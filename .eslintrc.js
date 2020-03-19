@@ -2,13 +2,6 @@
 
   ESLINT CONFIGURATION for URSYS/STEPSYS with VISUAL STUDIO CODE
 
-  NOTE: ESLINT configuration is a bit convoluted because the format obfuscates
-        the relations between plugins, rules, and configs and their roles.
-        I've added links to relevant docs.
-
-  NOTE: (Jan 2019) eslint doesn't understand javascript module format
-        (e.g. export default). See docs.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 module.exports = {
@@ -47,10 +40,11 @@ module.exports = {
     // 'eslint:recommended',
     // 'plugin:@typescript-eslint/eslint-recommended',
     // 'plugin:@typescript-eslint/recommended',
+
     // OUR ESLINT STACK
     'plugin:react/recommended', // handle jsx syntax
     'airbnb-typescript', // add airbnb typescript rules
-    'prettier/@typescript-eslint' // disable formatting-related rules
+    'prettier/@typescript-eslint' // make prettier code formatting to prevail over eslint
   ],
   globals: {
     Atomics: 'readonly',
