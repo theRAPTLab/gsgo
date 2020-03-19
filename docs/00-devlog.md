@@ -31,6 +31,20 @@ Let's see if we can just get the old project to build:
 
 This is good enough for now as we can continue development, and then break things out into other packages later.
 
+## 20-0318: Lerna-fying x-ur-framework
+
+To run using lerna, us: `lerna run dev --stream` (stream makes all output visible). There is also the `--no-prefix` flag to disable printing of the package.json 'name' field. This executes npm run dev on ALL packages.
+
+I [found](https://stackoverflow.com/questions/57858145) a description of a terminal package called multiview that can route different text to different columns using a format like this:
+`multiview [script] [script] [script]`. In the root package.json, I added a scripts entry: 
+```
+  "scripts": {
+    "dev": "multiview [npm run dev:appserver]",
+    "dev:appserver": "lerna run dev --stream --no-prefix"
+  },
+```
+This can easily be expanded to provide multiple output columns.
+
 ## 20-0318: Configuring Visual Studio Code and Building
 
 There are two major entry points for build: **webpack** and **visual studio code**. These share some of the same underlying tools (e.g. ESLint) and share configuration some of the time, which is confusing. Compounding the issue is the fragile chain of dependencies between ESLint, Webpack, Typescript, and Prettier. It doesn't help that ESLint has an obtuse plugin architecture, making it difficult to understand what is actually affecting what.

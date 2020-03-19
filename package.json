@@ -1,8 +1,13 @@
 {
   "name": "root",
   "private": true,
+  "scripts": {
+    "dev": "multiview [npm run dev:appserver]",
+    "dev:appserver": "lerna run dev --stream --no-prefix"
+  },
   "devDependencies": {
-    "lerna": "^3.20.2"
+    "lerna": "^3.20.2",
+    "multiview": "^3.0.0"
   },
   "dependencies": {
     "ip": "^1.1.5",

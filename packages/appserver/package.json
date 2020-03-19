@@ -1,7 +1,7 @@
 {
-  "name": "ur-framework",
+  "name": "appserver",
   "version": "0.0.1",
-  "description": "This folder contains the build system and source code for UR-FRAMEWORK.",
+  "description": "GEMSTEP AppServer",
   "main": "index.js",
   "scripts": {
     "dev": "node urdu dev",
