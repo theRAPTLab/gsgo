@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <base href="/" />
+    <title><%=APP_TITLE%></title>
+    <script>
+      if (!window.URSESSION) {
+        window.URSESSION = {
+          CLIENT_IP: '<%=CLIENT_IP%>',
+          USRV_Host: '<%=USRV_Host%>',
+          USRV_IP: '<%=USRV_IP%>',
+          USRV_MsgPort: '<%=USRV_MsgPort%>',
+          USRV_Start: '<%=USRV_Start%>',
+          CLIENT_UADDR: '',
+          USRV_UADDR: '',
+          SESSION_Key: '',
+          SESSION_Token: ''
+        };
+      } else {
+        var div = document.getElementById('app-container');
+        var err = 'window.URSESSION unexpectedly already defined';
+        div.innerHTML += err;
+        console.log(err);
+        throw Error(err);
+      }
+    </script>
+  </head>
+
+  <body>
+    <div id="app-container"></div>
+  </body>
+  <!-- manually insert webpack bundle -->
+  <script src="./web-bundle.js" defer></script>
+</html>
