@@ -2,8 +2,9 @@
   "name": "root",
   "private": true,
   "scripts": {
+    "bootstrap": "lerna bootstrap --hoist",
     "dev": "multiview [npm run dev:appserver]",
-    "dev:appserver": "lerna run dev --stream --no-prefix"
+    "dev:appserver": "lerna run dev --stream"
   },
   "devDependencies": {
     "lerna": "^3.20.2",

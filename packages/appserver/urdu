@@ -19,11 +19,11 @@ const FS = require('fs');
 const PROCESS = require('process');
 
 /// CHECK DEV DEPENDENCIES ////////////////////////////////////////////////////
-if (!FS.existsSync('./node_modules/ip')) {
-  console.log(`\x1b[30;41m\x1b[37m MEME STARTUP ERROR \x1b[0m\n`);
+if (!FS.existsSync('./node_modules/ipaddr.js')) {
+  console.log(`\x1b[30;41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
   let out = '';
   out += `MISSING CRITICAL MODULE\n`;
-  out += `is this the \x1b[33mfirst time running MEME\x1b[0m `;
+  out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
   out += `or did you just run \x1b[33mnpm clean:all\x1b[0m?\n`;
   out += `run \x1b[33mnpm ci\x1b[0m to install all node_modules\n`;
   console.log(out);
@@ -39,7 +39,7 @@ const URSERV = require('./ursys/node/ursys-serve');
 
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
 if (!shell.which('git')) {
-  shell.echo(`\x1b[30;41m You must have git installed to run the MEME devtool \x1b[0m`);
+  shell.echo(`\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`);
   shell.exit(0);
 }
 
