@@ -20,3 +20,18 @@ git init
 * Added `.nvmrc` with necessary version of npm. Note that global installs 
 * Added `urdu` script stub, modified to reflect GEMSCRIPT 
 
+## 20-0318: Minimal port from x-ur-framework
+
+Let's see if we can just get the old project to build:
+
+* copied `config/`, `src/`, `ursys/`, `package.json`, `urdu` into `packages/appserver`
+* removed `tss-loader` from `package.json` dependencies (fishy)
+* ran `npm install` in `packages/appserver`...failed on babelize
+* copied `.babelrc` to `packages/appserver`...success!
+
+This is good enough for now as we can continue development, and then break things out into other packages later.
+
+## 20-0318: Configuring Visual Studio Code and Building
+
+There are two major entry points for build: **webpack** and **visual studio code**. These share some of the same underlying tools (e.g. ESLint) and share configuration some of the time, which is confusing. Compounding the issue is the fragile chain of dependencies between ESLint, Webpack, Typescript, and Prettier. It doesn't help that ESLint has an obtuse plugin architecture, making it difficult to understand what is actually affecting what.
+
