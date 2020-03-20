@@ -19,7 +19,17 @@ module.exports = {
     of ESLINT.
     See: github.com/typescript-eslint/typescript-eslint
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  plugins: ['react', '@typescript-eslint'],
+  plugins: ['react', '@typescript-eslint', 'import'],
+  settings: {
+    'import/parsers': {
+      '@typescript-eslint/parser': ['.ts', '.tsx', '.js', '.jsx']
+    },
+    'import/resolver': {
+      'typescript': {
+        'directory': './packages/*/tsconfig.json'
+      }
+    }
+  },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     Important: We use the official typescript-eslint/parser instead of the
     default espree parser. This supercedes TSLINT as of 2019, and is supported
@@ -43,6 +53,7 @@ module.exports = {
 
     // OUR ESLINT STACK
     'plugin:react/recommended', // handle jsx syntax
+    'plugin:@typescript-eslint/eslint-recommended', // transform typescript rules
     'airbnb-typescript', // add airbnb typescript rules
     'prettier/@typescript-eslint' // make prettier code formatting to prevail over eslint
   ],
@@ -55,7 +66,10 @@ module.exports = {
       jsx: true // enable jsx parsing (plugin:react/recommended)
     },
     ecmaVersion: 2018, // parsing of modern javascript
-    sourceType: 'module' // allows use of imports
+    sourceType: 'module', // allows use of imports
+    project: './tsconfig.json',
+    // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
+    tsconfigRootDir: __dirname
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     The "rules" field can override what was set in the "extends" field.
@@ -69,7 +83,7 @@ module.exports = {
     'no-alert': 'warn',
     /* ursys style overrides */
     'spaced-comment': 'off',
-    camelcase: 'off',
+    'camelcase': 'off',
     'comma-dangle': ['error', 'never'],
     'no-underscore-dangle': 'off',
     '@typescript-eslint/camelcase': 'off',
@@ -82,7 +96,7 @@ module.exports = {
     'prefer-destructuring': 'off',
     'class-methods-use-this': 'off',
     /* additional prettier conflicts to disable */
-    'arrow-parens': 'as-needed',
+    'arrow-parens': [1, 'as-needed'],
     /* relax some errors to warnings, or turn them off */
     'import/no-extraneous-dependencies': [
       'error',

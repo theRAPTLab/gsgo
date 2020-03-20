@@ -109,6 +109,9 @@ npm install eslint-config-airbnb-typescript \
 
 ## add prettier eslint rules
 npm install eslint-config-prettier eslint-plugin-prettier --save-dev
+
+## add peers
+npm i -D eslint typescript prettier
 ```
 **configure** eslint with these essentials
 ```
@@ -142,5 +145,34 @@ node_modules
 dist
 ```
 
----
-# What's Next?
+# Troubleshooting
+
+_JSX files are not being syntax highlighted_
+Trying to debug my setup by looking at exampes.
+https://medium.com/@NiGhTTraX/how-to-set-up-a-typescript-monorepo-with-lerna-c6acda7d4559
+
+Note: by following the specific commands at eslint-config-airbnb with version numbers, maybe can avoid issues. There are ALWAYS issues with typescript, it seems, with regressions and things breaking.
+
+Made a `tsconfig.build.json` file, and setting `.eslintrc.js` parserOptions.project to this hack:
+https://github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
+```
+project: './tsconfig.json',
+tsconfigRootDir: __dirname
+```
+
+_path alias problems: they work in webpack, but not in vsc highlighting_
+see: https://stackoverflow.com/questions/57032522
+```
+Note: Apparently the eslint-plugin-import is SUPER IMPORTANT for resolving aliases in the IDE!
+See: https://www.npmjs.com/package/eslint-plugin-import
+See: https://github.com/alexgorbatchev/eslint-import-resolver-typescript
+
+// support tsconfig baseUrl and paths
+npm install --save-dev eslint-plugin-import 
+npm install --save-dev eslint-import-resolver-typescript
+```
+adding a "typescript" to settings "import/resolver" to help it find the tsconfig files helps.
+
+GAH, it is broken again...modules aren't resolving. But it does compile at least. 
+There is _one mystery setting_ in vscode `eslint.workingDirectories : [{ "pattern":"./packages/*/"}]` that I'm not sure is doing anything.
+

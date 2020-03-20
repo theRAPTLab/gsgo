@@ -57,13 +57,13 @@
     "ws": "^7.2.1"
   },
   "dependencies": {
-    "ip": "^1.1.5",
-    "minimist": "^1.2.5",
     "debounce": "^1.2.0",
     "hashids": "^1.2.2",
+    "ip": "^1.1.5",
     "lokijs": "^1.5.8",
+    "minimist": "^1.2.5",
     "prop-types": "^15.7.2",
-    "react": "^16.12.0",
+    "react": "^16.13.1",
     "react-dom": "^16.12.0",
     "react-router": "^5.1.2",
     "react-router-dom": "^5.1.2",
