@@ -3,7 +3,6 @@
   ESLINT CONFIGURATION for URSYS/STEPSYS with VISUAL STUDIO CODE
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
 module.exports = {
   env: {
     browser: true,
@@ -21,12 +20,13 @@ module.exports = {
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   plugins: ['react', '@typescript-eslint', 'import'],
   settings: {
-    'import/parsers': {
-      '@typescript-eslint/parser': ['.ts', '.tsx', '.js', '.jsx']
-    },
     'import/resolver': {
+      // this require .vscode/settings.json tweak
+      // eslint.workingDirectories:[{mode:'auto'}]
+      // https://github.com/microsoft/vscode-eslint/issues/696 has some hints
+      // has to do with relative directories, monorepos, and eslint 6 changes
       'typescript': {
-        'directory': './packages/*/tsconfig.json'
+        'directory': './tsconfig.json'
       }
     }
   },

@@ -8,5 +8,6 @@
     "editor.wordWrap": "on"
   },
   "typescript.suggest.completeJSDocs": false,
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"]
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.workingDirectories": [{ "mode": "auto" }]
 }

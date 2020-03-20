@@ -173,6 +173,42 @@ npm install --save-dev eslint-import-resolver-typescript
 ```
 adding a "typescript" to settings "import/resolver" to help it find the tsconfig files helps.
 
-GAH, it is broken again...modules aren't resolving. But it does compile at least. 
-There is _one mystery setting_ in vscode `eslint.workingDirectories : [{ "pattern":"./packages/*/"}]` that I'm not sure is doing anything.
+* appserver/src/app/views/ViewMain/ViewMain.jsx - ensure that we're seeing errors caught
 
+_how to resolve path problems?_
+
+The trick was to modify `.vscode/settings.json` to add `eslint.workingDirectories": [{ "mode": "auto" }]`
+and also modifying `.eslintrc.js` as follows:
+```
+'import/resolver': {
+  // this require .vscode/settings.json tweak
+  // eslint.workingDirectories:[{mode:'auto'}]
+  // https://github.com/microsoft/vscode-eslint/issues/696 has some hints
+  // has to do with relative directories, monorepos, and eslint 6 changes
+  'typescript': {
+    'directory': './tsconfig.json'
+  }
+}
+```
+This has the effect of making the eslint working direcctory change automatically, and then the tsconfig.json file can actually be found. It's an example of the wonky plugins and path stuff.
+
+Finally, to resolve :
+
+* ursys/chrome/ur-central.js - path errors
+* ursys/chrome/ursys - path errors
+
+Modify the `appserver/tsconfig.json` file with
+```
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "ursys/*": ["ursys/*"],
+      "app/modules/*": ["src/app/modules/*"],
+      "app/*": ["src/app/*"],
+      "util/*": ["src/app/util/*"],
+      "step/*": ["src/step/*"]
+    }
+  },
+  "include": ["src/**/*", "ursys/**/*"],
+```
+Now that the tsconfig is being found properly with the vscode setting, we can specify paths. This tsconfig.json is then used by the import/resolver "typescript" setting, which uses it to figure out path resolution so no more errors. NOTE this is separate from webpack, which has its own configuration.
