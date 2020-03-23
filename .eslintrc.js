@@ -21,10 +21,13 @@ module.exports = {
   plugins: ['react', '@typescript-eslint', 'import'],
   settings: {
     'import/resolver': {
-      // this require .vscode/settings.json tweak
-      // eslint.workingDirectories:[{mode:'auto'}]
-      // https://github.com/microsoft/vscode-eslint/issues/696 has some hints
-      // has to do with relative directories, monorepos, and eslint 6 changes
+      // This makes module resolution in VSCode work. Otherwise, it will flag
+      // modules as undeclared because it can't find them. The import plugin
+      // will read the tsconfig.json file to parse each file.
+      // This also requires a .vscode/settings.json tweak:
+      //   eslint.workingDirectories:[{mode:'auto'}]
+      // See https://github.com/microsoft/vscode-eslint/issues/696 for hints
+      // regarding relative directories, monorepos, and eslint 6 changes
       'typescript': {
         'directory': './tsconfig.json'
       }
@@ -36,7 +39,7 @@ module.exports = {
     both by the Microsoft and ESLint teams.
 
     The typescript parser handles the typescript superset syntax and creates a
-    compatible AST for ESLINT. Nifty!
+    compatible AST for ESLINT.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   parser: '@typescript-eslint/parser',
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
@@ -46,12 +49,9 @@ module.exports = {
     eslint.org/docs/user-guide/configuring#using-the-configuration-from-a-plugin
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   extends: [
-    // DEFAULT ESLINT RECOMMENDATION (no typescript, airbnb, or prettier)
-    // 'eslint:recommended',
-    // 'plugin:@typescript-eslint/eslint-recommended',
-    // 'plugin:@typescript-eslint/recommended',
-
     // OUR ESLINT STACK
+    // Note: Ideally, we would construct our own set of rules by carefully
+    // considering what's in each of these configurations, but this works
     'plugin:react/recommended', // handle jsx syntax
     'plugin:@typescript-eslint/eslint-recommended', // transform typescript rules
     'airbnb-typescript', // add airbnb typescript rules
@@ -67,9 +67,8 @@ module.exports = {
     },
     ecmaVersion: 2018, // parsing of modern javascript
     sourceType: 'module', // allows use of imports
-    project: './tsconfig.json',
-    // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
-    tsconfigRootDir: __dirname
+    project: './tsconfig.json', // remember, we're using typescript-eslint/parser
+    tsconfigRootDir: __dirname // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     The "rules" field can override what was set in the "extends" field.
