@@ -136,8 +136,7 @@ const Hook = (scope, phase, f) => {
     if (typeof phase !== 'string') throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
     if (!PHASES.includes(phase)) throw Error(`${phase} is not a recognized phase`);
     // did we also get a promise?
-    if (!(f instanceof Function))
-      throw Error('<arg3> must be a function optionally returning Promise');
+    if (!(f instanceof Function)) throw Error('<arg3> must be a function optionally returning Promise');
     // get the list of promises associated with this phase
     // and add the new promise
     if (!PHASE_HOOKS.has(phase)) PHASE_HOOKS.set(phase, []);
@@ -204,8 +203,7 @@ const Execute = async phase => {
   // wait for all promises to execute
   await Promise.all(promises)
     .then(values => {
-      if (DBG && values.length)
-        console.log(`[${phase}] PROMISES RETURNED  : ${values.length}`, values);
+      if (DBG && values.length) console.log(`[${phase}] PROMISES RETURNED  : ${values.length}`, values);
       if (DBG) console.groupEnd();
       return values;
     })
@@ -242,8 +240,7 @@ const SetScopeFromRoutes = routes => {
     to set the scope, we need to have a unique name to set. this scope is probably
     a directory. we can set the UMOD property using the __dirname config for webpack
     /*/
-    if (component.MOD_ID === undefined)
-      console.error(`WARNING: component for route '${loc}' has no MOD_ID property`);
+    if (component.MOD_ID === undefined) console.error(`WARNING: component for route '${loc}' has no MOD_ID property`);
     else {
       const viewpath = component.MOD_ID || 'boot';
       SetScopePath(viewpath);
@@ -373,8 +370,7 @@ const ModulePreflight = (comp, mod) => {
   if (!comp) return 'arg1 must be React component root view';
   if (!mod) return `arg2 must be 'module' keyword`;
   if (!mod.id) return `arg2 is not a 'module' keyword`;
-  if (!comp.MOD_ID)
-    return `Component.MOD_ID static property must be set = __dirname (e.g. ViewMain.MOD_ID=__dirname)`;
+  if (!comp.MOD_ID) return `Component.MOD_ID static property must be set = __dirname (e.g. ViewMain.MOD_ID=__dirname)`;
 };
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

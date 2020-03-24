@@ -2,15 +2,7 @@
 
   ESLINT CONFIGURATION for URSYS/STEPSYS with VISUAL STUDIO CODE
 
-  NOTE: ESLINT configuration is a bit convoluted because the format obfuscates
-        the relations between plugins, rules, and configs and their roles.
-        I've added links to relevant docs.
-
-  NOTE: (Jan 2019) eslint doesn't understand javascript module format
-        (e.g. export default). See docs.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
 module.exports = {
   env: {
     browser: true,
@@ -26,14 +18,28 @@ module.exports = {
     of ESLINT.
     See: github.com/typescript-eslint/typescript-eslint
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  plugins: ['react', '@typescript-eslint'],
+  plugins: ['react', '@typescript-eslint', 'import'],
+  settings: {
+    'import/resolver': {
+      // This makes module resolution in VSCode work. Otherwise, it will flag
+      // modules as undeclared because it can't find them. The import plugin
+      // will read the tsconfig.json file to parse each file.
+      // This also requires a .vscode/settings.json tweak:
+      //   eslint.workingDirectories:[{mode:'auto'}]
+      // See https://github.com/microsoft/vscode-eslint/issues/696 for hints
+      // regarding relative directories, monorepos, and eslint 6 changes
+      'typescript': {
+        'directory': './tsconfig.json'
+      }
+    }
+  },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     Important: We use the official typescript-eslint/parser instead of the
     default espree parser. This supercedes TSLINT as of 2019, and is supported
     both by the Microsoft and ESLint teams.
 
     The typescript parser handles the typescript superset syntax and creates a
-    compatible AST for ESLINT. Nifty!
+    compatible AST for ESLINT.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   parser: '@typescript-eslint/parser',
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
@@ -43,14 +49,13 @@ module.exports = {
     eslint.org/docs/user-guide/configuring#using-the-configuration-from-a-plugin
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   extends: [
-    // DEFAULT ESLINT RECOMMENDATION (no typescript, airbnb, or prettier)
-    // 'eslint:recommended',
-    // 'plugin:@typescript-eslint/eslint-recommended',
-    // 'plugin:@typescript-eslint/recommended',
     // OUR ESLINT STACK
+    // Note: Ideally, we would construct our own set of rules by carefully
+    // considering what's in each of these configurations, but this works
     'plugin:react/recommended', // handle jsx syntax
+    'plugin:@typescript-eslint/eslint-recommended', // transform typescript rules
     'airbnb-typescript', // add airbnb typescript rules
-    'prettier/@typescript-eslint' // disable formatting-related rules
+    'prettier/@typescript-eslint' // make prettier code formatting to prevail over eslint
   ],
   globals: {
     Atomics: 'readonly',
@@ -61,7 +66,9 @@ module.exports = {
       jsx: true // enable jsx parsing (plugin:react/recommended)
     },
     ecmaVersion: 2018, // parsing of modern javascript
-    sourceType: 'module' // allows use of imports
+    sourceType: 'module', // allows use of imports
+    project: './tsconfig.json', // remember, we're using typescript-eslint/parser
+    tsconfigRootDir: __dirname // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     The "rules" field can override what was set in the "extends" field.
@@ -75,7 +82,7 @@ module.exports = {
     'no-alert': 'warn',
     /* ursys style overrides */
     'spaced-comment': 'off',
-    camelcase: 'off',
+    'camelcase': 'off',
     'comma-dangle': ['error', 'never'],
     'no-underscore-dangle': 'off',
     '@typescript-eslint/camelcase': 'off',
@@ -88,7 +95,7 @@ module.exports = {
     'prefer-destructuring': 'off',
     'class-methods-use-this': 'off',
     /* additional prettier conflicts to disable */
-    'arrow-parens': 'as-needed',
+    'arrow-parens': [1, 'as-needed'],
     /* relax some errors to warnings, or turn them off */
     'import/no-extraneous-dependencies': [
       'error',

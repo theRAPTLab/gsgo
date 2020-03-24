@@ -7,8 +7,9 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import STACKTRACE from 'stacktrace-js';
+import CCSS from 'app/modules/console-styles';
 import PATH from './path';
-import CCSS from 'App/modules/console-styles';
+
 const { cssalert } = CCSS;
 
 /// INITIALIZE MAIN MODULE ////////////////////////////////////////////////////
