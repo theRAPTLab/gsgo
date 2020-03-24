@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "ursys/*": ["ursys/*"],
+      "app/modules/*": ["src/app/modules/*"],
+      "app/*": ["src/app/*"],
+      "util/*": ["src/app/util/*"],
+      "step/*": ["src/step/*"]
+    }
+  },
+  "include": ["src/**/*", "ursys/**/*"],
+  "exclude": ["node_modules"]
+}
