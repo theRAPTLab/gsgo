@@ -62,6 +62,7 @@
     "@gemstep/globals": "^0.0.0",
     "debounce": "^1.2.0",
     "hashids": "^1.2.2",
+    "http-proxy-middleware": "^1.0.3",
     "ip": "^1.1.5",
     "lokijs": "^1.5.8",
     "minimist": "^1.2.5",

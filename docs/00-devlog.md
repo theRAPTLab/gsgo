@@ -32,9 +32,7 @@ lerna bootstrap
 ```
 See [wip server architecture doc](03-server-arch.md). Anyway, I added `@gemstep/admin_srv` and `@gemstep/gem_srv`, and these both import `@gemstep/globals`
 
-At this point it would be nice to make a generic media server package. Let's look at the express setup.
-
-
+At this point it would be nice to make a generic media server package.
 
 ## 20-0325-2 Setting up Servers
 
@@ -58,8 +56,37 @@ For now we'll implement everything on a single server, with an eye toward breaki
 * We need modular code and debugging for Node.
 * The URSYS controller has to maintain everything, though.
 
-To establish the server architecture, let's make **one server**, and break out the different modules.
+To establish the server architecture, let's make **one server**, and break out the different modules. 
 
+* make lerna packages admin_srv and gem_srv in addition to app_srv.
+* app_srv may be split into admin_srv and gem_srv
+* we don't yet have **routing** and **view** architecture considered, much less the webpack build system. 
+* we also want to use React I think.
+
+So that means using **react router** to handle our loading, but we could also use server-side rendering version of React. The `ReactDOMServer` object will renger static markup as strings or as a stream. [This repo](https://github.com/Rohitkrops/ssr) describes the general process, though they recommend using NextJS to implement it. We can totally do that for our static website tests, all under one repo
+
+```
+npm install --save react react-dom next
+mkdir pages
+echo > pages/index.jsx
+npm run bootstrap
+# adjust port in next -p
+npm run dev
+```
+
+After this, we can follow the NextJS tutorials to make a SSR site. I'm thinking of proxying the URSYS presentation server to the various ports, which might be super cool.
+
+```
+git clone git@gitlab.com:stepsys/gem-step/gsgo.git
+cd gsgo
+nvm use           # is nvm installed and using specified version?
+which lerna       # is lerna installed globally?
+git branch        # on correct branch?
+
+npm ci            # initialize monorepo tools
+npm run bootstrap # initialize monorepo
+
+```
 
 
 ---

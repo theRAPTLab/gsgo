@@ -10,7 +10,7 @@
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
   "scripts": {
-    "dev:gem": "next -p 8080",
+    "dev:gem": "next -p 3000",
     "build:gem": "next build",
     "start:gem": "next start"
   },
@@ -19,5 +19,8 @@
     "next": "^9.3.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1"
+  },
+  "publishConfig": {
+    "access": "private"
   }
 }

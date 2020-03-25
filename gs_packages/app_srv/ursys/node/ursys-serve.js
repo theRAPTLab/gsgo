@@ -9,17 +9,19 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
-const ip = require('ip');
-const URWEB = require('./server-express');
-const URNET = require('./server-network');
-const URLOG = require('./server-logger');
-const URDB = require('./server-database');
-const PROMPTS = require('../../config/prompts');
+/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
+const ip = require("ip");
+//
+const URWEB = require("./server-express");
+const URNET = require("./server-network");
+const URLOG = require("./server-logger");
+const URDB = require("./server-database");
+//
+const PROMPTS = require("../../config/prompts");
 
 /// TERMINAL CONSTANTS ////////////////////////////////////////////////////////
 const { TERM_URSYS: CS, CCRIT: CC, CR, TR } = PROMPTS;
-const LPR = 'URSERV';
+const LPR = "URSERV";
 const PR = `${CS}${PROMPTS.Pad(LPR)}${CR}`;
 
 /// SERVER CONSTANTS //////////////////////////////////////////////////////////
@@ -45,7 +47,7 @@ URSERV.StartWebServer = callback => {
       out += `LOCAL  - ${SERVER_INFO.main}/#/admin\n`;
       out += `REMOTE - ${SERVER_INFO.client}\n`;
       out += `---\n`;
-      if (typeof callback === 'function') callback(out);
+      if (typeof callback === "function") callback(out);
       console.log(out);
     } catch (err) {
       console.log(PR, `${CC}${err}${CR}`);
@@ -66,10 +68,10 @@ URSERV.StartNetwork = () => {
 URSERV.RegisterHandlers = () => {
   URLOG.Write(LPR, `registering network services`);
   // start logging message
-  URNET.NetSubscribe('NET:SRV_LOG_EVENT', URLOG.PKT_LogEvent);
+  URNET.NetSubscribe("NET:SRV_LOG_EVENT", URLOG.PKT_LogEvent);
 
   // register remote messages
-  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', URNET.PKT_RegisterRemoteHandlers);
+  URNET.NetSubscribe("NET:SRV_REG_HANDLERS", URNET.PKT_RegisterRemoteHandlers);
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,8 +79,12 @@ URSERV.RegisterHandlers = () => {
  */
 URSERV.Initialize = (options = {}) => {
   URLOG.Write(LPR, `initializing network`);
-  if (options.apphost) console.log(PR, `${CC}APPHOST OPTIONS${TR} ${options.apphost}`);
-  if (process.env.DATASET) console.log(PR, `${CC}DATASET=${TR} ${process.env.DATASET}`);
+  if (options.apphost) {
+    console.log(PR, `${CC}APPHOST OPTIONS${TR} ${options.apphost}`);
+  }
+  if (process.env.DATASET) {
+    console.log(PR, `${CC}DATASET=${TR} ${process.env.DATASET}`);
+  }
   console.log(PR, `${CS}STARTING UR SOCKET SERVER${CR}`);
   URSERV.RegisterHandlers();
   // don't even bother with database yet

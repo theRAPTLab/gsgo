@@ -31,6 +31,7 @@ class ViewMain extends React.Component {
   render() {
     return (
       <div>
+        <h1>App Server</h1>
         <p>ViewMain</p>
       </div>
     );

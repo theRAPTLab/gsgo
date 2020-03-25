@@ -10,7 +10,7 @@
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
   "scripts": {
-    "dev:admin": "next -p 80",
+    "dev:admin": "next -p 8080",
     "build:admin": "next build",
     "start:admin": "next start"
   },
