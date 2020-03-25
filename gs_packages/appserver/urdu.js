@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  This is the GEMSTEP Development Utility, which is built to be called from
+  This is the URSYS Development Utility, which is built to be called from
   package.json scripts or the command line.
 
   To run from the command line: ./urdu <cmd> or node urdu <cmd>
@@ -12,15 +12,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
-const PR = 'GEMSTEP';
+const PR = 'URDU';
 
 /// LOAD BUILT-IN LIBRARIES ///////////////////////////////////////////////////
 const FS = require('fs');
 const PROCESS = require('process');
 
 /// CHECK DEV DEPENDENCIES ////////////////////////////////////////////////////
-if (!FS.existsSync('./node_modules/ip')) {
-  console.log(`\x1b[41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
+if (!FS.existsSync('./node_modules')) {
+  console.log(`\x1b[30;41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
   let out = '';
   out += `MISSING CRITICAL MODULE\n`;
   out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
@@ -31,41 +31,27 @@ if (!FS.existsSync('./node_modules/ip')) {
 }
 
 /// LOAD EXTERNAL LIBRARIES ///////////////////////////////////////////////////
-const SHELL = require('shelljs');
-const MINIMIST = require('minimist');
+const shell = require('shelljs');
+const minimist = require('minimist');
+
+/// LOAD SERVER MAIN MODULE ///////////////////////////////////////////////////
+const URSERV = require('./ursys/node/ursys-serve');
 
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
-if (!SHELL.which('git')) {
-  SHELL.echo(`\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`);
-  SHELL.exit(0);
-}
-/// GIT BRANCH INFORMATION ////////////////////////////////////////////////////
-const { error, stdout } = SHELL.exec('git symbolic-ref --short -q HEAD', { silent: true });
-let m_branch_info;
-if (error) m_branch_info = '<detached head>';
-if (stdout) m_branch_info = stdout.trim();
-
-/// CHECK VERSIONS
-let lernaJSON = JSON.parse(FS.readFileSync('lerna.json', 'utf8'));
-const GS_VERSION = lernaJSON.version;
-if (GS_VERSION === undefined) {
-  SHELL.echo(`\x1b[30;41m missing lerna.json version \x1b[0m`);
-  SHELL.exit(0);
+if (!shell.which('git')) {
+  shell.echo(`\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`);
+  shell.exit(0);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// COMMAND DISPATCHER ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const argv = MINIMIST(process.argv.slice(1));
+const argv = minimist(process.argv.slice(1));
 const cmd = argv._[1];
-
-SHELL.echo(`\n${PR} RUNTIME`);
-SHELL.echo(`.. branch:  ${m_branch_info}`);
-SHELL.echo(`.. version: ${GS_VERSION}`);
 
 switch (cmd) {
   case 'dev':
-    console.log('run dev');
+    RunDevServer();
     break;
   default:
     console.log('unknown command', cmd);
@@ -75,6 +61,14 @@ switch (cmd) {
 /// RUN DEV ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunDevServer() {
-  console.log(PR, `Starting ${PR} Development Server...`);
-  console.log(PR, `running branch ${m_branch_info} version ${GS_VERSION}`);
+  //    "dev": "echo '\n*** USING WEBPACK HOT DEV SERVER' && webpack-dev-server  --mode development --inline --hot --host 0.0.0.0 --config=./src/config/webpack.webapp.config.js --env.HMR_MODE='wds'",
+  // git branch information
+  const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', { silent: true });
+  console.log(PR, `Starting Development Server...`);
+  if (error) console.log(PR, `using repo <detached head>\n`);
+  if (stdout) console.log(PR, `using repo '${stdout.trim()}' branch\n`);
+
+  URSERV.Initialize({ apphost: 'devserver' });
+  URSERV.StartNetwork();
+  URSERV.StartWebServer();
 }
