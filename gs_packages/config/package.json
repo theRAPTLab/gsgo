@@ -1,0 +1,25 @@
+{
+  "name": "@gemstep/config",
+  "version": "0.0.0",
+  "description": "shared configuration for gem-step",
+  "keywords": [],
+  "author": "Dave 'Sri' Seah <david@davidseah.com>",
+  "license": "MIT",
+  "main": "lib/config.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "publishConfig": {
+    "access": "private"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

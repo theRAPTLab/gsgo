@@ -6,6 +6,7 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 import React from 'react';
+import GEM_CONFIG from '@gem-step/config';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 
@@ -16,6 +17,7 @@ class ViewMain extends React.Component {
   constructor(props) {
     super(props);
     console.log('constructed ViewMain');
+    console.log('@gem-step config', GEM_CONFIG);
   }
 
   componentDidMount() {
