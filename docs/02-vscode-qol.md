@@ -47,4 +47,13 @@ ANYWAY...the VSCode ESLint extension works by taking the open file and executing
 
 And thus...hopefully it all works!
 
+##  Addendum: Prettier VSCode Extension in Monorepos
+
+The Prettier extension is coded to look for the nearest `package.json` to determine the location of the Prettier binary. In a monorepo though with hoisted packages, prettier is located in the root, not the packages level. 
+
+Our packages are now called `gs_packages`, so the workaround is either to install prettier globally (ugh) or modify the VSCode extension itself with the **Prettier Path**. I've added the following to the `.vscode/settings.json`:
+```
+  "prettier.prettierPath": "./node_modules/prettier",
+  "prettier.configPath": "./"
+```
 
