@@ -53,7 +53,9 @@ The Prettier extension is coded to look for the nearest `package.json` to determ
 
 Our packages are now called `gs_packages`, so the workaround is either to install prettier globally (ugh) or modify the VSCode extension itself with the **Prettier Path**. I've added the following to the `.vscode/settings.json`:
 ```
-  "prettier.prettierPath": "./node_modules/prettier",
-  "prettier.configPath": "./"
+  "prettier.prettierPath": "./node_modules/prettier"
 ```
+This way, Prettier always looks at the root level of the monorepo, and pulls the prettier information from there. It's only applied to the project as a whole.
+
+NOTE: When I changed `prettier.configPath:"./"` this caused errors because I think this should have said `./tsconfig.json`...in any case I don't think it's needed.
 
