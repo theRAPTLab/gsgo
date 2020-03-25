@@ -15,4 +15,5 @@
     }
   ],
   "prettier.prettierPath": "./node_modules/prettier",
+  "prettier.configPath": "./tsconfig.json"
 }

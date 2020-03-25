@@ -49,13 +49,11 @@ And thus...hopefully it all works!
 
 ##  Addendum: Prettier VSCode Extension in Monorepos
 
-The Prettier extension is coded to look for the nearest `package.json` to determine the location of the Prettier binary. In a monorepo though with hoisted packages, prettier is located in the root, not the packages level. 
+The Prettier extension is coded to look for the nearest `package.json` to determine the location of the Prettier binary. In a monorepo though with hoisted packages, prettier is located in the root, not the /'packages' (or gs_packages in our case) level. 
 
-Our packages are now called `gs_packages`, so the workaround is either to install prettier globally (ugh) or modify the VSCode extension itself with the **Prettier Path**. I've added the following to the `.vscode/settings.json`:
+Our packages are now called `gs_packages`, so the workaround is either to install prettier globally (ugh) or modify the VSCode extension itself with the **Prettier Path** settings!
 ```
-  "prettier.prettierPath": "./node_modules/prettier"
+  "prettier.prettierPath": "./node_modules/prettier",
+  "prettier.configPath": "./tsconfig.json"
 ```
 This way, Prettier always looks at the root level of the monorepo, and pulls the prettier information from there. It's only applied to the project as a whole.
-
-NOTE: When I changed `prettier.configPath:"./"` this caused errors because I think this should have said `./tsconfig.json`...in any case I don't think it's needed.
-
