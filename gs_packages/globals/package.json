@@ -1,5 +1,5 @@
 {
-  "name": "@gemstep/config",
+  "name": "@gemstep/globals",
   "version": "0.0.0",
   "description": "shared configuration for gem-step",
   "keywords": [],
