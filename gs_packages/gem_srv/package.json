@@ -5,19 +5,19 @@
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "homepage": "",
   "license": "MIT",
-  "main": "lib/gem_srv.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "files": [
-    "lib"
-  ],
   "repository": {
     "type": "git",
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
-  "scripts": {},
+  "scripts": {
+    "dev:gem": "next -p 8080",
+    "build:gem": "next build",
+    "start:gem": "next start"
+  },
   "dependencies": {
-    "@gemstep/globals": "^0.0.0"
+    "@gemstep/globals": "^0.0.0",
+    "next": "^9.3.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
   }
 }
