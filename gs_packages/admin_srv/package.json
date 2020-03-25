@@ -14,6 +14,9 @@
     "build:admin": "next build",
     "start:admin": "next start"
   },
+  "publishConfig": {
+    "access": "private"
+  },
   "dependencies": {
     "@gemstep/globals": "^0.0.0",
     "next": "^9.3.1",
