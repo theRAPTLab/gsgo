@@ -2,9 +2,11 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
-    "dev": "multiview [npm run dev:appserver]",
-    "dev:appserver": "lerna run dev --stream"
+    "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
+    "dev": "multiview [npm run dev:app] [npm run dev:admin] [npm run dev:gem]",
+    "dev:admin": "lerna run dev:admin --stream --no-prefix",
+    "dev:app": "lerna run dev:app --stream --no-prefix",
+    "dev:gem": "lerna run dev:gem --stream --no-prefix"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.24.0",

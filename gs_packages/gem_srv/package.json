@@ -1,0 +1,26 @@
+{
+  "name": "@gemstep/gem_srv",
+  "version": "0.0.0",
+  "description": "GEMSTEP client server",
+  "author": "Dave 'Sri' Seah <david@davidseah.com>",
+  "homepage": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
+  },
+  "scripts": {
+    "dev:gem": "next -p 3000",
+    "build:gem": "next build",
+    "start:gem": "next start"
+  },
+  "dependencies": {
+    "@gemstep/globals": "^0.0.0",
+    "next": "^9.3.1",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1"
+  },
+  "publishConfig": {
+    "access": "private"
+  }
+}
