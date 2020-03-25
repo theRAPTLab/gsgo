@@ -1,5 +1,5 @@
 {
-  "name": "@gemstep/appserver",
+  "name": "@gemstep/app_srv",
   "version": "0.0.1",
   "description": "GEMSTEP AppServer",
   "main": "index.js",

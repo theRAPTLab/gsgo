@@ -4,7 +4,7 @@
   "scripts": {
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
     "dev": "lerna run dev --stream",
-    "dev:appserver": "multiview [npm run dev:appserver]"
+    "dev:app_srv": "multiview [npm run dev]"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.24.0",
