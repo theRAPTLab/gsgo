@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna bootstrap --hoist",
+    "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
     "dev": "lerna run dev --stream",
     "dev:appserver": "multiview [npm run dev:appserver]"
   },

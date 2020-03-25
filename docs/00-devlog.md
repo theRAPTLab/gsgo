@@ -1,7 +1,30 @@
 SRI'S DEVELOPMENT LOG
 
 ---
-# Creating Monorepo
+# 2. Scaffolding the System
+
+Essentially I just need to make a webserver, or webservers, that serve a webapp that is capable of handling multiple routes and connecting to the framework, and start filling it in.
+
+## 20-0325-1 Setting up shared lerna packages
+
+Currently, when I `npm run dev` this runs the current **appserver** package, which is the only package.  First, I'd like update the directory structure:
+* rename gsgo -> gsutil
+* rename packages -> gs_packages
+
+I'd like to change it so it imports a package from another place. Let's see if I can do that.
+```
+lerna create @gemstep/config -y  # create a @gemstep/config project directory
+# modify the config.js file that was created, look at the package.json
+# from monorepo root, add to package
+lerna add @gemstep/config --scope @gemstep/appserver
+# use gemstep script to 'lerna clean -y && lerna bootstrap --hoist'
+npm run bootstrap
+# now import package '@gemstep/config' into appserver
+# import CONFIG from '@gemstep/config'
+```
+
+---
+# 1. Creating Monorepo
 
 2020-0317 - Lerna is used to manage "monorepos", which contain multiple "packages" inside subdirectories. Each package can have its own package.json and build system, but it's all managed under the same git repository. Therefore, making a change across multiple modules becomes a single git commit. Lerna is the tool that makes managing the dependencies and importing of packages into code easier. Typical build tasks can be executed at the root level via lerna. 
 
