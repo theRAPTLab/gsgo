@@ -26,7 +26,22 @@ You can then import the packages into other packages, as if they were already np
 
 ## How do I manage versions with Lerna?
 
-I think Lerna has 
+GEMSTEP is comprised of many packages, but they all share the same version number and a single repo. The `lerna version` command is used to manage all the `package.json` files.  Note that [versioning](https://github.com/lerna/lerna/tree/master/commands/version) is different that [publishing](https://github.com/lerna/lerna/tree/master/commands/publish), wihich makes the package to **npm** for public consumption.
+
+The `lerna version` command will:
+
+* interactively prompt for a new version bump
+* modify all the `package.json` files
+* commit the change to the repo and tag it
+* push the commit to the upstream remote
+
+```
+lerna version 1.0.1 # example of explicit versioning to "1.0.1"
+lerna version patch # example of version to a "patch" keyword
+lerna version       # select from prompts interactively
+```
+
+Currently, we're using `lerna version` interactively until we get a sense how this works. 
 
 
 
