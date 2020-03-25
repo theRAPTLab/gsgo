@@ -305,9 +305,7 @@ class NetMessage {
     switch (key) {
       case 'src': /* falls-through */
       default:
-        return this.SourceGroupID()
-          ? `${this.SourceAddress()} [${this.SourceGroupID()}]`
-          : `${this.SourceAddress()}`;
+        return this.SourceGroupID() ? `${this.SourceAddress()} [${this.SourceGroupID()}]` : `${this.SourceAddress()}`;
     }
   }
 

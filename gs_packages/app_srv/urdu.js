@@ -61,7 +61,6 @@ switch (cmd) {
 /// RUN DEV ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunDevServer() {
-  //    "dev": "echo '\n*** USING WEBPACK HOT DEV SERVER' && webpack-dev-server  --mode development --inline --hot --host 0.0.0.0 --config=./src/config/webpack.webapp.config.js --env.HMR_MODE='wds'",
   // git branch information
   const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', { silent: true });
   console.log(PR, `Starting Development Server...`);

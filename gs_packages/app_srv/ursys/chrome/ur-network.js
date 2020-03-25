@@ -214,11 +214,7 @@ function m_HandleMessage(msgEvent) {
   }
   // DEBUG OUT UTILITY
   function cout_ForwardedStatus(pkt, result) {
-    console.log(
-      `ME_${NetMessage.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(
-        result
-      )}`
-    );
+    console.log(`ME_${NetMessage.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(result)}`);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

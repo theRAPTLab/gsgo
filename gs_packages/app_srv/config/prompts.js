@@ -8,8 +8,7 @@ let PROMPTS = {};
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// detect node environment and set padsize accordingly
-const IS_NODE =
-  typeof process !== 'undefined' && process.release && process.release.name === 'node';
+const IS_NODE = typeof process !== 'undefined' && process.release && process.release.name === 'node';
 let PAD_SIZE = IS_NODE
   ? 13 // nodejs
   : 0; // not nodejs

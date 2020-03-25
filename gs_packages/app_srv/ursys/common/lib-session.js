@@ -64,8 +64,7 @@ SESSION.DecodeToken = hashedToken => {
   if (tokenBits.length === 1) return { isValid, token, error: 'missing - in token' };
   if (tokenBits.length > 2) return { isValid, token, error: 'too many - in token' };
   if (tokenBits[0]) studentName = tokenBits[0].toUpperCase();
-  if (studentName.length < 3)
-    return { isValid, token, error: 'student name must have 3 or more letters' };
+  if (studentName.length < 3) return { isValid, token, error: 'student name must have 3 or more letters' };
 
   // (2) check hashed data
   if (tokenBits[1]) hashedData = tokenBits[1].toUpperCase();
