@@ -9,5 +9,11 @@
   },
   "typescript.suggest.completeJSDocs": false,
   "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
-  "eslint.workingDirectories": [{ "mode": "auto" }]
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "prettier.prettierPath": "./node_modules/prettier",
+  "prettier.configPath": "./tsconfig.json"
 }

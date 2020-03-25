@@ -51,3 +51,9 @@ Thumbs.db
 # Ignore archives
 *.zip
 
+# next.js build output
+.next
+
+# dotenv environment variables file (build for Zeit Now)
+.env
+.env.build

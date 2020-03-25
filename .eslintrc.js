@@ -104,6 +104,8 @@ module.exports = {
       }
     ],
     'no-unused-vars': 'warn',
-    'no-param-reassign': 'warn'
+    'no-shadow': 'warn',
+    'no-param-reassign': 'warn',
+    'object-curly-newline': 'off'
   }
 };

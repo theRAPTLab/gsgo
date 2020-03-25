@@ -1,7 +1,96 @@
 SRI'S DEVELOPMENT LOG
 
 ---
-# Creating Monorepo
+# 2. Scaffolding the System
+
+Essentially I just need to make a webserver, or webservers, that serve a webapp that is capable of handling multiple routes and connecting to the framework, and start filling it in.
+
+## 20-0325-1 Setting up shared lerna packages
+
+Currently, when I `npm run dev` this runs the current **app_srv** package, which is the only package.  First, I'd like update the directory structure:
+* rename gsgo -> gsutil
+* rename packages -> gs_packages
+
+I'd like to change it so it imports a package from another place. Let's see if I can do that.
+```
+lerna create @gemstep/globals -y  # create a @gemstep/globals project directory
+# modify the config.js file that was created, look at the package.json
+# from monorepo root, add to package
+lerna add @gemstep/globals --scope @gemstep/app_srv
+# use gemstep script to 'lerna clean -y && lerna bootstrap --hoist'
+npm run bootstrap
+# now import package '@gemstep/globals' into app_srv
+# import CONFIG from '@gemstep/globals'
+```
+Adding to monorepo...
+```
+# use license MIT
+lerna create @gemstep/admin_srv 
+lerna add @gemstep/globals --scope=@gemstep/admin_srv
+lerna bootstrap
+# edit package.json, README.md
+```
+See [wip server architecture doc](03-server-arch.md). Anyway, I added `@gemstep/admin_srv` and `@gemstep/gem_srv`, and these both import `@gemstep/globals`
+
+At this point it would be nice to make a generic media server package.
+
+## 20-0325-2 Setting up Servers
+
+I need to get all the web pages working, so I need to make a list of things to connect to. Let's do that.
+
+ServicesList:
+
+* Presentation Server on port 3000
+* Admin Webserver on port 8800
+* Student Webserver on Group Server Port 80
+* URSYS Controller on socket
+* FAKETRACK on socket
+* Authentication centralized on URSYS, with separate UserLists
+
+How do Group Servers work?
+
+When a group server starts up on a separate machine, it has to find an URSYS controller on the network. It's a node app. The node app spawns a student webserver from its local copy of the app. It has its own id set, and can be controlled from the URSYS controller (which I guess is the master). It would be capable of generating its own streams of data and simulation, and replicate data to the main controller.
+
+For now we'll implement everything on a single server, with an eye toward breaking them into multiple servers. For now we'll use URSYS as the main control mechanism.
+
+* We need modular code and debugging for Node.
+* The URSYS controller has to maintain everything, though.
+
+To establish the server architecture, let's make **one server**, and break out the different modules. 
+
+* make lerna packages admin_srv and gem_srv in addition to app_srv.
+* app_srv may be split into admin_srv and gem_srv
+* we don't yet have **routing** and **view** architecture considered, much less the webpack build system. 
+* we also want to use React I think.
+
+So that means using **react router** to handle our loading, but we could also use server-side rendering version of React. The `ReactDOMServer` object will renger static markup as strings or as a stream. [This repo](https://github.com/Rohitkrops/ssr) describes the general process, though they recommend using NextJS to implement it. We can totally do that for our static website tests, all under one repo
+
+```
+npm install --save react react-dom next
+mkdir pages
+echo > pages/index.jsx
+npm run bootstrap
+# adjust port in next -p
+npm run dev
+```
+
+After this, we can follow the NextJS tutorials to make a SSR site. I'm thinking of proxying the URSYS presentation server to the various ports, which might be super cool.
+
+```
+git clone git@gitlab.com:stepsys/gem-step/gsgo.git
+cd gsgo
+nvm use           # is nvm installed and using specified version?
+which lerna       # is lerna installed globally?
+git branch        # on correct branch?
+
+npm ci            # initialize monorepo tools
+npm run bootstrap # initialize monorepo
+
+```
+
+
+---
+# 1. Creating Monorepo
 
 2020-0317 - Lerna is used to manage "monorepos", which contain multiple "packages" inside subdirectories. Each package can have its own package.json and build system, but it's all managed under the same git repository. Therefore, making a change across multiple modules becomes a single git commit. Lerna is the tool that makes managing the dependencies and importing of packages into code easier. Typical build tasks can be executed at the root level via lerna. 
 
@@ -24,7 +113,7 @@ lerna init   # note this also does a "git init"
 
 ## 20-0318: Minimal port from x-ur-framework
 
-The `x-ur-framework` repo has the key elements of our ported UNISYS (now URSYS) system. It's been renamed to `appserver` because it is the application server for GEMSTEP. Among its responsibilities are:
+The `x-ur-framework` repo has the key elements of our ported UNISYS (now URSYS) system. It's been renamed to `app_srv` because it is the application server for GEMSTEP. Among its responsibilities are:
 
 * Serving multiple webapps through ExpressJS
 * Hot Module Reload for webapp development
@@ -37,10 +126,10 @@ The current framework only handles ExpressJS and the URSYS registration/messagin
 
 To port `x-ur-framework` into the new monorepo, I did the following:
 
-* copied `config/`, `src/`, `ursys/`, `package.json`, `urdu` into `packages/appserver`
+* copied `config/`, `src/`, `ursys/`, `package.json`, `urdu` into `packages/app_srv`
 * removed `tss-loader` from `package.json` dependencies (fishy)
-* ran `npm install` in `packages/appserver`...failed on babelize
-* copied `.babelrc` to `packages/appserver`...success!
+* ran `npm install` in `packages/app_srv`...failed on babelize
+* copied `.babelrc` to `packages/app_srv`...success!
 
 For new users of the monorepo, the instructions are now:
 
@@ -173,7 +262,7 @@ npm install --save-dev eslint-import-resolver-typescript
 ```
 adding a "typescript" to settings "import/resolver" to help it find the tsconfig files helps.
 
-* appserver/src/app/views/ViewMain/ViewMain.jsx - ensure that we're seeing errors caught
+* app_srv/src/app/views/ViewMain/ViewMain.jsx - ensure that we're seeing errors caught
 
 _how to resolve path problems?_
 
@@ -197,7 +286,7 @@ Finally, to resolve :
 * ursys/chrome/ur-central.js - path errors
 * ursys/chrome/ursys - path errors
 
-Modify the `appserver/tsconfig.json` file with
+Modify the `app_srv/tsconfig.json` file with
 ```
   "compilerOptions": {
     "baseUrl": "./",
