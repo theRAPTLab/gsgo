@@ -1,6 +1,6 @@
 {
   "packages": ["gs_packages/*"],
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.1",
   "command": {
     "version": {
       "allowBranch": "master"

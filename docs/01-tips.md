@@ -41,7 +41,10 @@ lerna version patch # example of version to a "patch" keyword
 lerna version       # select from prompts interactively
 ```
 
-Currently, we're using `lerna version` interactively until we get a sense how this works. 
+Currently, we're using `lerna version` **interactively** until we get a sense how this works. This is the interactive version. 
+
+* `major.minor.patch` is the normal versioning scheme (e.g. 0.1.1).  By convention if  major number is 0, it's considered a "prerelease" meaning that it's not yet stable enough for public consumption.
+* `major.minor.patch-prelease` is used to denote "prerelease" versions (e.g. 0.1.1-alpha). These are interim releases that are under development as a work-in-progress but are being shared regardless. 
 
 
 

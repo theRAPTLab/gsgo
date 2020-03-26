@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/gem_srv",
-  "version": "0.0.0",
+  "version": "0.0.0-alpha.1",
   "description": "GEMSTEP client server",
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "homepage": "",
