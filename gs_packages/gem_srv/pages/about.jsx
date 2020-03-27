@@ -1,10 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Index Page for NextJS server-side rendered webapp.
-  NextJS handles the rendering through ReactDom
+  About Page
 
-  NOTE: this page runs from the server side, so we can't access objects like
-  window or document, or manipulate the dom
+  NOTE: NextJS auto-creates the routing! Cool!
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -16,6 +14,7 @@ import Container from '@material-ui/core/Container';
 import Typography from '@material-ui/core/Typography';
 import Box from '@material-ui/core/Box';
 import MuiLink from '@material-ui/core/Link';
+import Button from '@material-ui/core/Button';
 ///
 import ProTip from '../src/ProTip';
 import Link from '../src/Link';
@@ -38,16 +37,16 @@ function Copyright() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default function Index() {
+export default function About() {
   return (
     <Container maxWidth="sm">
       <Box my={4}>
         <Typography variant="h4" component="h1" gutterBottom>
           Next.js example
         </Typography>
-        <Link href="/about" color="secondary">
-          Go to the about page
-        </Link>
+        <Button variant="contained" color="primary" component={Link} naked href="/">
+          Go to the main page
+        </Button>
         <ProTip />
         <Copyright />
       </Box>
