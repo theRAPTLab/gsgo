@@ -18,9 +18,9 @@ module.exports = {
     of ESLINT.
     See: github.com/typescript-eslint/typescript-eslint
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  plugins: ['react', '@typescript-eslint', 'import'],
+  plugins: ["react", "@typescript-eslint", "import"],
   settings: {
-    'import/resolver': {
+    "import/resolver": {
       // This makes module resolution in VSCode work. Otherwise, it will flag
       // modules as undeclared because it can't find them. The import plugin
       // will read the tsconfig.json file to parse each file.
@@ -28,8 +28,8 @@ module.exports = {
       //   eslint.workingDirectories:[{mode:'auto'}]
       // See https://github.com/microsoft/vscode-eslint/issues/696 for hints
       // regarding relative directories, monorepos, and eslint 6 changes
-      'typescript': {
-        'directory': './tsconfig.json'
+      typescript: {
+        directory: "./tsconfig.json"
       }
     }
   },
@@ -41,7 +41,7 @@ module.exports = {
     The typescript parser handles the typescript superset syntax and creates a
     compatible AST for ESLINT.
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-  parser: '@typescript-eslint/parser',
+  parser: "@typescript-eslint/parser",
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     We now configure what rules ESLINT will apply, in order of declaration.
 
@@ -52,22 +52,22 @@ module.exports = {
     // OUR ESLINT STACK
     // Note: Ideally, we would construct our own set of rules by carefully
     // considering what's in each of these configurations, but this works
-    'plugin:react/recommended', // handle jsx syntax
-    'plugin:@typescript-eslint/eslint-recommended', // transform typescript rules
-    'airbnb-typescript', // add airbnb typescript rules
-    'prettier/@typescript-eslint' // make prettier code formatting to prevail over eslint
+    "plugin:react/recommended", // handle jsx syntax
+    "plugin:@typescript-eslint/eslint-recommended", // transform typescript rules
+    "airbnb-typescript", // add airbnb typescript rules
+    "prettier/@typescript-eslint" // make prettier code formatting to prevail over eslint
   ],
   globals: {
-    Atomics: 'readonly',
-    SharedArrayBuffer: 'readonly'
+    Atomics: "readonly",
+    SharedArrayBuffer: "readonly"
   },
   parserOptions: {
     ecmaFeatures: {
       jsx: true // enable jsx parsing (plugin:react/recommended)
     },
     ecmaVersion: 2018, // parsing of modern javascript
-    sourceType: 'module', // allows use of imports
-    project: './tsconfig.json', // remember, we're using typescript-eslint/parser
+    sourceType: "module", // allows use of imports
+    project: "./tsconfig.json", // remember, we're using typescript-eslint/parser
     tsconfigRootDir: __dirname // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
@@ -77,35 +77,36 @@ module.exports = {
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   rules: {
     /* allow classroom debugging by researchers */
-    'no-console': 'off',
-    'no-debugger': 'warn',
-    'no-alert': 'warn',
+    "no-console": "off",
+    "no-debugger": "warn",
+    "no-alert": "warn",
     /* ursys style overrides */
-    'spaced-comment': 'off',
-    'camelcase': 'off',
-    'comma-dangle': ['error', 'never'],
-    'no-underscore-dangle': 'off',
-    '@typescript-eslint/camelcase': 'off',
-    '@typescript-eslint/no-use-before-define': 1,
-    '@typescript-eslint/no-unused-vars': 'warn',
+    "spaced-comment": "off",
+    camelcase: "off",
+    "comma-dangle": ["error", "never"],
+    "no-underscore-dangle": "off",
+    "@typescript-eslint/camelcase": "off",
+    "@typescript-eslint/no-use-before-define": 1,
+    "@typescript-eslint/no-unused-vars": "warn",
     /* allow for older syntax for clarity or style */
-    'arrow-body-style': 'off',
-    'no-plusplus': 'off',
-    'prefer-const': 'off',
-    'prefer-destructuring': 'off',
-    'class-methods-use-this': 'off',
+    "arrow-body-style": "off",
+    "no-plusplus": "off",
+    "prefer-const": "off",
+    "prefer-destructuring": "off",
+    "class-methods-use-this": "off",
     /* additional prettier conflicts to disable */
-    'arrow-parens': [1, 'as-needed'],
+    "arrow-parens": [1, "as-needed"],
     /* relax some errors to warnings, or turn them off */
-    'import/no-extraneous-dependencies': [
-      'error',
+    "import/no-extraneous-dependencies": [
+      "error",
       {
         devDependencies: true
       }
     ],
-    'no-unused-vars': 'warn',
-    'no-shadow': 'warn',
-    'no-param-reassign': 'warn',
-    'object-curly-newline': 'off'
+    "no-unused-vars": "warn",
+    "no-shadow": "warn",
+    "no-param-reassign": "warn",
+    "object-curly-newline": "off",
+    "react/jsx-props-no-spreading": "off"
   }
 };
