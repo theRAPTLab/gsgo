@@ -57,3 +57,67 @@ Our packages are now called `gs_packages`, so the workaround is either to instal
   "prettier.configPath": "./tsconfig.json"
 ```
 This way, Prettier always looks at the root level of the monorepo, and pulls the prettier information from there. It's only applied to the project as a whole.
+
+## Addendum: AutoFormat on Save
+
+Add the following to `.vscode/settings.json` as described on the [Prettier instructions page](https://github.com/prettier/prettier-vscode#linter-integration).
+
+```
+"editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+}
+```
+
+
+
+# Troubleshooting
+
+## Can't Resolve Module Path in Live Linting, but it Still Compiles and Runs
+
+Make sure the closest `tsconfig.json` file includes the source you're trying to import. ESLint is using that configuration file via the typescript parser option we've specified. If there isn't a `tsconfig.json` at the package directory level, then you must add one. Here's the one for `gs_packages/app_srv`
+
+```
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "ursys/*": ["ursys/*"],
+      "app/modules/*": ["src/app/modules/*"],
+      "app/*": ["src/app/*"],
+      "util/*": ["src/app/util/*"],
+      "step/*": ["src/step/*"],
+      "config/*": ["config/*"]
+    }
+  },
+  "include": ["src/**/*", "ursys/**/*", "config/*"],
+  "exclude": ["node_modules"]
+}
+```
+
+The directory structure looks like this:
+
+```
+app_srv/
+    config/
+    src/
+        app/
+            boot/
+            static/
+            modules/
+            views/
+                ViewMain/
+        util/
+        step/
+        assets/
+    ursys/
+        common/
+        chrome/
+        node/
+    .babelrc
+    package.json
+    package-lock.json
+    tsconfig.json
+```
+
+You can see that the `tsconfig.json` files is defining both `compilerOptions` for path aliases (the `path` property) and `include` for which files that will be processed by Typescript. It is this latter setting that matters for ESLint. The `compilerOptions` one is used by webpack when it invokes its typescript loader (maybe...I haven't confirmed this). 
