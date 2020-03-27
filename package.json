@@ -6,7 +6,8 @@
     "start": "multiview [npm run app] [npm run admin] [npm run gem]",
     "admin": "lerna run dev:admin --stream --no-prefix",
     "app": "lerna run dev:app --stream --no-prefix",
-    "gem": "lerna run dev:gem --stream --no-prefix"
+    "gem": "lerna run dev:gem --stream --no-prefix",
+    "xplay": "lerna run dev:xplay --stream --no-prefix"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^2.24.0",
