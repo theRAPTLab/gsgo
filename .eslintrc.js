@@ -94,8 +94,9 @@ module.exports = {
     "prefer-const": "off",
     "prefer-destructuring": "off",
     "class-methods-use-this": "off",
-    /* additional prettier conflicts to disable */
+    /* disable rules that step on prettier */
     "arrow-parens": [1, "as-needed"],
+    "react/jsx-one-expression-per-line": "off",
     /* relax some errors to warnings, or turn them off */
     "import/no-extraneous-dependencies": [
       "error",
