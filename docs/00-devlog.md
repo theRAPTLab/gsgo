@@ -309,5 +309,105 @@ As I wrote in the [01-tips document](01-tips.md), the `lerna version` command wi
 lerna version
 ```
 
+First I set the version in `lerna.json` and `gs_packages/**/package.json` to `"0.0.0-alpha.1"`, then ran `lerna version` and chose `prelease` (I think). Since it was the first time I ever had run it, the new version number was `"0.0.1-alpha.0"` and it was **pushed** with **tags** to the origin! I don't need to run `lerna publish` because this will register the package to the npm registry, and we're not doing that at all at this point.
+
+So...it seems to work!
+
+## Mar 26.1 - Scaffolding Material UI and Best Practices
+
+Now that the scaffold is officially pushed, it's time to work on the web page scaffolds. Currently we have a number of servers active:
+
+* app_srv - the skeleton URSYS project, with minimal elements ported
+* admin_src - a NextJS project with no pages
+* gem_srv - a NextJS project with no pages
+
+It is admin and gem that we want to work on to create **wireframes** for how the system works. Ben and others can work in these projects and everything will be great. 
+
+Now that I'm fairly comfortable with Javascript systems development, I can return to making user interfaces for the first time in this series. There are a lot of things to implement to make our UI development more robust and easier to maintain. We're going to use Material UI because Ben sunk a lot of energy into it in the prior project; we will define some best practices.
+
+>  *See [Using Material UI](05-using-material-ui.md) notes*
+
+## Mar 26.2 - Building a Server Home Page
+
+Let's look at the MEME Admin Interface. 
+http://localhost:3000/#/admin takes you to the admin
+http://localhost:3000/ takes you to the MEME app
+
+We have src/app-web/views/ViewAdmin and ViewMain components
+
+SystemRoutes imports these and exports an object mapping path to component
+
+* SystemInit: used to check current route against component so URSYS doesn't execute that code
+* SystemInit: wraps <SystemShell> in <HashRouter>
+  * SystemShell: creates <Switch><Route> structures for React Router
+
+Let's now look at <ViewAdmin>, loaded into <SystemShell>. The `render()` function does the following:
+
+* checks UR to see if admin is logged in and renders admin panel warning.
+* otherwise renders the admin grid
+
+```
+div className = classes.root
+	Grid container spacing={2}
+		Grid items
+```
+
+Now let's look at <ViewMain>, also loaded into <SystemShell>. The `render()` function does the following:
+
+* extract various data and display flags from `this.state`
+  * data access keys: modelId, studentId
+  * user data: modelAuthorGroupName, ,title, studentName, studentGroup
+  * user privs: isModelAuthor
+  * UI state: resourceLibraryIsOpen, addPropOpen, addEdgeOpen, componentIsSelected, mechIsSelected, suppressSelection
+* calculate derived state this values extracted from `this.state`
+  * data access keys: classroomId
+  * data: model, resources
+  * user privs: isViewOnly
+* renders the UI
+
+```
+<div className = classes.root>
+	<CssBaseline/>
+	<Login/>
+	<ModelSelect/>
+	<AppBar position="fixed" className={classes.appBar} color={isModelAuthor?'primary':'default'>
+		<Toolbar>
+			<InputBase> for title
+		 	<div "right app bar" controls> 
+		</Toolbar>
+	</AppBar>
+	<ToolsPanel>
+	<main>
+		<div toolbar>
+		<div interactive view area>
+			<ZoomInMapIcon>
+			<ZoomOutMapIcon>
+		</div>
+		<StickyNoteCollection/>
+		<RatingsDialog/>
+		<MechDialog/>
+		<DescriptionView/>
+		<ScreenshotView/>
+	</main>
+	<Drawer resource library>
+	<ResourceView/>
+	<HelpView/>
+	<PropDialog/>
+	<div mech dialog>
+</div>
+```
+
+To actually make this work I need to add Material UI now. Added [tips for MUI](01-tips-mui.md) document. Also looking at [MUI NextJS example](https://github.com/mui-org/material-ui/tree/master/examples/nextjs).
+
+```
+# create custom _document.jsx to insert font and meta manually
+# create custom _app.jsx with notes how this can store persistant stuff
+lerna add @material-ui/core --scope=@gemstep/gem_srv
+
+# DONE!!!
+```
+
+
+
 
 
