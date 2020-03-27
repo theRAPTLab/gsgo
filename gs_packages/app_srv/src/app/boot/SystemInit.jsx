@@ -22,11 +22,12 @@ import debounce from 'debounce';
 
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import SystemShell from './SystemShell';
 import CCSS from 'app/modules/console-styles';
-const { cssur, cssreset } = CCSS;
 import EXEC from 'ursys/chrome/ur-exec';
 import SETTINGS from 'config/app.settings';
+import SystemShell from './SystemShell';
+
+const { cssur, cssreset } = CCSS;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +47,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PromiseRenderApp() {
   if (DBG) console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     ReactDOM.render(
       <HashRouter hashType="slash">
         <SystemShell />

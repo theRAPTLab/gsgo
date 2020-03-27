@@ -7,9 +7,10 @@
       "app/modules/*": ["src/app/modules/*"],
       "app/*": ["src/app/*"],
       "util/*": ["src/app/util/*"],
-      "step/*": ["src/step/*"]
+      "step/*": ["src/step/*"],
+      "config/*": ["config/*"]
     }
   },
-  "include": ["src/**/*", "ursys/**/*"],
+  "include": ["src/**/*", "ursys/**/*", "config/*"],
   "exclude": ["node_modules"]
 }
