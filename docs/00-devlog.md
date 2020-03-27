@@ -407,7 +407,9 @@ lerna add @material-ui/core --scope=@gemstep/gem_srv
 # DONE!!!
 ```
 
+## Mar 27.1 - Review with Ben
 
+I showed Ben the current repo strategy, and here's some thing to do:
 
 TODO: move this to some kind of dev conventions document, figure out where that lives (a doc overview)
 
@@ -419,4 +421,5 @@ TODO: move this to some kind of dev conventions document, figure out where that 
 * `dev` branch is main dev integration branch
 * suggested branch naming: `dev-[feat-|fix-|patch-]` for in-progress work instead of dev-ds/patch (find a reference) (e.g. `dev-feat-banana-ricer`)
 * Ben is the executive editor of all `README.md` files in the repo!
+* can I use lerna anywhere? **yes** it will walk up the directory tree until it finds
 

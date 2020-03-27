@@ -68,7 +68,8 @@ Add the following to `.vscode/settings.json` as described on the [Prettier instr
 }
 ```
 
-
+There are **still issues** with Prettier conflicting with ESLint. This article does a good job of [explaining how](  https://blog.theodo.com/2019/08/empower-your-dev-environment-with-eslint-prettier-and-editorconfig-with-no-conflicts/
+) to attack the problem.
 
 # Troubleshooting
 
