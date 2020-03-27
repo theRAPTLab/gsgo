@@ -31,15 +31,17 @@ echo
 if [[ "$(xcode-select -p 1>/dev/null;echo $?)" -ne "0" ]]; then
     echo "xcode-select --install"
 else
-    echo "OK: xcode cli already installed"
+    echo "YAY xcode cli already installed"
 fi
 
-if ! [ -d ~/dev ]; then
-    echo "... creating ~/dev/ directory..."
-    echo "... cd ~ && mkdir dev"
-else
-    echo "OK: ~/dev directory already exists"
-fi
+# no longer requires repo to be in ~/dev
+# if you can run this script, you've already gotten it!
+# if ! [ -d ~/dev ]; then
+#     echo "... creating ~/dev/ directory..."
+#     echo "... cd ~ && mkdir dev"
+# else
+#     echo "YAY ~/dev directory already exists"
+# fi
 
 # check for shell version, and create profile if necessary
 # NOTE: $SHELL contains the current shell (e.g. /bin/bash)
@@ -48,7 +50,7 @@ case $SHELL in
         if [ ! -e ~/.bash_profile ]; then
             echo "... touch ~/.bash_profile"
         else
-            echo "OK: sourcing ~/.bash_profile..."
+            echo "YAY sourcing ~/.bash_profile..."
             source ~/.bash_profile
         fi
         ;;
@@ -56,7 +58,7 @@ case $SHELL in
         if [ ! -e ~/.zshrc ]; then
             echo "... touch ~/.zshrc"
         else
-            echo "OK: sourcing ~/.zshrc..."
+            echo "YAY sourcing ~/.zshrc..."
             source ~/.zshrc
         fi
         ;;
@@ -70,7 +72,7 @@ esac
 if ! [ -d ~/.nvm ]; then
     echo ".. mkdir ~/.nvm"
 else
-    echo "OK: ~/.nvm directory already exists"
+    echo "YAY ~/.nvm directory already exists"
 fi
 
 exists() { 
@@ -87,7 +89,7 @@ if ! exists nvm; then
     echo
     exit 0
 else
-    echo "OK: nvm is already installed"
+    echo "YAY nvm is already installed"
 fi
 
 # this is just cool...we're not using it though
@@ -115,7 +117,7 @@ echo "... npm ci"
 echo "... npm run bootstrap"
 echo
 echo "--- SETUP COMPLETE ---"
-echo "you do not need to run this script again"
+echo "    you do not need to run this script again"
 echo
 echo "*** COMMANDS TO TRY ***"
 echo "    npm start     - start all available servers"
