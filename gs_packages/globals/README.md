@@ -1,9 +1,11 @@
 # `@gemstep/globals`
 
-> a global configuration package for GEM-STEP
+> TODO: description
 
 ## Usage
 
 ```
-import config from '@gem-step/globals';
+const GLOBALS = import('@gemstep/globals');
+
+// TODO: DEMONSTRATE API
 ```

@@ -12,6 +12,8 @@ lerna create @gemstep/mypackage -y     # create npm package skeleton in gs_packa
 
 You should look at the `package.json` and update it as necessary. Make sure you set it to private, since we're not publishing GEMSTEP as a public resource available via npm.
 
+**WARNING** if you don't use `lerna create` then lerna won't know about versioning when you run `lerna version`
+
 If you are running a standalone package like a new server, then you're done. However, if you're making a package that you'd like to import into another package, you'll have to use the `lerna add` command followed by `lerna bootstrap`:
 
 ```
@@ -25,6 +27,16 @@ lerna clean -y && lerna bootstrap --hoist
 You can then import the packages into other packages, as if they were already npm-installed. 
 
 ## How do I manage versions with Lerna?
+
+#### TL;DR
+
+For our `0.x.x-alpha` releases, use this command (commit locally first!)
+
+```
+lerna version prelease
+```
+
+---
 
 GEMSTEP is comprised of many packages, but they all share the same version number and a single repo. The `lerna version` command is used to manage all the `package.json` files.  Note that [versioning](https://github.com/lerna/lerna/tree/master/commands/version) is different that [publishing](https://github.com/lerna/lerna/tree/master/commands/publish), wihich makes the package to **npm** for public consumption.
 
@@ -47,6 +59,9 @@ Currently, we're using `lerna version` **interactively** until we get a sense ho
 * `major.minor.patch-prelease` is used to denote "prerelease" versions (e.g. 0.1.1-alpha). These are interim releases that are under development as a work-in-progress but are being shared regardless. 
 * Run `lerna version prerelease` initially when just getting the repo into some kind of shape. 
 * Run `lerna version minor` when a release is feature-ready.
+
+
+
 
 ## How do I add remote npm packages to existing projects?
 
