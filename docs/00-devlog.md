@@ -409,5 +409,14 @@ lerna add @material-ui/core --scope=@gemstep/gem_srv
 
 
 
+TODO: move this to some kind of dev conventions document, figure out where that lives (a doc overview)
 
+* documents - through Sri, post issues in repo for changes, suggestions, additions. Goal is to make it fast to find out how to do things, and also how things work
+* wiki - "official user-facing instructions" 
+* docs folder - "internal development details"
+* version management - lerna (confirm it works from everywhere, maybe sunset root-level package scripts)
+* version prerelease packaging only happens from `master` branch
+* `dev` branch is main dev integration branch
+* suggested branch naming: `dev-[feat-|fix-|patch-]` for in-progress work instead of dev-ds/patch (find a reference) (e.g. `dev-feat-banana-ricer`)
+* Ben is the executive editor of all `README.md` files in the repo!
 
