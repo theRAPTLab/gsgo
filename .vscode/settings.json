@@ -3,25 +3,16 @@
   "editor.wordWrap": "off",
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
-  },
   "[markdown]": {
     "editor.formatOnSave": false,
     "editor.wordWrap": "on"
   },
   "typescript.suggest.completeJSDocs": false,
-  "eslint.validate": [
-    "javascript",
-    "javascriptreact",
-    "typescript",
-    "typescriptreact"
-  ],
+  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
   ],
-  "prettier.prettierPath": "./node_modules/prettier",
-  "prettier.configPath": "./tsconfig.json"
+  "prettier.prettierPath": "./node_modules/prettier"
 }
