@@ -1,0 +1,20 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "editor.wordWrap": "off",
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.formatOnSave": true,
+    "[markdown]": {
+      "editor.formatOnSave": false,
+      "editor.wordWrap": "on"
+    },
+    "typescript.suggest.completeJSDocs": false,
+    "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+    "prettier.prettierPath": "../../node_modules/prettier",
+    "prettier.configPath": "../../.prettierrc.js"
+  }
+}
