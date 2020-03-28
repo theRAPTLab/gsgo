@@ -8,10 +8,8 @@
 
 module.exports = {
   semi: true,
-  singleQuote: true,
   printWidth: 120,
-  tabWidth: 2,
-  useTabs: false,
-  quoteProps: 'preserve',
+  singleQuote: true,
+  quoteProps: 'as-needed',
   arrowParens: 'avoid'
 };
