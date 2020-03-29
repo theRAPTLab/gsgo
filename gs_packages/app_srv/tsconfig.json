@@ -9,7 +9,10 @@
       "util/*": ["src/app/util/*"],
       "step/*": ["src/step/*"],
       "config/*": ["config/*"]
-    }
+    },
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*", "ursys/**/*", "config/*"],
   "exclude": ["node_modules"]

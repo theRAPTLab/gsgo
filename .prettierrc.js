@@ -10,6 +10,6 @@ module.exports = {
   semi: true,
   printWidth: 120,
   singleQuote: true,
-  quoteProps: 'as-needed',
+  quoteProps: 'preserve',
   arrowParens: 'avoid'
 };
