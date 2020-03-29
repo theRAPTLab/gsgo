@@ -54,7 +54,10 @@ module.exports = {
     // considering what's in each of these configurations, but this works
     'plugin:react/recommended', // handle jsx syntax
     'plugin:@typescript-eslint/eslint-recommended', // transform typescript rules
-    'airbnb-typescript' // add airbnb typescript rules
+    'airbnb-typescript', // add airbnb typescript rules
+    'prettier',
+    'prettier/@typescript-eslint',
+    'prettier/react'
   ],
   globals: {
     Atomics: 'readonly',

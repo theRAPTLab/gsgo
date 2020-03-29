@@ -10,6 +10,7 @@
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
   "scripts": {
+    "local": "npm run dev:gem",
     "dev:gem": "next -p 3000",
     "build:gem": "next build",
     "start:gem": "next start"
