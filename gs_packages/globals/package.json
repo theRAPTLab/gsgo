@@ -19,5 +19,6 @@
     "type": "git",
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
-  "scripts": {}
+  "scripts": {},
+  "dependencies": {}
 }

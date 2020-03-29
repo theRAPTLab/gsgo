@@ -1,3 +1,3 @@
 export default {
-  STEP: "HOORAY"
+  NAME: 'GLOBALS'
 };

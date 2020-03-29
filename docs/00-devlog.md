@@ -414,12 +414,139 @@ I showed Ben the current repo strategy, and here's some thing to do:
 TODO: move this to some kind of dev conventions document, figure out where that lives (a doc overview)
 
 * documents - through Sri, post issues in repo for changes, suggestions, additions. Goal is to make it fast to find out how to do things, and also how things work
+
 * wiki - "official user-facing instructions" 
+
 * docs folder - "internal development details"
+
 * version management - lerna (confirm it works from everywhere, maybe sunset root-level package scripts)
+
 * version prerelease packaging only happens from `master` branch
+
 * `dev` branch is main dev integration branch
-* suggested branch naming: `dev-[feat-|fix-|patch-]` for in-progress work instead of dev-ds/patch (find a reference) (e.g. `dev-feat-banana-ricer`)
+
+* suggested branch naming: `[feature-|fix-|patch]/name` for in-progress work instead of dev-ds/patch (find a reference) (e.g. `feature/banana-ricer`)
+
 * Ben is the executive editor of all `README.md` files in the repo!
-* can I use lerna anywhere? **yes** it will walk up the directory tree until it finds
+
+  
+
+right now I'm dealing with two issues:
+
+* making sure prettier works consistently 
+
+  * in gsgo root
+    * in javascript and jsx files 
+  * in subprojects
+    * in javascript and jsx files 
+
+  
+
+* had to add this to `.vscode/settings.json` to force Prettier to work in jsx files, as it wasn't being set as the default formatter. 
+
+  ```  "[javascriptreact]": {
+      "[javascriptreact]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      },
+  ```
+
+The test goes like insert a bunch of blank lines then save it. if AutoFormat on Save is enabled, you'll see those lines removed. Also, test js, jsx, ts, and tsx files in the same way.
+
+If you right click and select Format Document As... and the default formatter is not prettier, then consider adding additional entries tt.
+
+**WHEN I WAKE UP** I need to do tests for prettier in gsgo and subprojects
+
+Test: (1) Prettier remove extra lines, (2) eslint flags warnings, (3) arrow functions single parameter is stripped (4) module paths resolve (5) default formatter is set correctly
+
+```
+// test snippet
+// (1) prettier: extra lines to be removed, double quotes, missing semicolons, weird indents
+// (2) eslint: warnings in extra lines, trailing spaces
+// (3) prettier: arrow function single parameter wrapped with paren
+// (4) eslint/tslint: module path resolution
+// manual check
+// (5) check default formatter (right-click 'format document with...' should be Prettier)
+// (6) check that module tsconfig.paths are linted, by inducing error in path
+// (7) in .ts and .tsx files, type warnings should appear for 'str' and imported modules
+
+/* 8< cut here */
+import Moo from "config/app.settings"
+		import GEM_CONFIG from "@gemstep/globals"
+
+
+
+const foo = (a) => {
+    const { PROJECT_NAME } = Moo;
+return `${PROJECT_NAME} ${GEM_CONFIG.NAME} ${a}`
+} 
+      console.log(foo);
+
+```
+
+
+
+GSGO/APPSRV WORKSPACE / PROJECT CHECK
+
+* `.jsx` file in app_srv... pass
+* `.js` file in app_srv... 
+* `.ts` file in app_srv... 
+* `.tsx` file in app_srv... pass with CHANGES BELOW
+
+For the 4th test, needed to add this to `tsconfig.json`  compilerOptions
+
+```
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true
+```
+
+GSGO/GEMSRV WORKSPACE / PROJECT CHECK
+
+* `.jsx` file in gem_srv... pass
+* `.js` file in gem_srv... pass
+* `.ts` file in gem_srv... pass
+* `.tsx` file in gem_srv... pass
+
+GEMSRV WORKSPACE / PROJECT CHECK
+
+If opening the project from its own workspace, does it still work? It's dependent on having the prettierPath and configPath set in the workspace.
+
+* .jsx` file in gem_srv... pass
+* `.js` file in gem_srv... pass
+* `.ts` file in gem_srv... pass
+* `.tsx` file in gem_srv... pass
+
+
+
+To summarize how this works:
+
+* eslint extension reads its config file by walking up the tree, the root `.estlintrc.js`
+* ts (through `@typescript-eslint/parser`) reads its `tsconfig.json` file from `.eslintrc.js`'s `parserOptions.tsconfigRootDir` that is set to `__dirname`.
+* `.eslintrc` implements the order of rules for typescript, airbnb, and eslint recommended. It also should disable any whitespace formatting elements so only Prettier handles that. ESLint is only used to flag errors.
+* prettier is invoked by extension, which looks for a `.prettierrc.js` file in the project root normally. However, we apply settings overrides in `.vscode/settings.json` to set `prettier.prettierPath` to `"./node_modules/prettier"` for the root project. 
+* for prettier subproject workspaces, we require a VSCode `.code-workspace` to exist with the `prettier.prettierPath` to point to the root `"../../node_modules/prettier"`  _AND_ also add `prettier.configPath: "../../prettierrc.js` so it finds the root version rather than require a duplication.
+* for tsconfiguration, the `tsconfig.json` lives at multiple levels because it's required to set different module paths in `compilerOptions.paths`, and include different subdirectories to parse in `include`. Otherwise eslint will fail to parse module paths, and typescript files will not be parsed at all.
+
+  
+
+DID RUNNING lerna bootstrap screw up my modules?
+
+``` module "/Users/sri/Library/Caches/typescript/3.8/node_modules/@types/react/index"
+import React from 'react'
+
+module "/Users/sri/Library/Caches/typescript/3.8/node_modules/@types/react/index"
+Unable to resolve path to module 
+```
+
+This might have been a combination of a corrupted visual studio cache AND a failed `npm run bootstrap`. I might have run `npm ci` and then everything broke until I ran `npm run bootstrap` again.
+
+
+
+
+
+
+
+
+
+# 3. Wireframing
 

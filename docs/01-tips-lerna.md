@@ -61,11 +61,11 @@ Currently, we're using `lerna version` **interactively** until we get a sense ho
 * Run `lerna version minor` when a release is feature-ready.
 
 
-
-
 ## How do I add remote npm packages to existing projects?
 
-Use `lerna add` with the optional `--dev` and `--peer` flags. It works like `npm install` but can only install one package at at time. It also accepts [lerna filters](https://www.npmjs.com/package/@lerna/filter-options); the one we use is `--scope=packagename`.
+Use `lerna add` with the optional `--dev` and `--peer` flags. It works like `npm install` but can only install one package at at time. It also accepts [lerna filters](https://www.npmjs.com/package/@lerna/filter-options) like `--scope=packagename`. 
+
+You can also use regular `npm install` or `yarn install`. The advantage that `lerna add` has is that it can add packages to *all* our packages at once.
 
 ## How do I add a local package? I'm getting an error!
 
@@ -75,6 +75,13 @@ npm ERR! 404 You should bug the author to publish it (or use the name yourself!)
 npm ERR! 404 It was specified as a dependency of 'app_srv'
 ```
 
-This seems to indicate a bad reference to a package version, as the current package in `lerna.json` is `"0.0.1-alpha.0"`, not `"0.0.0"`. I updated them manually and it seemed to work.
+This seems to indicate a bad reference to a package version, as the current package in `lerna.json` is `"0.0.1-alpha.0"`, not `"0.0.0"`. I updated them manually and it seemed to work. 
 
- 
+##  Can I use lerna anywhere in the directory structure
+
+**Yes** it will walk up the directory tree until it finds a lerna.json!
+
+## Can I open JUST a sub package in Visual Studio Code and work?
+
+Convention: `npm run local` is an alias for just running the current build
+
