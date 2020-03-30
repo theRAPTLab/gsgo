@@ -1,24 +1,6 @@
-/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  NextJS Material UI Custom Document Template
-
-  (1) This is how we add things to the <head>. For Material UI, this is
-  specifically setting the <meta name="viewport" ...> and loading the Roboto
-  font via <link>
-
-  (2) Also you can hook into pre-populating the page rather than pulling the
-  content from the client for SEO purposes through getStaticProps and
-  getServerSideProps.
-  https://nextjs.org/docs/basic-features/data-fetching
-
-  ---
-  NOTE: Custom document templates are an advanced NextJS feature:
-  https://nextjs.org/docs/advanced-features/custom-document
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
 import React from 'react';
 import Document, { Head, Main, NextScript } from 'next/document';
+import { ServerStyleSheets } from '@material-ui/core/styles';
 import theme from '../src/theme';
 
 export default class MyDocument extends Document {
@@ -28,11 +10,7 @@ export default class MyDocument extends Document {
         <Head>
           {/* PWA primary color */}
           <meta name="theme-color" content={theme.palette.primary.main} />
-          <link
-            rel="stylesheet"
-            href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap"
-          />
-          <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
+          <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&display=swap" />
         </Head>
         <body>
           <Main />
@@ -42,3 +20,44 @@ export default class MyDocument extends Document {
     );
   }
 }
+
+MyDocument.getInitialProps = async ctx => {
+  // Resolution order
+  //
+  // On the server:
+  // 1. app.getInitialProps
+  // 2. page.getInitialProps
+  // 3. document.getInitialProps
+  // 4. app.render
+  // 5. page.render
+  // 6. document.render
+  //
+  // On the server with error:
+  // 1. document.getInitialProps
+  // 2. app.render
+  // 3. page.render
+  // 4. document.render
+  //
+  // On the client
+  // 1. app.getInitialProps
+  // 2. page.getInitialProps
+  // 3. app.render
+  // 4. page.render
+
+  // Render app and page and get the context of the page with collected side effects.
+  const sheets = new ServerStyleSheets();
+  const originalRenderPage = ctx.renderPage;
+
+  ctx.renderPage = () =>
+    originalRenderPage({
+      enhanceApp: App => props => sheets.collect(<App {...props} />)
+    });
+
+  const initialProps = await Document.getInitialProps(ctx);
+
+  return {
+    ...initialProps,
+    // Styles fragment is rendered after the app and page rendering finish.
+    styles: [...React.Children.toArray(initialProps.styles), sheets.getStyleElement()]
+  };
+};

@@ -98,10 +98,12 @@ module.exports = {
         'devDependencies': true
       }
     ],
+    /* disable rules for material-ui sanity */
+    'react/forbid-prop-types': 'off',
+    'react/prop-types': 'off',
     /* disable prettier conflicts manually */
     'arrow-parens': 'off',
-    /* disable eslint rules that overlap typescript version */
-    /* that cause double-error reporting in the IDE */
+    /* disable eslint rules that are double-reported due to typescript */
     'no-unused-vars': 'off',
     'no-shadow': 'off',
     'no-param-reassign': 'off',
