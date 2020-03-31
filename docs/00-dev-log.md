@@ -592,3 +592,7 @@ Ok, some realizations about themes:
 
 Themes are defined in `_app.js` by reading from `theme.js`. End users never touch this. You can augment this with theme-related globals defined in `theme-extra.js` which can be used to calculated *derived* metrics. But these are read-only. 
 
+## Mar 31.1 - Blue Boxes
+
+Today's morning goal is to make a blue styled box appear in the grid. After yesterday's work, I should have a workable theme structure.
+
