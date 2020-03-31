@@ -11,8 +11,7 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import Head from 'next/head';
-import { Box, Grid, Typography, Paper } from '@material-ui/core';
+import { Box, Grid, Paper } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import GSAppBar from '../src/components/GSAppBar';
 import GSLoginBar from '../src/components/GSLoginBar';
@@ -41,14 +40,8 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
-/// See theme.js and theme-derived.js to customize theme properties
 function Main() {
-  // you may have some state to calculate based on useEffect, etc
-  const computedState = { show: true };
-
-  // calculate dynamic rules by passing state
-  const classes = useStyles(computedState); // dictionary of { rule : jss classname }
+  const classes = useStyles();
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (

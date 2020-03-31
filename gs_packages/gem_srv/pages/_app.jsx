@@ -10,7 +10,7 @@
   NOTE: Custom Application Templates is an advanced NextJS feature:
   https://nextjs.org/docs/advanced-features/custom-app
 
-  \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import App from 'next/app';
