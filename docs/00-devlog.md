@@ -542,11 +542,53 @@ This might have been a combination of a corrupted visual studio cache AND a fail
 
 
 
-
-
-
-
-
-
 # 3. Wireframing
+
+what are the key material elements to use?
+
+```
+Box - a generic box, can accept fixed width minWidth stuff.
+Container - a box with width and horizontal centered content
+Grid - a CSS FlexBox implementation
+```
+
+I think that I could make UI that uses a CSS Grid, with Material-UI stuff inside of it adapting to changes.
+
+The goals of the wireframe though are to show elements, so maybe not worrying about layout at this moment is the wise thing to do. Let's just make a wireframe that lists everything using existing components, but not worry about making it work yet. We'll have to see what everything looks like before we start working on screen technology. **capture first**
+
+## Mar 30.1 - Big Blue Boxes
+
+I'm working out the theming right now. I think the idea behind using MUI's styles is that you can do fancy stuff within the components themselves, which is nice. For global styles, though, we will use the theme.
+
+Ok, some realizations about themes:
+
+1. `<ThemeProvider>` and `createMuiTheme()` work by passing the theme object down. It's accessed either by `useTheme()` hook or `props.theme` when the component is wrapped with `withStyles()`. 
+
+2. While you can add your own elements to the theme, this is *not* the same as using `classes.root` and `className` with the style interface. Styles are independent of the theme, but can be passed the theme to use its constants.
+
+3. To see how to combine theme and style, see https://material-ui.com/styles/basics/#stress-test
+
+4. I'm still not sure if there's a way to create a shared stylesheet. The important object is probably to export `classes` somehow. Should console-log this to see what is really in there. 
+
+5. Apparently JSS is deterministic so classnames can be shared. But HOW? https://github.com/mui-org/material-ui/issues/8912 and https://material-ui.com/styles/advanced/#global-css
+
+6. `makeStyles`can receive a function that will receive the theme object. 
+
+   ```js
+   const useStyles = makeStyles(theme => ({
+     root: props => ({
+       backgroundColor: props.backgroundColor,
+       color: theme.color,
+     }),
+   }));
+   
+   const Component = props => {
+      const classes = useStyles(props);
+      ...
+   ```
+   How does this work? Recall `useStyles` is returned as a function from makeStyles. useStyles can receive a parameter, here called props, when it's invoked at render time.
+
+## Mar 30.2 - The Ultimate ThemeStyle
+
+Themes are defined in `_app.js` by reading from `theme.js`. End users never touch this. You can augment this with theme-related globals defined in `theme-extra.js` which can be used to calculated *derived* metrics. But these are read-only. 
 
