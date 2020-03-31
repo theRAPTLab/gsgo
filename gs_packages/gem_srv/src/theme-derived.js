@@ -1,14 +1,14 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  This is where you can define additional global properties that will be
-  propagated under the theme object available to all components.
+  This is where you can define additional global styles anhd properties that
+  will be propagated under the theme object available to all components.
 
-  addDerivedStyles accepts a theme object created with createMuiTheme, and
+  addDerivedStyles() accepts a theme object created with createMuiTheme, and
   returns a decorated object. You can create your derived properties using
   the values in the theme object.
 
-  DO NOT USE the following reserved property names, as they are part of MUI
-  theming. If you need to modify them, do so in theme.js
+  The following reserved property names are defined by createMuiTheme() and
+  will already be set when addDerivedStyles() is invoked by theme.js
 
     breakpoints   overrides    shadows      transitions
     direction     palette      shape        typography
@@ -18,43 +18,41 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 import merge from 'deepmerge';
 
 /// MERGE STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Merge a MuiTheme (assumed to be created with createMuiTheme) with
- *  extra parameters.
+ *  extra parameters. The categories below are merely suggestions.
  */
 const addDerivedStyles = theme => {
   // set layout-related styles here
-  const layoutStyles = {
-    root: '',
-    container: {
-      display: 'grid',
-      gridTemplateColumns: 'repeat(12, 1fr)',
-      gridGap: theme.spacing(3)
-    }
-  };
+  const layoutJSS = {};
   // provide additional MUI overrides
-  const componentStyles = {
-    paper: {
-      padding: theme.spacing(1),
-      textAlign: 'center',
-      color: theme.palette.text.secondary,
-      whiteSpace: 'nowrap',
-      marginBottom: theme.spacing(1)
-    },
-    divider: {
-      margin: theme.spacing(2, 0)
-    }
-  };
+  const componentJSS = {};
   // other styles of application-wide interest
   // for individual components, use local makeStyles/useStyles/useTheme
   // conventions
-  const globalStyles = {};
+  const globalProperties = {};
+  // make a global classname you can use directly instead of through
+  // the classes dictionary (e.g. <div className='ursys'>)
+  const globalClasses = {
+    '@global': {
+      '.ursys': {
+        height: 100,
+        width: 100,
+        backgroundColor: 'blue'
+      }
+    }
+  };
   // merge all styles together
-  return merge.all([theme, layoutStyles, componentStyles, globalStyles]);
+  return merge.all([
+    theme,
+    layoutJSS,
+    componentJSS,
+    globalProperties,
+    globalClasses
+  ]);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

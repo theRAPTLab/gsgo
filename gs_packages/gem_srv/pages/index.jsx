@@ -11,15 +11,20 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-
+import Head from 'next/head';
 import { Box, Grid, Typography, Paper } from '@material-ui/core';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
+import GSAppBar from '../src/components/GSAppBar';
+import GSLoginBar from '../src/components/GSLoginBar';
 
 /// CUSTOM STYLES FOR THIS COMPONENT //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create useStyles() hook with theme object included
 /// the useStyles() hook also can receive a parameter for further customization
 const useStyles = makeStyles(theme => ({
+  root: {
+    flexGrow: 1
+  },
   container: {
     display: 'grid',
     gridTemplateColumns: 'repeat(12, 1fr)',
@@ -31,13 +36,6 @@ const useStyles = makeStyles(theme => ({
     color: theme.palette.text.secondary,
     whiteSpace: 'nowrap',
     marginBottom: theme.spacing(1)
-  },
-  divider: {
-    margin: theme.spacing(2, 0)
-  },
-  calculated: state => {
-    const { show } = state;
-    return show ? { display: 'block' } : { display: 'none' };
   }
 }));
 
@@ -51,37 +49,35 @@ function Main() {
 
   // calculate dynamic rules by passing state
   const classes = useStyles(computedState); // dictionary of { rule : jss classname }
-  console.log(classes);
-  // if you need read-only theme parameters directly in the component
-  const theme = useTheme(); // property object of theme settings
 
-  // render
+  /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <Box className={classes.calculated}>
-      <Typography variant="subtitle1" gutterBottom>
-        Material-UI Grid:
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>xs=12</Paper>
+    <>
+      <GSLoginBar />
+      <GSAppBar />
+      <Box className={classes.root}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <Paper className={classes.paper}>xs=12</Paper>
+          </Grid>
+          <Grid item xs={3}>
+            <Paper className={classes.paper}>xs=3</Paper>
+          </Grid>
+          <Grid item xs={8}>
+            <Paper className={classes.paper}>xs=8</Paper>
+          </Grid>
+          <Grid item xs={1}>
+            <Paper className={classes.paper}>xs=1</Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <Paper className={classes.paper}>xs=12</Paper>
+          </Grid>
+          <Grid item xs={12}>
+            <Paper className={classes.paper}>xs=12</Paper>
+          </Grid>
         </Grid>
-        <Grid item xs={3}>
-          <Paper className={classes.paper}>xs=3</Paper>
-        </Grid>
-        <Grid item xs={8}>
-          <Paper className={classes.paper}>xs=8</Paper>
-        </Grid>
-        <Grid item xs={1}>
-          <Paper className={classes.paper}>xs=1</Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>xs=12</Paper>
-        </Grid>
-        <Grid item xs={12}>
-          <Paper className={classes.paper}>xs=12</Paper>
-        </Grid>
-      </Grid>
-    </Box>
+      </Box>
+    </>
   );
 }
 
