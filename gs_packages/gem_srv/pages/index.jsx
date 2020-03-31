@@ -1,33 +1,24 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Main View of GEMSTEP Wireframe
+  Root View of GEMSTEP Wireframe
 
   NOTE: this page runs from the server side, so we can't access objects like
-  window or document, or manipulate the dom
-
-  makeStyles will return a constant
-
-  breakpoints   palette      spacing
-  direction     props        transitions
-  mixins        shadows      typography
-  overrides     shape        zIndex
-
-  how
+  window or document, or manipulate the DOM. To debug, use the node debugger
+  through VSCode.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import PropTypes from 'prop-types';
-
-import clsx from 'clsx'; // classnames utility
 
 import { Box, Grid, Typography, Paper } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles, useTheme } from '@material-ui/core/styles';
 
-/// STYLES ////////////////////////////////////////////////////////////////////
+/// CUSTOM STYLES FOR THIS COMPONENT //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// create useStyles() hook with theme object included
+/// the useStyles() hook also can receive a parameter for further customization
 const useStyles = makeStyles(theme => ({
   container: {
     display: 'grid',
@@ -43,16 +34,30 @@ const useStyles = makeStyles(theme => ({
   },
   divider: {
     margin: theme.spacing(2, 0)
+  },
+  calculated: state => {
+    const { show } = state;
+    return show ? { display: 'block' } : { display: 'none' };
   }
 }));
 
-/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
+/// See theme.js and theme-derived.js to customize theme properties
 function Main() {
-  console.log('main is rendering');
-  const classes = useStyles();
+  // you may have some state to calculate based on useEffect, etc
+  const computedState = { show: true };
+
+  // calculate dynamic rules by passing state
+  const classes = useStyles(computedState); // dictionary of { rule : jss classname }
+  console.log(classes);
+  // if you need read-only theme parameters directly in the component
+  const theme = useTheme(); // property object of theme settings
+
+  // render
   return (
-    <Box className={classes.root}>
+    <Box className={classes.calculated}>
       <Typography variant="subtitle1" gutterBottom>
         Material-UI Grid:
       </Typography>
@@ -82,4 +87,4 @@ function Main() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Main;
+export default Main; // functional component

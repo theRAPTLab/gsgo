@@ -1,26 +1,32 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  theme-extra.js supports theme.js. Do not use this class directly.
+  This is where you can define additional global properties that will be
+  propagated under the theme object available to all components.
 
-  DO NOT USE the following reserved style names, as they are part of
-  MUI theming. If you need to modify them, do so in theme.js
+  addDerivedStyles accepts a theme object created with createMuiTheme, and
+  returns a decorated object. You can create your derived properties using
+  the values in the theme object.
 
-  breakpoints   overrides    shadows      transitions
-  direction     palette      shape        typography
-  mixins        props        spacing      zIndex
+  DO NOT USE the following reserved property names, as they are part of MUI
+  theming. If you need to modify them, do so in theme.js
+
+    breakpoints   overrides    shadows      transitions
+    direction     palette      shape        typography
+    mixins        props        spacing      zIndex
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 import merge from 'deepmerge';
 
 /// MERGE STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Merge a MuiTheme (assumed to be created with createMuiTheme) with a
- *  extra globalStyles object. The resulting object can be imported
+/** Merge a MuiTheme (assumed to be created with createMuiTheme) with
+ *  extra parameters.
  */
-const withExtraStyles = theme => {
+const addDerivedStyles = theme => {
   // set layout-related styles here
   const layoutStyles = {
     root: '',
@@ -53,4 +59,4 @@ const withExtraStyles = theme => {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default withExtraStyles;
+export default addDerivedStyles;
