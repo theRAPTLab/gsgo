@@ -16,10 +16,20 @@ import React from 'react';
 import App from 'next/app';
 import Head from 'next/head';
 ///
+import { create } from 'jss';
+import { StylesProvider, jssPreset } from '@material-ui/styles';
+import extend from 'jss-extend';
+///
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 ///
 import theme from '../src/theme';
+
+/// ADD EXTRA JSS PLUGINS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const jss = create({
+  plugins: [...jssPreset().plugins, extend()]
+});
 
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +46,7 @@ export default class MyApp extends App {
     const { Component, pageProps } = this.props;
 
     return (
-      <>
+      <StylesProvider jss={jss}>
         <Head>
           <title>GEMSTEP</title>
           <meta
@@ -49,7 +59,7 @@ export default class MyApp extends App {
           <CssBaseline />
           <Component {...pageProps} />
         </ThemeProvider>
-      </>
+      </StylesProvider>
     );
   }
 }

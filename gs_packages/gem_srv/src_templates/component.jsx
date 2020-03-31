@@ -7,17 +7,16 @@
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// react
 import React from 'react';
-// material ui core
+/// material ui
 import Typography from '@material-ui/core/IconButton';
-
 import { makeStyles, useTheme } from '@material-ui/core/styles';
+/// local imports
 
-/// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
+/// LOCAL STYLES DECLARATIONS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// This makes a 'useStyles hook' with theme object passed-in.
-/// The useStyles() hook also can receive a parameter for further customization.
-/// Format is JSS { camelCaseCSS : 'values' }
+/// note: global theme overrides are in theme.js and theme-derived.js
 const useStyles = makeStyles(theme => ({
   myRule: {
     // ex: theme-derived rule
@@ -27,18 +26,20 @@ const useStyles = makeStyles(theme => ({
   }
 }));
 
-/// EXAMPLE COMPONENT /////////////////////////////////////////////////////////
+/// FUNCTIONAL COMPONENT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
-/// See theme.js and theme-derived.js to customize theme properties
-function MyComponent() {
-  // ex: create state hook
+function MyComponent(props) {
+  /// STATEFUL DECLARATIONS ///////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// ex: use of hooks
   const [counter, setCounter] = React.useState(0);
   const [anchorEl, setAnchorEl] = React.useState(null);
-  // ex: calculate dynamic rules by passing state
+  /// ex: use of jss rule-value-function plugin (calculated styles)
   const classes = useStyles({ counter }); // computed rule receives param
-  // ex: get theme if needed for some reason
+  /// ex: get theme object if you need its parameters, or have added some
   const theme = useTheme(); // property object of theme settings
+  /// ex: props can also be passed from parent component
+  if (props) console.log('props', { ...props });
 
   /// HANDLERS ////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,15 +50,22 @@ function MyComponent() {
   };
 
   /// RENDER //////////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// note: you can refer to classes, theme, counter, anchorEl below
+  /// note: apply styles to 'className to modify existing theme styles
+  /// note: apply styles to 'classes' to replacing existing theme styles
+  /// note: or apply 'style' inline style object
   return (
-    <Typography className={classes.myRule} onClick={handleClick}>
-      This is my component. It was clicked {counter} times. The theme.spacing(1)
-      is {theme.spacing(1)} pixels.
-      {anchorEl ? 'Anchor element clicked!' : ''}
-    </Typography>
+    <>
+      <Typography className={classes.myRule} onClick={handleClick}>
+        This is my component. It was clicked {counter} times. The theme.spacing(1)
+        is {theme.spacing(1)} pixels.
+        {anchorEl ? 'Anchor element clicked!' : ''}
+      </Typography>
+    </>
   );
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default MyComponent; // functional component
+export default MyComponent; // your functional component
