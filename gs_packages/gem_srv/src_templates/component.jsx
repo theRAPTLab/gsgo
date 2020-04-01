@@ -10,7 +10,7 @@
 /// react
 import React from 'react';
 /// material ui
-import Typography from '@material-ui/core/IconButton';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 /// local imports
 
