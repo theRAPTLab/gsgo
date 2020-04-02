@@ -25,24 +25,17 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import createMuiTheme from '@material-ui/core/styles/createMuiTheme';
-import { red } from '@material-ui/core/colors';
+import { red, indigo, deepOrange } from '@material-ui/core/colors';
 import addDerivedStyles from './theme-derived';
 
 /// DEFINE MUI THEME //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const baseTheme = createMuiTheme({
   palette: {
-    primary: {
-      main: '#556cd6'
-    },
-    secondary: {
-      main: '#19857b'
-    },
+    primary: indigo,
+    secondary: deepOrange,
     error: {
       main: red.A400
-    },
-    background: {
-      default: '#fff'
     }
   }
 });

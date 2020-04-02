@@ -15,6 +15,7 @@ import React from 'react';
 import GSAppBar from '../src/components/GSAppBar';
 import GSLoginBar from '../src/components/GSLoginBar';
 import GSBoxLayout from '../src/components/GSBoxLayout';
+import GSTabbedAppBar from '../src/components/GSTabbedAppBar';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,8 +24,7 @@ function Main() {
   return (
     <>
       <GSLoginBar />
-      <GSAppBar />
-      <GSBoxLayout />
+      <GSTabbedAppBar />
     </>
   );
 }

@@ -5,7 +5,6 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import Head from 'next/head';
 import {
   Typography,
   // Appbar
@@ -16,8 +15,9 @@ import {
   MenuItem
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import GSLogo from '@material-ui/icons/SentimentVerySatisfied';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
+import GSLogo from '@material-ui/icons/SentimentVerySatisfied';
+import GSTabbedLayout from './GSTabbedAppBar';
 
 /// CUSTOM STYLES FOR THIS COMPONENT //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
