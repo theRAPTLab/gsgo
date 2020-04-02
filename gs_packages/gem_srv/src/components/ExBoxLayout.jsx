@@ -1,5 +1,10 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  Material UI Boxes Layout
+
+  Boxes are styled using their built in props rather than using CSS styling.
+  It is an alternative to using <Container> containing <Grid> elements.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
@@ -26,7 +31,7 @@ function GSBoxLayout() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <>
-      <Box height={100} width="100%" className={classes.wbArea}>
+      <Box height={100} p={1} width="100%" className={classes.wbArea}>
         Top
       </Box>
       <Box display="flex" alignItems="stretch" height="100%">

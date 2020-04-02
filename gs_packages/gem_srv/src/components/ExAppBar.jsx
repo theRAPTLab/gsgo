@@ -17,7 +17,7 @@ import {
 import MenuIcon from '@material-ui/icons/Menu';
 import { makeStyles, useTheme } from '@material-ui/core/styles';
 import GSLogo from '@material-ui/icons/SentimentVerySatisfied';
-import GSTabbedLayout from './GSTabbedAppBar';
+import GSTabbedLayout from './ExTabbedAppBar';
 
 /// CUSTOM STYLES FOR THIS COMPONENT //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
