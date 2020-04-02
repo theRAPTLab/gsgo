@@ -5,6 +5,7 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
+import merge from 'deepmerge';
 
 // material ui
 import Box from '@material-ui/core/Box';
@@ -18,34 +19,24 @@ import MenuItem from '@material-ui/core/MenuItem';
 import Typography from '@material-ui/core/Typography';
 import GSLogo from '@material-ui/icons/SentimentVerySatisfied';
 import MenuIcon from '@material-ui/icons/Menu';
-
-import blue from '@material-ui/core/colors/blue';
 import { makeStyles } from '@material-ui/core/styles';
+import wireframeStyles from '../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => ({
-  root: {
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.paper
-  },
-  tabs: {
-    backgroundColor: theme.palette.background.paper,
-    color: theme.palette.text.secondary
-  },
-  blueBox: {
-    backgroundColor: blue[50],
-    padding: theme.spacing(1)
-  },
-  controlBox: {
-    extend: 'blueBox',
-    backgroundColor: blue[100]
-  },
-  viewBox: {
-    extend: 'blueBox',
-    backgroundColor: blue[200]
-  }
-}));
+const useStyles = makeStyles(theme =>
+  merge.all([
+    {
+      tabs: {
+        flexGrow: 1,
+
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.text.secondary
+      }
+    },
+    wireframeStyles(theme)
+  ])
+);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TabPanel(props) {
@@ -101,7 +92,7 @@ function GSTabbedLayout() {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <div className={classes.root}>
+    <>
       <AppBar position="static">
         <Toolbar className={classes.toolbar}>
           <IconButton
@@ -148,6 +139,8 @@ function GSTabbedLayout() {
             </div>
           )}
         </Toolbar>
+      </AppBar>
+      <div className={classes.tabs}>
         <Tabs
           value={tabIndex}
           onChange={handleChange}
@@ -158,17 +151,17 @@ function GSTabbedLayout() {
           <Tab label="Item Two" {...a11yProps(1)} />
           <Tab label="Item Three" {...a11yProps(2)} />
         </Tabs>
-      </AppBar>
-      <TabPanel value={tabIndex} index={0}>
-        Item One
-      </TabPanel>
-      <TabPanel value={tabIndex} index={1}>
-        Item Two
-      </TabPanel>
-      <TabPanel value={tabIndex} index={2}>
-        Item Three
-      </TabPanel>
-    </div>
+        <TabPanel value={tabIndex} index={0}>
+          Item One
+        </TabPanel>
+        <TabPanel value={tabIndex} index={1}>
+          Item Two
+        </TabPanel>
+        <TabPanel value={tabIndex} index={2}>
+          Item Three
+        </TabPanel>
+      </div>
+    </>
   );
 }
 

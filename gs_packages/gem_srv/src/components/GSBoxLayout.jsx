@@ -5,28 +5,16 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
+import merge from 'deepmerge';
 
 // material ui
 import Box from '@material-ui/core/Box';
-import blue from '@material-ui/core/colors/blue';
 import { makeStyles } from '@material-ui/core/styles';
+import wireframeStyles from '../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => ({
-  blueBox: {
-    backgroundColor: blue[50],
-    padding: theme.spacing(1)
-  },
-  controlBox: {
-    extend: 'blueBox',
-    backgroundColor: blue[100]
-  },
-  viewBox: {
-    extend: 'blueBox',
-    backgroundColor: blue[200]
-  }
-}));
+const useStyles = makeStyles(theme => merge.all([{}, wireframeStyles(theme)]));
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,7 +26,7 @@ function GSBoxLayout() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <>
-      <Box height={100} width="100%" className={classes.blueBox}>
+      <Box height={100} width="100%" className={classes.wbArea}>
         Top
       </Box>
       <Box display="flex" alignItems="stretch" height="100%">
@@ -47,11 +35,11 @@ function GSBoxLayout() {
           flexGrow={0}
           flexShrink={0}
           flexBasis={100}
-          className={classes.controlBox}
+          className={classes.wbControl}
         >
           Item 1
         </Box>
-        <Box flexGrow={1} p={1} className={classes.viewBox}>
+        <Box flexGrow={1} p={1} className={classes.wbViewport}>
           Item 2
         </Box>
         <Box
@@ -59,7 +47,7 @@ function GSBoxLayout() {
           flexGrow={0}
           flexShrink={0}
           flexBasis={100}
-          className={classes.controlBox}
+          className={classes.wbControl}
         >
           Item 3
         </Box>
