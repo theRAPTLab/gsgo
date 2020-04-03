@@ -16,6 +16,8 @@ import GSAppBar from '../src/components/ExAppBar';
 import GSLoginBar from '../src/components/ExLoginBar';
 import GSBoxLayout from '../src/components/ExBoxLayout';
 import GSTabbedAppBar from '../src/components/ExTabbedAppBar';
+import GSTabbedView from '../src/components/ExTabbedView';
+import GSView from '../src/components/ExView';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,8 +26,18 @@ function Main() {
   return (
     <>
       <GSLoginBar />
-      <GSTabbedAppBar />
-      <GSBoxLayout />
+      <GSAppBar />
+      <GSTabbedView>
+        <GSView index={1} name="First Value">
+          <GSBoxLayout />
+        </GSView>
+        <GSView index={2} name="Second View">
+          Empty 2
+        </GSView>
+        <GSView index={3} name="Third View">
+          Empty
+        </GSView>
+      </GSTabbedView>
     </>
   );
 }
