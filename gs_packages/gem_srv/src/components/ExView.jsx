@@ -20,45 +20,30 @@ import wireframeStyles from '../modules/style/wireframing';
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-const useStyles = makeStyles(theme =>
-  merge.all([
-    {
-      tabs: {
-        flexGrow: 1,
-        backgroundColor: theme.palette.background.paper,
-        color: theme.palette.text.secondary
-      }
-    },
-    wireframeStyles(theme)
-  ])
-);
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function a11yProps(index) {
-  return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`
-  };
-}
+const useStyles = makeStyles(theme => merge.all([wireframeStyles(theme)]));
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
 function ExView(props) {
+  //
   const classes = useStyles();
-  const { children, index, view, ...other } = props;
+  const { children, index, view, store, ...other } = props;
+  const { currentTab } = store;
   // const { currentTab } = store; // REDUX HERE
-  const currentTab = 1;
+  console.log('exview got store', store || 'nothing');
 
   /// RENDER //////////////////////////////////////////////////////////////////
+
+  console.log(`currentTab ${currentTab}`);
 
   return (
     <Typography
       component="div"
       role="tabpanel"
       hidden={currentTab !== index} // REDUX HERE
-      id={`simple-tabpanel-${index}`}
+      id={`gem-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
       {...other}
     >

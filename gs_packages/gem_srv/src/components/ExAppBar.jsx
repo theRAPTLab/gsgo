@@ -51,11 +51,11 @@ function GSAppBar() {
 
   /// HANDLERS ////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  const handleMenu = event => {
+  const handleMenuOpen = event => {
     setAnchorEl(event.currentTarget);
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  const handleClose = () => {
+  const handleMenuClose = () => {
     setAnchorEl(null);
   };
 
@@ -68,7 +68,7 @@ function GSAppBar() {
           className={classes.menuButton}
           color="inherit"
           aria-label="menu"
-          onClick={handleMenu}
+          onClick={handleMenuOpen}
         >
           <MenuIcon />
         </IconButton>
@@ -81,7 +81,7 @@ function GSAppBar() {
               aria-label="account of current user"
               aria-controls="menu-appbar"
               aria-haspopup="true"
-              onClick={handleMenu}
+              onClick={handleMenuOpen}
               color="inherit"
             >
               <GSLogo />
@@ -99,10 +99,10 @@ function GSAppBar() {
                 horizontal: 'right'
               }}
               open={open}
-              onClose={handleClose}
+              onClose={handleMenuClose}
             >
-              <MenuItem onClick={handleClose}>Profile</MenuItem>
-              <MenuItem onClick={handleClose}>My account</MenuItem>
+              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
+              <MenuItem onClick={handleMenuClose}>My account</MenuItem>
             </Menu>
           </div>
         )}
