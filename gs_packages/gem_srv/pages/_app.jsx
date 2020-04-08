@@ -23,7 +23,13 @@ import extend from 'jss-extend';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 ///
+import { Provider } from 'react-redux';
+import store from '../redux/store';
+///
 import theme from '../src/theme';
+///
+import GSLoginBar from '../src/components/ExLoginBar';
+import GSTabbedNav from '../src/components/ExTabbedNav';
 
 /// ADD EXTRA JSS PLUGINS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,9 +37,25 @@ const jss = create({
   plugins: [...jssPreset().plugins, extend()]
 });
 
+/// CREATE CHEESEBALL STORE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const STORE = {
+  currentTab: 0
+};
+
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default class MyApp extends App {
+class MyApp extends App {
+  //
+  static async getInitialProps({ Component, ctx }) {
+    const pageProps = Component.getInitialProps
+      ? await Component.getInitialProps(ctx)
+      : {};
+
+    //Anything returned here can be accessed by the client
+    return { pageProps };
+  }
+
   componentDidMount() {
     // Remove the server-side injected CSS.
     const jssStyles = document.querySelector('#jss-server-side');
@@ -46,20 +68,26 @@ export default class MyApp extends App {
     const { Component, pageProps } = this.props;
 
     return (
-      <StylesProvider jss={jss}>
-        <Head>
-          <title>GEMSTEP</title>
-          <meta
-            name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width"
-          />
-        </Head>
-        <ThemeProvider theme={theme}>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          <CssBaseline />
-          <Component {...pageProps} />
-        </ThemeProvider>
-      </StylesProvider>
+      <Provider store={store}>
+        <StylesProvider jss={jss}>
+          <Head>
+            <title>GEMSTEP</title>
+            <meta
+              name="viewport"
+              content="minimum-scale=1, initial-scale=1, width=device-width"
+            />
+          </Head>
+          <ThemeProvider theme={theme}>
+            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+            <CssBaseline />
+            <GSLoginBar />
+            <GSTabbedNav />
+            <Component {...pageProps} store={STORE} />
+          </ThemeProvider>
+        </StylesProvider>
+      </Provider>
     );
   }
 }
+
+export default MyApp;

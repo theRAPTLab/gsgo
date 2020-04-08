@@ -13,16 +13,9 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import {
-  decrementCounter,
-  incrementCounter
-} from '../redux/actions/counterActions';
 
-import GSAppBar from '../src/components/ExAppBar';
-import GSLoginBar from '../src/components/ExLoginBar';
-import GSBoxLayout from '../src/components/ExBoxLayout';
-import GSTabbedAppBar from '../src/components/ExTabbedAppBar';
 import GSTabbedView from '../src/components/ExTabbedView';
+import GSBoxLayout from '../src/components/ExBoxLayout';
 import GSView from '../src/components/ExView';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
@@ -33,21 +26,17 @@ function Main(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <>
-      <GSLoginBar />
-      <GSAppBar />
-      <GSTabbedView store={store}>
-        <GSView index={0} name="First Value" store={store}>
-          <GSBoxLayout label="1" />
-        </GSView>
-        <GSView index={1} name="Second View" store={store}>
-          <GSBoxLayout label="2" />
-        </GSView>
-        <GSView index={2} name="Third View" store={store}>
-          Empty
-        </GSView>
-      </GSTabbedView>
-    </>
+    <GSTabbedView store={store}>
+      <GSView index={0} name="tab 1" store={store}>
+        <GSBoxLayout label="1" />
+      </GSView>
+      <GSView index={1} name="tab 2" store={store}>
+        <GSBoxLayout label="2" />
+      </GSView>
+      <GSView index={2} name="tab 2" store={store}>
+        Empty
+      </GSView>
+    </GSTabbedView>
   );
 }
 
