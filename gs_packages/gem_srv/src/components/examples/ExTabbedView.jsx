@@ -17,7 +17,7 @@ import Typography from '@material-ui/core/Typography';
 
 import { makeStyles } from '@material-ui/core/styles';
 
-import wireframeStyles from '../modules/style/wireframing';
+import wireframeStyles from '../../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

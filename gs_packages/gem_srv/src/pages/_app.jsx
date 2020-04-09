@@ -24,12 +24,12 @@ import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 ///
 import { Provider } from 'react-redux';
-import store from '../redux/store';
+import store from '../../redux/store';
 ///
-import theme from '../src/theme';
+import theme from '../modules/style/theme';
 ///
-import GSLoginBar from '../src/components/ExLoginBar';
-import GSTabbedNav from '../src/components/ExTabbedNav';
+import SiteLoginBar from '../components/SiteLoginBar';
+import SiteNavigation from '../components/SiteNavigation';
 
 /// ADD EXTRA JSS PLUGINS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,8 +80,8 @@ class MyApp extends App {
           <ThemeProvider theme={theme}>
             {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
             <CssBaseline />
-            <GSLoginBar />
-            <GSTabbedNav />
+            <SiteLoginBar />
+            <SiteNavigation />
             <Component {...pageProps} store={STORE} />
           </ThemeProvider>
         </StylesProvider>

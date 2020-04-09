@@ -15,7 +15,7 @@ import merge from 'deepmerge';
 // material ui
 import Box from '@material-ui/core/Box';
 import { makeStyles } from '@material-ui/core/styles';
-import wireframeStyles from '../modules/style/wireframing';
+import wireframeStyles from '../../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -99,9 +99,9 @@ function GSTabbedNav(props) {
             onChange={handleChange}
             aria-label="Page Navigation"
           >
-            <NextTab label="Page 1" href="/" {...a11yProps(0)} />
-            <NextTab label="Page 2" href="/about" {...a11yProps(1)} />
-            <NextTab label="Page 3" href="/extra" {...a11yProps(2)} />
+            <NextTab label="Page 1" href="/page1" {...a11yProps(0)} />
+            <NextTab label="Page 2" href="/page2" {...a11yProps(1)} />
+            <NextTab label="Page 3" href="/page3" {...a11yProps(2)} />
           </Tabs>
         </Grid>
       </Grid>

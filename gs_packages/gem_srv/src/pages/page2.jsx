@@ -14,15 +14,15 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 
-import GSTabbedView from '../src/components/ExTabbedView';
-import GSBoxLayout from '../src/components/ExBoxLayout';
-import GSView from '../src/components/ExView';
+import GSTabbedView from '../components/examples/ExTabbedView';
+import GSBoxLayout from '../components/examples/ExBoxLayout';
+import GSView from '../components/examples/ExView';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Main(props) {
   const { store } = props;
-  console.log('index got store', store);
+  console.log('page2 got store', store);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
