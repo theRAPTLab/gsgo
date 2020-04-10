@@ -14,9 +14,9 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 
-import GSTabbedView from '../components/examples/ExTabbedView';
-import GSBoxLayout from '../components/examples/ExBoxLayout';
-import GSView from '../components/examples/ExView';
+import SubNav from '../components/SubNavigation';
+import ExampleBoxLayout from '../components/examples/ExBoxLayout';
+import SubView from '../components/SubView';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,17 +31,17 @@ function Main(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <GSTabbedView store={store}>
-      <GSView index={0} name="Sub 1" store={store}>
-        <GSBoxLayout label="1" />
-      </GSView>
-      <GSView index={1} name="Sub 2" store={store}>
-        <GSBoxLayout label="2" />
-      </GSView>
-      <GSView index={2} name="Sub 3" store={store}>
+    <SubNav store={store}>
+      <SubView index={0} name="Sub 1" store={store}>
+        <ExampleBoxLayout label="1" />
+      </SubView>
+      <SubView index={1} name="Sub 2" store={store}>
+        <ExampleBoxLayout label="2" />
+      </SubView>
+      <SubView index={2} name="Sub 3" store={store}>
         Empty
-      </GSView>
-    </GSTabbedView>
+      </SubView>
+    </SubNav>
   );
 }
 

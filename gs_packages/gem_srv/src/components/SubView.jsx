@@ -11,7 +11,7 @@ import merge from 'deepmerge';
 import Typography from '@material-ui/core/Typography';
 // styling
 import { makeStyles } from '@material-ui/core/styles';
-import wireframeStyles from '../../modules/style/wireframing';
+import wireframeStyles from '../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme =>
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function ExView(props) {
+function SubView(props) {
   //
   const classes = useStyles();
   const { children, index, currentTab } = props;
@@ -50,4 +50,4 @@ function ExView(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default ExView; // functional component
+export default SubView; // functional component

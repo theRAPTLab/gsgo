@@ -14,9 +14,9 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 
-import GSTabbedView from '../components/examples/ExTabbedView';
+import GSTabbedView from '../components/SubNavigation';
 import GSBoxLayout from '../components/examples/ExBoxLayout';
-import GSView from '../components/examples/ExView';
+import GSView from '../components/SubView';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

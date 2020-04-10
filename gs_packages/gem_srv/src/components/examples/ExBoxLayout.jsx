@@ -1,9 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Material UI Boxes Layout
+  Example MUI Box-based Layout
 
   Boxes are styled using their built in props rather than using CSS styling.
   It is an alternative to using <Container> containing <Grid> elements.
+
+  For styling, you have a choice between using local styles OR using built-in
+  Box properties. Be sure to read up on CSS FlexBox to understand how this
+  layout is constructed
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,18 +15,26 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 import merge from 'deepmerge';
+import clsx from 'clsx';
 
 // material ui
 import Box from '@material-ui/core/Box';
+import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import wireframeStyles from '../../modules/style/wireframing';
 
-/// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
+/// LOCAL STYLES FOR COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme =>
   merge.all([
     {
-      root: {}
+      header: {
+        color: 'red',
+        height: '100px'
+      },
+      caption: {
+        padding: theme.spacing(1)
+      }
     },
     wireframeStyles(theme)
   ])
@@ -30,16 +42,18 @@ const useStyles = makeStyles(theme =>
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
-/// See theme.js and theme-derived.js to customize theme properties
-function GSBoxLayout() {
+function ExBoxLayout() {
+  /// compute class names from generated 'classes' css rules dictionary
   const classes = useStyles();
+  const headerClasses = clsx(classes.wbArea, classes.header);
 
   /// RENDER //////////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// NOTE: this example shows uses of local styles and Box props for sizing
   return (
     <>
-      <Box height={100} p={1} width="100%" className={classes.wbArea}>
-        components/examples/ExView
+      <Box p={1} className={headerClasses}>
+        HEADER
       </Box>
       <Box display="flex" alignItems="stretch" height="100%">
         <Box
@@ -49,10 +63,10 @@ function GSBoxLayout() {
           flexBasis={100}
           className={classes.wbControl}
         >
-          Item 1
+          LEFT
         </Box>
         <Box flexGrow={1} p={1} className={classes.wbViewport}>
-          Item 2
+          CENTER
         </Box>
         <Box
           p={1}
@@ -61,13 +75,16 @@ function GSBoxLayout() {
           flexBasis={100}
           className={classes.wbControl}
         >
-          Item 3
+          RIGHT
         </Box>
       </Box>
+      <Typography variant="caption" className={classes.caption}>
+        components/examples/ExBoxLayout
+      </Typography>
     </>
   );
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSBoxLayout; // functional component
+export default ExBoxLayout; // functional component

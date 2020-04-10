@@ -15,7 +15,7 @@ import Tab from '@material-ui/core/Tab';
 
 import { makeStyles } from '@material-ui/core/styles';
 
-import wireframeStyles from '../../modules/style/wireframing';
+import wireframeStyles from '../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +45,7 @@ function a11yProps(index) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function GSTabbedView(props) {
+function SubNavigation(props) {
   const classes = useStyles();
   const [subTabIndex, setSubTabIndex] = React.useState(0);
   const { children } = props;
@@ -90,4 +90,4 @@ function GSTabbedView(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSTabbedView; // functional component
+export default SubNavigation; // functional component
