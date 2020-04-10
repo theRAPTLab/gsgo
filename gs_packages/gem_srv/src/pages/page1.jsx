@@ -13,7 +13,9 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import GSBoxLayout from '../components/examples/ExBoxLayout';
+import SubNav from '../components/SubNavigation';
+import ExampleBoxLayout from '../components/examples/ExBoxLayout';
+import SubView from '../components/SubView';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,15 +23,27 @@ const DBG = false;
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Main(props) {
+function Page(props) {
   const { store } = props;
   const { currentTab, currentRoute } = store.getRoute();
   if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
-  return <GSBoxLayout label="1" />;
+  return (
+    <SubNav store={store}>
+      <SubView index={0} name="Select 1" store={store}>
+        <ExampleBoxLayout label="1" />
+      </SubView>
+      <SubView index={1} name="select 2" store={store}>
+        <ExampleBoxLayout label="2" />
+      </SubView>
+      <SubView index={2} name="Select 3" store={store}>
+        Empty
+      </SubView>
+    </SubNav>
+  );
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Main; // functional component
+export default Page; // functional component

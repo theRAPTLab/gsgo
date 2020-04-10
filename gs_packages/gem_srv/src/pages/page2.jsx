@@ -24,7 +24,7 @@ const DBG = false;
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Main(props) {
+function Page(props) {
   const { store } = props;
   const { currentTab, currentRoute } = store.getRoute();
   if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
@@ -47,4 +47,4 @@ function Main(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Main; // functional component
+export default Page; // functional component

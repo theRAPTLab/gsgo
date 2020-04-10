@@ -13,10 +13,7 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-
-import GSTabbedView from '../components/SubNavigation';
-import GSBoxLayout from '../components/examples/ExBoxLayout';
-import GSView from '../components/SubView';
+import ExBoxLayout from '../components/examples/ExBoxLayout';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,27 +21,15 @@ const DBG = false;
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Main(props) {
+function Page(props) {
   const { store } = props;
   const { currentTab, currentRoute } = store.getRoute();
   if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
-  return (
-    <GSTabbedView store={store}>
-      <GSView index={0} name="tab 1" store={store}>
-        <GSBoxLayout label="1" />
-      </GSView>
-      <GSView index={1} name="tab 2" store={store}>
-        <GSBoxLayout label="2" />
-      </GSView>
-      <GSView index={2} name="tab 2" store={store}>
-        Empty
-      </GSView>
-    </GSTabbedView>
-  );
+  return <ExBoxLayout label="1" />;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Main; // functional component
+export default Page; // functional component

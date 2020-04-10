@@ -55,7 +55,7 @@ function ExBoxLayout() {
       <Box p={1} className={headerClasses}>
         HEADER
       </Box>
-      <Box display="flex" alignItems="stretch" height="100%">
+      <Box display="flex" alignItems="stretch">
         <Box
           p={1}
           flexGrow={0}

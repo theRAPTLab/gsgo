@@ -23,12 +23,16 @@ import { makeStyles } from '@material-ui/core/styles';
 import APPSTATE from '../modules/appstate';
 import wireframeStyles from '../modules/style/wireframing';
 
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+
 /// PAGE NAVIGATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ROUTES = [
+  { label: 'Welcome', href: '/' },
   { label: 'Page 1', href: '/page1' },
-  { label: 'Page 2', href: '/page2' },
-  { label: 'Page 3', href: '/page3' }
+  { label: 'Page 2', href: '/page2' }
 ];
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
@@ -42,15 +46,9 @@ const useStyles = makeStyles(theme =>
         paddingRight: theme.spacing(3),
         transform: 'translateY(25%)'
       },
-      appbar: {
-        alignItems: 'center'
-      },
-      sitenav: {
-        padding: '6px 12px',
-        minHeight: '48px',
-        color: 'inherit',
-        opacity: 0.5
-      }
+      appbar: {},
+      container: {},
+      tabs: {}
     },
     wireframeStyles(theme)
   ])
@@ -85,6 +83,7 @@ function SiteNavigation() {
         label={page.label}
         key={key}
         component="a"
+        style={{ minWidth: '100px' }}
         onClick={event => {
           event.preventDefault();
         }}
@@ -93,13 +92,12 @@ function SiteNavigation() {
   });
 
   // MUI <Tabs> component uses this state to determine what is highlighted
-  // this is happening on client so setvalue never affects anything
+  // but we programmatically for page route through next/router
   const handleChange = (event, newIndex) => {
     setTabIndex(newIndex);
-
     const route = ROUTES[newIndex];
     if (route) {
-      console.log('change index', route.href);
+      if (DBG) console.log('change index', route.href);
       router.replace(route.href);
       APPSTATE.setRoute(newIndex, route.href);
     }
@@ -109,7 +107,7 @@ function SiteNavigation() {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   return (
     <AppBar position="static" className={classes.appbar}>
-      <Grid container>
+      <Grid container justify="space-between" className={classes.container}>
         <Grid item>
           <Typography variant="h6" className={classes.title}>
             GEM-STEP
@@ -117,7 +115,7 @@ function SiteNavigation() {
         </Grid>
         <Grid item>
           <Tabs
-            variant="standard"
+            className={classes.tabs}
             value={tabIndex}
             onChange={handleChange}
             aria-label="Page Navigation"
