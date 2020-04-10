@@ -24,8 +24,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
 ///
-import SiteLoginBar from '../blocks/SiteLoginBar';
-import SiteNavigation from '../blocks/SiteNavigation';
+import BlockLoginBar from '../blocks/BlockLoginBar';
+import BlockPageNav from '../blocks/BlockPageNav';
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,8 +53,8 @@ export default function MyApp(props) {
 
         <CssBaseline />
         <div style={{ height: '100vh', backgroundColor: '#eee' }}>
-          <SiteLoginBar />
-          <SiteNavigation />
+          <BlockLoginBar />
+          <BlockPageNav />
           <Component {...pageProps} store={APPSTATE} />
         </div>
       </ThemeProvider>

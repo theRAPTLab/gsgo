@@ -13,9 +13,9 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import SubNav from '../blocks/SubNavigation';
+import BlockTabs from '../blocks/BlockTabs';
 import ExampleBoxLayout from '../components/examples/ExBoxLayout';
-import SubView from '../blocks/SubView';
+import BlockTabView from '../blocks/BlockTabView';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,17 +30,17 @@ function Page(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <SubNav store={store}>
-      <SubView index={0} name="Select 1" store={store}>
+    <BlockTabs store={store}>
+      <BlockTabView index={0} name="Select 1" store={store}>
         <ExampleBoxLayout label="1" />
-      </SubView>
-      <SubView index={1} name="select 2" store={store}>
+      </BlockTabView>
+      <BlockTabView index={1} name="select 2" store={store}>
         <ExampleBoxLayout label="2" />
-      </SubView>
-      <SubView index={2} name="Select 3" store={store}>
+      </BlockTabView>
+      <BlockTabView index={2} name="Select 3" store={store}>
         Empty
-      </SubView>
-    </SubNav>
+      </BlockTabView>
+    </BlockTabs>
   );
 }
 
