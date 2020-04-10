@@ -13,26 +13,21 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-
-import APPSTATE from '../modules/appstate';
-
-import GSTabbedView from '../components/examples/ExTabbedView';
 import GSBoxLayout from '../components/examples/ExBoxLayout';
-import GSView from '../components/examples/ExView';
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Main(props) {
   const { store } = props;
   const { currentTab, currentRoute } = store.getRoute();
-  console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
+  if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
-  return (
-    <GSView index={0} name="box" store={store}>
-      <GSBoxLayout label="1" />
-    </GSView>
-  );
+  return <GSBoxLayout label="1" />;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

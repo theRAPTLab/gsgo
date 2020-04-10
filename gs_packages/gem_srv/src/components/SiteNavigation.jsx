@@ -68,7 +68,7 @@ function SiteNavigation() {
   const pageIndex = ROUTES.findIndex(page => page.href === router.pathname);
   const currentTab = pageIndex < 0 ? 0 : pageIndex;
   // set the current tab
-  const [value, setValue] = React.useState(currentTab);
+  const [tabIndex, setTabIndex] = React.useState(currentTab);
 
   // render cosmetic tab links
   // page navigation through nextjs is handled programmatically in
@@ -94,15 +94,14 @@ function SiteNavigation() {
 
   // MUI <Tabs> component uses this state to determine what is highlighted
   // this is happening on client so setvalue never affects anything
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
+  const handleChange = (event, newIndex) => {
+    setTabIndex(newIndex);
 
-    const route = ROUTES[newValue];
+    const route = ROUTES[newIndex];
     if (route) {
       console.log('change index', route.href);
       router.replace(route.href);
-      if (typeof window === 'object' && window.STORE)
-        window.STORE.currentTab = newValue;
+      APPSTATE.setRoute(newIndex, route.href);
     }
   };
 
@@ -119,7 +118,7 @@ function SiteNavigation() {
         <Grid item>
           <Tabs
             variant="standard"
-            value={value}
+            value={tabIndex}
             onChange={handleChange}
             aria-label="Page Navigation"
           >

@@ -36,8 +36,8 @@ const useStyles = makeStyles(theme =>
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function a11yProps(index) {
   return {
-    id: `gem-tab-${index}`,
-    'aria-controls': `gem-tabpanel-${index}`
+    id: `gem-subtab-${index}`,
+    'aria-controls': `gem-subtabpanel-${index}`
   };
 }
 
@@ -47,40 +47,43 @@ function a11yProps(index) {
 /// See theme.js and theme-derived.js to customize theme properties
 function GSTabbedView(props) {
   const classes = useStyles();
-  const [tabIndex, setTabIndex] = React.useState(0);
+  const [subTabIndex, setSubTabIndex] = React.useState(0);
   const { children } = props;
 
   /// HANDLERS ////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   const handleChange = (event, tabIndex) => {
-    setTabIndex(tabIndex);
+    setSubTabIndex(tabIndex);
   };
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // generate tab elements
-  const tabs = React.Children.toArray(children).map((element, index) => {
+  /// generate tab elements from children
+  const tabs = React.Children.map(children, (child, index) => {
     const key = `sub-${index}`;
     return (
       <Tab
         key={key} // why? https://reactjs.org/docs/lists-and-keys.html#keys
-        label={`${element.props.name}`}
+        label={`${child.props.name}`}
         {...a11yProps(index)}
       />
     );
+  });
+  const proppedChildren = React.Children.map(children, child => {
+    return React.cloneElement(child, { currentTab: subTabIndex });
   });
 
   return (
     <div className={classes.tabs}>
       <Tabs
-        value={tabIndex}
+        value={subTabIndex}
         onChange={handleChange}
         aria-label="GEMSTEP application modes"
         className={classes.tabs}
       >
         {tabs}
       </Tabs>
-      {children}
+      {proppedChildren}
     </div>
   );
 }

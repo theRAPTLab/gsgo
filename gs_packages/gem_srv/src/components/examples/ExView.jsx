@@ -31,24 +31,18 @@ const useStyles = makeStyles(theme =>
 function ExView(props) {
   //
   const classes = useStyles();
-  const { children, index, view, store, ...other } = props;
-  const { getRoute } = store;
-  const { currentTab } = getRoute();
-  // const { currentTab } = store; // REDUX HERE
-  // console.log('exview got store', store || 'nothing');
+  const { children, index, currentTab } = props;
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Typography
       component="div"
       role="tabpanel"
-      hidden={currentTab !== index} // REDUX HERE
-      id={`gem-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
+      id={`gem-subtab-${index}`}
+      aria-labelledby={`gem-subtab-${index}`}
       className={classes.root}
-      {...other}
+      hidden={currentTab !== index}
     >
-      {view}
       {children}
     </Typography>
   );

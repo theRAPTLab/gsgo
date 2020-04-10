@@ -18,12 +18,16 @@ import GSTabbedView from '../components/examples/ExTabbedView';
 import GSBoxLayout from '../components/examples/ExBoxLayout';
 import GSView from '../components/examples/ExView';
 
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Main(props) {
   const { store } = props;
   const { currentTab, currentRoute } = store.getRoute();
-  console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
+  if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
