@@ -23,9 +23,6 @@ import extend from 'jss-extend';
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 ///
-import { Provider } from 'react-redux';
-import store from '../../redux/store';
-///
 import theme from '../modules/style/theme';
 ///
 import SiteLoginBar from '../components/SiteLoginBar';
@@ -68,24 +65,22 @@ class MyApp extends App {
     const { Component, pageProps } = this.props;
 
     return (
-      <Provider store={store}>
-        <StylesProvider jss={jss}>
-          <Head>
-            <title>GEMSTEP</title>
-            <meta
-              name="viewport"
-              content="minimum-scale=1, initial-scale=1, width=device-width"
-            />
-          </Head>
-          <ThemeProvider theme={theme}>
-            {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-            <CssBaseline />
-            <SiteLoginBar />
-            <SiteNavigation />
-            <Component {...pageProps} store={STORE} />
-          </ThemeProvider>
-        </StylesProvider>
-      </Provider>
+      <StylesProvider jss={jss}>
+        <Head>
+          <title>GEMSTEP</title>
+          <meta
+            name="viewport"
+            content="minimum-scale=1, initial-scale=1, width=device-width"
+          />
+        </Head>
+        <ThemeProvider theme={theme}>
+          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+          <CssBaseline />
+          <SiteLoginBar />
+          <SiteNavigation />
+          <Component {...pageProps} store={STORE} />
+        </ThemeProvider>
+      </StylesProvider>
     );
   }
 }
