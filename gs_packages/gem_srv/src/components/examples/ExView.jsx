@@ -8,18 +8,13 @@ import React from 'react';
 import merge from 'deepmerge';
 
 // material ui
-import Box from '@material-ui/core/Box';
-import Tabs from '@material-ui/core/Tabs';
-import Tab from '@material-ui/core/Tab';
 import Typography from '@material-ui/core/Typography';
-
+// styling
 import { makeStyles } from '@material-ui/core/styles';
-
 import wireframeStyles from '../../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 const useStyles = makeStyles(theme => merge.all([wireframeStyles(theme)]));
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
@@ -30,7 +25,8 @@ function ExView(props) {
   //
   const classes = useStyles();
   const { children, index, view, store, ...other } = props;
-  const { currentTab } = store;
+  const { getRoute } = store;
+  const { currentTab } = getRoute();
   // const { currentTab } = store; // REDUX HERE
   // console.log('exview got store', store || 'nothing');
 
