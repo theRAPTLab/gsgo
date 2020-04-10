@@ -32,12 +32,9 @@ function ExView(props) {
   const { children, index, view, store, ...other } = props;
   const { currentTab } = store;
   // const { currentTab } = store; // REDUX HERE
-  console.log('exview got store', store || 'nothing');
+  // console.log('exview got store', store || 'nothing');
 
   /// RENDER //////////////////////////////////////////////////////////////////
-
-  console.log(`currentTab ${currentTab}`);
-
   return (
     <Typography
       component="div"

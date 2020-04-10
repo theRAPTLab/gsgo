@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function LoginBar() {
+function SiteLoginBar() {
   const classes = useStyles();
   // if you need read-only theme parameters directly in the component
   const theme = useTheme(); // property object of theme settings
@@ -56,4 +56,4 @@ function LoginBar() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default LoginBar; // functional component
+export default SiteLoginBar; // functional component
