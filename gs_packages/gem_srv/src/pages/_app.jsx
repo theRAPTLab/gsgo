@@ -1,88 +1,65 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   NextJS Material UI Custom Application Template
+  based on:
+  https://github.com/mui-org/material-ui/blob/master/examples/nextjs
 
   This is how we add global stuff to the app, like managing state while
   navigating pages. I think this works because this is loaded just once, and the
   actual contents of the app are loaded dynamically when <Component> changes.
 
-  ---
-  NOTE: Custom Application Templates is an advanced NextJS feature:
-  https://nextjs.org/docs/advanced-features/custom-app
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import App from 'next/app';
+import PropTypes from 'prop-types';
 import Head from 'next/head';
 ///
 import { create } from 'jss';
-import { StylesProvider, jssPreset } from '@material-ui/styles';
 import extend from 'jss-extend';
+import { StylesProvider, jssPreset } from '@material-ui/styles';
 ///
 import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 ///
 import theme from '../modules/style/theme';
+import APPSTATE from '../modules/appstate';
 ///
 import SiteLoginBar from '../components/SiteLoginBar';
 import SiteNavigation from '../components/SiteNavigation';
 
-/// ADD EXTRA JSS PLUGINS /////////////////////////////////////////////////////
+/// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// from https://material-ui.com/styles/advanced/#jss-plugins
 const jss = create({
   plugins: [...jssPreset().plugins, extend()]
 });
 
-/// CREATE CHEESEBALL STORE ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const STORE = {
-  currentTab: 0
-};
-
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MyApp extends App {
-  //
-  static async getInitialProps({ Component, ctx }) {
-    const pageProps = Component.getInitialProps
-      ? await Component.getInitialProps(ctx)
-      : {};
+export default function MyApp(props) {
+  const { Component, pageProps } = props;
 
-    //Anything returned here can be accessed by the client
-    return { pageProps };
-  }
-
-  componentDidMount() {
-    // Remove the server-side injected CSS.
-    const jssStyles = document.querySelector('#jss-server-side');
-    if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles);
-    }
-  }
-
-  render() {
-    const { Component, pageProps } = this.props;
-
-    return (
-      <StylesProvider jss={jss}>
-        <Head>
-          <title>GEMSTEP</title>
-          <meta
-            name="viewport"
-            content="minimum-scale=1, initial-scale=1, width=device-width"
-          />
-        </Head>
-        <ThemeProvider theme={theme}>
-          {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-          <CssBaseline />
-          <SiteLoginBar />
-          <SiteNavigation />
-          <Component {...pageProps} store={STORE} />
-        </ThemeProvider>
-      </StylesProvider>
-    );
-  }
+  return (
+    <StylesProvider jss={jss}>
+      <Head>
+        <title>GEMSTEP</title>
+        <meta
+          name="viewport"
+          content="minimum-scale=1, initial-scale=1, width=device-width"
+        />
+      </Head>
+      <ThemeProvider theme={theme}>
+        {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
+        <CssBaseline />
+        <SiteLoginBar />
+        <SiteNavigation />
+        <Component {...pageProps} store={APPSTATE} />
+      </ThemeProvider>
+    </StylesProvider>
+  );
 }
 
-export default MyApp;
+MyApp.propTypes = {
+  Component: PropTypes.elementType.isRequired,
+  pageProps: PropTypes.object.isRequired
+};

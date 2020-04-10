@@ -14,6 +14,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 
+import APPSTATE from '../modules/appstate';
+
 import GSTabbedView from '../components/examples/ExTabbedView';
 import GSBoxLayout from '../components/examples/ExBoxLayout';
 import GSView from '../components/examples/ExView';
@@ -22,21 +24,14 @@ import GSView from '../components/examples/ExView';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Main(props) {
   const { store } = props;
-  console.log('page1 got store', store);
+  const { currentTab, currentRoute } = store.getRoute();
+  console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <GSTabbedView store={store}>
-      <GSView index={0} name="tab 1" store={store}>
-        <GSBoxLayout label="1" />
-      </GSView>
-      <GSView index={1} name="tab 2" store={store}>
-        <GSBoxLayout label="2" />
-      </GSView>
-      <GSView index={2} name="tab 2" store={store}>
-        Empty
-      </GSView>
-    </GSTabbedView>
+    <GSView index={0} name="box" store={store}>
+      <GSBoxLayout label="1" />
+    </GSView>
   );
 }
 

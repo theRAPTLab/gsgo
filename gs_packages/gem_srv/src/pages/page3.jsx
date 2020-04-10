@@ -21,8 +21,9 @@ import GSView from '../components/examples/ExView';
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Main(props) {
-  const { store } = props;
-  console.log('page3 got store', store);
+  const { store } = props; // set in _app.jsx
+  const { currentTab, currentRoute } = store.getRoute();
+  console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (

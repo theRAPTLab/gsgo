@@ -12,15 +12,24 @@ import merge from 'deepmerge';
 // material ui
 import AppBar from '@material-ui/core/AppBar';
 import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
+
 import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
 import Typography from '@material-ui/core/Typography';
 import { useRouter } from 'next/router';
-import Link from 'next/link';
 
 import { makeStyles } from '@material-ui/core/styles';
 
+import APPSTATE from '../modules/appstate';
 import wireframeStyles from '../modules/style/wireframing';
+
+/// PAGE NAVIGATION ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const ROUTES = [
+  { label: 'Page 1', href: '/page1' },
+  { label: 'Page 2', href: '/page2' },
+  { label: 'Page 3', href: '/page3' }
+];
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,11 +45,11 @@ const useStyles = makeStyles(theme =>
       appbar: {
         alignItems: 'center'
       },
-      nexttab: {
+      sitenav: {
         padding: '6px 12px',
         minHeight: '48px',
         color: 'inherit',
-        opacity: 0.7
+        opacity: 0.5
       }
     },
     wireframeStyles(theme)
@@ -51,36 +60,51 @@ const useStyles = makeStyles(theme =>
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function GSTabbedNav(props) {
+function SiteNavigation() {
   const classes = useStyles();
   const router = useRouter();
-  const [value, setValue] = React.useState(0);
+
+  // calculate page index from matching router with ROUTES structure
+  const pageIndex = ROUTES.findIndex(page => page.href === router.pathname);
+  const currentTab = pageIndex < 0 ? 0 : pageIndex;
+  // set the current tab
+  const [value, setValue] = React.useState(currentTab);
+
+  // render cosmetic tab links
+  // page navigation through nextjs is handled programmatically in
+  // the onChange handler
+  const TabLinks = ROUTES.map((page, index) => {
+    const style = {};
+    const isSelected = router.pathname === page.href;
+    if (isSelected) APPSTATE.setRoute(index, page.href);
+
+    style.opacity = isSelected ? { opacity: 1 } : { opacity: 0.7 };
+    const key = `site-nav-${index}`;
+    return (
+      <Tab
+        label={page.label}
+        key={key}
+        component="a"
+        onClick={event => {
+          event.preventDefault();
+        }}
+      />
+    );
+  });
 
   // MUI <Tabs> component uses this state to determine what is highlighted
+  // this is happening on client so setvalue never affects anything
   const handleChange = (event, newValue) => {
     setValue(newValue);
+
+    const route = ROUTES[newValue];
+    if (route) {
+      console.log('change index', route.href);
+      router.replace(route.href);
+      if (typeof window === 'object' && window.STORE)
+        window.STORE.currentTab = newValue;
+    }
   };
-
-  // MUI <Tab> use ids to identify which to select
-  function a11yProps(index) {
-    return {
-      id: `nav-tab-${index}`,
-      'aria-controls': `nav-tabpanel-${index}`
-    };
-  }
-
-  // Use NextJS Link with MUI Button as <a> to handle routes
-  function NextTab(props) {
-    const { label, href } = props;
-    const style = router.pathname === href ? { opacity: 1 } : { opacity: 0.7 };
-    return (
-      <Link href={href} passHref>
-        <Button className={classes.nexttab} style={style} component="a">
-          {label}
-        </Button>
-      </Link>
-    );
-  }
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,9 +123,7 @@ function GSTabbedNav(props) {
             onChange={handleChange}
             aria-label="Page Navigation"
           >
-            <NextTab label="Page 1" href="/page1" {...a11yProps(0)} />
-            <NextTab label="Page 2" href="/page2" {...a11yProps(1)} />
-            <NextTab label="Page 3" href="/page3" {...a11yProps(2)} />
+            {TabLinks}
           </Tabs>
         </Grid>
       </Grid>
@@ -111,4 +133,4 @@ function GSTabbedNav(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSTabbedNav; // functional component
+export default SiteNavigation; // functional component

@@ -37,6 +37,9 @@ const baseTheme = createMuiTheme({
     error: {
       main: red.A400
     }
+  },
+  overrides: {
+    MuiTab: {}
   }
 });
 

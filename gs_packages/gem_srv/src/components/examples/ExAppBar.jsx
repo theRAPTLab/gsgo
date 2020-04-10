@@ -15,9 +15,8 @@ import {
   MenuItem
 } from '@material-ui/core';
 import MenuIcon from '@material-ui/icons/Menu';
-import { makeStyles, useTheme } from '@material-ui/core/styles';
+import { makeStyles } from '@material-ui/core/styles';
 import GSLogo from '@material-ui/icons/SentimentVerySatisfied';
-import GSTabbedLayout from './ExTabbedAppBar';
 
 /// CUSTOM STYLES FOR THIS COMPONENT //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,10 +52,12 @@ function GSAppBar() {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   const handleMenuOpen = event => {
     setAnchorEl(event.currentTarget);
+    setAuth(false);
   };
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   const handleMenuClose = () => {
     setAnchorEl(null);
+    setAuth(true);
   };
 
   /// RENDER //////////////////////////////////////////////////////////////////
@@ -101,8 +102,12 @@ function GSAppBar() {
               open={open}
               onClose={handleMenuClose}
             >
-              <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-              <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+              <MenuItem onClick={handleMenuClose}>
+                hack: openmenu disables login
+              </MenuItem>
+              <MenuItem onClick={handleMenuClose}>
+                hack: closemenu enables login
+              </MenuItem>
             </Menu>
           </div>
         )}
