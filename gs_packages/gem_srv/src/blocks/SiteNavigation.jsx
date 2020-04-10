@@ -23,17 +23,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import APPSTATE from '../modules/appstate';
 import wireframeStyles from '../modules/style/wireframing';
 
+import CONFIG from '../site-config';
+
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-
-/// PAGE NAVIGATION ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ROUTES = [
-  { label: 'Welcome', href: '/' },
-  { label: 'Page 1', href: '/page1' },
-  { label: 'Page 2', href: '/page2' }
-];
+const { NAVMENU } = CONFIG;
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,8 +57,8 @@ function SiteNavigation() {
   const classes = useStyles();
   const router = useRouter();
 
-  // calculate page index from matching router with ROUTES structure
-  const pageIndex = ROUTES.findIndex(page => page.href === router.pathname);
+  // calculate page index from matching router with NAVMENU structure
+  const pageIndex = NAVMENU.findIndex(page => page.href === router.pathname);
   const currentTab = pageIndex < 0 ? 0 : pageIndex;
   // set the current tab
   const [tabIndex, setTabIndex] = React.useState(currentTab);
@@ -71,7 +66,7 @@ function SiteNavigation() {
   // render cosmetic tab links
   // page navigation through nextjs is handled programmatically in
   // the onChange handler
-  const TabLinks = ROUTES.map((page, index) => {
+  const TabLinks = NAVMENU.map((page, index) => {
     const style = {};
     const isSelected = router.pathname === page.href;
     if (isSelected) APPSTATE.setRoute(index, page.href);
@@ -95,7 +90,7 @@ function SiteNavigation() {
   // but we programmatically for page route through next/router
   const handleChange = (event, newIndex) => {
     setTabIndex(newIndex);
-    const route = ROUTES[newIndex];
+    const route = NAVMENU[newIndex];
     if (route) {
       if (DBG) console.log('change index', route.href);
       router.replace(route.href);

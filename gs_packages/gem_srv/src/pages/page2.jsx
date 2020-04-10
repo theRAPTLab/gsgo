@@ -14,9 +14,9 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 
-import SubNav from '../components/SubNavigation';
+import SubNav from '../blocks/SubNavigation';
 import ExampleBoxLayout from '../components/examples/ExBoxLayout';
-import SubView from '../components/SubView';
+import SubView from '../blocks/SubView';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
