@@ -15,7 +15,14 @@ import wireframeStyles from '../../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => merge.all([wireframeStyles(theme)]));
+const useStyles = makeStyles(theme =>
+  merge.all([
+    {
+      root: {}
+    },
+    wireframeStyles(theme)
+  ])
+);
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,6 +45,7 @@ function ExView(props) {
       hidden={currentTab !== index} // REDUX HERE
       id={`gem-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
+      className={classes.root}
       {...other}
     >
       {view}

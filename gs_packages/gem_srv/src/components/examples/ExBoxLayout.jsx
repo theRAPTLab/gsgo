@@ -19,7 +19,14 @@ import wireframeStyles from '../../modules/style/wireframing';
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => merge.all([{}, wireframeStyles(theme)]));
+const useStyles = makeStyles(theme =>
+  merge.all([
+    {
+      root: {}
+    },
+    wireframeStyles(theme)
+  ])
+);
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,7 +39,7 @@ function GSBoxLayout() {
   return (
     <>
       <Box height={100} p={1} width="100%" className={classes.wbArea}>
-        Top
+        components/examples/ExView
       </Box>
       <Box display="flex" alignItems="stretch" height="100%">
         <Box

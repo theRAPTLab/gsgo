@@ -10,10 +10,8 @@ import React from 'react';
 import merge from 'deepmerge';
 
 // material ui
-import Box from '@material-ui/core/Box';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
-import Typography from '@material-ui/core/Typography';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -55,16 +53,17 @@ function GSTabbedView(props) {
   /// HANDLERS ////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   const handleChange = (event, tabIndex) => {
-    setTabIndex(tabIndex); // REDUX HERE
+    setTabIndex(tabIndex);
   };
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // generate tab elements
   const tabs = React.Children.toArray(children).map((element, index) => {
+    const key = `sub-${index}`;
     return (
       <Tab
-        key={index.toString()} // why? https://reactjs.org/docs/lists-and-keys.html#keys
+        key={key} // why? https://reactjs.org/docs/lists-and-keys.html#keys
         label={`${element.props.name}`}
         {...a11yProps(index)}
       />

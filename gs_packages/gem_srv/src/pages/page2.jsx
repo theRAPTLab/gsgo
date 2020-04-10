@@ -28,13 +28,13 @@ function Main(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <GSTabbedView store={store}>
-      <GSView index={0} name="tab 1" store={store}>
+      <GSView index={0} name="Sub 1" store={store}>
         <GSBoxLayout label="1" />
       </GSView>
-      <GSView index={1} name="tab 2" store={store}>
+      <GSView index={1} name="Sub 2" store={store}>
         <GSBoxLayout label="2" />
       </GSView>
-      <GSView index={2} name="tab 2" store={store}>
+      <GSView index={2} name="Sub 3" store={store}>
         Empty
       </GSView>
     </GSTabbedView>
