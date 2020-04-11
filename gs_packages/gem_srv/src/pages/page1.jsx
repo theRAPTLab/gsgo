@@ -4,17 +4,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-
-import URPageTabPanel from '../blocks/URPageTabPanel';
-import URPageTabs from '../blocks/URPageTabs';
-import URLoginBar from '../blocks/URLoginBar';
+///
 import URSiteNav from '../blocks/URSiteNav';
-
+import URLoginBar from '../blocks/URLoginBar';
+import URPageTabs from '../blocks/URPageTabs';
+import URPageTabPanel from '../blocks/URPageTabPanel';
+///
 import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////

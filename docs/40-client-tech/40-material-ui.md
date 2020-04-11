@@ -106,15 +106,17 @@ export default withStyles(styles,{withTheme:true})(Component);
 ## What's the difference between Container, Grid, and Box???
 
 >
-> It's an excellent question:
+>It's an excellent question:
 >
-> * The `Container` component is intended to be used as the main layout component. It sets minimum padding on the right and the left side, so your content doesn't touch the edges. At the same time, it horizontal centers your content when the screen is too wide. For instance, a small container width improves readability. https://material-ui.com/components/container/.
-> * The `Grid` component handles the layout positioning within a Container. It's a slim abstraction on top of the CSS flexbox model. It has two interesting features: the items spacing and the responsive columns handling. https://material-ui.com/components/grid/
-> * The `Box` component is a style toolbox, it's an abstraction for people who like the tailwinds approach. Instead of writing custom CSS, you can use the Box style props. https://material-ui.com/components/box/
+>* The `Container` component is intended to be used as the main layout component. It sets minimum padding on the right and the left side, so your content doesn't touch the edges. At the same time, it horizontal centers your content when the screen is too wide. For instance, a small container width improves readability. https://material-ui.com/components/container/.
+>* The `Grid` component handles the layout positioning within a Container. It's a slim abstraction on top of the CSS flexbox model. It has two interesting features: the items spacing and the responsive columns handling. https://material-ui.com/components/grid/
+>* The `Box` component is a style toolbox, it's an abstraction for people who like the tailwinds approach. Instead of writing custom CSS, you can use the Box style props. https://material-ui.com/components/box/
 >
-> You might be confused by <Container /> vs <Grid container />. But make no mistakes, you can't use the two interchangeably. a Grid container, abstracts a flex container. A Container abstracts a page top level element.
+>You might be confused by <Container /> vs <Grid container />. But make no mistakes, you can't use the two interchangeably. a Grid container, abstracts a flex container. A Container abstracts a page top level element.
 >
-> What's the difference between Grid and Box? You should be able to replace the Grid usage with the Box. However, the Box is a direct mapping to CSS properties, while the Grid tries to be smarter, with a more abstracted API. The Grid should be the default go to solution. Only consider the Box or custom CSS if it's not the case.
+>What's the difference between Grid and Box? You should be able to replace the Grid usage with the Box. However, the Box is a direct mapping to CSS properties, while the Grid tries to be smarter, with a more abstracted API. The Grid should be the default go to solution. Only consider the Box or custom CSS if it's not the case.
 >
-> We improve the documentation when moving Container to the core, before the release of v4 stable.
+>We improve the documentation when moving Container to the core, before the release of v4 stable.
+>
+>&raquo; [reference](https://spectrum.chat/material-ui/help/grid-vs-box-and-now-vs-container~73cef09f-1eb9-4d0f-a3a3-d46c44232524)
 
