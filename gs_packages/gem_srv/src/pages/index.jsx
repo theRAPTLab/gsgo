@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Example page with LoginBar, PageNav, and full page layout
+  Example page with PageNav and full page layout
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -9,7 +9,6 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
-import URLoginBar from '../blocks/URLoginBar';
 import URSiteNav from '../blocks/URSiteNav';
 
 import FlexBoxLayout from '../components/examples/FlexBoxLayout';
@@ -29,7 +28,6 @@ function Page(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Box className={classes.pagemode}>
-      <URLoginBar />
       <URSiteNav />
       <FlexBoxLayout store={store} />
     </Box>
