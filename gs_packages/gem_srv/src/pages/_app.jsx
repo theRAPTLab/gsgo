@@ -52,11 +52,7 @@ export default function MyApp(props) {
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
 
         <CssBaseline />
-        <div style={{ height: '100vh', backgroundColor: '#eee' }}>
-          <BlockLoginBar />
-          <BlockPageNav />
-          <Component {...pageProps} store={APPSTATE} />
-        </div>
+        <Component {...pageProps} store={APPSTATE} />
       </ThemeProvider>
     </StylesProvider>
   );
