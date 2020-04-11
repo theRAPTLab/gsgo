@@ -52,7 +52,7 @@ const useStyles = makeStyles(theme =>
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ExBoxLayout() {
+function FlexBoxLayout() {
   /// compute class names from generated 'classes' css rules dictionary
   const classes = useStyles();
 
@@ -76,7 +76,7 @@ function ExBoxLayout() {
         </Box>
       </Box>
       <Typography variant="caption" className={classes.caption}>
-        components/examples/ExBoxLayout
+        components/examples/FlexBoxLayout
       </Typography>
     </>
   );
@@ -84,4 +84,4 @@ function ExBoxLayout() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default ExBoxLayout; // functional component
+export default FlexBoxLayout; // functional component

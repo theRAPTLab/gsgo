@@ -9,7 +9,7 @@
 import React from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import ExBoxLayout from '../components/examples/ExBoxLayout';
+import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,7 +26,7 @@ function Page(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Box className={classes.pagemode}>
-      <ExBoxLayout store={store} />
+      <FlexBoxLayout store={store} />
     </Box>
   );
 }

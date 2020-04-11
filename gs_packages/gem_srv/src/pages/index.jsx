@@ -12,7 +12,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import URLoginBar from '../blocks/URLoginBar';
 import URSiteNav from '../blocks/URSiteNav';
 
-import ExampleBoxLayout from '../components/examples/ExBoxLayout';
+import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,7 +31,7 @@ function Page(props) {
     <Box className={classes.pagemode}>
       <URLoginBar />
       <URSiteNav />
-      <ExampleBoxLayout store={store} />
+      <FlexBoxLayout store={store} />
     </Box>
   );
 }

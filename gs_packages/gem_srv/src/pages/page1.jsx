@@ -15,7 +15,7 @@ import URPageTabs from '../blocks/URPageTabs';
 import URLoginBar from '../blocks/URLoginBar';
 import URSiteNav from '../blocks/URSiteNav';
 
-import ExampleBoxLayout from '../components/examples/ExBoxLayout';
+import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,13 +36,13 @@ function Page(props) {
       <URSiteNav />
       <URPageTabs store={store}>
         <URPageTabPanel index={0} label="Select 1" store={store}>
-          <ExampleBoxLayout />
+          <FlexBoxLayout store={store} />
         </URPageTabPanel>
         <URPageTabPanel index={1} label="Select 2" store={store}>
-          <ExampleBoxLayout />
+          EMPTY URPageTabPanel 2
         </URPageTabPanel>
         <URPageTabPanel index={2} label="Select 3" store={store}>
-          Empty
+          EMPTY URPageTabPanel 3
         </URPageTabPanel>
       </URPageTabs>
     </Box>
