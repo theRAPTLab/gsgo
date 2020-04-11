@@ -9,8 +9,8 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
-import BlockLoginBar from '../blocks/BlockLoginBar';
-import BlockPageNav from '../blocks/BlockPageNav';
+import URLoginBar from '../blocks/URLoginBar';
+import URSiteNav from '../blocks/URSiteNav';
 
 import ExampleBoxLayout from '../components/examples/ExBoxLayout';
 
@@ -29,8 +29,8 @@ function Page(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Box className={classes.pagemode}>
-      <BlockLoginBar />
-      <BlockPageNav />
+      <URLoginBar />
+      <URSiteNav />
       <ExampleBoxLayout store={store} />
     </Box>
   );

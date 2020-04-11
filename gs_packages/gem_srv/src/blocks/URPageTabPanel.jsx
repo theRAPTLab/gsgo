@@ -32,7 +32,7 @@ const useStyles = makeStyles(theme =>
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function SubView(props) {
+function URPageTabPanel(props) {
   const { children, index, currentTab } = props;
   const classes = useStyles({ index, currentTab });
 
@@ -52,4 +52,4 @@ function SubView(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default SubView; // functional component
+export default URPageTabPanel; // functional component

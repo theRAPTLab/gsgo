@@ -38,10 +38,10 @@ function a11yProps(index) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function SubNavigation(props) {
+function URPageTabs(props) {
   const classes = useStyles();
   const [subTabIndex, setSubTabIndex] = React.useState(0);
-  const { children } = props;
+  const { children, store } = props;
 
   /// HANDLERS ////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,4 +87,4 @@ function SubNavigation(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default SubNavigation; // functional component
+export default URPageTabs; // functional component

@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme =>
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function SiteNavigation() {
+function URSiteNav() {
   const classes = useStyles();
   const router = useRouter();
 
@@ -69,8 +69,6 @@ function SiteNavigation() {
   const TabLinks = NAVMENU.map((page, index) => {
     const style = {};
     const isSelected = router.pathname === page.href;
-    if (isSelected) APPSTATE.setRoute(index, page.href);
-
     style.opacity = isSelected ? { opacity: 1 } : { opacity: 0.7 };
     const key = `site-nav-${index}`;
     return (
@@ -125,4 +123,4 @@ function SiteNavigation() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default SiteNavigation; // functional component
+export default URSiteNav; // functional component

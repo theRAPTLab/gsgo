@@ -12,7 +12,8 @@ const STORE = {
 };
 const ROUTE = {
   currentTab: 0,
-  currentRoute: '/'
+  currentRoute: '/',
+  count: 0
 };
 
 if (typeof window === 'object') {
@@ -30,6 +31,7 @@ function get(key) {
 }
 
 function set(key, value) {
+  console.log('mode');
   if (STORE.isServer) console.log(`WARN: server-side set '${key}'`);
   STORE[key] = value;
 }
@@ -37,6 +39,7 @@ function set(key, value) {
 function setRoute(index, path) {
   ROUTE.currentTab = index;
   ROUTE.currentRoute = path;
+  console.log(`APPSTATE: route set ${ROUTE.count++} times`);
 }
 
 function getRoute() {

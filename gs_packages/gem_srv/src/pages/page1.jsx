@@ -10,10 +10,10 @@ import React from 'react';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 
-import BlockTabView from '../blocks/BlockTabView';
-import BlockTabs from '../blocks/BlockTabs';
-import BlockLoginBar from '../blocks/BlockLoginBar';
-import BlockPageNav from '../blocks/BlockPageNav';
+import URPageTabPanel from '../blocks/URPageTabPanel';
+import URPageTabs from '../blocks/URPageTabs';
+import URLoginBar from '../blocks/URLoginBar';
+import URSiteNav from '../blocks/URSiteNav';
 
 import ExampleBoxLayout from '../components/examples/ExBoxLayout';
 
@@ -32,19 +32,19 @@ function Page(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Box className={classes.pagemode}>
-      <BlockLoginBar />
-      <BlockPageNav />
-      <BlockTabs store={store}>
-        <BlockTabView index={0} label="Select 1" store={store}>
+      <URLoginBar />
+      <URSiteNav />
+      <URPageTabs store={store}>
+        <URPageTabPanel index={0} label="Select 1" store={store}>
           <ExampleBoxLayout />
-        </BlockTabView>
-        <BlockTabView index={1} label="Select 2" store={store}>
+        </URPageTabPanel>
+        <URPageTabPanel index={1} label="Select 2" store={store}>
           <ExampleBoxLayout />
-        </BlockTabView>
-        <BlockTabView index={2} label="Select 3" store={store}>
+        </URPageTabPanel>
+        <URPageTabPanel index={2} label="Select 3" store={store}>
           Empty
-        </BlockTabView>
-      </BlockTabs>
+        </URPageTabPanel>
+      </URPageTabs>
     </Box>
   );
 }
