@@ -1,33 +1,39 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Root View of GEMSTEP Wireframe
-
-  NOTE: this page runs from the server side, so we can't access objects like
-  window or document, or manipulate the DOM. To debug, use the node debugger
-  through VSCode.
-
-  PROBLEM: There's no way to trigger hook effects OUTSIDE of a component.
+  Example page with LoginBar, PageNav, and full page layout
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
-import ExBoxLayout from '../components/examples/ExBoxLayout';
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+import { Box } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
+
+import BlockLoginBar from '../blocks/BlockLoginBar';
+import BlockPageNav from '../blocks/BlockPageNav';
+
+import ExampleBoxLayout from '../components/examples/ExBoxLayout';
+
+/// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const useStyles = makeStyles(theme => ({
+  pagemode: theme.urFullScreenApp
+}));
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Page(props) {
   const { store } = props;
-  const { currentTab, currentRoute } = store.getRoute();
-  if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
+  const classes = useStyles();
 
   /// RENDER //////////////////////////////////////////////////////////////////
-  return <ExBoxLayout label="1" />;
+  return (
+    <Box className={classes.pagemode}>
+      <BlockLoginBar />
+      <BlockPageNav />
+      <ExampleBoxLayout store={store} />
+    </Box>
+  );
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

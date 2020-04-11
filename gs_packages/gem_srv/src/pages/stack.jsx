@@ -1,5 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  This is an example of a stacked flexbox page
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
@@ -19,27 +21,22 @@ const DBG = false;
 /// CUSTOM STYLES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  vstack: {
-    backgroundColor: '#e0e0e0',
-    display: 'flex',
-    flexFlow: 'column nowrap',
-    height: '100vh'
-  },
-  vfixed: {
+  pagemode: theme.urFullScreenApp,
+  fixedHeight: {
     backgroundColor: '#ffe0e0',
     minHeight: '100px'
   },
-  hstack: {
+  flexRow: {
     backgroundColor: '#e0e0ff',
     display: 'flex',
     flexFlow: 'row nowrap',
     flexGrow: 1
   },
-  hfixed: {
+  fixedWidth: {
     backgroundColor: '#d0d0ff',
     width: '200px'
   },
-  hstretch: {
+  flexWidth: {
     backgroundColor: 'white',
     flexGrow: 1
   }
@@ -51,22 +48,21 @@ function Page(props) {
   const { store } = props;
   const { currentTab, currentRoute } = store.getRoute();
   const classes = useStyles();
-
   if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <Box className={classes.vstack}>
+    <Box className={classes.pagemode}>
       <BlockLoginBar />
       <BlockPageNav />
 
-      <Box className={classes.vfixed}>HEADER</Box>
-      <Box className={classes.hstack}>
-        <Box className={classes.hfixed}>LEFT</Box>
-        <Box className={classes.hstretch}>MAIN</Box>
-        <Box className={classes.hfixed}>RIGHT</Box>
+      <Box className={classes.fixedHeight}>HEADER</Box>
+      <Box className={classes.flexRow}>
+        <Box className={classes.fixedWidth}>LEFT</Box>
+        <Box className={classes.flexWidth}>MAIN</Box>
+        <Box className={classes.fixedWidth}>RIGHT</Box>
       </Box>
-      <Box className={classes.vfixed}>FOOTER</Box>
+      <Box className={classes.fixedHeight}>FOOTER</Box>
     </Box>
   );
 }

@@ -29,8 +29,18 @@ const useStyles = makeStyles(theme =>
   merge.all([
     {
       header: {
-        color: 'red',
-        height: '100px'
+        color: 'red'
+      },
+      flexRow: {
+        display: 'flex',
+        flexFlow: 'row nowrap',
+        flexGrow: 1
+      },
+      left: {
+        minWidth: '100px'
+      },
+      right: {
+        minWidth: '100px'
       },
       caption: {
         padding: theme.spacing(1)
@@ -45,36 +55,23 @@ const useStyles = makeStyles(theme =>
 function ExBoxLayout() {
   /// compute class names from generated 'classes' css rules dictionary
   const classes = useStyles();
-  const headerClasses = clsx(classes.wbArea, classes.header);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// NOTE: this example shows uses of local styles and Box props for sizing
+  /// return a stack compatible with flex-flow:'column nowrap'
   return (
     <>
-      <Box p={1} className={headerClasses}>
+      <Box p={1} className={clsx(classes.wbArea, classes.header)}>
         HEADER
       </Box>
-      <Box display="flex" alignItems="stretch">
-        <Box
-          p={1}
-          flexGrow={0}
-          flexShrink={0}
-          flexBasis={100}
-          className={classes.wbControl}
-        >
+      <Box className={classes.flexRow}>
+        <Box p={1} className={clsx(classes.wbControl, classes.left)}>
           LEFT
         </Box>
         <Box flexGrow={1} p={1} className={classes.wbViewport}>
           CENTER
         </Box>
-        <Box
-          p={1}
-          flexGrow={0}
-          flexShrink={0}
-          flexBasis={100}
-          className={classes.wbControl}
-        >
+        <Box p={1} className={clsx(classes.wbControl, classes.right)}>
           RIGHT
         </Box>
       </Box>

@@ -59,7 +59,7 @@ function SiteNavigation() {
 
   // calculate page index from matching router with NAVMENU structure
   const pageIndex = NAVMENU.findIndex(page => page.href === router.pathname);
-  const currentTab = pageIndex < 0 ? 0 : pageIndex;
+  const currentTab = pageIndex < 0 ? false : pageIndex;
   // set the current tab
   const [tabIndex, setTabIndex] = React.useState(currentTab);
 
@@ -93,7 +93,7 @@ function SiteNavigation() {
     const route = NAVMENU[newIndex];
     if (route) {
       if (DBG) console.log('change index', route.href);
-      router.replace(route.href);
+      router.push(route.href);
       APPSTATE.setRoute(newIndex, route.href);
     }
   };

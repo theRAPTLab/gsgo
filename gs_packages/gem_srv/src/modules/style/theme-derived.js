@@ -24,10 +24,23 @@ import merge from 'deepmerge';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Merge a MuiTheme (assumed to be created with createMuiTheme) with
  *  extra parameters. The categories below are merely suggestions.
+ *  example:
+ *  const theme = useTheme();
+ *  <div style={theme.property}/>
  */
 const addDerivedStyles = theme => {
   // set layout-related styles here
-  const layoutJSS = {};
+  const layoutJSS = {
+    urFullScreenApp: {
+      backgroundColor: '#e0e0e0',
+      display: 'flex',
+      flexFlow: 'column nowrap',
+      height: '100vh'
+    },
+    urApp: {
+      display: 'block'
+    }
+  };
   // provide additional MUI overrides
   const componentJSS = {};
   // other styles of application-wide interest

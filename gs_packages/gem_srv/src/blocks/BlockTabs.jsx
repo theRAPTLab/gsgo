@@ -4,8 +4,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
 import merge from 'deepmerge';
 // material ui
@@ -15,18 +13,12 @@ import Tab from '@material-ui/core/Tab';
 import { makeStyles } from '@material-ui/core/styles';
 import wireframeStyles from '../modules/style/wireframing';
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// LOCAL STYLES AND PROPS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-
-/// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 const useStyles = makeStyles(theme =>
   merge.all([
     {
       tabs: {
-        flexGrow: 1,
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.text.secondary
       }
@@ -34,7 +26,6 @@ const useStyles = makeStyles(theme =>
     wireframeStyles(theme)
   ])
 );
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function a11yProps(index) {
   return {
@@ -60,23 +51,27 @@ function SubNavigation(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// generate tab elements from children
+  ///
+
+  // first generate <Tabs> tab elements from children
   const tabs = React.Children.map(children, (child, index) => {
     const key = `sub-${index}`;
     return (
       <Tab
         key={key} // why? https://reactjs.org/docs/lists-and-keys.html#keys
-        label={`${child.props.name}`}
+        label={`${child.props.label}`}
         {...a11yProps(index)}
       />
     );
   });
-  const proppedChildren = React.Children.map(children, child => {
-    return React.cloneElement(child, { currentTab: subTabIndex });
+  // now find only the matching child
+  const selectedTabView = React.Children.map(children, child => {
+    const match = subTabIndex === child.props.index;
+    return match ? child : undefined;
   });
-
+  // return <Tabs> followed by matching child
   return (
-    <div className={classes.tabs}>
+    <>
       <Tabs
         value={subTabIndex}
         onChange={handleChange}
@@ -85,8 +80,8 @@ function SubNavigation(props) {
       >
         {tabs}
       </Tabs>
-      {proppedChildren}
-    </div>
+      {selectedTabView}
+    </>
   );
 }
 

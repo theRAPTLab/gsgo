@@ -4,10 +4,6 @@
   based on:
   https://github.com/mui-org/material-ui/blob/master/examples/nextjs
 
-  This is how we add global stuff to the app, like managing state while
-  navigating pages. I think this works because this is loaded just once, and the
-  actual contents of the app are loaded dynamically when <Component> changes.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -23,9 +19,6 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 ///
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
-///
-import BlockLoginBar from '../blocks/BlockLoginBar';
-import BlockPageNav from '../blocks/BlockPageNav';
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,14 +43,13 @@ export default function MyApp(props) {
       </Head>
       <ThemeProvider theme={theme}>
         {/* CssBaseline kickstart an elegant, consistent, and simple baseline to build upon. */}
-
         <CssBaseline />
         <Component {...pageProps} store={APPSTATE} />
       </ThemeProvider>
     </StylesProvider>
   );
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MyApp.propTypes = {
   Component: PropTypes.elementType.isRequired,
   pageProps: PropTypes.object.isRequired
