@@ -11,7 +11,7 @@ import blue from '@material-ui/core/colors/blue';
 const styles = theme => ({
   /* a generic area */
   wbBase: {
-    padding: theme.spacing(1)
+    padding: `${theme.spacing(1)}px`
   },
   wbArea: {
     extend: 'wbBase',

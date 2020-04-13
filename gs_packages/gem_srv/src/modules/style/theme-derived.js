@@ -37,6 +37,11 @@ const addDerivedStyles = theme => {
       flexFlow: 'column nowrap',
       height: '100vh'
     },
+    urFullScreenView: {
+      display: 'flex',
+      flexFlow: 'column nowrap',
+      flexGrow: 1
+    },
     urApp: {
       display: 'block'
     }

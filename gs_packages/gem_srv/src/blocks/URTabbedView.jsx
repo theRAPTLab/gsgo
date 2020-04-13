@@ -21,6 +21,14 @@ const useStyles = makeStyles(theme =>
       tabs: {
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.text.secondary
+      },
+      tab: {
+        minWidth: '100px'
+      },
+      wrapper: {
+        display: 'flex',
+        flexGrow: 1,
+        flexFlow: 'column nowrap'
       }
     },
     wireframeStyles(theme)
@@ -33,12 +41,13 @@ function a11yProps(index) {
     'aria-controls': `gem-subtabpanel-${index}`
   };
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// COMPONENT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function URPageTabs(props) {
+function URTabbedView(props) {
   const classes = useStyles();
   const [subTabIndex, setSubTabIndex] = React.useState(0);
   const { children, store } = props;
@@ -51,13 +60,12 @@ function URPageTabs(props) {
 
   /// RENDER //////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  ///
-
   // first generate <Tabs> tab elements from children
   const tabs = React.Children.map(children, (child, index) => {
     const key = `sub-${index}`;
     return (
       <Tab
+        className={classes.tab}
         key={key} // why? https://reactjs.org/docs/lists-and-keys.html#keys
         label={`${child.props.label}`}
         {...a11yProps(index)}
@@ -65,8 +73,8 @@ function URPageTabs(props) {
     );
   });
   // now find only the matching child
-  const selectedTabView = React.Children.map(children, child => {
-    const match = subTabIndex === child.props.index;
+  const selectedTabView = React.Children.map(children, (child, index) => {
+    const match = subTabIndex === index;
     return match ? child : undefined;
   });
   // return <Tabs> followed by matching child
@@ -87,4 +95,4 @@ function URPageTabs(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default URPageTabs; // functional component
+export default URTabbedView; // functional component

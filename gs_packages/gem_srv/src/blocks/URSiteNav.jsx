@@ -37,8 +37,8 @@ const useStyles = makeStyles(theme =>
   merge.all([
     {
       title: {
-        paddingLeft: theme.spacing(1),
-        paddingRight: theme.spacing(3),
+        paddingLeft: `${theme.spacing(1)}px`,
+        paddingRight: `${theme.spacing(3)}px`,
         transform: 'translateY(25%)'
       },
       appbar: {},
