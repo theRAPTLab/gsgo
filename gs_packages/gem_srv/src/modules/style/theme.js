@@ -31,6 +31,7 @@ import addDerivedStyles from './theme-derived';
 /// DEFINE MUI THEME //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const baseTheme = createMuiTheme({
+  // global change MD default parameters
   palette: {
     primary: indigo,
     secondary: deepOrange,
@@ -38,11 +39,13 @@ const baseTheme = createMuiTheme({
       main: red.A400
     }
   },
+  // global change MUI css for built-in components
   overrides: {
     MuiTab: {}
   }
 });
 
 /// ADD OUR CUSTOM STYLES /////////////////////////////////////////////////////
+/// AND EXPORT            /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default addDerivedStyles(baseTheme);

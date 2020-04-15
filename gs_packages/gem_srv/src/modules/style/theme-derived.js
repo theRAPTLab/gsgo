@@ -30,6 +30,8 @@ import merge from 'deepmerge';
  */
 const addDerivedStyles = theme => {
   // set layout-related styles here
+  // the properties here (e.g. layoutJSS) are just for labeling clarity
+  // and are not part of any system configuration
   const layoutJSS = {
     urFullScreenApp: {
       backgroundColor: '#e0e0e0',
