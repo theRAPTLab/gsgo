@@ -23,8 +23,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Page(props) {
-  const { store } = props; // available to all components, no need to pass
+function Page() {
   const classes = useStyles(); //
 
   /// RENDER //////////////////////////////////////////////////////////////////
