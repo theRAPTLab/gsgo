@@ -23,7 +23,7 @@ cli() {
 }
 cliOut() {
     for t in "${CLI[@]}"; do
-        echo -e "\x1B[92m"$t"\x1B[0m"
+        echo "\x1B[92m"$t"\x1B[0m"
     done    
 }
 
@@ -129,8 +129,10 @@ exists() {
 # check that nvm is actually installed
 if ! exists nvm; then 
     pr "[ ] nvm is installed"
-    cli "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash"
-    cli "# after running curl, quit this terminal and reopen it, then rerun install helper"
+    cli "# You MUST install NVM to continue!"
+    cli "# (1) go to http://nvm.sh/ in your web browser"
+    cli "# (2) copy and paste the long 'curl' script into this terminal window"
+    cli "# (3) after running curl, QUIT this terminal and reopen it, then rerun this helper script"
     prOut
     cliOut
     exit 0
@@ -157,12 +159,12 @@ pr
 # now set the correct version type
 # finish generating cli output
 cli "nvm install $node_version"
-cli "nvm default $node_version"
+cli "nvm alias default $node_version"
 cli "nvm use"
 
 # check that lerna is installed globally
 if ! exists lerna; then
-    cli "npm -g lerna"
+    cli "npm install -g lerna"
 fi
 
 # now initialize the repo for the first time
@@ -174,9 +176,9 @@ cliOut
 
 echo
 echo "With luck your $MACHINE system can now run GEMSTEP! To test, type..."
-echo -e "\x1B[93m" # yellow
+echo "\x1B[93m" # yellow
 echo "npm start"
-echo -e "\x1B[0m" # reset
+echo "\x1B[0m" # reset
 echo "...to launch all servers and then browse to localhost in the Chrome"
 echo "browser. If you are a developer, we recommend using Visual Studio Code"
 echo "to open the gsgo folder and install the suggested extensions to conform"
