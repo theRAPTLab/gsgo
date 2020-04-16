@@ -3,7 +3,7 @@
 # the development requirements
 
 echo
-echo "GEMSTEP Dev Environment Installer Helper"
+echo -e "\x1B[1;44m GEMSTEP Dev Environment Installer Helper \x1B[0m"
 echo "This utility will determine what needs to be installed so you"
 echo "can run GEMSTEP, then print a list of commands."
 
@@ -23,7 +23,7 @@ cli() {
 }
 cliOut() {
     for t in "${CLI[@]}"; do
-        echo $t
+        echo "\x1B[92m"$t"\x1B[0m"
     done    
 }
 
@@ -129,8 +129,10 @@ exists() {
 # check that nvm is actually installed
 if ! exists nvm; then 
     pr "[ ] nvm is installed"
-    cli "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.35.3/install.sh | bash"
-    cli "# after running curl, quit this terminal and reopen it, then rerun install helper"
+    cli "# You MUST install NVM to continue!"
+    cli "# (1) go to http://nvm.sh/ in your web browser"
+    cli "# (2) copy and paste the long 'curl' script into this terminal window"
+    cli "# (3) after running curl, QUIT this terminal and reopen it, then rerun this helper script"
     prOut
     cliOut
     exit 0
@@ -140,17 +142,30 @@ fi
 
 # final output
 pr "[X] .nvmrc specifies Node $node_version"
+
+# part 1 of test: is lerna installed globally?
+# has to be part of this nvm use in any case
+if ! exists lerna; then
+    pr "[ ] lerna is installed globally"
+else
+    pr "[X] lerna is installed globally"
+fi
+
 pr
-pr "RECOMMENDED INSTALLATION COMMANDS:"
+pr "Based on the above information, we think you need to run these commands"
 pr "(copy and paste into the terminal)"
-pr "vvv"
 pr
 
 # now set the correct version type
 # finish generating cli output
 cli "nvm install $node_version"
-cli "nvm default $node_version"
+cli "nvm alias default $node_version"
 cli "nvm use"
+
+# check that lerna is installed globally
+if ! exists lerna; then
+    cli "npm install -g lerna"
+fi
 
 # now initialize the repo for the first time
 cli "npm ci"
@@ -160,11 +175,10 @@ prOut
 cliOut
 
 echo
-echo "^^^"
 echo "With luck your $MACHINE system can now run GEMSTEP! To test, type..."
-echo
-echo "  npm start"
-echo
+echo "\x1B[93m" # yellow
+echo "npm start"
+echo "\x1B[0m" # reset
 echo "...to launch all servers and then browse to localhost in the Chrome"
 echo "browser. If you are a developer, we recommend using Visual Studio Code"
 echo "to open the gsgo folder and install the suggested extensions to conform"

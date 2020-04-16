@@ -1,6 +1,10 @@
-SRI'S DEVELOPMENT LOG
+SUMMARY S06 MAR 16-29 2020
 
----
+* created monorepo w/ lerna in gsgo
+* added Visual Studio Code essential configuration files to work across all packages in monorepo with Eslint, Typescript, Prettier, AirBnb
+* organized and expanded docs folder
+* process for managing version numbers and committing monorepo
+
 # 1. Creating Monorepo
 
 2020-0317 - Lerna is used to manage "monorepos", which contain multiple "packages" inside subdirectories. Each package can have its own package.json and build system, but it's all managed under the same git repository. Therefore, making a change across multiple modules becomes a single git commit. Lerna is the tool that makes managing the dependencies and importing of packages into code easier. Typical build tasks can be executed at the root level via lerna. 
@@ -96,6 +100,7 @@ Install extension: **esbenp.prettier-vscode**, then do the following in the **ro
 At this point, we have the ESLint and Prettier extensions installed, but they are not yet obeying the the additional linting rules we want: Typescript, AirBnb, JSX. This is described in the [typescript-eslint getting started](https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/README.md) and in [prettier integration with linters](https://prettier.io/docs/en/integrating-with-linters.html) pages.
 
 **install packages** at root level
+
 ```
 # add airbnb eslint typescript react plugins and rules
 npm install eslint-config-airbnb-typescript \
@@ -113,7 +118,9 @@ npm install eslint-config-prettier eslint-plugin-prettier --save-dev
 ## add peers
 npm i -D eslint typescript prettier
 ```
+
 **configure** eslint with these essentials
+
 ```
 module.exports = {
 
@@ -137,7 +144,9 @@ module.exports = {
 
 };
 ```
+
 **optionally configure** `.eslintignore` file
+
 ```
 # don't ever lint node_modules
 node_modules
@@ -155,6 +164,7 @@ Note: by following the specific commands at eslint-config-airbnb with version nu
 
 Made a `tsconfig.build.json` file, and setting `.eslintrc.js` parserOptions.project to this hack:
 https://github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
+
 ```
 project: './tsconfig.json',
 tsconfigRootDir: __dirname
@@ -162,6 +172,7 @@ tsconfigRootDir: __dirname
 
 _path alias problems: they work in webpack, but not in vsc highlighting_
 see: https://stackoverflow.com/questions/57032522
+
 ```
 Note: Apparently the eslint-plugin-import is SUPER IMPORTANT for resolving aliases in the IDE!
 See: https://www.npmjs.com/package/eslint-plugin-import
@@ -171,6 +182,7 @@ See: https://github.com/alexgorbatchev/eslint-import-resolver-typescript
 npm install --save-dev eslint-plugin-import 
 npm install --save-dev eslint-import-resolver-typescript
 ```
+
 adding a "typescript" to settings "import/resolver" to help it find the tsconfig files helps.
 
 * app_srv/src/app/views/ViewMain/ViewMain.jsx - ensure that we're seeing errors caught
@@ -179,6 +191,7 @@ _how to resolve path problems?_
 
 The trick was to modify `.vscode/settings.json` to add `eslint.workingDirectories": [{ "mode": "auto" }]`
 and also modifying `.eslintrc.js` as follows:
+
 ```
 'import/resolver': {
   // this require .vscode/settings.json tweak
@@ -190,6 +203,7 @@ and also modifying `.eslintrc.js` as follows:
   }
 }
 ```
+
 This has the effect of making the eslint working direcctory change automatically, and then the tsconfig.json file can actually be found. It's an example of the wonky plugins and path stuff.
 
 Finally, to resolve :
@@ -198,6 +212,7 @@ Finally, to resolve :
 * ursys/chrome/ursys - path errors
 
 Modify the `app_srv/tsconfig.json` file with
+
 ```
   "compilerOptions": {
     "baseUrl": "./",
@@ -211,9 +226,11 @@ Modify the `app_srv/tsconfig.json` file with
   },
   "include": ["src/**/*", "ursys/**/*"],
 ```
+
 Now that the tsconfig is being found properly with the vscode setting, we can specify paths. This tsconfig.json is then used by the import/resolver "typescript" setting, which uses it to figure out path resolution so no more errors. NOTE this is separate from webpack, which has its own configuration.
 
 ---
+
 # 2. Scaffolding the System
 
 Essentially I just need to make a webserver, or webservers, that serve a webapp that is capable of handling multiple routes and connecting to the framework, and start filling it in.
@@ -221,10 +238,12 @@ Essentially I just need to make a webserver, or webservers, that serve a webapp 
 ## Mar 25.0 - Setting up shared lerna packages
 
 Currently, when I `npm run dev` this runs the current **app_srv** package, which is the only package.  First, I'd like update the directory structure:
+
 * rename gsgo -> gsutil
 * rename packages -> gs_packages
 
 I'd like to change it so it imports a package from another place. Let's see if I can do that.
+
 ```
 lerna create @gemstep/globals -y  # create a @gemstep/globals project directory
 # modify the config.js file that was created, look at the package.json
@@ -235,7 +254,9 @@ npm run bootstrap
 # now import package '@gemstep/globals' into app_srv
 # import CONFIG from '@gemstep/globals'
 ```
+
 Adding to monorepo...
+
 ```
 # use license MIT
 lerna create @gemstep/admin_srv 
@@ -243,6 +264,7 @@ lerna add @gemstep/globals --scope=@gemstep/admin_srv
 lerna bootstrap
 # edit package.json, README.md
 ```
+
 See [wip server architecture doc](03-server-arch.md). Anyway, I added `@gemstep/admin_srv` and `@gemstep/gem_srv`, and these both import `@gemstep/globals`
 
 At this point it would be nice to make a "server components" package that I can use to build special servers as just imports, but I can wait until we're actually making those servers.
@@ -521,10 +543,15 @@ If opening the project from its own workspace, does it still work? It's dependen
 To summarize how this works:
 
 * eslint extension reads its config file by walking up the tree, the root `.estlintrc.js`
+
 * ts (through `@typescript-eslint/parser`) reads its `tsconfig.json` file from `.eslintrc.js`'s `parserOptions.tsconfigRootDir` that is set to `__dirname`.
+
 * `.eslintrc` implements the order of rules for typescript, airbnb, and eslint recommended. It also should disable any whitespace formatting elements so only Prettier handles that. ESLint is only used to flag errors.
+
 * prettier is invoked by extension, which looks for a `.prettierrc.js` file in the project root normally. However, we apply settings overrides in `.vscode/settings.json` to set `prettier.prettierPath` to `"./node_modules/prettier"` for the root project. 
+
 * for prettier subproject workspaces, we require a VSCode `.code-workspace` to exist with the `prettier.prettierPath` to point to the root `"../../node_modules/prettier"`  _AND_ also add `prettier.configPath: "../../prettierrc.js` so it finds the root version rather than require a duplication.
+
 * for tsconfiguration, the `tsconfig.json` lives at multiple levels because it's required to set different module paths in `compilerOptions.paths`, and include different subdirectories to parse in `include`. Otherwise eslint will fail to parse module paths, and typescript files will not be parsed at all.
 
   
@@ -543,10 +570,4 @@ This might have been a combination of a corrupted visual studio cache AND a fail
 
 
 
-
-
-
-
-
-# 3. Wireframing
 

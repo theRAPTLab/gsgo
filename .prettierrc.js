@@ -8,7 +8,7 @@
 
 module.exports = {
   semi: true,
-  printWidth: 120,
+  printWidth: 82,
   singleQuote: true,
   quoteProps: 'preserve',
   arrowParens: 'avoid'
