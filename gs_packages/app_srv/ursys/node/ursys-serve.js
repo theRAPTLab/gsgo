@@ -10,24 +10,25 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-const ip = require("ip");
+const ip = require('ip');
 //
-const URWEB = require("./server-express");
-const URNET = require("./server-network");
-const URLOG = require("./server-logger");
-const URDB = require("./server-database");
+const URWEB = require('./server-express');
+const URNET = require('./server-network');
+const URLOG = require('./server-logger');
+// const URDB = require('./server-database');
 //
-const PROMPTS = require("../../config/prompts");
+const PROMPTS = require('../../config/prompts');
 
 /// TERMINAL CONSTANTS ////////////////////////////////////////////////////////
 const { TERM_URSYS: CS, CCRIT: CC, CR, TR } = PROMPTS;
-const LPR = "URSERV";
+const LPR = 'URSERV';
 const PR = `${CS}${PROMPTS.Pad(LPR)}${CR}`;
+const PORT = URWEB.PORT === 80 ? '' : `:${URWEB.PORT}`;
 
 /// SERVER CONSTANTS //////////////////////////////////////////////////////////
 const SERVER_INFO = {
-  main: `http://localhost:3000`,
-  client: `http://${ip.address()}:3000`
+  main: `http://localhost${PORT}`,
+  client: `http://${ip.address()}${PORT}`
 };
 
 /// API CREATE MODULE /////////////////////////////////////////////////////////
@@ -35,30 +36,30 @@ let URSERV = {};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URSERV.StartWebServer = callback => {
-  URLOG.Write(LPR, `starting web server`);
+  URLOG.Write(LPR, 'starting web server');
   // returns an optional promise hook
   console.log(PR, `${CS}STARTING WEB SERVER${CR}`);
   (async () => {
     try {
       await URWEB.Start();
-      let out = `\n---\n`;
+      let out = '\n---\n';
       out += `${CS}SYSTEM INITIALIZATION COMPLETE${CR}\n`;
-      out += `GO TO ONE OF THESE URLS in CHROME WEB BROWSER\n`;
+      out += 'GO TO ONE OF THESE URLS in CHROME WEB BROWSER\n';
       out += `LOCAL  - ${SERVER_INFO.main}/#/admin\n`;
       out += `REMOTE - ${SERVER_INFO.client}\n`;
-      out += `---\n`;
-      if (typeof callback === "function") callback(out);
+      out += '---\n';
+      if (typeof callback === 'function') callback(out);
       console.log(out);
     } catch (err) {
       console.log(PR, `${CC}${err}${CR}`);
-      console.log(PR, `... exiting with errors\n`);
+      console.log(PR, '... exiting with errors\n');
       process.exit(0);
     }
   })();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URSERV.StartNetwork = () => {
-  URLOG.Write(LPR, `starting network`);
+  URLOG.Write(LPR, 'starting network');
   URNET.StartNetwork();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,19 +67,19 @@ URSERV.StartNetwork = () => {
  * handled by the server.
  */
 URSERV.RegisterHandlers = () => {
-  URLOG.Write(LPR, `registering network services`);
+  URLOG.Write(LPR, 'registering network services');
   // start logging message
-  URNET.NetSubscribe("NET:SRV_LOG_EVENT", URLOG.PKT_LogEvent);
+  URNET.NetSubscribe('NET:SRV_LOG_EVENT', URLOG.PKT_LogEvent);
 
   // register remote messages
-  URNET.NetSubscribe("NET:SRV_REG_HANDLERS", URNET.PKT_RegisterRemoteHandlers);
+  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', URNET.PKT_RegisterRemoteHandlers);
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Main Entry Point
  */
 URSERV.Initialize = (options = {}) => {
-  URLOG.Write(LPR, `initializing network`);
+  URLOG.Write(LPR, 'initializing network');
   if (options.apphost) {
     console.log(PR, `${CC}APPHOST OPTIONS${TR} ${options.apphost}`);
   }
