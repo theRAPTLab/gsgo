@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/x-playground",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "description": "For screwing around with NextJS",
   "keywords": [],
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
@@ -18,7 +18,7 @@
     "start:xplay": "next start"
   },
   "dependencies": {
-    "@gemstep/globals": "^0.0.1-alpha.2",
+    "@gemstep/globals": "^0.0.1-alpha.3",
     "@material-ui/core": "^4.9.6",
     "clsx": "^1.1.0",
     "next": "^9.3.1",

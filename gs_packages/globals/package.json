@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/globals",
-  "version": "0.0.1-alpha.2",
+  "version": "0.0.1-alpha.3",
   "description": "shared configuration for gem-step",
   "keywords": [],
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
@@ -19,6 +19,5 @@
     "type": "git",
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
-  "scripts": {},
-  "dependencies": {}
+  "scripts": {}
 }
