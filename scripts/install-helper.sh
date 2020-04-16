@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Dev Environment Installer Helper for GEMSTEP
 # Prints out recommended course of action for setting up
 # the development requirements
@@ -23,7 +25,7 @@ cli() {
 }
 cliOut() {
     for t in "${CLI[@]}"; do
-        echo "\x1B[92m"$t"\x1B[0m"
+        echo -e "\x1B[92m"$t"\x1B[0m"
     done    
 }
 
@@ -86,9 +88,10 @@ fi
 
 # check for shell version, and create profile if necessary
 # NOTE: $SHELL contains the current shell (e.g. /bin/bash)
+# even though THIS shell is always bash
 case $SHELL in 
-    /bin/bash)
-        pr "[X] supported shell $SHELL"
+    /bin/bash) # default on MacOS pre-Catalina
+        pr "[X] supported shell: $SHELL"
         if [ ! -e ~/.bash_profile ]; then
             cli "touch ~/.bash_profile"
             pr "[ ] ~/.bash_profile exists"
@@ -97,8 +100,8 @@ case $SHELL in
             source ~/.bash_profile
         fi
         ;;
-    /bin/zsh)
-        pr "[X] supported shell $SHELL"
+    /bin/zsh) # default on MacOS post-Catalina
+        pr "[X] supported shell: $SHELL"
         if [ ! -e ~/.zshrc ]; then
             cli "touch ~/.zshrc"
             pr "[ ] $SHELL ~/.zshrc exists"
@@ -108,7 +111,8 @@ case $SHELL in
         fi
         ;;
     *)
-        pr "ERROR: unknown shell $SHELL...aborting"
+        pr "ERROR: unsupported shell:$SHELL on system:$MACHINE"
+        pr "Please let Sri or Ben know about this error!"
         prOut
         exit 1
         ;;
@@ -176,9 +180,9 @@ cliOut
 
 echo
 echo "With luck your $MACHINE system can now run GEMSTEP! To test, type..."
-echo "\x1B[93m" # yellow
+echo -e "\x1B[93m" # yellow
 echo "npm start"
-echo "\x1B[0m" # reset
+echo -e "\x1B[0m" # reset
 echo "...to launch all servers and then browse to localhost in the Chrome"
 echo "browser. If you are a developer, we recommend using Visual Studio Code"
 echo "to open the gsgo folder and install the suggested extensions to conform"

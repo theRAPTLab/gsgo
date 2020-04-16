@@ -18,7 +18,7 @@ Now download the repo:
 
 At this point you can run our **install script** to set everything up. This script detect what version of a (supported) operating system you're running, and then emits the commands for you to type. Copy and paste them into the terminal window. 
 
-1. enter `scripts/install-mac.sh`
+1. enter `./scripts/install-helper.sh`
 2. read the output to see what to do!
 
 ## 1. (Optional) Install Recommended Code Editor
