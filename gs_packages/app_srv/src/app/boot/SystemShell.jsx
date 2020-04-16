@@ -38,12 +38,7 @@ class SystemShell extends React.Component {
     return (
       <Switch>
         {SystemRoutes.map(route => (
-          <Route
-            exact={route.exact}
-            key={route.path}
-            path={route.path}
-            component={route.component}
-          />
+          <Route exact={route.exact} key={route.path} path={route.path} component={route.component} />
         ))}
       </Switch>
     );
