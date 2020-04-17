@@ -14,7 +14,7 @@ SUMMARY [S07 MAR 30-APR 12](00-dev-archives/sprint-07.md)
 
 SUMMARY S08 APR13-26
 
-* WIP
+---
 
 # 4. Documentation Cleanup
 
@@ -29,9 +29,14 @@ Is it on [GEM-STEP Foundation](https://gitlab.com/stepsys/gem-step/gsgo) home pa
 Didn't get anything done on Tuesday. Working today on finalizing things to do. I think I'm done with documentation for now and need to switch to something more exciting. But first I'll update:
 
 * [x] clean up this 00-dev-log 
-* [ ] test pull request
-* [ ] bump version on test success
-* [ ] accept
+* [x] test pull request
+* [x] bump version on test success
+* [x] accept
 
+## Apr 16.01 - Inserting Markdown
 
+The MEME project uses `react-markdown`, and its docs don't really list all the options. After perusing the source code I have a better sense of how it accomplishes what it does, and can infer that the syntax I expected will work.
 
+## Apr 17.01 - Page Layout Classes
+
+Laid out the tabbed interface using the page-level components. Made subpage components to allow much easier subdivision.

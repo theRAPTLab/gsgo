@@ -43,10 +43,7 @@ const useStyles = makeStyles(theme => ({
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Page(props) {
-  const { store } = props;
-  const { currentTab, currentRoute } = store.getRoute();
   const classes = useStyles();
-  if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (

@@ -5,39 +5,82 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-///
-import { Box } from '@material-ui/core';
+// material ui
+import Button from '@material-ui/core/Button';
 import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
-///
+// ursys components
 import URSiteNav from '../blocks/URSiteNav';
-///
+import URTabbedView from '../blocks/URTabbedView';
+import { FullScreen, View, Row, Cell, CellFixed } from '../blocks/URLayout';
 import MD from '../components/ReactMarkdown';
-import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp
+  pagemode: theme.urFullScreenApp,
+  viewmode: theme.urFullScreenView
 }));
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Page(props) {
-  const { store } = props;
+function Page() {
   const classes = useStyles();
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <Box className={classes.pagemode}>
-      <Typography variant="overline">
-        <MD>{`
-**markdown-styled** text here (wrapped in MUI Typography)
-      `}</MD>
-      </Typography>
+    <FullScreen>
       <URSiteNav />
-      <FlexBoxLayout store={store} />
-    </Box>
+      <URTabbedView>
+        <View label="Agents" className={classes.viewmode}>
+          <Row>
+            <CellFixed width={200}>
+              <MD>{`
+## Agents
+* Bee
+* Flower
+* * properties
+* * costume
+* Add Agent
+* Edit
+* Delete
+          `}</MD>
+            </CellFixed>
+            <Cell>
+              <MD>{`
+## Description
+this cell stretches to the remaining width
+              `}</MD>
+            </Cell>
+            <Cell>
+              <Button color="primary" variant="contained">
+                A button
+              </Button>
+              <Button color="primary" variant="contained">
+                A button
+              </Button>
+              <Button color="primary" variant="contained">
+                A button
+              </Button>
+            </Cell>
+          </Row>
+        </View>
+        <View label="Interactions" className={classes.viewmode}>
+          <MD>{`
+## Interactions
+          `}</MD>
+        </View>
+        <View label="Move" className={classes.viewmode}>
+          <MD>{`
+## Move
+          `}</MD>
+        </View>
+        <View label="Playback" className={classes.viewmode}>
+          <MD>{`
+## Playback
+          `}</MD>
+        </View>
+      </URTabbedView>
+    </FullScreen>
   );
 }
 

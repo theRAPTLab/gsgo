@@ -1,42 +1,48 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Render a Markdown block
+  accepts props for the ReactMarkdown component
+  https://github.com/rexxars/react-markdown
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import MD from 'react-markdown';
+import ReactMarkdown from 'react-markdown';
 ///
 import { makeStyles } from '@material-ui/core/styles';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
-/** NOTE:
- *  The & symbol means 'use the parent name'. In this style definition,
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** The & symbol means 'use the parent name'. In this style definition,
  *  it produces a class entry 'markdown' that will produce:
  *    .markdown { padding: 8px }
  *    .markdown > *:first-child { margin-top: 0 }
+ *    .markdown ul, .markdown ol { padding-inline-start: 1em }
  */
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => {
   return {
     markdown: {
-      padding: `${theme.spacing(1)}px`,
       '& > *:first-child': { 'margin-top': 0 },
-      '& > *:last-child': { 'margin-bottom': 0 }
+      '& > *:last-child': { 'margin-bottom': 0 },
+      '& ul, & ol': { 'padding-inline-start': '1em' }
     }
   };
 });
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ReactMarkdown(props) {
+function MD(props) {
   const classes = useStyles();
-  const { children } = props;
+  const { children, ...other } = props;
 
   /// RENDER //////////////////////////////////////////////////////////////////
-  return <MD className={classes.markdown}>{children}</MD>;
+  return (
+    <ReactMarkdown className={classes.markdown} {...other}>
+      {children}
+    </ReactMarkdown>
+  );
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default ReactMarkdown; // functional component
+export default MD; // functional component

@@ -39,7 +39,8 @@ const addDerivedStyles = theme => {
       backgroundColor: '#e0e0e0',
       display: 'flex',
       flexFlow: 'column nowrap',
-      height: '100vh'
+      height: '100vh',
+      overflow: 'hidden'
     },
     urFullScreenView: {
       display: 'flex',
