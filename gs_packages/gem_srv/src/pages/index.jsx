@@ -8,10 +8,11 @@ import React from 'react';
 ///
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import MD from '../components/ReactMarkdown';
+import Typography from '@material-ui/core/Typography';
 ///
 import URSiteNav from '../blocks/URSiteNav';
 ///
+import MD from '../components/ReactMarkdown';
 import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -29,9 +30,11 @@ function Page(props) {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Box className={classes.pagemode}>
-      <MD>{`
-**markdown-styled** text here
+      <Typography variant="overline">
+        <MD>{`
+**markdown-styled** text here (wrapped in MUI Typography)
       `}</MD>
+      </Typography>
       <URSiteNav />
       <FlexBoxLayout store={store} />
     </Box>
