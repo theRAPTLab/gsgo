@@ -26,6 +26,10 @@ lerna clean -y && lerna bootstrap --hoist
 
 You can then import the packages into other packages, as if they were already npm-installed. 
 
+## What is the best way to commit from dev to master?
+
+In SourceTree, you can do a merge+rebase from dev onto master. Dev retains all the history of commits, but master remains relatively clean.
+
 ## How do I manage versions with Lerna?
 
 #### TL;DR
@@ -61,11 +65,21 @@ Currently, we're using `lerna version prerelease` to automatically bump our prer
 * Run `lerna version minor` when a release is feature-ready.
 
 
-## How do I add remote npm packages to existing projects?
+## How do I add npm packages to existing projects?
 
-Use `lerna add` with the optional `--dev` and `--peer` flags. It works like `npm install` but can only install one package at at time. It also accepts [lerna filters](https://www.npmjs.com/package/@lerna/filter-options) like `--scope=packagename`. 
+You can use regular `npm install` or `yarn install` inside the package subfolder. The advantage that `lerna add` has is that it can add packages to *all* our packages at once.
 
-You can also use regular `npm install` or `yarn install`. The advantage that `lerna add` has is that it can add packages to *all* our packages at once.
+### Examples
+
+Use `lerna add` with the optional `--dev` and `--peer` flags. It works like `npm install` but can only install one package at at time. 
+
+> `npm add react-markdown
+> _note: this has to be executed at the TOP LEVEL of gsgs_
+
+It also accepts [lerna filters](https://www.npmjs.com/package/@lerna/filter-options) like `--scope=packagename` to install the package ONLY in the scope (a folder in our `gs_packages` directory)
+
+> `npm add react-markdown --scope=gem_srv`
+> _note: this has to be executed at the TOP LEVEL of gsgs_
 
 ## How do I add a local package? I'm getting an error!
 

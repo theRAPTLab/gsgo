@@ -1,43 +1,42 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Example page with PageNav and full page layout
+  Render a Markdown block
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import MD from 'react-markdown';
 ///
-import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-import MD from '../components/ReactMarkdown';
-///
-import URSiteNav from '../blocks/URSiteNav';
-///
-import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
+/** NOTE:
+ *  The & symbol means 'use the parent name'. In this style definition,
+ *  it produces a class entry 'markdown' that will produce:
+ *    .markdown { padding: 8px }
+ *    .markdown > *:first-child { margin-top: 0 }
+ */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp
-}));
+const useStyles = makeStyles(theme => {
+  return {
+    markdown: {
+      padding: `${theme.spacing(1)}px`,
+      '& > *:first-child': { 'margin-top': 0 },
+      '& > *:last-child': { 'margin-bottom': 0 }
+    }
+  };
+});
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Page(props) {
-  const { store } = props;
+function ReactMarkdown(props) {
   const classes = useStyles();
+  const { children } = props;
 
   /// RENDER //////////////////////////////////////////////////////////////////
-  return (
-    <Box className={classes.pagemode}>
-      <MD>{`
-**markdown-styled** text here
-      `}</MD>
-      <URSiteNav />
-      <FlexBoxLayout store={store} />
-    </Box>
-  );
+  return <MD className={classes.markdown}>{children}</MD>;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Page; // functional component
+export default ReactMarkdown; // functional component
