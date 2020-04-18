@@ -3,6 +3,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import clsx from 'clsx';
 // material ui
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -15,7 +16,8 @@ const useStyles = makeStyles(theme => ({
   pagemode: theme.urFullScreenApp,
   viewmode: theme.urFullScreenView,
   base: {
-    padding: `${theme.spacing(1)}px`
+    // now handled by adding className prop to any URLayout component
+    // padding: `${theme.spacing(1)}px`
   },
   fixedHeight: {
     extend: 'base',
@@ -46,10 +48,10 @@ const useStyles = makeStyles(theme => ({
  */
 function FullScreen(props) {
   const classes = useStyles();
-  const { children, ...other } = props;
+  const { children, className, ...other } = props;
   // if you need read-only theme parameters directly in the component
   return (
-    <Box className={classes.pagemode} {...other}>
+    <Box className={clsx(classes.pagemode, className)} {...other}>
       {children}
     </Box>
   );
@@ -62,9 +64,9 @@ function FullScreen(props) {
  */
 function View(props) {
   const classes = useStyles();
-  const { children, ...other } = props;
+  const { children, className, ...other } = props;
   return (
-    <Box className={classes.viewmode} {...other}>
+    <Box className={clsx(classes.viewmode, className)} {...other}>
       {children}
     </Box>
   );
@@ -76,10 +78,10 @@ function View(props) {
  */
 function RowFixed(props) {
   const classes = useStyles();
-  const { children, ...other } = props;
+  const { children, className, ...other } = props;
   // if you need read-only theme parameters directly in the component
   return (
-    <Box className={classes.fixedHeight} {...other}>
+    <Box className={clsx(classes.fixedHeight, className)} {...other}>
       {children}
     </Box>
   );
@@ -91,9 +93,9 @@ function RowFixed(props) {
  */
 function Row(props) {
   const classes = useStyles();
-  const { children, ...other } = props;
+  const { children, className, ...other } = props;
   return (
-    <Box className={classes.flexRow} {...other}>
+    <Box className={clsx(classes.flexRow, className)} {...other}>
       {children}
     </Box>
   );
@@ -105,9 +107,9 @@ function Row(props) {
  */
 function CellFixed(props) {
   const classes = useStyles();
-  const { children, ...other } = props;
+  const { children, className, ...other } = props;
   return (
-    <Box className={classes.fixedWidth} {...other}>
+    <Box className={clsx(classes.fixedWidth, className)} {...other}>
       {children}
     </Box>
   );
@@ -119,9 +121,9 @@ function CellFixed(props) {
  */
 function Cell(props) {
   const classes = useStyles();
-  const { children, ...other } = props;
+  const { children, className, ...other } = props;
   return (
-    <Box className={classes.flexWidth} {...other}>
+    <Box className={clsx(classes.flexWidth, className)} {...other}>
       {children}
     </Box>
   );

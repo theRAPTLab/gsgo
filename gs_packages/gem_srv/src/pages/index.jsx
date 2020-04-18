@@ -7,6 +7,7 @@
 import React from 'react';
 // material ui
 import Button from '@material-ui/core/Button';
+import { Typography } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 // ursys components
 import URSiteNav from '../blocks/URSiteNav';
@@ -17,8 +18,7 @@ import MD from '../components/ReactMarkdown';
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp,
-  viewmode: theme.urFullScreenView
+  inset: { padding: `${theme.spacing(1)}px` }
 }));
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
@@ -31,7 +31,7 @@ function Page() {
     <FullScreen>
       <URSiteNav />
       <URTabbedView>
-        <View label="Agents" className={classes.viewmode}>
+        <View label="Agents" className={classes.inset}>
           <Row>
             <CellFixed width={200}>
               <MD>{`
@@ -64,17 +64,19 @@ this cell stretches to the remaining width
             </Cell>
           </Row>
         </View>
-        <View label="Interactions" className={classes.viewmode}>
+
+        <View label="Interactions" className={classes.inset}>
           <MD>{`
 ## Interactions
           `}</MD>
         </View>
-        <View label="Move" className={classes.viewmode}>
+
+        <View label="Move" className={classes.inset}>
           <MD>{`
 ## Move
           `}</MD>
         </View>
-        <View label="Playback" className={classes.viewmode}>
+        <View label="Playback" className={classes.inset}>
           <MD>{`
 ## Playback
           `}</MD>
