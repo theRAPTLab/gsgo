@@ -103,7 +103,7 @@ function URSiteNav() {
       <Grid container justify="space-between" className={classes.container}>
         <Grid item>
           <Typography variant="h6" className={classes.title}>
-            GEM-STEP
+            MODELER
           </Typography>
         </Grid>
         <Grid item>

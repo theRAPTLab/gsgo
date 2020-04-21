@@ -1,5 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  FullScreen - full-height view that must be root component of View
+  View       - vertical-growable area inside a FullScreen view
+  Row        - vertical row that can contain Cell
+  RowFixed   - fixed-height row with default minHeight
+  Cell       - horizontal-growable area inside of Row
+  CellFixed  - fixed-width cell with default minWidth
+  MD         - ReactMarkdown component with some additional styling
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -7,6 +15,8 @@ import clsx from 'clsx';
 // material ui
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
+// utility components
+import MD from '../components/ReactMarkdown';
 
 /// SHARED CUSTOM STYLES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -131,4 +141,4 @@ function Cell(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { FullScreen, View, Row, RowFixed, Cell, CellFixed };
+export { FullScreen, View, Row, RowFixed, Cell, CellFixed, MD };
