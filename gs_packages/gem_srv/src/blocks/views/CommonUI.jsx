@@ -1,23 +1,17 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Interactions View
+  CommonUI View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../URLayout';
+import { View, Row, Cell, MD } from '../URLayout';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ELEMENTS = `
-### INTERACTIONS
-`;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-Interactions Panel
-* "if two things are touching"
-* add new interactions
+Shared Components
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -28,15 +22,12 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Interactions() {
+function CommonUI() {
   const classes = useStyles();
 
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={160}>
-          <MD>{ELEMENTS}</MD>
-        </CellFixed>
         <Cell>
           <MD>{NOTES}</MD>
         </Cell>
@@ -47,4 +38,4 @@ function Interactions() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Interactions;
+export default CommonUI;

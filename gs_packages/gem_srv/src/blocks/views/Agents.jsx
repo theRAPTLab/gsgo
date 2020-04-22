@@ -11,10 +11,28 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-HELLO
+### AGENTS
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
+View Model
+* List of Agents: interactions (see INTERACTIONS PANEL)
+* Add | Edit
+
+Manage Models
+* List of Models: group, class
+* Create | Duplicate | Delete | Share
+* Teacher flag to allow all other models
+
+Agent List Interactions
+* select agent: show PROPERTIES PANEL for editing
+* only one person can edit an agent at a time
+* multiple people can manipulate the same model
+
+Agent Properties Panel
+* default properties: type, costumes, color, location
+* user defined: list of properties, add property
+* display options for REALTIME PROPERTY DISPLAY
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -31,7 +49,7 @@ function Agents() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={200}>
+        <CellFixed width={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>

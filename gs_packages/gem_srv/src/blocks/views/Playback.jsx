@@ -11,10 +11,40 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-HELLO
+### PLAYBACK
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
+Model running (real-time)
+
+Environment Map
+* simulation window
+
+UI Interactions
+* drag instance of specific agent into environment
+* set starting values of agent instances
+* this is the "starting" point of the model on reset
+* agent control: static, AI (if programmed), by user (ptrack, faketrack)
+* video background underlay/overlay
+
+Recording
+* Start/Stop recording. Only one recording active at a time.
+* All connected accounts can control. Socially-managed, no permission locking.
+* On stop, recording saves with default name
+
+Playback
+* Select, then: play, pause, playback speed, ff, rewind
+* Scrub Bar
+
+Manage Recordings
+* Recording List. Belongs to the model.
+* Recording: group owner. Can Ddelete
+
+Annotating Recordings
+* Toggle on/off
+* Annotations can be made live, and are tagged by the person/group annotating it
+
+
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -31,7 +61,7 @@ function Playback() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={200}>
+        <CellFixed width={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>

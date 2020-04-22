@@ -11,10 +11,13 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-HELLO
+### MOVEMENT
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
+Movement Panel
+* see agent list, choose type of automatic (AI) movement
+* list of wizard actions (TBD)
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -31,7 +34,7 @@ function Move() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={200}>
+        <CellFixed width={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>

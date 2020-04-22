@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Interactions View
+  Annotation View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,13 +11,13 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### INTERACTIONS
+### ANNOTATION
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-Interactions Panel
-* "if two things are touching"
-* add new interactions
+Annotating Recordings
+* Toggle on/off
+* Annotations can be made live, and are tagged by the person/group annotating it
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Interactions() {
+function Annotation() {
   const classes = useStyles();
 
   return (
@@ -47,4 +47,4 @@ function Interactions() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Interactions;
+export default Annotation;

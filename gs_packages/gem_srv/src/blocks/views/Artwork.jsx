@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Interactions View
+  Artwork View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,13 +11,16 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### INTERACTIONS
+### ARTWORK
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-Interactions Panel
-* "if two things are touching"
-* add new interactions
+Creating Artwork
+* simple paint program
+* labels of different skins
+* background
+* save | delete | erase
+* import
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -28,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Interactions() {
+function Artwork() {
   const classes = useStyles();
 
   return (
@@ -47,4 +50,4 @@ function Interactions() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Interactions;
+export default Artwork;
