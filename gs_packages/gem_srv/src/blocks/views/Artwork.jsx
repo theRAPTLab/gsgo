@@ -12,6 +12,18 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
 ### ARTWORK
+* ${MD.cq('BGList')}
+* ${MD.cq('BGEditor')}
+* ${MD.cq('AddBGBtn')}
+* ${MD.cq('ImportBGBtn')}
+* ${MD.cq('DelBGBtn')}
+* ${MD.cq('EditBGBtn')}
+* ${MD.cq('CostumeList')}
+* ${MD.cq('CostumeEditor')}
+* ${MD.cq('ImportCostumeBtn')}
+* ${MD.cq('AddCostumeBtn')}
+* ${MD.cq('DelCostumeBtn')}
+* ${MD.cq('EditCostumeBtn')}
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `

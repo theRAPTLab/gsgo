@@ -12,6 +12,8 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
 ### MOVEMENT
+* ${MD.cq('MovementWizardList')}
+* ${MD.cq('AgentList')}_
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `

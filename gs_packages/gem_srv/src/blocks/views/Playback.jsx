@@ -7,11 +7,24 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../URLayout';
+import SimPanel from '../../components/SimPanel';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const { cq } = MD;
 const ELEMENTS = `
 ### PLAYBACK
+* ${cq('SimPanel')}
+* ${cq('AgentList')}
+* ${cq('AgentProps')}
+* ${cq('AgentControl')}
+* ${cq('VideoControl')}
+* ${cq('RecordingControl')}
+* ${cq('PlaybackControl')}
+* ${cq('RecordingList')}
+* ${cq('AnnotationControl')}
+* ${cq('AnnotationList')}
+
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
@@ -65,6 +78,7 @@ function Playback() {
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
+          <SimPanel />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>

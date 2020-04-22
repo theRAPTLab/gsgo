@@ -12,6 +12,9 @@ import { View, Row, Cell, CellFixed, MD } from '../URLayout';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
 ### INTERACTIONS
+* ${MD.cq('InteractionPanel')}
+* ${MD.cq('AddInteractionBtn')}
+* ${MD.cq('DelInteractionBtn')}
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `

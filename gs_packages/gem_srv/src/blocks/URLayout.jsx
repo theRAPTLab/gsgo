@@ -16,7 +16,7 @@ import clsx from 'clsx';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 // utility components
-import MD from '../components/ReactMarkdown';
+import { MD } from '../components/ReactMarkdown';
 
 /// SHARED CUSTOM STYLES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,4 +141,4 @@ function Cell(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { FullScreen, View, Row, RowFixed, Cell, CellFixed, MD };
+export { FullScreen, View, Row, RowFixed, Cell, CellFixed, Box, MD };

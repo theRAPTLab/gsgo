@@ -19,14 +19,12 @@ import { makeStyles } from '@material-ui/core/styles';
  *    .markdown > *:first-child { margin-top: 0 }
  *    .markdown ul, .markdown ol { padding-inline-start: 1em }
  */
-const useStyles = makeStyles(theme => {
-  return {
-    markdown: {
-      '& > *:first-child': { 'margin-top': 0 },
-      '& > *:last-child': { 'margin-bottom': 0 },
-      '& ul, & ol': { 'padding-inline-start': '1em' }
-    }
-  };
+const useStyles = makeStyles({
+  markdown: {
+    '& > *:first-child': { 'margin-top': 0 },
+    '& > *:last-child': { 'margin-bottom': 0 },
+    '& ul, & ol': { 'padding-inline-start': '1rem' }
+  }
 });
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
@@ -43,6 +41,19 @@ function MD(props) {
   );
 }
 
+/// HELPERS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+MD.cq = string => {
+  // eslint-disable-next-line prefer-template
+  return '``' + string + '``';
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+MD.cblock = string => {
+  // eslint-disable-next-line prefer-template
+  return '``````' + string + '``````';
+};
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default MD; // functional component
+// eslint-disable-next-line import/prefer-default-export
+export { MD }; // functional component

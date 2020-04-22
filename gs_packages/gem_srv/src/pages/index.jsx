@@ -34,7 +34,7 @@ function Page() {
             <Playback label="Playback" />
           </URTabbedView>
         </Cell>
-        <CellFixed width="20em" style={{ backgroundColor: 'white' }}>
+        <CellFixed width="200px" style={{ backgroundColor: 'white' }}>
           <URTabbedView>
             <CommonUI label="Common" />
           </URTabbedView>

@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Agents View
@@ -7,11 +8,21 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../URLayout';
+import AgentList from '../../components/AgentList';
+import AgentPropPanel from '../../components/AgentPropPanel';
+import ModelList from '../../components/ModelList';
+import ViewModelPanel from '../../components/ViewModelPanel';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
 ### AGENTS
+* ${MD.cq('AgentList')}
+* ${MD.cq('ModelList')}
+* ${MD.cq('AddAgentBtn')}
+* ${MD.cq('DelAgentBtn')}
+* ${MD.cq('EditAgentBtn')}
+* ${MD.cq('AgentPropPanel')}
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
@@ -53,6 +64,10 @@ function Agents() {
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
+          <ViewModelPanel />
+          <ModelList />
+          <AgentList />
+          <AgentPropPanel />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>

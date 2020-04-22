@@ -21,7 +21,6 @@ import { useRouter } from 'next/router';
 import { makeStyles } from '@material-ui/core/styles';
 
 import APPSTATE from '../modules/appstate';
-import wireframeStyles from '../modules/style/wireframing';
 
 import CONFIG from '../pages/_navmenu.json';
 
@@ -44,8 +43,7 @@ const useStyles = makeStyles(theme =>
       appbar: {},
       container: {},
       tabs: {}
-    },
-    wireframeStyles(theme)
+    }
   ])
 );
 

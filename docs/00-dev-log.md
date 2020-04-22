@@ -40,3 +40,12 @@ The MEME project uses `react-markdown`, and its docs don't really list all the o
 ## Apr 17.01 - Page Layout Classes
 
 Laid out the tabbed interface using the page-level components. Made subpage components to allow much easier subdivision.
+
+## Apr 21.01 - Controls and Stubs
+
+Looked at the draft doc and work through it. I created a bunch of tabs and placeholder pages to start working through the specific system elements.  After typing up everything I am realizing just how incomplete the draft design is; I can go to town imagining how this should really work.
+
+## Apr 22.01 - Placeholder Wireframes
+
+I need to review the MUI Basics again. Added to [40-mui-cheatsheet](40-client-tech/40-mui-cheatsheet.md). Started building a very simple expandable component for on-screen annotation of what things do
+
