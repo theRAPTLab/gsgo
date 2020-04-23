@@ -21,9 +21,10 @@ import { makeStyles } from '@material-ui/core/styles';
  */
 const useStyles = makeStyles({
   markdown: {
-    '& > *:first-child': { 'margin-top': 0 },
-    '& > *:last-child': { 'margin-bottom': 0 },
-    '& ul, & ol': { 'padding-inline-start': '1rem' }
+    '& > *:first-child': { marginTop: 0 },
+    '& > *:last-child': { marginBottom: 0 },
+    '& ul, & ol': { paddingInlineStart: '1rem' },
+    '& h4, & h4 + p': { marginBottom: '-0.80rem' }
   }
 });
 

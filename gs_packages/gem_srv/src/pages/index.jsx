@@ -11,18 +11,20 @@ import Interactions from '../blocks/views/Interactions';
 import Move from '../blocks/views/Move';
 import Playback from '../blocks/views/Playback';
 import Artwork from '../blocks/views/Artwork';
-import CommonUI from '../blocks/views/CommonUI';
+import CommonSimObjects from '../blocks/views/CommonSimObjects';
+import CommonSimControls from '../blocks/views/CommonSimControls';
+import CommonSystem from '../blocks/views/CommonSystem';
 // ursys components
 import URSiteNav from '../blocks/URSiteNav';
 import URTabbedView from '../blocks/URTabbedView';
-import { FullScreen, Row, CellFixed, Cell } from '../blocks/URLayout';
+import { FullScreen, ScrollPage, Row, CellFixed, Cell } from '../blocks/URLayout';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Page() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <FullScreen>
+    <ScrollPage>
       <URSiteNav />
       <Row>
         <Cell>
@@ -34,13 +36,15 @@ function Page() {
             <Playback label="Playback" />
           </URTabbedView>
         </Cell>
-        <CellFixed width="200px" style={{ backgroundColor: 'white' }}>
+        <CellFixed width="25%" style={{ backgroundColor: 'white' }}>
           <URTabbedView>
-            <CommonUI label="Common" />
+            <CommonSimObjects label="Objects" />
+            <CommonSimControls label="Controls" />
+            <CommonSystem label="Modules" />
           </URTabbedView>
         </CellFixed>
       </Row>
-    </FullScreen>
+    </ScrollPage>
   );
 }
 

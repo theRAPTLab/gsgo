@@ -47,5 +47,13 @@ Looked at the draft doc and work through it. I created a bunch of tabs and place
 
 ## Apr 22.01 - Placeholder Wireframes
 
-I need to review the MUI Basics again. Added to [40-mui-cheatsheet](40-client-tech/40-mui-cheatsheet.md). Started building a very simple expandable component for on-screen annotation of what things do
+I need to review the MUI Basics again. Added to [40-mui-cheatsheet](40-client-tech/40-mui-cheatsheet.md). Started building a very simple expandable component for on-screen annotation of what things do.
+
+## Apr 23.01 - Revisiting System Entities
+
+After starting the deep wireframing, by the end of the day I realized that the functional draft needs a lot of tightening up to be an  implementable design. So, let's work on that. I wrote it up in the IU Google Drive in [02-gemstep-ux](https://drive.google.com/open?id=1DTTEko3dzj2jMVIBqu-YTDs4-qmxDM3m). The first phase was **system entity description**; the next phase is to describe the UI for manipulating those system entities...the actual UX. 
+
+## Apr 23.02 - Defining System Entity UI Elements
+
+Now I'm going to make a list of the entities. First copy them to the COMMON ELEMENTS tab in GEM_SRV wireframe.
 

@@ -47,6 +47,11 @@ const addDerivedStyles = theme => {
       flexFlow: 'column nowrap',
       flexGrow: 1
     },
+    urScrollablePageView: {
+      backgroundColor: '#e0e0e0',
+      display: 'flex',
+      flexFlow: 'column nowrap'
+    },
     urApp: {
       display: 'block'
     }

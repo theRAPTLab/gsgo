@@ -25,26 +25,19 @@ import { MD } from '../components/ReactMarkdown';
 const useStyles = makeStyles(theme => ({
   pagemode: theme.urFullScreenApp,
   viewmode: theme.urFullScreenView,
-  base: {
-    // now handled by adding className prop to any URLayout component
-    // padding: `${theme.spacing(1)}px`
-  },
+  scrollmode: theme.urScrollablePageView,
   fixedHeight: {
-    extend: 'base',
     minHeight: '100px'
   },
   flexRow: {
-    extend: 'base',
     display: 'flex',
     flexFlow: 'row nowrap',
     flexGrow: 1
   },
   fixedWidth: {
-    extend: 'base',
     width: '100'
   },
   flexWidth: {
-    extend: 'base',
     flexGrow: 1
   }
 }));
@@ -62,6 +55,19 @@ function FullScreen(props) {
   // if you need read-only theme parameters directly in the component
   return (
     <Box className={clsx(classes.pagemode, className)} {...other}>
+      {children}
+    </Box>
+  );
+}
+
+/** Scrollable Page
+ */
+function ScrollPage(props) {
+  const classes = useStyles();
+  const { children, className, ...other } = props;
+  // if you need read-only theme parameters directly in the component
+  return (
+    <Box className={clsx(classes.scrollmode, className)} {...other}>
       {children}
     </Box>
   );
@@ -141,4 +147,4 @@ function Cell(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { FullScreen, View, Row, RowFixed, Cell, CellFixed, Box, MD };
+export { FullScreen, ScrollPage, View, Row, RowFixed, Cell, CellFixed, Box, MD };
