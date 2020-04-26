@@ -35,22 +35,23 @@ const addDerivedStyles = theme => {
   // the properties here (e.g. layoutJSS) are just for labeling clarity
   // and are not part of any system configuration
   const layoutJSS = {
-    urFullScreenApp: {
+    urScreenPage: {
       backgroundColor: '#e0e0e0',
       display: 'flex',
       flexFlow: 'column nowrap',
       height: '100vh',
       overflow: 'hidden'
     },
-    urFullScreenView: {
-      display: 'flex',
-      flexFlow: 'column nowrap',
-      flexGrow: 1
-    },
-    urScrollablePageView: {
+    urScrollableScreenPage: {
       backgroundColor: '#e0e0e0',
       display: 'flex',
       flexFlow: 'column nowrap'
+      /* no height or overflow */
+    },
+    urScreenView: {
+      display: 'flex',
+      flexFlow: 'column nowrap',
+      flexGrow: 1
     },
     urApp: {
       display: 'block'

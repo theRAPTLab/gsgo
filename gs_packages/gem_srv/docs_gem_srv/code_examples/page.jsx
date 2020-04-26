@@ -15,7 +15,7 @@ import URSiteNav from '../blocks/URSiteNav';
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp, // required for full-page screen apps
+  pagemode: theme.urScreenPage, // required for full-page screen apps
   example: {
     padding: `${theme.spacing(1)}px`
   }

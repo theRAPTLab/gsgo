@@ -16,8 +16,8 @@ import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp,
-  viewmode: theme.urFullScreenView
+  pagemode: theme.urScreenPage,
+  viewmode: theme.urScreenView
 }));
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////

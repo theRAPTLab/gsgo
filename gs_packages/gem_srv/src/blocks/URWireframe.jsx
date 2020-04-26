@@ -30,6 +30,9 @@ const useStyles = makeStyles(theme => {
         backgroundColor: 'white',
         marginBottom: space
       },
+      WFroot: {
+        opacity: 0.7
+      },
       titlebox: {
         padding: `0 0 0 ${space}`
       },
@@ -69,39 +72,66 @@ const useStyles = makeStyles(theme => {
 
 /// UR WIREFRAME COMPONENTS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
+/** basic wireframe component
+ *  example:
+ *  <WFComponent name='name', summary='short text'>
+ *    child content will be put in collapsable section
+ * </WFComponent>
  */
 function WFComponent(props) {
   const classes = useStyles();
-  const [expanded, setExpanded] = React.useState(true);
-  const { name = 'Component', summary = 'summary', children = 'text' } = props;
+  const { name = 'Component', summary = '', children, expanded = false } = props;
+  const isWF = name.includes('WF:');
+  const [isExpanded, setExpanded] = React.useState(expanded);
   const handleExpandClick = () => {
-    setExpanded(!expanded);
+    setExpanded(!isExpanded);
   };
+  const ExpandMore = () =>
+    children ? (
+      <IconButton
+        className={clsx(classes.expand, { [classes.expandOpen]: isExpanded })}
+        onClick={handleExpandClick}
+      >
+        <ExpandMoreIcon />
+      </IconButton>
+    ) : (
+      <IconButton className={clsx(classes.expand)}>
+        <div style={{ height: '24px', width: '24px' }} />
+      </IconButton>
+    );
+  const Summary = () =>
+    summary ? <Box className={classes.summary}>{summary}</Box> : '';
+
   // if you need read-only theme parameters directly in the component
   return (
-    <Box className={classes.root}>
+    <Box className={clsx(classes.root, { [classes.WFroot]: isWF })}>
       <Box display="flex" alignItems="center">
         <Box flexGrow={1} className={classes.titlebox}>
           <Typography className={classes.compname}>&lt;{name}&gt;</Typography>
         </Box>
         <Box>
-          <IconButton
-            className={clsx(classes.expand, { [classes.expandOpen]: expanded })}
-            onClick={handleExpandClick}
-          >
-            <ExpandMoreIcon />
-          </IconButton>
+          <ExpandMore />
         </Box>
       </Box>
-      <Box className={classes.summary}>{summary}</Box>
-      <Collapse in={expanded} className={classes.info}>
+      <Summary />
+      <Collapse in={isExpanded} className={classes.info}>
         <div className={classes.description}>{children}</div>
       </Collapse>
     </Box>
   );
 }
 
+/// UR WIREFRAME COMPONENTS ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ *  example:
+ *  short blart <Generic name subline
+ */
+function WF(props) {
+  const { name = 'name', summary = '' } = props;
+  return <WFComponent name={`WF:${name}`} summary={summary} expanded={false} />;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { WFComponent, MD };
+export { WFComponent, WF, MD };

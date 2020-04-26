@@ -19,7 +19,7 @@ const DBG = false;
 /// CUSTOM STYLES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp,
+  pagemode: theme.urScreenPage,
   fixedHeight: {
     backgroundColor: '#ffe0e0',
     minHeight: '100px'

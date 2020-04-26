@@ -11,20 +11,20 @@ import Interactions from '../blocks/views/Interactions';
 import Move from '../blocks/views/Move';
 import Playback from '../blocks/views/Playback';
 import Artwork from '../blocks/views/Artwork';
-import CommonSimObjects from '../blocks/views/CommonSimObjects';
-import CommonSimControls from '../blocks/views/CommonSimControls';
-import CommonSystem from '../blocks/views/CommonSystem';
+import CommonSimObjects from '../components/DocSimObjects';
+import CommonSimControls from '../components/DocSimControls';
+import CommonSystem from '../components/DocSystem';
 // ursys components
 import URSiteNav from '../blocks/URSiteNav';
 import URTabbedView from '../blocks/URTabbedView';
-import { FullScreen, ScrollPage, Row, CellFixed, Cell } from '../blocks/URLayout';
+import { URView, Row, CellFixed, Cell } from '../blocks/URLayout';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Page() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <ScrollPage>
+    <URView scrollable>
       <URSiteNav />
       <Row>
         <Cell>
@@ -44,7 +44,7 @@ function Page() {
           </URTabbedView>
         </CellFixed>
       </Row>
-    </ScrollPage>
+    </URView>
   );
 }
 

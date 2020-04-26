@@ -1,12 +1,11 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  CommonUI View
+  Documentation TextView
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, MD } from '../URLayout';
+import { TextView } from '../blocks/URLayout';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,31 +31,8 @@ The collection of
 Has the LIVE or PLAYBACK modes.
 * Playback Controls
 * Stream Selector
-
 `;
-
-/// LOCAL STYLES //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => ({
-  inset: { padding: `${theme.spacing(1)}px`, overflow: 'auto' }
-}));
-
-/// MAIN COMPONENT ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CommonSimControls() {
-  const classes = useStyles();
-
-  return (
-    <View className={classes.inset}>
-      <Row>
-        <Cell>
-          <MD>{NOTES}</MD>
-        </Cell>
-      </Row>
-    </View>
-  );
-}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default CommonSimControls;
+export default () => <TextView>{NOTES}</TextView>;

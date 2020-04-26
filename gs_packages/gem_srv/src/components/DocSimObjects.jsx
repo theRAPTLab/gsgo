@@ -5,8 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, MD } from '../URLayout';
+import { TextView } from '../blocks/URLayout';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,31 +42,8 @@ User inputs into the simulation
 #### Time
 * Time Intervals - periodic timers (60hz, user set) for Condition tests/Events
 * Timers - time elapsed counters (user set) for Condition tests/Events
-
 `;
-
-/// LOCAL STYLES //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => ({
-  inset: { padding: `${theme.spacing(1)}px`, overflow: 'auto' }
-}));
-
-/// MAIN COMPONENT ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CommonSim() {
-  const classes = useStyles();
-
-  return (
-    <View className={classes.inset}>
-      <Row>
-        <Cell>
-          <MD>{NOTES}</MD>
-        </Cell>
-      </Row>
-    </View>
-  );
-}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default CommonSim;
+export default () => <TextView>{NOTES}</TextView>;

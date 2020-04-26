@@ -23,9 +23,9 @@ import { MD } from '../components/ReactMarkdown';
 /// create useStyles() hook with theme object included
 /// the useStyles() hook also can receive a parameter for further customization
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp,
-  viewmode: theme.urFullScreenView,
-  scrollmode: theme.urScrollablePageView,
+  urscreen: theme.urScreenPage,
+  urscrollable: theme.urScrollableScreenPage,
+  urview: theme.urScreenView,
   fixedHeight: {
     minHeight: '100px'
   },
@@ -39,7 +39,8 @@ const useStyles = makeStyles(theme => ({
   },
   flexWidth: {
     flexGrow: 1
-  }
+  },
+  inset: { padding: `${theme.spacing(1)}px`, overflow: 'auto' }
 }));
 
 /// UR LAYOUT COMPONENTS //////////////////////////////////////////////////////
@@ -49,25 +50,13 @@ const useStyles = makeStyles(theme => ({
  *  to enable full-screen stretching layout.
  *
  */
-function FullScreen(props) {
+function URView(props) {
   const classes = useStyles();
-  const { children, className, ...other } = props;
+  const { children, scrollable, className, ...other } = props;
+  let viewClass = scrollable ? classes.urscrollable : classes.urscreen;
   // if you need read-only theme parameters directly in the component
   return (
-    <Box className={clsx(classes.pagemode, className)} {...other}>
-      {children}
-    </Box>
-  );
-}
-
-/** Scrollable Page
- */
-function ScrollPage(props) {
-  const classes = useStyles();
-  const { children, className, ...other } = props;
-  // if you need read-only theme parameters directly in the component
-  return (
-    <Box className={clsx(classes.scrollmode, className)} {...other}>
+    <Box className={clsx(viewClass, className)} {...other}>
       {children}
     </Box>
   );
@@ -82,9 +71,28 @@ function View(props) {
   const classes = useStyles();
   const { children, className, ...other } = props;
   return (
-    <Box className={clsx(classes.viewmode, className)} {...other}>
+    <Box className={clsx(classes.urview, className)} {...other}>
       {children}
     </Box>
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** TextView element for Page
+ *  Similar to View but accepts only a text as children to be processed
+ *  through React Markdown
+ */
+function TextView(props) {
+  const classes = useStyles();
+  const { children } = props;
+  return (
+    <View className={classes.inset}>
+      <Row>
+        <Cell>
+          <MD>{children}</MD>
+        </Cell>
+      </Row>
+    </View>
   );
 }
 
@@ -147,4 +155,4 @@ function Cell(props) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { FullScreen, ScrollPage, View, Row, RowFixed, Cell, CellFixed, Box, MD };
+export { URView, View, Row, RowFixed, Cell, CellFixed, Box, MD, TextView };
