@@ -1,25 +1,22 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Move View
+  Simulator View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../URLayout';
+import { WF, WFComponent } from '../URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### MOVEMENT
-* ${MD.cq('MovementWizardList')}
-* ${MD.cq('AgentList')}_
+### SIMULATE
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-Movement Panel
-* see agent list, choose type of automatic (AI) movement
-* list of wizard actions (TBD)
+
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -30,16 +27,25 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Move() {
+function Simulator() {
   const classes = useStyles();
 
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={160}>
+        <CellFixed minWidth={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
+          <WF name="SimWorld" summary="" />
+          <WF name="SimWorldActions" summary="" />
+          <WF name="SimWorldInputs" summary="" />
+          <WF name="SelectedAgentProps" summary="" />
+          <WF name="SessionList" summary="" />
+          <WF name="SessionRun" summary="" />
+          <WF name="SessionStatus" summary="" />
+          <WF name="SessionTrackSelector" summary="" />
+          <WF name="RunControls" summary="" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -49,4 +55,4 @@ function Move() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Move;
+export default Simulator;

@@ -6,11 +6,12 @@
 
 import React from 'react';
 // modeler views
-import Agents from '../blocks/views/Agents';
-import Interactions from '../blocks/views/Interactions';
-import Move from '../blocks/views/Move';
-import Playback from '../blocks/views/Playback';
-import Artwork from '../blocks/views/Artwork';
+import SystemHome from '../blocks/views/SystemHome';
+import SessionMgr from '../blocks/views/SessionMgr';
+import Simulator from '../blocks/views/Simulator';
+import Modeler from '../blocks/views/Modeler';
+import AssetMgr from '../blocks/views/AssetMgr';
+import Annotation from '../blocks/views/Annotation';
 import CommonSimObjects from '../components/DocSimObjects';
 import CommonSimControls from '../components/DocSimControls';
 import CommonSystem from '../components/DocSystem';
@@ -29,14 +30,21 @@ function Page() {
       <Row>
         <Cell>
           <URTabbedView>
-            <Agents label="Agents" />
-            <Interactions label="Interactions" />
-            <Move label="Move" />
-            <Artwork label="Artwork" />
-            <Playback label="Playback" />
+            <SystemHome label="Welcome" />
+            <SessionMgr label="Load" />
+            <Modeler label="Model" />
+            <Simulator label="Simulate" />
+            <Annotation label="Observe" />
+            <AssetMgr label="Images" />
           </URTabbedView>
         </Cell>
-        <CellFixed width="25%" style={{ backgroundColor: 'white' }}>
+        <CellFixed
+          style={{
+            maxWidth: '320px',
+            minWidth: '320px',
+            backgroundColor: 'white'
+          }}
+        >
           <URTabbedView>
             <CommonSimObjects label="Objects" />
             <CommonSimControls label="Controls" />

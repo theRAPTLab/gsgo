@@ -1,7 +1,7 @@
 /* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Agents View
+  Annotate View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -13,12 +13,10 @@ import { WF, WFComponent } from '../URWireframe';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### AGENTS
-* ${MD.cq('???')}
+### ANNOTATION
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-WIP...need to remake these given the new objects/controls/modules breakdown.
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -35,16 +33,20 @@ function Agents() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={160}>
+        <CellFixed minWidth={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
-          <WFComponent name="Hello" summary="fish balls">
-            Hello there les mond
-          </WFComponent>
-          <WF name="Hello" summary="fish balls">
-            Hello there les mond
-          </WF>
+          <WF name="SimWorld" summary="" />
+          <WF name="SimEventsFilter" summary="" />
+          <WF name="AgentListFilter" summary="" />
+          <WF name="InteractionListFilter" summary="" />
+          <WF name="SessionTrackFilter" summary="" />
+          <WF name="FilteredProps" summary="" />
+          <WF name="AnotationSelection" summary="" />
+          <WF name="AnotationControls" summary="" />
+          <WF name="SessionStatus" summary="" />
+          <WF name="SessionTrackSelector" summary="" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>

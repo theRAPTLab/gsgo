@@ -1,23 +1,27 @@
+/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Annotation View
+  System Home View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../blocks/URLayout';
+import { View, Row, Cell, CellFixed, MD } from '../URLayout';
+import { WF, WFComponent } from '../URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### ANNOTATION
+### SYSTEM HOME
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-Annotating Recordings
-* Toggle on/off
-* Annotations can be made live, and are tagged by the person/group annotating it
+* On initial load, only WELCOME and OBSERVE tabs are enabled.
+LoginStatus and Login are always visible
+* On successful login, the SESSIONS and IMAGES are enabled, but
+MODEL/SIM/ANNOTATE are inactive until a session is loaded.
+OBSERVE tab becomes ANNOTATE.
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -28,16 +32,25 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Annotation() {
+function SystemHome() {
   const classes = useStyles();
 
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={160}>
+        <CellFixed minWidth={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
+          <WF name="LoginStatus" summary="" />
+          <WF name="Login" summary="" />
+          <WF name="ClassroomInfo" summary="" />
+          <WF name="GroupInfo" summary="" />
+          <WF name="StudentInfo" summary="" />
+          <WF name="ConnectionStatus" summary="" />
+          <WF name="ProjectInfo" summary="" />
+          <WF name="TeacherMessage" summary="" />
+          <WF name="WelcomeHelp" summary="" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -47,4 +60,4 @@ function Annotation() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Annotation;
+export default SystemHome;

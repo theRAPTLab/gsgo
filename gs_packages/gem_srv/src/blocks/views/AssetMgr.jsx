@@ -1,38 +1,23 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Artwork View
+  Asset Manager View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../URLayout';
+import { WF, WFComponent } from '../URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### ARTWORK
-* ${MD.cq('BGList')}
-* ${MD.cq('BGEditor')}
-* ${MD.cq('AddBGBtn')}
-* ${MD.cq('ImportBGBtn')}
-* ${MD.cq('DelBGBtn')}
-* ${MD.cq('EditBGBtn')}
-* ${MD.cq('CostumeList')}
-* ${MD.cq('CostumeEditor')}
-* ${MD.cq('ImportCostumeBtn')}
-* ${MD.cq('AddCostumeBtn')}
-* ${MD.cq('DelCostumeBtn')}
-* ${MD.cq('EditCostumeBtn')}
+### ASSET MANAGER
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-Creating Artwork
-* simple paint program
-* labels of different skins
-* background
-* save | delete | erase
-* import
+Image-based assets, as files and also URLs.
+Are web page assets needed for comments and annotations?
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -43,16 +28,23 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Artwork() {
+function AssetMgr() {
   const classes = useStyles();
 
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed width={160}>
+        <CellFixed minWidth={160}>
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
+          <WF name="AssetType" summary="image-based assets" />
+          <WF name="AssetFilterList" summary="" />
+          <WF name="AssetListActions" summary="" />
+          <WF name="ImagePreview" summary="" />
+          <WF name="ImageEditor" summary="" />
+          <WF name="ImageEditorActions" summary="" />
+          <WF name="ImageImporter" summary="" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -62,4 +54,4 @@ function Artwork() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Artwork;
+export default AssetMgr;
