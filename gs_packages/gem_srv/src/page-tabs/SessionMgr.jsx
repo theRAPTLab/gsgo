@@ -1,27 +1,26 @@
-/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  System Home View
+  Interactions View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../URLayout';
-import { WF, WFComponent } from '../URWireframe';
+import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
+import { WF } from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### SYSTEM HOME
+### SESSION MGR
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
-* On initial load, only WELCOME and OBSERVE tabs are enabled.
-LoginStatus and Login are always visible
-* On successful login, the SESSIONS and IMAGES are enabled, but
-MODEL/SIM/ANNOTATE are inactive until a session is loaded.
-OBSERVE tab becomes ANNOTATE.
+When logged in, can select what model or session to load, or create a new one.
+
+
+#### Categories for SessionTable:
+* name, model, group, classroom, author, date created, date modified
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -32,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SystemHome() {
+function SessionMgr() {
   const classes = useStyles();
 
   return (
@@ -43,14 +42,17 @@ function SystemHome() {
         </CellFixed>
         <Cell>
           <WF name="LoginStatus" summary="" />
-          <WF name="Login" summary="" />
-          <WF name="ClassroomInfo" summary="" />
-          <WF name="GroupInfo" summary="" />
-          <WF name="StudentInfo" summary="" />
-          <WF name="ConnectionStatus" summary="" />
-          <WF name="ProjectInfo" summary="" />
-          <WF name="TeacherMessage" summary="" />
-          <WF name="WelcomeHelp" summary="" />
+          <WF
+            name="CurrentModelStatus"
+            summary="what model is currently loaded"
+          />
+          <WF
+            name="SessionTableCategories"
+            summary="sortable by category, filterable by keyword"
+          />
+          <WF name="SessionTable" summary="selectable session" />
+          <WF name="SessionActions" summary="add, load, edit, delete" />
+          <WF name="SessionEditor" summary="editable session descriptions?" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -60,4 +62,4 @@ function SystemHome() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default SystemHome;
+export default SessionMgr;

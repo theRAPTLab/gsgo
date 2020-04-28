@@ -5,20 +5,21 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-// modeler views
-import SystemHome from '../blocks/views/SystemHome';
-import SessionMgr from '../blocks/views/SessionMgr';
-import Simulator from '../blocks/views/Simulator';
-import Modeler from '../blocks/views/Modeler';
-import AssetMgr from '../blocks/views/AssetMgr';
-import Annotation from '../blocks/views/Annotation';
-import CommonSimObjects from '../components/DocSimObjects';
-import CommonSimControls from '../components/DocSimControls';
-import CommonSystem from '../components/DocSystem';
+// left-side tabbed views
+import SystemHome from '../page-tabs/SystemHome';
+import SessionMgr from '../page-tabs/SessionMgr';
+import Simulator from '../page-tabs/Simulator';
+import Modeler from '../page-tabs/Modeler';
+import AssetMgr from '../page-tabs/AssetMgr';
+import Annotation from '../page-tabs/Annotation';
+// right-side documentation reference
+import DocSimObjects from '../components/DocSimObjects';
+import DocSimControls from '../components/DocSimControls';
+import DocSystem from '../components/DocSystem';
 // ursys components
-import URSiteNav from '../blocks/URSiteNav';
-import URTabbedView from '../blocks/URTabbedView';
-import { URView, Row, CellFixed, Cell } from '../blocks/URLayout';
+import URSiteNav from '../page-blocks/URSiteNav';
+import URTabbedView from '../page-blocks/URTabbedView';
+import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,9 +47,9 @@ function Page() {
           }}
         >
           <URTabbedView>
-            <CommonSimObjects label="Objects" />
-            <CommonSimControls label="Controls" />
-            <CommonSystem label="Modules" />
+            <DocSimObjects label="Objects" />
+            <DocSimControls label="Controls" />
+            <DocSystem label="Modules" />
           </URTabbedView>
         </CellFixed>
       </Row>

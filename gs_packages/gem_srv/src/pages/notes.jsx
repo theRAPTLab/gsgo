@@ -10,7 +10,7 @@ import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
 ///
-import URSiteNav from '../blocks/URSiteNav';
+import URSiteNav from '../page-blocks/URSiteNav';
 ///
 import { MD } from '../components/ReactMarkdown';
 import FlexBoxLayout from '../components/examples/FlexBoxLayout';

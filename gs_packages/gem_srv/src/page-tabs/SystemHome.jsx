@@ -1,22 +1,27 @@
+/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Modeler View
+  System Home View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../URLayout';
-import { WF, WFComponent } from '../URWireframe';
+import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
+import { WF } from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { cq } = MD;
 const ELEMENTS = `
-### MODELER
+### SYSTEM HOME
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
+* On initial load, only WELCOME and OBSERVE tabs are enabled.
+LoginStatus and Login are always visible
+* On successful login, the SESSIONS and IMAGES are enabled, but
+MODEL/SIM/ANNOTATE are inactive until a session is loaded.
+OBSERVE tab becomes ANNOTATE.
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -27,7 +32,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Modeler() {
+function SystemHome() {
   const classes = useStyles();
 
   return (
@@ -37,16 +42,15 @@ function Modeler() {
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
-          <WF name="SimWorld" summary="" />
-          <WF name="SimWorldActions" summary="" />
-          <WF name="SimWorldInputs" summary="" />
-          <WF name="AgentList" summary="" />
-          <WF name="AgentListActions" summary="" />
-          <WF name="AgentScriptEditor" summary="" />
-          <WF name="AgentPropEditor" summary="" />
-          <WF name="InteractionList" summary="" />
-          <WF name="InteractionListActions" summary="" />
-          <WF name="SelectedAgentProps" summary="" />
+          <WF name="LoginStatus" summary="" />
+          <WF name="Login" summary="" />
+          <WF name="ClassroomInfo" summary="" />
+          <WF name="GroupInfo" summary="" />
+          <WF name="StudentInfo" summary="" />
+          <WF name="ConnectionStatus" summary="" />
+          <WF name="ProjectInfo" summary="" />
+          <WF name="TeacherMessage" summary="" />
+          <WF name="WelcomeHelp" summary="" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -56,4 +60,4 @@ function Modeler() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Modeler;
+export default SystemHome;

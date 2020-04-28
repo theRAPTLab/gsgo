@@ -7,8 +7,8 @@
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../URLayout';
-import { WF, WFComponent } from '../URWireframe';
+import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
+import { WF } from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

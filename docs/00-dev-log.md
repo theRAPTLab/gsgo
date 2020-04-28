@@ -57,3 +57,23 @@ After starting the deep wireframing, by the end of the day I realized that the f
 
 Now I'm going to make a list of the entities. First copy them to the COMMON ELEMENTS tab in GEM_SRV wireframe.
 
+## Apr 24.01 - Rough Sketch
+
+>  ***Review the docs I wrote yesterday, and make stand-in components. But first I need write system descriptions.***
+
+Picking up where I left off yesterday, I'm refining my understanding of the needs of the overall system (and documenting it as I go). I've made a rough sketch of what the systems are. On Saturday I will document them and try to make a working screen prototype of all the element areas.
+
+## Apr 26.01 Sunday Sketching
+
+I have a diagram that lists a bunch of things. Let's make those components.
+
+## Apr 27.01 Redoing Page Layout
+
+The functional spec tabs don't make sense to me in a working app, so I'm redoing the flow. SYSTEM SESSIONS MODEL SIM OBSERVE ASSETS
+
+Making new views for the index page.
+
+* renamed all views to page-tabs
+* redid all page-tabs to reflect a functional app
+* added placeholder WF components to list functions per tab
+* renamed blocks to page-blocks
