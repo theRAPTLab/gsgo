@@ -74,11 +74,11 @@ const useStyles = makeStyles(theme => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** basic wireframe component
  *  example:
- *  <WFComponent name='name', summary='short text'>
+ *  <WF name='name', summary='short text', expanded=false>
  *    child content will be put in collapsable section
- * </WFComponent>
+ * </WF>
  */
-function WFComponent(props) {
+function WF(props) {
   const classes = useStyles();
   const { name = 'Component', summary = '', children, expanded = false } = props;
   const isWF = name.includes('WF:');
@@ -121,17 +121,6 @@ function WFComponent(props) {
   );
 }
 
-/// UR WIREFRAME COMPONENTS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *  example:
- *  short blart <Generic name subline
- */
-function WF(props) {
-  const { name = 'name', summary = '' } = props;
-  return <WFComponent name={`WF:${name}`} summary={summary} expanded={false} />;
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { WFComponent, WF, MD };
+export { WF, MD };
