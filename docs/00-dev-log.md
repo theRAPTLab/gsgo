@@ -77,3 +77,9 @@ Making new views for the index page.
 * redid all page-tabs to reflect a functional app
 * added placeholder WF components to list functions per tab
 * renamed blocks to page-blocks
+
+## Apr 28.01 Reviewing System Layout
+
+I spent some time trying to get MDX to work because it provides a plugin, but NextJS completely fails to work with the Typescript parsing for some reason My guess is because of webpack/eslint bullshit. Next runs webpack which loads eslint, and webpack needs to know how to find modules. This is what is failing. The `Next.config.js` file is supposed to use some mdx plugins to set the configuration correctly, but their examples don't work. I'm assuming it's just broken.
+
+**With that, I think I'm at the point where I have enough outlined that I can move on to actual implemention of the SIM.**
