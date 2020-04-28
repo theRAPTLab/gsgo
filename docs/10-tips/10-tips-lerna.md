@@ -1,6 +1,6 @@
 # Lerna Tips
 
-## How do I add a new package to the monorepo?
+## How do I add a NEW package to the monorepo?
 
 Our monorepo is managed by `lerna`, which is a wrapper for `npm` or `yarn` that manages the contents of `node_modules` for you so you can have one giant 
 
@@ -64,10 +64,13 @@ Currently, we're using `lerna version prerelease` to automatically bump our prer
 * Run `lerna version prerelease` initially when just getting the repo into some kind of shape. 
 * Run `lerna version minor` when a release is feature-ready.
 
-
 ## How do I add npm packages to existing projects?
 
-You can use regular `npm install` or `yarn install` inside the package subfolder. The advantage that `lerna add` has is that it can add packages to *all* our packages at once.
+You can use regular `npm install` or `yarn install` inside the package subfolder. 
+
+* If it's only for that submodule, do the `npm install` in the subfolder, then in the root folder execute `npm run bootstrap`
+* If you want to add the package to everyone, then use `lerna add` has is that it can add packages to *all* our packages at once.
+* If you are added a package related to VSCode formatting (e.g. eslint, prettier) then you should reload the editor also after installing
 
 ### Examples
 
