@@ -11,7 +11,6 @@ import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 // styling
 import { makeStyles } from '@material-ui/core/styles';
-import wireframeStyles from '../modules/style/wireframing';
 
 /// LOCAL STYLES AND PROPS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,8 +29,7 @@ const useStyles = makeStyles(theme =>
         flexGrow: 1,
         flexFlow: 'column nowrap'
       }
-    },
-    wireframeStyles(theme)
+    }
   ])
 );
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

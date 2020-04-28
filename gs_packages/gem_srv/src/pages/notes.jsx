@@ -1,41 +1,46 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Example page with Page Navigation
-  Copy this to the src/pages directory
+  Example page with PageNav and full page layout
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-
+///
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
-
-import URSiteNav from '../blocks/URSiteNav';
+import Typography from '@material-ui/core/Typography';
+///
+import URSiteNav from '../page-blocks/URSiteNav';
+///
+import { MD } from '../components/ReactMarkdown';
+import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp, // required for full-page screen apps
-  example: {
-    padding: `${theme.spacing(1)}px`
-  }
+  pagemode: theme.urScreenPage
 }));
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Page() {
-  const classes = useStyles(); //
+function Page(props) {
+  const { store } = props;
+  const classes = useStyles();
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <Box className={classes.pagemode}>
+      <Typography variant="overline">
+        <MD>{`
+**markdown-styled** text here (wrapped in MUI Typography)
+      `}</MD>
+      </Typography>
       <URSiteNav />
-      <div className={classes.example}>
-        <p>Put whatever you want here</p>
-      </div>
+      <FlexBoxLayout store={store} />
     </Box>
   );
 }
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Page; // functional component

@@ -21,9 +21,8 @@ import { useRouter } from 'next/router';
 import { makeStyles } from '@material-ui/core/styles';
 
 import APPSTATE from '../modules/appstate';
-import wireframeStyles from '../modules/style/wireframing';
 
-import CONFIG from '../site-config';
+import CONFIG from '../pages/_navmenu.json';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,8 +43,7 @@ const useStyles = makeStyles(theme =>
       appbar: {},
       container: {},
       tabs: {}
-    },
-    wireframeStyles(theme)
+    }
   ])
 );
 
@@ -103,7 +101,7 @@ function URSiteNav() {
       <Grid container justify="space-between" className={classes.container}>
         <Grid item>
           <Typography variant="h6" className={classes.title}>
-            GEM-STEP
+            MODELER
           </Typography>
         </Grid>
         <Grid item>

@@ -1,36 +1,59 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Example page with PageNav and full page layout
+  MODELER MAIN PAGE
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-///
-import { Box } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
-///
-import URSiteNav from '../blocks/URSiteNav';
-///
-import FlexBoxLayout from '../components/examples/FlexBoxLayout';
-
-/// LOCAL STYLES //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp
-}));
+// left-side tabbed views
+import SystemHome from '../page-tabs/SystemHome';
+import SessionMgr from '../page-tabs/SessionMgr';
+import Simulator from '../page-tabs/Simulator';
+import Modeler from '../page-tabs/Modeler';
+import AssetMgr from '../page-tabs/AssetMgr';
+import Annotation from '../page-tabs/Annotation';
+// right-side documentation reference
+import DocSimObjects from '../components/DocSimObjects';
+import DocSimControls from '../components/DocSimControls';
+import DocSystem from '../components/DocSystem';
+// ursys components
+import URSiteNav from '../page-blocks/URSiteNav';
+import URTabbedView from '../page-blocks/URTabbedView';
+import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Page(props) {
-  const { store } = props;
-  const classes = useStyles();
-
+function Page() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
-    <Box className={classes.pagemode}>
+    <URView scrollable>
       <URSiteNav />
-      <FlexBoxLayout store={store} />
-    </Box>
+      <Row>
+        <Cell>
+          <URTabbedView>
+            <SystemHome label="Welcome" />
+            <SessionMgr label="Load" />
+            <Modeler label="Model" />
+            <Simulator label="Simulate" />
+            <Annotation label="Observe" />
+            <AssetMgr label="Images" />
+          </URTabbedView>
+        </Cell>
+        <CellFixed
+          style={{
+            maxWidth: '320px',
+            minWidth: '320px',
+            backgroundColor: 'white'
+          }}
+        >
+          <URTabbedView>
+            <DocSimObjects label="Objects" />
+            <DocSimControls label="Controls" />
+            <DocSystem label="Modules" />
+          </URTabbedView>
+        </CellFixed>
+      </Row>
+    </URView>
   );
 }
 
