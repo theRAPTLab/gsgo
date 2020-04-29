@@ -19,7 +19,7 @@ const DBG = false;
 /// CUSTOM STYLES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp,
+  pagemode: theme.urScreenPage,
   fixedHeight: {
     backgroundColor: '#ffe0e0',
     minHeight: '100px'
@@ -43,10 +43,7 @@ const useStyles = makeStyles(theme => ({
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Page(props) {
-  const { store } = props;
-  const { currentTab, currentRoute } = store.getRoute();
   const classes = useStyles();
-  if (DBG) console.log(`appstate tab:${currentTab} route:'${currentRoute}'`);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (

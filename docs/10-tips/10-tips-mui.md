@@ -40,3 +40,11 @@ export default function MyApp() {
 ```
 
 However there's more stuff that we need to jam in there
+
+## What's up with this Multiple Styles Instances Error?
+
+In your console you might see
+
+>It looks like there are several instances of `@material-ui/styles` initialized in this application. This may cause theme propagation issues, broken class names, specificity issues, and make your application bigger without a good reason.
+
+There's a link that [takes you to the mui faq](https://material-ui.com/getting-started/faq/#i-have-several-instances-of-styles-on-the-page). In my case, the issue came from having installed `@material-ui/styles` as well as `@material-ui/core` which already exports `styles`. Removing the former from local gem_srv `package.json` worked, but only after running `bootstrap --hoist` from the root level. Trying to remove it from the local package  `package.json` then running `npm install` failed.

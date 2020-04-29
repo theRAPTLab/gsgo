@@ -21,7 +21,6 @@ import clsx from 'clsx';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
-import wireframeStyles from '../../modules/style/wireframing';
 
 /// LOCAL STYLES FOR COMPONENT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,8 +44,7 @@ const useStyles = makeStyles(theme =>
       caption: {
         padding: theme.spacing(1)
       }
-    },
-    wireframeStyles(theme)
+    }
   ])
 );
 

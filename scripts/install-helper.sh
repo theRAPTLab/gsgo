@@ -9,6 +9,11 @@ echo -e "\x1B[1;44m GEMSTEP Dev Environment Installer Helper \x1B[0m"
 echo "This utility will determine what needs to be installed so you"
 echo "can run GEMSTEP, then print a list of commands."
 
+# utility
+exists() { 
+    command -v "$1" >/dev/null 2>&1 
+}
+
 # output buffering utilities
 OUT=()
 CLI=()
@@ -125,10 +130,6 @@ if ! [ -d ~/.nvm ]; then
 else
     pr "[X] ~/.nvm directory exists"
 fi
-
-exists() { 
-    command -v "$1" >/dev/null 2>&1 
-}
 
 # check that nvm is actually installed
 if ! exists nvm; then 

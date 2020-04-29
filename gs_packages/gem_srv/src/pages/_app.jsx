@@ -12,9 +12,12 @@ import Head from 'next/head';
 ///
 import { create } from 'jss';
 import extend from 'jss-extend';
-import { StylesProvider, jssPreset } from '@material-ui/styles';
+import {
+  StylesProvider,
+  jssPreset,
+  ThemeProvider
+} from '@material-ui/core/styles';
 ///
-import { ThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 ///
 import theme from '../modules/style/theme';

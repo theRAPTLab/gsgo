@@ -29,17 +29,26 @@ import merge from 'deepmerge';
  *  <div style={theme.property}/>
  */
 const addDerivedStyles = theme => {
+  const fontMargin = theme.typography.htmlFontSize;
+
   // set layout-related styles here
   // the properties here (e.g. layoutJSS) are just for labeling clarity
   // and are not part of any system configuration
   const layoutJSS = {
-    urFullScreenApp: {
+    urScreenPage: {
       backgroundColor: '#e0e0e0',
       display: 'flex',
       flexFlow: 'column nowrap',
-      height: '100vh'
+      height: '100vh',
+      overflow: 'hidden'
     },
-    urFullScreenView: {
+    urScrollableScreenPage: {
+      backgroundColor: '#e0e0e0',
+      display: 'flex',
+      flexFlow: 'column nowrap'
+      /* no height or overflow */
+    },
+    urScreenView: {
       display: 'flex',
       flexFlow: 'column nowrap',
       flexGrow: 1
@@ -54,25 +63,8 @@ const addDerivedStyles = theme => {
   // for individual components, use local makeStyles/useStyles/useTheme
   // conventions
   const globalProperties = {};
-  // make a global classname you can use directly instead of through
-  // the classes dictionary (e.g. <div className='ursys'>)
-  const globalClasses = {
-    '@global': {
-      '.ursys': {
-        height: 100,
-        width: 100,
-        backgroundColor: 'blue'
-      }
-    }
-  };
   // merge all styles together
-  return merge.all([
-    theme,
-    layoutJSS,
-    componentJSS,
-    globalProperties,
-    globalClasses
-  ]);
+  return merge.all([theme, layoutJSS, componentJSS, globalProperties]);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -13,7 +13,7 @@ import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStyles = makeStyles(theme => ({
-  pagemode: theme.urFullScreenApp
+  pagemode: theme.urScreenPage
 }));
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
