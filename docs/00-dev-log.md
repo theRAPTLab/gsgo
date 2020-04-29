@@ -83,3 +83,21 @@ Making new views for the index page.
 I spent some time trying to get MDX to work because it provides a plugin, but NextJS completely fails to work with the Typescript parsing for some reason My guess is because of webpack/eslint bullshit. Next runs webpack which loads eslint, and webpack needs to know how to find modules. This is what is failing. The `Next.config.js` file is supposed to use some mdx plugins to set the configuration correctly, but their examples don't work. I'm assuming it's just broken.
 
 **With that, I think I'm at the point where I have enough outlined that I can move on to actual implemention of the SIM.**
+
+## Apr 29.01 Merging and Moving On
+
+I made the merge request last night and merged it into dev. This got me to thinking bout how other people manage their branches, because I would like to version our tags in a certain way.
+
+Reviewing sample repos, these are the practices I saw:
+
+* `master` used for deployment, releases, which have only 'version update' related things
+* `next` is used for the "next version", squashed commits
+* `<feature>` branches are named arbitrarily
+* `<package/feature/subfeature>` sometimes seen
+* `[issueid]-feature` sometimes used
+* `gh-pages` for documentation on github
+* `1.x` versioning branches for old versions that aren't current with "master" or "next" branches.
+* `canary`, `master`, `alpha` in some repos
+* `stable` is merged from "master" that is currently deployed, and is never fussed with and is tagged.
+
+I wrote a new [Branching Conventions](20-tooling/21-branch-flow.md)) document that summarized our current practice. 
