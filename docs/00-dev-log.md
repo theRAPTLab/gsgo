@@ -65,7 +65,7 @@ I wrote a new [Branching Conventions](20-tooling/21-branch-flow.md)) document th
 
 # 6. Simulation Prototype
 
-## APR 30.01 Preparing for Simulation Authoring
+## Apr 30.01 Preparing for Simulation Authoring
 
 Here's a list of things to try:
 
@@ -80,4 +80,23 @@ Later on...
 * Make a URSYS server, and connect GEM_SRV to its messaging
 * URSYS state
 * URSYS device synch syste
+
+## Apr 30.02 Can I make a NextJS Custom Server in 10 Minutes?
+
+According to the docs, NextJS custom servers lose:
+
+* **serverless functions** - you can deploy to target 'serverless', which creates a "lambda function" for every defined page that works standalone on AWS Lamba or other serverless platforms. It's an interesting idea, but we are not using it at all. 
+* **automatic static optimization** - determine if page is static if no `getServerSideProps` or `getInitialProps` properties exist. Our custom `_app` doesn't use it, but our `_document` page does. The document page is only loaded once so the rest of the app can render static. It's useful in the case we're streaming optimized pages from CDNs. Note there is also `getStaticProps` but that always renders on the server at build time. You can tell if a page is rendered as static if the lightning bolt appears in dev mode.
+
+That in mind, let's go ahead and implement our custom server:
+
+* Copy server.js code from NextJS example...works!
+* update `package.json` scripts to run `node ./server/_start.js` instead of `next start`, etc
+* update `.vscode/launch.json` to also use our custom `_start.js`  so we can debug.
+
+Seems to work. Let's commit.
+
+
+
+
 

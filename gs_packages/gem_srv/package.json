@@ -11,9 +11,9 @@
   },
   "scripts": {
     "local": "npm run dev:gem",
-    "dev:gem": "next -p 3000",
+    "dev:gem": "node ./server/_start",
     "build:gem": "next build",
-    "start:gem": "next start"
+    "start:gem": "node ./server/_start"
   },
   "dependencies": {
     "@gemstep/globals": "^0.0.1-alpha.3",
@@ -31,9 +31,7 @@
     "react-redux": "^7.2.0",
     "redux": "^4.0.5"
   },
-  "publishConfig": {
-    "access": "private"
-  },
+  "private": true,
   "devDependencies": {
     "@zeit/next-source-maps": "0.0.3"
   }
