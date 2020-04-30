@@ -12,9 +12,7 @@
   "files": [
     "lib"
   ],
-  "publishConfig": {
-    "access": "private"
-  },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"

@@ -5,9 +5,7 @@
   "keywords": [],
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "license": "ISC",
-  "publishConfig": {
-    "access": "private"
-  },
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"

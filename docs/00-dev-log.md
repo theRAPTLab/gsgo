@@ -96,7 +96,15 @@ That in mind, let's go ahead and implement our custom server:
 
 Seems to work. Let's commit.
 
+## Apr 30.03 Can I make a stub URSYS package in our monorepo?
 
+This is a more complicated task. What would the import look like? We have something in `gs_packages/globals.js`, and this is imported using:
+
+```js
+import GEM_CONFIG from '@gemstep/globals';
+```
+
+The prefix `@gemstep` is set in each `package.json` file.
 
 
 
