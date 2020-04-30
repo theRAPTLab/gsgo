@@ -1,0 +1,23 @@
+{
+  "name": "@gemstep/ursys",
+  "version": "0.0.1-alpha.4",
+  "description": "URSYS Networked Application Framework",
+  "keywords": [],
+  "author": "Dave 'Sri' Seah <david@davidseah.com>",
+  "license": "MIT",
+  "main": "lib.js",
+  "directories": {
+    "lib": "lib"
+  },
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: run tests from root\" && exit 1"
+  }
+}

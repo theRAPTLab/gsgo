@@ -104,7 +104,27 @@ This is a more complicated task. What would the import look like? We have someth
 import GEM_CONFIG from '@gemstep/globals';
 ```
 
-The prefix `@gemstep` is set in each `package.json` file.
+The prefix `@gemstep` is set in each `package.json` file. Cleaned up invalid `publishConfig:'restricted'` setting, replaced with `private: true`. 
+
+Our stub package will be called `@gemstep/ursys` and it will export a number of libraries from the main object as follows:
+
+```js
+import { LibraryName } from '@gemstep/ursys';
+```
+
+To add the new package `lerna create @gemstep/ursys`. Updated package.json structure. Created stub `lib.js` that lists all the modules. I also renamed them. Also copy a minimum `tsconfig.json` file into the new `ursys` package so Visual Studio Code lints correctly.
+
+Now let's **test importing**. For that to happen, we need to use Lerna to add this as a dependency:
+
+```
+lerna add @gemstep/ursys --scope=@gemstep/gem_srv
+```
+
+>  NOTE: I'm not sure how the **module format** should be. Probably need to have its own webpack configuration to build the library just right, in a way that supports **Tree Shaking** and also to use the more modern module formats. Right now, we're limited to `export = {}` because webpack isn't involved at all in **transpiling** it.
+
+In my stub URSYS package, I have it export `_VERSION` which is echoed by the `gem_srv` custom server. It works!!!
+
+
 
 
 

@@ -9,12 +9,15 @@ const { parse } = require('url');
 const next = require('next');
 const path = require('path');
 
+const URSYS = require('@gemstep/ursys');
+
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const SCRIPT_PATH = path.relative(`${__dirname}/../..`, __filename);
 console.log(`SERVER STARTING: ${SCRIPT_PATH}`);
+console.log(`URSYS VERSION ${URSYS._VERSION}`);
 
 /*/ START WEB SERVER
     NextJS is loaded as middleware with all its usual features
