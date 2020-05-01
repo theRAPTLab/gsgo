@@ -124,6 +124,125 @@ lerna add @gemstep/ursys --scope=@gemstep/gem_srv
 
 In my stub URSYS package, I have it export `_VERSION` which is echoed by the `gem_srv` custom server. It works!!!
 
+## Apr 30.04 Where can I insert the startup code for URSYS in our NextJS framework?
+
+NextJS has a data fetching lifecycle. It's alluded to [in this MUI example](https://github.com/mui-org/material-ui/blob/master/examples/nextjs-with-typescript/pages/_document.tsx). The way NextJS works is by prerenderng React on the server. The web browser client loads an initial page stub based on `_document.jsx`. The order of rendering sucessfully o the server is inside-out: from page to _app to _document. It runs TWICE: once on the server, and also on the client. 
+
+SPECULATIVE THINKING OUT LOUD
+
+In our old system, a single-page webapp bundle is compiled ahead of time and then served to clients by our custom server. There were two parts: the webapp server which returned an index.html that loaded the client bundle, and a socket server interface that established a persistent connection to the server's database functions. Routing was handled through React Router on the client side, and state was always held in the webapp.
+
+In NextJS, we have routing managed by individual pages, served by the NextJS https server in either **development** mode or **production** mode. Each page is routed separately and is stateless, though there exists the provision for `getInitialProps` and others. I think it works like this:
+
+* **nextserver** receives request for a page
+
+* **nextserver** loads the page on the server and checks for:
+
+  * `getStaticProps` at build time for static generation. Never called on client side. Use `process.cwd()` to get current directory where next is being executed. Exported specifically as an async function, not a property attached to the page as `getInitialProps` was.
+  * `getStaticPaths` dynamic routes to pre-render based on data for static generation. Dynamic routes use the `[id].jsx` syntax. The function must export a `paths` key that specifics parameters to pre-render. Used in conjunction with `getStaticProps` to prerender a set of pages but also fallback to rendering to cache on demand. Cool!
+    * `getServerSideProps` fetchdata on each request for server-side rendering on demand. Receives a `context` object that contains route `params` if it's dynamic, the http `req` and `res` objects, the `query` string, and whether it's "preview mode" 
+
+* if any of those methods are attached to _document, _app, or the routed page, then those methods are called to retrieve props that will be provided to the React element being rendered on the page. This is fetched as a JSON file. 
+
+* **nextclient** fetches rendered html and stuffs it into into the browser web pages. This is *NOT* React code executing on the client. 
+
+* to run client-side code, the **dynamic import** is used. Two formats for Components
+
+  ```jsx
+  import dynamic from 'next/dynamic'
+  // load the entire module into DynamicComponent
+  const DynamicComponent = dynamic(()=>import('../components/hello'))
+  // or load a specific export from the module into Hello
+  const Hello = dynamic(()=>
+  	import('../components/hello').then(mod=>return mod.Hello)
+  );
+  // return a temporary loading symbol
+  const DynamicComponentWithCustomLoading = dynamic(
+    () => import('../components/hello'),
+    { loading: () => <p>...</p> }
+  )
+  	
+  ```
+
+* The **dynamic import** can be used to load any object on the client side. To force **browser-only** loading, pass the option key `{ssr:false}`.
+
+### Ramifications for URSYS Loading
+
+(1) We can maybe initialize URSYS using the dynamic loading of a module, maybe something like this on a page.
+
+```jsx
+import dynamic from 'next/dynamic'
+const URSYS = dynamic(()=>import('ursys').then(mod=>new Promise((res,rej)=>{
+  await const UR = URSYS.Initialize();
+  resolve(UR);
+},{SSR:false});
+```
+
+### Ramifications for THREEJS and External Library Loading
+
+(2) Another possibility is writing the state stuff into `_app.jsx` because this is the wrapper that returns our component. This is where we persist data. There's an example for using ThreeJS with NextJS, but there are some new maybe worrisome elements:
+
+* it uses React Suspense, which makes me suspicious. Suspense is a way to render a fallback component until a condition is met (like waiting for something to load), then draws when it's done.
+* it uses ThreeJS through something called a "React reconciler": a custom renderer that specifies a configuration where to draw stuff. 
+
+### Other kinds of Client-side Data Loading
+
+There's a react hook library called [SWR](https://swr.now.sh/) that can be used for remote data fetching using a "stale-while-revalidate" cache strategy. It immediately returns stale cache data and fetches validation data; if the new data is actually new it returns the new data again. I think this means it potentially fires twice.
+
+Using SWR in a component means that you use the useSWR hook to know when a component should be rerendered. Somehow React knows that the hook parameters returned are associated with the functional component, and it's called automatically when the behind-the-scenes engine has new data. That's kindof neat. Note that the `useSWR` hook looks like this:
+
+```
+const { data, error } = useSWR('key',asyncFunction); // note this isn't a destructured array
+const { data:user, error } = useSWR('key,asyncFunction); // note 'data' is renamed to 'user' 
+const { data:projects } = useSWR(()=>'/api/?uid='+user.id); 
+if (!projects) return 'loading';
+return 'You have '+projects.length+'projects'
+```
+
+So this is a pretty cool way to do asynchronous components with data fetches. This presumes an API endpoint, which I'm not quite sure how to write yet. We are using URSYS sockets though.
+
+## Apr 30.05 Test the Dynamic Loading to see if we can just load something client-side only
+
+**Q. Can we even load the URSYS package through `dynamic`?** 
+
+**A. NOPE.** The `dynamic` package wraps the return value in a React component, so it's not useful for us. It might be possible to dig out some inner value, but it's hacky.
+
+There may be a more direct way by using React's [built-in import](https://reactjs.org/docs/code-splitting.html) that is already provided by webpack. Let's see if that works.
+
+```js
+let URSYS;
+import('@gemstep/ursys').then(mod => {
+  URSYS = mod;
+});
+setTimeout(() => {
+  console.log('timeout URSYS=', URSYS.default._VERSION);
+}, 1000);
+console.log('immediate URSYS=', URSYS);
+```
+
+This actually works but we can't load the module very easily and execute it. For one thing, this is executing ALSO on the server side. 
+
+**Q. How about a client-side event trigger?** 
+
+A. We can rely on URSYS being loaded by webpack, so it can be defined and compiled serverside. Then we call the bundled library. This works fine! That is because NextJS **is our bundler** to provide source code; so long as we don't call any window-specific code outside of an event or effect hook, we're probably fine!!!
+```js
+import URSYS from '@gemstep/ursys';
+console.log(URSYS._VERSION); // prints on server AND client though...
+```
+> CAVEATS: when starting up the server, code is **run ONCE on the server-side to build the initial SS app**. After the server is running, the server is just serving rendered elements. However, every client connection and interaction will rerun (not sure exactly what triggers this)
+
+**Q. So how do we initialize the URSYS library on the client?**
+
+A. Use React's `useEffect` or `useLayoutEffect` hooks. **These hooks execute only on the client after rendering**; this [video](https://dev.to/changoman/next-js-server-side-rendering-and-getinitialprops-intro-10n2) may confirm this technically. For now, I'm seeing it only run on the client in the `_app.js` file.
+
+
+
+
+
+
+
+
+
 
 
 

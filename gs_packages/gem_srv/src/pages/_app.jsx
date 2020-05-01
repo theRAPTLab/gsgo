@@ -6,9 +6,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
+import URSYS from '@gemstep/ursys';
 ///
 import { create } from 'jss';
 import extend from 'jss-extend';
@@ -35,6 +36,16 @@ const jss = create({
 export default function MyApp(props) {
   const { Component, pageProps } = props;
 
+  // useEffect executes on on clients, after MyApp has completely rendered
+  useEffect(() => {
+    console.group('Initialize URSYS on Client');
+    URSYS.Init();
+    // window references will not throw error inside useEffect
+    // but if it was not then server would crash when starting
+    console.log('window object', window);
+    console.groupEnd();
+  });
+
   return (
     <StylesProvider jss={jss}>
       <Head>
@@ -52,6 +63,20 @@ export default function MyApp(props) {
     </StylesProvider>
   );
 }
+
+// Only uncomment this method if you have blocking data requirements for
+// every single page in your application. This disables the ability to
+// perform automatic static optimization, causing every page in your app to
+// be server-side rendered. This code is rendered on the server only!!!
+// Also add this import:
+// import App from 'next/app';
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// MyApp.getInitialProps = async appContext => {
+//   // calls page's `getInitialProps` and fills `appProps.pageProps`
+//   const appProps = await App.getInitialProps(appContext);
+//   return { ...appProps };
+// };
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MyApp.propTypes = {
   Component: PropTypes.elementType.isRequired,

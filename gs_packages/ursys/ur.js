@@ -13,6 +13,7 @@
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const VERSION = '1.0.0';
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +47,10 @@ const Session = {};
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  _VERSION: '1.0.0',
+  _VERSION: VERSION,
+  Init: () => {
+    console.log(`URSYS INITIALIZING: v${VERSION}`);
+  },
   Client: { Events, Exec, Extensions, Link, Network, PubSub },
   Server: { URStore, URWeb, URLogger, URNet, URMedia },
   Data: { Datamap, Messager, NetMessage, ValueBinding, DateString, Session }

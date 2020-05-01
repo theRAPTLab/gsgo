@@ -5,13 +5,9 @@
   "keywords": [],
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "license": "MIT",
-  "main": "lib.js",
-  "directories": {
-    "lib": "lib"
-  },
-  "files": [
-    "lib"
-  ],
+  "main": "ur.js",
+  "directories": {},
+  "files": [],
   "private": true,
   "repository": {
     "type": "git",
