@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-param-reassign */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -15,9 +17,11 @@
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const HashIds = require('hashids').default;
-const UUIDv5 = require('uuid/v5');
-const PROMPTS = require('../../config/prompts');
+const HashIds = require('hashids/cjs');
+const UUID = require('uuid');
+
+const UUIDv5 = UUID.v5;
+const PROMPTS = require('./prompts');
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,7 +43,7 @@ const UPLOAD_URL = `${SSHOT_URL}/upload`;
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_current_name = undefined; // global decoded name (only for browsers)
+let m_current_name; // global decoded name (only for browsers)
 let m_current_idsobj = {}; // global decoded props (only for browsers)
 let m_access_key = ''; // global access key (saved only for browsers)
 
@@ -52,19 +56,25 @@ const SESSION = {};
     complete decode succes. groupId is also set if successful
 /*/
 SESSION.DecodeToken = hashedToken => {
-  let studentName, hashedData; // token
-  let groupId, classroomId; // decoded data
+  let studentName;
+  let hashedData; // token
+  let groupId;
+  let classroomId; // decoded data
   let isValid = false;
   // is a valid token?
-  if (typeof hashedToken !== 'string') return { isValid, error: 'token must be a string' };
+  if (typeof hashedToken !== 'string')
+    return { isValid, error: 'token must be a string' };
   // token is of form NAME-HASHEDID
   // (1) check student name
   const token = hashedToken.toUpperCase();
   const tokenBits = token.toUpperCase().split('-');
-  if (tokenBits.length === 1) return { isValid, token, error: 'missing - in token' };
-  if (tokenBits.length > 2) return { isValid, token, error: 'too many - in token' };
+  if (tokenBits.length === 1)
+    return { isValid, token, error: 'missing - in token' };
+  if (tokenBits.length > 2)
+    return { isValid, token, error: 'too many - in token' };
   if (tokenBits[0]) studentName = tokenBits[0].toUpperCase();
-  if (studentName.length < 3) return { isValid, token, error: 'student name must have 3 or more letters' };
+  if (studentName.length < 3)
+    return { isValid, token, error: 'student name must have 3 or more letters' };
 
   // (2) check hashed data
   if (tokenBits[1]) hashedData = tokenBits[1].toUpperCase();
@@ -86,7 +96,11 @@ SESSION.DecodeToken = hashedToken => {
 /*/
 SESSION.IsValidToken = token => {
   let decoded = SESSION.DecodeToken(token);
-  return decoded && Number.isInteger(decoded.groupId) && typeof decoded.studentName === 'string';
+  return (
+    decoded &&
+    Number.isInteger(decoded.groupId) &&
+    typeof decoded.studentName === 'string'
+  );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -98,8 +112,10 @@ SESSION.IsValidToken = token => {
  */
 SESSION.MakeToken = (studentName, dataIds = {}) => {
   // type checking
-  if (typeof studentName !== 'string') throw Error(`classId arg1 '${studentName}' must be string`);
+  if (typeof studentName !== 'string')
+    throw Error(`classId arg1 '${studentName}' must be string`);
   let err;
+  // eslint-disable-next-line no-cond-assign
   if ((err = f_checkIdValue(dataIds))) {
     console.warn(`Could not make token. ${err}`);
     return undefined;
@@ -122,8 +138,10 @@ SESSION.MakeToken = (studentName, dataIds = {}) => {
  */
 SESSION.MakeTeacherToken = (teacherName, dataIds = {}) => {
   // type checking
-  if (typeof teacherName !== 'string') throw Error(`classId arg1 '${teacherName}' must be string`);
+  if (typeof teacherName !== 'string')
+    throw Error(`classId arg1 '${teacherName}' must be string`);
   let err;
+  // eslint-disable-next-line no-cond-assign
   if ((err = f_checkIdValue(dataIds))) {
     console.warn(`Could not make token. ${err}`);
     return undefined;
@@ -154,7 +172,6 @@ function f_checkIdValue(idsObj) {
     }
     if (val > Number.MAX_SAFE_INTEGER) {
       error += `'${key}' exceeds MAX_SAFE_INTEGER. `;
-      return;
     }
   });
   return error;
@@ -165,8 +182,8 @@ function f_checkIdValue(idsObj) {
  * as an authentication key based on a login token
  * @param {...*} var_args - string arguments
  */
-SESSION.MakeAccessKey = (/* args */) => {
-  const name = [...arguments].join(':');
+SESSION.MakeAccessKey = (...args) => {
+  const name = [...args].join(':');
   const key = UUIDv5(name, UUID_NAMESPACE);
   return key;
 };
@@ -195,10 +212,9 @@ SESSION.DecodeAndSet = token => {
       m_current_idsobj.teacherName = studentName;
       m_current_idsobj.classroomId = undefined;
     }
-    if (DBG) console.log('DecodeAndSet() success', studentName, groupId, classroomId);
-  } else {
-    if (DBG) console.log('DecodeAndSet() failed', token);
-  }
+    if (DBG)
+      console.log('DecodeAndSet() success', studentName, groupId, classroomId);
+  } else if (DBG) console.log('DecodeAndSet() failed', token);
   return isValid;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -208,7 +224,7 @@ SESSION.DecodeAndSet = token => {
 SESSION.Clear = () => {
   if (DBG) console.log('Clearing session');
   m_current_name = undefined;
-  m_current_idsob = undefined;
+  m_current_idsobj = undefined;
   m_access_key = undefined;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -252,7 +268,7 @@ SESSION.AdminKey = () => {
 SESSION.LoggedInProps = () => {
   const { groupId, classroomId, teacherId } = m_current_idsobj;
   if (groupId === 0) {
-    return { teacherName: m_current_name, teacherId: teacherId };
+    return { teacherName: m_current_name, teacherId };
   }
   return { studentName: m_current_name, groupId, classroomId };
 };

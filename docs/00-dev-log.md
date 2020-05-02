@@ -24,7 +24,7 @@ SUMMARY S09 APR27-MAY10
 
 ---
 
-# 5.0 GEMSTEP WIREFRAMING (CONTINUED)
+# 5. GEMSTEP WIREFRAMING (CONTINUED)
 
 ## Apr 27.01 Redoing Page Layout
 
@@ -235,7 +235,18 @@ console.log(URSYS._VERSION); // prints on server AND client though...
 
 A. Use React's `useEffect` or `useLayoutEffect` hooks. **These hooks execute only on the client after rendering**; this [video](https://dev.to/changoman/next-js-server-side-rendering-and-getinitialprops-intro-10n2) may confirm this technically. For now, I'm seeing it only run on the client in the `_app.js` file.
 
+## May 01.01 Add URSYS Server
 
+There's two parts to this:
+
+* The socket server
+* The client connection
+
+Copying the `app_srv` ursys files into `gem_srv` as preparation to launch URNET on the server and the as-is client connection services.
+
+**CURRENT STUCK POINT**
+
+The next big challenge is figuring out how to break the ursys package into **server** and **client** code. We can't just import URNET in `ur.js ` because NextJS actually will compile all those source files (I think), and it can't resolve 'fs'.
 
 
 

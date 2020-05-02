@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "fs-extra": "^9.0.0",
+    "hashids": "^2.2.1",
     "tracer": "^1.0.3",
+    "uuid": "^8.0.0",
     "ws": "^7.2.5"
   }
 }
