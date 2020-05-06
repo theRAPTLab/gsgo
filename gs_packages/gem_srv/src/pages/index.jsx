@@ -6,7 +6,7 @@
 
 import React from 'react';
 // left-side tabbed views
-import SystemHome from '../page-tabs/SystemHome';
+import Welcome from '../page-tabs/Welcome';
 import SessionMgr from '../page-tabs/SessionMgr';
 import Simulator from '../page-tabs/Simulator';
 import Modeler from '../page-tabs/Modeler';
@@ -31,7 +31,7 @@ function Page() {
       <Row>
         <Cell>
           <URTabbedView>
-            <SystemHome label="Welcome" />
+            <Welcome label="Welcome" />
             <SessionMgr label="Load" />
             <Modeler label="Model" />
             <Simulator label="Simulate" />

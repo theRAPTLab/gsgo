@@ -40,7 +40,7 @@ export default function MyApp(props) {
   useEffect(() => {
     console.group('Initialize URSYS on Client');
     URSYS.Init();
-    // window references will not throw error inside useEffect
+    // window references will not throw                                                                                                                                                                                                                                                                                                                                                                                                                                    inside useEffect
     // but if it was not then server would crash when starting
     console.log('window object', window);
     console.groupEnd();

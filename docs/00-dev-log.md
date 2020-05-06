@@ -246,8 +246,12 @@ Copying the `app_srv` ursys files into `gem_srv` as preparation to launch URNET 
 
 **CURRENT STUCK POINT**
 
-The next big challenge is figuring out how to break the ursys package into **server** and **client** code. We can't just import URNET in `ur.js ` because NextJS actually will compile all those source files (I think), and it can't resolve 'fs'.
+The next big challenge is figuring out how to break the ursys package into **server** and **client** code. We can't just import URNET in `ur.js ` because NextJS actually will compile all those source files (I think), and it can't resolve 'fs'. We need to import the server code from `gem_srv/server/_start.js` and client code from another entry point...URSYS needs at least two entry points, so I need to study how to put together a library like that.
 
+
+## May 05.01 Detailed Activity Log
+
+We got this [cool breakdown](https://docs.google.com/document/d/1AV-OxxQlY8KKXO4-nwu8JiYEodINReB5I_5dfDD-J50/edit) of a detailed activity walkthrough that will help structure the wireframe app!
 
 
 
