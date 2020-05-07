@@ -5,7 +5,7 @@
   "keywords": [],
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "license": "MIT",
-  "main": "ur.js",
+  "main": "dist/index.js",
   "directories": {},
   "files": [],
   "private": true,
@@ -14,7 +14,7 @@
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
   "scripts": {
-    "test": "echo \"Error: run tests from root\" && exit 1"
+    "build": "webpack"
   },
   "dependencies": {
     "fs-extra": "^9.0.0",
@@ -22,5 +22,13 @@
     "tracer": "^1.0.3",
     "uuid": "^8.0.0",
     "ws": "^7.2.5"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.8.3",
+    "@babel/preset-env": "^7.8.3",
+    "babel-eslint": "^10.1.0",
+    "babel-loader": "^8.0.6",
+    "eslint": "^6.8.0",
+    "webpack": "^4.41.5"
   }
 }

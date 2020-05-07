@@ -253,6 +253,11 @@ The next big challenge is figuring out how to break the ursys package into **ser
 
 We got this [cool breakdown](https://docs.google.com/document/d/1AV-OxxQlY8KKXO4-nwu8JiYEodINReB5I_5dfDD-J50/edit) of a detailed activity walkthrough that will help structure the wireframe app!
 
+## May 07.01 URSYS Library
+
+I've started notes on how npm libraries work in both the browser and node. The short answer is that the bundler generates the library, OR you write code that implements the UMD pattern for you. The UMD pattern has to be completely self-contained though, so I think I might just want to use Webpack. 
+
+In the [npm-tips](10-tips/10-tips-npm.md) notes, I assembled the necessary changes to make to a new `webpack.config.js` configuration in `@gemstep/ursys`.  It appears to work, so let's commit this change and test further.
 
 
 
