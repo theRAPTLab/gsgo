@@ -94,16 +94,6 @@ This seems to indicate a bad reference to a package version, as the current pack
 
 **Yes** it will walk up the directory tree until it finds a lerna.json.
 
-## When I add a new package to the monorepo, the Version is out of synch
-
-This occurs when using `lerna bootstrap --hoist` (or our `npm bootstrap` script which uses the hoisting option). 
-
-The only solution I know of is to ensure that the versions in the packages also match the root level package.json. I'm not sure this is always desirable; there might be a package that we don't want. In that case, we may not want to hoist certain 
-
-## When I npm run bootstrap, webpack throws "module not found" errors during build
-
-Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 
-
 
 
 # Lerna Repo Management
@@ -162,3 +152,18 @@ The other configuration files should not require copying. ESLint, for example, w
 
 Convention: `npm run local` is an alias for just running the current build. 
 
+## The problem with Hoisting and Module Resolution
+
+TL;DR: currently using the `lerna bootstrap --hoist` option, it actually doesn't hoist *just* the shared node_modules, it hoists *ALL OF THEM*. More recent versions of the lerna documentation omit the "shared" description, but tutorials predating May 2019 do not. 
+
+**resolution:** don't use hoisting despite the increase in footprint. The following issues are related to the hoisting problem.
+
+### When I add a new package to the monorepo, the Version is out of synch
+
+This occurs when using `lerna bootstrap --hoist` (or our `npm bootstrap` script which uses the hoisting option). 
+
+The only solution I know of is to ensure that the versions in the packages also match the root level package.json. I'm not sure this is always desirable; there might be a package that we don't want. In that case, we may not want to hoist certain. 
+
+### When I npm run bootstrap, webpack throws "module not found" errors during build
+
+Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 

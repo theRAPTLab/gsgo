@@ -96,6 +96,8 @@ That in mind, let's go ahead and implement our custom server:
 
 Seems to work. Let's commit.
 
+# 6.1. URSYS FOUNDATION FOR SIMULATION PROTOTYPE
+
 ## Apr 30.03 Can I make a stub URSYS package in our monorepo?
 
 This is a more complicated task. What would the import look like? We have something in `gs_packages/globals.js`, and this is imported using:
@@ -260,6 +262,14 @@ I've started notes on how npm libraries work in both the browser and node. The s
 In the [npm-tips](10-tips/10-tips-npm.md) notes, I assembled the necessary changes to make to a new `webpack.config.js` configuration in `@gemstep/ursys`.  It appears to work, so let's commit this change and test further.
 
 Now we have to split the code so the server elements don't include the client elements. This is done by making a webpack config that loads `export-server.js` and `export-client.js` using different webpack configurations.
+
+## May 08.01 URSYS Network Reactivation
+
+The opening question is: "can I even launch the socket server from the new ursys library?" YES
+
+Now adding `nodemon` to relaunch the custom server
+
+
 
 
 

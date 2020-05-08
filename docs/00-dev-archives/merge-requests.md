@@ -10,6 +10,8 @@ This is a surprisingly difficult thing to set up, because the extensions interac
 
 This pull request implements a working version of it (at least, it seems to work). The details regarding how it works are noted in the file `docs/02-vscode-qol.md`.
 
+---
+
 # 03/25: Initial System Skeleton
 
 The monorepo is configured with several projects to test the following features:
@@ -47,6 +49,8 @@ Once you install them and reload Visual Studio Code, you should have:
 * Reformat on Save using AirBnb rules 
 
 If there are any errors, let me know!
+
+---
 
 # 03/29: IDE: Auto-formatting Setup Best Practices in VSCode
 
@@ -151,6 +155,8 @@ The package in this release is `gem_srv`, which is the prototype for the new Nex
 * Note that there are now extensive DOCUMENTATION placeholders in the `gsgo/docs` folder. This collection is a work in progress currently under Sri's editorship.
 
 If everything looks ok, then hooray! Can move on to actual wireframing and adding meatier technical bits to the GEM-STEP system framework.
+
+---
 
 # 04/29: Wireframe + Live Documentation + Prototype Shell
 
