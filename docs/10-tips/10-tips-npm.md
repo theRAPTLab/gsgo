@@ -178,7 +178,7 @@ const baseConfig = {
 
 We then merge the baseConfig with **clientConfig** and **serverConfig**, using slightly different **targets**. 
 
-Here's **serverConfig** which sets `libraryTarget` to commonjs, with `target` environment node:
+Here's **serverConfig** which sets `libraryTarget` to use 'commonjs' conventions, with `target` environment 'node'. The `libraryTarget` settings tells Webpack what module return convention  to use, like  `module.exports` or `exports` convention or wrapping it with an IIFE.
 
 ```js
 // const URSYS = require('@gemscript/ursus/server')
@@ -194,7 +194,7 @@ const serverConfig = {
 };
 ```
 
-Here's **clientConfig** which uses the default target
+Here's **clientConfig** which sets the target explicitly to 'web' (this enables internal webpack flags so it can assume that `window` exists) and sets the `libraryTarget` to 'umd' and will wrap the module in the UMD factory pattern. 
 
 ```js
 // import URSYS from '@gemscript/ursys/client'
@@ -215,4 +215,4 @@ The new `webpack.config.js` file uses `webpack-merge` to create two different ou
 * `client/index.js`
 * `server/index.js`
 
-This is a bit unusual, but it allows us to import the library directly from npm, since `package.json` doesn't let you define multiple out files in `main`. You can specific
+This is a bit unusual, but it allows us to import the library directly from npm, since `package.json` doesn't let you define multiple out files in `main`. You can specify multiple configs to run however by exporting an **array of config objects** from the `webpack.config.js` file. Then to 

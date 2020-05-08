@@ -4,6 +4,7 @@
   "description": "GEMSTEP AppServer",
   "main": "index.js",
   "scripts": {
+    "local": "npm run dev:app",
     "dev:app": "node urdu dev",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
     "test:app": "echo \"Error: no test specified\" && exit 1"
