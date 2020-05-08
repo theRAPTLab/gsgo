@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS FEATURES STUB
+  URSYS SERVER
 
   node:     database, express, logger, network, serve
   commmon:  datamap, messager, netmessage, valuebinding, datestring, session
@@ -9,14 +9,16 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const COMMON_MODULES = require('./modules-common');
 const URNet = require('./server-urnet');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const VERSION = '1.0.0';
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const META = {
+  _SERVER: true,
+  _SCRIPT: __filename,
+  _VERSION: '0.0.1'
+};
 
 /// SERVER-SIDE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,32 +28,25 @@ const URLogger = {};
 // const URNet = {};
 const URMedia = {};
 
-/// COMMON ////////////////////////////////////////////////////////////////////
+/// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const Datamap = {};
-const Messager = {};
-const NetMessage = {};
-const ValueBinding = {};
-const DateString = {};
-const Session = {};
+function Init() {
+  return `${META._SCRIPT} ${META._VERSION}`;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  _VERSION: VERSION,
-  _SERVER: true,
-  Init: () => {
-    console.log(`URSYS SERVER INITIALIZING: v${VERSION}`);
-  },
+  // META
+  ...META,
+  // MAIN API
+  Init,
+  // SERVICES API
   URStore,
   URWeb,
   URLogger,
   URNet,
   URMedia,
-  Datamap,
-  Messager,
-  NetMessage,
-  ValueBinding,
-  DateString,
-  Session
+  // CONVENIENCE
+  ...COMMON_MODULES
 };

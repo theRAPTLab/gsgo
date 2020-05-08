@@ -11,9 +11,21 @@
   },
   "scripts": {
     "local": "npm run dev:gem",
-    "dev:gem": "node ./server/_start",
+    "dev:gem": "nodemon ./server/_start.js",
     "build:gem": "next build",
     "start:gem": "node ./server/_start"
+  },
+  "nodemonConfig": {
+    "verbose": true,
+    "ignore": [
+      "node_modules",
+      ".next"
+    ],
+    "watch": [
+      "server",
+      "../ursys/server"
+    ],
+    "ext": "js json"
   },
   "dependencies": {
     "@gemstep/globals": "^0.0.1-alpha.3",
@@ -25,6 +37,7 @@
     "jss": "^10.1.1",
     "jss-extend": "^6.2.0",
     "next": "^9.3.1",
+    "nodemon": "^2.0.3",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

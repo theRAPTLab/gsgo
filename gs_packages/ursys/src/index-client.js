@@ -1,23 +1,23 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS FEATURES STUB
+  URSYS C:OEMT
 
   chrome:   events, exec, extensions, link, network, pubsub
   commmon:  datamap, messager, netmessage, valuebinding, datestring, session
-  node:     database, express, logger, network, serve
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// const URNet = require('./server/urnet');
+const COMMON = require('./modules-common');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// META-DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const VERSION = '1.0.0';
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const META = {
+  _CLIENT: true,
+  _SCRIPT: __filename,
+  _VERSION: '0.0.1'
+};
 
 /// CLIENT-SIDE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,33 +28,26 @@ const Link = {};
 const Network = {};
 const PubSub = {};
 
-/// COMMON ////////////////////////////////////////////////////////////////////
+/// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const Datamap = {};
-const Messager = {};
-const NetMessage = {};
-const ValueBinding = {};
-const DateString = {};
-const Session = {};
+function Init() {
+  return `${META._SCRIPT} ${META._VERSION}`;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  _VERSION: VERSION,
-  _CLIENT: true,
-  Init: () => {
-    console.log(`URSYS CLIENT INITIALIZING: v${VERSION}`);
-  },
+  // META
+  ...META,
+  // MAIN API
+  Init,
+  // SERVICES API
   Events,
   Exec,
   Extensions,
   Link,
   Network,
   PubSub,
-  Datamap,
-  Messager,
-  NetMessage,
-  ValueBinding,
-  DateString,
-  Session
+  // CONVENIENCE
+  ...COMMON
 };
