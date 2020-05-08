@@ -10,7 +10,7 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const URNet = require('./server/urnet');
+// const URNet = require('./server/urnet');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,14 +28,6 @@ const Link = {};
 const Network = {};
 const PubSub = {};
 
-/// SERVER-SIDE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URStore = {};
-const URWeb = {};
-const URLogger = {};
-const URNet = {};
-const URMedia = {};
-
 /// COMMON ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Datamap = {};
@@ -49,10 +41,20 @@ const Session = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   _VERSION: VERSION,
+  _CLIENT: true,
   Init: () => {
-    console.log(`URSYS INITIALIZING: v${VERSION}`);
+    console.log(`URSYS CLIENT INITIALIZING: v${VERSION}`);
   },
-  Client: { Events, Exec, Extensions, Link, Network, PubSub },
-  Server: { URStore, URWeb, URLogger, URNet, URMedia },
-  Data: { Datamap, Messager, NetMessage, ValueBinding, DateString, Session }
+  Events,
+  Exec,
+  Extensions,
+  Link,
+  Network,
+  PubSub,
+  Datamap,
+  Messager,
+  NetMessage,
+  ValueBinding,
+  DateString,
+  Session
 };

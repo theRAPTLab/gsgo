@@ -96,7 +96,13 @@ This seems to indicate a bad reference to a package version, as the current pack
 
 ## When I add a new package to the monorepo, the Version is out of synch
 
+This occurs when using `lerna bootstrap --hoist` (or our `npm bootstrap` script which uses the hoisting option). 
 
+The only solution I know of is to ensure that the versions in the packages also match the root level package.json. I'm not sure this is always desirable; there might be a package that we don't want. In that case, we may not want to hoist certain 
+
+## When I npm run bootstrap, webpack throws "module not found" errors during build
+
+Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 
 
 
 

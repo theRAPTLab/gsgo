@@ -139,5 +139,80 @@ module.exports = {
   }
 }
 ```
-In the actual source code in `index.js`, we can use ES6 module format and rely on webpack to transpile into the UMD format. We just export everything.
+In the actual source code in `index.js`, we can use ES6 module format and rely on webpack to transpile into the UMD format. We just export everything. However, this breaks if SOME code only works on node and SOME code only works in the browser. 
 
+Enter Approach #3!
+
+### Approach 3: Distinct Server and Client packages in the same npm package
+
+In this version we create a **baseConfig**
+
+``` js
+const baseConfig = {
+  module: {
+    rules: [
+      {
+        test: /\.(js)$/,
+        exclude: /node_modules/,
+        use: ['babel-loader']
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.js'],
+    modules: [
+      path.resolve(__dirname, 'node_modules'),
+      path.resolve(__dirname, 'src')
+    ]
+  },
+  mode: 'development',
+  devtool: 'sourceMap',
+  node: {
+    // enable webpack's __filename and __dirname substitution in browsers
+    // for use in URSYS lifecycle event filtering as set in SystemInit.jsx
+    __filename: true,
+    __dirname: true
+  }
+};
+```
+
+We then merge the baseConfig with **clientConfig** and **serverConfig**, using slightly different **targets**. 
+
+Here's **serverConfig** which sets `libraryTarget` to commonjs, with `target` environment node:
+
+```js
+// const URSYS = require('@gemscript/ursus/server')
+const serverConfig = {
+  entry: path.resolve(__dirname, 'src/export-server.js'),
+  target: 'node', // sets node-specific webpack flags (web is default)
+  output: {
+    libraryTarget: 'commonjs',
+    globalObject: 'this',
+    path: path.resolve(__dirname, 'server'),
+    filename: 'index.js'
+  }
+};
+```
+
+Here's **clientConfig** which uses the default target
+
+```js
+// import URSYS from '@gemscript/ursys/client'
+const clientConfig = {
+  entry: path.resolve(__dirname, 'src/export-client.js'),
+  target: 'web', // sets browser-related webpack flags (web is default)
+  output: {
+    libraryTarget: 'umd', // universal module format
+    globalObject: 'this',
+    path: path.resolve(__dirname, 'client'),
+    filename: 'index.js'
+  }
+};
+```
+
+The new `webpack.config.js` file uses `webpack-merge` to create two different output files in the root level of the package:
+
+* `client/index.js`
+* `server/index.js`
+
+This is a bit unusual, but it allows us to import the library directly from npm, since `package.json` doesn't let you define multiple out files in `main`. You can specific

@@ -9,7 +9,7 @@
 import React, { useEffect } from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
-import URSYS from '@gemstep/ursys';
+import URSYS from '@gemstep/ursys/client';
 ///
 import { create } from 'jss';
 import extend from 'jss-extend';
@@ -38,7 +38,7 @@ export default function MyApp(props) {
 
   // useEffect executes on on clients, after MyApp has completely rendered
   useEffect(() => {
-    console.group('Initialize URSYS on Client');
+    console.group('Initialize URSYS on Client', URSYS);
     URSYS.Init();
     // window references will not throw                                                                                                                                                                                                                                                                                                                                                                                                                                    inside useEffect
     // but if it was not then server would crash when starting

@@ -259,6 +259,8 @@ I've started notes on how npm libraries work in both the browser and node. The s
 
 In the [npm-tips](10-tips/10-tips-npm.md) notes, I assembled the necessary changes to make to a new `webpack.config.js` configuration in `@gemstep/ursys`.  It appears to work, so let's commit this change and test further.
 
+Now we have to split the code so the server elements don't include the client elements. This is done by making a webpack config that loads `export-server.js` and `export-client.js` using different webpack configurations.
+
 
 
 
