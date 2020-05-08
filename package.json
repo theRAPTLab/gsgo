@@ -3,11 +3,12 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
-    "start": "multiview [npm run app] [npm run admin] [npm run gem]",
-    "admin": "lerna run dev:admin --stream --no-prefix",
+    "build": "lerna run build",
+    "start": "npm run build && multiview [npm run app] [npm run admin] [npm run gem]",
+    "admin": "npm run build && lerna run dev:admin --stream --no-prefix",
     "app": "lerna run dev:app --stream --no-prefix",
-    "gem": "lerna run dev:gem --stream --no-prefix",
-    "xplay": "lerna run dev:xplay --stream --no-prefix",
+    "gem": "npm run build && lerna run dev:gem --stream --no-prefix",
+    "xplay": "npm run build && lerna run dev:xplay --stream --no-prefix",
     "list": "# use 'npm run admin | app | gem | xplay'",
     "list:global": "npm list -g --depth=0"
   },
