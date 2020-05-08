@@ -15,7 +15,7 @@
  * Central is a common settings manager.
  * @module URCentral
  */
-import ValueBinding from '../common/class-valuebinding';
+import ValueBinding from './class-valuebinding';
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

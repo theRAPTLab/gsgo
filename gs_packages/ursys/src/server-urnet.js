@@ -10,11 +10,11 @@
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WSS = require('ws').Server;
-const NetMessage = require('../common/class-netmessage');
+const NetMessage = require('./class-netmessage');
 /** @typedef {Object} NetMessage */
 const LOGGER = require('./server-logger');
-const PROMPTS = require('../common/util-prompts');
-const SESSION = require('../common/util-session');
+const PROMPTS = require('./util-prompts');
+const SESSION = require('./util-session');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

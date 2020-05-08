@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/export-server.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index-server.js");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -8072,10 +8072,10 @@ function socketOnError() {
 
 /***/ }),
 
-/***/ "./src/common/class-netmessage.js":
-/*!****************************************!*\
-  !*** ./src/common/class-netmessage.js ***!
-  \****************************************/
+/***/ "./src/class-netmessage.js":
+/*!*********************************!*\
+  !*** ./src/class-netmessage.js ***!
+  \*********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -8102,7 +8102,7 @@ function socketOnError() {
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/common/util-prompts.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
+const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/util-prompts.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -8859,565 +8859,10 @@ module.exports = NetMessage;
 
 /***/ }),
 
-/***/ "./src/common/util-datestring.js":
-/*!***************************************!*\
-  !*** ./src/common/util-datestring.js ***!
-  \***************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/////////////////////////////////////////////////////////////////////////////
-
-/**	UTILITY FUNCTIONS ******************************************************/
-// enums for outputing dates
-const e_weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function str_TimeStamp() {
-  let date = new Date();
-  let hh = `0${date.getHours()}`.slice(-2);
-  let mm = `0${date.getMinutes()}`.slice(-2);
-  let ss = `0${date.getSeconds()}`.slice(-2);
-  return `${hh}:${mm}:${ss}`;
-} ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-function str_DateStamp() {
-  let date = new Date();
-  let mm = `0${date.getMonth() + 1}`.slice(-2);
-  let dd = `0${date.getDate()}`.slice(-2);
-  let day = e_weekday[date.getDay()];
-  let yyyy = date.getFullYear();
-  return `${yyyy}/${mm}/${dd} ${day}`;
-} ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- *  return a filename of form YYYY-MMDD-args-separated-by-dashes-HHMMSS
- */
-
-
-function str_TimeDatedFilename(...args) {
-  // construct filename
-  let date = new Date();
-  let dd = `0${date.getDate()}`.slice(-2);
-  let mm = `0${date.getMonth() + 1}`.slice(-2);
-  let hms = `0${date.getHours()}`.slice(-2);
-  hms += `0${date.getMinutes()}`.slice(-2);
-  hms += `0${date.getSeconds()}`.slice(-2);
-  let filename;
-  filename = date.getFullYear().toString();
-  filename += `-${mm}${dd}`;
-  let c = arguments.length;
-  if (c) filename = filename.concat('-', ...args);
-  filename += `-${hms}`;
-  return filename;
-} ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-module.exports = {
-  TimeStamp: str_TimeStamp,
-  DateStamp: str_DateStamp,
-  DatedFilename: str_TimeDatedFilename
-};
-
-/***/ }),
-
-/***/ "./src/common/util-prompts.js":
-/*!************************************!*\
-  !*** ./src/common/util-prompts.js ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  String Prompts for server console
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-let PROMPTS = {}; /// CONSTANTS /////////////////////////////////////////////////////////////////
-/// detect node environment and set padsize accordingly
-
-const IS_NODE = typeof process !== 'undefined' && process.release && process.release.name === 'node';
-let PAD_SIZE = IS_NODE ? 13 // nodejs
-: 0; // not nodejs
-
-const TERM = {
-  Reset: '\x1b[0m',
-  Bright: '\x1b[1m',
-  Dim: '\x1b[2m',
-  Underscore: '\x1b[4m',
-  Blink: '\x1b[5m',
-  Reverse: '\x1b[7m',
-  Hidden: '\x1b[8m',
-  FgBlack: '\x1b[30m',
-  FgRed: '\x1b[31m',
-  FgGreen: '\x1b[32m',
-  FgYellow: '\x1b[33m',
-  FgBlue: '\x1b[34m',
-  FgMagenta: '\x1b[35m',
-  FgCyan: '\x1b[36m',
-  FgWhite: '\x1b[37m',
-  BgBlack: '\x1b[40m',
-  BgRed: '\x1b[41m',
-  BgGreen: '\x1b[42m',
-  BgYellow: '\x1b[43m',
-  BgBlue: '\x1b[44m',
-  BgMagenta: '\x1b[45m',
-  BgCyan: '\x1b[46m',
-  BgWhite: '\x1b[47m'
-}; /// PROMPT STRING HELPERS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ return a string padded to work as a prompt for either browser or node
-    console output
-/*/
-
-PROMPTS.Pad = (prompt = '', psize = PAD_SIZE) => {
-  let len = prompt.length;
-  if (IS_NODE) return `${prompt.padEnd(psize, ' ')}-`; // must be non-node environment, so do dynamic string adjust
-
-  if (!psize) return `${prompt}:`; // if this far, then we're truncating
-
-  if (len >= psize) prompt = prompt.substr(0, psize - 1);else prompt.padEnd(psize, ' ');
-  return `${prompt}:`;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ returns PAD_SIZE stars
-/*/
-
-
-PROMPTS.Stars = count => {
-  if (count !== undefined) return ''.padEnd(count, '*');
-  return ''.padEnd(PAD_SIZE, '*');
-};
-
-PROMPTS.TR = TERM.Reset;
-PROMPTS.BR = TERM.Bright;
-PROMPTS.CWARN = TERM.FgYellow;
-PROMPTS.CCRIT = TERM.BgRed + TERM.FgWhite + TERM.Bright;
-PROMPTS.CINFO = TERM.BgBlue + TERM.FgWhite;
-PROMPTS.TERM_URSYS = TERM.FgBlue + TERM.Bright;
-PROMPTS.TERM_DB = TERM.FgBlue; // server-database
-
-PROMPTS.TERM_NET = TERM.FgBlue; // server-network
-
-PROMPTS.TERM_EXP = TERM.FgMagenta; // server-express
-
-PROMPTS.TERM_WPACK = TERM.FgGreen; // webpack configurations
-
-PROMPTS.CW = TERM.FgGreen; // webpack configurations
-
-PROMPTS.CY = TERM.FgYellow;
-PROMPTS.TERM = TERM;
-PROMPTS.CS = '\x1b[34m\x1b[1m';
-PROMPTS.CW = '\x1b[32m';
-PROMPTS.CR = '\x1b[0m'; /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-module.exports = PROMPTS;
-
-/***/ }),
-
-/***/ "./src/common/util-session.js":
-/*!************************************!*\
-  !*** ./src/common/util-session.js ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* eslint-disable @typescript-eslint/no-use-before-define */
-
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
-/* eslint-disable no-param-reassign */
-
-/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  Session Utilities
-  collection of session-related data structures
-
-  For student logins, we just need to encode the groupId, which will give
-  us the classroomId. We also need the name, which is not encoded, but
-  can be checked against the groups database.
-
-  <NAME>-HASHED_DATA
-  where HASHED_DATA encodes groupId, classroomId
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const HashIds = __webpack_require__(/*! hashids/cjs */ "./node_modules/hashids/cjs/index.js");
-
-const UUID = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-node/index.js");
-
-const UUIDv5 = UUID.v5;
-
-const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/common/util-prompts.js"); /// DEBUGGING /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-const DBG = false;
-const PR = PROMPTS.Pad('SESSUTIL'); /// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// HASH_* are used as parameters for hashids (login tokens)
-
-const HASH_ABET = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
-const HASH_MINLEN = 3;
-const HASH_SALT = 'MEMESALT/2019'; /// UUID_NAMESPACE was arbitrarily generated with 'npx uuid v4' (access keys)
-
-const UUID_NAMESPACE = '1abc839d-b04f-481e-87fe-5d69bd1907b2';
-let ADMIN_KEY = ''; // set to non-falsy to disable admin checks
-
-const ADMIN_QSTRING = 'danishpowers'; // used to bypass admin localhost test
-
-const SSHOT_URL = '/screenshots';
-const UPLOAD_URL = `${SSHOT_URL}/upload`; /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-let m_current_name; // global decoded name (only for browsers)
-
-let m_current_idsobj = {}; // global decoded props (only for browsers)
-
-let m_access_key = ''; // global access key (saved only for browsers)
-/// SESSION ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-const SESSION = {}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ Given a token of form NAME-HASHED_DATA, return an object
-    containing as many decoded values as possible. Check isValid for
-    complete decode succes. groupId is also set if successful
-/*/
-
-SESSION.DecodeToken = hashedToken => {
-  let studentName;
-  let hashedData; // token
-
-  let groupId;
-  let classroomId; // decoded data
-
-  let isValid = false; // is a valid token?
-
-  if (typeof hashedToken !== 'string') return {
-    isValid,
-    error: 'token must be a string'
-  }; // token is of form NAME-HASHEDID
-  // (1) check student name
-
-  const token = hashedToken.toUpperCase();
-  const tokenBits = token.toUpperCase().split('-');
-  if (tokenBits.length === 1) return {
-    isValid,
-    token,
-    error: 'missing - in token'
-  };
-  if (tokenBits.length > 2) return {
-    isValid,
-    token,
-    error: 'too many - in token'
-  };
-  if (tokenBits[0]) studentName = tokenBits[0].toUpperCase();
-  if (studentName.length < 3) return {
-    isValid,
-    token,
-    error: 'student name must have 3 or more letters'
-  }; // (2) check hashed data
-
-  if (tokenBits[1]) hashedData = tokenBits[1].toUpperCase(); // initialize hashid structure
-
-  let hashids = new HashIds(HASH_SALT + studentName, HASH_MINLEN, HASH_ABET); // try to decode the groupId
-
-  const dataIds = hashids.decode(hashedData); // invalidate if couldn't decode
-
-  if (dataIds.length === 0) return {
-    isValid,
-    token,
-    error: 'invalid token'
-  }; // at this point groupId is valid (begins with ID, all numeric)
-  // check for valid subgroupId
-
-  [groupId, classroomId] = dataIds;
-  isValid = true;
-  return {
-    isValid,
-    studentName,
-    token,
-    groupId,
-    classroomId
-  };
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ Return TRUE if the token decodes into an expected range of values
-/*/
-
-
-SESSION.IsValidToken = token => {
-  let decoded = SESSION.DecodeToken(token);
-  return decoded && Number.isInteger(decoded.groupId) && typeof decoded.studentName === 'string';
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Returns a token string of form NAME-HASHED_DATA
- * @param {String} studentName
- * @param {Object} dataIds
- * @param {Number} dataIds.groupId
- * @param {Number} dataIds.classroomId
- */
-
-
-SESSION.MakeToken = (studentName, dataIds = {}) => {
-  // type checking
-  if (typeof studentName !== 'string') throw Error(`classId arg1 '${studentName}' must be string`);
-  let err; // eslint-disable-next-line no-cond-assign
-
-  if (err = f_checkIdValue(dataIds)) {
-    console.warn(`Could not make token. ${err}`);
-    return undefined;
-  } // initialize hashid structure
-
-
-  studentName = studentName.toUpperCase();
-  const {
-    groupId,
-    classroomId
-  } = dataIds;
-  let hashids = new HashIds(HASH_SALT + studentName, HASH_MINLEN, HASH_ABET);
-  let hashedId = hashids.encode(groupId, classroomId);
-  return `${studentName}-${hashedId}`;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Returns a token string of form NAME-HASHED_DATA
- * @param {String} teacherName
- * @param {Object} dataIds
- * @param {Number} dataIds.groupId
- * @param {Number} dataIds.teacherId
- */
-
-
-SESSION.MakeTeacherToken = (teacherName, dataIds = {}) => {
-  // type checking
-  if (typeof teacherName !== 'string') throw Error(`classId arg1 '${teacherName}' must be string`);
-  let err; // eslint-disable-next-line no-cond-assign
-
-  if (err = f_checkIdValue(dataIds)) {
-    console.warn(`Could not make token. ${err}`);
-    return undefined;
-  } // convert to alphanumeric no spaces
-
-
-  const tokName = teacherName.replace(/\W/g, ''); // initialize hashid structure
-
-  teacherName = tokName.toUpperCase();
-  const {
-    groupId,
-    teacherId
-  } = dataIds;
-  let hashids = new HashIds(HASH_SALT + teacherName, HASH_MINLEN, HASH_ABET);
-  let hashedId = hashids.encode(groupId, teacherId);
-  return `${teacherName}-${hashedId}`;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// support function
-
-
-function f_checkIdValue(idsObj) {
-  const ids = Object.keys(idsObj);
-  let error = '';
-  ids.forEach(key => {
-    const val = idsObj[key];
-
-    if (!Number.isInteger(val)) {
-      error += `'${key}' is not an integer. `;
-      return;
-    }
-
-    if (val < 0) {
-      error += `'${key}' must be non-negative integer. `;
-      return;
-    }
-
-    if (val > Number.MAX_SAFE_INTEGER) {
-      error += `'${key}' exceeds MAX_SAFE_INTEGER. `;
-    }
-  });
-  return error;
-} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/** Makes a 'access key' that is not very secure, but unique enough to serve
- * as an authentication key based on a login token
- * @param {...*} var_args - string arguments
- */
-
-
-SESSION.MakeAccessKey = (...args) => {
-  const name = [...args].join(':');
-  const key = UUIDv5(name, UUID_NAMESPACE);
-  return key;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Set the global GROUPID, which is included in all NetMessage packets that are
- * sent to server. Do not use from server-based code.
- */
-
-
-SESSION.DecodeAndSet = token => {
-  const decoded = SESSION.DecodeToken(token);
-  const {
-    isValid,
-    studentName,
-    groupId,
-    classroomId
-  } = decoded;
-
-  if (isValid) {
-    m_current_name = studentName;
-    m_current_idsobj = {
-      studentName,
-      groupId,
-      classroomId
-    }; // handle teacher login
-    // in this case, the groupId is 0 and classroomId is actually
-    // teacherId, so update the object
-
-    if (groupId === 0) {
-      console.warn(`INFO: TEACHER LOGIN '${studentName}'`);
-      m_current_idsobj.teacherId = classroomId;
-      m_current_idsobj.teacherName = studentName;
-      m_current_idsobj.classroomId = undefined;
-    }
-
-    if (DBG) console.log('DecodeAndSet() success', studentName, groupId, classroomId);
-  } else if (DBG) console.log('DecodeAndSet() failed', token);
-
-  return isValid;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Clear all global session parameters. Do not use from server-based code.
- */
-
-
-SESSION.Clear = () => {
-  if (DBG) console.log('Clearing session');
-  m_current_name = undefined;
-  m_current_idsobj = undefined;
-  m_access_key = undefined;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Set the global SESSION ACCESS KEY, which is necessary as a parameter for
- * some operations (e.g. database writes). Do not use from server-based code.
- */
-
-
-SESSION.SetAccessKey = key => {
-  if (typeof key === 'string') {
-    m_access_key = key;
-    if (DBG) console.log('setting access key', key);
-  }
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Return the global SESSION ACCESS KEY that was set using SetAccessKey(). Don't
- * use this from server-based code.
- */
-
-
-SESSION.AccessKey = () => {
-  if (DBG) console.log('AccessKey() returning', m_access_key);
-  return m_access_key;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-SESSION.SetAdminKey = key => {
-  ADMIN_KEY = key || ADMIN_KEY;
-  return ADMIN_KEY;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * This is TOTALLY INSECURE and not even trying for the prototype
- */
-
-
-SESSION.AdminKey = () => {
-  const is = ADMIN_KEY || false;
-  if (DBG) console.warn('INFO: requested AdminKey()');
-  return is;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Return teacherId if this is a logged-in teacher
- */
-
-
-SESSION.LoggedInProps = () => {
-  const {
-    groupId,
-    classroomId,
-    teacherId
-  } = m_current_idsobj;
-
-  if (groupId === 0) {
-    return {
-      teacherName: m_current_name,
-      teacherId
-    };
-  }
-
-  return {
-    studentName: m_current_name,
-    groupId,
-    classroomId
-  };
-};
-
-SESSION.IsStudent = () => {
-  return SESSION.LoggedInProps().studentName !== undefined;
-};
-
-SESSION.IsTeacher = () => {
-  return SESSION.LoggedInProps().teacherName !== undefined;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Return the global LoggedInName that was set using DecodeAndSet(). Don't use
- * this from server-based code.
- */
-
-
-SESSION.LoggedInName = () => {
-  return m_current_name;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- * Return the global idsObject containing groupId, classroomId that was set
- * using DecodeAndSet(). Don't use this from server-based code.
- */
-
-
-SESSION.Ids = () => {
-  return m_current_idsobj;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-SESSION.AdminPlaintextPassphrase = () => ADMIN_QSTRING; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-SESSION.ScreenshotURL = () => SSHOT_URL;
-
-SESSION.ScreenshotPostURL = () => UPLOAD_URL; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// EXPORT MODULE /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-module.exports = SESSION;
-
-/***/ }),
-
-/***/ "./src/export-server.js":
-/*!******************************!*\
-  !*** ./src/export-server.js ***!
-  \******************************/
+/***/ "./src/index-server.js":
+/*!*****************************!*\
+  !*** ./src/index-server.js ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9431,7 +8876,7 @@ module.exports = SESSION;
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URNet = __webpack_require__(/*! ./server/server-urnet */ "./src/server/server-urnet.js"); /// CONSTANTS /////////////////////////////////////////////////////////////////
+const URNet = __webpack_require__(/*! ./server-urnet */ "./src/server-urnet.js"); /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -9476,10 +8921,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./src/server/server-logger.js":
-/*!*************************************!*\
-  !*** ./src/server/server-logger.js ***!
-  \*************************************/
+/***/ "./src/server-logger.js":
+/*!******************************!*\
+  !*** ./src/server-logger.js ***!
+  \******************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9504,9 +8949,9 @@ const FSE = __webpack_require__(/*! fs-extra */ "./node_modules/fs-extra/lib/ind
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
-const PROMPTS = __webpack_require__(/*! ../common/util-prompts */ "./src/common/util-prompts.js");
+const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/util-prompts.js");
 
-const DATESTR = __webpack_require__(/*! ../common/util-datestring */ "./src/common/util-datestring.js");
+const DATESTR = __webpack_require__(/*! ./util-datestring */ "./src/util-datestring.js");
 
 const PR = PROMPTS.Pad('LOGGER'); /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -9588,10 +9033,10 @@ module.exports = LOG;
 
 /***/ }),
 
-/***/ "./src/server/server-urnet.js":
-/*!************************************!*\
-  !*** ./src/server/server-urnet.js ***!
-  \************************************/
+/***/ "./src/server-urnet.js":
+/*!*****************************!*\
+  !*** ./src/server-urnet.js ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9610,15 +9055,15 @@ module.exports = LOG;
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WSS = __webpack_require__(/*! ws */ "./node_modules/ws/index.js").Server;
 
-const NetMessage = __webpack_require__(/*! ../common/class-netmessage */ "./src/common/class-netmessage.js");
+const NetMessage = __webpack_require__(/*! ./class-netmessage */ "./src/class-netmessage.js");
 /** @typedef {Object} NetMessage */
 
 
-const LOGGER = __webpack_require__(/*! ./server-logger */ "./src/server/server-logger.js");
+const LOGGER = __webpack_require__(/*! ./server-logger */ "./src/server-logger.js");
 
-const PROMPTS = __webpack_require__(/*! ../common/util-prompts */ "./src/common/util-prompts.js");
+const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/util-prompts.js");
 
-const SESSION = __webpack_require__(/*! ../common/util-session */ "./src/common/util-session.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
+const SESSION = __webpack_require__(/*! ./util-session */ "./src/util-session.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -10409,6 +9854,561 @@ function log_PktTransaction(pkt, status, promises) {
 
 
 module.exports = UNET;
+
+/***/ }),
+
+/***/ "./src/util-datestring.js":
+/*!********************************!*\
+  !*** ./src/util-datestring.js ***!
+  \********************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/////////////////////////////////////////////////////////////////////////////
+
+/**	UTILITY FUNCTIONS ******************************************************/
+// enums for outputing dates
+const e_weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']; ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function str_TimeStamp() {
+  let date = new Date();
+  let hh = `0${date.getHours()}`.slice(-2);
+  let mm = `0${date.getMinutes()}`.slice(-2);
+  let ss = `0${date.getSeconds()}`.slice(-2);
+  return `${hh}:${mm}:${ss}`;
+} ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+function str_DateStamp() {
+  let date = new Date();
+  let mm = `0${date.getMonth() + 1}`.slice(-2);
+  let dd = `0${date.getDate()}`.slice(-2);
+  let day = e_weekday[date.getDay()];
+  let yyyy = date.getFullYear();
+  return `${yyyy}/${mm}/${dd} ${day}`;
+} ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ *  return a filename of form YYYY-MMDD-args-separated-by-dashes-HHMMSS
+ */
+
+
+function str_TimeDatedFilename(...args) {
+  // construct filename
+  let date = new Date();
+  let dd = `0${date.getDate()}`.slice(-2);
+  let mm = `0${date.getMonth() + 1}`.slice(-2);
+  let hms = `0${date.getHours()}`.slice(-2);
+  hms += `0${date.getMinutes()}`.slice(-2);
+  hms += `0${date.getSeconds()}`.slice(-2);
+  let filename;
+  filename = date.getFullYear().toString();
+  filename += `-${mm}${dd}`;
+  let c = arguments.length;
+  if (c) filename = filename.concat('-', ...args);
+  filename += `-${hms}`;
+  return filename;
+} ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+module.exports = {
+  TimeStamp: str_TimeStamp,
+  DateStamp: str_DateStamp,
+  DatedFilename: str_TimeDatedFilename
+};
+
+/***/ }),
+
+/***/ "./src/util-prompts.js":
+/*!*****************************!*\
+  !*** ./src/util-prompts.js ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  String Prompts for server console
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+let PROMPTS = {}; /// CONSTANTS /////////////////////////////////////////////////////////////////
+/// detect node environment and set padsize accordingly
+
+const IS_NODE = typeof process !== 'undefined' && process.release && process.release.name === 'node';
+let PAD_SIZE = IS_NODE ? 13 // nodejs
+: 0; // not nodejs
+
+const TERM = {
+  Reset: '\x1b[0m',
+  Bright: '\x1b[1m',
+  Dim: '\x1b[2m',
+  Underscore: '\x1b[4m',
+  Blink: '\x1b[5m',
+  Reverse: '\x1b[7m',
+  Hidden: '\x1b[8m',
+  FgBlack: '\x1b[30m',
+  FgRed: '\x1b[31m',
+  FgGreen: '\x1b[32m',
+  FgYellow: '\x1b[33m',
+  FgBlue: '\x1b[34m',
+  FgMagenta: '\x1b[35m',
+  FgCyan: '\x1b[36m',
+  FgWhite: '\x1b[37m',
+  BgBlack: '\x1b[40m',
+  BgRed: '\x1b[41m',
+  BgGreen: '\x1b[42m',
+  BgYellow: '\x1b[43m',
+  BgBlue: '\x1b[44m',
+  BgMagenta: '\x1b[45m',
+  BgCyan: '\x1b[46m',
+  BgWhite: '\x1b[47m'
+}; /// PROMPT STRING HELPERS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ return a string padded to work as a prompt for either browser or node
+    console output
+/*/
+
+PROMPTS.Pad = (prompt = '', psize = PAD_SIZE) => {
+  let len = prompt.length;
+  if (IS_NODE) return `${prompt.padEnd(psize, ' ')}-`; // must be non-node environment, so do dynamic string adjust
+
+  if (!psize) return `${prompt}:`; // if this far, then we're truncating
+
+  if (len >= psize) prompt = prompt.substr(0, psize - 1);else prompt.padEnd(psize, ' ');
+  return `${prompt}:`;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ returns PAD_SIZE stars
+/*/
+
+
+PROMPTS.Stars = count => {
+  if (count !== undefined) return ''.padEnd(count, '*');
+  return ''.padEnd(PAD_SIZE, '*');
+};
+
+PROMPTS.TR = TERM.Reset;
+PROMPTS.BR = TERM.Bright;
+PROMPTS.CWARN = TERM.FgYellow;
+PROMPTS.CCRIT = TERM.BgRed + TERM.FgWhite + TERM.Bright;
+PROMPTS.CINFO = TERM.BgBlue + TERM.FgWhite;
+PROMPTS.TERM_URSYS = TERM.FgBlue + TERM.Bright;
+PROMPTS.TERM_DB = TERM.FgBlue; // server-database
+
+PROMPTS.TERM_NET = TERM.FgBlue; // server-network
+
+PROMPTS.TERM_EXP = TERM.FgMagenta; // server-express
+
+PROMPTS.TERM_WPACK = TERM.FgGreen; // webpack configurations
+
+PROMPTS.CW = TERM.FgGreen; // webpack configurations
+
+PROMPTS.CY = TERM.FgYellow;
+PROMPTS.TERM = TERM;
+PROMPTS.CS = '\x1b[34m\x1b[1m';
+PROMPTS.CW = '\x1b[32m';
+PROMPTS.CR = '\x1b[0m'; /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+module.exports = PROMPTS;
+
+/***/ }),
+
+/***/ "./src/util-session.js":
+/*!*****************************!*\
+  !*** ./src/util-session.js ***!
+  \*****************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* eslint-disable @typescript-eslint/no-use-before-define */
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
+/* eslint-disable no-param-reassign */
+
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  Session Utilities
+  collection of session-related data structures
+
+  For student logins, we just need to encode the groupId, which will give
+  us the classroomId. We also need the name, which is not encoded, but
+  can be checked against the groups database.
+
+  <NAME>-HASHED_DATA
+  where HASHED_DATA encodes groupId, classroomId
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+/// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const HashIds = __webpack_require__(/*! hashids/cjs */ "./node_modules/hashids/cjs/index.js");
+
+const UUID = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-node/index.js");
+
+const UUIDv5 = UUID.v5;
+
+const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/util-prompts.js"); /// DEBUGGING /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+const DBG = false;
+const PR = PROMPTS.Pad('SESSUTIL'); /// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// HASH_* are used as parameters for hashids (login tokens)
+
+const HASH_ABET = 'ABCDEFGHIJKLMNPQRSTVWXYZ23456789';
+const HASH_MINLEN = 3;
+const HASH_SALT = 'MEMESALT/2019'; /// UUID_NAMESPACE was arbitrarily generated with 'npx uuid v4' (access keys)
+
+const UUID_NAMESPACE = '1abc839d-b04f-481e-87fe-5d69bd1907b2';
+let ADMIN_KEY = ''; // set to non-falsy to disable admin checks
+
+const ADMIN_QSTRING = 'danishpowers'; // used to bypass admin localhost test
+
+const SSHOT_URL = '/screenshots';
+const UPLOAD_URL = `${SSHOT_URL}/upload`; /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+let m_current_name; // global decoded name (only for browsers)
+
+let m_current_idsobj = {}; // global decoded props (only for browsers)
+
+let m_access_key = ''; // global access key (saved only for browsers)
+/// SESSION ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+const SESSION = {}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ Given a token of form NAME-HASHED_DATA, return an object
+    containing as many decoded values as possible. Check isValid for
+    complete decode succes. groupId is also set if successful
+/*/
+
+SESSION.DecodeToken = hashedToken => {
+  let studentName;
+  let hashedData; // token
+
+  let groupId;
+  let classroomId; // decoded data
+
+  let isValid = false; // is a valid token?
+
+  if (typeof hashedToken !== 'string') return {
+    isValid,
+    error: 'token must be a string'
+  }; // token is of form NAME-HASHEDID
+  // (1) check student name
+
+  const token = hashedToken.toUpperCase();
+  const tokenBits = token.toUpperCase().split('-');
+  if (tokenBits.length === 1) return {
+    isValid,
+    token,
+    error: 'missing - in token'
+  };
+  if (tokenBits.length > 2) return {
+    isValid,
+    token,
+    error: 'too many - in token'
+  };
+  if (tokenBits[0]) studentName = tokenBits[0].toUpperCase();
+  if (studentName.length < 3) return {
+    isValid,
+    token,
+    error: 'student name must have 3 or more letters'
+  }; // (2) check hashed data
+
+  if (tokenBits[1]) hashedData = tokenBits[1].toUpperCase(); // initialize hashid structure
+
+  let hashids = new HashIds(HASH_SALT + studentName, HASH_MINLEN, HASH_ABET); // try to decode the groupId
+
+  const dataIds = hashids.decode(hashedData); // invalidate if couldn't decode
+
+  if (dataIds.length === 0) return {
+    isValid,
+    token,
+    error: 'invalid token'
+  }; // at this point groupId is valid (begins with ID, all numeric)
+  // check for valid subgroupId
+
+  [groupId, classroomId] = dataIds;
+  isValid = true;
+  return {
+    isValid,
+    studentName,
+    token,
+    groupId,
+    classroomId
+  };
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ Return TRUE if the token decodes into an expected range of values
+/*/
+
+
+SESSION.IsValidToken = token => {
+  let decoded = SESSION.DecodeToken(token);
+  return decoded && Number.isInteger(decoded.groupId) && typeof decoded.studentName === 'string';
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Returns a token string of form NAME-HASHED_DATA
+ * @param {String} studentName
+ * @param {Object} dataIds
+ * @param {Number} dataIds.groupId
+ * @param {Number} dataIds.classroomId
+ */
+
+
+SESSION.MakeToken = (studentName, dataIds = {}) => {
+  // type checking
+  if (typeof studentName !== 'string') throw Error(`classId arg1 '${studentName}' must be string`);
+  let err; // eslint-disable-next-line no-cond-assign
+
+  if (err = f_checkIdValue(dataIds)) {
+    console.warn(`Could not make token. ${err}`);
+    return undefined;
+  } // initialize hashid structure
+
+
+  studentName = studentName.toUpperCase();
+  const {
+    groupId,
+    classroomId
+  } = dataIds;
+  let hashids = new HashIds(HASH_SALT + studentName, HASH_MINLEN, HASH_ABET);
+  let hashedId = hashids.encode(groupId, classroomId);
+  return `${studentName}-${hashedId}`;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Returns a token string of form NAME-HASHED_DATA
+ * @param {String} teacherName
+ * @param {Object} dataIds
+ * @param {Number} dataIds.groupId
+ * @param {Number} dataIds.teacherId
+ */
+
+
+SESSION.MakeTeacherToken = (teacherName, dataIds = {}) => {
+  // type checking
+  if (typeof teacherName !== 'string') throw Error(`classId arg1 '${teacherName}' must be string`);
+  let err; // eslint-disable-next-line no-cond-assign
+
+  if (err = f_checkIdValue(dataIds)) {
+    console.warn(`Could not make token. ${err}`);
+    return undefined;
+  } // convert to alphanumeric no spaces
+
+
+  const tokName = teacherName.replace(/\W/g, ''); // initialize hashid structure
+
+  teacherName = tokName.toUpperCase();
+  const {
+    groupId,
+    teacherId
+  } = dataIds;
+  let hashids = new HashIds(HASH_SALT + teacherName, HASH_MINLEN, HASH_ABET);
+  let hashedId = hashids.encode(groupId, teacherId);
+  return `${teacherName}-${hashedId}`;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// support function
+
+
+function f_checkIdValue(idsObj) {
+  const ids = Object.keys(idsObj);
+  let error = '';
+  ids.forEach(key => {
+    const val = idsObj[key];
+
+    if (!Number.isInteger(val)) {
+      error += `'${key}' is not an integer. `;
+      return;
+    }
+
+    if (val < 0) {
+      error += `'${key}' must be non-negative integer. `;
+      return;
+    }
+
+    if (val > Number.MAX_SAFE_INTEGER) {
+      error += `'${key}' exceeds MAX_SAFE_INTEGER. `;
+    }
+  });
+  return error;
+} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/** Makes a 'access key' that is not very secure, but unique enough to serve
+ * as an authentication key based on a login token
+ * @param {...*} var_args - string arguments
+ */
+
+
+SESSION.MakeAccessKey = (...args) => {
+  const name = [...args].join(':');
+  const key = UUIDv5(name, UUID_NAMESPACE);
+  return key;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Set the global GROUPID, which is included in all NetMessage packets that are
+ * sent to server. Do not use from server-based code.
+ */
+
+
+SESSION.DecodeAndSet = token => {
+  const decoded = SESSION.DecodeToken(token);
+  const {
+    isValid,
+    studentName,
+    groupId,
+    classroomId
+  } = decoded;
+
+  if (isValid) {
+    m_current_name = studentName;
+    m_current_idsobj = {
+      studentName,
+      groupId,
+      classroomId
+    }; // handle teacher login
+    // in this case, the groupId is 0 and classroomId is actually
+    // teacherId, so update the object
+
+    if (groupId === 0) {
+      console.warn(`INFO: TEACHER LOGIN '${studentName}'`);
+      m_current_idsobj.teacherId = classroomId;
+      m_current_idsobj.teacherName = studentName;
+      m_current_idsobj.classroomId = undefined;
+    }
+
+    if (DBG) console.log('DecodeAndSet() success', studentName, groupId, classroomId);
+  } else if (DBG) console.log('DecodeAndSet() failed', token);
+
+  return isValid;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Clear all global session parameters. Do not use from server-based code.
+ */
+
+
+SESSION.Clear = () => {
+  if (DBG) console.log('Clearing session');
+  m_current_name = undefined;
+  m_current_idsobj = undefined;
+  m_access_key = undefined;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Set the global SESSION ACCESS KEY, which is necessary as a parameter for
+ * some operations (e.g. database writes). Do not use from server-based code.
+ */
+
+
+SESSION.SetAccessKey = key => {
+  if (typeof key === 'string') {
+    m_access_key = key;
+    if (DBG) console.log('setting access key', key);
+  }
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Return the global SESSION ACCESS KEY that was set using SetAccessKey(). Don't
+ * use this from server-based code.
+ */
+
+
+SESSION.AccessKey = () => {
+  if (DBG) console.log('AccessKey() returning', m_access_key);
+  return m_access_key;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+SESSION.SetAdminKey = key => {
+  ADMIN_KEY = key || ADMIN_KEY;
+  return ADMIN_KEY;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * This is TOTALLY INSECURE and not even trying for the prototype
+ */
+
+
+SESSION.AdminKey = () => {
+  const is = ADMIN_KEY || false;
+  if (DBG) console.warn('INFO: requested AdminKey()');
+  return is;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Return teacherId if this is a logged-in teacher
+ */
+
+
+SESSION.LoggedInProps = () => {
+  const {
+    groupId,
+    classroomId,
+    teacherId
+  } = m_current_idsobj;
+
+  if (groupId === 0) {
+    return {
+      teacherName: m_current_name,
+      teacherId
+    };
+  }
+
+  return {
+    studentName: m_current_name,
+    groupId,
+    classroomId
+  };
+};
+
+SESSION.IsStudent = () => {
+  return SESSION.LoggedInProps().studentName !== undefined;
+};
+
+SESSION.IsTeacher = () => {
+  return SESSION.LoggedInProps().teacherName !== undefined;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Return the global LoggedInName that was set using DecodeAndSet(). Don't use
+ * this from server-based code.
+ */
+
+
+SESSION.LoggedInName = () => {
+  return m_current_name;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Return the global idsObject containing groupId, classroomId that was set
+ * using DecodeAndSet(). Don't use this from server-based code.
+ */
+
+
+SESSION.Ids = () => {
+  return m_current_idsobj;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+SESSION.AdminPlaintextPassphrase = () => ADMIN_QSTRING; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+SESSION.ScreenshotURL = () => SSHOT_URL;
+
+SESSION.ScreenshotPostURL = () => UPLOAD_URL; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// EXPORT MODULE /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+
+module.exports = SESSION;
 
 /***/ }),
 

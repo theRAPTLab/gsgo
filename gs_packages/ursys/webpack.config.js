@@ -3,7 +3,7 @@ const merge = require('webpack-merge');
 
 // const URSYS = require('@gemscript/ursus/server')
 const serverConfig = {
-  entry: path.resolve(__dirname, 'src/export-server.js'),
+  entry: path.resolve(__dirname, 'src/index-server.js'),
   target: 'node', // sets node-specific webpack flags (web is default)
   output: {
     libraryTarget: 'commonjs',
@@ -15,7 +15,7 @@ const serverConfig = {
 
 // import URSYS from '@gemscript/ursys/client'
 const clientConfig = {
-  entry: path.resolve(__dirname, 'src/export-client.js'),
+  entry: path.resolve(__dirname, 'src/index-client.js'),
   target: 'web', // sets browser-related webpack flags (web is default)
   output: {
     libraryTarget: 'umd', // universal module format

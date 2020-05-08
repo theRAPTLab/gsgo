@@ -32,10 +32,10 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
-const Messager = require('../common/class-messager');
+const Messager = require('./class-messager');
 const CENTRAL = require('./client-central').default;
 const URNET = require('./client-connect').default; // workaround for require
-const DATAMAP = require('../common/class-datamap');
+const DATAMAP = require('./class-datamap');
 
 /** implements endpoints for talking to the URSYS network
  * @module URLink

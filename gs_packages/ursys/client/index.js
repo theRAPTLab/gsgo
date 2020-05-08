@@ -91,15 +91,15 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/export-client.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index-client.js");
 /******/ })
 /************************************************************************/
 /******/ ({
 
-/***/ "./src/export-client.js":
-/*!******************************!*\
-  !*** ./src/export-client.js ***!
-  \******************************/
+/***/ "./src/index-client.js":
+/*!*****************************!*\
+  !*** ./src/index-client.js ***!
+  \*****************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
