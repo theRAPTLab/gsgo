@@ -21,7 +21,7 @@ const HashIds = require('hashids/cjs');
 const UUID = require('uuid');
 
 const UUIDv5 = UUID.v5;
-const PROMPTS = require('./prompts');
+const PROMPTS = require('./util-prompts');
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

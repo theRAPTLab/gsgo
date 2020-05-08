@@ -10,9 +10,9 @@
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import CENTRAL from './central';
+import CENTRAL from './client-central';
 import NetMessage from '../common/class-netmessage';
-import PROMPTS from '../common/prompts';
+import PROMPTS from '../common/util-prompts';
 
 const DBG = { connect: false, handle: false, reg: false };
 

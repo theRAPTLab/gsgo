@@ -18,21 +18,20 @@ const FSE = require('fs-extra');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const PROMPTS = require('../common/prompts');
-const DATESTR = require('../common/lib-datestring');
-const SETTINGS = require('../common/app.settings');
+const PROMPTS = require('../common/util-prompts');
+const DATESTR = require('../common/util-datestring');
 
 const PR = PROMPTS.Pad('LOGGER');
-const { RUNTIME_PATH, PROJECT_NAME } = SETTINGS;
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const LOG_DIR = PATH.join(RUNTIME_PATH, 'logs');
+let LOG_DIR;
 const LOG_DELIMITER = '\t';
 let fs_log = null;
 
-function StartLogging() {
+function StartLogging({ RUNTIME_PATH, PROJECT_NAME }) {
   // initialize event logger
+  LOG_DIR = PATH.join(RUNTIME_PATH, 'logs');
   let dir = PATH.resolve(LOG_DIR);
   try {
     console.log(PR, `logging to ${dir}`);

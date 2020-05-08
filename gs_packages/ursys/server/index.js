@@ -8072,52 +8072,6 @@ function socketOnError() {
 
 /***/ }),
 
-/***/ "./src/common/app.settings.js":
-/*!************************************!*\
-  !*** ./src/common/app.settings.js ***!
-  \************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(__dirname) {/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  global application-specific constants
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-const PATH = __webpack_require__(/*! path */ "path"); /// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/**
- *  Optional search function. It's defined as a function, but we just jam
- *  our values into it like a regular object and use it like this:
- *
- *    const SETTINGS = require('app.settings');
- *    const { PROJECT_NAME } = SETTINGS;
- */
-
-
-const GLOBAL = key => {
-  if (typeof key !== 'string') throw Error('key must be string');
-  if (!key) throw Error('key can not be a falsey value');
-  return GLOBAL[key];
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-GLOBAL.Has = key => {
-  return GLOBAL(key) !== undefined;
-}; /// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-
-GLOBAL.PROJECT_NAME = 'GEMSTEP';
-GLOBAL.RUNTIME_PATH = PATH.join(__dirname, '../runtime'); /// EXPORTS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-module.exports = GLOBAL;
-/* WEBPACK VAR INJECTION */}.call(this, "src/common"))
-
-/***/ }),
-
 /***/ "./src/common/class-netmessage.js":
 /*!****************************************!*\
   !*** ./src/common/class-netmessage.js ***!
@@ -8148,7 +8102,7 @@ module.exports = GLOBAL;
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PROMPTS = __webpack_require__(/*! ./prompts */ "./src/common/prompts.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
+const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/common/util-prompts.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -8905,10 +8859,10 @@ module.exports = NetMessage;
 
 /***/ }),
 
-/***/ "./src/common/lib-datestring.js":
-/*!**************************************!*\
-  !*** ./src/common/lib-datestring.js ***!
-  \**************************************/
+/***/ "./src/common/util-datestring.js":
+/*!***************************************!*\
+  !*** ./src/common/util-datestring.js ***!
+  \***************************************/
 /*! no static exports found */
 /***/ (function(module, exports) {
 
@@ -8967,10 +8921,106 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./src/common/lib-session.js":
-/*!***********************************!*\
-  !*** ./src/common/lib-session.js ***!
-  \***********************************/
+/***/ "./src/common/util-prompts.js":
+/*!************************************!*\
+  !*** ./src/common/util-prompts.js ***!
+  \************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  String Prompts for server console
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+let PROMPTS = {}; /// CONSTANTS /////////////////////////////////////////////////////////////////
+/// detect node environment and set padsize accordingly
+
+const IS_NODE = typeof process !== 'undefined' && process.release && process.release.name === 'node';
+let PAD_SIZE = IS_NODE ? 13 // nodejs
+: 0; // not nodejs
+
+const TERM = {
+  Reset: '\x1b[0m',
+  Bright: '\x1b[1m',
+  Dim: '\x1b[2m',
+  Underscore: '\x1b[4m',
+  Blink: '\x1b[5m',
+  Reverse: '\x1b[7m',
+  Hidden: '\x1b[8m',
+  FgBlack: '\x1b[30m',
+  FgRed: '\x1b[31m',
+  FgGreen: '\x1b[32m',
+  FgYellow: '\x1b[33m',
+  FgBlue: '\x1b[34m',
+  FgMagenta: '\x1b[35m',
+  FgCyan: '\x1b[36m',
+  FgWhite: '\x1b[37m',
+  BgBlack: '\x1b[40m',
+  BgRed: '\x1b[41m',
+  BgGreen: '\x1b[42m',
+  BgYellow: '\x1b[43m',
+  BgBlue: '\x1b[44m',
+  BgMagenta: '\x1b[45m',
+  BgCyan: '\x1b[46m',
+  BgWhite: '\x1b[47m'
+}; /// PROMPT STRING HELPERS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ return a string padded to work as a prompt for either browser or node
+    console output
+/*/
+
+PROMPTS.Pad = (prompt = '', psize = PAD_SIZE) => {
+  let len = prompt.length;
+  if (IS_NODE) return `${prompt.padEnd(psize, ' ')}-`; // must be non-node environment, so do dynamic string adjust
+
+  if (!psize) return `${prompt}:`; // if this far, then we're truncating
+
+  if (len >= psize) prompt = prompt.substr(0, psize - 1);else prompt.padEnd(psize, ' ');
+  return `${prompt}:`;
+}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/*/ returns PAD_SIZE stars
+/*/
+
+
+PROMPTS.Stars = count => {
+  if (count !== undefined) return ''.padEnd(count, '*');
+  return ''.padEnd(PAD_SIZE, '*');
+};
+
+PROMPTS.TR = TERM.Reset;
+PROMPTS.BR = TERM.Bright;
+PROMPTS.CWARN = TERM.FgYellow;
+PROMPTS.CCRIT = TERM.BgRed + TERM.FgWhite + TERM.Bright;
+PROMPTS.CINFO = TERM.BgBlue + TERM.FgWhite;
+PROMPTS.TERM_URSYS = TERM.FgBlue + TERM.Bright;
+PROMPTS.TERM_DB = TERM.FgBlue; // server-database
+
+PROMPTS.TERM_NET = TERM.FgBlue; // server-network
+
+PROMPTS.TERM_EXP = TERM.FgMagenta; // server-express
+
+PROMPTS.TERM_WPACK = TERM.FgGreen; // webpack configurations
+
+PROMPTS.CW = TERM.FgGreen; // webpack configurations
+
+PROMPTS.CY = TERM.FgYellow;
+PROMPTS.TERM = TERM;
+PROMPTS.CS = '\x1b[34m\x1b[1m';
+PROMPTS.CW = '\x1b[32m';
+PROMPTS.CR = '\x1b[0m'; /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+module.exports = PROMPTS;
+
+/***/ }),
+
+/***/ "./src/common/util-session.js":
+/*!************************************!*\
+  !*** ./src/common/util-session.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9001,7 +9051,7 @@ const UUID = __webpack_require__(/*! uuid */ "./node_modules/uuid/dist/esm-node/
 
 const UUIDv5 = UUID.v5;
 
-const PROMPTS = __webpack_require__(/*! ./prompts */ "./src/common/prompts.js"); /// DEBUGGING /////////////////////////////////////////////////////////////////
+const PROMPTS = __webpack_require__(/*! ./util-prompts */ "./src/common/util-prompts.js"); /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -9364,102 +9414,6 @@ module.exports = SESSION;
 
 /***/ }),
 
-/***/ "./src/common/prompts.js":
-/*!*******************************!*\
-  !*** ./src/common/prompts.js ***!
-  \*******************************/
-/*! no static exports found */
-/***/ (function(module, exports) {
-
-/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  String Prompts for server console
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-let PROMPTS = {}; /// CONSTANTS /////////////////////////////////////////////////////////////////
-/// detect node environment and set padsize accordingly
-
-const IS_NODE = typeof process !== 'undefined' && process.release && process.release.name === 'node';
-let PAD_SIZE = IS_NODE ? 13 // nodejs
-: 0; // not nodejs
-
-const TERM = {
-  Reset: '\x1b[0m',
-  Bright: '\x1b[1m',
-  Dim: '\x1b[2m',
-  Underscore: '\x1b[4m',
-  Blink: '\x1b[5m',
-  Reverse: '\x1b[7m',
-  Hidden: '\x1b[8m',
-  FgBlack: '\x1b[30m',
-  FgRed: '\x1b[31m',
-  FgGreen: '\x1b[32m',
-  FgYellow: '\x1b[33m',
-  FgBlue: '\x1b[34m',
-  FgMagenta: '\x1b[35m',
-  FgCyan: '\x1b[36m',
-  FgWhite: '\x1b[37m',
-  BgBlack: '\x1b[40m',
-  BgRed: '\x1b[41m',
-  BgGreen: '\x1b[42m',
-  BgYellow: '\x1b[43m',
-  BgBlue: '\x1b[44m',
-  BgMagenta: '\x1b[45m',
-  BgCyan: '\x1b[46m',
-  BgWhite: '\x1b[47m'
-}; /// PROMPT STRING HELPERS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ return a string padded to work as a prompt for either browser or node
-    console output
-/*/
-
-PROMPTS.Pad = (prompt = '', psize = PAD_SIZE) => {
-  let len = prompt.length;
-  if (IS_NODE) return `${prompt.padEnd(psize, ' ')}-`; // must be non-node environment, so do dynamic string adjust
-
-  if (!psize) return `${prompt}:`; // if this far, then we're truncating
-
-  if (len >= psize) prompt = prompt.substr(0, psize - 1);else prompt.padEnd(psize, ' ');
-  return `${prompt}:`;
-}; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/*/ returns PAD_SIZE stars
-/*/
-
-
-PROMPTS.Stars = count => {
-  if (count !== undefined) return ''.padEnd(count, '*');
-  return ''.padEnd(PAD_SIZE, '*');
-};
-
-PROMPTS.TR = TERM.Reset;
-PROMPTS.BR = TERM.Bright;
-PROMPTS.CWARN = TERM.FgYellow;
-PROMPTS.CCRIT = TERM.BgRed + TERM.FgWhite + TERM.Bright;
-PROMPTS.CINFO = TERM.BgBlue + TERM.FgWhite;
-PROMPTS.TERM_URSYS = TERM.FgBlue + TERM.Bright;
-PROMPTS.TERM_DB = TERM.FgBlue; // server-database
-
-PROMPTS.TERM_NET = TERM.FgBlue; // server-network
-
-PROMPTS.TERM_EXP = TERM.FgMagenta; // server-express
-
-PROMPTS.TERM_WPACK = TERM.FgGreen; // webpack configurations
-
-PROMPTS.CW = TERM.FgGreen; // webpack configurations
-
-PROMPTS.CY = TERM.FgYellow;
-PROMPTS.TERM = TERM;
-PROMPTS.CS = '\x1b[34m\x1b[1m';
-PROMPTS.CW = '\x1b[32m';
-PROMPTS.CR = '\x1b[0m'; /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-module.exports = PROMPTS;
-
-/***/ }),
-
 /***/ "./src/export-server.js":
 /*!******************************!*\
   !*** ./src/export-server.js ***!
@@ -9477,7 +9431,7 @@ module.exports = PROMPTS;
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URNet = __webpack_require__(/*! ./server/urnet */ "./src/server/urnet.js"); /// CONSTANTS /////////////////////////////////////////////////////////////////
+const URNet = __webpack_require__(/*! ./server/server-urnet */ "./src/server/server-urnet.js"); /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 
@@ -9522,10 +9476,10 @@ module.exports = {
 
 /***/ }),
 
-/***/ "./src/server/logger.js":
-/*!******************************!*\
-  !*** ./src/server/logger.js ***!
-  \******************************/
+/***/ "./src/server/server-logger.js":
+/*!*************************************!*\
+  !*** ./src/server/server-logger.js ***!
+  \*************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9550,25 +9504,23 @@ const FSE = __webpack_require__(/*! fs-extra */ "./node_modules/fs-extra/lib/ind
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
 
-const PROMPTS = __webpack_require__(/*! ../common/prompts */ "./src/common/prompts.js");
+const PROMPTS = __webpack_require__(/*! ../common/util-prompts */ "./src/common/util-prompts.js");
 
-const DATESTR = __webpack_require__(/*! ../common/lib-datestring */ "./src/common/lib-datestring.js");
+const DATESTR = __webpack_require__(/*! ../common/util-datestring */ "./src/common/util-datestring.js");
 
-const SETTINGS = __webpack_require__(/*! ../common/app.settings */ "./src/common/app.settings.js");
-
-const PR = PROMPTS.Pad('LOGGER');
-const {
-  RUNTIME_PATH,
-  PROJECT_NAME
-} = SETTINGS; /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
+const PR = PROMPTS.Pad('LOGGER'); /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 
-const LOG_DIR = PATH.join(RUNTIME_PATH, 'logs');
+let LOG_DIR;
 const LOG_DELIMITER = '\t';
 let fs_log = null;
 
-function StartLogging() {
+function StartLogging({
+  RUNTIME_PATH,
+  PROJECT_NAME
+}) {
   // initialize event logger
+  LOG_DIR = PATH.join(RUNTIME_PATH, 'logs');
   let dir = PATH.resolve(LOG_DIR);
 
   try {
@@ -9636,10 +9588,10 @@ module.exports = LOG;
 
 /***/ }),
 
-/***/ "./src/server/urnet.js":
-/*!*****************************!*\
-  !*** ./src/server/urnet.js ***!
-  \*****************************/
+/***/ "./src/server/server-urnet.js":
+/*!************************************!*\
+  !*** ./src/server/server-urnet.js ***!
+  \************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -9662,11 +9614,11 @@ const NetMessage = __webpack_require__(/*! ../common/class-netmessage */ "./src/
 /** @typedef {Object} NetMessage */
 
 
-const LOGGER = __webpack_require__(/*! ./logger */ "./src/server/logger.js");
+const LOGGER = __webpack_require__(/*! ./server-logger */ "./src/server/server-logger.js");
 
-const PROMPTS = __webpack_require__(/*! ../common/prompts */ "./src/common/prompts.js");
+const PROMPTS = __webpack_require__(/*! ../common/util-prompts */ "./src/common/util-prompts.js");
 
-const SESSION = __webpack_require__(/*! ../common/lib-session */ "./src/common/lib-session.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
+const SESSION = __webpack_require__(/*! ../common/util-session */ "./src/common/util-session.js"); /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 

@@ -12,9 +12,9 @@
 const WSS = require('ws').Server;
 const NetMessage = require('../common/class-netmessage');
 /** @typedef {Object} NetMessage */
-const LOGGER = require('./logger');
-const PROMPTS = require('../common/prompts');
-const SESSION = require('../common/lib-session');
+const LOGGER = require('./server-logger');
+const PROMPTS = require('../common/util-prompts');
+const SESSION = require('../common/util-session');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -33,8 +33,8 @@
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
 const Messager = require('../common/class-messager');
-const CENTRAL = require('./central').default;
-const URNET = require('./connect').default; // workaround for require
+const CENTRAL = require('./client-central').default;
+const URNET = require('./client-connect').default; // workaround for require
 const DATAMAP = require('../common/class-datamap');
 
 /** implements endpoints for talking to the URSYS network
