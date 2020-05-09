@@ -23,6 +23,7 @@ import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// note: this is rendered both on the server once and on the client
 function Page() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (

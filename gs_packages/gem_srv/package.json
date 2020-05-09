@@ -22,9 +22,11 @@
       ".next"
     ],
     "watch": [
-      "server",
+      "server/_start.js",
       "../ursys/server",
-      "../ursys/client"
+      "../ursys/client",
+      "src/pages/_app.jsx",
+      "src/pages/_document.jsx"
     ],
     "ext": "js json"
   },
@@ -34,6 +36,7 @@
     "@material-ui/core": "^4.9.6",
     "@material-ui/icons": "^4.9.1",
     "clsx": "^1.1.0",
+    "cross-fetch": "^3.0.4",
     "deepmerge": "^4.2.2",
     "jss": "^10.1.1",
     "jss-extend": "^6.2.0",
@@ -44,6 +47,7 @@
     "react-dom": "^16.13.1",
     "react-markdown": "^4.3.1",
     "react-redux": "^7.2.0",
+    "react-use": "^14.2.0",
     "redux": "^4.0.5"
   },
   "private": true,

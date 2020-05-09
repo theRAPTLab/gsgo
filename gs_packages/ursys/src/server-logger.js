@@ -31,7 +31,7 @@ let fs_log = null;
 
 function StartLogging(options = {}) {
   if (!options.runtimePath) throw Error('runtime path is required');
-  if (!options.projectName) options.projectName = '<UNNAMED PROJECT>';
+  if (!options.serverName) options.serverName = '<UNNAMED SERVER>';
   // initialize event logger
   LOG_DIR = PATH.join(options.runtimePath, 'logs');
   let dir = PATH.resolve(LOG_DIR);
@@ -43,7 +43,7 @@ function StartLogging(options = {}) {
     fs_log = FSE.createWriteStream(pathname);
     LogLine(
       `${
-        options.projectName
+        options.serverName
       } APPSERVER SESSION LOG for ${DATESTR.DateStamp()} ${DATESTR.TimeStamp()}`
     );
     LogLine('---');

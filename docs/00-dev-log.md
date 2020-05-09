@@ -313,11 +313,38 @@ TODO:
 * `_start.js` send RUNTIME_FILES and MEDIA_FILES to URSYS SERVER
 * `_document.js` or `_app.js` receive URNET_BROKER information and make it accessible to the instance of URSYS CLIENT.
 
+Q. where determine RUNTIME_FILES etc it in _start.js?
+A. The call to `URSYS.StartServer()` is a good place to put it. it calculates the runtime path and calls URSYS.StartServer( options ) which also initializes LOGGER.StartLogging( options )
 
+Q. what about URNET_BROKER props in _app.js or _document.js?
+A. This is the broker stuff: host, port, uaddr which is from URNET
 
+Interestingly, the client is currently able to connect. However, that's because these values are hardcoded in client-connect.js `Connect()`. Here we want it to read any available injected values.
 
+* the host, port, uaddr needs to be generated somewhere when the server starts up. In GEMSRV that's `_start.js`  when it calls `URSYS.StartServer()` and receives back some results. We should jam that information then. 
+* That said, NextJS doesn't have an API to inject data. You're supposed to use getInitialProps.
+* That means it's up to _start.js to **provide the host and port** information to URSYS. Can I just write this back to the URSYS SERVER object and load the same object into _document.getInitialProps? YES
+* Now how to **put it into the client**? I tried adding it to _document.getInitialProps by wedging it into the renderPage function, which renders App. I'm losing the injection somewhere. 
 
+I'm stumped between the server and client rendering model. Ugh.
 
+* I want to be able to get data from the server from the client, but getInitialProps assumes that you're fetching props dynamically from the server. Maybe that's just the way it has to work. 
+* I can implement an api to do a data fetch. Endpoints are very easy to implement on the server side in `page/api/endpoint`. Very cool. But how do I even fetch this information to initialize the URNET connection?
 
+`URSERVER.StartNetwork` is started in `_start.js`  and stores broker information
 
+URCLIENT is loaded only on clients, and doesn't have access to the broker information in URSERVER. Before `URCLIENT.Connect` can be called inside a `useEffect` in the browser, it needs the broker information. 
+
+* `useEffect` is called inside the render function, so it needs access to fetched data.
+* getInitialProps doesn't work in _app.jsx as expected.
+* It turns out we can just return whatever in _app.jsx after doing a **fetch**. This happens once. 
+
+YAY, IT WORKS. The general idea was:
+
+* call `URSERVER.StartNetwork()` in `_start.js` custom server
+* make `pages/api/urnet.js` endpoint that will return urnet connection info
+* fetch data from the `api/urnet.js` endpoint in `_app.js` `getInitialProps()`,  returning it as `urProps` add-on to `...appProps`
+* in `_app.js` render function, `useIsomorphicLayoutEffect` to call `URCLIENT.Connect(urProps)` connection information `host`, `port`.
+
+This initializes the connection and sets up the client websocket. TODO: is to complete the handshake and URNET message loop.
 

@@ -7,9 +7,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useEffect } from 'react';
+import { useIsomorphicLayoutEffect } from 'react-use';
 import PropTypes from 'prop-types';
+import App from 'next/app';
 import Head from 'next/head';
-import URSYS from '@gemstep/ursys/client';
+///
+import fetch from 'cross-fetch';
+import URCLIENT from '@gemstep/ursys/client';
 ///
 import { create } from 'jss';
 import extend from 'jss-extend';
@@ -34,25 +38,25 @@ const jss = create({
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default function MyApp(props) {
-  const { Component, pageProps } = props;
+  const { Component, pageProps, urProps } = props;
 
   // NOTE: useEffect executes on on clients
   // after MyApp has completely rendered
 
-  // Remove the server-side injected CSS.
+  // client-side remove the server-side injected CSS (_app mounts once)
   useEffect(() => {
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
+      console.log('Removing extraneous JSS-SERVER-SIDE');
       jssStyles.parentElement.removeChild(jssStyles);
     }
   }, []);
 
-  // Initialize URSYS
-  useEffect(() => {
-    console.group('Initialize URSYS on Client', URSYS);
-    URSYS.Connect();
-    console.groupEnd();
-  });
+  // client-side initialize URSYS (_app mounts once)
+  useIsomorphicLayoutEffect(() => {
+    console.log('Initializing URCLIENT');
+    URCLIENT.Connect(urProps);
+  }, []);
 
   // render app wrapped with our providers
   return (
@@ -73,18 +77,18 @@ export default function MyApp(props) {
   );
 }
 
-// Only uncomment this method if you have blocking data requirements for
-// every single page in your application. This disables the ability to
-// perform automatic static optimization, causing every page in your app to
-// be server-side rendered. This code is rendered on the server only!!!
-// Also add this import:
-// import App from 'next/app';
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// MyApp.getInitialProps = async appContext => {
-//   // calls page's `getInitialProps` and fills `appProps.pageProps`
-//   const appProps = await App.getInitialProps(appContext);
-//   return { ...appProps };
-// };
+/// GET URSYS INFO ////////////////////////////////////////////////////////////
+/// NOTE: this disables automatic static optimization
+/// in the _app.js context, getInitialProps doesn't have pageProps ever
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+MyApp.getInitialProps = async ctx => {
+  // ctx contains Component, router, pageProps
+  const appProps = await App.getInitialProps(ctx);
+  const urProps = await fetch('http://localhost:3000/api/urnet').then(res =>
+    res.json()
+  );
+  return { ...appProps, urProps };
+};
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MyApp.propTypes = {

@@ -12,6 +12,10 @@
 const COMMON_MODULES = require('./modules-common');
 const URNet = require('./server-urnet');
 
+/// DECLARATIONS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let m_network_config;
+
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const META = {
@@ -30,12 +34,19 @@ const URMedia = {};
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** start the server
- *  StartServer({port,uaddr}) sets up the socket server options
- *  StartNetwork()
+/** Start the URNET socket server
  */
 function StartServer(options) {
-  return URNet.StartNetwork(options);
+  m_network_config = URNet.StartNetwork(options);
+  return m_network_config;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Retrieve URNET broker information
+ *  useed in _document.getInitialProps to inject as props
+ */
+function GetBrokerInfo() {
+  const { serverName, port, uaddr } = m_network_config;
+  return { serverName, port, uaddr };
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -45,6 +56,7 @@ module.exports = {
   ...META,
   // MAIN API
   StartServer,
+  GetBrokerInfo,
   // SERVICES API
   URStore,
   URWeb,

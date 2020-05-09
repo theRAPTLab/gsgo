@@ -9,7 +9,7 @@ const { parse } = require('url');
 const next = require('next');
 const path = require('path');
 
-const URSYS = require('@gemstep/ursys/server');
+const URSERVER = require('@gemstep/ursys/server');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -20,11 +20,12 @@ const RUNTIME_PATH = path.join(__dirname, '/runtime');
 
 (async () => {
   console.log(`STARTING: ${SCRIPT_PATH}`);
-  const results = await URSYS.StartServer({
-    projectName: 'GEM_SRV',
+  await URSERVER.StartServer({
+    serverName: 'GEM_SRV',
     runtimePath: RUNTIME_PATH
   });
-  console.log(`SERVER STARTED on port:${results.port} w/uaddr:${results.uaddr}`);
+  const { port, uaddr } = URSERVER.GetBrokerInfo();
+  console.log(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
 })();
 
 /// START WEN SERVER //////////////////////////////////////////////////////////
@@ -42,7 +43,7 @@ app.prepare().then(() => {
     const { pathname, query } = parsedUrl;
 
     // Do our route interception here
-    if (pathname === '/a') {
+    if (pathname === '/api/getinfo') {
       app.render(req, res, '/b', query);
     } else if (pathname === '/b') {
       app.render(req, res, '/a', query);

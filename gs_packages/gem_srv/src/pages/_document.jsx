@@ -41,16 +41,16 @@ export default class MyDocument extends Document {
 /// ALSO: material-ui.com/guides/server-rendering/#material-ui-on-the-server
 /// RELATED: medium.com/manato/b1e88ac11dfa (alt styling convention)
 MyDocument.getInitialProps = async ctx => {
-  // 1. inject CSS-IN-JS libraries with custom render page
+  // 1. prep CSS-IN-JS libraries with custom render page
   const sheets = new ServerStyleSheets();
   const originalRenderPage = ctx.renderPage;
+  // 2. inject new props (this doesn't work with ursys)
   ctx.renderPage = () =>
     originalRenderPage({
       enhanceApp: App => props => sheets.collect(<App {...props} />)
     });
-  // 2. call original getInitialProps with updated context
+  // 3. call original getInitialProps with updated context
   const initialProps = await Document.getInitialProps(ctx);
-  // return props to be injected into <Main><App>
   return {
     ...initialProps,
     // Styles fragment is rendered after the app and page rendering finish.

@@ -14,7 +14,7 @@ const CENTRAL = require('./client-central');
 const NetMessage = require('./class-netmessage');
 const PROMPTS = require('./util-prompts');
 
-const DBG = { connect: false, handle: false, reg: false };
+const DBG = { connect: true, handle: true, reg: true };
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

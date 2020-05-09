@@ -40,7 +40,6 @@ const EP = new DataLink('ursys-client');
  *  TODO: need some way to automatically know what the server address is
  */
 function Connect(options) {
-  console.log('network', Network);
   return Network.Connect(EP, options);
 }
 
