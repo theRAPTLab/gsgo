@@ -39,7 +39,7 @@ export default function MyApp(props) {
   // useEffect executes on on clients, after MyApp has completely rendered
   useEffect(() => {
     console.group('Initialize URSYS on Client', URSYS);
-    URSYS.Init();
+    URSYS.Connect();
     // window references will not throw                                                                                                                                                                                                                                                                                                                                                                                                                                    inside useEffect
     // but if it was not then server would crash when starting
     console.log('window object', window);

@@ -48,35 +48,22 @@ let UNET = {};
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Sets the default values for the network, which comprises of the websocket
- * server port, the URSYS address (uaddr) of the server. It also makes sure that
- * the websocket server hasn't already been initialized. Also initializes the
- * NetMessage class via its static setup method GlobalSetup(), passing the
- * server UADDR to it. Saves the configuration object in mu_options.
- *
- * Followup this call with StartNetwork().
- *
- * @param {Object} [options] - configuration settings
- * @param {number} [options.port] - default to DEFAULT_NET_PORT 2929
- * @param {string} [options.uaddr] - default to DefaultServerUADDR() 'SVR_01'
- * @returns {Object} complete configuration object
+/** Initializes the web socket server using the options set by
+ *  InitializeNetwork(), and directs connections to utility function
+ *  m_NewSocketConnected()
+ *  @param {Object} [options] - configuration settings
+ *  @param {number} [options.port] - default to DEFAULT_NET_PORT 2929
+ *  @param {string} [options.uaddr] - default to DefaultServerUADDR() 'SVR_01'
+ *  @returns {Object} complete configuration object
  */
-UNET.InitializeNetwork = options => {
+UNET.StartNetwork = options => {
   options = options || {};
   options.port = options.port || DEFAULT_NET_PORT;
   options.uaddr = options.uaddr || SERVER_UADDR;
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
   NetMessage.GlobalSetup({ uaddr: options.uaddr });
   mu_options = options;
-  return mu_options;
-}; // end InitializeNetwork()
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Initializes the web socket server using the options set by
- * InitializeNetwork(), and directs connections to utility function
- * m_NewSocketConnected()
- */
-UNET.StartNetwork = () => {
   // create listener.
   if (DBG.init)
     console.log(PR, `initializing web socket server on port ${mu_options.port}`);
@@ -94,6 +81,7 @@ UNET.StartNetwork = () => {
       socket.on('close', () => m_SocketDelete(socket));
     }); // end on 'connection'
   });
+  return options;
 }; // end StartNetwork()
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

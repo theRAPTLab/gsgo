@@ -277,13 +277,41 @@ The question is still open though: **launch the socket server**. YES!!! But:
 
 2. There is also the complication of **server-side rendering** and what modules get executed on the server.
 
-Addressing (2) - the mere act of including URSYS in `_app,jsx` means that it's run on the server side, so we need to clean it up.
+**Addressing (2)** - the mere act of including URSYS in `_app,jsx` means that it's run on the server side, so we need to clean it up.
 
 * index-client imports client-datalink, which looks clean
 * also imports client-connect, which  looks cleans but imports:
-  * client-central: sets a bunch of UR parameters
+  * client-central: sets a bunch of UR parameters on load...fixed
   * class-netmessage
   * util-prompts
+
+**Addressing (1)** - At this point, there are several parameters we need to deliver from the server to the clients. In past incarnations of STEP, we injected these values through an Express server template index page. NextJS has its own conventions for the templating (e.g. `_document.js` and `getStaticProps`), so we'll use that.
+
+First consider URSYS needs:
+
+URSYS is now a library, so URSYS SERVER needs to be initialized with several startup parameters to work with any given project. Previously these were hardcoded values in the embedded library.
+
+*  `RUNTIME_FILES` is the directory where internal data structures are generated. These are never served directly to the client. Examples:
+  * databases
+  * log files
+*  `MEDIA_FILES` user generated assets
+  * dynamically-generated assets like screenshots
+  * teacher-uploaded assets like images, pdfs, resource manifests
+  * NOTE: NextJS will [serve static files](https://nextjs.org/docs/basic-features/static-file-serving) from a `public` directory at the root level of the project. This directory can be used for the webapp, but shouldn't contain 
+
+Students type in the URL of their application server into a web browser to load the web app from the running application server. This web app needs to receive information to connect to URNET, which is the  hub-based message broker that allows apps on the network to talk to each other. Information that needs to be received by *EACH* connecting client:
+
+* `URNET_BROKER` is the websocket server host information
+  * `host` is the websocket url, including the port number
+  * `port` is the websocket port (separated for convenience)
+  * `uaddr` is the URNET address of the host
+
+When the client uses URSYS to connect to URNET, it then receives its own `uaddr` and is ready to send a variety of URSYS commands, but that is a topic for a later time.
+
+TODO:
+
+* `_start.js` send RUNTIME_FILES and MEDIA_FILES to URSYS SERVER
+* `_document.js` or `_app.js` receive URNET_BROKER information and make it accessible to the instance of URSYS CLIENT.
 
 
 

@@ -23,7 +23,8 @@
     ],
     "watch": [
       "server",
-      "../ursys/server"
+      "../ursys/server",
+      "../ursys/client"
     ],
     "ext": "js json"
   },

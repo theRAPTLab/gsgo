@@ -30,8 +30,12 @@ const URMedia = {};
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Init() {
-  return `${META._SCRIPT} ${META._VERSION}`;
+/** start the server
+ *  StartServer({port,uaddr}) sets up the socket server options
+ *  StartNetwork()
+ */
+function StartServer(options) {
+  return URNet.StartNetwork(options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -40,7 +44,7 @@ module.exports = {
   // META
   ...META,
   // MAIN API
-  Init,
+  StartServer,
   // SERVICES API
   URStore,
   URWeb,

@@ -16,8 +16,12 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const SCRIPT_PATH = path.relative(`${__dirname}/../..`, __filename);
-console.log(`STARTING: ${SCRIPT_PATH}`);
-console.log(`URSYS:    ${URSYS.Init()}`);
+
+(async () => {
+  console.log(`STARTING: ${SCRIPT_PATH}`);
+  const options = await URSYS.StartServer();
+  console.log(`SERVER STARTED on port:${options.port} w/uaddr:${options.uaddr}`);
+})();
 
 /*/ START WEB SERVER
     NextJS is loaded as middleware with all its usual features
