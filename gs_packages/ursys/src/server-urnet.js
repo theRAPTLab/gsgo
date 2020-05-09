@@ -11,7 +11,6 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WSS = require('ws').Server;
 const NetMessage = require('./class-netmessage');
-/** @typedef {Object} NetMessage */
 const LOGGER = require('./server-logger');
 const PROMPTS = require('./util-prompts');
 const SESSION = require('./util-session');
@@ -56,10 +55,14 @@ let UNET = {};
  *  @param {string} [options.uaddr] - default to DefaultServerUADDR() 'SVR_01'
  *  @returns {Object} complete configuration object
  */
-UNET.StartNetwork = options => {
-  options = options || {};
+UNET.StartNetwork = (options = {}) => {
+  if (!options.runtimePath) {
+    return Error('runtimePath required to start URSYS SERVER');
+  }
+  LOGGER.StartLogging(options);
   options.port = options.port || DEFAULT_NET_PORT;
   options.uaddr = options.uaddr || SERVER_UADDR;
+
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
   NetMessage.GlobalSetup({ uaddr: options.uaddr });
   mu_options = options;

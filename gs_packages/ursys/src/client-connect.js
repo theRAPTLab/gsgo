@@ -10,9 +10,9 @@
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import CENTRAL from './client-central';
-import NetMessage from './class-netmessage';
-import PROMPTS from './util-prompts';
+const CENTRAL = require('./client-central');
+const NetMessage = require('./class-netmessage');
+const PROMPTS = require('./util-prompts');
 
 const DBG = { connect: false, handle: false, reg: false };
 
@@ -100,7 +100,9 @@ NETWORK.Connect = (datalink, opt) => {
 
   // create websocket
   // uses values that were embedded in index.ejs on load
-  const { USRV_Host, USRV_MsgPort } = CENTRAL.GetVal('ur_session');
+  /** HACK GEMSRV HARDCODED **/
+  const USRV_Host = 'localhost';
+  const USRV_MsgPort = '2929';
   let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
   NETSOCK.ws = new WebSocket(wsURI);
   if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);
@@ -118,7 +120,7 @@ NETWORK.Connect = (datalink, opt) => {
     m_status = M_STANDALONE;
   });
   // handle incoming messages
-  NETWORK.AddListener('message', m_HandleRegistrationMessage);
+  // NETWORK.AddListener('message', m_HandleRegistrationMessage);
 }; // Connect()
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -245,4 +247,4 @@ NETWORK.IsLocalhost = () => NetMessage.IsLocalhost();
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default NETWORK;
+module.exports = NETWORK;

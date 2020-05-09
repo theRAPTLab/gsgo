@@ -9,7 +9,9 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const COMMON = require('./modules-common');
+const COMMON_MODULES = require('./modules-common');
+const DataLink = require('./client-datalink');
+const Network = require('./client-connect');
 
 /// META-DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,30 +26,37 @@ const META = {
 const Events = {};
 const Exec = {};
 const Extensions = {};
-const Link = {};
-const Network = {};
+// const Link = {};
+// const Network = {};
 const PubSub = {};
+
+/// DECLARATIONS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const EP = new DataLink('ursys-client');
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Init() {
-  return `${META._SCRIPT} ${META._VERSION}`;
+/** connect to URSYS network
+ *  TODO: need some way to automatically know what the server address is
+ */
+function Connect(options) {
+  console.log('network', Network);
+  return Network.Connect(EP, options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  // META
   ...META,
   // MAIN API
-  Init,
+  Connect,
   // SERVICES API
   Events,
   Exec,
   Extensions,
-  Link,
+  DataLink,
   Network,
   PubSub,
   // CONVENIENCE
-  ...COMMON
+  ...COMMON_MODULES
 };

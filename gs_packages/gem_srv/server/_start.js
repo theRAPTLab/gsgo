@@ -16,15 +16,20 @@ const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const SCRIPT_PATH = path.relative(`${__dirname}/../..`, __filename);
+const RUNTIME_PATH = path.join(__dirname, '/runtime');
 
 (async () => {
   console.log(`STARTING: ${SCRIPT_PATH}`);
-  const options = await URSYS.StartServer();
-  console.log(`SERVER STARTED on port:${options.port} w/uaddr:${options.uaddr}`);
+  const results = await URSYS.StartServer({
+    projectName: 'GEM_SRV',
+    runtimePath: RUNTIME_PATH
+  });
+  console.log(`SERVER STARTED on port:${results.port} w/uaddr:${results.uaddr}`);
 })();
 
-/*/ START WEB SERVER
-    NextJS is loaded as middleware with all its usual features
+/// START WEN SERVER //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ NextJS is loaded as middleware with all its usual features
     except for automatic static optimization.
     We get a chance to intercept routes before passing the request to
     to the default handlers provided by NexxtJS.

@@ -15,7 +15,7 @@
  * Central is a common settings manager.
  * @module URCentral
  */
-import ValueBinding from './class-valuebinding';
+const ValueBinding = require('./class-valuebinding');
 
 /// MODULE DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,22 +107,10 @@ const SetVal = (key, value) => {
     USRV_Start, CLIENT_UADDR, USRV_UADDR,
     SESSION_Key, SESSION_Token
 
+    THIS STUFF HAS TO BE REPLACED IN @GEMSTEP/URSYS
+
 /*/
-if (!window.URSESSION) window.URSESSION = {};
-Define('ur_session', window.URSESSION);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/
-    window.ur is used for console debugging
-/*/
-if (!window.ur) window.ur = {};
-Define('ur', window.ur);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBGUR = param => {
-  const obj = GetVal('ur');
-  if (param === undefined) return obj;
-  return obj[param];
-};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default { Define, GetVal, SetVal, DBGUR };
+module.exports = { Define, GetVal, SetVal };

@@ -29,9 +29,11 @@ let LOG_DIR;
 const LOG_DELIMITER = '\t';
 let fs_log = null;
 
-function StartLogging({ RUNTIME_PATH, PROJECT_NAME }) {
+function StartLogging(options = {}) {
+  if (!options.runtimePath) throw Error('runtime path is required');
+  if (!options.projectName) options.projectName = '<UNNAMED PROJECT>';
   // initialize event logger
-  LOG_DIR = PATH.join(RUNTIME_PATH, 'logs');
+  LOG_DIR = PATH.join(options.runtimePath, 'logs');
   let dir = PATH.resolve(LOG_DIR);
   try {
     console.log(PR, `logging to ${dir}`);
@@ -40,7 +42,9 @@ function StartLogging({ RUNTIME_PATH, PROJECT_NAME }) {
     let pathname = `${dir}/${logname}`;
     fs_log = FSE.createWriteStream(pathname);
     LogLine(
-      `${PROJECT_NAME} APPSERVER SESSION LOG for ${DATESTR.DateStamp()} ${DATESTR.TimeStamp()}`
+      `${
+        options.projectName
+      } APPSERVER SESSION LOG for ${DATESTR.DateStamp()} ${DATESTR.TimeStamp()}`
     );
     LogLine('---');
   } catch (err) {
@@ -53,7 +57,7 @@ function StartLogging({ RUNTIME_PATH, PROJECT_NAME }) {
 /*/	Log a standard system log message
 /*/
 function LogLine(...args) {
-  if (!fs_log) StartLogging();
+  if (!fs_log) throw Error('must call StartLogging with runtimePath first');
 
   let out = `${DATESTR.TimeStamp()} `;
   let c = args.length;
@@ -72,8 +76,8 @@ function LogLine(...args) {
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 let LOG = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Handle incoming log events
-/*/
+/** API: Handle incoming log events
+ */
 LOG.PKT_LogEvent = pkt => {
   let { event, items } = pkt.Data();
   if (DBG) console.log(PR, pkt.Info(), event, ...items);
@@ -81,9 +85,13 @@ LOG.PKT_LogEvent = pkt => {
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ API: Write to log as delimited arguments
-/*/
+/** API: Write to log as delimited arguments
+ */
 LOG.Write = LogLine;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Initialize Logger
+ */
+LOG.StartLogging = StartLogging;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

@@ -36,16 +36,25 @@ const jss = create({
 export default function MyApp(props) {
   const { Component, pageProps } = props;
 
-  // useEffect executes on on clients, after MyApp has completely rendered
+  // NOTE: useEffect executes on on clients
+  // after MyApp has completely rendered
+
+  // Remove the server-side injected CSS.
+  useEffect(() => {
+    const jssStyles = document.querySelector('#jss-server-side');
+    if (jssStyles) {
+      jssStyles.parentElement.removeChild(jssStyles);
+    }
+  }, []);
+
+  // Initialize URSYS
   useEffect(() => {
     console.group('Initialize URSYS on Client', URSYS);
     URSYS.Connect();
-    // window references will not throw                                                                                                                                                                                                                                                                                                                                                                                                                                    inside useEffect
-    // but if it was not then server would crash when starting
-    console.log('window object', window);
     console.groupEnd();
   });
 
+  // render app wrapped with our providers
   return (
     <StylesProvider jss={jss}>
       <Head>
