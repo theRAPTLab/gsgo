@@ -33,9 +33,8 @@
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
 const Messager = require('./class-messager');
-const CENTRAL = require('./client-central').default;
-const URNET = require('./client-urnet').default; // workaround for require
-const DATAMAP = require('./class-datamap');
+const DataMap = require('./class-datamap');
+const URNET = require('./client-urnet');
 
 /** implements endpoints for talking to the URSYS network
  * @module URLink
@@ -53,6 +52,7 @@ const PR = 'ULINK:';
 const UNODE_MAP = new Map(); // URSYS connector node map (local)
 const MAX_UNODES = 100;
 let UNODE_COUNTER = 0; // URSYS connector node id counter
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetUniqueId() {
   const id = `${++UNODE_COUNTER}`.padStart(3, '0');
   if (UNODE_COUNTER > MAX_UNODES)
@@ -188,8 +188,6 @@ class URLink {
       throw Error('did you intend to use Subscribe() instead of Publish()?');
     options = Object.assign(options, { type: 'msend' });
     options.srcUID = this.UID();
-    // ur_legacy_publish is set in ursys.js, and makes it work like Broadcast
-    if (CENTRAL.GetVal('ur_legacy_publish')) options.srcUID = null;
     MESSAGER.Publish(mesgName, inData, options);
   }
 
@@ -296,16 +294,16 @@ class URLink {
    * UR.DBQuery(cmd,data). The cmd is looks up the corresponding URSYS
    * message (e.g. add -> NET:SRV_DBADD)
    * @example
-   * DATAMAP.DBQuery('add', { teachers: { name: 'NewTeacher' }});
+   * DataMap.DBQuery('add', { teachers: { name: 'NewTeacher' }});
    */
   _DBQuery(cmd, data) {
-    const opmsg = DATAMAP.GetCommandMessage(cmd);
+    const opmsg = DataMap.GetCommandMessage(cmd);
     if (!opmsg) return Promise.reject(`invalid operation '${cmd}'`);
     if (data.cmd) return Promise.reject("do not include 'cmd' prop in data pack");
     if (!data.key)
       return Promise.reject("data must have access key 'key' defined");
     data.cmd = cmd;
-    let res = DATAMAP.ValidateCollections(data);
+    let res = DataMap.ValidateCollections(data);
     if (!res) return Promise.reject(`no-op: no valid collections found ${res}`);
     // got this far, so let's do the call!
     // returns promise that resolve to data object
@@ -317,9 +315,9 @@ class URLink {
   _DBLock(data) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { dbkey, dbids, key } = data;
-    if (!DATAMAP.IsValidKey(dbkey))
+    if (!DataMap.IsValidKey(dbkey))
       return Promise.reject(`invalid dbkey ${dbkey}`);
-    if (!DATAMAP.IsValidIdsArray(dbids))
+    if (!DataMap.IsValidIdsArray(dbids))
       return Promise.reject('dbids must be array of ints');
     if (!data.key)
       return Promise.reject("data must have access key 'key' defined");
@@ -332,9 +330,9 @@ class URLink {
   _DBRelease(data) {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { dbkey, dbids, key } = data;
-    if (!DATAMAP.IsValidKey(dbkey))
+    if (!DataMap.IsValidKey(dbkey))
       return Promise.reject(`invalid dbkey ${dbkey}`);
-    if (!DATAMAP.IsValidIdsArray(dbids))
+    if (!DataMap.IsValidIdsArray(dbids))
       return Promise.reject('dbids must be array of ints');
     if (!data.key)
       return Promise.reject("data must have access key 'key' defined");
