@@ -23,25 +23,26 @@ const META = {
 
 /// CLIENT-SIDE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// to be implemented
 const Events = {};
 const Exec = {};
 const Extensions = {};
-// const Link = {};
-// const URNet = {};
 const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EP = new URLink('ursys-client');
+const URLINK = new URLink('ursys-client');
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to URSYS network
- *  TODO: need some way to automatically know what the server address is
  */
-function Connect(options) {
-  return URNet.Connect(EP, options);
-}
+const Connect = options => {
+  return URNet.Connect(URLINK, options);
+};
+/** forward URLINK methods
+ */
+const { Subscribe, Unsubscribe, Signal, Publish } = URLINK;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,6 +50,10 @@ module.exports = {
   ...META,
   // MAIN API
   Connect,
+  Subscribe,
+  Unsubscribe,
+  Publish,
+  Signal,
   // SERVICES API
   Events,
   Exec,

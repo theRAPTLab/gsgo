@@ -125,7 +125,7 @@ class Messager {
         // skip "same origin" calls
         if (srcUID && handlerFunc.ulink_id === srcUID) {
           console.warn(
-            `MessagerSend: [${mesgName}] skip call since origin = destination; use Broadcast() if intended`
+            `MessagerSend: [${mesgName}] skip call since origin = destination; use Signal() if intended`
           );
           return;
         }
