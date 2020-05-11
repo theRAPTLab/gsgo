@@ -368,4 +368,8 @@ UR.Publish('MESSAGE',data).then(data=>{ ... })
 In NextJS, we need to ensure that the SUBSCRIBE happens only on the client side. 
 
 * implement the initial lifecycle in `_app.js` placeholder
-* now put in UR.Datalink calls...maybe rename first.
+* documented the ursys network in [urnet.md](01-architecture/02-urnet.md)
+* now put in UR.Datalink calls...maybe rename first
+  * client-connect -> client-urnet (mirror server-urnet)
+  * client-datalink -> client-urlink
+

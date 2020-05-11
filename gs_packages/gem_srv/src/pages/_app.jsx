@@ -51,7 +51,7 @@ export default function MyApp(props) {
     (async () => {
       console.groupCollapsed('UR-EXEC: INIT');
       console.groupEnd();
-      console.groupCollapsed('UR-EXEC: NET_INIT');
+      console.group('UR-EXEC: NET_INIT');
       await URCLIENT.Connect(urProps);
       console.groupEnd();
       console.groupCollapsed('UR-EXEC: LOAD');

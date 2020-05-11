@@ -34,7 +34,7 @@
 // between node and browser-side Javascript.
 const Messager = require('./class-messager');
 const CENTRAL = require('./client-central').default;
-const URNET = require('./client-connect').default; // workaround for require
+const URNET = require('./client-urnet').default; // workaround for require
 const DATAMAP = require('./class-datamap');
 
 /** implements endpoints for talking to the URSYS network

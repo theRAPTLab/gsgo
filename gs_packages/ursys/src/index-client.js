@@ -10,8 +10,8 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const COMMON_MODULES = require('./modules-common');
-const DataLink = require('./client-datalink');
-const Network = require('./client-connect');
+const URLink = require('./client-urlink');
+const URNet = require('./client-urnet');
 
 /// META-DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,12 +27,12 @@ const Events = {};
 const Exec = {};
 const Extensions = {};
 // const Link = {};
-// const Network = {};
+// const URNet = {};
 const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EP = new DataLink('ursys-client');
+const EP = new URLink('ursys-client');
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,7 +40,7 @@ const EP = new DataLink('ursys-client');
  *  TODO: need some way to automatically know what the server address is
  */
 function Connect(options) {
-  return Network.Connect(EP, options);
+  return URNet.Connect(EP, options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -53,8 +53,8 @@ module.exports = {
   Events,
   Exec,
   Extensions,
-  DataLink,
-  Network,
+  URLink,
+  URNet,
   PubSub,
   // CONVENIENCE
   ...COMMON_MODULES
