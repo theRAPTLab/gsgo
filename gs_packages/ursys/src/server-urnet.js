@@ -10,7 +10,7 @@
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WSS = require('ws').Server;
-const NetMessage = require('./class-netmessage');
+const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const PROMPTS = require('./util-prompts');
 const SESSION = require('./util-session');
@@ -29,7 +29,7 @@ const ERR_INVALID_DEST = "couldn't find socket with provided address";
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_NET_PORT = 2929;
-const SERVER_UADDR = NetMessage.DefaultServerUADDR(); // is 'SVR_01'
+const SERVER_UADDR = NetPacket.DefaultServerUADDR(); // is 'SVR_01'
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +64,7 @@ UNET.StartNetwork = (options = {}) => {
   options.uaddr = options.uaddr || SERVER_UADDR;
 
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
-  NetMessage.GlobalSetup({ uaddr: options.uaddr });
+  NetPacket.GlobalSetup({ uaddr: options.uaddr });
   mu_options = options;
 
   // create listener.
@@ -134,7 +134,7 @@ UNET.NetUnsubscribe = (mesgName, handlerFunc) => {
  * @return {Array<Object>} array of returned data items
  */
 UNET.NetCall = async (mesgName, data) => {
-  let pkt = new NetMessage(mesgName, data);
+  let pkt = new NetPacket(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   if (DBG.call)
     console.log(
@@ -171,7 +171,7 @@ UNET.LocalPublish = (mesgName, data) => {
  * @param {function} handlerFunc function originally registered
  */
 UNET.NetPublish = (mesgName, data) => {
-  let pkt = new NetMessage(mesgName, data);
+  let pkt = new NetPacket(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   // we don't care about waiting for the promise to complete
   if (DBG.call)
@@ -217,7 +217,7 @@ UNET.ClientList = () => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handles URSYS REGISTRATION PACKETS from connecting clients. It is the first
  * packet sent on successful socket connection.
- * @param {NetMessage} pkt - NetMessage packet instance
+ * @param {NetPacket} pkt - NetPacket packet instance
  * @return {Object} object with registered property containing array of message
  */
 UNET.PKT_RegisterRemoteHandlers = pkt => {
@@ -230,7 +230,7 @@ UNET.PKT_RegisterRemoteHandlers = pkt => {
   if (filtered.length !== messages.length) {
     const error = `${uaddr} blocked from registering SRV message`;
     console.log(PR, error);
-    return { error, code: NetMessage.CODE_REG_DENIED };
+    return { error, code: NetPacket.CODE_REG_DENIED };
   }
   let regd = [];
   // save message list, for later when having to delete
@@ -255,7 +255,7 @@ UNET.PKT_RegisterRemoteHandlers = pkt => {
  * ensure that keys can not be reused by other socket connections or multiple
  * logins using the same token.
  *
- * @param {NetMessage} pkt - NetMessage packet instance
+ * @param {NetPacket} pkt - NetPacket packet instance
  * @param {Object} pkt.data - data payload
  * @param {String} pkt.data.token - hashed session info
  * @return {Object} returned data payload
@@ -270,7 +270,7 @@ UNET.PKT_SessionLogin = pkt => {
     const error = `socket '${uaddr}' already has a session '${JSON.stringify(
       sock.USESS
     )}'`;
-    return { error, code: NetMessage.CODE_SES_RE_REGISTER };
+    return { error, code: NetPacket.CODE_SES_RE_REGISTER };
   }
   const { token } = pkt.Data();
   if (!token || typeof token !== 'string')
@@ -278,7 +278,7 @@ UNET.PKT_SessionLogin = pkt => {
   const decoded = SESSION.DecodeToken(token);
   if (!decoded.isValid) {
     const error = `token '${token}' is not valid`;
-    return { error, code: NetMessage.CODE_SES_INVALID_TOKEN };
+    return { error, code: NetPacket.CODE_SES_INVALID_TOKEN };
   }
   const key = SESSION.MakeAccessKey(token, uaddr);
   sock.USESS = decoded;
@@ -291,7 +291,7 @@ UNET.PKT_SessionLogin = pkt => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handle SESSION LOGOUT packets
  *
- * @param {NetMessage} pkt - NetMessage packet instance
+ * @param {NetPacket} pkt - NetPacket packet instance
  * @param {Object} pkt.data - data payload
  * @param {String} pkt.data.token - hashed session info
  * @return {Object} returned data payload
@@ -319,7 +319,7 @@ UNET.PKT_Session = pkt => {
   if (!sock) {
     const error = `${uaddr} impossible socket lookup failure`;
     console.log(PR, error);
-    return { error, code: NetMessage.CODE_SOC_NOSOCK };
+    return { error, code: NetPacket.CODE_SOC_NOSOCK };
   }
   const { key } = pkt.Data();
   if (sock.ULOCAL) {
@@ -329,7 +329,7 @@ UNET.PKT_Session = pkt => {
   if (!key) {
     const error = `${uaddr} access key is not set`;
     if (DBG.client) console.log(PR, error);
-    return { error, code: NetMessage.CODE_SES_REQUIRE_KEY };
+    return { error, code: NetPacket.CODE_SES_REQUIRE_KEY };
   }
   const evil_backdoor = SESSION.AdminPlaintextPassphrase();
   if (key === evil_backdoor) {
@@ -349,7 +349,7 @@ UNET.PKT_Session = pkt => {
   if (!sock.USESS) {
     const error = `sock.${uaddr} is not logged-in`;
     if (DBG.client) console.log(PR, `${uaddr} is not logged-in`);
-    return { error, code: NetMessage.CODE_SES_REQUIRE_LOGIN };
+    return { error, code: NetPacket.CODE_SES_REQUIRE_LOGIN };
   }
   if (key !== sock.UKEY) {
     if (DBG.client) {
@@ -359,7 +359,7 @@ UNET.PKT_Session = pkt => {
       );
     }
     const error = `sock.${uaddr} access keys do not match '${sock.UKEY}' '${key}'`;
-    return { error, code: NetMessage.CODE_SES_INVALID_KEY };
+    return { error, code: NetPacket.CODE_SES_INVALID_KEY };
   }
   // passes all tests, so its good!
   return sock.USESS;
@@ -419,13 +419,13 @@ function m_SocketClientAck(socket) {
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Main entry point for handling 'message' events from a client socket. It
- * converts the incoming JSON to a NetMessage packet and passes processing
+ * converts the incoming JSON to a NetPacket packet and passes processing
  * further on depending on the type.
  * @param {Object} socket messaging socket
- * @param {string} json text-encoded NetMessage
+ * @param {string} json text-encoded NetPacket
  */
 function m_SocketOnMessage(socket, json) {
-  let pkt = new NetMessage(json);
+  let pkt = new NetPacket(json);
   // figure out what to do
   switch (pkt.Type()) {
     case 'msig':
@@ -469,7 +469,7 @@ function m_SocketDelete(socket) {
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns the socket associated with a uaddr. The UADDR
- * can be accessed from a NetMessage packet's SourceAddress().
+ * can be accessed from a NetPacket packet's SourceAddress().
  */
 function m_SocketLookup(uaddr) {
   return mu_sockets.get(uaddr);
@@ -483,7 +483,7 @@ function m_SocketLookup(uaddr) {
  * 2. The incoming message is intended for the server
  * 3. the incoming message is from a remote reaching another remote
  * @param {Object} socket messaging socket
- * @param {NetMessage} pkt - NetMessage packet instance
+ * @param {NetPacket} pkt - NetPacket packet instance
  */
 async function m_HandleMessage(socket, pkt) {
   // (1) Is the incoming message a response to a message that the server sent?
@@ -520,7 +520,7 @@ async function m_HandleMessage(socket, pkt) {
     pkt.SetData({
       URserver: `info: ${out}`,
       error: `message ${pkt.Message()} not found`,
-      code: NetMessage.CODE_NO_MESSAGE
+      code: NetPacket.CODE_NO_MESSAGE
     });
     if (pkt.IsType('mcall')) pkt.ReturnTransaction(socket);
     return;
@@ -556,14 +556,14 @@ async function m_HandleMessage(socket, pkt) {
   // message packet to the original caller. First merge the data into
   // one data object...
   let data = pktArray.reduce((d, p) => {
-    let pdata = p instanceof NetMessage ? p.Data() : p;
+    let pdata = p instanceof NetPacket ? p.Data() : p;
     let retval = Object.assign(d, pdata);
     if (DBG_NOSRV)
       console.log(PR, `'${pkt.Message()}' reduce`, JSON.stringify(retval));
     return retval;
   }, {});
 
-  // (3g) ...then return the combined data using NetMessage.ReturnTransaction()
+  // (3g) ...then return the combined data using NetPacket.ReturnTransaction()
   // on the caller's socket, which we have retained through the magic of closures!
   const dbgData = JSON.stringify(data);
   pkt.SetData(data);
@@ -576,7 +576,7 @@ async function m_HandleMessage(socket, pkt) {
 /** MAIN HANDLER (currently stub) for network-synched state messages, which
  * are not yet implemented in URSYS
  * @param {Object} socket messaging socket
- * @param {NetMessage} pkt a NetMessage object received from socket
+ * @param {NetPacket} pkt a NetPacket object received from socket
  */
 /// function m_HandleState(socket, pkt) {}
 
@@ -585,7 +585,7 @@ async function m_HandleMessage(socket, pkt) {
  * associated with a SERVER-based message handler. Handler functions must return
  * a data object. Unlike the remote version of this function, this executes
  * synchronously because there is no network communication required.
- * @param {NetMessage} pkt a NetMessage object to use as message key
+ * @param {NetPacket} pkt a NetPacket object to use as message key
  * @returns {Array<Promise>} promises objects to use with await
  */
 function m_PromiseServerHandlers(pkt) {
@@ -612,11 +612,11 @@ function m_PromiseServerHandlers(pkt) {
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** KEY HELPER for handling "forwarded calls" to remote URSYS devices on behalf
  * of an incoming call that isn't implemented on the server. It works by cloning
- * the original NetMessage packet and sending it to removes via
- * NetMessage.PromiseTransaction(), returning an array of promises that resolve
- * when NetMessage.CompleteTransaction() is invoked on the returned data. Use
+ * the original NetPacket packet and sending it to removes via
+ * NetPacket.PromiseTransaction(), returning an array of promises that resolve
+ * when NetPacket.CompleteTransaction() is invoked on the returned data. Use
  * await Promise.all(promises) to wait.
- * @param {NetMessage} pkt a NetMessage object to use as message key
+ * @param {NetPacket} pkt a NetPacket object to use as message key
  * @returns {Array<Promise>} promises objects to use with Promise.all()
  */
 function m_PromiseRemoteHandlers(pkt) {
@@ -635,7 +635,7 @@ function m_PromiseRemoteHandlers(pkt) {
   let handlers = m_remote_handlers.get(mesgName);
   if (!handlers) return promises;
 
-  // if there are handlers to handle, create a NetMessage
+  // if there are handlers to handle, create a NetPacket
   // clone of this packet and forward it and save the promise
   handlers.forEach(d_uaddr => {
     const isOrigin = s_uaddr === d_uaddr;
@@ -646,7 +646,7 @@ function m_PromiseRemoteHandlers(pkt) {
     } else {
       let d_sock = mu_sockets.get(d_uaddr);
       if (d_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${d_uaddr}`);
-      let newpkt = new NetMessage(pkt); // clone packet data to new packet
+      let newpkt = new NetPacket(pkt); // clone packet data to new packet
       newpkt.MakeNewID(); // make new packet unique
       newpkt.CopySourceAddress(pkt); // clone original source address
       promises.push(newpkt.PromiseTransaction(d_sock));

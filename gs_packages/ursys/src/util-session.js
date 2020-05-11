@@ -190,7 +190,7 @@ SESSION.MakeAccessKey = (...args) => {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- * Set the global GROUPID, which is included in all NetMessage packets that are
+ * Set the global GROUPID, which is included in all NetPacket objects that are
  * sent to server. Do not use from server-based code.
  */
 SESSION.DecodeAndSet = token => {

@@ -8,7 +8,7 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Messager = require('./class-messager');
-const NetMessage = require('./class-netmessage');
+const NetPacket = require('./class-netpacket');
 const DateString = require('./util-datestring');
 const Session = require('./util-session');
 
@@ -16,7 +16,7 @@ const Session = require('./util-session');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   Messager,
-  NetMessage,
+  NetPacket,
   DateString,
   Session
 };

@@ -372,4 +372,7 @@ In NextJS, we need to ensure that the SUBSCRIBE happens only on the client side.
 * now put in UR.Datalink calls...maybe rename first
   * client-connect -> client-urnet (mirror server-urnet)
   * client-datalink -> client-urlink
+  * class-netmessage -> class-netpacket
+* next...use URLink to subscribe to something
+  * 
 

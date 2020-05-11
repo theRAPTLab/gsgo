@@ -7,26 +7,18 @@
     It initializes a network connection on the CONNECT lifecycle.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
-
-/// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const CENTRAL = require('./client-central');
-const NetMessage = require('./class-netmessage');
+const NetPacket = require('./class-netpacket');
 const PROMPTS = require('./util-prompts');
-
-const DBG = { connect: true, handle: true, reg: true };
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = { connect: true, handle: true, reg: true };
+///
 const PR = PROMPTS.Pad('NETWORK');
 const WARN = PROMPTS.Pad('!!!');
-const ERR_NM_REQ = 'arg1 must be NetMessage instance';
+const ERR_NM_REQ = 'arg1 must be NetPacket instance';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
-const ERR_BAD_ULINK = "An instance of 'URLink' is required";
-
-/// GLOBAL NETWORK INFO (INJECTED ON INDEX) ///////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NETSOCK = {};
+const ERR_BAD_URLINK = "An instance of 'URLink' is required";
 
 /// NETWORK ID VALUES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,106 +29,56 @@ const M3_REGISTERED = 3;
 const M4_READY = 4;
 const M_STANDALONE = 5;
 const M_NOCONNECT = 6;
-let m_status = M0_INIT;
-let m_options = {};
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+/// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NETWORK = {};
-let ULINK = null; // assigned during NETWORK.Connect()
+let m_socket; // contain socket information on registration message
+let m_urlink; // assigned during NETWORK.Connect()
+let m_options;
+let m_status = M0_INIT;
 
 /// NETWORK LISTENERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.AddListener = (event, handlerFunction) => {
-  if (NETSOCK.ws instanceof WebSocket) {
-    NETSOCK.ws.addEventListener(event, handlerFunction);
+function m_AddListener(event, handlerFunction) {
+  if (m_socket instanceof WebSocket) {
+    m_socket.addEventListener(event, handlerFunction);
   } else {
     throw Error(ERR_NO_SOCKET);
   }
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.RemoveListener = (event, handlerFunction) => {
-  if (NETSOCK.ws instanceof WebSocket) {
-    NETSOCK.ws.removeEventListener(event, handlerFunction);
+function m_RemoveListener(event, handlerFunction) {
+  if (m_socket instanceof WebSocket) {
+    m_socket.removeEventListener(event, handlerFunction);
   } else {
     throw Error(ERR_NO_SOCKET);
   }
-};
+}
 
-/// CONNECT ///////////////////////////////////////////////////////////////////
+/// API HELPERS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Establish connection to URSYS server. This is called by client.js during
-    NetworkInitialize(), which itself fires after the application has rendered
-    completely.
-/*/
-NETWORK.Connect = (datalink, opt) => {
-  return new Promise(resolve => {
-    if (m_status > 0) {
-      let err =
-        'called twice...other views may be calling URSYS outside of lifecycle';
-      console.error(WARN, err);
-      return;
-    }
-    m_status = M1_CONNECTING;
-
-    // check and save parms
-    if (datalink.constructor.name !== 'URLink') {
-      throw Error(ERR_BAD_ULINK);
-    }
-    if (!ULINK) ULINK = datalink;
-    m_options = opt || {};
-
-    // create websocket
-    // uses values that were embedded in index.ejs on load
-    /** HACK GEMSRV HARDCODED **/
-    const USRV_Host = 'localhost';
-    const USRV_MsgPort = '2929';
-    let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
-    NETSOCK.ws = new WebSocket(wsURI);
-    if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);
-
-    // create listeners
-    NETWORK.AddListener('open', event => {
-      if (DBG.connect) console.log(PR, '...OPEN', event.target.url);
-      m_status = M2_CONNECTED;
-      // message handling continues in 'message' handler
-      // the first message is assumed to be registration data
-      console.log('UR-EXEC: CONNECTED');
-      resolve();
-    });
-    NETWORK.AddListener('close', event => {
-      if (DBG.connect) console.log(PR, '..CLOSE', event.target.url);
-      NetMessage.GlobalOfflineMode();
-      m_status = M_STANDALONE;
-    });
-    // handle incoming messages
-    NETWORK.AddListener('message', m_HandleRegistrationMessage);
-  });
-}; // Connect()
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ After 'open' event, we expect the first message on the socket to contain
-    network session-related messages
-/*/
+/** After 'open' event, we expect the first message on the socket to contain
+ *  network session-related messages
+ */
 function m_HandleRegistrationMessage(msgEvent) {
   let regData = JSON.parse(msgEvent.data);
   let { HELLO, UADDR, SERVER_UADDR, PEERS, ULOCAL } = regData;
   // (1) after receiving the initial message, switch over to regular
   // message handler
-  NETWORK.RemoveListener('message', m_HandleRegistrationMessage);
+  m_RemoveListener('message', m_HandleRegistrationMessage);
   m_status = M3_REGISTERED;
   // (2) initialize global settings for netmessage
   if (DBG.connect) console.log(PR, `'${HELLO}'`);
-  NETSOCK.ws.UADDR = NetMessage.DefaultServerUADDR();
-  NetMessage.GlobalSetup({
+  m_socket.UADDR = NetPacket.DefaultServerUADDR();
+  NetPacket.GlobalSetup({
     uaddr: UADDR,
-    netsocket: NETSOCK.ws,
+    netsocket: m_socket,
     server_uaddr: SERVER_UADDR,
     peers: PEERS,
     is_local: ULOCAL
   });
   // (3) connect regular message handler
-  NETWORK.AddListener('message', m_HandleMessage);
+  m_AddListener('message', m_HandleMessage);
   m_status = M4_READY;
   // (4) network is initialized
   if (typeof m_options.success === 'function') m_options.success();
@@ -148,12 +90,11 @@ function m_HandleRegistrationMessage(msgEvent) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Dispatch incoming event object from the network.
- * @param {SocketEvent} msgEvent -incoming event object from websocket
+/** Dispatch incoming event object from the network.
+ *  @param {SocketEvent} msgEvent -incoming event object from websocket
  */
 function m_HandleMessage(msgEvent) {
-  let pkt = new NetMessage(msgEvent.data);
+  let pkt = new NetPacket(msgEvent.data);
   let msg = pkt.Message();
   // (1) If this packet is a response packet, then it must be one of
   // our OWN previously-sent messages that we expected a return value.
@@ -178,19 +119,19 @@ function m_HandleMessage(msgEvent) {
     case 'msig':
       // network signal to raise
       if (dbgout) cout_ReceivedStatus(pkt);
-      ULINK.LocalSignal(msg, data, { fromNet: true });
+      m_urlink.LocalSignal(msg, data, { fromNet: true });
       pkt.ReturnTransaction();
       break;
     case 'msend':
       // network message received
       if (dbgout) cout_ReceivedStatus(pkt);
-      ULINK.LocalPublish(msg, data, { fromNet: true });
+      m_urlink.LocalPublish(msg, data, { fromNet: true });
       pkt.ReturnTransaction();
       break;
     case 'mcall':
       // network call received
       if (dbgout) cout_ReceivedStatus(pkt);
-      ULINK.LocalCall(msg, data, { fromNet: true }).then(result => {
+      m_urlink.LocalCall(msg, data, { fromNet: true }).then(result => {
         if (dbgout) cout_ForwardedStatus(pkt, result);
         // now return the packet
         pkt.SetData(result);
@@ -204,37 +145,99 @@ function m_HandleMessage(msgEvent) {
   function cout_ReceivedStatus(pkt) {
     console.warn(
       PR,
-      `ME_${NetMessage.SocketUADDR()} received '${pkt.Type()}' '${pkt.Message()}' from ${pkt.SourceAddress()}`,
+      `ME_${NetPacket.SocketUADDR()} received '${pkt.Type()}' '${pkt.Message()}' from ${pkt.SourceAddress()}`,
       pkt.Data()
     );
   }
   // DEBUG OUT UTILITY
   function cout_ForwardedStatus(pkt, result) {
     console.log(
-      `ME_${NetMessage.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(
+      `ME_${NetPacket.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(
         result
       )}`
     );
   }
 }
+
+/// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Force close of connection, for example if URSYS.AppReady() fails
-/*/
+const NETWORK = {};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Establish connection to URSYS server. This is called by client.js during
+ *  NetworkInitialize(), which itself fires after the application has rendered
+ *  completely.
+ */
+NETWORK.Connect = (datalink, opt) => {
+  return new Promise(resolve => {
+    if (m_status > 0) {
+      let err =
+        'called twice...other views may be calling URSYS outside of lifecycle';
+      console.error(WARN, err);
+      return;
+    }
+    m_status = M1_CONNECTING;
+
+    // check and save parms
+    if (datalink.constructor.name !== 'URLink') {
+      throw Error(ERR_BAD_URLINK);
+    }
+    if (!m_urlink) m_urlink = datalink;
+    m_options = opt || {};
+
+    // create websocket
+    // uses values that were embedded in index.ejs on load
+    /** HACK GEMSRV HARDCODED **/
+    const USRV_Host = 'localhost';
+    const USRV_MsgPort = '2929';
+    let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
+    m_socket = new WebSocket(wsURI);
+    if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);
+
+    // create listeners
+    m_AddListener('open', event => {
+      if (DBG.connect) console.log(PR, '...OPEN', event.target.url);
+      m_status = M2_CONNECTED;
+      // message handling continues in 'message' handler
+      // the first message is assumed to be registration data
+      console.log('UR-EXEC: CONNECTED');
+      resolve();
+    });
+    m_AddListener('close', event => {
+      if (DBG.connect) console.log(PR, '..CLOSE', event.target.url);
+      NetPacket.GlobalOfflineMode();
+      m_status = M_STANDALONE;
+    });
+    // handle incoming messages
+    m_AddListener('message', m_HandleRegistrationMessage);
+  });
+}; // Connect()
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Force close of connection, for example if URSYS.AppReady() fails
+ */
 NETWORK.Close = (code, reason) => {
   code = code || 1000;
   reason = reason || 'URSYS forced close';
-  NETSOCK.ws.close(code, reason);
+  m_socket.close(code, reason);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return the current uaddr of this client, which is stored in NetPacket
+ *  when the client initializes.
+ */
 NETWORK.SocketUADDR = () => {
-  return NetMessage.SocketUADDR();
+  return NetPacket.SocketUADDR();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return TRUE if client is in "standalone" mode. This was a NetCreate
+ *  that was used to disable network communication for HTML-only snapshots.
+ */
 NETWORK.IsStandaloneMode = () => {
   return m_status === M_STANDALONE;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.IsLocalhost = () => NetMessage.IsLocalhost();
+/** Return TRUE if client is running with the localhost as server.
+ *  This can be used as quick way to enable admin-only features.
+ */
+NETWORK.IsLocalhost = () => NetPacket.IsLocalhost();
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

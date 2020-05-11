@@ -18,7 +18,7 @@
 
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
-const NetMessage = require('./class-netmessage');
+const NetPacket = require('./class-netpacket');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -135,7 +135,7 @@ class Messager {
 
     /// toNetwork
     if (toNet) {
-      let pkt = new NetMessage(mesgName, inData, type);
+      let pkt = new NetPacket(mesgName, inData, type);
       pkt.SocketSend();
     } // end toNetwork
   }
@@ -171,7 +171,7 @@ class Messager {
     let { srcUID, type } = options;
     let { toLocal = true, toNet = true } = options;
     let { fromNet = false } = options;
-    const channel = NetMessage.ExtractChannel(mesgName);
+    const channel = NetPacket.ExtractChannel(mesgName);
     const handlers = this.handlerMap.get(mesgName);
     let promises = [];
     /// handle a call from the network
@@ -229,7 +229,7 @@ class Messager {
     if (toNet) {
       if (!channel.NET) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';
-      let pkt = new NetMessage(mesgName, inData, type);
+      let pkt = new NetPacket(mesgName, inData, type);
       let p = pkt.PromiseTransaction();
       promises.push(p);
     } // end toNetwork
