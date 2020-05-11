@@ -1,3 +1,5 @@
+*warning: parts of this is becoming obsolete as we refactor bits of it as a library*
+
 # URNET
 
 This is a socket server that handles the URSYS messaging, launched at the same time that the entire constellation of servers start up. 
@@ -71,6 +73,8 @@ Server-side registration of handlers for a message on URNET. It is used to signa
 
 
 
+
+
 ## URNET Client API
 
 implemented in `ursys/client/connect.js`
@@ -100,10 +104,61 @@ Called during client-side network initialization and handles handshake to connec
 
 `ULINK` is the datalink module, and it is assigned to the `datalink` parameter received by `Connect()`.  
 
-
-
-
-
 ## Integrating into GEMSTEP
 
-This is a critical URSYS system component. 
+### Where do our non-React methods initialize?
+
+In the past, we had these key lifecycle events. I've reorganized them slightly here.
+
+Application lifecycle
+
+* INIT - define/allocate storage for the app 
+* NET_INIT - connect to URNET socket server
+* LOAD - load external media assets and data
+* CONFIG - configure/populate data structures
+* DOM_READY - dom is stable and rendered (should be disabled)
+* RESET - clear data structures for runtime
+* NET_APP_INIT - time to register initial subscribers and peer conditions
+* START - prepare to run, check for initial conditions, set initial values and state
+* RUN - activate ui elements
+* UPDATE - periodic update timer with elapsedMS and step 0|increment.
+* STOP - application stopped
+* UNLOAD - deallocate resources
+* SHUTDOWN - close application
+
+UR Application lifecycle
+
+* NET_APP_ONLINE - received after successful UR registration
+* NET_APP_QUEUED - received if queued data was received
+* NET_APP_EXCEPTION - received when connection drops, restored, times out
+* NET_PEER_UPDATE - received when change in peer conditions occur
+* NET_APP_UPDATE - received when UR changes an app 
+
+Internal socket connection status
+
+* OFFLINE - socket connection not yet initialized
+* CONNECTING - socket connection attempted
+* CONNECTED - socket connection connected
+* RECONNECTING - socket connection is attempting to reconnect
+* LOST - lost connection; stop trying
+
+Application Runtime Interrupts
+
+* PAUSE - request to suspend UPDATE lifecycle events
+
+* UNPAUSE - request to resume UPDATE lifecycle events
+
+  
+
+Internal URSYS application status
+
+* uaddr connecting
+* uaddr connected
+* uaddr register messages (call again to change list)
+* uaddr setstatus (lifecycle)
+* uaddr disconnected
+* uaddr reconnecting
+* uaddr reconnected
+
+
+

@@ -70,57 +70,48 @@ NETWORK.RemoveListener = (event, handlerFunction) => {
     completely.
 /*/
 NETWORK.Connect = (datalink, opt) => {
-  // special case: STANDALONE mode is set by a different set of magical
-  // window.NC_UNISYS properties
-  // if (window.NC_UNISYS.server.ip === 'standalone') {
-  //   m_status = M_STANDALONE;
-  //   console.warn(PR, 'STANDALONE MODE: NETWORK.Connect() suppressed!');
-  //   NetMessage.GlobalOfflineMode();
-  //   if (typeof opt.success === 'function') opt.success();
-  //   return;
-  // }
+  return new Promise(resolve => {
+    if (m_status > 0) {
+      let err =
+        'called twice...other views may be calling URSYS outside of lifecycle';
+      console.error(WARN, err);
+      return;
+    }
+    m_status = M1_CONNECTING;
 
-  // if multiple network connections occur, emit warning
-  // warning: don't modify this unless you have a deep knowledge of how
-  // the webapp system works or you might break something
-  if (m_status > 0) {
-    let err =
-      'called twice...other views may be calling URSYS outside of lifecycle';
-    console.error(WARN, err);
-    return;
-  }
-  m_status = M1_CONNECTING;
+    // check and save parms
+    if (datalink.constructor.name !== 'URLink') {
+      throw Error(ERR_BAD_ULINK);
+    }
+    if (!ULINK) ULINK = datalink;
+    m_options = opt || {};
 
-  // check and save parms
-  if (datalink.constructor.name !== 'URLink') {
-    throw Error(ERR_BAD_ULINK);
-  }
-  if (!ULINK) ULINK = datalink;
-  m_options = opt || {};
+    // create websocket
+    // uses values that were embedded in index.ejs on load
+    /** HACK GEMSRV HARDCODED **/
+    const USRV_Host = 'localhost';
+    const USRV_MsgPort = '2929';
+    let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
+    NETSOCK.ws = new WebSocket(wsURI);
+    if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);
 
-  // create websocket
-  // uses values that were embedded in index.ejs on load
-  /** HACK GEMSRV HARDCODED **/
-  const USRV_Host = 'localhost';
-  const USRV_MsgPort = '2929';
-  let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
-  NETSOCK.ws = new WebSocket(wsURI);
-  if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);
-
-  // create listeners
-  NETWORK.AddListener('open', event => {
-    if (DBG.connect) console.log(PR, '...OPEN', event.target.url);
-    m_status = M2_CONNECTED;
-    // message handling continues in 'message' handler
-    // the first message is assumed to be registration data
+    // create listeners
+    NETWORK.AddListener('open', event => {
+      if (DBG.connect) console.log(PR, '...OPEN', event.target.url);
+      m_status = M2_CONNECTED;
+      // message handling continues in 'message' handler
+      // the first message is assumed to be registration data
+      console.log('UR-EXEC: CONNECTED');
+      resolve();
+    });
+    NETWORK.AddListener('close', event => {
+      if (DBG.connect) console.log(PR, '..CLOSE', event.target.url);
+      NetMessage.GlobalOfflineMode();
+      m_status = M_STANDALONE;
+    });
+    // handle incoming messages
+    NETWORK.AddListener('message', m_HandleRegistrationMessage);
   });
-  NETWORK.AddListener('close', event => {
-    if (DBG.connect) console.log(PR, '..CLOSE', event.target.url);
-    NetMessage.GlobalOfflineMode();
-    m_status = M_STANDALONE;
-  });
-  // handle incoming messages
-  // NETWORK.AddListener('message', m_HandleRegistrationMessage);
 }; // Connect()
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

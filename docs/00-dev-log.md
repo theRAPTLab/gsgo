@@ -348,3 +348,24 @@ YAY, IT WORKS. The general idea was:
 
 This initializes the connection and sets up the client websocket. TODO: is to complete the handshake and URNET message loop.
 
+## May 10.1 URSYS handshake and messaging
+
+URNET is connecting. Now we have to fire/receive messages.
+
+First let's makek a handler. The syntax is:
+
+```javascript
+UR.Subscribe('MESSAGE',data=>{ ... })
+UR.Publish('MESSAGE',data).then(data=>{ ... }) 
+```
+
+* Publish and Subscribe are handled ur-link in MEME and client-datalink in GEMSRV. Neither name is good. 
+
+* We also have the convention of Local-only versus Network-only, as well as Server-only calls. I'm thinking of using specific channels for these: `MESSAGE` means local, `CHANNEL:MESSAGE` means a group of related devices on channels. Devices would be allowed to subscribe to channels and handle channel messages. Some channels would be reserved by the system.
+
+* There is also the case where some messages are intended as universal signals that are received back, and other messages that are only intended for the non-originating device. 
+
+In NextJS, we need to ensure that the SUBSCRIBE happens only on the client side. 
+
+* implement the initial lifecycle in `_app.js` placeholder
+* now put in UR.Datalink calls...maybe rename first.

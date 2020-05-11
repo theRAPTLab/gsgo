@@ -7,7 +7,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useEffect } from 'react';
-import { useIsomorphicLayoutEffect } from 'react-use';
 import PropTypes from 'prop-types';
 import App from 'next/app';
 import Head from 'next/head';
@@ -40,22 +39,44 @@ const jss = create({
 export default function MyApp(props) {
   const { Component, pageProps, urProps } = props;
 
-  // NOTE: useEffect executes on on clients
+  // NOTE: effects execute only on clients
   // after MyApp has completely rendered
 
   // client-side remove the server-side injected CSS (_app mounts once)
   useEffect(() => {
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
-      console.log('Removing extraneous JSS-SERVER-SIDE');
       jssStyles.parentElement.removeChild(jssStyles);
     }
-  }, []);
-
-  // client-side initialize URSYS (_app mounts once)
-  useIsomorphicLayoutEffect(() => {
-    console.log('Initializing URCLIENT');
-    URCLIENT.Connect(urProps);
+    (async () => {
+      console.groupCollapsed('UR-EXEC: INIT');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: NET_INIT');
+      await URCLIENT.Connect(urProps);
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: LOAD');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: CONFIG');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: DOM_READY');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: RESET');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: NET_APP_INIT');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: START');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: RUN');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: UPDATE');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: STOP');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: UNLOAD');
+      console.groupEnd();
+      console.groupCollapsed('UR-EXEC: SHUTDOWN');
+      console.groupEnd();
+    })();
   }, []);
 
   // render app wrapped with our providers
@@ -80,6 +101,7 @@ export default function MyApp(props) {
 /// GET URSYS INFO ////////////////////////////////////////////////////////////
 /// NOTE: this disables automatic static optimization
 /// in the _app.js context, getInitialProps doesn't have pageProps ever
+/// This only executes on the server and props are sent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
