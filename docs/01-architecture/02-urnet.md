@@ -104,7 +104,7 @@ Called during client-side network initialization and handles handshake to connec
 
 `ULINK` is the datalink module, and it is assigned to the `datalink` parameter received by `Connect()`.  
 
-## Integrating into GEMSTEP
+## URSYS Application Lifecycle
 
 ### Where do our non-React methods initialize?
 

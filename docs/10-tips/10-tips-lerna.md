@@ -102,9 +102,10 @@ This seems to indicate a bad reference to a package version, as the current pack
 
 Our Lerna config disallows versioning from anywhere except the master branch. The steps are:
 
-* Assuming `dev` is up-to-date, merge dev onto master locally. Then run `lerna version prerelease`. 
-
-
+* If commiting a new branch into dev, use the normal merge request process.
+* When dev is confirmed nice and clean, we're ready to push a package update!
+* First merge dev onto master **locally** in SourceTree.
+* Then run `lerna version prerelease`, which will update tabs and push up to master.
 
 ## How do I manage versions with Lerna?
 
