@@ -4,6 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+const UR = require('@gemstep/ursys/client');
+
 /// CREATE CHEESEBALL STORE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const STORE = {
@@ -46,4 +48,16 @@ function getRoute() {
   return ROUTE;
 }
 
-export default { get, set, setRoute, getRoute };
+function StartTimer() {
+  if (process.browser) {
+    console.log('setting imperative debug timer');
+    setInterval(() => {
+      UR.Signal('APPSTATE_TICK', ROUTE.currentRoute);
+    }, 5000);
+    UR.Subscribe('HELLO_URSYS', data => {
+      console.log('appstate', data);
+    });
+  }
+}
+
+module.exports = { get, set, setRoute, getRoute, StartTimer };

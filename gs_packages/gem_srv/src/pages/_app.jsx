@@ -23,6 +23,7 @@ import {
 } from '@material-ui/core/styles';
 ///
 import CssBaseline from '@material-ui/core/CssBaseline';
+import { useURSubscribe } from '../hooks/use-ursys';
 ///
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
@@ -39,8 +40,8 @@ const jss = create({
 export default function MyApp(props) {
   const { Component, pageProps, urProps } = props;
 
-  // NOTE: effects execute only on clients
-  // after MyApp has completely rendered
+  // NOTE: effects execute only on client after MyApp has completely rendered,
+  // but window is not accessible in
 
   // client-side remove the server-side injected CSS (_app mounts once)
   useEffect(() => {
@@ -65,6 +66,7 @@ export default function MyApp(props) {
       console.groupCollapsed('UR-EXEC: NET_APP_INIT');
       console.groupEnd();
       console.groupCollapsed('UR-EXEC: START');
+      APPSTATE.StartTimer();
       console.groupEnd();
       console.groupCollapsed('UR-EXEC: RUN');
       console.groupEnd();
@@ -78,6 +80,11 @@ export default function MyApp(props) {
       console.groupEnd();
     })();
   }, []);
+
+  function handleHello(data) {
+    console.log('_app.jsx', data);
+  }
+  useURSubscribe('HELLO_URSYS', handleHello);
 
   // render app wrapped with our providers
   return (

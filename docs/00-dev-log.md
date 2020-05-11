@@ -374,5 +374,92 @@ In NextJS, we need to ensure that the SUBSCRIBE happens only on the client side.
   * client-datalink -> client-urlink
   * class-netmessage -> class-netpacket
 * next...use URLink to subscribe to something
-  * 
+  * since client-side code reliably runs only in effects, we need to initialize them somehow only once. AND we need to provide a hook interface from URSYS to React somehow. Hmm.
+  * functional components aren't updated through external calls. 
+
+ASIDE: how to handle updates from elsewhere.
+
+* useEffect() to set-up the persistent module stuff in `_app.jsx` that initializes the URSYS module ONCE on mount.
+* In the URSYS module, 
+
+``` jsx
+function MyComponent() {
+	// (1) useState to set elements that update in component
+  const [state, setState] = useState(0);
+  // (3) useEffect(func,[]) to run setup once on mount in 
+  // _app so it renders when the state changes
+  useEffect(()=>{
+    
+  },[state]);
+
+
+}
+
+```
+
+
+
+GARBAGE
+
+I want to run an asynchronous code module that React reacts to. The simplest version of this is an external event fires, and this is routed somehow into a component. 
+
+* In the class style, we could setState at any time inside a class on an event handler, or even outside of it. The setState would be queued and would force a rerender.
+
+* In the functional+hook style, this isn't that clear. However, I'm reading through [this guide](https://overreacted.io/making-setinterval-declarative-with-react-hooks/). The gist is to create a custom hook function that accepts values and:
+
+  * uses `useRef` to keep a mutable object between renders, to which we assign our function.
+  * uses `useEffect` to save the callback into ref
+  * uses another `useEffect` to trigger the callback when the value changes, which returns a cleanup function that will be run next time this effect activates.
+
+  ``` js
+  function useInterval(callback, delay) {
+    // get an immutable object
+    const savedCallback = useRef();
+  
+    // when callback changes, we'll update our ref
+    useEffect(() => {
+      savedCallback.current = callback;
+    }, [callback]);
+  
+    // when delay changes, we start a new timer
+    useEffect(() => {
+      // declare the function to be used in setInterval
+      function tick() {
+        savedCallback.current();
+      }
+      // start the interval
+      if (delay !== null) {
+        let id = setInterval(tick, delay);
+        // return the cleanup function, which will be run whenever this
+        // effect is cleaned up IN THE FUTURE, not NOW.
+        return () => clearInterval(id);
+      }
+    }, [delay]);
+  }
+  ```
+
+The KEY INSIGHT is **the React model is declarative**, and what we do is describe what happens at certain points in the React lifecycle (which we have to know). That makes the flow hard to understand if you're expecting a more **imperative programming** pattern. A lot of React is returning functions that will eventually be processed by the React lifecycle at a certain time, and these functions often return other functions to be executed or be triggered by other internal React conditions. It is sort of like writing Shaders for graphics pipelines. 
+
+So how will this work? Hmm. It's like a **mini shader** that we're declaring through these use* functions. 
+
+* in my hook, load the necessary URSYS libraries and React hooks. 
+* useRef for storing persistence references
+* useEffect for changing parameters
+
+**What this does is tell React what to monitor for changes. When the change is detected in the useEffect() then the code is re-run.** 
+
+**When writing this into a Component, we pass our own functions in from the Component so closures will provide access to code. These functions can then also useState to effect changes in the render function.**
+
+**Question**: how do we respond to asynchronous messages being generated outside of React?
+A. Design a useEffect hook that monitors changes to a global counter accessible to scope? This doesn't work, probably because the closure doesn't update from the value of foo. 
+
+Ok, here's the NEW HOTNESS:
+
+* To SUB from within a functional component, use the new `useURSubscribe` hook from `hooks/use-ursys`. 
+* to PUB from within a functional component, use `UR.Publish()` directly.
+* To SUB or PUB from any module, use `UR.Publish()` and `UR.Subscribe()` as normal.
+
+
+
+
 

@@ -4,7 +4,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
+import React, { useRef } from 'react';
+import UR from '@gemstep/ursys/client';
+import { useURSubscribe, useInterval } from '../hooks/use-ursys';
 // left-side tabbed views
 import Welcome from '../page-tabs/Welcome';
 import SessionMgr from '../page-tabs/SessionMgr';
@@ -20,11 +22,26 @@ import DocSystem from '../components/DocSystem';
 import URSiteNav from '../page-blocks/URSiteNav';
 import URTabbedView from '../page-blocks/URTabbedView';
 import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
+//
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// note: this is rendered both on the server once and on the client
 function Page() {
+  const counter = useRef();
+  counter.current = 0;
+  function handleHello(data) {
+    console.log('index.jsx', data);
+  }
+  function handleTick(data) {
+    console.log('index.jsx tick', data);
+  }
+  useURSubscribe('HELLO_URSYS', handleHello);
+  useURSubscribe('APPSTATE_TICK', handleTick);
+  useInterval(() => {
+    UR.Signal('HELLO_URSYS', counter.current++);
+  }, 1000);
+
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <URView scrollable>
