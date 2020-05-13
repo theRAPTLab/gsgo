@@ -30,17 +30,23 @@ import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
 function Page() {
   const counter = useRef();
   counter.current = 0;
+
+  // // TEST 1
+  // function handleTick(data) {
+  //   console.log('index.jsx tick', data);
+  // }
+  // useURSubscribe('APPSTATE_TICK', handleTick);
+  // useInterval(() => {
+  //   UR.Signal('HELLO_URSYS', counter.current++);
+  // }, 1000);
+
+  // TEST 2
   function handleHello(data) {
     console.log('index.jsx', data);
-  }
-  function handleTick(data) {
-    console.log('index.jsx tick', data);
+    data.fish = 'added a fish';
+    return data;
   }
   useURSubscribe('HELLO_URSYS', handleHello);
-  useURSubscribe('APPSTATE_TICK', handleTick);
-  useInterval(() => {
-    UR.Signal('HELLO_URSYS', counter.current++);
-  }, 1000);
 
   /// RENDER //////////////////////////////////////////////////////////////////
   return (

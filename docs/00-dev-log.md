@@ -49,7 +49,9 @@ SUMMARY S10 MAY 11-MAY 24
 Ok, let's get the URSYS CALL tested, then implement the minimum for EXEC. I think this might take a couple of hours.
 
 * make a test button in Welcome
-* export Call
+* update to next 9.4.0 because better debugging
+* add npx-audit, multiview startup to gemsrv
+* export Call...had to use separate URLINK instance for subscribe functions for publisher functions, because Publish and Call will check for "same origin". Signal does not. This needs an eventual refactoring...once we write tests for URSYS.
 
 
 

@@ -31,18 +31,21 @@ const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URLINK = new URLink('ursys-client');
+const URLINK_SUB = new URLink('ursys-sub');
+const URLINK_PUB = new URLink('ursys-pub');
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to URSYS network
  */
 const Connect = options => {
-  return URNet.Connect(URLINK, options);
+  return URNet.Connect(URLINK_SUB, options);
 };
-/** forward URLINK methods
+/** forward URLINK_SUB methods
+ *
  */
-const { Subscribe, Unsubscribe, Signal, Publish } = URLINK;
+const { Subscribe, Unsubscribe } = URLINK_SUB;
+const { LocalSignal, LocalPublish, LocalCall } = URLINK_PUB;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,8 +55,9 @@ module.exports = {
   Connect,
   Subscribe,
   Unsubscribe,
-  Publish,
-  Signal,
+  Publish: LocalPublish,
+  Signal: LocalSignal,
+  Call: LocalCall,
   // SERVICES API
   Events,
   Exec,

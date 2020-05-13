@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
 import { WF } from '../page-blocks/URWireframe';
@@ -42,7 +43,11 @@ const useStyles = makeStyles(theme => ({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SystemHome() {
   const classes = useStyles();
-
+  function handleButton(e) {
+    UR.Call('HELLO_URSYS', { value: 'cats' }).then(data => {
+      console.log('Welcome.jsx received data', data);
+    });
+  }
   return (
     <View className={classes.inset}>
       <Row>
@@ -50,7 +55,11 @@ function SystemHome() {
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
-          <WF name="LoginStatus" summary="shows logged in" />
+          <WF name="LoginStatus" summary="shows logged in" expanded>
+            <button type="button" name="mow" onClick={handleButton}>
+              Test URSYS Call
+            </button>
+          </WF>
           <WF name="Login" summary="" />
           <WF name="ClassroomInfo" summary="" />
           <WF name="GroupInfo" summary="" />
