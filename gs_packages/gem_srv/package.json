@@ -10,7 +10,8 @@
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
   "scripts": {
-    "local": "multiview [npm run dev:gem] [npm run dev:gem:ursys] ",
+    "local": "npm run dev:gem",
+    "..ursys": "cd ../ursys && npm run local",
     "local:dev": "npm run dev:gem",
     "dev:gem:ursys": "cd ../ursys && npm run dev:ursys",
     "dev:gem": "nodemon ./server/_start.js",
