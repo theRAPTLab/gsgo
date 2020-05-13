@@ -5,7 +5,7 @@
     "bootstrap": "lerna clean -y && lerna bootstrap",
     "audit": "npx audit",
     "build": "lerna run build",
-    "start": "npm run build && multiview [npm run app] [npm run admin] [npm run gem]",
+    "start": "npm run build && multiview [npm run gem]",
     "admin": "npm run build && lerna run dev:admin --stream --no-prefix",
     "app": "lerna run dev:app --stream --no-prefix",
     "gem": "npm run build && lerna run dev:gem --stream --no-prefix",

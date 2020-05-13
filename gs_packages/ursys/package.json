@@ -19,6 +19,7 @@
   "scripts": {
     "local": "npm run dev:ursys",
     "dev:ursys": "webpack -w",
+    "build": "npm run build:ursys",
     "build:ursys": "webpack"
   },
   "dependencies": {
