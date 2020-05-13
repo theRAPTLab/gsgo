@@ -1,11 +1,8 @@
-SUMMARY S08 APR313-APR26 2020
+SUMMARY S08 APR 13-APR 26 2020
 
-* Create **GemServer** package with VSCode subworkspace supporting local "npm run local" command and "launch.json" server debugging.
-* Figure out **Material UI theming and styling** and its relation to Material Design. **Documented** and created source code examples.
-* Figure out **NextJS** and server-side rendering implications.
-* Create custom NextJS configuration with best practice **theming and styling**, **stackable  screen-filling components** with **two-level navigation**. Also rudimentary **client-side data persistence**.
-
-
+* Added ReactMarkdown, URLayout page grid, URWireframe components
+* Reviewed Functional Draft, created placeholder components and navigation in GEM_SRV
+* System Wireframing with Named Components begins
 
 # 4. DOCUMENTATION CLEANUP
 

@@ -18,7 +18,7 @@ In GEMSTEP, our monorepo includes the additional tooling:
 * Visual Code workspace file and workspace settings.
 * Additional Node packages in `package.json` for running the `gsutil` development tool.
 
-## Lerna Setup
+## How do I add a new package to the monorepo?
 
 Assume you want to add a new package named `mypackage` using the `@gemstep` scope. Make sure you are in the monorepo root, then issue the following commands:
 
@@ -30,19 +30,9 @@ You should look at the `package.json` and update it as necessary. Make sure you 
 
 **WARNING** if you don't use `lerna create` then lerna won't know about versioning when you run `lerna version`
 
-If you are running a standalone package like a new server, then you're done. However, if you're making a package that you'd like to import into another package, you'll have to use the `lerna add` command followed by `lerna bootstrap`:
+If you are running a standalone package like a new server, then you're done. 
 
-```
-# add the link one at a time
-lerna add @gemstep/mypackage --scope=@gemstep/anotherapp1
-lerna add @gemstep/mypackage --scope=@gemstep/anotherapp2
-# clean node_modules and relink, consolidating common modules
-lerna clean -y && lerna bootstrap --hoist
-```
-
-You can then import the packages into other packages, as if they were already npm-installed. 
-
-## How do I add npm packages to existing projects?
+## How do I add npm packages to existing packages in the monorepo?
 
 You can use regular `npm install` or `yarn install` inside the package subfolder. 
 
@@ -62,6 +52,34 @@ It also accepts [lerna filters](https://www.npmjs.com/package/@lerna/filter-opti
 > `npm add react-markdown --scope=gem_srv`
 > _note: this has to be executed at the TOP LEVEL of gsgs_
 
+## How do I add a reference one package from another?
+
+If you want to add the new package as a dependency to other packages, use the `lerna add` command followed by `lerna bootstrap` from the root level of the monorepo.
+
+```
+# add the link one at a time
+lerna add @gemstep/mypackage --scope=@gemstep/anotherapp1
+lerna add @gemstep/mypackage --scope=@gemstep/anotherapp2
+# clean node_modules and relink, consolidating common modules
+lerna clean -y && lerna bootstrap --hoist
+```
+
+You can then import the packages into other packages, as if they were already npm-installed. 
+
+For **Visual Studio Code** module resolution, you'll need to copy a `tsconfig.json` from one of the package directories so it is at the root (e.g. `gs_packages/ursys/tsconfig.json`, where `ursys` is one of the monorepo packages). 
+
+At minimum the `tsconfig.js` file needs to contain:
+
+```
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {},
+  "include": [ "src_glob" ]
+}
+```
+
+Then **reload Visual Studio Code**. The highlighted module editor errors should go away. You will also have to `include` any source directories that you want linted.
+
 ## How do I add a lerna package as a dependency? I'm getting an error!
 
 ```
@@ -72,9 +90,13 @@ npm ERR! 404 It was specified as a dependency of 'app_srv'
 
 This seems to indicate a bad reference to a package version, as the current package in `lerna.json` is `"0.0.1-alpha.0"`, not `"0.0.0"`. I updated them manually and it seemed to work. 
 
-##  Can I use lerna anywhere in the directory structure
+##  Can I use lerna anywhere in the directory structure?
 
-**Yes** it will walk up the directory tree until it finds a lerna.json!
+**Yes** it will walk up the directory tree until it finds a lerna.json.
+
+## How do I run npm audit in a package? I get ELOCKVERIFY errors!
+
+This is due to npm not liking symlinked files :( The workaround is to use the `npm-audit` utility, which is available at the root of gsgo as a script: `npm run audit`. 
 
 
 
@@ -84,9 +106,10 @@ This seems to indicate a bad reference to a package version, as the current pack
 
 Our Lerna config disallows versioning from anywhere except the master branch. The steps are:
 
-* Assuming `dev` is up-to-date, merge dev onto master locally. Then run `lerna version prerelease`. 
-
-
+* If commiting a new branch into dev, use the normal merge request process.
+* When dev is confirmed nice and clean, we're ready to push a package update!
+* First merge dev onto master **locally** in SourceTree.
+* Then run `lerna version prerelease`, which will update tabs and push up to master.
 
 ## How do I manage versions with Lerna?
 
@@ -134,3 +157,18 @@ The other configuration files should not require copying. ESLint, for example, w
 
 Convention: `npm run local` is an alias for just running the current build. 
 
+## The problem with Hoisting and Module Resolution
+
+TL;DR: currently using the `lerna bootstrap --hoist` option, it actually doesn't hoist *just* the shared node_modules, it hoists *ALL OF THEM*. More recent versions of the lerna documentation omit the "shared" description, but tutorials predating May 2019 do not. 
+
+**resolution:** don't use hoisting despite the increase in footprint. The following issues are related to the hoisting problem.
+
+### When I add a new package to the monorepo, the Version is out of synch
+
+This occurs when using `lerna bootstrap --hoist` (or our `npm bootstrap` script which uses the hoisting option). 
+
+The only solution I know of is to ensure that the versions in the packages also match the root level package.json. I'm not sure this is always desirable; there might be a package that we don't want. In that case, we may not want to hoist certain. 
+
+### When I npm run bootstrap, webpack throws "module not found" errors during build
+
+Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 

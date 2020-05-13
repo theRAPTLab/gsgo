@@ -1,4 +1,6 @@
-# 03/24: Visual Studio Quality of Life
+# [dev] Visual Studio QOL
+
+03/24/2020
 
 One of our dev goals is to have the same IDE configuration in Visual Studio Code that enforce code style and code quality. 
 
@@ -10,7 +12,11 @@ This is a surprisingly difficult thing to set up, because the extensions interac
 
 This pull request implements a working version of it (at least, it seems to work). The details regarding how it works are noted in the file `docs/02-vscode-qol.md`.
 
-# 03/25: Initial System Skeleton
+---
+
+# [dev] Initial System Skeleton
+
+03/25/2020
 
 The monorepo is configured with several projects to test the following features:
 
@@ -48,7 +54,13 @@ Once you install them and reload Visual Studio Code, you should have:
 
 If there are any errors, let me know!
 
-# 03/29: IDE: Auto-formatting Setup Best Practices in VSCode
+---
+
+# [dev]: Best Practices in VSCode
+
+
+
+03/29/2020
 
 This is the latest best practices for auto-formatting our code through Prettier.
 
@@ -94,7 +106,9 @@ Because the `eslint` and `prettier` binaries are installed only at the `gsgo` ro
 * There is a problem with VSCode not remembering that Prettier is the default formatter for `jsx` files. This requires an override in `.vscode/setting.json` and any subproject workspace file: `[javascriptreact]:{"editor.defaultFormatter": "esbenp.prettier-vscode"}`. 
 * To make Prettier work in VSCode, you also need to set `"editor.formatOnSave": true`.
 
-# 04/15: GEMSRV Web Server Foundation
+# [dev] Theming, Debugging, Server QOL Changes
+
+04/15/2020
 
 ## BACKGROUND 
 
@@ -152,7 +166,11 @@ The package in this release is `gem_srv`, which is the prototype for the new Nex
 
 If everything looks ok, then hooray! Can move on to actual wireframing and adding meatier technical bits to the GEM-STEP system framework.
 
-# 04/29: Wireframe + Live Documentation + Prototype Shell
+---
+
+# [dev] Wireframe, Live Docs in Unified Shell
+
+04/29/2020
 
 This release achieves several goals related to prototyping the GEMSTEP MODELER.
 

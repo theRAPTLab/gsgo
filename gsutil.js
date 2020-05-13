@@ -22,10 +22,10 @@ const PROCESS = require('process');
 if (!FS.existsSync('./node_modules/ip')) {
   console.log(`\x1b[41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
   let out = '';
-  out += `MISSING CRITICAL MODULE\n`;
+  out += 'MISSING CRITICAL MODULE\n';
   out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
-  out += `or did you just run \x1b[33mnpm clean:all\x1b[0m?\n`;
-  out += `run \x1b[33mnpm ci\x1b[0m to install all node_modules\n`;
+  out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
+  out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
   console.log(out);
   PROCESS.exit(0);
 }
@@ -36,11 +36,15 @@ const MINIMIST = require('minimist');
 
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
 if (!SHELL.which('git')) {
-  SHELL.echo(`\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`);
+  SHELL.echo(
+    `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
+  );
   SHELL.exit(0);
 }
 /// GIT BRANCH INFORMATION ////////////////////////////////////////////////////
-const { error, stdout } = SHELL.exec('git symbolic-ref --short -q HEAD', { silent: true });
+const { error, stdout } = SHELL.exec('git symbolic-ref --short -q HEAD', {
+  silent: true
+});
 let m_branch_info;
 if (error) m_branch_info = '<detached head>';
 if (stdout) m_branch_info = stdout.trim();
@@ -49,7 +53,7 @@ if (stdout) m_branch_info = stdout.trim();
 let lernaJSON = JSON.parse(FS.readFileSync('lerna.json', 'utf8'));
 const GS_VERSION = lernaJSON.version;
 if (GS_VERSION === undefined) {
-  SHELL.echo(`\x1b[30;41m missing lerna.json version \x1b[0m`);
+  SHELL.echo('\x1b[30;41m missing lerna.json version \x1b[0m');
   SHELL.exit(0);
 }
 
@@ -74,6 +78,7 @@ switch (cmd) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// RUN DEV ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function RunDevServer() {
   console.log(PR, `Starting ${PR} Development Server...`);
   console.log(PR, `running branch ${m_branch_info} version ${GS_VERSION}`);

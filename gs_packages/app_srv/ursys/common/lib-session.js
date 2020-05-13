@@ -15,8 +15,8 @@
 
 /// SYSTEM LIBRARIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const HashIds = require('hashids').default;
-const UUIDv5 = require('uuid/v5');
+const HashIds = require('hashids/cjs');
+const UUID = require('uuid');
 const PROMPTS = require('../../config/prompts');
 
 /// DEBUGGING /////////////////////////////////////////////////////////////////
@@ -56,15 +56,19 @@ SESSION.DecodeToken = hashedToken => {
   let groupId, classroomId; // decoded data
   let isValid = false;
   // is a valid token?
-  if (typeof hashedToken !== 'string') return { isValid, error: 'token must be a string' };
+  if (typeof hashedToken !== 'string')
+    return { isValid, error: 'token must be a string' };
   // token is of form NAME-HASHEDID
   // (1) check student name
   const token = hashedToken.toUpperCase();
   const tokenBits = token.toUpperCase().split('-');
-  if (tokenBits.length === 1) return { isValid, token, error: 'missing - in token' };
-  if (tokenBits.length > 2) return { isValid, token, error: 'too many - in token' };
+  if (tokenBits.length === 1)
+    return { isValid, token, error: 'missing - in token' };
+  if (tokenBits.length > 2)
+    return { isValid, token, error: 'too many - in token' };
   if (tokenBits[0]) studentName = tokenBits[0].toUpperCase();
-  if (studentName.length < 3) return { isValid, token, error: 'student name must have 3 or more letters' };
+  if (studentName.length < 3)
+    return { isValid, token, error: 'student name must have 3 or more letters' };
 
   // (2) check hashed data
   if (tokenBits[1]) hashedData = tokenBits[1].toUpperCase();
@@ -86,7 +90,11 @@ SESSION.DecodeToken = hashedToken => {
 /*/
 SESSION.IsValidToken = token => {
   let decoded = SESSION.DecodeToken(token);
-  return decoded && Number.isInteger(decoded.groupId) && typeof decoded.studentName === 'string';
+  return (
+    decoded &&
+    Number.isInteger(decoded.groupId) &&
+    typeof decoded.studentName === 'string'
+  );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -98,7 +106,8 @@ SESSION.IsValidToken = token => {
  */
 SESSION.MakeToken = (studentName, dataIds = {}) => {
   // type checking
-  if (typeof studentName !== 'string') throw Error(`classId arg1 '${studentName}' must be string`);
+  if (typeof studentName !== 'string')
+    throw Error(`classId arg1 '${studentName}' must be string`);
   let err;
   if ((err = f_checkIdValue(dataIds))) {
     console.warn(`Could not make token. ${err}`);
@@ -122,7 +131,8 @@ SESSION.MakeToken = (studentName, dataIds = {}) => {
  */
 SESSION.MakeTeacherToken = (teacherName, dataIds = {}) => {
   // type checking
-  if (typeof teacherName !== 'string') throw Error(`classId arg1 '${teacherName}' must be string`);
+  if (typeof teacherName !== 'string')
+    throw Error(`classId arg1 '${teacherName}' must be string`);
   let err;
   if ((err = f_checkIdValue(dataIds))) {
     console.warn(`Could not make token. ${err}`);
@@ -195,7 +205,8 @@ SESSION.DecodeAndSet = token => {
       m_current_idsobj.teacherName = studentName;
       m_current_idsobj.classroomId = undefined;
     }
-    if (DBG) console.log('DecodeAndSet() success', studentName, groupId, classroomId);
+    if (DBG)
+      console.log('DecodeAndSet() success', studentName, groupId, classroomId);
   } else {
     if (DBG) console.log('DecodeAndSet() failed', token);
   }
