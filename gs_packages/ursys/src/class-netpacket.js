@@ -136,7 +136,7 @@ class NetPacket {
     // addressing support
     this.s_uaddr = NetPacket.SocketUADDR() || null; // first originating uaddr set by SocketSend()
     this.s_group = null; // session groupid is set by external module once validated
-    this.s_uid = null; // first originating ULINK srcUID
+    this.s_uid = null; // first originating URCHAN srcUID
     // filtering support
   } // constructor
 

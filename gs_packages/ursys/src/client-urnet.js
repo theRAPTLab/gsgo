@@ -18,7 +18,7 @@ const PR = PROMPTS.Pad('NETWORK');
 const WARN = PROMPTS.Pad('!!!');
 const ERR_NM_REQ = 'arg1 must be NetPacket instance';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
-const ERR_BAD_URLINK = "An instance of 'URLink' is required";
+const ERR_BAD_URCHAN = "An instance of 'URChan' is required";
 
 /// NETWORK ID VALUES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -178,8 +178,8 @@ NETWORK.Connect = (datalink, opt) => {
     m_status = M1_CONNECTING;
 
     // check and save parms
-    if (datalink.constructor.name !== 'URLink') {
-      throw Error(ERR_BAD_URLINK);
+    if (datalink.constructor.name !== 'URChan') {
+      throw Error(ERR_BAD_URCHAN);
     }
     if (!m_urlink) m_urlink = datalink;
     m_options = opt || {};

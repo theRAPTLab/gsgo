@@ -44,14 +44,23 @@ SUMMARY S10 MAY 11-MAY 24
 
 # 6.2. URSYS FOUNDATION FOR SIMULATION PROTOTYPE (cont'd)
 
-## May 13.1
+## May 13.1 Finish URSYS LocalCall testing
 
 Ok, let's get the URSYS CALL tested, then implement the minimum for EXEC. I think this might take a couple of hours.
 
 * make a test button in Welcome
 * update to next 9.4.0 because better debugging
 * add npx-audit, multiview startup to gemsrv
-* export Call...had to use separate URLINK instance for subscribe functions for publisher functions, because Publish and Call will check for "same origin". Signal does not. This needs an eventual refactoring...once we write tests for URSYS.
+* export Call
+
+NOTES:
+
+* had to use separate URLINK instance for subscribe functions for publisher functions, because Publish and Call will check for "same origin". Signal does not. This needs an eventual refactoring...once we write tests for URSYS.
+* Perhaps the UI methods should implement a separate mirroring call by using different channels.
+* Should I renamed URLINK to URCHAN? They sort of are channels. 
+* I forgot that Call has to return data so the promise receives something. Do we have a reference?
+
+Rename URLINK to URCHAN, because channels are more accurate.
 
 
 

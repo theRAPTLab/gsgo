@@ -10,7 +10,7 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const COMMON_MODULES = require('./modules-common');
-const URLink = require('./client-urlink');
+const URChan = require('./client-urchan');
 const URNet = require('./client-urnet');
 
 /// META-DATA /////////////////////////////////////////////////////////////////
@@ -31,8 +31,8 @@ const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URLINK_SUB = new URLink('ursys-sub');
-const URLINK_PUB = new URLink('ursys-pub');
+const URLINK_SUB = new URChan('ursys-sub');
+const URLINK_PUB = new URChan('ursys-pub');
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,7 +62,7 @@ module.exports = {
   Events,
   Exec,
   Extensions,
-  URLink,
+  URChan,
   URNet,
   PubSub,
   // CONVENIENCE

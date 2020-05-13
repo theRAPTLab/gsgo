@@ -4,20 +4,20 @@
 /* eslint-disable no-param-reassign */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    URSYS LINK CLASS (ULINK)
+    URSYS CHANNEL CLASS (URCHAN)
 
-    A ULINK represents a connection to the URSYS message-passing system for the
-    app and optionally other entities on the URSYS Net.
+    A URCHAN (channel) represents a connection to the URSYS message-passing
+    system for the app and optionally other entities on the URSYS Net.
 
     Instances are created with URSYS.Connect() with a unique name for logging
     purposes.
 
-    Additionally, each ULINK has a unique local id (UID) that is assigned
-    a device address (UADDR). These are used together to make multiple ULINK
+    Additionally, each URCHAN has a unique local id (UID) that is assigned
+    a device address (UADDR). These are used together to make multiple URCHAN
     instances in an UR App uniquely addressable, though users of URSYS
     don't need to know that.
 
-    ULINKS can:
+    Channels can:
 
     * subscribe to a named message, locally and from the network
     * publish to a named message, locally and to the network
@@ -37,7 +37,7 @@ const DataMap = require('./class-datamap');
 const URNET = require('./client-urnet');
 
 /** implements endpoints for talking to the URSYS network
- * @module URLink
+ * @module URChan
  */
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +45,7 @@ const DBG = { create: false, send: false, return: false, register: false };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_NAME = 'name parameter must be a string';
 const BAD_UID = 'unexpected non-unique UID';
-const PR = 'ULINK:';
+const PR = 'URCHAN:';
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,7 +56,7 @@ let UNODE_COUNTER = 0; // URSYS connector node id counter
 function m_GetUniqueId() {
   const id = `${++UNODE_COUNTER}`.padStart(3, '0');
   if (UNODE_COUNTER > MAX_UNODES)
-    console.warn('Unexpectedly high number of ULINK nodes created!');
+    console.warn('Unexpectedly high number of URCHAN nodes created!');
   return `UDL${id}`;
 }
 
@@ -70,9 +70,9 @@ let MESSAGER = new Messager(); // all urlinks share a common messager
  * send messages. Constructor receives an owner, which is inspected for
  * properties to determine how to classify the created messager for debugging
  * purposes
- * @memberof URLink
+ * @memberof URChan
  */
-class URLink {
+class URChan {
   /** constructor
    * @param {object} owner the class instance or code module object
    * @param {string} owner.name code module name set manually
@@ -168,7 +168,7 @@ class URLink {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** ULINK wraps Messager.CallAsync(), which returns an agregate data
+  /** URCHAN wraps Messager.CallAsync(), which returns an agregate data
    * bundle after executing a bunch of promises async/await-style!
    */
   Call(mesgName, inData = {}, options = {}) {
@@ -181,7 +181,7 @@ class URLink {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Sends the data to all message implementors UNLESS it is originating from
-   *   the same ULINK instance (avoid echoing back to self)
+   *   the same URCHAN instance (avoid echoing back to self)
    */
   Publish(mesgName, inData = {}, options = {}) {
     if (typeof inData === 'function')
@@ -339,8 +339,8 @@ class URLink {
     if (!data.uaddr) return Promise.reject('data must have uaddr defined');
     return this.NetCall('NET:SRV_DBRELEASE', data);
   }
-} // class URLink
+} // class URChan
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = URLink;
+module.exports = URChan;
