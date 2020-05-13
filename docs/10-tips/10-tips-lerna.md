@@ -90,9 +90,13 @@ npm ERR! 404 It was specified as a dependency of 'app_srv'
 
 This seems to indicate a bad reference to a package version, as the current package in `lerna.json` is `"0.0.1-alpha.0"`, not `"0.0.0"`. I updated them manually and it seemed to work. 
 
-##  Can I use lerna anywhere in the directory structure
+##  Can I use lerna anywhere in the directory structure?
 
 **Yes** it will walk up the directory tree until it finds a lerna.json.
+
+## How do I run npm audit in a package? I get ELOCKVERIFY errors!
+
+This is due to npm not liking symlinked files :( The workaround is to use the `npm-audit` utility, which is available at the root of gsgo as a script: `npm run audit`. 
 
 
 
