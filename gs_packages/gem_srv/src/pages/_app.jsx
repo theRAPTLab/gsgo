@@ -15,7 +15,7 @@ import fetch from 'cross-fetch';
 import URCLIENT from '@gemstep/ursys/client';
 ///
 import { create } from 'jss';
-import extend from 'jss-extend';
+import extend from 'jss-plugin-extend';
 import {
   StylesProvider,
   jssPreset,
