@@ -50,12 +50,24 @@ function getRoute() {
 
 function StartTimer() {
   if (process.browser) {
-    console.log('setting imperative debug timer');
+    console.log('!!! SETTING imperative-style timer in declarative world!');
     setInterval(() => {
-      UR.Signal('APPSTATE_TICK', ROUTE.currentRoute);
+      UR.Signal('APPSTATE_TICK', {
+        source: 'src:5000ms timer',
+        route: `current route ${ROUTE.currentRoute}`
+      });
     }, 5000);
+    //
     UR.Subscribe('HELLO_URSYS', data => {
-      console.log('appstate', data);
+      console.log('RESPONSE "HELLO_URSYS"');
+      let out = '. got';
+      Object.keys(data).forEach(key => {
+        out += ` [${key}]:${data[key]}`;
+      });
+      data.lemon = 'yellow';
+      out += ` ret [lemon]:${data.lemon}`;
+      console.log(out);
+      return data;
     });
   }
 }

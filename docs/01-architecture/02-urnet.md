@@ -162,3 +162,24 @@ Internal URSYS application status
 
 
 
+## Channel Architecture
+
+May 13 2020
+
+I've renamed URLINK (formerly URDATA) to URCHAN, as these are "channels" currently consisting of a local origin id. There is a name parameter also that isn't used for routing, merely for identification, but this should probably be used for the upcoming **channel support** where we have `SIGNAL`, `SERVER`, `NET` and `LOCAL`.  Currently this is implemented in a rather adhoc way and it could be a lot clearer.
+
+* SIGNAL - used for raising events that everyone should respond to.
+* LOCAL - used for messages that only non-callers respond to
+* NET - used for messages sent/received from remote devices
+* SERVER - used for messages between the server. May be multiple server channels.
+
+Call Publish Subscribe
+
+require: s_uid for object using UR, unique to application, used to check for reflecting messages back in the case where the caller/publisher is sending and receiving on the same message channel. This is like a NOTIFICATION PARTY LINE message, maybe like a token ring?
+
+There's also a SIGNAL LINE that works like an interrupt that all subscribes need to respond to. These are more system level events, when the signal is used to initate a change or update data. It's a 1-way broad of data. 
+
+CALLS are used to implement remote methods. 
+
+There's only one SUBSCRIBE feature, and it's used to implement all three things. Maybe this is not a good idea, because it's not exactly one-size fits all.
+

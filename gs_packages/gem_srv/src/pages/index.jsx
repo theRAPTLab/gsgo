@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useRef } from 'react';
-import UR from '@gemstep/ursys/client';
+import UR from '@gemstep/ursys';
 import { useURSubscribe, useInterval } from '../hooks/use-ursys';
 // left-side tabbed views
 import Welcome from '../page-tabs/Welcome';
@@ -31,19 +31,31 @@ function Page() {
   const counter = useRef();
   counter.current = 0;
 
-  // // TEST 1
-  // function handleTick(data) {
-  //   console.log('index.jsx tick', data);
-  // }
-  // useURSubscribe('APPSTATE_TICK', handleTick);
-  // useInterval(() => {
-  //   UR.Signal('HELLO_URSYS', counter.current++);
-  // }, 1000);
+  // TEST 1
+  function handleTick(data) {
+    const { tick = '', source = '', route = '' } = data;
+    console.log(`TICK ${tick} ${source} ${route}`);
+  }
+  useURSubscribe('APPSTATE_TICK', handleTick);
+  //
+  useInterval(() => {
+    UR.Signal('APPSTATE_TICK', {
+      source: 'src:1000ms timer',
+      tick: counter.current++
+    });
+  }, 1000);
 
   // TEST 2
   function handleHello(data) {
-    console.log('index.jsx', data);
-    data.fish = 'added a fish';
+    console.log('RESPONSE "HELLO_URSYS"');
+    // I'm sure you don't really want this, just being thorough
+    let out = '. got';
+    Object.keys(data).forEach(key => {
+      out += ` [${key}]:${data[key]}`;
+    });
+    data.fish = 'mackerel';
+    out += ` ret [fish]:${data.fish}`;
+    console.log(out);
     return data;
   }
   useURSubscribe('HELLO_URSYS', handleHello);

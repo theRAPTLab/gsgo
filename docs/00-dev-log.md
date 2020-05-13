@@ -52,6 +52,8 @@ Ok, let's get the URSYS CALL tested, then implement the minimum for EXEC. I thin
 * update to next 9.4.0 because better debugging
 * add npx-audit, multiview startup to gemsrv
 * export Call
+* Rename URLINK to URCHAN, because channels are more accurate. 
+* Also added notes on channel architecture with publish, subscribe, call and the slightly different semantics for future thinking. What are channels anyway? Our implementation has an unresolved smell to it to make it much simpler, methinks.
 
 NOTES:
 
@@ -60,7 +62,12 @@ NOTES:
 * Should I renamed URLINK to URCHAN? They sort of are channels. 
 * I forgot that Call has to return data so the promise receives something. Do we have a reference?
 
-Rename URLINK to URCHAN, because channels are more accurate.
 
 
+## May 13.2 Package
+
+This is a good place to commit. 
+
+* cleaned up `npm start` that Joshua reported not working (expanded GEM server is the new model, others are incompatible at the moment due to duplicated URSYS servers).
+* cleaned up URSYS Call test
 

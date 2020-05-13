@@ -12,7 +12,7 @@ import App from 'next/app';
 import Head from 'next/head';
 ///
 import fetch from 'cross-fetch';
-import URCLIENT from '@gemstep/ursys/client';
+import UR from '@gemstep/ursys/client';
 ///
 import { create } from 'jss';
 import extend from 'jss-plugin-extend';
@@ -39,21 +39,22 @@ const jss = create({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default function MyApp(props) {
   const { Component, pageProps, urProps } = props;
-
   // NOTE: effects execute only on client after MyApp has completely rendered,
   // but window is not accessible in
 
   // client-side remove the server-side injected CSS (_app mounts once)
   useEffect(() => {
+    // MUI styles
     const jssStyles = document.querySelector('#jss-server-side');
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
+    // placeholder EXEC
     (async () => {
       console.groupCollapsed('UR-EXEC: INIT');
       console.groupEnd();
       console.group('UR-EXEC: NET_INIT');
-      await URCLIENT.Connect(urProps);
+      await UR.Connect(urProps);
       console.groupEnd();
       console.groupCollapsed('UR-EXEC: LOAD');
       console.groupEnd();
@@ -82,7 +83,12 @@ export default function MyApp(props) {
   }, []);
 
   function handleHello(data) {
-    console.log('_app.jsx', data);
+    console.log('RESPONSE "HELLO_URSYS"');
+    let out = '. got';
+    Object.keys(data).forEach(key => {
+      out += ` [${key}]:${data[key]}`;
+    });
+    console.log(out);
   }
   useURSubscribe('HELLO_URSYS', handleHello);
 

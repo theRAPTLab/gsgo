@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
+import React, { useState } from 'react';
 import UR from '@gemstep/ursys/client';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
@@ -43,9 +43,19 @@ const useStyles = makeStyles(theme => ({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SystemHome() {
   const classes = useStyles();
+  const [note, setNote] = useState('');
   function handleButton(e) {
+    console.group('>>> ASYNC CALL "HELLO_URSYS"');
     UR.Call('HELLO_URSYS', { value: 'cats' }).then(data => {
-      console.log('Welcome.jsx received data', data);
+      console.groupEnd();
+      console.group('>>> ASYNC CALL "HELLO_URSYS" COMPLETE');
+      let out = 'got aggregated data:';
+      Object.keys(data).forEach(key => {
+        out += ` [${key}]:${data[key]}`;
+      });
+      console.log(out);
+      setNote(out);
+      console.groupEnd();
     });
   }
   return (
@@ -55,11 +65,13 @@ function SystemHome() {
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
-          <WF name="LoginStatus" summary="shows logged in" expanded>
+          <WF name="URSYS Test" summary="see console for output" expanded>
             <button type="button" name="mow" onClick={handleButton}>
-              Test URSYS Call
+              URSYS Call Test
             </button>
-          </WF>
+            <div>{note}</div>
+          </WF>{' '}
+          <WF name="LoginStatus" summary="shows logged in" />
           <WF name="Login" summary="" />
           <WF name="ClassroomInfo" summary="" />
           <WF name="GroupInfo" summary="" />
