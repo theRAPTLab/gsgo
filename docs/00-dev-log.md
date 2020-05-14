@@ -1,83 +1,73 @@
-SUMMARY [S06 MAR 16-29](00-dev-archives/sprint-06.md)
+SUMMARY [S01-S05 JAN 05-MAR 15](00-dev-archives/sprint-01-05.md) - initial research
+
+* Early specification and research
+
+SUMMARY [S06 MAR 16-MAR 29](00-dev-archives/sprint-06.md) - development tooling
 
 * Created **monorepo** w/ **lerna** in gsgo
 * Added Visual Studio Code essential configuration files to work across all packages in monorepo with Eslint, Typescript, Prettier, AirBnb
 * Organized and expanded **docs folder**
 * Establish process for managing **monorepo versioning**
 
-SUMMARY [S07 MAR 30-APR 12](00-dev-archives/sprint-07.md)
+SUMMARY [S07 MAR 30-APR 12](00-dev-archives/sprint-07.md) - wireframing server, Material UI and NextJS
 
 * Create **GemServer** package with VSCode subworkspace supporting local "npm run local" command and "launch.json" server debugging.
-* Figure out **Material UI theming and styling** and its relation to Material Design. **Documented** and created source code examples.
+* Figure out **Material UI theming and styling** and its relation to Material Design. 
+* **Documented** and created source code examples.
 * Figure out **NextJS** and server-side rendering implications.
 * Create custom NextJS configuration with best practice **theming and styling**, **stackable  screen-filling components** with **two-level navigation**. Also rudimentary **client-side data persistence**.
 
-SUMMARY S08 APR13-26
+MISSED INTERNAL TARGET for having USER-FACING GEMSCRIPT PROTOTYPE
+
+* sri priority: develop stable platforms and standards that will prevent headaches from recurring.
+* sri priority: outline systems and communication first, because they are more complex.
+
+SUMMARY [S08 APR 13-APR 26](00-dev-archives/sprint-08.md) - wireframing documentation system, skeleton app navigation
 
 * Added ReactMarkdown, URLayout page grid, URWireframe components
 * Reviewed Functional Draft, created placeholder components and navigation in GEM_SRV
 * System Wireframing with Named Components begins
 
-SUMMARY S09 APR27-MAY10
+SUMMARY [S09 APR 27-MAY 10](00-dev-archives/sprint-09.md) - gemscript app outline begins, ursys network porting
 
-* in process
+* Review original Function Spec Tab Layout; interpreted into a working page flow
+* New [branching conventions](20-tooling/21-branch-flow.md) specified
+* NextJS: custom server. client and server code injection points for URSYS
+* URSYS: convert to package library. URNET socket server. URNET client injection.
+* URSYS: URLINK local publish, subscribe, signal. React custom hook interface.
+
+SUMMARY S10 MAY 11-MAY 24
+
+* WIP
 
 ---
 
-# 5.0 GEMSTEP WIREFRAMING (CONTINUED)
+# 6.2. URSYS FOUNDATION FOR SIMULATION PROTOTYPE (cont'd)
 
-## Apr 27.01 Redoing Page Layout
+## May 13.1 Finish URSYS LocalCall testing
 
-The functional spec tabs don't make sense to me in a working app, so I'm redoing the flow. SYSTEM SESSIONS MODEL SIM OBSERVE ASSETS
+Ok, let's get the URSYS CALL tested, then implement the minimum for EXEC. I think this might take a couple of hours.
 
-Making new views for the index page.
+* make a test button in Welcome
+* update to next 9.4.0 because better debugging
+* add npx-audit, multiview startup to gemsrv
+* export Call
+* Rename URLINK to URCHAN, because channels are more accurate. 
+* Also added notes on channel architecture with publish, subscribe, call and the slightly different semantics for future thinking. What are channels anyway? Our implementation has an unresolved smell to it to make it much simpler, methinks.
 
-* renamed all views to page-tabs
-* redid all page-tabs to reflect a functional app
-* added placeholder WF components to list functions per tab
-* renamed blocks to page-blocks
+NOTES:
 
-## Apr 28.01 Reviewing System Layout
-
-I spent some time trying to get MDX to work because it provides a plugin, but NextJS completely fails to work with the Typescript parsing for some reason My guess is because of webpack/eslint bullshit. Next runs webpack which loads eslint, and webpack needs to know how to find modules. This is what is failing. The `Next.config.js` file is supposed to use some mdx plugins to set the configuration correctly, but their examples don't work. I'm assuming it's just broken.
-
-**With that, I think I'm at the point where I have enough outlined that I can move on to actual implemention of the SIM.**
-
-## Apr 29.01 Merging and Moving On
-
-I made the merge request last night and merged it into dev. This got me to thinking bout how other people manage their branches, because I would like to version our tags in a certain way.
-
-Reviewing sample repos, these are the practices I saw:
-
-* `master` used for deployment, releases, which have only 'version update' related things
-* `next` is used for the "next version", squashed commits
-* `<feature>` branches are named arbitrarily
-* `<package/feature/subfeature>` sometimes seen
-* `[issueid]-feature` sometimes used
-* `gh-pages` for documentation on github
-* `1.x` versioning branches for old versions that aren't current with "master" or "next" branches.
-* `canary`, `master`, `alpha` in some repos
-* `stable` is merged from "master" that is currently deployed, and is never fussed with and is tagged.
-
-I wrote a new [Branching Conventions](20-tooling/21-branch-flow.md)) document that summarized our current practice. 
+* had to use separate URLINK instance for subscribe functions for publisher functions, because Publish and Call will check for "same origin". Signal does not. This needs an eventual refactoring...once we write tests for URSYS.
+* Perhaps the UI methods should implement a separate mirroring call by using different channels.
+* Should I renamed URLINK to URCHAN? They sort of are channels. 
+* I forgot that Call has to return data so the promise receives something. Do we have a reference?
 
 
 
-# 6. Simulation Prototype
+## May 13.2 Package
 
-## APR 30.01 Preparing for Simulation Authoring
+This is a good place to commit. 
 
-Here's a list of things to try:
-
-* write a custom NextJS server...sure, why not. There are instructions for this.
-* Make a pure data representation of agents based on pieces
-* write out the lifecycle of the GEMSRV modeler and try hooking bits of it to the wireframe
-* Make a canvas or webGL thingy. I am thinking PaperJS possibly in the future too; let's try to define a future-looking visualization module format.
-
-Later on...
-
-* Make a URSYS library that implements lifecycle for our web app framework
-* Make a URSYS server, and connect GEM_SRV to its messaging
-* URSYS state
-* URSYS device synch syste
+* cleaned up `npm start` that Joshua reported not working (expanded GEM server is the new model, others are incompatible at the moment due to duplicated URSYS servers).
+* cleaned up URSYS Call test
 

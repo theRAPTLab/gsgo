@@ -32,20 +32,25 @@ export default class MyDocument extends Document {
   }
 }
 
-// load MUI stylesheets from server and inject into app
+/// RETRIEVE PROPS FROM SERVER ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// This code adds MUI StyleSheets to SSR
+/// github.com/mui-org/material-ui/tree/master/examples/nextjs
+/// NOTE: for _document, getInitialProps is only called on the server
+/// ALSO: nextjs.org/docs/advanced-features/custom-document
+/// ALSO: material-ui.com/guides/server-rendering/#material-ui-on-the-server
+/// RELATED: medium.com/manato/b1e88ac11dfa (alt styling convention)
 MyDocument.getInitialProps = async ctx => {
-  // Render app and page and get the context of the page with collected side effects.
+  // 1. prep CSS-IN-JS libraries with custom render page
   const sheets = new ServerStyleSheets();
   const originalRenderPage = ctx.renderPage;
-
+  // 2. inject new props (this doesn't work with ursys)
   ctx.renderPage = () =>
     originalRenderPage({
       enhanceApp: App => props => sheets.collect(<App {...props} />)
     });
-
+  // 3. call original getInitialProps with updated context
   const initialProps = await Document.getInitialProps(ctx);
-  console.log('_document: injecting client-side styles');
-
   return {
     ...initialProps,
     // Styles fragment is rendered after the app and page rendering finish.

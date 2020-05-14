@@ -22,10 +22,10 @@ const PROCESS = require('process');
 if (!FS.existsSync('./node_modules')) {
   console.log(`\x1b[30;41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
   let out = '';
-  out += `MISSING CRITICAL MODULE\n`;
+  out += 'MISSING CRITICAL MODULE\n';
   out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
-  out += `or did you just run \x1b[33mnpm clean:all\x1b[0m?\n`;
-  out += `run \x1b[33mnpm ci\x1b[0m to install all node_modules\n`;
+  out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
+  out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
   console.log(out);
   PROCESS.exit(0);
 }
@@ -39,7 +39,9 @@ const URSERV = require('./ursys/node/ursys-serve');
 
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
 if (!shell.which('git')) {
-  shell.echo(`\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`);
+  shell.echo(
+    `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
+  );
   shell.exit(0);
 }
 
@@ -51,6 +53,7 @@ const cmd = argv._[1];
 
 switch (cmd) {
   case 'dev':
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     RunDevServer();
     break;
   default:
@@ -62,9 +65,11 @@ switch (cmd) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunDevServer() {
   // git branch information
-  const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', { silent: true });
-  console.log(PR, `Starting Development Server...`);
-  if (error) console.log(PR, `using repo <detached head>\n`);
+  const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
+    silent: true
+  });
+  console.log(PR, 'Starting Development Server...');
+  if (error) console.log(PR, 'using repo <detached head>\n');
   if (stdout) console.log(PR, `using repo '${stdout.trim()}' branch\n`);
 
   URSERV.Initialize({ apphost: 'devserver' });
