@@ -6,7 +6,7 @@ ESLint is capable of enforcing rules in Javascript as well as formatting them. I
 
 I did some surgery on the Prettier install.
 
-#### 1. Move Critical Settings
+## 1. Move Critical Settings
 
 I had these settings in the root level of gsgo:
 
@@ -32,7 +32,13 @@ I had these settings in the root level of gsgo:
 
 The crittical ones for Prettier are the first four. Since the .vscode directory isn't used when opening subworkspaces, I copied them to the workspace file themselves, and edited the prettier.* pathnames accordingly. 
 
-#### 2. Remove ESLint-related Format Settings
+## 2. Remove ESLint-related Format Settings
 
 As mentioned in this issue, there is a conflict between code actions and format actions. ESLint will autoformat using a code action. Prettier will autoformat using a format action. You can only have one active! I had both active, so I removed ESLint.
+
+## 3. Cancellable Promises
+
+This is something we need for our URSYS MESSAGING across the network. There is no formal rejection status. 
+
+## Add Module Resolver to Webpack Config in NextJS to fix the Lerna ESLint issue
 
