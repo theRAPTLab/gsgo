@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Debug App",
       "skipFiles": ["<node_internals>/**"],
-      "program": "${workspaceFolder}/node_modules/.bin/next",
+      "program": "${workspaceFolder}/server/_start",
       "console": "integratedTerminal",
       "cwd": "${workspaceFolder}"
     }

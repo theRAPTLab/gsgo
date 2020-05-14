@@ -66,9 +66,8 @@ For day-to-day development, we isolate our work in `feat-*`, `issue-*`, `hotfix-
 Updating Master branch happens when we decide that significant new features have been added to warrant a **release** of a new version. This is performed on your local machine by a privileged maintained (Sri or Ben) and pushed directly to master.
 
 * Pull the the lastest versions of `dev` and `master`  to your machine
-* Merge `dev` onto `master` using fast forward (?), and test that it works
-* ? do you need to commit also ?
-* `lerna version prerelease` will create the next tag and push it up to `origin:master`
+* Merge `dev` onto `master` using fast forward (?), *without committing*
+* `lerna version prerelease` will (1) commit (2) create the next tag and (3) push it up to `origin:master`
 
 ## [WIP] Release Branch Updates
 

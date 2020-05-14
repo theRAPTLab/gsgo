@@ -1,0 +1,4 @@
+# don't include dist files in server/ and client/
+# because this version of ursys is for devmode only
+/client
+/server

@@ -1,103 +1,73 @@
-SUMMARY [S06 MAR 16-29](00-dev-archives/sprint-06.md)
+SUMMARY [S01-S05 JAN 05-MAR 15](00-dev-archives/sprint-01-05.md) - initial research
+
+* Early specification and research
+
+SUMMARY [S06 MAR 16-MAR 29](00-dev-archives/sprint-06.md) - development tooling
 
 * Created **monorepo** w/ **lerna** in gsgo
 * Added Visual Studio Code essential configuration files to work across all packages in monorepo with Eslint, Typescript, Prettier, AirBnb
 * Organized and expanded **docs folder**
 * Establish process for managing **monorepo versioning**
 
-SUMMARY [S07 MAR 30-APR 12](00-dev-archives/sprint-07.md)
+SUMMARY [S07 MAR 30-APR 12](00-dev-archives/sprint-07.md) - wireframing server, Material UI and NextJS
 
 * Create **GemServer** package with VSCode subworkspace supporting local "npm run local" command and "launch.json" server debugging.
-* Figure out **Material UI theming and styling** and its relation to Material Design. **Documented** and created source code examples.
+* Figure out **Material UI theming and styling** and its relation to Material Design. 
+* **Documented** and created source code examples.
 * Figure out **NextJS** and server-side rendering implications.
 * Create custom NextJS configuration with best practice **theming and styling**, **stackable  screen-filling components** with **two-level navigation**. Also rudimentary **client-side data persistence**.
 
-SUMMARY S08 APR13-26
+MISSED INTERNAL TARGET for having USER-FACING GEMSCRIPT PROTOTYPE
+
+* sri priority: develop stable platforms and standards that will prevent headaches from recurring.
+* sri priority: outline systems and communication first, because they are more complex.
+
+SUMMARY [S08 APR 13-APR 26](00-dev-archives/sprint-08.md) - wireframing documentation system, skeleton app navigation
+
+* Added ReactMarkdown, URLayout page grid, URWireframe components
+* Reviewed Functional Draft, created placeholder components and navigation in GEM_SRV
+* System Wireframing with Named Components begins
+
+SUMMARY [S09 APR 27-MAY 10](00-dev-archives/sprint-09.md) - gemscript app outline begins, ursys network porting
+
+* Review original Function Spec Tab Layout; interpreted into a working page flow
+* New [branching conventions](20-tooling/21-branch-flow.md) specified
+* NextJS: custom server. client and server code injection points for URSYS
+* URSYS: convert to package library. URNET socket server. URNET client injection.
+* URSYS: URLINK local publish, subscribe, signal. React custom hook interface.
+
+SUMMARY S10 MAY 11-MAY 24
+
+* WIP
 
 ---
 
-# 4. Documentation Cleanup
+# 6.2. URSYS FOUNDATION FOR SIMULATION PROTOTYPE (cont'd)
 
-Reducing documentation verbosity in main dev log, summarizing information, ahead of getting into more systems-oriented work mocking-up the entire system.
+## May 13.1 Finish URSYS LocalCall testing
 
-## Apr 13.01 - Checking Documentation
+Ok, let's get the URSYS CALL tested, then implement the minimum for EXEC. I think this might take a couple of hours.
 
-Is it on [GEM-STEP Foundation](https://gitlab.com/stepsys/gem-step/gsgo) home page? No. The readme needs updating.
+* make a test button in Welcome
+* update to next 9.4.0 because better debugging
+* add npx-audit, multiview startup to gemsrv
+* export Call
+* Rename URLINK to URCHAN, because channels are more accurate. 
+* Also added notes on channel architecture with publish, subscribe, call and the slightly different semantics for future thinking. What are channels anyway? Our implementation has an unresolved smell to it to make it much simpler, methinks.
 
-## Apr 14.01 - Checking Docs Part II
+NOTES:
 
-Didn't get anything done on Tuesday. Working today on finalizing things to do. I think I'm done with documentation for now and need to switch to something more exciting. But first I'll update:
+* had to use separate URLINK instance for subscribe functions for publisher functions, because Publish and Call will check for "same origin". Signal does not. This needs an eventual refactoring...once we write tests for URSYS.
+* Perhaps the UI methods should implement a separate mirroring call by using different channels.
+* Should I renamed URLINK to URCHAN? They sort of are channels. 
+* I forgot that Call has to return data so the promise receives something. Do we have a reference?
 
-* [x] clean up this 00-dev-log 
-* [x] test pull request
-* [x] bump version on test success
-* [x] accept
 
-## Apr 16.01 - Inserting Markdown
 
-The MEME project uses `react-markdown`, and its docs don't really list all the options. After perusing the source code I have a better sense of how it accomplishes what it does, and can infer that the syntax I expected will work.
+## May 13.2 Package
 
-## Apr 17.01 - Page Layout Classes
+This is a good place to commit. 
 
-Laid out the tabbed interface using the page-level components. Made subpage components to allow much easier subdivision.
+* cleaned up `npm start` that Joshua reported not working (expanded GEM server is the new model, others are incompatible at the moment due to duplicated URSYS servers).
+* cleaned up URSYS Call test
 
-## Apr 21.01 - Controls and Stubs
-
-Looked at the draft doc and work through it. I created a bunch of tabs and placeholder pages to start working through the specific system elements.  After typing up everything I am realizing just how incomplete the draft design is; I can go to town imagining how this should really work.
-
-## Apr 22.01 - Placeholder Wireframes
-
-I need to review the MUI Basics again. Added to [40-mui-cheatsheet](40-client-tech/40-mui-cheatsheet.md). Started building a very simple expandable component for on-screen annotation of what things do.
-
-## Apr 23.01 - Revisiting System Entities
-
-After starting the deep wireframing, by the end of the day I realized that the functional draft needs a lot of tightening up to be an  implementable design. So, let's work on that. I wrote it up in the IU Google Drive in [02-gemstep-ux](https://drive.google.com/open?id=1DTTEko3dzj2jMVIBqu-YTDs4-qmxDM3m). The first phase was **system entity description**; the next phase is to describe the UI for manipulating those system entities...the actual UX. 
-
-## Apr 23.02 - Defining System Entity UI Elements
-
-Now I'm going to make a list of the entities. First copy them to the COMMON ELEMENTS tab in GEM_SRV wireframe.
-
-## Apr 24.01 - Rough Sketch
-
->  ***Review the docs I wrote yesterday, and make stand-in components. But first I need write system descriptions.***
-
-Picking up where I left off yesterday, I'm refining my understanding of the needs of the overall system (and documenting it as I go). I've made a rough sketch of what the systems are. On Saturday I will document them and try to make a working screen prototype of all the element areas.
-
-## Apr 26.01 Sunday Sketching
-
-I have a diagram that lists a bunch of things. Let's make those components.
-
-## Apr 27.01 Redoing Page Layout
-
-The functional spec tabs don't make sense to me in a working app, so I'm redoing the flow. SYSTEM SESSIONS MODEL SIM OBSERVE ASSETS
-
-Making new views for the index page.
-
-* renamed all views to page-tabs
-* redid all page-tabs to reflect a functional app
-* added placeholder WF components to list functions per tab
-* renamed blocks to page-blocks
-
-## Apr 28.01 Reviewing System Layout
-
-I spent some time trying to get MDX to work because it provides a plugin, but NextJS completely fails to work with the Typescript parsing for some reason My guess is because of webpack/eslint bullshit. Next runs webpack which loads eslint, and webpack needs to know how to find modules. This is what is failing. The `Next.config.js` file is supposed to use some mdx plugins to set the configuration correctly, but their examples don't work. I'm assuming it's just broken.
-
-**With that, I think I'm at the point where I have enough outlined that I can move on to actual implemention of the SIM.**
-
-## Apr 29.01 Merging and Moving On
-
-I made the merge request last night and merged it into dev. This got me to thinking bout how other people manage their branches, because I would like to version our tags in a certain way.
-
-Reviewing sample repos, these are the practices I saw:
-
-* `master` used for deployment, releases, which have only 'version update' related things
-* `next` is used for the "next version", squashed commits
-* `<feature>` branches are named arbitrarily
-* `<package/feature/subfeature>` sometimes seen
-* `[issueid]-feature` sometimes used
-* `gh-pages` for documentation on github
-* `1.x` versioning branches for old versions that aren't current with "master" or "next" branches.
-* `canary`, `master`, `alpha` in some repos
-* `stable` is merged from "master" that is currently deployed, and is never fussed with and is tagged.
-
-I wrote a new [Branching Conventions](20-tooling/21-branch-flow.md)) document that summarized our current practice. 
