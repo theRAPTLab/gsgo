@@ -38,7 +38,9 @@ As mentioned in this issue, there is a conflict between code actions and format 
 
 ## 3. Cancellable Promises
 
-This is something we need for our URSYS MESSAGING across the network. There is no formal rejection status. 
+This is something we need for our URSYS MESSAGING across the network. There is no formal rejection mechanism currently, nor is there a cancellable Promise standard yet in place as of this writing (May 14, 2020). 
 
-## Add Module Resolver to Webpack Config in NextJS to fix the Lerna ESLint issue
+## 4. Fix the Lerna Hoisting + ESLint Issue
+
+There is a [plugin](https://www.npmjs.com/package/eslint-import-resolver-lerna) that is supposed to fix that issue. Then we can use lerna hoisting again and make bootstrap much faster.
 

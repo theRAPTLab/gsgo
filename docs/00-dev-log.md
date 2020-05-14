@@ -62,12 +62,30 @@ NOTES:
 * Should I renamed URLINK to URCHAN? They sort of are channels. 
 * I forgot that Call has to return data so the promise receives something. Do we have a reference?
 
-
-
 ## May 13.2 Package
 
 This is a good place to commit. 
 
 * cleaned up `npm start` that Joshua reported not working (expanded GEM server is the new model, others are incompatible at the moment due to duplicated URSYS servers).
 * cleaned up URSYS Call test
+
+## May 14.1 Implement EXEC Lifecycle
+
+I'm not sure exactly what this entails, but the minimum is to review UREXEC and figure out how to wedge it into `_app.jsx`. 
+
+* update the phase list. We might want to make this something that can be initialized from the server since different apps may have different lifecycles. Punting for now. Created new [urexec reference](01-architecture/02-urexec.md). 
+
+* implemented preliminary `ExecuteGroup()` placeholder, test that it is callable from `_app.jsx`.
+
+* next: implement `Execute()`, looking at
+
+  ```js
+  // parallel
+  const [number1, number2] = await Promise.all([randomNumber(), randomNumber()]);
+  // serial
+  const number1 = await randomNumber();
+  const number2 = await randomNumber();
+  ```
+
+  
 
