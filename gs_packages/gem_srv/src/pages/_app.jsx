@@ -54,6 +54,11 @@ export default function MyApp(props) {
       console.groupCollapsed('UR-EXEC: INIT');
       console.groupEnd();
       console.group('UR-EXEC: NET_INIT');
+      UR.ExecuteGroup('PHASE_BOOT');
+      UR.ExecuteGroup('PHASE_INIT');
+      UR.ExecuteGroup('PHASE_LOAD');
+      UR.ExecuteGroup('PHASE_RUN');
+      UR.ExecuteGroup('PHASE_UNLOAD');
       await UR.Connect(urProps);
       console.groupEnd();
       console.groupCollapsed('UR-EXEC: LOAD');

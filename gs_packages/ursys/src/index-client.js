@@ -12,6 +12,7 @@
 const COMMON_MODULES = require('./modules-common');
 const URChan = require('./client-urchan');
 const URNet = require('./client-urnet');
+const URExec = require('./client-exec');
 
 /// META-DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,11 +42,13 @@ const URLINK_PUB = new URChan('ursys-pub');
 const Connect = options => {
   return URNet.Connect(URLINK_SUB, options);
 };
-/** forward URLINK_SUB methods
- *
+/** forward URCHAN methods
  */
 const { Subscribe, Unsubscribe } = URLINK_SUB;
 const { LocalSignal, LocalPublish, LocalCall } = URLINK_PUB;
+/** forward UREXEC methods
+ */
+const { SubscribeHook, Execute, ExecuteGroup } = URExec;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,6 +68,10 @@ module.exports = {
   URChan,
   URNet,
   PubSub,
+  // EXEC API
+  SubscribeHook,
+  Execute,
+  ExecuteGroup,
   // CONVENIENCE
   ...COMMON_MODULES
 };
