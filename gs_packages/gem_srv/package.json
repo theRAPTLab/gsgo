@@ -12,6 +12,7 @@
   "scripts": {
     "local": "npm run dev:gem",
     "..ursys": "cd ../ursys && npm run local",
+    "..bootstrap": "cd ../.. && npm run bootstrap",
     "local:dev": "npm run dev:gem",
     "dev:gem:ursys": "cd ../ursys && npm run dev:ursys",
     "dev:gem": "nodemon ./server/_start.js",

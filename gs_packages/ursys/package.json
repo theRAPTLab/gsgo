@@ -18,6 +18,7 @@
   },
   "scripts": {
     "local": "npm run dev:ursys",
+    "..bootstrap": "cd ../.. && npm run bootstrap",
     "dev:ursys": "webpack -w",
     "build": "npm run build:ursys",
     "build:ursys": "webpack"
