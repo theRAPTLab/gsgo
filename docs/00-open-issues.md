@@ -42,5 +42,16 @@ This is something we need for our URSYS MESSAGING across the network. There is n
 
 ## 4. Fix the Lerna Hoisting + ESLint Issue
 
-There is a [plugin](https://www.npmjs.com/package/eslint-import-resolver-lerna) that is supposed to fix that issue. Then we can use lerna hoisting again and make bootstrap much faster.
+The error manifested as "module not found" for `hashids` and `uuid` when building the **URSYS** library package.  This is because these packages are hoisted out of URSYS's `node_modules` to the top level of the gsgo repo. Only libraries that are common are hoisted; **APPSRV** and **GEMSRV** also use these libraries.
+
+The workarounds are:
+
+1. use  `lerna bootstrap` command **without the `--hoist` option**.
+2. or **modify URSYS**  `webpack.config.js` to include a new module path to `../../node_modules` in addition to what's there. 
+
+Using option (2) seems to work, and is a single change to a single library. Hoisting can be re-enabled. Remember to use `npm run bootstrap` after installing packages to make sure everything is linked.
+
+There was a second error with `fs-extra 9.0.0` having an issue addressing one of its own files. I downgraded to 8.1.0 and the problem went away. HOWEVER, webpack appears to be processing this file through the bundler which shouldn't be happening. I tried to resolve this by adding a second `exclude` entry to `webpack.config.js` to `../../node_modules` to see if that affects it.
+
+There is a [plugin](https://www.npmjs.com/package/eslint-import-resolver-lerna) that is supposed to ESLint issues, but that doesn't seem to be the case as I originally thought.
 

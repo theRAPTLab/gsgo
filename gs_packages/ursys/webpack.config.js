@@ -1,7 +1,7 @@
 const path = require('path');
 const merge = require('webpack-merge');
 
-// const URSYS = require('@gemscript/ursus/server')
+// const URSYS = require('@gemscript/ursys/server')
 const serverConfig = {
   entry: path.resolve(__dirname, 'src/index-server.js'),
   target: 'node', // sets node-specific webpack flags (web is default)
@@ -31,7 +31,10 @@ const baseConfig = {
     rules: [
       {
         test: /\.(js)$/,
-        exclude: /node_modules/,
+        exclude: [
+          path.resolve(__dirname, 'node_modules'), // ursys package
+          path.resolve(__dirname, '../../node_modules') // lerna hoisted
+        ],
         use: ['babel-loader']
       }
     ]
@@ -39,7 +42,8 @@ const baseConfig = {
   resolve: {
     extensions: ['.js'],
     modules: [
-      path.resolve(__dirname, 'node_modules'),
+      path.resolve(__dirname, 'node_modules'), // ursys package modules
+      path.resolve(__dirname, '../../node_modules'), // lerna hoisted modules
       path.resolve(__dirname, 'src')
     ]
   },
