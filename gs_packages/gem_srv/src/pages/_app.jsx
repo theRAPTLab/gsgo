@@ -51,40 +51,19 @@ export default function MyApp(props) {
     }
     // placeholder EXEC
     (async () => {
-      console.groupCollapsed('UR-EXEC: INIT');
-      console.groupEnd();
-      console.group('UR-EXEC: NET_INIT');
       UR.ExecuteGroup('PHASE_BOOT');
       UR.ExecuteGroup('PHASE_INIT');
+      UR.ExecuteGroup('PHASE_CONNECT');
       UR.ExecuteGroup('PHASE_LOAD');
+      UR.ExecuteGroup('PHASE_CONFIG');
+      UR.ExecuteGroup('PHASE_READY');
       UR.ExecuteGroup('PHASE_RUN');
-      UR.ExecuteGroup('PHASE_UNLOAD');
       await UR.Connect(urProps);
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: LOAD');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: CONFIG');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: DOM_READY');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: RESET');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: NET_APP_INIT');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: START');
-      APPSTATE.StartTimer();
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: RUN');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: UPDATE');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: STOP');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: UNLOAD');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: SHUTDOWN');
-      console.groupEnd();
+      // APPSTATE.StartTimer();
     })();
+    return function cleanup() {
+      UR.ExecuteGroup('PHASE_UNLOAD');
+    };
   }, []);
 
   function handleHello(data) {
@@ -119,7 +98,8 @@ export default function MyApp(props) {
 /// GET URSYS INFO ////////////////////////////////////////////////////////////
 /// NOTE: this disables automatic static optimization
 /// in the _app.js context, getInitialProps doesn't have pageProps ever
-/// This only executes on the server and props are sent
+/// This ONLY EXECUTES ON THE SERVER and props are sent as a bundle to
+/// hydrate MyApp
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps

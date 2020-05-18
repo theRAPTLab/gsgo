@@ -121,3 +121,48 @@ CALLS are used to implement remote methods.
 
 There's only one SUBSCRIBE feature, and it's used to implement all three things. Maybe this is not a good idea, because it's not exactly one-size fits all.
 
+## Examples
+
+This was added to `pages/index.jsx` during testing to print a counting tick handler.
+
+``` jsx
+import UR from '@gemstep/ursys';
+import { useURSubscribe, useInterval } from '../hooks/use-ursys';
+
+function Page() {
+const counter = useRef();
+  counter.current = 0;
+
+  // TEST 1
+  function handleTick(data) {
+    const { tick = '', source = '', route = '' } = data;
+    console.log(`TICK ${tick} ${source} ${route}`);
+  }
+  useURSubscribe('APPSTATE_TICK', handleTick);
+  //
+  useInterval(() => {
+    UR.Signal('APPSTATE_TICK', {
+      source: 'src:1000ms timer',
+      tick: counter.current++
+    });
+  }, 1000);
+
+  // TEST 2
+  function handleHello(data) {
+    console.log('RESPONSE "HELLO_URSYS"');
+    // I'm sure you don't really want this, just being thorough
+    let out = '. got';
+    Object.keys(data).forEach(key => {
+      out += ` [${key}]:${data[key]}`;
+    });
+    data.fish = 'mackerel';
+    out += ` ret [fish]:${data.fish}`;
+    console.log(out);
+    return data;
+  }
+  useURSubscribe('HELLO_URSYS', handleHello);
+}
+
+
+```
+

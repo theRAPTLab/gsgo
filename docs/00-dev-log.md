@@ -87,4 +87,41 @@ I'm not sure exactly what this entails, but the minimum is to review UREXEC and 
   const number2 = await randomNumber();
   ```
 
-  
+
+## May 17.1 Implement EXEC Lifecycle (cont'd)
+
+Looking at `_app.jsx`, we're starting to start the EXEC module. This all happens in an effect in MyApp:
+
+```js
+  useEffect(() => {
+    // placeholder exec
+    (async () => {
+      UR.ExecuteGroup('PHASE_BOOT');
+      UR.ExecuteGroup('PHASE_INIT');
+      UR.ExecuteGroup('PHASE_LOAD');
+      UR.ExecuteGroup('PHASE_RUN');
+      UR.ExecuteGroup('PHASE_UNLOAD');
+      await UR.Connect(urProps);
+      APPSTATE.StartTimer();
+    })();
+  }, []);
+```
+
+To make this work for real:
+
+* run PHASE_BOOT, PHASE_INIT, PHASE_LOAD, PHASE_RUN in the effect
+* run PHASE_UNLOAD as a cleanup function on unmount
+* move `await UR.Connect()` and `APPState.StartTimer()` to the appropriate hook in the module that needs to do it.
+
+### **Q. Where does `UR.Connect()` belong?**
+
+>  Probably `UR_INIT`. Note that the lifecycle hooks aren't events, but hooks. I wrote up the [difference](01-architecture/02-asynch.md). Basically hooks are **when our code needs to do the right thing** to startup properly.
+
+An issue is that we don't have reliable client-side runtime control until `_app.jsx` is loaded. The earliest we can guarantee app-wide browser-side code is in the `useEffect()` of `MyApp`. 
+
+I think I need to **rename lifecycle hooks** so they clearly indicate that we're invoking them from URSYS so user code has an opportunity to participate in the lifecycle....ok, that's done. These are now more like STATE GROUPS
+
+
+
+
+

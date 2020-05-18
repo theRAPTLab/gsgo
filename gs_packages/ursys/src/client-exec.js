@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable consistent-return */
 /* eslint-disable no-debugger */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
@@ -27,45 +28,57 @@ const { cssuri, cssalert, cssinfo, cssblue, cssreset } = CCSS;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PHASE_HOOKS = new Map();
 const PHASE_GROUPS = {
+  // NOTE: 'PHASE_*' fired on entry of states in this group
   PHASE_BOOT: [
-    'SYS_TESTCONF', // set testing mode parameters
-    'SYS_BOOT' // the earliest URSYS gets runtime control
+    'TEST_INIT', // hook to set any testing parameters or modes
+    'SYS_BOOTSTRAP' // grab initial props to load the rest of URSYS
   ],
   PHASE_INIT: [
-    'UR_INIT', // initialize URSYS subsystem
-    'DOM_READY' // app view system has stabilized
+    'SYS_INIT', // initialize key runtime parameters
+    'DOM_READY' // the dom is stable
   ],
   PHASE_CONNECT: [
-    'UR_CONNECT', // connect to URSYS network
-    'UR_REGISTER', // app establish elevated credentials
-    'UR_READY' // ursys is standing by
+    'NET_CONNECT', // initiate connection
+    'NET_REGISTER', // initiate registration
+    'NET_READY' // the network is stable
   ],
   PHASE_LOAD: [
-    'APP_LOAD', // app modules can request asynchronous loads
-    'APP_CONFIGURE' // app modules can configure data strucure
+    'APP_LOAD' // app modules can request asynchronous loads
+  ],
+  PHASE_CONFIG: [
+    'APP_CONFIGURE' // app modules can configure data structure from loaded data
+  ],
+  PHASE_READY: [
+    'APP_READY' // all apps have loaded and configured and are ready to run
   ],
   PHASE_RUN: [
-    'APP_RESET', // app modules prepare to run
-    'APP_START', // app modules can call any other module
+    'APP_RESET', // app modules receive reset params prior to starting
+    'APP_START', // app modules start execution, all modules are ready
     'APP_RUN', // app modules enter run mode
     'APP_UPDATE', // app modules execute a step
     'DOM_ANIMFRAME', // app modules animation frame
-    'APP_STOP' // app is stopping
+    'APP_LOOP' // fired at end, back to APP_UPDATE
+  ],
+  PHASE_PAUSED: [
+    'APP_PAUSE', // app modules should enter "paused state"
+    'APP_UPDATE', // app modules still receive update
+    'DOM_ANIMFRAME', // app modules still receive animframe
+    'APP_UNPAUSE' // app modules cleanup, then back to 'APP_LOOP'
   ],
   PHASE_UNLOAD: [
+    'APP_STOP', // app is stopping
     'APP_UNLOAD', // app is shutting down; release assets
     'APP_SHUTDOWN' // app is shut down
+  ],
+  PHASE_REBOOT: [
+    'SYS_REBOOT' // system is about to reboot back to PHASE_BOOT
   ]
 };
-const PHASES = [];
+const PHASE_LIST = [];
 Object.keys(PHASE_GROUPS).forEach(groupKey => {
-  PHASES.push(groupKey);
-  PHASES.push(...PHASE_GROUPS[groupKey]);
+  PHASE_LIST.push(groupKey);
+  PHASE_LIST.push(...PHASE_GROUPS[groupKey]);
 });
-
-/// COMPUTED DECLARATIONS //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let REACT_PHASES = [];
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,26 +112,6 @@ function m_ExecuteScopedPhase(phase, o) {
   // f() can return a Promise to force asynchronous waiting!
   return o.f();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UTILITY: compute the list of allowable REACT PHASES
-    that will be updated
-/*/
-function m_SetValidReactPhases(phase) {
-  let retval;
-  if (phase === undefined) {
-    retval = REACT_PHASES.shift();
-  } else {
-    const dr_index = PHASES.findIndex(el => {
-      return el === phase;
-    });
-    if (dr_index > 0) REACT_PHASES = PHASES.slice(dr_index);
-    retval = REACT_PHASES[0];
-  }
-  // if (DBG) console.log('REACT_PHASES:', REACT_PHASES.join(', '));
-  return retval;
-}
-// initialize
-m_SetValidReactPhases('DOM_READY');
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY: maintain current phase status (not used for anything currently)
@@ -137,7 +130,7 @@ function m_UpdateCurrentPhase(phase) {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: register a Phase Handler which is invoked by MOD.Execute() phase is a
- *  string constant from PHASES array above f is a function that does work
+ *  string constant from PHASE_LIST array above f is a function that does work
  *  immediately, or returns a Promise.
  */
 function SubscribeHook(phase, f, scope) {
@@ -147,7 +140,7 @@ function SubscribeHook(phase, f, scope) {
     // does this phase exist?
     if (typeof phase !== 'string')
       throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
-    if (!PHASES.includes(phase))
+    if (!PHASE_LIST.includes(phase))
       throw Error(`${phase} is not a recognized phase`);
     // did we also get a promise?
     if (!(f instanceof Function))
@@ -164,19 +157,6 @@ function SubscribeHook(phase, f, scope) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Return TRUE if the passed string is a valid URSYS phase that
- *  a React component can tap
- *  @param {string} phase
- */
-const IsReactPhase = phase => {
-  return (
-    REACT_PHASES.findIndex(el => {
-      return phase === el;
-    }) > 0
-  );
-};
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a phase, completing when
  *  all the callback functions complete. If the callback function returns
  *  a Promise, this is added to a list of Promises to wait for before the
@@ -184,7 +164,7 @@ const IsReactPhase = phase => {
  */
 async function Execute(phase) {
   // note: contents of PHASE_HOOKs are promise-generating functions
-  if (!PHASES.includes(phase))
+  if (!PHASE_LIST.includes(phase))
     throw Error(`${phase} is not a recognized EXEC phase`);
   if (phase.includes('PHASE_'))
     throw Error(`${phase} is a Phase Group; use ExecuteGroup() instead`);
@@ -449,6 +429,5 @@ module.exports = {
   CleanupRun,
   ServerDisconnect,
   ExitApp,
-  SetScopeFromRoutes,
-  IsReactPhase
+  SetScopeFromRoutes
 };
