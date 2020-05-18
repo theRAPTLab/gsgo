@@ -121,6 +121,29 @@ An issue is that we don't have reliable client-side runtime control until `_app.
 
 I think I need to **rename lifecycle hooks** so they clearly indicate that we're invoking them from URSYS so user code has an opportunity to participate in the lifecycle....ok, that's done. These are now more like STATE GROUPS
 
+## MAY 18.1 Inserting Lifecycle Functions
+
+Yesterday I worked out the meaning of hooks as the URSYS lifecycle synchronization mechanism. This is where user code has the opportunity to make use of the URSYS lifecycle. There is some internal code that handles stuff for us, but relies on the URSYS HOOK system to know when to do it.
+
+When porting URSYS to a new system, we have to figure out where to insert the engine that drives those lifecycle phases. This is the implementation specific part of URSYS. Figuring it out for NextJS is a new puzzle.
+
+I've expanded the list a bit again, because the rules are:
+
+* PHASES execute one after the other under system control. 
+* OPERATIONS within a PHASE will be completed before the next PHASE runs. However, the ORDER of operations is not guaranteed.
+* To particulate in the URSYS lifecycle, your user code HOOKS into an OPERATION by name. Your hook function may receive data. Your hook function can return a Promise to ensure that it completes its operation. 
+
+
+
+* [x] removed `REACT_PHASES`
+* [x] renamed PHASES to OPS for consistency in new schema
+* [ ] move UR.Connect to internal URSYS module?
+* [ ] remove `SetScopedPath()`
+
+
+
+
+
 
 
 

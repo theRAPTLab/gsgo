@@ -6,8 +6,8 @@
   URSYS Application Lifecycle
 
   to use:
-  EXEC.SubscribeHook('PHASE', (data) => { return new Promise((resolve,reject)=>{}); });
-  EXEC.SubscribeHook('PHASE', (data) => { ...code... });
+  EXEC.SubscribeHook('OP', (data) => { return new Promise((resolve,reject)=>{}); });
+  EXEC.SubscribeHook('OP', (data) => { ...code... });
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -22,11 +22,11 @@ const CCSS = require('./util-console-styles');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = true;
 const { cssuri, cssalert, cssinfo, cssblue, cssreset } = CCSS;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PHASE_HOOKS = new Map();
 const PHASE_GROUPS = {
   // NOTE: 'PHASE_*' fired on entry of states in this group
   PHASE_BOOT: [
@@ -74,51 +74,41 @@ const PHASE_GROUPS = {
     'SYS_REBOOT' // system is about to reboot back to PHASE_BOOT
   ]
 };
-const PHASE_LIST = [];
-Object.keys(PHASE_GROUPS).forEach(groupKey => {
-  PHASE_LIST.push(groupKey);
-  PHASE_LIST.push(...PHASE_GROUPS[groupKey]);
+
+// populate ops map
+const OP_HOOKS = new Map();
+Object.keys(PHASE_GROUPS).forEach(phaseKey => {
+  OP_HOOKS.set(phaseKey, []);
+  PHASE_GROUPS[phaseKey].forEach(opKey => {
+    OP_HOOKS.set(opKey, []);
+  });
 });
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
 const BAD_PATH =
   "module_path must be a string derived from the module's __dirname";
 const URCHAN = new URChan('UREXEC');
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let EXEC_PHASE; // current execution phase (the name of the phase)
-let EXEC_SCOPE; // current execution scope (the path of active view)
+let EXEC_OP; // current execution phase (the name of the phase)
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY: compare the destination scope with the acceptable scope.
     if the scope starts with view, check it. otherwise just run it.
 /*/
-function m_ExecuteScopedPhase(phase, o) {
-  // reject hooks that dont' match the current 'views' path that might
-  // be initializing in other React root views outside the class
-  if (o.scope.indexOf('views') === 0) {
-    // if it's the current scope, run it!
-    // console.log(`${phase} DOES '${EXEC_SCOPE}' contain '${o.scope}'?`);
-    if (o.scope.includes(EXEC_SCOPE, 0)) return o.f();
-    // otherwise don't run it
-    if (DBG) console.info(`skipped '${o.scope}'`);
-    return undefined;
-  }
-  // if we got this far, then it's something not in the view path
-  // f() can return a Promise to force asynchronous waiting!
+function m_ExecuteScopedOp(phase, o) {
   return o.f();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ UTILITY: maintain current phase status (not used for anything currently)
 /*/
-function m_UpdateCurrentPhase(phase) {
-  EXEC_PHASE = phase;
-  if (DBG) console.log(`PHASE UPDATED ${EXEC_PHASE}`);
+function m_UpdateCurrentOp(phase) {
+  EXEC_OP = phase;
+  if (DBG) console.log(`PHASE UPDATED ${EXEC_OP}`);
 }
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
@@ -129,27 +119,25 @@ function m_UpdateCurrentPhase(phase) {
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: register a Phase Handler which is invoked by MOD.Execute() phase is a
- *  string constant from PHASE_LIST array above f is a function that does work
- *  immediately, or returns a Promise.
+/** API: register an Operations Handler. <op> is a string constant
+ *  define in PHASE_GROUPS and converted into the MAP. <f> is a function that
+ *  will be invoked during the operation, and it can return a promise or value.
  */
-function SubscribeHook(phase, f, scope) {
+function SubscribeHook(op, f, scope = '/') {
   try {
     // make sure scope is included
     if (typeof scope !== 'string') throw Error('<arg1> scope should be included');
     // does this phase exist?
-    if (typeof phase !== 'string')
+    if (typeof op !== 'string')
       throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
-    if (!PHASE_LIST.includes(phase))
-      throw Error(`${phase} is not a recognized phase`);
+    if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
     // did we also get a promise?
     if (!(f instanceof Function))
       throw Error('<arg3> must be a function optionally returning Promise');
     // get the list of promises associated with this phase
     // and add the new promise
-    if (!PHASE_HOOKS.has(phase)) PHASE_HOOKS.set(phase, []);
-    PHASE_HOOKS.get(phase).push({ f, scope });
-    if (DBG) console.log(`[${phase}] added handler`);
+    OP_HOOKS.get(op).push({ f, scope });
+    if (DBG) console.log(`[${op}] added handler`);
   } catch (e) {
     console.error(e);
     debugger;
@@ -157,33 +145,32 @@ function SubscribeHook(phase, f, scope) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Execute all Promises associated with a phase, completing when
+/** API: Execute all Promises associated with a op, completing when
  *  all the callback functions complete. If the callback function returns
  *  a Promise, this is added to a list of Promises to wait for before the
  *  function returns control to the calling code.
  */
-async function Execute(phase) {
+async function Execute(op) {
   // note: contents of PHASE_HOOKs are promise-generating functions
-  if (!PHASE_LIST.includes(phase))
-    throw Error(`${phase} is not a recognized EXEC phase`);
-  if (phase.includes('PHASE_'))
-    throw Error(`${phase} is a Phase Group; use ExecuteGroup() instead`);
-  let hooks = PHASE_HOOKS.get(phase);
-  if (hooks === undefined) {
-    if (DBG) console.log(`[${phase}] no subscribers`);
+  if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized EXEC op`);
+  if (op.includes('PHASE_'))
+    throw Error(`${op} is a Phase Group; use ExecuteGroup() instead`);
+  let hooks = OP_HOOKS.get(op);
+  if (hooks.length === 0) {
+    if (DBG) console.log(`[${op}] no subscribers`);
     return;
   }
 
   // phase housekeeping
-  m_UpdateCurrentPhase(`${phase}_PENDING`);
+  m_UpdateCurrentOp(`${op}_PENDING`);
 
   // now execute handlers and promises
   let icount = 0;
-  if (DBG) console.group(`${phase} - ${EXEC_SCOPE}`);
+  if (DBG) console.group(`${op}`);
   // get an array of promises
-  // o contains f, scope pushed in SubscribeHook() above
+  // o contains 'f', 'scope' pushed in SubscribeHook() above
   let promises = hooks.map(o => {
-    let retval = m_ExecuteScopedPhase(phase, o);
+    let retval = m_ExecuteScopedOp(op, o);
     if (retval instanceof Promise) {
       icount++;
       return retval;
@@ -195,98 +182,37 @@ async function Execute(phase) {
     return e !== undefined;
   });
   if (DBG && hooks.length)
-    console.log(`[${phase}] HANDLERS PROCESSED : ${hooks.length}`);
-  if (DBG && icount) console.log(`[${phase}] PROMISES QUEUED    : ${icount}`);
+    console.log(`[${op}] HANDLERS PROCESSED : ${hooks.length}`);
+  if (DBG && icount) console.log(`[${op}] PROMISES QUEUED    : ${icount}`);
 
   // wait for all promises to execute
   await Promise.all(promises)
     .then(values => {
       if (DBG && values.length)
-        console.log(`[${phase}] PROMISES RETURNED  : ${values.length}`, values);
+        console.log(`[${op}] PROMISES  RETVALS  : ${values.length}`, values);
       if (DBG) console.groupEnd();
       return values;
     })
     .catch(err => {
-      if (DBG) console.log(`[${phase}]: ${err}`);
-      throw Error(`[${phase}]: ${err}`);
+      if (DBG) console.log(`[${op}]: ${err}`);
+      throw Error(`[${op}]: ${err}`);
     });
 
   // phase housekeeping
-  m_UpdateCurrentPhase(phase);
+  m_UpdateCurrentOp(op);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a Phase Group
  */
-async function ExecuteGroup(group) {
+function ExecuteGroup(group) {
   const ops = PHASE_GROUPS[group];
   if (ops === undefined) throw Error(`Phase Group "${group}" doesn't exist`);
-  ops.forEach(element => {
-    console.log(`EXEC ${element}`);
+  ops.forEach(async op => {
+    await Execute(op);
   });
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called during SystemInit to determine what the dynamic path is
- *  by matching
- *  @memberof URExec
- *  @param {Object[]} routes list of route objects
- *  @param {String} routes[].path the /path to match
- *  @param {Object} routes[].component the loaded view
- *  @returns true if scope was set successfully, false otherwise
- */
-function SetScopeFromRoutes(routes) {
-  // get current hash, without trailing parameters and # char
-  const hashbits = window.location.hash.substring(1).split('/');
-  const hash = `/${hashbits[1] || ''}`;
-  const loc = hash.split('?')[0];
-  if (DBG)
-    console.log(
-      `%cHASH_XLATE%c '${window.location.hash}' --> '${loc}'`,
-      cssinfo,
-      cssreset
-    );
-  const matches = routes.filter(route => {
-    return route.path === loc;
-  });
-  if (matches.length) {
-    const { component } = matches[0];
-    /*/
-    to set the scope, we need to have a unique name to set. this scope is probably
-    a directory. we can set the UMOD property using the __dirname config for webpack
-    /*/
-    if (component.MOD_ID === undefined)
-      console.error(
-        `WARNING: component for route '${loc}' has no MOD_ID property`
-      );
-    else {
-      const viewpath = component.MOD_ID || 'boot';
-      SetScopePath(viewpath);
-    }
-    return;
-  }
-  /* NO MATCHES */
-  console.log(`%cSetScopeFromRoutes() no match for ${loc}`, cssuri);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: The scope is used to filter EXEC events within a particular
-    application path, which are defined under the view directory.
-*/
-function SetScopePath(view_path) {
-  if (typeof view_path !== 'string') throw Error(BAD_PATH);
-  EXEC_SCOPE = view_path;
-  console.info(`%cEXEC_SCOPE%c '${EXEC_SCOPE}'`, cssinfo, cssreset);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: The scope
- */
-function CurrentScope() {
-  return EXEC_SCOPE;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function MatchScope(check) {
-  return EXEC_SCOPE.includes(check);
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: application startup
  */
@@ -416,10 +342,7 @@ module.exports = {
   SubscribeHook,
   Execute,
   ExecuteGroup,
-  SetScopePath,
   ModulePreflight,
-  CurrentScope,
-  MatchScope,
   EnterApp,
   SetupDOM,
   JoinNet,
@@ -428,6 +351,5 @@ module.exports = {
   Pause,
   CleanupRun,
   ServerDisconnect,
-  ExitApp,
-  SetScopeFromRoutes
+  ExitApp
 };
