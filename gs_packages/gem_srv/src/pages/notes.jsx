@@ -12,7 +12,7 @@ import Typography from '@material-ui/core/Typography';
 ///
 import URSiteNav from '../page-blocks/URSiteNav';
 ///
-import { MD } from '../components/ReactMarkdown';
+import { MD } from '../components/MD';
 import FlexBoxLayout from '../components/examples/FlexBoxLayout';
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////

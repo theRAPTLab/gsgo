@@ -16,7 +16,7 @@ import clsx from 'clsx';
 import { Box } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 // utility components
-import { MD } from '../components/ReactMarkdown';
+import { MD } from '../components/MD';
 
 /// SHARED CUSTOM STYLES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
