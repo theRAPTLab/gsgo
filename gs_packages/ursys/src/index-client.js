@@ -32,23 +32,35 @@ const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URLINK_SUB = new URChan('ursys-sub');
-const URLINK_PUB = new URChan('ursys-pub');
+const URCHAN_SUB = new URChan('ursys-sub');
+const URCHAN_PUB = new URChan('ursys-pub');
+
+/// HOOKED OPERATIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** autoconnect to URSYS network during NET_CONNECT
+ */
+URExec.SystemHook(
+  'NET_CONNECT',
+  () =>
+    new Promise((res, rej) =>
+      URNet.Connect(URCHAN_SUB, { success: res, failure: rej })
+    )
+);
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to URSYS network
  */
 const Connect = options => {
-  return URNet.Connect(URLINK_SUB, options);
+  return URNet.Connect(URCHAN_SUB, options);
 };
 /** forward URCHAN methods
  */
-const { Subscribe, Unsubscribe } = URLINK_SUB;
-const { LocalSignal, LocalPublish, LocalCall } = URLINK_PUB;
+const { Subscribe, Unsubscribe } = URCHAN_SUB;
+const { LocalSignal, LocalPublish, LocalCall } = URCHAN_PUB;
 /** forward UREXEC methods
  */
-const { SubscribeHook, Execute, ExecuteGroup } = URExec;
+const { SystemBoot, SystemUnload, SystemHook, SystemReboot } = URExec;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,9 +81,10 @@ module.exports = {
   URNet,
   PubSub,
   // EXEC API
-  SubscribeHook,
-  Execute,
-  ExecuteGroup,
+  SystemBoot,
+  SystemUnload,
+  SystemHook,
+  SystemReboot,
   // CONVENIENCE
   ...COMMON_MODULES
 };

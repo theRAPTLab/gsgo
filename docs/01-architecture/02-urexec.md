@@ -5,34 +5,45 @@
 UR-EXEC is the system that guarantees that one group of **operations** finish before the next is run. You can think of it as a state machine.
 
 * Modules subscribe to named **Operations**.  Operations are guaranteed to finish before the next operation executes. Operations have a type such as `SYS`, `UR`, `APP` and `DOM`. 
-* Operations belong to sets called **Phases**. The order of phase execution is guaranteed as listed, and it is guaranteed to complete in its entirety before the next phase is entered. The order of Operations is guaranteed by type, not between types. In other words, all `APP` states will execute in order, but whether they finish before `DOM` states is unpredictable.
+* Operations belong to sets called **Phase Groups**,. The order of Phase Group execution is guaranteed as listed, and it is guaranteed to complete in its entirety before the next phase is entered. 
+* The order of operations in a Phase Group
 * **Phase Transitions** are triggered by the completion of all operations within the phase. 
 
 The UR EXEC lifecycle predates our use of React, and provides the framework for our simulation engines. It is very loosely inspired by XNA game components and Unix runlevels.
 
-## Public API (PORTING)
+## Public API
 
-#### `SubscribeHook( op, callback, scope )`
+#### `SystemBoot()`
+
+Start the URSYS execution engine, which will run automatically firing phase groups one-after-the-other in series. 
+
+#### `SystemHook( op, callback, scope )`
 
 Used by **modules** to subscribe to the lifecycle system. Use one of the **named operations** from a **Phase Group**. You can also subscribe to a Phase Group and receive 'enter' and 'exit' status.
 
 The optional `scope` parameter specified which application routes to ignore; this is used in SPAs that implement separate spaces inside of a single instance (e.g. iSTEP presentation, teacher, and student views are all bundled in the same app bundle). 
 
-#### `useSubscribeHook( op, callback )`
+#### `useSystemHook( op, callback )`
 
-For **functional React components** that want to subscribe to our hooks, use the custom effect. It will automatically unsubscribe when the component goes out of scope/unmounts, so the `scope` parameter isn't necessary as it is in `SubscribeHook()`. 
+For **functional React components** that want to subscribe to our hooks, use the custom effect. It will automatically unsubscribe when the component goes out of scope/unmounts, so the `scope` parameter isn't necessary as it is in `SystemHook()`. 
 
-For **React class components**, you can use the module version of  `SubscribeHook()`. 
+For **React class components**, you can use the module version of  `SystemHook()`. 
 
-## Private API (PORTING)
+## Private API
 
-#### Execute( op )
+#### `Execute( op )`
 
-This is the main execution loop for the lifecycle manager. 
+This is the main execution loop for the lifecycle manager. It's used 
 
-#### ExecuteGroup( phaseGroup )
+#### `ExecutePhase( phaseGroup )`
 
-This is a convenience method for executing all the operations in a Phase Group, paralellized by type.
+Executes all the operations in a Phase Group sequentially
+
+#### `ExecutePhaseParallel( phaseGroup )`
+
+Executes all the operations in a Phase Group in parallel.
+
+
 
 
 
@@ -42,30 +53,54 @@ This is a convenience method for executing all the operations in a Phase Group, 
 
 NOTE: Not all implementations of URSYS implement every operation. In particular, we don't worry about implementing unloading/shutdown for browser-based clients.
 
-* **PHASE_BOOT**
-  * `SYS_TESTCONF`
-  * `SYS_BOOT`
-* **PHASE_INIT**
-  * `UR_INIT`
-  * `DOM_READY`
-* **PHASE_CONNECT**
-  * `UR_CONNECT`
-  * `UR_REGISTER`
-  * `UR_READY`
-* **PHASE_LOAD**
-  * `APP_LOAD`
-  * `APP_CONFIGURE`
-* **PHASE_RUN**
-  * `APP_RESET`
-  * `APP_START`
-  * `APP_RUN`
-  * `APP_UPDATE`
-  * `DOM_ANIMFRAME`
-  * `APP_STOP`
-  * `APP_PAUSE`
-* **PHASE_UNLOAD**
-  * `APP_UNLOAD`
-  * `APP_SHUTDOWN`
+```js
+PHASE_BOOT: [
+  'TEST_INIT', // hook to set any testing parameters or modes
+  'SYS_BOOTSTRAP' // grab initial props to load the rest of URSYS
+],
+PHASE_INIT: [
+  'SYS_INIT', // initialize key runtime parameters
+  'DOM_READY' // the dom is stable
+],
+PHASE_CONNECT: [
+  'NET_CONNECT', // initiate connection
+  'NET_REGISTER', // initiate registration
+  'NET_READY' // the network is stable
+],
+PHASE_LOAD: [
+  'APP_LOAD' // app modules can request asynchronous loads
+],
+PHASE_CONFIG: [
+  'APP_CONFIGURE' // app modules can configure data structure from loaded data
+],
+PHASE_READY: [
+  'APP_READY' // all apps have loaded and configured and are ready to run
+],
+PHASE_RUN: [
+  'APP_RESET', // app modules receive reset params prior to starting
+  'APP_START', // app modules start execution, all modules are ready
+  'APP_RUN', // app modules enter run mode
+  'APP_UPDATE', // app modules execute a step
+  'DOM_ANIMFRAME', // app modules animation frame
+  'APP_LOOP' // fired at end, back to APP_UPDATE
+],
+PHASE_PAUSED: [
+  'APP_PAUSE', // app modules should enter "paused state"
+  'APP_UPDATE', // app modules still receive update
+  'DOM_ANIMFRAME', // app modules still receive animframe
+  'APP_UNPAUSE' // app modules cleanup, then back to 'APP_LOOP'
+],
+PHASE_UNLOAD: [
+  'APP_STOP', // app is stopping
+  'APP_UNLOAD', // app is shutting down; release assets
+  'APP_SHUTDOWN' // app is shut down
+],
+PHASE_REBOOT: [
+  'SYS_REBOOT' // system is about to reboot back to PHASE_BOOT
+]
+```
+
+
 
 ## Phase Interrupts (WIP)
 

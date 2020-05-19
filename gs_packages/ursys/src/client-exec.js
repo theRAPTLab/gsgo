@@ -3,11 +3,7 @@
 /* eslint-disable no-debugger */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS Application Lifecycle
-
-  to use:
-  EXEC.SubscribeHook('OP', (data) => { return new Promise((resolve,reject)=>{}); });
-  EXEC.SubscribeHook('OP', (data) => { ...code... });
+  URSYS Application Lifecycle Controller
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -22,13 +18,12 @@ const CCSS = require('./util-console-styles');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = { subs: false };
 const { cssuri, cssalert, cssinfo, cssblue, cssreset } = CCSS;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PHASE_GROUPS = {
-  // NOTE: 'PHASE_*' fired on entry of states in this group
+const PHASES = {
   PHASE_BOOT: [
     'TEST_INIT', // hook to set any testing parameters or modes
     'SYS_BOOTSTRAP' // grab initial props to load the rest of URSYS
@@ -77,9 +72,9 @@ const PHASE_GROUPS = {
 
 // populate ops map
 const OP_HOOKS = new Map();
-Object.keys(PHASE_GROUPS).forEach(phaseKey => {
+Object.keys(PHASES).forEach(phaseKey => {
   OP_HOOKS.set(phaseKey, []);
-  PHASE_GROUPS[phaseKey].forEach(opKey => {
+  PHASES[phaseKey].forEach(opKey => {
     OP_HOOKS.set(opKey, []);
   });
 });
@@ -92,85 +87,63 @@ const URCHAN = new URChan('UREXEC');
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let EXEC_OP; // current execution phase (the name of the phase)
+let EXEC_OP; // current execution operation (the name of the op)
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UTILITY: compare the destination scope with the acceptable scope.
-    if the scope starts with view, check it. otherwise just run it.
+/** UTILITY: call the hook object's function. This used to do additional
+ *  checks to see if the function should be called based on the route.
 /*/
-function m_ExecuteScopedOp(phase, o) {
-  return o.f();
+function m_InvokeHook(op, hook) {
+  if (!hook.scope) return hook.f();
+  throw Error('scope checking is not implemented in this version of URSYS');
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ UTILITY: maintain current phase status (not used for anything currently)
-/*/
-function m_UpdateCurrentOp(phase) {
-  EXEC_OP = phase;
-  if (DBG) console.log(`PHASE UPDATED ${EXEC_OP}`);
-}
-
-/// CLASS DECLARATION /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// PUBLIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: register an Operations Handler. <op> is a string constant
- *  define in PHASE_GROUPS and converted into the MAP. <f> is a function that
+ *  define in PHASES and converted into the MAP. <f> is a function that
  *  will be invoked during the operation, and it can return a promise or value.
  */
-function SubscribeHook(op, f, scope = '/') {
-  try {
-    // make sure scope is included
-    if (typeof scope !== 'string') throw Error('<arg1> scope should be included');
-    // does this phase exist?
-    if (typeof op !== 'string')
-      throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
-    if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
-    // did we also get a promise?
-    if (!(f instanceof Function))
-      throw Error('<arg3> must be a function optionally returning Promise');
-    // get the list of promises associated with this phase
-    // and add the new promise
-    OP_HOOKS.get(op).push({ f, scope });
-    if (DBG) console.log(`[${op}] added handler`);
-  } catch (e) {
-    console.error(e);
-    debugger;
-  }
+function SystemHook(op, f, scope = '') {
+  // vestigial scope parameter check if we need it someday
+  if (typeof scope !== 'string') throw Error('<arg1> scope should be included');
+  // does this operation name exist?
+  if (typeof op !== 'string')
+    throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
+  if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
+  // did we also get a promise?
+  if (!(f instanceof Function))
+    throw Error('<arg3> must be a function optionally returning Promise');
+  // get the list of promises associated with this op
+  // and add the new promise
+  const hook = { f, scope };
+  OP_HOOKS.get(op).push(hook);
+  if (DBG) console.log(`[${op}] added ophook`);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a op, completing when
  *  all the callback functions complete. If the callback function returns
  *  a Promise, this is added to a list of Promises to wait for before the
  *  function returns control to the calling code.
  */
-async function Execute(op) {
+function Execute(op) {
   // note: contents of PHASE_HOOKs are promise-generating functions
   if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized EXEC op`);
   if (op.includes('PHASE_'))
-    throw Error(`${op} is a Phase Group; use ExecuteGroup() instead`);
+    throw Error(`${op} is a Phase Group; use ExecutePhase() instead`);
   let hooks = OP_HOOKS.get(op);
   if (hooks.length === 0) {
-    if (DBG) console.log(`[${op}] no subscribers`);
+    if (DBG.subs) console.log(`[${op}] no subscribers`);
     return;
   }
 
-  // phase housekeeping
-  m_UpdateCurrentOp(`${op}_PENDING`);
-
   // now execute handlers and promises
   let icount = 0;
-  if (DBG) console.group(`${op}`);
   // get an array of promises
-  // o contains 'f', 'scope' pushed in SubscribeHook() above
-  let promises = hooks.map(o => {
-    let retval = m_ExecuteScopedOp(op, o);
+  // o contains 'f', 'scope' pushed in SystemHook() above
+  let promises = hooks.map(hook => {
+    let retval = m_InvokeHook(op, hook);
     if (retval instanceof Promise) {
       icount++;
       return retval;
@@ -181,175 +154,81 @@ async function Execute(op) {
   promises = promises.filter(e => {
     return e !== undefined;
   });
-  if (DBG && hooks.length)
+  if (DBG.subs && hooks.length)
     console.log(`[${op}] HANDLERS PROCESSED : ${hooks.length}`);
-  if (DBG && icount) console.log(`[${op}] PROMISES QUEUED    : ${icount}`);
+  if (DBG.subs && icount) console.log(`[${op}] PROMISES QUEUED    : ${icount}`);
 
   // wait for all promises to execute
-  await Promise.all(promises)
+  return Promise.all(promises)
     .then(values => {
-      if (DBG && values.length)
+      if (DBG.subs && values.length)
         console.log(`[${op}] PROMISES  RETVALS  : ${values.length}`, values);
-      if (DBG) console.groupEnd();
       return values;
     })
     .catch(err => {
-      if (DBG) console.log(`[${op}]: ${err}`);
+      if (DBG.subs) console.log(`[${op}]: ${err}`);
       throw Error(`[${op}]: ${err}`);
     });
-
-  // phase housekeeping
-  m_UpdateCurrentOp(op);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Execute all Promises associated with a Phase Group
+/** API: Execute all Promises associated with a Phase Group in serial
+ *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
  */
-function ExecuteGroup(group) {
-  const ops = PHASE_GROUPS[group];
-  if (ops === undefined) throw Error(`Phase Group "${group}" doesn't exist`);
-  ops.forEach(async op => {
-    await Execute(op);
-  });
+function ExecutePhase(phaseName) {
+  if (DBG) console.log(`ExecutePhase(${phaseName})`);
+  const ops = PHASES[phaseName];
+  if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
+  return ops.reduce(async (previousPromise, nextOp) => {
+    await previousPromise;
+    return Execute(nextOp);
+  }, Promise.resolve());
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: application startup
+/** API: Execute all Promises associated with a Phase Group in parallel
  */
-const EnterApp = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('EXEC_TESTCONF'); // TESTCONFIG hook
-      await Execute('EXEC_INITIALIZE'); // INITIALIZE hook
-      await Execute('EXEC_LOAD'); // LOAD_ASSETS hook
-      await Execute('EXEC_CONFIGURE'); // CONFIGURE support modules
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: call this when the view system's DOM has stabilized and is ready
-    for manipulation by other code
-*/
-const SetupDOM = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('DOM_READY'); // GUI layout has finished composing
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: network startup
- */
-const JoinNet = () => {
-  return new Promise((resolve, reject) => {
-    URNET.Connect(URCHAN, { success: resolve, failure: reject });
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: configure system before run
- */
-const SetupRun = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('EXEC_RESET'); // RESET runtime datastructures
-      await Execute('EXEC_START'); // START running
-      await Execute('UR_REGISTER'); // register messages
-      URCHAN.RegisterSubscribers(); // send messages (this awaits internally)
-      await Execute('UR_READY'); // app is connected
-      await Execute('EXEC_RUN'); // tell network APP_READY
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: handle periodic updates for a simulation-driven timestep
- */
-const Running = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('EXEC_RUN');
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: do the Shutdown EXEC
-    NOTE ASYNC ARROW FUNCTION (necessary?)
-*/
-const Pause = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('EXEC_WILLPASUSE');
-      await Execute('EXEC_PAUSED');
-      await Execute('EXEC_SLEEPING');
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: do the Shutdown EXEC
-    NOTE ASYNC ARROW FUNCTION (necessary?)
-*/
-const CleanupRun = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('EXEC_STOP');
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: application offline
-    NOTE ASYNC ARROW FUNCTION (necessary?)
-*/
-const ServerDisconnect = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('UR_DISCONNECT');
-      resolve();
-    })();
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: application shutdown
-    NOTE ASYNC ARROW FUNCTION (necessary?)
-*/
-const ExitApp = () => {
-  return new Promise((resolve, reject) => {
-    (async () => {
-      await Execute('EXEC_UNLOAD');
-      await Execute('EXEC_SHUTDOWN');
-      resolve();
-    })();
-  });
-};
+function ExecutePhaseParallel(phaseName) {
+  const ops = PHASES[phaseName];
+  if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
+  return Promise.all(ops.map(op => Execute(op)));
+  // fix this and return promise
+}
 
-const ModulePreflight = (comp, mod) => {
-  if (!comp) return 'arg1 must be React component root view';
-  if (!mod) return "arg2 must be 'module' keyword";
-  if (!mod.id) return "arg2 is not a 'module' keyword";
-  if (!comp.MOD_ID)
-    return 'Component.MOD_ID static property must be set = __dirname (e.g. ViewMain.MOD_ID=__dirname)';
-};
-/// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: start the lifecycle state engine
+ */
+async function SystemBoot() {
+  console.log('SystemBoot!');
+  await ExecutePhase('PHASE_BOOT');
+  await ExecutePhase('PHASE_INIT');
+  await ExecutePhase('PHASE_CONNECT');
+  await ExecutePhase('PHASE_LOAD');
+  await ExecutePhase('PHASE_CONFIG');
+  await ExecutePhase('PHASE_READY');
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: end the lifecycle state engine
+ */
+function SystemUnload() {
+  console.log('SystemUnload!');
+  ExecutePhase('PHASE_UNLOAD');
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: restart the lifecycle from boot
+ */
+function SystemReboot() {
+  console.log('SystemReboot!');
+  ExecutePhase('PHASE_REBOOT');
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  SubscribeHook,
-  Execute,
-  ExecuteGroup,
-  ModulePreflight,
-  EnterApp,
-  SetupDOM,
-  JoinNet,
-  SetupRun,
-  Running,
-  Pause,
-  CleanupRun,
-  ServerDisconnect,
-  ExitApp
+  SystemBoot,
+  SystemHook,
+  SystemUnload,
+  SystemReboot
 };

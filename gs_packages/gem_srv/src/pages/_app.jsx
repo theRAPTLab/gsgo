@@ -49,20 +49,11 @@ export default function MyApp(props) {
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
-    // placeholder EXEC
-    (async () => {
-      UR.ExecuteGroup('PHASE_BOOT');
-      UR.ExecuteGroup('PHASE_INIT');
-      UR.ExecuteGroup('PHASE_CONNECT');
-      UR.ExecuteGroup('PHASE_LOAD');
-      UR.ExecuteGroup('PHASE_CONFIG');
-      UR.ExecuteGroup('PHASE_READY');
-      UR.ExecuteGroup('PHASE_RUN');
-      await UR.Connect(urProps);
-      // APPSTATE.StartTimer();
-    })();
+    // URSYS start
+    UR.SystemBoot();
+    // when _app unmounts, shutdown
     return function cleanup() {
-      UR.ExecuteGroup('PHASE_UNLOAD');
+      UR.SystemUnload();
     };
   }, []);
 
