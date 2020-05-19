@@ -48,7 +48,7 @@ const baseConfig = {
     ]
   },
   mode: 'development',
-  devtool: 'sourceMap',
+  devtool: 'eval-source-map',
   node: {
     // enable webpack's __filename and __dirname substitution in browsers
     // for use in URSYS lifecycle event filtering as set in SystemInit.jsx

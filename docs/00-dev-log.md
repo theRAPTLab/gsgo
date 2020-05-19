@@ -133,12 +133,31 @@ I've expanded the list a bit again, because the rules are:
 * OPERATIONS within a PHASE will be completed before the next PHASE runs. However, the ORDER of operations is not guaranteed.
 * To particulate in the URSYS lifecycle, your user code HOOKS into an OPERATION by name. Your hook function may receive data. Your hook function can return a Promise to ensure that it completes its operation. 
 
-
+Let's clean things up a bit, removing the old SCOPE requirements.
 
 * [x] removed `REACT_PHASES`
 * [x] renamed PHASES to OPS for consistency in new schema
-* [ ] move UR.Connect to internal URSYS module?
-* [ ] remove `SetScopedPath()`
+* [x] move UR.Connect to internal URSYS module?
+* [x] remove `SetScopedPath()`
+* [x] add SystemBoot, SystemUnload
+* [x] rename SubscribeHook to SystemHook
+* [x] fix asynchronous phase_group exec
+
+At this point, we can kick off the entire system using `SystemBoot()` and hook into the lifecycle using `SystemHook()` Yay! 
+
+## MAY 18.2 Lifecycle Run Logic
+
+The system heartbeat  runs independently of React's lifecycle to do an orderly startup of our system modules. We want to implement a "Phase Counter" that walks through all the phases in-order sequentially.
+
+* [x] implement System* interface and asynchronous run management
+* [x] implement update
+* [x] implement animframe
+* [x] implement reset
+
+TODO
+
+* [ ] urProps isn't being passed from _app.jsx to URNET.Connect
+* [ ] pages/api/urnet.js is not dynamic
 
 
 

@@ -50,7 +50,8 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    UR.SystemBoot();
+    console.log('URProps', JSON.stringify(urProps));
+    UR.SystemBoot({ autoRun: true, update: true, animFrame: true });
     // when _app unmounts, shutdown
     return function cleanup() {
       UR.SystemUnload();

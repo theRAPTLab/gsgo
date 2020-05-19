@@ -60,7 +60,14 @@ const { Subscribe, Unsubscribe } = URCHAN_SUB;
 const { LocalSignal, LocalPublish, LocalCall } = URCHAN_PUB;
 /** forward UREXEC methods
  */
-const { SystemBoot, SystemUnload, SystemHook, SystemReboot } = URExec;
+const {
+  SystemBoot,
+  SystemHook,
+  SystemRun,
+  SystemRestage,
+  SystemReboot,
+  SystemUnload
+} = URExec;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,9 +89,11 @@ module.exports = {
   PubSub,
   // EXEC API
   SystemBoot,
-  SystemUnload,
   SystemHook,
+  SystemRun,
+  SystemRestage,
   SystemReboot,
+  SystemUnload,
   // CONVENIENCE
   ...COMMON_MODULES
 };

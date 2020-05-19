@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable consistent-return */
 /* eslint-disable no-debugger */
@@ -47,12 +48,12 @@ const PHASES = {
     'APP_READY' // all apps have loaded and configured and are ready to run
   ],
   PHASE_RUN: [
-    'APP_RESET', // app modules receive reset params prior to starting
+    'APP_STAGE', // app modules receive reset params prior to starting
     'APP_START', // app modules start execution, all modules are ready
     'APP_RUN', // app modules enter run mode
     'APP_UPDATE', // app modules execute a step
     'DOM_ANIMFRAME', // app modules animation frame
-    'APP_LOOP' // fired at end, back to APP_UPDATE
+    'APP_NEXT' // app_module jump back to start of RUN
   ],
   PHASE_PAUSED: [
     'APP_PAUSE', // app modules should enter "paused state"
@@ -88,6 +89,11 @@ const URCHAN = new URChan('UREXEC');
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let EXEC_OP; // current execution operation (the name of the op)
+let SIM_TIMER_ID; // timer id for sim stepper
+let SIM_INTERVAL_MS = (1 / 30) * 1000;
+let SIM_UPDATE_HOOKS = [];
+let SYS_ANIMFRAME_ID;
+let SYS_ANIMFRAME_HOOKS = [];
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -119,7 +125,7 @@ function SystemHook(op, f, scope = '') {
   // and add the new promise
   const hook = { f, scope };
   OP_HOOKS.get(op).push(hook);
-  if (DBG) console.log(`[${op}] added ophook`);
+  if (DBG) console.log(`SystemHook('${op}')`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a op, completing when
@@ -176,7 +182,7 @@ function Execute(op) {
  *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
  */
 function ExecutePhase(phaseName) {
-  if (DBG) console.log(`ExecutePhase(${phaseName})`);
+  if (DBG) console.log(`ExecutePhase('${phaseName}')`);
   const ops = PHASES[phaseName];
   if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
   return ops.reduce(async (previousPromise, nextOp) => {
@@ -198,30 +204,100 @@ function ExecutePhaseParallel(phaseName) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle state engine
  */
-async function SystemBoot() {
-  console.log('SystemBoot!');
+async function SystemBoot(options = {}) {
+  //
+  if (DBG) console.log('** SystemBoot **');
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');
   await ExecutePhase('PHASE_CONNECT');
   await ExecutePhase('PHASE_LOAD');
   await ExecutePhase('PHASE_CONFIG');
   await ExecutePhase('PHASE_READY');
+  //
+  if (options.autoRun) {
+    if (DBG) console.log('info - autoRun to next phase');
+    SystemRun(options);
+  }
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: start the lifecycle run engine
+ */
+async function SystemRun(options = {}) {
+  //
+  if (DBG) console.log('** SystemRun **');
+  //
+  SIM_TIMER_ID = 0;
+  SYS_ANIMFRAME_ID = 0;
+  //
+  await Execute('APP_STAGE');
+  await Execute('APP_START');
+  await Execute('APP_RUN');
+  //
+  if (DBG) console.log('** SystemUpdate **');
+  // set up SIM_TIMER
+  if (options.update) {
+    if (DBG) console.log('info - starting simulation updates');
+    SIM_UPDATE_HOOKS = OP_HOOKS.get('APP_UPDATE').map(hook => hook.f);
+    if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
+    const u_simupdate = () => {
+      const u_exec = f => f(SIM_INTERVAL_MS);
+      SIM_UPDATE_HOOKS.forEach(u_exec);
+    };
+    SIM_TIMER_ID = setInterval(u_simupdate, SIM_INTERVAL_MS);
+  }
+  // set up ANIMFRAME
+  if (options.animFrame) {
+    if (DBG) console.log('info - starting animframe updates');
+    SYS_ANIMFRAME_HOOKS = OP_HOOKS.get('DOM_ANIMFRAME').map(hook => hook.f);
+    const u_animframe = ts => {
+      const u_anim = f => f(ts);
+      SYS_ANIMFRAME_HOOKS.forEach(u_anim);
+      SYS_ANIMFRAME_ID = window.requestAnimationFrame(u_animframe);
+    };
+    window.requestAnimationFrame(u_animframe);
+  }
+  if (!(options.animFrame || options.update)) {
+    console.log('info - no periodic updates are enabled');
+  }
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: force loop back to run
+ */
+async function SystemRestage() {
+  if (DBG) console.log('** SystemRestage **');
+  // clear running timers
+  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
+  if (SYS_ANIMFRAME_ID) window.cancelAnimationFrame(SYS_ANIMFRAME_ID);
+  //
+  await Execute('APP_NEXT');
+  //
+  SystemRun();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine
  */
-function SystemUnload() {
-  console.log('SystemUnload!');
-  ExecutePhase('PHASE_UNLOAD');
+async function SystemUnload() {
+  console.log('** SystemUnload **');
+  // clear running timers
+  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
+  if (SYS_ANIMFRAME_ID) window.cancelAnimationFrame(SYS_ANIMFRAME_ID);
+  //
+  await ExecutePhase('PHASE_UNLOAD');
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: restart the lifecycle from boot
  */
-function SystemReboot() {
-  console.log('SystemReboot!');
-  ExecutePhase('PHASE_REBOOT');
+async function SystemReboot() {
+  console.log('** SystemReboot **');
+  // clear running timers
+  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
+  if (SYS_ANIMFRAME_ID) window.cancelAnimationFrame(SYS_ANIMFRAME_ID);
+  //
+  await ExecutePhase('PHASE_REBOOT');
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -229,6 +305,8 @@ function SystemReboot() {
 module.exports = {
   SystemBoot,
   SystemHook,
+  SystemRun,
+  SystemRestage,
   SystemUnload,
   SystemReboot
 };

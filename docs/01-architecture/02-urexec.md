@@ -11,11 +11,32 @@ UR-EXEC is the system that guarantees that one group of **operations** finish be
 
 The UR EXEC lifecycle predates our use of React, and provides the framework for our simulation engines. It is very loosely inspired by XNA game components and Unix runlevels.
 
+
+
 ## Public API
 
-#### `SystemBoot()`
+#### `SystemBoot({autoRun})`
 
-Start the URSYS execution engine, which will run automatically firing phase groups one-after-the-other in series. 
+Start the URSYS execution engine, which will run automatically firing phase groups one-after-the-other in series. The boolean options are:
+
+* `autoRun` - after SystemBoot, go to SystemRun, passing options forward.
+
+  
+
+#### `SystemRun({update, animFrame})`
+
+Start the URSYS run loop, which includes staging and configuration before periodic updates fire.  Options when set true:
+
+*  `update` - fire APP_UPDATE hooks
+*  `animFrame`. - fire DOM_ANIMFRAME hooks
+
+
+
+####  `SystemNext()`
+
+When loading a "new level" or app mode, this will trigger APP_NEXT before jumping back to `SystemRun()` to restage based on whatever parameters have been set.
+
+
 
 #### `SystemHook( op, callback, scope )`
 
@@ -23,17 +44,21 @@ Used by **modules** to subscribe to the lifecycle system. Use one of the **named
 
 The optional `scope` parameter specified which application routes to ignore; this is used in SPAs that implement separate spaces inside of a single instance (e.g. iSTEP presentation, teacher, and student views are all bundled in the same app bundle). 
 
+
+
 #### `useSystemHook( op, callback )`
 
 For **functional React components** that want to subscribe to our hooks, use the custom effect. It will automatically unsubscribe when the component goes out of scope/unmounts, so the `scope` parameter isn't necessary as it is in `SystemHook()`. 
 
 For **React class components**, you can use the module version of  `SystemHook()`. 
 
+
+
 ## Private API
 
 #### `Execute( op )`
 
-This is the main execution loop for the lifecycle manager. It's used 
+This is the main execution loop for the lifecycle manager. It's used to run a single 
 
 #### `ExecutePhase( phaseGroup )`
 
@@ -77,12 +102,12 @@ PHASE_READY: [
   'APP_READY' // all apps have loaded and configured and are ready to run
 ],
 PHASE_RUN: [
-  'APP_RESET', // app modules receive reset params prior to starting
+  'APP_STAGE', // app modules receive reset params prior to starting
   'APP_START', // app modules start execution, all modules are ready
   'APP_RUN', // app modules enter run mode
   'APP_UPDATE', // app modules execute a step
   'DOM_ANIMFRAME', // app modules animation frame
-  'APP_LOOP' // fired at end, back to APP_UPDATE
+  'APP_RESTAGE' // fired at end, back to APP_STAGE
 ],
 PHASE_PAUSED: [
   'APP_PAUSE', // app modules should enter "paused state"
