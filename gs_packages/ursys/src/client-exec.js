@@ -92,7 +92,7 @@ let EXEC_OP; // current execution operation (the name of the op)
 let SIM_TIMER_ID; // timer id for sim stepper
 let SIM_INTERVAL_MS = (1 / 30) * 1000;
 let SIM_UPDATE_HOOKS = [];
-let SYS_ANIMFRAME_ID;
+let SYS_ANIMFRAME_RUN = true;
 let SYS_ANIMFRAME_HOOKS = [];
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
@@ -103,6 +103,14 @@ let SYS_ANIMFRAME_HOOKS = [];
 function m_InvokeHook(op, hook) {
   if (!hook.scope) return hook.f();
   throw Error('scope checking is not implemented in this version of URSYS');
+}
+
+/** UTILITY: clear timers
+ */
+function m_ClearTimers() {
+  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
+  SIM_TIMER_ID = 0;
+  SYS_ANIMFRAME_RUN = 0;
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -207,6 +215,7 @@ function ExecutePhaseParallel(phaseName) {
 async function SystemBoot(options = {}) {
   //
   if (DBG) console.log('** SystemBoot **');
+  //
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');
   await ExecutePhase('PHASE_CONNECT');
@@ -221,14 +230,32 @@ async function SystemBoot(options = {}) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: start the lifecycle run engine
+/** API: start the lifecycle run engine. This code is a bit convoluted because
+ *  I'm trying to avoid allocating temporary variables that cause the heap
+ *  to grow for each timer.
  */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function SystemRun(options = {}) {
+  // static declaration
+  let _COUNT;
+  // update timer (doesn't grow heap by itself)
+  function u_simexec() {
+    for (_COUNT = 0; _COUNT < SIM_UPDATE_HOOKS.length; _COUNT++)
+      SIM_UPDATE_HOOKS[_COUNT](SIM_INTERVAL_MS);
+  }
+  // animframe timer (seems to slowly grow heap
+  function u_animexec(ts) {
+    for (_COUNT = 0; _COUNT < SYS_ANIMFRAME_HOOKS.length; _COUNT++)
+      SYS_ANIMFRAME_HOOKS[_COUNT](ts);
+  }
+  function u_animframe(ts) {
+    if (SYS_ANIMFRAME_RUN) window.requestAnimationFrame(u_animframe);
+    u_animexec(ts);
+  }
   //
   if (DBG) console.log('** SystemRun **');
   //
-  SIM_TIMER_ID = 0;
-  SYS_ANIMFRAME_ID = 0;
+  m_ClearTimers();
   //
   await Execute('APP_STAGE');
   await Execute('APP_START');
@@ -240,21 +267,14 @@ async function SystemRun(options = {}) {
     if (DBG) console.log('info - starting simulation updates');
     SIM_UPDATE_HOOKS = OP_HOOKS.get('APP_UPDATE').map(hook => hook.f);
     if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
-    const u_simupdate = () => {
-      const u_exec = f => f(SIM_INTERVAL_MS);
-      SIM_UPDATE_HOOKS.forEach(u_exec);
-    };
-    SIM_TIMER_ID = setInterval(u_simupdate, SIM_INTERVAL_MS);
+    SIM_TIMER_ID = setInterval(u_simexec, SIM_INTERVAL_MS);
   }
   // set up ANIMFRAME
-  if (options.animFrame) {
+  SYS_ANIMFRAME_RUN = options.animFrame || false;
+  if (SYS_ANIMFRAME_RUN) {
     if (DBG) console.log('info - starting animframe updates');
     SYS_ANIMFRAME_HOOKS = OP_HOOKS.get('DOM_ANIMFRAME').map(hook => hook.f);
-    const u_animframe = ts => {
-      const u_anim = f => f(ts);
-      SYS_ANIMFRAME_HOOKS.forEach(u_anim);
-      SYS_ANIMFRAME_ID = window.requestAnimationFrame(u_animframe);
-    };
+    // start animframe process
     window.requestAnimationFrame(u_animframe);
   }
   if (!(options.animFrame || options.update)) {
@@ -268,8 +288,7 @@ async function SystemRun(options = {}) {
 async function SystemRestage() {
   if (DBG) console.log('** SystemRestage **');
   // clear running timers
-  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
-  if (SYS_ANIMFRAME_ID) window.cancelAnimationFrame(SYS_ANIMFRAME_ID);
+  m_ClearTimers();
   //
   await Execute('APP_NEXT');
   //
@@ -282,8 +301,7 @@ async function SystemRestage() {
 async function SystemUnload() {
   console.log('** SystemUnload **');
   // clear running timers
-  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
-  if (SYS_ANIMFRAME_ID) window.cancelAnimationFrame(SYS_ANIMFRAME_ID);
+  m_ClearTimers();
   //
   await ExecutePhase('PHASE_UNLOAD');
 }
@@ -294,8 +312,7 @@ async function SystemUnload() {
 async function SystemReboot() {
   console.log('** SystemReboot **');
   // clear running timers
-  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
-  if (SYS_ANIMFRAME_ID) window.cancelAnimationFrame(SYS_ANIMFRAME_ID);
+  m_ClearTimers();
   //
   await ExecutePhase('PHASE_REBOOT');
 }
