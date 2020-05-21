@@ -36,11 +36,19 @@ const baseConfig = {
           path.resolve(__dirname, '../../node_modules') // lerna hoisted
         ],
         use: ['babel-loader']
+      },
+      {
+        test: /\.(ts)?$/,
+        exclude: [
+          path.resolve(__dirname, 'node_modules'), // ursys package
+          path.resolve(__dirname, '../../node_modules') // lerna hoisted
+        ],
+        use: 'ts-loader'
       }
     ]
   },
   resolve: {
-    extensions: ['.js'],
+    extensions: ['.js', '.ts'],
     modules: [
       path.resolve(__dirname, 'node_modules'), // ursys package modules
       path.resolve(__dirname, '../../node_modules'), // lerna hoisted modules
