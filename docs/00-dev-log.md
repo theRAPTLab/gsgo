@@ -164,13 +164,11 @@ Why do we even want to do this? urProps contain the HOST, PORT, and potentially 
 
 ## May 21.1 Continue fixing remaining URNET issues
 
-* [ ] **urProps (now netProps) isn't being passed from _app.jsx to URNET.Connect**
+* [x] **urProps (now netProps) isn't being passed from _app.jsx to URNET.Connect**
   UR.SystemBoot() now receives them along with autoRun, update, animFram and checks
   The netProps options need to be stored in a central UR database for the current client connection...done
   Now URNET.Connect needs to get the broker info from the new client-session module...
   server-urnet StartNetwork returns options { port, uaddr }. We also need host
-
-  
-
-* [ ] pages/api/urnet.js is not dynamic
+* [x] **pages/api/urnet.js is not dynamic**
+  Remove the /pages/api/urnet...now replaced in the _start custom server with a call to URSYS so it's all contained there.
 
