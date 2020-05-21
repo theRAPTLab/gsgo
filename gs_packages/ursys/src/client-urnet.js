@@ -7,15 +7,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
-const PROMPTS = require('./util/prompts');
 const SESSION = require('./client-session');
+const PR = require('./util/debug-styles').makePrompt('UR.NET');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { connect: true, handle: true, reg: true };
 ///
-const PR = PROMPTS.Pad('NETWORK');
-const WARN = PROMPTS.Pad('!!!');
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
 const ERR_BAD_URCHAN = "An instance of 'URChan' is required";
 
@@ -66,7 +64,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_RemoveListener('message', m_HandleRegistrationMessage);
   m_status = M3_REGISTERED;
   // (2) initialize global settings for netmessage
-  if (DBG.connect) console.log(PR, `'${HELLO}'`);
+  if (DBG.connect) console.log(...PR(`'${HELLO}'`));
   m_socket.UADDR = NetPacket.DefaultServerUADDR();
   NetPacket.GlobalSetup({
     uaddr: UADDR,
@@ -98,7 +96,7 @@ function m_HandleMessage(msgEvent) {
   // our OWN previously-sent messages that we expected a return value.
   // Call CompleteTransaction() to invoke the function handler
   if (pkt.IsResponse()) {
-    if (DBG.handle) console.log(PR, 'completing transaction', msg);
+    if (DBG.handle) console.log(...PR(`completing transaction ${msg}`));
     pkt.CompleteTransaction();
     return;
   }
@@ -112,7 +110,7 @@ function m_HandleMessage(msgEvent) {
   switch (type) {
     case 'state':
       // unimplemented netstate
-      if (dbgout) console.log(PR, 'received state change', msg);
+      if (dbgout) console.log(...PR(`received state change ${msg}`));
       break;
     case 'msig':
       // network signal to raise
@@ -142,17 +140,20 @@ function m_HandleMessage(msgEvent) {
   // DEBUG OUT UTILITY
   function cout_ReceivedStatus(pkt) {
     console.warn(
-      PR,
-      `ME_${NetPacket.SocketUADDR()} received '${pkt.Type()}' '${pkt.Message()}' from ${pkt.SourceAddress()}`,
+      ...PR(
+        `ME_${NetPacket.SocketUADDR()} received '${pkt.Type()}' '${pkt.Message()}' from ${pkt.SourceAddress()}`
+      ),
       pkt.Data()
     );
   }
   // DEBUG OUT UTILITY
   function cout_ForwardedStatus(pkt, result) {
     console.log(
-      `ME_${NetPacket.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(
-        result
-      )}`
+      ...PR(
+        `ME_${NetPacket.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(
+          result
+        )}`
+      )
     );
   }
 }
@@ -172,7 +173,7 @@ NETWORK.Connect = (datalink, opt) => {
     if (m_status > 0) {
       let err =
         'called twice...other views may be calling URSYS outside of lifecycle';
-      console.error(WARN, err);
+      console.error(...PR(err));
       return;
     }
     m_status = M1_CONNECTING;
@@ -189,11 +190,11 @@ NETWORK.Connect = (datalink, opt) => {
     const { host: USRV_Host, port: USRV_MsgPort } = SESSION.GetNetBroker();
     let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
     m_socket = new WebSocket(wsURI);
-    if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);
+    if (DBG.connect) console.log(...PR(`OPEN SOCKET TO ${wsURI}`));
 
     // create listeners
     m_AddListener('open', event => {
-      if (DBG.connect) console.log(PR, '...OPEN', event.target.url);
+      if (DBG.connect) console.log(...PR(`...OPEN ${event.target.url}`));
       m_status = M2_CONNECTED;
       // message handling continues in 'message' handler
       // the first message is assumed to be registration data
@@ -201,7 +202,7 @@ NETWORK.Connect = (datalink, opt) => {
       resolve();
     });
     m_AddListener('close', event => {
-      if (DBG.connect) console.log(PR, '..CLOSE', event.target.url);
+      if (DBG.connect) console.log(...PR(`..CLOSE ${event.target.url}`));
       NetPacket.GlobalOfflineMode();
       m_status = M_STANDALONE;
     });
