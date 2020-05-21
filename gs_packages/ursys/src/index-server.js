@@ -48,8 +48,8 @@ function StartServer(options) {
  *  instead of the whole object.
  */
 function GetNetBroker() {
-  const { ip, port, urnet_version, uaddr } = m_network_options;
-  return { ip, port, urnet_version, uaddr };
+  const { host, port, urnet_version, uaddr } = m_network_options;
+  return { host, port, urnet_version, uaddr };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Called from a custom server using http.createServer(requestListener).
@@ -66,17 +66,14 @@ function HttpRequestListener(req, res) {
   if (pathname === '/urnet/getinfo') {
     res.setHeader('Content-Type', 'application/json');
     res.writeHead(200);
-    let { ip: host_ip, port, urnet_version, uaddr } = GetNetBroker();
+    let { host, port, urnet_version, uaddr } = GetNetBroker();
     let client_ip = requestIp.getClientIp(req);
     // prevent socket connection refusal due to mismatch of localhost
     // with use of numeric IP when connecting to server
-    if (client_ip.includes('127.0.0.1')) {
-      client_ip = 'localhost';
-      host_ip = 'localhost';
-    }
+    if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
     const netProps = {
       broker: {
-        ip: host_ip,
+        host,
         port,
         urnet_version,
         uaddr

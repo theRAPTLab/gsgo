@@ -28,7 +28,7 @@ const RUNTIME_PATH = path.join(__dirname, '/runtime');
   console.log(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
 })();
 
-/// START WEN SERVER //////////////////////////////////////////////////////////
+/// START CUSTOM SERVER ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ NextJS is loaded as middleware with all its usual features
     except for automatic static optimization.

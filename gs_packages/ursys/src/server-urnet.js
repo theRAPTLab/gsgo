@@ -63,11 +63,10 @@ UNET.StartNetwork = (options = {}) => {
   }
   LOGGER.StartLogging(options);
   // WSS options
-  options.host = 'localhost';
+  options.host = IP.address();
   options.port = options.port || DEFAULT_NET_PORT;
   // URNET options
   options.uaddr = options.uaddr || SERVER_UADDR;
-  options.ip = `${IP.address()}`;
   options.urnet_version = PROTOCOL_VERSION;
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
   NetPacket.GlobalSetup({ uaddr: options.uaddr });

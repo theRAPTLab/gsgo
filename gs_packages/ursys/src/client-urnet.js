@@ -186,7 +186,7 @@ NETWORK.Connect = (datalink, opt) => {
 
     // create websocket
     // uses values that are set by UR-EXEC SystemBoot()
-    const { ip: USRV_Host, port: USRV_MsgPort } = SESSION.GetNetBroker();
+    const { host: USRV_Host, port: USRV_MsgPort } = SESSION.GetNetBroker();
     let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
     m_socket = new WebSocket(wsURI);
     if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);

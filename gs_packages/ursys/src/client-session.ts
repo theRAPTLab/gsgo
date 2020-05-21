@@ -19,7 +19,7 @@ interface NetProps {
   broker: MessageBroker;
 }
 interface MessageBroker {
-  ip: string;
+  host: string;
   port: number;
   uaddr: string;
   urnet_version: number;
