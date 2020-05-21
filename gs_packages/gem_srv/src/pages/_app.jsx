@@ -28,10 +28,6 @@ import { useURSubscribe } from '../hooks/use-ursys';
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
 
-/// DEBUGGING /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// from https://material-ui.com/styles/advanced/#jss-plugins
@@ -54,6 +50,7 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
+    console.log('got netprops', netProps);
     UR.SystemBoot({
       autoRun: true,
       doUpdates: true,
@@ -104,7 +101,7 @@ export default function MyApp(props) {
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const netProps = await fetch('http://localhost:3000/api/urnet').then(res =>
+  const netProps = await fetch('http://localhost:3000/urnet/getinfo').then(res =>
     res.json()
   );
   return { ...appProps, netProps };

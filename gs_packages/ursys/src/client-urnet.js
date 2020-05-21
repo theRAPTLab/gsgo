@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable no-param-reassign */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
@@ -9,6 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const PROMPTS = require('./util-prompts');
+const SESSION = require('./client-session');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,7 +16,6 @@ const DBG = { connect: true, handle: true, reg: true };
 ///
 const PR = PROMPTS.Pad('NETWORK');
 const WARN = PROMPTS.Pad('!!!');
-const ERR_NM_REQ = 'arg1 must be NetPacket instance';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
 const ERR_BAD_URCHAN = "An instance of 'URChan' is required";
 
@@ -28,7 +27,6 @@ const M2_CONNECTED = 2;
 const M3_REGISTERED = 3;
 const M4_READY = 4;
 const M_STANDALONE = 5;
-const M_NOCONNECT = 6;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,6 +164,8 @@ const NETWORK = {};
 /** Establish connection to URSYS server. This is called by client.js during
  *  NetworkInitialize(), which itself fires after the application has rendered
  *  completely.
+ *  @param datalink - an urchannel endpoint
+ *  @param opt - { success, failure } functions
  */
 NETWORK.Connect = (datalink, opt) => {
   return new Promise(resolve => {
@@ -185,10 +185,8 @@ NETWORK.Connect = (datalink, opt) => {
     m_options = opt || {};
 
     // create websocket
-    // uses values that were embedded in index.ejs on load
-    /** HACK GEMSRV HARDCODED **/
-    const USRV_Host = 'localhost';
-    const USRV_MsgPort = '2929';
+    // uses values that are set by UR-EXEC SystemBoot()
+    const { ip: USRV_Host, port: USRV_MsgPort } = SESSION.GetNetBroker();
     let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
     m_socket = new WebSocket(wsURI);
     if (DBG.connect) console.log(PR, 'OPEN SOCKET TO', wsURI);

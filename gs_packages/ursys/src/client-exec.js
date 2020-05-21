@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable consistent-return */
 /* eslint-disable no-debugger */
@@ -10,6 +11,9 @@
 /**
  * @module URExec
  */
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const URSESSION = require('./client-session');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,9 +108,10 @@ function m_ClearTimers() {
 function m_CheckOptions(options) {
   const { autoRun, doUpdates, doAnimFrames, netProps, ...other } = options;
   const unknown = Object.keys(other);
-  if (unknown.length)
+  if (unknown.length) {
     console.log(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`);
-  else if (DBG) console.log('info - L1_OPTION pass');
+    throw Error('URSYS: bad option object');
+  } else if (DBG) console.log('info - L1_OPTION pass');
   // return true if there were no unknown option properties
   return unknown.length === 0;
 }
@@ -131,7 +136,7 @@ function SystemHook(op, f, scope = '') {
   // and add the new promise
   const hook = { f, scope };
   OP_HOOKS.get(op).push(hook);
-  if (DBG) console.log(`SystemHook('${op}')`);
+  if (DBG) console.log(`registered - SystemHook '${op}'`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a op, completing when
@@ -213,6 +218,7 @@ async function SystemBoot(options = {}) {
   //
   if (DBG) console.groupCollapsed('** System: Boot');
   m_CheckOptions(options);
+  URSESSION.InitializeNetProps(options.netProps);
   //
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');

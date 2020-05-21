@@ -9,6 +9,7 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const IP = require('ip');
 const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
@@ -30,6 +31,7 @@ const ERR_INVALID_DEST = "couldn't find socket with provided address";
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_NET_PORT = 2929;
 const SERVER_UADDR = NetPacket.DefaultServerUADDR(); // is 'SVR_01'
+const PROTOCOL_VERSION = 3;
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,9 +62,13 @@ UNET.StartNetwork = (options = {}) => {
     return Error('runtimePath required to start URSYS SERVER');
   }
   LOGGER.StartLogging(options);
+  // WSS options
+  options.host = 'localhost';
   options.port = options.port || DEFAULT_NET_PORT;
+  // URNET options
   options.uaddr = options.uaddr || SERVER_UADDR;
-
+  options.ip = `${IP.address()}`;
+  options.urnet_version = PROTOCOL_VERSION;
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
   NetPacket.GlobalSetup({ uaddr: options.uaddr });
   mu_options = options;

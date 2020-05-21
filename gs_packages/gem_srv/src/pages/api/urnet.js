@@ -6,16 +6,29 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+const URSERVER = require('@gemstep/ursys/server');
+
 export default function handler(req, res) {
   // req.body
   // req.query
   // req.cookies
+  let client_ip;
+  const { host_ip, port, urnet_version, uaddr } = URSERVER.GetNetBroker();
+  if (req.method === 'get') {
+    client_ip = req.headers['x-real-ip'] || req.connection.remoteAddress;
+    if (client_ip.substr(0, 7) === '::ffff:') {
+      client_ip = client_ip.substr(7);
+    }
+  }
   res.json({
     broker: {
-      host: 'localhost',
-      port: '2929',
-      urnet_version: '3',
-      urnet_addr: 'SVR_01'
+      host_ip,
+      port,
+      urnet_version,
+      uaddr
+    },
+    client: {
+      client_ip
     }
   });
 }

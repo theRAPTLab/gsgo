@@ -19,24 +19,26 @@ interface NetProps {
   broker: MessageBroker;
 }
 interface MessageBroker {
-  host: string;
+  ip: string;
   port: number;
+  uaddr: string;
   urnet_version: number;
-  urnet_addr: string;
 }
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let NET_PROPS: NetProps;
+let NET_BROKER: MessageBroker;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InitializeNetProps(props: NetProps) {
   if (DBG) console.log('info - setting netprops', props);
-  NET_PROPS = props;
+  const { broker } = props;
+  NET_BROKER = broker;
+  console.log('session broker', broker);
 }
 function GetNetBroker() {
-  return NET_PROPS.broker;
+  return NET_BROKER;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
