@@ -17,16 +17,22 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PAD = 'padding:0 4px';
 const TAB = '4';
+///
 const redbg = 'color:pink;background-color:#909';
+///
 const blue = 'color:blue';
 const red = 'color:red';
+///
 const purplebg = 'color:#000;background-color:#fcf';
 const bluebg = 'color:#000;background-color:#cdf';
 const greenbg = 'color:#000;background-color:#cfc';
-const yellowbg = 'color:black;background-color:#ffdd99';
+const yellowbg = 'color:#000;background-color:#ffdd99';
+const graybg = 'color:#000;background-color:#c0c0c0';
+///
 const dkgreenbg = 'color:white;background-color:green';
 const dkbluebg = 'color:white;background-color:blue';
 const dkredbg = 'color:white;background-color:red';
+///
 const reset = 'color:auto;background-color:auto';
 
 /// STYLES
@@ -42,14 +48,17 @@ const STYLES = {
   cssreset: `${reset}`,
   csstab: `padding-left:${TAB}px`,
   csstab2: `padding-left:${TAB * 2}px`,
-  cssmark: `dkredbg;${PAD}`
+  cssmark: `dkredbg;${PAD}`,
+  // named ursys modules
+  CRST: `${reset}`,
+  CEXE: `graybg;${PAD}`
 };
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a quoted string
  */
-STYLES.Q = (str, delim = '[') => {
+function Q(str, delim = '[') {
   let end;
   switch (delim) {
     case '[':
@@ -67,8 +76,17 @@ STYLES.Q = (str, delim = '[') => {
       break;
   }
   return `${delim}${str}${end}`;
-};
+}
+/** Return styled terminal or console css string
+ */
+function PR(str) {
+  return [`%c${str}`, STYLES.CEXE];
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default STYLES;
+export default {
+  ...STYLES,
+  Q,
+  PR
+};

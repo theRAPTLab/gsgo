@@ -9,8 +9,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Messager = require('./class-messager');
 const NetPacket = require('./class-netpacket');
-const DateString = require('./util-datestring');
-const Session = require('./util-session');
+const DateString = require('./util/datestring');
+const Session = require('./util/session');
 
 /// EXPORT ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

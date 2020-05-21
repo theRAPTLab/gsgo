@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
-const PROMPTS = require('./util-prompts');
+const PROMPTS = require('./util/prompts');
 const SESSION = require('./client-session');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////

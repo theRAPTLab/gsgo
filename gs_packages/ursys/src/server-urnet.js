@@ -13,8 +13,8 @@ const IP = require('ip');
 const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
-const PROMPTS = require('./util-prompts');
-const SESSION = require('./util-session');
+const PROMPTS = require('./util/prompts');
+const SESSION = require('./util/session');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

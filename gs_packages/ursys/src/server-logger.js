@@ -18,8 +18,8 @@ const FSE = require('fs-extra');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const PROMPTS = require('./util-prompts');
-const DATESTR = require('./util-datestring');
+const PROMPTS = require('./util/prompts');
+const DATESTR = require('./util/datestring');
 
 const PR = PROMPTS.Pad('LOGGER');
 
