@@ -28,6 +28,10 @@ import { useURSubscribe } from '../hooks/use-ursys';
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
 
+/// DEBUGGING /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// from https://material-ui.com/styles/advanced/#jss-plugins
@@ -38,7 +42,7 @@ const jss = create({
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default function MyApp(props) {
-  const { Component, pageProps, urProps } = props;
+  const { Component, pageProps, netProps } = props;
   // NOTE: effects execute only on client after MyApp has completely rendered,
   // but window is not accessible in
 
@@ -50,8 +54,12 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    console.log('URProps', JSON.stringify(urProps));
-    UR.SystemBoot({ autoRun: true, update: true, animFrame: true });
+    UR.SystemBoot({
+      autoRun: true,
+      doUpdates: true,
+      doAnimFrames: true,
+      netProps
+    });
     // when _app unmounts, shutdown
     return function cleanup() {
       UR.SystemUnload();
@@ -96,10 +104,10 @@ export default function MyApp(props) {
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const urProps = await fetch('http://localhost:3000/api/urnet').then(res =>
+  const netProps = await fetch('http://localhost:3000/api/urnet').then(res =>
     res.json()
   );
-  return { ...appProps, urProps };
+  return { ...appProps, netProps };
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

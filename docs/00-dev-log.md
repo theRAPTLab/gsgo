@@ -154,16 +154,17 @@ The system heartbeat  runs independently of React's lifecycle to do an orderly s
 * [x] implement animframe
 * [x] implement reset
 
+## May 20.1 Fix remaining URNET issues
+
 TODO
 
+* [x] reduce the update/animFrame overhead as much as possible
+
+Why do we even want to do this? urProps contain the HOST, PORT, and potentially a unique SESSION id. 
+
+May 21.1 Continue fixing remaining URNET issues
+
 * [ ] urProps isn't being passed from _app.jsx to URNET.Connect
+  UR.SystemBoot() now receives them along with autoRun, update, animFram
 * [ ] pages/api/urnet.js is not dynamic
-
-
-
-
-
-
-
-
 

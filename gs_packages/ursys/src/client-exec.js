@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable consistent-return */
 /* eslint-disable no-debugger */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
@@ -11,16 +10,10 @@
 /**
  * @module URExec
  */
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URNET = require('./client-urnet');
-const URChan = require('./client-urchan');
-const CCSS = require('./util-console-styles');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { subs: false };
-const { cssuri, cssalert, cssinfo, cssblue, cssreset } = CCSS;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,15 +73,8 @@ Object.keys(PHASES).forEach(phaseKey => {
   });
 });
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const BAD_PATH =
-  "module_path must be a string derived from the module's __dirname";
-const URCHAN = new URChan('UREXEC');
-
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let EXEC_OP; // current execution operation (the name of the op)
 let SIM_TIMER_ID; // timer id for sim stepper
 let SIM_INTERVAL_MS = (1 / 30) * 1000;
 let SIM_UPDATE_HOOKS = [];
@@ -99,12 +85,12 @@ let SYS_ANIMFRAME_HOOKS = [];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: call the hook object's function. This used to do additional
  *  checks to see if the function should be called based on the route.
-/*/
+ */
 function m_InvokeHook(op, hook) {
   if (!hook.scope) return hook.f();
   throw Error('scope checking is not implemented in this version of URSYS');
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: clear timers
  */
 function m_ClearTimers() {
@@ -112,8 +98,20 @@ function m_ClearTimers() {
   SIM_TIMER_ID = 0;
   SYS_ANIMFRAME_RUN = 0;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: check options passed to SystemBoot, etc
+ */
+function m_CheckOptions(options) {
+  const { autoRun, doUpdates, doAnimFrames, netProps, ...other } = options;
+  const unknown = Object.keys(other);
+  if (unknown.length)
+    console.log(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`);
+  else if (DBG) console.log('info - L1_OPTION pass');
+  // return true if there were no unknown option properties
+  return unknown.length === 0;
+}
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+/// OPERATION HOOK API CALLS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: register an Operations Handler. <op> is a string constant
  *  define in PHASES and converted into the MAP. <f> is a function that
@@ -184,7 +182,6 @@ function Execute(op) {
       throw Error(`[${op}]: ${err}`);
     });
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a Phase Group in serial
  *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
@@ -198,7 +195,6 @@ function ExecutePhase(phaseName) {
     return Execute(nextOp);
   }, Promise.resolve());
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a Phase Group in parallel
  */
@@ -209,12 +205,14 @@ function ExecutePhaseParallel(phaseName) {
   // fix this and return promise
 }
 
+/// RUNTIME API CALLS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle state engine
  */
 async function SystemBoot(options = {}) {
   //
-  if (DBG) console.log('** SystemBoot **');
+  if (DBG) console.groupCollapsed('** System: Boot');
+  m_CheckOptions(options);
   //
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');
@@ -225,10 +223,10 @@ async function SystemBoot(options = {}) {
   //
   if (options.autoRun) {
     if (DBG) console.log('info - autoRun to next phase');
+    if (DBG) console.groupEnd();
     SystemRun(options);
   }
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle run engine. This code is a bit convoluted because
  *  I'm trying to avoid allocating temporary variables that cause the heap
@@ -236,6 +234,19 @@ async function SystemBoot(options = {}) {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function SystemRun(options = {}) {
+  // PART 1 - SYSTEM RUN
+  if (DBG) console.groupCollapsed('** System: Run');
+  m_CheckOptions(options);
+  //
+  m_ClearTimers();
+  //
+  await Execute('APP_STAGE');
+  await Execute('APP_START');
+  await Execute('APP_RUN');
+
+  // PART 2 - SYSTEM UPDATE
+  if (DBG) console.groupEnd();
+  if (DBG) console.groupCollapsed('** System: Update');
   // static declaration
   let _COUNT;
   // update timer (doesn't grow heap by itself)
@@ -252,69 +263,62 @@ async function SystemRun(options = {}) {
     if (SYS_ANIMFRAME_RUN) window.requestAnimationFrame(u_animframe);
     u_animexec(ts);
   }
-  //
-  if (DBG) console.log('** SystemRun **');
-  //
-  m_ClearTimers();
-  //
-  await Execute('APP_STAGE');
-  await Execute('APP_START');
-  await Execute('APP_RUN');
-  //
-  if (DBG) console.log('** SystemUpdate **');
   // set up SIM_TIMER
-  if (options.update) {
+  if (options.doUpdates) {
     if (DBG) console.log('info - starting simulation updates');
     SIM_UPDATE_HOOKS = OP_HOOKS.get('APP_UPDATE').map(hook => hook.f);
     if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
     SIM_TIMER_ID = setInterval(u_simexec, SIM_INTERVAL_MS);
   }
   // set up ANIMFRAME
-  SYS_ANIMFRAME_RUN = options.animFrame || false;
+  SYS_ANIMFRAME_RUN = options.doAnimFrames || false;
   if (SYS_ANIMFRAME_RUN) {
     if (DBG) console.log('info - starting animframe updates');
     SYS_ANIMFRAME_HOOKS = OP_HOOKS.get('DOM_ANIMFRAME').map(hook => hook.f);
     // start animframe process
     window.requestAnimationFrame(u_animframe);
   }
-  if (!(options.animFrame || options.update)) {
+  if (!(options.doUpdates || options.doAnimFrames)) {
     console.log('info - no periodic updates are enabled');
   }
+  if (DBG) console.groupEnd();
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
  */
 async function SystemRestage() {
-  if (DBG) console.log('** SystemRestage **');
+  if (DBG) console.groupCollapsed('** System: Restage');
   // clear running timers
   m_ClearTimers();
   //
   await Execute('APP_NEXT');
   //
+  if (DBG) console.groupEnd();
   SystemRun();
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine
  */
 async function SystemUnload() {
-  console.log('** SystemUnload **');
+  if (DBG) console.groupCollapsed('** System: Unload');
   // clear running timers
   m_ClearTimers();
   //
   await ExecutePhase('PHASE_UNLOAD');
+  //
+  if (DBG) console.groupEnd();
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: restart the lifecycle from boot
  */
 async function SystemReboot() {
-  console.log('** SystemReboot **');
+  if (DBG) console.groupCollapsed('** System: Reboot');
   // clear running timers
   m_ClearTimers();
   //
   await ExecutePhase('PHASE_REBOOT');
+  //
+  if (DBG) console.groupEnd();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
