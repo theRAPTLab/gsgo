@@ -11,8 +11,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { parse } = require('url');
 const requestIp = require('request-ip');
-const COMMON_MODULES = require('./modules-common');
 const URNet = require('./server-urnet');
+const Prompts = require('./util/debug-styles');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,5 +104,5 @@ module.exports = {
   URNet,
   URMedia,
   // CONVENIENCE
-  ...COMMON_MODULES
+  Prompts
 };

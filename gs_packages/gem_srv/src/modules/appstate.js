@@ -8,6 +8,8 @@ const UR = require('@gemstep/ursys/client');
 
 /// CREATE CHEESEBALL STORE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompts.makePrompt('APST');
+
 const STORE = {
   isBrowser: false,
   isServer: true
@@ -22,26 +24,26 @@ if (typeof window === 'object') {
   STORE.isBrowser = true;
   STORE.isServer = false;
   window.STORE = STORE;
-  console.log('APPSTATE: browser initialized');
+  console.log(...PR('browser initialized'));
 } else {
-  console.log('APPSTATE: server initialized');
+  console.log(...PR('server initialized'));
 }
 
 function get(key) {
-  if (STORE.isServer) console.log(`WARN: server-side get '${key}'`);
+  if (STORE.isServer) console.log(...PR(`WARN: server-side get '${key}'`));
   return STORE[key];
 }
 
 function set(key, value) {
   console.log('mode');
-  if (STORE.isServer) console.log(`WARN: server-side set '${key}'`);
+  if (STORE.isServer) console.log(...PR(`WARN: server-side set '${key}'`));
   STORE[key] = value;
 }
 
 function setRoute(index, path) {
   ROUTE.currentTab = index;
   ROUTE.currentRoute = path;
-  console.log(`APPSTATE: route set ${ROUTE.count++} times`);
+  console.log(...PR(`APPSTATE: route set ${ROUTE.count++} times`));
 }
 
 function getRoute() {
@@ -49,8 +51,10 @@ function getRoute() {
 }
 
 function StartTimer() {
-  if (process.browser) {
-    console.log('!!! SETTING imperative-style timer in declarative world!');
+  if (typeof window === 'object') {
+    console.log(
+      ...PR('!!! SETTING imperative-style timer in declarative world!')
+    );
     setInterval(() => {
       UR.Signal('APPSTATE_TICK', {
         source: 'src:5000ms timer',
@@ -59,14 +63,14 @@ function StartTimer() {
     }, 5000);
     //
     UR.Subscribe('HELLO_URSYS', data => {
-      console.log('RESPONSE "HELLO_URSYS"');
+      console.log(...PR('RESPONSE "HELLO_URSYS"'));
       let out = '. got';
       Object.keys(data).forEach(key => {
         out += ` [${key}]:${data[key]}`;
       });
       data.lemon = 'yellow';
       out += ` ret [lemon]:${data.lemon}`;
-      console.log(out);
+      console.log(...PR(out));
       return data;
     });
   }

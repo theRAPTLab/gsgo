@@ -28,6 +28,10 @@ import { useURSubscribe } from '../hooks/use-ursys';
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
 
+/// DEBUG UTILS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompts.makePrompt('_APP');
+
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// from https://material-ui.com/styles/advanced/#jss-plugins
@@ -50,7 +54,7 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    console.log('got netprops', netProps);
+    console.log(...PR('got netprops'), netProps);
     UR.SystemBoot({
       autoRun: true,
       doUpdates: true,
@@ -64,12 +68,12 @@ export default function MyApp(props) {
   }, []);
 
   function handleHello(data) {
-    console.log('RESPONSE "HELLO_URSYS"');
+    console.log(...PR('RESPONSE "HELLO_URSYS"'));
     let out = '. got';
     Object.keys(data).forEach(key => {
       out += ` [${key}]:${data[key]}`;
     });
-    console.log(out);
+    console.log(...PR(out));
   }
   useURSubscribe('HELLO_URSYS', handleHello);
 

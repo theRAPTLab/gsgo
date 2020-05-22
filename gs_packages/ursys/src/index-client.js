@@ -9,10 +9,10 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const COMMON_MODULES = require('./modules-common');
 const URChan = require('./client-urchan');
 const URNet = require('./client-urnet');
 const URExec = require('./client-exec');
+const Prompts = require('./util/debug-styles');
 
 /// META-DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,5 +95,5 @@ module.exports = {
   SystemReboot,
   SystemUnload,
   // CONVENIENCE
-  ...COMMON_MODULES
+  Prompts
 };

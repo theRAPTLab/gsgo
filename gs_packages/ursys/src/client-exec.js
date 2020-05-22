@@ -14,6 +14,7 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSESSION = require('./client-session');
+const PR = require('./util/debug-styles').makePrompt('EXEC');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,9 +110,9 @@ function m_CheckOptions(options) {
   const { autoRun, doUpdates, doAnimFrames, netProps, ...other } = options;
   const unknown = Object.keys(other);
   if (unknown.length) {
-    console.log(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`);
+    console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
     throw Error('URSYS: bad option object');
-  } else if (DBG) console.log('info - L1_OPTION pass');
+  } else if (DBG) console.log(...PR('info - L1_OPTION pass'));
   // return true if there were no unknown option properties
   return unknown.length === 0;
 }
@@ -136,7 +137,7 @@ function SystemHook(op, f, scope = '') {
   // and add the new promise
   const hook = { f, scope };
   OP_HOOKS.get(op).push(hook);
-  if (DBG) console.log(`registered - SystemHook '${op}'`);
+  if (DBG) console.log(...PR(`registered - SystemHook '${op}'`));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Execute all Promises associated with a op, completing when
@@ -151,7 +152,7 @@ function Execute(op) {
     throw Error(`${op} is a Phase Group; use ExecutePhase() instead`);
   let hooks = OP_HOOKS.get(op);
   if (hooks.length === 0) {
-    if (DBG.subs) console.log(`[${op}] no subscribers`);
+    if (DBG.subs) console.log(...PR(`[${op}] no subscribers`));
     return;
   }
 
@@ -172,18 +173,22 @@ function Execute(op) {
     return e !== undefined;
   });
   if (DBG.subs && hooks.length)
-    console.log(`[${op}] HANDLERS PROCESSED : ${hooks.length}`);
-  if (DBG.subs && icount) console.log(`[${op}] PROMISES QUEUED    : ${icount}`);
+    console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
+  if (DBG.subs && icount)
+    console.log(...PR(`[${op}] PROMISES QUEUED    : ${icount}`));
 
   // wait for all promises to execute
   return Promise.all(promises)
     .then(values => {
       if (DBG.subs && values.length)
-        console.log(`[${op}] PROMISES  RETVALS  : ${values.length}`, values);
+        console.log(
+          ...PR(`[${op}] PROMISES  RETVALS  : ${values.length}`),
+          values
+        );
       return values;
     })
     .catch(err => {
-      if (DBG.subs) console.log(`[${op}]: ${err}`);
+      if (DBG.subs) console.log(...PR(`[${op}]: ${err}`));
       throw Error(`[${op}]: ${err}`);
     });
 }
@@ -192,7 +197,7 @@ function Execute(op) {
  *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
  */
 function ExecutePhase(phaseName) {
-  if (DBG) console.log(`ExecutePhase('${phaseName}')`);
+  if (DBG) console.log(...PR(`ExecutePhase('${phaseName}')`));
   const ops = PHASES[phaseName];
   if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
   return ops.reduce(async (previousPromise, nextOp) => {
@@ -228,7 +233,7 @@ async function SystemBoot(options = {}) {
   await ExecutePhase('PHASE_READY');
   //
   if (options.autoRun) {
-    if (DBG) console.log('info - autoRun to next phase');
+    if (DBG) console.log(...PR('info - autoRun to next phase'));
     if (DBG) console.groupEnd();
     SystemRun(options);
   }
@@ -271,7 +276,7 @@ async function SystemRun(options = {}) {
   }
   // set up SIM_TIMER
   if (options.doUpdates) {
-    if (DBG) console.log('info - starting simulation updates');
+    if (DBG) console.log(...PR('info - starting simulation updates'));
     SIM_UPDATE_HOOKS = OP_HOOKS.get('APP_UPDATE').map(hook => hook.f);
     if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
     SIM_TIMER_ID = setInterval(u_simexec, SIM_INTERVAL_MS);
@@ -279,13 +284,13 @@ async function SystemRun(options = {}) {
   // set up ANIMFRAME
   SYS_ANIMFRAME_RUN = options.doAnimFrames || false;
   if (SYS_ANIMFRAME_RUN) {
-    if (DBG) console.log('info - starting animframe updates');
+    if (DBG) console.log(...PR('info - starting animframe updates'));
     SYS_ANIMFRAME_HOOKS = OP_HOOKS.get('DOM_ANIMFRAME').map(hook => hook.f);
     // start animframe process
     window.requestAnimationFrame(u_animframe);
   }
   if (!(options.doUpdates || options.doAnimFrames)) {
-    console.log('info - no periodic updates are enabled');
+    console.log(...PR('info - no periodic updates are enabled'));
   }
   if (DBG) console.groupEnd();
 }

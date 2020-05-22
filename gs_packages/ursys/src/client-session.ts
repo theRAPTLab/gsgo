@@ -12,6 +12,7 @@
 /// DEBUG  ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
+const PR = require('./util/debug-styles').makePrompt('SESS');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,10 +33,10 @@ let NET_BROKER: MessageBroker;
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InitializeNetProps(props: NetProps) {
-  if (DBG) console.log('info - setting netprops', props);
+  if (DBG) console.log(...PR('info - setting netprops'), props);
   const { broker } = props;
   NET_BROKER = broker;
-  console.log('session broker', broker);
+  console.log(...PR('session broker'), broker);
 }
 function GetNetBroker() {
   return NET_BROKER;

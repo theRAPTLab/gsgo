@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const SESSION = require('./client-session');
-const PR = require('./util/debug-styles').makePrompt('UR.NET');
+const PR = require('./util/debug-styles').makePrompt('UNET');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,7 +198,7 @@ NETWORK.Connect = (datalink, opt) => {
       m_status = M2_CONNECTED;
       // message handling continues in 'message' handler
       // the first message is assumed to be registration data
-      console.log('UR-EXEC: CONNECTED');
+      console.log(...PR('CONNECTED'));
       resolve();
     });
     m_AddListener('close', event => {
