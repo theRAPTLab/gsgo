@@ -1,7 +1,7 @@
 const path = require('path');
 const merge = require('webpack-merge');
 
-// const URSYS = require('@gemscript/ursus/server')
+// const URSYS = require('@gemscript/ursys/server')
 const serverConfig = {
   entry: path.resolve(__dirname, 'src/index-server.js'),
   target: 'node', // sets node-specific webpack flags (web is default)
@@ -31,20 +31,32 @@ const baseConfig = {
     rules: [
       {
         test: /\.(js)$/,
-        exclude: /node_modules/,
+        exclude: [
+          path.resolve(__dirname, 'node_modules'), // ursys package
+          path.resolve(__dirname, '../../node_modules') // lerna hoisted
+        ],
         use: ['babel-loader']
+      },
+      {
+        test: /\.(ts)?$/,
+        exclude: [
+          path.resolve(__dirname, 'node_modules'), // ursys package
+          path.resolve(__dirname, '../../node_modules') // lerna hoisted
+        ],
+        use: 'ts-loader'
       }
     ]
   },
   resolve: {
-    extensions: ['.js'],
+    extensions: ['.js', '.ts'],
     modules: [
-      path.resolve(__dirname, 'node_modules'),
+      path.resolve(__dirname, 'node_modules'), // ursys package modules
+      path.resolve(__dirname, '../../node_modules'), // lerna hoisted modules
       path.resolve(__dirname, 'src')
     ]
   },
   mode: 'development',
-  devtool: 'sourceMap',
+  devtool: 'eval-source-map',
   node: {
     // enable webpack's __filename and __dirname substitution in browsers
     // for use in URSYS lifecycle event filtering as set in SystemInit.jsx

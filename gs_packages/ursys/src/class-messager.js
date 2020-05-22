@@ -59,7 +59,7 @@ class Messager {
       throw Error('arg2 must be a function');
     }
     if (typeof handlerUID === 'string') {
-      // bind the ULINK uid to the handlerFunc function for convenient access
+      // bind the URChan uid to the handlerFunc function for convenient access
       // by the message dispatcher
       handlerFunc.ulink_id = handlerUID;
     }
@@ -121,7 +121,7 @@ class Messager {
     if (handlers && toLocal)
       handlers.forEach(handlerFunc => {
         // handlerFunc signature: (data,dataReturn) => {}
-        // handlerFunc has ulink_id property to note originating ULINK object
+        // handlerFunc has ulink_id property to note originating URCHAN object
         // skip "same origin" calls
         if (srcUID && handlerFunc.ulink_id === srcUID) {
           console.warn(
@@ -182,7 +182,7 @@ class Messager {
         handlers.forEach(handlerFunc => {
           /*/
           handlerFunc signature: (data,dataReturn) => {}
-          handlerFunc has ulink_id property to note originating ULINK object
+          handlerFunc has ulink_id property to note originating URCHAN object
           handlerFunc has fromNet property if it expects to receive network sourced calls
           /*/
           // skip calls that don't have their fromNet stat set if it's a net call

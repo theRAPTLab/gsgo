@@ -2,7 +2,7 @@
   "name": "root",
   "private": true,
   "scripts": {
-    "bootstrap": "lerna clean -y && lerna bootstrap",
+    "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
     "audit": "npx audit",
     "build": "lerna run build",
     "start": "npm run build && multiview [npm run gem]",

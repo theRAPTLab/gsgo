@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/ursys",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "URSYS Framework",
   "keywords": [],
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
@@ -18,22 +18,27 @@
   },
   "scripts": {
     "local": "npm run dev:ursys",
+    "..bootstrap": "cd ../.. && npm run bootstrap",
     "dev:ursys": "webpack -w",
     "build": "npm run build:ursys",
     "build:ursys": "webpack"
   },
   "dependencies": {
-    "fs-extra": "^9.0.0",
+    "fs-extra": "^8.1.0",
     "hashids": "^2.2.1",
+    "ip": "^1.1.5",
+    "request-ip": "^2.1.3",
     "tracer": "^1.0.3",
     "uuid": "^8.0.0",
     "ws": "^7.2.5"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
-    "babel-loader": "^8.0.6",
+    "@babel/core": "^7.9.6",
+    "@babel/preset-env": "^7.9.6",
+    "babel-loader": "^8.1.0",
     "eslint": "^6.8.0",
+    "ts-loader": "^7.0.4",
+    "typescript": "^3.8.3",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.11",
     "webpack-merge": "^4.2.2"

@@ -20,15 +20,16 @@ const RUNTIME_PATH = path.join(__dirname, '/runtime');
 
 (async () => {
   console.log(`STARTING: ${SCRIPT_PATH}`);
+  await URSERVER.Initialize();
   await URSERVER.StartServer({
     serverName: 'GEM_SRV',
     runtimePath: RUNTIME_PATH
   });
-  const { port, uaddr } = URSERVER.GetBrokerInfo();
+  const { port, uaddr } = URSERVER.GetNetBroker();
   console.log(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
 })();
 
-/// START WEN SERVER //////////////////////////////////////////////////////////
+/// START CUSTOM SERVER ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ NextJS is loaded as middleware with all its usual features
     except for automatic static optimization.
@@ -40,14 +41,7 @@ app.prepare().then(() => {
     // Be sure to pass `true` as the second argument to `url.parse`.
     // This tells it to parse the query portion of the URL.
     const parsedUrl = parse(req.url, true);
-    const { pathname, query } = parsedUrl;
-
-    // Do our route interception here
-    if (pathname === '/api/getinfo') {
-      app.render(req, res, '/b', query);
-    } else if (pathname === '/b') {
-      app.render(req, res, '/a', query);
-    } else {
+    if (!URSERVER.HttpRequestListener(req, res)) {
       handle(req, res, parsedUrl);
     }
   }).listen(3000, err => {

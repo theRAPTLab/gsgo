@@ -30,6 +30,8 @@ const useStyles = makeStyles({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Use `MD` to convert Markdown to HTML
+ */
 function MD(props) {
   const classes = useStyles();
   const { children, ...other } = props;

@@ -16,7 +16,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 // utility components
 import wireframeStyles from '../modules/style/wireframing';
-import { MD } from '../components/ReactMarkdown';
+import { MD } from '../components/MD';
 
 /// SHARED CUSTOM STYLES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

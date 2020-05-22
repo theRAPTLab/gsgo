@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/gem_srv",
-  "version": "0.0.1-alpha.4",
+  "version": "0.0.1-alpha.5",
   "description": "GEMSTEP client server",
   "author": "Dave 'Sri' Seah <david@davidseah.com>",
   "homepage": "",
@@ -12,11 +12,14 @@
   "scripts": {
     "local": "npm run dev:gem",
     "..ursys": "cd ../ursys && npm run local",
+    "..bootstrap": "cd ../.. && npm run bootstrap",
     "local:dev": "npm run dev:gem",
     "dev:gem:ursys": "cd ../ursys && npm run dev:ursys",
     "dev:gem": "nodemon ./server/_start.js",
     "build:gem": "next build",
-    "start:gem": "node ./server/_start"
+    "start:gem": "node ./server/_start",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "nodemonConfig": {
     "verbose": true,
@@ -34,8 +37,8 @@
     "ext": "js json"
   },
   "dependencies": {
-    "@gemstep/globals": "^0.0.1-alpha.3",
-    "@gemstep/ursys": "^0.0.1-alpha.4",
+    "@gemstep/globals": "^0.0.1-alpha.5",
+    "@gemstep/ursys": "^0.0.1-alpha.5",
     "@material-ui/core": "^4.9.6",
     "@material-ui/icons": "^4.9.1",
     "clsx": "^1.1.0",
@@ -55,7 +58,15 @@
   },
   "private": true,
   "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@storybook/addon-actions": "^5.3.18",
+    "@storybook/addon-docs": "^5.3.18",
+    "@storybook/addon-links": "^5.3.18",
+    "@storybook/addon-storysource": "^5.3.18",
+    "@storybook/addons": "^5.3.18",
+    "@storybook/react": "^5.3.18",
     "@zeit/next-source-maps": "0.0.3",
+    "babel-loader": "^8.1.0",
     "multiview": "^3.0.0"
   }
 }

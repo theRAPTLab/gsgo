@@ -1,4 +1,4 @@
-*warning: parts of this is becoming obsolete as we refactor bits of it as a library*
+*warning: work in progress. parts of this is becoming obsolete as we refactor bits of it as a library*
 
 # URNET
 
@@ -71,10 +71,6 @@ Server-side unsubscribe to a message on URNET. The handler function to unsubscri
 
 Server-side registration of handlers for a message on URNET. It is used to signal internal server messages only (e.g. "SRV_SOCKET_DELETED" when a socket goes away)
 
-
-
-
-
 ## URNET Client API
 
 implemented in `ursys/client/connect.js`
@@ -104,64 +100,6 @@ Called during client-side network initialization and handles handshake to connec
 
 `ULINK` is the datalink module, and it is assigned to the `datalink` parameter received by `Connect()`.  
 
-## URSYS Application Lifecycle
-
-### Where do our non-React methods initialize?
-
-In the past, we had these key lifecycle events. I've reorganized them slightly here.
-
-Application lifecycle
-
-* INIT - define/allocate storage for the app 
-* NET_INIT - connect to URNET socket server
-* LOAD - load external media assets and data
-* CONFIG - configure/populate data structures
-* DOM_READY - dom is stable and rendered (should be disabled)
-* RESET - clear data structures for runtime
-* NET_APP_INIT - time to register initial subscribers and peer conditions
-* START - prepare to run, check for initial conditions, set initial values and state
-* RUN - activate ui elements
-* UPDATE - periodic update timer with elapsedMS and step 0|increment.
-* STOP - application stopped
-* UNLOAD - deallocate resources
-* SHUTDOWN - close application
-
-UR Application lifecycle
-
-* NET_APP_ONLINE - received after successful UR registration
-* NET_APP_QUEUED - received if queued data was received
-* NET_APP_EXCEPTION - received when connection drops, restored, times out
-* NET_PEER_UPDATE - received when change in peer conditions occur
-* NET_APP_UPDATE - received when UR changes an app 
-
-Internal socket connection status
-
-* OFFLINE - socket connection not yet initialized
-* CONNECTING - socket connection attempted
-* CONNECTED - socket connection connected
-* RECONNECTING - socket connection is attempting to reconnect
-* LOST - lost connection; stop trying
-
-Application Runtime Interrupts
-
-* PAUSE - request to suspend UPDATE lifecycle events
-
-* UNPAUSE - request to resume UPDATE lifecycle events
-
-  
-
-Internal URSYS application status
-
-* uaddr connecting
-* uaddr connected
-* uaddr register messages (call again to change list)
-* uaddr setstatus (lifecycle)
-* uaddr disconnected
-* uaddr reconnecting
-* uaddr reconnected
-
-
-
 ## Channel Architecture
 
 May 13 2020
@@ -182,4 +120,49 @@ There's also a SIGNAL LINE that works like an interrupt that all subscribes need
 CALLS are used to implement remote methods. 
 
 There's only one SUBSCRIBE feature, and it's used to implement all three things. Maybe this is not a good idea, because it's not exactly one-size fits all.
+
+## Examples
+
+This was added to `pages/index.jsx` during testing to print a counting tick handler.
+
+``` jsx
+import UR from '@gemstep/ursys';
+import { useURSubscribe, useInterval } from '../hooks/use-ursys';
+
+function Page() {
+const counter = useRef();
+  counter.current = 0;
+
+  // TEST 1
+  function handleTick(data) {
+    const { tick = '', source = '', route = '' } = data;
+    console.log(`TICK ${tick} ${source} ${route}`);
+  }
+  useURSubscribe('APPSTATE_TICK', handleTick);
+  //
+  useInterval(() => {
+    UR.Signal('APPSTATE_TICK', {
+      source: 'src:1000ms timer',
+      tick: counter.current++
+    });
+  }, 1000);
+
+  // TEST 2
+  function handleHello(data) {
+    console.log('RESPONSE "HELLO_URSYS"');
+    // I'm sure you don't really want this, just being thorough
+    let out = '. got';
+    Object.keys(data).forEach(key => {
+      out += ` [${key}]:${data[key]}`;
+    });
+    data.fish = 'mackerel';
+    out += ` ret [fish]:${data.fish}`;
+    console.log(out);
+    return data;
+  }
+  useURSubscribe('HELLO_URSYS', handleHello);
+}
+
+
+```
 
