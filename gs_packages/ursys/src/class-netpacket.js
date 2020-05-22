@@ -19,13 +19,13 @@
 
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PROMPTS = require('./util/prompts');
+const PROMPTS = require('./util/debug-styles');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { send: false, transact: false, setup: false };
 
-const PR = PROMPTS.Pad('PKT');
+const PR = PROMPTS.makeLogHelper('PKT');
 const ERR = ':ERR:';
 const PERR = ERR + PR;
 const ERR_NOT_NETMESG = `${PERR}obj does not seem to be a NetPacket`;

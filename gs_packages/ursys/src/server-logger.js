@@ -18,10 +18,10 @@ const FSE = require('fs-extra');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const PROMPTS = require('./util/prompts');
+const PROMPTS = require('./util/debug-styles');
 const DATESTR = require('./util/datestring');
 
-const PR = PROMPTS.Pad('LOGGER');
+const PR = PROMPTS.makeLogHelper('LOGGER');
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
