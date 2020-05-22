@@ -104,12 +104,22 @@ This is due to npm not liking symlinked files :( The workaround is to use the `n
 
 ## What is the best way to commit from dev to master?
 
-Our Lerna config disallows versioning from anywhere except the master branch. The steps are:
+Our Lerna config allows version management only in the master branch. 
 
-* If commiting a new branch into dev, use the normal merge request process.
-* When dev is confirmed nice and clean, we're ready to push a package update!
-* First merge dev onto master **locally** in SourceTree.
-* Then run `lerna version prerelease`, which will update tabs and push up to master.
+The steps preceding versioning are:
+
+1. merge all branches to `dev` for integration
+2. fix any errors in `dev` using `fix-` branches
+3. when `dev` looks good, glance through the `README` and `docs` folders to ensure they are in good shape.
+4. create a `merge request` from `dev` to  `releasecandidates` branch, using our template (TBD)
+5. have someone test the `release-candidates` merge request branch
+6. accept the merge request
+
+Then, to apply version updates you need to do this from your local machine:
+
+7. fetch the repo
+8. merge `release-candidates` onto `master` 
+9. enter `lerna version prerelease` which will update the version across all packages, add a version tag, AND push to `master` for you!
 
 ## How do I manage versions with Lerna?
 

@@ -28,6 +28,11 @@ import { useURSubscribe } from '../hooks/use-ursys';
 import theme from '../modules/style/theme';
 import APPSTATE from '../modules/appstate';
 
+/// DEBUG UTILS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompts.makeLogHelper('_APP');
+UR.Prompts.printTagColors();
+
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// from https://material-ui.com/styles/advanced/#jss-plugins
@@ -38,7 +43,7 @@ const jss = create({
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default function MyApp(props) {
-  const { Component, pageProps, urProps } = props;
+  const { Component, pageProps, netProps } = props;
   // NOTE: effects execute only on client after MyApp has completely rendered,
   // but window is not accessible in
 
@@ -49,46 +54,28 @@ export default function MyApp(props) {
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
-    // placeholder EXEC
-    (async () => {
-      console.groupCollapsed('UR-EXEC: INIT');
-      console.groupEnd();
-      console.group('UR-EXEC: NET_INIT');
-      await UR.Connect(urProps);
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: LOAD');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: CONFIG');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: DOM_READY');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: RESET');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: NET_APP_INIT');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: START');
-      APPSTATE.StartTimer();
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: RUN');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: UPDATE');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: STOP');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: UNLOAD');
-      console.groupEnd();
-      console.groupCollapsed('UR-EXEC: SHUTDOWN');
-      console.groupEnd();
-    })();
+    // URSYS start
+    console.log(...PR('got netprops', netProps));
+    UR.Initialize();
+    UR.SystemBoot({
+      autoRun: true,
+      doUpdates: true,
+      doAnimFrames: true,
+      netProps
+    });
+    // when _app unmounts, shutdown
+    return function cleanup() {
+      UR.SystemUnload();
+    };
   }, []);
 
   function handleHello(data) {
-    console.log('RESPONSE "HELLO_URSYS"');
+    console.log(...PR('RESPONSE "HELLO_URSYS"'));
     let out = '. got';
     Object.keys(data).forEach(key => {
       out += ` [${key}]:${data[key]}`;
     });
-    console.log(out);
+    console.log(...PR(out));
   }
   useURSubscribe('HELLO_URSYS', handleHello);
 
@@ -114,15 +101,16 @@ export default function MyApp(props) {
 /// GET URSYS INFO ////////////////////////////////////////////////////////////
 /// NOTE: this disables automatic static optimization
 /// in the _app.js context, getInitialProps doesn't have pageProps ever
-/// This only executes on the server and props are sent
+/// This ONLY EXECUTES ON THE SERVER and props are sent as a bundle to
+/// hydrate MyApp
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const urProps = await fetch('http://localhost:3000/api/urnet').then(res =>
+  const netProps = await fetch('http://localhost:3000/urnet/getinfo').then(res =>
     res.json()
   );
-  return { ...appProps, urProps };
+  return { ...appProps, netProps };
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
