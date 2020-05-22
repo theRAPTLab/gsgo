@@ -153,7 +153,7 @@ function printTagColors() {
   colors.forEach(key => {
     const color = colortable[key];
     const items = IS_NODE
-      ? [`(node) ${padString(out)} - ${color}${key}${reset}`]
+      ? [`${padString(out)} - (node) ${color}${key}${reset}`]
       : [`(browser) %c${key}%c`, color, reset];
     console.log(...items);
   });

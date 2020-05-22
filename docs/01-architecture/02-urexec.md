@@ -19,7 +19,7 @@ The UR EXEC lifecycle predates our use of React, and provides the framework for 
 
 Start the URSYS execution engine, which will run automatically firing phase groups one-after-the-other in series. The boolean options are:
 
-* `autoRun` - after SystemBoot, go to SystemRun, passing options forward.
+* `autoRun` - after SystemBoot, go to SystemRun if `true`, passing options forward.
 
   
 
@@ -27,8 +27,8 @@ Start the URSYS execution engine, which will run automatically firing phase grou
 
 Start the URSYS run loop, which includes staging and configuration before periodic updates fire.  Options when set true:
 
-*  `update` - fire APP_UPDATE hooks
-*  `animFrame`. - fire DOM_ANIMFRAME hooks
+*  `update` - fire APP_UPDATE hooks if `true`
+*  `animFrame`. - fire DOM_ANIMFRAME hooks if `true`
 
 
 
