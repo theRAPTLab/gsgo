@@ -20,6 +20,7 @@ const RUNTIME_PATH = path.join(__dirname, '/runtime');
 
 (async () => {
   console.log(`STARTING: ${SCRIPT_PATH}`);
+  await URSERVER.Initialize();
   await URSERVER.StartServer({
     serverName: 'GEM_SRV',
     runtimePath: RUNTIME_PATH

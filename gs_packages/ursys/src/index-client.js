@@ -39,17 +39,26 @@ const PubSub = {};
 const URCHAN_SUB = new URChan('ursys-sub');
 const URCHAN_PUB = new URChan('ursys-pub');
 
-/// HOOKED OPERATIONS /////////////////////////////////////////////////////////
+/// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** autoconnect to URSYS network during NET_CONNECT
+/** initialize dependent libraries
  */
-URExec.SystemHook(
-  'NET_CONNECT',
-  () =>
-    new Promise((res, rej) =>
-      URNet.Connect(URCHAN_SUB, { success: res, failure: rej })
-    )
-);
+const Initialize = () => {
+  // autoconnect to URSYS network during NET_CONNECT
+  URExec.SystemHook(
+    'NET_CONNECT',
+    () =>
+      new Promise((res, rej) =>
+        URNet.Connect(URCHAN_SUB, { success: res, failure: rej })
+      )
+  );
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** deallocate any system resources assigned during Initialize
+ */
+const Shutdown = () => {
+  //
+};
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,6 +87,8 @@ const {
 module.exports = {
   ...META,
   // MAIN API
+  Initialize,
+  Shutdown,
   Connect,
   Subscribe,
   Unsubscribe,

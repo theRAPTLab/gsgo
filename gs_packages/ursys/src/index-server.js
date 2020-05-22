@@ -20,6 +20,10 @@ let m_network_options;
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** these properties are exported from the library so you can tell if the
+ *  ur instance you're using is serverside or clientside, if that needs
+ *  to be checked
+ */
 const META = {
   _SERVER: true,
   _SCRIPT: __filename,
@@ -33,6 +37,20 @@ const URWeb = {};
 const URLogger = {};
 // const URNet = {};
 const URMedia = {};
+
+/// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** initialize dependent libraries
+ */
+function Initialize() {
+  // hooks registration goes here
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** deallocate any system resources assigned during Initialize
+ */
+function Shutdown() {
+  // ot
+}
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -94,6 +112,8 @@ module.exports = {
   // META
   ...META,
   // MAIN API
+  Initialize,
+  Shutdown,
   StartServer,
   GetNetBroker,
   HttpRequestListener,

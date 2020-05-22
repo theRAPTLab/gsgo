@@ -172,3 +172,43 @@ Why do we even want to do this? urProps contain the HOST, PORT, and potentially 
 * [x] **pages/api/urnet.js is not dynamic**
   Remove the /pages/api/urnet...now replaced in the _start custom server with a call to URSYS so it's all contained there.
 
+## May 21.2 Now what?
+
+GEMSRV is now capable of starting up completely without hardcoded connection points; you just have to point to the server and it will automatically connect to URSYS by grabbing information from urnet/getinfo...here's some stuff to put off:
+
+* [ ] insert interrupt management into exec ... eventually
+* [ ] make ursys-react ... eventually
+* [ ] port faketrack ... soon
+
+We also have to port FakeTrack over at some point for input data.
+
+Going to nap and then tackle the SIM STUFF. I think the first thing to do is write the GAMELOOP somewhere so it prints stuff out. Then maybe make a simple button panel. Then maybe the Agent class as a set of composable functions. Yeah composition!
+
+* [x] fixed bug in server-urnet, where ws.Server was initialized with host 'localhost' instead of its own ip address, which caused the socket server to refuse remote connections.
+
+## May 21.3 Still Thursday
+
+Moving list of immediate steps to stick into the current work:
+
+* [ ] insert gameloop lifecycle into exec
+* [ ] write agent base class
+* [ ] write costume, location, input placeholders
+* [ ] write interaction set code
+* [ ] write interaction processing
+
+Free thinking on the inserting the gameloop...hm, I guess that would have to be somewhere in a simulation module. **where will that live?** I think it will be some kind of black box with its own API and of course its own lifecycle. It's similar to EXEC.
+
+* clean up info text
+* write a new debug module
+
+## May 22.1 Cleaning up
+
+Yesterday I wrote a new PROMPTS module, and have just finished replacing it. It will make centralized debug messages much easier to manage while looking good for both the server and the client.
+
+* cleaned up debug module, added ability to disable console output from one place
+* removed console-styles and old prompts modules, renamed debug module to prompts
+
+## May 22.2 Inserting Simulation Update
+
+
+

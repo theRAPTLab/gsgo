@@ -55,7 +55,7 @@ export default function MyApp(props) {
     }
     // URSYS start
     console.log(...PR('got netprops', netProps));
-    console.log(...[]);
+    UR.Initialize();
     UR.SystemBoot({
       autoRun: true,
       doUpdates: true,
