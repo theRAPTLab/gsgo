@@ -69,17 +69,35 @@ const CSS_COLORS = {
   TagDkRed: 'color:white;background-color:red'
 };
 
+/// OUTPUT CONTROL ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** define
+ */
+const SHOW = true;
+const HIDE = false;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPT_DICT = {
-  'UNET': 'TagBlue',
-  '_APP': 'TagCyan',
-  'SESS': 'TagBlue'
+  'UNET': [SHOW, 'TagBlue'], // e.g. debugout 'UNET' channel, use 'TagBlue'
+  '_APP': [SHOW, 'TagCyan'],
+  'SESS': [SHOW, 'TagBlue']
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** based on current detected enviroment, return either ANSI terminal or
+ *  css based color markers for use in debugging messages
+ */
+function m_GetEnvColor(prompt) {
+  const [dbg_mode, defcol] = PROMPT_DICT[prompt] || [SHOW, 'TagGray'];
+  const color = IS_NODE ? TERM_COLORS[defcol] : CSS_COLORS[defcol];
+  const reset = IS_NODE ? TERM_COLORS.Reset : CSS_COLORS.Reset;
+  return [dbg_mode, color, reset];
+}
 
+/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Pad string to fixed length, with default padding depending on
  *  whether the environment is node or browser
  */
-function padPrompt(str, padding = DEFAULT_PADDING) {
+function padString(str, padding = DEFAULT_PADDING) {
   let len = str.length;
   if (IS_NODE) return `${str.padEnd(padding, ' ')}`;
   // must be non-node environment, so do dynamic string adjust
@@ -90,15 +108,30 @@ function padPrompt(str, padding = DEFAULT_PADDING) {
   return `${str}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return a function that will prompt strings for you
+/** Return a function that will prompt strings for you. The function will
+ *  returns an array to destructure into console.log().
+ *
+ *  To create the function, provide a short PROMPT. This will be color coded
+ *  according to the PROMPTS_DICT table, or gray otherwise. You can turn off the
+ *  debug output for all PROMPTS in a category also for centralized debug
+ *  statement control.
+ *
+ *  The prompt function accepts a string followed by any number of parameters.
+ *  It returns an array of values that are destructured inside of console.log()
+ *    const promptFunction = makeLoginHelper('APP');
+ *    console.log(...promptFunction('huzzah'));
  */
-function makePrompt(prompt) {
-  const defcol = PROMPT_DICT[prompt] || 'TagGray';
-  const color = IS_NODE ? TERM_COLORS[defcol] : CSS_COLORS[defcol];
-  const reset = IS_NODE ? TERM_COLORS.Reset : CSS_COLORS.Reset;
-  return IS_NODE
-    ? str => [`${color}${padPrompt(prompt)}${reset} - ${str}`]
-    : str => [`%c${padPrompt(prompt)}%c ${str}`, color, reset];
+function makeLogHelper(prompt) {
+  const [dbg, color, reset] = m_GetEnvColor(prompt);
+  if (!dbg) return () => [];
+  const wrap = IS_NODE
+    ? (str, ...args) => {
+        return [`${color}${padString(prompt)}${reset} - ${str}`, ...args]; // server
+      }
+    : (str, ...args) => {
+        return [`%c${padString(prompt)}%c ${str}`, color, reset, ...args]; // browser
+      };
+  return wrap;
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
@@ -106,6 +139,6 @@ function makePrompt(prompt) {
 module.exports = {
   TERM: TERM_COLORS,
   CSS: CSS_COLORS,
-  padPrompt,
-  makePrompt
+  padString,
+  makeLogHelper
 };

@@ -14,7 +14,7 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSESSION = require('./client-session');
-const PR = require('./util/debug-styles').makePrompt('EXEC');
+const PR = require('./util/debug-styles').makeLogHelper('EXEC');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

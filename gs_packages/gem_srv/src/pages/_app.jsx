@@ -30,7 +30,7 @@ import APPSTATE from '../modules/appstate';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompts.makePrompt('_APP');
+const PR = UR.Prompts.makeLogHelper('_APP');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +54,8 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    console.log(...PR('got netprops'), netProps);
+    console.log(...PR('got netprops', netProps));
+    console.log(...[]);
     UR.SystemBoot({
       autoRun: true,
       doUpdates: true,
