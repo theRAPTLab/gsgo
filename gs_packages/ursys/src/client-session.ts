@@ -12,7 +12,7 @@
 /// DEBUG  ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
-const PR = require('./util/debug-styles').makeLogHelper('SESS');
+const PR = require('./util/prompts').makeLogHelper('SESS');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

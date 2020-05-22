@@ -12,10 +12,14 @@
 const URChan = require('./client-urchan');
 const URNet = require('./client-urnet');
 const URExec = require('./client-exec');
-const Prompts = require('./util/debug-styles');
+const Prompts = require('./util/prompts');
 
 /// META-DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** these properties are exported from the library so you can tell if the
+ *  ur instance you're using is serverside or clientside, if that needs
+ *  to be checked
+ */
 const META = {
   _CLIENT: true,
   _SCRIPT: __filename,
