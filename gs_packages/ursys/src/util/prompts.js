@@ -6,7 +6,7 @@
 
 const IS_NODE = typeof window === 'undefined';
 const DEFAULT_PADDING = IS_NODE
-  ? 10 // nodejs
+  ? 5 // nodejs
   : 0; // not nodejs
 
 const TERM_COLORS = {
@@ -80,7 +80,8 @@ const HIDE = false;
 const PROMPT_DICT = {
   'UNET': [SHOW, 'TagBlue'], // e.g. debugout 'UNET' channel, use 'TagBlue'
   '_APP': [SHOW, 'TagCyan'],
-  'SESS': [SHOW, 'TagBlue']
+  'SESS': [SHOW, 'TagBlue'],
+  'APST': [HIDE, 'TagGray']
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Based on current detected enviroment, return either ANSI terminal or
@@ -126,16 +127,40 @@ function padString(str, padding = DEFAULT_PADDING) {
  *  It returns an array of values that are destructured inside of console.log()
  *    const promptFunction = makeLoginHelper('APP');
  *    console.log(...promptFunction('huzzah'));
+ *
+ *  NOTE: This doesn't work as expected on NodeJS, because empty arrays
+ *  render as linefeeds so we just output it regardless. If you want to
+ *  disable output, use the makeLogger() function instead.
  */
 function makeLogHelper(prompt, tagColor) {
   const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
-  if (!dbg) return () => [];
+  // return empty array if debugging disabled in browser
+  // or debugging is enabled but it's node (de morgan's law)
+  if (!(dbg || IS_NODE)) return () => [];
+  // return the appropriate array to deconstructr
   const wrap = IS_NODE
     ? (str, ...args) => {
         return [`${color}${padString(prompt)}${reset} - ${str}`, ...args]; // server
       }
     : (str, ...args) => {
         return [`%c${padString(prompt)}%c ${str}`, color, reset, ...args]; // browser
+      };
+  return wrap;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Function to directly print to console instead of returning an array. This
+ *  works better for NodeJS since the empty [] still results in output unlike
+ *  the browser. Use makeLogHelper for browsers
+ */
+function makeLogger(prompt, tagColor) {
+  const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
+  if (!dbg) return () => {};
+  const wrap = IS_NODE
+    ? (str, ...args) => {
+        console.log(`${color}${padString(prompt)}${reset} - ${str}`, ...args);
+      }
+    : (str, ...args) => {
+        console.log(`%c${padString(prompt)}%c ${str}`, color, reset, ...args);
       };
   return wrap;
 }
@@ -167,5 +192,6 @@ module.exports = {
   CSS: CSS_COLORS,
   padString,
   makeLogHelper,
+  makeLogger,
   printTagColors
 };
