@@ -28,7 +28,7 @@ import { useURSubscribe } from '../hooks/use-ursys';
 import theme from '../modules/style/theme';
 // simulation components
 import APPSTATE from '../modules/appstate';
-import SIM from '../modules/sim/mainloop';
+import SIM from '../modules/sim/loop';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,8 +59,7 @@ export default function MyApp(props) {
     // URSYS start
     console.log(...PR('got netprops', netProps));
     // initialize models in this order
-    UR.Initialize();
-    SIM.Initialize();
+    UR.Initialize([SIM.Initialize]);
     // boot
     UR.SystemBoot({
       autoRun: true,
@@ -70,6 +69,7 @@ export default function MyApp(props) {
     });
     // when _app unmounts, shutdown
     return function cleanup() {
+      console.log(...PR('unmounting'));
       UR.SystemUnload();
     };
   }, []);

@@ -43,7 +43,8 @@ const URCHAN_PUB = new URChan('ursys-pub');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize dependent libraries
  */
-const Initialize = () => {
+const Initialize = (initializers = []) => {
+  console.groupCollapsed('** System: Initialize');
   // autoconnect to URSYS network during NET_CONNECT
   URExec.SystemHook(
     'NET_CONNECT',
@@ -52,6 +53,10 @@ const Initialize = () => {
         URNet.Connect(URCHAN_SUB, { success: res, failure: rej })
       )
   );
+  initializers.forEach(f => {
+    if (typeof f === 'function') f();
+  });
+  console.groupEnd();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize

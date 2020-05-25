@@ -215,10 +215,19 @@ I've been kind of stalled on this over the weekend. Let's just jam the gameloop 
 **Q. Where to put the gameloop?**
 A. I think probably a new module that hooks into it. But how will it get called without being run on the server?
 
-* [x] insert gameloop lifecycle into exec
-  making new modules/sim/mainloop
+* [x] **insert gameloop lifecycle into exec**
+  making new modules/sim/mainloop...
   how to hook into init? Need to explicitly load modules in _app and initialize them manually.
-* [ ] write agent base class
+  add stub calls to gameloop
+* [x] **create gameloop lifecycle module???**
+  similar to ur-exec, but for game loops with its own lifecycle.
+  maybe add a custom phase group to ur-exec
+* [ ] **write agent base class**
+  first need to outline the simulation loop and data needs
+  stub out data needs and also the data model
+  make stub data modules
+* [ ] create agents in gameloop module
+* [ ] iterate over agents per cycle
 * [ ] write costume, location, input placeholders
 * [ ] write interaction set code
 * [ ] write interaction processing

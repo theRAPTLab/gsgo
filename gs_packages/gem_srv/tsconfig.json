@@ -16,6 +16,6 @@
     "isolatedModules": true,
     "jsx": "preserve"
   },
-  "include": ["src/pages/*", "src/*", "server"],
+  "include": ["src/*", "server"],
   "exclude": ["node_modules"]
 }
