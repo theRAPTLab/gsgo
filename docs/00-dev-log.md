@@ -208,7 +208,18 @@ Yesterday I wrote a new PROMPTS module, and have just finished replacing it. It 
 * cleaned up debug module, added ability to disable console output from one place
 * removed console-styles and old prompts modules, renamed debug module to prompts
 
-## May 22.2 Inserting Simulation Update
+## May 24.1 Inserting Simulation Update
 
+I've been kind of stalled on this over the weekend. Let's just jam the gameloop in there.
 
+**Q. Where to put the gameloop?**
+A. I think probably a new module that hooks into it. But how will it get called without being run on the server?
+
+* [x] insert gameloop lifecycle into exec
+  making new modules/sim/mainloop
+  how to hook into init? Need to explicitly load modules in _app and initialize them manually.
+* [ ] write agent base class
+* [ ] write costume, location, input placeholders
+* [ ] write interaction set code
+* [ ] write interaction processing
 

@@ -19,6 +19,7 @@ const PR = require('./util/prompts').makeLogHelper('EXEC');
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { subs: false };
+const IS_NODE = typeof window === 'undefined';
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -124,12 +125,18 @@ function m_CheckOptions(options) {
  *  will be invoked during the operation, and it can return a promise or value.
  */
 function SystemHook(op, f, scope = '') {
+  // don't run on server
+  if (IS_NODE) return;
   // vestigial scope parameter check if we need it someday
   if (typeof scope !== 'string') throw Error('<arg1> scope should be included');
   // does this operation name exist?
   if (typeof op !== 'string')
     throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
   if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
+  if (op.includes('PHASE_'))
+    throw Error(
+      `Hooking a PHASE GROUP '${op}' is not supported. Hook each individual operation instead.`
+    );
   // did we also get a promise?
   if (!(f instanceof Function))
     throw Error('<arg3> must be a function optionally returning Promise');

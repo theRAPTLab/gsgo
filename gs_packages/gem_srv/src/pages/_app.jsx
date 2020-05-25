@@ -26,7 +26,9 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { useURSubscribe } from '../hooks/use-ursys';
 ///
 import theme from '../modules/style/theme';
+// simulation components
 import APPSTATE from '../modules/appstate';
+import SIM from '../modules/sim/mainloop';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,7 +58,10 @@ export default function MyApp(props) {
     }
     // URSYS start
     console.log(...PR('got netprops', netProps));
+    // initialize models in this order
     UR.Initialize();
+    SIM.Initialize();
+    // boot
     UR.SystemBoot({
       autoRun: true,
       doUpdates: true,
