@@ -14,6 +14,7 @@ import REFEREE from './referee';
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.util.Prompts.makeLogHelper('SIM');
+const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,13 +43,16 @@ function StartSimulation() {
   // start the clock
   // start recording buffer
   function u_dump(phases, index) {
+    if (!DBG) return;
     if (index === 0) console.log('start of PHASE', index);
     if (index === phases.length) console.log('end of PHASE', index);
     else console.log(`.. executing ${index} ${phases[index]}`);
   }
+  //
   GameLoop.Hook('PHASE_WORLD', u_dump);
   GameLoop.Hook('PHASE_AGENTS', u_dump);
   GameLoop.Hook('PHASE_EVAL', u_dump);
+  //
 }
 function PauseSimulation() {
   // set the playback rate from 0 to 10
@@ -84,6 +88,13 @@ function Initialize() {
   UR.SystemHook('APP_RUN', () => {});
   UR.SystemHook('APP_UPDATE', StepSimulation);
   UR.SystemHook('APP_NEXT', () => {});
+  //
+  INPUTS.Initialize(GameLoop);
+  CONDITIONS.Initialize(GameLoop);
+  AGENTS.Initialize(GameLoop);
+  MANAGERS.Initialize(GameLoop);
+  REFEREE.Initialize(GameLoop);
+  //
   StartSimulation();
 } // Initialize
 

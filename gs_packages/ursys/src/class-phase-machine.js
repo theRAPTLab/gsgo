@@ -65,12 +65,13 @@ class PhaseMachine {
     });
     // bind functions to instance so it can be called inside promises
     // and asynchronous handler context
+    this.Hook = this.Hook.bind(this);
     this.Execute = this.Execute.bind(this);
     this.ExecutePhase = this.ExecutePhase.bind(this);
     this.ExecutePhaseParallel = this.ExecutePhaseParallel.bind(this);
     this.GetHookFunctions = this.GetHookFunctions.bind(this);
     this.GetPhaseFunctionsAsMap = this.GetPhaseFunctionsAsMap.bind(this);
-    this.Hook = this.Hook.bind(this);
+    this.MockHook = this.MockHook.bind(this);
   } // end constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -203,6 +204,16 @@ class PhaseMachine {
       );
     });
     return map;
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** UTILITY: Print arguments for hook, with optional callback
+   */
+  MockHook(op, callback) {
+    this.Hook(op, (...args) => {
+      console.log(`${op} recv:`, ...args);
+      if (typeof callback === 'function') callback(...args);
+    });
   }
 }
 

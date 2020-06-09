@@ -6,23 +6,25 @@
 * W2: Research deterministic finite automata and libraries (xstate), reactive programming with streams (rxjs), stream computation, the actor model, distributed architectures, message brokering systems, and relation to behavior trees and utility AI.
 
 ---
-## June 8 - Rushing into Implementation
+## June 08 - Pushing into Implementation
 
-I need to start resolving some of these open questions. My immediate focus from the end of last week
+I will probably use **xstatejs** and **rxjs** in the simulation engine. I decided though to keep the lifecycle engine from EXEC, since it already works well and is easier to understand as-is.
 
-**Let's make a representation of the Super Agent** - this is the thing that holds agents. The Super Agent is the home of all data observables.
-
-* [ ] todo: make a stream observable model
-
-**For now, we'll just try to make a representation that uses (1) state charts and (2) observables inside of  `_sim_main`**
-
+* [ ] ~~todo: make a stream observable model~~
 * [x] install xstate and rxjs
 * [ ] ~~define simloop as a machine?~~
   NO...the promise-based system we're using works better
-* [x] extract PhaseMachine from EXEC
-* [x] use PhaseMachine in SimExec, clarify phase group invocation
+* [x] extract `class-phase-machine` from EXEC
+* [x] use `PhaseMachine` in `EXEC`
+* [x] clean up PhaseMachine so semantics of invoking a phase (as opposed to an op) will fire on start and end. This might be useful for monitoring.
 
+PhaseMachine gives us the ability to manage our game loop using the same logic as EXEC. 
 
+* [x] simloop `Initialize()` creates a GameLoop PhaseMachine and passes to modules that will use it.
+
+## June 09 - Wiring in Agent
+
+The next state i
 
 
 
