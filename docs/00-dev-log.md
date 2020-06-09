@@ -19,7 +19,8 @@ I need to start resolving some of these open questions. My immediate focus from 
 * [x] install xstate and rxjs
 * [ ] ~~define simloop as a machine?~~
   NO...the promise-based system we're using works better
-* [x] define simloop as promise loop similar to exec
+* [x] extract PhaseMachine from EXEC
+* [x] use PhaseMachine in SimExec, clarify phase group invocation
 
 
 

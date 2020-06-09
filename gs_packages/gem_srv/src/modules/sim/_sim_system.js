@@ -15,8 +15,21 @@ import REFEREE from './referee';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.util.Prompts.makeLogHelper('SIM');
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const GameLoop = new UR.class.PhaseMachine({
+  PHASE_WORLD: ['INPUTS', 'PHYSICS', 'TIMERS', 'CONDITIONS'],
+  PHASE_AGENTS: [
+    'AGENTS_UPDATE',
+    'MANAGERS_UPDATE',
+    'MANAGERS_THINK',
+    'AGENTS_THINK',
+    'MANAGERS_RETHINK',
+    'AGENTS_EXEC',
+    'MANAGERS_EXEC'
+  ],
+  PHASE_EVAL: ['SIM_EVAL', 'REFEREE_EVAL']
+});
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,6 +41,14 @@ function StartSimulation() {
   // initialize agents and assets
   // start the clock
   // start recording buffer
+  function u_dump(phases, index) {
+    if (index === 0) console.log('start of PHASE', index);
+    if (index === phases.length) console.log('end of PHASE', index);
+    else console.log(`.. executing ${index} ${phases[index]}`);
+  }
+  GameLoop.Hook('PHASE_WORLD', u_dump);
+  GameLoop.Hook('PHASE_AGENTS', u_dump);
+  GameLoop.Hook('PHASE_EVAL', u_dump);
 }
 function PauseSimulation() {
   // set the playback rate from 0 to 10
@@ -46,7 +67,11 @@ function ResetSimulation() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StepSimulation(int_ms) {
   /* insert game pause control here */
-  console.log(...PR(`StepSimulation(${int_ms})`));
+  (async () => {
+    await GameLoop.ExecutePhase('PHASE_WORLD', int_ms);
+    await GameLoop.ExecutePhase('PHASE_AGENTS', int_ms);
+    await GameLoop.ExecutePhase('PHASE_EVAL', int_ms);
+  })();
   /* insert game logic here */
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,6 +84,7 @@ function Initialize() {
   UR.SystemHook('APP_RUN', () => {});
   UR.SystemHook('APP_UPDATE', StepSimulation);
   UR.SystemHook('APP_NEXT', () => {});
+  StartSimulation();
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

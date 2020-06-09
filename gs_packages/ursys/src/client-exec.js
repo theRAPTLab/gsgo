@@ -72,12 +72,12 @@ const PHASES = {
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PHASE_MACHINE = new URPHASER(PHASES, '');
-const { ExecutePhase, Execute, Hook, GetHooks } = PHASE_MACHINE;
+const { ExecutePhase, Execute, Hook, GetHookFunctions } = PHASE_MACHINE;
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let SIM_TIMER_ID; // timer id for sim stepper
-let SIM_INTERVAL_MS = (1 / 30) * 1000;
+let SIM_INTERVAL_MS = 3000;
 let SIM_UPDATE_HOOKS = [];
 let SYS_ANIMFRAME_RUN = true;
 let SYS_ANIMFRAME_HOOKS = [];
@@ -167,7 +167,7 @@ async function SystemRun(options = {}) {
   // set up SIM_TIMER
   if (options.doUpdates) {
     if (DBG) console.log(...PR('info - starting simulation updates'));
-    SIM_UPDATE_HOOKS = GetHooks('APP_UPDATE');
+    SIM_UPDATE_HOOKS = GetHookFunctions('APP_UPDATE');
     if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
     SIM_TIMER_ID = setInterval(u_simexec, SIM_INTERVAL_MS);
   }
@@ -175,7 +175,7 @@ async function SystemRun(options = {}) {
   SYS_ANIMFRAME_RUN = options.doAnimFrames || false;
   if (SYS_ANIMFRAME_RUN) {
     if (DBG) console.log(...PR('info - starting animframe updates'));
-    SYS_ANIMFRAME_HOOKS = GetHooks('DOM_ANIMFRAME');
+    SYS_ANIMFRAME_HOOKS = GetHookFunctions('DOM_ANIMFRAME');
     // start animframe process
     window.requestAnimationFrame(u_animframe);
   }
