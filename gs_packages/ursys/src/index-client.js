@@ -9,12 +9,16 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URChan = require('./client-urchan');
-const URNet = require('./client-urnet');
-const URExec = require('./client-exec');
+const NetChannel = require('./client-urchan');
+const Net = require('./client-urnet');
+const Exec = require('./client-exec');
 const Prompts = require('./util/prompts');
 
-/// META-DATA /////////////////////////////////////////////////////////////////
+/// CLASSES ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PhaseMachine = require('./class-phase-machine');
+
+/// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** these properties are exported from the library so you can tell if the
  *  ur instance you're using is serverside or clientside, if that needs
@@ -30,27 +34,29 @@ const META = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// to be implemented
 const Events = {};
-const Exec = {};
 const Extensions = {};
 const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URCHAN_SUB = new URChan('ursys-sub');
-const URCHAN_PUB = new URChan('ursys-pub');
+const nc_sub = new NetChannel('ursys-sub');
+const nc_pub = new NetChannel('ursys-pub');
 
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize dependent libraries
  */
 const Initialize = (initializers = []) => {
   console.groupCollapsed('** System: Initialize');
   // autoconnect to URSYS network during NET_CONNECT
-  URExec.SystemHook(
+  Exec.SystemHook(
     'NET_CONNECT',
     () =>
       new Promise((res, rej) =>
-        URNet.Connect(URCHAN_SUB, { success: res, failure: rej })
+        Net.Connect(nc_sub, { success: res, failure: rej })
       )
   );
   initializers.forEach(f => {
@@ -64,28 +70,12 @@ const Initialize = (initializers = []) => {
 const Shutdown = () => {
   //
 };
-
-/// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to URSYS network
  */
 const Connect = options => {
-  return URNet.Connect(URCHAN_SUB, options);
+  return Net.Connect(nc_sub, options);
 };
-/** forward URCHAN methods
- */
-const { Subscribe, Unsubscribe } = URCHAN_SUB;
-const { LocalSignal, LocalPublish, LocalCall } = URCHAN_PUB;
-/** forward UREXEC methods
- */
-const {
-  SystemBoot,
-  SystemHook,
-  SystemRun,
-  SystemRestage,
-  SystemReboot,
-  SystemUnload
-} = URExec;
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,27 +83,25 @@ module.exports = {
   ...META,
   // MAIN API
   Initialize,
-  Shutdown,
   Connect,
-  Subscribe,
-  Unsubscribe,
-  Publish: LocalPublish,
-  Signal: LocalSignal,
-  Call: LocalCall,
-  // SERVICES API
-  Events,
-  Exec,
-  Extensions,
-  URChan,
-  URNet,
-  PubSub,
-  // EXEC API
-  SystemBoot,
-  SystemHook,
-  SystemRun,
-  SystemRestage,
-  SystemReboot,
-  SystemUnload,
-  // CONVENIENCE
-  Prompts
+  Shutdown,
+  // FORWARDED GENERAL PUB/SUB
+  Subscribe: nc_sub.Subscribe,
+  Unsubscribe: nc_sub.Unsubscribe,
+  Publish: nc_pub.LocalPublish,
+  Signal: nc_pub.LocalSignal,
+  Call: nc_pub.LocalCall,
+  // FORWARDED EXEC API
+  SystemBoot: Exec.SystemBoot,
+  SystemHook: Exec.SystemHook,
+  SystemRun: Exec.SystemRun,
+  SystemRestage: Exec.SystemRestage,
+  SystemReboot: Exec.SystemReboot,
+  SystemUnload: Exec.SystemUnload,
+  // HELPER CLASSES
+  class: {
+    PhaseMachine
+  },
+  // CONVENIENCE Mpo
+  util: { Prompts }
 };

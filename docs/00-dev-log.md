@@ -16,7 +16,10 @@ I need to start resolving some of these open questions. My immediate focus from 
 
 **For now, we'll just try to make a representation that uses (1) state charts and (2) observables inside of  `_sim_main`**
 
-* [ ] install xstate and rxjs
+* [x] install xstate and rxjs
+* [ ] ~~define simloop as a machine?~~
+  NO...the promise-based system we're using works better
+* [x] define simloop as promise loop similar to exec
 
 
 

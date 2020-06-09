@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable consistent-return */
 /* eslint-disable no-debugger */
@@ -14,12 +13,12 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSESSION = require('./client-session');
+const URPHASER = require('./class-phase-machine');
 const PR = require('./util/prompts').makeLogHelper('EXEC');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { subs: false };
-const IS_NODE = typeof window === 'undefined';
+const DBG = true;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,14 +69,10 @@ const PHASES = {
   ]
 };
 
-// populate ops map
-const OP_HOOKS = new Map();
-Object.keys(PHASES).forEach(phaseKey => {
-  OP_HOOKS.set(phaseKey, []);
-  PHASES[phaseKey].forEach(opKey => {
-    OP_HOOKS.set(opKey, []);
-  });
-});
+/// PHASER ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let PHASE_MACHINE = new URPHASER(PHASES, '');
+const { ExecutePhase, Execute, Hook, GetHooks } = PHASE_MACHINE;
 
 /// STATE /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,14 +83,6 @@ let SYS_ANIMFRAME_RUN = true;
 let SYS_ANIMFRAME_HOOKS = [];
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: call the hook object's function. This used to do additional
- *  checks to see if the function should be called based on the route.
- */
-function m_InvokeHook(op, hook) {
-  if (!hook.scope) return hook.f();
-  throw Error('scope checking is not implemented in this version of URSYS');
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: clear timers
  */
@@ -116,110 +103,6 @@ function m_CheckOptions(options) {
   } else if (DBG) console.log(...PR('info - L1_OPTION pass'));
   // return true if there were no unknown option properties
   return unknown.length === 0;
-}
-
-/// OPERATION HOOK API CALLS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: register an Operations Handler. <op> is a string constant
- *  define in PHASES and converted into the MAP. <f> is a function that
- *  will be invoked during the operation, and it can return a promise or value.
- */
-function SystemHook(op, f, scope = '') {
-  // don't run on server
-  if (IS_NODE) return;
-  // vestigial scope parameter check if we need it someday
-  if (typeof scope !== 'string') throw Error('<arg1> scope should be included');
-  // does this operation name exist?
-  if (typeof op !== 'string')
-    throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
-  if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
-  if (op.includes('PHASE_'))
-    throw Error(
-      `Hooking a PHASE GROUP '${op}' is not supported. Hook each individual operation instead.`
-    );
-  // did we also get a promise?
-  if (!(f instanceof Function))
-    throw Error('<arg3> must be a function optionally returning Promise');
-  // get the list of promises associated with this op
-  // and add the new promise
-  const hook = { f, scope };
-  OP_HOOKS.get(op).push(hook);
-  if (DBG) console.log(...PR(`registered - SystemHook '${op}'`));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Execute all Promises associated with a op, completing when
- *  all the callback functions complete. If the callback function returns
- *  a Promise, this is added to a list of Promises to wait for before the
- *  function returns control to the calling code.
- */
-function Execute(op) {
-  // note: contents of PHASE_HOOKs are promise-generating functions
-  if (!OP_HOOKS.has(op)) throw Error(`${op} is not a recognized EXEC op`);
-  if (op.includes('PHASE_'))
-    throw Error(`${op} is a Phase Group; use ExecutePhase() instead`);
-  let hooks = OP_HOOKS.get(op);
-  if (hooks.length === 0) {
-    if (DBG.subs) console.log(...PR(`[${op}] no subscribers`));
-    return;
-  }
-
-  // now execute handlers and promises
-  let icount = 0;
-  // get an array of promises
-  // o contains 'f', 'scope' pushed in SystemHook() above
-  let promises = hooks.map(hook => {
-    let retval = m_InvokeHook(op, hook);
-    if (retval instanceof Promise) {
-      icount++;
-      return retval;
-    }
-    // return undefined to signal no special handling
-    return undefined;
-  });
-  promises = promises.filter(e => {
-    return e !== undefined;
-  });
-  if (DBG.subs && hooks.length)
-    console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
-  if (DBG.subs && icount)
-    console.log(...PR(`[${op}] PROMISES QUEUED    : ${icount}`));
-
-  // wait for all promises to execute
-  return Promise.all(promises)
-    .then(values => {
-      if (DBG.subs && values.length)
-        console.log(
-          ...PR(`[${op}] PROMISES  RETVALS  : ${values.length}`),
-          values
-        );
-      return values;
-    })
-    .catch(err => {
-      if (DBG.subs) console.log(...PR(`[${op}]: ${err}`));
-      throw Error(`[${op}]: ${err}`);
-    });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Execute all Promises associated with a Phase Group in serial
- *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
- */
-function ExecutePhase(phaseName) {
-  if (DBG) console.log(...PR(`ExecutePhase('${phaseName}')`));
-  const ops = PHASES[phaseName];
-  if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
-  return ops.reduce(async (previousPromise, nextOp) => {
-    await previousPromise;
-    return Execute(nextOp);
-  }, Promise.resolve());
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Execute all Promises associated with a Phase Group in parallel
- */
-function ExecutePhaseParallel(phaseName) {
-  const ops = PHASES[phaseName];
-  if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
-  return Promise.all(ops.map(op => Execute(op)));
-  // fix this and return promise
 }
 
 /// RUNTIME API CALLS /////////////////////////////////////////////////////////
@@ -284,7 +167,7 @@ async function SystemRun(options = {}) {
   // set up SIM_TIMER
   if (options.doUpdates) {
     if (DBG) console.log(...PR('info - starting simulation updates'));
-    SIM_UPDATE_HOOKS = OP_HOOKS.get('APP_UPDATE').map(hook => hook.f);
+    SIM_UPDATE_HOOKS = GetHooks('APP_UPDATE');
     if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
     SIM_TIMER_ID = setInterval(u_simexec, SIM_INTERVAL_MS);
   }
@@ -292,7 +175,7 @@ async function SystemRun(options = {}) {
   SYS_ANIMFRAME_RUN = options.doAnimFrames || false;
   if (SYS_ANIMFRAME_RUN) {
     if (DBG) console.log(...PR('info - starting animframe updates'));
-    SYS_ANIMFRAME_HOOKS = OP_HOOKS.get('DOM_ANIMFRAME').map(hook => hook.f);
+    SYS_ANIMFRAME_HOOKS = GetHooks('DOM_ANIMFRAME');
     // start animframe process
     window.requestAnimationFrame(u_animframe);
   }
@@ -342,8 +225,8 @@ async function SystemReboot() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  SystemHook: Hook,
   SystemBoot,
-  SystemHook,
   SystemRun,
   SystemRestage,
   SystemUnload,

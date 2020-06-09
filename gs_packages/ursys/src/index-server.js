@@ -124,5 +124,7 @@ module.exports = {
   URNet,
   URMedia,
   // CONVENIENCE
-  Prompts
+  util: {
+    Prompts
+  }
 };

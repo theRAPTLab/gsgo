@@ -32,8 +32,8 @@ import SIM from '../modules/sim/_sim_system';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompts.makeLogHelper('_APP');
-UR.Prompts.printTagColors();
+const PR = UR.util.Prompts.makeLogHelper('_APP');
+UR.util.Prompts.printTagColors();
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

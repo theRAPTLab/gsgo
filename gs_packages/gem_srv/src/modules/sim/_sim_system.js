@@ -2,16 +2,7 @@
 
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-import {
-  Machine,
-  State,
-  actions,
-  assign,
-  send,
-  sendParent,
-  interpret,
-  spawn
-} from 'xstate';
+
 import UR from '@gemstep/ursys/client';
 // runtime data modules
 import INPUTS from './inputs';
@@ -22,22 +13,10 @@ import REFEREE from './referee';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompts.makeLogHelper('SIM');
+const PR = UR.util.Prompts.makeLogHelper('SIM');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Hook into URSYS system for lifecycle events
- */
-function Initialize() {
-  UR.SystemHook('APP_STAGE', () => {});
-  UR.SystemHook('APP_START', () => {});
-  UR.SystemHook('APP_RUN', () => {});
-  UR.SystemHook('APP_UPDATE', StepSimulation);
-  UR.SystemHook('APP_NEXT', () => {});
-}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,6 +49,17 @@ function StepSimulation(int_ms) {
   console.log(...PR(`StepSimulation(${int_ms})`));
   /* insert game logic here */
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: Hook into URSYS system for lifecycle events
+ */
+function Initialize() {
+  // hook into URSYS lifecycle
+  UR.SystemHook('APP_STAGE', () => {});
+  UR.SystemHook('APP_START', () => {});
+  UR.SystemHook('APP_RUN', () => {});
+  UR.SystemHook('APP_UPDATE', StepSimulation);
+  UR.SystemHook('APP_NEXT', () => {});
+} // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
