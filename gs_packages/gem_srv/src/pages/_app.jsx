@@ -28,7 +28,7 @@ import { useURSubscribe } from '../hooks/use-ursys';
 import theme from '../modules/style/theme';
 // simulation components
 import APPSTATE from '../modules/appstate';
-import SIM from '../modules/sim/loop';
+import SIM from '../modules/sim/_sim_system';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

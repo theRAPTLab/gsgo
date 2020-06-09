@@ -1,43 +1,17 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Borrowing from game loop concepts:
-
-  Use SystemHooks to initialize at the right times.
-  This does things like initialize pieces, etc.
-  simulation modules implement the SIMLOOP LIFECYCLE, which is a different
-  but similar interface:
-
-  # STATE UPDATE PHASE
-    GetInputAll        // update the inputs data for this tick
-    PhysicsUpdate      // update autonomous physics
-    TimerUpdates       // update ongoing timers
-    ConditionsUpdate   // update any simulation conditions
-
-  # THINKING PHASE
-    AgentsUpdate       // agent autonomous functions update
-    ManagersUpdate     // managers of agents evaluate agents
-    ManagersThink      // manager AI, queue decision
-    AgentThink         // agent AI, queue decision
-    ManagersOverride   // manager micromanage AI as necessary
-
-  # EXECUTION PHASE
-    AgentsExecute      // agents execute decision
-    ManagersExecute    // managers execute decision
-
-  # EVALUATION PHASE
-    SimStateEvaluate   // update values for non-agent UI
-    RefereeEvaluate    // check for change in simulation
-
-  Additionally there are stages for PAUSING, RENDERING, and UI UPDATES
-  that have to go somewhere.
-
-  The general idea is that our simulation engine runs synchronously in
-  distinct phases that set flags to be read by subsequent phases. This
-  requires discipline by developers working on AI to not try to set actions
-  directly in themselves or other elements in such a way they clobber each
-  other. These data modules provide the source of data.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+import {
+  Machine,
+  State,
+  actions,
+  assign,
+  send,
+  sendParent,
+  interpret,
+  spawn
+} from 'xstate';
 import UR from '@gemstep/ursys/client';
 // runtime data modules
 import INPUTS from './inputs';
@@ -93,7 +67,7 @@ function ResetSimulation() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StepSimulation(int_ms) {
   /* insert game pause control here */
-  console.log(...PR(`DoGameStep ${int_ms}`));
+  console.log(...PR(`StepSimulation(${int_ms})`));
   /* insert game logic here */
 }
 
