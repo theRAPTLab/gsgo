@@ -39,25 +39,33 @@ const GameLoop = new UR.class.PhaseMachine({
 function LoadSimulation() {
   // load agents and assets
   // prep recording buffer
+  console.log(...PR('LoadSimulation'));
 }
-function StartSimulation() {}
+function StartSimulation() {
+  console.log(...PR('StartSimulation'));
+}
 function PauseSimulation() {
   // set the playback rate from 0 to 10
   // can we support backing up in the buffer?
   // can we offer forward simulation from the playback buffer
+  console.log(...PR('PauseSimulation'));
 }
 function EndSimulation() {
   // stop simulation
+  console.log(...PR('EndSimulation'));
 }
 function ExportSimulation() {
   // grab data from the simulation
+  console.log(...PR('ExportSimulation'));
 }
 function ResetSimulation() {
   // return simulation to starting state, ready to run
+  console.log(...PR('ResetSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunSimulation() {
   // prepare to run simulation and do first-time setup
+  console.log(...PR('RunSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StepSimulation(int_ms) {
@@ -73,6 +81,9 @@ function StepSimulation(int_ms) {
 /** API: Hook into URSYS system for lifecycle events
  */
 function UR_Initialize(logModuleName) {
+  // report startup
+  logModuleName('SimSystem');
+
   // hook into URSYS lifecycle
   UR.SystemHook('APP_STAGE', LoadSimulation);
   UR.SystemHook('APP_START', ResetSimulation);
@@ -97,9 +108,6 @@ function UR_Initialize(logModuleName) {
   AGENTS.Initialize(GameLoop);
   MANAGERS.Initialize(GameLoop);
   REFEREE.Initialize(GameLoop);
-
-  // report startup
-  logModuleName('SimSystem');
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
