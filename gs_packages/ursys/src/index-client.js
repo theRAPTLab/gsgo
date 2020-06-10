@@ -9,7 +9,7 @@
 const URChannel = require('./client-channel');
 const URNet = require('./client-network');
 const URExec = require('./client-exec');
-const Prompts = require('./util/prompts');
+const PROMPTS = require('./util/prompts');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,6 +99,6 @@ module.exports = {
   class: {
     PhaseMachine
   },
-  // CONVENIENCE Mpo
-  util: { Prompts }
+  // CONVENIENCE MODULES
+  util: { PROMPTS }
 };

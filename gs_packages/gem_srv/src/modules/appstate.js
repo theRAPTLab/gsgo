@@ -8,7 +8,7 @@ const UR = require('@gemstep/ursys/client');
 
 /// CREATE CHEESEBALL STORE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.Prompts.makeLogHelper('APST');
+const PR = UR.util.PROMPTS.makeLogHelper('APST');
 
 const STORE = {
   isBrowser: false,
