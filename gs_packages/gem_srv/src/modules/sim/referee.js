@@ -13,7 +13,7 @@
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Initialize(gloop) {
-  gloop.MockHook('REFEREE_EVAL');
+  gloop.Hook('REFEREE_EVAL');
 }
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////

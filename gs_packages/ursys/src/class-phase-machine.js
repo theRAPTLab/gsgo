@@ -42,8 +42,12 @@ const IS_NODE = typeof window === 'undefined';
  *  checks to see if the function should be called based on the route.
  */
 function m_InvokeHook(op, hook, ...args) {
-  if (!hook.scope) return hook.f(...args);
-  throw Error('scope checking is not implemented in this version of URSYS');
+  if (hook.scope)
+    throw Error('scope checking is not implemented in this version of URSYS');
+  // execute callbac and return possible Promise
+  if (hook.f) return hook.f(...args);
+  // if no hook.f, this hook was implicitly mocked
+  return undefined;
 }
 
 /// URSYS PhaseMachine CLASS //////////////////////////////////////////////////
@@ -87,13 +91,16 @@ class PhaseMachine {
     if (typeof op !== 'string')
       throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
     if (!this.OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
-    // did we also get a promise?
-    if (!(f instanceof Function)) throw Error('<arg3> must be a function');
+    let status = 'REGD';
+    if (!(f instanceof Function)) {
+      // no function means "implicit mock"
+      status = 'MOCK';
+    }
     // get the list of promises associated with this op
     // and add the new promise
     const hook = { f, scope };
     this.OP_HOOKS.get(op).push(hook);
-    if (DBG) console.log(...this.PR(`reg '${op}' Hook`));
+    if (DBG) console.log(...this.PR(`${status} '${op}' Hook`));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,7 +217,7 @@ class PhaseMachine {
    */
   MockHook(op, callback) {
     this.Hook(op, (...args) => {
-      console.log(`${op} recv:`, ...args);
+      console.log(`MOCK ${op} recv:`, ...args);
       if (typeof callback === 'function') callback(...args);
     });
   }

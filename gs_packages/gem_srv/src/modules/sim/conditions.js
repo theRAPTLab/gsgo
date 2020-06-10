@@ -13,8 +13,8 @@
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Initialize(gloop) {
-  gloop.MockHook('CONDITIONS');
-  gloop.MockHook('SIM_EVAL');
+  gloop.Hook('CONDITIONS');
+  gloop.Hook('SIM_EVAL');
 }
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { interval } from 'rxjs';
 // runtime data modules
 import INPUTS from './inputs';
 import CONDITIONS from './conditions';
@@ -18,8 +19,7 @@ const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** create PhaseMachine to manage gameloop
- */
+/// create PhaseMachine to manage gameloop
 const GameLoop = new UR.class.PhaseMachine({
   PHASE_WORLD: ['INPUTS', 'PHYSICS', 'TIMERS', 'CONDITIONS'],
   PHASE_AGENTS: [
@@ -33,6 +33,10 @@ const GameLoop = new UR.class.PhaseMachine({
   ],
   PHASE_EVAL: ['SIM_EVAL', 'REFEREE_EVAL']
 });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// rxjs
+let obs_frame_interval = interval(33);
+let sub_frame;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +47,7 @@ function LoadSimulation() {
 }
 function StartSimulation() {
   console.log(...PR('StartSimulation'));
+  sub_frame = obs_frame_interval.subscribe(StepSimulation);
 }
 function PauseSimulation() {
   // set the playback rate from 0 to 10
@@ -53,6 +58,7 @@ function PauseSimulation() {
 function EndSimulation() {
   // stop simulation
   console.log(...PR('EndSimulation'));
+  sub_frame.unsubscribe();
 }
 function ExportSimulation() {
   // grab data from the simulation
@@ -68,14 +74,18 @@ function RunSimulation() {
   console.log(...PR('RunSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function StepSimulation(int_ms) {
+function StepSimulation(frame) {
   /* insert game pause control here */
   (async () => {
-    await GameLoop.ExecutePhase('PHASE_WORLD', int_ms);
-    await GameLoop.ExecutePhase('PHASE_AGENTS', int_ms);
-    await GameLoop.ExecutePhase('PHASE_EVAL', int_ms);
+    await GameLoop.ExecutePhase('PHASE_WORLD', frame);
+    await GameLoop.ExecutePhase('PHASE_AGENTS', frame);
+    await GameLoop.ExecutePhase('PHASE_EVAL', frame);
   })();
   /* insert game logic here */
+}
+function UpdateSimulation() {
+  // application host has changed
+  console.log(...PR('RunSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Hook into URSYS system for lifecycle events
@@ -86,10 +96,10 @@ function UR_Initialize(logModuleName) {
 
   // hook into URSYS lifecycle
   UR.SystemHook('APP_STAGE', LoadSimulation);
-  UR.SystemHook('APP_START', ResetSimulation);
+  UR.SystemHook('APP_START', StartSimulation);
   UR.SystemHook('APP_RUN', RunSimulation);
-  UR.SystemHook('APP_UPDATE', () => {});
-  UR.SystemHook('APP_RESET', () => {});
+  UR.SystemHook('APP_UPDATE', UpdateSimulation);
+  UR.SystemHook('APP_RESET', ResetSimulation);
 
   // register debugging messages for GameLoop phases
   const u_dump = (phases, index) => {

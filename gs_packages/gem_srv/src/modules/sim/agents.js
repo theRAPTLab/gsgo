@@ -13,9 +13,9 @@
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Initialize(gloop) {
-  gloop.MockHook('AGENTS_UPDATE');
-  gloop.MockHook('AGENTS_THINK');
-  gloop.MockHook('AGENTS_EXEC');
+  gloop.Hook('AGENTS_UPDATE');
+  gloop.Hook('AGENTS_THINK');
+  gloop.Hook('AGENTS_EXEC');
 }
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////

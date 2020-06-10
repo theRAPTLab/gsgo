@@ -644,7 +644,6 @@ function m_PromiseRemoteHandlers(pkt) {
 /** helper debug output used by m_SocketAdd(), m_SocketDelete() */
 function log_ListSockets(change) {
   DLOG(`socketlist changed: '${change}'`);
-  DLOG(`socketlist changed: '${change}'`);
   // let's use iterators! for..of
   let values = mu_sockets.values();
   let count = 1;

@@ -36,7 +36,12 @@ It occurs to me that the tick function might better be handled in SIM rather tha
 * [ ] *PhaseMachine might accept hardcoded events `RESET` and `NEXT`, etc.*
 * [x] remove timer code from URExec
 * [x] does sim startup still? Just needed some log statements.
-* [ ] convert timer code to stand-alone module using RxJS
+* [ ] Now add back timer code; use RxJS?
+
+Working on the sim stuff...add back timer code. Try RxJS
+
+* [x] use `interval` observable to create timer
+* [ ] 
 
 
 
