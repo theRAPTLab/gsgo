@@ -70,6 +70,7 @@ export default function MyApp(props) {
     return function cleanup() {
       console.log(...PR('unmounting'));
       UR.SystemUnload();
+      UR.URSYS_Shutdown();
     };
   }, []);
 

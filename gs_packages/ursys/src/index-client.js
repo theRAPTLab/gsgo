@@ -59,9 +59,9 @@ function URSYS_Initialize(initializers = []) {
     const { UR_Initialize: initalizer } = mod;
     if (initalizer) {
       const retvalue = initalizer(u_log);
-      if (retvalue) console.log(`unimplemented: retvalue=${retvalue}`);
+      if (retvalue) console.log(...PR(`unimplemented: retvalue=${retvalue}`));
     } else {
-      console.log('UR_Initialize: module missing UR_Initialize()', mod);
+      console.log(...PR('URSYS_Initialize: no initializer function', mod));
     }
   });
   console.groupEnd();
@@ -71,6 +71,8 @@ function URSYS_Initialize(initializers = []) {
  */
 function URSYS_Shutdown() {
   //
+  console.log(...PR('URSYS_Shutdown: Reload app manually'));
+  URNet.Close();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
