@@ -14,27 +14,32 @@ import REFEREE from './referee';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.PROMPTS.makeLogHelper('SIM');
+const PR = UR.util.PROMPTS.makeLogHelper('SIML');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
 const GameLoop = new UR.class.PhaseMachine({
-  PHASE_WORLD: ['INPUTS', 'PHYSICS', 'TIMERS', 'CONDITIONS'],
-  PHASE_AGENTS: [
+  PHASE_INIT: ['RESET', 'SELECT', 'PROGRAM'],
+  PHASE_LOOP: [
+    'INPUTS',
+    'PHYSICS',
+    'TIMERS',
+    'CONDITIONS',
     'AGENTS_UPDATE',
     'MANAGERS_UPDATE',
     'MANAGERS_THINK',
     'AGENTS_THINK',
     'MANAGERS_RETHINK',
     'AGENTS_EXEC',
-    'MANAGERS_EXEC'
-  ],
-  PHASE_EVAL: ['SIM_EVAL', 'REFEREE_EVAL']
+    'MANAGERS_EXEC',
+    'SIM_EVAL',
+    'REFEREE_EVAL'
+  ]
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// rxjs
+/// RXJS TESTS ////////////////////////////////////////////////////////////////
 let obs_frame_interval = interval(33);
 let sub_frame;
 
@@ -44,29 +49,41 @@ function LoadSimulation() {
   // load agents and assets
   // prep recording buffer
   console.log(...PR('LoadSimulation'));
+  (async () => {
+    await GameLoop.ExecutePhase('PHASE_INIT');
+  })();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StartSimulation() {
   console.log(...PR('StartSimulation'));
   sub_frame = obs_frame_interval.subscribe(StepSimulation);
+  console.log(obs_frame_interval);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PauseSimulation() {
   // set the playback rate from 0 to 10
   // can we support backing up in the buffer?
   // can we offer forward simulation from the playback buffer
   console.log(...PR('PauseSimulation'));
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function EndSimulation() {
   // stop simulation
   console.log(...PR('EndSimulation'));
   sub_frame.unsubscribe();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ExportSimulation() {
   // grab data from the simulation
   console.log(...PR('ExportSimulation'));
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ResetSimulation() {
   // return simulation to starting state, ready to run
   console.log(...PR('ResetSimulation'));
+  (async () => {
+    await GameLoop.ExecutePhase('PHASE_INIT');
+  })();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunSimulation() {
@@ -77,12 +94,11 @@ function RunSimulation() {
 function StepSimulation(frame) {
   /* insert game pause control here */
   (async () => {
-    await GameLoop.ExecutePhase('PHASE_WORLD', frame);
-    await GameLoop.ExecutePhase('PHASE_AGENTS', frame);
-    await GameLoop.ExecutePhase('PHASE_EVAL', frame);
+    await GameLoop.ExecutePhase('PHASE_LOOP', frame);
   })();
   /* insert game logic here */
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdateSimulation() {
   // application host has changed
   console.log(...PR('RunSimulation'));
@@ -108,16 +124,11 @@ function UR_Initialize(logModuleName) {
     if (index === phases.length) console.log('end of PHASE', index);
     else console.log(`.. executing ${index} ${phases[index]}`);
   };
-  GameLoop.Hook('PHASE_WORLD', u_dump);
-  GameLoop.Hook('PHASE_AGENTS', u_dump);
-  GameLoop.Hook('PHASE_EVAL', u_dump);
+  GameLoop.Hook('PHASE_INIT', u_dump);
+  GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  INPUTS.Initialize(GameLoop);
-  CONDITIONS.Initialize(GameLoop);
-  AGENTS.Initialize(GameLoop);
-  MANAGERS.Initialize(GameLoop);
-  REFEREE.Initialize(GameLoop);
+  GameLoop.BootModules([INPUTS, CONDITIONS, AGENTS, MANAGERS, REFEREE]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

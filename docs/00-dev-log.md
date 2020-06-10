@@ -41,11 +41,17 @@ It occurs to me that the tick function might better be handled in SIM rather tha
 Working on the sim stuff...add back timer code. Try RxJS
 
 * [x] use `interval` observable to create timer
-* [ ] 
 
+### Q. How do you represent a collection?
 
+A collection is a list of agents. There's a big list of agents that we want to filter. So we need a filtering function.
 
-
-
-
+```
+* set property
+* get a collection
+* filter a collection by condition
+* execute an action with parameters
+* execute an action conditionally
+* respond to to an event
+```
 

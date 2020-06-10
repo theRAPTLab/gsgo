@@ -12,7 +12,7 @@
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Initialize(gloop) {
+function PM_Boot(gloop) {
   gloop.Hook('REFEREE_EVAL');
 }
 
@@ -25,5 +25,5 @@ function Initialize(gloop) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  Initialize
+  PM_Boot
 };

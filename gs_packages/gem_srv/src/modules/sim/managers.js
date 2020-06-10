@@ -12,7 +12,7 @@
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Initialize(gloop) {
+function PM_Boot(gloop) {
   gloop.Hook('MANAGERS_UPDATE');
   gloop.Hook('MANAGERS_THINK');
   gloop.Hook('MANAGERS_RETHINK');
@@ -28,5 +28,5 @@ function Initialize(gloop) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  Initialize
+  PM_Boot
 };

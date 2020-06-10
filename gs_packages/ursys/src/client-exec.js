@@ -176,6 +176,7 @@ module.exports = {
   SystemHook: Hook,
   SystemBoot,
   SystemRun,
+  SystemUpdate,
   SystemRestage,
   SystemUnload,
   SystemReboot

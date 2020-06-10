@@ -220,6 +220,20 @@ class PhaseMachine {
       if (typeof callback === 'function') callback(...args);
     });
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** UTILITY: Give a list of modules a chance to invoke PhaseMachine API
+   */
+  BootModules(moduleArray = []) {
+    const fname = 'PM_Boot';
+    moduleArray.forEach((mod = {}) => {
+      if (typeof mod[fname] !== 'function') {
+        console.warn(...this.PR(`missing ${fname}() in module`, mod));
+        return;
+      }
+      mod[fname](this); // pass phasemachine instance
+    });
+  }
 }
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
