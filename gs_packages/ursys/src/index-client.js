@@ -39,13 +39,19 @@ const PR = PROMPTS.makeLogHelper('_URS');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const nc_sub = new URChannel('ursys-sub');
 const nc_pub = new URChannel('ursys-pub');
+let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize dependent libraries
  */
 function URSYS_Initialize(initializers = []) {
+  if (URSYS_RUNNING) {
+    console.log(...PR('URSYS_Initialize: Already running!!!'));
+    return false;
+  }
   console.groupCollapsed('** URSYS: Initialize');
+
   // autoconnect to URSYS network during NET_CONNECT
   URExec.SystemHook(
     'NET_CONNECT',
@@ -65,14 +71,22 @@ function URSYS_Initialize(initializers = []) {
     }
   });
   console.groupEnd();
+  URSYS_RUNNING = true;
+  return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize
  */
 function URSYS_Shutdown() {
-  //
-  console.log(...PR('URSYS_Shutdown: Reload app manually'));
+  if (!URSYS_RUNNING) {
+    console.log(...PR('URSYS_Shutdown: URSYS is not running!!!'));
+    return;
+  }
+  // close the network
   URNet.Close();
+  URSYS_RUNNING = false;
+  // force a reload
+  window.location.reload();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

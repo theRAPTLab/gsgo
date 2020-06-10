@@ -24,7 +24,6 @@
   * if you subscribe to a phase group operation, you receive the list of
     phases and the current index at the beginning of each phase
 
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////

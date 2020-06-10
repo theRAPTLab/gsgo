@@ -57,18 +57,19 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    UR.URSYS_Initialize([SIM]);
-    // 1. Boot URSYS lifecycle independent of React
-    UR.SystemBoot({
-      autoRun: true,
-      doUpdates: true,
-      doAnimFrames: true,
-      netProps
-    });
+    // 1. Boot URSYS lifecycle independ nt of React
+    if (UR.URSYS_Initialize([SIM])) {
+      UR.SystemBoot({
+        autoRun: true,
+        doUpdates: true,
+        doAnimFrames: true,
+        netProps
+      });
+    }
 
     // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
-      console.log(...PR('unmounting'));
+      console.log(...PR('unmounting _app'));
       UR.SystemUnload();
       UR.URSYS_Shutdown();
     };
