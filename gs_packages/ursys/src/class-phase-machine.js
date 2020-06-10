@@ -51,12 +51,11 @@ function m_InvokeHook(op, hook, ...args) {
 class PhaseMachine {
   /** CONSTRUCTOR: phases is an object of upper-case KEYS containing
    *  arrays of OPERATION strings.
-   *  If 'name' is not passed, then all debug output is suppressed.
    */
-  constructor(phases, name = '') {
+  constructor(phases, prompt = '-') {
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
-    this.PR = name ? PROMPTS.makeLogHelper(name) : () => [];
+    this.PR = prompt ? PROMPTS.makeLogHelper(prompt) : () => [];
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {

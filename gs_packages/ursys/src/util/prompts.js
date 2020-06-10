@@ -64,6 +64,7 @@ const CSS_COLORS = {
   TagPurple: `color:#000;background-color:#b6f;${CSS_PAD}`,
   TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
   TagGray: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
+  TagNull: 'color:#999',
   //
   TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
   TagDkGreen: `color:white;background-color:green;${CSS_PAD}`,
@@ -78,10 +79,11 @@ const SHOW = true;
 const HIDE = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPT_DICT = {
+  '_URS': [SHOW, 'TagDkBlue'],
   'UNET': [SHOW, 'TagBlue'], // e.g. debugout 'UNET' channel, use 'TagBlue'
   '_APP': [SHOW, 'TagCyan'],
   'SESS': [SHOW, 'TagBlue'],
-  'APST': [HIDE, 'TagGray']
+  '-': [SHOW, 'TagNull']
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Based on current detected enviroment, return either ANSI terminal or
