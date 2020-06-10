@@ -92,7 +92,7 @@ function m_CheckOptions(options) {
  */
 async function SystemBoot(options = {}) {
   //
-  if (DBG) console.groupCollapsed('** System: Boot');
+  if (DBG) console.groupCollapsed('** URSYS: Boot');
   m_CheckOptions(options);
   URSession.InitializeNetProps(options.netProps);
   //
@@ -117,7 +117,7 @@ async function SystemBoot(options = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function SystemRun(options = {}) {
   // PART 1 - SYSTEM RUN
-  if (DBG) console.groupCollapsed('** System: Run');
+  if (DBG) console.groupCollapsed('** URSYS: Run');
   m_CheckOptions(options);
   //
   await Execute('APP_STAGE');
@@ -130,7 +130,7 @@ async function SystemRun(options = {}) {
 /** API: something important application-wide has updated
  */
 async function SystemUpdate() {
-  if (DBG) console.groupCollapsed('** System: Restage');
+  if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
   await Execute('APP_UPDATE');
   //
@@ -142,7 +142,7 @@ async function SystemUpdate() {
 /** API: force loop back to run
  */
 async function SystemRestage() {
-  if (DBG) console.groupCollapsed('** System: Restage');
+  if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
   await Execute('APP_RESET');
   //
@@ -153,7 +153,7 @@ async function SystemRestage() {
 /** API: end the lifecycle state engine
  */
 async function SystemUnload() {
-  if (DBG) console.groupCollapsed('** System: Unload');
+  if (DBG) console.groupCollapsed('** URSYS: Unload');
   //
   await ExecutePhase('PHASE_UNLOAD');
   //
@@ -163,7 +163,7 @@ async function SystemUnload() {
 /** API: restart the lifecycle from boot
  */
 async function SystemReboot() {
-  if (DBG) console.groupCollapsed('** System: Reboot');
+  if (DBG) console.groupCollapsed('** URSYS: Reboot');
   //
   await ExecutePhase('PHASE_REBOOT');
   //

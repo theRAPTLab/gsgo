@@ -33,55 +33,53 @@ const META = {
 const Events = {};
 const Extensions = {};
 const PubSub = {};
+const PR = PROMPTS.makeLogHelper('_URS');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const nc_sub = new URChannel('ursys-sub');
 const nc_pub = new URChannel('ursys-pub');
 
-/// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize dependent libraries
  */
-const Initialize = (initializers = []) => {
-  console.groupCollapsed('** System: Initialize');
+function URSYS_Initialize(initializers = []) {
+  console.groupCollapsed('** URSYS: Initialize');
   // autoconnect to URSYS network during NET_CONNECT
   URExec.SystemHook(
     'NET_CONNECT',
     () =>
-      new Promise((res, rej) =>
-        URNet.Connect(nc_sub, { success: res, failure: rej })
+      new Promise((resolvbe, reject) =>
+        URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
       )
   );
-  initializers.forEach(f => {
-    if (typeof f === 'function') f();
+  const u_log = msg => console.log(...PR('URSYS_Initialize:', msg));
+  initializers.forEach((mod = {}) => {
+    const { UR_Initialize: initalizer } = mod;
+    if (initalizer) {
+      const retvalue = initalizer(u_log);
+      if (retvalue) console.log(`unimplemented: retvalue=${retvalue}`);
+    } else {
+      console.log('UR_Initialize: module missing UR_Initialize()', mod);
+    }
   });
   console.groupEnd();
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize
  */
-const Shutdown = () => {
+function URSYS_Shutdown() {
   //
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** connect to URSYS network
- */
-const Connect = options => {
-  return URNet.Connect(nc_sub, options);
-};
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   ...META,
   // MAIN API
-  Initialize,
-  Connect,
-  Shutdown,
+  URSYS_Initialize,
+  URSYS_Shutdown,
   // FORWARDED GENERAL PUB/SUB
   Subscribe: nc_sub.Subscribe,
   Unsubscribe: nc_sub.Unsubscribe,

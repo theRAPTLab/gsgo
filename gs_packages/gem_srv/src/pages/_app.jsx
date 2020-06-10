@@ -57,17 +57,16 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    console.log(...PR('got netprops', netProps));
-    // initialize models in this order
-    UR.Initialize([SIM.Initialize]);
-    // boot
+    UR.URSYS_Initialize([SIM]);
+    // 1. Boot URSYS lifecycle independent of React
     UR.SystemBoot({
       autoRun: true,
       doUpdates: true,
       doAnimFrames: true,
       netProps
     });
-    // when _app unmounts, shutdown
+
+    // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
       console.log(...PR('unmounting'));
       UR.SystemUnload();

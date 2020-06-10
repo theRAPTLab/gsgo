@@ -32,11 +32,11 @@ It occurs to me that the tick function might better be handled in SIM rather tha
 
 **Move UPDATE out of URExec**
 
-* [ ] remove DOM_ANIMFRAME from URExec
-* [ ] PhaseMachine might accept hardcoded events `RESET` and `NEXT`, etc.
-* [ ] remote timer code from the 
+* [x] remove DOM_ANIMFRAME from URExec
+* [ ] *PhaseMachine might accept hardcoded events `RESET` and `NEXT`, etc.*
+* [x] remote timer code from URExec
 * [ ] convert timer code to stand-alone module using RxJS
-* [ ] does sim startup still?
+* [ ] does sim startup still...weirdly no
 
 
 

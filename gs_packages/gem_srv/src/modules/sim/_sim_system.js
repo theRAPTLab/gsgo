@@ -72,7 +72,7 @@ function StepSimulation(int_ms) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: Hook into URSYS system for lifecycle events
  */
-function Initialize() {
+function UR_Initialize(logModuleName) {
   // hook into URSYS lifecycle
   UR.SystemHook('APP_STAGE', LoadSimulation);
   UR.SystemHook('APP_START', ResetSimulation);
@@ -97,12 +97,15 @@ function Initialize() {
   AGENTS.Initialize(GameLoop);
   MANAGERS.Initialize(GameLoop);
   REFEREE.Initialize(GameLoop);
+
+  // report startup
+  logModuleName('SimSystem');
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  Initialize,
+  UR_Initialize,
   LoadSimulation,
   StartSimulation,
   PauseSimulation,
