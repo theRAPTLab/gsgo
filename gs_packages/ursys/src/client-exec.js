@@ -49,14 +49,12 @@ const PHASES = {
     'APP_STAGE', // app modules receive reset params prior to starting
     'APP_START', // app modules start execution, all modules are ready
     'APP_RUN', // app modules enter run mode
-    'APP_UPDATE', // app modules execute a step
-    'DOM_ANIMFRAME', // app modules animation frame
-    'APP_NEXT' // app_module jump back to start of RUN
+    'APP_UPDATE', // app modules configuration update
+    'APP_RESET' // app_module will jump back to APP_RUN
   ],
   PHASE_PAUSED: [
     'APP_PAUSE', // app modules should enter "paused state"
-    'APP_UPDATE', // app modules still receive update
-    'DOM_ANIMFRAME', // app modules still receive animframe
+    'APP_UPDATE', // app modules configuration update
     'APP_UNPAUSE' // app modules cleanup, then back to 'APP_LOOP'
   ],
   PHASE_UNLOAD: [
@@ -72,25 +70,8 @@ const PHASES = {
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PHASE_MACHINE = new URPhaseMachine(PHASES, '');
-const { ExecutePhase, Execute, Hook, GetHookFunctions } = PHASE_MACHINE;
+const { ExecutePhase, Execute, Hook } = PHASE_MACHINE;
 
-/// STATE /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let SIM_TIMER_ID; // timer id for sim stepper
-let SIM_INTERVAL_MS = 3000;
-let SIM_UPDATE_HOOKS = [];
-let SYS_ANIMFRAME_RUN = true;
-let SYS_ANIMFRAME_HOOKS = [];
-
-/// PRIVATE HELPERS ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: clear timers
- */
-function m_ClearTimers() {
-  if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
-  SIM_TIMER_ID = 0;
-  SYS_ANIMFRAME_RUN = 0;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemBoot, etc
  */
@@ -139,60 +120,31 @@ async function SystemRun(options = {}) {
   if (DBG) console.groupCollapsed('** System: Run');
   m_CheckOptions(options);
   //
-  m_ClearTimers();
-  //
   await Execute('APP_STAGE');
   await Execute('APP_START');
   await Execute('APP_RUN');
 
-  // PART 2 - SYSTEM UPDATE
-  if (DBG) console.groupEnd();
-  if (DBG) console.groupCollapsed('** System: Update');
-  // static declaration
-  let _COUNT;
-  // update timer (doesn't grow heap by itself)
-  function u_simexec() {
-    for (_COUNT = 0; _COUNT < SIM_UPDATE_HOOKS.length; _COUNT++)
-      SIM_UPDATE_HOOKS[_COUNT](SIM_INTERVAL_MS);
-  }
-  // animframe timer (seems to slowly grow heap
-  function u_animexec(ts) {
-    for (_COUNT = 0; _COUNT < SYS_ANIMFRAME_HOOKS.length; _COUNT++)
-      SYS_ANIMFRAME_HOOKS[_COUNT](ts);
-  }
-  function u_animframe(ts) {
-    if (SYS_ANIMFRAME_RUN) window.requestAnimationFrame(u_animframe);
-    u_animexec(ts);
-  }
-  // set up SIM_TIMER
-  if (options.doUpdates) {
-    if (DBG) console.log(...PR('info - starting simulation updates'));
-    SIM_UPDATE_HOOKS = GetHookFunctions('APP_UPDATE');
-    if (SIM_TIMER_ID) clearInterval(SIM_TIMER_ID);
-    SIM_TIMER_ID = setInterval(u_simexec, SIM_INTERVAL_MS);
-  }
-  // set up ANIMFRAME
-  SYS_ANIMFRAME_RUN = options.doAnimFrames || false;
-  if (SYS_ANIMFRAME_RUN) {
-    if (DBG) console.log(...PR('info - starting animframe updates'));
-    SYS_ANIMFRAME_HOOKS = GetHookFunctions('DOM_ANIMFRAME');
-    // start animframe process
-    window.requestAnimationFrame(u_animframe);
-  }
-  if (!(options.doUpdates || options.doAnimFrames)) {
-    console.log(...PR('info - no periodic updates are enabled'));
-  }
   if (DBG) console.groupEnd();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: something important application-wide has updated
+ */
+async function SystemUpdate() {
+  if (DBG) console.groupCollapsed('** System: Restage');
+  //
+  await Execute('APP_UPDATE');
+  //
+  if (DBG) console.groupEnd();
+  SystemRun();
+}
+/// - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
  */
 async function SystemRestage() {
   if (DBG) console.groupCollapsed('** System: Restage');
-  // clear running timers
-  m_ClearTimers();
   //
-  await Execute('APP_NEXT');
+  await Execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
   SystemRun();
@@ -202,8 +154,6 @@ async function SystemRestage() {
  */
 async function SystemUnload() {
   if (DBG) console.groupCollapsed('** System: Unload');
-  // clear running timers
-  m_ClearTimers();
   //
   await ExecutePhase('PHASE_UNLOAD');
   //
@@ -214,8 +164,6 @@ async function SystemUnload() {
  */
 async function SystemReboot() {
   if (DBG) console.groupCollapsed('** System: Reboot');
-  // clear running timers
-  m_ClearTimers();
   //
   await ExecutePhase('PHASE_REBOOT');
   //

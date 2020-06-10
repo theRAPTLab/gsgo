@@ -28,6 +28,15 @@ It occurs to me that the tick function might better be handled in SIM rather tha
 
 * [x] cleanup: client-side UR libraries -> URLibName, LibName, ClassName
 * [x] cleanup: server-side UR libraries -> NAME (module convention), ClassName
+* [x] cleanup: conform module names, remove dead modules
+
+**Move UPDATE out of URExec**
+
+* [ ] remove DOM_ANIMFRAME from URExec
+* [ ] PhaseMachine might accept hardcoded events `RESET` and `NEXT`, etc.
+* [ ] remote timer code from the 
+* [ ] convert timer code to stand-alone module using RxJS
+* [ ] does sim startup still?
 
 
 
