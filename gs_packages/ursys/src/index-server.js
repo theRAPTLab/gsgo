@@ -1,9 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS SERVER
-
-  node:     database, express, logger, network, serve
-  commmon:  datamap, messager, netmessage, valuebinding, datestring, session
+  URSYS SERVER MAIN ENTRY
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

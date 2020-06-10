@@ -1,16 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS C:OEMT
-
-  chrome:   events, exec, extensions, link, network, pubsub
-  commmon:  datamap, messager, netmessage, valuebinding, datestring, session
+  URSYS CLIENT MAIN ENTRY
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URChannel = require('./client-urchan');
-const URNet = require('./client-urnet');
+const URChannel = require('./client-channel');
+const URNet = require('./client-network');
 const URExec = require('./client-exec');
 const Prompts = require('./util/prompts');
 
