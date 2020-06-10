@@ -12,8 +12,8 @@
  */
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URSESSION = require('./client-session');
-const URPHASER = require('./class-phase-machine');
+const URSession = require('./client-session');
+const URPhaseMachine = require('./class-phase-machine');
 const PR = require('./util/prompts').makeLogHelper('EXEC');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
@@ -71,7 +71,7 @@ const PHASES = {
 
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PHASE_MACHINE = new URPHASER(PHASES, '');
+let PHASE_MACHINE = new URPhaseMachine(PHASES, '');
 const { ExecutePhase, Execute, Hook, GetHookFunctions } = PHASE_MACHINE;
 
 /// STATE /////////////////////////////////////////////////////////////////////
@@ -113,7 +113,7 @@ async function SystemBoot(options = {}) {
   //
   if (DBG) console.groupCollapsed('** System: Boot');
   m_CheckOptions(options);
-  URSESSION.InitializeNetProps(options.netProps);
+  URSession.InitializeNetProps(options.netProps);
   //
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');

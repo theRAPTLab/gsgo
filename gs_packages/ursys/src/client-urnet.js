@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
-const SESSION = require('./client-session');
+const URSession = require('./client-session');
 const PR = require('./util/prompts').makeLogHelper('UNET');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
@@ -187,7 +187,7 @@ NETWORK.Connect = (datalink, opt) => {
 
     // create websocket
     // uses values that are set by UR-EXEC SystemBoot()
-    const { host: USRV_Host, port: USRV_MsgPort } = SESSION.GetNetBroker();
+    const { host: USRV_Host, port: USRV_MsgPort } = URSession.GetNetBroker();
     let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
     m_socket = new WebSocket(wsURI);
     if (DBG.connect) console.log(...PR(`OPEN SOCKET TO ${wsURI}`));

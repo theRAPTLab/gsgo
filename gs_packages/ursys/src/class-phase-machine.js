@@ -29,7 +29,7 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = require('./util/prompts');
+const PROMPTS = require('./util/prompts');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,7 +56,7 @@ class PhaseMachine {
   constructor(phases, name = '') {
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
-    this.PR = name ? PR.makeLogHelper(name) : () => [];
+    this.PR = name ? PROMPTS.makeLogHelper(name) : () => [];
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {

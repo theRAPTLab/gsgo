@@ -34,7 +34,7 @@
 // between node and browser-side Javascript.
 const Messager = require('./class-messager');
 const DataMap = require('./class-datamap');
-const URNET = require('./client-urnet');
+const URNet = require('./client-urnet');
 
 /** implements endpoints for talking to the URSYS network
  * @module URChan
@@ -120,7 +120,7 @@ class URChan {
   }
 
   UADDR() {
-    return URNET.SocketUADDR();
+    return URNet.SocketUADDR();
   }
 
   /// MESSAGES ////////////////////////////////////////////////////////////////
@@ -274,7 +274,7 @@ class URChan {
    * subscribers.
    */
   RegisterSubscribers(messages = []) {
-    if (URNET.IsStandaloneMode()) {
+    if (URNet.IsStandaloneMode()) {
       console.warn(PR, 'STANDALONE MODE: RegisterMessagesPromise() suppressed!');
       return Promise.resolve();
     }

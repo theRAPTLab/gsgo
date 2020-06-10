@@ -24,9 +24,10 @@ PhaseMachine gives us the ability to manage our game loop using the same logic a
 
 ## June 09 - Wiring in Agent
 
-The next state i
+It occurs to me that the tick function might better be handled in SIM rather than APP level. So let's move that functionality out so we can control rate within sim. We can then update PhaseMachine to use an RxJS observable.
 
-
+* [x] cleanup: client-side UR libraries -> URLibName, LibName, ClassName
+* [x] cleanup: server-side UR libraries -> NAME (module convention), ClassName
 
 
 

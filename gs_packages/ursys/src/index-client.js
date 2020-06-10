@@ -9,9 +9,9 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NetChannel = require('./client-urchan');
-const Net = require('./client-urnet');
-const Exec = require('./client-exec');
+const URChannel = require('./client-urchan');
+const URNet = require('./client-urnet');
+const URExec = require('./client-exec');
 const Prompts = require('./util/prompts');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
@@ -39,8 +39,8 @@ const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const nc_sub = new NetChannel('ursys-sub');
-const nc_pub = new NetChannel('ursys-pub');
+const nc_sub = new URChannel('ursys-sub');
+const nc_pub = new URChannel('ursys-pub');
 
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,11 +52,11 @@ const nc_pub = new NetChannel('ursys-pub');
 const Initialize = (initializers = []) => {
   console.groupCollapsed('** System: Initialize');
   // autoconnect to URSYS network during NET_CONNECT
-  Exec.SystemHook(
+  URExec.SystemHook(
     'NET_CONNECT',
     () =>
       new Promise((res, rej) =>
-        Net.Connect(nc_sub, { success: res, failure: rej })
+        URNet.Connect(nc_sub, { success: res, failure: rej })
       )
   );
   initializers.forEach(f => {
@@ -74,7 +74,7 @@ const Shutdown = () => {
 /** connect to URSYS network
  */
 const Connect = options => {
-  return Net.Connect(nc_sub, options);
+  return URNet.Connect(nc_sub, options);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -92,12 +92,12 @@ module.exports = {
   Signal: nc_pub.LocalSignal,
   Call: nc_pub.LocalCall,
   // FORWARDED EXEC API
-  SystemBoot: Exec.SystemBoot,
-  SystemHook: Exec.SystemHook,
-  SystemRun: Exec.SystemRun,
-  SystemRestage: Exec.SystemRestage,
-  SystemReboot: Exec.SystemReboot,
-  SystemUnload: Exec.SystemUnload,
+  SystemBoot: URExec.SystemBoot,
+  SystemHook: URExec.SystemHook,
+  SystemRun: URExec.SystemRun,
+  SystemRestage: URExec.SystemRestage,
+  SystemReboot: URExec.SystemReboot,
+  SystemUnload: URExec.SystemUnload,
   // HELPER CLASSES
   class: {
     PhaseMachine
