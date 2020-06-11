@@ -61,8 +61,6 @@ export default function MyApp(props) {
     if (UR.URSYS_Initialize([SIM])) {
       UR.SystemBoot({
         autoRun: true,
-        doUpdates: true,
-        doAnimFrames: true,
         netProps
       });
     }

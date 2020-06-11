@@ -76,7 +76,7 @@ const { ExecutePhase, Execute, Hook } = PHASE_MACHINE;
 /** UTILITY: check options passed to SystemBoot, etc
  */
 function m_CheckOptions(options) {
-  const { autoRun, doUpdates, doAnimFrames, netProps, ...other } = options;
+  const { autoRun, netProps, ...other } = options;
   const unknown = Object.keys(other);
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
