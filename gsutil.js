@@ -13,9 +13,10 @@
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 const PR = 'GEMSTEP';
+const ERR = '.. ERROR:';
 
 /// LOAD BUILT-IN LIBRARIES ///////////////////////////////////////////////////
-const FS = require('fs');
+const FS = require('fs-extra');
 const PROCESS = require('process');
 
 /// CHECK DEV DEPENDENCIES ////////////////////////////////////////////////////
@@ -71,6 +72,9 @@ switch (cmd) {
   case 'dev':
     console.log('run dev');
     break;
+  case 'urcopy':
+    CopyURSYS(argv._.slice(2));
+    break;
   default:
     console.log('unknown command', cmd);
 }
@@ -82,4 +86,37 @@ switch (cmd) {
 function RunDevServer() {
   console.log(PR, `Starting ${PR} Development Server...`);
   console.log(PR, `running branch ${m_branch_info} version ${GS_VERSION}`);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// COPY URSYS ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CopyURSYS(args) {
+  const ERR = '** ERR:';
+  const FB = '.. URCOPY:';
+
+  SHELL.echo('\nURCOPY - URSYS COPIER');
+  if (!args.length) {
+    SHELL.echo('HELP: pass <pathname> of directory to clone to');
+    SHELL.exit(0);
+  }
+  const destination = args[0];
+  if (!FS.existsSync(destination)) {
+    SHELL.echo(ERR, `path ${destination} does not exist`);
+    SHELL.exit(0);
+  }
+  const stats = FS.statSync(destination);
+  if (!stats.isDirectory()) {
+    SHELL.echo(ERR, `${destination} is not a directory`);
+  }
+  SHELL.echo(FB, `Copying URSYS to ${destination}...`);
+  console.log(`
+  src/
+  .vscode/*
+  .eslintignore
+  .gitignore
+  package.json (only dependencies, devdependencies, optionaldependencies)
+  tsconfig.json (combining tsconfig.build.json)
+  webpack.config.js
+  `);
 }

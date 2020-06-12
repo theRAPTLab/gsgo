@@ -129,7 +129,7 @@ Addresses and identity aren't the same thing. Addresses are very broad, can desi
 
 Other references
 
-*  is a very tidy breakdown. This is superior to the common reference [The actor model in 10 minutes](https://www.brianstorti.com/the-actor-model).
+*  [Requirements for an Actor Programming Language](http://www.dalnefre.com/wp/2020/01/requirements-for-an-actor-programming-language/) is a very tidy breakdown. This is superior to the common reference [The actor model in 10 minutes](https://www.brianstorti.com/the-actor-model).
 
 ## Related: URSYS
 
