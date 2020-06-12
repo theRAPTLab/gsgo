@@ -58,7 +58,7 @@ export default function MyApp(props) {
     }
     // URSYS start
     // 1. Boot URSYS lifecycle independ nt of React
-    if (UR.URSYS_Initialize([SIM])) {
+    if (UR.URSYS_Initialize([SIM, APPSTATE])) {
       UR.SystemBoot({
         autoRun: true,
         netProps
@@ -80,6 +80,8 @@ export default function MyApp(props) {
       out += ` [${key}]:${data[key]}`;
     });
     console.log(...PR(out));
+    data._app = 'hello from _app';
+    return data;
   }
   useURSubscribe('HELLO_URSYS', handleHello);
 

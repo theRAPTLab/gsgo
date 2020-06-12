@@ -33,7 +33,7 @@ const META = {
 const Events = {};
 const Extensions = {};
 const PubSub = {};
-const PR = PROMPTS.makeLogHelper('_URS');
+const PR = PROMPTS.makeLogHelper('USYS');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,13 +61,13 @@ function URSYS_Initialize(initializers = []) {
       )
   );
   const u_log = msg => console.log(...PR('URSYS_Initialize:', msg));
-  initializers.forEach((mod = {}) => {
-    const { UR_Initialize: initalizer } = mod;
-    if (initalizer) {
-      const retvalue = initalizer(u_log);
-      if (retvalue) console.log(...PR(`unimplemented: retvalue=${retvalue}`));
+  initializers.forEach((mod = {}, index) => {
+    const { UR_Initialize: initializer } = mod;
+    if (initializer) {
+      const retvalue = initializer(u_log);
+      if (retvalue) console.log(...PR(`retvalue=${retvalue} (unused)`));
     } else {
-      console.log(...PR('URSYS_Initialize: no initializer function', mod));
+      throw Error(`missing URSYS_Initialize() in module (array index ${index})`);
     }
   });
   console.groupEnd();

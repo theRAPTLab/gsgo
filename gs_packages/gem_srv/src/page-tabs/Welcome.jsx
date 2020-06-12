@@ -45,10 +45,10 @@ function SystemHome() {
   const classes = useStyles();
   const [note, setNote] = useState('');
   function handleButton(e) {
-    console.group('>>> ASYNC CALL "HELLO_URSYS"');
+    console.groupCollapsed('>>> ASYNC CALL "HELLO_URSYS"');
     UR.Call('HELLO_URSYS', { value: 'cats' }).then(data => {
       console.groupEnd();
-      console.group('>>> ASYNC CALL "HELLO_URSYS" COMPLETE');
+      console.groupCollapsed('>>> ASYNC CALL "HELLO_URSYS" COMPLETE');
       let out = 'got aggregated data:';
       Object.keys(data).forEach(key => {
         out += ` [${key}]:${data[key]}`;
