@@ -47,11 +47,105 @@ Working on the sim stuff...add back timer code. Try RxJS
 A collection is a list of agents. There's a big list of agents that we want to filter. So we need a filtering function.
 
 ```
-* set property
-* get a collection
-* filter a collection by condition
-* execute an action with parameters
-* execute an action conditionally
-* respond to to an event
+X set property
+X get a collection
+X filter a collection by condition
+X execute an action with parameters
+X execute an action conditionally
+O respond to to an event
 ```
+
+## June 11 - Wiring in Agent Continued
+
+Very slow going working out bits of work. A bit burned out, so took a sidetrack to write an URSYS exporter so I can get another group of collaborators working with this. 
+
+I have some coverage with filters, expression, actions with parameters, and conditional execution. Still events, conditional events, defined blocks, triggers. 
+
+## June 12 -Events and Observables
+
+```
+O defining an event
+O responding to an event
+O conditional events
+O block definition
+O triggering events 
+O meta: what is a block
+O meta: how do observables fit into software design
+```
+
+I'm starting to get into the **block structure** of agent programming. I have the individual elements that go into code:
+
+* setting/getting properties inside an agent context
+* possibly setting/getting properties from a global context
+* writing a method as a function (agent, param)
+  * ...that manipulates properties and participates in the lifecycle (features)
+* writing a condition as a function that returns truthy/falsey valies
+  * ...writing a condition as a function that returns a ValueRange with truthy/falsey interpretation 
+  * ...defining types with built-in conditional checks
+  * ...chained conditions
+* accesssing a collection of agents
+* filtering a collection of agents using a condition
+* executing a method conditionally 
+
+**THINKING ALOUD** about **CONDITIONS**
+
+**Event Sources** are **Observables**. Observables can be defined as a *queue of objects* that have **Subscribers**. Subscribers track their **subscription id** so they can unsubscribe as needed. There is no other flow control mechanism. Subscribers are called as soon as the Observable decides it's time to emit an event.
+
+To define a **condition** we write an expression
+```
+[when] [condition] *do the thing*
+```
+
+This has two possible interpretations:
+
+* asynchronous event detection based on condition will just do the thing
+* conditionally execute the thing
+
+The second interpretation is more of an `if` clause, where `when` is the event-style thing.
+
+We also don't have named events in the scripting language, but behind the scenes we probably want to give them logical names.
+
+So...let's define some stuff!
+
+* primitive conditions are named functions that perform a comparison
+* compound conditions are generated from primitive conditions by the user by defining them in the UI. they're implemented as function objects and rely on closures.
+
+There's also the version of conditions used to create **collections**.
+
+```
+[when] [collection] [filter] [condition] *do the thing*
+[when] [collection] [condition] *do the thing*
+
+[when] [collection] [filter] 
+[condition]
+[and] [condition]
+* do the thing*
+```
+
+We'll store the collections as memoized function keys storing collection filter and matching results during `PROGRAM`
+
+The memoized functions will be executed once during `CONDITIONS` , and subscribing objects will have the results queued for the Agent to process later.
+
+Each agent will retrieve the memoized function key results in the results queue during its `AGENT_UPDATE` and execute its  scripts. 
+
+The result of an AGENT FILTERING is an AGENTGROUP. GROUPS are like MANAGERS in the old system but can be created via programming and named.
+
+**THINKING ALOUD ON "DOING THE THING"**
+
+We have a few basics
+
+```
+set property on an agent or on all agents in agentgroup
+get property of an agent or of all agents in agentgroup (array)
+invoke function on agent or on all agents in agentgroup
+... which may return an array of return values?
+calculate an expression using chaining functions
+..write chainable classes for GBoolean, GValue, and GRange
+..how to write parenthetical expressions?
+invoking a function that does something
+```
+
+NOTE: when we have the possibility of returning an array of values, we will choose not to implement that in version 1.0.
+
+
 

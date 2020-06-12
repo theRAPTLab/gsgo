@@ -23,19 +23,27 @@ const DBG = false;
 const GameLoop = new UR.class.PhaseMachine({
   PHASE_INIT: ['RESET', 'SELECT', 'PROGRAM'],
   PHASE_LOOP: [
+    // get state and queue derived state
     'INPUTS',
     'PHYSICS',
     'TIMERS',
     'CONDITIONS',
+    'COLLECTIONS',
+    // agent/groups autonomous updates
     'AGENTS_UPDATE',
-    'MANAGERS_UPDATE',
-    'MANAGERS_THINK',
+    'GROUPS_UPDATE',
+    // agent/groups script execution and queue actions
+    'GROUPS_THINK',
     'AGENTS_THINK',
-    'MANAGERS_RETHINK',
+    'GROUPS_RETHINK',
+    // agent/groups execute queue actions
     'AGENTS_EXEC',
-    'MANAGERS_EXEC',
+    'GROUPS_EXEC',
+    // simulation
     'SIM_EVAL',
-    'REFEREE_EVAL'
+    'REFEREE_EVAL',
+    // display output
+    'RENDER'
   ]
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,11 +61,33 @@ function LoadSimulation() {
     await GameLoop.ExecutePhase('PHASE_INIT');
   })();
 }
+
+/// MAIN RUN CONTROL //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RunSimulation() {
+  // prepare to run simulation and do first-time setup
+  console.log(...PR('RunSimulation'));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function StepSimulation(frame) {
+  /* insert game pause control here */
+  (async () => {
+    await GameLoop.ExecutePhase('PHASE_LOOP', frame);
+  })();
+  /* insert game logic here */
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StartSimulation() {
   console.log(...PR('StartSimulation'));
   sub_frame = obs_frame_interval.subscribe(StepSimulation);
   console.log(obs_frame_interval);
+}
+
+/// SUPPORTING CONTROLS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function UpdateSimulation() {
+  // application host has changed
+  console.log(...PR('RunSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PauseSimulation() {
@@ -85,26 +115,9 @@ function ResetSimulation() {
     await GameLoop.ExecutePhase('PHASE_INIT');
   })();
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RunSimulation() {
-  // prepare to run simulation and do first-time setup
-  console.log(...PR('RunSimulation'));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function StepSimulation(frame) {
-  /* insert game pause control here */
-  (async () => {
-    await GameLoop.ExecutePhase('PHASE_LOOP', frame);
-  })();
-  /* insert game logic here */
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UpdateSimulation() {
-  // application host has changed
-  console.log(...PR('RunSimulation'));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: Hook into URSYS system for lifecycle events
+/** URSYS API: Hook into application lifecycle events
  */
 function UR_Initialize(logModuleName) {
   // report startup

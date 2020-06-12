@@ -1,31 +1,57 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  STUB OUT LIST
+  AGENT CONCEPTUAL TEST CODE
 
-  * set property
-  * get a collection
-  * filter a collection by condition
-  * execute an action with parameters
-  * execute an action conditionally
-  * respond to to an event
+  WORKING EXPRESSIONS
+
+  * setting/getting properties inside an agent context
+  * possibly setting/getting properties from a global context
+  * writing a method as a function (agent, param)
+    ..that manipulates properties and participates in the lifecycle (features)
+  * writing a condition as a function that returns truthy/falsey valies
+    - writing a condition as a function that returns a ValueRange
+      with truthy/falsey interpretation
+    - defining types with built-in conditional checks
+    - chained conditions
+  * accesssing a collection of agents
+  * filtering a collection of agents using a condition
+  * executing a method conditionally
+
+  NEXT EXPRESSIONS
+
+  what is an event / trigger / observable / pipe
+  how do conditions relate to events and triggers
+
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+import { GBoolean, GValue, GRange } from './script-engine';
 
 /// CONTEXT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // global agent lists
-const gAgents = []; // the set of all agents
-const gAgentGroups = new Map(); // agents by type
-// local agent
-const agentContext = {};
+const agentSet = new Set(); // the set of all agents
+const agentGroups = new Map(); // agents by type
+
+const dummyAgent = {
+  id: 1,
+  name: '',
+  costume: {},
+  position: { x: 1, y: 1 }
+};
+
 // global agent condition tests
 const agentTests = {
-  hasProp: (a, prop) => !!a[prop]
+  hasProp: (agent, prop) => !!agent[prop]
 };
-// global agent condition tests
-const comparisonTests = {
-  isEqualTo: (a, b) => a === b
+const action = {
+  moveTo: (context, x, y) => {}
 };
+const expression = {
+  val: a => GValue(a)
+};
+const mailbox = [];
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +60,7 @@ const comparisonTests = {
  *  @param {any} value value to set
  */
 function setProperty(prop, value) {
-  agentContext[prop] = value;
+  dummyAgent[prop] = value;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** get property of agent
@@ -42,19 +68,7 @@ function setProperty(prop, value) {
  *  @returns {any}
  */
 function getProperty(prop) {
-  return agentContext[prop];
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return set of agents matching agent filter
- */
-function getAgentFilter(agentFilter) {
-  return gAgents.filter(agentFilter);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return a conditional test by name
- */
-function getConditionTest(testName) {
-  return comparisonTests[testName];
+  return dummyAgent[prop];
 }
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
@@ -64,27 +78,60 @@ function AgentProgram() {
   console.log(`
   AgentProgram June 14 Goals
 
-  o - set property
-  o - get property
-  o - filter collection by condition
-  o - execute action w/ parameters
-  o - execute action conditionally
-  o - execute block
+  o - create a dummy agent
+  x - set property (variable)
+  x - get property (variable)
+  x - get a collection
+  x - define a condition
+  x - filter collection by condition
+  x - calculate value of expression
+  x - execute action w/ parameters
+  x - execute action conditionally
   o - respond to event
   o - respond to conditional event
+  o - define block (function)
+  o - execute block (function)
+  o - phasemachine autoupdates, triggers
   `);
+
+  // create a dummy agent
+  dummyAgent.name = 'DUMDUM';
+  agentSet.add(dummyAgent);
+
+  // set a property
+  setProperty('testCount', 10);
+  // define a 'when' condition
+  // when myvar > 10 && myvar < 20 do something once or more (detect vs duration)
+  const n = getProperty('myvar');
+  // const condition = comparisonTests.isBetween;
+  // const agent = dummyAgent;
+  // const agentFilter = agent => comparisonTests.isBetween(agent.myvar, 10, 20);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frame) {
-  // do agenty things
+  // get a property
+  const name = getProperty('name');
+  // respond to an event
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frame) {
-  // do agenty things
+  // get a collection of references
+  const agents = [...agentSet];
+  const test = agentTests.hasProp;
+  const R1 = 'name';
+  const set = agents.filter(A1 => test(A1, R1));
+  console.log(set.length);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frame) {
-  // do agenty things
+  // execute an action with parameters
+  // save to variable
+  // dummyAgent.myvar = math.add(frame, 1);
+  // execute action conditionally
+  // if (comparisonTests.isGreaterThan(dummyAgent.myvar, 2)) {
+  //   dummyAgent.myvar = math.add(frame, 1);
+  // }
+  //
 }
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
