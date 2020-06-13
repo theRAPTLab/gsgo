@@ -26,117 +26,122 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GBoolean, GValue, GRange } from './script-engine';
+import { GBoolean, GValue, GRange, Agent } from './script-engine';
 
 /// CONTEXT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // global agent lists
-const agentSet = new Set(); // the set of all agents
-const agentGroups = new Map(); // agents by type
-
-const dummyAgent = {
-  id: 1,
-  name: '',
-  costume: {},
-  position: { x: 1, y: 1 }
-};
-
-// global agent condition tests
-const agentTests = {
-  hasProp: (agent, prop) => !!agent[prop]
-};
-const action = {
-  moveTo: (context, x, y) => {}
-};
-const expression = {
-  val: a => GValue(a)
-};
-const mailbox = [];
+const agent = new Agent();
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** set property of agent
- *  @param {string} prop property name
- *  @param {any} value value to set
- */
-function setProperty(prop, value) {
-  dummyAgent[prop] = value;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** get property of agent
- *  @param {string} prop property name
- *  @returns {any}
- */
-function getProperty(prop) {
-  return dummyAgent[prop];
-}
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentProgram() {
+function AgentSelect() {
   console.groupEnd();
   console.log(`
-  AgentProgram June 14 Goals
+AgentProgram June 14 Goals
 
-  o - create a dummy agent
-  x - set property (variable)
-  x - get property (variable)
-  x - get a collection
-  x - define a condition
-  x - filter collection by condition
-  x - calculate value of expression
-  x - execute action w/ parameters
-  x - execute action conditionally
-  o - respond to event
-  o - respond to conditional event
-  o - define block (function)
-  o - execute block (function)
-  o - phasemachine autoupdates, triggers
+o - create a dummy agent
+x - set property (variable)
+x - get property (variable)
+x - get a collection
+x - define a condition
+x - filter collection by condition
+x - calculate value of expression
+x - execute action w/ parameters
+x - execute action conditionally
+o - respond to event
+o - respond to conditional event
+o - define block (function)
+o - execute block (function)
+o - phasemachine autoupdates, triggers
   `);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AgentProgram() {
+  /*/
+  define agent MyAgent
+    .name setTo "Bob the Agent"
+    .x setTo 100
+    .y setTo 200
+    .skin setTo "balloon.png"
+    define property .currentHealth as Number
+      setTo 0
+      max 10
+      min 0
+  /*/
+  agent.prop('name').setTo('Bob the Agent');
+  agent.prop('x').setTo(100);
+  agent.prop('y').setTo(200);
+  agent.prop('skin').setTo('balloon.png');
+  agent.defineProp('currentHealth', new GValue()).setTo(0);
+  agent
+    .prop('currentHealth')
+    .setMin(0)
+    .setMax(10);
+  console.log('*** AGENT PROGRAMMING RESULTS ***', agent.export());
 
-  // create a dummy agent
-  dummyAgent.name = 'DUMDUM';
-  agentSet.add(dummyAgent);
+  /*/
+  define agent MyAgent
+    use feature Movement
+      setController "student"
+    use feature Costume
+      setCostumes {1:"slowbee.png", 2:"fastbee.png"}
+      showCostume 1
+  /*/
+  const MovementPack = {
+    name: 'Movement',
+    initialize: () => {},
+    reset: () => {},
+    setController: x => {
+      console.log(`setting control to ${x}`);
+    }
+  };
+  agent.addFeature(MovementPack).setController('student');
 
-  // set a property
-  setProperty('testCount', 10);
-  // define a 'when' condition
-  // when myvar > 10 && myvar < 20 do something once or more (detect vs duration)
-  const n = getProperty('myvar');
-  // const condition = comparisonTests.isBetween;
-  // const agent = dummyAgent;
-  // const agentFilter = agent => comparisonTests.isBetween(agent.myvar, 10, 20);
+  /*/
+  // the collection of any bees that is touching any hive
+  when Bee touches Hive
+    if @Bee.nectar greaterThan 0
+      @Bee.nectar subtract 1
+      @Hive.nectar add 1
+  /*/
+  /*/
+  // the collection of Bees matching a condition
+  when Bee.energy greaterThan 0
+    @Bee.energy subtract 1
+    if (@Bee.energy isZero)
+      @Bee die
+
+  when MyTimer.elapsed greaterThan 10
+    @MyTimer reset
+    World.pollution add 1
+
+/*/
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frame) {
-  // get a property
-  const name = getProperty('name');
-  // respond to an event
+  const healthProp = agent.prop('currentHealth');
+  console.log(healthProp.value, healthProp.nvalue);
+  if (healthProp.eq(5).true()) console.log('!!! 5 health');
+  healthProp.add(1);
+  //
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frame) {
-  // get a collection of references
-  const agents = [...agentSet];
-  const test = agentTests.hasProp;
-  const R1 = 'name';
-  const set = agents.filter(A1 => test(A1, R1));
-  console.log(set.length);
+  //
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frame) {
-  // execute an action with parameters
-  // save to variable
-  // dummyAgent.myvar = math.add(frame, 1);
-  // execute action conditionally
-  // if (comparisonTests.isGreaterThan(dummyAgent.myvar, 2)) {
-  //   dummyAgent.myvar = math.add(frame, 1);
-  // }
   //
 }
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PM_Boot(gloop) {
+  gloop.Hook('SELECT', AgentSelect);
   gloop.Hook('PROGRAM', AgentProgram);
   gloop.Hook('AGENTS_UPDATE', AgentUpdate);
   gloop.Hook('AGENTS_THINK', AgentThink);

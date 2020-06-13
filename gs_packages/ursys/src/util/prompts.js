@@ -80,9 +80,7 @@ const HIDE = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPT_DICT = {
   'USYS': [SHOW, 'TagDkBlue'],
-  'UNET': [SHOW, 'TagBlue'], // e.g. debugout 'UNET' channel, use 'TagBlue'
-  '_APP': [SHOW, 'TagCyan'],
-  'SESS': [SHOW, 'TagBlue'],
+  'SIML': [SHOW, 'TagPink'],
   '-': [SHOW, 'TagNull']
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

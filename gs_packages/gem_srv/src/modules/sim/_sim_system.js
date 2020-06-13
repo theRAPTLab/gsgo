@@ -9,7 +9,7 @@ import { interval } from 'rxjs';
 import INPUTS from './inputs';
 import CONDITIONS from './conditions';
 import AGENTS from './agents';
-import MANAGERS from './managers';
+import GROUPS from './agentgroups';
 import REFEREE from './referee';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
@@ -21,7 +21,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
 const GameLoop = new UR.class.PhaseMachine({
-  PHASE_INIT: ['RESET', 'SELECT', 'PROGRAM'],
+  PHASE_LOAD: ['RESET', 'WAIT', 'SELECT', 'PROGRAM', 'READY'],
   PHASE_LOOP: [
     // get state and queue derived state
     'INPUTS',
@@ -58,7 +58,7 @@ function LoadSimulation() {
   // prep recording buffer
   console.log(...PR('LoadSimulation'));
   (async () => {
-    await GameLoop.ExecutePhase('PHASE_INIT');
+    await GameLoop.ExecutePhase('PHASE_LOAD');
   })();
 }
 
@@ -112,7 +112,7 @@ function ResetSimulation() {
   // return simulation to starting state, ready to run
   console.log(...PR('ResetSimulation'));
   (async () => {
-    await GameLoop.ExecutePhase('PHASE_INIT');
+    await GameLoop.ExecutePhase('PHASE_LOAD');
   })();
 }
 
@@ -137,11 +137,11 @@ function UR_Initialize(logModuleName) {
     if (index === phases.length) console.log('end of PHASE', index);
     else console.log(`.. executing ${index} ${phases[index]}`);
   };
-  GameLoop.Hook('PHASE_INIT', u_dump);
+  GameLoop.Hook('PHASE_LOAD', u_dump);
   GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  GameLoop.BootModules([INPUTS, CONDITIONS, AGENTS, MANAGERS, REFEREE]);
+  GameLoop.BootModules([INPUTS, CONDITIONS, AGENTS, GROUPS, REFEREE]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

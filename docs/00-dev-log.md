@@ -147,5 +147,47 @@ invoking a function that does something
 
 NOTE: when we have the possibility of returning an array of values, we will choose not to implement that in version 1.0.
 
+## June 12 pt 2 -Script elements
 
+I can now write this intermediary code:
 
+``` js
+/*** PROGRAM ***/
+
+const agent = new Agent();
+// built-ins
+agent.prop('name')
+  .setTo('Bob the Agent');
+agent.prop('x')
+  .setTo(100);
+agent.prop('y')
+  .setTo(200);
+agent.prop('skin')
+  .setTo('balloon.png');
+// user props
+agent.defineProp('currentHealth', new GValue())
+  .setTo(0);
+agent.prop('currentHealth')
+  .setMin(0)
+  .setMax(10);
+// feature packs
+const MovementPack = {
+  name: 'Movement',
+  initialize: () => {},
+  reset: () => {},
+  setController: x => {
+    console.log(`setting control to ${x}`);
+  }
+};
+agent.addFeature(MovementPack)
+  .setController('student');
+
+/*** RUNTIME ***/
+const healthProp = agent.prop('currentHealth');
+console.log(healthProp.value, healthProp.nvalue);
+if (healthProp.eq(5).true()) console.log('!!! 5 health');
+healthProp.add(1);
+
+```
+
+ToDo: Sets, Conditions, Filters, Triggers, 

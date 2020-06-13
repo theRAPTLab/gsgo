@@ -1,7 +1,9 @@
 import GBoolean from './g-boolean';
+import GBaseType from './g-basetype';
 
-class GRange {
+class GRange extends GBaseType {
   constructor(a = Number.MIN_SAFE_INTEGER, b = Number.MAX_SAFE_INTEGER) {
+    super();
     this.value = a;
     this.min = a;
     this.max = b;

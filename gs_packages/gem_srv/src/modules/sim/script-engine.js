@@ -4,6 +4,7 @@
 import GBoolean from './class/g-boolean';
 import GValue from './class/g-value';
 import GRange from './class/g-range';
+import Agent from './class/agent';
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,4 +28,4 @@ import GRange from './class/g-range';
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GBoolean, GValue, GRange };
+export { GBoolean, GValue, GRange, Agent };
