@@ -1,6 +1,6 @@
-import GSBaseType from './gsBasetype';
+import GSValue from './class-value';
 
-class GSBoolean extends GSBaseType {
+class GSBoolean extends GSValue {
   constructor(initial = true, fuzzy = 0) {
     super();
     this.value = initial;

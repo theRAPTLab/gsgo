@@ -1,7 +1,7 @@
-import GSBoolean from './gsBoolean';
-import GSBaseType from './gsBasetype';
+import GSBoolean from './value-boolean';
+import GSValue from './class-value';
 
-class GSString extends GSBaseType {
+class GSString extends GSValue {
   constructor(initial = '') {
     super();
     this.value = initial;

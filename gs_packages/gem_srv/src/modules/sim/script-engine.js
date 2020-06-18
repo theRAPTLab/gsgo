@@ -1,11 +1,11 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './class/gsBoolean';
-import GSValue from './class/gsValue';
-import GSRange from './class/gsRange';
-import Agent from './class/agent';
-import World from './class/world';
+import GSBoolean from './properties/value-boolean';
+import GSNumber from './properties/value-number';
+import Agent from './agents/class-agent';
+import World from './agents/agent-world';
+import Features from './features/class-feature';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,4 +84,4 @@ AgentSet.defineGroup = setName => {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GSBoolean, GSValue, GSRange, Agent, AgentSet, World };
+export { GSBoolean, GSNumber, Agent, AgentSet, World, Features };

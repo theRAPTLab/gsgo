@@ -1,5 +1,5 @@
-import GSBoolean from './gsBoolean';
-import GSBaseType from './gsBasetype';
+import GSBoolean from './value-boolean';
+import GSValue from './class-value';
 
 const DBG = false;
 
@@ -22,7 +22,7 @@ function u_CheckMinMax(vobj) {
   vobj.nvalue = (vobj.value - vobj.min) / (vobj.max - vobj.min);
 }
 
-class GSValue extends GSBaseType {
+class GSNumber extends GSValue {
   constructor(initial = 0) {
     super();
     this.value = initial;
@@ -82,4 +82,4 @@ class GSValue extends GSBaseType {
   }
 }
 
-export default GSValue;
+export default GSNumber;

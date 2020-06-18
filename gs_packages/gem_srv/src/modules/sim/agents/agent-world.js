@@ -1,11 +1,13 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  The World Agent is global context for every agent
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import rxjs from 'rxjs';
-
-import GSValue from './gsValue';
-import GSString from './gsString';
-import Agent from './agent';
+import GSNumber from '../properties/value-number';
+import GSString from '../properties/value-string';
+import Agent from './class-agent';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,6 +20,8 @@ class WorldAgent extends Agent {
     // this.props = Map 'prop' => ValueClass
     // this.features = Map 'feature' => FeatureClass
     // this.eventQ = [] of incoming events
+    this.timers = [];
+    this.globals = {};
   }
 }
 

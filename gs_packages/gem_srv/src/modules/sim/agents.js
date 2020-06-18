@@ -28,10 +28,10 @@
 
 import {
   GSBoolean,
-  GSValue,
-  GSRange,
+  GSNumber,
   Agent,
   AgentSet,
+  Features,
   World
 } from './script-engine';
 
@@ -83,7 +83,7 @@ function AgentProgram() {
   agent.prop('x').setTo(100);
   agent.prop('y').setTo(200);
   agent.prop('skin').setTo('balloon.png');
-  agent.defineProp('currentHealth', new GSValue()).setTo(0);
+  agent.defineProp('currentHealth', new GSNumber()).setTo(0);
   agent
     .prop('currentHealth')
     .setMin(0)
@@ -103,7 +103,7 @@ function AgentProgram() {
     initialize: pm => {
       pm.Hook('INPUT', this.HandleInput);
     },
-    bind: agent => {
+    agentInit: agent => {
       this.agent = agent;
     },
     setController: x => {
@@ -144,7 +144,7 @@ function AgentProgram() {
     initialize: pm => {
       pm.Hook('INPUT', this.HandleInput);
     },
-    bind: agent => {
+    agentInit: agent => {
       this.agent = agent;
       return TimerPack;
     },
