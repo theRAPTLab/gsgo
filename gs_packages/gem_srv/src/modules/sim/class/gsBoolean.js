@@ -1,6 +1,6 @@
-import GBaseType from './g-basetype';
+import GSBaseType from './gsBasetype';
 
-class GBoolean extends GBaseType {
+class GSBoolean extends GSBaseType {
   constructor(initial = true, fuzzy = 0) {
     super();
     this.value = initial;
@@ -45,4 +45,4 @@ class GBoolean extends GBaseType {
   }
 }
 
-export default GBoolean;
+export default GSBoolean;

@@ -1,7 +1,7 @@
-import GBoolean from './g-boolean';
-import GBaseType from './g-basetype';
+import GSBoolean from './gsBoolean';
+import GSBaseType from './gsBasetype';
 
-class GRange extends GBaseType {
+class GSRange extends GSBaseType {
   constructor(a = Number.MIN_SAFE_INTEGER, b = Number.MAX_SAFE_INTEGER) {
     super();
     this.value = a;
@@ -12,8 +12,8 @@ class GRange extends GBaseType {
     this.value = num;
   }
   isBetween(num = this.value) {
-    return new GBoolean(num > this.min && num < this.max);
+    return new GSBoolean(num > this.min && num < this.max);
   }
 }
 
-export default GRange;
+export default GSRange;

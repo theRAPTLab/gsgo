@@ -26,7 +26,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GBoolean, GValue, GRange, Agent } from './script-engine';
+import {
+  GSBoolean,
+  GSValue,
+  GSRange,
+  Agent,
+  AgentSet,
+  World
+} from './script-engine';
 
 /// CONTEXT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,7 +50,7 @@ function AgentSelect() {
   console.log(`
 AgentProgram June 14 Goals
 
-o - create a dummy agent
+x - create a dummy agent
 x - set property (variable)
 x - get property (variable)
 x - get a collection
@@ -76,7 +83,7 @@ function AgentProgram() {
   agent.prop('x').setTo(100);
   agent.prop('y').setTo(200);
   agent.prop('skin').setTo('balloon.png');
-  agent.defineProp('currentHealth', new GValue()).setTo(0);
+  agent.defineProp('currentHealth', new GSValue()).setTo(0);
   agent
     .prop('currentHealth')
     .setMin(0)
@@ -93,8 +100,12 @@ function AgentProgram() {
   /*/
   const MovementPack = {
     name: 'Movement',
-    initialize: () => {},
-    reset: () => {},
+    initialize: pm => {
+      pm.Hook('INPUT', this.HandleInput);
+    },
+    bind: agent => {
+      this.agent = agent;
+    },
     setController: x => {
       console.log(`setting control to ${x}`);
     }
@@ -102,24 +113,57 @@ function AgentProgram() {
   agent.addFeature(MovementPack).setController('student');
 
   /*/
-  // the collection of any bees that is touching any hive
   when Bee touches Hive
     if @Bee.nectar greaterThan 0
       @Bee.nectar subtract 1
       @Hive.nectar add 1
   /*/
+  AgentSet.defineGroup('Bee');
+  AgentSet.when('Bee') // set of Bees
+    .touches('Hive') // filtered Bees touching Hive
+    .queueEvent('touches', 'Bee'); // operating on set
+
   /*/
-  // the collection of Bees matching a condition
   when Bee.energy greaterThan 0
     @Bee.energy subtract 1
     if (@Bee.energy isZero)
       @Bee die
-
+  /*/
+  AgentSet.when('Bee')
+    .filter(bee => {
+      return bee.speed > 10;
+    })
+    .queueEvent('speedExcess');
+  /*/
   when MyTimer.elapsed greaterThan 10
     @MyTimer reset
     World.pollution add 1
-
-/*/
+  /*/
+  const TimerPack = {
+    name: 'Timer',
+    initialize: pm => {
+      pm.Hook('INPUT', this.HandleInput);
+    },
+    bind: agent => {
+      this.agent = agent;
+      return TimerPack;
+    },
+    defineTimer: timerName => {
+      console.log(`deftimer ${timerName}`);
+      return TimerPack;
+    },
+    on: (eventName, f) => {
+      console.log(`${TimerPack.name} handler for '${eventName}'`);
+      return TimerPack;
+    }
+  };
+  World.addFeature(TimerPack);
+  World.feature('Timer')
+    .defineTimer('population')
+    .on('elapsed', timer => {
+      timer.reset();
+      console.log('population timer elapsed');
+    });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frame) {

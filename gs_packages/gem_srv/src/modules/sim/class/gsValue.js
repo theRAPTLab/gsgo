@@ -1,5 +1,5 @@
-import GBoolean from './g-boolean';
-import GBaseType from './g-basetype';
+import GSBoolean from './gsBoolean';
+import GSBaseType from './gsBasetype';
 
 const DBG = false;
 
@@ -22,7 +22,7 @@ function u_CheckMinMax(vobj) {
   vobj.nvalue = (vobj.value - vobj.min) / (vobj.max - vobj.min);
 }
 
-class GValue extends GBaseType {
+class GSValue extends GSBaseType {
   constructor(initial = 0) {
     super();
     this.value = initial;
@@ -66,21 +66,20 @@ class GValue extends GBaseType {
     return this;
   }
   eq(num) {
-    console.log(this.value);
-    return new GBoolean(this.value === num);
+    return new GSBoolean(this.value === num);
   }
   gt(num) {
-    return new GBoolean(this.value > num);
+    return new GSBoolean(this.value > num);
   }
   lt(num) {
-    return new GBoolean(this.value < num);
+    return new GSBoolean(this.value < num);
   }
   gte(num) {
-    return new GBoolean(this.value >= num);
+    return new GSBoolean(this.value >= num);
   }
   lte(num) {
-    return new GBoolean(this.value <= num);
+    return new GSBoolean(this.value <= num);
   }
 }
 
-export default GValue;
+export default GSValue;
