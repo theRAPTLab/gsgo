@@ -149,7 +149,7 @@ NOTE: when we have the possibility of returning an array of values, we will choo
 
 ## June 12 pt 2 -Script elements
 
-I can now write this intermediary code:
+I can now write this intermediary code which is similar to GEMScript
 
 ``` js
 /*** PROGRAM ***/
@@ -191,3 +191,24 @@ healthProp.add(1);
 ```
 
 ToDo: Sets, Conditions, Filters, Triggers, 
+
+## June 17 - Writing Conditions
+
+It's still fuzzy in my head, but I think I can just work it out as as I go in Agent.
+
+The general idea is to write a condition caching routine, but to do that I need to write the condition first! It's multi-stage.
+
+* [x] in Agent Program, write the conditional expression and what it should do
+* [x] Add AgentSet to script-engine.js to figure out how sets work.
+
+Resuming from where I left off at midnight...I'm working on the timers now. Maybe reactive stuff needs to happen? And after this is sorta working, let's do a review.
+
+* [x] implement timer condition
+* [x] implement when clauses
+* [x] implement filter sets
+
+We have a basic outline of things now in crappy code form. So let's save everything and then start refactoring:
+
+* [ ] make FeaturePack base class
+* [ ] make FeaturePack name manager
+

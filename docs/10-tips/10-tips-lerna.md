@@ -18,6 +18,18 @@ In GEMSTEP, our monorepo includes the additional tooling:
 * Visual Code workspace file and workspace settings.
 * Additional Node packages in `package.json` for running the `gsutil` development tool.
 
+## How do I create a new Lerna monorepo?
+
+it's pretty easy! If you have `lerna` installed globally, create a "fixed/locked mode" repo with this. All versions in all packages are synchronized.
+
+```
+lerna init
+```
+
+Then edit  `package.json` as needed. You should probably change the name.
+
+
+
 ## How do I add a new package to the monorepo?
 
 Assume you want to add a new package named `mypackage` using the `@gemstep` scope. Make sure you are in the monorepo root, then issue the following commands:
@@ -184,3 +196,4 @@ The only solution I know of is to ensure that the versions in the packages also 
 ### When I npm run bootstrap, webpack throws "module not found" errors during build
 
 Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 
+
