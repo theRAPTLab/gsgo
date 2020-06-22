@@ -1,4 +1,7 @@
 {
+  "SITE": {
+    "title": "GEMSTEP"
+  },
   "NAVMENU": [
     { "label": "Wireframe", "href": "/" },
     { "label": "Notes", "href": "/notes" }
