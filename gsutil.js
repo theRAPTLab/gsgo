@@ -326,6 +326,7 @@ function CopyNext(args) {
     'src/components/',
     'src/hooks/',
     'src/modules/style/',
+    'src/modules/sim/',
     'src/page-blocks/',
     'src/pages/',
     'src/modules/appstate.js',
