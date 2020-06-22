@@ -67,64 +67,78 @@ if (GS_VERSION === undefined) {
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_DirectoryExists(path) {
-  if (!FS.existsSync(path)) {
-    return false;
-  }
+  if (!FS.existsSync(path)) return false;
   const stats = FS.statSync(path);
-  if (!stats.isDirectory()) {
+  if (!stats.isDirectory()) return false;
+  return true;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_ParseLernaDirectory(path) {
+  if (!m_DirectoryExists(path)) return false;
+  try {
+    const lernaJson = JSON.parse(FS.readFileSync(`${path}/lerna.json`, 'utf-8'));
+    return lernaJson;
+  } catch (e) {
     return false;
   }
-  return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_CopyFiles(source, dest, rpaths) {
   rpaths.forEach(relativePath => {
-    const from = PATH.join(source, relativePath);
+    try {
+      const from = PATH.join(source, relativePath);
 
-    const fromType = FS.statSync(from);
-    // directories
-    if (fromType.isDirectory()) {
-      const target = PATH.join(dest, relativePath, '..');
-      FS.ensureDirSync(target);
-      SHELL.cp('-Rf', from, target);
-      const pstr = PATH.relative(target, source)
-        .split('../')
-        .join('');
-      console.log(`.. copying dir ${pstr}/${relativePath}`);
-      return;
+      const fromType = FS.statSync(from);
+      // directories
+      if (fromType.isDirectory()) {
+        const target = PATH.join(dest, relativePath, '..');
+        FS.ensureDirSync(target);
+        SHELL.cp('-Rf', from, target);
+        const pstr = PATH.relative(target, source)
+          .split('../')
+          .join('');
+        console.log(`.. copying dir ${pstr}/${relativePath}`);
+        return;
+      }
+      // files
+      if (fromType.isFile()) {
+        const target = PATH.join(dest, relativePath);
+        FS.ensureDirSync(PATH.dirname(target));
+        SHELL.cp(from, target);
+        const pstr = PATH.relative(target, source)
+          .split('../')
+          .join('');
+        console.log(`.. copying file ${pstr}/${relativePath}`);
+        return;
+      }
+      console.log('** skipping unknown file stat');
+    } catch (e) {
+      console.log('** error', relativePath);
     }
-    // files
-    if (fromType.isFile()) {
-      const target = PATH.join(dest, relativePath);
-      FS.ensureDirSync(PATH.dirname(target));
-      SHELL.cp(from, target);
-      const pstr = PATH.relative(target, source)
-        .split('../')
-        .join('');
-      console.log(`.. copying file ${pstr}/${relativePath}`);
-      return;
-    }
-    console.log('** skipping unknown file stat');
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_RemoveFiles(dir, rpaths) {
   rpaths.forEach(relativePath => {
-    const target = PATH.join(dir, relativePath);
-    const targetType = FS.statSync(target);
-    // directories
-    if (targetType.isDirectory()) {
-      SHELL.rm('-rf', target);
-      console.log(`.. removing dir ${target}`);
-      return;
+    try {
+      const target = PATH.join(dir, relativePath);
+      const targetType = FS.statSync(target);
+      // directories
+      if (targetType.isDirectory()) {
+        SHELL.rm('-rf', target);
+        console.log(`.. removing dir ${target}`);
+        return;
+      }
+      // files
+      if (targetType.isFile()) {
+        SHELL.rm(target);
+        console.log(`.. removing file ${target}`);
+        return;
+      }
+      console.log('** skipping unknown file stat');
+    } catch (e) {
+      console.log('** error', relativePath);
     }
-    // files
-    if (targetType.isFile()) {
-      SHELL.rm(target);
-      console.log(`.. removing file ${target}`);
-      return;
-    }
-    console.log('** skipping unknown file stat');
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -210,11 +224,55 @@ function RunDevServer() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// COPY REPO /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CloneLerna(args) {
+  const ERR = '** ERR:';
+  const HELP = '      :';
+  SHELL.echo('\nNEW LERNA - LERNA REPO BLANK');
+
+  const SOURCE = __dirname;
+  const DEST = args[0];
+  const lernaPackage = m_ParseLernaDirectory(DEST);
+
+  if (!lernaPackage) {
+    SHELL.echo(ERR, `path ${DEST} is not a lerna repo`);
+    SHELL.echo(HELP, 'to make a new ');
+    SHELL.echo(HELP, '(1) mkdir <new repo directory>');
+    SHELL.echo(HELP, '(2) pushd <dir repo directory>');
+    SHELL.echo(HELP, '(3) git init');
+    SHELL.echo(HELP, '(4) lerna init');
+    SHELL.echo(HELP, '(5) popd');
+    SHELL.echo(HELP, '(6) ./gsutil.js lernacopy <new repo directory>');
+    SHELL.exit(0);
+  }
+
+  m_CopyFiles(SOURCE, DEST, [
+    '.vscode/',
+    'scripts/',
+    '.editorconfig',
+    '.eslintrc.js',
+    '.gitignore',
+    '.nvmrc',
+    '.prettierrc.js',
+    'gsutil.js',
+    'tsconfig.json',
+    'tsconfig.build.json'
+  ]);
+
+  m_CopyJsonProps(`${SOURCE}/package.json`, `${DEST}/package.json`, [
+    'dependencies',
+    'devDependencies'
+  ]);
+
+  m_CopyPackageComplete('LERNA CONFIG');
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// COPY URSYS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function CopyURSYS(args) {
   const ERR = '** ERR:';
-  const FB = '.. URCOPY:';
 
   SHELL.echo('\nURCOPY - URSYS COPIER');
 
@@ -225,7 +283,6 @@ function CopyURSYS(args) {
     SHELL.exit(0);
   }
 
-  SHELL.echo(FB, `Copying URSYS files from ${SOURCE}/`);
   m_CopyFiles(SOURCE, DEST, [
     'src/',
     '.vscode/',
@@ -316,6 +373,9 @@ SHELL.echo(`.. version: ${GS_VERSION}`);
 switch (cmd) {
   case 'dev':
     console.log('run dev');
+    break;
+  case 'lernacopy':
+    CloneLerna(argv._.slice(2));
     break;
   case 'urcopy':
     CopyURSYS(argv._.slice(2));
