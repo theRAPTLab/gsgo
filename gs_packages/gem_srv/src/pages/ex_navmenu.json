@@ -1,0 +1,6 @@
+{
+  "SITE": {
+    "title": "NextJS Page Title"
+  },
+  "NAVMENU": [{ "label": "Example", "href": "/" }]
+}
