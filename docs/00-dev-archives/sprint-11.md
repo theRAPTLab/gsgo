@@ -1,4 +1,4 @@
-SUMMARY S11 MAY 25-JUN 07
+**SUMMARY S11 MAY 25-JUN 07**
 
 * W1: (Mostly MEME work.) Research lokijs, lowdb, lodash, memoization, assertion, and trigger libraries
 * W2: Research deterministic finite automata and libraries (xstate), reactive programming with streams (rxjs), stream computation, the actor model, distributed architectures, message brokering systems, and relation to behavior trees and utility AI.

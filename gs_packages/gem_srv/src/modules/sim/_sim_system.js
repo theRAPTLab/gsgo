@@ -20,7 +20,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
 const GameLoop = new UR.class.PhaseMachine({
-  PHASE_LOAD: ['RESET', 'WAIT', 'SELECT', 'PROGRAM', 'READY'],
+  PHASE_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
   PHASE_LOOP: [
     // get state and queue derived state
     'INPUTS',
@@ -31,11 +31,14 @@ const GameLoop = new UR.class.PhaseMachine({
     // agent/groups autonomous updates
     'AGENTS_UPDATE',
     'GROUPS_UPDATE',
+    'FEATURES_UPDATE',
     // agent/groups script execution and queue actions
+    'FEATURES_THINK',
     'GROUPS_THINK',
     'AGENTS_THINK',
     'GROUPS_RETHINK',
     // agent/groups execute queue actions
+    'FEATURES_EXEC',
     'AGENTS_EXEC',
     'GROUPS_EXEC',
     // simulation

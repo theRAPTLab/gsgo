@@ -185,7 +185,7 @@ function AgentExec(frame) {
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PM_Boot(gloop) {
-  gloop.Hook('SELECT', AgentSelect);
+  gloop.Hook('SETMODE', AgentSelect);
   gloop.Hook('PROGRAM', AgentProgram);
   gloop.Hook('AGENTS_UPDATE', AgentUpdate);
   gloop.Hook('AGENTS_THINK', AgentThink);
