@@ -1,0 +1,2 @@
+# don't lint the command line utility, which is a bash script
+gsgo

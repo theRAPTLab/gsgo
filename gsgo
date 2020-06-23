@@ -1,0 +1,245 @@
+#!/usr/bin/env node
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  This is the GEMSTEP Development Utility, which is built to be called from
+  package.json scripts or the command line.
+
+  To run from the command line: ./gsutil <cmd> or node gsutil <cmd>
+
+  DEV TIP: To pass a parameter via npm run script, you have to use -- as in
+  npm run myscript -- --myoptions=something
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = 'GEMSTEP';
+const ERR = 'ERR';
+const SPC = '   ';
+
+/// LOAD BUILT-IN LIBRARIES ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const FS = require('fs-extra');
+const PATH = require('path');
+const PROCESS = require('process');
+
+/// 1. CHECK INSTALLED ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if (!FS.existsSync('./node_modules/ip')) {
+  console.log(`\x1b[41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
+  let out = '';
+  out += 'MISSING CRITICAL MODULE\n';
+  out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
+  out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
+  out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
+  console.log(out);
+  PROCESS.exit(0);
+}
+
+/// 2. LOAD EXTERNAL LIBRARIES ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SHELL = require('shelljs');
+const MINIMIST = require('minimist');
+const {
+  SessionStart,
+  SessionEnd,
+  CopyFiles,
+  CopyJsonProps,
+  DirectoryExists,
+  ParseLernaDirectory,
+  RemoveFiles,
+  RenameFiles,
+  FlagStrings,
+  ReplaceStrings
+} = require('./scripts/cli-utils');
+
+/// 3. CHECK GIT DEPENDENCY ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if (!SHELL.which('git')) {
+  SHELL.echo(
+    `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
+  );
+  SHELL.exit(0);
+}
+/// 4. EMIT BRANCH INFORMATION ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const { error, stdout } = SHELL.exec('git symbolic-ref --short -q HEAD', {
+  silent: true
+});
+let m_branch_info;
+if (error) m_branch_info = '<detached head>';
+if (stdout) m_branch_info = stdout.trim();
+
+/// CHECK VERSIONS
+let lernaJSON = JSON.parse(FS.readFileSync('lerna.json', 'utf8'));
+const GS_VERSION = lernaJSON.version;
+if (GS_VERSION === undefined) {
+  SHELL.echo('\x1b[30;41m missing lerna.json version \x1b[0m');
+  SHELL.exit(0);
+}
+
+/// COMMAND FUNCTIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Clone the base Lerna configuration to destination path
+ */
+function CloneLerna(args) {
+  const SOURCE = __dirname;
+  const DEST = args[0];
+  const lernaPackage = ParseLernaDirectory(DEST);
+
+  if (!lernaPackage) {
+    SHELL.echo(`
+    ERROR: destination path '${DEST || '<undefined>'}' is not a valid lerna repo!
+
+    To prepare the destination directory, re-run this command after
+    doing the following:
+    (1) mkdir <new repo directory>
+    (2) pushd <dir repo directory>
+    (3) git init
+    (4) lerna init
+    (5) popd
+    `);
+    SHELL.exit(0);
+  }
+
+  CopyFiles(SOURCE, DEST, [
+    '.vscode/',
+    'scripts/',
+    '.editorconfig',
+    '.eslintrc.js',
+    '.gitignore',
+    '.nvmrc',
+    '.prettierrc.js',
+    'gsgo',
+    'tsconfig.json',
+    'tsconfig.build.json'
+  ]);
+
+  RenameFiles(DEST, [['gsgo', 'repoutil']]);
+
+  CopyJsonProps(`${SOURCE}/package.json`, `${DEST}/package.json`, [
+    'dependencies',
+    'devDependencies'
+  ]);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// COPY URSYS ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CloneUrsys(args) {
+  const SOURCE = 'gs_packages/ursys';
+  const DEST = args[0] || '/Users/sri/Dev/PUB/ursanode/packages/ursys';
+  if (!DirectoryExists(DEST)) {
+    SHELL.echo(ERR, `path ${DEST} is not a directory`);
+    SHELL.exit(0);
+  }
+
+  CopyFiles(SOURCE, DEST, [
+    'src/',
+    '.vscode/',
+    '.eslintignore',
+    'webpack.config.js',
+    'tsconfig.json'
+  ]);
+
+  CopyJsonProps(`${SOURCE}/package.json`, `${DEST}/package.json`, [
+    'dependencies',
+    'devDependencies',
+    'optionalDependencies'
+  ]);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// COPY NEXTJS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CloneNext(args) {
+  const SOURCE = 'gs_packages/gem_srv';
+  const DEST = args[0] || '/Users/sri/Dev/PUB/ursanode/packages/ex-next';
+
+  if (!DirectoryExists(DEST)) {
+    SHELL.echo(ERR, `path ${DEST} is not a directory`);
+    SHELL.exit(0);
+  }
+
+  CopyFiles(SOURCE, DEST, [
+    '.eslintignore',
+    'tsconfig.json',
+    'server/_start.js',
+    '.vscode/',
+    '.storybook/',
+    'public/',
+    'src/components/',
+    'src/hooks/',
+    'src/modules/style/',
+    'src/modules/sim/',
+    'src/page-blocks/',
+    'src/pages/',
+    'src/modules/appstate.js',
+    'next-config.js'
+  ]);
+
+  RemoveFiles(DEST, [
+    'src/pages/index.jsx',
+    'src/pages/notes.jsx',
+    'src/pages/_navmenu.json'
+  ]);
+
+  RenameFiles(DEST, [
+    ['src/pages/ex_index.jsx', 'src/pages/index.jsx'],
+    ['src/pages/ex_navmenu.json', 'src/pages/_navmenu.json']
+  ]);
+
+  CopyJsonProps(`${SOURCE}/package.json`, `${DEST}/package.json`, [
+    'dependencies',
+    'devDependencies',
+    'nodemonConfig'
+  ]);
+
+  ReplaceStrings(`${DEST}/src`, /\.jsx?$/, '@gemstep', '@ursanode');
+  ReplaceStrings(`${DEST}/server`, /\.jsx?$/, '@gemstep', '@ursanode');
+  FlagStrings(
+    `${DEST}/package.json`,
+    '@gemstep/ursys',
+    'you must update this entry manually to @ursanode/ursys with correct version'
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// COMMAND DISPATCHER ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const argv = MINIMIST(process.argv.slice(1));
+const cmd = argv._[1];
+
+const params = argv._.slice(2);
+switch (cmd) {
+  case 'dev':
+    SHELL.echo(`\n${PR} RUNTIME`);
+    SHELL.echo(`.. branch:  ${m_branch_info}`);
+    SHELL.echo(`.. version: ${GS_VERSION}`);
+    break;
+  case 'clone:lerna':
+    SessionStart('monorepo w/ vscode config', { sim: true });
+    CloneLerna(params);
+    SessionEnd('monorepo w/ vscode config');
+    break;
+  case 'clone:ursys':
+    SessionStart('gs_packages/ursys', { sim: true });
+    CloneUrsys(params);
+    SessionEnd('gs_packages/ursys');
+    break;
+  case 'clone:next':
+    SessionStart('gs_packages/gem_srv', { sim: true });
+    CloneNext(params);
+    SessionEnd('gs_packages/gem_srv');
+    break;
+  default:
+    if (!cmd)
+      SHELL.echo(`
+    Commands for '${PATH.basename(argv._[0])}' utility:
+      dev                  - start dev server
+      clone:lerna [toDir]  - clone monorepo w/ vscode config
+      clone:ursys [toRepo] - clone ursys library package
+      clone:next  [toRepo] - clone nextjs blank package
+    `);
+    else console.log('unknown command:', cmd);
+}
