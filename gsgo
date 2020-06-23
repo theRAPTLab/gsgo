@@ -211,6 +211,8 @@ const argv = MINIMIST(process.argv.slice(1));
 const cmd = argv._[1];
 
 const params = argv._.slice(2);
+// if --execute flag is passed, then actually do stuff
+const sim = argv.execute ? false : true;
 switch (cmd) {
   case 'dev':
     SHELL.echo(`\n${PR} RUNTIME`);
@@ -218,17 +220,17 @@ switch (cmd) {
     SHELL.echo(`.. version: ${GS_VERSION}`);
     break;
   case 'clone:lerna':
-    SessionStart('monorepo w/ vscode config', { sim: true });
+    SessionStart('monorepo w/ vscode config', { sim });
     CloneLerna(params);
     SessionEnd('monorepo w/ vscode config');
     break;
   case 'clone:ursys':
-    SessionStart('gs_packages/ursys', { sim: true });
+    SessionStart('gs_packages/ursys', { sim });
     CloneUrsys(params);
     SessionEnd('gs_packages/ursys');
     break;
   case 'clone:next':
-    SessionStart('gs_packages/gem_srv', { sim: true });
+    SessionStart('gs_packages/gem_srv', { sim });
     CloneNext(params);
     SessionEnd('gs_packages/gem_srv');
     break;
