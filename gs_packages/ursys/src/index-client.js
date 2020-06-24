@@ -43,76 +43,64 @@ let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** initialize dependent libraries
+/** initialize modules that participate in UR EXEC PhaseMachine
  */
-function URSYS_Initialize(initializers = []) {
+async function SystemHookModules(initializers = []) {
   if (URSYS_RUNNING) {
-    console.log(...PR('URSYS_Initialize: Already running!!!'));
-    return false;
+    console.log(...PR('SystemModulesInit: URSYS already running!!!'));
+    return Promise.reject();
   }
-  console.groupCollapsed('** URSYS: Initialize');
-
   // autoconnect to URSYS network during NET_CONNECT
-  URExec.SystemHook(
-    'NET_CONNECT',
-    () =>
-      new Promise((resolvbe, reject) =>
-        URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
-      )
-  );
-  const u_log = msg => console.log(...PR('URSYS_Initialize:', msg));
-  initializers.forEach((mod = {}, index) => {
-    const { UR_Initialize: initializer } = mod;
-    if (initializer) {
-      const retvalue = initializer(u_log);
-      if (retvalue) console.log(...PR(`retvalue=${retvalue} (unused)`));
-    } else {
-      throw Error(`missing URSYS_Initialize() in module (array index ${index})`);
-    }
+  URExec.HookModules(initializers).then(() => {
+    URExec.SystemHook(
+      'NET_CONNECT',
+      () =>
+        new Promise((resolvbe, reject) =>
+          URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
+        )
+    );
   });
-  console.groupEnd();
   URSYS_RUNNING = true;
-  return true;
+  return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize
  */
-function URSYS_Shutdown() {
+async function SystemUnhookModules() {
   if (!URSYS_RUNNING) {
-    console.log(...PR('URSYS_Shutdown: URSYS is not running!!!'));
-    return;
+    console.log(...PR('SystemModulesStop: URSYS is not running!!!'));
+    return Promise.resolve();
   }
   // close the network
-  URNet.Close();
+  await URNet.Close();
   URSYS_RUNNING = false;
-  // force a reload
-  window.location.reload();
+  return Promise.resolve();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   ...META,
-  // MAIN API
-  URSYS_Initialize,
-  URSYS_Shutdown,
-  // FORWARDED GENERAL PUB/SUB
+  // SYSTEM PHASEMACHINE START/STOP
+  SystemHookModules,
+  SystemUnhookModules,
+  // FORWARDED PUB/SUB
   Subscribe: nc_sub.Subscribe,
   Unsubscribe: nc_sub.Unsubscribe,
   Publish: nc_pub.LocalPublish,
   Signal: nc_pub.LocalSignal,
   Call: nc_pub.LocalCall,
-  // FORWARDED EXEC API
+  // FORWARDED UR EXEC PHASEMACHINE
   SystemBoot: URExec.SystemBoot,
   SystemHook: URExec.SystemHook,
   SystemRun: URExec.SystemRun,
   SystemRestage: URExec.SystemRestage,
   SystemReboot: URExec.SystemReboot,
   SystemUnload: URExec.SystemUnload,
-  // HELPER CLASSES
+  // CONVENIENCE CLASS ACCESS
   class: {
     PhaseMachine
   },
-  // CONVENIENCE MODULES
+  // CONVENIENCE MODULES ACCESS
   util: { PROMPTS }
 };

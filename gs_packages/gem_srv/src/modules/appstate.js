@@ -50,7 +50,7 @@ function getRoute() {
   return ROUTE;
 }
 
-function UR_Initialize() {
+function UR_ModuleInit() {
   if (typeof window === 'object') {
     console.log(
       ...PR('!!! SETTING imperative-style timer in declarative world!')
@@ -76,4 +76,4 @@ function UR_Initialize() {
   }
 }
 
-module.exports = { get, set, setRoute, getRoute, UR_Initialize };
+module.exports = { get, set, setRoute, getRoute, UR_ModuleInit };

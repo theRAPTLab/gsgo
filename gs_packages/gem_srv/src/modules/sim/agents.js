@@ -184,7 +184,7 @@ function AgentExec(frame) {
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function PM_Boot(gloop) {
+function SIM_ModuleInit(gloop) {
   gloop.Hook('SETMODE', AgentSelect);
   gloop.Hook('PROGRAM', AgentProgram);
   gloop.Hook('AGENTS_UPDATE', AgentUpdate);
@@ -195,5 +195,5 @@ function PM_Boot(gloop) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  PM_Boot
+  SIM_ModuleInit
 };

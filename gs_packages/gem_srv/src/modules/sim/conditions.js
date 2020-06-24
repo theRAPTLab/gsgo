@@ -12,7 +12,7 @@
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function PM_Boot(gloop) {
+function SIM_ModuleInit(gloop) {
   gloop.Hook('CONDITIONS');
   gloop.Hook('SIM_EVAL');
 }
@@ -26,5 +26,5 @@ function PM_Boot(gloop) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  PM_Boot
+  SIM_ModuleInit
 };

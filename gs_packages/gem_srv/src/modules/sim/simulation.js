@@ -19,7 +19,7 @@ const DBG = false;
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
-const GameLoop = new UR.class.PhaseMachine({
+const GameLoop = new UR.class.PhaseMachine('SIM', {
   PHASE_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
   PHASE_LOOP: [
     // get state and queue derived state
@@ -119,12 +119,10 @@ function ResetSimulation() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** URSYS API: Hook into application lifecycle events
+/** URSYS API: Hook into application lifecycle events.
+ *  This module participates in the URSYS EXEC PhaseMachine
  */
-function UR_Initialize(logModuleName) {
-  // report startup
-  logModuleName('SimSystem');
-
+function UR_ModuleInit() {
   // hook into URSYS lifecycle
   UR.SystemHook('APP_STAGE', LoadSimulation);
   UR.SystemHook('APP_START', StartSimulation);
@@ -143,13 +141,13 @@ function UR_Initialize(logModuleName) {
   GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  GameLoop.BootModules([INPUTS, CONDITIONS, AGENTS, GROUPS, REFEREE]);
+  GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, GROUPS, REFEREE]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  UR_Initialize,
+  UR_ModuleInit,
   LoadSimulation,
   StartSimulation,
   PauseSimulation,

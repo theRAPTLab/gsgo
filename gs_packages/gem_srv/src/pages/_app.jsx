@@ -29,7 +29,7 @@ import theme from '../modules/style/theme';
 import { SITE } from './_navmenu.json';
 // simulation components
 import APPSTATE from '../modules/appstate';
-import SIM from '../modules/sim/_sim_system';
+import SIM from '../modules/sim/simulation';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,19 +58,22 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    // 1. Boot URSYS lifecycle independ nt of React
-    if (UR.URSYS_Initialize([SIM, APPSTATE])) {
+    // 1. Boot URSYS lifecycle independent of React
+    UR.SystemHookModules([SIM, APPSTATE]).then(() => {
       UR.SystemBoot({
         autoRun: true,
         netProps
       });
-    }
+    });
 
     // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
       console.log(...PR('unmounting _app'));
-      UR.SystemUnload();
-      UR.URSYS_Shutdown();
+      UR.SystemModulesStop().then(() => {
+        UR.SystemUnload();
+      });
+      // force page reload
+      window.location.reload();
     };
   }, []);
 

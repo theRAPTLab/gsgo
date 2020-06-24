@@ -32,7 +32,7 @@ const PROMPTS = require('./util/prompts');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { subs: true, ops: false, phases: false };
+const DBG = { subs: true, ops: false, phases: false, init: true };
 const IS_NODE = typeof window === 'undefined';
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
@@ -55,10 +55,12 @@ class PhaseMachine {
   /** CONSTRUCTOR: phases is an object of upper-case KEYS containing
    *  arrays of OPERATION strings.
    */
-  constructor(phases, prompt = '-') {
+  constructor(shortName, phases, dbgPrompt = '-') {
+    if (typeof shortName !== 'string') throw Error('arg1 must be string');
+    this.NAME = shortName;
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
-    this.PR = prompt ? PROMPTS.makeLogHelper(prompt) : () => [];
+    this.PR = dbgPrompt ? PROMPTS.makeLogHelper(dbgPrompt) : () => [];
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {
@@ -76,6 +78,24 @@ class PhaseMachine {
     this.MockHook = this.MockHook.bind(this);
   } // end constructor
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: Given a list of module objects, invoke the associated
+   *  name_ModuleInit() method. The 'name' parameter is set at initialization
+   *  time and is typically a short name. The client-exec.js module uses
+   *  'UR' as its phase machine name, so the corresponding initializer function
+   *  will be UR_ModuleInit() in each module to give it a chance to hook-in.
+   */
+  HookModules(moduleArray = []) {
+    const initializer = `${this.NAME}_ModuleInit`;
+    moduleArray.forEach((mod = {}) => {
+      if (typeof mod[initializer] !== 'function') {
+        console.warn(...this.PR(`missing ${initializer}() in module`, mod));
+        return Promise.reject();
+      }
+      mod[initializer](this); // pass phasemachine instance
+    });
+    return Promise.resolve();
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: register an Operations Handler. <op> is a string constant
    *  define in PHASES and converted into the MAP. <f> is a function that
@@ -101,7 +121,6 @@ class PhaseMachine {
     this.OP_HOOKS.get(op).push(hook);
     if (DBG) console.log(...this.PR(`${status} '${op}' Hook`));
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Execute all Promises associated with a op, completing when
    *  all the callback functions complete. If the callback function returns
@@ -196,16 +215,17 @@ class PhaseMachine {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** UTILITY: Return a Map organized by phase:functions[]
    */
-  GetPhaseFunctionsAsMap(phase) {
-    if (!phase.startsWith('PHASE_'))
-      throw Error(`${phase} is not a Phase Group name`);
-    if (DBG.ops) console.log(...this.PR(`getting hook map for phase '${phase}'`));
-    const phaseOps = this.PHASES[phase]; // list of operations in the phase
+  GetPhaseFunctionsAsMap(phaseName) {
+    if (!phaseName.startsWith('PHASE_'))
+      throw Error(`${phaseName} is not a Phase Group name`);
+    if (DBG.ops)
+      console.log(...this.PR(`getting hook map for phase '${phaseName}'`));
+    const phaseOps = this.PHASES[phaseName]; // list of operations in the phase
     const map = new WeakMap();
     phaseOps.forEach(pop => {
       map.set(
         pop,
-        this.OP_HOOKS.get(phase).map(hook => hook.f)
+        this.OP_HOOKS.get(phaseName).map(hook => hook.f)
       );
     });
     return map;
@@ -218,20 +238,6 @@ class PhaseMachine {
     this.Hook(op, (...args) => {
       console.log(`MOCK ${op} recv:`, ...args);
       if (typeof callback === 'function') callback(...args);
-    });
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** UTILITY: Give a list of modules a chance to invoke PhaseMachine API
-   */
-  BootModules(moduleArray = []) {
-    const fname = 'PM_Boot';
-    moduleArray.forEach((mod = {}) => {
-      if (typeof mod[fname] !== 'function') {
-        console.warn(...this.PR(`missing ${fname}() in module`, mod));
-        return;
-      }
-      mod[fname](this); // pass phasemachine instance
     });
   }
 }
