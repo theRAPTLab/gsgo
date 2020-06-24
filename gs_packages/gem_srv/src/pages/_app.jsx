@@ -69,7 +69,7 @@ export default function MyApp(props) {
     // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
       console.log(...PR('unmounting _app'));
-      UR.SystemModulesStop().then(() => {
+      UR.SystemUnhookModules().then(() => {
         UR.SystemUnload();
       });
       // force page reload
