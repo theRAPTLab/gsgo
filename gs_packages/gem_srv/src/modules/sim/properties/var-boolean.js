@@ -1,4 +1,4 @@
-import GSValue from './class-value';
+import GSValue from './var';
 
 class GSBoolean extends GSValue {
   constructor(initial = true, fuzzy = 0) {

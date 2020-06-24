@@ -5,8 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import rxjs from 'rxjs';
-import GSNumber from '../properties/value-number';
-import GSString from '../properties/value-string';
+import GSNumber from '../properties/var-number';
+import GSString from '../properties/var-string';
 import Agent from './class-agent';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////

@@ -1,5 +1,5 @@
-import GSBoolean from './value-boolean';
-import GSValue from './class-value';
+import GSBoolean from './var-boolean';
+import GSValue from './var';
 
 class GSString extends GSValue {
   constructor(initial = '') {

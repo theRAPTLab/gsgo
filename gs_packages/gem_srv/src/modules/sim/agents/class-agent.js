@@ -1,19 +1,26 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSNumber from '../properties/value-number';
-import GSString from '../properties/value-string';
+import GSNumber from '../properties/var-number';
+import GSString from '../properties/var-string';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const AGENT_TEMPLATES = new Map();
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_AddTemplate(agent) {
+  const name = agent.props.name.getValue();
+}
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Agent {
-  constructor() {
+  constructor(templateName) {
     // all properties are stored in prop map
     this.props = new Map([
       ['name', new GSString()],
