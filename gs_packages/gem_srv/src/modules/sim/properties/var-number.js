@@ -26,6 +26,7 @@ class GSNumber extends GSValue {
   constructor(initial = 0) {
     super();
     this.value = initial;
+    this.type = 'num';
     this.nvalue = undefined;
     this.min = 0;
     this.max = 0;
@@ -79,6 +80,13 @@ class GSNumber extends GSValue {
   }
   lte(num) {
     return new GSBoolean(this.value <= num);
+  }
+  serialize() {
+    const values = super.serialize();
+    values.push('nvalue', this.nvalue);
+    values.push('min', this.min);
+    values.push('max', this.max);
+    return values;
   }
 }
 

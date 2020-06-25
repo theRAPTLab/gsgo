@@ -25,10 +25,6 @@
 * agent: conditions and interactions will be "cached" during early gameloop phaseop
 * agent: move timer out of UREXEC and into SIM
 
-## June 22 - Reviewing Dan's Project
-
-Ben has the file. Request sent.
-
 
 
 ## June 22 - FeaturePacks, Etc.
@@ -81,17 +77,19 @@ As mentioned above, only CLASS 2 and 3 operations are tested during runtime.
 1. System state is updated in (D) so agents, groups, and features have up-to-date information available every frame. System state keeps track of which Agents, AgentSets, and Features are interested in a particular state (conditions, triggers, etc), and **queues events** to each of them for processing in later phases. These event queues are implemented as observables.
 2. In each subsequent phase, agents, groups, and features have a chance to acts on observables in the event queue, and potentially push more events that later phases can operate on. Agents, groups, and features may also implement their own observable streams based on piping events from a source to a destination. 
 
-## June 22.1 - Implementation Task List
 
-* [ ] Implement Class Ops 1: Properties during Programming Phase
+
+## June 24 - Implementation Task List
+
+* [x] Implement Class Ops 1: Properties during Programming Phase
 
 * [ ] Implement Class Ops 2: Interaction Declaration during Programming Phase
 
-  * [ ] Agent, Agent, Condition creates a key in the Conditions collection for an observable
-  * [ ] Feature, Condition creates a key in the Conditions collection for an observable
-  * [ ] During (D): stuff the condition event into appropriate agents or make it available from AgentTemplate
-  * [ ] During (E), (F), (G): pull the condition event and do something with it, pushing it further down
-  * [ ] Implement **EventQueues** as necessary...?
+  * [ ] i. Agent, Agent, Condition creates a key in the **Conditions** collection for an observable
+  * [ ] ii.. Feature, Condition creates a key in the Conditions collection for an observable
+  * [ ] iii. During (D): stuff the condition event into appropriate agents or make it available from AgentTemplate
+  * [ ] iv. During (E), (F), (G): pull the condition event and do something with it, pushing it further down
+  * [ ] v. Implement **EventQueues** as necessary...?
 
 * [ ] Test Class Ops 2
 
@@ -102,57 +100,145 @@ As mentioned above, only CLASS 2 and 3 operations are tested during runtime.
 
   
 
+Above is the list of things to do! First thing on the list is to implement Class Ops 1, which are properties during the programming phase. 
 
+### URSYS_Initialize
 
-
-
-
+Defined in `index-client`
 
 ```
-WHAT HAPPENS IN PROGRAMMING MODE?
-	there's only two things that happen in programming:
-	* declaring PROPERTIES - WE HAVE THIS
-	* declaring INTERACTIONS - This is where features come in
-	
-	shared between both are:
-	* setting properties via direct assignment or method
-	* arithmetic expressions
-	* getting/setting properties
-	* calling methods
-	* conditional execution
-	
-	So we need to do the feature invocation as part of INTERACTIONS
+URSYS_Initialize() accepts an array of initializers to execute once.
+It returns true when it initializes, false if it didn't.
+It checks if initialization had already occurred by chec
+It calls URExec.SystemHook() to register NET_CONNECT to establish network conn.
+After this is done, then looks for UR_Initialize() from each module and invokes
+it, passing a function that accepts a name for the startup sequence.
+```
 
-MovementPack invocation with agent:
-	how to declare during program mode? We have access to agent.
-	agent.addFeature('Movement') -> addFeature should add itself to MovementPack's list somehow
-	agent.feature('Movement') -> feature should invoke the feature with itself as context for the returned object...?
+### PhaseMachine Class
 
-MovementPack communication:
-	agent.events.Think(eventName, ()=>{agent.prop.add(x));
-	agent.eventQ.Think(eventName, data);
+```
+constructor(shortName, pmDef, dbgPrompt)
+
+HOOK SUBSCRIBES
+	HookModules(moduleArray)
+  Hook(op, f, scope)
+  
+EXECUTION
+  Execute(op, ...args)
+  ExecutePhase(phaseName, ...args)
+  ExecutePhaseParallel(phaseName,...args)
+
+OPTIMIZATION UTILITIES
+  GetHookFunctions(op)
+  GetPhaseFunctionsAsMap(phaseName)
+  
+TESTING
+	MockHook(op, callback)
 	
-	
-STUCK STUCK STUCK
-
-agent.addFeature - look up FeaturePack and store in this.features[featureName], calls feature.init(agent);
-agent.feature - get this.features[featureName] which implements a bunch of methods.
-Each feature method MUST take as first argument the agent, followed by data object.
-The feature can (1) modify the agent (2) use agent properties to update its own properties stored in the agent (3) queue an event for a later stage in the agent's event queue.
-
 ```
 
 
 
-**Next up** FeaturePacks are pretty complicated middleware in that they have to plug-in to the overall gameloop lifecycle.
+### Sim System
 
-They are mini programs, which is kindof cool. But they also need to determine when to run during particular phases. 
+This is the main entry point for the simulation system. It creates
+
+```
+Initialization from Parent in _APP.JSX UR.URSYS_Initialize
+  UR_Initialize()URExec SUBSCRIBE to...
+:APP_STAGE
+:APP_START
+:APP_RUN
+:APP_UPDATE
+:APP_RESET
+
+GameLoop DEFINE PhaseMachine
+PHASE_LOAD:
+PHASE_LOOP:
+
+Calls
+
+API Methods
+  LoadSimulation() 
+  RunSimulation()
+  StepSimulation()
+  StartSimulation()
+  UpdateSimulation()
+  PauseSimulation()
+  EndSimulation()
+  ExportSimulation()
+  ResetSimulation()
 
 ```
 
-agent.addFeature('Costume'); 	// initialize Costume properties, maybe adds to agent
-agent.feature('Costume')			// invoke Costume
-	.setColor(agent,'#ffffff');
 
+
+### Agents Modules
+
+This is a logic module currently
+
+```
+import GSBoolean, GSNumber
+import AgentFactory
+import Features
+
+GameLoop SUBSCRIBE to...
+:SETMODE
+:PROGRAM
+:AGENTS_UPDATE
+:AGENTS_THINK
+:AGENTS_EXEC
+
+AgentProgram()
+AgentSelect()
+AgentThink()
+AgentUpdate()
+AgentExec()
+PM_Boot()
+```
+
+
+
+## June 25 - Notes on Typescript
+
+I took another stab at using Typescript for a new library. I have decided that Typescript will not be part of our development environment if I can help for the following reasons:
+
+1. **Compile-time static analysis is a miniscule win for high cost** - Javascript is untyped and therefore prone to mistakes in assigning properties to objects or mistyping names of functions. However, these are very fast crashes that are relatively easy to debug. Furthermore, using the live linting extension *already* highlights mispelled and unused variables. 
+2. **It's not possible to use Typescript trivially** - One of the original conceits was that you could just add Typescript to your toolchain and start adding it incrementally to your code. While it's true that you can do this in the toolchain, the moment you change your source file extensions from `js` to `ts` or `jsx` to `tsx` you have to conform everything that uses a type. 
+3. **Typescript errors are very verbose** - They are seldom short or prescriptive. They are exceedingly descriptive spanning multiple lines requiring a deeper knowledge of computer language metaconcepts. 
+4. **Typescript decorations gets in the way of expressive, readable code** - This is the biggest dealbreaker. We are writing code that we expect casual developers to read and understand. We spend a lot of time trying to clarify our code so it tells a story as you read it, with some footnotes in comments to provide necessary context. Typescript, by comparison, litters code with some many declarations that it quickly becomes overwhelming unless you have access to a separate document that describes everything.
+5. **Typescript is a terrible environment for rapid prototyping** -  It gets in the way of concepting the flow code during the prototyping stage because of the dozens of warnings it throws the moment you add a Typescript keyword. This is a constant distraction that doesn't aid in casual design approaches. 
+
+There are a couple of uses I can think of: 
+
+1. **Typescript is increasingly used in open source Javascript libraries, so familiarity with it would be helpful.** Not much more to say about that. Even then, Typescript is never a requirement for using those libraries; it's more useful when you have to look at source to figure out what the hell it's doing, when there is an absence of good documentation.
+2. **Typescript could be useful in very strictly designed implementation of protocol-handling code**. If you have the time to create a nice hierarchy of objects and data types, Typescript would allow you to express it. That said, it doesn't help you test the code or guard against runtime errors. 
+
+## June 25 - Implementing Agent Templates
+
+After a few false starts, I have a pretty clean (I think) implementation of our Agent class and an Agent Factory with a reasonable Composition model that avoids duplicating functions across objects. Here's how **programming a template** looks now:
+
+```js
+// Create an Agent Template named "Flower" and set initial conditions
+AgentFactory.AddTemplate('Flower', agent => {
+  agent.prop('x').setTo(100);
+  agent.prop('y').setTo(200);
+  agent.prop('skin').setTo('flower.png');
+  agent
+    .defineProp('currentHealth', new GSNumber(100))
+    .setMin(0)
+    .setMax(100);
+  agent.defineProp('isAlive', new GSBoolean(true));
+  agent.addFeature('Movement')
+    .setController('student');
+});
+```
+
+And here's what **instantiation of a template** looks like now:
+
+```js
+// Create an agent from the template
+const posie = AgentFactory.MakeAgent('My Flower',{ template:'Flower' });
 ```
 

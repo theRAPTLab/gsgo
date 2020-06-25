@@ -4,6 +4,7 @@ class GSBoolean extends GSValue {
   constructor(initial = true, fuzzy = 0) {
     super();
     this.value = initial;
+    this.type = 'bool';
     this.fuzzy = fuzzy;
   }
   true() {
@@ -42,6 +43,11 @@ class GSBoolean extends GSValue {
   mostlyFalse() {
     this.value = this.value && this.fuzzy < -0.75;
     return this;
+  }
+  serialize() {
+    const values = super.serialize();
+    values.push('fuzzy', this.fuzzy);
+    return values;
   }
 }
 

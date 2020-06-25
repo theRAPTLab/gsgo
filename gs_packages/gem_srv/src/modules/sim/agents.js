@@ -29,16 +29,13 @@
 import {
   GSBoolean,
   GSNumber,
-  Agent,
+  AgentFactory,
   AgentSet,
-  Features,
-  World
+  Features
 } from './script-engine';
 
 /// CONTEXT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// global agent lists
-const agent = new Agent();
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,61 +65,66 @@ o - phasemachine autoupdates, triggers
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
-  /*/
-  define agent MyAgent
-    .name setTo "Bob the Agent"
-    .x setTo 100
-    .y setTo 200
-    .skin setTo "balloon.png"
-    define property .currentHealth as Number
-      setTo 0
-      max 10
-      min 0
-  /*/
-  agent.prop('name').setTo('Bob the Agent');
-  agent.prop('x').setTo(100);
-  agent.prop('y').setTo(200);
-  agent.prop('skin').setTo('balloon.png');
-  agent.defineProp('currentHealth', new GSNumber()).setTo(0);
-  agent
-    .prop('currentHealth')
-    .setMin(0)
-    .setMax(10);
-  console.log('*** AGENT PROGRAMMING RESULTS ***', agent.export());
-
-  /*/
-  define agent MyAgent
+  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    define agent MyAgent
+      .name setTo "Bob the Agent"
+      .x setTo 100
+      .y setTo 200
+      .skin setTo "balloon.png"
+      define property .currentHealth as Number
+        setTo 0
+        max 10
+        min 0
     use feature Movement
       setController "student"
     use feature Costume
       setCostumes {1:"slowbee.png", 2:"fastbee.png"}
       showCostume 1
-  /*/
-  const MovementPack = {
-    name: 'Movement',
-    initialize: pm => {
-      pm.Hook('INPUT', this.HandleInput);
-    },
-    agentInit: agent => {
-      this.agent = agent;
-    },
-    setController: x => {
-      console.log(`setting control to ${x}`);
-    }
-  };
-  agent.addFeature(MovementPack).setController('student');
+  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
+  console.groupCollapsed('Flower Programming');
+  AgentFactory.AddTemplate('Flower', agent => {
+    agent.prop('x').setTo(100);
+    agent.prop('y').setTo(200);
+    agent.prop('skin').setTo('flower.png');
+    agent
+      .defineProp('currentHealth', new GSNumber(100))
+      .setMin(0)
+      .setMax(100);
+    agent.defineProp('isAlive', new GSBoolean(true));
+    agent.addFeature('Movement').setController('student');
+  });
+  console.groupEnd();
 
-  /*/
-  when Bee touches Hive
+  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    when MyTimer.elapsed greaterThan 10
+      @MyTimer reset
+      World.pollution add 1
+  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
+  console.groupCollapsed('World Programming');
+  AgentFactory.AddTemplate('World', world => {
+    world.addFeature('Timer');
+    world
+      .feature('Timer')
+      .defineTimer('population')
+      .on('elapsed', timer => {
+        timer.reset();
+        console.log('population timer elapsed');
+      });
+  });
+  // save creation template
+  console.groupEnd();
+
+  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    when Bee touches Hive
     if @Bee.nectar greaterThan 0
       @Bee.nectar subtract 1
       @Hive.nectar add 1
-  /*/
+  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
+  console.groupCollapsed('Interaction Programming');
   AgentSet.defineGroup('Bee');
   AgentSet.when('Bee') // set of Bees
     .touches('Hive') // filtered Bees touching Hive
     .queueEvent('touches', 'Bee'); // operating on set
-
   /*/
   when Bee.energy greaterThan 0
     @Bee.energy subtract 1
@@ -134,43 +136,26 @@ function AgentProgram() {
       return bee.speed > 10;
     })
     .queueEvent('speedExcess');
-  /*/
-  when MyTimer.elapsed greaterThan 10
-    @MyTimer reset
-    World.pollution add 1
-  /*/
-  const TimerPack = {
-    name: 'Timer',
-    initialize: pm => {
-      pm.Hook('INPUT', this.HandleInput);
-    },
-    agentInit: agent => {
-      this.agent = agent;
-      return TimerPack;
-    },
-    defineTimer: timerName => {
-      console.log(`deftimer ${timerName}`);
-      return TimerPack;
-    },
-    on: (eventName, f) => {
-      console.log(`${TimerPack.name} handler for '${eventName}'`);
-      return TimerPack;
-    }
-  };
-  World.addFeature(TimerPack);
-  World.feature('Timer')
-    .defineTimer('population')
-    .on('elapsed', timer => {
-      timer.reset();
-      console.log('population timer elapsed');
-    });
+  console.groupEnd();
+
+  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    creation test
+  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
+  console.group('Creation Testing');
+  const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
+  names.forEach(name => {
+    const agent = AgentFactory.MakeAgent(name, { template: 'Flower' });
+    console.log(`'${name}' as export:`, AgentFactory.ExportAgent(agent));
+  });
+  console.groupEnd();
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frame) {
-  const healthProp = agent.prop('currentHealth');
-  console.log(healthProp.value, healthProp.nvalue);
-  if (healthProp.eq(5).true()) console.log('!!! 5 health');
-  healthProp.add(1);
+  // const healthProp = agent.prop('currentHealth');
+  // console.log(healthProp.value, healthProp.nvalue);
+  // if (healthProp.eq(5).true()) console.log('!!! 5 health');
+  // healthProp.add(1);
   //
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

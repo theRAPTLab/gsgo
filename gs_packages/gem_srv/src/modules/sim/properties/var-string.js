@@ -5,6 +5,7 @@ class GSString extends GSValue {
   constructor(initial = '') {
     super();
     this.value = initial;
+    this.type = 'str';
   }
   setTo(str) {
     this.value = str;

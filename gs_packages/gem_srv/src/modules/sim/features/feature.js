@@ -11,10 +11,42 @@
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATURES = new Map(); // track all features
+/* temp */
+const MovementPack = {
+  name: 'Movement',
+  initialize: pm => {
+    pm.Hook('INPUT', this.HandleInput);
+  },
+  decorate: agent => {
+    return MovementPack;
+  },
+  setController: (agent, x) => {
+    return MovementPack;
+  }
+};
+
+const TimerPack = {
+  name: 'Timer',
+  initialize: pm => {
+    pm.Hook('INPUT', this.HandleInput);
+  },
+  decorate: agent => {
+    return TimerPack;
+  },
+  defineTimer: (agent, timerName, timerOptions) => {
+    return TimerPack;
+  },
+  on: (agent, eventName, subscriberFunc) => {
+    return TimerPack;
+  }
+};
+FEATURES.set(MovementPack.name, MovementPack);
+FEATURES.set(TimerPack.name, TimerPack);
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
+/** Feature code uses agent objects for state and variable storage. When a
+ *  feature is invoked by an agent, it passes itself in the invocation.
  */
 class Feature {
   constructor(name) {
@@ -24,18 +56,12 @@ class Feature {
     // subclassers can add other properties
   }
 
-  /** initializes storage on agent
-   */
-  agentInit(agent) {
+  decorate(agent) {
     if (agent.features.has(this.name))
       throw Error(`agent already bound to feature ${this.name}`);
-    // initialize empty object in agent.props[featureName]
-    agent.props.set(this.name, {});
     // subclassers
   }
 
-  /** retrieve feature prop from agent.prop[this.name][propName]
-   */
   prop(agent, propName) {
     // get the feature storage object
     const fpobj = agent.prop.get(this.name);
@@ -52,7 +78,13 @@ class Feature {
     fpobj[propName] = gVar;
     return gVar;
   }
-}
+} // end of class
+
+/// STATIC METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Feature.GetByName = featureName => {
+  return FEATURES.get(featureName);
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

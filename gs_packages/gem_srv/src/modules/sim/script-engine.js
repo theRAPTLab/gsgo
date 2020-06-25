@@ -3,10 +3,9 @@
 
 import GSBoolean from './properties/var-boolean';
 import GSNumber from './properties/var-number';
-import Agent from './agents/class-agent';
+import AgentFactory from './agents/factory-agent';
 import AgentSet from './agents/class-agentset';
-import World from './agents/agent-world';
-import Features from './features/class-feature';
+import Features from './features/feature';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,4 +21,4 @@ import Features from './features/class-feature';
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GSBoolean, GSNumber, Agent, AgentSet, World, Features };
+export { GSBoolean, GSNumber, AgentFactory, AgentSet, Features };
