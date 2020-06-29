@@ -1,8 +1,21 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  The GSNumber class can do simple arithmetic and logical comparisons
+  with literal numbers.
+
+  In our first prototype, we do not support arbitrary expressions.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 import GSBoolean from './var-boolean';
 import GSValue from './var';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
+/// MODULE HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function u_CheckMinMax(vobj) {
   if (vobj.min === vobj.max && vobj.min === 0) return;
   if (vobj.min > vobj.max) {
@@ -22,6 +35,8 @@ function u_CheckMinMax(vobj) {
   vobj.nvalue = (vobj.value - vobj.min) / (vobj.max - vobj.min);
 }
 
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class GSNumber extends GSValue {
   constructor(initial = 0) {
     super();
@@ -90,4 +105,6 @@ class GSNumber extends GSValue {
   }
 }
 
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default GSNumber;

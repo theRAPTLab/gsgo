@@ -26,13 +26,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  GSBoolean,
-  GSNumber,
-  AgentFactory,
-  AgentSet,
-  Features
-} from './script-engine';
+import { GSBoolean, GSNumber, AgentFactory, AgentSet } from './script-engine';
 
 /// CONTEXT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,10 +81,10 @@ function AgentProgram() {
     agent.prop('y').setTo(200);
     agent.prop('skin').setTo('flower.png');
     agent
-      .defineProp('currentHealth', new GSNumber(100))
+      .defProp('currentHealth', new GSNumber(100))
       .setMin(0)
       .setMax(100);
-    agent.defineProp('isAlive', new GSBoolean(true));
+    agent.defProp('isAlive', new GSBoolean(true));
     agent.addFeature('Movement').setController('student');
   });
   console.groupEnd();
@@ -141,11 +135,22 @@ function AgentProgram() {
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     creation test
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.group('Creation Testing');
+  console.groupCollapsed('Creation Testing');
   const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
   names.forEach(name => {
     const agent = AgentFactory.MakeAgent(name, { template: 'Flower' });
     console.log(`'${name}' as export:`, AgentFactory.ExportAgent(agent));
+  });
+  console.groupEnd();
+
+  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    condition programming
+  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
+  console.group('OnTick Testing');
+  const ticker = AgentFactory.MakeAgent('TickyTicky');
+  ticker.addFeature('Timer');
+  ticker.feature('Timer').onTick(agent => {
+    console.log('ticked', agent.name);
   });
   console.groupEnd();
 }

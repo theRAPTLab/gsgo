@@ -27,9 +27,11 @@ const MovementPack = {
 
 const TimerPack = {
   name: 'Timer',
+  subscribers: new Map(),
   initialize: pm => {
     pm.Hook('INPUT', this.HandleInput);
   },
+  onTick: func => console.log('subscribe onTick'),
   decorate: agent => {
     return TimerPack;
   },
@@ -43,7 +45,7 @@ const TimerPack = {
 FEATURES.set(MovementPack.name, MovementPack);
 FEATURES.set(TimerPack.name, TimerPack);
 
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Feature code uses agent objects for state and variable storage. When a
  *  feature is invoked by an agent, it passes itself in the invocation.
@@ -51,7 +53,9 @@ FEATURES.set(TimerPack.name, TimerPack);
 class Feature {
   constructor(name) {
     if (FEATURES.has(name)) throw Error(`feature named ${name} already exists`);
-    this.name = name;
+    this.meta = {
+      feature: name
+    };
     FEATURES.set(name, this);
     // subclassers can add other properties
   }
@@ -62,6 +66,7 @@ class Feature {
     // subclassers
   }
 
+  /** get feature prop value */
   prop(agent, propName) {
     // get the feature storage object
     const fpobj = agent.prop.get(this.name);
@@ -69,10 +74,9 @@ class Feature {
     return fpobj[propName];
   }
 
-  /** set feature prop
-   */
+  /** set feature prop value */
   setProp(agent, propName, gVar) {
-    // get the feature storage object
+    // get the feature storage object, which is in its own object
     const fpobj = agent.prop.get(this.name);
     // store the variable and return gVar for chaining
     fpobj[propName] = gVar;
@@ -80,12 +84,15 @@ class Feature {
   }
 } // end of class
 
-/// STATIC METHODS ////////////////////////////////////////////////////////////
+/// LIBRARY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Feature.GetByName = featureName => {
-  return FEATURES.get(featureName);
-};
+function GetByName(name) {
+  return FEATURES.get(name);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Feature;
+export default {
+  Feature,
+  GetByName
+};
