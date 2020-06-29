@@ -26,13 +26,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GSBoolean, GSNumber, AgentFactory, AgentSet } from './script-engine';
-
-/// CONTEXT ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// PUBLIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import {
+  GSVar,
+  GSBoolean,
+  GSNumber,
+  AgentFactory,
+  AgentSet
+} from './script-engine';
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -86,7 +86,26 @@ function AgentProgram() {
       .setMax(100);
     agent.defProp('isAlive', new GSBoolean(true));
     agent.addFeature('Movement').setController('student');
+    agent
+      .if()
+      .prop('x')
+      .test('lt', 10)
+      .then(agent => {
+        console.log(agent.name(), 'lt', 10);
+      });
   });
+  console.groupEnd();
+  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
+    creation test
+  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
+  console.group('Creation Testing');
+  const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
+  names.forEach(name => {
+    const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
+    // console.log(`'${name}' as export:`, AgentFactory.ExportAgent(agent));
+  });
+  console.log('Flowers', AgentFactory.GetAgentsByType('Flower'));
+  console.log('Mugworts', AgentFactory.GetAgentsByType('Mugworts'));
   console.groupEnd();
 
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
@@ -133,20 +152,9 @@ function AgentProgram() {
   console.groupEnd();
 
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
-    creation test
-  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('Creation Testing');
-  const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
-  names.forEach(name => {
-    const agent = AgentFactory.MakeAgent(name, { template: 'Flower' });
-    console.log(`'${name}' as export:`, AgentFactory.ExportAgent(agent));
-  });
-  console.groupEnd();
-
-  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     condition programming
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.group('OnTick Testing');
+  console.groupCollapsed('OnTick Testing');
   const ticker = AgentFactory.MakeAgent('TickyTicky');
   ticker.addFeature('Timer');
   ticker.feature('Timer').onTick(agent => {

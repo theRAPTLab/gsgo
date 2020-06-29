@@ -1,29 +1,21 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSString class does simple comparisons
+  The GSAgentFeature class manages FeaturePacks
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './var-boolean';
 import GSVar from './var';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSString extends GSVar {
+class GSAgentFeature extends GSVar {
   constructor(initial = '') {
     super();
-    this.meta.type = Symbol.for('GSString');
+    this.meta.type = Symbol.for('GSAgentFeature');
     this.value = initial;
-  }
-  setTo(str) {
-    this.value = str;
-    return this;
-  }
-  isEq(str) {
-    return new GSBoolean(this.value === str);
   }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSString;
+export default GSAgentFeature;

@@ -8,16 +8,30 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import GSVar from '../properties/var';
 import GSNumber from '../properties/var-number';
 import GSString from '../properties/var-string';
+import Condition from '../conditions/class-condition';
 import FeatureLib from '../features/featurefactory';
 import GlobalLib from '../features/feature-global';
 
-/// MODULE UTILITIES //////////////////////////////////////////////////////////
+/// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_counter = 100;
+const m_agents = new Map();
+
+/// MODULE UTILITIES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_AgentCount() {
   return m_counter++;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return strings useful for making a condition key
+ */
+function m_MakeKeyParts(agent, gvars) {
+  const agentkey = agent.meta.type;
+  const gvarkey = GSVar.GetTypes(gvars).join('.');
+  return { agentkey, gvarkey };
 }
 
 /// HELPER METHODS ////////////////////////////////////////////////////////////
@@ -26,8 +40,8 @@ function m_AgentCount() {
  *  Add a property to an agent's prop map by property name
  *  @param {Agent} agent - instance of Agent class
  *  @param {string} prop - name of property to add
- *  @param {GSVariable} gvar - GSVariable instance
- *  @returns {GSVariable} - for chaining
+ *  @param {GSVar} gvar - GSVar instance
+ *  @returns {GSVar} - for chaining
  */
 function AddProp(agent, prop, gvar) {
   const { props } = agent;
@@ -69,6 +83,11 @@ function AddFeature(agent, feature) {
   // this should return agent
   return fpack.decorate(agent);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** HELPER:
+ *  retrieve an array of values based on passed properties and keys
+ */
+function GetAgentValues(...args) {}
 
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -113,7 +132,7 @@ class Agent {
   constructor(agentName = '<anon>') {
     if (typeof agentName !== 'string') throw Error('arg1 must be string');
     // meta information
-    this.agent = {
+    this.meta = {
       id: m_AgentCount(),
       type: 'Agent'
     };
@@ -122,25 +141,20 @@ class Agent {
     this.methods = new Map();
     this.features = new Map();
     this.events = [];
-    // add common properties
-    this.name = new GSString(agentName);
-    this.x = new GSNumber();
-    this.y = new GSNumber();
-    this.skin = new GSString();
     // mirror in props for conceptual symmetry
-    this.props.set('name', this.name);
-    this.props.set('x', this.x);
-    this.props.set('y', this.y);
-    this.props.set('skin', this.skin);
+    this.props.set('name', new GSString(agentName));
+    this.props.set('x', new GSNumber());
+    this.props.set('y', new GSNumber());
+    this.props.set('skin', new GSString());
     // add global feature
     this.features.set('*', GlobalLib);
   }
 
   // accessor methods for built-in props
-  name = () => this.name;
-  x = () => this.x;
-  y = () => this.y;
-  skin = () => this.skin;
+  name = () => this.prop('name').value;
+  x = () => this.prop('x').value;
+  y = () => this.prop('y').value;
+  skin = () => this.prop('skin').value;
 
   // definition methods
   defProp = (name, gvar) => AddProp(this, name, gvar);
@@ -165,17 +179,61 @@ class Agent {
     return fpack; // instance of Feature
   }
 
-  test(func) {}
+  // return a condition object
+  if() {
+    return new Condition();
+  }
+
+  // agent test
+  addTest(condition, gvars = [], execFunc) {
+    // condition.test = (this, parms) => (testResult { value, ...results })
+    // condition.name = 'TEST_NAME'
+    // condition.value = true/false
+    // condition.data = {}
+    const { agentkey, gvarkey } = m_MakeKeyParts(this, gvars);
+    const key = `conditionkey${agentkey}${gvarkey}`;
+    // we want to add this condition test to the pool of tests
+    console.log('todo: conditions[key] = { condition, gvars, execFunc }');
+    // temporary queue test...this should happen only in execFunc
+    this.queue(condition, gvars, execFunc);
+  }
 
   // event queue methods
-  queue() {
-    console.log('queue() unimplemented');
+  queue(condition, gvars, execFunc) {
+    const results = condition(this, gvars, execFunc);
+    console.log(`agent ${this.name()} results:`, results);
+    if (results) {
+      console.log('executing function with agent');
+      execFunc(this);
+    }
   }
 } // end of Agent class
+
+/// AGENT SET UTILITIES ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** save agent by type into agent map, which contains weaksets of types */
+function SaveAgent(agent) {
+  const { id, type } = agent.meta;
+  if (!m_agents.has(type)) m_agents.set(type, new Set());
+  const agents = m_agents.get(type);
+  if (agents.has(id)) throw Error(`agent id${id} already in ${type} list`);
+  // console.log(`m_agents now has ${m_agents.get(type).size}`);
+  agents.add(agent);
+  return agent;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return agent set */
+function GetAgentSet(type) {
+  const agents = m_agents.get(type);
+  console.log('type', type, [...m_agents.keys()]);
+  return agents || [];
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 Agent.AddFeature = AddFeature;
 Agent.AddMethod = AddMethod;
 Agent.AddProp = AddProp;
+Agent.SaveAgent = SaveAgent;
+Agent.GetAgentSet = GetAgentSet;
 export default Agent;

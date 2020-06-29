@@ -6,7 +6,7 @@ import UR from '@gemstep/ursys/client';
 import { interval } from 'rxjs';
 // runtime data modules
 import INPUTS from './inputs';
-import CONDITIONS from './conditions';
+import CONDITIONS from './conditions/class-condition';
 import AGENTS from './agents';
 import GROUPS from './agentgroups';
 import REFEREE from './referee';
@@ -26,17 +26,17 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
     'INPUTS',
     'PHYSICS',
     'TIMERS',
-    'CONDITIONS',
-    'COLLECTIONS',
     // agent/groups autonomous updates
     'AGENTS_UPDATE',
     'GROUPS_UPDATE',
     'FEATURES_UPDATE',
+    // process conditions and collection
+    'CONDITIONS',
     // agent/groups script execution and queue actions
     'FEATURES_THINK',
     'GROUPS_THINK',
     'AGENTS_THINK',
-    'GROUPS_RETHINK',
+    'GROUPS_VETO',
     // agent/groups execute queue actions
     'FEATURES_EXEC',
     'AGENTS_EXEC',

@@ -10,6 +10,10 @@
 * W1: Agent simulation execution engine starts. Basic agent set/get, value types, condition types, phasemachine
 * W2: Agent collections, featurepacks, filters, and event+phase management started
 
+**SUMMARY S13 JUN 22-JUL 05**
+
+* W1: 
+
 ---
 ## June 22 - Highlights of Sprint 12
 
@@ -406,4 +410,140 @@ THINGS TO GATHER
   * the test, if true, forwards an **event** to each subscribed **agent** with the **doSomething** function
 * during agent.THINK, each event is potentially accepted or rejected or filtered, and forwarded
 * during agent.EXEC, the **doSomething** function is executed on the agent
+
+* [x] Add `SaveAgent()` and `GetAgentSet()` to Agent class so we can retrieve a set of agents by type
+* [x] For the test:
+  * [x] `MakeTypeKey(agent, ...gvars)` returns a unique key for the type of agent
+  * [x] called by `Agent.test()`
+  * [x] make a `condition` to pass to `test()` in 
+
+Rudimentary flow:
+
+```js
+/// agents.js - programming phase
+AgentFactory.AddTemplate('Flower',agent=>{
+	const gt = (agent, gvars) => {
+	  const [a,b] = GSVar.GetValues(gvars);
+	  return a>b;
+	}
+	const exec = agent => {
+		// do something with agent
+	}
+	agent.addTest(gt,[agent.prop('x'),10],exec);
+});
+
+/// class-agent.js - test addition
+class Agent {
+  // add test during programming
+  // TODO: what is the final form of condition?
+	addTest(condition, gvars=[], execFunc) {
+    const key = m_MakeTypeKey(this, gvars);
+    // TODO: save the condition, gvars, execFunc by key
+    this.queue(condition, gvars, execFunc);
+  }
+  queue(condition, gvars=[], execFunc) {
+    // TODO: create a condition event and push on a queue that
+    // will be read during lifecycle...somehow
+  }
+}
+
+/// class-agent.js - lifecycle static methods
+/*/
+conditions run after UPDATE.
+conditions have references to their original gvar objects
+all the conditions stored by key in the conditions store are run
+if a condition uses the same TEMPLATE+TEST+GVARSIG, it's stored and run just once
+/*/
+```
+
+I left off at class-agent.
+
+* [ ] write condition key store - 
+
+* [ ] create a condition class around name, testFunc, result interface
+
+* [ ] hook agentfactory into lifecycle
+
+  * [ ] hook CONDITIONS to read all conditions and run them
+  * [ ] hook AGENT_THINK to read condition events and forward
+  * [ ] hook AGENT_EXEC to read execution events and execute
+
+
+## June 29 - MONDAY RAMPUP...HUR, HAR...
+
+REVIEW
+```
+AgentFactory.AddTemplate('Flower',agent=>{});   // make template 'Flower'
+AgentFactory.MakeAgent('Momo',{type:'Flower'}); // make 'Flower' agent named 'Momo'
+Agent.addTest(condition, gvars=[], agent=>{});  // add a test to an agent
+AgentSet.???                                    // add a test to an agent set
+```
+The **addTest** method has two groups of parameters:
+
+1. `condition` and `gvars` is what's used to evaluate to true/false
+2. `agent=>{}` is the function executed if the condition passes.
+
+There are at least **two versions of addTest** for Agents and AgentSets. There are **many conditions** to define and evalute as part of our toolkit. Also, we have to write **lifecycle hooks** to run (1) and (2) at the right time in any arbitrary agent instance or AgentSet, predictably handing it in stages using **reactive streams**. OOF.
+
+I keep forgetting that **tests can be reused**. The reuse depends on the kind of test:
+
+1. individual agent test: needs to have **gvars** passed as parameters to the condition function
+2. agent type test: needs to have **agent + propnames** passed as parameters to the condition function
+3. agentset test: needs to have **agentA, agentB** passed as parameters to the condition function
+
+#### Condition Packaging
+
+Let's start by writing a hypothetical condition package.
+
+**Just write some code to see some kind of flow** (add this to post later)
+
+## June 30 - TUESDAY MIDNIGHT
+
+Writing some code to get moving again...this is a tricky thing to conceptualize. 
+
+Start with the programming stastement in agents.js. 
+
+```
+AgentSet
+	.when().agent('moop').test('touch',{radius:10}).agent('foop')
+	.then(agent=>{});
+
+when() returns a condition object
+	.agent(type) pushes agent type on the arg stack, returning self
+	.touches() will push the touch test with options on the test stack, returning self
+	.then() queues the execFunction, then pushes the entire condition into the conditions update lifecycle.
+```
+
+I've implemented:
+
+* Several **stack utilities** to push **argument objects** on a stack, which will be used to populate the **test's args** when it's invoked. Eventually these might use the `var-*` classes, since these all support `value` emissions and serialization.
+* A **Condition** class to implement the chain: `agent()`, `prop()`, `test()`, `then()`
+* A **m_testfactory** map to store **factory functions** that generate **test functions w/ options** that return **results** of any type. Probably more than true/false...in some cases AgentSets
+* A **m_conditions** map to the generated test functions by **test+arguments** signature
+* new **var-agent-*** variable prop types! feature, prop, set, and template.
+
+We're still working on that **when()-then()** call.
+
+
+
+```
+Agent
+	.if().agent('moop.x').test('lt',10)
+	.then(agent=>{});
+	
+if() returns a condition object
+	.prop('x') pushes modifier on arg stack
+	.test('lt',10) pushes arg 10 on arg stack and retrieves test
+	.then() queues execFunction, then pushes the entire condition in the conditions update lifecycle
+```
+
+Let's look at **if()-then()** call.
+
+The **stack operations** need a bit of clarity.
+
+* stack holds GSVariables which can report a `value` and a `type` 
+* 
+
+
+
 

@@ -1,13 +1,19 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  Condition Factory
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// PUBLIC METHODS ////////////////////////////////////////////////////////////
+import Condition from './class-condition';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// PHASE MACHINE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SIM_ModuleInit(gloop) {
-  gloop.Hook('GROUPS_UPDATE');
-  gloop.Hook('GROUPS_THINK');
-  gloop.Hook('GROUPS_VETO');
-  gloop.Hook('GROUPS_EXEC');
+  gloop.Hook('CONDITIONS');
+  gloop.Hook('SIM_EVAL');
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

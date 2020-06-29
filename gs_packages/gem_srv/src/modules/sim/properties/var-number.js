@@ -40,8 +40,8 @@ function u_CheckMinMax(vobj) {
 class GSNumber extends GSValue {
   constructor(initial = 0) {
     super();
+    this.meta.type = Symbol.for('GSNumber');
     this.value = initial;
-    this.type = 'num';
     this.nvalue = undefined;
     this.min = 0;
     this.max = 0;

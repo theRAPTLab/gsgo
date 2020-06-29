@@ -1,29 +1,24 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSString class does simple comparisons
+  The GSAgentType class manages all Agent Templates.
+  An Agent Type is a type.
+  An Agent Template is a named function that creates an agent instance.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './var-boolean';
 import GSVar from './var';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSString extends GSVar {
-  constructor(initial = '') {
+class GSAgentType extends GSVar {
+  constructor(templateName) {
     super();
-    this.meta.type = Symbol.for('GSString');
-    this.value = initial;
-  }
-  setTo(str) {
-    this.value = str;
-    return this;
-  }
-  isEq(str) {
-    return new GSBoolean(this.value === str);
+    this.meta.type = Symbol.for('GSAgentType');
+    if (!GSVar.IsAgentString(templateName)) throw Error('not a valid agent name');
+    this.value = templateName;
   }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSString;
+export default GSAgentType;

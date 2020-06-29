@@ -1,6 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import GSVariable from './properties/var';
 import GSBoolean from './properties/var-boolean';
 import GSNumber from './properties/var-number';
 import AgentFactory from './agents/agentfactory';
@@ -21,4 +22,4 @@ import Features from './features/featurefactory';
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { GSBoolean, GSNumber, AgentFactory, AgentSet, Features };
+export { GSVariable, GSBoolean, GSNumber, AgentFactory, AgentSet, Features };

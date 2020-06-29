@@ -1,29 +1,23 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSString class does simple comparisons
+  The GSPropRef class manages the representation of a property by name.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './var-boolean';
 import GSVar from './var';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSString extends GSVar {
-  constructor(initial = '') {
+class GSPropRef extends GSVar {
+  constructor(propName) {
     super();
-    this.meta.type = Symbol.for('GSString');
-    this.value = initial;
-  }
-  setTo(str) {
-    this.value = str;
-    return this;
-  }
-  isEq(str) {
-    return new GSBoolean(this.value === str);
+    this.meta.type = Symbol.for('GSPropRef');
+    this.agentType = undefined;
+    this.propName = propName;
+    this.value = undefined;
   }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSString;
+export default GSPropRef;

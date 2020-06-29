@@ -1,29 +1,21 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSString class does simple comparisons
+  The GSAgentSet class manages sets of agent INSTANCES
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './var-boolean';
 import GSVar from './var';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSString extends GSVar {
+class GSAgentSet extends GSVar {
   constructor(initial = '') {
     super();
-    this.meta.type = Symbol.for('GSString');
+    this.meta.type = Symbol.for('GSAgentSet');
     this.value = initial;
-  }
-  setTo(str) {
-    this.value = str;
-    return this;
-  }
-  isEq(str) {
-    return new GSBoolean(this.value === str);
   }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSString;
+export default GSAgentSet;

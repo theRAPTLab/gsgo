@@ -38,7 +38,7 @@ function AddTemplate(name, f_Decorate) {
   const factoryFunc = agentName => {
     const agent = new Agent(agentName);
     f_Decorate(agent);
-    agent.agent.type = name;
+    agent.meta.type = name;
     return agent;
   };
   console.log(`storing template: '${name}`);
@@ -52,11 +52,16 @@ function AddTemplate(name, f_Decorate) {
  */
 function MakeAgent(agentName, options = {}) {
   const { type } = options;
-  if (type === undefined) return new Agent(agentName);
-  const factoryFunc = TEMPLATES.get(type);
-  if (!factoryFunc) throw Error(`agent template for '${type}' not defined`);
-  // return the created agent from template
-  return factoryFunc(agentName);
+  let agent;
+  if (type === undefined) {
+    agent = new Agent(agentName);
+  } else {
+    const factoryFunc = TEMPLATES.get(type);
+    if (!factoryFunc) throw Error(`agent template for '${type}' not defined`);
+    // return the created agent from template
+    agent = factoryFunc(agentName);
+  }
+  return Agent.SaveAgent(agent);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
@@ -65,7 +70,7 @@ function MakeAgent(agentName, options = {}) {
 function ExportAgent(agent) {
   // this is our serialization data structure
   const obj = {
-    agent: [],
+    meta: [],
     props: {
       var: [],
       bool: [],
@@ -76,8 +81,8 @@ function ExportAgent(agent) {
   };
 
   // serialize low level agent properties
-  const agentKeys = Object.entries(agent.agent);
-  agentKeys.forEach(entry => obj.agent.push(entry));
+  const agentKeys = Object.entries(agent.meta);
+  agentKeys.forEach(entry => obj.meta.push(entry));
   // serialize all properties by name, value, and addition parameters
   const propKeys = [...agent.props.keys()];
   propKeys.forEach(key => {
@@ -92,11 +97,17 @@ function ExportAgent(agent) {
   // return serialized agent
   return obj;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return an array of agents by type */
+function GetAgentsByType(type) {
+  return [...Agent.GetAgentSet(type)];
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
   MakeAgent, // create an agent instance from template
   AddTemplate, // add template function by name
-  ExportAgent // return serializable object representing an agent instance
+  ExportAgent, // return serializable object representing an agent instance
+  GetAgentsByType // return a list of agents by type
 };

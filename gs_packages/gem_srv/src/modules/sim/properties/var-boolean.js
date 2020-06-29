@@ -3,8 +3,8 @@ import GSValue from './var';
 class GSBoolean extends GSValue {
   constructor(initial = true, fuzzy = 0) {
     super();
+    this.meta.type = Symbol.for('GSBoolean');
     this.value = initial;
-    this.type = 'bool';
     this.fuzzy = fuzzy;
   }
   true() {
