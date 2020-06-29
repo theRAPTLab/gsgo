@@ -242,3 +242,168 @@ And here's what **instantiation of a template** looks like now:
 const posie = AgentFactory.MakeAgent('My Flower',{ template:'Flower' });
 ```
 
+## June 26 - Implementing Conditions
+
+With this software design in place, I think I can move on to the Class operations. 
+
+* [x] Implement Agent Template Programming and Instantiation
+
+* [x] Implement Agent Serialization
+
+* [x] Implement Class Ops 1: Properties during Programming Phase
+
+* [ ] Implement Class Ops 2: Interaction Declaration during Programming Phase
+
+  * [ ] i. Agent, Agent, Condition creates a key in the **Conditions** collection for an observable
+  * [ ] ii.. Feature, Condition creates a key in the Conditions collection for an observable
+  * [ ] iii. During (D): stuff the condition event into appropriate agents or make it available from AgentTemplate
+  * [ ] iv. During (E), (F), (G): pull the condition event and do something with it, pushing it further down
+  * [ ] v. Implement **EventQueues** as necessary...?
+  
+* [ ] Test Class Ops 2
+
+  * [ ] timer -> invoke method
+  * [ ] animframe -> invoke method
+  * [ ] intersection -> invoke method
+  * [ ] condition met -> invoke method
+  
+* [ ] Implement Class Ops 3: Conditions that change specific agents or Agent Sets
+
+* [ ] Implement Class Ops 3: Feature invocation at periodic intervals (flexible timers)
+
+The easiest thing to implement is the **OnTick** handler. Codewise it looks like:
+
+```
+const agent = AgentFactory('flower',{template:'Flower'});
+// at runtime for one instance or programming time for all agents
+agent.onTick(agent=>{
+	agent.prop('x').add(1);
+	agent.prop('y').add(1);
+	agent.prop('x').gt(10)
+		.exec( // true/false, 
+			agent=>{agent.prop('x').setTo(0)}, 
+			agent=>{agent.prop('y').setTo(1)}
+		);
+// define user method
+agent.defineMethod('sin',(agent,value)=>{ stuff }));
+```
+
+The implication of this is that .onTick() accepts a callback function that will be fired at the right time.
+
+## June 27-29 - Weekend Push
+
+I'm working through how events and conditions relate to the current Agent/Template API.
+
+**reboot**
+
+745PM // is to **find the flow---any flow---and lock onto it**. I'm noticing I'm getting a headache from looking at the screeen with these glasses, so I should change them. Adjusted and refit my fixed-focus glasses.
+
+800PM // finding the flow...where did I leave off. I'm adding the timer feature. I'm adding it to a live agent. I'm noting that an agent has three possible sources of a method: (1) agent class (2) feature method and (3) added method to object.
+
+1030PM // finished documenting and isolating the Agent class (see class-agent.js)
+
+1115PM // now looking at agent processing of **conditions** and **events**, which are the same thing in some ways. The execution model I'm using relies on the agent to forward certain operations to certain stages of the lifecycle. There is similar to the Actor model in that during EXEC, there are two things that can happen:
+
+* the agent can change itself
+* the agent can send a message to another agent
+
+I don't have **message sending between agents** implemented though, so I have to think about this.
+
+QUESTION: **What do conditions look like?**
+
+```
+agent.if(condition).or(condition).then(agent=>{
+	agent.doStuff
+});
+```
+
+The programming implementation of this looks something like:
+
+```
+(1) agent.if/or ...
+		generate a cascade of new gbooleans + gcomparisons
+(2) ...then(func)
+		save the cascade of gbooleans+comparisons under a unique 'agent signature' 
+```
+
+The actual execution of the above probably looks like:
+
+```
+AGENTS_UPDATE   autonomous agent updates
+GROUPS_UPDATE   autonomous group updates
+FEATURES_UPDATE autonomous feature updates
+CONDITIONS      (1) execute condition chains and forward func to subscribers
+GROUPS_THINK
+AGENTS_THINK    (2) read event stream and build exec stream
+GROUPS_VETO			
+AGENTS_EXEC			(3) process exec stream and invoke all functions
+GROUPS_EXEC
+
+```
+
+QUESTION: **What does message forwarding look like?**
+
+```
+agentset.when(touch('type1','type2')).then((me,you)=>{
+	me.doStuff()
+	you.request('prop')
+	you.tell('method',...args)
+});
+```
+
+Implementing **condition chains**
+
+* The `GSBoolean` type makes use of **comparison functions** which currently aren't defined. It only returns **truthy/falsey** results
+* For `GSBoolean` to do useful work, we need to define the actual comparison functions.
+* Comparison functions operate only on GSVars, and are stored in some kind of library.
+
+```
+if agent.prop('x').lt(num).then()
+// literal: number.lt -> boolean
+if agent.prop('x').lt(agent.prop('y')).then()
+// if (x<y)
+// value: number.lt ( number) -> boolean
+if agent.prop('x').lt(agent.prop('y').add(10).sub(agent.prop('x')).then()
+// if (x<y+10-x)
+if agent.prop('x').lt(agent.prop('y').div(10).sub(agent.prop('x')).then()
+// if (x<y/10-x)
+if agent.prop('x').lt(GSNumber(agent.prop('y').div(10))-agent.prop('y')).then()
+// if (x<((y/10)-x))
+
+To reconstruct this expression at runtime from the script engine, we probably need to tokenize the script input. Ultimately we want a function expresion that returns TRUE
+
+const condition = Comparisons.lt; // return exprA < exprB
+const exprA = GSNumber()
+const exprB = GSNumber()
+```
+
+**THIS QUICKLY BECOMES VERY COMPLICATED**... I think it might make sense to implement just a very simple set of expressions that use **numeric literals only.**
+
+**Back to simple condition triggering**...maybe we can just use functions for now and use an expression parser.
+
+Our simpler case looks like this:
+
+```
+if agent.test(parms) then doSomething - any test for just an agent
+if agentset.test(parms) then doSomething - any tests involving a set
+- turns into -
+save (a) test, (b) parms, (c) necessary object, and (d) doSomething method
+1. during tests phase, retrieve params and context and forward result to think phase
+2. during think phase, examine streams of results, process, and forward to exec phase
+3. during exec phase, execute all doSomethings with agent or agentset
+
+for agent.tests, doSomething receives (agent)
+for agentset.tests, doSomething receives (agent, target)
+```
+
+THINGS TO GATHER
+
+* the **test** is a function that receives values from the **parms** we provide
+  * agent tests operate only on **agent** or **agentset** comparison
+  * property tests operate only on properties or methods that return properties.
+* we also provide the **doSomething** function.
+* the test is run with the **parms**
+  * the test, if true, forwards an **event** to each subscribed **agent** with the **doSomething** function
+* during agent.THINK, each event is potentially accepted or rejected or filtered, and forwarded
+* during agent.EXEC, the **doSomething** function is executed on the agent
+

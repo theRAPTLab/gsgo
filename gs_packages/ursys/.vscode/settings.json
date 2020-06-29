@@ -2,6 +2,7 @@
   "search.exclude": {
     "node_modules": true,
     "/server": true,
-    "/client": true
+    "/client": true,
+    "package-lock.json": true
   }
 }
