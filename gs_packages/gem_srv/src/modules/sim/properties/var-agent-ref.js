@@ -1,8 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSAgentType class manages all Agent Templates.
-  An Agent Type is a type.
-  An Agent Template is a named function that creates an agent instance.
+  The GSAgentRef class manages Agent Type Names, which are a kind of string.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -10,15 +8,16 @@ import GSVar from './var';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSAgentType extends GSVar {
-  constructor(templateName) {
+class GSAgentRef extends GSVar {
+  constructor(agentType) {
     super();
-    this.meta.type = Symbol.for('GSAgentType');
-    if (!GSVar.IsAgentString(templateName)) throw Error('not a valid agent name');
-    this.value = templateName;
+    this.meta.type = Symbol.for('GSAgentRef');
+    //
+    if (!GSVar.IsAgentString(agentType)) throw Error('not a valid agent name');
+    this.value = agentType;
   }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSAgentType;
+export default GSAgentRef;

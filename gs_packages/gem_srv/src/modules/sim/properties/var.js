@@ -2,8 +2,6 @@
 
   The GSVar class provides uniqueIds for each variable in the system
 
-  In our first prototype, we do not support arbitrary expressions.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
