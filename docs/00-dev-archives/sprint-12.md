@@ -1,4 +1,4 @@
-**SUMMARY S12 JUN 08-JUN 21**
+**SUMMARY S13 JUN 08-JUN 21**
 
 * W1: Agent simulation execution engine starts. Basic agent set/get, value types, condition types, phasemachine
 * W2: Agent collections, featurepacks, filters, and event+phase management started
