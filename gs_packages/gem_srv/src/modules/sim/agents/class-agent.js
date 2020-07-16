@@ -161,22 +161,26 @@ class Agent {
   defMethod = (name, methodFunc) => AddMethod(this, name, methodFunc);
   addFeature = name => AddFeature(this, name);
 
-  // accessor methods for user+feature props
+  // props return gvars
+  // e.g. let x = agent.prop('x').value;
   prop(name) {
     const p = this.props.get(name);
     if (p === undefined) throw Error(`no prop named '${name}'`);
     return p;
   }
+
+  // to call an op as a method, do some conversion
   method(name, ...args) {
-    const f = this.methods.get(name);
-    if (f === undefined) throw Error(`no method named '${name}'`);
-    return f.apply(this, args);
+    const stack = [...args];
+    this.opExec(name, stack);
+    return stack.pop();
   }
-  // rewrite this to forward agent
-  feature(name) {
-    const fpack = this.features.get(name);
-    if (!fpack) throw Error(`feature ${name} is not installed in this agent`);
-    return fpack; // instance of Feature
+
+  // operations receive arguments from a stack
+  opExec(name, stack) {
+    const opExec = this.methods.get(name);
+    if (opExec === undefined) throw Error(`no method named '${name}'`);
+    return opExec.apply(this, stack);
   }
 
   // return a condition object
@@ -225,7 +229,6 @@ function SaveAgent(agent) {
 /** return agent set */
 function GetAgentSet(type) {
   const agents = m_agents.get(type);
-  console.log('type', type, [...m_agents.keys()]);
   return agents || [];
 }
 

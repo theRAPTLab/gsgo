@@ -22,17 +22,13 @@
   what is an event / trigger / observable / pipe
   how do conditions relate to events and triggers
 
-
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  GSVar,
-  GSBoolean,
-  GSNumber,
-  AgentFactory,
-  AgentSet
-} from './script-engine';
+import GSBoolean from './properties/var-boolean';
+import GSNumber from './properties/var-number';
+import AgentFactory from './agents/agentfactory';
+import AgentSet from './agents/class-agentset';
+import StackMachine from './agents/stackmachine';
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,6 +73,7 @@ function AgentProgram() {
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.groupCollapsed('Flower Programming');
   AgentFactory.AddTemplate('Flower', agent => {
+    // all this is direct templating
     agent.prop('x').setTo(100);
     agent.prop('y').setTo(200);
     agent.prop('skin').setTo('flower.png');
@@ -86,10 +83,11 @@ function AgentProgram() {
       .setMax(100);
     agent.defProp('isAlive', new GSBoolean(true));
     agent.addFeature('Movement').setController('student');
+    // this stuff has to create smcode runtime programs
     agent
       .if()
       .prop('x')
-      .test('lt', 10)
+      .test('lt', new GSNumber(10))
       .then(agent => {
         console.log(agent.name(), 'lt', 10);
       });
@@ -100,9 +98,10 @@ function AgentProgram() {
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.group('Creation Testing');
   const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
+  const smc_init = StackMachine.SMC_GetInit();
   names.forEach(name => {
     const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
-    // console.log(`'${name}' as export:`, AgentFactory.ExportAgent(agent));
+    StackMachine.Exec(smc_init, agent);
   });
   console.log('Flowers', AgentFactory.GetAgentsByType('Flower'));
   console.log('Mugworts', AgentFactory.GetAgentsByType('Mugworts'));
@@ -116,13 +115,6 @@ function AgentProgram() {
   console.groupCollapsed('World Programming');
   AgentFactory.AddTemplate('World', world => {
     world.addFeature('Timer');
-    world
-      .feature('Timer')
-      .defineTimer('population')
-      .on('elapsed', timer => {
-        timer.reset();
-        console.log('population timer elapsed');
-      });
   });
   // save creation template
   console.groupEnd();
@@ -157,9 +149,6 @@ function AgentProgram() {
   console.groupCollapsed('OnTick Testing');
   const ticker = AgentFactory.MakeAgent('TickyTicky');
   ticker.addFeature('Timer');
-  ticker.feature('Timer').onTick(agent => {
-    console.log('ticked', agent.name);
-  });
   console.groupEnd();
 }
 
@@ -169,6 +158,9 @@ function AgentUpdate(frame) {
   // console.log(healthProp.value, healthProp.nvalue);
   // if (healthProp.eq(5).true()) console.log('!!! 5 health');
   // healthProp.add(1);
+  const agents = AgentFactory.GetAgentsByType('Flower');
+  const smc_update = StackMachine.SMC_GetUpdate();
+  agents.forEach(agent => StackMachine.Exec(smc_update, agent));
   //
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

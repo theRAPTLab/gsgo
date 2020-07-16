@@ -14,24 +14,24 @@ function m_VarCount() {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class GSVariable {
-  constructor() {
+  constructor(initialValue) {
     this.meta = {
       id: m_VarCount(),
       type: Symbol.for('GSVariable')
     };
-    this.var = undefined;
+    this._value = initialValue;
   }
   get value() {
-    return this.var;
+    return this._value;
   }
   set value(value) {
-    this.var = value;
+    this._value = value;
   }
   get() {
-    return this.var;
+    return this._value;
   }
   serialize() {
-    return ['value', this.var];
+    return ['value', this._value];
   }
 }
 

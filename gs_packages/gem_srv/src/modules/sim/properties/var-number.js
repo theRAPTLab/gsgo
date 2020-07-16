@@ -39,7 +39,7 @@ function u_CheckMinMax(vobj) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class GSNumber extends GSValue {
   constructor(initial = 0) {
-    super();
+    super(initial);
     this.meta.type = Symbol.for('GSNumber');
     this.value = initial;
     this.nvalue = undefined;
