@@ -1,7 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  A Lookup Dictionary of Named Sets of type T
-  Used to manage a sets of unique T by name
+  A Map that manages Sets of type T.
+  const SETS = new SetMap<SCMObject>('');
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

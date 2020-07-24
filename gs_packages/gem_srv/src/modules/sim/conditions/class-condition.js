@@ -1,7 +1,10 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Condition Class
-  A collection of functions for different kinds of tests
+  A collection of functions for gathering references onto a 'parameter stack'
+  that are then used to create a test function that executes later with
+  an actual object.
+
 
   # CREATING AN EFFECT FUNCTION
 
@@ -55,8 +58,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import SIMDATA from '../simulation-data';
 import GSVar from '../properties/var';
 import GSPropRef from '../properties/var-prop-ref';
+import GSAgentType from '../properties/var-agent-ref';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,26 +74,30 @@ const m_testfactory = new Map();
 m_testfactory.set('touches', (stack, options = {}) => {
   // this test takes two AgentTypes and returns a set of matching agents
   const { radius = 1 } = options;
-  const test = (aType1, aType2) => {
+  return (aType1, aType2) => {
     console.log(`test ${aType1} touch ${aType2} within ${radius} units`);
     return []; // return AgentSet (potentially empty)
   };
-  // return the test to be stored in condition table by argument signature
-  return test; // (atype1, atype2) => AgentSet
 });
 
 const lt = stack => {
   // this test compares the last two numbers on the stack a,b
-  const b = stack.pop().value;
-  const a = stack.pop().value;
-  return a < b;
+  return () => {
+    const agent = stack.pop();
+    console.log('agent', agent.name);
+    const b = stack.pop().value;
+    const a = stack.pop().value;
+    return a < b;
+  };
 };
 m_testfactory.set('lt', lt);
 const gt = stack => {
   // this test compares the last two numbers on the stack a,b
-  const b = stack.pop().value;
-  const a = stack.pop().value;
-  return a > b;
+  return () => {
+    const b = stack.pop().value;
+    const a = stack.pop().value;
+    return a > b;
+  };
 };
 m_testfactory.set('gt', gt);
 
@@ -98,30 +107,6 @@ const m_conditions = new Map();
 
 /// STACK UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** retrieve index-back from stack */
-function stack_Back(stack, back = 1) {
-  return stack[stack.length - 1 - back];
-}
-/** push 'agent' arg on stack */
-function stack_PushAgent(stack, str) {
-  if (!GSVar.IsAgentString(str)) throw Error(`invalid agent string ${str}`);
-  stack.push({ type: 'agent', id: str });
-  // save last agent pushed to use as context for props
-  last_agent = str;
-}
-/** push 'agent.prop' arg on stack, using last pushed agent */
-function stack_PushProp(stack, prop) {
-  if (!GSVar.IsPropString(prop)) throw Error(`invalid prop string ${prop}`);
-  if (!last_agent) throw Error('agent must be pushed before prop');
-  stack.push(new GSPropRef(prop));
-}
-/** retrieve actual values from the argument stack
- *  requires writing an arguments class though
- */
-function stack_GetValues(stack) {
-  return stack.map(arg => arg.value);
-}
-
 /** converts the test object and stack parameters into a hash key */
 function ConditionHashKey(test, stack) {
   return test.name + stack.length; // dumb placeholder
@@ -130,6 +115,7 @@ function ConditionHashKey(test, stack) {
 /// CLASS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Condition {
+  //
   constructor() {
     this.stack = []; // array objects
     this.tests = []; // condition functions using stack params
@@ -138,7 +124,7 @@ class Condition {
 
   /** agentType is string 'agent' or 'agent.prop' */
   agent(agentType) {
-    stack_PushAgent(this.stack, agentType);
+    this.stack.push(new GSAgentType(agentType));
     // return chainable self
     return this;
   }
@@ -168,17 +154,22 @@ class Condition {
     const test = testMaker(this.stack);
     // save test with arg key
     m_conditions.set(key, test);
-    // save test to run later
-    this.tests.push(key);
+    // save test to run later for testing only
+    this.tests.push(test);
     // return chainable self
     return this;
   }
 
+  /** compile and push condition onto conditions stack */
   then(execFunc) {
     this.effects.push(execFunc);
   }
 
-  signature() {}
+  /// GAMELOOP INTERFACE //////////////////////////////////////////////////////
+
+  doUPDATE(agent) {}
+  doTHINK(agent) {}
+  doEXEC(agent) {}
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Typechecks Module
+  Typechecks Module for Non-Typescript Code
 
   Every method potentially throws an Error.
 

@@ -1,6 +1,6 @@
-import GSValue from './var';
+import GSVar from './var';
 
-class GSBoolean extends GSValue {
+class GSBoolean extends GSVar {
   constructor(initial = true, fuzzy = 0) {
     super();
     this.meta.type = Symbol.for('GSBoolean');

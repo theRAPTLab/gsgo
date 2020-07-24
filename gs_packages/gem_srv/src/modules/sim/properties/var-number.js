@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import GSBoolean from './var-boolean';
-import GSValue from './var';
+import GSVar from './var';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,7 +37,7 @@ function u_CheckMinMax(vobj) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSNumber extends GSValue {
+class GSNumber extends GSVar {
   constructor(initial = 0) {
     super(initial);
     this.meta.type = Symbol.for('GSNumber');

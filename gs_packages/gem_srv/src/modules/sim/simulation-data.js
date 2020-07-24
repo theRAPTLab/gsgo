@@ -12,7 +12,7 @@ import ObjectMap from './class-object-map';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const AGENTS = new SetMap('Agent Instances');
 const TEMPLATES = new ObjectMap('Template Functions');
-console.log(TEMPLATES.type(), TEMPLATES);
+const FEATURES = new ObjectMap('Feature Packs');
 
 /// PHASEMACHINE API //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,4 +24,4 @@ function SIM_ModuleInit(gloop) {
 export default {
   SIM_ModuleInit
 };
-export { AGENTS, TEMPLATES };
+export { AGENTS, TEMPLATES, FEATURES };

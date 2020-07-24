@@ -1,35 +1,61 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSVar class provides uniqueIds for each variable in the system
+  StackMachineObject implements prop and method maps.
+  : this.props stores [key,value]
+  : this.methods stores [method,functionRef]
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_counter = 100;
-function m_VarCount() {
+function m_ContextCount() {
   return m_counter++;
+}
+
+/// HELPER METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  Add a property to given context
+ *  @param {StackMachineObject} obj - instance of Agent class
+ *  @param {string} name - name of property to add
+ *  @param {GSVar} gvar - GSVar instance
+ *  @returns {GSVar} - for chaining
+ */
+function AddProp(obj, name, gvar) {
+  const { props } = obj;
+  if (props.has(prop)) throw Error(`prop '${prop}' already added`);
+  props.set(prop, gvar);
+  return gvar;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  add a method to an agent's method map by method name
+ *  @param {Agent} agent - instance of Agent class
+ *  @param {string} method - name of method to add
+ *  @param {function} func - function signature (agent,...args)
+ *  @returns {Agent} - for chaining agent calls
+ */
+function AddMethod(agent, method, func) {
+  const { methods } = agent;
+  if (method.has(methods)) throw Error(`method '${method}' already added`);
+  methods.set(method, func);
+  agent[method] = func;
+  return agent;
 }
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSVar {
-  constructor(initialValue) {
+class StackMachineObject {
+  constructor() {
     this.meta = {
-      id: m_VarCount(),
-      type: Symbol.for('GSVar')
+      id: m_ContextCount(),
+      type: Symbol.for('GSBaseContext')
     };
-    this._value = initialValue;
+    this.props = new Map();
+    this.methods = new Map();
   }
-  get value() {
-    return this._value;
-  }
-  set value(value) {
-    this._value = value;
-  }
-  get() {
-    return this._value;
-  }
+
   serialize() {
     return ['value', this._value];
   }
@@ -43,7 +69,7 @@ class GSVar {
  */
 function GetValues(gvars) {
   const values = gvars.map(gvar => {
-    if (gvar instanceof GSVar) return gvar.value;
+    if (gvar instanceof GSVariable) return gvar.value;
     return gvar;
   });
   return values;
@@ -55,7 +81,7 @@ function GetValues(gvars) {
  */
 function GetTypes(gvars) {
   const types = gvars.map(gvar => {
-    if (gvar instanceof GSVar) return gvar.meta.type;
+    if (gvar instanceof GSVariable) return gvar.meta.type;
     if (typeof gvar === 'string') return 'STR'; // literal string
     if (typeof gvar === 'number') return 'NUM'; // literal number
     if (typeof gvar === 'boolean') return 'BOL'; // literal boolean
@@ -80,8 +106,8 @@ function IsPropString(str) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GSVar.GetTypes = GetTypes;
-GSVar.GetValues = GetValues;
-GSVar.IsAgentString = IsAgentString;
-GSVar.IsPropString = IsPropString;
-export default GSVar;
+StackMachineObject.GetTypes = GetTypes;
+StackMachineObject.GetValues = GetValues;
+StackMachineObject.IsAgentString = IsAgentString;
+StackMachineObject.IsPropString = IsPropString;
+export default StackMachineObject;

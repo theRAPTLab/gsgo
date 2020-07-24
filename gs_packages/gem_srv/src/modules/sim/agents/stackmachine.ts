@@ -7,19 +7,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  // types
-  SMScopeRef,
-  SMProgram,
-  // ops
   setPropValue,
-  refPop,
   refProp,
-  scopedCall,
+  callRef,
   pushProp,
+  dbgStack,
   pop,
-  scopedProp,
-  dbgStack
+  refReturn
 } from './stackmachine-ops';
+import { SMProgram } from './stackmachine-types';
 import Agent from './class-agent';
 import GVar from '../properties/var';
 
@@ -39,11 +35,11 @@ function SMC_GetUpdate(): SMProgram {
   const program: SMProgram = [
     // run during Agent.Update phase
     refProp('x'),
-    scopedCall('add', 1),
+    callRef('add', 1),
     pushProp('x'),
     dbgStack(),
     pop(),
-    refPop()
+    refReturn()
   ];
   return program;
 }
