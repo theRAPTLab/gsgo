@@ -16,7 +16,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { AGENTS } from '../simulation-data';
+import { AGENTS } from '../runtime-data';
 import Agent from './class-agent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

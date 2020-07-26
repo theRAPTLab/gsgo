@@ -10,7 +10,7 @@ import { IsString, HasMeta, HasKey, GetKey, SaveKey } from './type-checks';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class ObjectMap<T = any> {
+class ObjectMap<T> {
   //
   protected mapType: symbol;
   protected dict: Map<string, T>;
@@ -37,7 +37,7 @@ class ObjectMap<T = any> {
   }
 
   /** add object to category set */
-  save(key: string, obj: T): void {
+  set(key: string, obj: T): void {
     if (!HasMeta(obj)) throw Error('obj does not have valid meta prop');
     SaveKey(this.dict, key, obj);
   }

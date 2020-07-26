@@ -9,9 +9,10 @@ import GSVar from './var';
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class GSDictionary extends GSVar {
-  constructor() {
+  constructor(name) {
     super();
     this.meta.type = Symbol.for('GSDictionary');
+    this.meta.name = name;
     this.dict = new Map();
   }
   addProp(key, gvar) {

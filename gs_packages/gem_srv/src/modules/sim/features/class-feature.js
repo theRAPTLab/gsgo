@@ -1,6 +1,22 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  The Feature Class!
+
+  This is the "FeaturePack" base class. Creating a new feature means adding
+  properties and methods that act on agents. FeaturePacks are created
+  only once, because all methods use the passed agent for storing
+  properties. If you need to persist information, store it in the agent.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+import GDictionary from '../properties/var-dictionary';
+import { FEATURES } from '../runtime-data';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const FEATURES = new Map(); // track all features
+
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -15,44 +31,48 @@ class Feature {
     };
     FEATURES.set(name, this);
     // subclassers can add other properties
+    // super(name)
+    // this.newprop = ...
   }
 
-  /** return the feature object stored in agent.props[featurename] */
-  fpobj(agent) {
+  /** return the feature object stored in agent.props[feature] */
+  getContext(agent) {
     return agent.prop.get(this.name);
   }
 
+  /** called by agent template function when creating new agent */
   decorate(agent) {
     if (agent.features.has(this.name))
       throw Error(`agent already bound to feature ${this.name}`);
     return this;
     // SUBCLASSERS IMPLEMENT SOMETHING LIKE
     // super.decorate(agent);
-    // const fpobj = agent.defProp(this.name, {});
-    // fpobj.newProp = 'hello';
+    // const featMap = new GSDictionary(this.name);
+    // agent.defProp(this.name,featMap);
+    // agent.defMethod(
     // return this;
   }
 
   /** get feature prop value */
   prop(agent, propName) {
     // get the feature storage object
-    const fpobj = this.fpobj(agent);
+    const featMap = this.getContext(agent);
     // return the propName for chaining
-    return fpobj[propName];
+    return featMap.get(propName);
   }
 
   /** set feature prop value */
   defProp(agent, propName, gVar) {
     // get the feature storage object, which is in its own object
-    const fpobj = this.fpobj(agent);
+    const featMap = this.getContext(agent);
     // store the variable and return gVar for chaining
-    fpobj[propName] = gVar;
+    featMap.set(propName, gVar);
     return gVar;
   }
 
   /** SUBCLASSER IMPLEMENT ADDITIONAL METHODS LIKE THIS */
-  // someMethod(agent) {
-  //   /* access feature props in the agent.props[featurename][propname] */
+  // someMethod(agent,...args) {
+  //   /* access feature props in the agent.props[feature][propname] */
   //   /* or agent props in  agent.props[propname] */
   //   const x = agent.x();
   //   if (this.prop('featureprop').value && x > 0) return true;
@@ -66,8 +86,8 @@ Feature.GetByName = name => {
   return FEATURES.get(name);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Feature.AddExternal = featurePack => {
-  FEATURES.set(featurePack.name, featurePack);
+Feature.AddExternal = fpack => {
+  FEATURES.set(fpack.name, fpack);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

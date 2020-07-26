@@ -12,30 +12,30 @@ function IsDefined(any) {
   return any !== undefined;
 }
 function IsFunction(f) {
-  if (typeof f !== 'function') throw Error(`${f} is not a function`);
+  if (typeof f !== 'function') return false;
   return true;
 }
 function IsNumber(num) {
-  if (typeof num !== 'number') throw Error(`${num} is not a number`);
+  if (typeof num !== 'number') return false;
   return true;
 }
 function IsInteger(int) {
-  if (!Number.isInteger()) throw Error(`${int} is not an integer number`);
+  if (!Number.isInteger()) return false;
 }
 function IsString(str) {
-  if (typeof str !== 'string') throw Error(`${str} is not a string`);
+  if (typeof str !== 'string') return false;
   return true;
 }
 function IsObject(obj) {
-  if (!Object.isObject(obj)) throw Error(`${obj} is not an object`);
+  if (typeof obj !== 'object') return false;
   return true;
 }
 function IsMap(map) {
-  if (map instanceof Map) throw Error(`${map} is not a Map`);
+  if (map instanceof Map) return false;
   return true;
 }
 function IsKey(str) {
-  if (!Object.isString(str)) throw Error(`${str} is not a key (must be string)`);
+  if (!Object.isString(str)) return false;
   return true;
 }
 function HasMeta(obj) {
@@ -48,14 +48,14 @@ function GetKey(map, key) {
   return HasKey(map) ? map(key) : undefined;
 }
 function SaveKey(map, key, obj) {
-  if (!IsDefined(obj)) throw Error('obj to save is undefined; use DeleteKey');
-  if (HasKey(map, key)) throw Error(`key ${key} already in map ${map}`);
+  if (!IsDefined(obj)) return false;
+  if (HasKey(map, key)) return false;
   map.set(key, obj);
 }
 function DeleteKey(map, key) {
-  if (!HasKey(map, key)) throw Error(`map doesn't have key ${key} to delete`);
+  if (!HasKey(map, key)) return false;
   const obj = map.get(key);
-  if (!map.delete(key)) throw Error(`unexpected map delete error for ${key}`);
+  if (!map.delete(key)) return false;
   return obj;
 }
 

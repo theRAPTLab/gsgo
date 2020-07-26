@@ -29,7 +29,7 @@ import theme from '../modules/style/theme';
 import { SITE } from './_navmenu.json';
 // simulation components
 import APPSTATE from '../modules/appstate';
-import SIM from '../modules/sim/simulation';
+import SIM from '../modules/sim/runtime';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

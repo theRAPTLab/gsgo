@@ -5,14 +5,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import SetMap from './class-set-map';
-import ObjectMap from './class-object-map';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const AGENTS = new SetMap('Agent Instances');
-const TEMPLATES = new ObjectMap('Template Functions');
-const FEATURES = new ObjectMap('Feature Packs');
+const AGENTS = new Map();
+const TEMPLATES = new Map();
+const FEATURES = new Map();
 
 /// PHASEMACHINE API //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +18,9 @@ function SIM_ModuleInit(gloop) {
 }
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PhaseMachine required initialization point
 export default {
   SIM_ModuleInit
 };
+/// export shared data structures
 export { AGENTS, TEMPLATES, FEATURES };

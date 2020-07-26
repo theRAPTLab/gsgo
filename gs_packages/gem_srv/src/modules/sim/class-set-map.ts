@@ -1,8 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  A Map that manages Sets of type T.
-  const SETS = new SetMap<SCMObject>('');
+  A Map that manages Typed Sets
 
+  const SETS = new SetMap<SCMObject>('');
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

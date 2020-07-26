@@ -58,7 +58,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import SIMDATA from '../simulation-data';
+import SIMDATA from '../runtime-data';
 import GSVar from '../properties/var';
 import GSPropRef from '../properties/var-prop-ref';
 import GSAgentType from '../properties/var-agent-ref';
