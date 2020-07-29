@@ -1,61 +1,53 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  StackMachineObject implements prop and method maps.
-  : this.props stores [key,value]
-  : this.methods stores [method,functionRef]
+  GSBase is used for Agents and Agent Properties, as well as anything that
+  has to work with StackMachineCode (SMC)
+
+  * this.props is a <key,value> map
+  * this.methods is a <key,[function || smc_method]> map
+  * this._value is used by property classes
+  * base.value is a getter/setter
+  * base.get() and base.set() are alternative accessors
+  * serializer() returns
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_counter = 100;
-function m_ContextCount() {
-  return m_counter++;
-}
-
-/// HELPER METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- *  Add a property to given context
- *  @param {StackMachineObject} obj - instance of Agent class
- *  @param {string} name - name of property to add
- *  @param {GSVar} gvar - GSVar instance
- *  @returns {GSVar} - for chaining
- */
-function AddProp(obj, name, gvar) {
-  const { props } = obj;
-  if (props.has(prop)) throw Error(`prop '${prop}' already added`);
-  props.set(prop, gvar);
-  return gvar;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- *  add a method to an agent's method map by method name
- *  @param {Agent} agent - instance of Agent class
- *  @param {string} method - name of method to add
- *  @param {function} func - function signature (agent,...args)
- *  @returns {Agent} - for chaining agent calls
- */
-function AddMethod(agent, method, func) {
-  const { methods } = agent;
-  if (method.has(methods)) throw Error(`method '${method}' already added`);
-  methods.set(method, func);
-  agent[method] = func;
-  return agent;
+let m_objcount = 100;
+function new_obj_id() {
+  return m_objcount++;
 }
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class StackMachineObject {
-  constructor() {
+class GSBase {
+  constructor(init) {
+    // init is a literal value
+    this._value = init;
     this.meta = {
-      id: m_ContextCount(),
-      type: Symbol.for('GSBaseContext')
+      id: new_obj_id(),
+      type: Symbol.for('GSBase')
     };
     this.props = new Map();
     this.methods = new Map();
   }
 
+  /// getter/setter and get() set() equivalents
+  get value() {
+    return this._value;
+  }
+  set value(value) {
+    this._value = value;
+  }
+  get() {
+    return this._value;
+  }
+  set(value) {
+    this._value = value;
+  }
+
+  /// serializer
   serialize() {
     return ['value', this._value];
   }
@@ -63,33 +55,32 @@ class StackMachineObject {
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *  given an array of mixed gvars and literals, return an array of
+/** given an array of mixed gbase and literals, return an array of
  *  pure values
  */
-function GetValues(gvars) {
-  const values = gvars.map(gvar => {
-    if (gvar instanceof GSVariable) return gvar.value;
-    return gvar;
+function GetValues(mixedArray) {
+  const values = mixedArray.map(gbv => {
+    if (gbv instanceof GSBase) return gbv.value;
+    return gbv;
   });
   return values;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *  given an array of mixed gvars and literals, return an array of
+/** given an array of mixed gbase and literals, return an array of
  *  types
  */
-function GetTypes(gvars) {
-  const types = gvars.map(gvar => {
-    if (gvar instanceof GSVariable) return gvar.meta.type;
-    if (typeof gvar === 'string') return 'STR'; // literal string
-    if (typeof gvar === 'number') return 'NUM'; // literal number
-    if (typeof gvar === 'boolean') return 'BOL'; // literal boolean
-    throw Error(`unknown gvar type '${gvar}'`);
+function GetTypes(mixedArray) {
+  const types = mixedArray.map(gbv => {
+    if (gbv instanceof GSBase) return gbv.meta.type;
+    if (typeof gbv === 'string') return 'STR'; // literal string
+    if (typeof gbv === 'number') return 'NUM'; // literal number
+    if (typeof gbv === 'boolean') return 'BOL'; // literal boolean
+    throw Error(`unknown variable type '${gbv}'`);
   });
   return types;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** test for string keys that do not contain a . */
 function IsAgentString(str) {
   if (typeof str !== 'string') throw Error('arg must be string');
   const len = str.split('.').length;
@@ -97,6 +88,7 @@ function IsAgentString(str) {
   return false; // dot is in name
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** test for string keys than begin with . */
 function IsPropString(str) {
   if (typeof str !== 'string') throw Error('arg must be string');
   if (!str.startsWith('.')) return false; // not a .string
@@ -106,8 +98,10 @@ function IsPropString(str) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-StackMachineObject.GetTypes = GetTypes;
-StackMachineObject.GetValues = GetValues;
-StackMachineObject.IsAgentString = IsAgentString;
-StackMachineObject.IsPropString = IsPropString;
-export default StackMachineObject;
+/// attach static methods to class
+GSBase.GetTypes = GetTypes;
+GSBase.GetValues = GetValues;
+GSBase.IsAgentString = IsAgentString;
+GSBase.IsPropString = IsPropString;
+/// export class
+export default GSBase;

@@ -6,7 +6,6 @@ import UR from '@gemstep/ursys/client';
 import { interval } from 'rxjs';
 // runtime data modules
 import INPUTS from './inputs';
-import CONDITIONS from './conditions/class-condition';
 import AGENTS from './agents';
 import GROUPS from './agentgroups';
 import REFEREE from './referee';
@@ -141,7 +140,7 @@ function UR_ModuleInit() {
   GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, GROUPS, REFEREE]);
+  GameLoop.HookModules([INPUTS, AGENTS, GROUPS, REFEREE]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -11,7 +11,6 @@
 import GSVar from '../properties/var';
 import GSNumber from '../properties/var-number';
 import GSString from '../properties/var-string';
-import Condition from '../conditions/class-condition';
 import FeatureLib from '../features/featurefactory';
 import GlobalLib from '../features/feature-global';
 import { AddFeature, AddProp, AddMethod } from '../smc/utils-smcobj';
@@ -136,7 +135,7 @@ class Agent {
 
   // return a condition object
   if() {
-    return new Condition();
+    return this;
   }
 
   // agent test

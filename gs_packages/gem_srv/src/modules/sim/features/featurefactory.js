@@ -9,8 +9,19 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Feature from './class-feature';
+import { FEATURES } from '../runtime-data';
 
-/// TEMPORARY DEFINITIONS /////////////////////////////////////////////////////
+/// LIBRARY UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetByName(name) {
+  return FEATURES.get(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_AddExternal(fpack) {
+  FEATURES.set(fpack.name, fpack);
+}
+
+// Fake Feature Packs...
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const MovementPack = {
   name: 'Movement',
@@ -24,7 +35,7 @@ const MovementPack = {
     return MovementPack;
   }
 };
-Feature.AddExternal(MovementPack);
+m_AddExternal(MovementPack);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TimerPack = {
   name: 'Timer',
@@ -43,11 +54,12 @@ const TimerPack = {
     return TimerPack;
   }
 };
-Feature.AddExternal(TimerPack);
+m_AddExternal(TimerPack);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export
 export default {
-  GetByName: Feature.GetByName
+  GetByName: m_GetByName,
+  Register: m_AddExternal
 };

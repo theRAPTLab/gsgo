@@ -37,7 +37,7 @@ function SMC_GetUpdate(): SMProgram {
     refProp('x'),
     callRef('add', 1),
     pushProp('x'),
-    dbgStack(),
+    // dbgStack(),
     pop(),
     refReturn()
   ];

@@ -84,19 +84,12 @@ function AgentProgram() {
     agent.defProp('isAlive', new GSBoolean(true));
     agent.addFeature('Movement').setController('student');
     // this stuff has to create smcode runtime programs
-    agent
-      .if()
-      .prop('x')
-      .test('lt', new GSNumber(10))
-      .then(agent => {
-        console.log(agent.name(), 'lt', 10);
-      });
   });
   console.groupEnd();
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     creation test
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.group('Creation Testing');
+  console.groupCollapsed('Creation Testing');
   const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
   const smc_init = StackMachine.SMC_GetInit();
   names.forEach(name => {
