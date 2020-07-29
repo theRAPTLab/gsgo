@@ -151,3 +151,41 @@ function run () {
   }
 }
 ```
+
+
+## DEFINITIONS OF TERMS
+
+I designed the stack machine opcodes in this [spreadsheet](https://docs.google.com/spreadsheets/d/1jLPHsRAsP65oHNrtxJOpEgP6zbS1xERLEz9B0SC5CTo/edit#gid=934723724).
+
+```js
+// program runner
+function run(agent, program) {
+  const stack=[];
+  const scope=[];
+  const flags={};
+  const mem = { agent, stack, scope, flags };
+  program.forEach(op=>op(mem));
+}
+
+// opfunction for CALL METHOD with return values on stack
+// scoped!
+const CALL = (methodName,...args) => {
+  return (mem) => {
+    const scope = mem.scope();
+    mem.stackPush(...args);
+		scope.method(methodName)(mem.stack);
+  };
+}
+// opfunction for retrieving a property on stack
+// scoped!
+const PROP = (propName) => {
+  return (mem) => {
+    const scope=mem.scope();
+    mem.push(scope.prop(propName));
+  };
+}
+
+
+
+```
+
