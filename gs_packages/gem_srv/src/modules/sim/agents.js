@@ -24,12 +24,94 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './properties/var-boolean';
-import GSNumber from './properties/var-number';
+import GSBoolean from './props/var-boolean';
+import GSNumber from './props/var-number';
 import AgentFactory from './agents/agentfactory';
 import AgentSet from './agents/class-agentset';
 import StackMachine from './agents/stackmachine';
+import Agent from './lib/class-agent';
+import { AGENTS, TEMPLATES } from './runtime-data';
 
+/// FACTORY UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  Templates are factory functions that are stored by name in the
+ *  TEMPLATES map. The factory function accepts an agentName that
+ *  is used to create the base agent.
+ *  When calling this function, provide the templateName and a function
+ *  that will be used to add additional properties, features, and methods
+ *  to the agent. Use the AgentFactory methods
+ *  modify.
+ */
+function AddTemplate(name, f_Decorate) {
+  if (TEMPLATES.has(name)) throw Error(`state template '${name}' already exists`);
+  const factoryFunc = agentName => {
+    const agent = new Agent(agentName);
+    f_Decorate(agent);
+    agent.meta.type = name;
+    return agent;
+  };
+  console.log(`storing template: '${name}`);
+  TEMPLATES.set(name, factoryFunc);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  Factory method to return a new Agent
+ *  @param {string} agentName - name of this instance
+ *  @param {string} template - name of the template to use (default 'Agent')
+ */
+function MakeAgent(agentName, options = {}) {
+  const { type } = options;
+  let agent;
+  if (type === undefined) {
+    agent = new Agent(agentName);
+  } else {
+    const factoryFunc = TEMPLATES.get(type);
+    if (!factoryFunc) throw Error(`agent template for '${type}' not defined`);
+    // return the created agent from template
+    agent = factoryFunc(agentName);
+  }
+  return Agent.SaveAgent(agent);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API:
+ *  Convert an agent to a serializable object format
+ */
+function ExportAgent(agent) {
+  // this is our serialization data structure
+  const obj = {
+    meta: [],
+    props: {
+      var: [],
+      bool: [],
+      num: [],
+      str: []
+    },
+    features: []
+  };
+
+  // serialize low level agent properties
+  const agentKeys = Object.entries(agent.meta);
+  agentKeys.forEach(entry => obj.meta.push(entry));
+  // serialize all properties by name, value, and addition parameters
+  const propKeys = [...agent.props.keys()];
+  propKeys.forEach(key => {
+    const prop = agent.props.get(key);
+    const serialized = prop.serialize();
+    obj.props[prop.type].push([key, ...serialized]);
+  });
+  // collect features by name
+  const featKeys = [...agent.features.keys()];
+  featKeys.forEach(key => obj.features.push(key));
+
+  // return serialized agent
+  return obj;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return an array of agents by type */
+function GetAgentsByType(type) {
+  return [...Agent.GetAgentSet(type)];
+}
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
@@ -72,7 +154,7 @@ function AgentProgram() {
       showCostume 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.groupCollapsed('Flower Programming');
-  AgentFactory.AddTemplate('Flower', agent => {
+  AddTemplate('Flower', agent => {
     // all this is direct templating
     agent.prop('x').setTo(100);
     agent.prop('y').setTo(200);
@@ -89,15 +171,15 @@ function AgentProgram() {
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     creation test
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('Creation Testing');
+  console.group('Creation Testing');
   const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
   const smc_init = StackMachine.SMC_GetInit();
   names.forEach(name => {
-    const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
+    const agent = MakeAgent(name, { type: 'Flower' });
     StackMachine.Exec(smc_init, agent);
   });
-  console.log('Flowers', AgentFactory.GetAgentsByType('Flower'));
-  console.log('Mugworts', AgentFactory.GetAgentsByType('Mugworts'));
+  console.log('Flowers', GetAgentsByType('Flower'));
+  console.log('Mugworts', GetAgentsByType('Mugworts'));
   console.groupEnd();
 
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
@@ -106,7 +188,7 @@ function AgentProgram() {
       World.pollution add 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.groupCollapsed('World Programming');
-  AgentFactory.AddTemplate('World', world => {
+  AddTemplate('World', world => {
     world.addFeature('Timer');
   });
   // save creation template
@@ -140,7 +222,7 @@ function AgentProgram() {
     condition programming
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.groupCollapsed('OnTick Testing');
-  const ticker = AgentFactory.MakeAgent('TickyTicky');
+  const ticker = MakeAgent('TickyTicky');
   ticker.addFeature('Timer');
   console.groupEnd();
 }
@@ -151,7 +233,7 @@ function AgentUpdate(frame) {
   // console.log(healthProp.value, healthProp.nvalue);
   // if (healthProp.eq(5).true()) console.log('!!! 5 health');
   // healthProp.add(1);
-  const agents = AgentFactory.GetAgentsByType('Flower');
+  const agents = GetAgentsByType('Flower');
   const smc_update = StackMachine.SMC_GetUpdate();
   agents.forEach(agent => StackMachine.Exec(smc_update, agent));
   //
@@ -164,10 +246,15 @@ function AgentThink(frame) {
 function AgentExec(frame) {
   //
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AgentReset(frame) {
+  console.log('AgentReset');
+}
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SIM_ModuleInit(gloop) {
+  gloop.Hook('RESET', AgentReset);
   gloop.Hook('SETMODE', AgentSelect);
   gloop.Hook('PROGRAM', AgentProgram);
   gloop.Hook('AGENTS_UPDATE', AgentUpdate);
@@ -178,5 +265,9 @@ function SIM_ModuleInit(gloop) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  SIM_ModuleInit
+  SIM_ModuleInit,
+  MakeAgent, // create an agent instance from template
+  AddTemplate, // add template function by name
+  ExportAgent, // return serializable object representing an agent instance
+  GetAgentsByType // return a list of agents by type
 };

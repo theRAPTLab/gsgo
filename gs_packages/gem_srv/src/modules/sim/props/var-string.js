@@ -1,25 +1,29 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSVar class provides uniqueIds for each variable in the system.
-  Extends GSBase
+  The StringProp class does simple comparisons
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBase from '../agents/class-base';
+import SM_Object from '../lib/class-sm-object';
+import BooleanProp from './var-boolean';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSVar extends GSBase {
-  constructor(initialValue) {
-    super(initialValue);
-    this.meta = {
-      type: Symbol.for('GSVar')
-    };
+class StringProp extends SM_Object {
+  constructor(initial = '') {
+    super();
+    this.meta.type = Symbol.for('StringProp');
+    this.value = initial;
   }
-  // get/set _value defined in base class
-  // serialize() is defined in base class
+  setTo(str) {
+    this.value = str;
+    return this;
+  }
+  isEq(str) {
+    return new BooleanProp(this.value === str);
+  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSVar;
+export default StringProp;

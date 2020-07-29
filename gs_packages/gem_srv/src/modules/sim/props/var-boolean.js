@@ -1,6 +1,6 @@
-import GSVar from './var';
+import SM_Object from '../lib/class-sm-object';
 
-class GSBoolean extends GSVar {
+class GSBoolean extends SM_Object {
   constructor(initial = true, fuzzy = 0) {
     super();
     this.meta.type = Symbol.for('GSBoolean');

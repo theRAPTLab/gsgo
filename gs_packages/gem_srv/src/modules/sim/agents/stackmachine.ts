@@ -15,9 +15,9 @@ import {
   pop,
   refReturn
 } from './stackmachine-ops';
-import { SMProgram } from './stackmachine-types';
-import Agent from './class-agent';
-import GVar from '../properties/var';
+import { SMProgram, SMScopeRef } from './stackmachine-types';
+import Agent from '../lib/class-agent';
+import SM_Object from '../lib/class-SM_Object';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +47,7 @@ function SMC_GetUpdate(): SMProgram {
 /// EXEC FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Exec(smc: SMProgram, agent: Agent) {
-  const stack: GVar[] = [];
+  const stack: SM_Object[] = [];
   const scope: SMScopeRef[] = [];
   smc.forEach(op => op(agent, stack, scope));
 }

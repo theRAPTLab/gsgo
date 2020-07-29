@@ -5,8 +5,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Agent, AnyFunction, AgentTemplateFunction } from './type-defs';
-import { IsString, HasMeta, HasKey, GetKey, SaveKey } from './type-checks';
+import { AnyFunction } from '../types/def-functions';
+import { IsString, HasMeta, HasKey, GetKey, SaveKey } from './util-typechecks';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

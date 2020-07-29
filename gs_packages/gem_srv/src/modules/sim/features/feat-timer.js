@@ -21,13 +21,15 @@ const TimerPack = {
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// URSYS PROMPT //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
-import Feature from './feature';
+import Feature from './class-feature';
 
 const { makeLogHelper } = UR.util.PROMPTS;
 const PR = makeLogHelper('TimerFeature');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,13 +38,15 @@ const PR = makeLogHelper('TimerFeature');
 class TimerFeature extends Feature {
   constructor() {
     super('Timer');
-    console.log(...PR(`${this.name} initialized`));
+    console.log(...PR(`${this.name()} initialized`));
   }
+
   // super.agentInit(agent)
   // super.prop(agent,propName) => gVar
   // super.setProp(agent,propName,gVar) => gVar
 }
+const INSTANCE = new TimerFeature('Timer');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default TimerFeature;
+export default INSTANCE;

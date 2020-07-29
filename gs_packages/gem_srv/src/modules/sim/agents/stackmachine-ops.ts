@@ -4,9 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Agent from './class-agent';
-import GVar from '../properties/var';
-import GAgent from '../properties/var-agent';
+import Agent from '../lib/class-agent';
+import SM_Object from '../lib/class-SM_Object';
 import { SMOpExec, SMScopeRef } from './stackmachine-types';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -14,30 +13,30 @@ const DBG = true;
 
 /// STACK OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** push a GVar argument onto the stack for subsequent ops */
-const pushVar = (gv: GVar): SMOpExec => {
-  return (agent: Agent, stack: GVar[]) => {
+/** push a SM_Object argument onto the stack for subsequent ops */
+const pushVar = (gv: SM_Object): SMOpExec => {
+  return (agent: Agent, stack: SM_Object[]) => {
     stack.push(gv);
   };
 };
 
 /** Get the prop from agent and push it on the stack */
 const pushProp = (propName: string): SMOpExec => {
-  return (agent: Agent, stack: GVar[]) => {
+  return (agent: Agent, stack: SM_Object[]) => {
     stack.push(agent.prop(propName).value);
   };
 };
 
 /** discard the top-most values (default to 1) */
 const pop = (num: Number = 1): SMOpExec => {
-  return (agent: Agent, stack: GVar[]) => {
+  return (agent: Agent, stack: SM_Object[]) => {
     for (let i = 0; i < num; i++) stack.pop();
   };
 };
 
 /** Pop prop from stack, and set agent prop to its value */
 const popPropValue = (propName: string): SMOpExec => {
-  return (agent: Agent, stack: GVar[]) => {
+  return (agent: Agent, stack: SM_Object[]) => {
     const value = stack.pop().value;
     agent.prop(propName).value = value;
   };
@@ -59,14 +58,14 @@ const setPropValue = (propName: string, value: any): SMOpExec => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** remove a scope object from the scope stack */
 const refReturn = (): SMOpExec => {
-  return (agent: Agent, stack: GVar[], scope: SMScopeRef[]) => {
+  return (agent: Agent, stack: SM_Object[], scope: SMScopeRef[]) => {
     scope.pop();
   };
 };
 
 /** add agent prop to scope stack */
 const refProp = (propName): SMOpExec => {
-  return (agent: Agent, stack: GVar[], scope: SMScopeRef[]) => {
+  return (agent: Agent, stack: SM_Object[], scope: SMScopeRef[]) => {
     const prop = agent.prop(propName);
     scope.push(prop);
   };
@@ -74,8 +73,8 @@ const refProp = (propName): SMOpExec => {
 
 /** call method for object on the scope stack  */
 const callRef = (methodName: string, ...args: any[]): SMOpExec => {
-  /* TODO: GVars and Agents need to have the same prop/method interface */
-  return (agent: Agent, stack: GVar[], scope: SMScopeRef[]) => {
+  /* TODO: SM_Objects and Agents need to have the same prop/method interface */
+  return (agent: Agent, stack: SM_Object[], scope: SMScopeRef[]) => {
     const srobj = scope[scope.length - 1];
     const result: any = srobj[methodName](...args);
   };
@@ -83,8 +82,8 @@ const callRef = (methodName: string, ...args: any[]): SMOpExec => {
 
 /** call method for object on the scope stack  */
 const propRef = (propName): SMOpExec => {
-  /* TODO: GVars and Agents need to have the same prop/method interface */
-  return (agent: Agent, stack: GVar[], scope: SMScopeRef[]) => {
+  /* TODO: SM_Objects and Agents need to have the same prop/method interface */
+  return (agent: Agent, stack: SM_Object[], scope: SMScopeRef[]) => {
     const srobj: SMScopeRef = scope[scope.length - 1];
   };
 };

@@ -7,8 +7,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import ObjectMap from './class-object-map';
-import { Agent } from './type-defs';
-import { IsString } from './type-checks';
+import Agent from './class-agent';
+import { IsString } from './util-typechecks';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

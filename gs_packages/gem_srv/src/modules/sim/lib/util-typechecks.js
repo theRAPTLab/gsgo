@@ -20,7 +20,7 @@ function IsNumber(num) {
   return true;
 }
 function IsInteger(int) {
-  if (!Number.isInteger()) return false;
+  if (!Number.isInteger(int)) return false;
 }
 function IsString(str) {
   if (typeof str !== 'string') return false;

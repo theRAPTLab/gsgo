@@ -8,58 +8,31 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Feature from './class-feature';
-import { FEATURES } from '../runtime-data';
+import { FEATURES } from './runtime-data';
+import MovementPack from './features/feat-movement';
+import TimerPack from './features/feat-timer';
 
 /// LIBRARY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_GetByName(name) {
+function GetByName(name) {
   return FEATURES.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_AddExternal(fpack) {
-  FEATURES.set(fpack.name, fpack);
+function Register(fpack) {
+  FEATURES.set(fpack.name(), fpack);
 }
-
-// Fake Feature Packs...
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const MovementPack = {
-  name: 'Movement',
-  initialize: pm => {
-    pm.Hook('INPUT', this.HandleInput);
-  },
-  decorate: agent => {
-    return MovementPack;
-  },
-  setController: (agent, x) => {
-    return MovementPack;
-  }
-};
-m_AddExternal(MovementPack);
+function RegisterFeatures() {
+  Register(MovementPack);
+  Register(TimerPack);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TimerPack = {
-  name: 'Timer',
-  subscribers: new Map(),
-  initialize: pm => {
-    pm.Hook('INPUT', this.HandleInput);
-  },
-  onTick: func => console.log('subscribe onTick'),
-  decorate: agent => {
-    return TimerPack;
-  },
-  defineTimer: (agent, timerName, timerOptions) => {
-    return TimerPack;
-  },
-  on: (agent, eventName, subscriberFunc) => {
-    return TimerPack;
-  }
-};
-m_AddExternal(TimerPack);
+function SIM_ModuleInit(gloop) {
+  console.log('SIM GLOOP RESET');
+  gloop.Hook('RESET', RegisterFeatures);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export
-export default {
-  GetByName: m_GetByName,
-  Register: m_AddExternal
-};
+export default { SIM_ModuleInit, GetByName, Register };

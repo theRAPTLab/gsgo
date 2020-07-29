@@ -1,14 +1,14 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSNumber class can do simple arithmetic and logical comparisons
+  The NumberProp class can do simple arithmetic and logical comparisons
   with literal numbers.
 
   In our first prototype, we do not support arbitrary expressions.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './var-boolean';
-import GSVar from './var';
+import SM_Object from '../lib/class-sm-object';
+import BooleanProp from './var-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,10 +37,10 @@ function u_CheckMinMax(vobj) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSNumber extends GSVar {
+class NumberProp extends SM_Object {
   constructor(initial = 0) {
     super(initial);
-    this.meta.type = Symbol.for('GSNumber');
+    this.meta.type = Symbol.for('NumberProp');
     this.value = initial;
     this.nvalue = undefined;
     this.min = 0;
@@ -82,19 +82,19 @@ class GSNumber extends GSVar {
     return this;
   }
   eq(num) {
-    return new GSBoolean(this.value === num);
+    return new BooleanProp(this.value === num);
   }
   gt(num) {
-    return new GSBoolean(this.value > num);
+    return new BooleanProp(this.value > num);
   }
   lt(num) {
-    return new GSBoolean(this.value < num);
+    return new BooleanProp(this.value < num);
   }
   gte(num) {
-    return new GSBoolean(this.value >= num);
+    return new BooleanProp(this.value >= num);
   }
   lte(num) {
-    return new GSBoolean(this.value <= num);
+    return new BooleanProp(this.value <= num);
   }
   serialize() {
     const values = super.serialize();
@@ -107,4 +107,4 @@ class GSNumber extends GSVar {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSNumber;
+export default NumberProp;

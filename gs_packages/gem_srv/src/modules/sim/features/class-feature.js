@@ -33,10 +33,20 @@ class Feature {
     // are code libraries. agents provide memory context and props
   }
 
+  /** return name of feature */
+  name() {
+    return this.meta.feature;
+  }
+
+  /** hook into lifecycle methods */
+  initialize(phaseMachine) {}
+
   /** called by agent template function when creating new agent */
   decorate(agent) {
-    if (!agent.features.has(this.name)) agent.features.set(this.name, this);
-    else throw Error(`decorate: agent already bound to feature ${this.name}`);
+    console.log(`class feature '${this.name()}' decorate '${agent.name()}'`);
+    if (agent.features.has(this.name()))
+      console.log(`agent decorate '${agent.name()}'`);
+    else throw Error(`decorate: agent already bound to feature ${this.name()}`);
 
     if (!agent.props.has(this.name)) agent.props.set(this.name, new Map());
     else throw Error(`decorate: agent already has props.${this.name}`);
@@ -45,6 +55,7 @@ class Feature {
     this.methods.set('test', () => {
       return 'feature test succeeded';
     });
+    return this;
   }
 
   /** return prop located in the agent */

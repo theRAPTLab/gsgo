@@ -1,23 +1,23 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The GSDictionary class is a key/value store for other GVar properties
+  The DictionaryProp class is a key/value store for other GVar properties
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSVar from './var';
+import SM_Object from '../lib/class-SM_Object';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class GSDictionary extends GSVar {
+class DictionaryProp extends SM_Object {
   constructor(name) {
     super();
-    this.meta.type = Symbol.for('GSDictionary');
+    this.meta.type = Symbol.for('DictionaryProp');
     this.meta.name = name;
     this.dict = new Map();
   }
   addProp(key, gvar) {
     if (this.dict.has(key)) throw Error(`key ${key} already exists`);
-    if (gvar instanceof GSVar) this.dict.set(key, gvar);
+    if (gvar instanceof SM_Object) this.dict.set(key, gvar);
     else throw Error(`value to set must be GVar, not typeof ${typeof gvar}`);
   }
   prop(key) {
@@ -30,4 +30,4 @@ class GSDictionary extends GSVar {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default GSDictionary;
+export default DictionaryProp;

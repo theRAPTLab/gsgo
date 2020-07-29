@@ -7,8 +7,8 @@ import { interval } from 'rxjs';
 // runtime data modules
 import INPUTS from './inputs';
 import AGENTS from './agents';
-import GROUPS from './agentgroups';
 import REFEREE from './referee';
+import FEATURES from './features';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,8 +80,9 @@ function StepSimulation(frame) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StartSimulation() {
   console.log(...PR('StartSimulation'));
+
   sub_frame = obs_frame_interval.subscribe(StepSimulation);
-  console.log(obs_frame_interval);
+  // console.log(obs_frame_interval);
 }
 
 /// SUPPORTING CONTROLS ///////////////////////////////////////////////////////
@@ -140,7 +141,7 @@ function UR_ModuleInit() {
   GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  GameLoop.HookModules([INPUTS, AGENTS, GROUPS, REFEREE]);
+  GameLoop.HookModules([INPUTS, AGENTS, FEATURES, REFEREE]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
