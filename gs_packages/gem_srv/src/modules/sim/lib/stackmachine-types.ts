@@ -4,28 +4,27 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Agent from '../lib/class-agent';
-import SM_Object from '../lib/class-SM_Object';
-
-/// INTERFACE DECLARATIONS /////////////////////////////////////////////////////
+/// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export interface SMScopeRef {
-  opExec: (name: string, stack: SM_Object[]) => SM_Object;
+export interface SM_Object {
   method: (name: string, ...args: any) => any;
   prop: (name: string) => SM_Object;
+  value: any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export interface SMObject {
-  method: (name: string, ...args: any) => any;
-  prop: (name: string) => SMObject;
-}
-
-/// TYPE DECLARATIONS /////////////////////////////////////////////////////////
+export type SM_OpStatus = Promise<any> | void;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export type SMOpStatus = Promise<any> | void;
-export type SMOpExec = (
+export type SM_OpExec = (
   agent: Agent,
-  stack?: SM_Object[],
-  scope?: SMScopeRef[]
-) => SMOpStatus;
-export type SMProgram = SMOpExec[];
+  stack?: Array<SM_Object>,
+  scope?: Array<SM_Object>
+) => SM_OpStatus;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export type SM_Program = SM_OpExec[];
+
+/// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface Agent extends SM_Object {
+  feature: (name: string) => any;
+  name: () => string;
+}

@@ -6,6 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { Agent, SM_Object, SM_Program } from './stackmachine-types';
 import {
   setPropValue,
   refProp,
@@ -15,15 +16,12 @@ import {
   pop,
   refReturn
 } from './stackmachine-ops';
-import { SMProgram, SMScopeRef } from './stackmachine-types';
-import Agent from './class-agent';
-import SM_Object from './class-sm-object';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
-function SMC_GetInit(): SMProgram {
-  const program: SMProgram = [
+function SMC_GetInit(): SM_Program {
+  const program: SM_Program = [
     // initialize values only in an init program
     setPropValue('x', 0),
     setPropValue('y', 0)
@@ -31,8 +29,8 @@ function SMC_GetInit(): SMProgram {
   return program;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SMC_GetUpdate(): SMProgram {
-  const program: SMProgram = [
+function SMC_GetUpdate(): SM_Program {
+  const program: SM_Program = [
     // run during Agent.Update phase
     refProp('x'),
     callRef('add', 1),
@@ -46,9 +44,9 @@ function SMC_GetUpdate(): SMProgram {
 
 /// EXEC FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Exec(smc: SMProgram, agent: Agent) {
-  const stack: SM_Object[] = [];
-  const scope: SMScopeRef[] = [];
+function Exec(smc: SM_Program, agent: Agent) {
+  const stack: Array<SM_Object> = [];
+  const scope: Array<SM_Object> = [];
   smc.forEach(op => op(agent, stack, scope));
 }
 
