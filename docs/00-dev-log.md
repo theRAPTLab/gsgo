@@ -120,7 +120,25 @@ I have the system map. Next is to refactor the code so I can start implementing 
 
 ### JUL 29 Wednesday 1215 - Let's Make Stuff Happen!!!
 
-Everything will live in the sim/ directory. Updated and added to [Module Hierarchy](https://whimsical.com/BTfD5QmAszjsfWmA8uHy1s).
+Everything will live in the sim/ directory. Updated and added to [Module Hierarchy](https://whimsical.com/BTfD5QmAszjsfWmA8uHy1s). Also cleaned up the directory so it still runs, but there's still more cleanup to do (and adjustments to make to the hierarchy)
+
+### JULY 30 Thursday 1315 - Clean UP!!!
+
+Yesterday I refactored and got the loop continuing to work, though there are things that need addressing. 
+
+* [x] commit changes to sim-prototype
+* [x] review sim runtime in detail
+
+I made a map of all the methods in the current loop. The bulk of the action is in `agents`, which I've renamed to `sim_agents.js` and all other similar modules that participate in the simloop as controlled by `runtime`. 
+
+I also reviewed the needs of the missing `sim_conditions` module, and added it. I need to add a "clean to import" module for the entire runtime, so I've **renamed** `runtime-data` to `runtime-core`. This will have all the global data structures AND pertinent methods.
+
+* [ ] move template and agent stuff to AgentFactory
+* [ ] convert the examples in agents.Program to actual smc_methods
+* [ ] find a home for smc_methods and agent definition, simulating UI
+* [ ] make conditions module retrieve its conditions list from runtime-core
+
+
 
 
 
