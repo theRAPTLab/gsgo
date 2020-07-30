@@ -9,7 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
-import { FEATURES, AGENTS } from '../runtime-data';
+import { FEATURES, AGENTS } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
 

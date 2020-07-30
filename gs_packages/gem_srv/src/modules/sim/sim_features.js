@@ -8,7 +8,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES } from './runtime-data';
+import { FEATURES } from './runtime-core';
 import MovementPack from './features/feat-movement';
 import TimerPack from './features/feat-timer';
 

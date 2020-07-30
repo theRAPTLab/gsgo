@@ -5,14 +5,15 @@
 import UR from '@gemstep/ursys/client';
 import { interval } from 'rxjs';
 // runtime data modules
-import INPUTS from './inputs';
-import AGENTS from './agents';
-import REFEREE from './referee';
-import FEATURES from './features';
+import INPUTS from './sim_inputs';
+import CONDITIONS from './sim_conditions';
+import AGENTS from './sim_agents';
+import REFEREE from './sim_referee';
+import FEATURES from './sim_features';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.PROMPTS.makeLogHelper('SIML');
+const PR = UR.util.PROMPTS.makeLogHelper('SIM');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
@@ -30,7 +31,7 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
     'GROUPS_UPDATE',
     'FEATURES_UPDATE',
     // process conditions and collection
-    'CONDITIONS',
+    'CONDITIONS_UPDATE',
     // agent/groups script execution and queue actions
     'FEATURES_THINK',
     'GROUPS_THINK',
@@ -141,7 +142,7 @@ function UR_ModuleInit() {
   GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  GameLoop.HookModules([INPUTS, AGENTS, FEATURES, REFEREE]);
+  GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, FEATURES, REFEREE]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

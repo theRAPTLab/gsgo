@@ -17,7 +17,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Agent from '../lib/class-agent';
-import { TEMPLATES } from '../runtime-data';
+import { TEMPLATES } from '../runtime-core';
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

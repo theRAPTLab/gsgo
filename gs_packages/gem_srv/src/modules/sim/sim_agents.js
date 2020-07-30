@@ -24,13 +24,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import GSBoolean from './props/var-boolean';
-import GSNumber from './props/var-number';
+import BooleanProp from './props/var-boolean';
+import NumberProp from './props/var-number';
 import AgentFactory from './agents/agentfactory';
 import AgentSet from './agents/class-agentset';
 import StackMachine from './agents/stackmachine';
 import Agent from './lib/class-agent';
-import { AGENTS, TEMPLATES } from './runtime-data';
+import { AGENTS, TEMPLATES } from './runtime-core';
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -160,10 +160,10 @@ function AgentProgram() {
     agent.prop('y').setTo(200);
     agent.prop('skin').setTo('flower.png');
     agent
-      .defProp('currentHealth', new GSNumber(100))
+      .defProp('currentHealth', new NumberProp(100))
       .setMin(0)
       .setMax(100);
-    agent.defProp('isAlive', new GSBoolean(true));
+    agent.defProp('isAlive', new BooleanProp(true));
     agent.addFeature('Movement').setController('student');
     // this stuff has to create smcode runtime programs
   });
