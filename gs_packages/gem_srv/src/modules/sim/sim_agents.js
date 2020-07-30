@@ -28,7 +28,7 @@ import BooleanProp from './props/var-boolean';
 import NumberProp from './props/var-number';
 import AgentFactory from './agents/agentfactory';
 import AgentSet from './agents/class-agentset';
-import StackMachine from './agents/stackmachine';
+import StackMachine from './lib/stackmachine';
 import Agent from './lib/class-agent';
 import { AGENTS, TEMPLATES } from './runtime-core';
 

@@ -4,8 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Agent from '../lib/class-agent';
-import SM_Object from '../lib/class-SM_Object';
+import Agent from './class-agent';
+import SM_Object from './class-sm-object';
 import { SMOpExec, SMScopeRef } from './stackmachine-types';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

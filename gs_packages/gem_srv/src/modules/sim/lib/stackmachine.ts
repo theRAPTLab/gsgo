@@ -16,8 +16,8 @@ import {
   refReturn
 } from './stackmachine-ops';
 import { SMProgram, SMScopeRef } from './stackmachine-types';
-import Agent from '../lib/class-agent';
-import SM_Object from '../lib/class-SM_Object';
+import Agent from './class-agent';
+import SM_Object from './class-sm-object';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

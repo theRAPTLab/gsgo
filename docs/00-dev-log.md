@@ -134,6 +134,7 @@ I made a map of all the methods in the current loop. The bulk of the action is i
 I also reviewed the needs of the missing `sim_conditions` module, and added it. I need to add a "clean to import" module for the entire runtime, so I've **renamed** `runtime-data` to `runtime-core`. This will have all the global data structures AND pertinent methods.
 
 * [ ] move template and agent stuff to AgentFactory
+* [ ] move stackmachine...somewhere else
 * [ ] convert the examples in agents.Program to actual smc_methods
 * [ ] find a home for smc_methods and agent definition, simulating UI
 * [ ] make conditions module retrieve its conditions list from runtime-core
