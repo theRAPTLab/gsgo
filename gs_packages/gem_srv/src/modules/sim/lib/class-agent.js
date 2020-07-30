@@ -9,12 +9,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
-import { FEATURES, AGENTS } from '../runtime-core';
+import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -62,22 +59,29 @@ class Agent extends SM_Object {
     // this.methods map defined in SM_Object
     this.features = new Map();
     this.events = [];
-    // mirror in props for conceptual symmetry
-    this.props.set('name', new StringVar(agentName));
-    this.props.set('x', new NumberVar());
-    this.props.set('y', new NumberVar());
-    this.props.set('skin', new StringVar());
+
+    // declare agent basic properties
+    this._name = new StringVar(agentName);
+    this._x = new NumberVar();
+    this._y = new NumberVar();
+    this._skin = new StringVar();
+    // mirror basic props in props for conceptual symmetry
+    this.props.set('name', this._name);
+    this.props.set('x', this._x);
+    this.props.set('y', this._y);
+    this.props.set('skin', this._skin);
   }
 
   // accessor methods for built-in props
-  name = () => this.prop('name').value;
-  x = () => this.prop('x').value;
-  y = () => this.prop('y').value;
-  skin = () => this.prop('skin').value;
+  name = () => this._name.value;
+  x = () => this._x.value;
+  y = () => this._y.value;
+  skin = () => this._skin.value;
 
   // definition methods
   defProp = (name, gvar) => AddProp(this, name, gvar);
   defMethod = (name, methodFunc) => AddMethod(this, name, methodFunc);
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: add a featurepack to an agent's feature map by feature name
    *  featurepacks store its own properties directly in agent.props
@@ -121,29 +125,14 @@ class Agent extends SM_Object {
   }
 } // end of Agent class
 
-/// AGENT SET UTILITIES ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** save agent by type into agent map, which contains weaksets of types */
-function SaveAgent(agent) {
-  const { id, type } = agent.meta;
-  if (!AGENTS.has(type)) AGENTS.set(type, new Set());
-  const agents = AGENTS.get(type);
-  if (agents.has(id)) throw Error(`agent id${id} already in ${type} list`);
-  // console.log(`AGENTS now has ${AGENTS.get(type).size}`);
-  agents.add(agent);
-  return agent;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return agent set */
-function GetAgentSet(type) {
-  const agents = AGENTS.get(type);
-  return agents || [];
-}
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-Agent.AddMethod = AddMethod;
-Agent.AddProp = AddProp;
-Agent.SaveAgent = SaveAgent;
-Agent.GetAgentSet = GetAgentSet;
+/// attach as static methods
+Agent.AddMethod = AddMethod; // forward from SM_Object
+Agent.AddProp = AddProp; // forward from SM_Object
+/// export main Agent
 export default Agent;
+/*/ use as
+    import Agent from './class-agent'
+    const { AddMethods, AddProp } = Agent
+/*/

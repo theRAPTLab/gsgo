@@ -17,7 +17,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Agent from '../lib/class-agent';
-import { TEMPLATES } from '../runtime-core';
+import { AGENTS_Save, AGENTS_GetSet, TEMPLATES } from '../runtime-core';
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,7 +58,7 @@ function MakeAgent(agentName, options = {}) {
     // return the created agent from template
     agent = factoryFunc(agentName);
   }
-  return Agent.SaveAgent(agent);
+  return AGENTS_Save(agent);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
@@ -97,7 +97,7 @@ function ExportAgent(agent) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return an array of agents by type */
 function GetAgentsByType(type) {
-  return [...Agent.GetAgentSet(type)];
+  return [...AGENTS_GetSet(type)];
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
