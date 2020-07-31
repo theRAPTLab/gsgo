@@ -30,7 +30,7 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgStack = (num: number = 0): T_Opcode => {
-  return (agent, STATE: T_State): T_OpWait => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { stack } = STATE;
     u_dump(num, stack, 'stack');
   };
@@ -40,7 +40,7 @@ const dbgStack = (num: number = 0): T_Opcode => {
  *  Optionally dump number of items to dump
  */
 const dbgScope = (num: number = 0): T_Opcode => {
-  return (agent, STATE: T_State): T_OpWait => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { scope } = STATE;
     u_dump(num, scope, 'scope');
   };
