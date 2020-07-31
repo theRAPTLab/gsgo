@@ -33,15 +33,25 @@ class Feature {
     // are code libraries. agents provide memory context and props
   }
 
-  /** return name of feature */
+  /**
+   *  hook into lifecycle methods
+   */
+  initialize(phaseMachine) {
+    // do something
+  }
+
+  /**
+   *  return name of this feature feature, used for adding a GSDictionary
+   *  property by name to Agent.props
+   */
   name() {
     return this.meta.feature;
   }
 
-  /** hook into lifecycle methods */
-  initialize(phaseMachine) {}
-
-  /** called by agent template function when creating new agent */
+  /**
+   *  called by agent template function when creating new agent
+   *  note: subclassers must override this method as necessary
+   */
   decorate(agent) {
     console.log(`class feature '${this.name()}' decorate '${agent.name()}'`);
     if (agent.features.has(this.name()))
@@ -51,14 +61,18 @@ class Feature {
     if (!agent.props.has(this.name)) agent.props.set(this.name, new Map());
     else throw Error(`decorate: agent already has props.${this.name}`);
 
-    // register a public method for the feature
+    // register a public method for the feature in this instance
     this.methods.set('test', () => {
       return 'feature test succeeded';
     });
     return this;
   }
 
-  /** return prop located in the agent */
+  /**
+   *  return prop located in the agent
+   *  remember: there is a single instance of all methods for the feature
+   *  note: this is a mirror implementation of SM_Object.prop
+   */
   prop(agent, key) {
     temp = agent.props.get(this.name);
     if (temp instanceof Map) return temp.get(key);
@@ -67,11 +81,11 @@ class Feature {
 
   /** return method or function for feature invocation
    *  remember: there is a single instance of all methods for the feature
+   *  note: this is a mirror implementation of SM_Object.prop
    */
   method(agent, key) {
     return this.methods.get(key);
   }
-  /** return dummy value */
 } // end of class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

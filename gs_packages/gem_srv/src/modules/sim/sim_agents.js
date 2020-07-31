@@ -28,7 +28,7 @@ import BooleanProp from './props/var-boolean';
 import NumberProp from './props/var-number';
 import AgentFactory from './agents/agentfactory';
 import AgentSet from './lib/class-agentset';
-import StackMachine from './lib/stackmachine';
+import { StackMachine } from './script/commander';
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

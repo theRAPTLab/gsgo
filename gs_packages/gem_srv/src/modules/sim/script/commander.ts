@@ -1,27 +1,26 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  StackMachine
+  StackMachine Commander
   programming template: done in AgentFactory.MakeTemplate
   initializing props: smcode program
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Agent, SM_Object, SM_Program } from './stackmachine-types';
+import { Agent, T_State, T_Program } from '../types/t-commander';
 import {
   setPropValue,
-  refProp,
-  callRef,
+  stackToScope,
+  scopedFunction,
   pushProp,
-  dbgStack,
-  pop,
-  refReturn
-} from './stackmachine-ops';
+  pop
+} from './ops/basic-ops';
+import { dbgAgent, dbgStack } from './ops/debug-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
-function SMC_GetInit(): SM_Program {
-  const program: SM_Program = [
+function SMC_GetInit(): T_Program {
+  const program: T_Program = [
     // initialize values only in an init program
     setPropValue('x', 0),
     setPropValue('y', 0)
@@ -29,31 +28,35 @@ function SMC_GetInit(): SM_Program {
   return program;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SMC_GetUpdate(): SM_Program {
-  const program: SM_Program = [
+function SMC_GetUpdate(): T_Program {
+  const program: T_Program = [
     // run during Agent.Update phase
-    refProp('x'),
-    callRef('add', 1),
     pushProp('x'),
-    // dbgStack(),
-    pop(),
-    refReturn()
+    stackToScope(),
+    scopedFunction('add', 1),
+    dbgStack(1),
+    dbgAgent(),
+    pop()
   ];
   return program;
 }
 
 /// EXEC FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Exec(smc: SM_Program, agent: Agent) {
-  const stack: Array<SM_Object> = [];
-  const scope: Array<SM_Object> = [];
-  smc.forEach(op => op(agent, stack, scope));
+/** run an SM_Program on an agent
+ */
+function Exec(smc: T_Program, agent: Agent) {
+  try {
+    const state = new T_State();
+    smc.forEach(op => op(agent, state));
+  } catch (e) {
+    console.log(e);
+    debugger;
+  }
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default {
-  SMC_GetInit,
-  SMC_GetUpdate,
-  Exec
-};
+const StackMachine = { Exec, SMC_GetInit, SMC_GetUpdate };
+const ScriptCommands = {};
+export { StackMachine, ScriptCommands };
