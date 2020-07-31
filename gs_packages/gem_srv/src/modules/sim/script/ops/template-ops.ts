@@ -19,8 +19,13 @@ const addProp = (name: string, gv: T_Scopeable): T_Opcode => {
     agent.addProp(name, gv);
   };
 };
+const addFeature = (name: string): T_Opcode => {
+  return (agent: T_Agent): T_OpWait => {
+    agent.addFeature(name);
+  };
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// debug opcodes
-export { addProp };
+export { addProp, addFeature };

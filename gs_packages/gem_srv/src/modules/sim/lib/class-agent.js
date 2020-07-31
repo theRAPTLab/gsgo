@@ -100,7 +100,7 @@ class Agent extends SM_Object {
     try {
       program.forEach(op => op(this, state));
     } catch (e) {
-      console.log(e);
+      console.error(e);
       debugger;
     }
     return state.stack;

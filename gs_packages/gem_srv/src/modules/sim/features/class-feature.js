@@ -9,10 +9,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let temp; // global temp variable to avoid creating new ones
-
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -58,13 +54,8 @@ class Feature {
       console.log(`agent decorate '${agent.name()}'`);
     else throw Error(`decorate: agent already bound to feature ${this.name()}`);
 
-    if (!agent.props.has(this.name)) agent.props.set(this.name, new Map());
+    if (!agent.props.has(this.name)) agent.props.set(this.name(), new Map());
     else throw Error(`decorate: agent already has props.${this.name}`);
-
-    // register a public method for the feature in this instance
-    this.methods.set('test', () => {
-      return 'feature test succeeded';
-    });
     return this;
   }
 
@@ -73,10 +64,14 @@ class Feature {
    *  remember: there is a single instance of all methods for the feature
    *  note: this is a mirror implementation of SM_Object.prop
    */
+  addProp(agent, prop, gvar) {
+    const FP = agent.props.get(this.name());
+    FP.set(prop, gvar);
+  }
   prop(agent, key) {
-    temp = agent.props.get(this.name);
-    if (temp instanceof Map) return temp.get(key);
-    throw Error(`decorate: agent doesn't have props map ${this.name}`);
+    const FP = agent.props.get(this.name());
+    if (FP instanceof Map) return FP.get(key);
+    throw Error(`decorate: agent doesn't have props map ${this.name()}`);
   }
 
   /** return method or function for feature invocation

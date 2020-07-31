@@ -26,6 +26,7 @@ export interface T_Scopeable {
 export interface T_Agent extends T_Scopeable {
   exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
   feature: (name: string) => any;
+  addFeature: (name: string) => T_Agent;
   name: () => string;
   x: () => number;
   y: () => number;
@@ -34,7 +35,7 @@ export interface T_Agent extends T_Scopeable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A "stackable" object is one that can be pushed on the data stack.
  */
-export type T_Stackable = T_Scopeable | any;
+export type T_Stackable = T_Scopeable;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Stackmachine operations return a Promise if it is operating asynchronously
  *  though this may not be necessary. I thought it might be cool
@@ -67,6 +68,12 @@ export class T_State {
       TRUE: false,
       FALSE: true
     };
+  }
+  stackPeek() {
+    return this.stack[this.stack.length - 1];
+  }
+  stackPop() {
+    return this.stack.pop();
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

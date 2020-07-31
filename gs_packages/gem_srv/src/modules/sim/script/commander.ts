@@ -11,22 +11,36 @@ import {
   setAgentPropValue,
   stackToScope,
   scopedFunction,
+  scopedFunctionWithAgent,
   pushAgentProp,
+  agentPropToScope,
+  agentFeatureToScope,
+  scopePop,
   pop
 } from './ops/basic-ops';
 import { NumberProp } from '../props/var';
-import { addProp } from './ops/template-ops';
+import { addProp, addFeature } from './ops/template-ops';
 import { dbgAgent, dbgStack } from './ops/debug-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
 function TestSMC_Init(): T_Program {
+  // this is two programs: define and init
   const program: T_Program = [
-    // initialize values only in an init program
+    // define program
+    addProp('currentHealth', new NumberProp()),
+    addFeature('Movement'),
+    // init program
     setAgentPropValue('x', 0),
     setAgentPropValue('y', 0),
-    addProp('currentHealth', new NumberProp())
+    agentPropToScope('currentHealth'),
+    scopedFunction('setMin', 0),
+    scopedFunction('setMax', 100),
+    scopePop(),
+    agentFeatureToScope('Movement'),
+    scopedFunctionWithAgent('setController', 'student'),
+    scopePop()
   ];
   return program;
 }

@@ -45,8 +45,7 @@ class TimerFeature extends Feature {
   // super.prop(agent,propName) => gVar
   // super.setProp(agent,propName,gVar) => gVar
 }
-const INSTANCE = new TimerFeature('Timer');
-
-/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// EXPORT SINGLETON //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const INSTANCE = new TimerFeature('TimerFeature');
 export default INSTANCE;

@@ -16,11 +16,13 @@
 
 import {
   T_Agent,
+  T_Stackable,
   T_Scopeable,
   T_State,
   T_Opcode,
   T_OpWait
 } from '../../types/t-commander';
+import SM_Object from '../../lib/class-sm-object';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = true;
@@ -28,7 +30,7 @@ const DBG = true;
 /// STACK OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** push object (usually a prop or agent) on stack */
-const push = (gv: T_Scopeable): T_Opcode => {
+const push = (gv: T_Stackable): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     STATE.stack.push(gv);
   };
@@ -61,8 +63,12 @@ const pushAgentPropValue = (propName: string): T_Opcode => {
  */
 const popAgentPropValue = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    const value = STATE.stack.pop().value;
-    agent.prop(propName).value = value;
+    const element = STATE.stackPop();
+    if (element instanceof SM_Object) {
+      agent.prop(propName).value = element.value;
+    } else {
+      agent.prop(propName).value = element;
+    }
   };
 };
 
@@ -115,6 +121,7 @@ const agentToScope = (): T_Opcode => {
 /** push an agent's feature on the scope stack */
 const agentFeatureToScope = (featName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    STATE.scope.push(agent);
     STATE.scope.push(agent.feature(featName));
   };
 };
@@ -122,7 +129,7 @@ const agentFeatureToScope = (featName: string): T_Opcode => {
 const scopedProp = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { scope, stack } = STATE;
-    const SOBJ: T_Scopeable = scope[scope.length - 1];
+    const SOBJ: T_Stackable = scope[scope.length - 1];
     stack.push(SOBJ.prop(propName));
   };
 };
@@ -138,7 +145,7 @@ const scopedMethod = (methodName: string, ...args: any[]): T_Opcode => {
     // call the method, which is also a stackmachine program
     // the results of the method, if any, are returned as a stack
     // so we need to push this onto the existing stack
-    const RSTACK: Array<any> = SOBJ.method(methodName)(...args);
+    const RSTACK: T_Stackable = SOBJ.method(methodName)(...args);
     // push elements returned from scoped call onto our stack
     stack.push(RSTACK);
   };
@@ -149,7 +156,18 @@ const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
     const { scope, stack } = STATE;
     const SOBJ = scope[scope.length - 1];
     // call the function property on the scoped object
-    const RSTACK: Array<any> = SOBJ[funcName](...args);
+    const RSTACK = SOBJ[funcName](...args);
+    // push elements returned from scoped call onto our stack
+    stack.push(RSTACK);
+  };
+};
+/** Invoke a feature's scoped context by **including agent** */
+const scopedFunctionWithAgent = (funcName: string, ...args: any[]): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    const { scope, stack } = STATE;
+    const SOBJ = scope[scope.length - 1];
+    // call the function property on the scoped object
+    const RSTACK: T_Stackable = SOBJ[funcName](agent, ...args);
     // push elements returned from scoped call onto our stack
     stack.push(RSTACK);
   };
@@ -169,3 +187,5 @@ export { stackToScope, scopeToStack };
 export { agentToScope, agentPropToScope, agentFeatureToScope, scopePop };
 /// scoped invocation ops
 export { scopedMethod, scopedFunction, scopedProp };
+/// scoped feature ops
+export { scopedFunctionWithAgent };
