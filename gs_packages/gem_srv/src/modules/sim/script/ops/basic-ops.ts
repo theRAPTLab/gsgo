@@ -112,7 +112,7 @@ const agentToScope = (): T_Opcode => {
     STATE.scope.push(agent);
   };
 };
-/** push an agent feature on the scope stack */
+/** push an agent's feature on the scope stack */
 const agentFeatureToScope = (featName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     STATE.scope.push(agent.feature(featName));

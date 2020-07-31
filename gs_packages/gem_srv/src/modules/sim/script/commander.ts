@@ -6,7 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_State, T_Program } from '../types/t-commander';
+import { T_Agent, T_Program } from '../types/t-commander';
 import {
   setAgentPropValue,
   stackToScope,
@@ -19,7 +19,7 @@ import { dbgAgent, dbgStack } from './ops/debug-ops';
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
-function SMC_GetInit(): T_Program {
+function TestSMC_Init(): T_Program {
   const program: T_Program = [
     // initialize values only in an init program
     setAgentPropValue('x', 0),
@@ -28,7 +28,7 @@ function SMC_GetInit(): T_Program {
   return program;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SMC_GetUpdate(): T_Program {
+function TestSMC_Update(): T_Program {
   const program: T_Program = [
     // run during Agent.Update phase
     pushAgentProp('x'),
@@ -43,12 +43,11 @@ function SMC_GetUpdate(): T_Program {
 
 /// EXEC FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** run an SM_Program on an agent
+/** Run an SM_Program on an agent
  */
-function Exec(smc: T_Program, agent: T_Agent) {
+function ExecSMC(smc: T_Program, agent: T_Agent) {
   try {
-    const state = new T_State();
-    smc.forEach(op => op(agent, state));
+    agent.exec_smc(smc);
   } catch (e) {
     console.log(e);
     debugger;
@@ -57,6 +56,6 @@ function Exec(smc: T_Program, agent: T_Agent) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const StackMachine = { Exec, SMC_GetInit, SMC_GetUpdate };
+const StackMachine = { ExecSMC, TestSMC_Init, TestSMC_Update };
 const ScriptCommands = {};
 export { StackMachine, ScriptCommands };

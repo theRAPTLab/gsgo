@@ -33,8 +33,8 @@ export type T_OpWait = Promise<any> | void;
  *  stackmachine opcode. The opcode is free to mutate the stacks and agent
  */
 export class T_State {
-  stack: Array<T_Stackable>; // data stack (pass values in/out)
-  scope: Array<T_Scopeable>; // scope stack (current execution context)
+  stack: T_Stackable[]; // data stack (pass values in/out)
+  scope: T_Scopeable[]; // scope stack (current execution context)
   flags: {
     Z: boolean; // zero flag
     GT: boolean; // greater than than
@@ -86,6 +86,7 @@ export type T_Program = T_Opcode[];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of T_Scopeable */
 export interface T_Agent extends T_Scopeable {
+  exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
   feature: (name: string) => any;
   name: () => string;
   x: () => number;

@@ -91,10 +91,10 @@ function AgentProgram() {
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.group('Creation Testing');
   const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
-  const smc_init = StackMachine.SMC_GetInit();
+  const smc_init = StackMachine.TestSMC_Init();
   names.forEach(name => {
     const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
-    StackMachine.Exec(smc_init, agent);
+    StackMachine.ExecSMC(smc_init, agent);
   });
   console.log('Flowers', AgentFactory.GetAgentsByType('Flower'));
   console.log('Mugworts', AgentFactory.GetAgentsByType('Mugworts'));
@@ -152,8 +152,8 @@ function AgentUpdate(frame) {
   // if (healthProp.eq(5).true()) console.log('!!! 5 health');
   // healthProp.add(1);
   const agents = AgentFactory.GetAgentsByType('Flower');
-  const smc_update = StackMachine.SMC_GetUpdate();
-  agents.forEach(agent => StackMachine.Exec(smc_update, agent));
+  const smc_update = StackMachine.TestSMC_Update();
+  agents.forEach(agent => StackMachine.ExecSMC(smc_update, agent));
   //
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

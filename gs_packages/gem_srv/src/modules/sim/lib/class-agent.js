@@ -79,7 +79,7 @@ class Agent extends SM_Object {
     const m = this.methods.get(name);
     if (m === undefined) throw Error(`no method named '${name}'`);
     if (typeof m === 'function') return m.apply(this, ...args);
-    if (Array.isArray(m)) return this._exec_smc(m, [...args]);
+    if (Array.isArray(m)) return this.exec_smc(m, [...args]);
     throw Error(`method ${name} object is neither function or ops array`);
   }
 
@@ -90,8 +90,11 @@ class Agent extends SM_Object {
     return f;
   }
 
-  /** Execute agent stack machine program */
-  _exec_smc(program, stack) {
+  /** Execute agent stack machine program. Note that commander also
+   *  implements ExecSMC to run arbitrary programs as well when
+   *  processing AgentSets
+   */
+  exec_smc(program, stack = []) {
     const state = new T_State();
     state.stack = stack;
     try {
