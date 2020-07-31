@@ -8,10 +8,10 @@
 
 import { T_Agent, T_State, T_Program } from '../types/t-commander';
 import {
-  setPropValue,
+  setAgentPropValue,
   stackToScope,
   scopedFunction,
-  pushProp,
+  pushAgentProp,
   pop
 } from './ops/basic-ops';
 import { dbgAgent, dbgStack } from './ops/debug-ops';
@@ -22,8 +22,8 @@ import { dbgAgent, dbgStack } from './ops/debug-ops';
 function SMC_GetInit(): T_Program {
   const program: T_Program = [
     // initialize values only in an init program
-    setPropValue('x', 0),
-    setPropValue('y', 0)
+    setAgentPropValue('x', 0),
+    setAgentPropValue('y', 0)
   ];
   return program;
 }
@@ -31,11 +31,11 @@ function SMC_GetInit(): T_Program {
 function SMC_GetUpdate(): T_Program {
   const program: T_Program = [
     // run during Agent.Update phase
-    pushProp('x'),
+    pushAgentProp('x'),
     stackToScope(),
     scopedFunction('add', 1),
-    dbgStack(1),
-    dbgAgent(),
+    // dbgStack(1),
+    // dbgAgent(),
     pop()
   ];
   return program;

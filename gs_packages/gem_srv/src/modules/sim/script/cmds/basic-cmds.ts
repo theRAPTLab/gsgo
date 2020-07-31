@@ -2,19 +2,43 @@
 
   Basic Script Commands, built from basic opcodes.
 
-  These higher order functions perform
+  REMEMBER: this generates STACK MACHINE CODE so you have to be
+  thinking in terms of agent operations happening in that context.
+  These functions do not return values programmatically.
 
-  A StackMachine opcode is a higher order function returning
-  a function that receives an agent instance and a stack, scope, and
-  conditions object. This function is the "compiled" output of the
-  operation.
+  If you need to do that, you can just call them directly on the
+  agents themselves in regular Javascript.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  Agent,
+  T_Agent,
   T_Scopeable,
-  T_Stackable,
   T_Opcode,
   T_OpWait
-} from '../../types/t-stackmachine';
+} from '../../types/t-commander';
+import { setAgentPropValue } from '../ops/basic-ops';
+
+/// AGENT DEFINITION STAGE ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Direct set built-in properties common to all agents */
+const setX = (num: number): T_Opcode[] => [setAgentPropValue('x', num)];
+const setY = (num: number): T_Opcode[] => [setAgentPropValue('y', num)];
+const setSkin = (path: string): T_Opcode[] => [setAgentPropValue('skin', path)];
+
+/** Direct set property with passed property object */
+const defineAgentProp = (propName: string, prop: T_Scopeable): T_Opcode => {
+  return (agent: T_Agent): T_OpWait => {
+    agent.addProp(propName, prop);
+  };
+};
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// built-in props
+export {
+  setX, // num
+  setY, // num
+  setSkin, // string
+  defineAgentProp // propname, prop
+};

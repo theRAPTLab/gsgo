@@ -12,6 +12,8 @@
  */
 export interface T_Scopeable {
   method: (name: string, ...args: any) => any;
+  addProp: (name: string, gv: T_Scopeable) => T_Scopeable;
+  addMethod: (name: String, callable: T_Method) => T_Scopeable;
   prop: (name: string) => T_Scopeable;
   serialize: () => string;
   value: any;
@@ -67,6 +69,12 @@ export type T_Opcode = (
   sm_state: T_State // machine state
 ) => T_OpWait;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine method can be either a stackmachine program OR a regular
+ *  function. The invocation method will check what it is
+ */
+export type T_Method = T_Program | Function;
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine program is an array of opcodes that are read from the
  *  beginning and executed one-after-the-other. Each function is invoked
  *  with the current data and scope stacks, as well as flags object that
@@ -80,4 +88,7 @@ export type T_Program = T_Opcode[];
 export interface T_Agent extends T_Scopeable {
   feature: (name: string) => any;
   name: () => string;
+  x: () => number;
+  y: () => number;
+  skin: () => string;
 }

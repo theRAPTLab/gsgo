@@ -40,26 +40,26 @@ const pop = (num: Number = 1): T_Opcode => {
   };
 };
 /** push agent on stack */
-const pushT_Agent = (): T_Opcode => {
+const pushAgent = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     STATE.stack.push(agent);
   };
 };
 /** push agent.prop on stack */
-const pushProp = (propName: string): T_Opcode => {
+const pushAgentProp = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     STATE.stack.push(agent.prop(propName));
   };
 };
 /** push agent.prop.value on stack */
-const pushPropValue = (propName: string): T_Opcode => {
+const pushAgentPropValue = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     STATE.stack.push(agent.prop(propName).value);
   };
 };
 /** Pop object from stack, read its value, then assign to agent.prop
  */
-const popPropValue = (propName: string): T_Opcode => {
+const popAgentPropValue = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const value = STATE.stack.pop().value;
     agent.prop(propName).value = value;
@@ -68,15 +68,14 @@ const popPropValue = (propName: string): T_Opcode => {
 
 /// IMMEDIATE OPCODES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Directly set object prop with immediate value */
-const setPropValue = (propName: string, value: any): T_Opcode => {
+/** Directly set agent prop with immediate value */
+const setAgentPropValue = (propName: string, value: any): T_Opcode => {
   return (agent: T_Agent): T_OpWait => {
     const prop = agent.prop(propName);
-    const old = prop.value;
     prop.value = value;
-    if (DBG) console.log(`set ${agent.name()}.${propName}=${value} (was ${old})`);
   };
 };
+/** There is no getAgentPropValue. Use popAgentPropValue */
 
 /// STACK INDIRECT OPCODES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,6 +86,13 @@ const stackToScope = (): T_Opcode => {
     scope.push(stack.pop());
   };
 };
+/** move top of data stack to scope stack */
+const scopeToStack = (): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    const { scope, stack } = STATE;
+    stack.push(scope.pop());
+  };
+};
 /** remove an object from the scope stack */
 const scopePop = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
@@ -94,19 +100,34 @@ const scopePop = (): T_Opcode => {
   };
 };
 /** push the named agent prop on the scope stack */
-const scopePushProp = (propName): T_Opcode => {
+const agentPropToScope = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const prop = agent.prop(propName);
     STATE.scope.push(prop);
   };
 };
 /** push the agent on the scope stack */
-const scopePushT_Agent = (): T_Opcode => {
+const agentToScope = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     STATE.scope.push(agent);
   };
 };
-/** Invoke method() from scoped object. This is like a subroutine.
+/** push an agent feature on the scope stack */
+const agentFeatureToScope = (featName: string): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    STATE.scope.push(agent.feature(featName));
+  };
+};
+/** Retrieve prop() from scoped object, and push it on stack. */
+const scopedProp = (propName: string): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    const { scope, stack } = STATE;
+    const SOBJ: T_Scopeable = scope[scope.length - 1];
+    stack.push(SOBJ.prop(propName));
+  };
+};
+/** Invoke method() from scoped object, return onto stack
+ *  This is like a subroutine.
  *  Any method name and an arbitrary number of argument are passed,
  *  and any results are pushed on the datastack.
  */
@@ -122,7 +143,7 @@ const scopedMethod = (methodName: string, ...args: any[]): T_Opcode => {
     stack.push(RSTACK);
   };
 };
-/** Invoke function property on scoped object */
+/** Invoke function property on scoped object, return onto stack */
 const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { scope, stack } = STATE;
@@ -133,23 +154,18 @@ const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
     stack.push(RSTACK);
   };
 };
-/** Retrieve prop() from scoped object, and push it on the data stack. */
-const scopedProp = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    const { scope, stack } = STATE;
-    const SOBJ: T_Scopeable = scope[scope.length - 1];
-    stack.push(SOBJ.prop(propName));
-  };
-};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// agent stack opcodes
-export { push, pop, pushT_Agent, stackToScope };
-/// agent prop opcodes
-export { pushProp, pushPropValue, popPropValue, setPropValue };
-/// scope stack opcodes
-/// note: for agent scope, just methods+props are accessed directly
-export { scopePop, scopePushT_Agent, scopePushProp, scopedMethod, scopedProp };
-/// direct agent manipulation
-export { scopedFunction };
+/// data stack ops
+export { push, pushAgent, pushAgentProp, pop };
+/// data stack indirect ops
+export { pushAgentPropValue, popAgentPropValue };
+/// agent direct ops
+export { setAgentPropValue };
+/// stack utility ops
+export { stackToScope, scopeToStack };
+/// scope stack ops
+export { agentToScope, agentPropToScope, agentFeatureToScope, scopePop };
+/// scoped invocation ops
+export { scopedMethod, scopedFunction, scopedProp };

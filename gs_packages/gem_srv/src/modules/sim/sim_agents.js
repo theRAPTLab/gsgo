@@ -78,10 +78,10 @@ function AgentProgram() {
     agent.prop('y').setTo(200);
     agent.prop('skin').setTo('flower.png');
     agent
-      .defProp('currentHealth', new NumberProp(100))
+      .addProp('currentHealth', new NumberProp(100))
       .setMin(0)
       .setMax(100);
-    agent.defProp('isAlive', new BooleanProp(true));
+    agent.addProp('isAlive', new BooleanProp(true));
     agent.addFeature('Movement').setController('student');
     // this stuff has to create smcode runtime programs
   });

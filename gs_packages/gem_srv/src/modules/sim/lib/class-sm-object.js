@@ -1,5 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  Scopeable Stack Machine Object
+
   SM_Object is used for Agents and Agent Properties, as well as anything that
   has to work with StackMachineCode (SMC)
 
@@ -101,14 +103,14 @@ class SM_Object {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: add a named method to SMC_Object method map
-   *  @param {string} methodName - name of method to add
-   *  @param {function} func - function(args)
+   *  @param {string} name - name of method to add
+   *  @param {function} smc_or_f - smc array or function
    *  @returns {SMC_Object} - for chaining agent calls
    */
-  addMethod(mName, func) {
+  addMethod(name, smc_or_f) {
     const { methods } = this;
-    if (methods.has(mName)) throw Error(`method '${mName}' already added`);
-    methods.set(mName, func);
+    if (methods.has(name)) throw Error(`method '${name}' already added`);
+    methods.set(name, smc_or_f);
     return this;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

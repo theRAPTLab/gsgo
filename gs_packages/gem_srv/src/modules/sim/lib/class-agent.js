@@ -9,49 +9,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
+import { T_State } from '../types/t-commander';
 import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
 
-/*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
-
-  The Agent class has four main storage objects:
-
-  * 'props' maps propertyNames to gsVariable instance
-  * 'methods' maps user-defined methodNames to function objects
-  * 'features' maps featurePackageName to feature plugins
-  * 'events' is a queue of messages between different stages of the agent
-    lifecycle.
-
-  Each of these storage objects are populated with an associated
-  definition method, which are available to user programming:
-
-    defProp('propName',gsVar) -> GSVar
-    defMethod('methodName', functionObj) -> Agent
-    addFeature('featureName') -> FeaturePack
-
-  The stored properties, methods, and features have corresponding
-  retrieval methods which hide the internal storage mechanism:
-
-    prop('propName') -> GSVar
-    method('methodName', ...args) -> result
-    feature('featureName') -> FeaturePack
-
-  There is an IMPORTANT DISTINCTION between AGENT definition and
-  TEMPLATE definition:
-
-  * An Agent Definition is a blank STORAGE OBJECT with a unique AgentType.
-    The Agent class implements storage and storage accessors as described
-    above.
-
-  * An Agent Template is a FUNCTION that creates an agent, then
-    DECORATES it with the properties, methods, and features that make
-    it unique. This function can use the agent's built-in storage
-    accessors to manipulate it at programming time.
-
-  Agent Templates are handled by the AgentFactory module.
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Agent extends SM_Object {
   constructor(agentName = '<anon>') {
     super(agentName); // sets _value to agentName, which is only for debugging
@@ -79,8 +43,8 @@ class Agent extends SM_Object {
   skin = () => this._skin.value;
 
   // definition methods
-  defProp = (name, gvar) => AddProp(this, name, gvar);
-  defMethod = (name, methodFunc) => AddMethod(this, name, methodFunc);
+  // addProp defined in SM_Object
+  // addMethod defined in SM_Object
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: add a featurepack to an agent's feature map by feature name
@@ -102,26 +66,41 @@ class Agent extends SM_Object {
     this.features.set(fName, fpack);
     return fpack.decorate(this);
   }
-  // props return gvars
-  // e.g. let x = agent.prop('x').value;
+
+  /** retrieve a prop object */
   prop(name) {
     const p = this.props.get(name);
     if (p === undefined) throw Error(`no prop named '${name}'`);
     return p;
   }
 
-  // to call an op as a method, do some conversion
+  /** invoke method by name. functions return values, smc programs return stack */
   method(name, ...args) {
-    const stack = [...args];
-    this.opExec(name, stack);
-    return stack.pop();
+    const m = this.methods.get(name);
+    if (m === undefined) throw Error(`no method named '${name}'`);
+    if (typeof m === 'function') return m.apply(this, ...args);
+    if (Array.isArray(m)) return this._exec_smc(m, [...args]);
+    throw Error(`method ${name} object is neither function or ops array`);
   }
 
-  // operations receive arguments from a stack
-  opExec(name, stack) {
-    const opExec = this.methods.get(name);
-    if (opExec === undefined) throw Error(`no method named '${name}'`);
-    return opExec.apply(this, stack);
+  /** retrieve the feature reference */
+  feature(name) {
+    const f = this.features.get(name);
+    if (f === undefined) throw Error(`no feature named '${name}'`);
+    return f;
+  }
+
+  /** Execute agent stack machine program */
+  _exec_smc(program, stack) {
+    const state = new T_State();
+    state.stack = stack;
+    try {
+      program.forEach(op => op(this, state));
+    } catch (e) {
+      console.log(e);
+      debugger;
+    }
+    return state.stack;
   }
 
   // serialization
