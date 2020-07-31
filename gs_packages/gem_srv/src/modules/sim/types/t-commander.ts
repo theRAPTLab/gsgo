@@ -13,10 +13,23 @@
 export interface T_Scopeable {
   method: (name: string, ...args: any) => any;
   addProp: (name: string, gv: T_Scopeable) => T_Scopeable;
-  addMethod: (name: String, callable: T_Method) => T_Scopeable;
+  addMethod: (name: String, callable: T_Method) => void;
+  props: Map<string, T_Scopeable>;
   prop: (name: string) => T_Scopeable;
-  serialize: () => string;
+  methods: Map<string, T_Method>;
+  serialize: () => any[];
   value: any;
+}
+/// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Agents have additional properties on top of T_Scopeable */
+export interface T_Agent extends T_Scopeable {
+  exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
+  feature: (name: string) => any;
+  name: () => string;
+  x: () => number;
+  y: () => number;
+  skin: () => string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A "stackable" object is one that can be pushed on the data stack.
@@ -81,15 +94,3 @@ export type T_Method = T_Program | Function;
  *  can be updated by conditional opcodes
  */
 export type T_Program = T_Opcode[];
-
-/// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Agents have additional properties on top of T_Scopeable */
-export interface T_Agent extends T_Scopeable {
-  exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
-  feature: (name: string) => any;
-  name: () => string;
-  x: () => number;
-  y: () => number;
-  skin: () => string;
-}

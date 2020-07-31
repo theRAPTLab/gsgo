@@ -14,6 +14,8 @@ import {
   pushAgentProp,
   pop
 } from './ops/basic-ops';
+import { NumberProp } from '../props/var';
+import { addProp } from './ops/template-ops';
 import { dbgAgent, dbgStack } from './ops/debug-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
@@ -23,7 +25,8 @@ function TestSMC_Init(): T_Program {
   const program: T_Program = [
     // initialize values only in an init program
     setAgentPropValue('x', 0),
-    setAgentPropValue('y', 0)
+    setAgentPropValue('y', 0),
+    addProp('currentHealth', new NumberProp())
   ];
   return program;
 }

@@ -4,26 +4,28 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import SM_Object from '../lib/class-SM_Object';
+import SM_Object from '../lib/class-sm-object';
+import { T_Scopeable } from '../types/t-commander';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DictionaryProp extends SM_Object {
-  constructor(name) {
-    super();
+  dict: Map<string, T_Scopeable>;
+  constructor(name: string) {
+    super(name);
     this.meta.type = Symbol.for('DictionaryProp');
     this.meta.name = name;
     this.dict = new Map();
   }
-  addProp(key, gvar) {
+  addItem(key: string, gvar: T_Scopeable) {
     if (this.dict.has(key)) throw Error(`key ${key} already exists`);
     if (gvar instanceof SM_Object) this.dict.set(key, gvar);
     else throw Error(`value to set must be GVar, not typeof ${typeof gvar}`);
   }
-  prop(key) {
+  getItem(key: string): T_Scopeable {
     return this.dict.get(key);
   }
-  has(key) {
+  hasItem(key: string): boolean {
     return this.dict.has(key);
   }
 }

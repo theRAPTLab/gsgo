@@ -1,3 +1,5 @@
+/* eslint-disable react/static-property-placement */
+
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Scopeable Stack Machine Object
@@ -11,6 +13,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { T_Agent, T_Scopeable, T_Method } from '../types/t-commander';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_objcount = 100;
@@ -20,14 +24,8 @@ function new_obj_id() {
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- *  Add a property to an agent's prop map by property name
- *  @param {Agent} agent - instance of Agent class
- *  @param {string} prop - name of property to add
- *  @param {GSVar} gvar - GSVar instance
- *  @returns {GSVar} - for chaining
- */
-function AddProp(agent, prop, gvar) {
+/** Add a property to an agent's prop map by property name */
+function AddProp(agent: T_Agent, prop: string, gvar: T_Scopeable) {
   const { props } = agent;
   if (props.has(prop)) throw Error(`prop '${prop}' already added`);
   props.set(prop, gvar);
@@ -35,38 +33,36 @@ function AddProp(agent, prop, gvar) {
 }
 /// MODULE UTILITIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_MapHas(map, key) {
+function m_MapHas(map: Map<string, any>, key: string) {
   return map.get(key) || false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_MapGet(map, key) {
-  const v = m_MapHas(key);
+function m_MapGet(map: Map<string, any>, key: string) {
+  const v = m_MapHas(map, key);
   if (!v) throw Error(`no key in map '${key}'`);
   return v;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API:
- *  add a method to an agent's method map by method name
- *  @param {Agent} agent - instance of Agent class
- *  @param {string} method - name of method to add
- *  @param {function} func - function signature (agent,...args)
- *  @returns {Agent} - for chaining agent calls
- */
-function AddMethod(agent, method, func) {
+/** Add a method to an agent's method map by method name */
+function AddMethod(agent: T_Agent, name: string, smc_or_f: T_Method) {
   const { methods } = agent;
-  if (methods.has(method)) throw Error(`method '${method}' already added`);
-  methods.set(method, func);
-  agent[method] = func;
+  if (methods.has(name)) throw Error(`method '${name}' already added`);
+  methods.set(name, smc_or_f);
+  agent[name] = smc_or_f;
   return agent;
 }
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class SM_Object {
-  constructor(init) {
+class SM_Object implements T_Scopeable {
+  _value: any;
+  meta: { id: number; type: symbol; name?: string };
+  props: Map<string, T_Scopeable>;
+  methods: Map<string, T_Method>;
+  constructor(initValue?: any) {
     // init is a literal value
-    this._value = init;
+    this._value = initValue;
     this.meta = {
       id: new_obj_id(),
       type: Symbol.for('SM_Object')
@@ -90,48 +86,37 @@ class SM_Object {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Add a named property to SMC_Object prop map
-   *  @param {string} propName - name of property to add
-   *  @param {SM_Object} gvar - SM_Object instance
-   *  @returns {SM_Object} - for chaining
-   */
-  addProp(pName, gvar) {
+  /** Add a named property to SMC_Object prop map */
+  addProp(pName: string, gvar: T_Scopeable): T_Scopeable {
     const { props } = this;
     if (props.has(pName)) throw Error(`prop '${pName}' already added`);
     props.set(pName, gvar);
     return gvar;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: add a named method to SMC_Object method map
-   *  @param {string} name - name of method to add
-   *  @param {function} smc_or_f - smc array or function
-   *  @returns {SMC_Object} - for chaining agent calls
-   */
-  addMethod(name, smc_or_f) {
+  /** Add a named method to SMC_Object method map */
+  addMethod(name: string, smc_or_f: T_Method): void {
     const { methods } = this;
     if (methods.has(name)) throw Error(`method '${name}' already added`);
     methods.set(name, smc_or_f);
-    return this;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: return the gvar assocated with propName
    *  @param {string} propName - name of property
    *  @returns {GVar} - value object
    */
-  prop(pName) {
+  prop(pName: string): T_Scopeable {
     return m_MapGet(this.props, pName);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: call a named method function using javascript semantics
-   *  @param {string} methodName - name of method
-   *  @param {...*} args - list of arguments
-   */
-  method(mName, ...args) {
+  /** Call a named method function using javascript semantics */
+  method(mName: string, ...args: any): any {
     const method = m_MapGet(this.methods, mName);
     return method.call(this, ...args);
   }
-  /// serializer
-  serialize() {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return a serializer array */
+  serialize(): any {
     return ['value', this._value];
   }
 }
@@ -141,7 +126,7 @@ class SM_Object {
 /** given an array of mixed gbase and literals, return an array of
  *  pure values
  */
-function GetValues(mixedArray) {
+function GetValues(mixedArray: any[]): any[] | SM_Object {
   const values = mixedArray.map(smo => {
     if (smo instanceof SM_Object) return smo.value;
     return smo;
@@ -152,9 +137,9 @@ function GetValues(mixedArray) {
 /** given an array of mixed gbase and literals, return an array of
  *  types
  */
-function GetTypes(mixedArray) {
+function GetTypes(mixedArray: any[]): string[] {
   const types = mixedArray.map(smo => {
-    if (smo instanceof SM_Object) return smo.meta.type;
+    if (smo instanceof SM_Object) return 'SMOBJ'; // SM_Object
     if (typeof smo === 'string') return 'STR'; // literal string
     if (typeof smo === 'number') return 'NUM'; // literal number
     if (typeof smo === 'boolean') return 'BOL'; // literal boolean
@@ -164,7 +149,7 @@ function GetTypes(mixedArray) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** test for string keys that do not contain a . */
-function IsAgentString(str) {
+function IsAgentString(str: string): boolean {
   if (typeof str !== 'string') throw Error('arg must be string');
   const len = str.split('.').length;
   if (len === 1) return true; // agent = string without periods
@@ -172,7 +157,7 @@ function IsAgentString(str) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** test for string keys than begin with . */
-function IsPropString(str) {
+function IsPropString(str: string): boolean {
   if (typeof str !== 'string') throw Error('arg must be string');
   if (!str.startsWith('.')) return false; // not a .string
   if (str.split('.').length !== 2) return false; // more than one .
