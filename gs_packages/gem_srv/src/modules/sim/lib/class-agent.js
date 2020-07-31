@@ -123,6 +123,19 @@ class Agent extends SM_Object {
     if (opExec === undefined) throw Error(`no method named '${name}'`);
     return opExec.apply(this, stack);
   }
+
+  // serialization
+  serialize() {
+    const obj = {
+      name: this.name(),
+      x: this.x(),
+      y: this.y(),
+      skin: this.skin()
+    };
+    // call serialize on all features
+    // call serialize on all props
+    return JSON.stringify(obj);
+  }
 } // end of Agent class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

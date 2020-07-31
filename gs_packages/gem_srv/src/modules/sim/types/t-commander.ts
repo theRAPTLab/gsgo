@@ -13,6 +13,7 @@
 export interface T_Scopeable {
   method: (name: string, ...args: any) => any;
   prop: (name: string) => T_Scopeable;
+  serialize: () => string;
   value: any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,7 +63,7 @@ export class T_State {
  *  in case we want to have asynchronous opcodes.
  */
 export type T_Opcode = (
-  agent: Agent, // REQUIRED memory context
+  agent: T_Agent, // REQUIRED memory context
   sm_state: T_State // machine state
 ) => T_OpWait;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,7 +77,7 @@ export type T_Program = T_Opcode[];
 /// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of T_Scopeable */
-export interface Agent extends T_Scopeable {
+export interface T_Agent extends T_Scopeable {
   feature: (name: string) => any;
   name: () => string;
 }

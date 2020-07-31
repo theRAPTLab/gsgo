@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_State, T_Opcode, T_OpWait } from '../../types/t-commander';
+import { T_Agent, T_State, T_Opcode, T_OpWait } from '../../types/t-commander';
 
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +47,7 @@ const dbgScope = (num: number = 0): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgAgent = (match: string = ''): T_Opcode => {
-  return (agent, STATE: T_State): T_OpWait => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
     if (agent.name() === match)
       console.log(`agent[${agent.name()}]:`, agent.serialize());
   };

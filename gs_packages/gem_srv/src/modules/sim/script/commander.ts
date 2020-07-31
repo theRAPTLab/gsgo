@@ -6,7 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Agent, T_State, T_Program } from '../types/t-commander';
+import { T_Agent, T_State, T_Program } from '../types/t-commander';
 import {
   setPropValue,
   stackToScope,
@@ -45,7 +45,7 @@ function SMC_GetUpdate(): T_Program {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** run an SM_Program on an agent
  */
-function Exec(smc: T_Program, agent: Agent) {
+function Exec(smc: T_Program, agent: T_Agent) {
   try {
     const state = new T_State();
     smc.forEach(op => op(agent, state));
