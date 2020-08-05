@@ -52,8 +52,13 @@ const dbgAgent = (match: string = ''): T_Opcode => {
       console.log(`agent[${agent.name()}]:`, agent.serialize());
   };
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** implement a pause */
+const nop = (): T_Opcode => {
+  return (): T_OpWait => {};
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// debug opcodes
-export { dbgStack, dbgScope, dbgAgent };
+export { dbgStack, dbgScope, dbgAgent, nop };

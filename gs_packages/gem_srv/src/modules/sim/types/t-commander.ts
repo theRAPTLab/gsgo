@@ -1,8 +1,10 @@
+/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   StackMachine Type Declarations
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+import T_Condition from './t-state-conditions';
 
 /// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,49 +35,16 @@ export interface T_Agent extends T_Scopeable {
   skin: () => string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A "stackable" object is one that can be pushed on the data stack.
- */
-export type T_Stackable = T_Scopeable;
+/** Allowed "literal values" on the data stack */
+export type T_Value = string | number | boolean;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A "stackable" object is one that can be pushed on the data stack. */
+export type T_Stackable = T_Scopeable | T_Value;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Stackmachine operations return a Promise if it is operating asynchronously
  *  though this may not be necessary. I thought it might be cool
  */
 export type T_OpWait = Promise<any> | void;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine maintains state in form of a data stack, a scope stack,
- *  and a flags object. This state is passed, along with agent, to every
- *  stackmachine opcode. The opcode is free to mutate the stacks and agent
- */
-export class T_State {
-  stack: T_Stackable[]; // data stack (pass values in/out)
-  scope: T_Scopeable[]; // scope stack (current execution context)
-  flags: {
-    Z: boolean; // zero flag
-    GT: boolean; // greater than than
-    LT: boolean; // less-than, same as !(GT&&EQ)
-    EQ: boolean; // equal flag
-    TRUE: boolean; // if result of op was "true" after compare
-    FALSE: boolean; // inverse of TRUE operation
-  };
-  constructor() {
-    this.stack = [];
-    this.scope = [];
-    this.flags = {
-      Z: false,
-      GT: false,
-      LT: false,
-      EQ: false,
-      TRUE: false,
-      FALSE: true
-    };
-  }
-  stackPeek() {
-    return this.stack[this.stack.length - 1];
-  }
-  stackPop() {
-    return this.stack.pop();
-  }
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine operation or "opcode" is a function that receives mutable
  *  agent, stack, scope, and condition flag objects. This is how agents
@@ -93,7 +62,6 @@ export type T_Opcode = (
  *  function. The invocation method will check what it is
  */
 export type T_Method = T_Program | Function;
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine program is an array of opcodes that are read from the
  *  beginning and executed one-after-the-other. Each function is invoked
@@ -101,3 +69,24 @@ export type T_Method = T_Program | Function;
  *  can be updated by conditional opcodes
  */
 export type T_Program = T_Opcode[];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine maintains state in form of a data stack, a scope stack,
+ *  and a flags object. This state is passed, along with agent, to every
+ *  stackmachine opcode. The opcode is free to mutate the stacks and agent
+ */
+export class T_State {
+  stack: T_Stackable[]; // data stack (pass values in/out)
+  scope: T_Scopeable[]; // scope stack (current execution context)
+  flags: T_Condition; // condition flags
+  constructor() {
+    this.stack = [];
+    this.scope = [];
+    this.flags = new T_Condition();
+  }
+  stackPeek() {
+    return this.stack[this.stack.length - 1];
+  }
+  stackPop() {
+    return this.stack.pop();
+  }
+}

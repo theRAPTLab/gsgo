@@ -85,18 +85,14 @@ const setAgentPropValue = (propName: string, value: any): T_Opcode => {
 
 /// STACK INDIRECT OPCODES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** move top of data stack to scope stack */
-const stackToScope = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    const { scope, stack } = STATE;
-    scope.push(stack.pop());
-  };
-};
-/** move top of data stack to scope stack */
+/** Move top of scope stack to data stack. Note that there is no equivalent
+ *  opcode for data stack to scope, since data stack can have literal values
+ *  on it and this creates a type violation on the scope stack
+ */
 const scopeToStack = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { scope, stack } = STATE;
-    stack.push(scope.pop());
+    stack.push(scope.pop() as T_Stackable);
   };
 };
 /** remove an object from the scope stack */
@@ -172,6 +168,17 @@ const scopedFunctionWithAgent = (funcName: string, ...args: any[]): T_Opcode => 
     stack.push(RSTACK);
   };
 };
+/** conditions */
+const compareNumbers = (a: number, b: number): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    STATE.flags.compareNumbers(a, b);
+  };
+};
+const checkZero = (val: number): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    STATE.flags.checkZero(val);
+  };
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -182,10 +189,12 @@ export { pushAgentPropValue, popAgentPropValue };
 /// agent direct ops
 export { setAgentPropValue };
 /// stack utility ops
-export { stackToScope, scopeToStack };
+export { scopeToStack };
 /// scope stack ops
 export { agentToScope, agentPropToScope, agentFeatureToScope, scopePop };
 /// scoped invocation ops
 export { scopedMethod, scopedFunction, scopedProp };
 /// scoped feature ops
 export { scopedFunctionWithAgent };
+/// value comparisons
+export { compareNumbers, checkZero };

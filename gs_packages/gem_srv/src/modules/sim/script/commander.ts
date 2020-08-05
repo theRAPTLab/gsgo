@@ -9,7 +9,6 @@
 import { T_Agent, T_Program } from '../types/t-commander';
 import {
   setAgentPropValue,
-  stackToScope,
   scopedFunction,
   scopedFunctionWithAgent,
   pushAgentProp,
@@ -20,7 +19,7 @@ import {
 } from './ops/basic-ops';
 import { NumberProp } from '../props/var';
 import { addProp, addFeature } from './ops/template-ops';
-import { dbgAgent, dbgStack } from './ops/debug-ops';
+import { dbgAgent, dbgStack, nop } from './ops/debug-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,8 +38,11 @@ function TestSMC_Init(): T_Program {
     scopedFunction('setMax', 100),
     scopePop(),
     agentFeatureToScope('Movement'),
+    nop(),
     scopedFunctionWithAgent('setController', 'student'),
-    scopePop()
+    scopePop(),
+    // conditions
+    nop()
   ];
   return program;
 }
@@ -48,8 +50,7 @@ function TestSMC_Init(): T_Program {
 function TestSMC_Update(): T_Program {
   const program: T_Program = [
     // run during Agent.Update phase
-    pushAgentProp('x'),
-    stackToScope(),
+    agentPropToScope('x'),
     scopedFunction('add', 1),
     // dbgStack(1),
     // dbgAgent(),
