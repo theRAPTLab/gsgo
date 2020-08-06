@@ -20,6 +20,8 @@ export interface T_Scopeable {
   prop: (name: string) => T_Scopeable;
   methods: Map<string, T_Method>;
   serialize: () => any[];
+  //  get value(): any; // works with typescript 3.6+
+  //  set value(val:any); // works with typescript 3.6+
   _value: any;
   get: () => T_Value;
   set: (key: string, value: T_Value) => void;
@@ -85,6 +87,7 @@ export interface T_State {
   peek(): T_Stackable;
   pop(): T_Stackable;
   popArgs(num: number): T_Stackable[];
+  push(...args: number[]): void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine condition

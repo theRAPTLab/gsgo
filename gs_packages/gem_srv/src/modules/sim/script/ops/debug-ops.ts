@@ -17,12 +17,12 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
     num = 0;
   }
   if (num === 0) {
-    console.log(`${prompt}:`, JSON.stringify(stack));
+    console.log(`${prompt}:`, stack);
   } else {
     const end = stack.length - 1;
     const arr = [];
     for (let i = num; i--; i > 0) arr.push(stack[end - i]);
-    console.log(`${prompt}-top ${num}:`, JSON.stringify(arr));
+    console.log(`${prompt}-top ${num}:`, arr);
   }
 }
 /** Dump the current stack contents to console. Defaults to all.

@@ -9,7 +9,7 @@ import { T_Condition } from '../types/t-smc';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOZ_ERR = 'zerocheck not called before flag read';
-const NOC_ERR = 'compareNumbners not called before flag read';
+const NOC_ERR = 'compareNumbers not called before flag read';
 const NOS_ERR = 'compareStrings not called before flag read';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////

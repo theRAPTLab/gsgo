@@ -66,7 +66,7 @@ const ifGT = (program: T_Program): T_Opcode => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifLTE = (program: T_Program): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    if (!STATE.flags.GT()) {
+    if (STATE.flags.LTE()) {
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
       if (DBG) console.log('lte stack return', results);
     }
@@ -75,7 +75,7 @@ const ifLTE = (program: T_Program): T_Opcode => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifGTE = (program: T_Program): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    if (STATE.flags.LT()) {
+    if (STATE.flags.GTE()) {
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
       if (DBG) console.log('gte stack return', results);
     }

@@ -59,18 +59,18 @@ const pushAgentProp = (propName: string): T_Opcode => {
 /** push agent.prop.value on stack */
 const pushAgentPropValue = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    STATE.stack.push(agent.prop(propName).value);
+    STATE.stack.push(agent.prop(propName)._value);
   };
 };
 /** Pop object from stack, read its value, then assign to agent.prop
  */
 const popAgentPropValue = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    const element = STATE.stackPop();
+    const element = STATE.pop();
     if (element instanceof SM_Object) {
-      agent.prop(propName).value = element.value;
+      agent.prop(propName)._value = element.value;
     } else {
-      agent.prop(propName).value = element;
+      agent.prop(propName)._value = element;
     }
   };
 };
@@ -81,21 +81,28 @@ const popAgentPropValue = (propName: string): T_Opcode => {
 const setAgentPropValue = (propName: string, value: any): T_Opcode => {
   return (agent: T_Agent): T_OpWait => {
     const prop = agent.prop(propName);
-    prop.value = value;
+    prop._value = value;
   };
 };
 /** There is no getAgentPropValue. Use popAgentPropValue */
 
 /// STACK INDIRECT OPCODES ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Move top of scope stack to data stack. Note that there is no equivalent
- *  opcode for data stack to scope, since data stack can have literal values
- *  on it and this creates a type violation on the scope stack
+/** Move top of scope stack to data stack.
  */
 const scopeToStack = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { scope, stack } = STATE;
     stack.push(scope.pop() as T_Stackable);
+  };
+};
+/** Move top of stack to scope stack, with checks */
+const stackToScope = (): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    const { scope, stack } = STATE;
+    const obj = stack.pop();
+    if (obj instanceof SM_Object) scope.push(obj as T_Scopeable);
+    else throw Error('stackToScope can not move non-SM_Object');
   };
 };
 /** remove an object from the scope stack */
@@ -131,6 +138,14 @@ const scopedProp = (propName: string): T_Opcode => {
     const { scope, stack } = STATE;
     const SOBJ: T_Stackable = scope[scope.length - 1];
     stack.push(SOBJ.prop(propName));
+  };
+};
+/** Retrieve prop.value from scoped object, and push it on stack. */
+const scopedPropValue = (propName: string): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    const { scope, stack } = STATE;
+    const SOBJ: T_Stackable = scope[scope.length - 1];
+    stack.push(SOBJ.prop(propName)._value);
   };
 };
 /** Invoke method() from scoped object, return onto stack
@@ -183,10 +198,10 @@ export { pushAgentPropValue, popAgentPropValue };
 /// agent direct ops
 export { setAgentPropValue };
 /// stack utility ops
-export { scopeToStack };
+export { stackToScope, scopeToStack };
 /// scope stack ops
 export { agentToScope, agentPropToScope, agentFeatureToScope, scopePop };
 /// scoped invocation ops
-export { scopedMethod, scopedFunction, scopedProp };
+export { scopedMethod, scopedFunction, scopedProp, scopedPropValue };
 /// scoped feature ops
 export { scopedFunctionWithAgent };
