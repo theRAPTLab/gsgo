@@ -4,7 +4,6 @@
   StackMachine Type Declarations
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-import T_Condition from './t-smc-condition';
 
 /// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,32 +68,50 @@ export type T_Method = T_Program | Function;
  *  can be updated by conditional opcodes
  */
 export type T_Program = T_Opcode[];
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,
  *  and a flags object. This state is passed, along with agent, to every
  *  stackmachine opcode. The opcode is free to mutate the stacks and agent
  */
-export class T_State {
+export interface T_State {
   stack: T_Stackable[]; // data stack (pass values in/out)
   scope: T_Scopeable[]; // scope stack (current execution context)
   flags: T_Condition; // condition flags
-  constructor(argStack: T_Stackable[] = []) {
-    this.stack = argStack;
-    this.scope = [];
-    this.flags = new T_Condition();
-  }
-  peek() {
-    return this.stack[this.stack.length - 1];
-  }
-  pop() {
-    return this.stack.pop();
-  }
-  popArgs(num: number = 1) {
-    if (num > this.stack.length) throw Error('stack underflow');
-    if (num === 0) throw Error('null stack operation with 0 num');
-    const arr = [];
-    for (let i = num; i--; i > 0) arr.unshift(this.stack.pop());
-    return arr;
-  }
+  peek(): T_Stackable;
+  pop(): T_Stackable;
+  popArgs(num: number): T_Stackable[];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine condition
+ */
+export interface T_Condition {
+  VAZ: boolean; // true when zerocheck runs
+  VAC: boolean; // true when condition runs
+  VAS: boolean; // true for string comparisons
+  _Z: boolean; // zero flag
+  _LT: boolean; // less-than, same as !(GT&&EQ)
+  _EQ: boolean; // equal flag
+  reset(): void;
+  status(): string;
+  compareNumbers(a: number, b: number);
+  LT(): boolean;
+  LTE(): boolean;
+  GTE(): boolean;
+  GT(): boolean;
+  EQ(): boolean;
+  NEQ(): boolean;
+  compareStrings(s1: string, s2: string): void;
+  STR_EQ(): boolean;
+  STR_NEQ(): boolean;
+  checkZero(value: number): void;
+  Z(): boolean;
+  NZ(): boolean;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine message
+ */
+export interface T_Message {
+  id: number;
+  channel: string;
+  message: string;
 }

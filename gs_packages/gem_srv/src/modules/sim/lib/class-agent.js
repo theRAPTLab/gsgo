@@ -9,7 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
-import { T_State } from '../types/t-smc';
+import SM_State from './class-sm-state';
 import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
@@ -92,10 +92,10 @@ class Agent extends SM_Object {
 
   /** Execute agent stack machine program. Note that commander also
    *  implements ExecSMC to run arbitrary programs as well when
-   *  processing AgentSets
+   *  processing AgentSets. Optionally pass a stack to reuse.
    */
   exec_smc(program, stack = []) {
-    const state = new T_State(stack);
+    const state = new SM_State(stack);
     try {
       // run the program with the passed stack, if any
       program.forEach(op => op(this, state));
@@ -103,6 +103,7 @@ class Agent extends SM_Object {
       console.error(e);
       debugger;
     }
+    // return the stack as a result, though
     return state.stack;
   }
 

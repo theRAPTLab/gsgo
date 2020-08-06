@@ -28,7 +28,7 @@ const compareNumbers = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const [a, b] = STATE.popArgs(2);
     STATE.flags.compareNumbers(a, b);
-    console.log(STATE.flags.status());
+    // console.log(STATE.flags.status());
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -109,6 +109,7 @@ function AgentProgram() {
   AgentFactory.AddTemplate('World', world => {
     world.addFeature('Timer');
   });
+
   // save creation template
   console.groupEnd();
 
@@ -163,6 +164,8 @@ function AgentThink(frame) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frame) {
   //
+  const smc_condition = StackMachine.TestSMC_Condition();
+  StackMachine.ExecSMC(smc_condition, AgentFactory.GetWorldAgent());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frame) {

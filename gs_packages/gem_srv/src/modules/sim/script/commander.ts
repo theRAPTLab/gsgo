@@ -27,6 +27,7 @@ import {
   ifGT,
   ifEQ
 } from './ops/condition-ops';
+import { agentQueue, agentSend, debugMessage } from './ops/message-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,6 +72,13 @@ function TestSMC_Update(): T_Program {
   ];
   return program;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function TestSMC_Condition(): T_Program {
+  const program: T_Program = [
+    // debugMessage('moof:pickle')
+  ];
+  return program;
+}
 
 /// EXEC FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,6 +95,6 @@ function ExecSMC(smc: T_Program, agent: T_Agent) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const StackMachine = { ExecSMC, TestSMC_Init, TestSMC_Update };
+const StackMachine = { ExecSMC, TestSMC_Init, TestSMC_Update, TestSMC_Condition };
 const ScriptCommands = {};
 export { StackMachine, ScriptCommands };

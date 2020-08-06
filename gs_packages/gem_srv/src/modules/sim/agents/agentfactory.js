@@ -18,6 +18,7 @@
 
 import Agent from '../lib/class-agent';
 import { AGENTS_Save, AGENTS_GetSet, TEMPLATES } from '../runtime-core';
+import { WORLD } from './global';
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -99,6 +100,11 @@ function ExportAgent(agent) {
 function GetAgentsByType(type) {
   return [...AGENTS_GetSet(type)];
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the WORLD agent */
+function GetWorldAgent() {
+  return WORLD;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,5 +112,6 @@ export default {
   MakeAgent, // create an agent instance from template
   AddTemplate, // add template function by name
   ExportAgent, // return serializable object representing an agent instance
-  GetAgentsByType // return a list of agents by type
+  GetAgentsByType, // return a list of agents by type
+  GetWorldAgent // return world agent
 };

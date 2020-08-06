@@ -4,6 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { T_Condition } from '../types/t-smc';
+
 const NOZ_ERR = 'zerocheck not called before flag read';
 const NOC_ERR = 'compareNumbners not called before flag read';
 const NOS_ERR = 'compareStrings not called before flag read';
@@ -12,7 +14,7 @@ const NOS_ERR = 'compareStrings not called before flag read';
  *  results of an operation. This storage class represents the register
  *  and provides utility functions for setting/interpeting the flags
  */
-export default class T_Condition {
+export default class SM_Condition implements T_Condition {
   VAZ: boolean; // true when zerocheck runs
   VAC: boolean; // true when condition runs
   VAS: boolean; // true for string comparisons
@@ -22,7 +24,7 @@ export default class T_Condition {
   constructor() {
     this.reset();
   }
-  reset() {
+  reset(): void {
     this.VAZ = false;
     this.VAC = false;
     this.VAS = false;
@@ -31,7 +33,7 @@ export default class T_Condition {
     this._LT = undefined;
     this._EQ = undefined;
   }
-  status() {
+  status(): string {
     let z = this._Z ? '1' : '0';
     let lt = this._LT ? '1' : '0';
     let eq = this._EQ ? '1' : '0';
@@ -45,32 +47,32 @@ export default class T_Condition {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Call this to set zero and true/false flags and validate condition stack.
    */
-  compareNumbers(a: number, b: number) {
+  compareNumbers(a: number, b: number): void {
     this._EQ = a === b;
     this._LT = a < b;
     this.VAC = true;
   }
-  LT() {
+  LT(): boolean {
     if (this.VAC) return this._LT;
     throw Error(NOC_ERR);
   }
-  LTE() {
+  LTE(): boolean {
     if (this.VAC) return this._LT || this._EQ;
     throw Error(NOC_ERR);
   }
-  GTE() {
+  GTE(): boolean {
     if (this.VAC) return !this._LT || this._EQ;
     throw Error(NOC_ERR);
   }
-  GT() {
+  GT(): boolean {
     if (this.VAC) return !(this._LT || this._EQ);
     throw Error(NOC_ERR);
   }
-  EQ() {
+  EQ(): boolean {
     if (this.VAC) return this._EQ;
     throw Error(NOC_ERR);
   }
-  NEQ() {
+  NEQ(): boolean {
     if (this.VAC) return !this._EQ;
     throw Error(NOC_ERR);
   }
@@ -78,15 +80,15 @@ export default class T_Condition {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Call this to set zero and true/false flags and validate condition stack.
    */
-  compareStrings(s1: string, s2: string) {
+  compareStrings(s1: string, s2: string): void {
     this._EQ = s1 === s2;
     this.VAS = true;
   }
-  STR_EQ() {
+  STR_EQ(): boolean {
     if (this.VAS) return this._EQ;
     throw Error(NOS_ERR);
   }
-  STR_NEQ() {
+  STR_NEQ(): boolean {
     if (this.VAS) return !this._EQ;
     throw Error(NOS_ERR);
   }
@@ -96,7 +98,7 @@ export default class T_Condition {
   /** Call this to set zero and true/false flags and validate condition stack
    *  based on the passed numeric value
    */
-  checkZero(value: number) {
+  checkZero(value: number): void {
     if (value === 0) {
       this._Z = true;
     } else {
@@ -104,12 +106,12 @@ export default class T_Condition {
     }
     this.VAZ = true;
   }
-  Z() {
-    if (this.VAZ) return this.Z;
+  Z(): boolean {
+    if (this.VAZ) return this._Z;
     throw Error(NOZ_ERR);
   }
-  NZ() {
-    if (this.VAZ) return !this.Z;
+  NZ(): boolean {
+    if (this.VAZ) return !this._Z;
     throw Error(NOZ_ERR);
   }
 }
