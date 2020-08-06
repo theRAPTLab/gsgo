@@ -19,12 +19,16 @@ export interface T_Scopeable {
   prop: (name: string) => T_Scopeable;
   methods: Map<string, T_Method>;
   serialize: () => any[];
-  value: any;
+  _value: any;
+  get: () => T_Value;
+  set: (key: string, value: T_Value) => void;
 }
 /// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of T_Scopeable */
 export interface T_Agent extends T_Scopeable {
+  features: Map<string, any>;
+  events: T_Message[];
   exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
   feature: (name: string) => any;
   addFeature: (name: string) => T_Agent;
@@ -114,4 +118,16 @@ export interface T_Message {
   id: number;
   channel: string;
   message: string;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine feature
+ */
+export interface T_Feature {
+  meta: { feature: string };
+  methods: Map<string, T_Method>;
+  initialize(pm: any): void;
+  name(): string;
+  decorate(agent: T_Agent): void;
+  addProp(agent: T_Agent, key: string, prop: T_Scopeable): void;
+  method: (agent: T_Agent, key: string, ...args: any) => any;
 }

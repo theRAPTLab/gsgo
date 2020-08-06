@@ -10,6 +10,7 @@
 const AGENTS = new Map();
 const TEMPLATES = new Map();
 const FEATURES = new Map();
+const CONDITIONS = new Map();
 
 /// PHASEMACHINE API //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,9 +31,17 @@ function AGENTS_Save(agent) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return agent set */
-function AGENTS_GetSet(type) {
+function AGENTS_Typeof(type) {
   const agents = AGENTS.get(type);
   return agents || [];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CONDITION_Save(condition) {
+  console.log('unimplemented; got', condition);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CONDITION_Get(signature) {
+  console.log('unimplemented; got', signature);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -42,6 +51,6 @@ export default {
   SIM_ModuleInit
 };
 /// export shared data structures
-export { AGENTS, TEMPLATES, FEATURES };
+export { AGENTS, TEMPLATES, FEATURES, CONDITIONS };
 /// export agent creation methods
-export { AGENTS_Save, AGENTS_GetSet };
+export { AGENTS_Save, AGENTS_Typeof, CONDITION_Save, CONDITION_Get };

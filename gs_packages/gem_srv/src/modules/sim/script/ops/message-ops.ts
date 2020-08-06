@@ -16,7 +16,7 @@ import {
   T_State,
   T_Stackable
 } from '../../types/t-smc';
-import T_Message, { GetMessageParts } from '../../lib/class-smc-message';
+import T_Message, { GetMessageParts } from '../../lib/class-sm-message';
 
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

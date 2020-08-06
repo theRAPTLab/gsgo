@@ -10,13 +10,20 @@
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
+import { T_Agent, T_Message, T_Scopeable, T_Stackable } from '../types/t-smc';
 import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Agent extends SM_Object {
+class SM_Agent extends SM_Object implements T_Agent {
+  features: Map<string, any>;
+  events: T_Message[];
+  _name: StringVar;
+  _x: NumberVar;
+  _y: NumberVar;
+  _skin: StringVar;
   constructor(agentName = '<anon>') {
     super(agentName); // sets _value to agentName, which is only for debugging
     // this.props map defined in SM_Object
@@ -54,7 +61,7 @@ class Agent extends SM_Object {
    *  @param {string} featureName - name of FeatureLib to look up and add
    *  @returns {FeatureLib} - for chaining agent calls
    */
-  addFeature(fName) {
+  addFeature(fName: string): any {
     const { features } = this;
     // does key already exist in this agent? double define in template!
     if (features.has(fName))
@@ -67,15 +74,19 @@ class Agent extends SM_Object {
     return fpack.decorate(this);
   }
 
-  /** retrieve a prop object */
-  prop(name) {
+  /** Retrieve a prop object
+   *  This overrides sm-object prop()
+   */
+  prop(name: string): T_Scopeable {
     const p = this.props.get(name);
     if (p === undefined) throw Error(`no prop named '${name}'`);
     return p;
   }
 
-  /** invoke method by name. functions return values, smc programs return stack */
-  method(name, ...args) {
+  /** Invoke method by name. functions return values, smc programs return stack
+   *  This overrides sm-object method()
+   */
+  method(name: string, ...args: any): T_Stackable[] {
     const m = this.methods.get(name);
     if (m === undefined) throw Error(`no method named '${name}'`);
     if (typeof m === 'function') return m.apply(this, ...args);
@@ -84,7 +95,7 @@ class Agent extends SM_Object {
   }
 
   /** retrieve the feature reference */
-  feature(name) {
+  feature(name: string): any {
     const f = this.features.get(name);
     if (f === undefined) throw Error(`no feature named '${name}'`);
     return f;
@@ -117,18 +128,15 @@ class Agent extends SM_Object {
     };
     // call serialize on all features
     // call serialize on all props
-    return JSON.stringify(obj);
+    return [];
   }
 } // end of Agent class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// attach as static methods
-Agent.AddMethod = AddMethod; // forward from SM_Object
-Agent.AddProp = AddProp; // forward from SM_Object
 /// export main Agent
-export default Agent;
+export default SM_Agent;
+export { AddMethod, AddProp };
 /*/ use as
-    import Agent from './class-agent'
-    const { AddMethods, AddProp } = Agent
+    import Agent, {AddMethod, AddProp} from './class-agent'
 /*/

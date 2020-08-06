@@ -25,7 +25,7 @@ class DictionaryProp extends SM_Object {
   getItem(key: string): T_Scopeable {
     return this.dict.get(key);
   }
-  hasItem(key: string): boolean {
+  has(key: string): boolean {
     return this.dict.has(key);
   }
 }

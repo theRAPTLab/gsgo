@@ -17,7 +17,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Agent from '../lib/class-agent';
-import { AGENTS_Save, AGENTS_GetSet, TEMPLATES } from '../runtime-core';
+import { AGENTS_Save, AGENTS_Typeof, TEMPLATES } from '../runtime-core';
 import { WORLD } from './global';
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
@@ -98,7 +98,7 @@ function ExportAgent(agent) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return an array of agents by type */
 function GetAgentsByType(type) {
-  return [...AGENTS_GetSet(type)];
+  return [...AGENTS_Typeof(type)];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the WORLD agent */

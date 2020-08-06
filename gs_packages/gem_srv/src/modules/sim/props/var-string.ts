@@ -10,7 +10,7 @@ import BooleanProp from './var-boolean';
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class StringProp extends SM_Object {
-  constructor(initial: any) {
+  constructor(initial?: string) {
     super();
     this.meta.type = Symbol.for('StringProp');
     this.value = initial;
