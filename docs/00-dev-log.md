@@ -40,5 +40,36 @@ Where we left off last was
 Insight: I can eliminate stackToScope to avoid the type errors
 
 * [x] delete stackToScope() to ensure no type issues
-* [ ] break out `T_Condition` with methods
+* [x] break out `T_Condition` with methods
+* [x] implement condition ops
+* [x] test condition op `ifLT` with `program` to increment an agent prop
+
+YAY! It seems to work!
+
+### Thu Aug 06
+
+ Now we need to implement **messages** that can be sent to an agent.
+
+* [x] define a message object as a `name` and a `data` payload and create a class for it
+* [ ] think through conditions: these are really `ConditionalSets` and `Interactions` 
+
+For a first pass, I made an `AgentSet` class that implements:
+
+```
+class AgentSet 
+  _types: string[]
+  _test: T_Program
+  _members: T_Agent[]
+  setTest(test:T_Program)
+  filter()
+  members()
+  interact()
+```
+
+This AgentSet holds the results of a test. Every member then **receives an event** to notify it of what happened. So the next steps would be something like this:
+
+* [ ] Make the Condition object store AgentSet, TestProgram, ExecProgram
+* [ ] Store Condition object using a unique hashable name based on signature in CONDITIONS
+* [ ] During CONDITION_UPDATE, call all conditions and either `filter()` or `interact()`  to gather `members` and `pairs`
+* [ ] At end of CONDITION_UPDATE, walk either `members` or `pairs` and **queue ExecProgram** in a **message**
 
