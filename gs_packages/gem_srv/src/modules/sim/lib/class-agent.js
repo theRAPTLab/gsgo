@@ -9,7 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
-import { T_State } from '../types/t-commander';
+import { T_State } from '../types/t-smc';
 import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
@@ -95,9 +95,9 @@ class Agent extends SM_Object {
    *  processing AgentSets
    */
   exec_smc(program, stack = []) {
-    const state = new T_State();
-    state.stack = stack;
+    const state = new T_State(stack);
     try {
+      // run the program with the passed stack, if any
       program.forEach(op => op(this, state));
     } catch (e) {
       console.error(e);

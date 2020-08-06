@@ -5,12 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  T_Agent,
-  T_Opcode,
-  T_OpWait,
-  T_Scopeable
-} from '../../types/t-commander';
+import { T_Agent, T_Opcode, T_OpWait, T_Scopeable } from '../../types/t-smc';
 
 /// AGENT TEMPLATE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

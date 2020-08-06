@@ -21,11 +21,8 @@ import {
   T_State,
   T_Opcode,
   T_OpWait
-} from '../../types/t-commander';
+} from '../../types/t-smc';
 import SM_Object from '../../lib/class-sm-object';
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
 
 /// STACK OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -168,17 +165,6 @@ const scopedFunctionWithAgent = (funcName: string, ...args: any[]): T_Opcode => 
     stack.push(RSTACK);
   };
 };
-/** conditions */
-const compareNumbers = (a: number, b: number): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    STATE.flags.compareNumbers(a, b);
-  };
-};
-const checkZero = (val: number): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    STATE.flags.checkZero(val);
-  };
-};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -196,5 +182,3 @@ export { agentToScope, agentPropToScope, agentFeatureToScope, scopePop };
 export { scopedMethod, scopedFunction, scopedProp };
 /// scoped feature ops
 export { scopedFunctionWithAgent };
-/// value comparisons
-export { compareNumbers, checkZero };

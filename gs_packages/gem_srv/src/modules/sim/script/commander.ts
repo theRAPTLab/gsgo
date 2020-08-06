@@ -6,12 +6,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Program } from '../types/t-commander';
+import { T_Agent, T_Program } from '../types/t-smc';
 import {
   setAgentPropValue,
   scopedFunction,
   scopedFunctionWithAgent,
-  pushAgentProp,
+  push,
+  pushAgentPropValue,
   agentPropToScope,
   agentFeatureToScope,
   scopePop,
@@ -19,7 +20,13 @@ import {
 } from './ops/basic-ops';
 import { NumberProp } from '../props/var';
 import { addProp, addFeature } from './ops/template-ops';
-import { dbgAgent, dbgStack, nop } from './ops/debug-ops';
+import {
+  compareNumbers,
+  clearCondition,
+  ifLT,
+  ifGT,
+  ifEQ
+} from './ops/condition-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,11 +45,8 @@ function TestSMC_Init(): T_Program {
     scopedFunction('setMax', 100),
     scopePop(),
     agentFeatureToScope('Movement'),
-    nop(),
     scopedFunctionWithAgent('setController', 'student'),
-    scopePop(),
-    // conditions
-    nop()
+    scopePop()
   ];
   return program;
 }
@@ -50,11 +54,20 @@ function TestSMC_Init(): T_Program {
 function TestSMC_Update(): T_Program {
   const program: T_Program = [
     // run during Agent.Update phase
-    agentPropToScope('x'),
-    scopedFunction('add', 1),
-    // dbgStack(1),
-    // dbgAgent(),
-    pop()
+    // if agent.currentHealth < 10
+    //   agent.currentHealth++
+    clearCondition(),
+    pushAgentPropValue('currentHealth'),
+    push(10),
+    compareNumbers(), // sets comparison flags
+    ifLT([
+      agentPropToScope('currentHealth'), // set scope to prop
+      scopedFunction('add', 1) // invoke agent.add(1)
+    ]),
+    ifEQ([
+      agentPropToScope('currentHealth'), // set set to prop
+      scopedFunction('setTo', 0)
+    ])
   ];
   return program;
 }

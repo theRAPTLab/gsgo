@@ -38,6 +38,9 @@ function u_CheckMinMax(vobj) {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class NumberProp extends SM_Object {
+  nvalue: number;
+  min: number;
+  max: number;
   constructor(initial = 0) {
     super(initial);
     this.meta.type = Symbol.for('NumberProp');
@@ -46,54 +49,54 @@ class NumberProp extends SM_Object {
     this.min = 0;
     this.max = 0;
   }
-  setMin(num) {
+  setMin(num: number) {
     this.min = num;
     u_CheckMinMax(this);
     return this;
   }
-  setMax(num) {
+  setMax(num: number) {
     this.max = num;
     u_CheckMinMax(this);
     return this;
   }
-  setTo(num) {
+  setTo(num: number) {
     this.value = num;
     u_CheckMinMax(this);
     return this;
   }
-  add(num) {
+  add(num: number) {
     this.value += num;
     u_CheckMinMax(this);
     return this;
   }
-  sub(num) {
+  sub(num: number) {
     this.value -= num;
     u_CheckMinMax(this);
     return this;
   }
-  div(num) {
+  div(num: number) {
     this.value /= num;
     u_CheckMinMax(this);
     return this;
   }
-  mul(num) {
+  mul(num: number) {
     this.value *= num;
     u_CheckMinMax(this);
     return this;
   }
-  eq(num) {
+  eq(num: number) {
     return new BooleanProp(this.value === num);
   }
-  gt(num) {
+  gt(num: number) {
     return new BooleanProp(this.value > num);
   }
-  lt(num) {
+  lt(num: number) {
     return new BooleanProp(this.value < num);
   }
-  gte(num) {
+  gte(num: number) {
     return new BooleanProp(this.value >= num);
   }
-  lte(num) {
+  lte(num: number) {
     return new BooleanProp(this.value <= num);
   }
   serialize() {

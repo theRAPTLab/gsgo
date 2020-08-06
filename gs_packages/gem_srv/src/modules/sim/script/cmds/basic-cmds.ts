@@ -11,12 +11,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  T_Agent,
-  T_Scopeable,
-  T_Opcode,
-  T_OpWait
-} from '../../types/t-commander';
+import { T_Agent, T_Scopeable, T_Opcode, T_OpWait } from '../../types/t-smc';
 import { setAgentPropValue } from '../ops/basic-ops';
 
 /// AGENT DEFINITION STAGE ////////////////////////////////////////////////////

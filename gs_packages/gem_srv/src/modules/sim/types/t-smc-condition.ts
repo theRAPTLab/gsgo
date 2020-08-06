@@ -16,9 +16,9 @@ export default class T_Condition {
   VAZ: boolean; // true when zerocheck runs
   VAC: boolean; // true when condition runs
   VAS: boolean; // true for string comparisons
-  Z: boolean; // zero flag
-  LT: boolean; // less-than, same as !(GT&&EQ)
-  EQ: boolean; // equal flag
+  _Z: boolean; // zero flag
+  _LT: boolean; // less-than, same as !(GT&&EQ)
+  _EQ: boolean; // equal flag
   constructor() {
     this.reset();
   }
@@ -27,9 +27,18 @@ export default class T_Condition {
     this.VAC = false;
     this.VAS = false;
     //
-    this.Z = undefined;
-    this.LT = undefined;
-    this.EQ = undefined;
+    this._Z = undefined;
+    this._LT = undefined;
+    this._EQ = undefined;
+  }
+  status() {
+    let z = this._Z ? '1' : '0';
+    let lt = this._LT ? '1' : '0';
+    let eq = this._EQ ? '1' : '0';
+    z = this.VAZ ? z : '#';
+    lt = this.VAC ? lt : '#';
+    eq = this.VAC ? eq : '#';
+    return `Z:${z} LT:${lt} EQ:${eq}`;
   }
 
   /// COMPARISON FLAGS : NUMBERS //////////////////////////////////////////////
@@ -37,32 +46,32 @@ export default class T_Condition {
   /** Call this to set zero and true/false flags and validate condition stack.
    */
   compareNumbers(a: number, b: number) {
-    this.EQ = a === b;
-    this.LT = a < b;
+    this._EQ = a === b;
+    this._LT = a < b;
     this.VAC = true;
   }
-  lt() {
-    if (this.VAC) return this.LT;
+  LT() {
+    if (this.VAC) return this._LT;
     throw Error(NOC_ERR);
   }
-  lte() {
-    if (this.VAC) return this.LT || this.EQ;
+  LTE() {
+    if (this.VAC) return this._LT || this._EQ;
     throw Error(NOC_ERR);
   }
-  gte() {
-    if (this.VAC) return !this.LT || this.EQ;
+  GTE() {
+    if (this.VAC) return !this._LT || this._EQ;
     throw Error(NOC_ERR);
   }
-  gt() {
-    if (this.VAC) return !(this.LT || this.EQ);
+  GT() {
+    if (this.VAC) return !(this._LT || this._EQ);
     throw Error(NOC_ERR);
   }
-  eq() {
-    if (this.VAC) return this.EQ;
+  EQ() {
+    if (this.VAC) return this._EQ;
     throw Error(NOC_ERR);
   }
-  neq() {
-    if (this.VAC) return !this.EQ;
+  NEQ() {
+    if (this.VAC) return !this._EQ;
     throw Error(NOC_ERR);
   }
   /// COMPARISON FLAGS : STRINGS //////////////////////////////////////////////
@@ -70,15 +79,15 @@ export default class T_Condition {
   /** Call this to set zero and true/false flags and validate condition stack.
    */
   compareStrings(s1: string, s2: string) {
-    this.EQ = s1 === s2;
+    this._EQ = s1 === s2;
     this.VAS = true;
   }
-  str_eq() {
-    if (this.VAS) return this.EQ;
+  STR_EQ() {
+    if (this.VAS) return this._EQ;
     throw Error(NOS_ERR);
   }
-  str_neq() {
-    if (this.VAS) return !this.EQ;
+  STR_NEQ() {
+    if (this.VAS) return !this._EQ;
     throw Error(NOS_ERR);
   }
 
@@ -89,17 +98,17 @@ export default class T_Condition {
    */
   checkZero(value: number) {
     if (value === 0) {
-      this.Z = true;
+      this._Z = true;
     } else {
-      this.Z = false;
+      this._Z = false;
     }
     this.VAZ = true;
   }
-  z() {
+  Z() {
     if (this.VAZ) return this.Z;
     throw Error(NOZ_ERR);
   }
-  nz() {
+  NZ() {
     if (this.VAZ) return !this.Z;
     throw Error(NOZ_ERR);
   }

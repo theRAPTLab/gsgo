@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_State, T_Opcode, T_OpWait } from '../../types/t-commander';
+import { T_Agent, T_State, T_Opcode, T_OpWait } from '../../types/t-smc';
 
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
