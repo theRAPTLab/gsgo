@@ -28,7 +28,7 @@ const agentSend = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {};
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const debugMessage = (msg: string): T_Opcode => {
+const dbgMessage = (msg: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     console.log(GetMessageParts(msg));
   };
@@ -37,4 +37,4 @@ const debugMessage = (msg: string): T_Opcode => {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { agentQueue, agentSend };
-export { debugMessage };
+export { dbgMessage };

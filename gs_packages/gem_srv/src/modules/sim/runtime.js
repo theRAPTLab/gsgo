@@ -50,7 +50,7 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// RXJS TESTS ////////////////////////////////////////////////////////////////
-let obs_frame_interval = interval(33);
+let obs_frame_interval = interval(1000);
 let sub_frame;
 
 /// API METHODS ///////////////////////////////////////////////////////////////

@@ -9,11 +9,15 @@ import { T_Agent, T_Opcode, T_OpWait, T_Scopeable } from '../../types/t-smc';
 
 /// AGENT TEMPLATE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const addProp = (name: string, gv: T_Scopeable): T_Opcode => {
+const addProp = (
+  name: string,
+  NewFunc: { new (...args): T_Scopeable }
+): T_Opcode => {
   return (agent: T_Agent): T_OpWait => {
-    agent.addProp(name, gv);
+    agent.addProp(name, new NewFunc(name));
   };
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const addFeature = (name: string): T_Opcode => {
   return (agent: T_Agent): T_OpWait => {
     agent.addFeature(name);

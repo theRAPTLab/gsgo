@@ -46,10 +46,17 @@ const dbgScope = (num: number = 0): T_Opcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgAgent = (match: string = ''): T_Opcode => {
+const dbgAgent = (match?: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
-    if (agent.name() === match)
-      console.log(`agent[${agent.name()}]:`, agent.serialize());
+    if ((match && agent.name() === match) || !match)
+      console.log(`agent[${agent.name()}] serialize:`, agent.serialize());
+  };
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** implement a pause */
+const dbgOut = (...args: any): T_Opcode => {
+  return (): T_OpWait => {
+    console.log(...args);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,4 +68,4 @@ const nop = (): T_Opcode => {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// debug opcodes
-export { dbgStack, dbgScope, dbgAgent, nop };
+export { dbgStack, dbgScope, dbgAgent, dbgOut, nop };

@@ -10,8 +10,8 @@ export default class SM_State implements T_State {
     this.scope = [];
     this.flags = new SM_Condition();
   }
-  peek(): T_Stackable {
-    return this.stack[this.stack.length - 1];
+  peek(n: number = 0): T_Stackable {
+    return this.stack[this.stack.length - 1 - n];
   }
   pop(): T_Stackable {
     return this.stack.pop();

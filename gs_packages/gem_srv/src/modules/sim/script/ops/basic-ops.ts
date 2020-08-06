@@ -38,6 +38,12 @@ const pop = (num: Number = 1): T_Opcode => {
     for (let i = 0; i < num; i++) STATE.stack.pop();
   };
 };
+/** duplicate top of stack */
+const dupe = (): T_Opcode => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    STATE.stack.push(STATE.peek());
+  };
+};
 /** push agent on stack */
 const pushAgent = (): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
@@ -102,6 +108,7 @@ const scopePop = (): T_Opcode => {
 const agentPropToScope = (propName: string): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const prop = agent.prop(propName);
+    // console.log('prop', agent.name(), '.', agent.prop(propName));
     STATE.scope.push(prop);
   };
 };
@@ -147,9 +154,10 @@ const scopedMethod = (methodName: string, ...args: any[]): T_Opcode => {
 const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { scope, stack } = STATE;
-    const SOBJ = scope[scope.length - 1];
+    const SOBJ: T_Scopeable = scope[scope.length - 1];
     // call the function property on the scoped object
     const RSTACK = SOBJ[funcName](...args);
+    // console.log(SOBJ.meta.id, funcName, ...args, '=>', RSTACK);
     // push elements returned from scoped call onto our stack
     stack.push(RSTACK);
   };
@@ -169,7 +177,7 @@ const scopedFunctionWithAgent = (funcName: string, ...args: any[]): T_Opcode => 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// data stack ops
-export { push, pushAgent, pushAgentProp, pop };
+export { push, pushAgent, pushAgentProp, pop, dupe };
 /// data stack indirect ops
 export { pushAgentPropValue, popAgentPropValue };
 /// agent direct ops

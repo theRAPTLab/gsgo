@@ -7,7 +7,7 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const AGENTS = new Map();
+const AGENTS = new Map(); // string type, set of agents
 const TEMPLATES = new Map();
 const FEATURES = new Map();
 const CONDITIONS = new Map();
@@ -43,6 +43,11 @@ function CONDITION_Save(condition) {
 function CONDITION_Get(signature) {
   console.log('unimplemented; got', signature);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CONDITION_All() {
+  const conditions = CONDITIONS.entries();
+  return [...conditions];
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,4 +58,10 @@ export default {
 /// export shared data structures
 export { AGENTS, TEMPLATES, FEATURES, CONDITIONS };
 /// export agent creation methods
-export { AGENTS_Save, AGENTS_Typeof, CONDITION_Save, CONDITION_Get };
+export {
+  AGENTS_Save,
+  AGENTS_Typeof,
+  CONDITION_All,
+  CONDITION_Save,
+  CONDITION_Get
+};

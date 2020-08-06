@@ -6,7 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Program } from '../types/t-smc';
+import { T_Agent, T_Program, T_Prop } from '../types/t-smc';
 import {
   setAgentPropValue,
   scopedFunction,
@@ -16,7 +16,8 @@ import {
   agentPropToScope,
   agentFeatureToScope,
   scopePop,
-  pop
+  pop,
+  dupe
 } from './ops/basic-ops';
 import { NumberProp } from '../props/var';
 import { addProp, addFeature } from './ops/template-ops';
@@ -24,61 +25,56 @@ import {
   compareNumbers,
   clearCondition,
   ifLT,
+  ifLTE,
   ifGT,
+  ifGTE,
   ifEQ
 } from './ops/condition-ops';
-import { agentQueue, agentSend, debugMessage } from './ops/message-ops';
+import { agentQueue, agentSend, dbgMessage } from './ops/message-ops';
+import { dbgAgent } from './ops/debug-ops';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
-function TestSMC_Init(): T_Program {
-  // this is two programs: define and init
-  const program: T_Program = [
-    // define program
-    addProp('currentHealth', new NumberProp()),
-    addFeature('Movement'),
-    // init program
-    setAgentPropValue('x', 0),
-    setAgentPropValue('y', 0),
-    agentPropToScope('currentHealth'),
-    scopedFunction('setMin', 0),
-    scopedFunction('setMax', 100),
-    scopePop(),
-    agentFeatureToScope('Movement'),
-    scopedFunctionWithAgent('setController', 'student'),
-    scopePop()
-  ];
-  return program;
-}
+const test_smc_init: T_Program = [
+  // define program
+  addProp('currentHealth', NumberProp),
+  addFeature('Movement'),
+  // init program
+  setAgentPropValue('x', 0),
+  setAgentPropValue('y', 0),
+  agentPropToScope('currentHealth'),
+  scopedFunction('setMin', 0),
+  scopedFunction('setMax', 100),
+  scopedFunction('setTo', 1),
+  scopePop(),
+  agentFeatureToScope('Movement'),
+  scopedFunctionWithAgent('setController', 'student'),
+  scopePop()
+];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSMC_Update(): T_Program {
-  const program: T_Program = [
-    // run during Agent.Update phase
-    // if agent.currentHealth < 10
-    //   agent.currentHealth++
-    clearCondition(),
-    pushAgentPropValue('currentHealth'),
-    push(10),
-    compareNumbers(), // sets comparison flags
-    ifLT([
-      agentPropToScope('currentHealth'), // set scope to prop
-      scopedFunction('add', 1) // invoke agent.add(1)
-    ]),
-    ifEQ([
-      agentPropToScope('currentHealth'), // set set to prop
-      scopedFunction('setTo', 0)
-    ])
-  ];
-  return program;
-}
+const test_smc_update: T_Program = [
+  // run during Agent.Update phase
+  // if agent.currentHealth < 10
+  //   agent.currentHealth++
+  clearCondition(),
+  pushAgentPropValue('currentHealth'),
+  push(10),
+  compareNumbers(), // sets comparison flags
+  ifLT([
+    agentPropToScope('currentHealth'), // set scope to prop
+    scopedFunction('add', 1) // invoke agent.add(1)
+  ]),
+  ifEQ([
+    agentPropToScope('currentHealth'), // set set to prop
+    scopedFunction('setTo', 1)
+  ])
+];
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSMC_Condition(): T_Program {
-  const program: T_Program = [
-    // debugMessage('moof:pickle')
-  ];
-  return program;
-}
+const test_smc_condition: T_Program = [
+  // debugMessage('moof:pickle')
+];
 
 /// EXEC FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,6 +91,11 @@ function ExecSMC(smc: T_Program, agent: T_Agent) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const StackMachine = { ExecSMC, TestSMC_Init, TestSMC_Update, TestSMC_Condition };
+const StackMachine = {
+  ExecSMC,
+  test_smc_init,
+  test_smc_update,
+  test_smc_condition
+};
 const ScriptCommands = {};
 export { StackMachine, ScriptCommands };

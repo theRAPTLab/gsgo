@@ -6,13 +6,19 @@
 
 import { T_Condition } from '../types/t-smc';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOZ_ERR = 'zerocheck not called before flag read';
 const NOC_ERR = 'compareNumbners not called before flag read';
 const NOS_ERR = 'compareStrings not called before flag read';
 
-/** A stack machine also maintains a flags "register" for containing the
- *  results of an operation. This storage class represents the register
- *  and provides utility functions for setting/interpeting the flags
+/// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stack machine maintains a flags "register" for containing the
+ *  results of a comparison operation. This storage class represents
+ *  the register and provides utility functions for setting/interpeting
+ *  the flags. In this version of the stack machine, these flags are
+ *  only set by comparison opcodes
  */
 export default class SM_Condition implements T_Condition {
   VAZ: boolean; // true when zerocheck runs

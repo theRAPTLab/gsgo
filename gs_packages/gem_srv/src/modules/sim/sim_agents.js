@@ -89,9 +89,16 @@ function AgentProgram() {
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     creation test
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.group('Creation Testing');
-  const names = ['posie', 'peony', 'daisy', 'rose', 'tulip', 'honeysuckle'];
-  const smc_init = StackMachine.TestSMC_Init();
+  console.groupCollapsed('Creation Testing');
+  const names = [
+    'flowerA',
+    'flowerB',
+    'flowerC',
+    'flowerD',
+    'flowerE',
+    'flowerF'
+  ];
+  const smc_init = StackMachine.test_smc_init;
   names.forEach(name => {
     const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
     StackMachine.ExecSMC(smc_init, agent);
@@ -109,32 +116,7 @@ function AgentProgram() {
   AgentFactory.AddTemplate('World', world => {
     world.addFeature('Timer');
   });
-
   // save creation template
-  console.groupEnd();
-
-  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
-    when Bee touches Hive
-    if @Bee.nectar greaterThan 0
-      @Bee.nectar subtract 1
-      @Hive.nectar add 1
-  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('Interaction Programming');
-  AgentSet.defineGroup('Bee');
-  AgentSet.when('Bee') // set of Bees
-    .touches('Hive') // filtered Bees touching Hive
-    .queueEvent('touches', 'Bee'); // operating on set
-  /*/
-  when Bee.energy greaterThan 0
-    @Bee.energy subtract 1
-    if (@Bee.energy isZero)
-      @Bee die
-  /*/
-  AgentSet.when('Bee')
-    .filter(bee => {
-      return bee.speed > 10;
-    })
-    .queueEvent('speedExcess');
   console.groupEnd();
 
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
@@ -153,7 +135,7 @@ function AgentUpdate(frame) {
   // if (healthProp.eq(5).true()) console.log('!!! 5 health');
   // healthProp.add(1);
   const agents = AgentFactory.GetAgentsByType('Flower');
-  const smc_update = StackMachine.TestSMC_Update();
+  const smc_update = StackMachine.test_smc_update;
   agents.forEach(agent => StackMachine.ExecSMC(smc_update, agent));
   //
 }
@@ -164,7 +146,7 @@ function AgentThink(frame) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frame) {
   //
-  const smc_condition = StackMachine.TestSMC_Condition();
+  const smc_condition = StackMachine.test_smc_condition;
   StackMachine.ExecSMC(smc_condition, AgentFactory.GetWorldAgent());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
