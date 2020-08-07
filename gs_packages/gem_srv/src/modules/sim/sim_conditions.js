@@ -78,12 +78,12 @@ function SIM_ModuleInit(gloop) {
   as = new AgentSet('Flower', 'Flower');
   as.setTest(interaction_test);
 }
-
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Update(int_ms) {
   as.interact();
 }
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {

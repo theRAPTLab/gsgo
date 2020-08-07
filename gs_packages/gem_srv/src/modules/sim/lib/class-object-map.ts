@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { AnyFunction } from '../types/def-functions';
+import { AnyFunction } from '../types/t-functions';
 import { IsString, HasMeta, HasKey, GetKey, SaveKey } from './util-typechecks';
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////

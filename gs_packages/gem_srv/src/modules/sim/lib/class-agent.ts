@@ -17,7 +17,7 @@ import StringVar from '../props/var-string';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class SM_Agent extends SM_Object implements T_Agent {
+class Agent extends SM_Object implements T_Agent {
   features: Map<string, any>;
   events: T_Message[];
   _name: StringVar;
@@ -135,7 +135,7 @@ class SM_Agent extends SM_Object implements T_Agent {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
-export default SM_Agent;
+export default Agent;
 export { AddMethod, AddProp };
 /*/ use as
     import Agent, {AddMethod, AddProp} from './class-agent'

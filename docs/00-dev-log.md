@@ -66,10 +66,14 @@ class AgentSet
   interact()
 ```
 
-This AgentSet holds the results of a test. Every member then **receives an event** to notify it of what happened. So the next steps would be something like this:
+This AgentSet holds the results of a test. Every member then **receives an event** to notify it of what happened. 
+
+### Fri Aug 07
 
 * [ ] Make the Condition object store AgentSet, TestProgram, ExecProgram
 * [ ] Store Condition object using a unique hashable name based on signature in CONDITIONS
 * [ ] During CONDITION_UPDATE, call all conditions and either `filter()` or `interact()`  to gather `members` and `pairs`
 * [ ] At end of CONDITION_UPDATE, walk either `members` or `pairs` and **queue ExecProgram** in a **message**
+
+
 

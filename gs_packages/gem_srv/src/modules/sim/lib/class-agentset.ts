@@ -23,18 +23,18 @@ const DBG = false;
 /**
  */
 class AgentSet {
-  _types: string[];
+  agTypes: string[];
   _test: T_Program;
   _members: T_Agent[];
   _pairs: [T_Agent, T_Agent][];
   //
   constructor(...types: string[]) {
-    this._types = types;
+    this.agTypes = types;
     this._members = [];
     this._pairs = [];
     this._test = [];
-    if (this._types.length > 2) throw Error(TOOMANY_ERR);
-    if (this._types.length < 1) throw Error(TOOFEW_ERR);
+    if (this.agTypes.length > 2) throw Error(TOOMANY_ERR);
+    if (this.agTypes.length < 1) throw Error(TOOFEW_ERR);
   }
   /** set the AgentSet test */
   setTest(test: T_Program) {
@@ -44,7 +44,7 @@ class AgentSet {
   filter(): void {
     if (!this._test) throw Error(BADTEST_ERR);
     // always run the first type only
-    const agents = [...AGENTS.get(this._types[0])];
+    const agents = [...AGENTS.get(this.agTypes[0])];
     this._members = agents.filter(agent => {
       const result = agent.exec_smc(this._test);
       // console.log(agent.name(), result);
@@ -59,9 +59,9 @@ class AgentSet {
    */
   interact(): void {
     if (!this._test) throw Error(BADTEST_ERR);
-    if (this._types.length !== 2) throw Error(TOOFEW_ERR);
-    const SET_A: T_Agent[] = [...AGENTS.get(this._types[0])];
-    const SET_B: T_Agent[] = [...AGENTS.get(this._types[1])];
+    if (this.agTypes.length !== 2) throw Error(TOOFEW_ERR);
+    const SET_A: T_Agent[] = [...AGENTS.get(this.agTypes[0])];
+    const SET_B: T_Agent[] = [...AGENTS.get(this.agTypes[1])];
     // walk over arrays
     for (let i = SET_A.length - 1; i >= 0; i--) {
       for (let j = SET_B.length - 1; j >= 0; j--) {
