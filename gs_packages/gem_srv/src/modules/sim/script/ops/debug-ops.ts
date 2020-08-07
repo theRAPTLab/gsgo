@@ -29,12 +29,20 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
  *  Optionally dump number of items to dump
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgStack = (num: number = 0): T_Opcode => {
+const dbgStack = (num: number = 0, desc: string = 'stack'): T_Opcode => {
   return (agent: T_Agent, STATE: T_State): T_OpWait => {
     const { stack } = STATE;
-    u_dump(num, stack, 'stack');
+    u_dump(num, stack, desc);
   };
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const dbgStackCount = (num: number, desc: string = 'dbgStackCount') => {
+  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+    const slen = STATE.stack.length;
+    if (slen !== num) throw Error(`stack.length ${slen}!==${num} (${desc})`);
+  };
+};
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dump the current scope contents to console. Defaults to all.
  *  Optionally dump number of items to dump
@@ -68,4 +76,4 @@ const nop = (): T_Opcode => {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// debug opcodes
-export { dbgStack, dbgScope, dbgAgent, dbgOut, nop };
+export { dbgStack, dbgScope, dbgAgent, dbgOut, nop, dbgStackCount };

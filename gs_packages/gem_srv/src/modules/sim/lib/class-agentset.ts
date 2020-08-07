@@ -8,79 +8,140 @@
 import { T_Agent, T_Program } from '../types/t-smc';
 import { AGENTS, CONDITIONS } from '../runtime-core';
 import { WORLD } from '../agents/global';
+import Message from './class-sm-message';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const BADTEST_ERR = 'stack did not contain test result';
-const NOTEST_ERR = 'a test has not been defined';
-const TOOMANY_ERR = 'AgentSet currently handles at most 2 agent types';
-const TOOFEW_ERR = 'AgentSet requires at least one type to process';
-
-const DBG = false;
+const DBG = { pair: true, summary: false };
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
 class AgentSet {
-  agTypes: string[];
-  _test: T_Program;
-  _members: T_Agent[];
-  _pairs: [T_Agent, T_Agent][];
+  agentTypes: string[]; // 1 or 2 agent types
+  testResults: any[]; // array OR array-of-array of T_Agents
   //
   constructor(...types: string[]) {
-    this.agTypes = types;
-    this._members = [];
-    this._pairs = [];
-    this._test = [];
-    if (this.agTypes.length > 2) throw Error(TOOMANY_ERR);
-    if (this.agTypes.length < 1) throw Error(TOOFEW_ERR);
+    this.agentTypes = types;
+    this.testResults = [];
+    if (this.agentTypes.length > 2) throw Error('max 2 type strings');
+    if (this.agentTypes.length < 1) throw Error('type string(s) required');
   }
-  /** set the AgentSet test */
-  setTest(test: T_Program) {
-    this._test = test;
+  /** utility to retrieve agent sets */
+  getAgents(): any[] {
+    const len = this.agentTypes.length;
+    let retval: any[];
+    if (len < 1 || len > 2) throw Error(`bad agent count ${len}`);
+    if (len === 1) retval = [[...AGENTS.get(this.agentTypes[0])]];
+    if (len === 2) {
+      const a = [...AGENTS.get(this.agentTypes[0])];
+      const b = [...AGENTS.get(this.agentTypes[1])];
+      // the first set is always the smaller one
+      retval = a.length > b.length ? [b, a] : [a, b];
+    }
+    return retval;
   }
+
   /** uses the test function to filter the agent set into members array */
-  filter(): void {
-    if (!this._test) throw Error(BADTEST_ERR);
+  filter(test: T_Program): void {
+    if (!test) throw Error('undefined filter test');
+    const len = this.agentTypes.length;
+    if (len !== 1) throw Error('set count must be 1, not 2');
     // always run the first type only
-    const agents = [...AGENTS.get(this.agTypes[0])];
-    this._members = agents.filter(agent => {
-      const result = agent.exec_smc(this._test);
-      // console.log(agent.name(), result);
-      if (result.length !== 1) throw Error(NOTEST_ERR);
+    const [agents] = this.getAgents();
+    // push matching agents onto results
+    this.testResults = agents.filter(agent => {
+      const result = agent.exec_smc(test, []);
+      // the result stack should contain 1 element
+      if (result.length < 1) throw Error('filter test underflow');
       return result.pop();
     });
+  }
+  /** Apply test(s) to agents, storing results. A test is a T_Program
+   *  that ingests either one or two agents on the stack and returns
+   *  either true or false on the stack. The test stack
+   */
+  pair(test: T_Program): void {
+    if (!test) throw Error('undefined pair test');
+    const len = this.agentTypes.length;
+    if (len < 1 || len > 2) throw Error(`set count != 1 or 2; got ${len}`);
+    if (len === 1) this.singlePair(test);
+    if (len === 2) this.doublePair(test);
+  }
+
+  /** uses the test function to do a pair-wise check on a single agent set
+   *  similar to interact(), but does not produce duplicate pairs
+   *
+   */
+  singlePair(test: T_Program): void {
+    // always run the first type only
+    const [agents] = this.getAgents();
+    for (let i = 0; i < agents.length; i++) {
+      for (let j = 0; j < i; j++) {
+        if (i === j) continue;
+        const agentA: T_Agent = agents[i];
+        const agentB: T_Agent = agents[j];
+        console.log(i, agentA.name(), agentB.name());
+        const result = WORLD.exec_smc(test, [agentA, agentB]);
+        // the result stack should contain 1 element
+        if (result.length < 1) throw Error('pair1 test underflow');
+        // save this pair
+        if (result.pop() === true) this.testResults.push([agentA, agentB]);
+      }
+      console.log('---');
+    }
   }
   /** uses the test function to run interactions between all agents
    *  these are potentially very slow, so we want to eventually cache
    *  the AgentSet results and streamline the functions as much
    *  as possible
    */
-  interact(): void {
-    if (!this._test) throw Error(BADTEST_ERR);
-    if (this.agTypes.length !== 2) throw Error(TOOFEW_ERR);
-    const SET_A: T_Agent[] = [...AGENTS.get(this.agTypes[0])];
-    const SET_B: T_Agent[] = [...AGENTS.get(this.agTypes[1])];
-    // walk over arrays
-    for (let i = SET_A.length - 1; i >= 0; i--) {
-      for (let j = SET_B.length - 1; j >= 0; j--) {
-        const agentA = SET_A[i];
-        const agentB = SET_B[j];
+  doublePair(test: T_Program): void {
+    // getAgents returns the smaller set first
+    const [SET_A, SET_B] = this.getAgents();
+    //
+    for (let i = 0; i < SET_A.length; i++) {
+      for (let j = 0; j < SET_B.length; j++) {
+        const agentA: T_Agent = SET_A[i];
+        const agentB: T_Agent = SET_B[j];
+        // skip agents that match themselves
         if (agentA === agentB) continue;
-
-        const stack = [agentA, agentB];
-        // the result should be
-        const result = WORLD.exec_smc(this._test, stack);
-        if (result.length !== 1) throw Error(NOTEST_ERR);
-        if (result.pop() === true) this._pairs.push([agentA, agentB]);
+        const result = WORLD.exec_smc(test, [agentA, agentB]);
+        // the result stack should contain 1 element
+        if (result.length < 1) throw Error('pair2 test underflow');
+        // save this pair
+        if (result.pop() === true) this.testResults.push([agentA, agentB]);
       }
     }
-    if (DBG) console.log('matching pairs', this._pairs);
+    if (DBG.summary) console.log('matching pairs', this.testResults);
   }
+
   /** returns the members array that has presumably been filtered */
-  members() {
-    return this._members;
+  getMembers(): T_Agent[] {
+    return this.testResults as T_Agent[];
+  }
+  getPairs(): Array<T_Agent[]> {
+    return this.testResults as Array<T_Agent[]>;
+  }
+
+  /** notify */
+  notifyMatches(execs: T_Program[]): void {
+    this.getMembers().forEach(agent => {
+      console.log(agent);
+      const msg = new Message('exec', { programs: execs, inputs: [agent] });
+      agent.queue(msg);
+    });
+  }
+  notifyPairs(execs: T_Program[]): void {
+    if (!Array.isArray(execs)) execs = [execs];
+    this.getPairs().forEach(pair => {
+      const [agentA, agentB] = pair;
+      const msgA = new Message('exec', { programs: execs, inputs: [agentB] });
+      const msgB = new Message('exec', { programs: execs, inputs: [agentA] });
+      agentA.queue(msgA);
+      agentB.queue(msgB);
+    });
   }
 }
 

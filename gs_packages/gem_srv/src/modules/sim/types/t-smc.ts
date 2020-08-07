@@ -31,7 +31,10 @@ export interface T_Scopeable {
 /** Agents have additional properties on top of T_Scopeable */
 export interface T_Agent extends T_Scopeable {
   features: Map<string, any>;
-  events: T_Message[];
+  updateQueue: T_Message[];
+  thinkQueue: T_Message[];
+  execQueue: T_Message[];
+  queue: (msg: T_Message) => void;
   exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
   feature: (name: string) => any;
   addFeature: (name: string) => T_Agent;
@@ -100,8 +103,12 @@ export interface T_Condition {
   _LT: boolean; // less-than, same as !(GT&&EQ)
   _EQ: boolean; // equal flag
   reset(): void;
-  status(): string;
-  compareNumbers(a: number, b: number);
+  setZ(s?: boolean): void;
+  setLT(s?: boolean): void;
+  setGT(s?: boolean): void;
+  setEQ(s?: boolean): void;
+  status(): object;
+  compareNumbers(a: number, b: number): void;
   LT(): boolean;
   LTE(): boolean;
   GTE(): boolean;
@@ -116,14 +123,6 @@ export interface T_Condition {
   NZ(): boolean;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine message
- */
-export interface T_Message {
-  id: number;
-  channel: string;
-  message: string;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine feature
  */
 export interface T_Feature {
@@ -134,4 +133,15 @@ export interface T_Feature {
   decorate(agent: T_Agent): void;
   addProp(agent: T_Agent, key: string, prop: T_Scopeable): void;
   method: (agent: T_Agent, key: string, ...args: any) => any;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine Message
+ */
+export interface T_Message {
+  id: number;
+  channel: string;
+  message: string;
+  data?: any;
+  programs?: T_Program[];
+  inputs?: any;
 }

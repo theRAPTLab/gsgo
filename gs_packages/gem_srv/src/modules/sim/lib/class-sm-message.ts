@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Opcode, T_Message } from '../types/t-smc';
+import { T_Opcode, T_Program, T_Message } from '../types/t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,11 +19,12 @@ let MSG_COUNTER = 100;
  *  array of "CHANNEL:", "MessageName".
  */
 function GetMessageParts(msg: string): string[] {
-  if (typeof msg !== 'string') throw Error(`${BADMSG_ERR} ${msg}`);
-  const bits: string[] = msg.toUpperCase().split(':');
-  if (bits.length !== 2) throw Error(`${BADFMT_ERR}: '${msg}'`);
-  if (!bits[1]) throw Error(`${BADFMT_ERR}: '${msg}'`);
-  return [!bits[0] ? '*:' : `${bits[0]}:`, bits[1]];
+  if (typeof msg !== 'string') throw Error(`NOT STR: ${msg}`);
+  const bits: string[] = msg.split(':');
+  if (bits.length === 0) throw Error(`BAD FMT =0: '${msg}'`);
+  if (bits.length > 2) throw Error(`BAD FMT >3: '${msg}'`);
+  if (!bits[1]) return ['*', bits[0]]; // 'msg'
+  return [!bits[0] ? '*:' : `${bits[0]}:`, bits[1]]; // 'chan:msg'
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -34,16 +35,19 @@ export default class SM_Message implements T_Message {
   id: number;
   channel: string;
   message: string;
-  data: {
-    program?: T_Opcode[];
-    error?: string;
-  };
-  constructor(msg: string, data = {}) {
+  inputs?: any;
+  programs?: T_Program[];
+  data: object;
+  //
+  constructor(msg: string, init: any = {}) {
     this.id = MSG_COUNTER++;
     const [channel, message] = GetMessageParts(msg);
     this.channel = channel;
     this.message = message;
-    this.data = data;
+    if (init.programs) this.programs = init.programs;
+    if (init.inputs) this.inputs = init.inputs;
+    if (init.data) this.data = init.data;
+    this.data = init;
   }
 }
 /** export utility methods */

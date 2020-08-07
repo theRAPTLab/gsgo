@@ -1,3 +1,4 @@
+/* eslint-disable no-unneeded-ternary */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   StackMachine State Condition Flags
@@ -27,9 +28,12 @@ export default class SM_Condition implements T_Condition {
   _Z: boolean; // zero flag
   _LT: boolean; // less-than, same as !(GT&&EQ)
   _EQ: boolean; // equal flag
+  //
   constructor() {
     this.reset();
   }
+  /// DIRECT FLAG MANIPULATION ////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   reset(): void {
     this.VAZ = false;
     this.VAC = false;
@@ -39,14 +43,40 @@ export default class SM_Condition implements T_Condition {
     this._LT = undefined;
     this._EQ = undefined;
   }
-  status(): string {
+  setZ(setting?: boolean): void {
+    setting = setting && setting; // force undefined to false
+    this._Z = setting;
+  }
+  setLT(setting?: boolean): void {
+    setting = setting && setting;
+    this._LT = setting;
+    this._EQ = false;
+  }
+  setGT(setting?: boolean): void {
+    setting = setting && setting;
+    this._LT = !setting;
+    this._EQ = false;
+  }
+  setEQ(setting?: boolean): void {
+    setting = setting && setting;
+    this._EQ = setting;
+  }
+
+  /// DIRECT FLAG READ ////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  status(): object {
     let z = this._Z ? '1' : '0';
     let lt = this._LT ? '1' : '0';
     let eq = this._EQ ? '1' : '0';
     z = this.VAZ ? z : '#';
     lt = this.VAC ? lt : '#';
     eq = this.VAC ? eq : '#';
-    return `Z:${z} LT:${lt} EQ:${eq}`;
+    return {
+      info: `Z:${z} LT:${lt} EQ:${eq}`,
+      Z: this._Z,
+      LT: this._LT,
+      EQ: this._EQ
+    };
   }
 
   /// COMPARISON FLAGS : NUMBERS //////////////////////////////////////////////
@@ -82,6 +112,7 @@ export default class SM_Condition implements T_Condition {
     if (this.VAC) return !this._EQ;
     throw Error(NOC_ERR);
   }
+
   /// COMPARISON FLAGS : STRINGS //////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Call this to set zero and true/false flags and validate condition stack.

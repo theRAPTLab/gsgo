@@ -10,26 +10,33 @@
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { T_Agent, T_Message, T_Scopeable, T_Stackable } from '../types/t-smc';
+import { T_Agent, T_Scopeable, T_Stackable, T_Message } from '../types/t-smc';
 import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
+
+/// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const ERR_WHATMSG = 'unhandled message; got';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Agent extends SM_Object implements T_Agent {
   features: Map<string, any>;
-  events: T_Message[];
+  updateQueue: T_Message[];
+  thinkQueue: T_Message[];
+  execQueue: T_Message[];
   _name: StringVar;
   _x: NumberVar;
   _y: NumberVar;
   _skin: StringVar;
+  //
   constructor(agentName = '<anon>') {
     super(agentName); // sets _value to agentName, which is only for debugging
     // this.props map defined in SM_Object
     // this.methods map defined in SM_Object
     this.features = new Map();
-    this.events = [];
+    this.execQueue = [];
 
     // declare agent basic properties
     this._name = new StringVar(agentName);
@@ -107,6 +114,7 @@ class Agent extends SM_Object implements T_Agent {
    */
   exec_smc(program, stack = []) {
     const state = new SM_State(stack);
+    // console.log('exec got program', program.length);
     try {
       // run the program with the passed stack, if any
       program.forEach(op => op(this, state));
@@ -118,17 +126,41 @@ class Agent extends SM_Object implements T_Agent {
     return state.stack;
   }
 
+  /** handle queue */
+  queue(msg: T_Message) {
+    switch (msg.message) {
+      case 'update':
+        this.updateQueue.push(msg);
+        break;
+      case 'think':
+        this.thinkQueue.push(msg);
+        break;
+      case 'exec':
+        this.execQueue.push(msg);
+        break;
+      default:
+        throw Error(`${ERR_WHATMSG} ${msg.message}`);
+    }
+  }
+
   // serialization
   serialize() {
-    const obj = {
-      name: this.name(),
-      x: this.x(),
-      y: this.y(),
-      skin: this.skin()
-    };
     // call serialize on all features
     // call serialize on all props
-    return [];
+    return super
+      .serialize()
+      .concat([
+        'name',
+        this.name(),
+        'x',
+        this.x(),
+        'y',
+        this.y(),
+        'skin',
+        this.skin(),
+        'features',
+        [...this.features.keys()]
+      ]);
   }
 } // end of Agent class
 
