@@ -4,17 +4,16 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { WORLD } from './agents/global';
-import { CONDITION_All } from './runtime-core';
 import AgentSet from './lib/class-agentset';
 import Condition from './lib/class-condition';
+import { CONDITIONS } from './runtime-core';
+
 import {
   push,
   pushAgentPropValue,
   stackToScope,
   scopedPropValue,
-  scopePop,
-  pop
+  scopePop
 } from './script/ops/basic-ops';
 import {
   compareNumbers,
@@ -22,15 +21,14 @@ import {
   ifLT,
   ifLTE,
   ifGT,
-  ifGTE,
-  ifEQ
+  ifGTE
+  //  ifEQ
 } from './script/ops/condition-ops';
-import { dbgStack, dbgOut, dbgStackCount } from './script/ops/debug-ops';
+import { /* dbgStack, dbgOut,*/ dbgStackCount } from './script/ops/debug-ops';
 import { sub, abs } from './script/ops/math-ops';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let ags = null;
 let conds = [];
 
 /// TEST PROGRAMS /////////////////////////////////////////////////////////////
@@ -88,7 +86,11 @@ const exec_test = [
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ModuleInit(gloop) {
+function ModuleInit(/* gloop */) {
+  CONDITIONS.set('distx5', interaction_test);
+  CONDITIONS.set('health5', filter_test);
+  CONDITIONS.set('exectest', exec_test);
+
   for (let i = 0; i < 100; i++) {
     const cond = new Condition(new AgentSet('Flower'));
     cond.addTest(filter_test);
@@ -97,7 +99,7 @@ function ModuleInit(gloop) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Update(frame) {
+function Update(/* frame */) {
   // console.log('condition frame update', frame);
   conds.forEach(cond => {
     cond.reset();

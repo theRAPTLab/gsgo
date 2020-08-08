@@ -50,7 +50,7 @@ const dbgScope = (num: number = 0): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgAgent = (match?: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: T_Agent): T_OpWait => {
     if ((match && agent.name() === match) || !match)
       console.log(`agent[${agent.name()}] serialize:`, agent.serialize());
   };

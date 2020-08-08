@@ -4,15 +4,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Program } from '../types/t-smc';
-import { AGENTS, CONDITIONS } from '../runtime-core';
-import { WORLD } from '../agents/global';
+import { T_Program } from '../types/t-smc';
 import AgentSet from './class-agentset';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_INIT_ERR = 'constructor requires AgentSet instance';
-const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

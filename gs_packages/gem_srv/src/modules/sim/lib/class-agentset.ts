@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { T_Agent, T_Program } from '../types/t-smc';
-import { AGENTS, CONDITIONS } from '../runtime-core';
+import { AGENTS } from '../runtime-core';
 import { WORLD } from '../agents/global';
 import Message from './class-sm-message';
 

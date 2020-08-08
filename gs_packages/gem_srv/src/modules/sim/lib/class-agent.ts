@@ -146,8 +146,8 @@ class Agent extends SM_Object implements T_Agent {
       // run the program with the passed stack, if any
       program.forEach(op => op(this, state));
     } catch (e) {
-      console.error(e);
-      debugger;
+      console.log(e);
+      throw Error(e);
     }
     // return the stack as a result, though
     return state.stack;

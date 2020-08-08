@@ -24,10 +24,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import BooleanProp from './props/var-boolean';
-import NumberProp from './props/var-number';
 import AgentFactory from './agents/agentfactory';
-import AgentSet from './lib/class-agentset';
 import { StackMachine } from './script/commander';
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
@@ -35,7 +32,7 @@ import { StackMachine } from './script/commander';
 function AgentSelect() {
   console.groupEnd();
   console.log(`
-AgentProgram June 14 Goals
+AgentProgram August 07 Goals
 
 x - create a dummy agent
 x - set property (variable)
@@ -46,10 +43,10 @@ x - filter collection by condition
 x - calculate value of expression
 x - execute action w/ parameters
 x - execute action conditionally
-o - respond to event
-o - respond to conditional event
-o - define block (function)
-o - execute block (function)
+x - respond to event
+x - respond to conditional event
+x - define block (function)
+x - execute block (function)
 o - phasemachine autoupdates, triggers
   `);
 }
@@ -124,7 +121,7 @@ function AgentProgram() {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentUpdate(frame) {
+function AgentUpdate(/* frame */) {
   // const healthProp = agent.prop('currentHealth');
   // console.log(healthProp.value, healthProp.nvalue);
   // if (healthProp.eq(5).true()) console.log('!!! 5 health');
@@ -137,17 +134,15 @@ function AgentUpdate(frame) {
   agents.forEach(agent => agent.AGENTS_EXEC());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentThink(frame) {
-  //
-}
+function AgentThink(/* frame */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentExec(frame) {
+function AgentExec(/* frame */) {
   //
   const smc_condition = StackMachine.test_smc_condition;
   StackMachine.ExecSMC(smc_condition, AgentFactory.GetWorldAgent());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentReset(frame) {
+function AgentReset(/* frame */) {
   console.log('AgentReset');
 }
 
