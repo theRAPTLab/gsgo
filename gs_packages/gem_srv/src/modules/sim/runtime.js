@@ -50,7 +50,7 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// RXJS TESTS ////////////////////////////////////////////////////////////////
-let obs_frame_interval = interval(1000);
+let obs_frame_interval = interval(33);
 let sub_frame;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -73,9 +73,12 @@ function RunSimulation() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function StepSimulation(frame) {
   /* insert game pause control here */
-  (async () => {
-    await GameLoop.ExecutePhase('PHASE_LOOP', frame);
-  })();
+  // synchronous version
+  // (async () => {
+  //   await GameLoop.ExecutePhase('PHASE_LOOP', frame);
+  // })();
+  // async version
+  GameLoop.ExecutePhase('PHASE_LOOP', frame);
   /* insert game logic here */
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

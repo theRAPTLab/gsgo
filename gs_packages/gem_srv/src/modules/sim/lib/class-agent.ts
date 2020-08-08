@@ -108,22 +108,14 @@ class Agent extends SM_Object implements T_Agent {
     return f;
   }
 
-  /** Execute agent stack machine program. Note that commander also
-   *  implements ExecSMC to run arbitrary programs as well when
-   *  processing AgentSets. Optionally pass a stack to reuse.
-   */
-  exec_smc(program, stack = []) {
-    const state = new SM_State(stack);
-    // console.log('exec got program', program.length);
-    try {
-      // run the program with the passed stack, if any
-      program.forEach(op => op(this, state));
-    } catch (e) {
-      console.error(e);
-      debugger;
-    }
-    // return the stack as a result, though
-    return state.stack;
+  /** PhaseMachine Lifecycle Execution */
+  AGENTS_EXEC() {
+    // if (this.execQueue.length) console.log('execQueue', this.execQueue.length);
+    this.execQueue.forEach(msg => {
+      const stack = msg.inputs;
+      msg.programs.forEach(program => this.exec_smc(program, stack));
+    });
+    this.execQueue = [];
   }
 
   /** handle queue */
@@ -141,6 +133,24 @@ class Agent extends SM_Object implements T_Agent {
       default:
         throw Error(`${ERR_WHATMSG} ${msg.message}`);
     }
+  }
+
+  /** Execute agent stack machine program. Note that commander also
+   *  implements ExecSMC to run arbitrary programs as well when
+   *  processing AgentSets. Optionally pass a stack to reuse.
+   */
+  exec_smc(program, stack = []) {
+    const state = new SM_State(stack);
+    // console.log('exec got program', program.length);
+    try {
+      // run the program with the passed stack, if any
+      program.forEach(op => op(this, state));
+    } catch (e) {
+      console.error(e);
+      debugger;
+    }
+    // return the stack as a result, though
+    return state.stack;
   }
 
   // serialization

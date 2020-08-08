@@ -24,9 +24,12 @@ class AgentSet {
   //
   constructor(...types: string[]) {
     this.agentTypes = types;
-    this.testResults = [];
     if (this.agentTypes.length > 2) throw Error('max 2 type strings');
     if (this.agentTypes.length < 1) throw Error('type string(s) required');
+    this.reset();
+  }
+  reset() {
+    this.testResults = [];
   }
   /** utility to retrieve agent sets */
   getAgents(): any[] {
@@ -126,22 +129,32 @@ class AgentSet {
   }
 
   /** notify */
-  notifyMatches(execs: T_Program[]): void {
+  notifyMatches(execs: T_Program[], stacks: any[]): void {
     this.getMembers().forEach(agent => {
-      console.log(agent);
-      const msg = new Message('exec', { programs: execs, inputs: [agent] });
+      const msg = new Message('exec', {
+        programs: execs,
+        inputs: stacks.slice(0).concat(agent)
+      });
       agent.queue(msg);
     });
+    this.reset();
   }
-  notifyPairs(execs: T_Program[]): void {
+  notifyPairs(execs: T_Program[], stacks: any[]): void {
     if (!Array.isArray(execs)) execs = [execs];
     this.getPairs().forEach(pair => {
       const [agentA, agentB] = pair;
-      const msgA = new Message('exec', { programs: execs, inputs: [agentB] });
-      const msgB = new Message('exec', { programs: execs, inputs: [agentA] });
+      const msgA = new Message('exec', {
+        programs: execs,
+        inputs: stacks.slice(0).concat(agentB)
+      });
+      const msgB = new Message('exec', {
+        programs: execs,
+        inputs: stacks.slice(0).concat(agentA)
+      });
       agentA.queue(msgA);
       agentB.queue(msgB);
     });
+    this.reset();
   }
 }
 

@@ -70,10 +70,15 @@ This AgentSet holds the results of a test. Every member then **receives an event
 
 ### Fri Aug 07
 
-* [ ] Make the Condition object store AgentSet, TestProgram, ExecProgram
+* [x] Make the Condition object store AgentSet, TestProgram, ExecProgram
+* [x] During CONDITION_UPDATE, call all conditions and either `filter()` or `interact()`  to gather `members` and `pairs`
+* [x] At end of CONDITION_UPDATE, walk either `members` or `pairs` and **queue ExecProgram** in a **message**
+
+DONE! First pass! There is no message filtering on the agents, so `agentSet.sendResults()` will invoke a new `Message` with type `'exec'` which will be shoved directly in the exec queue.
+
+50 flower agents will bring it down for pairwise-filtering, so we will have to write some custom tests for that. 100 flower agents kills the pairwise filtering altogether. For simple filtering, we can do 100 agent instances, each filtering the entire set of 100 agents 100 times(10,000 iterations) for a total of 100,000 iterations. In practice, we will not have that many filtering operations running so performance might be better.
+
+NEXT:
+
 * [ ] Store Condition object using a unique hashable name based on signature in CONDITIONS
-* [ ] During CONDITION_UPDATE, call all conditions and either `filter()` or `interact()`  to gather `members` and `pairs`
-* [ ] At end of CONDITION_UPDATE, walk either `members` or `pairs` and **queue ExecProgram** in a **message**
-
-
 

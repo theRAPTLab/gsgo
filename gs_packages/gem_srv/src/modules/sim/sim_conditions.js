@@ -31,24 +31,24 @@ import { sub, abs } from './script/ops/math-ops';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let ags = null;
-let cond = null;
+let conds = [];
 
 /// TEST PROGRAMS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // this test returns FALSE 5 times then TRUE 5 times
 // since currentHealth increments by 1 and wraps at 10
-const update_test = [
-  // agentA and agentB are on the stack
-  dbgStackCount(2, 'start update_test'),
+const filter_test = [
+  // agentA is on the stack
+  dbgStackCount(0, 'start filter_test'),
   // calculate
   clearCondition(),
   pushAgentPropValue('currentHealth'),
   push(5),
   compareNumbers(), // sets comparison flags
-  ifGT([push(true), dbgOut('GT')]),
-  ifLTE([push(false), dbgOut('LTE')]),
+  ifGT([push(true)]),
+  ifLTE([push(false)]),
   // check result is on stack
-  dbgStackCount(1, 'end update_test')
+  dbgStackCount(1, 'end filter_test')
 ];
 
 // this test is invoked on the WORLD object, and the stack
@@ -79,22 +79,31 @@ const interaction_test = [
 ];
 
 // this test is executed by agent queue...eventually
-const exec_test = [dbgOut('execution')];
+const exec_test = [
+  stackToScope(),
+  scopedPropValue('name'),
+  scopedPropValue('name'),
+  scopedPropValue('name')
+];
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ModuleInit(gloop) {
-  ags = new AgentSet('Flower', 'Flower');
-  cond = new Condition(ags);
-  cond.addTest(interaction_test);
-  cond.addExec(exec_test);
+  for (let i = 0; i < 100; i++) {
+    const cond = new Condition(new AgentSet('Flower'));
+    cond.addTest(filter_test);
+    cond.addExec(exec_test);
+    conds.push(cond);
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Update(frame) {
-  console.log('condition frame update', frame);
-  cond.reset();
-  cond.pairTest();
-  cond.sendResults();
+  // console.log('condition frame update', frame);
+  conds.forEach(cond => {
+    cond.reset();
+    cond.filterTest();
+    cond.sendResults();
+  });
 }
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////

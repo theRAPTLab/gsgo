@@ -11,19 +11,14 @@ import { T_Agent, T_State, T_Opcode, T_OpWait } from '../../types/t-smc';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// support util functions ////////////////////////////////////////////////////
 function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
-  if (num > stack.length) {
-    console.log(`warning: requested ${num} exceeds stack length`);
-    // force output the entire stack, which will be short
-    num = 0;
-  }
-  if (num === 0) {
+  if (num === 0 || num > stack.length) {
     console.log(`${prompt}:`, stack);
-  } else {
-    const end = stack.length - 1;
-    const arr = [];
-    for (let i = num; i--; i > 0) arr.push(stack[end - i]);
-    console.log(`${prompt}-top ${num}:`, arr);
+    return;
   }
+  const end = stack.length - 1;
+  const arr = [];
+  for (let i = num; i--; i > 0) arr.push(stack[end - i]);
+  console.log(`${prompt}-top ${num}:`, arr);
 }
 /** Dump the current stack contents to console. Defaults to all.
  *  Optionally dump number of items to dump
