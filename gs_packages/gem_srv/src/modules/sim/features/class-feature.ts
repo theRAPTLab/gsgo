@@ -11,10 +11,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  T_Feature,
+  I_Feature,
   T_Method,
-  T_Agent,
-  T_Scopeable,
+  I_Agent,
+  I_Scopeable,
   T_Stackable
 } from '../types/t-smc';
 import { DictionaryProp } from '../props/var';
@@ -29,7 +29,7 @@ const NOT_METHOD_ERR = 'retrieved method is not a method; got';
 /** Feature code uses agent objects for state and variable storage. When a
  *  feature is invoked by an agent, it passes itself in the invocation.
  */
-class Feature implements T_Feature {
+class Feature implements I_Feature {
   meta: { feature: string };
   methods: Map<string, T_Method>;
   //
@@ -53,7 +53,7 @@ class Feature implements T_Feature {
    *  called by agent template function when creating new agent
    *  note: subclassers must override this method as necessary
    */
-  decorate(agent: T_Agent) {
+  decorate(agent: I_Agent) {
     console.log(`class feature '${this.name()}' decorate '${agent.name()}'`);
     if (agent.features.has(this.name()))
       console.log(`agent decorate '${agent.name()}'`);
@@ -77,8 +77,8 @@ class Feature implements T_Feature {
    *  remember: there is a single instance of all methods for the feature
    *  note: this is a mirror implementation of SM_Object.prop
    */
-  addProp(agent: T_Agent, key: string, prop: T_Scopeable) {
-    // agent.props = Map<string, T_Scopeable>;
+  addProp(agent: I_Agent, key: string, prop: I_Scopeable) {
+    // agent.props = Map<string, I_Scopeable>;
     const dict = agent.props.get(this.name()) as DictionaryProp;
     dict.addItem(key, prop);
   }
@@ -86,7 +86,7 @@ class Feature implements T_Feature {
    *  Return prop given the passed agent and key. This prop is stored
    *  in the agent's props map as a DictionaryProp, so this version
    *  of prop returns the contents of the DictionaryProp! */
-  prop(agent: T_Agent, key: string): T_Scopeable {
+  prop(agent: I_Agent, key: string): I_Scopeable {
     const dict = agent.props.get(this.name()) as DictionaryProp;
     return dict.getItem(key);
   }
@@ -94,7 +94,7 @@ class Feature implements T_Feature {
    *  remember: there is a single instance of all methods for the feature
    *  note: this is a mirror implementation of SM_Object.prop
    */
-  method(agent: T_Agent, key: string, ...args: any): any {
+  method(agent: I_Agent, key: string, ...args: any): any {
     const method = this.methods.get(key);
     if (typeof method === 'function') return method(agent, ...args);
     if (Array.isArray(method)) return agent.exec_smc(method);

@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import AgentSet from './lib/class-agentset';
-import Condition from './lib/class-condition';
+import Condition from './lib/class-sm-condition';
 import { CONDITIONS } from './runtime-core';
 
 import {

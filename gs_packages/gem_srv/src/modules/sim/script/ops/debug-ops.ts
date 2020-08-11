@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_State, T_Opcode, T_OpWait } from '../../types/t-smc';
+import { I_Agent, I_State, T_Opcode, T_OpWait } from '../../types/t-smc';
 
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,14 +25,14 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgStack = (num: number = 0, desc: string = 'stack'): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { stack } = STATE;
     u_dump(num, stack, desc);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgStackCount = (num: number, desc: string = 'dbgStackCount') => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const slen = STATE.stack.length;
     if (slen !== num) throw Error(`stack.length ${slen}!==${num} (${desc})`);
   };
@@ -43,14 +43,14 @@ const dbgStackCount = (num: number, desc: string = 'dbgStackCount') => {
  *  Optionally dump number of items to dump
  */
 const dbgScope = (num: number = 0): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope } = STATE;
     u_dump(num, scope, 'scope');
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgAgent = (match?: string): T_Opcode => {
-  return (agent: T_Agent): T_OpWait => {
+  return (agent: I_Agent): T_OpWait => {
     if ((match && agent.name() === match) || !match)
       console.log(`agent[${agent.name()}] serialize:`, agent.serialize());
   };

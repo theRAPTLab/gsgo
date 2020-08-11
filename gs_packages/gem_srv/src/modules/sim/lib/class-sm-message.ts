@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Opcode, T_Program, T_Message } from '../types/t-smc';
+import { T_Opcode, T_Program, I_Message } from '../types/t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,7 +29,7 @@ function GetMessageParts(msg: string): string[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of a stack machine message
  */
-export default class SM_Message implements T_Message {
+export default class SM_Message implements I_Message {
   id: number;
   channel: string;
   message: string;

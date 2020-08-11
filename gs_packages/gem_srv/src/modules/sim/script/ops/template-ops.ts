@@ -5,21 +5,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Opcode, T_OpWait, T_Scopeable } from '../../types/t-smc';
+import { I_Agent, T_Opcode, T_OpWait, I_Scopeable } from '../../types/t-smc';
 
 /// AGENT TEMPLATE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const addProp = (
   name: string,
-  NewFunc: { new (...args): T_Scopeable }
+  NewFunc: { new (...args): I_Scopeable }
 ): T_Opcode => {
-  return (agent: T_Agent): T_OpWait => {
+  return (agent: I_Agent): T_OpWait => {
     agent.addProp(name, new NewFunc(name));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const addFeature = (name: string): T_Opcode => {
-  return (agent: T_Agent): T_OpWait => {
+  return (agent: I_Agent): T_OpWait => {
     agent.addFeature(name);
   };
 };

@@ -1,14 +1,14 @@
-import { T_State, T_Stackable, T_Scopeable, T_Condition } from '../types/t-smc';
-import SM_Condition from './class-sm-condition';
+import { I_State, T_Stackable, I_Scopeable, I_Comparator } from '../types/t-smc';
+import SM_Comparator from './class-sm-comparator';
 
-export default class SM_State implements T_State {
+export default class SM_State implements I_State {
   stack: T_Stackable[]; // data stack (pass values in/out)
-  scope: T_Scopeable[]; // scope stack (current execution context)
-  flags: T_Condition; // condition flags
+  scope: I_Scopeable[]; // scope stack (current execution context)
+  flags: I_Comparator; // comparison flags set by ALU operations
   constructor(argStack: T_Stackable[] = [] as T_Stackable[]) {
     this.stack = argStack;
     this.scope = [];
-    this.flags = new SM_Condition();
+    this.flags = new SM_Comparator();
   }
   peek(n: number = 0): T_Stackable {
     return this.stack[this.stack.length - 1 - n];

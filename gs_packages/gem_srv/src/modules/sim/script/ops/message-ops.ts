@@ -9,21 +9,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Opcode, T_OpWait, T_State } from '../../types/t-smc';
+import { I_Agent, T_Opcode, T_OpWait, I_State } from '../../types/t-smc';
 import { GetMessageParts } from '../../lib/class-sm-message';
 
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const agentQueue = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {};
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {};
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const agentSend = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {};
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {};
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgMessage = (msg: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     console.log(GetMessageParts(msg));
   };
 };

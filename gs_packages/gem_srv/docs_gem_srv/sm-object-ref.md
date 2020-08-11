@@ -1,6 +1,6 @@
 ## Stack Machine Objects
 
-The Stack Machine implements code that pertains to **scriptable objects**. The main interface for this is an `SM_Object`, which is of type `T_Scopeable`. The objects defined below are run in one of three contexts:
+The Stack Machine implements code that pertains to **scriptable objects**. The main interface for this is an `SM_Object`, which is of type `I_Scopeable`. The objects defined below are run in one of three contexts:
 
 * an DECLARATION phase (smc_define)
 * an INIT phase (smc_initialize program)
@@ -69,7 +69,7 @@ NOTE: These property methods are not currently used for calculations using SM_Pr
 
 ### Features
 
-**Features** are a special object that implement `T_Feature` and subclass `Feature`. This is NOT a direct descendent of SM_Object, but they implement extended `method`, `prop` and `addProp` calls. These versions differ by having an additional **agent** argument. That is necessary because Feature code does not have any storage of its own, but uses that of a provided agent. 
+**Features** are a special object that implement `I_Feature` and subclass `Feature`. This is NOT a direct descendent of SM_Object, but they implement extended `method`, `prop` and `addProp` calls. These versions differ by having an additional **agent** argument. That is necessary because Feature code does not have any storage of its own, but uses that of a provided agent. 
 
 When a Feature is added to an Agent using `addFeature`, the agent also invoked the feature's `decorate(agent)` function. This function can add both properties and methods to the agent's props and methods maps. 
 

@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Program } from '../types/t-smc';
+import { I_Agent, T_Program } from '../types/t-smc';
 import { AGENTS } from '../runtime-core';
 import { WORLD } from '../agents/global';
 import Message from './class-sm-message';
@@ -83,8 +83,8 @@ class AgentSet {
     for (let i = 0; i < agents.length; i++) {
       for (let j = 0; j < i; j++) {
         if (i === j) continue;
-        const agentA: T_Agent = agents[i];
-        const agentB: T_Agent = agents[j];
+        const agentA: I_Agent = agents[i];
+        const agentB: I_Agent = agents[j];
         console.log(i, agentA.name(), agentB.name());
         const result = WORLD.exec_smc(test, [agentA, agentB]);
         // the result stack should contain 1 element
@@ -106,8 +106,8 @@ class AgentSet {
     //
     for (let i = 0; i < SET_A.length; i++) {
       for (let j = 0; j < SET_B.length; j++) {
-        const agentA: T_Agent = SET_A[i];
-        const agentB: T_Agent = SET_B[j];
+        const agentA: I_Agent = SET_A[i];
+        const agentB: I_Agent = SET_B[j];
         // skip agents that match themselves
         if (agentA === agentB) continue;
         const result = WORLD.exec_smc(test, [agentA, agentB]);
@@ -121,11 +121,11 @@ class AgentSet {
   }
 
   /** returns the members array that has presumably been filtered */
-  getMembers(): T_Agent[] {
-    return this.testResults as T_Agent[];
+  getMembers(): I_Agent[] {
+    return this.testResults as I_Agent[];
   }
-  getPairs(): Array<T_Agent[]> {
-    return this.testResults as Array<T_Agent[]>;
+  getPairs(): Array<I_Agent[]> {
+    return this.testResults as Array<I_Agent[]>;
   }
 
   /** notify */

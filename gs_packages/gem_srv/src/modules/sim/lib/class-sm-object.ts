@@ -14,8 +14,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  T_Agent,
-  T_Scopeable,
+  I_Agent,
+  I_Scopeable,
   T_Stackable,
   T_Method,
   T_Value
@@ -33,7 +33,7 @@ function new_obj_id() {
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Add a property to an agent's prop map by property name */
-function AddProp(agent: T_Agent, prop: string, gvar: T_Scopeable) {
+function AddProp(agent: I_Agent, prop: string, gvar: I_Scopeable) {
   const { props } = agent;
   if (props.has(prop)) throw Error(`prop '${prop}' already added`);
   props.set(prop, gvar);
@@ -42,7 +42,7 @@ function AddProp(agent: T_Agent, prop: string, gvar: T_Scopeable) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Add a method to an agent's method map by method name */
-function AddMethod(agent: T_Agent, name: string, smc_or_f: T_Method): T_Agent {
+function AddMethod(agent: I_Agent, name: string, smc_or_f: T_Method): I_Agent {
   const { methods } = agent;
   if (methods.has(name)) throw Error(`method '${name}' already added`);
   methods.set(name, smc_or_f);
@@ -52,10 +52,10 @@ function AddMethod(agent: T_Agent, name: string, smc_or_f: T_Method): T_Agent {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class SM_Object implements T_Scopeable {
+class SM_Object implements I_Scopeable {
   _value: any;
   meta: { id: number; type: symbol; name?: string };
-  props: Map<string, T_Scopeable>;
+  props: Map<string, I_Scopeable>;
   methods: Map<string, T_Method>;
   constructor(initValue?: any) {
     // init is a literal value
@@ -85,7 +85,7 @@ class SM_Object implements T_Scopeable {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named property to SMC_Object prop map */
-  addProp(pName: string, gvar: T_Scopeable): T_Scopeable {
+  addProp(pName: string, gvar: I_Scopeable): I_Scopeable {
     const { props } = this;
     if (props.has(pName)) throw Error(`prop '${pName}' already added`);
     props.set(pName, gvar);
@@ -103,7 +103,7 @@ class SM_Object implements T_Scopeable {
    *  @param {string} propName - name of property
    *  @returns {GVar} - value object
    */
-  prop(key: string): T_Scopeable {
+  prop(key: string): I_Scopeable {
     return this.props.get(key);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

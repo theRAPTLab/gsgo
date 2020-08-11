@@ -11,10 +11,10 @@
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
 import {
-  T_Agent,
-  T_Scopeable,
+  I_Agent,
+  I_Scopeable,
   T_Stackable,
-  T_Message,
+  I_Message,
   T_Program
 } from '../types/t-smc';
 import { FEATURES } from '../runtime-core';
@@ -27,11 +27,11 @@ const ERR_WHATMSG = 'unhandled message; got';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Agent extends SM_Object implements T_Agent {
+class Agent extends SM_Object implements I_Agent {
   features: Map<string, any>;
-  updateQueue: T_Message[];
-  thinkQueue: T_Message[];
-  execQueue: T_Message[];
+  updateQueue: I_Message[];
+  thinkQueue: I_Message[];
+  execQueue: I_Message[];
   _name: StringVar;
   _x: NumberVar;
   _y: NumberVar;
@@ -90,7 +90,7 @@ class Agent extends SM_Object implements T_Agent {
   /** Retrieve a prop object
    *  This overrides sm-object prop()
    */
-  prop(name: string): T_Scopeable {
+  prop(name: string): I_Scopeable {
     const p = this.props.get(name);
     if (p === undefined) throw Error(`no prop named '${name}'`);
     return p;
@@ -125,7 +125,7 @@ class Agent extends SM_Object implements T_Agent {
   }
 
   /** handle queue */
-  queue(msg: T_Message) {
+  queue(msg: I_Message) {
     switch (msg.message) {
       case 'update':
         this.updateQueue.push(msg);

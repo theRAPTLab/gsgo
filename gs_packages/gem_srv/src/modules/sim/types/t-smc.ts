@@ -11,13 +11,13 @@
  *  context for ops using method(), prop() or value-related assignments.
  *  The Agent, Prop, and Feature classes implement this interface.
  */
-export interface T_Scopeable {
+export interface I_Scopeable {
   meta: { id: number; type: symbol; name?: string };
   method: (name: string, ...args: any) => any;
-  addProp: (name: string, gv: T_Scopeable) => T_Scopeable;
+  addProp: (name: string, gv: I_Scopeable) => I_Scopeable;
   addMethod: (name: String, callable: T_Method) => void;
-  props: Map<string, T_Scopeable>;
-  prop: (name: string) => T_Scopeable;
+  props: Map<string, I_Scopeable>;
+  prop: (name: string) => I_Scopeable;
   methods: Map<string, T_Method>;
   serialize: () => any[];
   //  get value(): any; // works with typescript 3.6+
@@ -28,13 +28,13 @@ export interface T_Scopeable {
 }
 /// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Agents have additional properties on top of T_Scopeable */
-export interface T_Agent extends T_Scopeable {
+/** Agents have additional properties on top of I_Scopeable */
+export interface I_Agent extends I_Scopeable {
   features: Map<string, any>;
-  updateQueue: T_Message[];
-  thinkQueue: T_Message[];
-  execQueue: T_Message[];
-  queue: (msg: T_Message) => void;
+  updateQueue: I_Message[];
+  thinkQueue: I_Message[];
+  execQueue: I_Message[];
+  queue: (msg: I_Message) => void;
   exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
   feature: (name: string) => any;
   addFeature: (name: string) => void;
@@ -48,7 +48,7 @@ export interface T_Agent extends T_Scopeable {
 export type T_Value = string | number | boolean;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A "stackable" object is one that can be pushed on the data stack. */
-export type T_Stackable = T_Scopeable | T_Value;
+export type T_Stackable = I_Scopeable | T_Value;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Stackmachine operations return a Promise if it is operating asynchronously
  *  though this may not be necessary. I thought it might be cool
@@ -63,8 +63,8 @@ export type T_OpWait = Promise<any> | void;
  *  in case we want to have asynchronous opcodes.
  */
 export type T_Opcode = (
-  agent: T_Agent, // REQUIRED memory context
-  sm_state: T_State // machine state
+  agent: I_Agent, // REQUIRED memory context
+  sm_state: I_State // machine state
 ) => T_OpWait;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
@@ -83,10 +83,10 @@ export type T_Program = T_Opcode[];
  *  and a flags object. This state is passed, along with agent, to every
  *  stackmachine opcode. The opcode is free to mutate the stacks and agent
  */
-export interface T_State {
+export interface I_State {
   stack: T_Stackable[]; // data stack (pass values in/out)
-  scope: T_Scopeable[]; // scope stack (current execution context)
-  flags: T_Condition; // condition flags
+  scope: I_Scopeable[]; // scope stack (current execution context)
+  flags: I_Comparator; // condition flags
   peek(): T_Stackable;
   pop(): T_Stackable;
   popArgs(num: number): T_Stackable[];
@@ -95,7 +95,7 @@ export interface T_State {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine condition
  */
-export interface T_Condition {
+export interface I_Comparator {
   VAZ: boolean; // true when zerocheck runs
   VAC: boolean; // true when condition runs
   VAS: boolean; // true for string comparisons
@@ -125,20 +125,20 @@ export interface T_Condition {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine feature
  */
-export interface T_Feature {
+export interface I_Feature {
   meta: { feature: string };
   methods: Map<string, T_Method>;
   initialize(pm: any): void;
   name(): string;
-  decorate(agent: T_Agent): void;
-  addProp(agent: T_Agent, key: string, prop: T_Scopeable): void;
-  prop(agent: T_Agent, key: string): T_Scopeable;
-  method: (agent: T_Agent, key: string, ...args: any) => any;
+  decorate(agent: I_Agent): void;
+  addProp(agent: I_Agent, key: string, prop: I_Scopeable): void;
+  prop(agent: I_Agent, key: string): I_Scopeable;
+  method: (agent: I_Agent, key: string, ...args: any) => any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine Message
  */
-export interface T_Message {
+export interface I_Message {
   id: number;
   channel: string;
   message: string;

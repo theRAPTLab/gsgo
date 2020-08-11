@@ -9,8 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  T_Agent,
-  T_State,
+  I_Agent,
+  I_State,
   T_Opcode,
   T_OpWait,
   T_Program,
@@ -22,12 +22,12 @@ const DBG = false;
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const clearCondition = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.flags.reset();
   };
 }; /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const compareNumbers = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a, b] = STATE.popArgs(2);
     // if (b === 10) console.log(`${agent.name()} a:${a} b:${b}`);
     STATE.flags.compareNumbers(a as number, b as number);
@@ -36,7 +36,7 @@ const compareNumbers = (): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const compareStrings = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const val = STATE.pop();
     STATE.flags.checkZero(val as number);
   };
@@ -45,7 +45,7 @@ const compareStrings = (): T_Opcode => {
 /// CONDITIONAL ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifLT = (program: T_Program): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     if (STATE.flags.LT()) {
       // pass current stack as vars to program
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
@@ -55,7 +55,7 @@ const ifLT = (program: T_Program): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifGT = (program: T_Program): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     if (STATE.flags.GT()) {
       // alternate way to use a substack instead of passing existing
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
@@ -65,7 +65,7 @@ const ifGT = (program: T_Program): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifLTE = (program: T_Program): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     if (STATE.flags.LTE()) {
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
       if (DBG) console.log('lte stack return', results);
@@ -74,7 +74,7 @@ const ifLTE = (program: T_Program): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifGTE = (program: T_Program): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     if (STATE.flags.GTE()) {
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
       if (DBG) console.log('gte stack return', results);
@@ -83,7 +83,7 @@ const ifGTE = (program: T_Program): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifEQ = (program: T_Program): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     if (STATE.flags.EQ()) {
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
       if (DBG) console.log('eq stack return', results);
@@ -92,7 +92,7 @@ const ifEQ = (program: T_Program): T_Opcode => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ifNEQ = (program: T_Program): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     if (STATE.flags.NEQ()) {
       const results: T_Stackable[] = agent.exec_smc(program, STATE.stack);
       if (DBG) console.log('neq stack return', results);

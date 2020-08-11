@@ -30,7 +30,7 @@ PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 ### Wed Aug 05 (summarized)
 
-* Defined preliminary  `T_Condition` type (class `SM_Condition`) 
+* Defined preliminary  `I_Comparator` type (class `SM_Comparator`) 
 * Test a simple proximity test program with new opcodes for conditionals. 
 
 YAY! It seems to work!
@@ -40,7 +40,7 @@ YAY! It seems to work!
  Now we need to implement **messages** that can be sent to an agent.
 
 * defined `message` object and properties (name, data)
-* redefined `AgentSet` to be a "results container" class that is used by `SM_Condition` . The idea is Conditions are stored in a Conditions Library and run during the `CONDITIONS_UPDATE` phase, and its stored tests are sent to `AgentSet` to do operations like **filter**, **interact** between 1 or 2 AgentTypes (defined as strings). The result is stored as **members** or **pairs**. The AgentSet can be reset afterwards so it can be run again. 
+* redefined `AgentSet` to be a "results container" class that is used by `SM_Comparator` . The idea is Conditions are stored in a Conditions Library and run during the `CONDITIONS_UPDATE` phase, and its stored tests are sent to `AgentSet` to do operations like **filter**, **interact** between 1 or 2 AgentTypes (defined as strings). The result is stored as **members** or **pairs**. The AgentSet can be reset afterwards so it can be run again. 
 
 ### Fri Aug 07
 
@@ -74,12 +74,12 @@ As I'm going through the documentation, I see the need to blueprint the various 
 
 Here's a list of **possible oversights** that I noticed:
 
-
-
-* What I am calling "SM_Conditional" in SM_State is not quite accurate. It might be better named "SM_ComparisonUnit"
+* What I am calling "SM_Conditional" in SM_State is not quite accurate. It might be better named "SM_Comparator"
 * the props and methods map are used to store only *scriptable* methods.
 * Features are called with `decorate()` when an Agent is executing its `addFeature()` code. This code adds Props to a `props[featureName]` property containing a `DictionaryProp`, and the `prop()` method is overriden to dig the property out of the passed agent. 
 * Feature also implements `prop()` and `method()` differently; since features are not part of an object, they must receive the object. 
   *  `prop()` returns the key of the stored Dictionary object
   * `method()`  returns the local method of the feature, not the agent's method.
-* Should I move `exec_smc` to `SM_Object`? 
+* Should I move `exec_smc` to `SM_Object`?  NAH
+* I should rename interfaces from `T_State` to `I_State`, and so on. This is more standard (and more correct, though Interfaces can be used as Types when specifying type values.)
+

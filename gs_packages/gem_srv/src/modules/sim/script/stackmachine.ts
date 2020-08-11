@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Program } from '../types/t-smc';
+import { I_Agent, T_Program } from '../types/t-smc';
 import {
   setAgentPropValue,
   scopedFunction,
@@ -81,7 +81,7 @@ const test_smc_condition: T_Program = [
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Run an SM_Program on an agent
  */
-function ExecSMC(smc: T_Program, agent: T_Agent) {
+function ExecSMC(smc: T_Program, agent: I_Agent) {
   try {
     agent.exec_smc(smc);
   } catch (e) {

@@ -15,10 +15,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
-  T_Agent,
+  I_Agent,
   T_Stackable,
-  T_Scopeable,
-  T_State,
+  I_Scopeable,
+  I_State,
   T_Opcode,
   T_OpWait
 } from '../../types/t-smc';
@@ -28,44 +28,44 @@ import SM_Object from '../../lib/class-sm-object';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** push object (usually a prop or agent) on stack */
 const push = (gv: T_Stackable): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.stack.push(gv);
   };
 };
 /** discard values from stack (default 1) */
 const pop = (num: Number = 1): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     for (let i = 0; i < num; i++) STATE.stack.pop();
   };
 };
 /** duplicate top of stack */
 const dupe = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.stack.push(STATE.peek());
   };
 };
 /** push agent on stack */
 const pushAgent = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.stack.push(agent);
   };
 };
 /** push agent.prop on stack */
 const pushAgentProp = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.stack.push(agent.prop(propName));
   };
 };
 /** push agent.prop.value on stack */
 const pushAgentPropValue = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.stack.push(agent.prop(propName)._value);
   };
 };
 /** Pop object from stack, read its value, then assign to agent.prop
  */
 const popAgentPropValue = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const element = STATE.pop();
     if (element instanceof SM_Object) {
       agent.prop(propName)._value = element.value;
@@ -79,7 +79,7 @@ const popAgentPropValue = (propName: string): T_Opcode => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Directly set agent prop with immediate value */
 const setAgentPropValue = (propName: string, value: any): T_Opcode => {
-  return (agent: T_Agent): T_OpWait => {
+  return (agent: I_Agent): T_OpWait => {
     const prop = agent.prop(propName);
     prop._value = value;
   };
@@ -91,29 +91,29 @@ const setAgentPropValue = (propName: string, value: any): T_Opcode => {
 /** Move top of scope stack to data stack.
  */
 const scopeToStack = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
     stack.push(scope.pop() as T_Stackable);
   };
 };
 /** Move top of stack to scope stack, with checks */
 const stackToScope = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
     const obj = stack.pop();
-    if (obj instanceof SM_Object) scope.push(obj as T_Scopeable);
+    if (obj instanceof SM_Object) scope.push(obj as I_Scopeable);
     else throw Error('stackToScope can not move non-SM_Object');
   };
 };
 /** remove an object from the scope stack */
 const scopePop = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.scope.pop();
   };
 };
 /** push the named agent prop on the scope stack */
 const agentPropToScope = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const prop = agent.prop(propName);
     // console.log('prop', agent.name(), '.', agent.prop(propName));
     STATE.scope.push(prop);
@@ -121,20 +121,20 @@ const agentPropToScope = (propName: string): T_Opcode => {
 };
 /** push the agent on the scope stack */
 const agentToScope = (): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.scope.push(agent);
   };
 };
 /** push an agent's feature on the scope stack */
 const agentFeatureToScope = (featName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     STATE.scope.push(agent);
     STATE.scope.push(agent.feature(featName));
   };
 };
 /** Retrieve prop() from scoped object, and push it on stack. */
 const scopedProp = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
     const SOBJ: T_Stackable = scope[scope.length - 1];
     stack.push(SOBJ.prop(propName));
@@ -142,7 +142,7 @@ const scopedProp = (propName: string): T_Opcode => {
 };
 /** Retrieve prop.value from scoped object, and push it on stack. */
 const scopedPropValue = (propName: string): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
     const SOBJ: T_Stackable = scope[scope.length - 1];
     stack.push(SOBJ.prop(propName)._value);
@@ -154,7 +154,7 @@ const scopedPropValue = (propName: string): T_Opcode => {
  *  and any results are pushed on the datastack.
  */
 const scopedMethod = (methodName: string, ...args: any[]): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
     const SOBJ = scope[scope.length - 1];
     // call the method, which is also a stackmachine program
@@ -167,9 +167,9 @@ const scopedMethod = (methodName: string, ...args: any[]): T_Opcode => {
 };
 /** Invoke function property on scoped object, return onto stack */
 const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
-    const SOBJ: T_Scopeable = scope[scope.length - 1];
+    const SOBJ: I_Scopeable = scope[scope.length - 1];
     // call the function property on the scoped object
     const RSTACK = SOBJ[funcName](...args);
     // console.log(SOBJ.meta.id, funcName, ...args, '=>', RSTACK);
@@ -179,7 +179,7 @@ const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
 };
 /** Invoke a feature's scoped context by **including agent** */
 const scopedFunctionWithAgent = (funcName: string, ...args: any[]): T_Opcode => {
-  return (agent: T_Agent, STATE: T_State): T_OpWait => {
+  return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const { scope, stack } = STATE;
     const SOBJ = scope[scope.length - 1];
     // call the function property on the scoped object
