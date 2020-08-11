@@ -37,7 +37,7 @@ export interface T_Agent extends T_Scopeable {
   queue: (msg: T_Message) => void;
   exec_smc: (prog: T_Program, initStack?: T_Stackable[]) => T_Stackable[];
   feature: (name: string) => any;
-  addFeature: (name: string) => T_Agent;
+  addFeature: (name: string) => void;
   name: () => string;
   x: () => number;
   y: () => number;
@@ -132,6 +132,7 @@ export interface T_Feature {
   name(): string;
   decorate(agent: T_Agent): void;
   addProp(agent: T_Agent, key: string, prop: T_Scopeable): void;
+  prop(agent: T_Agent, key: string): T_Scopeable;
   method: (agent: T_Agent, key: string, ...args: any) => any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

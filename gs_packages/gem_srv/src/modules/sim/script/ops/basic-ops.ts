@@ -193,7 +193,6 @@ const scopedFunctionWithAgent = (funcName: string, ...args: any[]): T_Opcode => 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// data stack ops
 export { push, pushAgent, pushAgentProp, pop, dupe };
-/// data stack indirect ops
 export { pushAgentPropValue, popAgentPropValue };
 /// agent direct ops
 export { setAgentPropValue };

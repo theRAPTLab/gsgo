@@ -8,14 +8,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  T_Agent,
-  T_State,
-  T_Opcode,
-  T_OpWait,
-  T_Program,
-  T_Stackable
-} from '../../types/t-smc';
+import { T_Agent, T_State, T_Opcode, T_OpWait } from '../../types/t-smc';
 
 const DBG = false;
 

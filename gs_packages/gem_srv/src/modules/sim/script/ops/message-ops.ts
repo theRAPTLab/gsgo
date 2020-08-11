@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Conditions Stack Machine Operations
@@ -8,15 +9,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import {
-  T_Agent,
-  T_Opcode,
-  T_OpWait,
-  T_Program,
-  T_State,
-  T_Stackable
-} from '../../types/t-smc';
-import T_Message, { GetMessageParts } from '../../lib/class-sm-message';
+import { T_Agent, T_Opcode, T_OpWait, T_State } from '../../types/t-smc';
+import { GetMessageParts } from '../../lib/class-sm-message';
 
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

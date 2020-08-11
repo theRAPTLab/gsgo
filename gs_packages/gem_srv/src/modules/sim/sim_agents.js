@@ -25,7 +25,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import AgentFactory from './agents/agentfactory';
-import { StackMachine } from './script/commander';
+import { StackMachine } from './script/stackmachine';
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

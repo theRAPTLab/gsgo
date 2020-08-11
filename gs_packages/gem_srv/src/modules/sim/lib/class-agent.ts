@@ -10,7 +10,13 @@
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { T_Agent, T_Scopeable, T_Stackable, T_Message } from '../types/t-smc';
+import {
+  T_Agent,
+  T_Scopeable,
+  T_Stackable,
+  T_Message,
+  T_Program
+} from '../types/t-smc';
 import { FEATURES } from '../runtime-core';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
@@ -68,7 +74,7 @@ class Agent extends SM_Object implements T_Agent {
    *  @param {string} featureName - name of FeatureLib to look up and add
    *  @returns {FeatureLib} - for chaining agent calls
    */
-  addFeature(fName: string): any {
+  addFeature(fName: string): void {
     const { features } = this;
     // does key already exist in this agent? double define in template!
     if (features.has(fName))
@@ -78,7 +84,7 @@ class Agent extends SM_Object implements T_Agent {
     if (!fpack) throw Error(`'${fName}' is not an available feature`);
     // this should return agent
     this.features.set(fName, fpack);
-    return fpack.decorate(this);
+    fpack.decorate(this);
   }
 
   /** Retrieve a prop object
@@ -139,7 +145,7 @@ class Agent extends SM_Object implements T_Agent {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program, stack = []) {
+  exec_smc(program: T_Program, stack = []) {
     const state = new SM_State(stack);
     // console.log('exec got program', program.length);
     try {

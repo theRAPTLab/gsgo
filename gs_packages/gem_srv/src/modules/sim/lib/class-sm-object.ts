@@ -18,10 +18,8 @@ import {
   T_Scopeable,
   T_Stackable,
   T_Method,
-  T_Program,
   T_Value
 } from '../types/t-smc';
-import SM_State from './class-sm-state';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,6 +80,7 @@ class SM_Object implements T_Scopeable {
   }
   set(value: T_Value) {
     this._value = value;
+    return this;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

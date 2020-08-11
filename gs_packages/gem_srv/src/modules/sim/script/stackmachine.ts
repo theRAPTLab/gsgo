@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   StackMachine Commander
@@ -6,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { T_Agent, T_Program, T_Prop } from '../types/t-smc';
+import { T_Agent, T_Program } from '../types/t-smc';
 import {
   setAgentPropValue,
   scopedFunction,
@@ -85,6 +86,7 @@ function ExecSMC(smc: T_Program, agent: T_Agent) {
     agent.exec_smc(smc);
   } catch (e) {
     console.log(e);
+    // eslint-disable-next-line no-debugger
     debugger;
   }
 }

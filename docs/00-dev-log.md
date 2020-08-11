@@ -1,4 +1,4 @@
-[PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
+PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY S12 JUN 08-JUN 21**
 
@@ -26,47 +26,21 @@
 
 ---
 
-#### PROMPTING QUESTION FOR SPRINT 16
+## S16 W1
 
-### Wed Aug 05
+### Wed Aug 05 (summarized)
 
-Where we left off last was 
-
-* opcode design for conditionals - how to implement them in SMC
-* implement condition in template - how to create the template call to install them?
-* opcode event queueing mechanism for each stage - how to queue messages?
-* per-agent event queue processing for each stage - how to process messages at runtime?
-
-Insight: I can eliminate stackToScope to avoid the type errors
-
-* [x] delete stackToScope() to ensure no type issues
-* [x] break out `T_Condition` with methods
-* [x] implement condition ops
-* [x] test condition op `ifLT` with `program` to increment an agent prop
+* Defined preliminary  `T_Condition` type (class `SM_Condition`) 
+* Test a simple proximity test program with new opcodes for conditionals. 
 
 YAY! It seems to work!
 
-### Thu Aug 06
+### Thu Aug 06 (summarized)
 
  Now we need to implement **messages** that can be sent to an agent.
 
-* [x] define a message object as a `name` and a `data` payload and create a class for it
-* [ ] think through conditions: these are really `ConditionalSets` and `Interactions` 
-
-For a first pass, I made an `AgentSet` class that implements:
-
-```
-class AgentSet 
-  _types: string[]
-  _test: T_Program
-  _members: T_Agent[]
-  setTest(test:T_Program)
-  filter()
-  members()
-  interact()
-```
-
-This AgentSet holds the results of a test. Every member then **receives an event** to notify it of what happened. 
+* defined `message` object and properties (name, data)
+* redefined `AgentSet` to be a "results container" class that is used by `SM_Condition` . The idea is Conditions are stored in a Conditions Library and run during the `CONDITIONS_UPDATE` phase, and its stored tests are sent to `AgentSet` to do operations like **filter**, **interact** between 1 or 2 AgentTypes (defined as strings). The result is stored as **members** or **pairs**. The AgentSet can be reset afterwards so it can be run again. 
 
 ### Fri Aug 07
 
@@ -74,11 +48,38 @@ This AgentSet holds the results of a test. Every member then **receives an event
 * [x] During CONDITION_UPDATE, call all conditions and either `filter()` or `interact()`  to gather `members` and `pairs`
 * [x] At end of CONDITION_UPDATE, walk either `members` or `pairs` and **queue ExecProgram** in a **message**
 
+I did have to re-add `stackToScope` and jigger the typing. It's not ideal but I'm not sure how else to handle it.
+
 DONE! First pass! There is no message filtering on the agents, so `agentSet.sendResults()` will invoke a new `Message` with type `'exec'` which will be shoved directly in the exec queue.
+
+#### PERFORMANCE NOTES
 
 50 flower agents will bring it down for pairwise-filtering, so we will have to write some custom tests for that. 100 flower agents kills the pairwise filtering altogether. For simple filtering, we can do 100 agent instances, each filtering the entire set of 100 agents 100 times(10,000 iterations) for a total of 100,000 iterations. In practice, we will not have that many filtering operations running so performance might be better.
 
-NEXT:
+#### NEXT?
 
 * [ ] Store Condition object using a unique hashable name based on signature in CONDITIONS
 
+## S16 W2
+
+I'm at the point where I need to document the system so Ben can use that. I'll start by reviewing the old diagrams and seeing what needs to be added to it.
+
+* [ ] look at the new files in sim, and copy to hierarchy
+* [ ] add new classes to the other one
+* [ ] make a diagram explaining the script engine
+
+As I'm going through the documentation, I see the need to blueprint the various kinds of programs in the system, and designate homes for them.
+
+* Reviewed the diagrams and wrote some starter docs for the main StackMachine objects, **documenting each class method** and making **a list of all the opcodes**.
+
+Here's a list of **possible oversights** that I noticed:
+
+
+
+* What I am calling "SM_Conditional" in SM_State is not quite accurate. It might be better named "SM_ComparisonUnit"
+* the props and methods map are used to store only *scriptable* methods.
+* Features are called with `decorate()` when an Agent is executing its `addFeature()` code. This code adds Props to a `props[featureName]` property containing a `DictionaryProp`, and the `prop()` method is overriden to dig the property out of the passed agent. 
+* Feature also implements `prop()` and `method()` differently; since features are not part of an object, they must receive the object. 
+  *  `prop()` returns the key of the stored Dictionary object
+  * `method()`  returns the local method of the feature, not the agent's method.
+* Should I move `exec_smc` to `SM_Object`? 

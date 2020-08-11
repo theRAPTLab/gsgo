@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   StackMachine Message
@@ -8,9 +9,6 @@ import { T_Opcode, T_Program, T_Message } from '../types/t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const BADMSG_ERR = 'message must be string; got';
-const BADFMT_ERR = 'invalid message format; got';
-//
 let MSG_COUNTER = 100;
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////

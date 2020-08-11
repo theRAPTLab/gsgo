@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   The Feature Class!
@@ -31,6 +32,7 @@ const NOT_METHOD_ERR = 'retrieved method is not a method; got';
 class Feature implements T_Feature {
   meta: { feature: string };
   methods: Map<string, T_Method>;
+  //
   constructor(name: string) {
     this.meta = {
       feature: name
@@ -40,20 +42,11 @@ class Feature implements T_Feature {
     // because features are not instance per agent, but instead
     // are code libraries. agents provide memory context and props
   }
-
   /**
    *  hook into lifecycle methods
    */
   initialize(phaseMachine: any) {
     // do something
-  }
-
-  /**
-   *  return name of this feature feature, used for adding a GSDictionary
-   *  property by name to Agent.props
-   */
-  name(): string {
-    return this.meta.feature;
   }
 
   /**
@@ -72,6 +65,14 @@ class Feature implements T_Feature {
   }
 
   /**
+   *  return name of this feature feature, used for adding a GSDictionary
+   *  property by name to Agent.props
+   */
+  name(): string {
+    return this.meta.feature;
+  }
+
+  /**
    *  return prop located in the agent
    *  remember: there is a single instance of all methods for the feature
    *  note: this is a mirror implementation of SM_Object.prop
@@ -81,6 +82,10 @@ class Feature implements T_Feature {
     const dict = agent.props.get(this.name()) as DictionaryProp;
     dict.addItem(key, prop);
   }
+  /**
+   *  Return prop given the passed agent and key. This prop is stored
+   *  in the agent's props map as a DictionaryProp, so this version
+   *  of prop returns the contents of the DictionaryProp! */
   prop(agent: T_Agent, key: string): T_Scopeable {
     const dict = agent.props.get(this.name()) as DictionaryProp;
     return dict.getItem(key);
