@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/app_srv",
-  "version": "0.0.1-alpha.6",
+  "version": "0.0.1-alpha.7",
   "description": "GEMSTEP AppServer",
   "main": "index.js",
   "scripts": {
@@ -57,7 +57,7 @@
     "ws": "^7.2.5"
   },
   "dependencies": {
-    "@gemstep/globals": "^0.0.1-alpha.6",
+    "@gemstep/globals": "^0.0.1-alpha.7",
     "debounce": "^1.2.0",
     "hashids": "^2.2.1",
     "http-proxy-middleware": "^1.0.3",
