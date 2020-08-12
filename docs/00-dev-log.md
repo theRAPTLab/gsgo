@@ -87,8 +87,8 @@ Here's a list of **possible oversights** that I noticed:
 
 Updated System Diagrams
 
-* [Module Hierarchy DR04](https://whimsical.com/VZqkMQLW4STPG4bj4nLqq3)
-* [System Types DR04](https://whimsical.com/B4iVN3UN9tsWq86QczhftA)
-* [System Flowchart DR04](https://whimsical.com/3VUjwb6zxn1FkRYUtFmwZ4)
+* [SIM Modules DR04](https://whimsical.com/VZqkMQLW4STPG4bj4nLqq3)
+* [SIM Types DR04](https://whimsical.com/B4iVN3UN9tsWq86QczhftA)
+* [SIM Flowchart DR04](https://whimsical.com/3VUjwb6zxn1FkRYUtFmwZ4)
 * [System Phases DR04](https://whimsical.com/Hd6ztovsXEV4DGZeja1BTB)
 

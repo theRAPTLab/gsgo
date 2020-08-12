@@ -27,7 +27,7 @@
     "eslint-plugin-react-hooks": "^2.5.1",
     "lerna": "^3.22.1",
     "lerna-audit": "^1.2.0",
-    "multiview": "^3.0.0",
+    "multiview": "^3.0.1",
     "prettier": "^2.0.5",
     "typescript": "^3.8.3"
   },
