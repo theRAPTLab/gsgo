@@ -3,7 +3,6 @@
     "**/node_modules": true,
     "**/.next": true,
     "**/.storybook": true,
-    "**/ursys/server": true,
-    "**/ursys/client": true
+    "**/package-lock.json": true
   }
 }

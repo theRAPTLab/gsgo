@@ -11,10 +11,23 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
   "typescript.suggest.completeJSDocs": false,
-  "eslint.validate": ["javascript", "javascriptreact", "typescript", "typescriptreact"],
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
   "eslint.workingDirectories": [
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/.next": true,
+    "**/.storybook": true,
+    "**/ursys/server": true,
+    "**/ursys/client": true,
+    "**/package-lock.json": true
+  }
 }

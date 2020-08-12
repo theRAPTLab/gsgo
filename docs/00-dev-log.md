@@ -1,214 +1,94 @@
-SUMMARY [S01-S05 JAN 05-MAR 15](00-dev-archives/sprint-01-05.md) - initial research
+PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
-* Early specification and research
+**SUMMARY S12 JUN 08-JUN 21**
 
-SUMMARY [S06 MAR 16-MAR 29](00-dev-archives/sprint-06.md) - development tooling
+* W1: Agent simulation execution engine starts. Basic agent set/get, value types, condition types, phasemachine
+* W2: Agent collections, featurepacks, filters, and event+phase management started
 
-* Created **monorepo** w/ **lerna** in gsgo
-* Added Visual Studio Code essential configuration files to work across all packages in monorepo with Eslint, Typescript, Prettier, AirBnb
-* Organized and expanded **docs folder**
-* Establish process for managing **monorepo versioning**
+**SUMMARY S13 JUN 22-JUL 05**
 
-SUMMARY [S07 MAR 30-APR 12](00-dev-archives/sprint-07.md) - wireframing server, Material UI and NextJS
+* W1: features,agents,phases. gsgo clone repo. agent, agentset, event, pm module_init. agent template functions. agent and features into factories, composition. agent API and event forwarding. Conditions class design and message within workflow. test function encoding. 
+* W2:  condition class engine, simulation-data consolidations. program+stack machine research
 
-* Create **GemServer** package with VSCode subworkspace supporting local "npm run local" command and "launch.json" server debugging.
-* Figure out **Material UI theming and styling** and its relation to Material Design. 
-* **Documented** and created source code examples.
-* Figure out **NextJS** and server-side rendering implications.
-* Create custom NextJS configuration with best practice **theming and styling**, **stackable  screen-filling components** with **two-level navigation**. Also rudimentary **client-side data persistence**.
+**SUMMARY S14 JUL 06-JUL 19**
 
-MISSED INTERNAL TARGET for having USER-FACING GEMSCRIPT PROTOTYPE
+* W1: document [architecture](https://whimsical.com/Hd6ztovsXEV4DGZeja1BTB) so I can design [script engine](https://whimsical.com/N9br22U6RWCJAqSiNEHkGG).
+* W2: capture activity [interactive intents](https://docs.google.com/document/d/15_z_fw7Lp0qwFL_wPGhRSvNs4DiLxf0yoGR6JFmZdpA/edit) and define [stack machine opcodes](https://docs.google.com/spreadsheets/d/1jLPHsRAsP65oHNrtxJOpEgP6zbS1xERLEz9B0SC5CTo/edit#gid=934723724).
 
-* sri priority: develop stable platforms and standards that will prevent headaches from recurring.
-* sri priority: outline systems and communication first, because they are more complex.
+**SUMMARY S15 JUL 20-AUG 02**
 
-SUMMARY [S08 APR 13-APR 26](00-dev-archives/sprint-08.md) - wireframing documentation system, skeleton app navigation
+* W1: opcode design, agent-script interaction design, diagram entire system
+* W2: refactor to match system model, implement opcode/function execution engine, simplify system
 
-* Added ReactMarkdown, URLayout page grid, URWireframe components
-* Reviewed Functional Draft, created placeholder components and navigation in GEM_SRV
-* System Wireframing with Named Components begins
+**SUMMARY S16 AUG 03-AUG 16**
 
-SUMMARY [S09 APR 27-MAY 10](00-dev-archives/sprint-09.md) - gemscript app outline begins, ursys network porting
-
-* Review original Function Spec Tab Layout; interpreted into a working page flow
-* New [branching conventions](20-tooling/21-branch-flow.md) specified
-* NextJS: custom server. client and server code injection points for URSYS
-* URSYS: convert to package library. URNET socket server. URNET client injection.
-* URSYS: URLINK local publish, subscribe, signal. React custom hook interface.
-
-SUMMARY S10 MAY 11-MAY 24
-
-* WIP
+* W1
 
 ---
 
-# 6.2. URSYS FOUNDATION FOR SIMULATION PROTOTYPE (cont'd)
+## S16 W1
 
-## May 13.1 Finish URSYS LocalCall testing
+### Wed Aug 05 (summarized)
 
-Ok, let's get the URSYS CALL tested, then implement the minimum for EXEC. I think this might take a couple of hours.
+* Defined preliminary  `I_Comparator` type (class `SM_Comparator`) 
+* Test a simple proximity test program with new opcodes for conditionals. 
 
-* make a test button in Welcome
-* update to next 9.4.0 because better debugging
-* add npx-audit, multiview startup to gemsrv
-* export Call
-* Rename URLINK to URCHAN, because channels are more accurate. 
-* Also added notes on channel architecture with publish, subscribe, call and the slightly different semantics for future thinking. What are channels anyway? Our implementation has an unresolved smell to it to make it much simpler, methinks.
+YAY! It seems to work!
 
-NOTES:
+### Thu Aug 06 (summarized)
 
-* had to use separate URLINK instance for subscribe functions for publisher functions, because Publish and Call will check for "same origin". Signal does not. This needs an eventual refactoring...once we write tests for URSYS.
-* Perhaps the UI methods should implement a separate mirroring call by using different channels.
-* Should I renamed URLINK to URCHAN? They sort of are channels. 
-* I forgot that Call has to return data so the promise receives something. Do we have a reference?
+ Now we need to implement **messages** that can be sent to an agent.
 
-## May 13.2 Package
+* defined `message` object and properties (name, data)
+* redefined `AgentSet` to be a "results container" class that is used by `SM_Comparator` . The idea is Conditions are stored in a Conditions Library and run during the `CONDITIONS_UPDATE` phase, and its stored tests are sent to `AgentSet` to do operations like **filter**, **interact** between 1 or 2 AgentTypes (defined as strings). The result is stored as **members** or **pairs**. The AgentSet can be reset afterwards so it can be run again. 
 
-This is a good place to commit. 
+### Fri Aug 07
 
-* cleaned up `npm start` that Joshua reported not working (expanded GEM server is the new model, others are incompatible at the moment due to duplicated URSYS servers).
-* cleaned up URSYS Call test
+* [x] Make the Condition object store AgentSet, TestProgram, ExecProgram
+* [x] During CONDITION_UPDATE, call all conditions and either `filter()` or `interact()`  to gather `members` and `pairs`
+* [x] At end of CONDITION_UPDATE, walk either `members` or `pairs` and **queue ExecProgram** in a **message**
 
-## May 14.1 Implement EXEC Lifecycle
+I did have to re-add `stackToScope` and jigger the typing. It's not ideal but I'm not sure how else to handle it.
 
-I'm not sure exactly what this entails, but the minimum is to review UREXEC and figure out how to wedge it into `_app.jsx`. 
+DONE! First pass! There is no message filtering on the agents, so `agentSet.sendResults()` will invoke a new `Message` with type `'exec'` which will be shoved directly in the exec queue.
 
-* update the phase list. We might want to make this something that can be initialized from the server since different apps may have different lifecycles. Punting for now. Created new [urexec reference](01-architecture/02-urexec.md). 
+#### PERFORMANCE NOTES
 
-* implemented preliminary `ExecuteGroup()` placeholder, test that it is callable from `_app.jsx`.
+50 flower agents will bring it down for pairwise-filtering, so we will have to write some custom tests for that. 100 flower agents kills the pairwise filtering altogether. For simple filtering, we can do 100 agent instances, each filtering the entire set of 100 agents 100 times(10,000 iterations) for a total of 100,000 iterations. In practice, we will not have that many filtering operations running so performance might be better.
 
-* next: implement `Execute()`, looking at
+#### NEXT?
 
-  ```js
-  // parallel
-  const [number1, number2] = await Promise.all([randomNumber(), randomNumber()]);
-  // serial
-  const number1 = await randomNumber();
-  const number2 = await randomNumber();
-  ```
+* [ ] Store Condition object using a unique hashable name based on signature in CONDITIONS
 
+## S16 W2
 
-## May 17.1 Implement EXEC Lifecycle (cont'd)
+I'm at the point where I need to document the system so Ben can use that. I'll start by reviewing the old diagrams and seeing what needs to be added to it.
 
-Looking at `_app.jsx`, we're starting to start the EXEC module. This all happens in an effect in MyApp:
+* [ ] look at the new files in sim, and copy to hierarchy
+* [ ] add new classes to the other one
+* [ ] make a diagram explaining the script engine
 
-```js
-  useEffect(() => {
-    // placeholder exec
-    (async () => {
-      UR.ExecuteGroup('PHASE_BOOT');
-      UR.ExecuteGroup('PHASE_INIT');
-      UR.ExecuteGroup('PHASE_LOAD');
-      UR.ExecuteGroup('PHASE_RUN');
-      UR.ExecuteGroup('PHASE_UNLOAD');
-      await UR.Connect(urProps);
-      APPSTATE.StartTimer();
-    })();
-  }, []);
-```
+As I'm going through the documentation, I see the need to blueprint the various kinds of programs in the system, and designate homes for them.
 
-To make this work for real:
+* Reviewed the diagrams and wrote some starter docs for the main StackMachine objects, **documenting each class method** and making **a list of all the opcodes**.
 
-* run PHASE_BOOT, PHASE_INIT, PHASE_LOAD, PHASE_RUN in the effect
-* run PHASE_UNLOAD as a cleanup function on unmount
-* move `await UR.Connect()` and `APPState.StartTimer()` to the appropriate hook in the module that needs to do it.
+Here's a list of **possible oversights** that I noticed:
 
-### **Q. Where does `UR.Connect()` belong?**
+* What I am calling "SM_Conditional" in SM_State is not quite accurate. It might be better named "SM_Comparator"
+* the props and methods map are used to store only *scriptable* methods.
+* Features are called with `decorate()` when an Agent is executing its `addFeature()` code. This code adds Props to a `props[featureName]` property containing a `DictionaryProp`, and the `prop()` method is overriden to dig the property out of the passed agent. 
+* Feature also implements `prop()` and `method()` differently; since features are not part of an object, they must receive the object. 
+  *  `prop()` returns the key of the stored Dictionary object
+  * `method()`  returns the local method of the feature, not the agent's method.
+* Should I move `exec_smc` to `SM_Object`?  NAH
+* I should rename interfaces from `T_State` to `I_State`, and so on. This is more standard (and more correct, though Interfaces can be used as Types when specifying type values.)
 
->  Probably `UR_INIT`. Note that the lifecycle hooks aren't events, but hooks. I wrote up the [difference](01-architecture/02-asynch.md). Basically hooks are **when our code needs to do the right thing** to startup properly.
+### Wednesday Aug 12
 
-An issue is that we don't have reliable client-side runtime control until `_app.jsx` is loaded. The earliest we can guarantee app-wide browser-side code is in the `useEffect()` of `MyApp`. 
+Updated System Diagrams
 
-I think I need to **rename lifecycle hooks** so they clearly indicate that we're invoking them from URSYS so user code has an opportunity to participate in the lifecycle....ok, that's done. These are now more like STATE GROUPS
-
-## MAY 18.1 Inserting Lifecycle Functions
-
-Yesterday I worked out the meaning of hooks as the URSYS lifecycle synchronization mechanism. This is where user code has the opportunity to make use of the URSYS lifecycle. There is some internal code that handles stuff for us, but relies on the URSYS HOOK system to know when to do it.
-
-When porting URSYS to a new system, we have to figure out where to insert the engine that drives those lifecycle phases. This is the implementation specific part of URSYS. Figuring it out for NextJS is a new puzzle.
-
-I've expanded the list a bit again, because the rules are:
-
-* PHASES execute one after the other under system control. 
-* OPERATIONS within a PHASE will be completed before the next PHASE runs. However, the ORDER of operations is not guaranteed.
-* To particulate in the URSYS lifecycle, your user code HOOKS into an OPERATION by name. Your hook function may receive data. Your hook function can return a Promise to ensure that it completes its operation. 
-
-Let's clean things up a bit, removing the old SCOPE requirements.
-
-* [x] removed `REACT_PHASES`
-* [x] renamed PHASES to OPS for consistency in new schema
-* [x] move UR.Connect to internal URSYS module?
-* [x] remove `SetScopedPath()`
-* [x] add SystemBoot, SystemUnload
-* [x] rename SubscribeHook to SystemHook
-* [x] fix asynchronous phase_group exec
-
-At this point, we can kick off the entire system using `SystemBoot()` and hook into the lifecycle using `SystemHook()` Yay! 
-
-## MAY 18.2 Lifecycle Run Logic
-
-The system heartbeat  runs independently of React's lifecycle to do an orderly startup of our system modules. We want to implement a "Phase Counter" that walks through all the phases in-order sequentially.
-
-* [x] implement System* interface and asynchronous run management
-* [x] implement update
-* [x] implement animframe
-* [x] implement reset
-
-## May 20.1 Fix remaining URNET issues
-
-TODO
-
-* [x] reduce the update/animFrame overhead as much as possible
-
-Why do we even want to do this? urProps contain the HOST, PORT, and potentially a unique SESSION id. 
-
-## May 21.1 Continue fixing remaining URNET issues
-
-* [x] **urProps (now netProps) isn't being passed from _app.jsx to URNET.Connect**
-  UR.SystemBoot() now receives them along with autoRun, update, animFram and checks
-  The netProps options need to be stored in a central UR database for the current client connection...done
-  Now URNET.Connect needs to get the broker info from the new client-session module...
-  server-urnet StartNetwork returns options { port, uaddr }. We also need host
-* [x] **pages/api/urnet.js is not dynamic**
-  Remove the /pages/api/urnet...now replaced in the _start custom server with a call to URSYS so it's all contained there.
-
-## May 21.2 Now what?
-
-GEMSRV is now capable of starting up completely without hardcoded connection points; you just have to point to the server and it will automatically connect to URSYS by grabbing information from urnet/getinfo...here's some stuff to put off:
-
-* [ ] insert interrupt management into exec ... eventually
-* [ ] make ursys-react ... eventually
-* [ ] port faketrack ... soon
-
-We also have to port FakeTrack over at some point for input data.
-
-Going to nap and then tackle the SIM STUFF. I think the first thing to do is write the GAMELOOP somewhere so it prints stuff out. Then maybe make a simple button panel. Then maybe the Agent class as a set of composable functions. Yeah composition!
-
-* [x] fixed bug in server-urnet, where ws.Server was initialized with host 'localhost' instead of its own ip address, which caused the socket server to refuse remote connections.
-
-## May 21.3 Still Thursday
-
-Moving list of immediate steps to stick into the current work:
-
-* [ ] insert gameloop lifecycle into exec
-* [ ] write agent base class
-* [ ] write costume, location, input placeholders
-* [ ] write interaction set code
-* [ ] write interaction processing
-
-Free thinking on the inserting the gameloop...hm, I guess that would have to be somewhere in a simulation module. **where will that live?** I think it will be some kind of black box with its own API and of course its own lifecycle. It's similar to EXEC.
-
-* clean up info text
-* write a new debug module
-
-## May 22.1 Cleaning up
-
-Yesterday I wrote a new PROMPTS module, and have just finished replacing it. It will make centralized debug messages much easier to manage while looking good for both the server and the client.
-
-* cleaned up debug module, added ability to disable console output from one place
-* removed console-styles and old prompts modules, renamed debug module to prompts
-
-## May 22.2 Inserting Simulation Update
-
-
+* [SIM Modules DR04](https://whimsical.com/VZqkMQLW4STPG4bj4nLqq3)
+* [SIM Types DR04](https://whimsical.com/B4iVN3UN9tsWq86QczhftA)
+* [SIM Flowchart DR04](https://whimsical.com/3VUjwb6zxn1FkRYUtFmwZ4)
+* [System Phases DR04](https://whimsical.com/Hd6ztovsXEV4DGZeja1BTB)
 

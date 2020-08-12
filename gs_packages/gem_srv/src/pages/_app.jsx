@@ -26,12 +26,15 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import { useURSubscribe } from '../hooks/use-ursys';
 ///
 import theme from '../modules/style/theme';
+import { SITE } from './_navmenu.json';
+// simulation components
 import APPSTATE from '../modules/appstate';
+import SIM from '../modules/sim/runtime';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompts.makeLogHelper('_APP');
-UR.Prompts.printTagColors();
+const PR = UR.util.PROMPTS.makeLogHelper('_APP');
+UR.util.PROMPTS.printTagColors();
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,17 +58,22 @@ export default function MyApp(props) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
     // URSYS start
-    console.log(...PR('got netprops', netProps));
-    UR.Initialize();
-    UR.SystemBoot({
-      autoRun: true,
-      doUpdates: true,
-      doAnimFrames: true,
-      netProps
+    // 1. Boot URSYS lifecycle independent of React
+    UR.SystemHookModules([SIM, APPSTATE]).then(() => {
+      UR.SystemBoot({
+        autoRun: true,
+        netProps
+      });
     });
-    // when _app unmounts, shutdown
+
+    // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
-      UR.SystemUnload();
+      console.log(...PR('unmounting _app'));
+      UR.SystemUnhookModules().then(() => {
+        UR.SystemUnload();
+      });
+      // force page reload
+      window.location.reload();
     };
   }, []);
 
@@ -76,6 +84,8 @@ export default function MyApp(props) {
       out += ` [${key}]:${data[key]}`;
     });
     console.log(...PR(out));
+    data._app = 'hello from _app';
+    return data;
   }
   useURSubscribe('HELLO_URSYS', handleHello);
 
@@ -83,7 +93,7 @@ export default function MyApp(props) {
   return (
     <StylesProvider jss={jss}>
       <Head>
-        <title>GEMSTEP</title>
+        <title>{SITE.title}</title>
         <meta
           name="viewport"
           content="minimum-scale=1, initial-scale=1, width=device-width"

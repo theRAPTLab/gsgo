@@ -1,6 +1,6 @@
 {
   "name": "@gemstep/app_srv",
-  "version": "0.0.1-alpha.5",
+  "version": "0.0.1-alpha.6",
   "description": "GEMSTEP AppServer",
   "main": "index.js",
   "scripts": {
@@ -46,7 +46,7 @@
     "source-map-loader": "^0.2.4",
     "style-loader": "^1.1.2",
     "tracer": "^1.0.3",
-    "ts-loader": "^6.2.1",
+    "ts-loader": "^7.0.4",
     "typescript": "^3.8.3",
     "webpack": "^4.41.5",
     "webpack-cli": "^3.3.11",
@@ -57,7 +57,7 @@
     "ws": "^7.2.5"
   },
   "dependencies": {
-    "@gemstep/globals": "^0.0.1-alpha.5",
+    "@gemstep/globals": "^0.0.1-alpha.6",
     "debounce": "^1.2.0",
     "hashids": "^2.2.1",
     "http-proxy-middleware": "^1.0.3",

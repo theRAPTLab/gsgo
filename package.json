@@ -3,10 +3,11 @@
   "private": true,
   "scripts": {
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
-    "audit": "npx audit",
+    "audit": "lerna bootstrap && lerna-audit",
     "build": "lerna run build",
     "start": "npm run build && multiview [npm run gem]",
     "admin": "npm run build && lerna run dev:admin --stream --no-prefix",
+    "ursys": "#ERR 'ursys is not runnable from lerna root'",
     "app": "lerna run dev:app --stream --no-prefix",
     "gem": "npm run build && lerna run dev:gem --stream --no-prefix",
     "xplay": "npm run build && lerna run dev:xplay --stream --no-prefix",
@@ -24,13 +25,15 @@
     "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-react": "^7.19.0",
     "eslint-plugin-react-hooks": "^2.5.1",
-    "lerna": "^3.20.2",
+    "lerna": "^3.22.1",
     "lerna-audit": "^1.2.0",
-    "multiview": "^3.0.0",
-    "prettier": "^1.19.1",
+    "multiview": "^3.0.1",
+    "prettier": "^2.0.5",
     "typescript": "^3.8.3"
   },
   "dependencies": {
+    "deepmerge": "^4.2.2",
+    "fs-extra": "^8.1.0",
     "ip": "^1.1.5",
     "minimist": "^1.2.5",
     "shelljs": "^0.8.3"

@@ -81,7 +81,7 @@ function URTabbedView(props) {
       <Tabs
         value={subTabIndex}
         onChange={handleChange}
-        aria-label="GEMSTEP application modes"
+        aria-label="application modes"
         className={classes.tabs}
       >
         {tabs}

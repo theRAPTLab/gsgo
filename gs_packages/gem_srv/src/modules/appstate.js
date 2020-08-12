@@ -8,7 +8,7 @@ const UR = require('@gemstep/ursys/client');
 
 /// CREATE CHEESEBALL STORE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompts.makeLogHelper('APST');
+const PR = UR.util.PROMPTS.makeLogHelper('APST');
 
 const STORE = {
   isBrowser: false,
@@ -50,7 +50,7 @@ function getRoute() {
   return ROUTE;
 }
 
-function StartTimer() {
+function UR_ModuleInit() {
   if (typeof window === 'object') {
     console.log(
       ...PR('!!! SETTING imperative-style timer in declarative world!')
@@ -76,4 +76,4 @@ function StartTimer() {
   }
 }
 
-module.exports = { get, set, setRoute, getRoute, StartTimer };
+module.exports = { get, set, setRoute, getRoute, UR_ModuleInit };

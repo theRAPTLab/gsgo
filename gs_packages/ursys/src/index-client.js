@@ -1,20 +1,21 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS C:OEMT
-
-  chrome:   events, exec, extensions, link, network, pubsub
-  commmon:  datamap, messager, netmessage, valuebinding, datestring, session
+  URSYS CLIENT MAIN ENTRY
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URChan = require('./client-urchan');
-const URNet = require('./client-urnet');
+const URChannel = require('./client-channel');
+const URNet = require('./client-network');
 const URExec = require('./client-exec');
-const Prompts = require('./util/prompts');
+const PROMPTS = require('./util/prompts');
 
-/// META-DATA /////////////////////////////////////////////////////////////////
+/// CLASSES ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PhaseMachine = require('./class-phase-machine');
+
+/// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** these properties are exported from the library so you can tell if the
  *  ur instance you're using is serverside or clientside, if that needs
@@ -30,85 +31,76 @@ const META = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// to be implemented
 const Events = {};
-const Exec = {};
 const Extensions = {};
 const PubSub = {};
+const PR = PROMPTS.makeLogHelper('USYS');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URCHAN_SUB = new URChan('ursys-sub');
-const URCHAN_PUB = new URChan('ursys-pub');
-
-/// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** initialize dependent libraries
- */
-const Initialize = () => {
-  // autoconnect to URSYS network during NET_CONNECT
-  URExec.SystemHook(
-    'NET_CONNECT',
-    () =>
-      new Promise((res, rej) =>
-        URNet.Connect(URCHAN_SUB, { success: res, failure: rej })
-      )
-  );
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** deallocate any system resources assigned during Initialize
- */
-const Shutdown = () => {
-  //
-};
+const nc_sub = new URChannel('ursys-sub');
+const nc_pub = new URChannel('ursys-pub');
+let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** connect to URSYS network
+/** initialize modules that participate in UR EXEC PhaseMachine
  */
-const Connect = options => {
-  return URNet.Connect(URCHAN_SUB, options);
-};
-/** forward URCHAN methods
+async function SystemHookModules(initializers = []) {
+  if (URSYS_RUNNING) {
+    console.log(...PR('SystemModulesInit: URSYS already running!!!'));
+    return Promise.reject();
+  }
+  // autoconnect to URSYS network during NET_CONNECT
+  URExec.HookModules(initializers).then(() => {
+    URExec.SystemHook(
+      'NET_CONNECT',
+      () =>
+        new Promise((resolvbe, reject) =>
+          URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
+        )
+    );
+  });
+  URSYS_RUNNING = true;
+  return Promise.resolve();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** deallocate any system resources assigned during Initialize
  */
-const { Subscribe, Unsubscribe } = URCHAN_SUB;
-const { LocalSignal, LocalPublish, LocalCall } = URCHAN_PUB;
-/** forward UREXEC methods
- */
-const {
-  SystemBoot,
-  SystemHook,
-  SystemRun,
-  SystemRestage,
-  SystemReboot,
-  SystemUnload
-} = URExec;
+async function SystemUnhookModules() {
+  if (!URSYS_RUNNING) {
+    console.log(...PR('SystemModulesStop: URSYS is not running!!!'));
+    return Promise.resolve();
+  }
+  // close the network
+  await URNet.Close();
+  URSYS_RUNNING = false;
+  return Promise.resolve();
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   ...META,
-  // MAIN API
-  Initialize,
-  Shutdown,
-  Connect,
-  Subscribe,
-  Unsubscribe,
-  Publish: LocalPublish,
-  Signal: LocalSignal,
-  Call: LocalCall,
-  // SERVICES API
-  Events,
-  Exec,
-  Extensions,
-  URChan,
-  URNet,
-  PubSub,
-  // EXEC API
-  SystemBoot,
-  SystemHook,
-  SystemRun,
-  SystemRestage,
-  SystemReboot,
-  SystemUnload,
-  // CONVENIENCE
-  Prompts
+  // SYSTEM PHASEMACHINE START/STOP
+  SystemHookModules,
+  SystemUnhookModules,
+  // FORWARDED PUB/SUB
+  Subscribe: nc_sub.Subscribe,
+  Unsubscribe: nc_sub.Unsubscribe,
+  Publish: nc_pub.LocalPublish,
+  Signal: nc_pub.LocalSignal,
+  Call: nc_pub.LocalCall,
+  // FORWARDED UR EXEC PHASEMACHINE
+  SystemBoot: URExec.SystemBoot,
+  SystemHook: URExec.SystemHook,
+  SystemRun: URExec.SystemRun,
+  SystemRestage: URExec.SystemRestage,
+  SystemReboot: URExec.SystemReboot,
+  SystemUnload: URExec.SystemUnload,
+  // CONVENIENCE CLASS ACCESS
+  class: {
+    PhaseMachine
+  },
+  // CONVENIENCE MODULES ACCESS
+  util: { PROMPTS }
 };

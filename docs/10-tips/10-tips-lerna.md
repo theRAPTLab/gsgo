@@ -18,6 +18,18 @@ In GEMSTEP, our monorepo includes the additional tooling:
 * Visual Code workspace file and workspace settings.
 * Additional Node packages in `package.json` for running the `gsutil` development tool.
 
+## How do I create a new Lerna monorepo?
+
+it's pretty easy! If you have `lerna` installed globally, create a "fixed/locked mode" repo with this. All versions in all packages are synchronized.
+
+```
+lerna init
+```
+
+Then edit  `package.json` as needed. You should probably change the name.
+
+
+
 ## How do I add a new package to the monorepo?
 
 Assume you want to add a new package named `mypackage` using the `@gemstep` scope. Make sure you are in the monorepo root, then issue the following commands:
@@ -102,11 +114,13 @@ This is due to npm not liking symlinked files :( The workaround is to use the `n
 
 # Lerna Repo Management
 
-## What is the best way to commit from dev to master?
+## Version Releases: What is the best way to commit from dev to master?
 
-Our Lerna config allows version management only in the master branch. 
+Our Lerna config allows version management **only** in the master branch. We update our tagged releases in two steps: (1) make an integration branch and test it (2) merge the tested integration branch onto `master` and run the `lerna version prerelease` command.
 
-The steps preceding versioning are:
+PRE-STEP:
+
+Note: In the initial stages of development, we just use `dev` instead of formal integration branches. Follow steps 1-3, then in steps 7-9 substitute `dev` for `release-candidates`. 
 
 1. merge all branches to `dev` for integration
 2. fix any errors in `dev` using `fix-` branches
@@ -115,10 +129,10 @@ The steps preceding versioning are:
 5. have someone test the `release-candidates` merge request branch
 6. accept the merge request
 
-Then, to apply version updates you need to do this from your local machine:
+VERSION: to apply version updates you need to do this from your **local** machine:
 
 7. fetch the repo
-8. merge `release-candidates` onto `master` 
+8. merge `release-candidates` onto `master` (but **don't** commit yet...make sure option is unchecked in merge dialog)
 9. enter `lerna version prerelease` which will update the version across all packages, add a version tag, AND push to `master` for you!
 
 ## How do I manage versions with Lerna?
@@ -182,3 +196,4 @@ The only solution I know of is to ensure that the versions in the packages also 
 ### When I npm run bootstrap, webpack throws "module not found" errors during build
 
 Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 
+

@@ -532,10 +532,10 @@ NetPacket.GlobalCleanup = () => {
 NetPacket.GlobalOfflineMode = () => {
   m_mode = M_STANDALONE;
   if (m_netsocket) {
-    console.warn(PR, 'STANDALONE MODE: NetPacket disabling network');
+    console.log(...PR('STANDALONE MODE: NetPacket disabling network'));
     m_netsocket = null;
     let event = new CustomEvent('URSYSDisconnect', {});
-    console.log('dispatching event to', document, event);
+    console.log(...PR('STANDALONE MODE: sending URSYSDisconnect'));
     document.dispatchEvent(event);
   }
 };

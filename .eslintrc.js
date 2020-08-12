@@ -87,6 +87,8 @@ module.exports = {
     'camelcase': 'off',
     'comma-dangle': ['error', 'never'],
     'no-underscore-dangle': 'off',
+    'lines-between-class-members': 'off',
+    'no-bitwise': 'off',
     '@typescript-eslint/camelcase': 'off',
     '@typescript-eslint/no-use-before-define': 1,
     '@typescript-eslint/no-unused-vars': 'warn',

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# Dev Environment Installer Helper for GEMSTEP
+# Dev Environment Installer Helper
 # Prints out recommended course of action for setting up
 # the development requirements
 
 echo
-echo -e "\x1B[1;44m GEMSTEP Dev Environment Installer Helper \x1B[0m"
+echo -e "\x1B[1;44m Dev Environment Installer Helper \x1B[0m"
 echo "This utility will determine what needs to be installed so you"
-echo "can run GEMSTEP, then print a list of commands."
+echo "can run the dev environment, then print a list of commands."
 
 # utility
 exists() { 
@@ -180,13 +180,14 @@ prOut
 cliOut
 
 echo
-echo "With luck your $MACHINE system can now run GEMSTEP! To test, type..."
+echo "With luck your $MACHINE system can now run the dev environment!"
+echo "To test, type..."
 echo -e "\x1B[93m" # yellow
 echo "npm start"
 echo -e "\x1B[0m" # reset
 echo "...to launch all servers and then browse to localhost in the Chrome"
 echo "browser. If you are a developer, we recommend using Visual Studio Code"
-echo "to open the gsgo folder and install the suggested extensions to conform"
+echo "to open the root folder and install the suggested extensions to conform"
 echo "to the dev team's code standards."
 echo
 echo "Enjoy! If you have questions just ask Sri!"

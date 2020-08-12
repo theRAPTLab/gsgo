@@ -1,9 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS SERVER
-
-  node:     database, express, logger, network, serve
-  commmon:  datamap, messager, netmessage, valuebinding, datestring, session
+  URSYS SERVER MAIN ENTRY
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,8 +8,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { parse } = require('url');
 const requestIp = require('request-ip');
-const URNet = require('./server-urnet');
-const Prompts = require('./util/prompts');
+const NETWORK = require('./server-urnet');
+const PROMPTS = require('./util/prompts');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,11 +29,11 @@ const META = {
 
 /// SERVER-SIDE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URStore = {};
-const URWeb = {};
-const URLogger = {};
-// const URNet = {};
-const URMedia = {};
+const STORE = {};
+const EXPRESS = {};
+const LOGGER = {};
+// const NETWORK = {};
+const MEDIA = {};
 
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,7 +54,7 @@ function Shutdown() {
 /** Start the URNET socket server
  */
 function StartServer(options) {
-  m_network_options = URNet.StartNetwork(options);
+  m_network_options = NETWORK.StartNetwork(options);
   return m_network_options;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,11 +115,13 @@ module.exports = {
   GetNetBroker,
   HttpRequestListener,
   // SERVICES API
-  URStore,
-  URWeb,
-  URLogger,
-  URNet,
-  URMedia,
+  STORE,
+  EXPRESS,
+  LOGGER,
+  NETWORK,
+  MEDIA,
   // CONVENIENCE
-  Prompts
+  util: {
+    PROMPTS
+  }
 };

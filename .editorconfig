@@ -9,7 +9,7 @@
 root = true
 
 # settings for our default files
-[*.{js,jsx,ts,tsx,json,md,html}]
+[*.{js,jsx,ts,tsx,json,md,html,txt}]
 indent_style = space
 indent_size = 2
 end_of_line = lf
@@ -20,11 +20,3 @@ insert_final_newline = true
 # trailing whitespace means something in markdown
 [*.md]
 trim_trailing_whitespace = false
-
-[*.txt]
-indent_style = space
-indent_size = 4
-end_of_line = lf
-charset = utf-8
-trim_trailing_whitespace = true
-insert_final_newline = true
