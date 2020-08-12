@@ -83,3 +83,12 @@ Here's a list of **possible oversights** that I noticed:
 * Should I move `exec_smc` to `SM_Object`?  NAH
 * I should rename interfaces from `T_State` to `I_State`, and so on. This is more standard (and more correct, though Interfaces can be used as Types when specifying type values.)
 
+### Wednesday Aug 12
+
+Updated System Diagrams
+
+* [Module Hierarchy DR04](https://whimsical.com/VZqkMQLW4STPG4bj4nLqq3)
+* [System Types DR04](https://whimsical.com/B4iVN3UN9tsWq86QczhftA)
+* [System Flowchart DR04](https://whimsical.com/3VUjwb6zxn1FkRYUtFmwZ4)
+* [System Phases DR04](https://whimsical.com/Hd6ztovsXEV4DGZeja1BTB)
+

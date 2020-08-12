@@ -95,10 +95,10 @@ class Feature implements I_Feature {
    *  note: this is a mirror implementation of SM_Object.prop
    */
   method(agent: I_Agent, key: string, ...args: any): any {
-    const method = this.methods.get(key);
-    if (typeof method === 'function') return method(agent, ...args);
-    if (Array.isArray(method)) return agent.exec_smc(method);
-    throw Error(`${NOT_METHOD_ERR} ${typeof method}`);
+    const m = this.methods.get(key);
+    if (typeof m === 'function') return m(agent, ...args);
+    if (Array.isArray(m)) return agent.exec_smc(m);
+    throw Error(`${NOT_METHOD_ERR} ${typeof m}`);
   }
 } // end of class
 

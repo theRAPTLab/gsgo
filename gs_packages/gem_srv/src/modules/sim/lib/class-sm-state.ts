@@ -23,7 +23,7 @@ export default class SM_State implements I_State {
     for (let i = num; i--; i > 0) arr.unshift(this.stack.pop());
     return arr;
   }
-  push(...args: number[]): void {
+  pushArgs(...args: number[]): void {
     this.stack.push(...args);
   }
 }

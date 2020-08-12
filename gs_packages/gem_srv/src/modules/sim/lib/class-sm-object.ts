@@ -1,5 +1,4 @@
 /* eslint-disable react/static-property-placement */
-
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Scopeable Stack Machine Object

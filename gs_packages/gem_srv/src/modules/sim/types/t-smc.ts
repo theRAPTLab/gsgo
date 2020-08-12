@@ -90,7 +90,7 @@ export interface I_State {
   peek(): T_Stackable;
   pop(): T_Stackable;
   popArgs(num: number): T_Stackable[];
-  push(...args: number[]): void;
+  pushArgs(...args: number[]): void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine condition

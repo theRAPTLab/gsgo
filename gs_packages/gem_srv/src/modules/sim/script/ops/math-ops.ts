@@ -17,55 +17,55 @@ const DBG = false;
 const add = (): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a, b] = STATE.popArgs(2);
-    STATE.push((a as number) + (b as number));
+    STATE.pushArgs((a as number) + (b as number));
   };
 };
 const addImmediate = (num: number): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a] = STATE.popArgs(1);
-    STATE.push((a as number) + num);
+    STATE.pushArgs((a as number) + num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const sub = (): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a, b] = STATE.popArgs(2);
-    STATE.push((b as number) - (a as number));
+    STATE.pushArgs((b as number) - (a as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const subImmediate = (num: number): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a] = STATE.popArgs(1);
-    STATE.push((a as number) - num);
+    STATE.pushArgs((a as number) - num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const mul = (): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a, b] = STATE.popArgs(2);
-    STATE.push((a as number) * (b as number));
+    STATE.pushArgs((a as number) * (b as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const mulImmediate = (num: number): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a] = STATE.popArgs(1);
-    STATE.push((a as number) * num);
+    STATE.pushArgs((a as number) * num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const div = (): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a, b] = STATE.popArgs(2);
-    STATE.push((a as number) / (b as number));
+    STATE.pushArgs((a as number) / (b as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const divImmediate = (num: number): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a] = STATE.popArgs(1);
-    STATE.push((a as number) / num);
+    STATE.pushArgs((a as number) / num);
   };
 };
 
@@ -74,7 +74,7 @@ const divImmediate = (num: number): T_Opcode => {
 const abs = (): T_Opcode => {
   return (agent: I_Agent, STATE: I_State): T_OpWait => {
     const [a] = STATE.popArgs(1);
-    STATE.push(Math.abs(a as number));
+    STATE.pushArgs(Math.abs(a as number));
   };
 };
 
