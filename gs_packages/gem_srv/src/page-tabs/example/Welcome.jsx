@@ -8,8 +8,8 @@
 import React, { useState } from 'react';
 import UR from '@gemstep/ursys/client';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
-import { WF } from '../page-blocks/URWireframe';
+import { View, Row, Cell, CellFixed, MD } from '../../page-blocks/URLayout';
+import { WF } from '../../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +44,7 @@ const useStyles = makeStyles(theme => ({
 function SystemHome() {
   const classes = useStyles();
   const [note, setNote] = useState('');
-  function handleButton(e) {
+  function handleButton(/*event*/) {
     console.groupCollapsed('>>> ASYNC CALL "HELLO_URSYS"');
     UR.Call('HELLO_URSYS', { value: 'cats' }).then(data => {
       console.groupEnd();

@@ -6,12 +6,12 @@
 
 import React, { useRef } from 'react';
 // left-side tabbed views
-import Welcome from '../page-tabs/Welcome';
-import SessionMgr from '../page-tabs/SessionMgr';
-import Simulator from '../page-tabs/Simulator';
-import Modeler from '../page-tabs/Modeler';
-import AssetMgr from '../page-tabs/AssetMgr';
-import Annotation from '../page-tabs/Annotation';
+import Welcome from '../page-tabs/example/Welcome';
+import SessionMgr from '../page-tabs/example/SessionMgr';
+import Simulator from '../page-tabs/example/Simulator';
+import Modeler from '../page-tabs/example/Modeler';
+import AssetMgr from '../page-tabs/example/AssetMgr';
+import Annotation from '../page-tabs/example/Annotation';
 // right-side documentation reference
 import DocSimObjects from '../components/DocSimObjects';
 import DocSimControls from '../components/DocSimControls';
