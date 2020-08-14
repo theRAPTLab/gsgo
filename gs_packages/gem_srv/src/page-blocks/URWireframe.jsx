@@ -16,6 +16,7 @@ import { makeStyles } from '@material-ui/core/styles';
 
 // utility components
 import wireframeStyles from '../modules/style/wireframing';
+import { Row, Cell } from './URLayout';
 import { MD } from '../components/MD';
 
 /// SHARED CUSTOM STYLES //////////////////////////////////////////////////////
@@ -24,6 +25,13 @@ import { MD } from '../components/MD';
 /// the useStyles() hook also can receive a parameter for further customization
 const useStyles = makeStyles(theme => {
   const space = `${theme.spacing(1)}px`;
+  const bgBorder = theme.palette.grey[400];
+  const bgColor = theme.palette.grey[400];
+  const summaryColor = theme.palette.grey[500];
+  //
+  const innerBgColor = theme.palette.grey[100];
+  const infoBorder = theme.palette.grey[100];
+  //
   return merge.all([
     {
       root: {
@@ -31,7 +39,7 @@ const useStyles = makeStyles(theme => {
         marginBottom: space
       },
       WFroot: {
-        opacity: 0.7
+        // opacity: 0.7,
       },
       titlebox: {
         padding: `0 0 0 ${space}`
@@ -40,15 +48,19 @@ const useStyles = makeStyles(theme => {
         marginTop: '-0.5em',
         paddingBottom: '0.5em',
         padding: `0 ${space}`,
-        color: theme.palette.grey[500]
+        color: summaryColor
       },
       description: {
+        backgroundColor: innerBgColor,
+        borderLeft: `1px dotted ${bgBorder}`,
+        borderRight: `1px dotted ${bgBorder}`,
+        borderBottom: `1px dotted ${bgBorder}`,
         fontSize: '1em',
         padding: space
       },
       info: {
-        backgroundColor: theme.palette.grey[50],
-        borderTop: `1px dotted ${theme.palette.grey[300]}`
+        backgroundColor: bgColor,
+        borderTop: `1px dotted ${infoBorder}`
       },
       compname: {
         fontFamily: 'monospace',
@@ -122,6 +134,41 @@ function WF(props) {
   );
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** cell-wrapped <WF>
+ *  example:
+ *  <Row>
+ *    <WFCell name='name', summary='short text', expanded=false>
+ *      child content will be put in collapsable section
+ *    </WFCell>
+ *  </Row>
+ */
+function CellWF(props) {
+  return (
+    <Cell>
+      <WF {...props} />
+    </Cell>
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** row-wrapped <WF>
+ *  example:
+ *  <RowWF>
+ *    <WFCell name='name', summary='short text', expanded=false>
+ *      child content will be put in collapsable section
+ *    </WFCell>
+ *  </RowWF>
+ */
+function RowWF(props) {
+  const { children, expanded = true, ...extra } = props;
+  return (
+    <WF {...extra} expanded={expanded}>
+      <Row>{children}</Row>
+    </WF>
+  );
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { WF, MD };
+export { WF, RowWF, CellWF, MD };

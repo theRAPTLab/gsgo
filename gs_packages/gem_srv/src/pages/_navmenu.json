@@ -2,6 +2,10 @@
   "SITE": {
     "title": "GEMSTEP"
   },
+  "DEVICE": {
+    "laptop": "LAPTOP GROUP SERVER",
+    "ipad": "IPAD GROUP PARTICIPANT"
+  },
   "NAVMENU": [
     { "label": "Wireframe", "href": "/" },
     { "label": "Notes", "href": "/notes" }

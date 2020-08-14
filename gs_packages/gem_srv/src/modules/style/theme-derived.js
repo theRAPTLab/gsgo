@@ -30,20 +30,20 @@ import merge from 'deepmerge';
  */
 const addDerivedStyles = theme => {
   const fontMargin = theme.typography.htmlFontSize;
-
+  const bgColor = '#d0e0e0';
   // set layout-related styles here
   // the properties here (e.g. layoutJSS) are just for labeling clarity
   // and are not part of any system configuration
   const layoutJSS = {
     urScreenPage: {
-      backgroundColor: '#e0e0e0',
+      backgroundColor: bgColor,
       display: 'flex',
       flexFlow: 'column nowrap',
       height: '100vh',
       overflow: 'hidden'
     },
     urScrollableScreenPage: {
-      backgroundColor: '#e0e0e0',
+      backgroundColor: bgColor,
       display: 'flex',
       flexFlow: 'column nowrap'
       /* no height or overflow */
@@ -62,7 +62,9 @@ const addDerivedStyles = theme => {
   // other styles of application-wide interest
   // for individual components, use local makeStyles/useStyles/useTheme
   // conventions
-  const globalProperties = {};
+  const globalProperties = {
+    urBackgroundColor: bgColor
+  };
   // merge all styles together
   return merge.all([theme, layoutJSS, componentJSS, globalProperties]);
 };
