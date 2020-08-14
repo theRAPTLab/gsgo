@@ -38,7 +38,7 @@ const useStyles = makeStyles(theme => {
       },
       summary: {
         marginTop: '-0.5em',
-        marginBottom: '0.5em',
+        paddingBottom: '0.5em',
         padding: `0 ${space}`,
         color: theme.palette.grey[500]
       },
@@ -100,9 +100,10 @@ function WF(props) {
       </IconButton>
     );
   const Summary = () =>
-    summary ? <Box className={classes.summary}>{summary}</Box> : '';
+    summary ? <Box className={clsx(classes.summary)}>{summary}</Box> : '';
 
   // if you need read-only theme parameters directly in the component
+  // NOTE: [classes.WFroot] is a dynamic key for clsx...see docs
   return (
     <Box className={clsx(classes.root, { [classes.WFroot]: isWF })}>
       <Box display="flex" alignItems="center">
