@@ -6,12 +6,11 @@
 
 import React, { useRef } from 'react';
 // left-side tabbed views
-import Welcome from '../page-tabs/example/Welcome';
-import SessionMgr from '../page-tabs/example/SessionMgr';
-import Simulator from '../page-tabs/example/Simulator';
-import Modeler from '../page-tabs/example/Modeler';
-import AssetMgr from '../page-tabs/example/AssetMgr';
-import Annotation from '../page-tabs/example/Annotation';
+import Home from '../page-tabs/Home';
+import ModelBuild from '../page-tabs/ModelBuild';
+import ModelRun from '../page-tabs/ModelRun';
+import Test from '../page-tabs/Test';
+
 // right-side documentation reference
 import DocSimObjects from '../components/DocSimObjects';
 import DocSimControls from '../components/DocSimControls';
@@ -28,19 +27,18 @@ function Page() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <URView scrollable>
-      <URSiteNav />
+      <URSiteNav title="GEMSTEP Laptop Controller" />
       <Row>
+        {/* LEFT SIDE */}
         <Cell>
           <URTabbedView>
-            <Welcome label="Welcome" />
-            <SessionMgr label="Load" />
-            <Modeler label="Model" />
-            <Simulator label="Simulate" />
-            <Annotation label="Observe" />
-            <AssetMgr label="Images" />
+            <Home label="Home" />
+            <ModelBuild label="Edit" />
+            <ModelRun label="Run Model" />
           </URTabbedView>
         </Cell>
-        <CellFixed
+        {/* RIGHT SIDE */}
+        {/* <CellFixed
           style={{
             maxWidth: '320px',
             minWidth: '320px',
@@ -52,7 +50,7 @@ function Page() {
             <DocSimControls label="Controls" />
             <DocSystem label="Modules" />
           </URTabbedView>
-        </CellFixed>
+        </CellFixed> */}
       </Row>
     </URView>
   );
