@@ -92,3 +92,7 @@ Updated System Diagrams
 * [SIM Flowchart DR04](https://whimsical.com/3VUjwb6zxn1FkRYUtFmwZ4)
 * [System Phases DR04](https://whimsical.com/Hd6ztovsXEV4DGZeja1BTB)
 
+I've closed out the sim engine work with [Merge Request 9](https://gitlab.com/stepsys/gem-step/gsgo/-/merge_requests/9), and included the links above.
+
+
+

@@ -1,22 +1,26 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Simulator View
+  Interactions View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
-import { WF } from '../page-blocks/URWireframe';
+import { View, Row, Cell, CellFixed, MD } from '../../page-blocks/URLayout';
+import { WF } from '../../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### SIMULATE
+### SESSION MGR
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
+When logged in, can select what model or session to load, or create a new one.
 
+
+#### Categories for SessionTable:
+* name, model, group, classroom, author, date created, date modified
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -27,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Simulator() {
+function SessionMgr() {
   const classes = useStyles();
 
   return (
@@ -37,15 +41,18 @@ function Simulator() {
           <MD>{ELEMENTS}</MD>
         </CellFixed>
         <Cell>
-          <WF name="SimWorld" summary="" />
-          <WF name="SimWorldActions" summary="" />
-          <WF name="SimWorldInputs" summary="" />
-          <WF name="SelectedAgentProps" summary="" />
-          <WF name="SessionList" summary="" />
-          <WF name="SessionRun" summary="" />
-          <WF name="SessionStatus" summary="" />
-          <WF name="SessionTrackSelector" summary="" />
-          <WF name="RunControls" summary="" />
+          <WF name="LoginStatus" summary="" />
+          <WF
+            name="CurrentModelStatus"
+            summary="what model is currently loaded"
+          />
+          <WF
+            name="SessionTableCategories"
+            summary="sortable by category, filterable by keyword"
+          />
+          <WF name="SessionTable" summary="selectable session" />
+          <WF name="SessionActions" summary="add, load, edit, delete" />
+          <WF name="SessionEditor" summary="editable session descriptions?" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -55,4 +62,4 @@ function Simulator() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Simulator;
+export default SessionMgr;

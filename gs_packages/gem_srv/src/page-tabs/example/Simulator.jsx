@@ -1,22 +1,22 @@
-/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Annotate View
+  Simulator View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
-import { WF } from '../page-blocks/URWireframe';
+import { View, Row, Cell, CellFixed, MD } from '../../page-blocks/URLayout';
+import { WF } from '../../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ELEMENTS = `
-### ANNOTATION
+### SIMULATE
 `;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NOTES = `
+
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Agents() {
+function Simulator() {
   const classes = useStyles();
 
   return (
@@ -38,15 +38,14 @@ function Agents() {
         </CellFixed>
         <Cell>
           <WF name="SimWorld" summary="" />
-          <WF name="SimEventsFilter" summary="" />
-          <WF name="AgentListFilter" summary="" />
-          <WF name="InteractionListFilter" summary="" />
-          <WF name="SessionTrackFilter" summary="" />
-          <WF name="FilteredProps" summary="" />
-          <WF name="AnotationSelection" summary="" />
-          <WF name="AnotationControls" summary="" />
+          <WF name="SimWorldActions" summary="" />
+          <WF name="SimWorldInputs" summary="" />
+          <WF name="SelectedAgentProps" summary="" />
+          <WF name="SessionList" summary="" />
+          <WF name="SessionRun" summary="" />
           <WF name="SessionStatus" summary="" />
           <WF name="SessionTrackSelector" summary="" />
+          <WF name="RunControls" summary="" />
           <MD>{NOTES}</MD>
         </Cell>
       </Row>
@@ -56,4 +55,4 @@ function Agents() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Agents;
+export default Simulator;

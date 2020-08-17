@@ -11,5 +11,6 @@ module.exports = {
   printWidth: 82,
   singleQuote: true,
   quoteProps: 'preserve',
-  arrowParens: 'avoid'
+  arrowParens: 'avoid',
+  trailingComma: 'none'
 };

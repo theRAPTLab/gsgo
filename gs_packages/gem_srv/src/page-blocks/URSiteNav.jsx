@@ -28,6 +28,7 @@ import CONFIG from '../pages/_navmenu.json';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const { NAVMENU } = CONFIG;
+const { laptop, ipad } = CONFIG.DEVICE;
 
 /// CUSTOM STYLES FOR COMPONENT ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,9 +52,10 @@ const useStyles = makeStyles(theme =>
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: global theme properties are passed in _app.js by <ThemeProvider>
 /// See theme.js and theme-derived.js to customize theme properties
-function URSiteNav() {
+function URSiteNav(props) {
   const classes = useStyles();
   const router = useRouter();
+  const { title = CONFIG.SITE.title } = props;
 
   // calculate page index from matching router with NAVMENU structure
   const pageIndex = NAVMENU.findIndex(page => page.href === router.pathname);
@@ -101,7 +103,7 @@ function URSiteNav() {
       <Grid container justify="space-between" className={classes.container}>
         <Grid item>
           <Typography variant="h6" className={classes.title}>
-            MODELER
+            {title}
           </Typography>
         </Grid>
         <Grid item>

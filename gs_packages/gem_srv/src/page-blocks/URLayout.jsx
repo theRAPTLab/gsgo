@@ -22,26 +22,30 @@ import { MD } from '../components/MD';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create useStyles() hook with theme object included
 /// the useStyles() hook also can receive a parameter for further customization
-const useStyles = makeStyles(theme => ({
-  urscreen: theme.urScreenPage,
-  urscrollable: theme.urScrollableScreenPage,
-  urview: theme.urScreenView,
-  fixedHeight: {
-    minHeight: '100px'
-  },
-  flexRow: {
-    display: 'flex',
-    flexFlow: 'row nowrap',
-    flexGrow: 1
-  },
-  fixedWidth: {
-    width: '100'
-  },
-  flexWidth: {
-    flexGrow: 1
-  },
-  inset: { padding: `${theme.spacing(1)}px`, overflow: 'auto' }
-}));
+const useStyles = makeStyles(theme => {
+  const space = `${theme.spacing(1)}px`;
+  return {
+    urscreen: theme.urScreenPage,
+    urscrollable: theme.urScrollableScreenPage,
+    urview: theme.urScreenView,
+    fixedHeight: {
+      minHeight: '100px'
+    },
+    flexRow: {
+      display: 'flex',
+      flexFlow: 'row nowrap',
+      flexGrow: 1,
+      gap: space
+    },
+    fixedWidth: {
+      width: '100'
+    },
+    flexWidth: {
+      flexGrow: 1
+    },
+    cellBG: {}
+  };
+});
 
 /// UR LAYOUT COMPONENTS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
