@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   MODELER MAIN PAGE
@@ -9,16 +10,25 @@ import React, { useRef } from 'react';
 import Home from '../page-tabs/Home';
 import ModelBuild from '../page-tabs/ModelBuild';
 import ModelRun from '../page-tabs/ModelRun';
-import Test from '../page-tabs/Test';
 
-// right-side documentation reference
-import DocSimObjects from '../components/DocSimObjects';
-import DocSimControls from '../components/DocSimControls';
-import DocSystem from '../components/DocSystem';
 // ursys components
 import URSiteNav from '../page-blocks/URSiteNav';
 import URTabbedView from '../page-blocks/URTabbedView';
-import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
+import { URView, Row, CellFixed, Cell, TextView } from '../page-blocks/URLayout';
+
+/// GLOBAL NOTES //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const GLOBAL = `
+* size of panes are adjustable in edit mode
+* sizes should support planned activities
+`;
+
+/// TERMINOLOGY NOTES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TERMS = `
+* Visual Model
+* Tracked vs Untracked Agents
+`;
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,19 +48,22 @@ function Page() {
           </URTabbedView>
         </Cell>
         {/* RIGHT SIDE */}
-        {/* <CellFixed
+        <CellFixed
           style={{
-            maxWidth: '320px',
-            minWidth: '320px',
-            backgroundColor: 'white'
+            maxWidth: '240px',
+            minWidth: '240px',
+            backgroundColor: '#f7f0c0'
           }}
         >
           <URTabbedView>
-            <DocSimObjects label="Objects" />
-            <DocSimControls label="Controls" />
-            <DocSystem label="Modules" />
+            <TextView p={1} label="global">
+              {GLOBAL}
+            </TextView>
+            <TextView p={1} label="terms">
+              {TERMS}
+            </TextView>
           </URTabbedView>
-        </CellFixed> */}
+        </CellFixed>
       </Row>
     </URView>
   );

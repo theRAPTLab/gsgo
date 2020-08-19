@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/quotes */
+/* eslint-disable react/jsx-curly-brace-presence */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Modeler Run/Playback View
@@ -7,7 +9,16 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
-import { WF, RowWF, CellWF } from '../page-blocks/URWireframe';
+import {
+  WF,
+  WFChildRow,
+  CellWF,
+  WFList,
+  WFLabel,
+  WFCheckItem,
+  WFChildStack,
+  WFSlider
+} from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,6 +28,12 @@ const LEFT_SIDEBAR = `
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
 file: page-tabs/ModelRun.jsx
+
+three choices:
+
+1. Code adds agents, and then controls them
+2. Place agents by dragging them in Agent area
+3. Set general control mode; when someone walks in space they are the thing set to be tracking.
 
 _wireframe based on [Joshua's Whimsical Wireframe](https://whimsical.com/KKQMf7UH6Cm3y9DGAhapV7)_
 `;
@@ -43,42 +60,97 @@ function Modeler() {
           {/* right side */}
           <Row>
             {/* Annotations */}
-            <CellWF name="Annotations" expanded>
+            <CellWF
+              name="AnnotationControl"
+              summary="list reflects current annotations by peers"
+              expanded
+            >
+              <WFList name="Annotations">
+                <WFCheckItem text="Nathan" />
+                <WFCheckItem text="Kalani" />
+                <WFCheckItem text="David" />
+                <WFCheckItem text="Sara" />
+              </WFList>
               <Row>
                 <CellWF name="ButtonAll" />
                 <CellWF name="ButtonClear" />
               </Row>
-              <MD>{`
-#### List of Annotations
-* Nathan
-* Kalani
-* David
-* Sara
-                `}</MD>
             </CellWF>
             {/* AgentInterface */}
-            <CellWF name="AgentInterface" summary="" expanded>
+            <CellWF
+              name="AgentInterface"
+              summary="Used in both Edit and Run Mode"
+              expanded
+            >
+              <MD>{`
+Note: The Agent Interface has a number of functions:
+
+* triggerable agent buttons ("poop", "flash color") for student control
+* debug (multiple agents?)
+* controls only one agent at a time per student
+            `}</MD>
+
               <Row>
-                <CellWF name="TrackingArea" summary="tracking area" />
-                <CellWF name="NotTracked" summary="tracking area" />
+                <CellWF name="TrackingArea" summary="tracking area" expanded>
+                  Visual Model (tracked)
+                </CellWF>
+                <CellWF name="NotTracked" summary="tracking area" expanded>
+                  Visual Model (not tracked)
+                </CellWF>
               </Row>
-              <RowWF name="PlaybackControls">
-                <Cell>
+              <WFChildRow name="PlaybackControls">
+                <MD>{`
+
+                `}</MD>
+                <CellFixed width="100px">
                   <WF name="Rec" />
                   <WF name="Play" />
+                </CellFixed>
+                <Cell>
+                  <WFSlider />
                 </Cell>
-                <CellWF name="Slider" />
-              </RowWF>
+              </WFChildRow>
+              <WFChildStack
+                name="AgentInspector"
+                summary="floating panel?"
+                expanded
+              >
+                <MD>{`
+* selecting an agent shows the properties
+* during run mode, properties update in real time
+* during edit mode, can edit initial values
+                `}</MD>
+                <Row>
+                  <Cell>
+                    <WFList name="name">
+                      <WFLabel text="Type" />
+                      <WFLabel text="Name" />
+                      <WFLabel text="Property" />
+                    </WFList>
+                  </Cell>
+                  <Cell>
+                    <WFList name="value">
+                      <WFLabel text="Squirrel" />
+                      <WFLabel text="Sammy" />
+                      <WFLabel text="12" />
+                    </WFList>
+                  </Cell>
+                </Row>
+              </WFChildStack>
             </CellWF>
             {/* end AgentInterface */}
           </Row>
           {/* ControlMode */}
           <Row>
-            <CellWF name="ControlMode" summary="model control?" expanded>
+            <CellWF name="TrackingControl" summary="pick an agent" expanded>
               <Row>
-                <CellWF name="Tracking" summary="active" />
-                <CellWF name="Agent Int" summary="either" />
-                <CellWF name="Agent Int" summary="active" />
+                <WF name="Tracking" summary="active" expanded>
+                  select agent type to use for people in trackerspace
+                </WF>
+                <WF name="Agent Int" summary="active" expanded>
+                  {`select agent type for 'agent control interface'`}
+                </WF>
+                <WF name="Agent Int" summary="either" expanded>{`???`}</WF>
               </Row>
             </CellWF>
           </Row>

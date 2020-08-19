@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -8,6 +9,7 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
+
 import { WF } from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
@@ -18,6 +20,8 @@ const LEFT_SIDEBAR = `
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
 file: page-tabs/Home.jsx
+
+* Home is where you pick a model and other high-level functions.
 
 _wireframe based on [Joshua's Whimsical Wireframe](https://whimsical.com/KKQMf7UH6Cm3y9DGAhapV7)_
 `;
@@ -42,10 +46,7 @@ function SystemHome() {
           <Row>
             <MD>{`
 ## Welcome to GEMSTEP
-
-Some stuff probably goes here...see page-tabs/example/Welcome.jsx for some ideas
-
-          `}</MD>
+            `}</MD>
           </Row>
           <Row>
             <Cell>

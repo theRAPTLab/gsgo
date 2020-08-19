@@ -31,6 +31,26 @@ PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 With the scripting engine implemented, it is time to turn our attention to UX/UI. There has not been a lot of work on it since I started the script engine, so we are still starting from scratch. I am building out a sacrificial wireframe, based on Joshua's work!
 
+Meeting with Joshua and Ben about the vision. Joshua reminded us of a lot of cool ideas (my paraphrasing):
+
+>  GEMSTEP is not intended to be a replacement for Scratch and NetLogo, which are highly refined tools with their own strengths. 
+
+> GEMSTEP's emphasis is on powerful foreground collaboration, using "modelling as a verb". Rather than create a simulation and turn it in, GEMSTEP models exist more in the moment of embodiment. The reasoning between students is done while they act things out, using GEMSTEP as the facilitator. Ideally, it enables fast iteration in a group over slow and deliberate coding in solitude.
+
+> For example: A group consists of two kids acting as agents in the simulated space making other agents react to them. At the same time, two other kids are making annotations on what they're doing on top of that. And then they can play back what happens. The "Model Run is the first class citizen", from 1-2 minutes in length. The interface should allow kids to "run it again" to try different things, and choose when to save them. The Play/Rewind/Pause/Record interface is envisioned to allow that (it could be something else). This reminds me of "live replay" recording in game streaming; recording is always happening, and you can choose to save the replay buffer if you have done something cool.
+
+NEXT STEPS from MEETING:
+
+* Joshua is going to produce a "stable" version of the thought document for us.
+* I am going to throw something together independently while Ben and Joshua work through it.
+* I am hoping to make significant progress this week in getting more interactive up and running.
+
+## WEDNESDAY - BURST 1/3
+
+Let's review Joshua's document and start fleshing out more controls.
+
+* I don't like the way I am overiding CSS in the components. There is a better way to do this but I forgot how MUI handles it. 
+
 
 
 
