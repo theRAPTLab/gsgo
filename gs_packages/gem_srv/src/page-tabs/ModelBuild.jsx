@@ -16,6 +16,9 @@ import {
   MD
 } from '../page-blocks/URLayout';
 import { WF, WFChildRow, CellWF } from '../page-blocks/URWireframe';
+import AgentPanel from '../components/AgentPanel';
+import TrackingPanel from '../components/TrackingPanel';
+import ScriptPanel from '../components/ScriptPanel';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,7 +42,7 @@ const useStyles = makeStyles(theme => ({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Modeler() {
   const classes = useStyles();
-
+  const mode = 'edit';
   return (
     <View className={classes.inset}>
       <Row>
@@ -50,43 +53,14 @@ function Modeler() {
         <Cell>
           {/* right side */}
           <Row>
+            <ScriptPanel mode={mode} />
             {/* ScriptEditor R1C1 */}
-            <CellWF name="ScriptEditor" summary="code stuff" expanded>
-              <TextView>{`drag-and-drop style "script wizard"`}</TextView>
-            </CellWF>
-            {/* AgentInterface R1C2 */}
-            <CellWF name="AgentInterface" summary="" expanded>
-              <Row>
-                <CellWF name="TrackingArea" summary="tracking area" expanded>
-                  This shows the representation of the world
-                </CellWF>
-                <CellWF name="NotTracked" summary="tracking area" expanded>
-                  This might be a holding area for unused agents?
-                </CellWF>
-              </Row>
-              {/* LibraryControls */}
-              <WFChildRow name="LibraryControls" expanded>
-                This is where you would load/save other agents
-              </WFChildRow>
-            </CellWF>
-            {/* end AgentInterface */}
+
+            <AgentPanel mode={mode} />
           </Row>
           {/* Controls R2C1 */}
           <Row>
-            <Cell>
-              <WF name="ControlMode" summary="model control?" expanded>
-                <Row>
-                  <Cell>
-                    <TextView>I am not sure what this does</TextView>
-                  </Cell>
-                </Row>
-                <Row>
-                  <CellWF name="Tracking" summary="active" />
-                  <CellWF name="Agent Int" summary="either" />
-                  <CellWF name="Agent Int" summary="active" />
-                </Row>
-              </WF>
-            </Cell>
+            <TrackingPanel mode={mode} />
           </Row>
           <hr />
           <MD>{BOTTOM_NOTES}</MD>

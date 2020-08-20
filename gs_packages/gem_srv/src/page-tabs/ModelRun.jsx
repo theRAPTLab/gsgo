@@ -19,6 +19,10 @@ import {
   WFChildStack,
   WFSlider
 } from '../page-blocks/URWireframe';
+import AnnotationPanel from '../components/AnnotationPanel';
+import AgentPanel from '../components/AgentPanel';
+import TrackingPanel from '../components/TrackingPanel';
+import InspectorPanel from '../components/InspectorPanel';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,7 +52,7 @@ const useStyles = makeStyles(theme => ({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Modeler() {
   const classes = useStyles();
-
+  const mode = 'run';
   return (
     <View className={classes.inset}>
       <Row>
@@ -59,100 +63,12 @@ function Modeler() {
         <Cell>
           {/* right side */}
           <Row>
-            {/* Annotations */}
-            <CellWF
-              name="AnnotationControl"
-              summary="list reflects current annotations by peers"
-              expanded
-            >
-              <WFList name="Annotations">
-                <WFCheckItem text="Nathan" />
-                <WFCheckItem text="Kalani" />
-                <WFCheckItem text="David" />
-                <WFCheckItem text="Sara" />
-              </WFList>
-              <Row>
-                <CellWF name="ButtonAll" />
-                <CellWF name="ButtonClear" />
-              </Row>
-            </CellWF>
-            {/* AgentInterface */}
-            <CellWF
-              name="AgentInterface"
-              summary="Used in both Edit and Run Mode"
-              expanded
-            >
-              <MD>{`
-Note: The Agent Interface has a number of functions:
-
-* triggerable agent buttons ("poop", "flash color") for student control
-* debug (multiple agents?)
-* controls only one agent at a time per student
-            `}</MD>
-
-              <Row>
-                <CellWF name="TrackingArea" summary="tracking area" expanded>
-                  Visual Model (tracked)
-                </CellWF>
-                <CellWF name="NotTracked" summary="tracking area" expanded>
-                  Visual Model (not tracked)
-                </CellWF>
-              </Row>
-              <WFChildRow name="PlaybackControls">
-                <MD>{`
-
-                `}</MD>
-                <CellFixed width="100px">
-                  <WF name="Rec" />
-                  <WF name="Play" />
-                </CellFixed>
-                <Cell>
-                  <WFSlider />
-                </Cell>
-              </WFChildRow>
-              <WFChildStack
-                name="AgentInspector"
-                summary="floating panel?"
-                expanded
-              >
-                <MD>{`
-* selecting an agent shows the properties
-* during run mode, properties update in real time
-* during edit mode, can edit initial values
-                `}</MD>
-                <Row>
-                  <Cell>
-                    <WFList name="name">
-                      <WFLabel text="Type" />
-                      <WFLabel text="Name" />
-                      <WFLabel text="Property" />
-                    </WFList>
-                  </Cell>
-                  <Cell>
-                    <WFList name="value">
-                      <WFLabel text="Squirrel" />
-                      <WFLabel text="Sammy" />
-                      <WFLabel text="12" />
-                    </WFList>
-                  </Cell>
-                </Row>
-              </WFChildStack>
-            </CellWF>
-            {/* end AgentInterface */}
+            <AnnotationPanel />
+            <AgentPanel mode={mode} />
+            <InspectorPanel mode={mode} />
           </Row>
-          {/* ControlMode */}
           <Row>
-            <CellWF name="TrackingControl" summary="pick an agent" expanded>
-              <Row>
-                <WF name="Tracking" summary="active" expanded>
-                  select agent type to use for people in trackerspace
-                </WF>
-                <WF name="Agent Int" summary="active" expanded>
-                  {`select agent type for 'agent control interface'`}
-                </WF>
-                <WF name="Agent Int" summary="either" expanded>{`???`}</WF>
-              </Row>
-            </CellWF>
+            <TrackingPanel mode={mode} />
           </Row>
           <hr />
           <MD>{BOTTOM_NOTES}</MD>

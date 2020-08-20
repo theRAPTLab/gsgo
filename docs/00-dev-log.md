@@ -51,6 +51,10 @@ Let's review Joshua's document and start fleshing out more controls.
 
 * I don't like the way I am overiding CSS in the components. There is a better way to do this but I forgot how MUI handles it. 
 
+Fleshed out V1 with notes from Joshua's wireframe. Next to make components from the common elements. 
+
+## THURSDAY - BURST 2/3
+
 
 
 
