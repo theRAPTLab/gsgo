@@ -8,9 +8,15 @@
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
+import { View, Box, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
 
-import { WF } from '../page-blocks/URWireframe';
+import {
+  WF,
+  CellWF,
+  WFChildRow,
+  WFList,
+  WFLabel
+} from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,19 +42,23 @@ function SystemHome() {
     <View className={classes.inset}>
       <Row>
         <Cell>
-          <Row>
-            <MD>{`
+          <MD>{`
 ## Welcome to GEMSTEP
-            `}</MD>
-          </Row>
-          <Row>
-            <Cell>
-              <WF name="LoadModel" summary="" />
-            </Cell>
-            <Cell>
-              <WF name="SaveModel" summary="" />
-            </Cell>
-          </Row>
+      `}</MD>
+          <WF name="ModelList" expanded>
+            <WFList name="List of Models">
+              <WFLabel text="Model, Group, ?" />
+              <WFLabel text="Model, Group, ?" />
+              <WFLabel text="Model, Group, ?" />
+              <WFLabel text="Model, Group, ?" />
+              <WFLabel text="Model, Group, ?" />
+            </WFList>
+
+            <Row>
+              <CellWF name="LoadModel" />
+              <CellWF name="SaveModel" />
+            </Row>
+          </WF>
           <hr />
           <MD>{BOTTOM_NOTES}</MD>
         </Cell>
