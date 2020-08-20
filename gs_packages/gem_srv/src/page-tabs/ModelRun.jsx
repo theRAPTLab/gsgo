@@ -26,10 +26,6 @@ import InspectorPanel from '../components/InspectorPanel';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LEFT_SIDEBAR = `
-### MODEL RUN
-`;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
 file: page-tabs/ModelRun.jsx
 
@@ -56,10 +52,6 @@ function Modeler() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed minWidth={160}>
-          {/* left side */}
-          <MD>{LEFT_SIDEBAR}</MD>
-        </CellFixed>
         <Cell>
           {/* right side */}
           <Row>

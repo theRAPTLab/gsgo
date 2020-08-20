@@ -55,7 +55,9 @@ Fleshed out V1 with notes from Joshua's wireframe. Next to make components from 
 
 ## THURSDAY - BURST 2/3
 
+Here are some [IOS Design Cheatsheets](https://kapeli.com/cheat_sheets/iOS_Design.docset/Contents/Resources/Documents/index) showing the resolutions of various ipads. The smallest legacy size is **1024x768.**
 
+And here are some [Chromebook Resolutions]([https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks%20come%20with%20a%20variety,usually%201366x768%20or%201920x1080%20resolution.](https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks come with a variety,usually 1366x768 or 1920x1080 resolution.)). **1366x768** seems to be the minimum size.
 
 
 

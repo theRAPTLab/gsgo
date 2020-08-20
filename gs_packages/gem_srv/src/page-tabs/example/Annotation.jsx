@@ -1,31 +1,22 @@
-/* eslint-disable react/jsx-curly-brace-presence */
+/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Modeler Build View
+  Annotate View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import {
-  View,
-  Row,
-  Cell,
-  CellFixed,
-  TextView,
-  MD
-} from '../page-blocks/URLayout';
-import { WF, WFChildRow, CellWF } from '../page-blocks/URWireframe';
-import AgentPanel from '../components/AgentPanel';
-import TrackingPanel from '../components/TrackingPanel';
-import ScriptPanel from '../components/ScriptPanel';
+import { View, Row, Cell, CellFixed, MD } from '../../page-blocks/URLayout';
+import { WF } from '../../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const BOTTOM_NOTES = `
-file: page-tabs/ModelBuild.jsx
-
-_wireframe based on [Joshua's Whimsical Wireframe](https://whimsical.com/KKQMf7UH6Cm3y9DGAhapV7)_
+const ELEMENTS = `
+### ANNOTATION
+`;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const NOTES = `
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -36,26 +27,27 @@ const useStyles = makeStyles(theme => ({
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Modeler() {
+function Agents() {
   const classes = useStyles();
-  const mode = 'edit';
+
   return (
     <View className={classes.inset}>
       <Row>
+        <CellFixed minWidth={160}>
+          <MD>{ELEMENTS}</MD>
+        </CellFixed>
         <Cell>
-          {/* right side */}
-          <Row>
-            <ScriptPanel mode={mode} />
-            {/* ScriptEditor R1C1 */}
-
-            <AgentPanel mode={mode} />
-          </Row>
-          {/* Controls R2C1 */}
-          <Row>
-            <TrackingPanel mode={mode} />
-          </Row>
-          <hr />
-          <MD>{BOTTOM_NOTES}</MD>
+          <WF name="SimWorld" summary="" />
+          <WF name="SimEventsFilter" summary="" />
+          <WF name="AgentListFilter" summary="" />
+          <WF name="InteractionListFilter" summary="" />
+          <WF name="SessionTrackFilter" summary="" />
+          <WF name="FilteredProps" summary="" />
+          <WF name="AnotationSelection" summary="" />
+          <WF name="AnotationControls" summary="" />
+          <WF name="SessionStatus" summary="" />
+          <WF name="SessionTrackSelector" summary="" />
+          <MD>{NOTES}</MD>
         </Cell>
       </Row>
     </View>
@@ -64,4 +56,4 @@ function Modeler() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Modeler;
+export default Agents;

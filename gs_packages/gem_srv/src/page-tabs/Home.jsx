@@ -14,10 +14,6 @@ import { WF } from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LEFT_SIDEBAR = `
-### HOME
-`;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
 file: page-tabs/Home.jsx
 
@@ -39,9 +35,6 @@ function SystemHome() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed minWidth={160}>
-          <MD>{LEFT_SIDEBAR}</MD>
-        </CellFixed>
         <Cell>
           <Row>
             <MD>{`

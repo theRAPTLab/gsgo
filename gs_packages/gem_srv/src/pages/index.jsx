@@ -19,6 +19,8 @@ import { URView, Row, CellFixed, Cell, TextView } from '../page-blocks/URLayout'
 /// GLOBAL NOTES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const GLOBAL = `
+* smallest chromebook 1366x768
+* smallest iPad 1024x768
 * size of panes are adjustable in edit mode
 * sizes should support planned activities
 `;
@@ -40,13 +42,18 @@ function Page() {
       <URSiteNav title="GEMSTEP Laptop Controller" />
       <Row>
         {/* LEFT SIDE */}
-        <Cell>
+        <CellFixed
+          style={{
+            maxWidth: '1024px',
+            minWidth: '1024px'
+          }}
+        >
           <URTabbedView>
             <Home label="Home" />
             <ModelBuild label="Edit" />
             <ModelRun label="Run Model" />
           </URTabbedView>
-        </Cell>
+        </CellFixed>
         {/* RIGHT SIDE */}
         <CellFixed
           style={{
