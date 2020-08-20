@@ -8,13 +8,13 @@
 import React, { useRef } from 'react';
 // left-side tabbed views
 import Home from '../page-tabs/Home';
-import ModelBuild from '../page-tabs/ModelBuild';
+import ModelEdit from '../page-tabs/ModelEdit';
 import ModelRun from '../page-tabs/ModelRun';
 
 // ursys components
 import URSiteNav from '../page-blocks/URSiteNav';
 import URTabbedView from '../page-blocks/URTabbedView';
-import { URView, Row, CellFixed, Cell, TextView } from '../page-blocks/URLayout';
+import { URView, Row, CellFixed, TextView } from '../page-blocks/URLayout';
 
 /// GLOBAL NOTES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,7 +50,7 @@ function Page() {
         >
           <URTabbedView>
             <Home label="Home" />
-            <ModelBuild label="Edit" />
+            <ModelEdit label="Edit" />
             <ModelRun label="Run Model" />
           </URTabbedView>
         </CellFixed>

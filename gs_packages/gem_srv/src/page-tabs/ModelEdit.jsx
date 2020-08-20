@@ -23,7 +23,7 @@ import ScriptPanel from '../components/ScriptPanel';
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
-file: page-tabs/ModelBuild.jsx
+file: page-tabs/ModelEdit.jsx
 
 _wireframe based on [Joshua's Whimsical Wireframe](https://whimsical.com/KKQMf7UH6Cm3y9DGAhapV7)_
 `;
