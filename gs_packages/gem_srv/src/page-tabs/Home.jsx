@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 /* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -7,19 +8,25 @@
 
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
-import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
-import { WF } from '../page-blocks/URWireframe';
+import { View, Box, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
+
+import {
+  WF,
+  CellWF,
+  WFChildRow,
+  WFList,
+  WFLabel
+} from '../page-blocks/URWireframe';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LEFT_SIDEBAR = `
-### HOME
-`;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
 file: page-tabs/Home.jsx
 
 _wireframe based on [Joshua's Whimsical Wireframe](https://whimsical.com/KKQMf7UH6Cm3y9DGAhapV7)_
+`;
+const ASIDE = `
+* Home is where you pick a model and other high-level functions.
 `;
 
 /// LOCAL STYLES //////////////////////////////////////////////////////////////
@@ -35,28 +42,29 @@ function SystemHome() {
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed minWidth={160}>
-          <MD>{LEFT_SIDEBAR}</MD>
-        </CellFixed>
         <Cell>
-          <Row>
-            <MD>{`
+          <MD>{`
 ## Welcome to GEMSTEP
-
-Some stuff probably goes here...see page-tabs/example/Welcome.jsx for some ideas
-
           `}</MD>
-          </Row>
-          <Row>
-            <Cell>
-              <WF name="LoadModel" summary="" />
-            </Cell>
-            <Cell>
-              <WF name="SaveModel" summary="" />
-            </Cell>
-          </Row>
+          <WF name="ModelList" expanded>
+            <WFList name="List of Models">
+              <WFLabel text="1 Model, Group, ?" />
+              <WFLabel text="2 Model, Group, ?" />
+              <WFLabel text="3 Model, Group, ?" />
+              <WFLabel text="4 Model, Group, ?" />
+              <WFLabel text="5 Model, Group, ?" />
+            </WFList>
+
+            <Row>
+              <CellWF name="LoadModel" />
+              <CellWF name="SaveModel" />
+            </Row>
+          </WF>
           <hr />
           <MD>{BOTTOM_NOTES}</MD>
+        </Cell>
+        <Cell>
+          <MD>{ASIDE}</MD>
         </Cell>
       </Row>
     </View>

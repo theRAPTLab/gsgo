@@ -88,9 +88,9 @@ function View(props) {
  */
 function TextView(props) {
   const classes = useStyles();
-  const { children } = props;
+  const { children, ...other } = props;
   return (
-    <View className={classes.inset}>
+    <View className={classes.inset} {...other}>
       <Row>
         <Cell>
           <MD>{children}</MD>

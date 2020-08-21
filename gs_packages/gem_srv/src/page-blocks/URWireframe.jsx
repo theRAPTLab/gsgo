@@ -6,17 +6,27 @@
 import React from 'react';
 import clsx from 'clsx';
 import merge from 'deepmerge';
+
 // material ui
+import { makeStyles } from '@material-ui/core/styles';
 import Box from '@material-ui/core/Box';
 import IconButton from '@material-ui/core/IconButton';
 import Collapse from '@material-ui/core/Collapse';
-import Typography from '@material-ui/core/Typography';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import { makeStyles } from '@material-ui/core/styles';
+import Typography from '@material-ui/core/Typography';
+// material ui lists
+import FormLabel from '@material-ui/core/FormLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormGroup from '@material-ui/core/FormGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormHelperText from '@material-ui/core/FormHelperText';
+import Checkbox from '@material-ui/core/Checkbox';
+// material ui slider
+import Slider from '@material-ui/core/Slider';
 
 // utility components
 import wireframeStyles from '../modules/style/wireframing';
-import { Row, Cell } from './URLayout';
+import { Row, Cell, TextView } from './URLayout';
 import { MD } from '../components/MD';
 
 /// SHARED CUSTOM STYLES //////////////////////////////////////////////////////
@@ -28,6 +38,7 @@ const useStyles = makeStyles(theme => {
   const bgBorder = theme.palette.grey[400];
   const bgColor = theme.palette.grey[400];
   const summaryColor = theme.palette.grey[500];
+  const labelColor = theme.palette.grey[900];
   //
   const innerBgColor = theme.palette.grey[100];
   const infoBorder = theme.palette.grey[100];
@@ -38,9 +49,16 @@ const useStyles = makeStyles(theme => {
         backgroundColor: 'white',
         marginBottom: space
       },
-      WFroot: {
-        // opacity: 0.7,
+      formRoot: {
+        backgroundColor: 'white',
+        padding: theme.spacing(2),
+        marginBottom: space
       },
+      formLabel: {
+        margin: 0,
+        padding: 0
+      },
+      sliderRoot: {},
       titlebox: {
         padding: `0 0 0 ${space}`
       },
@@ -49,6 +67,10 @@ const useStyles = makeStyles(theme => {
         paddingBottom: '0.5em',
         padding: `0 ${space}`,
         color: summaryColor
+      },
+      label: {
+        paddingBottom: '0.25em',
+        color: labelColor
       },
       description: {
         backgroundColor: innerBgColor,
@@ -135,7 +157,7 @@ function WF(props) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** cell-wrapped <WF>
+/** cell-wrapped <WF> for use with <Row>
  *  example:
  *  <Row>
  *    <WFCell name='name', summary='short text', expanded=false>
@@ -152,15 +174,10 @@ function CellWF(props) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** row-wrapped <WF>
- *  example:
- *  <RowWF>
- *    <WFCell name='name', summary='short text', expanded=false>
- *      child content will be put in collapsable section
- *    </WFCell>
- *  </RowWF>
+/** WF-wrapped <Row>
+ *  Makes a <WF> containing a <Row> of all children
  */
-function RowWF(props) {
+function WFChildRow(props) {
   const { children, expanded = true, ...extra } = props;
   return (
     <WF {...extra} expanded={expanded}>
@@ -169,6 +186,82 @@ function RowWF(props) {
   );
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** WF-wrapped rows of children
+ *  Makes a <WF> containing a stack of <Row> for ach child
+ */
+function WFChildStack(props) {
+  const { children, expanded, ...extra } = props;
+  const rows = React.Children.map(children, child => <Row>{child}</Row>);
+  return (
+    <WF {...extra} expanded={expanded}>
+      {rows}
+    </WF>
+  );
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function WFLabel(props) {
+  const classes = useStyles();
+  const { text = '' } = props;
+  return text ? <Box className={clsx(classes.label)}>{text}</Box> : '';
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function WFCheckItem(props) {
+  const classes = useStyles();
+  const { text = '' } = props;
+  return text ? (
+    <FormControlLabel
+      className={classes.checkItem}
+      style={{ 'marginLeft': 0 }}
+      control={<Checkbox style={{ 'padding': 0 }} name={text} />}
+      label={text}
+    />
+  ) : (
+    ''
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function WFList(props) {
+  const classes = useStyles();
+  const { children, name = 'WFList', expanded, ...extra } = props;
+  const list = React.Children.map(children, child => (
+    <FormControlLabel control={child} name={name} />
+  ));
+  return (
+    <div className={classes.formRoot}>
+      <FormLabel
+        style={{ 'marginLeft': '-11px', 'paddingBottom': '0.5rem' }}
+        className={classes.formLabel}
+        component="legend"
+      >
+        {name}
+      </FormLabel>
+      <FormGroup>{list}</FormGroup>
+    </div>
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function WFSlider(props) {
+  const classes = useStyles();
+  function valuetext(value) {
+    return `${value}°C`;
+  }
+  return (
+    <Box p={1} className={classes.root}>
+      <Slider defaultValue={0} getAriaValueText={valuetext} />
+    </Box>
+  );
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { WF, RowWF, CellWF, MD };
+export { WF, MD };
+/// use these with <Row> and <Cell> from URLayout
+export { WFChildRow, CellWF, WFChildStack };
+/// specialty checklist
+export { WFList, WFCheckItem, WFLabel };
+/// specialty slider
+export { WFSlider };

@@ -3,11 +3,15 @@
     "title": "GEMSTEP"
   },
   "DEVICE": {
-    "laptop": "LAPTOP GROUP SERVER",
-    "ipad": "IPAD GROUP PARTICIPANT"
+    "server": "app server for GEMSTEP software",
+    "projector": "hardware projection machine",
+    "laptop": "access model, agent interfaces",
+    "ipad": "access agent interface"
   },
   "NAVMENU": [
-    { "label": "Wireframe", "href": "/" },
-    { "label": "Notes", "href": "/notes" }
+    { "label": "Model", "href": "/" },
+    { "label": "Agent", "href": "/" },
+    { "label": "Admin", "href": "/" },
+    { "label": "Display", "href": "/" }
   ]
 }

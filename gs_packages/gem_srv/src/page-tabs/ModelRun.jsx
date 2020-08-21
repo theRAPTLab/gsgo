@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/quotes */
+/* eslint-disable react/jsx-curly-brace-presence */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Modeler Run/Playback View
@@ -7,16 +9,31 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import { View, Row, Cell, CellFixed, MD } from '../page-blocks/URLayout';
-import { WF, RowWF, CellWF } from '../page-blocks/URWireframe';
+import {
+  WF,
+  WFChildRow,
+  CellWF,
+  WFList,
+  WFLabel,
+  WFCheckItem,
+  WFChildStack,
+  WFSlider
+} from '../page-blocks/URWireframe';
+import AnnotationPanel from '../components/AnnotationPanel';
+import AgentPanel from '../components/AgentPanel';
+import TrackingPanel from '../components/TrackingPanel';
+import InspectorPanel from '../components/InspectorPanel';
 
 /// CONTENT ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LEFT_SIDEBAR = `
-### MODEL RUN
-`;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BOTTOM_NOTES = `
 file: page-tabs/ModelRun.jsx
+
+three choices:
+
+1. Code adds agents, and then controls them
+2. Place agents by dragging them in Agent area
+3. Set general control mode; when someone walks in space they are the thing set to be tracking.
 
 _wireframe based on [Joshua's Whimsical Wireframe](https://whimsical.com/KKQMf7UH6Cm3y9DGAhapV7)_
 `;
@@ -31,56 +48,19 @@ const useStyles = makeStyles(theme => ({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Modeler() {
   const classes = useStyles();
-
+  const mode = 'run';
   return (
     <View className={classes.inset}>
       <Row>
-        <CellFixed minWidth={160}>
-          {/* left side */}
-          <MD>{LEFT_SIDEBAR}</MD>
-        </CellFixed>
         <Cell>
           {/* right side */}
           <Row>
-            {/* Annotations */}
-            <CellWF name="Annotations" expanded>
-              <Row>
-                <CellWF name="ButtonAll" />
-                <CellWF name="ButtonClear" />
-              </Row>
-              <MD>{`
-#### List of Annotations
-* Nathan
-* Kalani
-* David
-* Sara
-                `}</MD>
-            </CellWF>
-            {/* AgentInterface */}
-            <CellWF name="AgentInterface" summary="" expanded>
-              <Row>
-                <CellWF name="TrackingArea" summary="tracking area" />
-                <CellWF name="NotTracked" summary="tracking area" />
-              </Row>
-              <RowWF name="PlaybackControls">
-                <Cell>
-                  <WF name="Rec" />
-                  <WF name="Play" />
-                </Cell>
-                <CellWF name="Slider" />
-              </RowWF>
-            </CellWF>
-            {/* end AgentInterface */}
+            <AnnotationPanel />
+            <AgentPanel mode={mode} />
+            <InspectorPanel mode={mode} />
           </Row>
-          {/* ControlMode */}
           <Row>
-            <CellWF name="ControlMode" summary="model control?" expanded>
-              <Row>
-                <CellWF name="Tracking" summary="active" />
-                <CellWF name="Agent Int" summary="either" />
-                <CellWF name="Agent Int" summary="active" />
-              </Row>
-            </CellWF>
+            <TrackingPanel mode={mode} />
           </Row>
           <hr />
           <MD>{BOTTOM_NOTES}</MD>
