@@ -55,13 +55,21 @@ Fleshed out V1 with notes from Joshua's wireframe. Next to make components from 
 
 ## THURSDAY - BURST 2/3
 
-Here are some [IOS Design Cheatsheets](https://kapeli.com/cheat_sheets/iOS_Design.docset/Contents/Resources/Documents/index) showing the resolutions of various ipads. The smallest legacy size is **1024x768.**
+* Here are some [IOS Design Cheatsheets](https://kapeli.com/cheat_sheets/iOS_Design.docset/Contents/Resources/Documents/index) showing the resolutions of various ipads. The smallest legacy size is **1024x768.**
+* And here are some [Chromebook Resolutions]([https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks%20come%20with%20a%20variety,usually%201366x768%20or%201920x1080%20resolution.](https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks come with a variety,usually 1366x768 or 1920x1080 resolution.)). **1366x768** seems to be the minimum size.
 
-And here are some [Chromebook Resolutions]([https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks%20come%20with%20a%20variety,usually%201366x768%20or%201920x1080%20resolution.](https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks come with a variety,usually 1366x768 or 1920x1080 resolution.)). **1366x768** seems to be the minimum size.
+I made a diagram of the [data sources and interconnects](https://whimsical.com/XsQrYE226NbeAZoEqQjxYe).
 
+* laptop architecture pure group: make a first pass assuming this is the model
+* push back on that
+* Design display engine to minimum space: position, timestamp, id of what (visual independent transmission, but connectable) (AgentTemplateID systemwide). 
 
+PixiJS is our new graphics engine. It looks really fast, thanks to GPU smart caching and batch drawing. ThreeJS has changed a lot and most of the API surface area is related to 3D stuff. I liked at Ben's pozyx example and also flipped through the PixiJS demos. We can use the react fiber plugin to add it.
 
+NEXT STEP:
 
-
-
+* We could review our old system, but I don't think it's really necessary
+* We do want to port the tracker tool and faketrack right away
+* Use the React Pixi Fiber integration to add dummy mode on new path
+* **Use PixiJS to make FakeTrack**
 
