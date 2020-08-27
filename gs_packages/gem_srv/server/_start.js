@@ -2,7 +2,7 @@
 
   Custom NextJS Server
 
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ w* /////////////////////////////////////*/
 
 const { createServer } = require('http');
 const { parse } = require('url');
@@ -10,6 +10,7 @@ const next = require('next');
 const path = require('path');
 
 const URSERVER = require('@gemstep/ursys/server');
+const PTRACK = require('./step-ptrack');
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -20,6 +21,7 @@ const RUNTIME_PATH = path.join(__dirname, '/runtime');
 
 (async () => {
   console.log(`STARTING: ${SCRIPT_PATH}`);
+  await PTRACK.StartTrackerSystem();
   await URSERVER.Initialize();
   await URSERVER.StartServer({
     serverName: 'GEM_SRV',
