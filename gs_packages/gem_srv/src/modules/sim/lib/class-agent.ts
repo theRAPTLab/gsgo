@@ -175,7 +175,7 @@ class Agent extends SM_Object implements I_Agent {
         'skin',
         this.skin(),
         'features',
-        [...this.features.keys()]
+        this.features.keys()
       ]);
   }
 } // end of Agent class

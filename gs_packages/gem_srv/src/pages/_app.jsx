@@ -72,8 +72,8 @@ export default function MyApp(props) {
       UR.SystemUnhookModules().then(() => {
         UR.SystemUnload();
       });
-      // force page reload
-      window.location.reload();
+      // force page reload after unmount
+      // window.location.reload();
     };
   }, []);
 

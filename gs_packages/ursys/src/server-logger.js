@@ -36,7 +36,7 @@ function StartLogging(options = {}) {
   LOG_DIR = PATH.join(options.runtimePath, 'logs');
   let dir = PATH.resolve(LOG_DIR);
   try {
-    console.log(PR, `logging to ${dir}`);
+    console.log(...PR(`logging to ${dir}`));
     FSE.ensureDirSync(dir);
     let logname = `${DATESTR.DatedFilename('log')}.txt`;
     let pathname = `${dir}/${logname}`;

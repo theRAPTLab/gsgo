@@ -45,7 +45,7 @@ NEXT STEPS from MEETING:
 * I am going to throw something together independently while Ben and Joshua work through it.
 * I am hoping to make significant progress this week in getting more interactive up and running.
 
-## WEDNESDAY - BURST 1/3
+### WEDNESDAY - BURST 1/3
 
 Let's review Joshua's document and start fleshing out more controls.
 
@@ -53,7 +53,7 @@ Let's review Joshua's document and start fleshing out more controls.
 
 Fleshed out V1 with notes from Joshua's wireframe. Next to make components from the common elements. 
 
-## THURSDAY - BURST 2/3
+### THURSDAY - BURST 2/3
 
 * Here are some [IOS Design Cheatsheets](https://kapeli.com/cheat_sheets/iOS_Design.docset/Contents/Resources/Documents/index) showing the resolutions of various ipads. The smallest legacy size is **1024x768.**
 * And here are some [Chromebook Resolutions]([https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks%20come%20with%20a%20variety,usually%201366x768%20or%201920x1080%20resolution.](https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks come with a variety,usually 1366x768 or 1920x1080 resolution.)). **1366x768** seems to be the minimum size.
@@ -73,3 +73,135 @@ NEXT STEP:
 * Use the React Pixi Fiber integration to add dummy mode on new path
 * **Use PixiJS to make FakeTrack**
 
+## S17 W2
+
+### MONDAY
+
+Ok, the thing I'm doing today is starting FAKETRACK. So what is faketrack?
+
+* It's a module that reads PTRACK data and converts it into positional data
+* I need to design the positional data system. 
+* So we might as well do that.
+
+#### About PTRACK
+
+There are two kinds of entities: **PTRACK** and **INPUTS** from other devices (what was called "FakeTrack" before)
+
+```
+PTRACK - OpenPTRACK entities
+
+  Read UDP from port 21234 on multicast group 224.0.0.1
+  convert PTRACK frame data into entity data
+  - read tracks
+  - retrieve track ENTITIES and EVENTS
+  - filter and map entities to produce pieces with trackerobject
+  - transform entity positions to logical normalized coordinates space
+  Forward transformed entities to registered connections on port 3030
+
+INPUT - other inputs creating logical data entities
+
+	INPUT devices register on TCP port 21212 of server (socket server)
+	- read track
+	- retrieve track ENTITEIS and EVENTS
+	- filter and map entities to produce pieces with trackerobject
+	- skip transform step: INPUT entities should already be using normalized coordinates
+	Forward transformed entities to registered connections on port 3030
+```
+
+The data structures and data structures for **Pieces**
+
+```
+TrackerObject(entityId)
+	id: number
+	pos: Vector3
+	valid: boolean
+	isNew: boolean
+	isOutside: boolean
+	mode: enum = jump, lerp, seek
+	type: enum = ?, object, people, pose, faketrack
+
+TrackablePiece extends InqPiece
+	has TrackerObject
+	has Movement types to seek TrackObject using TrackerObject mode
+	
+InqPiece extends Piece
+	implements message calls (!)
+	implements subscriptions to event
+	implements behaviors
+	impements pieces in range
+	
+Piece extends ProtoPiece
+	position, rotation, heading
+	position0, position1, position2
+	visual
+	body
+	state
+	ai
+	updateFunc, thinkFunc, executeFunc
+	implements setters
+	
+ProtoPiece 
+	id
+	name
+	roles
+	tags
+	factions
+	groups
+	implements saving of piece into dictionary
+```
+
+Now the **algorithm** for transforming entities to pieces
+
+```
+m_inputs = the list of Pieces that are mapped, via TrackerObject, to an Entity
+m_pieces = the subset of m_inputs that are visible in the play space
+
+unassigned = m_MapEntities(m_inputs, add, remove)
+- retrieve EntityDict from PTRACK module, computed in ProcessFrame(frameData)
+- steps through every entity in the EntityDict to build updated, lost, new piece lists
+- - increment nop count (increment every frame by milliseconds if entity not found)
+- - increment age (only objects that have min age are considered valid)
+- - remove old entities that are within error radius
+- - remove entities that have expired, reclaim used pieced into pool
+- - assign new entities to available pieces, expanding piece pool as necessary
+
+Transforms normalize coordinates in TrackerSpace to +/- 1, and then expand them to the size of the logical space (in piecels).
+
+- m_transform.matrix_align orientes PTRACK first
+- is normalized to extents of the PTRACK area
+
+Note that m_transform is computed from other values saved in it:
+
+  var m = new THREE.Matrix4();
+  m.multiplyMatrices ( scale, rotatex );
+  m.multiply ( rotatey );
+  m.multiply ( rotatez );
+  m.multiply ( translate );
+
+  /* finally! */
+  m_transform.matrix_align = m;
+```
+
+#### Next Steps!
+
+* [ ] port server UDP and TrackData server
+* [ ] port client TrackData subscriber
+* [ ] insert ProcessFrame into server
+* [ ] insert transform normalization
+* [ ] implement PTRACK visualizer on localhost **calibrate** + **transform** with PixiJS
+* [ ] insert Entity management into server (add, remove, update)
+
+The clients need to receive DisplayList information for the actual pieces, but not much else. I think for inspection, we'll do a round-trip request rather than actually ship the data on every frame.
+
+### WEDNESDAY 26
+
+Looking at the playback code in PLAE to use for a datastream reader
+
+I'm not quite sure where to start on this. I'm feeling a bit unsure about what to do. I guess **port the step tracker**
+
+* [ ] new module `step-ptrack` needs to launch in `_start.js` of gem_srv
+* [ ] faketrack module...
+
+
+
+e
