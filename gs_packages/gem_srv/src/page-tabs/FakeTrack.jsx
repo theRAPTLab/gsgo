@@ -48,7 +48,7 @@ function FakeTrack() {
   return (
     <View className={classes.inset}>
       <Stage options={{ backgroundColor: 0xf00000, height: 600, width: 800 }}>
-        <Sprite texture={PIXI.Texture.from('sprites/bunnys.png')} />
+        {/*<Sprite texture={PIXI.Texture.from('sprites/bunny01.png')} />*/}
       </Stage>
     </View>
   );
