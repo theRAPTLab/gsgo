@@ -22,9 +22,9 @@ import debounce from 'debounce';
 
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import SETTINGS from 'config/app.settings';
 import CCSS from 'app/modules/console-styles';
 import EXEC from 'ursys/chrome/ur-exec';
-import SETTINGS from 'config/app.settings';
 import SystemShell from './SystemShell';
 
 const { cssur, cssreset } = CCSS;
@@ -46,7 +46,8 @@ const DBG = false;
 /// STARTUP HELPER FUNCTIONS
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PromiseRenderApp() {
-  if (DBG) console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
+  if (DBG)
+    console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise(resolve => {
     ReactDOM.render(
       <HashRouter hashType="slash">
@@ -64,12 +65,20 @@ function m_PromiseRenderApp() {
 function Init() {
   console.log('%cURSYS: INITIALIZE', cssur);
   // handle window resize events through URSYS
-  window.addEventListener('resize', debounce(() => {
-    // console.clear();
-  }, 500));
+  window.addEventListener(
+    'resize',
+    debounce(() => {
+      // console.clear();
+    }, 500)
+  );
   // initialize app when DOM is completely resolved
   document.addEventListener('DOMContentLoaded', () => {
-    if (DBG) console.log('%cINIT %cDOMContentLoaded. Starting URSYS Lifecycle!', cssur, cssreset);
+    if (DBG)
+      console.log(
+        '%cINIT %cDOMContentLoaded. Starting URSYS Lifecycle!',
+        cssur,
+        cssreset
+      );
     // 1. preflight system routes
     // 2. lifecycle startup
     (async () => {
@@ -79,7 +88,12 @@ function Init() {
       await EXEC.SetupDOM();
       await EXEC.SetupRun();
       /* everything is done, system is running */
-      if (DBG) console.log('%cINIT %cURSYS Lifecycle Init Complete', 'color:blue', 'color:auto');
+      if (DBG)
+        console.log(
+          '%cINIT %cURSYS Lifecycle Init Complete',
+          'color:blue',
+          'color:auto'
+        );
     })();
   });
   // handle disconnect event
@@ -88,7 +102,6 @@ function Init() {
     document.location.reload();
   });
 }
-
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

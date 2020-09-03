@@ -31,14 +31,19 @@ class SystemShell extends React.Component {
   }
 
   render() {
-    const classes = this.props.classes;
+    const { hasError } = this.state;
     // omg an error???
-    if (this.state.hasError) debugger;
+    if (hasError) debugger;
     // otherwise return component with matching routed view
     return (
       <Switch>
         {SystemRoutes.map(route => (
-          <Route exact={route.exact} key={route.path} path={route.path} component={route.component} />
+          <Route
+            exact={route.exact}
+            key={route.path}
+            path={route.path}
+            component={route.component}
+          />
         ))}
       </Switch>
     );

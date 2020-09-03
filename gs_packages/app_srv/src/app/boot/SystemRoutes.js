@@ -9,6 +9,7 @@
 
 /// COMPONENTS ////////////////////////////////////////////////////////////////
 import ViewMain from '../views/ViewMain/ViewMain';
+import Tracker from '../views/Tracker/Tracker';
 import NoMatch from './ NoMatch';
 
 /*****************************************************************************\
@@ -25,7 +26,7 @@ const SystemRoutes = [
   {
     path: '/',
     exact: true,
-    component: ViewMain
+    component: Tracker
   },
   {
     path: '*',
