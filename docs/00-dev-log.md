@@ -203,3 +203,110 @@ Differences:
 * `SystemHookModules()` **explicitly** **initializes** modules by calling their `UR_ModuleInit()` handlers, instead of `SystemRoutes` being used to figure out what modules are in-scope or note. 
 * `SystemBoot()` **replaces** the async function in old ursys
 
+### THE URSERVER
+
+We want to import the URSERVER but not modify the rest of the express server
+
+```
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  Custom NextJS Server
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ w* /////////////////////////////////////*/
+
+const { createServer } = require('http');
+const { parse } = require('url');
+const next = require('next');
+const path = require('path');
+
+const URSERVER = require('@gemstep/ursys/server');
+const PTRACK = require('./step-ptrack');
+
+const dev = process.env.NODE_ENV !== 'production';
+const app = next({ dev });
+const handle = app.getRequestHandler();
+
+const SCRIPT_PATH = path.relative(`${__dirname}/../..`, __filename);
+const RUNTIME_PATH = path.join(__dirname, '/runtime');
+
+(async () => {
+  console.log(`STARTING: ${SCRIPT_PATH}`);
+  await PTRACK.StartTrackerSystem();
+  await URSERVER.Initialize();
+  await URSERVER.StartServer({
+    serverName: 'GEM_SRV',
+    runtimePath: RUNTIME_PATH
+  });
+  const { port, uaddr } = URSERVER.GetNetBroker();
+  console.log(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
+})();
+
+/// START CUSTOM SERVER ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ NextJS is loaded as middleware with all its usual features
+    except for automatic static optimization.
+    We get a chance to intercept routes before passing the request to
+    to the default handlers provided by NexxtJS.
+/*/
+app.prepare().then(() => {
+  createServer((req, res) => {
+    // Be sure to pass `true` as the second argument to `url.parse`.
+    // This tells it to parse the query portion of the URL.
+    const parsedUrl = parse(req.url, true);
+    if (!URSERVER.HttpRequestListener(req, res)) {
+      handle(req, res, parsedUrl);
+    }
+  }).listen(3000, err => {
+    if (err) throw err;
+    console.log('> Ready on http://localhost:3000');
+  });
+});
+
+```
+
+The way the current server works:
+
+```
+URSRV = ursys-serve = Initialize, RegisterHandlers
+URWEB = server-express
+URNET = server-network
+URLOG = server-logger
+
+urdu.js runs
+URSERV.Initialize({apphost:'devserver'});
+URSERV.StartNetwork();
+URSERV.StartWebServer();
+
+Initialize()
+- RegisterHandlers()
+- URNET.InitializeNetwork(options)
+- - NetMessage.GlobalSetup({uaddr: options.uaddr})
+StartNetwork()
+- URNET.StartNetwork()
+- - create socket server and handlers *** here ***
+StartWebServer()
+- await URWeb.Start()
+- - load webpack configuration
+- - listen to port after StartServer
+- - promiseStart does compiler message
+- - use cookieP, access control, view engine ejs
+- - get / render index with URSsessionParms
+- - / Express.static DIR_OUT (built/web)
+```
+
+#### THINGS TO DO
+
+```
+[X] - add @gemstep/ursys: lerna add @gemstep/ursys --scope=@gemstep/app_srv
+[ ] - update SystemInit with netProps and SystemBook
+[ ] - @gemstep/ursys/server StartServer() and HttpRequestListener(req,res)
+
+insert the netprops into the web server, which should be launched by urdu.js
+URSERVER.HttpRequestListener(req, res) 
+```
+
+NOTES:
+
+* Remember to use `UR.SystemHookModules([ ...  ])` on document DOMContentLoaded to give every module an opportunity to hook. They must define `UR_ModuleInit( UR_EXEC )` where `UR_EXEC` is the phase machine instance that implements `Hook('Phase',handler)`
+* The bootstrap is handled in `SystemInit.jsx` and it taps itself and RENDERER to hook into UR_EXEC events.
+* Execution continues in the loaded route.

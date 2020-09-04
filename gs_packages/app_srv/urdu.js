@@ -11,14 +11,22 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-const PR = 'URDU';
-
-/// LOAD BUILT-IN LIBRARIES ///////////////////////////////////////////////////
 const FS = require('fs');
 const PROCESS = require('process');
+const PATH = require('path');
+const shell = require('shelljs');
+const minimist = require('minimist');
+const URSERVER = require('@gemstep/ursys/server');
+const URPACK = require('./src/server-webpack');
 
-/// CHECK DEV DEPENDENCIES ////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = 'URDU';
+const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
+
+/// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// CHECK NPM CI WAS RUN //////////////////////////////////////////////////////
 if (!FS.existsSync('./node_modules')) {
   console.log(`\x1b[30;41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
   let out = '';
@@ -29,14 +37,6 @@ if (!FS.existsSync('./node_modules')) {
   console.log(out);
   PROCESS.exit(0);
 }
-
-/// LOAD EXTERNAL LIBRARIES ///////////////////////////////////////////////////
-const shell = require('shelljs');
-const minimist = require('minimist');
-
-/// LOAD SERVER MAIN MODULE ///////////////////////////////////////////////////
-const URSERV = require('./ursys/node/ursys-serve');
-
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
 if (!shell.which('git')) {
   shell.echo(
@@ -44,10 +44,7 @@ if (!shell.which('git')) {
   );
   shell.exit(0);
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// COMMAND DISPATCHER ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const argv = minimist(process.argv.slice(1));
 const cmd = argv._[1];
 
@@ -60,8 +57,7 @@ switch (cmd) {
     console.log('unknown command', cmd);
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// RUN DEV ///////////////////////////////////////////////////////////////////
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunDevServer() {
   // git branch information
@@ -72,7 +68,18 @@ function RunDevServer() {
   if (error) console.log(PR, 'using repo <detached head>\n');
   if (stdout) console.log(PR, `using repo '${stdout.trim()}' branch\n`);
 
-  URSERV.Initialize({ apphost: 'devserver' });
-  URSERV.StartNetwork();
-  URSERV.StartWebServer();
+  // old ursys
+  // URSERV.Initialize({ apphost: 'devserver' });
+  // URSERV.StartNetwork();
+  // URSERV.StartWebServer();
+
+  // new ursys
+  (async () => {
+    await URSERVER.Initialize();
+    await URSERVER.StartServer({
+      serverName: 'APP_SRV',
+      runtimePath: RUNTIME_PATH
+    });
+    await URPACK.Start();
+  })();
 }

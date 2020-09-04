@@ -6,6 +6,7 @@
   "scripts": {
     "local": "npm run dev:app",
     "dev:app": "node urdu dev",
+    "..ursys": "cd ../ursys && npm run local",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
     "test:app": "echo \"Error: no test specified\" && exit 1"
   },
@@ -58,6 +59,7 @@
     "ws": "^7.2.5"
   },
   "dependencies": {
+    "@gemstep/ursys": "^0.0.1-alpha.7",
     "@material-ui/core": "^4.11.0",
     "debounce": "^1.2.0",
     "hashids": "^2.2.1",

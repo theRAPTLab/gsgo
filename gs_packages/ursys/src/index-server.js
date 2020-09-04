@@ -26,6 +26,7 @@ const META = {
   _SCRIPT: __filename,
   _VERSION: '0.0.1'
 };
+const URNET_PROP_ROUTE = '/urnet/getinfo';
 
 /// SERVER-SIDE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -66,8 +67,33 @@ function GetNetBroker() {
   const { host, port, urnet_version, uaddr } = m_network_options;
   return { host, port, urnet_version, uaddr };
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called from a custom server using http.createServer(requestListener).
+/** given req and response, return URNET connection information
+ */
+function ReplyWithUrnetInfo(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  res.writeHead(200);
+  let { host, port, urnet_version, uaddr } = GetNetBroker();
+  let client_ip = requestIp.getClientIp(req);
+  // prevent socket connection refusal due to mismatch of localhost
+  // with use of numeric IP when connecting to server
+  if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
+  const netProps = {
+    broker: {
+      host,
+      port,
+      urnet_version,
+      uaddr
+    },
+    client: {
+      ip: client_ip
+    }
+  };
+  res.end(JSON.stringify(netProps));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Called from a custom NextJS server using http.createServer(requestListener).
  *  This listener is hardcoded with the urnet API, so it is independent of
  *  the NextJS and other frameworks.
  */
@@ -78,29 +104,20 @@ function HttpRequestListener(req, res) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   // Do our route interception here
-  if (pathname === '/urnet/getinfo') {
-    res.setHeader('Content-Type', 'application/json');
-    res.writeHead(200);
-    let { host, port, urnet_version, uaddr } = GetNetBroker();
-    let client_ip = requestIp.getClientIp(req);
-    // prevent socket connection refusal due to mismatch of localhost
-    // with use of numeric IP when connecting to server
-    if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
-    const netProps = {
-      broker: {
-        host,
-        port,
-        urnet_version,
-        uaddr
-      },
-      client: {
-        ip: client_ip
-      }
-    };
-    res.end(JSON.stringify(netProps));
+  if (pathname === URNET_PROP_ROUTE) {
+    ReplyWithUrnetInfo(req, res);
     return true;
   }
   return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ExpressHandler(req, res, next) {
+  const parsedUrl = parse(req.url, true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { pathname, query } = parsedUrl;
+  if (pathname === URNET_PROP_ROUTE) {
+    ReplyWithUrnetInfo(req, res);
+  } else next();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -114,6 +131,7 @@ module.exports = {
   StartServer,
   GetNetBroker,
   HttpRequestListener,
+  ExpressHandler,
   // SERVICES API
   STORE,
   EXPRESS,

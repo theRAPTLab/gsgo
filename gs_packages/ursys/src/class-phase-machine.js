@@ -86,6 +86,8 @@ class PhaseMachine {
    *  will be UR_ModuleInit() in each module to give it a chance to hook-in.
    */
   HookModules(moduleArray = []) {
+    if (!Array.isArray(moduleArray))
+      return Promise.reject(Error('HookModules() requires an array'));
     const initializer = `${this.NAME}_ModuleInit`;
     moduleArray.forEach((mod = {}) => {
       if (typeof mod[initializer] !== 'function') {

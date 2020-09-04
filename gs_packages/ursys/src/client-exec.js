@@ -81,7 +81,7 @@ function m_CheckOptions(options) {
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
     throw Error('URSYS: bad option object');
-  } else if (DBG) console.log(...PR('info - L1_OPTION pass'));
+  }
   // return true if there were no unknown option properties
   return unknown.length === 0;
 }

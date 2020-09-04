@@ -16,49 +16,28 @@ const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const DevServer = require('webpack-dev-middleware');
 const HotReload = require('webpack-hot-middleware');
+const { ExpressHandler } = require('@gemstep/ursys/server');
+const { parse } = require('url');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
-const PROMPTS = require('../../config/prompts');
-const wpconf_packager = require('../../config/wp.pack.webapp');
-const SETTINGS = require('../../config/app.settings');
+const wpconf_packager = require('../config/wp.pack.webapp');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const { TERM_EXP: CLR, TR } = PROMPTS;
 const LPR = 'EXPRESS';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 const PORT = 80;
-const PR = `${CLR}${PROMPTS.Pad(LPR)}${TR}`;
-const DIR_ROOT = Path.resolve(__dirname, '../../');
+const PR = `${LPR}`;
+const DIR_ROOT = Path.resolve(__dirname, '../');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 
-/// RUNTIME SETUP /////////////////////////////////////////////////////////////
-const USRV_START = new Date(Date.now()).toISOString(); // server startup time
-
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_GetTemplateValues(req) {
-  let { ip, hostname } = req;
-  if (ip === '::1') ip = '127.0.0.1'; // rewrite short form ip
-  const { PROJECT_NAME } = SETTINGS;
-  const params = {
-    APP_TITLE: PROJECT_NAME,
-    CLIENT_IP: ip,
-    USRV_Host: hostname,
-    USRV_IP: IP.address(),
-    USRV_MsgPort: 2929,
-    USRV_Start: USRV_START
-  };
-  return params;
-}
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
 const app = Express();
 let m_server; // server object returned by app.listen()
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- *  start the express webserver on designated PORT
+/** Start the express webserver on designated PORT
  */
 function Start() {
   console.log(
@@ -143,16 +122,13 @@ function Start() {
   app.set('view engine', 'ejs');
   // handle special case for root url to serve our ejs template
   app.get('/', (req, res) => {
-    const URSessionParams = m_GetTemplateValues(req);
+    const URSessionParams = {};
     res.render(`${DIR_OUT}/index`, URSessionParams);
   });
-  // redirects
-  app.get('/admin', (req, res) => {
-    res.redirect('http://localhost:8080');
-  });
-  app.get('/gem', (req, res) => {
-    res.redirect('http://localhost:3000');
-  });
+
+  // handle urnet
+  app.use(ExpressHandler);
+
   // for everything else...
   app.use('/', Express.static(DIR_OUT));
 

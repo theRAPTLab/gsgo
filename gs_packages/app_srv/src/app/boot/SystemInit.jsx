@@ -23,13 +23,12 @@ import debounce from 'debounce';
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import SETTINGS from 'config/app.settings';
-import CCSS from 'app/modules/console-styles';
-import UR from 'ursys/chrome/ursys';
-import EXEC from 'ursys/chrome/ur-exec';
-import SystemRoutes from './SystemRoutes';
+import UR from '@gemstep/ursys/client';
 import SystemShell from './SystemShell';
 
-const { cssur, cssreset } = CCSS;
+/// HOOK MODULES //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import RENDERER from '../modules/renderer';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,33 +38,33 @@ const { PROJECT_NAME } = SETTINGS;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
-/// SYSTEM-WIDE LANGUAGE EXTENSIONS ///////////////////////////////////////////
+/// MODULE PHASE SYSTEM INITIALIZATION ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// These are loaded in init to make sure they are available globally!
-/// You do not need to copy these extensions to your own module files
+/** render react once all modules have completed their initialization */
+function UR_ModuleInit(UR_EXEC) {
+  UR_EXEC.Hook('APP_READY', () => {
+    if (DBG)
+      console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
+    return new Promise(resolve => {
+      ReactDOM.render(
+        <HashRouter hashType="slash">
+          <SystemShell />
+        </HashRouter>,
+        document.getElementById('app-container'),
+        () => {
+          console.log('URSYS: START');
+          resolve();
+        }
+      );
+    }); // promise
+  });
+}
 
 /// URSYS STARTUP /////////////////////////////////////////////////////////////
-/// STARTUP HELPER FUNCTIONS
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PromiseRenderApp() {
-  if (DBG)
-    console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
-  return new Promise(resolve => {
-    ReactDOM.render(
-      <HashRouter hashType="slash">
-        <SystemShell />
-      </HashRouter>,
-      document.getElementById('app-container'),
-      () => {
-        console.log('%cURSYS: START', cssur);
-        resolve();
-      }
-    );
-  }); // promise
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Init() {
-  console.log('%cURSYS: INITIALIZE', cssur);
+  console.log('URSYS: INITIALIZE');
+
   // handle window resize events through URSYS
   window.addEventListener(
     'resize',
@@ -73,32 +72,23 @@ function Init() {
       // console.clear();
     }, 500)
   );
+
   // initialize app when DOM is completely resolved
   document.addEventListener('DOMContentLoaded', () => {
-    if (DBG)
-      console.log(
-        '%cINIT %cDOMContentLoaded. Starting URSYS Lifecycle!',
-        cssur,
-        cssreset
-      );
-    // 1. preflight system routes
-    UR.RoutePreflight(SystemRoutes);
-    // 2. lifecycle startup
+    if (DBG) console.log('INIT DOMContentLoaded. Starting URSYS Lifecycle!');
+    // initialize URSYS
     (async () => {
-      await EXEC.JoinNet();
-      await EXEC.EnterApp();
-      await m_PromiseRenderApp(); // compose React view
-      await EXEC.SetupDOM();
-      await EXEC.SetupRun();
-      /* everything is done, system is running */
-      if (DBG)
-        console.log(
-          '%cINIT %cURSYS Lifecycle Init Complete',
-          'color:blue',
-          'color:auto'
-        );
+      const response = await fetch('/urnet/getinfo');
+      const netProps = await response.json();
+      await UR.SystemHookModules([RENDERER, { UR_ModuleInit }]);
+      console.log('hooked modules');
+      await UR.SystemBoot({
+        autoRun: true,
+        netProps
+      });
     })();
   });
+
   // handle disconnect event
   document.addEventListener('URSYSDisconnect', () => {
     console.log(`${PROJECT_NAME} SERVER HAS DISCONNECTED`);
@@ -108,4 +98,4 @@ function Init() {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default { Init };
+export default { Init, UR_ModuleInit };

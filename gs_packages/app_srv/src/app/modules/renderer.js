@@ -1,5 +1,4 @@
 import * as PIXI from 'pixi.js';
-import EXEC from 'ursys/chrome/ur-exec';
 
 let PIXI_APP;
 let PIXI_ROOT;
@@ -8,27 +7,11 @@ let CONTAINERS = {};
 const LOADER = PIXI.Loader.shared;
 
 /** initialize at runtime */
-let type = 'WebGL';
-if (!PIXI.utils.isWebGLSupported()) {
-  type = 'canvas';
-}
-PIXI.utils.sayHello(type);
+PIXI.utils.skipHello();
 if (PIXI_APP) throw Error('renderer already defined');
 PIXI_APP = new PIXI.Application({ width: 512, height: 512 });
 const root = new PIXI.Container();
 PIXI_APP.stage.addChild(root);
-
-EXEC.Hook(__dirname, 'EXEC_LOAD', () => {
-  const loadSprites = (resolve, reject) => {
-    console.log('loadSprites EXEC_LOAD');
-    LOADER.add('static/sprites/bunny.json').load(loader => {
-      let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
-      SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
-      resolve();
-    });
-  };
-  return new Promise(loadSprites);
-});
 
 /** initalizze and attach renderer view to element */
 function Init(element) {
@@ -73,4 +56,19 @@ function Draw() {
   console.log('drawing');
 }
 
-export default { Init, HookResize, Draw };
+function UR_ModuleInit(UR_EXEC) {
+  UR_EXEC.Hook('APP_LOAD', () => {
+    console.log('hooking APP_LOAD');
+    const loadSprites = (resolve, reject) => {
+      console.log('loadSprites EXEC_LOAD');
+      LOADER.add('static/sprites/bunny.json').load(loader => {
+        let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
+        SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
+        resolve();
+      });
+    };
+    return new Promise(loadSprites);
+  });
+}
+
+export default { Init, HookResize, Draw, UR_ModuleInit };
