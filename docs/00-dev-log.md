@@ -25,183 +25,181 @@ PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 * W1: Added last pieces of script engine: condition objects, agent sets, tests, execution of subprograms.
 * W2: Update [script engine docs+diagrams](https://gitlab.com/stepsys/gem-step/gsgo/-/merge_requests/9) as it stands now. Push repo. New wireframe based on Joshua diagram.
 
+**SUMMARY S17 AUG 17-AUG 30**
+
+* W1: Wireframing from Joshua, placeholder components
+* W2: Port PTRack, issues with PixiJS and React and SSR.
+
 ---
 
-## S17 W1
+## MONDAY AUG 31 - Rebuilding
 
-With the scripting engine implemented, it is time to turn our attention to UX/UI. There has not been a lot of work on it since I started the script engine, so we are still starting from scratch. I am building out a sacrificial wireframe, based on Joshua's work!
-
-Meeting with Joshua and Ben about the vision. Joshua reminded us of a lot of cool ideas (my paraphrasing):
-
->  GEMSTEP is not intended to be a replacement for Scratch and NetLogo, which are highly refined tools with their own strengths. 
-
-> GEMSTEP's emphasis is on powerful foreground collaboration, using "modelling as a verb". Rather than create a simulation and turn it in, GEMSTEP models exist more in the moment of embodiment. The reasoning between students is done while they act things out, using GEMSTEP as the facilitator. Ideally, it enables fast iteration in a group over slow and deliberate coding in solitude.
-
-> For example: A group consists of two kids acting as agents in the simulated space making other agents react to them. At the same time, two other kids are making annotations on what they're doing on top of that. And then they can play back what happens. The "Model Run is the first class citizen", from 1-2 minutes in length. The interface should allow kids to "run it again" to try different things, and choose when to save them. The Play/Rewind/Pause/Record interface is envisioned to allow that (it could be something else). This reminds me of "live replay" recording in game streaming; recording is always happening, and you can choose to save the replay buffer if you have done something cool.
-
-NEXT STEPS from MEETING:
-
-* Joshua is going to produce a "stable" version of the thought document for us.
-* I am going to throw something together independently while Ben and Joshua work through it.
-* I am hoping to make significant progress this week in getting more interactive up and running.
-
-### WEDNESDAY - BURST 1/3
-
-Let's review Joshua's document and start fleshing out more controls.
-
-* I don't like the way I am overiding CSS in the components. There is a better way to do this but I forgot how MUI handles it. 
-
-Fleshed out V1 with notes from Joshua's wireframe. Next to make components from the common elements. 
-
-### THURSDAY - BURST 2/3
-
-* Here are some [IOS Design Cheatsheets](https://kapeli.com/cheat_sheets/iOS_Design.docset/Contents/Resources/Documents/index) showing the resolutions of various ipads. The smallest legacy size is **1024x768.**
-* And here are some [Chromebook Resolutions]([https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks%20come%20with%20a%20variety,usually%201366x768%20or%201920x1080%20resolution.](https://www.starryhope.com/chromebooks/chromebook-comparison-chart/#:~:text=Chromebooks come with a variety,usually 1366x768 or 1920x1080 resolution.)). **1366x768** seems to be the minimum size.
-
-I made a diagram of the [data sources and interconnects](https://whimsical.com/XsQrYE226NbeAZoEqQjxYe).
-
-* laptop architecture pure group: make a first pass assuming this is the model
-* push back on that
-* Design display engine to minimum space: position, timestamp, id of what (visual independent transmission, but connectable) (AgentTemplateID systemwide). 
-
-PixiJS is our new graphics engine. It looks really fast, thanks to GPU smart caching and batch drawing. ThreeJS has changed a lot and most of the API surface area is related to 3D stuff. I liked at Ben's pozyx example and also flipped through the PixiJS demos. We can use the react fiber plugin to add it.
-
-NEXT STEP:
-
-* We could review our old system, but I don't think it's really necessary
-* We do want to port the tracker tool and faketrack right away
-* Use the React Pixi Fiber integration to add dummy mode on new path
-* **Use PixiJS to make FakeTrack**
-
-## S17 W2
-
-### MONDAY
-
-Ok, the thing I'm doing today is starting FAKETRACK. So what is faketrack?
-
-* It's a module that reads PTRACK data and converts it into positional data
-* I need to design the positional data system. 
-* So we might as well do that.
-
-#### About PTRACK
-
-There are two kinds of entities: **PTRACK** and **INPUTS** from other devices (what was called "FakeTrack" before)
+We need to rebuild the app server system. But first...PIXI
 
 ```
-PTRACK - OpenPTRACK entities
-
-  Read UDP from port 21234 on multicast group 224.0.0.1
-  convert PTRACK frame data into entity data
-  - read tracks
-  - retrieve track ENTITIES and EVENTS
-  - filter and map entities to produce pieces with trackerobject
-  - transform entity positions to logical normalized coordinates space
-  Forward transformed entities to registered connections on port 3030
-
-INPUT - other inputs creating logical data entities
-
-	INPUT devices register on TCP port 21212 of server (socket server)
-	- read track
-	- retrieve track ENTITEIS and EVENTS
-	- filter and map entities to produce pieces with trackerobject
-	- skip transform step: INPUT entities should already be using normalized coordinates
-	Forward transformed entities to registered connections on port 3030
-```
-
-The data structures and data structures for **Pieces**
+lerna add pixi.js --scope=@gemstep/app_srv
 
 ```
-TrackerObject(entityId)
-	id: number
-	pos: Vector3
-	valid: boolean
-	isNew: boolean
-	isOutside: boolean
-	mode: enum = jump, lerp, seek
-	type: enum = ?, object, people, pose, faketrack
 
-TrackablePiece extends InqPiece
-	has TrackerObject
-	has Movement types to seek TrackObject using TrackerObject mode
-	
-InqPiece extends Piece
-	implements message calls (!)
-	implements subscriptions to event
-	implements behaviors
-	impements pieces in range
-	
-Piece extends ProtoPiece
-	position, rotation, heading
-	position0, position1, position2
-	visual
-	body
-	state
-	ai
-	updateFunc, thinkFunc, executeFunc
-	implements setters
-	
-ProtoPiece 
-	id
-	name
-	roles
-	tags
-	factions
-	groups
-	implements saving of piece into dictionary
-```
-
-Now the **algorithm** for transforming entities to pieces
+THINGS TO FIX
 
 ```
-m_inputs = the list of Pieces that are mapped, via TrackerObject, to an Entity
-m_pieces = the subset of m_inputs that are visible in the play space
-
-unassigned = m_MapEntities(m_inputs, add, remove)
-- retrieve EntityDict from PTRACK module, computed in ProcessFrame(frameData)
-- steps through every entity in the EntityDict to build updated, lost, new piece lists
-- - increment nop count (increment every frame by milliseconds if entity not found)
-- - increment age (only objects that have min age are considered valid)
-- - remove old entities that are within error radius
-- - remove entities that have expired, reclaim used pieced into pool
-- - assign new entities to available pieces, expanding piece pool as necessary
-
-Transforms normalize coordinates in TrackerSpace to +/- 1, and then expand them to the size of the logical space (in piecels).
-
-- m_transform.matrix_align orientes PTRACK first
-- is normalized to extents of the PTRACK area
-
-Note that m_transform is computed from other values saved in it:
-
-  var m = new THREE.Matrix4();
-  m.multiplyMatrices ( scale, rotatex );
-  m.multiply ( rotatey );
-  m.multiply ( rotatez );
-  m.multiply ( translate );
-
-  /* finally! */
-  m_transform.matrix_align = m;
+ursys now requests props directly from the server, not in an ejs template
+SystemInit.jsx has module resolution problems in IDE (path aliases aren't working in ide)
 ```
 
-#### Next Steps!
+## TUESDAY SEP 01 - PREPPING
 
-* [ ] port server UDP and TrackData server
-* [ ] port client TrackData subscriber
-* [ ] insert ProcessFrame into server
-* [ ] insert transform normalization
-* [ ] implement PTRACK visualizer on localhost **calibrate** + **transform** with PixiJS
-* [ ] insert Entity management into server (add, remove, update)
+I outlined the system yesterday to reacquaint myself. I also need to make some "thinking space" for myself. 
 
-The clients need to receive DisplayList information for the actual pieces, but not much else. I think for inspection, we'll do a round-trip request rather than actually ship the data on every frame.
+## WEDNESDAY SEP 02 - HTML REBUILD on OLD SERVER
 
-### WEDNESDAY 26
+What is the div structure of the old server?
 
-Looking at the playback code in PLAE to use for a datastream reader
+```
+## LAUNCHING SPA
+urdu.js spawns dev server through RunDevServer()
+express server runs from ursys/node/ursys-serve
+.. Initialize: URNET.InitializeNetwork()
+.. StartNetwork: URNET.StartNetwork()
+.. StartWebServer: await URWEB.Start() -- webpack dev server make bundle, 
+web-index.html.ejs defines div#app-container and loads web-bundle.js
+web-bundle.js is created by config/wp.pack.webapp.js through webpack
 
-I'm not quite sure where to start on this. I'm feeling a bit unsure about what to do. I guess **port the step tracker**
+## SPA
+web-index.js is the entry point defined in wp.pack.webapp.js
+web-index.js calls boot/SystemInit after doing page setup
+SystemInit.Init:
+.. adds resize listener
+.. adds DOMContentLoaded listener
+.. adds URSYSDisconnect listener
+.. calls URSYS initialization: JoinNet, EnterApp, m_PromiseRenderApp, SetupDOM, SetupRun
+.. .. JoinNet call returns JoinNet promise URNET.Connect
+.. .. EnterApp: INIT, LOAD, CONFIGURE
+.. .. m_PromiseRenderApp: ReactDOM.render into #app-container, then resolve()
+.. .. SetupDOM: DOM_READ
+.. .. SetupRun: RESET, START, REGISTER, ULINK.RegisterSubscribers, READY, RUN
+			(ULINK.RegisterSubscribers if messages, then do a netcall to server)
+```
 
-* [ ] new module `step-ptrack` needs to launch in `_start.js` of gem_srv
-* [ ] faketrack module...
+Thinking aloud. What is it that I want to do?
 
+* Well, I need to load PixiJS into some kind of HTML shell. I think I can shortcut that by inserting it into `m_PromiseRenderApp`, and have it ignore React and instead call some other module.
 
+What modules are accesible from SystemInit.Init()?
 
-e
+* Currently it loads `SystemShell` and renders it inside `#app-container`
+* This routes the components defined in `SystemRoutes`
+  * `ViewMain` and `NoMatch` are the two components
+* `ViewMain` currently doesn't show anything. 
+
+```
+HOW PLAE RENDERS SPA
+
+during construct, it looks for #system-app and renders into it
+For bees2, it loads components/AppBees2
+
+The SCREEN component provides screen manipulation functions
+
+info = #nfo1401
+main = #renderer
+debug = #dbg1401
+
+main:
+	#renderer position relative
+		#renderer-overlay position absolute, top 0
+			#paint-overlay position absolute, top 0
+Screen.RefreshDimension(cfg)
+
+---
+LAYOUT RULES - how the render area fits its space
+
+  FIXED  - #renderer drawn upper left of #display, 1:1 pixel
+  SCALED - #renderer canvas is scaled to fit browser window
+  FLUID  - #renderer is 1:1 pixels but is resized
+
+SCREEN MODES - surrounding layout (if any) for the renderer
+
+  CONSOLE - fixed presentation on large screen, with sidebar areas
+            surrounding a WebGL canvas
+  MOBILE 	- responsive presentation on small screens, using a
+            ui framework, with an optional WebGL canvas
+  NONE    - no sidebar areas at all
+
+Both a LAYOUT RULE and a SCREEN MODE can be set, and they will behave
+as you would expect.
+
+```
+
+OK, what we need to do is just
+
+## THURSDAY - PixiJS in APP_SRV
+
+It works! It is a much cleaner architectures than NextJS for this kind of stuff.
+
+## FRIDAY - Port URSYS into APP_SRV
+
+SystemInit needs this replaced:
+
+```
+document.addEventListener('DOMContentLoaded', () => {
+    if (DBG)
+      console.log(
+        '%cINIT %cDOMContentLoaded. Starting URSYS Lifecycle!',
+        cssur,
+        cssreset
+      );
+    // 1. preflight system routes
+    UR.RoutePreflight(SystemRoutes);
+    // 2. lifecycle startup
+    (async () => {
+      await EXEC.JoinNet();
+      await EXEC.EnterApp();
+      await m_PromiseRenderApp(); // compose React view
+      await EXEC.SetupDOM();
+      await EXEC.SetupRun();
+      /* everything is done, system is running */
+      if (DBG)
+        console.log(
+          '%cINIT %cURSYS Lifecycle Init Complete',
+          'color:blue',
+          'color:auto'
+        );
+    })();
+  });
+ 
+```
+
+The `UR.RoutePreflight(SystemRoutes)` call doesn't have an equivalent in the new URSYS. How does it work?
+
+In the NextJS app server, ursys is initialized in `_app.js` as a `useEffect()` hook. 
+
+```
+  useEffect(() => {
+		...
+		// URSYS start
+    // 1. Boot URSYS lifecycle independent of React
+    UR.SystemHookModules([SIM, APPSTATE]).then(() => {
+      UR.SystemBoot({
+        autoRun: true,
+        netProps
+      });
+    });
+
+    // useEffect unmounting action: URSYS shutdown
+    return function cleanup() {
+      console.log(...PR('unmounting _app'));
+      UR.SystemUnhookModules().then(() => {
+        UR.SystemUnload();
+      });
+      // force page reload after unmount
+      // window.location.reload();
+    };
+  }, []);
+```
+
+Differences:
+
+* `SystemHookModules()` **explicitly** **initializes** modules by calling their `UR_ModuleInit()` handlers, instead of `SystemRoutes` being used to figure out what modules are in-scope or note. 
+* `SystemBoot()` **replaces** the async function in old ursys
+
