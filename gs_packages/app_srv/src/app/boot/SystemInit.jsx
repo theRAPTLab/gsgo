@@ -24,7 +24,9 @@ import debounce from 'debounce';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import SETTINGS from 'config/app.settings';
 import CCSS from 'app/modules/console-styles';
+import UR from 'ursys/chrome/ursys';
 import EXEC from 'ursys/chrome/ur-exec';
+import SystemRoutes from './SystemRoutes';
 import SystemShell from './SystemShell';
 
 const { cssur, cssreset } = CCSS;
@@ -80,6 +82,7 @@ function Init() {
         cssreset
       );
     // 1. preflight system routes
+    UR.RoutePreflight(SystemRoutes);
     // 2. lifecycle startup
     (async () => {
       await EXEC.JoinNet();

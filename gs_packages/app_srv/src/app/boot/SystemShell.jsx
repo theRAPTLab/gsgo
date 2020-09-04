@@ -22,18 +22,19 @@ class SystemShell extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError() {
-    return { hasError: true };
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
   }
 
   componentDidMount() {
     // console.log(`%ccomponentDidMount()`, cssreact);
   }
+  componentDidCatch(error, errorInfo) {}
 
   render() {
-    const { hasError } = this.state;
+    const { hasError, error } = this.state;
     // omg an error???
-    if (hasError) debugger;
+    if (hasError) return <p>{error}</p>;
     // otherwise return component with matching routed view
     return (
       <Switch>

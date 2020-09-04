@@ -12,13 +12,12 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import SESSION from 'ursys/common/lib-session';
-import REFLECT from 'util/reflect';
 import NetMessage from 'ursys/common/class-netmessage';
 import URLink from 'ursys/chrome/ur-link';
-import ReloadOnViewChange from 'util/reload';
-import EXT from 'ursys/chrome/ur-extension';
+import ReloadOnViewChange from '../../src/util/reload';
 import CENTRAL from './ur-central';
 import EXEC from './ur-exec';
+import REFLECT from '../../src/util/reflect';
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,9 +36,9 @@ let MEMEXT_INSTALLED = false;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// do session overrides  React does first render in phase after CONFIGURE
-EXEC.Hook(__dirname, 'CONFIGURE', () => {
+EXEC.Hook(__dirname, 'EXEC_CONFIGURE', () => {
   // attempt to connect to extension
-  EXT.ConnectToExtension(SocketUADDR());
+  // EXT.ConnectToExtension(SocketUADDR());
   // check for admin override thenreturn
   const qs = SESSION.AdminPlaintextPassphrase();
   if (document.location.hash.includes(qs)) {
@@ -79,7 +78,8 @@ const { Hook } = EXEC;
  * explicitly
  */
 function ReactHook(scope, phase, func) {
-  if (!EXEC.IsReactPhase(phase)) throw Error(`Phase ${phase} has already passed; can't hook it!`);
+  if (!EXEC.IsReactPhase(phase))
+    throw Error(`Phase ${phase} has already passed; can't hook it!`);
   Hook(scope, phase, f);
 }
 
@@ -125,7 +125,7 @@ function DBTryRelease(dbkey, dbids) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { Define, GetVal, SetVal } = CENTRAL;
-const { ExtPublish, ExtSubscribe, ExtCallAsync } = EXT;
+// const { ExtPublish, ExtSubscribe, ExtCallAsync } = EXT;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function IsLocalhost() {
@@ -168,7 +168,8 @@ function SocketUADDR() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PromiseCaptureScreen(options) {
-  if (!EXT.IsConnected()) return Promise.resolve({ error: 'Extension not connected' });
+  if (!EXT.IsConnected())
+    return Promise.resolve({ error: 'Extension not connected' });
   let res = EXT.ExtCallAsync('CAPTURE_SCREEN', options)
     .then(async data => {
       let { dataURI } = data;
