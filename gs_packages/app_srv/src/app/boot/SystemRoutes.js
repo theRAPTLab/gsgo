@@ -8,9 +8,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// COMPONENTS ////////////////////////////////////////////////////////////////
-import ViewMain from '../views/ViewMain/ViewMain';
-import Tracker from '../views/Tracker/Tracker';
-import NoMatch from './ NoMatch';
+import Tracker from '../pages/Tracker/Tracker';
+import NoMatch from './NoMatch';
 
 /*****************************************************************************\
 

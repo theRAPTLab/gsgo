@@ -10,7 +10,7 @@ node_modules/
 
 # Ignore all logfiles and tempfiles.
 *.log*
-tmp
+tmp*
 
 # Ignore all generated files
 npm-debug.log
