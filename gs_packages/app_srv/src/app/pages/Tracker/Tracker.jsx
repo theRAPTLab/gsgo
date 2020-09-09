@@ -9,7 +9,7 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 
-import Renderer from '../../modules/renderer';
+import Renderer from '../../modules/test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,6 +42,10 @@ class Tracker extends React.Component {
   componentDidMount() {
     console.log('componentDidMount Tracker');
     const renderRoot = document.getElementById('root-renderer');
+    /* test code */
+    // Sim.LoadSimulation();
+    // Sim.StartSimulation();
+    /* end test code */
     Renderer.Init(renderRoot);
     Renderer.HookResize(renderRoot);
     Renderer.Draw();

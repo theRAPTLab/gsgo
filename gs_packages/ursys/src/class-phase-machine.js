@@ -91,10 +91,11 @@ class PhaseMachine {
     const initializer = `${this.NAME}_ModuleInit`;
     moduleArray.forEach((mod = {}) => {
       if (typeof mod[initializer] !== 'function') {
-        console.warn(...this.PR(`missing ${initializer}() in module`, mod));
-        return Promise.reject();
+        const err = `missing ${initializer}() in module`;
+        console.warn(...this.PR(err, mod));
+      } else {
+        mod[initializer](this); // pass phasemachine instance
       }
-      mod[initializer](this); // pass phasemachine instance
     });
     return Promise.resolve();
   }

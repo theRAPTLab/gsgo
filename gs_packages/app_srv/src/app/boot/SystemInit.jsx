@@ -28,7 +28,7 @@ import SystemShell from './SystemShell';
 
 /// HOOK MODULES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import RENDERER from '../modules/renderer';
+import RUNTIME from '../modules/sim/runtime';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,8 +80,7 @@ function Init() {
     (async () => {
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
-      await UR.SystemHookModules([RENDERER, { UR_ModuleInit }]);
-      console.log('hooked modules');
+      await UR.SystemHookModules([RUNTIME, { UR_ModuleInit }]);
       await UR.SystemBoot({
         autoRun: true,
         netProps

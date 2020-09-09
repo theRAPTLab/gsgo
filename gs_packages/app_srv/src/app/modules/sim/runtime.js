@@ -10,6 +10,8 @@ import CONDITIONS from './sim_conditions';
 import AGENTS from './sim_agents';
 import REFEREE from './sim_referee';
 import FEATURES from './sim_features';
+import RENDERER from '../vis/sim_render';
+import TestRenderer from '../test-renderer';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -126,13 +128,14 @@ function ResetSimulation() {
 /** URSYS API: Hook into application lifecycle events.
  *  This module participates in the URSYS EXEC PhaseMachine
  */
-function UR_ModuleInit() {
+function UR_ModuleInit(urloop) {
   // hook into URSYS lifecycle
-  UR.SystemHook('APP_STAGE', LoadSimulation);
-  UR.SystemHook('APP_START', StartSimulation);
-  UR.SystemHook('APP_RUN', RunSimulation);
-  UR.SystemHook('APP_UPDATE', UpdateSimulation);
-  UR.SystemHook('APP_RESET', ResetSimulation);
+  urloop.Hook('APP_STAGE', LoadSimulation);
+  urloop.Hook('APP_START', StartSimulation);
+  urloop.Hook('APP_RUN', RunSimulation);
+  urloop.Hook('APP_UPDATE', UpdateSimulation);
+  urloop.Hook('APP_RESET', ResetSimulation);
+  urloop.HookModules([TestRenderer]);
 
   // register debugging messages for GameLoop phases
   const u_dump = (phases, index) => {
@@ -145,7 +148,7 @@ function UR_ModuleInit() {
   GameLoop.Hook('PHASE_LOOP', u_dump);
 
   // initialize modules that are participating in this gameloop
-  GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, FEATURES, REFEREE]);
+  GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, FEATURES, REFEREE, RENDERER]);
 } // Initialize
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

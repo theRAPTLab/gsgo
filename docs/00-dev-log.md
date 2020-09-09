@@ -309,4 +309,50 @@ NOTES:
 
 * Remember to use `UR.SystemHookModules([ ...  ])` on document DOMContentLoaded to give every module an opportunity to hook. They must define `UR_ModuleInit( UR_EXEC )` where `UR_EXEC` is the phase machine instance that implements `Hook('Phase',handler)`
 * The bootstrap is handled in `SystemInit.jsx` and it taps itself and RENDERER to hook into UR_EXEC events.
-* Execution continues in the loaded route.
+* Execution continues in the loaded route.x
+
+---
+
+## September 9 - Sprites in
+
+Reviewing the difference between app_srv and gem_srv in its file hierarchy. It's similar except for the organization of the bootup:
+
+* gemserv is nextjs and uses pages, pageblocks, pagetabs 
+* appserv is custom express and uses src/app/boot that loads app/views
+
+Compare to PLAE
+
+* 1401 is the system, 1401-games is the view
+* system is module-level, objects are common data, components are ui 
+
+```
+PLAE
+----
+1401/
+components/
+objects/
+system/
+1401-games/
+components/
+game-run.*
+```
+
+* inserted sim startup in Tracker.jsx for now in componentDidMount, probably not a great idea
+
+The current startup now looks like this
+
+```
+SystemInit DOMCOntentLoaded: UR SystemHookModules sim/runtime and SystemShell render
+sim/runtime UR_ModuleInit: UR Hook APP_*, forward UR HookModules to sim-dependent modules
+.. test-renderer UR_ModuleInit: APP_LOAD load sprites
+sim/runtime SIM_ModuleInit hooked into GameLoop
+.. INPUTS
+.. CONDITIONS
+.. AGENTS
+.. FEATURES
+.. REFEREREE
+.. RENDERER
+```
+
+
+
