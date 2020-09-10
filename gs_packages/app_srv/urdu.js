@@ -75,11 +75,11 @@ function RunDevServer() {
 
   // new ursys
   (async () => {
+    await URPACK.Start();
     await URSERVER.Initialize();
     await URSERVER.StartServer({
       serverName: 'APP_SRV',
       runtimePath: RUNTIME_PATH
     });
-    await URPACK.Start();
   })();
 }

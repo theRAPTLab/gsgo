@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/quotes */
 /*/////////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   This configuration defines the webpack rules for processing different file
@@ -13,11 +14,10 @@
 const Path = require('path');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
-const PROMPTS = require('./prompts');
+const { util } = require('@gemstep/ursys/server');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const { TERM_EXP: CW, CR } = PROMPTS;
-const PR = `${CW}${PROMPTS.Pad('WEBPACK')}${CR}`;
+const PR = util.PROMPTS.makeLogHelper('PACK');
 
 /// CONSTANTS INFO ////////////////////////////////////////////////////////////
 const DIR_ROOT = Path.resolve(__dirname, '../');
@@ -29,7 +29,7 @@ const DIR_INCLUDES = [Path.join(DIR_ROOT, 'src')];
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WebpackLoaders = () => {
-  console.log(PR, `... setting common webpack loader rules`);
+  console.log(...PR('... setting common webpack loader rules'));
   return {
     module: {
       rules: [
@@ -68,7 +68,9 @@ const WebpackLoaders = () => {
         },
         {
           test: /\.(eot|svg|ttf|woff|woff2)$/,
-          use: [{ loader: 'file-loader?name=font/[name]__[hash:base64:5].[ext]' }],
+          use: [
+            { loader: 'file-loader?name=font/[name]__[hash:base64:5].[ext]' }
+          ],
           // note: applies only to "imported" images in source code. Doesn't affect
           // static assets copied as-is (see wp.pack.* configs)
           include: DIR_INCLUDES
@@ -81,9 +83,9 @@ const WebpackLoaders = () => {
       // create chrome webapp path aliases (webapps only)
       alias: {
         config: Path.resolve(__dirname, '../config'),
-        ursys: Path.resolve(__dirname, '../ursys'),
-        util: Path.resolve(__dirname, '../src/util'),
-        step: Path.resolve(__dirname, '../src/step/'),
+        // ursys: Path.resolve(__dirname, '../ursys'),
+        // util: Path.resolve(__dirname, '../src/util'),
+        // step: Path.resolve(__dirname, '../src/step/'),
         app: Path.resolve(__dirname, '../src/app')
       }
     }

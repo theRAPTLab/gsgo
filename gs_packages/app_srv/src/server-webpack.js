@@ -16,18 +16,17 @@ const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const DevServer = require('webpack-dev-middleware');
 const HotReload = require('webpack-hot-middleware');
-const { ExpressHandler } = require('@gemstep/ursys/server');
+const { ExpressHandler, util } = require('@gemstep/ursys/server');
 const { parse } = require('url');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 const wpconf_packager = require('../config/wp.pack.webapp');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const LPR = 'EXPRESS';
+const PR = util.PROMPTS.makeLogHelper('ASRV');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 const PORT = 80;
-const PR = `${LPR}`;
 const DIR_ROOT = Path.resolve(__dirname, '../');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 
@@ -41,23 +40,23 @@ let m_server; // server object returned by app.listen()
  */
 function Start() {
   console.log(
-    PR,
-    'COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...'
+    ...PR('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...')
   );
   let promiseStart;
 
   // RUN WEBPACK THROUGH API
   // first create a webpack instance with our chosen config file
   const webConfig = wpconf_packager();
-  const compiler = Webpack(webConfig);
 
+  const compiler = Webpack(webConfig);
   // add webpack middleware to Express
   // also add the hot module reloading middleware
   const instance = DevServer(compiler, {
-    // logLevel: 'silent', // turns off [wdm] messages
+    logLevel: 'silent', // turns off [wdm] messages
     publicPath: webConfig.output.publicPath,
     stats: 'errors-only' // see https://webpack.js.org/configuration/stats/
   });
+  console.log(...PR('... starting hot devserver (this may take a while)'));
 
   app.use(instance);
   app.use(HotReload(compiler));
@@ -65,12 +64,13 @@ function Start() {
   // compilation start message
   // we'll start the server after webpack bundling is complete
   // but we still have some configuration to do
+  // note that many hooks do not run in developer HMR mode
   compiler.hooks.afterCompile.tap('StartServer', () => {
     if (!m_server) {
       m_server = app.listen(PORT, () => {
-        console.log(PR, `WEBSERVER LISTENING ON PORT ${PORT}`);
-        console.log(PR, `SERVING '${DIR_OUT}'`);
-        console.log(PR, 'LIVE RELOAD ENABLED');
+        console.log(...PR(`serving bundle '${DIR_OUT}'`));
+        console.log(...PR('LIVE RELOAD ENABLED'));
+        console.log(...PR(`webapp server listening on port ${PORT}`));
       });
     }
   });
@@ -82,10 +82,11 @@ function Start() {
     let COMPILE_RESOLVED = false;
     const INTERVAL_PERIOD = 2000;
     const COMPILE_TIME = Math.floor((INTERVAL_MAX * INTERVAL_PERIOD) / 1000);
+
     // start compile status update timer
     let INTERVAL = setInterval(() => {
       if (++INTERVAL_COUNT < INTERVAL_MAX) {
-        console.log(PR, '... webpack compiling');
+        console.log(...PR('... transpiling bundle'));
       } else {
         clearInterval(INTERVAL);
         const emsg = `webpack compile time > INTERVAL_MAX (${COMPILE_TIME} seconds)`;
@@ -93,15 +94,16 @@ function Start() {
         reject(err);
       }
     }, INTERVAL_PERIOD);
+
     // set resolver
     compiler.hooks.afterCompile.tap('ResolvePromise', () => {
       if (!COMPILE_RESOLVED) {
-        console.log(PR, '... webpack done');
+        console.log(...PR('... transpiling'));
         clearInterval(INTERVAL);
         resolve();
         COMPILE_RESOLVED = true;
       } else {
-        console.log(PR, 'RECOMPILED SOURCE CODE and RELOADING');
+        console.log(...PR('RECOMPILED SOURCE CODE and RELOADING'));
       }
     });
   });

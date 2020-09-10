@@ -15,13 +15,11 @@ const DBG = false;
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PATH = require('path');
 const FSE = require('fs-extra');
+const PR = require('./util/prompts').makeLogHelper('SLOG');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const PROMPTS = require('./util/prompts');
 const DATESTR = require('./util/datestring');
-
-const PR = PROMPTS.makeLogHelper('LOGGER');
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
