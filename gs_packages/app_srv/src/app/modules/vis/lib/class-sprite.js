@@ -20,7 +20,7 @@ class Sprite {
   constructor() {
     this.x = 0;
     this.y = 0;
-    this.sprite = PIXI.AnimatedSprite();
+    this.sprite = PIXI.Sprite();
   }
 }
 
@@ -35,4 +35,4 @@ class Sprite {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Sprite };
+export default Sprite;
