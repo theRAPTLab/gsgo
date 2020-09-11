@@ -14,7 +14,7 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const SESSION = require('./util/session');
-const DLOG = require('./util/prompts').makeLogger('UNET');
+const DLOG = require('./util/prompts').makeLogHelper('UNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -66,9 +66,9 @@ function Start() {
   compiler.hooks.afterCompile.tap('StartServer', () => {
     if (!m_server) {
       m_server = app.listen(PORT, () => {
-        console.log(...PR(`serving bundle '${DIR_OUT}'`));
-        console.log(...PR('LIVE RELOAD ENABLED'));
+        console.log(...PR(`webapp bundle: '${DIR_OUT}'`));
         console.log(...PR(`webapp server listening on port ${PORT}`));
+        console.log(...PR('LIVE RELOAD ENABLED'));
       });
     }
   });
@@ -96,7 +96,7 @@ function Start() {
     // set resolver
     compiler.hooks.afterCompile.tap('ResolvePromise', () => {
       if (!COMPILE_RESOLVED) {
-        console.log(...PR('... transpiling'));
+        console.log(...PR('... transpiling complete!'));
         clearInterval(INTERVAL);
         resolve();
         COMPILE_RESOLVED = true;

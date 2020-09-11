@@ -477,9 +477,77 @@ The way this might work:
 *  `INPUT` phase: the Movement feature reads the position of FakeTrack agents and sends an input packet to system
 * `UPDATE` phase: agent position, decoration flags updated from relevant agent props
 
+## September 11 - Implementing FakeTrack through Agent Interface
+
+This should be possible, but I'm not sure how it will work. 
+
+Let's list things in chunks in the backlog, and convert to questions as **NEXT ACTIONS:**
+
+```
+---
+Q01 - How does routing relate to URLOOP and URSIM startup?
+	SystemShell uses SystemRoutes to generate a React Router Switch statement
+	SystemRoutes has a list of top-level components located in pages/
+
+  SystemShell route to FAKETRACK entry point
+  FAKETRACK URLOOP startup
+  SIMLOOP startup control
+
+---
+Q02 - What does a "Clickable Agent" need to implement?
+Q03 - How does an Agent Instance link to a Sprite?
+
+  define agent TEMPLATE for a clickable faketrack agent
+  define movement FEATURE with type "interactive"
+  
+---
+Q04 - How does URLOOP and SIMLOOP overlap in phases?
+Q05 - How do arbitrary modules register for either URLOOP or SIMLOOP anyway?
 
 
+```
 
+**BACKLOG**
+
+```
+
+FAKETRACK init of TEMPLATE in URLOOP
+FAKETRACK instantiate template INSTANCE in URLOOP
+FAKETRACK update template INTERACTIONS in URLOOP
+
+FEATURE hook into SIMLOOP
+
+RENDERER init of SPRITE ENGINE in URLOOP
+
+in SIMLOOP INPUT:
+  get lists of entity by movement type: "interactive", "static", "ptrack"
+  
+in SIMLOOP UPDATE:
+  process entities by type
+  interactive -> update associated agent tracked position DIRECT
+  ptrack -> update associated agent tracked position LERP
+  -
+  update autonomous FEATURE processes in held agents
+  -
+  handle queued messages, set props, forward as necessary
+
+in SIMLOOP CONDITIONS
+  run all condition tests to create sets
+  
+in SIMLOOP THINK:
+
+in SIMLOOP EXEC:
+
+in SIMLOOP RENDER part 1:
+  read AGENT INSTANCES entity information
+  encode into DISPLAY LIST
+  send DISPLAY LIST
+
+in SIMLOOP RENDER part 2:
+  read DISPLAY LIST
+  render to SPRITE POOL
+ 
+```
 
 
 

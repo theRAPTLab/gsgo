@@ -140,7 +140,7 @@ function makeLogHelper(prompt, tagColor) {
   // return the appropriate array to deconstructr
   const wrap = IS_NODE
     ? (str, ...args) => {
-        return [`${color}${padString(prompt)}${reset} - ${str}`, ...args]; // server
+        return [`${color}${padString(prompt)}${reset}   ${str}`, ...args]; // server
       }
     : (str, ...args) => {
         return [`%c${padString(prompt)}%c ${str}`, color, reset, ...args]; // browser
