@@ -85,16 +85,26 @@ class PhaseMachine {
    *  'UR' as its phase machine name, so the corresponding initializer function
    *  will be UR_ModuleInit() in each module to give it a chance to hook-in.
    */
-  HookModules(moduleArray = []) {
-    if (!Array.isArray(moduleArray))
-      return Promise.reject(Error('HookModules() requires an array'));
-    const initializer = `${this.NAME}_ModuleInit`;
-    moduleArray.forEach((mod = {}) => {
-      if (typeof mod[initializer] !== 'function') {
-        const err = `missing ${initializer}() in module`;
+  HookModules(formod = []) {
+    // case 1: direct function version (called by modules)
+    if (typeof formod === 'function') {
+      formod(this);
+      return Promise.resolve();
+    }
+
+    // case 2: array of modules with '*_ModuleInit' function
+    if (!Array.isArray(formod))
+      return Promise.reject(
+        Error('HookModules() requires a func or array of modules')
+      );
+    // call every module in the array
+    const initName = `${this.NAME}_ModuleInit`;
+    formod.forEach((mod = {}) => {
+      if (typeof mod[initName] !== 'function') {
+        const err = `missing ${initName}() in module`;
         console.warn(...this.PR(err, mod));
       } else {
-        mod[initializer](this); // pass phasemachine instance
+        mod[initName](this); // pass phasemachine instance
       }
     });
     return Promise.resolve();

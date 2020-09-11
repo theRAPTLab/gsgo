@@ -313,7 +313,7 @@ NOTES:
 
 ---
 
-## September 9 - Sprites in
+## September 9 - Figuring out where Modules go
 
 Reviewing the difference between app_srv and gem_srv in its file hierarchy. It's similar except for the organization of the bootup:
 
@@ -353,6 +353,135 @@ sim/runtime SIM_ModuleInit hooked into GameLoop
 .. REFEREREE
 .. RENDERER
 ```
+
+The extra time spent compiling app_srv might be related to the way hot reload is built, and also that ursys itself is being compiled from scratch each time.
+
+I tried to figure out why the compilation was taking so long, but couldn't figure it out. NextJS compiles much more quickly, so I'm not sure what I'm doing wrong. Let's check brunch
+
+## September 10 - Sprites In
+
+Let's see if I can click on the sprite and drag it around. Yes! Relatively easy. The examples are more useful than the documentation.
+
+### Porting PTrack Location and Transformation Code
+
+I'm reviewing the INPUT and PTRACK client-side code to determine what data structures need to be made.
+
+```
+Raw PTRACK JSON is processed into a Frame
+EntityObjects are created from Frame
+
+TrackerObjects use transformed EntityObject position data in world space
+TrackerPiece is a Piece with a TrackerObject property
+```
+
+**class-ptrack** implements the PTrack manager that continually processes frame data received from the PTrack server into an entity list.  This entity list is transformed by **step/ptrack** from physical coordinates in the world into SimWorld coordinates that are stored in **class-tracker-object** inputs that are then mapped to a **piece pool**. 
+
+* when moving pieces around, we assume the **SimWorld coordinates of -500 to 500**
+
+RAMIFICATIONS
+
+* the **tracker-object** holds SimWorld normalized coordinates that represent a **target location**
+* **agents** in the SimWorld that are controlled by students **seek** the target location in a tracker object.
+* **sprites** are drawn based on the current target location of an associated agent.
+
+### Handling Agent and Sprite Creation
+
+Every agent instance needs a sprite to represent it.
+
+Agents have x, y properties. These can be in a TrackerObject. We might also need **orientation** and **speed** provided in the **Movement feature**. 
+
+Sprites are maintained in a pool, and are assigned to a particular Agent instance by id using a similar method of mapping raw frame entities by id to an existing trackerobject. When sprites update, they retrieve the location from its TrackerObject.
+
+* id, x, y are part of the agent
+* orientation, speed, direction, rotation, acceleration are part of the Movement Feature.
+* active agents are processed and their matching sprite IDs are checked to see if an update is necessary
+* if an active agent implements Movement, then rotation and direction are also applied to the sprite, depending on the type of movement.
+
+So we need to next implement a **Movement Feature** and be able assign it in an Agent Template. 
+
+#### INPUT GROUPS and MAPPING
+
+PTrack is entity data from the camera tracking system, but we have two other inputs:
+
+* FakeTrack input that mirror PTrack data 
+* Pointer input that is assigned by INPUT GROUP to have a particular function (controlling a bird, or something)
+* Observer inputs that provide events to trigger
+
+For the first two groups, there's a *MAPPING STRATEGY* that determines how the input is shown on the screen:
+
+* For PTrack/FakeTrack, entities are assigned agents based on proximity to existing agents that are seeking to be controlled. They need to have some kind of "target" and also "sprite position". 
+* For Pointer Input, the activity defines devices by INPUT GROUP, each one meaning something. There are a number of "agent instance slots" that can be assigned to a Pointer Group.
+* FakeTrack and Pointer Inputs are very reliable, so they will hold their agent assignments. PTrack data can be unreliable because of entity dropouts, so PTrack entities will have to use proximity embodiment for agents designated under 
+  "student control". PTrack-controlled agents will display some kind of indicator.
+
+#### CREATION LIFECYCLE
+
+```
+load model definition
+* agent template functions - define properties, features, and interactions
+* agent instance init - set starting property values, run initial code
+* agent conditions - run periodically
+
+initialize simulation
+* make agent instances and run agent init on all of them
+* apply agent instance value overrides
+* apply agent instance feature initialization
+
+update lifecycle runs
+* features tap lifecycle
+* features maintain list of subscribing agent instances
+```
+
+#### MOVEMENT FEATURE THINK-ALOUD
+
+```
+movement.type == PTrack? 
+Then do nearest entity assignment to nearest PTRACK controlled agent!
+* map entityID with TrackerObj in TrackerPool in agentID
+* map agentID with spriteID in SpritePool
+* agent seek TrackerObject on update
+* sprite drawn at agent pos during RENDER
+
+movement.type == FakeTrack?
+Then it's the same as PTrack
+
+movement.type == Pointer?
+Then assign Pointer to "affiliated agent"
+* generate entityID for pointer
+* allocate agent instance to pointer (first come, or direct assignment by instance name/device name)
+* agent seek Pointer TrackerObject
+```
+
+#### IMPLEMENTING FAKETRACK
+
+This can use the agent interface also. The program would be something like this:
+
+```
+-- these are defaults
+agent FakeTrack
+	use feature 'Movement'
+		prop 'type' setTo 'selectable' -- 'ptrack' another option
+		prop 'mode' setTo 'direct'
+	property skin setTo 'round.png'
+
+agent Blue extends FakeTrack
+	prop 'group' setTo 'Blue'
+	
+agent Red extends FakeTrack
+	prop 'group' setTo 'Red'
+```
+
+The way this might work:
+
+* the FakeTrack agent is using Movement and is initalized to type 'selectable', which adds the agent instance to the pool of eligible controllable agents.
+*  `INPUT` phase: the Movement feature reads the position of FakeTrack agents and sends an input packet to system
+* `UPDATE` phase: agent position, decoration flags updated from relevant agent props
+
+
+
+
+
+
 
 
 

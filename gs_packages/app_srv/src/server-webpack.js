@@ -11,13 +11,11 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 const Express = require('express'); //your original BE server
 const Path = require('path');
-const IP = require('ip');
 const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const DevServer = require('webpack-dev-middleware');
 const HotReload = require('webpack-hot-middleware');
 const { ExpressHandler, util } = require('@gemstep/ursys/server');
-const { parse } = require('url');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 const wpconf_packager = require('../config/wp.pack.webapp');
