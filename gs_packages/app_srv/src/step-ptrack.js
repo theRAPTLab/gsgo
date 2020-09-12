@@ -15,8 +15,9 @@ let DBGTRK = true;
 
 const dgram = require('dgram');
 const WebSocketServer = require('ws').Server;
-const PR = require('@gemstep/ursys/server').util.PROMPTS.makeLogHelper('PTRK');
+const { Prompt } = require('@gemstep/ursys/server');
 //
+const PR = Prompt('PTRK');
 const PT_GROUP = '224.0.0.1'; // ptrack UDP multicast address
 const PT_UPORT = 21234; // ptrack UDP port
 const OUT_DPORT = 3030; // ptrack TCP data port socket server

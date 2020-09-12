@@ -14,10 +14,10 @@
 const Path = require('path');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
-const { util } = require('@gemstep/ursys/server');
+const URSERV = require('@gemstep/ursys/server');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const PR = util.PROMPTS.makeLogHelper('PACK');
+const PR = URSERV.Prompt('PACK');
 
 /// CONSTANTS INFO ////////////////////////////////////////////////////////////
 const DIR_ROOT = Path.resolve(__dirname, '../');

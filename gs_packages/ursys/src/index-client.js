@@ -52,7 +52,7 @@ async function SystemStart() {
     return Promise.reject();
   }
   // autoconnect to URSYS network during NET_CONNECT
-  PhaseMachine.SystemHook(
+  PhaseMachine.QueueHookFor(
     'UR',
     'NET_CONNECT',
     () =>
@@ -89,12 +89,10 @@ module.exports = {
   Call: nc_pub.LocalCall,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
-  SystemUnhook: () => {
-    console.log(...PR('SystemUnhook NOP'));
-  },
+  // SYSTEM STARTUP
   SystemStart,
   SystemStop,
-  // FORWARDED UR EXEC
+  // FORWARDED SYSTEM CONTROL VIA UREXEC
   SystemBoot: URExec.SystemBoot,
   SystemRun: URExec.SystemRun,
   SystemRestage: URExec.SystemRestage,
@@ -102,6 +100,6 @@ module.exports = {
   SystemUnload: URExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
   Prompt: PROMPTS.makeLogHelper,
-  // FORWARDED classes
+  // FORWARDED CLASSES
   class: { PhaseMachine }
 };

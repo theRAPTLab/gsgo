@@ -12,7 +12,7 @@
 const Path = require('path');
 const Webpack = require('webpack');
 const WebpackMerge = require('webpack-merge');
-const { util } = require('@gemstep/ursys/server');
+const { Prompt } = require('@gemstep/ursys/server');
 
 /// LOAD WEBPACK PLUGINS //////////////////////////////////////////////////////
 const CopyPlugin = require('copy-webpack-plugin');
@@ -23,7 +23,7 @@ const WriteFilesPlugin = require('write-file-webpack-plugin');
 const WebpackLoaders = require('./wp.base.loaders');
 
 /// DEFINE CONSTANTS //////////////////////////////////////////////////////////
-const PR = util.PROMPTS.makeLogHelper('PACK');
+const PR = Prompt('PACK');
 const DIR_ROOT = Path.resolve(__dirname, '..');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 const DIR_SRC = Path.join(DIR_ROOT, 'src/app');

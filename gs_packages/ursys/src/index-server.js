@@ -138,10 +138,7 @@ module.exports = {
   LOGGER,
   NETWORK,
   MEDIA,
-  // FORWARDED PROMPT UTILITY
+  // PROMPT UTILITIES
   Prompt: PROMPTS.makeLogHelper,
-  // CONVENIENCE
-  util: {
-    PROMPTS
-  }
+  DBGLog: PROMPTS.makeLogger
 };
