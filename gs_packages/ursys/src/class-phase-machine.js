@@ -32,7 +32,7 @@ const PROMPTS = require('./util/prompts');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { subs: true, ops: false, phases: false, init: true };
+const DBG = { subs: true, ops: false, phases: false, init: false };
 const IS_NODE = typeof window === 'undefined';
 
 const PR = PROMPTS.makePrefixUtil('UR.PHM');

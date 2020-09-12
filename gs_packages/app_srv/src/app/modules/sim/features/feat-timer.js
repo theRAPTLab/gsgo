@@ -46,5 +46,5 @@ class TimerFeature extends Feature {
 }
 /// EXPORT SINGLETON //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const INSTANCE = new TimerFeature('TimerFeature');
+const INSTANCE = new TimerFeature('Timer');
 export default INSTANCE;

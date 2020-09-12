@@ -44,7 +44,8 @@ let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** initialize modules that participate in UR EXEC PhaseMachine
+/** initialize modules that participate in UR EXEC PhaseMachine before running
+ *  SystemBoot, which starts the URSYS lifecycle.
  */
 async function SystemStart() {
   if (URSYS_RUNNING) {

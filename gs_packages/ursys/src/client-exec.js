@@ -70,7 +70,7 @@ const PHASES = {
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PHASE_MACHINE = new URPhaseMachine('UR', PHASES, '');
-const { ExecutePhase, Execute, Hook } = PHASE_MACHINE;
+const { ExecutePhase, Execute } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemBoot, etc
