@@ -16,7 +16,7 @@ import Renderer from '../modules/test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompt('TrackerJSX');
+const PR = UR.PrefixUtil('TrackerJSX');
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

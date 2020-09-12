@@ -139,6 +139,6 @@ module.exports = {
   NETWORK,
   MEDIA,
   // PROMPT UTILITIES
-  Prompt: PROMPTS.makeLogHelper,
-  DBGLog: PROMPTS.makeLogger
+  PrefixUtil: PROMPTS.makePrefixUtil,
+  TermOut: PROMPTS.makeTerminalOut
 };

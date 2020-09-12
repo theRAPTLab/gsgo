@@ -9,7 +9,7 @@ import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompt('RUNTIME-CORE');
+const PR = UR.PrefixUtil('RUNTIME-CORE');
 
 const AGENTS = new Map(); // string type, set of agents
 const TEMPLATES = new Map();

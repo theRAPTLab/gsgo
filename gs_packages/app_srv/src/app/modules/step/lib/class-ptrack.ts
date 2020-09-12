@@ -13,7 +13,7 @@ import { EntityObject, Frame, FrameStatus } from '../types/t-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompt('PTRAK');
+const PR = UR.PrefixUtil('PTRAK');
 
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

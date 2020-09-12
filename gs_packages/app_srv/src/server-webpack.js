@@ -15,13 +15,13 @@ const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const DevServer = require('webpack-dev-middleware');
 const HotReload = require('webpack-hot-middleware');
-const { ExpressHandler, Prompt } = require('@gemstep/ursys/server');
+const { ExpressHandler, PrefixUtil } = require('@gemstep/ursys/server');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 const wpconf_packager = require('../config/wp.pack.webapp');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const PR = Prompt('ASRV');
+const PR = PrefixUtil('ASRV');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 const PORT = 80;

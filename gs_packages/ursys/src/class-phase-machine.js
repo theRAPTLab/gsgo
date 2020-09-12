@@ -35,7 +35,7 @@ const PROMPTS = require('./util/prompts');
 const DBG = { subs: true, ops: false, phases: false, init: true };
 const IS_NODE = typeof window === 'undefined';
 
-const PR = PROMPTS.makeLogHelper('UR.PHM');
+const PR = PROMPTS.makePrefixUtil('UR.PHM');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

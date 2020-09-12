@@ -13,7 +13,7 @@ import { FEATURES } from './runtime-core';
 import MovementPack from './features/feat-movement';
 import TimerPack from './features/feat-timer';
 
-const PR = UR.Prompt('SIM_FEATURES');
+const PR = UR.PrefixUtil('SIM_FEATURES');
 
 /// LIBRARY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

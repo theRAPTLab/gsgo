@@ -15,7 +15,7 @@ import TestRenderer from '../test-renderer';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.Prompt('RUNTIME');
+const PR = UR.PrefixUtil('RUNTIME');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////

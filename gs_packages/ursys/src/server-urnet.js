@@ -14,7 +14,7 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const SESSION = require('./util/session');
-const DLOG = require('./util/prompts').makeLogger('UNET');
+const TOUT = require('./util/prompts').makeTerminalOut('UNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,13 +70,13 @@ UNET.StartNetwork = (options = {}) => {
   mu_options = options;
 
   // create listener.
-  if (DBG.init) DLOG(`initializing web socket server on port ${mu_options.port}`);
+  if (DBG.init) TOUT(`initializing web socket server on port ${mu_options.port}`);
 
   mu_wss = new WSS(mu_options);
   mu_wss.on('listening', () => {
-    if (DBG.init) DLOG(`socket server listening on port ${mu_options.port}`);
+    if (DBG.init) TOUT(`socket server listening on port ${mu_options.port}`);
     mu_wss.on('connection', (socket, req) => {
-      // if (DBG) DLOG('socket connected');
+      // if (DBG) TOUT('socket connected');
       // house keeping
       m_SocketAdd(socket, req); // assign UADDR to socket
       m_SocketClientAck(socket); // tell client HELLO with new UADDR
@@ -96,7 +96,7 @@ UNET.StartNetwork = (options = {}) => {
  */
 UNET.NetSubscribe = (mesgName, handlerFunc) => {
   if (typeof handlerFunc !== 'function') {
-    DLOG(`${mesgName} subscription failure`);
+    TOUT(`${mesgName} subscription failure`);
     throw Error('arg2 must be a function');
   }
   let handlers = m_server_handlers.get(mesgName);
@@ -138,7 +138,7 @@ UNET.NetCall = async (mesgName, data) => {
   let pkt = new NetPacket(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   if (DBG.call)
-    DLOG(`${pkt.Info()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
+    TOUT(`${pkt.Info()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
   /// MAGICAL ASYNC/AWAIT BLOCK ///////
   const results = await Promise.all(promises);
   /// END MAGICAL ASYNC/AWAIT BLOCK ///
@@ -173,7 +173,7 @@ UNET.NetPublish = (mesgName, data) => {
   let promises = m_PromiseRemoteHandlers(pkt);
   // we don't care about waiting for the promise to complete
   if (DBG.call)
-    DLOG(`${pkt.Info()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
+    TOUT(`${pkt.Info()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Alias for NetPublish(), kept for conceptual symmetry to the client-side URSYS
@@ -183,7 +183,7 @@ UNET.NetPublish = (mesgName, data) => {
  * @param {function} handlerFunc function originally registered
  */
 UNET.NetSignal = (mesgName, data) => {
-  DLOG('NOTE: Use NetPublish(), not NetSignal() since the server doesnt care.');
+  TOUT('NOTE: Use NetPublish(), not NetSignal() since the server doesnt care.');
   UNET.NetPublish(mesgName, data);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -221,7 +221,7 @@ UNET.PKT_RegisterRemoteHandlers = pkt => {
   const filtered = messages.filter(msg => !msg.startsWith('NET:SRV'));
   if (filtered.length !== messages.length) {
     const error = `${uaddr} blocked from registering SRV message`;
-    DLOG(error);
+    TOUT(error);
     return { error, code: NetPacket.CODE_REG_DENIED };
   }
   let regd = [];
@@ -235,7 +235,7 @@ UNET.PKT_RegisterRemoteHandlers = pkt => {
       entry = new Set();
       m_remote_handlers.set(msg, entry);
     }
-    if (DBG.client) DLOG(`${uaddr} regr '${msg}'`);
+    if (DBG.client) TOUT(`${uaddr} regr '${msg}'`);
     entry.add(uaddr);
     regd.push(msg);
   });
@@ -275,7 +275,7 @@ UNET.PKT_SessionLogin = pkt => {
   const key = SESSION.MakeAccessKey(token, uaddr);
   sock.USESS = decoded;
   sock.UKEY = key;
-  if (DBG.client) DLOG(`${uaddr} user log-in '${decoded.token}'`);
+  if (DBG.client) TOUT(`${uaddr} user log-in '${decoded.token}'`);
   LOGGER.Write(sock.UADDR, 'log-in', decoded.token);
   return { status: 'logged in', success: true, token, uaddr, key };
 };
@@ -296,7 +296,7 @@ UNET.PKT_SessionLogout = pkt => {
   const { key } = pkt.Data();
   if (sock.UKEY !== key)
     return { error: `uaddr '${uaddr}' key '${key}'!=='${sock.UKEY}'` };
-  if (DBG.client) DLOG(`${uaddr} user logout '${sock.USESS.token}'`);
+  if (DBG.client) TOUT(`${uaddr} user logout '${sock.USESS.token}'`);
   if (sock.USESS) LOGGER.Write(sock.UADDR, 'logout', sock.USESS.token);
   sock.UKEY = undefined;
   sock.USESS = undefined;
@@ -310,17 +310,17 @@ UNET.PKT_Session = pkt => {
   const sock = m_SocketLookup(uaddr);
   if (!sock) {
     const error = `${uaddr} impossible socket lookup failure`;
-    DLOG(error);
+    TOUT(error);
     return { error, code: NetPacket.CODE_SOC_NOSOCK };
   }
   const { key } = pkt.Data();
   if (sock.ULOCAL) {
-    if (DBG.client) DLOG(`${uaddr} is localhost so bypass key check`);
+    if (DBG.client) TOUT(`${uaddr} is localhost so bypass key check`);
     return { localhost: true };
   }
   if (!key) {
     const error = `${uaddr} access key is not set`;
-    if (DBG.client) DLOG(error);
+    if (DBG.client) TOUT(error);
     return { error, code: NetPacket.CODE_SES_REQUIRE_KEY };
   }
   const evil_backdoor = SESSION.AdminPlaintextPassphrase();
@@ -329,7 +329,7 @@ UNET.PKT_Session = pkt => {
     if (!sock.USESS) {
       const warning = `non-localhost admin '${evil_backdoor}' logged-in`;
       LOGGER.Write(uaddr, warning);
-      DLOG(`${uaddr} WARN ${warning}`);
+      TOUT(`${uaddr} WARN ${warning}`);
       const adminToken = SESSION.MakeToken('Admin', {
         groupId: 0,
         classroomId: 0
@@ -340,12 +340,12 @@ UNET.PKT_Session = pkt => {
   }
   if (!sock.USESS) {
     const error = `sock.${uaddr} is not logged-in`;
-    if (DBG.client) DLOG(`${uaddr} is not logged-in`);
+    if (DBG.client) TOUT(`${uaddr} is not logged-in`);
     return { error, code: NetPacket.CODE_SES_REQUIRE_LOGIN };
   }
   if (key !== sock.UKEY) {
     if (DBG.client) {
-      DLOG(
+      TOUT(
         `Session: sock.${uaddr} keys do not match packet '${sock.UKEY}' '${key}'`
       );
     }
@@ -376,7 +376,7 @@ function m_SocketAdd(socket, req) {
   socket.ULOCAL = remoteIp === '127.0.0.1' || remoteIp === '::1';
   // save socket
   mu_sockets.set(sid, socket);
-  if (DBG.init) DLOG(`socket ADD ${socket.UADDR} to network`);
+  if (DBG.init) TOUT(`socket ADD ${socket.UADDR} to network`);
   LOGGER.Write(socket.UADDR, 'joined network');
   if (DBG.init) log_ListSockets(`add ${sid}`);
 } // end m_SocketAdd()
@@ -428,7 +428,7 @@ function m_SocketOnMessage(socket, json) {
       // m_HandleState(socket, pkt);
       break;
     default:
-      throw new Error(`${DLOG} unknown packet type '${pkt.Type()}'`);
+      throw new Error(`${TOUT} unknown packet type '${pkt.Type()}'`);
   } // end switch
 } // end m_SocketOnMessage()
 
@@ -440,7 +440,7 @@ function m_SocketOnMessage(socket, json) {
 function m_SocketDelete(socket) {
   let uaddr = socket.UADDR;
   if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
-  if (DBG) DLOG(`socket DEL ${uaddr} from network`);
+  if (DBG) TOUT(`socket DEL ${uaddr} from network`);
   const user = socket.USESS ? socket.USESS.token : '';
   LOGGER.Write(socket.UADDR, 'left network', user.toUpperCase());
   mu_sockets.delete(uaddr);
@@ -449,7 +449,7 @@ function m_SocketDelete(socket) {
   if (Array.isArray(rmesgs)) {
     rmesgs.forEach(msg => {
       let handlers = m_remote_handlers.get(msg);
-      if (DBG) DLOG(`${uaddr} removed handler '${msg}'`);
+      if (DBG) TOUT(`${uaddr} removed handler '${msg}'`);
       if (handlers) handlers.delete(uaddr);
     });
   }
@@ -485,7 +485,7 @@ async function m_HandleMessage(socket, pkt) {
   // recombines and returns to the original packet sender
   if (pkt.IsResponse()) {
     if (DBG.calls)
-      DLOG(`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
+      TOUT(`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
     pkt.CompleteTransaction();
     return;
   }
@@ -503,7 +503,7 @@ async function m_HandleMessage(socket, pkt) {
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
     const out = `${pkt.SourceAddress()} cannot resolve call '${pkt.Message()}'`;
-    DLOG(out);
+    TOUT(out);
     // return transaction to resolve callee
     pkt.SetData({
       URserver: `info: ${out}`,
@@ -546,7 +546,7 @@ async function m_HandleMessage(socket, pkt) {
   let data = pktArray.reduce((d, p) => {
     let pdata = p instanceof NetPacket ? p.Data() : p;
     let retval = Object.assign(d, pdata);
-    if (DBG_NOSRV) DLOG(`'${pkt.Message()}' reduce`, JSON.stringify(retval));
+    if (DBG_NOSRV) TOUT(`'${pkt.Message()}' reduce`, JSON.stringify(retval));
     return retval;
   }, {});
 
@@ -554,7 +554,7 @@ async function m_HandleMessage(socket, pkt) {
   // on the caller's socket, which we have retained through the magic of closures!
   const dbgData = JSON.stringify(data);
   pkt.SetData(data);
-  if (DBG_NOSRV) DLOG(`'${pkt.Message()}' returning transaction data ${dbgData}`);
+  if (DBG_NOSRV) TOUT(`'${pkt.Message()}' returning transaction data ${dbgData}`);
   pkt.ReturnTransaction(socket);
 } // end m_HandleMessage()
 
@@ -627,7 +627,7 @@ function m_PromiseRemoteHandlers(pkt) {
     const isOrigin = s_uaddr === d_uaddr;
     // we want to do this only when
     if (publishOnly && isOrigin) {
-      if (DBG.calls) DLOG(`skipping msend|mcall from ${s_uaddr} to ${d_uaddr}`);
+      if (DBG.calls) TOUT(`skipping msend|mcall from ${s_uaddr} to ${d_uaddr}`);
     } else {
       let d_sock = mu_sockets.get(d_uaddr);
       if (d_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${d_uaddr}`);
@@ -643,12 +643,12 @@ function m_PromiseRemoteHandlers(pkt) {
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** helper debug output used by m_SocketAdd(), m_SocketDelete() */
 function log_ListSockets(change) {
-  DLOG(`socketlist changed: '${change}'`);
+  TOUT(`socketlist changed: '${change}'`);
   // let's use iterators! for..of
   let values = mu_sockets.values();
   let count = 1;
   for (let socket of values) {
-    DLOG(`  ${count} = ${socket.UADDR}`);
+    TOUT(`  ${count} = ${socket.UADDR}`);
     count++;
   }
 }
@@ -657,7 +657,7 @@ function log_ListSockets(change) {
 function log_PktDirection(pkt, direction, promises) {
   if (promises.length < 1) return;
   const ents = promises.length > 1 ? 'handlers' : 'handler';
-  DLOG(
+  TOUT(
     `${pkt.Info()} ${direction} '${pkt.Message()}' (${promises.length} ${ents})`
   );
 }
@@ -666,9 +666,9 @@ function log_PktDirection(pkt, direction, promises) {
 function log_PktTransaction(pkt, status, promises) {
   const src = pkt.SourceAddress();
   if (promises && promises.length) {
-    DLOG(`${src} >> '${pkt.Message()}' ${status} ${promises.length} Promises`);
+    TOUT(`${src} >> '${pkt.Message()}' ${status} ${promises.length} Promises`);
   } else {
-    DLOG(`${src} << '${pkt.Message()}' ${status}`);
+    TOUT(`${src} << '${pkt.Message()}' ${status}`);
   }
 }
 

@@ -14,7 +14,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSession = require('./client-session');
 const URPhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeLogHelper('UR.EXC');
+const PR = require('./util/prompts').makePrefixUtil('UR.EXC');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

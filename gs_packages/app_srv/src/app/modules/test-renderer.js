@@ -1,7 +1,7 @@
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 
-const PR = UR.Prompt('TestRender');
+const PR = UR.PrefixUtil('TestRender');
 
 let PIXI_APP;
 let PIXI_ROOT;

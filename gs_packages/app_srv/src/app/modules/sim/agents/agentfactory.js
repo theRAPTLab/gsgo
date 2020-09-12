@@ -21,7 +21,7 @@ import Agent from '../lib/class-agent';
 import { AGENTS_Save, AGENTS_Typeof, TEMPLATES } from '../runtime-core';
 import { WORLD } from './global';
 
-const PR = UR.Prompt('AgentFactory');
+const PR = UR.PrefixUtil('AgentFactory');
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -16,7 +16,7 @@ import { Switch, Route } from 'react-router-dom';
 /// SYSTEM ROUTES /////////////////////////////////////////////////////////////
 import SystemRoutes from './SystemRoutes';
 
-const PR = UR.Prompt('SystemShell');
+const PR = UR.PrefixUtil('SystemShell');
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 class SystemShell extends React.Component {

@@ -29,7 +29,7 @@ import SystemShell from './SystemShell';
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
-const PR = UR.Prompt('SystemInit');
+const PR = UR.PrefixUtil('SystemInit');
 
 /// DEBUG CONTROL /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

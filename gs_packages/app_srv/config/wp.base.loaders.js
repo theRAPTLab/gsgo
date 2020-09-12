@@ -17,7 +17,7 @@ const Path = require('path');
 const URSERV = require('@gemstep/ursys/server');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const PR = URSERV.Prompt('PACK');
+const PR = URSERV.PrefixUtil('PACK');
 
 /// CONSTANTS INFO ////////////////////////////////////////////////////////////
 const DIR_ROOT = Path.resolve(__dirname, '../');

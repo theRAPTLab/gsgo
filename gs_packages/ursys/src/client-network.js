@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const URSession = require('./client-session');
-const PR = require('./util/prompts').makeLogHelper('UR.NET');
+const PR = require('./util/prompts').makePrefixUtil('UR.NET');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -130,9 +130,9 @@ function padString(str, padding = DEFAULT_PADDING) {
  *
  *  NOTE: This doesn't work as expected on NodeJS, because empty arrays
  *  render as linefeeds so we just output it regardless. If you want to
- *  disable output, use the makeLogger() function instead.
+ *  disable output, use the makeTerminalOut() function instead.
  */
-function makeLogHelper(prompt, tagColor) {
+function makePrefixUtil(prompt, tagColor) {
   const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
   // return empty array if debugging disabled in browser
   // or debugging is enabled but it's node (de morgan's law)
@@ -150,9 +150,9 @@ function makeLogHelper(prompt, tagColor) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Function to directly print to console instead of returning an array. This
  *  works better for NodeJS since the empty [] still results in output unlike
- *  the browser. Use makeLogHelper for browsers
+ *  the browser. Use makePrefixUtil for browsers
  */
-function makeLogger(prompt, tagColor) {
+function makeTerminalOut(prompt, tagColor) {
   const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
   if (!dbg) return () => {};
   const wrap = IS_NODE
@@ -191,7 +191,7 @@ module.exports = {
   TERM: TERM_COLORS,
   CSS: CSS_COLORS,
   padString,
-  makeLogHelper,
-  makeLogger,
+  makePrefixUtil,
+  makeTerminalOut,
   printTagColors
 };

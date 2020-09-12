@@ -15,7 +15,7 @@ const DBG = false;
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PATH = require('path');
 const FSE = require('fs-extra');
-const PR = require('./util/prompts').makeLogHelper('SLOG');
+const PR = require('./util/prompts').makePrefixUtil('SLOG');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
