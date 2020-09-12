@@ -44,26 +44,24 @@ console.log(...PR('module parse'));
 /// MODULE PHASE SYSTEM INITIALIZATION ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render react once all modules have completed their initialization */
-function UR_ModuleInit(UR_EXEC) {
-  UR_EXEC.Hook('APP_READY', () => {
-    if (DBG)
-      console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
-    return new Promise(resolve => {
-      console.log(...PR('render() start'));
-      ReactDOM.render(
-        <HashRouter hashType="slash">
-          <SystemShell />
-        </HashRouter>,
-        document.getElementById('app-container'),
-        () => {
-          console.log(...PR('render() end'));
-          console.log('URSYS: START');
-          resolve();
-        }
-      );
-    }); // promise
-  });
-}
+UR.SystemHook('UR', 'APP_READY', () => {
+  if (DBG)
+    console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
+  return new Promise(resolve => {
+    console.log(...PR('render() start'));
+    ReactDOM.render(
+      <HashRouter hashType="slash">
+        <SystemShell />
+      </HashRouter>,
+      document.getElementById('app-container'),
+      () => {
+        console.log(...PR('render() end'));
+        console.log('URSYS: START');
+        resolve();
+      }
+    );
+  }); // promise
+});
 
 /// URSYS STARTUP /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,7 +83,6 @@ function Init() {
     (async () => {
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
-      await UR.SystemHookModules([RUNTIME, { UR_ModuleInit }]);
       await UR.SystemBoot({
         autoRun: true,
         netProps
@@ -102,4 +99,4 @@ function Init() {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default { Init, UR_ModuleInit };
+export default { Init };

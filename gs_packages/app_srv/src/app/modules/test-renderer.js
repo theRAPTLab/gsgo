@@ -1,7 +1,7 @@
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 
-const PR = UR.Prompt('TestRenderer');
+const PR = UR.Prompt('TestRender');
 console.log(...PR('module parse'));
 
 let PIXI_APP;
@@ -91,19 +91,17 @@ function Draw() {
   console.log('drawing');
 }
 
-function UR_ModuleInit(UR_EXEC) {
-  UR_EXEC.Hook('APP_LOAD', () => {
-    console.log('hooking APP_LOAD');
-    const loadSprites = (resolve, reject) => {
-      console.log('loadSprites EXEC_LOAD');
-      LOADER.add('static/sprites/bunny.json').load(loader => {
-        let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
-        SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
-        resolve();
-      });
-    };
-    return new Promise(loadSprites);
-  });
-}
+UR.SystemHook('UR', 'APP_LOAD', () => {
+  console.log('hooking APP_LOAD');
+  const loadSprites = (resolve, reject) => {
+    console.log('loadSprites EXEC_LOAD');
+    LOADER.add('static/sprites/bunny.json').load(loader => {
+      let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
+      SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
+      resolve();
+    });
+  };
+  return new Promise(loadSprites);
+});
 
-export default { Init, HookResize, Draw, UR_ModuleInit };
+export default { Init, HookResize, Draw };

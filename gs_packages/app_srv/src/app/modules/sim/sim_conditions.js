@@ -112,15 +112,14 @@ function Update(/* frame */) {
   });
 }
 
-/// PUBLIC METHODS ////////////////////////////////////////////////////////////
+/// MODULE INITIALIZATION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SIM_ModuleInit(gloop) {
-  gloop.Hook('CONDITIONS_UPDATE', Update);
-  ModuleInit(gloop);
-}
+UR.SystemHook('SIM', 'CONDITIONS_UPDATE', Update);
+UR.SystemHook('UR', 'APP_CONFIGURE', ModuleInit);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  SIM_ModuleInit
+  ModuleInit,
+  Update
 };

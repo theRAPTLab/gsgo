@@ -83,18 +83,19 @@ async function SystemUnhookModules() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   ...META,
-  // SYSTEM PHASEMACHINE START/STOP
-  SystemHookModules,
-  SystemUnhookModules,
   // FORWARDED PUB/SUB
   Subscribe: nc_sub.Subscribe,
   Unsubscribe: nc_sub.Unsubscribe,
   Publish: nc_pub.LocalPublish,
   Signal: nc_pub.LocalSignal,
   Call: nc_pub.LocalCall,
+  // FORWARDED GENERIC PHASE MACHINE
+  SystemHook: PhaseMachine.QueueHookFor,
+  SystemUnhook: () => {
+    console.log(...PR('SystemUnhook NOP'));
+  },
   // FORWARDED UR EXEC PHASEMACHINE
   SystemBoot: URExec.SystemBoot,
-  SystemHook: URExec.SystemHook,
   SystemRun: URExec.SystemRun,
   SystemRestage: URExec.SystemRestage,
   SystemReboot: URExec.SystemReboot,

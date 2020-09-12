@@ -35,7 +35,7 @@ const PROMPTS = require('./util/prompts');
 const DBG = { subs: true, ops: false, phases: false, init: true };
 const IS_NODE = typeof window === 'undefined';
 
-const PR = PROMPTS.makeLogHelper('UR.PHASEMACHINE');
+const PR = PROMPTS.makeLogHelper('UR.PHM');
 console.log(...PR('module parse'));
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -54,6 +54,7 @@ function m_InvokeHook(op, hook, ...args) {
   // execute callbac and return possible Promise
   if (hook.f) return hook.f(...args);
   // if no hook.f, this hook was implicitly mocked
+  console.log(...PR('MOCK', op, ...args));
   return undefined;
 } // end m_InvokeHook
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,10 +74,6 @@ function m_ProcessQueueFor(pmkey) {
     pm.Hook(op, f);
   });
   m_queue.delete(pmkey);
-  if (DBG.init) {
-    const keys = [...m_queue.keys()];
-    console.log(...PR(`${keys.length} remaining queues:`, keys));
-  }
 } // end m_ProcessQueueFor
 
 /// URSYS PhaseMachine CLASS //////////////////////////////////////////////////
@@ -85,7 +82,7 @@ class PhaseMachine {
   /** CONSTRUCTOR: phases is an object of upper-case KEYS containing
    *  arrays of OPERATION strings.
    */
-  constructor(shortName, phases, dbgPrompt = '-') {
+  constructor(shortName, phases) {
     if (typeof shortName !== 'string') throw Error('arg1 must be string');
     if (shortName.length < 1) throw Error('arg1 string.length must be > 1');
     if (m_machines.has(shortName))
@@ -93,7 +90,6 @@ class PhaseMachine {
     this.NAME = shortName;
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
-    this.PR = dbgPrompt ? PROMPTS.makeLogHelper(dbgPrompt) : () => [];
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {
@@ -170,7 +166,7 @@ class PhaseMachine {
     // and add the new promise
     const hook = { f, scope };
     this.OP_HOOKS.get(op).push(hook);
-    if (DBG) console.log(...this.PR(`${status} '${op}' Hook`));
+    if (DBG.init) console.log(...PR(`${status} '${this.NAME}.${op}' Hook`));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: MockHook used for placeholder hooks to just show they are being
@@ -296,15 +292,24 @@ class PhaseMachine {
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** static: queue hook requests even if machine isn't already defined
+/** Queue hook requests even if machine isn't already defined.
+ *  This routine can be used as the standard hook method for UR clients.
  */
-PhaseMachine.QueueHook = (pm, op, f) => {
-  if (typeof pm !== 'string') throw Error('arg1 must be phasemachine name');
+PhaseMachine.QueueHookFor = (pmName, op, f) => {
+  if (typeof pmName !== 'string') throw Error('arg1 must be phasemachine name');
   if (typeof op !== 'string') throw Error('arg2 must be phaseop name');
-  if (typeof f !== 'function') throw Error('arg3 must be function');
+  if (typeof f !== 'function' && f !== undefined)
+    throw Error('arg3 must be function or undefined');
   //
-  if (!m_queue.has(pm)) m_queue.set(pm, []);
-  const q = m_queue.get(pm);
+  const pm = m_machines.get(pmName);
+  // if phasemachine is already valid, then just hook it directly
+  if (pm) {
+    pm.Hook(op, f);
+    return;
+  }
+  // otherwise, queue the request
+  if (!m_queue.has(pmName)) m_queue.set(pmName, []);
+  const q = m_queue.get(pmName);
   q.push([op, f]); // array of 2-element arrays
 };
 

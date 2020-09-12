@@ -10,9 +10,10 @@ console.log(...PR('module parse'));
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SIM_ModuleInit(gloop) {
-  gloop.Hook('REFEREE_EVAL');
-}
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('SIM', 'REFEREE_EVAL');
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,6 +23,4 @@ function SIM_ModuleInit(gloop) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default {
-  SIM_ModuleInit
-};
+export default {};

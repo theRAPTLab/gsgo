@@ -184,8 +184,6 @@ async function SystemReboot() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  HookModules,
-  SystemHook: Hook,
   SystemBoot,
   SystemRun,
   SystemUpdate,

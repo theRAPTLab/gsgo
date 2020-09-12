@@ -19,9 +19,8 @@ const CONDITIONS = new Map();
 
 /// PHASEMACHINE API //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SIM_ModuleInit(gloop) {
-  gloop.Hook('SETMODE', () => {});
-}
+UR.SystemHook('SIM', 'SETMODE');
+
 /// AGENT SET UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** save agent by type into agent map, which contains weaksets of types */
@@ -56,10 +55,6 @@ function CONDITION_All() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// PhaseMachine required initialization point
-export default {
-  SIM_ModuleInit
-};
 /// export shared data structures
 export { AGENTS, TEMPLATES, FEATURES, CONDITIONS };
 /// export agent creation methods

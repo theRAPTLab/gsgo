@@ -30,13 +30,11 @@ function RegisterFeatures() {
   Register(MovementPack);
   Register(TimerPack);
 }
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SIM_ModuleInit(gloop) {
-  console.log('SIM GLOOP RESET');
-  gloop.Hook('RESET', RegisterFeatures);
-}
+UR.SystemHook('SIM', 'RESET', RegisterFeatures);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// export
-export default { SIM_ModuleInit, GetByName, Register };
+export default { GetByName, Register };

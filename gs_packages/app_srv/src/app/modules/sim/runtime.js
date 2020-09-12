@@ -127,37 +127,29 @@ function ResetSimulation() {
   })();
 }
 
+/// MODULE INIT ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** URSYS API: Hook into application lifecycle events.
- *  This module participates in the URSYS EXEC PhaseMachine
- */
-function UR_ModuleInit(urloop) {
-  // hook into URSYS lifecycle
-  urloop.Hook('APP_STAGE', LoadSimulation);
-  urloop.Hook('APP_START', StartSimulation);
-  urloop.Hook('APP_RUN', RunSimulation);
-  urloop.Hook('APP_UPDATE', UpdateSimulation);
-  urloop.Hook('APP_RESET', ResetSimulation);
-  urloop.HookModules([TestRenderer]);
+UR.SystemHook('UR', 'APP_STAGE', LoadSimulation);
+UR.SystemHook('UR', 'APP_START', StartSimulation);
+UR.SystemHook('UR', 'APP_RUN', RunSimulation);
+UR.SystemHook('UR', 'APP_UPDATE', UpdateSimulation);
+UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
+// register debugging messages for GameLoop phases
+const u_dump = (phases, index) => {
+  if (!DBG) return;
+  if (index === 0) console.log('start of PHASE', index);
+  if (index === phases.length) console.log('end of PHASE', index);
+  else console.log(`.. executing ${index} ${phases[index]}`);
+};
+GameLoop.Hook('PHASE_LOAD', u_dump);
+GameLoop.Hook('PHASE_LOOP', u_dump);
 
-  // register debugging messages for GameLoop phases
-  const u_dump = (phases, index) => {
-    if (!DBG) return;
-    if (index === 0) console.log('start of PHASE', index);
-    if (index === phases.length) console.log('end of PHASE', index);
-    else console.log(`.. executing ${index} ${phases[index]}`);
-  };
-  GameLoop.Hook('PHASE_LOAD', u_dump);
-  GameLoop.Hook('PHASE_LOOP', u_dump);
-
-  // initialize modules that are participating in this gameloop
-  GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, FEATURES, REFEREE, RENDERER]);
-} // Initialize
+// initialize modules that are participating in this gameloop
+// GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, FEATURES, REFEREE, RENDERER]);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  UR_ModuleInit,
   LoadSimulation,
   StartSimulation,
   PauseSimulation,

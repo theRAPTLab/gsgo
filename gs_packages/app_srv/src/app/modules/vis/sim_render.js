@@ -28,11 +28,11 @@ console.log(...PR('module parse'));
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SIM_ModuleInit(gloop) {
-  console.log('hook sim_render');
-  gloop.Hook('RENDER');
-}
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('SIM', 'RENDER');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default { SIM_ModuleInit };
+export default {};

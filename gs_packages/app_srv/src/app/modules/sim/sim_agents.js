@@ -135,17 +135,17 @@ function AgentReset(/* frame */) {
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SIM_ModuleInit(gloop) {
-  gloop.Hook('RESET', AgentReset);
-  gloop.Hook('SETMODE', AgentSelect);
-  gloop.Hook('PROGRAM', AgentProgram);
-  gloop.Hook('AGENTS_UPDATE', AgentUpdate);
-  gloop.Hook('AGENTS_THINK', AgentThink);
-  gloop.Hook('AGENTS_EXEC', AgentExec);
-}
+UR.SystemHook('SIM', 'RESET', AgentReset);
+UR.SystemHook('SIM', 'SETMODE', AgentSelect);
+UR.SystemHook('SIM', 'PROGRAM', AgentProgram);
+UR.SystemHook('SIM', 'AGENTS_UPDATE', AgentUpdate);
+UR.SystemHook('SIM', 'AGENTS_THINK', AgentThink);
+UR.SystemHook('SIM', 'AGENTS_EXEC', AgentExec);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  SIM_ModuleInit
+  AgentSelect,
+  AgentProgram,
+  AgentFactory
 };
