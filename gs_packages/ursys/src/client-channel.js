@@ -35,6 +35,10 @@
 const Messager = require('./class-messager');
 const DataMap = require('./class-datamap');
 const URNet = require('./client-network');
+const PROMPTS = require('./util/prompts');
+
+const PR = PROMPTS.makeLogHelper('UR.CHAN');
+console.log(...PR('module parse'));
 
 /** implements endpoints for talking to the URSYS network
  * @module URChan
@@ -45,7 +49,6 @@ const DBG = { create: false, send: false, return: false, register: false };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_NAME = 'name parameter must be a string';
 const BAD_UID = 'unexpected non-unique UID';
-const PR = 'URCHAN:';
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

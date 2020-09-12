@@ -24,31 +24,18 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import AgentFactory from './agents/agentfactory';
 import { StackMachine } from './script/stackmachine';
+
+// import UR from '@gemstep/ursys/client';
+const PR = UR.Prompt('SIM_AGENTS');
+console.log(...PR('module parse'));
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
   console.groupEnd();
-  console.log(`
-AgentProgram August 07 Goals
-
-x - create a dummy agent
-x - set property (variable)
-x - get property (variable)
-x - get a collection
-x - define a condition
-x - filter collection by condition
-x - calculate value of expression
-x - execute action w/ parameters
-x - execute action conditionally
-x - respond to event
-x - respond to conditional event
-x - define block (function)
-x - execute block (function)
-o - phasemachine autoupdates, triggers
-  `);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {

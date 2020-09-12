@@ -5,8 +5,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompt('RUNTIME-CORE');
+console.log(...PR('module parse'));
+
 const AGENTS = new Map(); // string type, set of agents
 const TEMPLATES = new Map();
 const FEATURES = new Map();

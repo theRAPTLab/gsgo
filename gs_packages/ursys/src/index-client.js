@@ -11,6 +11,9 @@ const URNet = require('./client-network');
 const URExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 
+const PR = PROMPTS.makeLogHelper('UR');
+console.log(...PR('module parse'));
+
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PhaseMachine = require('./class-phase-machine');
@@ -33,7 +36,6 @@ const META = {
 const Events = {};
 const Extensions = {};
 const PubSub = {};
-const PR = PROMPTS.makeLogHelper('USYS');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,6 +99,8 @@ module.exports = {
   SystemRestage: URExec.SystemRestage,
   SystemReboot: URExec.SystemReboot,
   SystemUnload: URExec.SystemUnload,
+  // FORWARDED PROMPT UTILITY
+  Prompt: PROMPTS.makeLogHelper,
   // CONVENIENCE CLASS ACCESS
   class: {
     PhaseMachine

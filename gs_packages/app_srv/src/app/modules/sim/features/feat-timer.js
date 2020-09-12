@@ -26,19 +26,19 @@ const TimerPack = {
 import UR from '@gemstep/ursys/client';
 import Feature from './class-feature';
 
-const { makeLogHelper } = UR.util.PROMPTS;
-const PR = makeLogHelper('TimerFeature');
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompt('TimerFeature');
+console.log(...PR('module parse'));
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
 class TimerFeature extends Feature {
-  constructor() {
-    super('Timer');
-    console.log(...PR(`${this.name()} initialized`));
+  constructor(name) {
+    super(name);
+    console.log(...PR('construct'));
   }
 
   // super.agentInit(agent)

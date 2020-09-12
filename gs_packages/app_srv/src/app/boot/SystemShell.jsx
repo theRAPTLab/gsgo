@@ -9,11 +9,15 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import PropTypes from 'prop-types';
 import { Switch, Route } from 'react-router-dom';
 
 /// SYSTEM ROUTES /////////////////////////////////////////////////////////////
 import SystemRoutes from './SystemRoutes';
+
+const PR = UR.Prompt('SystemShell');
+console.log(...PR('module parse'));
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 class SystemShell extends React.Component {
@@ -32,6 +36,7 @@ class SystemShell extends React.Component {
   componentDidCatch(error, errorInfo) {}
 
   render() {
+    console.log(...PR('render() called'));
     const { hasError, error } = this.state;
     // omg an error???
     if (hasError) return <p>{error}</p>;

@@ -1,4 +1,8 @@
+import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
+
+const PR = UR.Prompt('TestRenderer');
+console.log(...PR('module parse'));
 
 let PIXI_APP;
 let PIXI_ROOT;

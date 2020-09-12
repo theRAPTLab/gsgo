@@ -15,12 +15,13 @@ import TestRenderer from '../test-renderer';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.PROMPTS.makeLogHelper('SIM');
+const PR = UR.Prompt('RUNTIME');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
+console.log(...PR('module parse'));
 const GameLoop = new UR.class.PhaseMachine('SIM', {
   PHASE_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
   PHASE_LOOP: [
@@ -50,6 +51,8 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
     'RENDER'
   ]
 });
+console.log(...PR('SimLoop Created'));
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// RXJS TESTS ////////////////////////////////////////////////////////////////
 let obs_frame_interval = interval(33);

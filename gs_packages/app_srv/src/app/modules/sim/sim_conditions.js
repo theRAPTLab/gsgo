@@ -4,6 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import AgentSet from './lib/class-agentset';
 import Condition from './lib/class-sm-condition';
 import { CONDITIONS } from './runtime-core';
@@ -29,6 +30,9 @@ import { sub, abs } from './script/ops/math-ops';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompt('SIM_CONDITIONS');
+console.log(...PR('module parse'));
+
 let conds = [];
 
 /// TEST PROGRAMS /////////////////////////////////////////////////////////////

@@ -35,6 +35,14 @@ const PROMPTS = require('./util/prompts');
 const DBG = { subs: true, ops: false, phases: false, init: true };
 const IS_NODE = typeof window === 'undefined';
 
+const PR = PROMPTS.makeLogHelper('UR.PHASEMACHINE');
+console.log(...PR('module parse'));
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const m_machines = new Map(); // store phasemachines <machinename,instance>
+const m_queue = new Map(); // store by <machinename,['op',f]>
+
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: call the hook object's function. This used to do additional
@@ -47,7 +55,29 @@ function m_InvokeHook(op, hook, ...args) {
   if (hook.f) return hook.f(...args);
   // if no hook.f, this hook was implicitly mocked
   return undefined;
-}
+} // end m_InvokeHook
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: process queued hooks for a phasemachine name.
+ */
+function m_ProcessQueueFor(pmkey) {
+  const pm = m_machines.get(pmkey);
+  if (!pm) {
+    console.warn(...PR(`${pmkey} not yet defined`));
+    return;
+  }
+  const qhooks = m_queue.get(pmkey) || [];
+  if (DBG.init)
+    console.log(...PR(`phasemachine '${pmkey}' has ${qhooks.length} queued ops`));
+  qhooks.forEach(element => {
+    const [op, f] = element;
+    pm.Hook(op, f);
+  });
+  m_queue.delete(pmkey);
+  if (DBG.init) {
+    const keys = [...m_queue.keys()];
+    console.log(...PR(`${keys.length} remaining queues:`, keys));
+  }
+} // end m_ProcessQueueFor
 
 /// URSYS PhaseMachine CLASS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,6 +87,9 @@ class PhaseMachine {
    */
   constructor(shortName, phases, dbgPrompt = '-') {
     if (typeof shortName !== 'string') throw Error('arg1 must be string');
+    if (shortName.length < 1) throw Error('arg1 string.length must be > 1');
+    if (m_machines.has(shortName))
+      throw Error(`already registered '${shortName}'`);
     this.NAME = shortName;
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
@@ -76,6 +109,11 @@ class PhaseMachine {
     this.GetHookFunctions = this.GetHookFunctions.bind(this);
     this.GetPhaseFunctionsAsMap = this.GetPhaseFunctionsAsMap.bind(this);
     this.MockHook = this.MockHook.bind(this);
+    // save instance by name
+    m_machines.set(shortName, this);
+    if (DBG.init) console.log(...PR(`phasemachine '${shortName}' saved`));
+    // check queued hooks
+    m_ProcessQueueFor(shortName);
   } // end constructor
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,6 +171,17 @@ class PhaseMachine {
     const hook = { f, scope };
     this.OP_HOOKS.get(op).push(hook);
     if (DBG) console.log(...this.PR(`${status} '${op}' Hook`));
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: MockHook used for placeholder hooks to just show they are being
+   *  fired using default output. Callback function can be used to append
+   *  more information
+   */
+  MockHook(op, callback) {
+    this.Hook(op, (...args) => {
+      console.log(`MOCK ${op} recv:`, ...args);
+      if (typeof callback === 'function') callback(...args);
+    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Execute all Promises associated with a op, completing when
@@ -243,17 +292,21 @@ class PhaseMachine {
     });
     return map;
   }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** UTILITY: Print arguments for hook, with optional callback
-   */
-  MockHook(op, callback) {
-    this.Hook(op, (...args) => {
-      console.log(`MOCK ${op} recv:`, ...args);
-      if (typeof callback === 'function') callback(...args);
-    });
-  }
 }
+
+/// STATIC METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** static: queue hook requests even if machine isn't already defined
+ */
+PhaseMachine.QueueHook = (pm, op, f) => {
+  if (typeof pm !== 'string') throw Error('arg1 must be phasemachine name');
+  if (typeof op !== 'string') throw Error('arg2 must be phaseop name');
+  if (typeof f !== 'function') throw Error('arg3 must be function');
+  //
+  if (!m_queue.has(pm)) m_queue.set(pm, []);
+  const q = m_queue.get(pm);
+  q.push([op, f]); // array of 2-element arrays
+};
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

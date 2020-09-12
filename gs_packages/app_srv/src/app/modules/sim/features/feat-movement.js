@@ -13,17 +13,17 @@ import UR from '@gemstep/ursys/client';
 import Feature from './class-feature';
 import { StringProp } from '../props/var';
 
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { makeLogHelper } = UR.util.PROMPTS;
-const PR = makeLogHelper('TimerFeature');
+const PR = UR.Prompt('MovementFeature');
+console.log(...PR('module parse'));
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class MovementPack extends Feature {
   constructor(name) {
     super(name);
-    console.log(...PR(`feature init: ${name}`));
+    console.log(...PR('construct'));
     // super.meta
     // super.methods
     // super.decorate(agent)

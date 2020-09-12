@@ -14,7 +14,9 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSession = require('./client-session');
 const URPhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeLogHelper('EXEC');
+const PR = require('./util/prompts').makeLogHelper('UR.EXEC');
+
+console.log(...PR('module parse'));
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

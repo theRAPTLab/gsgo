@@ -33,10 +33,13 @@ import RUNTIME from '../modules/sim/runtime';
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
+const PR = UR.Prompt('SystemInit');
 
 /// DEBUG CONTROL /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+
+console.log(...PR('module parse'));
 
 /// MODULE PHASE SYSTEM INITIALIZATION ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,12 +49,14 @@ function UR_ModuleInit(UR_EXEC) {
     if (DBG)
       console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
     return new Promise(resolve => {
+      console.log(...PR('render() start'));
       ReactDOM.render(
         <HashRouter hashType="slash">
           <SystemShell />
         </HashRouter>,
         document.getElementById('app-container'),
         () => {
+          console.log(...PR('render() end'));
           console.log('URSYS: START');
           resolve();
         }

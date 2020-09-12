@@ -483,15 +483,52 @@ This should be possible, but I'm not sure how it will work.
 
 Let's list things in chunks in the backlog, and convert to questions as **NEXT ACTIONS:**
 
+#### Q01 - How does routing relate to URLOOP and URSIM startup?
 ```
----
-Q01 - How does routing relate to URLOOP and URSIM startup?
-	SystemShell uses SystemRoutes to generate a React Router Switch statement
-	SystemRoutes has a list of top-level components located in pages/
+** PATH 1 **
+SystemInit hooks DOMContentLoaded to use IIFE to start URSYS
 
-  SystemShell route to FAKETRACK entry point
-  FAKETRACK URLOOP startup
-  SIMLOOP startup control
+1. get urnet info
+2. call UR.SystemHookModules() to invoke UR_ModuleInit() - sim, local UR_ModuleInit
+3. call UR.SystemBoot() with urnet info
+4. UREXEC manages the UR phase machine and has a SystemBoot() method that
+   - initalizes the session props in URSESSION from urnet info
+   - executes phases and starts URLOOP update
+
+** PATH 2 **
+SystemInit starts React when its UR_ModuleInit() is called in PATH 1 step 2
+
+1. SystemShell uses SystemRoutes to generate a React Router Switch statement
+2. SystemRoutes has a list of top-level components located in pages/
+3. Tracker is switched-in and renders forth based on route
+
+*** PATH 3 ***
+Tracker imports test-render as Renderer and invokes Init in componentDidMount()
+
+1. Renderer.Init(renderRoot)
+2. Renderer.HookResize(renderRoot)
+3. Renderer.Draw()
+
+*** CHANGES TO MAKE ***
+We want to change SystemHookModules([modules]) to something that
+	o - hooks into UR on initialization within the module like an import
+	    import UR
+	    UR.Hook('PHASE',()=>{ ... });
+	o - It shouldn't be necessary to have an explicit UR_ModuleInit() then
+	
+Likewise, the sim/runtime and sim/runtime-core provide the main loop
+  o - import RUNTIME 
+      RUNTIME.Hook('PHASE',()=>{ ... });
+  o - this suggests that runtime.js might have to move somewhere else.
+  
+*** CONFIRM CHANGE POSSIBILITY ***
+[X] - UR.class.PhaseMachine('SIM') runs in runtime? 
+			YES. UR IS AVAILABLE
+[X] - UR is the first module loaded, which loads its constituent sub features
+[ ] - modify PhaseMachine to directly accept hooks
+[ ] - add QueueHook() to UR, test with SIM
+[ ] - remove PhaseMachine HookModules if it works
+```
 
 ---
 Q02 - What does a "Clickable Agent" need to implement?
@@ -499,15 +536,16 @@ Q03 - How does an Agent Instance link to a Sprite?
 
   define agent TEMPLATE for a clickable faketrack agent
   define movement FEATURE with type "interactive"
-  
+
 ---
 Q04 - How does URLOOP and SIMLOOP overlap in phases?
 Q05 - How do arbitrary modules register for either URLOOP or SIMLOOP anyway?
 
+---
 
-```
 
-**BACKLOG**
+
+**BACKLOG** to move above...
 
 ```
 

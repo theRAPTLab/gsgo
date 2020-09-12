@@ -5,11 +5,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import Sprite from './lib/class-sprite';
 import Viewport from './lib/class-viewport';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.Prompt('SIM_RENDER');
+console.log(...PR('module parse'));
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
