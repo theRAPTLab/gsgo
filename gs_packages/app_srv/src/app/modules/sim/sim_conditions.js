@@ -31,7 +31,6 @@ import { sub, abs } from './script/ops/math-ops';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.Prompt('SIM_CONDITIONS');
-console.log(...PR('module parse'));
 
 let conds = [];
 

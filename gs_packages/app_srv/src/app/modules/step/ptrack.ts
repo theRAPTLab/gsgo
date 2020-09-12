@@ -21,7 +21,7 @@ import { EntityObject } from './types/t-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.PROMPTS.makeLogHelper('INPUT');
+const PR = UR.Prompt('INPUT');
 
 const LOCATIONS: LocationDict = new Map();
 let CURRENT_LOCATION = GetLastLocation();

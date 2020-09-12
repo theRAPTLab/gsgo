@@ -14,7 +14,6 @@ import MovementPack from './features/feat-movement';
 import TimerPack from './features/feat-timer';
 
 const PR = UR.Prompt('SIM_FEATURES');
-console.log(...PR('module parse'));
 
 /// LIBRARY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

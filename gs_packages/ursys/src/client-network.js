@@ -10,8 +10,6 @@ const NetPacket = require('./class-netpacket');
 const URSession = require('./client-session');
 const PR = require('./util/prompts').makeLogHelper('UR.NET');
 
-console.log(...PR('module parse'));
-
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { connect: true, handle: true, reg: true };

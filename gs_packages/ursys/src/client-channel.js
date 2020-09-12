@@ -37,8 +37,7 @@ const DataMap = require('./class-datamap');
 const URNet = require('./client-network');
 const PROMPTS = require('./util/prompts');
 
-const PR = PROMPTS.makeLogHelper('UR.CHAN');
-console.log(...PR('module parse'));
+const PR = PROMPTS.makeLogHelper('UR.CHN');
 
 /** implements endpoints for talking to the URSYS network
  * @module URChan

@@ -16,7 +16,6 @@ import Renderer from '../modules/test-renderer';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.Prompt('TrackerJSX');
-console.log(...PR('module parse'));
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +59,6 @@ class Tracker extends React.Component {
   }
 
   render() {
-    console.log(...PR('render() called'));
     const { classes } = this.props;
     return (
       <div className={classes.root}>

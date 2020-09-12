@@ -17,7 +17,6 @@ import { Switch, Route } from 'react-router-dom';
 import SystemRoutes from './SystemRoutes';
 
 const PR = UR.Prompt('SystemShell');
-console.log(...PR('module parse'));
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 class SystemShell extends React.Component {
@@ -36,7 +35,6 @@ class SystemShell extends React.Component {
   componentDidCatch(error, errorInfo) {}
 
   render() {
-    console.log(...PR('render() called'));
     const { hasError, error } = this.state;
     // omg an error???
     if (hasError) return <p>{error}</p>;

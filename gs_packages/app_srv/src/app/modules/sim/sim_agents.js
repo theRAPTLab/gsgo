@@ -30,7 +30,6 @@ import { StackMachine } from './script/stackmachine';
 
 // import UR from '@gemstep/ursys/client';
 const PR = UR.Prompt('SIM_AGENTS');
-console.log(...PR('module parse'));
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

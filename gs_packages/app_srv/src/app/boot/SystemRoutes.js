@@ -13,7 +13,7 @@ import Tracker from '../pages/Tracker';
 import NoMatch from './NoMatch';
 
 const PR = UR.Prompt('SystemRoutes');
-console.log(...PR('module parse'));
+
 /*****************************************************************************\
 
   MAIN ROUTE DECLARATION

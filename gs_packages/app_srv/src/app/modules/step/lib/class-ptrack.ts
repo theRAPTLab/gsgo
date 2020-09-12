@@ -13,7 +13,7 @@ import { EntityObject, Frame, FrameStatus } from '../types/t-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.PROMPTS.makeLogHelper('PTRAK');
+const PR = UR.Prompt('PTRAK');
 
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

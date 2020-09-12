@@ -39,8 +39,6 @@ const PR = UR.Prompt('SystemInit');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
-console.log(...PR('module parse'));
-
 /// MODULE PHASE SYSTEM INITIALIZATION ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render react once all modules have completed their initialization */

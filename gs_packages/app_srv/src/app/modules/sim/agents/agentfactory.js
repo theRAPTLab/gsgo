@@ -22,7 +22,6 @@ import { AGENTS_Save, AGENTS_Typeof, TEMPLATES } from '../runtime-core';
 import { WORLD } from './global';
 
 const PR = UR.Prompt('AgentFactory');
-console.log(...PR('module parse'));
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
