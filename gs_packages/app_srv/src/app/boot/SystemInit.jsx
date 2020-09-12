@@ -26,10 +26,6 @@ import SETTINGS from 'config/app.settings';
 import UR from '@gemstep/ursys/client';
 import SystemShell from './SystemShell';
 
-/// HOOK MODULES //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import RUNTIME from '../modules/sim/runtime';
-
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
@@ -46,15 +42,13 @@ UR.SystemHook('UR', 'APP_READY', () => {
   if (DBG)
     console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise(resolve => {
-    console.log(...PR('render() start'));
     ReactDOM.render(
       <HashRouter hashType="slash">
         <SystemShell />
       </HashRouter>,
       document.getElementById('app-container'),
       () => {
-        console.log(...PR('render() end'));
-        console.log('URSYS: START');
+        console.log('URSYS: STARTED');
         resolve();
       }
     );
@@ -81,6 +75,7 @@ function Init() {
     (async () => {
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
+      await UR.SystemStart();
       await UR.SystemBoot({
         autoRun: true,
         netProps
