@@ -36,7 +36,6 @@ const DBG = { subs: true, ops: false, phases: false, init: true };
 const IS_NODE = typeof window === 'undefined';
 
 const PR = PROMPTS.makeLogHelper('UR.PHM');
-console.log(...PR('module parse'));
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,7 +103,6 @@ class PhaseMachine {
     this.ExecutePhaseParallel = this.ExecutePhaseParallel.bind(this);
     this.GetHookFunctions = this.GetHookFunctions.bind(this);
     this.GetPhaseFunctionsAsMap = this.GetPhaseFunctionsAsMap.bind(this);
-    this.MockHook = this.MockHook.bind(this);
     // save instance by name
     m_machines.set(shortName, this);
     if (DBG.init) console.log(...PR(`phasemachine '${shortName}' saved`));
@@ -112,37 +110,6 @@ class PhaseMachine {
     m_ProcessQueueFor(shortName);
   } // end constructor
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Given a list of module objects, invoke the associated
-   *  name_ModuleInit() method. The 'name' parameter is set at initialization
-   *  time and is typically a short name. The client-exec.js module uses
-   *  'UR' as its phase machine name, so the corresponding initializer function
-   *  will be UR_ModuleInit() in each module to give it a chance to hook-in.
-   */
-  HookModules(formod = []) {
-    // case 1: direct function version (called by modules)
-    if (typeof formod === 'function') {
-      formod(this);
-      return Promise.resolve();
-    }
-
-    // case 2: array of modules with '*_ModuleInit' function
-    if (!Array.isArray(formod))
-      return Promise.reject(
-        Error('HookModules() requires a func or array of modules')
-      );
-    // call every module in the array
-    const initName = `${this.NAME}_ModuleInit`;
-    formod.forEach((mod = {}) => {
-      if (typeof mod[initName] !== 'function') {
-        const err = `missing ${initName}() in module`;
-        console.warn(...this.PR(err, mod));
-      } else {
-        mod[initName](this); // pass phasemachine instance
-      }
-    });
-    return Promise.resolve();
-  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: register an Operations Handler. <op> is a string constant
    *  define in PHASES and converted into the MAP. <f> is a function that
@@ -167,17 +134,6 @@ class PhaseMachine {
     const hook = { f, scope };
     this.OP_HOOKS.get(op).push(hook);
     if (DBG.init) console.log(...PR(`${status} '${this.NAME}.${op}' Hook`));
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: MockHook used for placeholder hooks to just show they are being
-   *  fired using default output. Callback function can be used to append
-   *  more information
-   */
-  MockHook(op, callback) {
-    this.Hook(op, (...args) => {
-      console.log(`MOCK ${op} recv:`, ...args);
-      if (typeof callback === 'function') callback(...args);
-    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Execute all Promises associated with a op, completing when

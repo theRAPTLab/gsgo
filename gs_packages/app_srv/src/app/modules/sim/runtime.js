@@ -21,7 +21,6 @@ const DBG = false;
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
-console.log(...PR('module parse'));
 const GameLoop = new UR.class.PhaseMachine('SIM', {
   PHASE_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
   PHASE_LOOP: [
@@ -143,9 +142,6 @@ const u_dump = (phases, index) => {
 };
 GameLoop.Hook('PHASE_LOAD', u_dump);
 GameLoop.Hook('PHASE_LOOP', u_dump);
-
-// initialize modules that are participating in this gameloop
-// GameLoop.HookModules([INPUTS, CONDITIONS, AGENTS, FEATURES, REFEREE, RENDERER]);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

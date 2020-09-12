@@ -12,7 +12,6 @@ const URExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeLogHelper('UR');
-console.log(...PR('module parse'));
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,28 +46,27 @@ let URSYS_RUNNING = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine
  */
-async function SystemHookModules(initializers = []) {
+async function SystemStart() {
   if (URSYS_RUNNING) {
-    console.log(...PR('SystemModulesInit: URSYS already running!!!'));
+    console.log(...PR('SystemStart: URSYS already running!!!'));
     return Promise.reject();
   }
   // autoconnect to URSYS network during NET_CONNECT
-  URExec.HookModules(initializers).then(() => {
-    URExec.SystemHook(
-      'NET_CONNECT',
-      () =>
-        new Promise((resolvbe, reject) =>
-          URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
-        )
-    );
-  });
+  PhaseMachine.SystemHook(
+    'UR',
+    'NET_CONNECT',
+    () =>
+      new Promise((resolvbe, reject) =>
+        URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
+      )
+  );
   URSYS_RUNNING = true;
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize
  */
-async function SystemUnhookModules() {
+async function SystemStop() {
   if (!URSYS_RUNNING) {
     console.log(...PR('SystemModulesStop: URSYS is not running!!!'));
     return Promise.resolve();
@@ -94,7 +92,9 @@ module.exports = {
   SystemUnhook: () => {
     console.log(...PR('SystemUnhook NOP'));
   },
-  // FORWARDED UR EXEC PHASEMACHINE
+  SystemStart,
+  SystemStop,
+  // FORWARDED UR EXEC
   SystemBoot: URExec.SystemBoot,
   SystemRun: URExec.SystemRun,
   SystemRestage: URExec.SystemRestage,
@@ -102,10 +102,6 @@ module.exports = {
   SystemUnload: URExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
   Prompt: PROMPTS.makeLogHelper,
-  // CONVENIENCE CLASS ACCESS
-  class: {
-    PhaseMachine
-  },
-  // CONVENIENCE MODULES ACCESS
-  util: { PROMPTS }
+  // FORWARDED classes
+  class: { PhaseMachine }
 };

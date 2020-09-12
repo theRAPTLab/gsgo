@@ -14,9 +14,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSession = require('./client-session');
 const URPhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeLogHelper('UR.EXEC');
-
-console.log(...PR('module parse'));
+const PR = require('./util/prompts').makeLogHelper('UR.EXC');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -89,15 +87,6 @@ function m_CheckOptions(options) {
 }
 
 /// RUNTIME API CALLS /////////////////////////////////////////////////////////
-/** API: initialize the EXEC phase machines with all modules
- */
-async function HookModules(initializers = []) {
-  if (DBG) console.groupCollapsed('** URSYS: Init');
-  await PHASE_MACHINE.HookModules(initializers);
-  if (DBG) console.groupEnd();
-  return Promise.resolve();
-}
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle state engine
  */

@@ -527,8 +527,8 @@ Likewise, the sim/runtime and sim/runtime-core provide the main loop
 [X] - UR is the first module loaded, which loads its constituent sub features
 [X] - modify PhaseMachine to directly accept hooks
 [X] - add QueueHook() to UR, test with SIM
-[ ] - remove PhaseMachine HookModules if it's used
-[ ] - remove PhaseMachine MockHook if it's used
+[X] - remove PhaseMachine HookModules if it's used
+[X] - remove PhaseMachine MockHook if it's used
 ```
 
 ---
