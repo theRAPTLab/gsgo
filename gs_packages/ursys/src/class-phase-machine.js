@@ -53,7 +53,6 @@ function m_InvokeHook(op, hook, ...args) {
   // execute callbac and return possible Promise
   if (hook.f) return hook.f(...args);
   // if no hook.f, this hook was implicitly mocked
-  console.log(...PR('MOCK', op, ...args));
   return undefined;
 } // end m_InvokeHook
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
