@@ -1,11 +1,15 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  sprite class + manager, wrapping PixiJS.Sprite with additional methods
-  relevant to gemstep
+  A visual representation of an id-ish object, linking a data object
+  to a visual object. These are used in Display Lists for the Renderer.
+
+  Extends SMObject, which is our common stackmachine- compatible object.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import * as PIXI from 'pixi.js';
+// import SM_Object from '../../sim/lib/class-sm-object';
+// import Sprite from './class-sprite';
+import { I_PoolMappable } from './types-visual';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -15,13 +19,24 @@ import * as PIXI from 'pixi.js';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Sprite {
-  //
-  constructor() {
-    this.x = 0;
-    this.y = 0;
-    this.sprite = PIXI.Sprite();
+class DisplayObject implements I_PoolMappable {
+  visual: any;
+  refId: any;
+  dirty: boolean;
+
+  constructor(refId: any) {
+    this.visual = undefined; // visuals must implement Draw()
+    this.refId = refId; // store reference
+    this.dirty = true; // set when needs processing
   }
+
+  setVisual(vis: any) {
+    this.visual = vis;
+  }
+
+  /// SERIALIZE DATA //////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  serialize() {}
 }
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
@@ -35,4 +50,4 @@ class Sprite {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Sprite;
+export default DisplayObject;
