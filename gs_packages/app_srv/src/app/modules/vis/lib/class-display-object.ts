@@ -23,16 +23,34 @@ class DisplayObject implements I_PoolMappable {
   visual: any;
   refId: any;
   dirty: boolean;
+  poolId: number;
+  valid: boolean;
 
-  constructor(refId: any) {
-    this.visual = undefined; // visuals must implement Draw()
-    this.refId = refId; // store reference
-    this.dirty = true; // set when needs processing
+  constructor() {
+    this.init();
   }
 
   setVisual(vis: any) {
     this.visual = vis;
   }
+
+  init() {
+    this.visual = undefined; // visuals must implement Draw()
+    this.refId = undefined; // store reference
+    this.poolId = undefined;
+    this.dirty = false; // set when needs processing
+    this.valid = false;
+  }
+
+  validate(flag: boolean) {
+    this.valid = flag;
+  }
+
+  isValid(): boolean {
+    return this.valid;
+  }
+
+  dispose() {}
 
   /// SERIALIZE DATA //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
