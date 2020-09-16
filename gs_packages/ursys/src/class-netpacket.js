@@ -25,7 +25,7 @@ const PROMPTS = require('./util/prompts');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { send: false, transact: false, setup: false };
 
-const PR = PROMPTS.makePrefixUtil('PKT');
+const PR = PROMPTS.makeStyleFormatter('PKT');
 const ERR = ':ERR:';
 const PERR = ERR + PR;
 const ERR_NOT_NETMESG = `${PERR}obj does not seem to be a NetPacket`;

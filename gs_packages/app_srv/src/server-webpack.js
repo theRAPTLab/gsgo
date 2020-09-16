@@ -21,7 +21,7 @@ const { ExpressHandler, PrefixUtil } = require('@gemstep/ursys/server');
 const wpconf_packager = require('../config/wp.pack.webapp');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const PR = PrefixUtil('ASRV');
+const PR = PrefixUtil('APPSRV');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 const PORT = 80;

@@ -14,7 +14,7 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const SESSION = require('./util/session');
-const TOUT = require('./util/prompts').makeTerminalOut('UNET');
+const TOUT = require('./util/prompts').makeTerminalOut('URNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

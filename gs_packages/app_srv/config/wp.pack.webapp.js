@@ -23,7 +23,7 @@ const WriteFilesPlugin = require('write-file-webpack-plugin');
 const WebpackLoaders = require('./wp.base.loaders');
 
 /// DEFINE CONSTANTS //////////////////////////////////////////////////////////
-const PR = PrefixUtil('PACK');
+const PR = PrefixUtil('PACK/BDL');
 const DIR_ROOT = Path.resolve(__dirname, '..');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 const DIR_SRC = Path.join(DIR_ROOT, 'src/app');

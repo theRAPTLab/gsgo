@@ -6,10 +6,11 @@
 
 const IS_NODE = typeof window === 'undefined';
 const DEFAULT_PADDING = IS_NODE
-  ? 5 // nodejs
+  ? 8 // nodejs
   : 0; // not nodejs
 
 const TERM_COLORS = {
+  // TOUT = makeTerminalOut(str); TOUT('hi')
   Reset: '\x1b[0m',
   Bright: '\x1b[1m',
   Dim: '\x1b[2m',
@@ -36,17 +37,24 @@ const TERM_COLORS = {
   BgPurple: '\x1b[45m',
   BgWhite: '\x1b[47m',
   //
-  TagBlue: '\x1b[34m',
-  TagGray: '\x1b[2m',
-  TagYellow: '\x1b[33m'
+  TagYellow: '\x1b[43;30m',
+  TagRed: '\x1b[41;37m',
+  TagGreen: '\x1b[42;37m',
+  TagCyan: '\x1b[46;37m',
+  TagBlue: '\x1b[43;37m',
+  TagPurple: '\x1b[45;37m',
+  TagPink: '\x1b[95;30m',
+  TagGray: '\x1b[2;37m',
+  TagNull: 'color:#999'
 };
 
 const CSS_PAD = 'padding:3px 5px;border-radius:2px';
 const CSS_TAB = '4px';
 
+// NAME LIST MUST MATCH TERM_COLORS!
 const CSS_COLORS = {
   Reset: 'color:auto;background-color:auto',
-  //
+  // COLOR FOREGROUND
   Black: 'color:black',
   White: 'color:white',
   Red: 'color:red',
@@ -55,7 +63,7 @@ const CSS_COLORS = {
   Cyan: 'color:cyan',
   Blue: 'color:blue',
   Magenta: 'color:magenta',
-  //
+  // COLOR BACKGROUND
   TagRed: `color:#000;background-color:#f66;${CSS_PAD}`,
   TagYellow: `color:#000;background-color:#fd4;${CSS_PAD}`,
   TagGreen: `color:#000;background-color:#5c8;${CSS_PAD}`,
@@ -65,7 +73,7 @@ const CSS_COLORS = {
   TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
   TagGray: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
   TagNull: 'color:#999',
-  //
+  // COLOR BACKGROUND DARK
   TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
   TagDkGreen: `color:white;background-color:green;${CSS_PAD}`,
   TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`
@@ -79,8 +87,15 @@ const SHOW = true;
 const HIDE = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPT_DICT = {
-  'USYS': [SHOW, 'TagDkBlue'],
-  'SIML': [SHOW, 'TagPink'],
+  // URSYS-RELATED MODULES
+  'UR': [SHOW, 'TagRed'],
+  'URNET': [SHOW, 'TagRed'],
+  'URLOG': [SHOW, 'TagRed'],
+  // SERVERS
+  'APPSRV': [SHOW, 'Yellow'],
+  'GEMSRV': [SHOW, 'Yellow'],
+
+  // SPECIAL
   '-': [SHOW, 'TagNull']
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,7 +147,7 @@ function padString(str, padding = DEFAULT_PADDING) {
  *  render as linefeeds so we just output it regardless. If you want to
  *  disable output, use the makeTerminalOut() function instead.
  */
-function makePrefixUtil(prompt, tagColor) {
+function makeStyleFormatter(prompt, tagColor) {
   const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
   // return empty array if debugging disabled in browser
   // or debugging is enabled but it's node (de morgan's law)
@@ -150,7 +165,7 @@ function makePrefixUtil(prompt, tagColor) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Function to directly print to console instead of returning an array. This
  *  works better for NodeJS since the empty [] still results in output unlike
- *  the browser. Use makePrefixUtil for browsers
+ *  the browser. Use makeStyleFormatter for browsers
  */
 function makeTerminalOut(prompt, tagColor) {
   const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
@@ -191,7 +206,7 @@ module.exports = {
   TERM: TERM_COLORS,
   CSS: CSS_COLORS,
   padString,
-  makePrefixUtil,
+  makeStyleFormatter,
   makeTerminalOut,
   printTagColors
 };

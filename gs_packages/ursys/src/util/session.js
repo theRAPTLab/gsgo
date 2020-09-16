@@ -26,7 +26,7 @@ const PROMPTS = require('./prompts');
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-const PR = PROMPTS.makePrefixUtil('XSES');
+const PR = PROMPTS.makeStyleFormatter('XSES');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

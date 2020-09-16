@@ -37,7 +37,7 @@ const DataMap = require('./class-datamap');
 const URNet = require('./client-network');
 const PROMPTS = require('./util/prompts');
 
-const PR = PROMPTS.makePrefixUtil('UR.CHN');
+const PR = PROMPTS.makeStyleFormatter('UR.CHN');
 
 /** implements endpoints for talking to the URSYS network
  * @module URChan

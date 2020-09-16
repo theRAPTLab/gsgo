@@ -35,7 +35,7 @@ const PROMPTS = require('./util/prompts');
 const DBG = { subs: true, ops: false, phases: false, init: false };
 const IS_NODE = typeof window === 'undefined';
 
-const PR = PROMPTS.makePrefixUtil('UR.PHM');
+const PR = PROMPTS.makeStyleFormatter('UR.PHM');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -139,6 +139,6 @@ module.exports = {
   NETWORK,
   MEDIA,
   // PROMPT UTILITIES
-  PrefixUtil: PROMPTS.makePrefixUtil,
+  PrefixUtil: PROMPTS.makeStyleFormatter,
   TermOut: PROMPTS.makeTerminalOut
 };

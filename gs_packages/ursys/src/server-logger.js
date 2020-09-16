@@ -15,7 +15,8 @@ const DBG = false;
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 const PATH = require('path');
 const FSE = require('fs-extra');
-const PR = require('./util/prompts').makePrefixUtil('SLOG');
+/// for server-side modules,
+const TOUT = require('./util/prompts').makeTerminalOut('URLOG');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -34,7 +35,7 @@ function StartLogging(options = {}) {
   LOG_DIR = PATH.join(options.runtimePath, 'logs');
   let dir = PATH.resolve(LOG_DIR);
   try {
-    console.log(...PR(`logging to ${dir}`));
+    TOUT(`logging to ${dir}`);
     FSE.ensureDirSync(dir);
     let logname = `${DATESTR.DatedFilename('log')}.txt`;
     let pathname = `${dir}/${logname}`;
@@ -78,7 +79,7 @@ let LOG = {};
  */
 LOG.PKT_LogEvent = pkt => {
   let { event, items } = pkt.Data();
-  if (DBG) console.log(PR, pkt.Info(), event, ...items);
+  if (DBG) console.log(TOUT, pkt.Info(), event, ...items);
   LogLine(pkt.Info(), event || '-', ...items);
   return { OK: true };
 };

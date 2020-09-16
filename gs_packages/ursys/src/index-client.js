@@ -11,7 +11,7 @@ const URNet = require('./client-network');
 const URExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 
-const PR = PROMPTS.makePrefixUtil('UR');
+const PR = PROMPTS.makeStyleFormatter('UR');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,7 +100,7 @@ module.exports = {
   SystemReboot: URExec.SystemReboot,
   SystemUnload: URExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
-  PrefixUtil: PROMPTS.makePrefixUtil,
+  PrefixUtil: PROMPTS.makeStyleFormatter,
   // FORWARDED CLASSES
   class: { PhaseMachine }
 };
