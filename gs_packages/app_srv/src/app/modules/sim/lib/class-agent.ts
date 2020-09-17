@@ -17,7 +17,7 @@ import {
   I_Message,
   T_Program
 } from '../types/t-smc';
-import { FEATURES } from '../runtime-core';
+import { FEATURES } from '../runtime-datacore';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
 
