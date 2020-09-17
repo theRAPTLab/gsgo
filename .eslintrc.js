@@ -93,6 +93,7 @@ module.exports = {
     '@typescript-eslint/no-use-before-define': 1,
     '@typescript-eslint/no-unused-vars': 'warn',
     '@typescript-eslint/quotes': 'warn',
+    'import/prefer-default-export': 'off',
     /* check for dependencies */
     'import/no-extraneous-dependencies': [
       'error',
