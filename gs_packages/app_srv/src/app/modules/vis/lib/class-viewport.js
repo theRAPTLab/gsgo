@@ -21,7 +21,7 @@ import * as PIXI from 'pixi.js';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Viewport {
   constructor() {
-    this.origin;
+    this.origin = [0, 0];
   }
 }
 

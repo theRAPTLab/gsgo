@@ -8,7 +8,7 @@
 import UR from '@gemstep/ursys/client';
 import Sprite from './lib/class-sprite';
 import Viewport from './lib/class-viewport';
-import * as POOL from './lib/class-pool-map';
+import * as POOL from './lib/class-pool';
 import TEST from '../tests/test-vis';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

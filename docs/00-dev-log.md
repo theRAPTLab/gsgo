@@ -39,35 +39,102 @@
 
 ## SEP 14 MON: Implementation Plans
 
-There's a lot of stuff to do:
+```
+[X] Outline Data Commonalities between Classses
+[X] * Agent Instance Shared Display Object Properties
+[X] * Display Object Classes
+[X] * Sprite Classes
+[X] Generic Pool Class
+[X] * objects with ids map one array of objects to pool of mapped objects
+[X] * Pool has add, delete, and update methods
+```
+Working on the Pool implementation from `plae-input` which has the `m_MapEntities` function.
+
+The new Pool class has the following methods:
+
+* `new Pool(name,opt)` with options `size, batchSize,Constructor`
+* `getInstance()` returns a freshly initialized instance of the Managed Class
+* `returnInstance( obj )` returns the instance to the pool for reuse
+* `deallocateId( poolId )` returns the instance by ID instead of instance
+
+Next up, we need to make the actual **Agents to DisplayObjects** and **DisplayObjects to Sprites**
 
 ```
-[ ] Outline Data Commonalities between Classses
-[ ] * Agent Instance Shared Display Object Properties
-[ ] * Display Object Classes
-[ ] * Sprite Classes
-```
-Let's outline these quickly as modules
-```
-SM_Object is the base class for all these things
-	_value, meta.id, props, methods
-class agent extends SM_Object, and has properties as SMObjects
-	_x, _y, _skin, _name are SMObjects
-
-What goes into 
-represent idish
-
-
+[ ] Knit Agents to DisplayObject with DiffMaps and Pools
 ```
 
+Algorithm for Agents to DisplayObjects:
+
+1. get agent entities dictionary - from `runtime-data:AGENTS`
+2. get display objects dictionary - from `runtime-data:DISPLAY_OBJECTS` 
+`DISPLAY_OBJECTS` dictionary is `Map<agentId, DisplayObject>`
+3. using `Pool.DiffMaps(AGENTS,DISPLAY_OBJECTS, opt)` -  invoke add, update, remove operations
+4. `DiffMaps` is used with `addFunc`, `removeTest` and `removeFunc` 
+    `addFunc` request an instance from the Pool with `allocate()
+    `
+    `removeFunc` returns an instance to the Pool with `deallocate()` or `deallocateId()`
+
+Implementation for Agents to DisplayObjects
 
 ```
-[ ] Generic Pool Class
-	  * objects with ids map one array of objects to pool of mapped objects
-	  * Pool has add, delete, and update methods
-	  * Has one method: MapObjectsToPool( param ), returns added, deleted, updates list
+DATACORE.DiffMaps(AGENTS,DISPLAY_POOL,{
+	addFunc: (refId,agentDict,displayPool)=>{},
+	removeTest: (displayObject)=>{},
+	removeFunc: (refId,displayPool)=>{},
+	updateFunc: (refId,agentDict,displayPool)=>{}
+});
+
+We have an indirect mapping from refIds to DisplayObjects stored in a DisplayPool
+refId = agentId
+displayObjectId = poolId
+
+need a refId-to-displayObject map as as well
+DisplayObjects need a fast lookup by refId, and therefore need a refId property
+
+But what does it look like?
+* I_PoolMappable already has refId
+* Pool has to maintain a dictionary that looks up poolId
+
 ```
-Do this after looking at the data commonalities
+
+**I'm not sure** where the translation should happen. 
+
+* when adding to the mapped, we are creating a new DisplayObject that has a refId. That means DisplayObject should be created with a refId to the constructor; **poolId** is created by the Pool class and mapped with a ref->poolId dictionary
+
+* The thing to do might be to actually convert Pool to use dictionaries keyed by refId pointing to a DisplayObject which has both refId and pooId so it can be disposed.
+
+## SEP 15 TUE: Review of Ben's Event Signaling
+
+Ben implemented "one way data flow except for forwarding parent handlers to children", which I didn't think was a good approach because it creates hard-to-follow event chains up through the component tree. Also, there was considerable data processing happening in each component stage before finally calling a `DoSave` function on a Dispatcher to save the change.
+
+I suggested that this wasn't necessary, because the components that are sending data should be able to just send its local change directly to Dispatcher, providing the id of the data object to update and the complete data payload. That would be much simpler.
+
+## SEP 16 WED: Resuming
+
+From Monday the 14th, we have these tasks:
+
+* write agent to display object
+* write display objects to sprite
+
+For efficient encoding of a display frame:
+
+* we'll truncate `x,y` to 1 point of precision, using`Number.toFixed(1)`.  The data type will be an array of digits that are assumed to be a fixed-point format tuple array (e.g. `[ ddd,d, ddd.d ]` for (x,y).
+* `visual state` will be encoded as 8-bit field, using hex. To encode, use `Number.toString(16)`. To decode, use `parseInt( str, 16)`. For additional speed, a bitfield table can be precomputed for visual state parsing into 
+* `_skin` will be sent as a url string, or possibly a system reference identifier
+
+A special display object is a dictionary of texture URLs. This is used to generate a texture table mapping ids to the urls, so display frames can merely use the id reference. `id, name, url` are sent so the appropriate lookup tables can be generated.
+
+This was a difficult work day due to distractions and insomnia.
+
+## SEP 17 THU:
+
+FIRST UP
+
+* Can I iterate over all the agent instances?
+
+## SEP 18 FRI: Recovery Weekend
+
+Making the Pool and MappedPool classes, untangling how they work together.
 
 ---
 

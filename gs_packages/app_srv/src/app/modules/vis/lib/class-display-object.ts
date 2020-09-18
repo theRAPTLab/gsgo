@@ -9,7 +9,7 @@
 
 // import SM_Object from '../../sim/lib/class-sm-object';
 // import Sprite from './class-sprite';
-import { I_PoolMappable } from './types-visual';
+import { I_Poolable } from './types-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,7 +19,7 @@ import { I_PoolMappable } from './types-visual';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class DisplayObject implements I_PoolMappable {
+class DisplayObject implements I_Poolable {
   visual: any;
   refId: any;
   dirty: boolean;

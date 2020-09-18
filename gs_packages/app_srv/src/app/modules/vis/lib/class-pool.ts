@@ -2,63 +2,34 @@
 
   PoolMapper
 
+  Pool instances manage a set of objects, pre-allocating them for performance
+  reasons. It can be set to automatically grow as well, but it does not
+  shrink.
+
+  The options.Constructor parameter is a class constructor. This Constructor
+  must implement I_Poolable.
+
+  SYNTAX
+  // options Constructor
+  let pool = new Pool(name, { Constructor });
+
+  // instance operations
+  let instance = pool.allocate()
+  pool.deallocate(instance)
+  //
+  instance = pool.allocate();
+  let id = instance.id;
+  pool.deallocateId(id);
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_PoolMappable, I_PoolOptions } from './types-visual';
+import { I_Poolable, I_PoolOptions } from './types-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const DEFAULT_SIZE = 20;
 const DEFAULT_BATCH = 10;
-
-/// MODULE HELPERS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Looks for differences between two dictionaries 'source' and 'mapped'
- *  containing objects that have a number id property. Runs a function for
- *  each case.
- *  Returns { added, updated, removed } arrays.
- */
-function DiffMaps(source, mapped, opt) {
-  // extract custom handler functions
-  const { removeTest, addFunc, updateFunc, removeFunc } = opt;
-  // provide object mapping utilities
-  function f_add(key, source, mapped) {
-    const s = source.get(key);
-    const m = mapped.get(key);
-    addFunc(key, source, mapped);
-  }
-  function f_remove(key, mapped) {
-    const m = mapped.get(key);
-    removeFunc(key, source, mapped);
-  }
-  function f_update(key, source, mapped) {
-    const s = source.get(key);
-    const m = mapped.get(key);
-    updateFunc(key, source, mapped);
-  }
-  // keys in mapped and not in source are deleted if opt.removeTest() passes
-  // keys in source and not in mapped are added
-  // keys in mapped and source are updated
-  const skeys = [...source.keys()];
-  const mkeys = [...mapped.keys()];
-  // simple filters
-  const arr_update = skeys.filter(key => mkeys.includes(key));
-  const arr_add = skeys.filter(key => !mkeys.includes(key));
-  // tricky filter: remove if source doesn't have key
-  // AND if removeTest agrees that it should be removed
-  const arr_remove = mkeys.filter(
-    key => !skeys.includes(key) && removeTest(mapped.get(key))
-  );
-  // process all through the appropriate function
-  arr_add.forEach(key => f_add(key, source, mapped));
-  arr_remove.forEach(key => f_remove(key, mapped));
-  arr_update.forEach(key => f_update(key, source, mapped));
-  //
-  return { added: arr_add, updated: arr_update, removed: arr_remove };
-}
-
-function m_add(f: Function) {}
 
 /// LOCAL TYPES ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,7 +43,7 @@ function m_add(f: Function) {}
  */
 class Pool {
   // local stage
-  _pool: Array<I_PoolMappable>; // allocated objects
+  _pool: Array<I_Poolable>; // allocated objects
   _avail: Array<number>; // array of availalbe indexes
   //
   name: string;
@@ -97,7 +68,7 @@ class Pool {
 
   /** create a new object from stored ManagedClass constructor */
   makeObject() {
-    const o: I_PoolMappable = new this.ManagedClass();
+    const o: I_Poolable = new this.ManagedClass();
     const pool_id = this._pool.length; // inc by 1
     o.poolId = pool_id;
     this._avail.push(pool_id); // add new instance indexes
@@ -143,7 +114,7 @@ class Pool {
   }
 
   /** return an instance to the pool */
-  deallocate(o: I_PoolMappable) {
+  deallocate(o: I_Poolable) {
     const id = o.poolId;
     this._avail.push(id);
     o.dispose(); // deallocate instance-specific stuff
@@ -162,4 +133,5 @@ class Pool {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Pool;
-export { DiffMaps };
+/// forward types as needed
+export { I_Poolable, I_PoolOptions };

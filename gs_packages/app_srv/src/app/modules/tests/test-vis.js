@@ -4,7 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Pool, { DiffMaps } from '../vis/lib/class-pool-map';
+import Pool from '../vis/lib/class-pool';
+import { DiffMaps } from '../vis/lib/class-mapped-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,10 +33,10 @@ if (TEST) {
   const s = makeMap('source', [1, 2, 3, 4, 5, 0]);
   const m = makeMap('mapped', [2, 3, 5, 6, 7]);
   const tmp = DiffMaps(s, m, {
-    addFunc: () => {},
-    updateFunc: () => {},
-    removeFunc: () => {},
-    removeTest: item => item.id === 6 // only remove id 6
+    funcAdd: () => {},
+    funcUpdate: () => {},
+    funcRemove: () => {},
+    testRemove: item => item.id === 6 // only remove id 6
   });
   const { added, updated, removed } = tmp;
   console.assert(arraysSame(updated, [2, 3, 5]), 'fail updated', updated);
