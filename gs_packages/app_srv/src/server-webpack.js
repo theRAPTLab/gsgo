@@ -11,6 +11,7 @@
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 const Express = require('express'); //your original BE server
 const Path = require('path');
+const IP = require('ip');
 const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const DevServer = require('webpack-dev-middleware');
@@ -65,9 +66,11 @@ function Start() {
   // note that many hooks do not run in developer HMR mode
   compiler.hooks.afterCompile.tap('StartServer', () => {
     if (!m_server) {
+      const ip = `\x1b[33m${IP.address()}\x1b[0m`;
+      const port = `\x1b[33m${PORT}\x1b[0m`;
       m_server = app.listen(PORT, () => {
         console.log(...PR(`webapp bundle: '${DIR_OUT}'`));
-        console.log(...PR(`webapp server listening on port ${PORT}`));
+        console.log(...PR(`webapp server listening ${ip} on port ${port}`));
         console.log(...PR('LIVE RELOAD ENABLED'));
       });
     }
