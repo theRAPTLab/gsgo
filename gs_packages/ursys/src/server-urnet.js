@@ -14,7 +14,7 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const SESSION = require('./util/session');
-const TOUT = require('./util/prompts').makeTerminalOut('URNET');
+const TOUT = require('./util/prompts').makeTerminalOut(' URNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,8 +70,6 @@ UNET.StartNetwork = (options = {}) => {
   mu_options = options;
 
   // create listener.
-  if (DBG.init) TOUT(`initializing web socket server on port ${mu_options.port}`);
-
   mu_wss = new WSS(mu_options);
   mu_wss.on('listening', () => {
     if (DBG.init) TOUT(`socket server listening on port ${mu_options.port}`);

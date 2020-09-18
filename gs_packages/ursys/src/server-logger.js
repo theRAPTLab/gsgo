@@ -16,7 +16,7 @@ const DBG = false;
 const PATH = require('path');
 const FSE = require('fs-extra');
 /// for server-side modules,
-const TOUT = require('./util/prompts').makeTerminalOut('URLOG');
+const TOUT = require('./util/prompts').makeTerminalOut(' URLOG');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

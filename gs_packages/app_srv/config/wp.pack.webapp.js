@@ -23,7 +23,7 @@ const WriteFilesPlugin = require('write-file-webpack-plugin');
 const WebpackLoaders = require('./wp.base.loaders');
 
 /// DEFINE CONSTANTS //////////////////////////////////////////////////////////
-const PR = PrefixUtil('PACK/BDL');
+const PR = PrefixUtil(' PACK/BDL');
 const DIR_ROOT = Path.resolve(__dirname, '..');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 const DIR_SRC = Path.join(DIR_ROOT, 'src/app');
@@ -39,11 +39,11 @@ const WebpackPacker = env => {
   // adjust build parameters based on mode
   env = env || { DEVELOPMENT: 'default' };
   if (env && env.PRODUCTION) {
-    console.log(...PR('... using webapp production config for packaging'));
+    console.log(...PR('... setting appsrv bundle rules (production)'));
     MODE = 'production';
   }
   if (env && env.DEVELOPMENT) {
-    console.log(...PR('... using webapp development config for packaging'));
+    console.log(...PR('... setting appsrv bundle rules (dev)'));
     // add hot reload for development version
     ENTRY_FILES.push('webpack-hot-middleware/client?reload=true');
     MODE = 'development';

@@ -6,7 +6,7 @@
 
 const IS_NODE = typeof window === 'undefined';
 const DEFAULT_PADDING = IS_NODE
-  ? 8 // nodejs
+  ? 10 // nodejs
   : 0; // not nodejs
 
 const TERM_COLORS = {
@@ -89,8 +89,6 @@ const HIDE = false;
 const PROMPT_DICT = {
   // URSYS-RELATED MODULES
   'UR': [SHOW, 'TagRed'],
-  'URNET': [SHOW, 'TagRed'],
-  'URLOG': [SHOW, 'TagRed'],
   // SERVERS
   'APPSRV': [SHOW, 'Yellow'],
   'GEMSRV': [SHOW, 'Yellow'],
@@ -106,7 +104,7 @@ const PROMPT_DICT = {
  *  PROMPTS_DICT structure.
  */
 function m_GetEnvColor(prompt, tagColor) {
-  const [dbg_mode, defcol] = PROMPT_DICT[prompt] || [SHOW, 'TagGray'];
+  const [dbg_mode, defcol] = PROMPT_DICT[prompt.trim()] || [SHOW, 'TagGray'];
   const ucolor = IS_NODE ? TERM_COLORS[tagColor] : CSS_COLORS[tagColor];
   const dcolor = IS_NODE ? TERM_COLORS[defcol] : CSS_COLORS[defcol];
   const color = ucolor || dcolor;
