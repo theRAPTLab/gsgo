@@ -1,99 +1,128 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Object MappedPool
+  Object MappedPool (WIP)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Pool from './class-pool';
+import Pool, { I_Poolable } from './class-pool';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-interface Mappable {
-  id: number; // all mappable objects MUST have a numeric id
-}
-type AnyMap = Map<any, Mappable>;
-type ObjectTest = (obj: any) => boolean;
-type MapFunction = (key: any, source?: AnyMap, mapped?: AnyMap) => void;
+type PoolableMap = Map<any, I_Poolable>;
+type PoolableArray = I_Poolable[];
 
-export interface SyncOptions {
-  testRemove: ObjectTest;
-  funcAdd: MapFunction;
-  funcUpdate: MapFunction;
-  funcRemove: MapFunction;
+type TestFunction = (obj: any) => boolean;
+type AddFunction = (srcObj: I_Poolable, newObj: I_Poolable) => I_Poolable;
+type UpdateFunction = (srcObj: I_Poolable, mappedObj: I_Poolable) => I_Poolable;
+type RemoveFunction = (mappedObj: I_Poolable) => I_Poolable;
+
+export interface SyncFunctions {
+  onAdd: AddFunction;
+  onUpdate: UpdateFunction;
+  shouldRemove: TestFunction;
+  onRemove: RemoveFunction;
 }
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Looks for differences between two dictionaries 'source' and 'mapped'
- *  containing objects that have a number id property. Runs a function for
- *  each case.
- *  Returns { added, updated, removed } arrays.
- */
-export function DiffMaps(source: AnyMap, mapped: AnyMap, opt: SyncOptions) {
-  // extract custom handler functions
-  const { testRemove, funcAdd, funcUpdate, funcRemove } = opt;
-
-  // algorithm:
-  // keys in mapped and not in source are deleted if opt.removeTest() passes
-  // keys in source and not in mapped are added
-  // keys in mapped and source are updated
-  const skeys = [...source.keys()];
-  const mkeys = [...mapped.keys()];
-  // simple filters
-  const arr_update = skeys.filter(key => mkeys.includes(key));
-  const arr_add = skeys.filter(key => !mkeys.includes(key));
-  // tricky filter: remove if source doesn't have key
-  // AND if removeTest agrees that it should be removed
-  const arr_remove = mkeys.filter(
-    key => !skeys.includes(key) && testRemove(mapped.get(key))
-  );
-  // process all through the appropriate function
-  arr_add.forEach(key => funcAdd(key, source, mapped));
-  arr_remove.forEach(key => funcRemove(key, source, mapped));
-  arr_update.forEach(key => funcUpdate(key, source, mapped));
-  // return lists of what was done
-  return { added: arr_add, updated: arr_update, removed: arr_remove };
+function m_CheckConf(config: SyncFunctions) {
+  if (typeof config !== 'object') throw Error('arg1 is not config object');
+  if (typeof config.onAdd !== 'function') throw Error('config missing onAdd');
+  if (typeof config.onUpdate !== 'function')
+    throw Error('config missing onUpdate');
+  if (typeof config.onRemove !== 'function')
+    throw Error('config missing onRemove');
+  if (typeof config.shouldRemove !== 'function')
+    throw Error('config missing shouldRemove');
+  return config;
 }
-
-/// LOCAL TYPES ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// MAPPER CLASS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
 export default class MappedPool {
-  fAdd: MapFunction;
-  fUpdate: MapFunction;
-  fRemove: MapFunction;
-  tRemove: ObjectTest;
+  cbAdder: AddFunction;
+  cbUpdater: UpdateFunction;
+  cbRemover: RemoveFunction;
+  ifRemove: TestFunction;
   pool: Pool;
 
-  constructor(pool: Pool, config: SyncOptions) {
-    const { funcAdd, funcUpdate, funcRemove, testRemove } = config;
-    this.fAdd = funcAdd;
-    this.fUpdate = funcUpdate;
-    this.fRemove = funcRemove;
-    this.tRemove = testRemove;
+  constructor(pool: Pool, conf: SyncFunctions) {
+    const { onAdd, onUpdate, onRemove, shouldRemove } = m_CheckConf(conf);
+    this.cbAdder = onAdd;
+    this.cbUpdater = onUpdate;
+    this.cbRemover = onRemove;
+    this.ifRemove = shouldRemove;
     this.pool = pool;
   }
 
   /** given source, destination, and key to sync, do the mapping */
-  sync(srcMap: AnyMap, dstMap: AnyMap, syncKey: any) {
-    const skeys = [...srcMap.keys()];
-    const mkeys = [...dstMap.keys()];
-    // simple filters
-    const arr_update = skeys.filter(key => mkeys.includes(key));
-    const arr_add = skeys.filter(key => !mkeys.includes(key));
-    // tricky filter: remove if source doesn't have key
-    // AND if removeTest agrees that it should be removed
-    const arr_remove = mkeys.filter(
-      key => !skeys.includes(key) && this.tRemove(dstMap.get(key))
-    );
+  syncFromMap(srcMap: PoolableMap) {
+    const sobjs = [...srcMap.values()];
+
+    // build update and add array by iterated over source objects
+    const arr_update = [];
+    const arr_add = [];
+    sobjs.forEach(sobj => {
+      if (this.pool.has(sobj.id)) arr_update.push(sobj);
+      else arr_add.push(sobj);
+    });
+    // build remove array by iterating over allocated objects
+    const arr_remove = this.pool
+      .getAllocated() // get array of in-use pool objects
+      .filter(poolObj => !srcMap.has(poolObj.id) && this.ifRemove(poolObj));
+
     // process all through the appropriate function
-    arr_add.forEach(key => this.fAdd(key, srcMap, dstMap));
-    arr_remove.forEach(key => this.fRemove(key, srcMap, dstMap));
-    arr_update.forEach(key => this.fUpdate(key, srcMap, dstMap));
+    arr_update.forEach(sobj => {
+      const dobj = this.pool.get(sobj.id);
+      this.cbUpdater(sobj, dobj);
+    });
+    arr_add.forEach(sobj => {
+      const dobj = this.pool.allocate();
+      this.cbAdder(sobj, dobj);
+    });
+    arr_remove.forEach(dobj => {
+      this.cbRemover(dobj);
+      this.pool.deallocate(dobj);
+    });
+    // return lists of what was done
+    return { added: arr_add, updated: arr_update, removed: arr_remove };
+  }
+
+  /** given source array of objs, sync */
+  syncFromArray(sobjs: PoolableArray) {
+    // build update and add array by iterated over source objects
+    const sobjSet = new Set();
+    const arr_update = [];
+    const arr_add = [];
+    sobjs.forEach(sobj => {
+      if (this.pool.has(sobj.id)) arr_update.push(sobj);
+      else arr_add.push(sobj);
+      sobjSet.add(sobj.id);
+    });
+    // build remove array by iterating over allocated objects
+    const arr_remove = [];
+    const pobjs = this.pool.getAllocated();
+    // get all the objects that are already allocated
+    pobjs.forEach(pobj => {
+      const sobjGone = !sobjSet.has(pobj.id);
+      const yesRemove = this.ifRemove(pobj);
+      if (sobjGone && yesRemove) arr_remove.push(pobj);
+    });
+    // process all through the appropriate function
+    arr_update.forEach(sobj => {
+      const dobj = this.pool.get(sobj.id);
+      this.cbUpdater(sobj, dobj);
+    });
+    arr_add.forEach(sobj => {
+      const dobj = this.pool.allocate();
+      this.cbAdder(sobj, dobj);
+    });
+    arr_remove.forEach(dobj => {
+      this.cbRemover(dobj);
+      this.pool.deallocate(dobj);
+    });
     // return lists of what was done
     return { added: arr_add, updated: arr_update, removed: arr_remove };
   }

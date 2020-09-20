@@ -7,8 +7,9 @@
 /// POOLS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface I_Poolable {
-  refId: any; // id referencing original (agentInstance)
-  poolId: number; // refId is the original reference object
+  id: any; // id referencing original (agentInstance)
+  _pool_id: number; // used for fast pool lookup
+  constructor(id: any): void; // MUST initialize with an id
   dispose: () => void; // deallocate resources on destruction
   init: () => void; // reset the object to default state
   validate: (state: boolean) => void; // set validation state

@@ -1,25 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  PoolMapper
-
-  Pool instances manage a set of objects, pre-allocating them for performance
-  reasons. It can be set to automatically grow as well, but it does not
-  shrink.
-
-  The options.Constructor parameter is a class constructor. This Constructor
-  must implement I_Poolable.
-
-  SYNTAX
-  // options Constructor
-  let pool = new Pool(name, { Constructor });
-
-  // instance operations
-  let instance = pool.allocate()
-  pool.deallocate(instance)
-  //
-  instance = pool.allocate();
-  let id = instance.id;
-  pool.deallocateId(id);
+  Object Pool (WIP)
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -43,8 +24,9 @@ const DEFAULT_BATCH = 10;
  */
 class Pool {
   // local stage
-  _pool: Array<I_Poolable>; // allocated objects
-  _avail: Array<number>; // array of availalbe indexes
+  pool_objs: Array<I_Poolable>; // pool of reusable objects
+  avail_objs: Array<number>; // array of available indices
+  obj_map: Map<number, number>; // Map obj.id to pool_ids
   //
   name: string;
   ManagedClass: () => void; // create an object
@@ -61,24 +43,27 @@ class Pool {
     this.batchSize = opt.batchSize || DEFAULT_BATCH;
     this.autoGrow = opt.autoGrow || false;
     //
-    this._pool = [];
-    this._avail = [];
+    this.pool_objs = [];
+    this.avail_objs = [];
     this.setSize();
   }
 
   /** create a new object from stored ManagedClass constructor */
   makeObject() {
     const o: I_Poolable = new this.ManagedClass();
-    const pool_id = this._pool.length; // inc by 1
-    o.poolId = pool_id;
-    this._avail.push(pool_id); // add new instance indexes
-    this._pool.push(o); // save new object
+    const pool_id = this.pool_objs.length; // inc by 1
+    // make object.id mappable to pool_id
+    o._pool_id = pool_id;
+    this.obj_map.set(o.id, pool_id);
+    // save new object to pool and make available
+    this.pool_objs.push(o);
+    this.avail_objs.push(pool_id);
     return o;
   }
 
   /** set the number of items in the pool */
   setSize(newSize: number = this.size) {
-    const pool_size = this._pool.length;
+    const pool_size = this.pool_objs.length;
     if (newSize < pool_size) return;
     //
     let addCount = newSize - pool_size;
@@ -91,23 +76,27 @@ class Pool {
   increaseSize(count: number = this.batchSize) {
     if (DBG) console.log('growing by', this.batchSize);
     while (count-- > 0) this.makeObject();
-    this.size = this._pool.length;
-    if (DBG) console.log('available', JSON.stringify(this._avail));
+    this.size = this.pool_objs.length;
+    if (DBG) console.log('available', JSON.stringify(this.avail_objs));
   }
 
   /** retrieve an instance from allocation pool */
   allocate() {
-    if (this._avail.length < 1) {
+    if (this.avail_objs.length < 1) {
       if (this.autoGrow) {
         this.increaseSize(/* default */);
       } else {
-        if (DBG) console.log('available', JSON.stringify(this._avail));
+        if (DBG) console.log('available', JSON.stringify(this.avail_objs));
         return undefined;
       }
     }
-    if (DBG) console.log('available', JSON.stringify(this._avail));
-    const index: number = this._avail.shift();
-    const o = this._pool[index];
+    if (DBG) console.log('available', JSON.stringify(this.avail_objs));
+    const index: number = this.avail_objs.shift();
+    // retrieve something from the pool
+    const o = this.pool_objs[index];
+    // remove objId to poolId lookup
+    this.obj_map.set(o.id, index);
+    // tell object to initialize itself
     o.init();
     o.validate(true);
     return o;
@@ -115,18 +104,49 @@ class Pool {
 
   /** return an instance to the pool */
   deallocate(o: I_Poolable) {
-    const id = o.poolId;
-    this._avail.push(id);
-    o.dispose(); // deallocate instance-specific stuff
-    o.validate(false); //
-    if (DBG) console.log('available', JSON.stringify(this._avail));
+    const poolId = o._pool_id;
+    // tell object to clean itself up on removal
+    o.dispose();
+    o.validate(false);
+    // remove objId to poolId lookup
+    this.obj_map.delete(o.id);
+    // add back to pool
+    this.avail_objs.push(poolId);
+    if (DBG) console.log('dalloc:avail', JSON.stringify(this.avail_objs));
   }
 
-  /** deallocate an instance by id */
-  deallocateId(poolId: number) {
-    const o = this._pool[poolId];
-    if (o.poolId !== poolId) throw Error(`bad dealloc: ${poolId}!==${o.poolId}`);
-    this.deallocate(o);
+  /** deallocate an instance by object id (not pool id) */
+  deallocateId(objId: number) {
+    const poolId = this.obj_map.get(objId); // Map<objId,poolId>
+
+    const o = this.pool_objs[poolId];
+    o.dispose();
+    o.validate(false);
+    this.avail_objs.push(poolId);
+    if (DBG) console.log('dallocId:avail', JSON.stringify(this.avail_objs));
+  }
+
+  /** return whether an id (not pool_id) is in the pool */
+  has(objId: any) {
+    // obj_map is Map<objId,poolId>
+    return this.obj_map.has(objId);
+  }
+
+  /** retrieve an allocated object by id (not pool id) */
+  get(objId: number): I_Poolable {
+    const index = this.obj_map.get(objId);
+    return this.pool_objs[index];
+  }
+
+  /** retrieve an array of allocated objids */
+  getAllocatedIds(): number[] {
+    // obj_map is Map<objId,poolId>
+    return [...this.obj_map.keys()];
+  }
+  /** retrieve an array of allocated objects */
+  getAllocated(): I_Poolable[] {
+    const ids = this.getAllocatedIds();
+    return ids.map(id => this.pool_objs[this.obj_map.get(id)]);
   }
 } // end of Pool class
 
