@@ -79,7 +79,7 @@ export default class MappedPool {
       this.cbUpdater(sobj, dobj);
     });
     arr_add.forEach(sobj => {
-      const dobj = this.pool.allocate();
+      const dobj = this.pool.allocateId(sobj.id);
       this.cbAdder(sobj, dobj);
     });
     arr_remove.forEach(dobj => {
@@ -116,7 +116,7 @@ export default class MappedPool {
       this.cbUpdater(sobj, dobj);
     });
     arr_add.forEach(sobj => {
-      const dobj = this.pool.allocate();
+      const dobj = this.pool.allocateId(sobj.id);
       this.cbAdder(sobj, dobj);
     });
     arr_remove.forEach(dobj => {

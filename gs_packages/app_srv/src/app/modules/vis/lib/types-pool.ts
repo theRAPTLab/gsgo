@@ -9,9 +9,8 @@
 export interface I_Poolable {
   id: any; // id referencing original (agentInstance)
   _pool_id: number; // used for fast pool lookup
-  constructor(id: any): void; // MUST initialize with an id
   dispose: () => void; // deallocate resources on destruction
-  init: () => void; // reset the object to default state
+  init: (id?: number) => void; // reset the object to default state
   validate: (state: boolean) => void; // set validation state
   isValid: () => boolean; // is a valid pool item
 }

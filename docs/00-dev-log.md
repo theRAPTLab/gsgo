@@ -191,7 +191,9 @@ Now we can **update `syncFromMap()`**  to call Pool methods so it can do what it
 * [x] rewrite removal code to use reverse lookup
 * [x] add `syncFromArray`
 
+Debugging:
 
+* [x] try to make allocate function automagically assign object id
 
 
 
