@@ -140,7 +140,6 @@ function TestDisplayList() {
       dobj.skin = sobj.skin();
     },
     shouldRemove: dobj => {
-      console.log('got dobj');
       SPRITE_POOL.deallocate(dobj);
       dobj.visual = undefined;
     },
@@ -163,6 +162,48 @@ function TestDisplayList() {
   //
   console.groupEnd();
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ *  Generate Periodic Display Lists
+ */
+const AGENT_TO_DOBJ_UPDATE = new MappedPool(DOBJ_POOL, {
+  onAdd: (sobj, dobj) => {
+    dobj.x = sobj.x();
+    dobj.y = sobj.y();
+    dobj.skin = sobj.skin();
+    dobj.visual = SPRITE_POOL.allocate();
+  },
+  onUpdate: (sobj, dobj) => {
+    dobj.x = sobj.x();
+    dobj.y = sobj.y();
+    dobj.skin = sobj.skin();
+  },
+  shouldRemove: dobj => {
+    SPRITE_POOL.deallocate(dobj);
+    dobj.visual = undefined;
+  },
+  onRemove: u_NullRemove
+});
+
+function TestUpdateDisplayList(frameTime) {
+  const agents = AGENTS_GetArrayAll();
+  agents.forEach(agent => {
+    const rx = Math.round(5 - Math.random() * 10);
+    const ry = Math.round(5 - Math.random() * 10);
+    const x = agent.x() + rx;
+    const y = agent.y() + ry;
+    agent.prop('x').value = x;
+    agent.prop('y').value = y;
+  });
+  AGENT_TO_DOBJ_UPDATE.syncFromArray(agents);
+  const dobj = DOBJ_POOL.get(510);
+  // console.log('dobj x,y=', dobj.x, dobj.y);
+}
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('SIM', 'RENDER', TestUpdateDisplayList);
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
