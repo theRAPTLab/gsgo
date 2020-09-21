@@ -24,20 +24,36 @@ UR.SystemHook('SIM', 'SETMODE');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** save agent by type into agent map, which contains weaksets of types */
 function AGENTS_Save(agent) {
-  const { id, type } = agent.meta;
-  if (!AGENTS.has(type)) AGENTS.set(type, new Set());
+  const { type } = agent.meta;
+  const { id } = agent;
+  if (!AGENTS.has(type)) AGENTS.set(type, new Map());
+  // agents is a Map of agents
   const agents = AGENTS.get(type);
-  if (agents.has(id)) throw Error(`agent id${id} already in ${type} list`);
+  // retrieve the set
+  if (agents.has(id)) throw Error(`agent id ${id} already in ${type} list`);
   // console.log(`AGENTS now has ${AGENTS.get(type).size}`);
-  agents.add(agent);
+  agents.set(id, agent);
   return agent;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return agent set */
-function AGENTS_Typeof(type) {
-  const agents = AGENTS.get(type);
-  return agents || [];
+/** return agent set by type */
+function AGENTS_GetTypeSet(type) {
+  const agentSet = AGENTS.get(type);
+  if (agentSet) return [...agentSet.values()];
+  console.warn(...PR(`agentset '${type}' not in AGENTS`));
+  return [];
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AGENTS_GetArrayAll() {
+  const arr = [];
+  const maps = [...AGENTS.values()];
+  maps.forEach(map => {
+    arr.push(...map.values());
+  });
+  return arr;
+}
+
+/// CONDITION UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function CONDITION_Save(condition) {
   console.log('unimplemented; got', condition);
@@ -52,6 +68,14 @@ function CONDITION_All() {
   return [...conditions];
 }
 
+/// TESTING UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** test agent set */
+function TestAgentSets(type) {
+  const agents = AGENTS.get(type);
+  return [...agents] || [];
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export shared data structures
@@ -59,8 +83,10 @@ export { AGENTS, TEMPLATES, FEATURES, CONDITIONS };
 /// export agent creation methods
 export {
   AGENTS_Save,
-  AGENTS_Typeof,
+  AGENTS_GetTypeSet,
+  AGENTS_GetArrayAll,
   CONDITION_All,
   CONDITION_Save,
-  CONDITION_Get
+  CONDITION_Get,
+  TestAgentSets
 };

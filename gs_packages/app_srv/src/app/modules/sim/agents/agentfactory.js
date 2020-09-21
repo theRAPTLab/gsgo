@@ -18,10 +18,10 @@
 
 import UR from '@gemstep/ursys/client';
 import Agent from '../lib/class-agent';
-import { AGENTS_Save, AGENTS_Typeof, TEMPLATES } from '../runtime-datacore';
+import { AGENTS_Save, AGENTS_GetTypeSet, TEMPLATES } from '../runtime-datacore';
 import { WORLD } from './global';
 
-const PR = UR.PrefixUtil('AgentFactory');
+const PR = UR.PrefixUtil('AGENT');
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -101,7 +101,7 @@ function ExportAgent(agent) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return an array of agents by type */
 function GetAgentsByType(type) {
-  return [...AGENTS_Typeof(type)];
+  return [...AGENTS_GetTypeSet(type)];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the WORLD agent */

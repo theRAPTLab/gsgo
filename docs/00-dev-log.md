@@ -140,11 +140,7 @@ Trying to recover from the terrible week of distraction (therapist, fam stuff).
 
 **SATURDAY** - starting late in the evening after brain reset. 
 
-
-
-SOC MODE
-
-I'm updating the func* functions for add, update, remove for my mapped pool class,
+I'm updating the functions for add, update, remove for my mapped pool class,
 
 A **Pool** is initialized with a **name** and  at minimum a **Constructor** function, and it can create its own instances,
 
@@ -158,7 +154,6 @@ import ObjectClass from 'class/ObjectClass'
 const objectpool = new Pool("mypool",{ Constructor: ObjectClass });
 const DOBJ_POOL = new MappedPool(objectpool,{ onAdd,onRemove, onUpdate, canRemove });
 ...
-
 // SAMPLE UPDATE
 DOBJ_POOL.syncFromMap(AGENTS);
 ```
@@ -195,19 +190,26 @@ Debugging:
 
 * [x] try to make allocate function automagically assign object id
 
+**SUNDAY** - Write AGENTS to DOBJS, finish Pool and MappedPool classes w/ testing
 
+Now, we're **testing Agent to DataObjects** with actual code!
 
+* [x] add `test-displaylist` and `test-agents`that contains test code
+* [x] rewrite `sim-agents` to call `test-agents`, simplifying it
+* [x] add test `TestSyncAgents` to  `test-displaylist` 
+  * [x] AGENTS is a Map of `<agentType,Set>` so it can't be directly used with `MappedPool.syncFromMap()`, so rewrite 
+  * [x] Change AGENTS to be `<agentType,Map>` for ease of processing in `class-mapped-pool`
+  * [x] Add `AGENTS_GetArrayAll()` to runtime-datacore
+* [x] change `class-agent` to have `id` as main property, not in `meta`
 
+BUG: the updated array is failing. 
 
+* [ ] check that `syncFromArray()` in class-mapped-pool is correctly updating
+* [ ] is class-pool not saving updated? 
 
+The problem seems to be that when the source objects don't have an id, 
 
-Algorithm:
-
-* onAdd: sobj, dobj copy props. The keys
-
-funcAdd() recieves SOURCE object and the new DEST object to mirror. 
-
-
+* [ ] was missing parameter for` arr_update.push(sobj)`...duhdoi.
 
 
 

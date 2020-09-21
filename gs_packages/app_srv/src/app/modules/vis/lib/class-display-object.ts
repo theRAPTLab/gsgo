@@ -20,24 +20,25 @@ import { I_Poolable } from './types-pool';
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DisplayObject implements I_Poolable {
+  id: number;
+  _pool_id: number;
   visual: any;
-  refId: any;
   dirty: boolean;
   poolId: number;
   valid: boolean;
 
-  constructor() {
-    this.init();
+  constructor(id?: number) {
+    this.init(id);
   }
 
   setVisual(vis: any) {
     this.visual = vis;
   }
 
-  init() {
+  init(id?: number) {
     this.visual = undefined; // visuals must implement Draw()
-    this.refId = undefined; // store reference
-    this.poolId = undefined;
+    this.id = id; // store reference
+    this.poolId = id;
     this.dirty = false; // set when needs processing
     this.valid = false;
   }

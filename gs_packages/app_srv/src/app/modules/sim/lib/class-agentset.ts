@@ -31,15 +31,21 @@ class AgentSet {
   reset() {
     this.testResults = [];
   }
-  /** utility to retrieve agent sets */
+  /**
+   *  utility to retrieve agent sets
+   */
   getAgents(): any[] {
-    const len = this.agentTypes.length;
+    if (!AGENTS) throw Error('DATACORE.AGENTS is undefined');
+    //
     let retval: any[];
+    const len = this.agentTypes.length;
     if (len < 1 || len > 2) throw Error(`bad agent count ${len}`);
-    if (len === 1) retval = [[...AGENTS.get(this.agentTypes[0])]];
+    // case 1: return an array of a single agent array
+    if (len === 1) retval = [[...AGENTS.get(this.agentTypes[0]).values()]];
+    // case 2: return an array of two agent arrays
     if (len === 2) {
-      const a = [...AGENTS.get(this.agentTypes[0])];
-      const b = [...AGENTS.get(this.agentTypes[1])];
+      const a = [...AGENTS.get(this.agentTypes[0]).values()];
+      const b = [...AGENTS.get(this.agentTypes[1]).values()];
       // the first set is always the smaller one
       retval = a.length > b.length ? [b, a] : [a, b];
     }
@@ -52,7 +58,8 @@ class AgentSet {
     const len = this.agentTypes.length;
     if (len !== 1) throw Error('set count must be 1, not 2');
     // always run the first type only
-    const [agents] = this.getAgents();
+    const agents = this.getAgents()[0];
+    // agents contains a map
     // push matching agents onto results
     this.testResults = agents.filter(agent => {
       const result = agent.exec_smc(test, []);

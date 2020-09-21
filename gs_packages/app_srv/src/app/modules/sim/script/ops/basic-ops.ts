@@ -172,7 +172,6 @@ const scopedFunction = (funcName: string, ...args: any[]): T_Opcode => {
     const SOBJ: I_Scopeable = scope[scope.length - 1];
     // call the function property on the scoped object
     const RSTACK = SOBJ[funcName](...args);
-    // console.log(SOBJ.meta.id, funcName, ...args, '=>', RSTACK);
     // push elements returned from scoped call onto our stack
     stack.push(RSTACK);
   };

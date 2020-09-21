@@ -12,7 +12,8 @@
  *  The Agent, Prop, and Feature classes implement this interface.
  */
 export interface I_Scopeable {
-  meta: { id: number; type: symbol; name?: string };
+  id: number;
+  meta: { type: symbol; name?: string };
   method: (name: string, ...args: any) => any;
   addProp: (name: string, gv: I_Scopeable) => I_Scopeable;
   addMethod: (name: String, callable: T_Method) => void;

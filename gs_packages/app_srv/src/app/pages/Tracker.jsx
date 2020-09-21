@@ -12,7 +12,7 @@ import { Typography } from '@material-ui/core';
 import UR from '@gemstep/ursys/client';
 
 import RUNTIME from '../modules/sim/runtime';
-import Renderer from '../modules/test-renderer';
+import Renderer from '../modules/tests/test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -9,12 +9,13 @@ import Pool, { I_Poolable } from './class-pool';
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type PoolableMap = Map<any, I_Poolable>;
+type PoolableSet = Set<I_Poolable>;
 type PoolableArray = I_Poolable[];
 
 type TestFunction = (obj: any) => boolean;
 type AddFunction = (srcObj: I_Poolable, newObj: I_Poolable) => I_Poolable;
-type UpdateFunction = (srcObj: I_Poolable, mappedObj: I_Poolable) => I_Poolable;
-type RemoveFunction = (mappedObj: I_Poolable) => I_Poolable;
+type UpdateFunction = (srcObj: I_Poolable, updateObj: I_Poolable) => I_Poolable;
+type RemoveFunction = (removeObj: I_Poolable) => I_Poolable;
 
 export interface SyncFunctions {
   onAdd: AddFunction;
@@ -35,6 +36,23 @@ function m_CheckConf(config: SyncFunctions) {
   if (typeof config.shouldRemove !== 'function')
     throw Error('config missing shouldRemove');
   return config;
+}
+/// TESTING UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function TestMapEntities(map: Map<any, any>) {
+  const objs = [...map.values()];
+  objs.filter(obj => obj.id !== undefined);
+  const hasId = objs.length === 0; // true if objs have id prop
+  return hasId;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function TestArrayEntities(arr) {
+  const numBadObjs = arr.reduce((acc, obj) => {
+    return acc + obj.id === undefined ? 1 : 0;
+  });
+  const goodIds = numBadObjs === 0; // true if objs have id prop
+  return goodIds;
 }
 
 /// MAPPER CLASS ///////////////////////////////////////////////////////////////
@@ -57,7 +75,7 @@ export default class MappedPool {
     this.pool = pool;
   }
 
-  /** given source, destination, and key to sync, do the mapping */
+  /** given source map, do the obj.id mapping to our pool */
   syncFromMap(srcMap: PoolableMap) {
     const sobjs = [...srcMap.values()];
 
@@ -90,23 +108,23 @@ export default class MappedPool {
     return { added: arr_add, updated: arr_update, removed: arr_remove };
   }
 
-  /** given source array of objs, sync */
+  /** given source array, do the obj.id mapping to our pool */
   syncFromArray(sobjs: PoolableArray) {
     // build update and add array by iterated over source objects
-    const sobjSet = new Set();
+    const seen_sobjs = new Set(); // track ids that were added up updated
     const arr_update = [];
     const arr_add = [];
     sobjs.forEach(sobj => {
       if (this.pool.has(sobj.id)) arr_update.push(sobj);
       else arr_add.push(sobj);
-      sobjSet.add(sobj.id);
+      seen_sobjs.add(sobj.id);
     });
     // build remove array by iterating over allocated objects
     const arr_remove = [];
     const pobjs = this.pool.getAllocated();
     // get all the objects that are already allocated
     pobjs.forEach(pobj => {
-      const sobjGone = !sobjSet.has(pobj.id);
+      const sobjGone = !seen_sobjs.has(pobj.id);
       const yesRemove = this.ifRemove(pobj);
       if (sobjGone && yesRemove) arr_remove.push(pobj);
     });
@@ -123,7 +141,16 @@ export default class MappedPool {
       this.cbRemover(dobj);
       this.pool.deallocate(dobj);
     });
-    // return lists of what was done
+    // added and updated will contain source objs
+    // removed will contain "deleted" pool objects
     return { added: arr_add, updated: arr_update, removed: arr_remove };
   }
+
+  getSyncedObjects() {
+    return this.pool.getAllocated();
+  }
 }
+
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// above functions, classes are exported

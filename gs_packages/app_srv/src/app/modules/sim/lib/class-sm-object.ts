@@ -52,15 +52,16 @@ function AddMethod(agent: I_Agent, name: string, smc_or_f: T_Method): I_Agent {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class SM_Object implements I_Scopeable {
+  id: number; // unique within all stack machine objects
   _value: any;
-  meta: { id: number; type: symbol; name?: string };
+  meta: { type: symbol; name?: string };
   props: Map<string, I_Scopeable>;
   methods: Map<string, T_Method>;
   constructor(initValue?: any) {
     // init is a literal value
     this._value = initValue;
+    this.id = new_obj_id();
     this.meta = {
-      id: new_obj_id(),
       type: Symbol.for('SM_Object')
     };
     this.props = new Map();
