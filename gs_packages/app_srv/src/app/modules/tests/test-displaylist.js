@@ -6,12 +6,9 @@
 
 import UR from '@gemstep/ursys/client';
 import Pool from '../vis/lib/class-pool';
-import MappedPool, {
-  TestMapEntities,
-  TestArrayEntities
-} from '../vis/lib/class-mapped-pool';
+import MappedPool, { TestArrayEntities } from '../vis/lib/class-mapped-pool';
 import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
-import DisplayObject from '../vis/lib/class-display-object';
+import DisplayObject, { TestValidDOBJs } from '../vis/lib/class-display-object';
 import Sprite from '../vis/lib/class-sprite';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -41,7 +38,7 @@ function u_NullAdd(srcObj, newObj) {
 function u_NullUpdate(srcObj, updobj) {
   // console.log(...PR('update', srcObj, updobj));
 }
-function u_NullRemoveTest(testObj) {
+function u_NullRemoveIsOk(testObj) {
   // console.log(...PR('test', testObj));
   return true;
 }
@@ -57,19 +54,13 @@ function u_PrintArgs(...args) {
 const ENTITY_TO_DOBJ = new MappedPool(ENTITY_POOL, {
   onAdd: u_NullAdd,
   onUpdate: u_NullUpdate,
-  shouldRemove: u_NullRemoveTest,
-  onRemove: u_NullRemove
-});
-const AGENT_TO_DOBJ = new MappedPool(DOBJ_POOL, {
-  onAdd: u_NullAdd,
-  onUpdate: u_NullUpdate,
-  shouldRemove: u_NullRemoveTest,
+  shouldRemove: u_NullRemoveIsOk,
   onRemove: u_NullRemove
 });
 const DOBJ_TO_SPRITE = new MappedPool(SPRITE_POOL, {
   onAdd: u_NullAdd,
   onUpdate: u_NullUpdate,
-  shouldRemove: u_NullRemoveTest,
+  shouldRemove: u_NullRemoveIsOk,
   onRemove: u_NullRemove
 });
 
@@ -79,10 +70,16 @@ const DOBJ_TO_SPRITE = new MappedPool(SPRITE_POOL, {
  *  Create DataObjects from the AGENTS map in DATACORE.
  */
 function TestSyncAgents() {
+  const AGENT_TO_DOBJ = new MappedPool(DOBJ_POOL, {
+    onAdd: u_NullAdd,
+    onUpdate: u_NullUpdate,
+    shouldRemove: u_NullRemoveIsOk,
+    onRemove: u_NullRemove
+  });
   // the AGENTS map is keyed by type, containing Sets of agent instances
   const agents = AGENTS_GetArrayAll();
   const startCount = agents.length;
-  console.assert(TestArrayEntities(agents), 'entities do not pass test');
+  console.assert(TestArrayEntities(agents), 'agents do not pass test');
 
   /* TEST 1 */
   console.group('initial sync');
@@ -116,14 +113,57 @@ function TestSyncAgents() {
   let { added: a3, removed: r3, updated: u3 } = AGENT_TO_DOBJ.syncFromArray(
     halfArray
   );
-
   console.assert(a3.length === 0, `added should be 0, not ${a3.length}`);
   const rem = startCount - halfArray.length;
   console.assert(r3.length === rem, `removed should be ${rem}, not ${r3.length}`);
   const hal = halfArray.length;
   console.assert(u3.length === hal, `updated should be ${hal}, not ${u3.length}`);
+  console.groupEnd();
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ *  Generate and Inspect Display Lists updating from Agents
+ */
+function TestDisplayList() {
+  console.group('generate display objects');
+  const AGENT_TO_DOBJ = new MappedPool(DOBJ_POOL, {
+    onAdd: (sobj, dobj) => {
+      dobj.x = sobj.x();
+      dobj.y = sobj.y();
+      dobj.skin = sobj.skin();
+      dobj.visual = SPRITE_POOL.allocate();
+    },
+    onUpdate: (sobj, dobj) => {
+      dobj.x = sobj.x();
+      dobj.y = sobj.y();
+      dobj.skin = sobj.skin();
+    },
+    shouldRemove: dobj => {
+      console.log('got dobj');
+      SPRITE_POOL.deallocate(dobj);
+      dobj.visual = undefined;
+    },
+    onRemove: u_NullRemove
+  });
+
+  /* TEST 4 - Inspect Display List */
+  // the AGENTS map is keyed by type, containing Sets of agent instances
+  const agents = AGENTS_GetArrayAll();
+  const startCount = agents.length;
+  console.assert(TestArrayEntities(agents), 'entities do not pass test');
+
+  AGENT_TO_DOBJ.syncFromArray(agents);
+  const dobjs = AGENT_TO_DOBJ.getSyncedObjects();
+
+  console.log('agents', agents);
+  console.log('display objects', dobjs);
+
+  console.assert(TestValidDOBJs(dobjs), 'display objects are not valid');
+  //
+  console.groupEnd();
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { TestSyncAgents };
+export { TestSyncAgents, TestDisplayList };

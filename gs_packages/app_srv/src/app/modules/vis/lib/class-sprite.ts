@@ -9,6 +9,7 @@
 
 import * as PIXI from 'pixi.js';
 import { I_Visual } from './types-visual';
+import { I_Poolable } from './types-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,18 +19,31 @@ import { I_Visual } from './types-visual';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Sprite implements I_Visual {
+class Sprite implements I_Visual, I_Poolable {
+  // visual
   sprite: PIXI.Sprite;
-  refId: any;
+  refId: number;
+  // poolable
+  id: number;
+  _pool_id: number;
 
-  constructor(refId: any) {
+  constructor(id: number) {
     this.sprite = new PIXI.Sprite();
-    this.refId = refId; // store reference
+    this.id = id; // store reference
   }
 
   /// RENDERING ///////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   draw() {}
+
+  /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  dispose() {}
+  init() {}
+  validate() {}
+  isValid() {
+    return true;
+  }
 
   /// POSITION, ANGLE, SIZE ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

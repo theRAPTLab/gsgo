@@ -209,9 +209,14 @@ BUG: the updated array is failing.
 
 The problem seems to be that when the source objects don't have an id, 
 
-* [ ] was missing parameter for` arr_update.push(sobj)`...duhdoi.
+* [x] was missing parameter for` arr_update.push(sobj)`...duhdoi.
 
+**HOW ABOUT DISPLAY OBJECTS?** Now that we are generating them, let's see what's actually there so we can then write DisplayObject to Sprite!
 
+* [x] test copy functionality between sobj and dobj in MappedPool SyncFunctions...good!
+* [x] update Sprite class to implement I_Poolable, as sprites are poolable assets
+* [ ] look into `SM_Object` use of autoincrementing id...maybe be a conflict. This is why id numbers go so high.
+* [x] fix issues with `var-string` defaulting to `undefined` instead of emptystring
 
 
 

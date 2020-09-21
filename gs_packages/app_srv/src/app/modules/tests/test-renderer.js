@@ -28,6 +28,31 @@ function Init(element) {
   PIXI_ROOT.appendChild(PIXI_APP.view);
   PIXI_APP.renderer.resize(PIXI_ROOT.offsetWidth, PIXI_ROOT.offsetHeight);
   //
+  function onDragStart(event) {
+    // store a reference to the data
+    // the reason for this is because of multitouch
+    // we want to track the movement of this particular touch
+    this.data = event.data;
+    this.alpha = 0.5;
+    this.dragging = true;
+  }
+
+  function onDragEnd() {
+    this.alpha = 1;
+    this.dragging = false;
+    // set the interaction data to null
+    this.data = null;
+  }
+
+  function onDragMove() {
+    if (this.dragging) {
+      const newPosition = this.data.getLocalPosition(this.parent);
+      this.x = newPosition.x;
+      this.y = newPosition.y;
+    }
+  }
+
+  //
   const { bunny } = SPRITES;
   bunny.interactive = true;
   bunny.on('mousedown', onDragStart);
@@ -48,30 +73,6 @@ function Init(element) {
   PIXI_APP.ticker.add(delta => {
     bunny.rotation -= 0.01 * delta;
   });
-}
-
-function onDragStart(event) {
-  // store a reference to the data
-  // the reason for this is because of multitouch
-  // we want to track the movement of this particular touch
-  this.data = event.data;
-  this.alpha = 0.5;
-  this.dragging = true;
-}
-
-function onDragEnd() {
-  this.alpha = 1;
-  this.dragging = false;
-  // set the interaction data to null
-  this.data = null;
-}
-
-function onDragMove() {
-  if (this.dragging) {
-    const newPosition = this.data.getLocalPosition(this.parent);
-    this.x = newPosition.x;
-    this.y = newPosition.y;
-  }
 }
 
 /** hook resize */

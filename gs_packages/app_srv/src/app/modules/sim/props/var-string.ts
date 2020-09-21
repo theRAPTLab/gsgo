@@ -13,7 +13,7 @@ class StringProp extends SM_Object {
   constructor(initial?: string) {
     super();
     this.meta.type = Symbol.for('StringProp');
-    this.value = initial;
+    this.value = initial || '';
   }
   setTo(str: string): StringProp {
     this.value = str;

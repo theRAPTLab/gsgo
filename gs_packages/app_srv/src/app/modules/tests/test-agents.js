@@ -27,7 +27,7 @@
 import UR from '@gemstep/ursys/client';
 import AgentFactory from '../sim/agents/agentfactory';
 import { StackMachine } from '../sim/script/stackmachine';
-import { TestSyncAgents } from './test-displaylist';
+import { TestSyncAgents, TestDisplayList } from './test-displaylist';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -110,6 +110,7 @@ function TestAgentProgram() {
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
   console.group('DisplayList Testing');
   TestSyncAgents();
+  TestDisplayList();
   console.groupEnd();
 }
 

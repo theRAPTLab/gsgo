@@ -7,25 +7,41 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// import SM_Object from '../../sim/lib/class-sm-object';
-// import Sprite from './class-sprite';
 import { I_Poolable } from './types-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// MODULE HELPERS /////////////////////////////////////////////////////////////
+/// TESTING UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function TestValidDOBJs(dobjs: any[]): boolean {
+  const badCount = dobjs.reduce((acc: number, item: DisplayObject) => {
+    let hasProps = true;
+    if (item.x === undefined) console.log(item, 'bad x');
+    if (item.y === undefined) console.log(item, 'bad y');
+    if (item.skin === undefined) console.log(item, 'bad skin');
+    if (item.visual === undefined) console.log(item, 'bad visual');
+    hasProps = hasProps && item.x !== undefined;
+    hasProps = hasProps && item.y !== undefined;
+    hasProps = hasProps && item.skin !== undefined;
+    hasProps = hasProps && item.visual !== undefined;
+    return acc + (hasProps ? 0 : 1);
+  }, 0);
+  return badCount === 0;
+}
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DisplayObject implements I_Poolable {
+  // poolable
   id: number;
   _pool_id: number;
+  // displayobj
   visual: any;
-  dirty: boolean;
-  poolId: number;
   valid: boolean;
+  skin: string;
+  x: number;
+  y: number;
 
   constructor(id?: number) {
     this.init(id);
@@ -38,8 +54,6 @@ class DisplayObject implements I_Poolable {
   init(id?: number) {
     this.visual = undefined; // visuals must implement Draw()
     this.id = id; // store reference
-    this.poolId = id;
-    this.dirty = false; // set when needs processing
     this.valid = false;
   }
 
@@ -51,7 +65,9 @@ class DisplayObject implements I_Poolable {
     return this.valid;
   }
 
-  dispose() {}
+  dispose() {
+    if (this.visual) this.visual.dispose();
+  }
 
   /// SERIALIZE DATA //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

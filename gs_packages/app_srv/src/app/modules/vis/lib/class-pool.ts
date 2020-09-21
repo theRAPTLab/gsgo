@@ -43,10 +43,14 @@ class Pool {
     this._batch_size = opt.batchSize || DEFAULT_BATCH;
     this._auto_grow = opt.autoGrow || false;
     //
+    this.reset();
+    this.setSize();
+  }
+
+  reset() {
     this.pool_objs = [];
     this.avail_objs = [];
     this.obj_map = new Map();
-    this.setSize();
   }
 
   /** create a new object from stored ManagedClass constructor */
@@ -160,6 +164,10 @@ class Pool {
   getAllocated(): I_Poolable[] {
     const ids = this.getAllocatedIds();
     return ids.map(id => this.pool_objs[this.obj_map.get(id)]);
+  }
+
+  allocatedCount() {
+    return this.getAllocatedIds().length;
   }
 
   availCount() {

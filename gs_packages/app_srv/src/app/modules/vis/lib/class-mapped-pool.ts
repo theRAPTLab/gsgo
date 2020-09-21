@@ -1,3 +1,4 @@
+import { AnyFunction } from '../../sim/types/t-functions';
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Object MappedPool (WIP)
@@ -47,8 +48,8 @@ export function TestMapEntities(map: Map<any, any>) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function TestArrayEntities(arr) {
-  const numBadObjs = arr.reduce((acc, obj) => {
+export function TestArrayEntities(arr: any[]): boolean {
+  const numBadObjs = arr.reduce((acc: number, obj: any) => {
     return acc + obj.id === undefined ? 1 : 0;
   });
   const goodIds = numBadObjs === 0; // true if objs have id prop
@@ -73,6 +74,11 @@ export default class MappedPool {
     this.cbRemover = onRemove;
     this.ifRemove = shouldRemove;
     this.pool = pool;
+    // clear the pool just in case
+    if (this.pool.allocatedCount() > 0) {
+      console.warn(`pool '${this.pool.name()}' reused, so resetting`);
+      this.pool.reset();
+    }
   }
 
   /** given source map, do the obj.id mapping to our pool */
