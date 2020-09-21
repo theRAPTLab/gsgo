@@ -1,4 +1,3 @@
-import { AnyFunction } from '../../sim/types/t-functions';
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Object MappedPool (WIP)

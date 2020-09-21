@@ -218,7 +218,11 @@ The problem seems to be that when the source objects don't have an id,
 * [ ] look into `SM_Object` use of autoincrementing id...maybe be a conflict. This is why id numbers go so high.
 * [x] fix issues with `var-string` defaulting to `undefined` instead of emptystring
 
+**NEXT OUTPUT DISPLAY LIST** The Display List needs to be passed to the **Renderer** so it can update all the sprites from the display object.
 
+* [ ] where does the renderer's display list come from?
+* [ ] how does the renderer manage sprites?
+* [ ] do DisplayObjects need to *NOT* have a reference to a visual?
 
 ---
 

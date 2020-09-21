@@ -126,7 +126,7 @@ function ResetSimulation() {
   })();
 }
 
-/// MODULE INIT ///////////////////////////////////////////////////////////////
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('UR', 'APP_STAGE', LoadSimulation);
 UR.SystemHook('UR', 'APP_START', StartSimulation);
