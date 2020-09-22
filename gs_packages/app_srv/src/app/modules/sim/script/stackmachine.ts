@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Agent, T_Program } from '../types/t-smc';
+import { IAgent, Program } from '../lib/t-smc';
 import {
   setAgentPropValue,
   scopedFunction,
@@ -37,7 +37,7 @@ import { dbgAgent } from './ops/debug-ops';
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
-const test_smc_init: T_Program = [
+const test_smc_init: Program = [
   // define program
   addProp('currentHealth', NumberProp),
   addFeature('Movement'),
@@ -54,7 +54,7 @@ const test_smc_init: T_Program = [
   scopePop()
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const test_smc_update: T_Program = [
+const test_smc_update: Program = [
   // run during Agent.Update phase
   // if agent.currentHealth < 10
   //   agent.currentHealth++
@@ -73,7 +73,7 @@ const test_smc_update: T_Program = [
 ];
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const test_smc_condition: T_Program = [
+const test_smc_condition: Program = [
   // debugMessage('moof:pickle')
 ];
 
@@ -81,7 +81,7 @@ const test_smc_condition: T_Program = [
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Run an SM_Program on an agent
  */
-function ExecSMC(smc: T_Program, agent: I_Agent) {
+function ExecSMC(smc: Program, agent: IAgent) {
   try {
     agent.exec_smc(smc);
   } catch (e) {

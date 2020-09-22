@@ -8,62 +8,62 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Agent, I_State, T_Opcode, T_OpWait } from '../../types/t-smc';
+import { IAgent, IState, TOpcode, TOpWait } from '../../lib/t-smc';
 
 const DBG = false;
 
 /// ARITHMETIC OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const add = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const add = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a, b] = STATE.popArgs(2);
     STATE.pushArgs((a as number) + (b as number));
   };
 };
-const addImmediate = (num: number): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const addImmediate = (num: number): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a] = STATE.popArgs(1);
     STATE.pushArgs((a as number) + num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const sub = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const sub = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a, b] = STATE.popArgs(2);
     STATE.pushArgs((b as number) - (a as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const subImmediate = (num: number): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const subImmediate = (num: number): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a] = STATE.popArgs(1);
     STATE.pushArgs((a as number) - num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const mul = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const mul = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a, b] = STATE.popArgs(2);
     STATE.pushArgs((a as number) * (b as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const mulImmediate = (num: number): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const mulImmediate = (num: number): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a] = STATE.popArgs(1);
     STATE.pushArgs((a as number) * num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const div = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const div = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a, b] = STATE.popArgs(2);
     STATE.pushArgs((a as number) / (b as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const divImmediate = (num: number): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const divImmediate = (num: number): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a] = STATE.popArgs(1);
     STATE.pushArgs((a as number) / num);
   };
@@ -71,8 +71,8 @@ const divImmediate = (num: number): T_Opcode => {
 
 /// BOUNDING OPERATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const abs = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const abs = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const [a] = STATE.popArgs(1);
     STATE.pushArgs(Math.abs(a as number));
   };

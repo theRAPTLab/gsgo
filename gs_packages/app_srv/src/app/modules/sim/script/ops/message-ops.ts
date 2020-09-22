@@ -9,21 +9,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Agent, T_Opcode, T_OpWait, I_State } from '../../types/t-smc';
+import { IAgent, TOpcode, TOpWait, IState } from '../../lib/t-smc';
 import { GetMessageParts } from '../../lib/class-sm-message';
 
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const agentQueue = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {};
+const agentQueue = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {};
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const agentSend = (): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {};
+const agentSend = (): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {};
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgMessage = (msg: string): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const dbgMessage = (msg: string): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     console.log(GetMessageParts(msg));
   };
 };

@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Agent, I_State, T_Opcode, T_OpWait } from '../../types/t-smc';
+import { IAgent, IState, TOpcode, TOpWait } from '../../lib/t-smc';
 
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,15 +24,15 @@ function u_dump(num: number = 0, stack: any[], prompt: string = '<dump>') {
  *  Optionally dump number of items to dump
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgStack = (num: number = 0, desc: string = 'stack'): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const dbgStack = (num: number = 0, desc: string = 'stack'): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const { stack } = STATE;
     u_dump(num, stack, desc);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dbgStackCount = (num: number, desc: string = 'dbgStackCount') => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const slen = STATE.stack.length;
     if (slen !== num) throw Error(`stack.length ${slen}!==${num} (${desc})`);
   };
@@ -42,30 +42,30 @@ const dbgStackCount = (num: number, desc: string = 'dbgStackCount') => {
 /** Dump the current scope contents to console. Defaults to all.
  *  Optionally dump number of items to dump
  */
-const dbgScope = (num: number = 0): T_Opcode => {
-  return (agent: I_Agent, STATE: I_State): T_OpWait => {
+const dbgScope = (num: number = 0): TOpcode => {
+  return (agent: IAgent, STATE: IState): TOpWait => {
     const { scope } = STATE;
     u_dump(num, scope, 'scope');
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dbgAgent = (match?: string): T_Opcode => {
-  return (agent: I_Agent): T_OpWait => {
+const dbgAgent = (match?: string): TOpcode => {
+  return (agent: IAgent): TOpWait => {
     if ((match && agent.name() === match) || !match)
       console.log(`agent[${agent.name()}] serialize:`, agent.serialize());
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
-const dbgOut = (...args: any): T_Opcode => {
-  return (): T_OpWait => {
+const dbgOut = (...args: any): TOpcode => {
+  return (): TOpWait => {
     console.log(...args);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** implement a pause */
-const nop = (): T_Opcode => {
-  return (): T_OpWait => {};
+const nop = (): TOpcode => {
+  return (): TOpWait => {};
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

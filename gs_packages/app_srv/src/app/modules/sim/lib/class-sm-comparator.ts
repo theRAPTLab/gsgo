@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Comparator } from '../types/t-smc';
+import { IComparator } from './t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +21,7 @@ const NOS_ERR = 'compareStrings not called before flag read';
  *  the flags. In this version of the stack machine, these flags are
  *  only set by comparison opcodes
  */
-export default class SM_Comparator implements I_Comparator {
+export default class SM_Comparator implements IComparator {
   VAZ: boolean; // true when zerocheck runs
   VAC: boolean; // true when condition runs
   VAS: boolean; // true for string comparisons

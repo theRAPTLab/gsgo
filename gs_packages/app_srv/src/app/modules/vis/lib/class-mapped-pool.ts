@@ -4,18 +4,18 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Pool, { I_Poolable } from './class-pool';
+import Pool, { IPoolable } from './class-pool';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export type PoolableMap = Map<any, I_Poolable>;
-export type PoolableSet = Set<I_Poolable>;
-export type PoolableArray = I_Poolable[];
+export type PoolableMap = Map<any, IPoolable>;
+export type PoolableSet = Set<IPoolable>;
+export type PoolableArray = IPoolable[];
 
 export type TestFunction = (obj: any) => boolean;
-export type AddFunction = (srcObj: I_Poolable, newObj: I_Poolable) => void;
-export type UpdateFunction = (srcObj: I_Poolable, updateObj: I_Poolable) => void;
-export type RemoveFunction = (removeObj: I_Poolable) => void;
+export type AddFunction = (srcObj: IPoolable, newObj: IPoolable) => void;
+export type UpdateFunction = (srcObj: IPoolable, updateObj: IPoolable) => void;
+export type RemoveFunction = (removeObj: IPoolable) => void;
 
 export interface SyncFunctions {
   onAdd?: AddFunction;

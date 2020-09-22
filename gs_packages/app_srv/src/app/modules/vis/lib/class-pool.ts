@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Poolable, I_PoolableConstructor, I_PoolOptions } from './types-pool';
+import { IPoolable, IPoolableConstructor, IPoolOptions } from './t-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,17 +24,17 @@ const DEFAULT_BATCH = 10;
  */
 class Pool {
   // local stage
-  pool_objs: Array<I_Poolable>; // pool of reusable objects
+  pool_objs: Array<IPoolable>; // pool of reusable objects
   avail_objs: Array<number>; // array of available indices
   obj_map: Map<number, number>; // Map obj.id to pool_ids
   //
   _name: string;
-  ManagedClass: I_PoolableConstructor; // create an object
+  ManagedClass: IPoolableConstructor; // create an object
   _size: number; // current size of pool
   _batch_size: number; // batch size (default to 10)
   _auto_grow: boolean; // whether to grow or die
 
-  constructor(name: string, opt: I_PoolOptions) {
+  constructor(name: string, opt: IPoolOptions) {
     //
     this._name = name;
     //
@@ -55,7 +55,7 @@ class Pool {
 
   /** create a new object from stored ManagedClass constructor */
   makeObject() {
-    const o: I_Poolable = new this.ManagedClass();
+    const o: IPoolable = new this.ManagedClass();
     const pool_id = this.pool_objs.length; // inc by 1
     // make object.id mappable to pool_id
     o._pool_id = pool_id;
@@ -85,7 +85,7 @@ class Pool {
   }
 
   /** retrieve an instance from allocation pool */
-  allocateId(objId: number): I_Poolable {
+  allocateId(objId: number): IPoolable {
     if (objId === undefined) throw Error('allocateId() requires id');
     if (this.obj_map.has(objId)) throw Error(`duplicate id ${objId}`);
     if (DBG) console.log('available', JSON.stringify(this.avail_objs));
@@ -99,13 +99,13 @@ class Pool {
     return o;
   }
   /** non-id version of allocate when you don't want to set the id */
-  allocate(): I_Poolable {
+  allocate(): IPoolable {
     const [, o] = this._alloc();
     return o;
   }
 
   /** private utility method to allocate */
-  _alloc(): [number, I_Poolable] {
+  _alloc(): [number, IPoolable] {
     if (this.avail_objs.length < 1) {
       if (this._auto_grow) {
         this.increaseSize(/* default */);
@@ -121,7 +121,7 @@ class Pool {
   }
 
   /** return an instance to the pool */
-  deallocate(o: I_Poolable) {
+  deallocate(o: IPoolable) {
     const poolId = o._pool_id;
     // tell object to clean itself up on removal
     o.dispose();
@@ -150,7 +150,7 @@ class Pool {
   }
 
   /** retrieve an allocated object by id (not pool id) */
-  get(objId: number): I_Poolable {
+  get(objId: number): IPoolable {
     const index = this.obj_map.get(objId);
     return this.pool_objs[index];
   }
@@ -161,7 +161,7 @@ class Pool {
     return [...this.obj_map.keys()];
   }
   /** retrieve an array of allocated objects */
-  getAllocated(): I_Poolable[] {
+  getAllocated(): IPoolable[] {
     const ids = this.getAllocatedIds();
     return ids.map(id => this.pool_objs[this.obj_map.get(id)]);
   }
@@ -186,4 +186,4 @@ class Pool {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Pool;
 /// forward types as needed
-export { I_Poolable, I_PoolOptions };
+export { IPoolable, IPoolOptions };

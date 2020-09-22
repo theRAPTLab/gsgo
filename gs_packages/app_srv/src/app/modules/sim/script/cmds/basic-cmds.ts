@@ -11,19 +11,19 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Agent, I_Scopeable, T_Opcode, T_OpWait } from '../../types/t-smc';
+import { IAgent, IScopeable, TOpcode, TOpWait } from '../../lib/t-smc';
 import { setAgentPropValue } from '../ops/basic-ops';
 
 /// AGENT DEFINITION STAGE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Direct set built-in properties common to all agents */
-const setX = (num: number): T_Opcode[] => [setAgentPropValue('x', num)];
-const setY = (num: number): T_Opcode[] => [setAgentPropValue('y', num)];
-const setSkin = (path: string): T_Opcode[] => [setAgentPropValue('skin', path)];
+const setX = (num: number): TOpcode[] => [setAgentPropValue('x', num)];
+const setY = (num: number): TOpcode[] => [setAgentPropValue('y', num)];
+const setSkin = (path: string): TOpcode[] => [setAgentPropValue('skin', path)];
 
 /** Direct set property with passed property object */
-const defineAgentProp = (propName: string, prop: I_Scopeable): T_Opcode => {
-  return (agent: I_Agent): T_OpWait => {
+const defineAgentProp = (propName: string, prop: IScopeable): TOpcode => {
+  return (agent: IAgent): TOpWait => {
     agent.addProp(propName, prop);
   };
 };

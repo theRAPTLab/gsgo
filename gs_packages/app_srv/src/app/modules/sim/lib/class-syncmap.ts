@@ -4,7 +4,7 @@
   'source objects'. The set of derived objects are created, updated,
   and removed to track the source objects.
 
-  Both source and derived objects MUST implement I_Poolable, which mandates
+  Both source and derived objects MUST implement IPoolable, which mandates
   certain properties and methods to facilitate managing a Pool of objects.
 
   USAGE:
@@ -22,7 +22,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Pool, { I_Poolable, I_PoolOptions } from '../../vis/lib/class-pool';
+import Pool, { IPoolable, IPoolOptions } from '../../vis/lib/class-pool';
 import MappedPool, {
   SyncFunctions,
   TestFunction,
@@ -38,17 +38,17 @@ import MappedPool, {
 const PR = UR.PrefixUtil('SMAP');
 
 interface ISyncResults {
-  added: I_Poolable[];
-  updated: I_Poolable[];
-  removed: I_Poolable[];
+  added: IPoolable[];
+  updated: IPoolable[];
+  removed: IPoolable[];
 }
 
 /// NULL FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const f_NullAdd = (srcObj: I_Poolable, newObj: I_Poolable) => {};
-const f_NullUpdate = (srcObj: I_Poolable, updobj: I_Poolable) => {};
-const f_AlwaysTrue = (testObj: I_Poolable) => true;
-const f_NullRemove = (remObj: I_Poolable) => {};
+const f_NullAdd = (srcObj: IPoolable, newObj: IPoolable) => {};
+const f_NullUpdate = (srcObj: IPoolable, updobj: IPoolable) => {};
+const f_AlwaysTrue = (testObj: IPoolable) => true;
+const f_NullRemove = (remObj: IPoolable) => {};
 
 /// SYNCMAP CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +60,7 @@ class SyncMap {
   pool: Pool;
   map: MappedPool;
 
-  constructor(poolName: string, poolOptions: I_PoolOptions) {
+  constructor(poolName: string, poolOptions: IPoolOptions) {
     // pool options have a Constructor at minimum
     this.pool = new Pool(poolName, poolOptions);
     // the default mapped pool uses null functions
@@ -105,7 +105,7 @@ class SyncMap {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Updates derived objects from source objects in map
-   *  param: srcMap Map<id:number,obj:I_Poolable>
+   *  param: srcMap Map<id:number,obj:IPoolable>
    *  return: { added,updated,removed } arrays
    *
    *  WARNING: some Maps used in the system are not organized by numeric id
@@ -115,7 +115,7 @@ class SyncMap {
     return this.map.syncFromMap(srcMap);
   }
   /** Updates derived objects from an array of source objects
-   *  param: sobjs I_Poolable[]
+   *  param: sobjs IPoolable[]
    *  return: { added,updated,removed } arrays
    */
   syncFromArray(sobjs: PoolableArray) {
@@ -125,7 +125,7 @@ class SyncMap {
   /** Return all the objects that are in use, which are stored in pool
    *  that was passed to the mapped pool.
    */
-  getSyncedObjects(): I_Poolable[] {
+  getSyncedObjects(): IPoolable[] {
     return this.pool.getAllocated();
   }
   getSyncedIds(): number[] {
@@ -134,7 +134,7 @@ class SyncMap {
   hasSyncedId(objId: number): boolean {
     return this.pool.has(objId);
   }
-  getSyncedObject(objId: number): I_Poolable {
+  getSyncedObject(objId: number): IPoolable {
     return this.pool.get(objId);
   }
   clearSyncedObjects(): void {

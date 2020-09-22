@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Agent, T_Program } from '../types/t-smc';
+import { IAgent, Program } from './t-smc';
 import { AGENTS } from '../runtime-datacore';
 import { WORLD } from '../agents/global';
 import Message from './class-sm-message';
@@ -53,7 +53,7 @@ class AgentSet {
   }
 
   /** uses the test function to filter the agent set into members array */
-  filter(test: T_Program): void {
+  filter(test: Program): void {
     if (!test) throw Error('undefined filter test');
     const len = this.agentTypes.length;
     if (len !== 1) throw Error('set count must be 1, not 2');
@@ -68,11 +68,11 @@ class AgentSet {
       return result.pop();
     });
   }
-  /** Apply test(s) to agents, storing results. A test is a T_Program
+  /** Apply test(s) to agents, storing results. A test is a Program
    *  that ingests either one or two agents on the stack and returns
    *  either true or false on the stack. The test stack
    */
-  pair(test: T_Program): void {
+  pair(test: Program): void {
     if (!test) throw Error('undefined pair test');
     const len = this.agentTypes.length;
     if (len < 1 || len > 2) throw Error(`set count != 1 or 2; got ${len}`);
@@ -84,14 +84,14 @@ class AgentSet {
    *  similar to interact(), but does not produce duplicate pairs
    *
    */
-  singlePair(test: T_Program): void {
+  singlePair(test: Program): void {
     // always run the first type only
     const [agents] = this.getAgents();
     for (let i = 0; i < agents.length; i++) {
       for (let j = 0; j < i; j++) {
         if (i === j) continue;
-        const agentA: I_Agent = agents[i];
-        const agentB: I_Agent = agents[j];
+        const agentA: IAgent = agents[i];
+        const agentB: IAgent = agents[j];
         console.log(i, agentA.name(), agentB.name());
         const result = WORLD.exec_smc(test, [agentA, agentB]);
         // the result stack should contain 1 element
@@ -107,14 +107,14 @@ class AgentSet {
    *  the AgentSet results and streamline the functions as much
    *  as possible
    */
-  doublePair(test: T_Program): void {
+  doublePair(test: Program): void {
     // getAgents returns the smaller set first
     const [SET_A, SET_B] = this.getAgents();
     //
     for (let i = 0; i < SET_A.length; i++) {
       for (let j = 0; j < SET_B.length; j++) {
-        const agentA: I_Agent = SET_A[i];
-        const agentB: I_Agent = SET_B[j];
+        const agentA: IAgent = SET_A[i];
+        const agentB: IAgent = SET_B[j];
         // skip agents that match themselves
         if (agentA === agentB) continue;
         const result = WORLD.exec_smc(test, [agentA, agentB]);
@@ -128,15 +128,15 @@ class AgentSet {
   }
 
   /** returns the members array that has presumably been filtered */
-  getMembers(): I_Agent[] {
-    return this.testResults as I_Agent[];
+  getMembers(): IAgent[] {
+    return this.testResults as IAgent[];
   }
-  getPairs(): Array<I_Agent[]> {
-    return this.testResults as Array<I_Agent[]>;
+  getPairs(): Array<IAgent[]> {
+    return this.testResults as Array<IAgent[]>;
   }
 
   /** notify */
-  notifyMatches(execs: T_Program[], stacks: any[]): void {
+  notifyMatches(execs: Program[], stacks: any[]): void {
     this.getMembers().forEach(agent => {
       const msg = new Message('exec', {
         programs: execs,
@@ -146,7 +146,7 @@ class AgentSet {
     });
     this.reset();
   }
-  notifyPairs(execs: T_Program[], stacks: any[]): void {
+  notifyPairs(execs: Program[], stacks: any[]): void {
     if (!Array.isArray(execs)) execs = [execs];
     this.getPairs().forEach(pair => {
       const [agentA, agentB] = pair;

@@ -6,10 +6,10 @@
 
 /// POOLS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export interface I_PoolableConstructor {
-  new (id?: number): I_Poolable;
+export interface IPoolableConstructor {
+  new (id?: number): IPoolable;
 }
-export interface I_Poolable {
+export interface IPoolable {
   id: any; // id referencing original (agentInstance)
   _pool_id: number; // used for fast pool lookup
   dispose: () => void; // deallocate resources on destruction
@@ -18,8 +18,8 @@ export interface I_Poolable {
   isValid: () => boolean; // is a valid pool item
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export interface I_PoolOptions {
-  Constructor: I_PoolableConstructor; // constructor to use (class instance)
+export interface IPoolOptions {
+  Constructor: IPoolableConstructor; // constructor to use (class instance)
   size?: number; // size of initial array
   batchSize?: number; // number of elements to add when growing
   autoGrow?: boolean; // whether to automatically increase size or error out

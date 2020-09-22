@@ -10,13 +10,7 @@
 
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import {
-  I_Agent,
-  I_Scopeable,
-  T_Stackable,
-  I_Message,
-  T_Program
-} from '../types/t-smc';
+import { IAgent, IScopeable, TStackable, IMessage, Program } from './t-smc';
 import { FEATURES } from '../runtime-datacore';
 import NumberVar from '../props/var-number';
 import StringVar from '../props/var-string';
@@ -27,11 +21,11 @@ const ERR_WHATMSG = 'unhandled message; got';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Agent extends SM_Object implements I_Agent {
+class Agent extends SM_Object implements IAgent {
   features: Map<string, any>;
-  updateQueue: I_Message[];
-  thinkQueue: I_Message[];
-  execQueue: I_Message[];
+  updateQueue: IMessage[];
+  thinkQueue: IMessage[];
+  execQueue: IMessage[];
   _name: StringVar;
   _x: NumberVar;
   _y: NumberVar;
@@ -90,7 +84,7 @@ class Agent extends SM_Object implements I_Agent {
   /** Retrieve a prop object
    *  This overrides sm-object prop()
    */
-  prop(name: string): I_Scopeable {
+  prop(name: string): IScopeable {
     const p = this.props.get(name);
     if (p === undefined) throw Error(`no prop named '${name}'`);
     return p;
@@ -99,7 +93,7 @@ class Agent extends SM_Object implements I_Agent {
   /** Invoke method by name. functions return values, smc programs return stack
    *  This overrides sm-object method()
    */
-  method(name: string, ...args: any): T_Stackable[] {
+  method(name: string, ...args: any): TStackable[] {
     const m = this.methods.get(name);
     if (m === undefined) throw Error(`no method named '${name}'`);
     if (typeof m === 'function') return m.apply(this, ...args);
@@ -125,7 +119,7 @@ class Agent extends SM_Object implements I_Agent {
   }
 
   /** handle queue */
-  queue(msg: I_Message) {
+  queue(msg: IMessage) {
     switch (msg.message) {
       case 'update':
         this.updateQueue.push(msg);
@@ -145,7 +139,7 @@ class Agent extends SM_Object implements I_Agent {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: T_Program, stack = []) {
+  exec_smc(program: Program, stack = []) {
     const state = new SM_State(stack);
     // console.log('exec got program', program.length);
     try {

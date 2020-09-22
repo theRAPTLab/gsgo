@@ -8,8 +8,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
-import { I_Visual } from './types-visual';
-import { I_Poolable } from './types-pool';
+import { IVisual } from './t-visual';
+import { IPoolable } from './t-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,7 +19,7 @@ import { I_Poolable } from './types-pool';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Sprite implements I_Visual, I_Poolable {
+class Sprite implements IVisual, IPoolable {
   // visual
   sprite: PIXI.Sprite;
   refId: number;
