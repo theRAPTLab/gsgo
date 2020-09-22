@@ -72,7 +72,7 @@ export default class MappedPool {
     this.pool = pool;
     // clear the pool just in case
     if (this.pool.allocatedCount() > 0) {
-      console.warn(`MappedPool: pool '${this.pool.name()}' reinitialized`);
+      console.warn(`${this.pool.name()} pool was reused (old data lost)`);
       this.pool.reset();
     }
   }

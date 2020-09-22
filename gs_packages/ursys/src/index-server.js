@@ -140,5 +140,6 @@ module.exports = {
   MEDIA,
   // PROMPT UTILITIES
   PrefixUtil: PROMPTS.makeStyleFormatter,
-  TermOut: PROMPTS.makeTerminalOut
+  TermOut: PROMPTS.makeTerminalOut,
+  SetPromptColor: PROMPTS.setPromptColor
 };

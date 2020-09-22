@@ -72,7 +72,7 @@ function TestAgentProgram() {
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     creation test
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.group('Creation Testing');
+  console.groupCollapsed('Creation Testing');
 
   const names = [];
   for (let i = 0; i < 50; i++) names.push(`flower${i}`);

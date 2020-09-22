@@ -12,7 +12,7 @@ import { Typography } from '@material-ui/core';
 import UR from '@gemstep/ursys/client';
 
 import RUNTIME from '../modules/sim/runtime';
-import Renderer from '../modules/tests/test-renderer';
+import * as Renderer from '../modules/tests/test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,7 +51,7 @@ class Tracker extends React.Component {
     // Sim.StartSimulation();
     /* end test code */
     Renderer.Init(renderRoot);
-    Renderer.HookResize(renderRoot);
+    Renderer.HookResize();
     Renderer.Draw();
   }
 

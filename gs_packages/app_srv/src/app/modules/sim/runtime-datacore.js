@@ -7,9 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import DisplayObject from '../vis/lib/class-display-object';
-import MappedPool from '../vis/lib/class-mapped-pool';
 import SyncMap from './lib/class-syncmap';
-import Pool from '../vis/lib/class-pool';
 import Sprite from '../vis/lib/class-sprite';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

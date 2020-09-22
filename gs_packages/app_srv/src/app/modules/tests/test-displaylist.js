@@ -10,11 +10,12 @@ import MappedPool, { TestArrayEntities } from '../vis/lib/class-mapped-pool';
 import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
 import DisplayObject, { TestValidDOBJs } from '../vis/lib/class-display-object';
 import Sprite from '../vis/lib/class-sprite';
+import * as RENDERER from './test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TEST = true;
-const PR = UR.PrefixUtil('TEST');
+const PR = UR.PrefixUtil('TestDisplayList', 'TagBlue');
 
 /// CREATE POOLS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,6 +189,7 @@ const AGENT_TO_DOBJ_UPDATE = new MappedPool(DOBJ_POOL, {
 
 function TestUpdateDisplayList(frameTime) {
   const agents = AGENTS_GetArrayAll();
+  // move the agents around manually by random jiggle
   agents.forEach(agent => {
     const rx = Math.round(5 - Math.random() * 10);
     const ry = Math.round(5 - Math.random() * 10);
@@ -197,13 +199,25 @@ function TestUpdateDisplayList(frameTime) {
     agent.prop('y').value = y;
   });
   AGENT_TO_DOBJ_UPDATE.syncFromArray(agents);
-  const dobj = DOBJ_POOL.get(510);
+  // test single object updates
+  // const dobj = DOBJ_POOL.get(510);
   // console.log('dobj x,y=', dobj.x, dobj.y);
+  const displayList = AGENT_TO_DOBJ_UPDATE.getSyncedObjects();
+  // console.log(...PR('Update List'));
+  RENDERER.HandleDisplayList(displayList);
+}
+function TestInit() {
+  console.log(...PR('Init'));
+}
+function TestRender(frameTime) {
+  // console.log(...PR('Render'));
 }
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM', 'RENDER', TestUpdateDisplayList);
+UR.SystemHook('SIM', 'INIT', TestInit);
+UR.SystemHook('SIM', 'VIS_UPDATE', TestUpdateDisplayList);
+UR.SystemHook('SIM', 'VIS_RENDER', TestRender);
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

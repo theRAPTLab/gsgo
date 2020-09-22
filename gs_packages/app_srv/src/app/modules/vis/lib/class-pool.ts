@@ -78,7 +78,7 @@ class Pool {
 
   /** add a number of objects to the pool */
   increaseSize(count: number = this._batch_size) {
-    if (DBG) console.log('growing by', this._batch_size);
+    console.warn(this._name, 'pool growing by', this._batch_size);
     while (count-- > 0) this.makeObject();
     this._size = this.pool_objs.length;
     if (DBG) console.log('available', JSON.stringify(this.avail_objs));

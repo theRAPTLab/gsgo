@@ -11,7 +11,7 @@ import AGENTS from './sim_agents';
 import REFEREE from './sim_referee';
 import FEATURES from './sim_features';
 import RENDERER from '../vis/sim_render';
-import TestRenderer from '../tests/test-renderer';
+import * as TestRenderer from '../tests/test-renderer';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +47,8 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
     'SIM_EVAL',
     'REFEREE_EVAL',
     // display output
-    'RENDER'
+    'VIS_UPDATE',
+    'VIS_RENDER'
   ]
 });
 console.log(...PR('SimLoop Created'));

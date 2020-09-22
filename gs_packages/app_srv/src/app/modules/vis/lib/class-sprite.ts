@@ -26,10 +26,31 @@ class Sprite implements IVisual, IPoolable {
   // poolable
   id: number;
   _pool_id: number;
+  // sprite
+  root: PIXI.Container;
 
   constructor(id: number) {
     this.sprite = new PIXI.Sprite();
     this.id = id; // store reference
+  }
+
+  setTexture(texture: PIXI.Texture) {
+    this.sprite.texture = texture;
+  }
+
+  add(root: PIXI.Container) {
+    console.log('adding');
+    this.root = root;
+    root.addChild(this.sprite);
+  }
+
+  dispose() {
+    this.root.removeChild(this.sprite);
+    this.root = undefined;
+  }
+
+  setPosition(x: number, y: number) {
+    this.sprite.position.set(x, y);
   }
 
   /// RENDERING ///////////////////////////////////////////////////////////////
@@ -38,7 +59,6 @@ class Sprite implements IVisual, IPoolable {
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  dispose() {}
   init() {}
   validate() {}
   isValid() {

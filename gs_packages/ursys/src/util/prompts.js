@@ -8,6 +8,9 @@ const IS_NODE = typeof window === 'undefined';
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
   : 0; // not nodejs
+const DEFAULT_COLOR = 'TagGray';
+const CSS_PAD = 'padding:3px 5px;border-radius:2px';
+const CSS_TAB = '4px';
 
 const TERM_COLORS = {
   // TOUT = makeTerminalOut(str); TOUT('hi')
@@ -47,9 +50,6 @@ const TERM_COLORS = {
   TagGray: '\x1b[2;37m',
   TagNull: 'color:#999'
 };
-
-const CSS_PAD = 'padding:3px 5px;border-radius:2px';
-const CSS_TAB = '4px';
 
 // NAME LIST MUST MATCH TERM_COLORS!
 const CSS_COLORS = {
@@ -92,10 +92,23 @@ const PROMPT_DICT = {
   // SERVERS
   'APPSRV': [SHOW, 'Yellow'],
   'GEMSRV': [SHOW, 'Yellow'],
-
   // SPECIAL
   '-': [SHOW, 'TagNull']
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** add a color to the PROMPT_DICT for a particular PREFIX */
+function m_SetPromptColors(match, color = DEFAULT_COLOR) {
+  if (typeof match !== 'string') throw Error('match prompt must be string');
+  match = match.trim();
+  if (match === '') throw Error('match prompt cannot be empty');
+  let colorTable = IS_NODE ? TERM_COLORS : CSS_COLORS;
+  let validColor = false;
+  validColor = colorTable[color] !== undefined;
+  if (!validColor) throw Error(`prompt color ${color} is not defined`);
+  // turn on color prompt
+  PROMPT_DICT[match] = [true, color];
+  return colorTable;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Based on current detected enviroment, return either ANSI terminal or
  *  css based color markers for use in debugging messages. If tagColor is
@@ -104,11 +117,12 @@ const PROMPT_DICT = {
  *  PROMPTS_DICT structure.
  */
 function m_GetEnvColor(prompt, tagColor) {
-  const [dbg_mode, defcol] = PROMPT_DICT[prompt.trim()] || [SHOW, 'TagGray'];
-  const ucolor = IS_NODE ? TERM_COLORS[tagColor] : CSS_COLORS[tagColor];
-  const dcolor = IS_NODE ? TERM_COLORS[defcol] : CSS_COLORS[defcol];
+  const colorTable = m_SetPromptColors(prompt, tagColor);
+  const [dbg_mode, defcol] = PROMPT_DICT[prompt.trim()] || [SHOW, DEFAULT_COLOR];
+  const ucolor = colorTable[tagColor];
+  const dcolor = colorTable[defcol];
   const color = ucolor || dcolor;
-  const reset = IS_NODE ? TERM_COLORS.Reset : CSS_COLORS.Reset;
+  const reset = colorTable.Reset;
   return [dbg_mode, color, reset];
 }
 
@@ -127,6 +141,7 @@ function padString(str, padding = DEFAULT_PADDING) {
   else str.padEnd(padding, ' ');
   return `${str}`;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a function that will prompt strings for you. The function will
  *  returns an array to destructure into console.log().
@@ -144,6 +159,9 @@ function padString(str, padding = DEFAULT_PADDING) {
  *  NOTE: This doesn't work as expected on NodeJS, because empty arrays
  *  render as linefeeds so we just output it regardless. If you want to
  *  disable output, use the makeTerminalOut() function instead.
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** allow modification of the PROMPT_DICT
  */
 function makeStyleFormatter(prompt, tagColor) {
   const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
@@ -206,5 +224,6 @@ module.exports = {
   padString,
   makeStyleFormatter,
   makeTerminalOut,
-  printTagColors
+  printTagColors,
+  m_SetPromptColors
 };

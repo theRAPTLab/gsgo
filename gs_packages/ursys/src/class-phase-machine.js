@@ -67,11 +67,16 @@ function m_ProcessQueueFor(pmkey) {
   const qhooks = m_queue.get(pmkey) || [];
   if (DBG.init)
     console.log(...PR(`phasemachine '${pmkey}' has ${qhooks.length} queued ops`));
-  qhooks.forEach(element => {
-    const [op, f] = element;
-    pm.Hook(op, f);
-  });
-  m_queue.delete(pmkey);
+  try {
+    qhooks.forEach(element => {
+      const [op, f] = element;
+      pm.Hook(op, f);
+    });
+    m_queue.delete(pmkey);
+  } catch (e) {
+    console.warn(...PR('Error while processing queued phasemachine hooks'));
+    throw Error(e.toString());
+  }
 } // end m_ProcessQueueFor
 
 /// URSYS PhaseMachine CLASS //////////////////////////////////////////////////
@@ -122,7 +127,8 @@ class PhaseMachine {
     // does this operation name exist?
     if (typeof op !== 'string')
       throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
-    if (!this.OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
+    if (!this.OP_HOOKS.has(op))
+      throw Error(`Phase handler '${this.NAME}':'${op}' is not defined`);
     let status = 'REGD';
     if (!(f instanceof Function)) {
       // no function means "implicit mock"

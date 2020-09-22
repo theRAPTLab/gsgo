@@ -101,6 +101,7 @@ module.exports = {
   SystemUnload: URExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
+  SetPromptColor: PROMPTS.setPromptColor,
   // FORWARDED CLASSES
   class: { PhaseMachine }
 };

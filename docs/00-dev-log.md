@@ -240,16 +240,27 @@ The problem seems to be that when the source objects don't have an id,
 * [x] move stuff from test-displaylist into runtime-datacore
 * [x] make `class-syncmap`
 * [x] update runtime-datacore to use class-syncmap
-* [ ] how does the renderer manage sprites?
-* [ ] do DisplayObjects need to *NOT* have a reference to a visual?
-* [ ] Read DisplayList
-* [ ] Update Sprites from DisplayList
-* [ ] Render SpritePool
+* [x] how does the renderer manage sprites?
+* [x] do DisplayObjects need to *NOT* have a reference to a visual?
+* [x] Read DisplayList
+* [x] Update Sprites from DisplayList
+* [x] Render SpritePool
+* [ ] move base data structures to 'common' directory?
 
-**test-displaylist** has 
+```
+PHASE_LOAD: 
+	RESET, SETMODE, WAIT, PROGRAM, INIT, READY
+PHASE_LOOP: 
+	INPUTS, PHYSICS, TIMERS
+	AGENTS_UPDATE, GROUPS_UPDATE, FEATURES_UPDATE
+	CONDITIONS_UPDATE
+	FEATURES_THINK, GROUPS_THINK, AGENTS_THINK, GROUPS_VETO
+	FEATURES_EXEC, AGENTS_EXEC, GROUPS_EXEC
+	SIM_EVAL, REFEREE_EVAL
+	VIS_UPDATE, VIS_RENDER
+```
 
-* `DOBJ_POOL` and creates `AGENT_TO_DOBJ` in each test function `TestSyncAgents()` and `TestDisplayList()`
-* I think I would like RuntimeCore to provide  method that creates dedicated pools.
+I have a **really ugly** rendering system, so tomorrow I get to think about putting together the actual rendering hierarchy and design the API. Then, **FakeTrack** will also have to generate Entities and ship them to the renderer so it can handle DisplayObjects.
 
 ---
 
