@@ -6,6 +6,9 @@
 
 /// POOLS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface I_PoolableConstructor {
+  new (id?: number): I_Poolable;
+}
 export interface I_Poolable {
   id: any; // id referencing original (agentInstance)
   _pool_id: number; // used for fast pool lookup
@@ -16,7 +19,7 @@ export interface I_Poolable {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface I_PoolOptions {
-  Constructor: () => I_Poolable; // constructor to use
+  Constructor: I_PoolableConstructor; // constructor to use (class instance)
   size?: number; // size of initial array
   batchSize?: number; // number of elements to add when growing
   autoGrow?: boolean; // whether to automatically increase size or error out

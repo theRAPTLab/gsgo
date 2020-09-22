@@ -8,20 +8,20 @@ import Pool, { I_Poolable } from './class-pool';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type PoolableMap = Map<any, I_Poolable>;
-type PoolableSet = Set<I_Poolable>;
-type PoolableArray = I_Poolable[];
+export type PoolableMap = Map<any, I_Poolable>;
+export type PoolableSet = Set<I_Poolable>;
+export type PoolableArray = I_Poolable[];
 
-type TestFunction = (obj: any) => boolean;
-type AddFunction = (srcObj: I_Poolable, newObj: I_Poolable) => I_Poolable;
-type UpdateFunction = (srcObj: I_Poolable, updateObj: I_Poolable) => I_Poolable;
-type RemoveFunction = (removeObj: I_Poolable) => I_Poolable;
+export type TestFunction = (obj: any) => boolean;
+export type AddFunction = (srcObj: I_Poolable, newObj: I_Poolable) => void;
+export type UpdateFunction = (srcObj: I_Poolable, updateObj: I_Poolable) => void;
+export type RemoveFunction = (removeObj: I_Poolable) => void;
 
 export interface SyncFunctions {
-  onAdd: AddFunction;
-  onUpdate: UpdateFunction;
-  shouldRemove: TestFunction;
-  onRemove: RemoveFunction;
+  onAdd?: AddFunction;
+  onUpdate?: UpdateFunction;
+  shouldRemove?: TestFunction;
+  onRemove?: RemoveFunction;
 }
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
@@ -67,17 +67,23 @@ export default class MappedPool {
   pool: Pool;
 
   constructor(pool: Pool, conf: SyncFunctions) {
-    const { onAdd, onUpdate, onRemove, shouldRemove } = m_CheckConf(conf);
-    this.cbAdder = onAdd;
-    this.cbUpdater = onUpdate;
-    this.cbRemover = onRemove;
-    this.ifRemove = shouldRemove;
+    // ensure that constructor has full complement of functions
+    this.setObjectHandlers(m_CheckConf(conf));
     this.pool = pool;
     // clear the pool just in case
     if (this.pool.allocatedCount() > 0) {
-      console.warn(`pool '${this.pool.name()}' reused, so resetting`);
+      console.warn(`MappedPool: pool '${this.pool.name()}' reinitialized`);
       this.pool.reset();
     }
+  }
+
+  setObjectHandlers(conf: SyncFunctions) {
+    // we allow partial updates to SyncFunctions
+    const { onAdd, onUpdate, onRemove, shouldRemove } = conf;
+    if (typeof onAdd === 'function') this.cbAdder = onAdd;
+    if (typeof onUpdate === 'function') this.cbUpdater = onUpdate;
+    if (typeof shouldRemove === 'function') this.ifRemove = shouldRemove;
+    if (typeof onRemove === 'function') this.cbRemover = onRemove;
   }
 
   /** given source map, do the obj.id mapping to our pool */

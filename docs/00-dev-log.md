@@ -35,6 +35,11 @@
 * W1: New FakeTrack progress, resurrect appserv architecture for pixiJS integration
 * W2: Refit URSYS. Sprite and display list system architecture for clickable interactions
 
+**SUMMARY S18 AUG 14-SEP 27**
+
+* W1: Pool, MappedPool, Agent to DisplayObject, DisplayObject to Sprite. Introduce testing modules.
+* W2: 
+
 ---
 
 ## SEP 14 MON: Implementation Plans
@@ -218,29 +223,38 @@ The problem seems to be that when the source objects don't have an id,
 * [ ] look into `SM_Object` use of autoincrementing id...maybe be a conflict. This is why id numbers go so high.
 * [x] fix issues with `var-string` defaulting to `undefined` instead of emptystring
 
-**NEXT OUTPUT DISPLAY LIST** The Display List needs to be passed to the **Renderer** so it can update all the sprites from the display object.
+## SEP 21 MON - Finishing off DisplayLists, Sprites ahead of PTrack
 
-* [ ] where does the renderer's display list come from?
+***SIDEBAR*** - Ben has created a basic model for **Features**, comprised of
+
+1. a list of Feature commands like `showCostume`
+2. defaults for those props that need them
+3. scriptable actions, like `setCostume`
+4. model-level commands that can override the Feature definitions
+
+**MON 10PM**
+
+**NEXT OUTPUT DISPLAY LIST** - The Display List needs to be passed to the **Renderer** so it can update all the sprites from the display object.
+
+* [x] **where** should the renderer's display list come from? **runtime-datacore, duh!**
+* [x] move stuff from test-displaylist into runtime-datacore
+* [x] make `class-syncmap`
+* [x] update runtime-datacore to use class-syncmap
 * [ ] how does the renderer manage sprites?
 * [ ] do DisplayObjects need to *NOT* have a reference to a visual?
+* [ ] Read DisplayList
+* [ ] Update Sprites from DisplayList
+* [ ] Render SpritePool
+
+**test-displaylist** has 
+
+* `DOBJ_POOL` and creates `AGENT_TO_DOBJ` in each test function `TestSyncAgents()` and `TestDisplayList()`
+* I think I would like RuntimeCore to provide  method that creates dedicated pools.
 
 ---
 
 BACKLOG
 ```[ ] Create DisplayObject Pool
-[ ] Create SpritePool
-[ ] Backport PTrackInput to use new Pool
-	  
-[ ] Write Display List: 
-[ ] * Map Agent List to Display Objects
-[ ] * Display Objects contain only visual things
-[ ] * Write Display List
-
-[ ] Read Display List:
-[ ] * Read Incoming Display List
-[ ] * Maintain Controlled Display List
-[ ] * Display Objects to Sprite Classes
-
 [ ] Renderer:
 [ ] * Implement Coordinate System
 [ ] * Write the Render Loop

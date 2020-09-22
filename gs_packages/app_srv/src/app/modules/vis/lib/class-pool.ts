@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { I_Poolable, I_PoolOptions } from './types-pool';
+import { I_Poolable, I_PoolableConstructor, I_PoolOptions } from './types-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,7 +29,7 @@ class Pool {
   obj_map: Map<number, number>; // Map obj.id to pool_ids
   //
   _name: string;
-  ManagedClass: (id?: number) => void; // create an object
+  ManagedClass: I_PoolableConstructor; // create an object
   _size: number; // current size of pool
   _batch_size: number; // batch size (default to 10)
   _auto_grow: boolean; // whether to grow or die
@@ -144,7 +144,7 @@ class Pool {
   }
 
   /** return whether an id (not pool_id) is in the pool */
-  has(objId: any) {
+  has(objId: number) {
     // obj_map is Map<objId,poolId>
     return this.obj_map.has(objId);
   }

@@ -6,19 +6,25 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import DisplayObject from '../vis/lib/class-display-object';
+import MappedPool from '../vis/lib/class-mapped-pool';
+import SyncMap from './lib/class-syncmap';
+import Pool from '../vis/lib/class-pool';
+import Sprite from '../vis/lib/class-sprite';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('RUNTIME-CORE');
 
-const AGENTS = new Map(); // string type, set of agents
-const TEMPLATES = new Map();
-const FEATURES = new Map();
-const CONDITIONS = new Map();
+/// INSTANCE MAPS /////////////////////////////////////////////////////////////
+const AGENTS = new Map();
+const AGENT_DOBJ = new SyncMap('AGT-DOB', { Constructor: DisplayObject });
+const DOBJ_SPRITE = new SyncMap('DOB-SPR', { Constructor: Sprite });
 
-/// PHASEMACHINE API //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM', 'SETMODE');
+/// RUNTIME ASSETS ////////////////////////////////////////////////////////////
+const FEATURES = new Map();
+const TEMPLATES = new Map();
+const CONDITIONS = new Map();
 
 /// AGENT SET UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,6 +81,13 @@ function TestAgentSets(type) {
   const agents = AGENTS.get(type);
   return [...agents] || [];
 }
+
+/// TESTING UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function OnSimReset() {}
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('SIM', 'RESET', OnSimReset);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
