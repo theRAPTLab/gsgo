@@ -140,7 +140,7 @@ function TestAgentReset(/* frame */) {
   console.log('AgentReset');
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // UR.SystemHook('SIM', 'RESET', AgentReset);
 // UR.SystemHook('SIM', 'SETMODE', AgentSelect);

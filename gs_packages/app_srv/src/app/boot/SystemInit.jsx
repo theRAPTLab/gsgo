@@ -35,7 +35,7 @@ const PR = UR.PrefixUtil('SystemInit');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render react once all modules have completed their initialization */
 UR.SystemHook('UR', 'APP_READY', () => {

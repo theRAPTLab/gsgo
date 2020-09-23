@@ -22,7 +22,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Pool, { IPoolable, IPoolOptions } from '../../vis/lib/class-pool';
+import Pool, { IPoolable, IPoolOptions } from './class-pool';
 import MappedPool, {
   SyncFunctions,
   TestFunction,
@@ -31,7 +31,7 @@ import MappedPool, {
   RemoveFunction,
   PoolableMap,
   PoolableArray
-} from '../../vis/lib/class-mapped-pool';
+} from './class-mapped-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

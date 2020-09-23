@@ -5,11 +5,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Pool from '../vis/lib/class-pool';
-import MappedPool, { TestArrayEntities } from '../vis/lib/class-mapped-pool';
+import Pool from '../sim/lib/class-pool';
+import MappedPool, { TestArrayEntities } from '../sim/lib/class-mapped-pool';
 import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
-import DisplayObject, { TestValidDOBJs } from '../vis/lib/class-display-object';
-import Sprite from '../vis/lib/class-sprite';
+import DisplayObject, { TestValidDOBJs } from '../sim/lib/class-display-object';
+import Sprite from '../sim/lib/class-sprite';
 import * as RENDERER from './test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -213,7 +213,7 @@ function TestRender(frameTime) {
   // console.log(...PR('Render'));
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM', 'INIT', TestInit);
 UR.SystemHook('SIM', 'VIS_UPDATE', TestUpdateDisplayList);

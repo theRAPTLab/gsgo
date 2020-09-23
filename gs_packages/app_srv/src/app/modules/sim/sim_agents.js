@@ -44,7 +44,7 @@ function AgentReset(frameTime) {
   TestAgentReset(frameTime);
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM', 'RESET', AgentReset);
 UR.SystemHook('SIM', 'SETMODE', AgentSelect);

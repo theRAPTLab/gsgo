@@ -7,7 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Sprite from './lib/class-sprite';
-import SyncMap from '../sim/lib/class-syncmap';
+import SyncMap from './lib/class-syncmap';
 import Viewport from './lib/class-viewport';
 import * as POOL from './lib/class-pool';
 import TEST from '../tests/test-vis';
@@ -34,26 +34,14 @@ DISPLAY_LIST.setObjectHandlers({
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function HandleDisplayList(displayList) {
+function HandleDisplayList(displayList) {
   const { added, updated, removed } = DISPLAY_LIST.syncFromArray(displayList);
   console.log(
     ...PR('add:', added.length, 'upd:', updated.length, 'rem:', removed.length)
   );
 }
 
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// STATIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// MODULE METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // UR.SystemHook('SIM', 'WAIT', () => {
 //   console.log(...PR('initialize viewport'));
@@ -61,4 +49,4 @@ export function HandleDisplayList(displayList) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// individual exports
+export { HandleDisplayList };

@@ -30,7 +30,7 @@ function RegisterFeatures() {
   Register(TimerPack);
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM', 'RESET', RegisterFeatures);
 

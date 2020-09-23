@@ -1,6 +1,6 @@
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
-import Sprite from '../vis/lib/class-sprite';
+import Sprite from '../sim/lib/class-sprite';
 import SyncMap from '../sim/lib/class-syncmap';
 
 const PR = UR.PrefixUtil('TestRender', 'TagRed');

@@ -10,7 +10,7 @@ import CONDITIONS from './sim_conditions';
 import AGENTS from './sim_agents';
 import REFEREE from './sim_referee';
 import FEATURES from './sim_features';
-import RENDERER from '../vis/sim_render';
+import RENDERER from '../sim/sim_render';
 import * as TestRenderer from '../tests/test-renderer';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
@@ -127,7 +127,7 @@ function ResetSimulation() {
   })();
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('UR', 'APP_STAGE', LoadSimulation);
 UR.SystemHook('UR', 'APP_START', StartSimulation);
