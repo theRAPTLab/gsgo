@@ -198,8 +198,9 @@ class PhaseMachine {
   ExecutePhase(phaseName, ...args) {
     if (DBG.phases) console.log(...this.PR(`ExecutePhase('${phaseName}')`));
     const ops = this.PHASES[phaseName];
+    if (ops === undefined)
+      throw Error(`Phase "${phaseName}" doesn't exist in ${this.NAME}`);
     const phaseHookFuncs = this.GetHookFunctions(phaseName);
-    if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
     let index = 0;
     return ops.reduce(
       async (previousPromise, nextOp) => {

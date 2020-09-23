@@ -14,7 +14,7 @@ import * as RENDERER from './test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TEST = true;
+const TEST = false;
 const PR = UR.PrefixUtil('TestDisplayList', 'TagBlue');
 
 /// CREATE POOLS //////////////////////////////////////////////////////////////
@@ -215,9 +215,11 @@ function TestRender(frameTime) {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM', 'INIT', TestInit);
-UR.SystemHook('SIM', 'VIS_UPDATE', TestUpdateDisplayList);
-UR.SystemHook('SIM', 'VIS_RENDER', TestRender);
+if (TEST) {
+  UR.SystemHook('SIM', 'INIT', TestInit);
+  UR.SystemHook('SIM', 'VIS_UPDATE', TestUpdateDisplayList);
+  UR.SystemHook('SIM', 'VIS_RENDER', TestRender);
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

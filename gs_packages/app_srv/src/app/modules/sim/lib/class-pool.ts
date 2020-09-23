@@ -78,7 +78,6 @@ class Pool {
 
   /** add a number of objects to the pool */
   increaseSize(count: number = this._batch_size) {
-    console.warn(this._name, 'pool growing by', this._batch_size);
     while (count-- > 0) this.makeObject();
     this._size = this.pool_objs.length;
     if (DBG) console.log('available', JSON.stringify(this.avail_objs));
@@ -109,6 +108,8 @@ class Pool {
     if (this.avail_objs.length < 1) {
       if (this._auto_grow) {
         this.increaseSize(/* default */);
+        const { _name, _size, _batch_size } = this;
+        console.warn(`'${_name}' pool grew by ${_batch_size} (now ${_size})`);
       } else {
         if (DBG) console.log('available', JSON.stringify(this.avail_objs));
         throw Error(`'${this._name}' maxsize ${this._size} (autoGrow false)`);

@@ -1,29 +1,36 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  RUNTIME
+
+  It is the "master controller" for the simulation module. It creates the
+  'SIM' PhaseMachine. All sim_* modules hook into the SIM PhaseMachine
+  independently to participate in the simulation lifecycle.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import { interval } from 'rxjs';
 // runtime data modules
-import INPUTS from './sim_inputs';
-import CONDITIONS from './sim_conditions';
-import AGENTS from './sim_agents';
-import REFEREE from './sim_referee';
-import FEATURES from './sim_features';
-import RENDERER from '../sim/sim_render';
-import * as TestRenderer from '../tests/test-renderer';
+// these have their own phasemachine interface hooks
+import './sim_inputs';
+import './sim_conditions';
+import './sim_agents';
+import './sim_referee';
+import './sim_features';
+import './sim_render';
 
-/// DEBUG /////////////////////////////////////////////////////////////////////
+/// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RUNTIME');
+const PR = UR.PrefixUtil('SIM_RUNTIME', 'TagCyan');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
-const GameLoop = new UR.class.PhaseMachine('SIM', {
-  PHASE_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
-  PHASE_LOOP: [
+const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
+  GLOOP_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
+  GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
+  GLOOP: [
     // get state and queue derived state
     'INPUTS',
     'PHYSICS',
@@ -53,77 +60,70 @@ const GameLoop = new UR.class.PhaseMachine('SIM', {
 });
 console.log(...PR('SimLoop Created'));
 
+/// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// RXJS TESTS ////////////////////////////////////////////////////////////////
-let obs_frame_interval = interval(33);
-let sub_frame;
+let SIM_FRAME_MS = interval(33);
+let RX_SUB;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StepSimulation(frameCount) {
+  /* insert conditional run control here */
+  GAME_LOOP.ExecutePhase('GLOOP', frameCount);
+  /* insert game logic here */
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// LOADING CONTROL ///////////////////////////////////////////////////////////
 function LoadSimulation() {
   // load agents and assets
   // prep recording buffer
-  console.log(...PR('LoadSimulation'));
   (async () => {
-    await GameLoop.ExecutePhase('PHASE_LOAD');
+    await GAME_LOOP.ExecutePhase('GLOOP_LOAD');
+    console.log(...PR('Simulation Loaded'));
   })();
 }
 
-/// MAIN RUN CONTROL //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// RUNTIME CONTROL ///////////////////////////////////////////////////////////
 function RunSimulation() {
   // prepare to run simulation and do first-time setup
-  console.log(...PR('RunSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function StepSimulation(frame) {
-  /* insert game pause control here */
-  // synchronous version
-  // (async () => {
-  //   await GameLoop.ExecutePhase('PHASE_LOOP', frame);
-  // })();
-  // async version
-  GameLoop.ExecutePhase('PHASE_LOOP', frame);
-  /* insert game logic here */
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** once the simluation is initialized, start the periodic frame update */
 function StartSimulation() {
-  console.log(...PR('StartSimulation'));
-
-  sub_frame = obs_frame_interval.subscribe(StepSimulation);
-  // console.log(obs_frame_interval);
+  console.log(...PR('Simulation Timestep Started'));
+  RX_SUB = SIM_FRAME_MS.subscribe(m_StepSimulation);
 }
 
-/// SUPPORTING CONTROLS ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
 function UpdateSimulation() {
   // application host has changed
-  console.log(...PR('RunSimulation'));
+  console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
+  GAME_LOOP.Execute('SYSEX');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PauseSimulation() {
   // set the playback rate from 0 to 10
   // can we support backing up in the buffer?
   // can we offer forward simulation from the playback buffer
-  console.log(...PR('PauseSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function EndSimulation() {
   // stop simulation
   console.log(...PR('EndSimulation'));
-  sub_frame.unsubscribe();
+  RX_SUB.unsubscribe();
 }
+
+/// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ExportSimulation() {
   // grab data from the simulation
-  console.log(...PR('ExportSimulation'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ResetSimulation() {
   // return simulation to starting state, ready to run
-  console.log(...PR('ResetSimulation'));
   (async () => {
-    await GameLoop.ExecutePhase('PHASE_LOAD');
+    console.log(...PR('ResetSimulation'));
+    await GAME_LOOP.ExecutePhase('GLOOP_LOAD');
   })();
 }
 
@@ -134,15 +134,15 @@ UR.SystemHook('UR', 'APP_START', StartSimulation);
 UR.SystemHook('UR', 'APP_RUN', RunSimulation);
 UR.SystemHook('UR', 'APP_UPDATE', UpdateSimulation);
 UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
-// register debugging messages for GameLoop phases
+// register debugging messages for GAME_LOOP phases
 const u_dump = (phases, index) => {
   if (!DBG) return;
   if (index === 0) console.log('start of PHASE', index);
   if (index === phases.length) console.log('end of PHASE', index);
   else console.log(`.. executing ${index} ${phases[index]}`);
 };
-GameLoop.Hook('PHASE_LOAD', u_dump);
-GameLoop.Hook('PHASE_LOOP', u_dump);
+GAME_LOOP.Hook('GLOOP_LOAD', u_dump);
+GAME_LOOP.Hook('GLOOP', u_dump);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

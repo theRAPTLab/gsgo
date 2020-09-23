@@ -12,7 +12,7 @@ const PR = require('./util/prompts').makeStyleFormatter('UR.NET');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { connect: true, handle: true, reg: true };
+const DBG = { connect: false, hello: true, handle: false, reg: false };
 ///
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
 const ERR_BAD_URCHAN = "An instance of 'URChan' is required";
@@ -64,7 +64,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_RemoveListener('message', m_HandleRegistrationMessage);
   m_status = M3_REGISTERED;
   // (2) initialize global settings for netmessage
-  if (DBG.connect) console.log(...PR(`'${HELLO}'`));
+  if (DBG.connect || DBG.hello) console.log(...PR(`'${HELLO}'`));
   m_socket.UADDR = NetPacket.DefaultServerUADDR();
   NetPacket.GlobalSetup({
     uaddr: UADDR,
@@ -198,7 +198,7 @@ NETWORK.Connect = (datalink, opt) => {
       m_status = M2_CONNECTED;
       // message handling continues in 'message' handler
       // the first message is assumed to be registration data
-      console.log(...PR('CONNECTED'));
+      if (DBG.connect) console.log(...PR('CONNECTED'));
       resolve();
     });
     m_AddListener('close', event => {

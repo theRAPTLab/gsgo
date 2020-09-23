@@ -13,10 +13,10 @@
 import { IFeature, TMethod, IAgent, IScopeable, TStackable } from '../lib/t-smc';
 import { DictionaryProp } from '../props/var';
 
-const NOT_METHOD_ERR = 'retrieved method is not a method; got';
-
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const NOT_METHOD_ERR = 'retrieved method is not a method; got';
+const DBG = false;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,10 +48,11 @@ class Feature implements IFeature {
    *  note: subclassers must override this method as necessary
    */
   decorate(agent: IAgent) {
-    console.log(`class feature '${this.name()}' decorate '${agent.name()}'`);
-    if (agent.features.has(this.name()))
-      console.log(`agent decorate '${agent.name()}'`);
-    else throw Error(`decorate: agent already bound to feature ${this.name()}`);
+    if (DBG)
+      console.log(`class feature '${this.name()}' decorate '${agent.name()}'`);
+    if (agent.features.has(this.name())) {
+      if (DBG) console.log(`agent decorate '${agent.name()}'`);
+    } else throw Error(`decorate: agent already bound to feature ${this.name()}`);
 
     if (!agent.props.has(this.name()))
       agent.props.set(this.name(), new DictionaryProp(this.name()));

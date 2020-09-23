@@ -262,6 +262,67 @@ PHASE_LOOP:
 
 I have a **really ugly** rendering system, so tomorrow I get to think about putting together the actual rendering hierarchy and design the API. Then, **FakeTrack** will also have to generate Entities and ship them to the renderer so it can handle DisplayObjects.
 
+## SEP 22 WED - Cleaning up Renderer, then FakeTrack
+
+```
+DATACORE
+  TestAgentSets(type)
+  
+class-display-objects
+	TestValidDOBJS(dobjs)
+	
+class-mapped-pool
+	TestMapEntities(map-> {})
+	TestArrayEntities(arr-> {})
+
+sim_render: loaded by 
+	imports: UR, Sprite, SyncMap (Viewport, class pool, test-viz
+	exports: { HandleDisplayList }
+	maintains its own DISPLAY_LIST, but should grab it from RUNTIME
+	stub HandleDisplayList(displayList)
+	
+test-renderer: loaded by Tracker, runtime, test-displaylist
+	imports: UR, PIXI, Sprite,SyncMap
+	exports: { Init, HookResize, HandleDisplayList, Draw }
+	
+test-agents loaded by sim_agents
+	imports:
+	exports:
+	TestAgentSelect()
+	TestAgentProgram()
+	TestAgentReset()
+	TestAgentUpdate(), TestAgentThink(), TestAgentExec()
+	TestSyncAgents()
+	TestDisplayList()
+	TestInit()
+	TestRender()
+	
+test-vis: loaded by sim_render
+	imports: Pool, MappedPool
+	exports:
+	* tests mapped pool and pool operations (should move it out)
+
+** THIS IS WHAT ACTUALLY DOES THE DRAWING
+test-displaylist: loaded by test-agents
+	imports UR, Pool, MappedPoor, TestArrayEntities
+	imports runtime-datacore
+	imports DisplayObject, TestValidDOBJs, test-renderer
+	exports: TestSyncAgents, TestDisplayList
+	hooks: SIM:INIT, SIM:VIS_UPDATE, SIM:VIS_RENDER	
+```
+
+**RESUMING** the current rendering cycle is actually hooked in `test-displaylist` ***directly*** just by loading it from `test-agents`, which is loaded by `sim_agents` and calls the exported test functions. 
+
+* [x] move the `vis` classes into sim.
+* [x] move the code from `test-displaylist` to `sim_render`
+* [ ] port of `test-renderer` into the runtime
+
+Ok, the rendering cycle is now cleaned up some sim_render 
+
+
+
+
+
 ---
 
 BACKLOG

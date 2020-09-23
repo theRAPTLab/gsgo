@@ -1,52 +1,85 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  render manager for main simulation view area
+  Renderer Phase Machine Interface
 
+  Works purely with display objects, so it is up to other code to convert
+  lists of Agents, etc into an array or map of DisplayObjects.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Sprite from './lib/class-sprite';
 import SyncMap from './lib/class-syncmap';
-import Viewport from './lib/class-viewport';
-import * as POOL from './lib/class-pool';
-import TEST from '../tests/test-vis';
+import Sprite from './lib/class-sprite';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SIM_RENDER', 'TagRed');
-
-const DISPLAY_LIST = new SyncMap('DOB-SPR', {
-  Constructor: Sprite,
+const PR = UR.PrefixUtil('SIM_RENDER');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let DOBJ_LIST;
+const MAPPED_SPRITES = new SyncMap('DOBJ-TO-SPRITE', {
+  Constructor: Sprite, // sprites track display objs
   autoGrow: true
 });
-DISPLAY_LIST.setObjectHandlers({
-  onAdd: (dobj, spr) => {
-    spr.x = dobj.x;
-    spr.y = dobj.y;
-  },
-  onUpdate: (dobj, spr) => {
-    spr.x = dobj.x;
-    spr.y = dobj.y;
-  },
-  onRemove: spr => {}
-});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Manager for handling changes in the display objects, and handling their
+ *  individual updates
+ */
+function m_Initialize() {
+  MAPPED_SPRITES.setObjectHandlers({
+    onAdd: (dobj, spr) => {
+      spr.x = dobj.x;
+      spr.y = dobj.y;
+    },
+    onUpdate: (dobj, spr) => {
+      spr.x = dobj.x;
+      spr.y = dobj.y;
+    },
+    onRemove: spr => {}
+  });
+}
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HandleDisplayList(displayList) {
-  const { added, updated, removed } = DISPLAY_LIST.syncFromArray(displayList);
-  console.log(
-    ...PR('add:', added.length, 'upd:', updated.length, 'rem:', removed.length)
-  );
+function m_RenderDisplayList(frameNum) {
+  if (!MAPPED_SPRITES) throw Error('called before init()');
+  DOBJ_LIST = MAPPED_SPRITES.getSyncedObjects();
+}
+
+/// API FUNCTIONS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Accepts a list of display objects that were presumably already derived from
+ *  the agents list
+ */
+function SaveDisplayList(dobjs) {
+  DOBJ_LIST = dobjs;
+}
+/** Update the sprites from the saved list of display objects
+ */
+function RenderDisplayList() {
+  MAPPED_SPRITES.syncFromArray(DOBJ_LIST);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.SystemHook('SIM', 'WAIT', () => {
-//   console.log(...PR('initialize viewport'));
-// });
+/// PHASE_LOAD
+UR.SystemHook('SIM', 'RESET', () => {
+  m_Initialize();
+});
+UR.SystemHook('SIM', 'SETMODE', () => {});
+UR.SystemHook('SIM', 'WAIT', () => {
+  console.log(...PR('should initialize viewport'));
+  console.log(...PR('should load sprites'));
+});
+UR.SystemHook('SIM', 'INIT', () => {});
+UR.SystemHook('SIM', 'READY', () => {});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PHASE_LOOP
+UR.SystemHook('SIM', 'VIS_UPDATE', () => {
+  // use this for updating anything other than mapped display objects,
+  // since MAPPED_SPRITES updates sprites implicitly after
+});
+UR.SystemHook('SIM', 'VIS_RENDER', m_RenderDisplayList);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { HandleDisplayList };
+export { SaveDisplayList, RenderDisplayList };

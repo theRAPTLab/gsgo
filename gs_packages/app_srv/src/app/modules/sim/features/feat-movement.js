@@ -15,14 +15,15 @@ import { StringProp } from '../props/var';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MovementFeature');
+const PR = UR.PrefixUtil('FeatMovement');
+const DBG = false;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class MovementPack extends Feature {
   constructor(name) {
     super(name);
-    console.log(...PR('construct'));
+    if (DBG) console.log(...PR('construct'));
     // super.meta
     // super.methods
     // super.decorate(agent)
@@ -41,7 +42,7 @@ class MovementPack extends Feature {
   }
 
   setController(agent, x) {
-    console.log(`setting control to ${x}`);
+    if (DBG) console.log(...PR(`setting control to ${x}`));
     this.prop(agent, 'controller').value = x;
   }
 }

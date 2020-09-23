@@ -18,7 +18,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { HashRouter } from 'react-router-dom';
-import debounce from 'debounce';
 
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,18 +28,12 @@ import SystemShell from './SystemShell';
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
-const PR = UR.PrefixUtil('SystemInit');
-
-/// DEBUG CONTROL /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render react once all modules have completed their initialization */
 UR.SystemHook('UR', 'APP_READY', () => {
-  if (DBG)
-    console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
   return new Promise(resolve => {
     ReactDOM.render(
       <HashRouter hashType="slash">
@@ -48,7 +41,6 @@ UR.SystemHook('UR', 'APP_READY', () => {
       </HashRouter>,
       document.getElementById('app-container'),
       () => {
-        console.log('URSYS: STARTED');
         resolve();
       }
     );
@@ -58,24 +50,17 @@ UR.SystemHook('UR', 'APP_READY', () => {
 /// URSYS STARTUP /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Init() {
-  console.log('URSYS: INITIALIZE');
-
-  // handle window resize events through URSYS
-  window.addEventListener(
-    'resize',
-    debounce(() => {
-      // console.clear();
-    }, 500)
-  );
+  console.log(...PR('URSYS INITIALIZING...'));
 
   // initialize app when DOM is completely resolved
   document.addEventListener('DOMContentLoaded', () => {
-    if (DBG) console.log('INIT DOMContentLoaded. Starting URSYS Lifecycle!');
     // initialize URSYS
     (async () => {
+      console.log(...PR('URSYS CONNECTING...'));
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
       await UR.SystemStart();
+      console.log(...PR(`${PROJECT_NAME.toUpperCase()} SYSTEM BOOT`));
       await UR.SystemBoot({
         autoRun: true,
         netProps
@@ -85,7 +70,7 @@ function Init() {
 
   // handle disconnect event
   document.addEventListener('URSYSDisconnect', () => {
-    console.log(`${PROJECT_NAME} SERVER HAS DISCONNECTED`);
+    console.log(...PR(`${PROJECT_NAME.toUpperCase} SYSTEM DISCONNECTED`));
     document.location.reload();
   });
 }

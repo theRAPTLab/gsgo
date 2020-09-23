@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Agents Lifecycle
+  Agents Phase Machine Interface
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,19 +14,24 @@ import {
   TestAgentExec
 } from '../tests/test-agents';
 
-// import UR from '@gemstep/ursys/client';
+/// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
+  console.log(...PR('should inspect mode and change agent settings'));
   TestAgentSelect();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
+  console.group(...PR('Programming Test Agents'));
   TestAgentProgram();
+  console.groupEnd();
 }
 
+/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
   TestAgentUpdate(frameTime);
@@ -41,6 +46,7 @@ function AgentExec(frameTime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
+  console.log(...PR('should reset all agents'));
   TestAgentReset(frameTime);
 }
 

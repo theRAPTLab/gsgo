@@ -16,7 +16,7 @@ import * as Renderer from '../modules/tests/test-renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TrackerJSX');
+const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,14 +37,7 @@ const useStyles = theme => ({
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Tracker extends React.Component {
-  // constructor
-  constructor(props) {
-    super(props);
-    console.log('constructed Tracker');
-  }
-
   componentDidMount() {
-    console.log('componentDidMount Tracker');
     const renderRoot = document.getElementById('root-renderer');
     /* test code */
     // Sim.LoadSimulation();

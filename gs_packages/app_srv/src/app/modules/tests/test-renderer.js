@@ -1,9 +1,11 @@
 import UR from '@gemstep/ursys/client';
+import debounce from 'debounce';
+
 import * as PIXI from 'pixi.js';
 import Sprite from '../sim/lib/class-sprite';
 import SyncMap from '../sim/lib/class-syncmap';
 
-const PR = UR.PrefixUtil('TestRender', 'TagRed');
+const PR = UR.PrefixUtil('TestRender');
 
 let PIXI_APP;
 let PIXI_ROOT;
@@ -40,7 +42,6 @@ PIXI_APP.stage.addChild(root);
 
 /** initalizze and attach renderer view to element */
 function Init(element) {
-  console.log(...PR('Init()'));
   document.body.style.margin = '0px';
   //
   PIXI_APP.renderer.autoResize = true;
@@ -104,18 +105,21 @@ function Init(element) {
 
 /** hook resize */
 function HookResize() {
-  window.addEventListener('resize', () => {
-    const renderRoot = document.getElementById('root-renderer');
-    console.log(
-      ...PR('window resize', renderRoot.offsetWidth, renderRoot.offsetHeight)
-    );
-    PIXI_APP.renderer.resize(renderRoot.offsetWidth, renderRoot.offsetHeight);
-    const { root } = CONTAINERS;
-    root.x = PIXI_APP.screen.width / 2;
-    root.y = PIXI_APP.screen.height / 2;
-    root.pivot.x = 0; //root.width / 2;
-    root.pivot.y = 0; // root.height / 2;
-  });
+  window.addEventListener(
+    'resize',
+    debounce(() => {
+      const renderRoot = document.getElementById('root-renderer');
+      console.log(
+        ...PR('window resize', renderRoot.offsetWidth, renderRoot.offsetHeight)
+      );
+      PIXI_APP.renderer.resize(renderRoot.offsetWidth, renderRoot.offsetHeight);
+      const { root } = CONTAINERS;
+      root.x = PIXI_APP.screen.width / 2;
+      root.y = PIXI_APP.screen.height / 2;
+      root.pivot.x = 0; //root.width / 2;
+      root.pivot.y = 0; // root.height / 2;
+    }, 500)
+  );
 }
 
 function HandleDisplayList(displayList) {
@@ -124,9 +128,7 @@ function HandleDisplayList(displayList) {
 function Draw() {}
 
 UR.SystemHook('UR', 'APP_LOAD', () => {
-  console.log('hooking APP_LOAD');
   const loadSprites = (resolve, reject) => {
-    console.log('loadSprites EXEC_LOAD');
     LOADER.add('static/sprites/bunny.json').load(loader => {
       let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
       SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);

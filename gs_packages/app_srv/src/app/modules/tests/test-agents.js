@@ -31,7 +31,7 @@ import { TestSyncAgents, TestDisplayList } from './test-displaylist';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TEST');
+const PR = UR.PrefixUtil('TEST AGT');
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +54,7 @@ function TestAgentProgram() {
       setCostumes {1:"slowbee.png", 2:"fastbee.png"}
       showCostume 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('Flower Programming');
+  console.log(...PR('Making Flower Agent Template Function'));
   AgentFactory.AddTemplate('Flower', agent => {
     // all this is direct templating
     agent.prop('x').setTo(100);
@@ -68,50 +68,36 @@ function TestAgentProgram() {
     // agent.addFeature('Movement').setController('student');
     // this stuff has to create smcode runtime programs
   });
-  console.groupEnd();
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     creation test
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('Creation Testing');
 
   const names = [];
-  for (let i = 0; i < 50; i++) names.push(`flower${i}`);
+  const NUM_AGENTS = 50;
+  console.log(...PR(`Making ${NUM_AGENTS} instances`));
+  for (let i = 0; i < NUM_AGENTS; i++) names.push(`flower${i}`);
   const smc_init = StackMachine.test_smc_init;
   names.forEach(name => {
     const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
     StackMachine.ExecSMC(smc_init, agent);
   });
-  console.log('Flowers', AgentFactory.GetAgentsByType('Flower'));
-  console.log('Mugworts', AgentFactory.GetAgentsByType('Mugworts'));
-  console.groupEnd();
 
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     when MyTimer.elapsed greaterThan 10
       @MyTimer reset
       World.pollution add 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('World Programming');
+  console.log(...PR('Making World template with Timer feature'));
   AgentFactory.AddTemplate('World', world => {
     world.addFeature('Timer');
   });
-  // save creation template
-  console.groupEnd();
 
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     condition programming
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.groupCollapsed('OnTick Testing');
+  console.log(...PR('Making Ticker Agent with Timer feature'));
   const ticker = AgentFactory.MakeAgent('TickyTicky');
   ticker.addFeature('Timer');
-  console.groupEnd();
-
-  /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
-    Agent to DisplayList Testing
-  \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.group('DisplayList Testing');
-  TestSyncAgents();
-  TestDisplayList();
-  console.groupEnd();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -128,17 +114,15 @@ function TestAgentUpdate(/* frame */) {
   agents.forEach(agent => agent.AGENTS_EXEC());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestAgentThink(/* frame */) {}
+function TestAgentThink(/* frameNum */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestAgentExec(/* frame */) {
+function TestAgentExec(/* frameNum */) {
   //
   const smc_condition = StackMachine.test_smc_condition;
   StackMachine.ExecSMC(smc_condition, AgentFactory.GetWorldAgent());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestAgentReset(/* frame */) {
-  console.log('AgentReset');
-}
+function TestAgentReset(/* frameNum */) {}
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

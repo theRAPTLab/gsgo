@@ -18,23 +18,25 @@ const PR = require('./util/prompts').makeStyleFormatter('UR.EXC');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PHASES = {
   PHASE_BOOT: [
-    'TEST_INIT', // hook to set any testing parameters or modes
+    'TEST_INIT', // set any testing parameters or modes
     'SYS_BOOTSTRAP' // grab initial props to load the rest of URSYS
   ],
   PHASE_INIT: [
     'SYS_INIT', // initialize key runtime parameters
-    'DOM_READY' // the dom is stable
+    'DOM_READY', // the dom is stable
+    'TEST_LOCAL' // run local tests that don't require network calls
   ],
   PHASE_CONNECT: [
     'NET_CONNECT', // initiate connection
     'NET_REGISTER', // initiate registration
-    'NET_READY' // the network is stable
+    'NET_READY', // the network is stable
+    'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
     'APP_LOAD' // app modules can request asynchronous loads

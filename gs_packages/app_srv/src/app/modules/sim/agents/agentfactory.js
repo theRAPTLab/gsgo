@@ -21,7 +21,7 @@ import Agent from '../lib/class-agent';
 import { AGENTS_Save, AGENTS_GetTypeSet, TEMPLATES } from '../runtime-datacore';
 import { WORLD } from './global';
 
-const PR = UR.PrefixUtil('AGENT');
+const PR = UR.PrefixUtil('AGT FACTORY');
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,7 +42,7 @@ function AddTemplate(name, f_Decorate) {
     agent.meta.type = name;
     return agent;
   };
-  console.log(`storing template: '${name}`);
+  console.log(...PR(`storing template: '${name}'`));
   TEMPLATES.set(name, factoryFunc);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
