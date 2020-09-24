@@ -5,7 +5,7 @@
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
     "audit": "lerna bootstrap && lerna-audit",
     "build": "lerna run build",
-    "start": "npm run build && multiview [npm run gem]",
+    "start": "npm run build && multiview [npm run gem] [npm run app]",
     "admin": "npm run build && lerna run dev:admin --stream --no-prefix",
     "ursys": "#ERR 'ursys is not runnable from lerna root'",
     "app": "lerna run dev:app --stream --no-prefix",
