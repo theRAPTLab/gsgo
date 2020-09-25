@@ -155,7 +155,7 @@ function m_MakeColorArray(prompt, tagColor) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Function to modify the text area of a passed HTML element.
  */
-function m_HTMLTextOut(str, lineBuffer = [], id, row = 0, col = 0) {
+function m_HTMLTextOut(str = '', lineBuffer = [], id, row = 0, col = 0) {
   const el = document.getElementById(id);
   if (!el) return;
   const text = el.textContent;
@@ -183,7 +183,7 @@ function m_HTMLTextOut(str, lineBuffer = [], id, row = 0, col = 0) {
     for (let i = 0; i < col + str.length - line.length; i++) line += ' ';
   }
   // insert str into line
-  let p1 = line.substr(0, col - 1);
+  let p1 = line.substr(0, col);
   let p3 = line.substr(col + str.length, line.length - (col + str.length));
   lineBuffer[row] = `${p1}${str}${p3}`;
   // write buffer back out
@@ -228,7 +228,7 @@ function makeTerminalOut(prompt, tagColor) {
   if (!dbg) return () => {};
   const wrap = IS_NODE
     ? (str, ...args) => {
-        console.log(`${color}${m_PadString(prompt)}${reset} - ${str}`, ...args);
+        console.log(`${color}${m_PadString(prompt)}${reset}    ${str}`, ...args);
       }
     : (str, ...args) => {
         console.log(`%c${m_PadString(prompt)}%c ${str}`, color, reset, ...args);
@@ -236,12 +236,12 @@ function makeTerminalOut(prompt, tagColor) {
   return wrap;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return function to print a string, given a DIV id and optional row/column
+/** Return function to print a string, given a DIV id and optional row/column.
  */
 function makeHTMLConsole(divId, row, col) {
-  let buffer = [];
-  return str => {
-    m_HTMLTextOut(str, buffer, divId, row, col);
+  const buffer = [];
+  return (str, y = row, x = col) => {
+    m_HTMLTextOut(str, buffer, divId, y, x);
   };
 }
 

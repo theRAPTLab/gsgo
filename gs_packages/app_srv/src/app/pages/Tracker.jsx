@@ -36,8 +36,19 @@ const useStyles = theme => ({
 /// DEBUGGING STUFF ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // debugging stuff
+let X = 0;
+let INC = 1;
+const ZIP = '=@=';
+const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
   FCOUT(`framecount: ${frameCount}`);
+  if (frameCount % 6) return;
+  FCOUT(ZIP_BLNK, 3, X);
+  X += INC;
+  FCOUT(ZIP, 3, X);
+  FCOUT(`X: ${X}`, 4);
+  if (X < 1) INC = 1;
+  if (X > 24) INC = -1;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// END DEBUGGING STUFF ///////////////////////////////////////////////////////
@@ -73,7 +84,7 @@ class Tracker extends React.Component {
           className={classes.cell}
           style={{ gridColumnEnd: 'span 2', backgroundColor: 'lavender' }}
         >
-          TEMP CONSOLE
+          DEBUGGER
         </div>
         <div
           id="root-renderer"
