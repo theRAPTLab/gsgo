@@ -102,6 +102,7 @@ module.exports = {
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   SetPromptColor: PROMPTS.setPromptColor,
+  HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   // FORWARDED CLASSES
   class: { PhaseMachine }
 };

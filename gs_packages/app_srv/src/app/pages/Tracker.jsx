@@ -10,13 +10,13 @@ import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 
 import UR from '@gemstep/ursys/client';
-
-import RUNTIME from '../modules/sim/runtime';
-import * as Renderer from '../modules/tests/test-renderer';
+import { Init, HookResize, Draw } from '../modules/tests/test-renderer';
+import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
+const FCOUT = UR.HTMLConsoleUtil('ursys-console', 1, 0);
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,19 +33,23 @@ const useStyles = theme => ({
     padding: '5px'
   }
 });
+/// DEBUGGING STUFF ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// debugging stuff
+UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
+  FCOUT(`framecount: ${frameCount}`);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// END DEBUGGING STUFF ///////////////////////////////////////////////////////
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Tracker extends React.Component {
   componentDidMount() {
     const renderRoot = document.getElementById('root-renderer');
-    /* test code */
-    // Sim.LoadSimulation();
-    // Sim.StartSimulation();
-    /* end test code */
-    Renderer.Init(renderRoot);
-    Renderer.HookResize();
-    Renderer.Draw();
+    Init(renderRoot);
+    HookResize();
+    Draw();
   }
 
   componentWillUnmount() {
@@ -65,10 +69,11 @@ class Tracker extends React.Component {
           <Typography>RESIZEABLE PIXIJS SHELL</Typography>
         </div>
         <div
+          id="ursys-console"
           className={classes.cell}
           style={{ gridColumnEnd: 'span 2', backgroundColor: 'lavender' }}
         >
-          left
+          TEMP CONSOLE
         </div>
         <div
           id="root-renderer"
@@ -97,9 +102,6 @@ class Tracker extends React.Component {
     );
   }
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// requirement for URSYS MODULES and COMPONENTS
-Tracker.MOD_ID = __dirname;
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
