@@ -1,5 +1,3 @@
 # our dist path is @gemstep/client and @gemstep/server
-# include these files so people don't need to compile
-# separately
-# /client
-# /server
+/client
+/server
