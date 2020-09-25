@@ -16,7 +16,7 @@ import '../modules/sim/runtime';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
-const FCOUT = UR.HTMLConsoleUtil('ursys-console', 1, 0);
+const HCON = UR.HTMLConsoleUtil('ursys-console', 1, 0);
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,14 +41,20 @@ let INC = 1;
 const ZIP = '=@=';
 const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
-  FCOUT(`framecount: ${frameCount}`);
+  HCON.plot(`framecount: ${frameCount}`);
   if (frameCount % 6) return;
-  FCOUT(ZIP_BLNK, 3, X);
+  HCON.plot(ZIP_BLNK, 3, X);
   X += INC;
-  FCOUT(ZIP, 3, X);
-  FCOUT(`X: ${X}`, 4);
+  HCON.plot(ZIP, 3, X);
+  const XS = `${X}`.padStart(3, ' ');
+  HCON.plot(`X: ${XS}`, 5);
   if (X < 1) INC = 1;
   if (X > 24) INC = -1;
+  if (Math.random() > 0.5) {
+    HCON.gotoRow(6);
+    HCON.print(`data log:${Math.random().toFixed(2)}`);
+  }
+  if (Math.random() > 0.95) HCON.clear(6);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// END DEBUGGING STUFF ///////////////////////////////////////////////////////
@@ -84,7 +90,7 @@ class Tracker extends React.Component {
           className={classes.cell}
           style={{ gridColumnEnd: 'span 2', backgroundColor: 'lavender' }}
         >
-          DEBUGGER
+          DEV DEBUG
         </div>
         <div
           id="root-renderer"

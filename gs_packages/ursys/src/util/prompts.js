@@ -153,30 +153,61 @@ function m_MakeColorArray(prompt, tagColor) {
     : [`%c${m_PadString(prompt)}%c `, color, reset]; // browser
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Function to modify the text area of a passed HTML element.
- */
-function m_HTMLTextOut(str = '', lineBuffer = [], id, row = 0, col = 0) {
+function m_GetDivText(id) {
   const el = document.getElementById(id);
-  if (!el) return;
+  if (!el) return {};
   const text = el.textContent;
   if (text === undefined) {
     console.log(`HTMLTextOut: element ${id} does not have textContent`);
-    return;
+    return {};
   }
-  // override style
   el.style.whiteSpace = 'pre';
   el.style.fontFamily = 'monospace';
+  return { element: el, text };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_HTMLTextJumpRow(row, lineBuffer, id) {
+  const { element, text } = m_GetDivText(id);
+  if (text === undefined) return lineBuffer;
   // convert content to line buffer
-  if (lineBuffer.length === 0) lineBuffer = text.split('\n');
+  if (lineBuffer.length === 0) {
+    console.log(`initializing linebuffer from element id='${id}'`);
+    lineBuffer = text.split('\n'); // creates a NEW array
+  }
   // handle line underflow in buffer if row exceeds line buffer
   if (row > lineBuffer.length - 1) {
-    for (let i = row + 1 - lineBuffer.length; i > 0; i--) lineBuffer.push('');
+    const count = row + 1 - lineBuffer.length;
+    for (let i = count; i > 0; i--) lineBuffer.push('');
   }
+  return lineBuffer;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_HTMLTextPrint(str = '', lineBuffer, id) {
+  const { element, text } = m_GetDivText(id);
+  if (!text) return lineBuffer;
+  // append text
+  lineBuffer.push(str);
+  element.textContent = lineBuffer.join('\n');
+  return lineBuffer;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Function to modify the text area of a passed HTML element. Always return
+ *  lineBuffer so we can reassign the reference, as the array often changes.
+ */
+function m_HTMLTextPlot(str = '', lineBuffer, id, row = 0, col = 0) {
+  const { element, text } = m_GetDivText(id);
+  if (!element) return lineBuffer;
+  if (text === undefined) {
+    console.log(`HTMLTextOut: element ${id} does not have textContent`);
+    return lineBuffer;
+  }
+  // ensure row exists
+  lineBuffer = m_HTMLTextJumpRow(row, lineBuffer, id);
   // fetch line
   let line = lineBuffer[row];
   if (line === undefined) {
     console.log(`HTMLTextOut: unexpected line error for line ${row}`);
-    return;
+    return lineBuffer;
   }
   // handle column underflow in line if col exceeds line length
   if (col + str.length > line.length + str.length) {
@@ -187,7 +218,8 @@ function m_HTMLTextOut(str = '', lineBuffer = [], id, row = 0, col = 0) {
   let p3 = line.substr(col + str.length, line.length - (col + str.length));
   lineBuffer[row] = `${p1}${str}${p3}`;
   // write buffer back out
-  el.textContent = lineBuffer.join('\n');
+  element.textContent = lineBuffer.join('\n');
+  return lineBuffer;
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -239,10 +271,23 @@ function makeTerminalOut(prompt, tagColor) {
 /** Return function to print a string, given a DIV id and optional row/column.
  */
 function makeHTMLConsole(divId, row, col) {
-  const buffer = [];
-  return (str, y = row, x = col) => {
-    m_HTMLTextOut(str, buffer, divId, y, x);
+  let buffer = [];
+  const hcon = {
+    buffer: [],
+    plot: (str, y = row, x = col) => {
+      buffer = m_HTMLTextPlot(str, buffer, divId, y, x);
+    },
+    print: str => {
+      buffer = m_HTMLTextPrint(str, buffer, divId);
+    },
+    clear: (startRow = 0, endRow = buffer.length) => {
+      buffer.splice(startRow, endRow);
+    },
+    gotoRow: row => {
+      buffer = m_HTMLTextJumpRow(row, buffer, divId);
+    }
   };
+  return hcon;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
