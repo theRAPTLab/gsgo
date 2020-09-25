@@ -315,12 +315,69 @@ test-displaylist: loaded by test-agents
 
 * [x] move the `vis` classes into sim.
 * [x] move the code from `test-displaylist` to `sim_render`
+
+Ok, the rendering cycle is now cleaned up sim_render ... there was a stupid bug with the phase machine induced by adding debug statements in a way that triggered a false console error which lead to a series of cascading failures until I reverted to a previous build. UNBILLABLE.
+
+## SEP 23 THU - Renderer/Sprite/Viewport Placeholder Goal!
+
+I'm trying to get SOME kind of minimal renderer pipeline modularized. The trick is that there has to be separation from the model and the visual system. The only communication that is allowed from model/sim to visual system is through **display objects**. Likewise, we need to receive **entity positions** as well as **input triggers** from outside the system using some kind of event system which I'll call **control objects**.
+
+ For FakeTrack to work, it needs to:
+
+* [ ] Create from 1 to 10 sprites
+* [ ] Package sprite positions into control object
+* [ ] Package button triggers into control object
+* [ ] Identify a **converter** process to turn raw data into the universal control object format
+* [ ] Package a unique data frame that can be processed separately from other data objects, using **multiple SyncMaps**.
+* [ ] Consolidate all data objects, control objects into sprite renderer
+
+In the meantime, thinking about this architecture in the rendering with the above in mind. 
+
 * [ ] port of `test-renderer` into the runtime
+  * [x] `HookResize()` in the debounced window resize
+  * [ ] **sim_agents** calls **test-agents** `TestAgentUpdate()` which just calls **SMC programs**
+  * [ ] the actual agent updates are done in **sim_render** by didling the agent instances directly. We should move this to Agents Update, and separate the different sprite pools.
+  * [ ] Maybe Sprites needs to maintain the big list itself. 
+  * [ ] There are multiple channels of display object and now control objects (for input events from PTrack and FakeTrack, buttons, etc). Do they get their own display object channel too?
 
-Ok, the rendering cycle is now cleaned up some sim_render 
+These are important issues. I made a **[thinking worksheet](https://whimsical.com/UxyGMWHtQ9jZadP2RchD34)** to make sense of the **module relationships** between controls (formerly called inputs) and their **control objects**, and display elements with **visual objects** (formerly called display objects). These are data structures uses for communicating change, so "object" isn't the greatest name for them. `ctrObj` and `visObj` are ok as parameter names, though, so maybe we'll just stick with that. 
 
+**THE BIG QUESTIONS** to resolve right now is
 
+* who manages agent-to-vobj conversion?
+* who stores the current displayList?
+* who sends outgoing displayList?
+* who manages MULTIPLE displayLists?
+* who receives incoming displayList
+* who manages vobj-to-sprite conversion?
+* who manages MULTIPLE RECIEVED displayLists?
+* who managers input-to-ctrobj conversion?
 
+The whimsical document was updated to answer all these questions, so now we have a roadmap to follow.
+
+* defined simserver, input devices, asset server (which serves sprite elements)
+* defined render, controls, and asset synchronization modules.
+
+This should be helpful. To **reassess** the todo list from earlier for a FakeTrack base, simplified:
+
+* [x] Move stuff out of `test-render` 
+* [x] Move SyncMap data structures -> Render Passes, because SyncMaps _are_ render passes!!!
+* [x] Split `syncFrom*()` into two parts: one that determines what changed, and one that processes what changed
+* [ ] now disconnect `test-renderer` and substitute `renderer` in **TrackerJSX**
+
+Does it work? Still not seeing agents OR the old bunny. Too much weird test code. 
+
+*  is renderer.Render() being called? Yes
+*  is renderer.UpdateModelList() being called? Yes
+   *  who's calling it? test-display-list
+   *  are dobjs passed? yes, from AGENT_TO_DOBJ_UPDATE.getSyncedObjects()
+   *  the AgentList that's retrieved may not actually do something
+*  ended up being the wrong reference, because in test code they create their own dictionaries
+
+* [x] in renderer, hacked in temporary sprite updater
+* [ ] port sprite code in `test-renderer` to Sprite class
+* [ ] re-add "drag and drop" sprite, now in Sprite class definition
+* [ ] rename `test-agents` to `agent-functions`
 
 
 ---

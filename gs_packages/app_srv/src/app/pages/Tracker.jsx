@@ -10,13 +10,13 @@ import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 
 import UR from '@gemstep/ursys/client';
-import { Init, HookResize, Draw } from '../modules/tests/test-renderer';
+import { Init, HookResize } from '../modules/sim/display/renderer';
 import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('ursys-console', 1, 0);
+const HCON = UR.HTMLConsoleUtil('ursys-console-1');
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +52,7 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
   if (X > 24) INC = -1;
   if (Math.random() > 0.5) {
     HCON.gotoRow(6);
-    HCON.print(`data log:${Math.random().toFixed(2)}`);
+    HCON.print(`dummy datalog: ${Math.random().toFixed(2)}`);
   }
   if (Math.random() > 0.95) HCON.clear(6);
 });
@@ -63,10 +63,10 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Tracker extends React.Component {
   componentDidMount() {
+    // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
     Init(renderRoot);
-    HookResize();
-    Draw();
+    HookResize(window);
   }
 
   componentWillUnmount() {
@@ -86,7 +86,7 @@ class Tracker extends React.Component {
           <Typography>RESIZEABLE PIXIJS SHELL</Typography>
         </div>
         <div
-          id="ursys-console"
+          id="ursys-console-1"
           className={classes.cell}
           style={{ gridColumnEnd: 'span 2', backgroundColor: 'lavender' }}
         >
@@ -110,6 +110,7 @@ class Tracker extends React.Component {
           right
         </div>
         <div
+          id="ursys-console-2"
           className={classes.cell}
           style={{ gridColumnEnd: 'span 12', backgroundColor: 'thistle' }}
         >

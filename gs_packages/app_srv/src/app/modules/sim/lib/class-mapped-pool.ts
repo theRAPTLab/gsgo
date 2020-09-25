@@ -5,6 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import Pool, { IPoolable } from './class-pool';
+import { ISyncResults } from './t-pool';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,6 +66,7 @@ export default class MappedPool {
   cbRemover: RemoveFunction;
   ifRemove: TestFunction;
   pool: Pool;
+  deltas: ISyncResults;
 
   constructor(pool: Pool, conf: SyncFunctions) {
     // ensure that constructor has full complement of functions
@@ -89,72 +91,65 @@ export default class MappedPool {
   /** given source map, do the obj.id mapping to our pool */
   syncFromMap(srcMap: PoolableMap) {
     const sobjs = [...srcMap.values()];
-
     // build update and add array by iterated over source objects
-    const arr_update = [];
-    const arr_add = [];
+    const updated = [];
+    const added = [];
     sobjs.forEach(sobj => {
-      if (this.pool.has(sobj.id)) arr_update.push(sobj);
-      else arr_add.push(sobj);
+      if (this.pool.has(sobj.id)) updated.push(sobj);
+      else added.push(sobj);
     });
     // build remove array by iterating over allocated objects
-    const arr_remove = this.pool
+    const removed = this.pool
       .getAllocated() // get array of in-use pool objects
       .filter(poolObj => !srcMap.has(poolObj.id) && this.ifRemove(poolObj));
-
-    // process all through the appropriate function
-    arr_update.forEach(sobj => {
-      const dobj = this.pool.get(sobj.id);
-      this.cbUpdater(sobj, dobj);
-    });
-    arr_add.forEach(sobj => {
-      const dobj = this.pool.allocateId(sobj.id);
-      this.cbAdder(sobj, dobj);
-    });
-    arr_remove.forEach(dobj => {
-      this.cbRemover(dobj);
-      this.pool.deallocate(dobj);
-    });
     // return lists of what was done
-    return { added: arr_add, updated: arr_update, removed: arr_remove };
+    this.deltas = { added, updated, removed };
+    return this.deltas;
   }
 
   /** given source array, do the obj.id mapping to our pool */
   syncFromArray(sobjs: PoolableArray) {
     // build update and add array by iterated over source objects
     const seen_sobjs = new Set(); // track ids that were added up updated
-    const arr_update = [];
-    const arr_add = [];
+    const updated = [];
+    const added = [];
     sobjs.forEach(sobj => {
-      if (this.pool.has(sobj.id)) arr_update.push(sobj);
-      else arr_add.push(sobj);
+      if (this.pool.has(sobj.id)) updated.push(sobj);
+      else added.push(sobj);
       seen_sobjs.add(sobj.id);
     });
     // build remove array by iterating over allocated objects
-    const arr_remove = [];
+    const removed = [];
     const pobjs = this.pool.getAllocated();
     // get all the objects that are already allocated
     pobjs.forEach(pobj => {
       const sobjGone = !seen_sobjs.has(pobj.id);
       const yesRemove = this.ifRemove(pobj);
-      if (sobjGone && yesRemove) arr_remove.push(pobj);
-    });
-    // process all through the appropriate function
-    arr_update.forEach(sobj => {
-      const dobj = this.pool.get(sobj.id);
-      this.cbUpdater(sobj, dobj);
-    });
-    arr_add.forEach(sobj => {
-      const dobj = this.pool.allocateId(sobj.id);
-      this.cbAdder(sobj, dobj);
-    });
-    arr_remove.forEach(dobj => {
-      this.cbRemover(dobj);
-      this.pool.deallocate(dobj);
+      if (sobjGone && yesRemove) removed.push(pobj);
     });
     // added and updated will contain source objs
     // removed will contain "deleted" pool objects
-    return { added: arr_add, updated: arr_update, removed: arr_remove };
+    this.deltas = { added, updated, removed };
+    return this.deltas;
+  }
+
+  processSyncedObjects() {
+    if (!this.deltas) return;
+    const { updated, added, removed } = this.deltas;
+    // process all through the appropriate function
+    updated.forEach(sobj => {
+      const dobj = this.pool.get(sobj.id);
+      this.cbUpdater(sobj, dobj);
+    });
+    added.forEach(sobj => {
+      const dobj = this.pool.allocateId(sobj.id);
+      this.cbAdder(sobj, dobj);
+    });
+    removed.forEach(dobj => {
+      this.cbRemover(dobj);
+      this.pool.deallocate(dobj);
+    });
+    this.deltas = undefined;
   }
 
   getSyncedObjects() {

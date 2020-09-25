@@ -7,18 +7,31 @@ import SyncMap from '../sim/lib/class-syncmap';
 
 const PR = UR.PrefixUtil('TestRender');
 
-let PIXI_APP;
-let PIXI_ROOT;
-let SPRITES = {};
-let CONTAINERS = {};
+/// PIXI INSTANCES
+let PIXI_APP; // PixiJS instance
+let PIXI_ROOT; // PixiJS root element
+
+/// DEMO CODE SPRITE LIBRARY
+let SPRITES = {}; // sprite resources dictionary
+let CONTAINERS = {}; // PixiJS contain references
+
+/// ASSET LOADER
 const LOADER = PIXI.Loader.shared;
 
-// initialize display list
+/// RENDERER INITIALIZE -- copy to sim_render
+PIXI.utils.skipHello();
+if (PIXI_APP) throw Error('renderer already defined');
+PIXI_APP = new PIXI.Application({ width: 512, height: 512 });
+const root = new PIXI.Container();
+PIXI_APP.stage.addChild(root);
+
+/** initialize display list **/
+let num = 1;
 const DISPLAY_LIST = new SyncMap('DOB-SPR', {
   Constructor: Sprite,
   autoGrow: true
 });
-let num = 3;
+//
 DISPLAY_LIST.setObjectHandlers({
   onAdd: (dobj, spr) => {
     spr.add(root);
@@ -33,13 +46,6 @@ DISPLAY_LIST.setObjectHandlers({
   onRemove: spr => {}
 });
 
-/** initialize at runtime */
-PIXI.utils.skipHello();
-if (PIXI_APP) throw Error('renderer already defined');
-PIXI_APP = new PIXI.Application({ width: 512, height: 512 });
-const root = new PIXI.Container();
-PIXI_APP.stage.addChild(root);
-
 /** initalizze and attach renderer view to element */
 function Init(element) {
   document.body.style.margin = '0px';
@@ -52,6 +58,10 @@ function Init(element) {
   PIXI_ROOT.appendChild(PIXI_APP.view);
   PIXI_APP.renderer.resize(PIXI_ROOT.offsetWidth, PIXI_ROOT.offsetHeight);
   //
+  MakeOneBunny();
+}
+
+function MakeOneBunny() {
   function onDragStart(event) {
     // store a reference to the data
     // the reason for this is because of multitouch
@@ -60,14 +70,12 @@ function Init(element) {
     this.alpha = 0.5;
     this.dragging = true;
   }
-
   function onDragEnd() {
     this.alpha = 1;
     this.dragging = false;
     // set the interaction data to null
     this.data = null;
   }
-
   function onDragMove() {
     if (this.dragging) {
       const newPosition = this.data.getLocalPosition(this.parent);
@@ -76,7 +84,6 @@ function Init(element) {
     }
   }
 
-  //
   const { bunny } = SPRITES;
   bunny.interactive = true;
   bunny.on('mousedown', onDragStart);
@@ -127,6 +134,8 @@ function HandleDisplayList(displayList) {
 }
 function Draw() {}
 
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('UR', 'APP_LOAD', () => {
   const loadSprites = (resolve, reject) => {
     LOADER.add('static/sprites/bunny.json').load(loader => {
@@ -139,4 +148,6 @@ UR.SystemHook('UR', 'APP_LOAD', () => {
   return new Promise(loadSprites);
 });
 
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { Init, HookResize, HandleDisplayList, Draw };

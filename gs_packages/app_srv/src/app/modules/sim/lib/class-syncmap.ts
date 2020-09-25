@@ -23,6 +23,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Pool, { IPoolable, IPoolOptions } from './class-pool';
+import { ISyncResults } from './t-pool';
 import MappedPool, {
   SyncFunctions,
   TestFunction,
@@ -36,12 +37,6 @@ import MappedPool, {
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SMAP');
-
-interface ISyncResults {
-  added: IPoolable[];
-  updated: IPoolable[];
-  removed: IPoolable[];
-}
 
 /// NULL FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,8 +54,11 @@ const f_NullRemove = (remObj: IPoolable) => {};
 class SyncMap {
   pool: Pool;
   map: MappedPool;
+  deltas: ISyncResults;
 
   constructor(poolName: string, poolOptions: IPoolOptions) {
+    if (typeof poolName !== 'string') throw Error('arg1 must be string name');
+    if (typeof poolOptions !== 'object') throw Error('arg2 must be config obj');
     // pool options have a Constructor at minimum
     this.pool = new Pool(poolName, poolOptions);
     // the default mapped pool uses null functions
@@ -112,14 +110,24 @@ class SyncMap {
    *  and object (e.g. AGENTS). In those cases, use syncFromArray() instead
    */
   syncFromMap(srcMap: PoolableMap) {
-    return this.map.syncFromMap(srcMap);
+    this.deltas = this.map.syncFromMap(srcMap);
+    return this.deltas;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Updates derived objects from an array of source objects
    *  param: sobjs IPoolable[]
    *  return: { added,updated,removed } arrays
    */
   syncFromArray(sobjs: PoolableArray) {
-    return this.map.syncFromArray(sobjs);
+    this.deltas = this.map.syncFromArray(sobjs);
+    return this.deltas;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Execute add, update, remove functions for the objects that were
+   *  synced through syncFromMap() or syncFromArray()
+   */
+  processSyncedObjects() {
+    return this.map.processSyncedObjects();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return all the objects that are in use, which are stored in pool
@@ -128,17 +136,21 @@ class SyncMap {
   getSyncedObjects(): IPoolable[] {
     return this.pool.getAllocated();
   }
-  getSyncedIds(): number[] {
-    return this.pool.getAllocatedIds();
-  }
-  hasSyncedId(objId: number): boolean {
-    return this.pool.has(objId);
-  }
   getSyncedObject(objId: number): IPoolable {
     return this.pool.get(objId);
   }
   clearSyncedObjects(): void {
     this.pool.reset();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** ObjectId-based access. Note that this refers the original source key,
+   *  which is mirrored in the synced objects
+   */
+  getSyncedIds(): number[] {
+    return this.pool.getAllocatedIds();
+  }
+  hasSyncedId(objId: number): boolean {
+    return this.pool.has(objId);
   }
 }
 

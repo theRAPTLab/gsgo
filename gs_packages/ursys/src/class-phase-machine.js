@@ -155,7 +155,7 @@ class PhaseMachine {
     // check that there are promises to execute
     let hooks = this.OP_HOOKS.get(op);
     if (hooks.length === 0) {
-      if (DBG.ops) console.log(...this.PR(`[${op}] no subscribers`));
+      if (DBG.ops) console.log(...PR(`[${op}] no subscribers`));
       return Promise.resolve();
     }
 
@@ -172,21 +172,21 @@ class PhaseMachine {
       }
     });
     if (DBG.ops && hooks.length)
-      console.log(...this.PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
+      console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
     if (DBG.ops && icount)
-      console.log(...this.PR(`[${op}] PROMISES QUEUED    : ${icount}`));
+      console.log(...PR(`[${op}] PROMISES QUEUED    : ${icount}`));
 
     // wait for all promises to execute
     return Promise.all(promises)
       .then(values => {
         if (DBG.ops && values.length)
           console.log(
-            ...this.PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
+            ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
           );
         return values;
       })
       .catch(err => {
-        if (DBG.ops) console.log(...this.PR(`[${op}]: ${err}`));
+        if (DBG.ops) console.log(...PR(`[${op}]: ${err}`));
         throw Error(`[${op}]: ${err}`);
       });
   }
@@ -196,7 +196,7 @@ class PhaseMachine {
    *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
    */
   ExecutePhase(phaseName, ...args) {
-    if (DBG.phases) console.log(...this.PR(`ExecutePhase('${phaseName}')`));
+    if (DBG.phases) console.log(...PR(`ExecutePhase('${phaseName}')`));
     const ops = this.PHASES[phaseName];
     if (ops === undefined)
       throw Error(`Phase "${phaseName}" doesn't exist in ${this.NAME}`);
@@ -228,7 +228,7 @@ class PhaseMachine {
    *  client-exec SystemRun()
    */
   GetHookFunctions(op) {
-    if (DBG.ops) console.log(...this.PR(`getting hook for '${op}'`));
+    if (DBG.ops) console.log(...PR(`getting hook for '${op}'`));
     return this.OP_HOOKS.get(op).map(hook => hook.f);
   }
 
@@ -238,8 +238,7 @@ class PhaseMachine {
   GetPhaseFunctionsAsMap(phaseName) {
     if (!phaseName.startsWith('PHASE_'))
       throw Error(`${phaseName} is not a Phase Group name`);
-    if (DBG.ops)
-      console.log(...this.PR(`getting hook map for phase '${phaseName}'`));
+    if (DBG.ops) console.log(...PR(`getting hook map for phase '${phaseName}'`));
     const phaseOps = this.PHASES[phaseName]; // list of operations in the phase
     const map = new WeakMap();
     phaseOps.forEach(pop => {

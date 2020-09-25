@@ -10,6 +10,7 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from './lib/class-syncmap';
 import Sprite from './lib/class-sprite';
+import { Render } from './display/renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,8 +42,7 @@ function m_Initialize() {
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_RenderDisplayList(frameNum) {
-  if (!MAPPED_SPRITES) throw Error('called before init()');
-  DOBJ_LIST = MAPPED_SPRITES.getSyncedObjects();
+  Render(frameNum);
 }
 
 /// API FUNCTIONS /////////////////////////////////////////////////////////////

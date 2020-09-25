@@ -6,9 +6,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import DisplayObject from './lib/class-display-object';
-import SyncMap from './lib/class-syncmap';
-import Sprite from './lib/class-sprite';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,10 +13,10 @@ const PR = UR.PrefixUtil('RUNTIME-CORE');
 
 /// INSTANCE MAPS /////////////////////////////////////////////////////////////
 const AGENTS = new Map();
-const AGENT_DOBJ = new SyncMap('AGT-DOB', { Constructor: DisplayObject });
-const DOBJ_SPRITE = new SyncMap('DOB-SPR', { Constructor: Sprite });
 
 /// RUNTIME ASSETS ////////////////////////////////////////////////////////////
+/// Visual assets (such as sprites) are not stored in datacore but
+/// are available in the renderer classes. Datacore is for pure model data.
 const FEATURES = new Map();
 const TEMPLATES = new Map();
 const CONDITIONS = new Map();

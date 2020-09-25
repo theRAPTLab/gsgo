@@ -79,6 +79,9 @@ const CSS_COLORS = {
   TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`
 };
 
+// div console
+const HTCONSOLES = {};
+
 /// OUTPUT CONTROL ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** define
@@ -270,23 +273,30 @@ function makeTerminalOut(prompt, tagColor) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return function to print a string, given a DIV id and optional row/column.
  */
-function makeHTMLConsole(divId, row, col) {
+function makeHTMLConsole(divId, row = 0, col = 0) {
   let buffer = [];
-  const hcon = {
-    buffer: [],
-    plot: (str, y = row, x = col) => {
-      buffer = m_HTMLTextPlot(str, buffer, divId, y, x);
-    },
-    print: str => {
-      buffer = m_HTMLTextPrint(str, buffer, divId);
-    },
-    clear: (startRow = 0, endRow = buffer.length) => {
-      buffer.splice(startRow, endRow);
-    },
-    gotoRow: row => {
-      buffer = m_HTMLTextJumpRow(row, buffer, divId);
-    }
-  };
+  if (typeof divId !== 'string') throw Error('bad id');
+  let hcon;
+  if (HTCONSOLES[divId]) {
+    hcon = HTCONSOLES[divId];
+  } else {
+    hcon = {
+      buffer: [],
+      plot: (str, y = row, x = col) => {
+        buffer = m_HTMLTextPlot(str, buffer, divId, y, x);
+      },
+      print: str => {
+        buffer = m_HTMLTextPrint(str, buffer, divId);
+      },
+      clear: (startRow = 0, endRow = buffer.length) => {
+        buffer.splice(startRow, endRow);
+      },
+      gotoRow: row => {
+        buffer = m_HTMLTextJumpRow(row, buffer, divId);
+      }
+    };
+    HTCONSOLES[divId] = hcon;
+  }
   return hcon;
 }
 

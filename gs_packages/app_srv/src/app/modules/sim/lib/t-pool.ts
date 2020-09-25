@@ -24,3 +24,9 @@ export interface IPoolOptions {
   batchSize?: number; // number of elements to add when growing
   autoGrow?: boolean; // whether to automatically increase size or error out
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface ISyncResults {
+  added: IPoolable[];
+  updated: IPoolable[];
+  removed: IPoolable[];
+}

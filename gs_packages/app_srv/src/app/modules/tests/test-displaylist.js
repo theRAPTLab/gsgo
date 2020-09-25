@@ -2,6 +2,9 @@
 
   DisplayList Tests
 
+  These are data structure exercisers that wiill eventually be moved to
+  Jest testing. It's useful only as a reference for generating data to test.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -10,7 +13,7 @@ import MappedPool, { TestArrayEntities } from '../sim/lib/class-mapped-pool';
 import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
 import DisplayObject, { TestValidDOBJs } from '../sim/lib/class-display-object';
 import Sprite from '../sim/lib/class-sprite';
-import * as RENDERER from './test-renderer';
+import { UpdateModelList } from '../sim/display/renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -146,7 +149,6 @@ function TestDisplayList() {
     },
     onRemove: u_NullRemove
   });
-
   /* TEST 4 - Inspect Display List */
   // the AGENTS map is keyed by type, containing Sets of agent instances
   const agents = AGENTS_GetArrayAll();
@@ -199,12 +201,13 @@ function TestUpdateDisplayList(frameTime) {
     agent.prop('y').value = y;
   });
   AGENT_TO_DOBJ_UPDATE.syncFromArray(agents);
+  AGENT_TO_DOBJ_UPDATE.processSyncedObjects();
   // test single object updates
   // const dobj = DOBJ_POOL.get(510);
   // console.log('dobj x,y=', dobj.x, dobj.y);
   const displayList = AGENT_TO_DOBJ_UPDATE.getSyncedObjects();
   // console.log(...PR('Update List'));
-  RENDERER.HandleDisplayList(displayList);
+  UpdateModelList(displayList);
 }
 function TestInit() {
   console.log(...PR('Init'));
