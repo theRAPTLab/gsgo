@@ -373,11 +373,14 @@ Does it work? Still not seeing agents OR the old bunny. Too much weird test code
    *  are dobjs passed? yes, from AGENT_TO_DOBJ_UPDATE.getSyncedObjects()
    *  the AgentList that's retrieved may not actually do something
 *  ended up being the wrong reference, because in test code they create their own dictionaries
-
 * [x] in renderer, hacked in temporary sprite updater
-* [ ] port sprite code in `test-renderer` to Sprite class
+* [x] rename `test-agents` to `agent-functions`
+* [x] port sprite code in `test-renderer` to Sprite class
+
+Ok, this sorta works! It's still a mess but need to take a break
+
 * [ ] re-add "drag and drop" sprite, now in Sprite class definition
-* [ ] rename `test-agents` to `agent-functions`
+
 
 
 ---

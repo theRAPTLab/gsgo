@@ -12,7 +12,7 @@ import {
   TestAgentUpdate,
   TestAgentThink,
   TestAgentExec
-} from '../tests/test-agents';
+} from '../tests/agent-functions';
 import { AGENTS_GetArrayAll } from './runtime-datacore';
 import SyncMap from './lib/class-syncmap';
 import { UpdateModelList } from './display/renderer';

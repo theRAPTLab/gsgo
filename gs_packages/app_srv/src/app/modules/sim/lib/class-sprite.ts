@@ -7,12 +7,19 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// placeholders
+interface ISpriteStore {
+  sheet?: PIXI.Spritesheet;
+}
+const LOADER = PIXI.Loader.shared;
+const SHEETS: ISpriteStore = {};
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,7 +29,6 @@ import { IPoolable } from './t-pool';
 class Sprite implements IVisual, IPoolable {
   // visual
   sprite: PIXI.Sprite;
-  refId: number;
   // poolable
   id: number;
   _pool_id: number;
@@ -30,16 +36,19 @@ class Sprite implements IVisual, IPoolable {
   root: PIXI.Container;
 
   constructor(id: number) {
-    this.sprite = new PIXI.Sprite();
     this.id = id; // store reference
+    const spr = new PIXI.Sprite();
+    spr.pivot.x = spr.width / 2;
+    spr.pivot.y = spr.height / 2;
+    this.sprite = spr;
   }
 
-  setTexture(texture: PIXI.Texture) {
-    this.sprite.texture = texture;
+  setTexture(name: string) {
+    const tex = SHEETS.sheet.textures[name];
+    this.sprite.texture = tex;
   }
 
   add(root: PIXI.Container) {
-    console.log('adding');
     this.root = root;
     root.addChild(this.sprite);
   }
@@ -52,10 +61,6 @@ class Sprite implements IVisual, IPoolable {
   setPosition(x: number, y: number) {
     this.sprite.position.set(x, y);
   }
-
-  /// RENDERING ///////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  draw() {}
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,10 +117,50 @@ class Sprite implements IVisual, IPoolable {
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MakeDraggable(spr: PIXI.Sprite) {
+  function onDragStart(event) {
+    // store a reference to the data
+    // the reason for this is because of multitouch
+    // we want to track the movement of this particular touch
+    this.data = event.data;
+    this.alpha = 0.5;
+    this.dragging = true;
+  }
+  function onDragEnd() {
+    this.alpha = 1;
+    this.dragging = false;
+    // set the interaction data to null
+    this.data = null;
+  }
+  function onDragMove() {
+    if (this.dragging) {
+      const newPosition = this.data.getLocalPosition(this.parent);
+      this.x = newPosition.x;
+      this.y = newPosition.y;
+    }
+  }
+  spr.interactive = true;
+  spr.on('mousedown', onDragStart);
+  spr.on('mouseup', onDragEnd);
+  spr.on('mouseupoutside', onDragEnd);
+  spr.on('mousemove', onDragMove);
+}
 
-/// INITIALIZATION ////////////////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('UR', 'APP_LOAD', () => {
+  const loadSprites = (resolve, reject) => {
+    LOADER.add('static/sprites/bunny.json').load(loader => {
+      let sheet: PIXI.Spritesheet =
+        loader.resources['static/sprites/bunny.json'].spritesheet;
+      SHEETS.sheet = sheet;
+      resolve();
+    });
+  };
+  return new Promise(loadSprites);
+});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Sprite;
+export { MakeDraggable };

@@ -7,6 +7,5 @@
 /// VISUALS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IVisual {
-  refId: number; // id referencing synched instance
-  draw: () => void; // draw the visual
+  id: number; // id referencing synched instance
 }

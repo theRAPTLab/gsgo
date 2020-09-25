@@ -136,17 +136,17 @@ function Draw() {}
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR', 'APP_LOAD', () => {
-  const loadSprites = (resolve, reject) => {
-    LOADER.add('static/sprites/bunny.json').load(loader => {
-      let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
-      SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
-      SPRITES.sheet = sheet;
-      resolve();
-    });
-  };
-  return new Promise(loadSprites);
-});
+// UR.SystemHook('UR', 'APP_LOAD', () => {
+//   const loadSprites = (resolve, reject) => {
+//     LOADER.add('static/sprites/bunny.json').load(loader => {
+//       let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
+//       SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
+//       SPRITES.sheet = sheet;
+//       resolve();
+//     });
+//   };
+//   return new Promise(loadSprites);
+// });
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

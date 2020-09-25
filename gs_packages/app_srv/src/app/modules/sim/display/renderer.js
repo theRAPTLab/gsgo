@@ -67,8 +67,7 @@ function Init(element) {
       spr.add(CONTAINERS.Root);
       if (++temp_num > 5) temp_num = 1;
       const pick = `${temp_num}`.padStart(2, '0');
-      const tex = SPRITES.sheet.textures[`bunny${pick}.png`];
-      spr.setTexture(tex);
+      spr.setTexture(`bunny${pick}.png`);
       spr.setPosition(dobj.x, dobj.y);
     },
     onUpdate: (dobj, spr) => {
@@ -140,18 +139,6 @@ function Render() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM', 'RESET', () => {
   console.log(...PR('SIM.RESET'));
-});
-UR.SystemHook('UR', 'APP_LOAD', () => {
-  const loadSprites = (resolve, reject) => {
-    LOADER.add('static/sprites/bunny.json').load(loader => {
-      let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;
-      SPRITES.bunny = new PIXI.Sprite(sheet.textures['bunny02.png']);
-      SPRITES.sheet = sheet;
-      resolve();
-      console.log('loaded sprites sheets');
-    });
-  };
-  return new Promise(loadSprites);
 });
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
