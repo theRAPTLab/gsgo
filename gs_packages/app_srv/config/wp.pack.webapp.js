@@ -52,8 +52,8 @@ const WebpackPacker = env => {
   // github.com/webpack-contrib/copy-webpack-plugin
   const COPY_FILES = [
     {
-      from: 'web-index.html.ejs',
-      to: `${DIR_OUT}/index.ejs`,
+      from: 'web-index.html',
+      to: `${DIR_OUT}/index.html`,
       toType: 'file'
     },
     {

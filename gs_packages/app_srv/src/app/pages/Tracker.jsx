@@ -41,7 +41,7 @@ let INC = 1;
 const ZIP = '=@=';
 const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
-  HCON.plot(`framecount: ${frameCount}`);
+  HCON.plot(`framecount: ${frameCount}`, 1);
   if (frameCount % 6) return;
   HCON.plot(ZIP_BLNK, 3, X);
   X += INC;

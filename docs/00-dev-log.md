@@ -381,7 +381,20 @@ Ok, this sorta works! It's still a mess but need to take a break
 
 * [ ] re-add "drag and drop" sprite, now in Sprite class definition
 
+## SEP 25 FRI - Draggin' and Droppin'   Sprites
 
+**sidebar**: I finally got **vscode debugging** working with the browser. 
+
+* install visual studio debugger for chrome
+* create launch.json file, and set up a config for chrome and node each. It's stored in `.vscode/launch.json`
+* to debug Chrome javascript, make sure that the `webRoot` path is pointing to the root path of the *SOURCE* files (`${workspaceFolder}/src/app/`), not the actual served files `${workspaceFolder}/built/web`. If the breakponts don't work, this is why. You can also look at the `sources` field fo the `.map` file to see what your source code module paths look like. If you need to override multiple roots, there is a special sourceFilesOverride (?) property that accepts key/value pairs of the source prefix followed by the override
+* use the RUN menu, and enjoy!
+* You can also set up a **compound** thing that will allow you to run/debug both node and chrome at the same time. You can specify which you are debugging by using the selector in the run button bar, or clicking on the running instance in the call stack display on the left in visual studio code.
+* Otherwise, do `npm run local` as normal and then run the launch config just for the browser.
+
+
+
+ 
 
 ---
 
