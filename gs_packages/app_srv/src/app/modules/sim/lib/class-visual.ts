@@ -1,7 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  sprite class + manager, wrapping PixiJS.Sprite with additional methods
-  relevant to gemstep.
+  visual class + manager, with a default PixiJS.Sprite visual
 
   Extends SMObject, which is our common stackmachine- compatible object.
 
@@ -26,7 +25,7 @@ const SHEETS: ISpriteStore = {};
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Sprite implements IVisual, IPoolable {
+class Visual implements IVisual, IPoolable {
   // visual
   sprite: PIXI.Sprite;
   // poolable
@@ -162,5 +161,5 @@ UR.SystemHook('UR', 'APP_LOAD', () => {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Sprite;
+export default Visual;
 export { MakeDraggable };

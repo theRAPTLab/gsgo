@@ -9,7 +9,7 @@
 
 import UR from '@gemstep/ursys/client';
 import SyncMap from './lib/class-syncmap';
-import Sprite from './lib/class-sprite';
+import Sprite from './lib/class-visual';
 import { Render } from './display/renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

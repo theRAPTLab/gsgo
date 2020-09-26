@@ -6,7 +6,7 @@
 import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
-import Sprite from '../lib/class-sprite';
+import Sprite from '../lib/class-visual';
 import SyncMap from '../lib/class-syncmap';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

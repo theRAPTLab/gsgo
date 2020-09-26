@@ -392,7 +392,32 @@ Ok, this sorta works! It's still a mess but need to take a break
 * You can also set up a **compound** thing that will allow you to run/debug both node and chrome at the same time. You can specify which you are debugging by using the selector in the run button bar, or clicking on the running instance in the call stack display on the left in visual studio code.
 * Otherwise, do `npm run local` as normal and then run the launch config just for the browser.
 
+**resuming** AT MINIMUM I just need to have clickable sprites. I'd like to be able to augment our base sprite class using decoration instead of inheritance, in a manner similar to how I've implemented Features in agents. Furthermore, a main Sprite might have several SUBSPRITES that are controlled by the master. That suggests that "sprite" maybe isn't the term I should use.
 
+```
+MODELING STUFF
+agents, displayobjects (dobjs), features, properties, methods, and...costumes?
+```
+
+Costumes are a feature of Agents, but they could represent ANY visual dressing for a discrete piece of data. I don't think the term matches all the possible kinds of "visual elements" we might have.  In the past, though, we've used the term **Visual** as the generic name, which goes back to terminology we used in the 90s based on. 
+
+```
+PRESENTATION STUFF
+Viewports, Views, Coordinates, Markers, Particles, Screen, Visuals, VisualEffect, Audible, ScreenEffect, AudioEmitter, Renderer, RenderPass, Camera
+```
+
+I'm inclined to call it a Visual class again because it's quite different sounding that other things in our system. The list above seems to work well.
+
+```
+OBJECT SHORTHAND for INSTANCES
+agents/ag, visuals/visual/vobj, displayList/dobjs/dobj, sprites/spr
+```
+
+So now I'm making a **Visual** base object that is the abstract base for a broad class of visuals, which will use an **IVisual** interface. 
+
+* [ ] rename `class-sprite` to `class-visual`
+* [ ] write up the `t-visual.ts` type definitions
+* [ ] create `class-visual.ts` base code definition
 
  
 
