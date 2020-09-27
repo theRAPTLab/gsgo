@@ -16,7 +16,9 @@ import '../modules/sim/runtime';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('ursys-console-1');
+const HCON = UR.HTMLConsoleUtil('console-left');
+const BG_COLOR = '#F0F0F0';
+const BG_TITLE = '#404040';
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,12 +27,15 @@ const useStyles = theme => ({
     display: 'grid',
     width: '100vw',
     height: '100vh',
-    gridTemplateColumns: 'repeat(12,1fr)',
+    gridTemplateColumns: '240px auto 120px',
+    //  gridTemplateColumns: 'repeat(12,1fr)',
     gridTemplateRows: '50px 1fr 100px',
     gridGap: theme.spacing(1)
   },
   cell: {
-    padding: '5px'
+    padding: '5px',
+    whiteSpace: 'prep',
+    fontFamily: 'monospace'
   }
 });
 /// DEBUGGING STUFF ///////////////////////////////////////////////////////////
@@ -78,24 +83,27 @@ class Tracker extends React.Component {
     return (
       <div className={classes.root}>
         <div
+          id="console-top"
+          className={classes.cell}
           style={{
-            gridColumnEnd: 'span 12',
-            backgroundColor: 'lightcyan'
+            gridColumnEnd: 'span 3',
+            color: 'white',
+            backgroundColor: BG_TITLE
           }}
         >
-          <Typography>RESIZEABLE PIXIJS SHELL</Typography>
+          <span style={{ fontSize: '32px' }}>FAKETRACK/TEST</span>
         </div>
         <div
-          id="ursys-console-1"
+          id="console-left"
           className={classes.cell}
-          style={{ gridColumnEnd: 'span 2', backgroundColor: 'lavender' }}
+          style={{ gridColumnEnd: 'span 1', backgroundColor: BG_COLOR }}
         >
-          DEV DEBUG
+          console-left
         </div>
         <div
           id="root-renderer"
           style={{
-            gridColumnEnd: 'span 8',
+            gridColumnEnd: 'span 1',
             position: 'relative',
             width: '100%',
             height: '100%'
@@ -104,17 +112,18 @@ class Tracker extends React.Component {
           mid
         </div>
         <div
+          id="console-right"
           className={classes.cell}
-          style={{ gridColumnEnd: 'span 2', backgroundColor: 'lavender' }}
+          style={{ gridColumnEnd: 'span 1', backgroundColor: BG_COLOR }}
         >
-          right
+          console-right
         </div>
         <div
-          id="ursys-console-2"
+          id="console-bottom"
           className={classes.cell}
-          style={{ gridColumnEnd: 'span 12', backgroundColor: 'thistle' }}
+          style={{ gridColumnEnd: 'span 3', backgroundColor: BG_COLOR }}
         >
-          footer
+          console-bottom
         </div>
       </div>
     );

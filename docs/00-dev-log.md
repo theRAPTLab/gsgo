@@ -440,6 +440,11 @@ I've untangled the resource loader key. There are two kinds of resources so far:
 
 #### Saturday Evening
 
+All that was so I could specify a default sprite for the Sprite class, so I can make markers in the FakeTrack app. It leverages the existing phase system to ensure asynchronous loads are finished before the app continues to load. Let's convert the test agent pattern into a managed system.
+
+* [ ] convert test "random agents" to use default sprites
+* [ ] make each sprite rotate at a different rate
+
 
 
  

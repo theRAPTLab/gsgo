@@ -158,7 +158,7 @@ function m_MakeColorArray(prompt, tagColor) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDivText(id) {
   const el = document.getElementById(id);
-  if (!el) return {};
+  if (!el) throw Error(`GetDivText: element ${id} does not exist`);
   const text = el.textContent;
   if (text === undefined) {
     console.log(`HTMLTextOut: element ${id} does not have textContent`);

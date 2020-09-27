@@ -12,7 +12,7 @@ import SyncMap from '../lib/class-syncmap';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('RENDER');
-const HCON = UR.HTMLConsoleUtil('ursys-console-2');
+const HCON = UR.HTMLConsoleUtil('console-bottom');
 const LOADER = PIXI.Loader.shared;
 //
 let PIXI_APP; // PixiJS instance
