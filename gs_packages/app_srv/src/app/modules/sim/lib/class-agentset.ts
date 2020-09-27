@@ -36,12 +36,16 @@ class AgentSet {
    */
   getAgents(): any[] {
     if (!AGENTS) throw Error('DATACORE.AGENTS is undefined');
+    if (AGENTS.size === 0) return [];
     //
     let retval: any[];
     const len = this.agentTypes.length;
     if (len < 1 || len > 2) throw Error(`bad agent count ${len}`);
     // case 1: return an array of a single agent array
-    if (len === 1) retval = [[...AGENTS.get(this.agentTypes[0]).values()]];
+    if (len === 1) {
+      const ags = AGENTS.get(this.agentTypes[0]);
+      retval = [[...ags.values()]];
+    }
     // case 2: return an array of two agent arrays
     if (len === 2) {
       const a = [...AGENTS.get(this.agentTypes[0]).values()];
@@ -58,7 +62,7 @@ class AgentSet {
     const len = this.agentTypes.length;
     if (len !== 1) throw Error('set count must be 1, not 2');
     // always run the first type only
-    const agents = this.getAgents()[0];
+    const agents = this.getAgents()[0] || [];
     // agents contains a map
     // push matching agents onto results
     this.testResults = agents.filter(agent => {
