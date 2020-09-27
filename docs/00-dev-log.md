@@ -442,12 +442,27 @@ I've untangled the resource loader key. There are two kinds of resources so far:
 
 All that was so I could specify a default sprite for the Sprite class, so I can make markers in the FakeTrack app. It leverages the existing phase system to ensure asynchronous loads are finished before the app continues to load. Let's convert the test agent pattern into a managed system.
 
-* [ ] convert test "random agents" to use default sprites
-* [ ] make each sprite rotate at a different rate
+* [x] convert test "random agents" to use default sprites
+* [x] make each sprite rotate at a different rate
+
+`sim-agents` is where this is happening. 
+
+* AGENT_DOBJ defined, calls `agent.skin()`, which is a property that was set at Agent creation time
+* Agents are created in `agent-functions` 
+*   **`sim-agents`** implements an AgentUpdate that is doing the actual jiggling in the DOBJ level.
+* Doing some additional overrides in `renderer`  in `RP_MODEL_SPR.setObjectHandlers()` 
+
+So at this point, we have a working minimum sprite engine that's reading from a display list and syncing the display list to sprites. We also have a fully async loader class that can be instanced into multiple pools. Pretty clean so far.
+
+## SEP 27 SUN - Back to Drag & Drop
+
+The clickable sprite code
 
 
 
- 
+
+
+
 
 ---
 

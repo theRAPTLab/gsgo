@@ -6,7 +6,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as PIXI from 'pixi.js';
 import PixiTextureMgr from './lib/class-pixi-asset-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -31,14 +30,22 @@ const texturelist = [
     assetId: 1,
     assetName: 'default',
     assetUrl: 'static/sprites/default-sprite.png'
+  },
+  {
+    assetId: 2,
+    assetName: 'bunny.json',
+    assetUrl: 'static/sprites/bunny.json'
   }
 ];
 /// ASSET LOADING PHASE HOOK //////////////////////////////////////////////////
-UR.SystemHook('UR', 'APP_LOAD', () => {
+UR.SystemHook('SIM', 'LOAD_ASSETS', () => {
   console.log(...PR('loading sprites'));
   ASSET_MGR.queueArray(texturelist);
   return ASSET_MGR.loadQueue();
 });
+/// ASSET LOADING API METHODS /////////////////////////////////////////////////
+const ASSETS_GetResource = ASSET_MGR.getAsset;
+const ASSETS_GetResourceById = ASSET_MGR.getAssetById;
 
 /// AGENT SET UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -110,6 +117,8 @@ UR.SystemHook('SIM', 'RESET', OnSimReset);
 export { AGENTS, TEMPLATES, FEATURES, CONDITIONS };
 /// export agent creation methods
 export {
+  ASSETS_GetResource,
+  ASSETS_GetResourceById,
   AGENTS_Save,
   AGENTS_GetTypeSet,
   AGENTS_GetArrayAll,

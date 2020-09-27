@@ -7,8 +7,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
+import * as DATACORE from '../runtime-datacore';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool';
 
@@ -18,11 +18,45 @@ import { IPoolable } from './t-pool';
 interface ISpriteStore {
   sheet?: PIXI.Spritesheet;
 }
-const LOADER = PIXI.Loader.shared;
-const SHEETS: ISpriteStore = {};
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
+  // is spritesheet?
+  if (rsrc.spritesheet) {
+    let key: number;
+    let tex: PIXI.Texture;
+    const t = typeof frameKey;
+    switch (t) {
+      case 'string':
+        tex = rsrc.textures[frameKey];
+        if (tex === undefined) console.error(`invalid frame name '${frameKey}'`);
+        break;
+      case 'number':
+        if (!Number.isInteger(<number>frameKey))
+          throw Error('numeric frameKey must be integer');
+        key = rsrc.spritesheet._frameKeys[frameKey];
+        if (key === undefined) {
+          key = rsrc.spritesheet._frameKeys[0];
+          console.error(`invalid frame[${frameKey}]; using frame[0]`);
+        }
+        tex = rsrc.textures[key];
+        break;
+      case 'undefined':
+        key = rsrc.spritesheet._frameKeys[0];
+        tex = rsrc.textures[key];
+        break;
+      default:
+        throw Error(`rsrc.spritesheet._frameKeys[${frameKey}] does not exist`);
+    }
+    return tex;
+  }
+  // otherwise, is this a regular texture?
+  if (rsrc.texture) return rsrc.texture;
+
+  // if we got here, the passed rsrc  might not be one
+  throw Error('could not find texture in resource');
+}
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,9 +77,21 @@ class Visual implements IVisual, IPoolable {
     this.sprite = spr;
   }
 
-  setTexture(name: string) {
-    const tex = SHEETS.sheet.textures[name];
+  setTextureById(assetId: number, frameKey: string | number) {
+    if (!Number.isInteger(assetId))
+      throw Error('numeric frameKey must be integer');
+    const rsrc = DATACORE.ASSETS_GetResourceById(assetId);
+    const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
+  }
+
+  setTexture(name: string, frameKey: string | number) {
+    if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
+    const rsrc: PIXI.LoaderResource = DATACORE.ASSETS_GetResource(name);
+    // is this a spritesheet?
+    const tex = m_ExtractTexture(rsrc, frameKey);
+    this.sprite.texture = tex;
+    // we're done
   }
 
   add(root: PIXI.Container) {
@@ -56,10 +102,6 @@ class Visual implements IVisual, IPoolable {
   dispose() {
     this.root.removeChild(this.sprite);
     this.root = undefined;
-  }
-
-  setPosition(x: number, y: number) {
-    this.sprite.position.set(x, y);
   }
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
@@ -100,6 +142,32 @@ class Visual implements IVisual, IPoolable {
     return this.sprite.angle;
   }
 
+  getScale() {
+    return {
+      x: this.sprite.scale.x,
+      y: this.sprite.scale.y
+    };
+  }
+
+  setPosition(x: number, y: number) {
+    this.sprite.position.set(x, y);
+  }
+
+  turnAngle(deltaA: number) {
+    this.sprite.angle += deltaA;
+  }
+
+  setAlpha(o: number) {
+    this.sprite.alpha = o;
+  }
+  setAngle(angle: number) {
+    this.sprite.angle = angle;
+  }
+
+  setRotation(rad: number) {
+    this.sprite.rotation = rad;
+  }
+
   /** set plotting parameters all at once */
   setPlotValues(x, y, angle) {}
 
@@ -107,7 +175,10 @@ class Visual implements IVisual, IPoolable {
   setSizeValues(w, h) {}
 
   /** set the scale factor of sprite, which affects width/height */
-  setScale(z) {}
+  setScale(x: number, y: number = x) {
+    this.sprite.scale.set(x, y);
+  }
+
   /** rotate by angle (+ is counterclockwise) */
   rotateBy() {}
 } // end class Sprite
@@ -148,17 +219,6 @@ function MakeDraggable(spr: PIXI.Sprite) {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR', 'APP_LOAD', () => {
-  const loadSprites = (resolve, reject) => {
-    LOADER.add('static/sprites/bunny.json').load(loader => {
-      let sheet: PIXI.Spritesheet =
-        loader.resources['static/sprites/bunny.json'].spritesheet;
-      SHEETS.sheet = sheet;
-      resolve();
-    });
-  };
-  return new Promise(loadSprites);
-});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

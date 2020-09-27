@@ -28,7 +28,15 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// create PhaseMachine to manage gameloop
 const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
-  GLOOP_LOAD: ['RESET', 'SETMODE', 'WAIT', 'PROGRAM', 'INIT', 'READY'],
+  GLOOP_LOAD: [
+    'LOAD_ASSETS',
+    'RESET',
+    'SETMODE',
+    'WAIT',
+    'PROGRAM',
+    'INIT',
+    'READY'
+  ],
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state

@@ -65,13 +65,22 @@ function Init(element) {
   RP_MODEL_SPR.setObjectHandlers({
     onAdd: (dobj, spr) => {
       spr.add(CONTAINERS.Root);
-      if (++temp_num > 5) temp_num = 1;
-      const pick = `${temp_num}`.padStart(2, '0');
-      spr.setTexture(`bunny${pick}.png`);
+      if (++temp_num > 4) temp_num = 1;
+      // spr.setTextureById(2, temp_num);
+      spr.setTexture('default', temp_num);
       spr.setPosition(dobj.x, dobj.y);
     },
     onUpdate: (dobj, spr) => {
       spr.setPosition(dobj.x, dobj.y);
+      // HACK: this should be a dobj.parm 'angle'
+      spr.turnAngle(Math.random() * 10 - 5);
+      // HACK: this should be a dobj.parm 'scale'
+      let { x } = spr.getScale();
+      x += (Math.random() - 0.5) * 0.5;
+      if (x > 2) x = 2;
+      if (x < 0.5) x = 0.5;
+      spr.setScale(x, x);
+      spr.setAlpha(0.5);
     },
     shouldRemove: spr => true,
     onRemove: spr => {}

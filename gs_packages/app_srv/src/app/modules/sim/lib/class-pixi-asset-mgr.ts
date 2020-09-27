@@ -63,6 +63,8 @@ class PixiAssetManager {
     this._loader.onComplete.add(this._loadComplete);
     // to ensure async compatibility, bind callback functions
     this.loadQueue = this.loadQueue.bind(this);
+    this.getAsset = this.getAsset.bind(this);
+    this.getAssetById = this.getAssetById.bind(this);
   }
 
   load(id: AssetId, name: AssetName, url: AssetURL) {
