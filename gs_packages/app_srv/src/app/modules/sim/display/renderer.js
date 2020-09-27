@@ -6,21 +6,19 @@
 import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
-import Sprite from '../lib/class-visual';
+import Visual, { MakeDraggable } from '../lib/class-visual';
 import SyncMap from '../lib/class-syncmap';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('RENDER');
 const HCON = UR.HTMLConsoleUtil('console-bottom');
-const LOADER = PIXI.Loader.shared;
-//
+/// PIXI & HTML DOM
 let PIXI_APP; // PixiJS instance
 let PIXI_DIV; // PixiJS root div element
 const CONTAINERS = {}; // PixiJS container reference
-const SPRITES = {}; // temp sprite info holder
-//
-let RP_MODEL_SPR; // renderpass for model sprites
+/// RENDERPASS SYNCMAPS
+let RP_MODEL_TO_VOBJ; // renderpass for model sprites
 let RP_PTRAK_SPR; // renderpass for ptrack marker sprites
 let RP_ANNOT_SPR; // renderpass for annotation marker sprites
 
@@ -57,47 +55,59 @@ function Init(element) {
   CONTAINERS.Root = root;
 
   // map model display objects to sprites
-  RP_MODEL_SPR = new SyncMap('1-SPR', {
-    Constructor: Sprite,
+  RP_MODEL_TO_VOBJ = new SyncMap('1-D2V', {
+    Constructor: Visual,
     autoGrow: true
   });
+
+  // object handlers for 1-D2V
   let temp_num = 1;
-  RP_MODEL_SPR.setObjectHandlers({
-    onAdd: (dobj, spr) => {
-      spr.add(CONTAINERS.Root);
+  const doScale = true;
+  const doRotate = true;
+  const doAlpha = true;
+
+  RP_MODEL_TO_VOBJ.setObjectHandlers({
+    onAdd: (dobj, vobj) => {
+      MakeDraggable(vobj);
+      vobj.add(CONTAINERS.Root);
       if (++temp_num > 4) temp_num = 1;
-      // spr.setTextureById(2, temp_num);
-      spr.setTexture('default', temp_num);
-      spr.setPosition(dobj.x, dobj.y);
+      // vobj.setTextureById(2, temp_num);
+      vobj.setTexture('default');
+      vobj.setAngle(Math.random() * 180);
+      if (!vobj.sprite.draggin) vobj.setPosition(dobj.x, dobj.y);
     },
-    onUpdate: (dobj, spr) => {
-      spr.setPosition(dobj.x, dobj.y);
+    onUpdate: (dobj, vobj) => {
+      if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
       // HACK: this should be a dobj.parm 'angle'
-      spr.turnAngle(Math.random() * 10 - 5);
+      if (doRotate) {
+        vobj.turnAngle(vobj.refId % 2 ? 2 : -2);
+      }
       // HACK: this should be a dobj.parm 'scale'
-      let { x } = spr.getScale();
-      x += (Math.random() - 0.5) * 0.5;
-      if (x > 2) x = 2;
-      if (x < 0.5) x = 0.5;
-      spr.setScale(x, x);
-      spr.setAlpha(0.5);
+      if (doScale) {
+        let { x } = vobj.getScale();
+        x += (Math.random() - 0.5) * 0.05;
+        if (x > 0.75) x = 0.5;
+        if (x < 0.1) x = 0.1;
+        vobj.setScale(x, x);
+      }
+      if (doAlpha) vobj.setAlpha(0.5);
     },
-    shouldRemove: spr => true,
-    onRemove: spr => {}
+    shouldRemove: vobj => true,
+    onRemove: vobj => {}
   });
 
-  // RP_MODEL_SPR.setObjectHandlers()
+  // RP_MODEL_TO_VOBJ.setObjectHandlers()
 
   // map ptrack markers
   RP_PTRAK_SPR = new SyncMap('2-PTK', {
-    Constructor: Sprite,
+    Constructor: Visual,
     autoGrow: true
   });
   // RP_PTRAK_SPR.setObjectHandlers()
 
   // map student input controls
   RP_ANNOT_SPR = new SyncMap('3-ANO', {
-    Constructor: Sprite,
+    Constructor: Visual,
     autoGrow: true
   });
   // RP_ANNOT_SPR.setObjectHandlers()
@@ -123,7 +133,7 @@ function HookResize(element) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdateModelList(dobjs) {
-  RP_MODEL_SPR.syncFromArray(dobjs);
+  RP_MODEL_TO_VOBJ.syncFromArray(dobjs);
   HCON.plot(`updated model list ${dobjs.length}`, 1);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -136,10 +146,10 @@ function UpdateAnnotationList(dobjs) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Render() {
-  RP_MODEL_SPR.processSyncedObjects();
+  RP_MODEL_TO_VOBJ.processSyncedObjects();
   RP_PTRAK_SPR.processSyncedObjects();
   RP_PTRAK_SPR.processSyncedObjects();
-  const synced = RP_MODEL_SPR.getSyncedObjects();
+  const synced = RP_MODEL_TO_VOBJ.getSyncedObjects();
   HCON.plot('renderer called', 0);
   HCON.plot(`synced count ${synced.length}`, 0, 20);
 }

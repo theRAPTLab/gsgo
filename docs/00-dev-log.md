@@ -449,14 +449,22 @@ All that was so I could specify a default sprite for the Sprite class, so I can 
 
 * AGENT_DOBJ defined, calls `agent.skin()`, which is a property that was set at Agent creation time
 * Agents are created in `agent-functions` 
-*   **`sim-agents`** implements an AgentUpdate that is doing the actual jiggling in the DOBJ level.
-* Doing some additional overrides in `renderer`  in `RP_MODEL_SPR.setObjectHandlers()` 
+*   **`sim-agents`** function `AgentUpdate()`  creates the DOBJ list and ships it to RENDERER
+* RENDERER manages the sprite pool for demo purposes in `RP_MODEL_SPR.setObjectHandlers()` 
 
 So at this point, we have a working minimum sprite engine that's reading from a display list and syncing the display list to sprites. We also have a fully async loader class that can be instanced into multiple pools. Pretty clean so far.
 
-## SEP 27 SUN - Back to Drag & Drop
+* [x] enable drag-and-drop code in visual
 
-The clickable sprite code
+The drag and drop code is relatively straightforward except that the position isn't updated. The UI will have to do something like this:
+
+1. when the vobj is dropped, grab the `vobj.id` which will match the agent and dobj ids.
+2. get the agent instance associated with the agent id.
+3. set the position on agent...works!!!
+
+## SEP 27 SUN - Make FakeTrack
+
+With all the supporting code in place, let's see how long it takes to make a rudimentary FakeTrack. We won't worry about network broadcasting yet, because this requires some protocol development. The underlying system is designed to work efficiently with the upcoming network protocols.
 
 
 

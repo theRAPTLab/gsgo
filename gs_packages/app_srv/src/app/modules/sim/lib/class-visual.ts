@@ -18,6 +18,7 @@ import { IPoolable } from './t-pool';
 interface ISpriteStore {
   sheet?: PIXI.Spritesheet;
 }
+let REF_ID_COUNTER = 0;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,6 +62,8 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Visual implements IVisual, IPoolable {
+  // class
+  refId?: number;
   // visual
   sprite: PIXI.Sprite;
   // poolable
@@ -75,6 +78,7 @@ class Visual implements IVisual, IPoolable {
     spr.pivot.x = spr.width / 2;
     spr.pivot.y = spr.height / 2;
     this.sprite = spr;
+    this.refId = REF_ID_COUNTER++;
   }
 
   setTextureById(assetId: number, frameKey: string | number) {
@@ -91,6 +95,9 @@ class Visual implements IVisual, IPoolable {
     // is this a spritesheet?
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
+    const px = this.sprite.texture.width / 2;
+    const py = this.sprite.texture.height / 2;
+    this.sprite.pivot.set(px, py);
     // we're done
   }
 
@@ -188,7 +195,7 @@ class Visual implements IVisual, IPoolable {
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function MakeDraggable(spr: PIXI.Sprite) {
+function MakeDraggable(vobj: Visual) {
   function onDragStart(event) {
     // store a reference to the data
     // the reason for this is because of multitouch
@@ -196,10 +203,20 @@ function MakeDraggable(spr: PIXI.Sprite) {
     this.data = event.data;
     this.alpha = 0.5;
     this.dragging = true;
+    this.tint = 0xff0000;
   }
   function onDragEnd() {
     this.alpha = 1;
     this.dragging = false;
+    const agent = DATACORE.AGENT_GetById(vobj.id);
+    if (agent) {
+      console.log(`agent id ${agent.id} dropped`);
+      this.tint = 0x00ff00;
+      const newPosition = this.data.getLocalPosition(this.parent);
+      const { x, y } = newPosition;
+      agent.prop('x').value = x;
+      agent.prop('y').setTo(y);
+    }
     // set the interaction data to null
     this.data = null;
   }
@@ -210,6 +227,7 @@ function MakeDraggable(spr: PIXI.Sprite) {
       this.y = newPosition.y;
     }
   }
+  const spr = vobj.sprite;
   spr.interactive = true;
   spr.on('mousedown', onDragStart);
   spr.on('mouseup', onDragEnd);

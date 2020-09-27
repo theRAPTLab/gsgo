@@ -31,7 +31,7 @@ type AssetId = number;
 type AssetName = string;
 type AssetURL = string;
 
-const PR = UR.PrefixUtil('AssetMgr', 'TagPink');
+const PR = UR.PrefixUtil('ASSETS', 'TagPink');
 const DBG = true;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
@@ -135,7 +135,7 @@ class PixiAssetManager {
           const [assetName, rsrc] = kv;
           const assetId = this._tex_dict.get(assetName);
           if (assetId === undefined) {
-            console.log(...PR(`skipping extra asset '${assetName}'`));
+            console.log(...PR(`[${i}] '${assetName}' support asset not indexed`));
             return;
           }
           this._textures.set(assetId, rsrc);

@@ -18,6 +18,7 @@ import StringVar from '../props/var-string';
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ERR_WHATMSG = 'unhandled message; got';
+let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,6 +38,7 @@ class Agent extends SM_Object implements IAgent {
     // this.methods map defined in SM_Object
     this.features = new Map();
     this.execQueue = [];
+    this.refId = REF_ID_COUNT++;
 
     // declare agent basic properties
     this._name = new StringVar(agentName);

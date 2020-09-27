@@ -66,10 +66,7 @@ UR.SystemHook('SIM', 'RESET', () => {
   m_Initialize();
 });
 UR.SystemHook('SIM', 'SETMODE', () => {});
-UR.SystemHook('SIM', 'WAIT', () => {
-  console.log(...PR('should initialize viewport'));
-  console.log(...PR('should load sprites'));
-});
+UR.SystemHook('SIM', 'WAIT', () => {});
 UR.SystemHook('SIM', 'INIT', () => {});
 UR.SystemHook('SIM', 'READY', () => {});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

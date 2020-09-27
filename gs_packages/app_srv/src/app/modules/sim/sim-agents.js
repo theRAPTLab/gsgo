@@ -15,7 +15,7 @@ import {
 } from '../tests/agent-functions';
 import { AGENTS_GetArrayAll } from './runtime-datacore';
 import SyncMap from './lib/class-syncmap';
-import { UpdateModelList } from './display/renderer';
+import * as RENDERER from './display/renderer';
 import DisplayObject from './lib/class-display-object';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -71,7 +71,7 @@ function AgentUpdate(frameTime) {
   });
   AGENT_TO_DOBJ.syncFromArray(agents);
   AGENT_TO_DOBJ.processSyncedObjects();
-  UpdateModelList(AGENT_TO_DOBJ.getSyncedObjects());
+  RENDERER.UpdateModelList(AGENT_TO_DOBJ.getSyncedObjects());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {

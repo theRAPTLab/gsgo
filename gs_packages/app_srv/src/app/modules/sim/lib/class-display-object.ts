@@ -33,6 +33,7 @@ export function TestValidDOBJs(dobjs: any[]): boolean {
 class DisplayObject implements IPoolable {
   // poolable
   id: number;
+  refId?: number;
   _pool_id: number;
   // displayobj
   valid: boolean;

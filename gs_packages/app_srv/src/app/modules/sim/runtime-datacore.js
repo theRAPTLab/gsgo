@@ -13,7 +13,8 @@ import PixiTextureMgr from './lib/class-pixi-asset-mgr';
 const PR = UR.PrefixUtil('RUNTIME-CORE');
 
 /// INSTANCE MAPS /////////////////////////////////////////////////////////////
-const AGENTS = new Map();
+const AGENTS = new Map(); // template => Map<id,Agent>
+const AGENT_DICT = new Map(); // id => Agent
 
 /// SCRIPT MACHINE ASSETS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,8 +59,10 @@ function AGENTS_Save(agent) {
   const agents = AGENTS.get(type);
   // retrieve the set
   if (agents.has(id)) throw Error(`agent id ${id} already in ${type} list`);
-  // console.log(`AGENTS now has ${AGENTS.get(type).size}`);
   agents.set(id, agent);
+  // also save the id global lookup table
+  if (AGENT_DICT.has(id)) throw Error(`agent id ${id} already in global dict`);
+  AGENT_DICT.set(id, agent);
   return agent;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,6 +72,13 @@ function AGENTS_GetTypeSet(type) {
   if (agentSet) return [...agentSet.values()];
   console.warn(...PR(`agentset '${type}' not in AGENTS`));
   return [];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AGENT_GetById(id) {
+  const agent = AGENT_DICT.get(id);
+  if (agent) return agent;
+  console.warn(...PR(`agent ${id} not in AGENT_DICT`));
+  return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AGENTS_GetArrayAll() {
@@ -120,6 +130,7 @@ export {
   ASSETS_GetResource,
   ASSETS_GetResourceById,
   AGENTS_Save,
+  AGENT_GetById,
   AGENTS_GetTypeSet,
   AGENTS_GetArrayAll,
   CONDITION_All,

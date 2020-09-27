@@ -47,10 +47,12 @@ function AddMethod(agent: IAgent, name: string, smc_or_f: TMethod): IAgent {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class SM_Object implements IScopeable {
   id: number; // unique within all stack machine objects
+  refId?: number; // optional class specific id
   _value: any;
   meta: { type: symbol; name?: string };
   props: Map<string, IScopeable>;
   methods: Map<string, TMethod>;
+
   constructor(initValue?: any) {
     // init is a literal value
     this._value = initValue;

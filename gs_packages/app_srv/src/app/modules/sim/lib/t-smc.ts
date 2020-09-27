@@ -13,6 +13,7 @@
  */
 export interface IScopeable {
   id: number;
+  refId?: number;
   meta: { type: symbol; name?: string };
   method: (name: string, ...args: any) => any;
   addProp: (name: string, gv: IScopeable) => IScopeable;
