@@ -18,7 +18,7 @@ let CONTAINERS = {}; // PixiJS contain references
 /// ASSET LOADER
 const LOADER = PIXI.Loader.shared;
 
-/// RENDERER INITIALIZE -- copy to sim_render
+/// RENDERER INITIALIZE -- copy to sim-render
 PIXI.utils.skipHello();
 if (PIXI_APP) throw Error('renderer already defined');
 PIXI_APP = new PIXI.Application({ width: 512, height: 512 });

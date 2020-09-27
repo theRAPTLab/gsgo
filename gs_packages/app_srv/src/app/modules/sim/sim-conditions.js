@@ -73,7 +73,7 @@ const interaction_test = [
   // 5 > dx
   // dbgStack(2),
   compareNumbers(),
-  ifLT([push(true)]), // dbgOut('sim_conditions intersect')]),
+  ifLT([push(true)]), // dbgOut('sim-conditions intersect')]),
   ifGTE([push(false)]), // dbgOut('-')]),
   // check result is on stack
   dbgStackCount(1, 'end interaction_test')

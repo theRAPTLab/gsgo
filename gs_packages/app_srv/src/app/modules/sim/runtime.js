@@ -3,7 +3,7 @@
   RUNTIME
 
   It is the "master controller" for the simulation module. It creates the
-  'SIM' PhaseMachine. All sim_* modules hook into the SIM PhaseMachine
+  'SIM' PhaseMachine. All sim-* modules hook into the SIM PhaseMachine
   independently to participate in the simulation lifecycle.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -12,12 +12,12 @@ import UR from '@gemstep/ursys/client';
 import { interval } from 'rxjs';
 // runtime data modules
 // these have their own phasemachine interface hooks
-import './sim_inputs';
-import './sim_conditions';
-import './sim_agents';
-import './sim_referee';
-import './sim_features';
-import './sim_render';
+import './sim-inputs';
+import './sim-conditions';
+import './sim-agents';
+import './sim-referee';
+import './sim-features';
+import './sim-render';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
