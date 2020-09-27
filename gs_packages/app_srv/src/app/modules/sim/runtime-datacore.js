@@ -6,6 +6,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as PIXI from 'pixi.js';
+import PixiTextureMgr from './lib/class-pixi-asset-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -14,12 +16,29 @@ const PR = UR.PrefixUtil('RUNTIME-CORE');
 /// INSTANCE MAPS /////////////////////////////////////////////////////////////
 const AGENTS = new Map();
 
-/// RUNTIME ASSETS ////////////////////////////////////////////////////////////
-/// Visual assets (such as sprites) are not stored in datacore but
-/// are available in the renderer classes. Datacore is for pure model data.
+/// SCRIPT MACHINE ASSETS /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATURES = new Map();
 const TEMPLATES = new Map();
 const CONDITIONS = new Map();
+
+/// PIXI JS ASSET MANAGEMENT //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const ASSET_MGR = new PixiTextureMgr();
+/* set the texture list */
+const texturelist = [
+  {
+    assetId: 1,
+    assetName: 'default',
+    assetUrl: 'static/sprites/default-sprite.png'
+  }
+];
+/// ASSET LOADING PHASE HOOK //////////////////////////////////////////////////
+UR.SystemHook('UR', 'APP_LOAD', () => {
+  console.log(...PR('loading sprites'));
+  ASSET_MGR.queueArray(texturelist);
+  return ASSET_MGR.loadQueue();
+});
 
 /// AGENT SET UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,6 +99,7 @@ function TestAgentSets(type) {
 /// TESTING UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function OnSimReset() {}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM', 'RESET', OnSimReset);

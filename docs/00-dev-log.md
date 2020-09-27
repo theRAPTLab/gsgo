@@ -383,7 +383,7 @@ Ok, this sorta works! It's still a mess but need to take a break
 
 ## SEP 25 FRI - Draggin' and Droppin'   Sprites
 
-**sidebar**: I finally got **vscode debugging** working with the browser. 
+**SIDEBAR**: I finally got **vscode debugging** working with the browser. 
 
 * install visual studio debugger for chrome
 * create launch.json file, and set up a config for chrome and node each. It's stored in `.vscode/launch.json`
@@ -392,7 +392,7 @@ Ok, this sorta works! It's still a mess but need to take a break
 * You can also set up a **compound** thing that will allow you to run/debug both node and chrome at the same time. You can specify which you are debugging by using the selector in the run button bar, or clicking on the running instance in the call stack display on the left in visual studio code.
 * Otherwise, do `npm run local` as normal and then run the launch config just for the browser.
 
-**resuming** AT MINIMUM I just need to have clickable sprites. I'd like to be able to augment our base sprite class using decoration instead of inheritance, in a manner similar to how I've implemented Features in agents. Furthermore, a main Sprite might have several SUBSPRITES that are controlled by the master. That suggests that "sprite" maybe isn't the term I should use.
+**RESUME** AT MINIMUM I just need to have clickable sprites. I'd like to be able to augment our base sprite class using decoration instead of inheritance, in a manner similar to how I've implemented Features in agents. Furthermore, a main Sprite might have several SUBSPRITES that are controlled by the master. That suggests that "sprite" maybe isn't the term I should use.
 
 ```
 MODELING STUFF
@@ -413,11 +413,34 @@ OBJECT SHORTHAND for INSTANCES
 agents/ag, visuals/visual/vobj, displayList/dobjs/dobj, sprites/spr
 ```
 
+## SEP 26 SAT - Building Sprite,  Asset Management Classes
+
 So now I'm making a **Visual** base object that is the abstract base for a broad class of visuals, which will use an **IVisual** interface. 
 
-* [ ] rename `class-sprite` to `class-visual`
-* [ ] write up the `t-visual.ts` type definitions
-* [ ] create `class-visual.ts` base code definition
+* [x] rename `class-sprite` to `class-visual`
+* [x] write up the `t-visual.ts` type definitions
+* [x] create `class-visual.ts` base code definition
+* [x] class-visual extends PIXI.Sprite (**SKIP FOR NOW**)
+* [x] class-visual super(DEFAULT_TEXTURE) from Sprite TextureManager
+
+Managing textures needs to belong to something that loads all the sprites in a dictionary. I'll put this in DATACORE for the time being.
+
+* [x] put **Sprite Texture Manage**r that preloads assets in DATACORE
+* [x] Sprite TextureManager also maintains "texture_id to url" lookup for more efficient prop changes
+* [ ] Do textures have to be duplicated per sprite instance? Dunno yet.
+* [x] loader save resource
+
+I've untangled the resource loader key. There are two kinds of resources so far: spritesheets and sprites, each with a different data structure. The key properties to grab textures from are **spritesheet.textures** or **texture** (for single image). 
+
+* [x] define asset manager library systen for system-wide sync by id
+* [x] define compression protocol for display updates to use assetIds instead of strings
+* [x] created asset manager class to wrap PIXI.Loader (can be extended for other resource types!!!)
+
+**SIDEBAR** because display objects are shipped between devices on the network I'd like to improve its efficiency. When we first did this in PLAE, it was somewhat slow. After doing some research, I see we can actually **process binary data efficiently** in Javascript now; I wasn't aware of this back in 2015. So that means we can happily encode and send packed binary data between the server and clients with `ArrayBuffer` and `DataView` classes. We can encode coordinates much more efficiently than with strings by sending 4 bytes instead of 8-12 bytes _per number_. That is a significant savings, and will cut down on our JSON parse time.
+
+#### Saturday Evening
+
+
 
  
 

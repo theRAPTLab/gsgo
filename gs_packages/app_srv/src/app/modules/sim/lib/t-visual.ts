@@ -7,5 +7,5 @@
 /// VISUALS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IVisual {
-  id: number; // id referencing synched instance
+  sprite: PIXI.Sprite;
 }

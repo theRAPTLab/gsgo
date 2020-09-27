@@ -9,7 +9,7 @@
 
 import UR from '@gemstep/ursys/client';
 import SyncMap from './lib/class-syncmap';
-import Sprite from './lib/class-visual';
+import Visual from './lib/class-visual';
 import { Render } from './display/renderer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -17,8 +17,8 @@ import { Render } from './display/renderer';
 const PR = UR.PrefixUtil('SIM_RENDER');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DOBJ_LIST;
-const MAPPED_SPRITES = new SyncMap('DOBJ-TO-SPRITE', {
-  Constructor: Sprite, // sprites track display objs
+const MAPPED_VISUALS = new SyncMap('DOBJ-TO-VOBJ', {
+  Constructor: Visual, // sprites track display objs
   autoGrow: true
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,16 +26,16 @@ const MAPPED_SPRITES = new SyncMap('DOBJ-TO-SPRITE', {
  *  individual updates
  */
 function m_Initialize() {
-  MAPPED_SPRITES.setObjectHandlers({
-    onAdd: (dobj, spr) => {
-      spr.x = dobj.x;
-      spr.y = dobj.y;
+  MAPPED_VISUALS.setObjectHandlers({
+    onAdd: (dobj, vobj) => {
+      vobj.x = dobj.x;
+      vobj.y = dobj.y;
     },
     onUpdate: (dobj, spr) => {
       spr.x = dobj.x;
       spr.y = dobj.y;
     },
-    onRemove: spr => {}
+    onRemove: vobj => {}
   });
 }
 
@@ -56,7 +56,7 @@ function SaveDisplayList(dobjs) {
 /** Update the sprites from the saved list of display objects
  */
 function RenderDisplayList() {
-  MAPPED_SPRITES.syncFromArray(DOBJ_LIST);
+  MAPPED_VISUALS.syncFromArray(DOBJ_LIST);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

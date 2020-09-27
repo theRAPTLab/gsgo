@@ -1,6 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  visual class + manager, with a default PixiJS.Sprite visual
+  sprite class + manager, wrapping PixiJS.Sprite with additional methods
+  relevant to gemstep.
 
   Extends SMObject, which is our common stackmachine- compatible object.
 
