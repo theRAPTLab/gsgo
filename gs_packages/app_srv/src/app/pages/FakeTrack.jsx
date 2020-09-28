@@ -1,26 +1,23 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Tracker - Main Application View
+  Generator - Main Application View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Typography } from '@material-ui/core';
 
 import UR from '@gemstep/ursys/client';
-import SETTINGS from '../../../config/app.settings';
 import { Init, HookResize } from '../modules/sim/display/renderer';
 import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('Generator', 'TagBlue');
+const PR = UR.PrefixUtil('FakeTrack', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
 const BG_COLOR = '#F0F0F0';
 const BG_TITLE = '#404040';
-const { PROJECT_NAME } = SETTINGS;
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,11 +65,10 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Generator extends React.Component {
+class Tracker extends React.Component {
   componentDidMount() {
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
-    // initialize renderer
+    UR.SystemConfig({ autoRun: true }); // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
     Init(renderRoot);
     HookResize(window);
@@ -95,7 +91,7 @@ class Generator extends React.Component {
             backgroundColor: BG_TITLE
           }}
         >
-          <span style={{ fontSize: '32px' }}>GENERATOR/TEST</span>
+          <span style={{ fontSize: '32px' }}>FAKETRACK/TEST</span>
         </div>
         <div
           id="console-left"
@@ -137,4 +133,4 @@ class Generator extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStyles)(Generator);
+export default withStyles(useStyles)(Tracker);

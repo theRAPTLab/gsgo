@@ -6,37 +6,21 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { Suspense } from 'react';
+import React from 'react';
 import UR from '@gemstep/ursys/client';
 import PropTypes from 'prop-types';
-import { Switch, Route, BrowserRouter } from 'react-router-dom';
+import { Switch, Route } from 'react-router-dom';
+
+import {
+  LazyTracker,
+  LazyGenerator,
+  LazyFakeTrack,
+  LazyHome
+} from './SystemRoutes';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SystemShell');
-
-/// ROUTES ////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// LAZY LOADING
-const Tracker = React.lazy(() => import('../pages/Tracker'));
-const Generator = React.lazy(() => import('../pages/Generator'));
-const Home = React.lazy(() => import('../pages/Home'));
-/// ROUTE DEFINITION
-const LazyTracker = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <Tracker />
-  </Suspense>
-);
-const LazyGenerator = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <Generator />
-  </Suspense>
-);
-const LazyHome = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <Home />
-  </Suspense>
-);
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,13 +44,19 @@ class SystemShell extends React.Component {
         <Route exact path="/">
           <LazyHome />
         </Route>
+        <Route path="/app/faketrack">
+          <LazyFakeTrack />
+        </Route>
         <Route path="/app/tracker">
           <LazyTracker />
         </Route>
         <Route path="/app/generator">
           <LazyGenerator />
         </Route>
-        <Route path="/app*">
+        <Route exact path="/app">
+          <LazyHome />
+        </Route>
+        <Route path="/app/*">
           <div style={{ whiteSpace: 'pre', fontFamily: 'monospace' }}>
             NO ROUTE FOR PATH
             <br />

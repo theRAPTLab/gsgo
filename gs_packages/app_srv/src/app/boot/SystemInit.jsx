@@ -21,8 +21,8 @@ import { BrowserRouter } from 'react-router-dom';
 
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import SETTINGS from 'config/app.settings';
 import UR from '@gemstep/ursys/client';
+import SETTINGS from '../../../config/app.settings';
 import SystemShell from './SystemShell';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
