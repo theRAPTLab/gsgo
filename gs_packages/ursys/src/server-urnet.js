@@ -70,19 +70,25 @@ UNET.StartNetwork = (options = {}) => {
   mu_options = options;
 
   // create listener.
-  mu_wss = new WSS(mu_options);
-  mu_wss.on('listening', () => {
-    if (DBG.init) TOUT(`socket server listening on port ${mu_options.port}`);
-    mu_wss.on('connection', (socket, req) => {
-      // if (DBG) TOUT('socket connected');
-      // house keeping
-      m_SocketAdd(socket, req); // assign UADDR to socket
-      m_SocketClientAck(socket); // tell client HELLO with new UADDR
-      // subscribe socket to handlers
-      socket.on('message', json => m_SocketOnMessage(socket, json));
-      socket.on('close', () => m_SocketDelete(socket));
-    }); // end on 'connection'
-  });
+  try {
+    mu_wss = new WSS(mu_options);
+    mu_wss.on('listening', () => {
+      if (DBG.init) TOUT(`socket server listening on port ${mu_options.port}`);
+      mu_wss.on('connection', (socket, req) => {
+        // if (DBG) TOUT('socket connected');
+        // house keeping
+        m_SocketAdd(socket, req); // assign UADDR to socket
+        m_SocketClientAck(socket); // tell client HELLO with new UADDR
+        // subscribe socket to handlers
+        socket.on('message', json => m_SocketOnMessage(socket, json));
+        socket.on('close', () => m_SocketDelete(socket));
+      }); // end on 'connection'
+    });
+  } catch (e) {
+    TOUT(`FATAL ERROR: ${e.toString}`);
+    TOUT('Another URSYS server already running on this machine, so exiting');
+    process.exit(1);
+  }
   return options;
 }; // end StartNetwork()
 

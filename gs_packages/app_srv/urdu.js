@@ -21,14 +21,21 @@ const URPACK = require('./src/server-webpack');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = 'URDU';
+const PR = 'APPSRV-RUN';
+const TOUT = URSERVER.TermOut(PR);
 const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
+
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_WrapErrorText(str) {
+  return `\x1b[30;41m\x1b[37m ${str} \x1b[0m\n`;
+}
 
 /// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// CHECK NPM CI WAS RUN //////////////////////////////////////////////////////
 if (!FS.existsSync('./node_modules')) {
-  console.log(`\x1b[30;41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
+  console.log(m_WrapErrorText(`${PR} STARTUP ERROR`));
   let out = '';
   out += 'MISSING CRITICAL MODULE\n';
   out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
@@ -64,16 +71,23 @@ function RunDevServer() {
   const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
   });
-  console.log(PR, 'Starting Development Server...');
-  if (error) console.log(PR, 'using repo <detached head>\n');
-  if (stdout) console.log(PR, `using repo '${stdout.trim()}' branch\n`);
+  TOUT('Starting Development Server...');
+  if (error) TOUT('using repo <detached head>\n');
+  if (stdout) TOUT(`using repo '${stdout.trim()}' branch\n`);
 
   // old ursys
   // URSERV.Initialize({ apphost: 'devserver' });
   // URSERV.StartNetwork();
   // URSERV.StartWebServer();
 
-  // new ursys
+  // trap connection errors when there is port conflict
+  process.on('uncaughtException', err => {
+    if (err.errno === 'EADDRINUSE')
+      TOUT(m_WrapErrorText('PORT 2929 is already in use. Aborting'));
+    else TOUT(err);
+    PROCESS.exit(0);
+  });
+  // run ursys
   (async () => {
     await URPACK.Start();
     await URSERVER.Initialize();

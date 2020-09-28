@@ -12,15 +12,34 @@ const path = require('path');
 const URSERVER = require('@gemstep/ursys/server');
 const PTRACK = require('./step-ptrack');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 
 const SCRIPT_PATH = path.relative(`${__dirname}/../..`, __filename);
 const RUNTIME_PATH = path.join(__dirname, '/runtime');
+const TOUT = URSERVER.TermOut('GEMSRV-RUN');
 
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_WrapErrorText(str) {
+  return `\x1b[30;41m\x1b[37m ${str} \x1b[0m\n`;
+}
+
+/// START URSYS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// trap connection errors when there is port conflict
+process.on('uncaughtException', err => {
+  if (err.errno === 'EADDRINUSE')
+    TOUT(m_WrapErrorText('PORT 2929 is already in use. Aborting'));
+  else TOUT(err);
+  process.exit(0);
+});
+// run ursys
 (async () => {
-  console.log(`STARTING: ${SCRIPT_PATH}`);
+  TOUT(`STARTING: ${SCRIPT_PATH}`);
   await PTRACK.StartTrackerSystem();
   await URSERVER.Initialize();
   await URSERVER.StartServer({
@@ -28,7 +47,7 @@ const RUNTIME_PATH = path.join(__dirname, '/runtime');
     runtimePath: RUNTIME_PATH
   });
   const { port, uaddr } = URSERVER.GetNetBroker();
-  console.log(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
+  TOUT(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
 })();
 
 /// START CUSTOM SERVER ///////////////////////////////////////////////////////
@@ -48,6 +67,6 @@ app.prepare().then(() => {
     }
   }).listen(3000, err => {
     if (err) throw err;
-    console.log('> Ready on http://localhost:3000');
+    TOUT('Ready on http://localhost:3000');
   });
 });
