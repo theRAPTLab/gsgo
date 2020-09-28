@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Tracker - Main Application View
+  Home - Main Application View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -10,12 +10,10 @@ import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 
 import UR from '@gemstep/ursys/client';
-import { Init, HookResize } from '../modules/sim/display/renderer';
-import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
+const PR = UR.PrefixUtil('HOME', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
 const BG_COLOR = '#F0F0F0';
 const BG_TITLE = '#404040';
@@ -38,45 +36,17 @@ const useStyles = theme => ({
     fontFamily: 'monospace'
   }
 });
-/// DEBUGGING STUFF ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// debugging stuff
-let X = 0;
-let INC = 1;
-const ZIP = '=@=';
-const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
-UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
-  HCON.plot(`framecount: ${frameCount}`, 1);
-  if (frameCount % 6) return;
-  HCON.plot(ZIP_BLNK, 3, X);
-  X += INC;
-  HCON.plot(ZIP, 3, X);
-  const XS = `${X}`.padStart(3, ' ');
-  HCON.plot(`X: ${XS}`, 5);
-  if (X < 1) INC = 1;
-  if (X > 24) INC = -1;
-  if (Math.random() > 0.5) {
-    HCON.gotoRow(6);
-    HCON.print(`dummy datalog: ${Math.random().toFixed(2)}`);
-  }
-  if (Math.random() > 0.95) HCON.clear(6);
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// END DEBUGGING STUFF ///////////////////////////////////////////////////////
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Tracker extends React.Component {
+class Home extends React.Component {
   componentDidMount() {
     // initialize renderer
-    console.log(...PR('Initializing'));
     const renderRoot = document.getElementById('root-renderer');
-    Init(renderRoot);
-    HookResize(window);
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount Tracker');
+    console.log('componentWillUnmount Home');
   }
 
   render() {
@@ -92,14 +62,22 @@ class Tracker extends React.Component {
             backgroundColor: BG_TITLE
           }}
         >
-          <span style={{ fontSize: '32px' }}>FAKETRACK/TEST</span>
+          <span style={{ fontSize: '32px' }}>INDEX</span>
         </div>
         <div
           id="console-left"
           className={classes.cell}
           style={{ gridColumnEnd: 'span 1', backgroundColor: BG_COLOR }}
         >
-          console-left
+          <h3>available routes</h3>
+          <ul>
+            <li>
+              <a href="/app/tracker">Tracker</a>
+            </li>
+            <li>
+              <a href="/app/generator">Generator</a>
+            </li>
+          </ul>
         </div>
         <div
           id="root-renderer"
@@ -110,7 +88,7 @@ class Tracker extends React.Component {
             height: '100%'
           }}
         >
-          mid
+          main area
         </div>
         <div
           id="console-right"
@@ -134,4 +112,4 @@ class Tracker extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStyles)(Tracker);
+export default withStyles(useStyles)(Home);

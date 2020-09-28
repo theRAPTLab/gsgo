@@ -17,7 +17,7 @@
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { HashRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,9 +36,9 @@ const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
 UR.SystemHook('UR', 'APP_READY', () => {
   return new Promise(resolve => {
     ReactDOM.render(
-      <HashRouter hashType="slash">
+      <BrowserRouter forceRefresh>
         <SystemShell />
-      </HashRouter>,
+      </BrowserRouter>,
       document.getElementById('app-container'),
       () => {
         resolve();

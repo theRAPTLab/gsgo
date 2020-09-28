@@ -466,9 +466,22 @@ The drag and drop code is relatively straightforward except that the position is
 
 With all the supporting code in place, let's see how long it takes to make a rudimentary FakeTrack. We won't worry about network broadcasting yet, because this requires some protocol development. The underlying system is designed to work efficiently with the upcoming network protocols.
 
+Next, design a **displayList network shared** protocol so we can get inputs working, but it might not be necessary yet. Should at least design it or start thinking about it. 
+
+* [ ] **priority**: how about another route? We'll have Tracker and FakeTrack, maybe even Model.
+  * [ ] how to run only the routed comonent?
+* [ ] **priority**: how about testing the agent programs actually update themselves and this automatically works?
+
+To do the **route**, we can theoretically copy `Tracker.jsx` and then update `SystemRoutes.js` to add the new component. However, this also *runs* the component, which I don't want to do because that makes the app big. For now we'll just import and try using lazy loading later.
+
+There is an issue already: the co-loaded modules all hook into the same phase. That is not good. We will have to do a different kind of routing.
 
 
 
+* [ ] implement/test entity broadcasts
+* [ ] how to integrate multiple display lists together?
+* [ ] design device persistant naming and reconnection between reloads
+* [ ] maybe use JWT to establish identities? 
 
 
 

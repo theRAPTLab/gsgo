@@ -123,10 +123,16 @@ function Start() {
 
   // set the templating engine
   app.set('view engine', 'ejs');
+
   // handle special case for root url to serve our ejs template
   app.get('/', (req, res) => {
-    const URSessionParams = {};
-    res.render(`${DIR_OUT}/index`, URSessionParams);
+    res.render(`${DIR_OUT}/index`);
+  });
+  app.get('/app', (req, res) => {
+    res.render(`${DIR_OUT}/index`);
+  });
+  app.get('/app/*', (req, res) => {
+    res.render(`${DIR_OUT}/index`);
   });
 
   // handle urnet

@@ -6,19 +6,39 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// LIBRARIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import React from 'react';
+import React, { Suspense } from 'react';
 import UR from '@gemstep/ursys/client';
 import PropTypes from 'prop-types';
-import { Switch, Route } from 'react-router-dom';
+import { Switch, Route, BrowserRouter } from 'react-router-dom';
 
-/// SYSTEM ROUTES /////////////////////////////////////////////////////////////
-import SystemRoutes from './SystemRoutes';
-
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SystemShell');
 
+/// ROUTES ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const Tracker = React.lazy(() => import('../pages/Tracker'));
+const Generator = React.lazy(() => import('../pages/Generator'));
+const Home = React.lazy(() => import('../pages/Home'));
+
+const LazyTracker = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <Tracker />
+  </Suspense>
+);
+const LazyGenerator = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <Generator />
+  </Suspense>
+);
+const LazyHome = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <Home />
+  </Suspense>
+);
+
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class SystemShell extends React.Component {
   constructor(props) {
     super(props);
@@ -41,14 +61,28 @@ class SystemShell extends React.Component {
     // otherwise return component with matching routed view
     return (
       <Switch>
-        {SystemRoutes.map(route => (
-          <Route
-            exact={route.exact}
-            key={route.path}
-            path={route.path}
-            component={route.component}
-          />
-        ))}
+        <Route exact path="/">
+          <Suspense fallback={<div>loading</div>}>
+            <Home />
+          </Suspense>
+        </Route>
+        <Route path="/app/tracker">
+          <Suspense fallback={<div>loading</div>}>
+            <Tracker />
+          </Suspense>
+        </Route>
+        <Route path="/app/generator">
+          <Suspense fallback={<div>loading</div>}>
+            <Generator />
+          </Suspense>
+        </Route>
+        <Route path="/app*">
+          <div style={{ whiteSpace: 'pre', fontFamily: 'monospace' }}>
+            NO ROUTE FOR PATH
+            <br />
+            <a href="/">GO TO INDEX</a>
+          </div>
+        </Route>
       </Switch>
     );
   }
