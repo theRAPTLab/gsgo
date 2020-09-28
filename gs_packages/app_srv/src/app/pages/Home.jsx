@@ -26,24 +26,35 @@ const useStyles = theme => ({
     width: '100vw',
     height: '100vh',
     gridTemplateColumns: '240px auto 120px',
-    //  gridTemplateColumns: 'repeat(12,1fr)',
-    gridTemplateRows: '50px 1fr 100px',
-    gridGap: theme.spacing(1)
+    gridTemplateRows: '50px auto 100px',
+    gridGap: theme.spacing(1),
+    fontFamily: 'sans-serif'
   },
   cell: {
     padding: '5px',
-    whiteSpace: 'prep',
     fontFamily: 'monospace'
+  },
+  list: {
+    marginLeft: 0,
+    paddingLeft: 0,
+    listStyle: 'none',
+    '& a': {
+      color: theme.palette.primary.main,
+      fontSize: '150%',
+      fontWeight: 'bold',
+      display: 'block',
+      marginBottom: theme.spacing(0.25),
+      textDecoration: 'none'
+    },
+    '& a:visited': { color: theme.palette.primary },
+    '& li + li': { marginTop: theme.spacing(2) }
   }
 });
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Home extends React.Component {
-  componentDidMount() {
-    // initialize renderer
-    const renderRoot = document.getElementById('root-renderer');
-  }
+  componentDidMount() {}
 
   componentWillUnmount() {
     console.log('componentWillUnmount Home');
@@ -69,13 +80,16 @@ class Home extends React.Component {
           className={classes.cell}
           style={{ gridColumnEnd: 'span 1', backgroundColor: BG_COLOR }}
         >
-          <h3>available routes</h3>
-          <ul>
+          <b style={{ fontSize: 'large' }}>Available Routes</b>
+          <ul className={classes.list}>
             <li>
-              <a href="/app/tracker">Tracker</a>
+              <a href="/app/tracker">TRACKER</a>display all entities in system
             </li>
             <li>
-              <a href="/app/generator">Generator</a>
+              <a href="/app/generator">GENERATOR</a>generate npc entities
+            </li>
+            <li>
+              <a href="/app/faketrack">FAKETRACK</a>testbed for annotation input
             </li>
           </ul>
         </div>

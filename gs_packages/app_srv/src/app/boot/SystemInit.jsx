@@ -39,6 +39,9 @@ function Init() {
   console.log(...PR('URSYS INITIALIZING...'));
   // initialize app when DOM is completely resolved
   document.addEventListener('DOMContentLoaded', () => {
+    // reset body margins to 0
+    document.body.style.margin = '0px';
+    console.log(...PR('FYI: setting document.body.style.margin to 0'));
     // initialize URSYS synchronously
     (async () => {
       console.log(...PR('URSYS CONNECTING...'));
