@@ -30,41 +30,34 @@ import SystemShell from './SystemShell';
 const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
 
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** render react once all modules have completed their initialization */
-UR.SystemHook('UR', 'APP_READY', () => {
-  return new Promise(resolve => {
-    ReactDOM.render(
-      <BrowserRouter forceRefresh>
-        <SystemShell />
-      </BrowserRouter>,
-      document.getElementById('app-container'),
-      () => {
-        resolve();
-      }
-    );
-  }); // promise
-});
-
 /// URSYS STARTUP /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Init is called from the startup js file, usually in index.html.
+ *  This starts the multi-step URSYS lifecycle startup.
+ */
 function Init() {
   console.log(...PR('URSYS INITIALIZING...'));
-
   // initialize app when DOM is completely resolved
   document.addEventListener('DOMContentLoaded', () => {
-    // initialize URSYS
+    // initialize URSYS synchronously
     (async () => {
       console.log(...PR('URSYS CONNECTING...'));
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
       await UR.SystemStart();
       console.log(...PR(`${PROJECT_NAME.toUpperCase()} SYSTEM BOOT`));
-      await UR.SystemBoot({
-        autoRun: true,
-        netProps
-      });
+      // system boot runs BOOT,INIT,CONNECT phases
+      await UR.SystemBoot({ netProps });
+      // start React
+      ReactDOM.render(
+        <BrowserRouter forceRefresh>
+          <SystemShell />
+        </BrowserRouter>,
+        document.getElementById('app-container'),
+        () => {
+          console.log(...PR(`${PROJECT_NAME.toUpperCase()} REACT READY`));
+        }
+      );
     })();
   });
 

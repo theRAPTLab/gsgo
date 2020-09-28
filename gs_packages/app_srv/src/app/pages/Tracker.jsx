@@ -10,6 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { Typography } from '@material-ui/core';
 
 import UR from '@gemstep/ursys/client';
+import SETTINGS from 'config/app.settings';
 import { Init, HookResize } from '../modules/sim/display/renderer';
 import '../modules/sim/runtime';
 
@@ -19,6 +20,7 @@ const PR = UR.PrefixUtil('TRACKER', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
 const BG_COLOR = '#F0F0F0';
 const BG_TITLE = '#404040';
+const { PROJECT_NAME } = SETTINGS;
 
 /// STYLES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,8 +70,9 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Tracker extends React.Component {
   componentDidMount() {
+    // start URSYS
+    UR.SystemConfig({ autoRun: true });
     // initialize renderer
-    console.log(...PR('Initializing'));
     const renderRoot = document.getElementById('root-renderer');
     Init(renderRoot);
     HookResize(window);

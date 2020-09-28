@@ -14,11 +14,11 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSession = require('./client-session');
 const URPhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeStyleFormatter('UR.EXC');
+const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = true;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,7 +56,7 @@ const PHASES = {
   ],
   PHASE_PAUSED: [
     'APP_PAUSE', // app modules should enter "paused state"
-    'APP_UPDATE', // app modules configuration update
+    'APP_PAUSED', // app modules receive configuration update
     'APP_UNPAUSE' // app modules cleanup, then back to 'APP_LOOP'
   ],
   PHASE_UNLOAD: [
@@ -90,17 +90,28 @@ function m_CheckOptions(options) {
 
 /// RUNTIME API CALLS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: start the lifecycle state engine
+/** API: start the lifecycle state engine, connecting to the network
  */
 async function SystemBoot(options = {}) {
   //
   if (DBG) console.groupCollapsed('** URSYS: Boot');
+  //
   m_CheckOptions(options);
   URSession.InitializeNetProps(options.netProps);
   //
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');
   await ExecutePhase('PHASE_CONNECT');
+  //
+  if (DBG) console.groupEnd();
+}
+//// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: initialize, configure, and load data after SystemBoot
+ */
+async function SystemConfig(options = {}) {
+  //
+  if (DBG) console.groupCollapsed('** URSYS: Config');
+  //
   await ExecutePhase('PHASE_LOAD');
   await ExecutePhase('PHASE_CONFIG');
   await ExecutePhase('PHASE_READY');
@@ -118,14 +129,16 @@ async function SystemBoot(options = {}) {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function SystemRun(options = {}) {
-  // PART 1 - SYSTEM RUN
-  if (DBG) console.groupCollapsed('** URSYS: Run');
+  // PART 1 - SYSTEM RUN (part of PHASE_RUN group)
   m_CheckOptions(options);
   //
+  console.log(...PR('URSYS: STAGE START RUN'));
   await Execute('APP_STAGE');
   await Execute('APP_START');
   await Execute('APP_RUN');
-
+  console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
+  // PART 2 - after the run has started, there are no periodic updates
+  //          unless you add them yourself
   if (DBG) console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -139,7 +152,6 @@ async function SystemUpdate() {
   if (DBG) console.groupEnd();
   SystemRun();
 }
-/// - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
  */
@@ -176,6 +188,7 @@ async function SystemReboot() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   SystemBoot,
+  SystemConfig,
   SystemRun,
   SystemUpdate,
   SystemRestage,

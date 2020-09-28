@@ -174,7 +174,7 @@ class PhaseMachine {
     if (DBG.ops && hooks.length)
       console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
     if (DBG.ops && icount)
-      console.log(...PR(`[${op}] PROMISES QUEUED    : ${icount}`));
+      console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
 
     // wait for all promises to execute
     return Promise.all(promises)

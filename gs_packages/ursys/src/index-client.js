@@ -95,6 +95,7 @@ module.exports = {
   SystemStop,
   // FORWARDED SYSTEM CONTROL VIA UREXEC
   SystemBoot: URExec.SystemBoot,
+  SystemConfig: URExec.SystemConfig,
   SystemRun: URExec.SystemRun,
   SystemRestage: URExec.SystemRestage,
   SystemReboot: URExec.SystemReboot,

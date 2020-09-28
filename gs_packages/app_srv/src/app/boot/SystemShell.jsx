@@ -17,10 +17,11 @@ const PR = UR.PrefixUtil('SystemShell');
 
 /// ROUTES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// LAZY LOADING
 const Tracker = React.lazy(() => import('../pages/Tracker'));
 const Generator = React.lazy(() => import('../pages/Generator'));
 const Home = React.lazy(() => import('../pages/Home'));
-
+/// ROUTE DEFINITION
 const LazyTracker = () => (
   <Suspense fallback={<div>loading</div>}>
     <Tracker />
@@ -49,11 +50,6 @@ class SystemShell extends React.Component {
     return { hasError: true, error };
   }
 
-  componentDidMount() {
-    // console.log(`%ccomponentDidMount()`, cssreact);
-  }
-  componentDidCatch(error, errorInfo) {}
-
   render() {
     const { hasError, error } = this.state;
     // omg an error???
@@ -62,19 +58,13 @@ class SystemShell extends React.Component {
     return (
       <Switch>
         <Route exact path="/">
-          <Suspense fallback={<div>loading</div>}>
-            <Home />
-          </Suspense>
+          <LazyHome />
         </Route>
         <Route path="/app/tracker">
-          <Suspense fallback={<div>loading</div>}>
-            <Tracker />
-          </Suspense>
+          <LazyTracker />
         </Route>
         <Route path="/app/generator">
-          <Suspense fallback={<div>loading</div>}>
-            <Generator />
-          </Suspense>
+          <LazyGenerator />
         </Route>
         <Route path="/app*">
           <div style={{ whiteSpace: 'pre', fontFamily: 'monospace' }}>

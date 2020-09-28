@@ -468,13 +468,11 @@ With all the supporting code in place, let's see how long it takes to make a rud
 
 Next, design a **displayList network shared** protocol so we can get inputs working, but it might not be necessary yet. Should at least design it or start thinking about it. 
 
-* [ ] **priority**: how about another route? We'll have Tracker and FakeTrack, maybe even Model.
-  * [ ] how to run only the routed comonent?
+* [x] **priority**: how about another route? We'll have Tracker and FakeTrack, maybe even Model.
+  * [x] how to run only the routed comonent? The **solution** is to eliminate SystemRoutes and manually write  the `<Suspense>` into `<SystemShell>` route components.
+  * [x] however, with lazy-load, this means that a lot of the modules that rely on instant loading to catch the URSYS init will fail because the system boots too early.
+  * [ ] make sure URSYS changes don't break GEM_SRV
 * [ ] **priority**: how about testing the agent programs actually update themselves and this automatically works?
-
-To do the **route**, we can theoretically copy `Tracker.jsx` and then update `SystemRoutes.js` to add the new component. However, this also *runs* the component, which I don't want to do because that makes the app big. For now we'll just import and try using lazy loading later.
-
-There is an issue already: the co-loaded modules all hook into the same phase. That is not good. We will have to do a different kind of routing.
 
 
 

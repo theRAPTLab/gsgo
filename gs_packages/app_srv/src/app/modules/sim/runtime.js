@@ -66,7 +66,6 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'VIS_RENDER'
   ]
 });
-console.log(...PR('SimLoop Created'));
 
 /// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -86,6 +85,7 @@ function LoadSimulation() {
   // load agents and assets
   // prep recording buffer
   (async () => {
+    console.log(...PR('Loading Simulation'));
     await GAME_LOOP.ExecutePhase('GLOOP_LOAD');
     console.log(...PR('Simulation Loaded'));
   })();
@@ -137,18 +137,19 @@ function ResetSimulation() {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR', 'APP_STAGE', LoadSimulation);
-UR.SystemHook('UR', 'APP_START', StartSimulation);
-UR.SystemHook('UR', 'APP_RUN', RunSimulation);
-UR.SystemHook('UR', 'APP_UPDATE', UpdateSimulation);
-UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
-// register debugging messages for GAME_LOOP phases
 const u_dump = (phases, index) => {
   if (!DBG) return;
   if (index === 0) console.log('start of PHASE', index);
   if (index === phases.length) console.log('end of PHASE', index);
   else console.log(`.. executing ${index} ${phases[index]}`);
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('UR', 'APP_STAGE', LoadSimulation);
+UR.SystemHook('UR', 'APP_START', StartSimulation);
+UR.SystemHook('UR', 'APP_RUN', RunSimulation);
+UR.SystemHook('UR', 'APP_UPDATE', UpdateSimulation);
+UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GAME_LOOP.Hook('GLOOP_LOAD', u_dump);
 GAME_LOOP.Hook('GLOOP', u_dump);
 

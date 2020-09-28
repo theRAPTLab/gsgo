@@ -48,7 +48,7 @@ function AgentSelect() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
-  console.group(...PR('Programming Test Agents'));
+  console.groupCollapsed(...PR('Programming Test Agents'));
   TestAgentProgram();
   console.groupEnd();
 }

@@ -135,7 +135,7 @@ class PixiAssetManager {
           const [assetName, rsrc] = kv;
           const assetId = this._tex_dict.get(assetName);
           if (assetId === undefined) {
-            console.log(...PR(`[${i}] '${assetName}' support asset not indexed`));
+            if (DBG) console.log(...PR(`[${i}] '${assetName}' aux asset`));
             return;
           }
           this._textures.set(assetId, rsrc);
