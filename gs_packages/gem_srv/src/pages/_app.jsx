@@ -29,12 +29,11 @@ import theme from '../modules/style/theme';
 import { SITE } from './_navmenu.json';
 // simulation components
 import APPSTATE from '../modules/appstate';
-import SIM from '../modules/sim/runtime';
 
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.util.PROMPTS.makeLogHelper('_APP');
-UR.util.PROMPTS.printTagColors();
+const PR = UR.PrefixUtil('_APP');
+UR.PrintTagColors();
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,21 +56,16 @@ export default function MyApp(props) {
     if (jssStyles) {
       jssStyles.parentElement.removeChild(jssStyles);
     }
-    // URSYS start
-    // 1. Boot URSYS lifecycle independent of React
-    UR.SystemHookModules([SIM, APPSTATE]).then(() => {
-      UR.SystemBoot({
-        autoRun: true,
-        netProps
-      });
-    });
+    // URSYS startup
+    (async () => {
+      await UR.SystemBoot({ netProps });
+      await UR.SystemConfig({ autoRun: true });
+    })();
 
     // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
       console.log(...PR('unmounting _app'));
-      UR.SystemUnhookModules().then(() => {
-        UR.SystemUnload();
-      });
+      UR.SystemUnload();
       // force page reload after unmount
       // window.location.reload();
     };

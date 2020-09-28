@@ -471,7 +471,8 @@ Next, design a **displayList network shared** protocol so we can get inputs work
 * [x] **priority**: how about another route? We'll have Tracker and FakeTrack, maybe even Model.
   * [x] how to run only the routed comonent? The **solution** is to eliminate SystemRoutes and manually write  the `<Suspense>` into `<SystemShell>` route components.
   * [x] however, with lazy-load, this means that a lot of the modules that rely on instant loading to catch the URSYS init will fail because the system boots too early.
-  * [ ] make sure URSYS changes don't break GEM_SRV
+  * [x] make sure URSYS changes don't break GEM_SRV, fix issues
+  * [x] also remove sim from GEM_SRV because it's been moved to APP_SRV as the "master version", before we break it into a stand-alone module.
 * [ ] **priority**: how about testing the agent programs actually update themselves and this automatically works?
 
 
