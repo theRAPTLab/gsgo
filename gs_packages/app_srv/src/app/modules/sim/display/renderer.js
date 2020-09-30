@@ -63,7 +63,6 @@ function Init(element) {
   });
 
   // object handlers for 1-D2V
-  let temp_num = 1;
   RP_MODEL_TO_VOBJ.setObjectHandlers({
     onAdd: (dobj, vobj) => {
       // copy parameters
@@ -73,7 +72,7 @@ function Init(element) {
         console.log('crash skin on agent', agent);
         debugger;
       }
-      vobj.setTexture(dobj.skin);
+      vobj.setTexture(dobj.skin, dobj.frame);
       // add drag-and-drop handlers
       MakeDraggable(vobj);
       if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
@@ -82,6 +81,7 @@ function Init(element) {
     },
     onUpdate: (dobj, vobj) => {
       if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
+
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);

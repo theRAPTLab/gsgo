@@ -32,7 +32,8 @@ import {
   ifEQ
 } from './ops/condition-ops';
 import { agentQueue, agentSend, dbgMessage } from './ops/message-ops';
-import { dbgAgent } from './ops/debug-ops';
+import { dbgOut } from './ops/debug-ops';
+import { jitterAgent } from './cmds/agent-cmds';
 
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,7 +72,13 @@ const test_smc_update: Program = [
     scopedFunction('setTo', 1)
   ])
 ];
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const test_smc_agent_update: Program = [
+  // run during Agent.Update phase
+  // if agent.currentHealth < 10
+  //   agent.currentHealth++
+  jitterAgent()
+];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const test_smc_condition: Program = [
   // debugMessage('moof:pickle')
@@ -97,7 +104,8 @@ const StackMachine = {
   ExecSMC,
   test_smc_init,
   test_smc_update,
-  test_smc_condition
+  test_smc_condition,
+  test_smc_agent_update
 };
 const ScriptCommands = {};
 export { StackMachine, ScriptCommands };

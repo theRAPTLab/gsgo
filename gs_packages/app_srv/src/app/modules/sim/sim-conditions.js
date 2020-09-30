@@ -95,7 +95,7 @@ function ModuleInit(/* gloop */) {
   CONDITIONS.set('exectest', exec_test);
 
   for (let i = 0; i < 100; i++) {
-    const cond = new Condition(new AgentSet('Flower'));
+    const cond = new Condition(new AgentSet('Bunny'));
     cond.addTest(filter_test);
     cond.addExec(exec_test);
     conds.push(cond);

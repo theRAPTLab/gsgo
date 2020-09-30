@@ -88,7 +88,8 @@ class Agent extends SM_Object implements IAgent {
    */
   prop(name: string): IScopeable {
     const p = this.props.get(name);
-    if (p === undefined) throw Error(`no prop named '${name}'`);
+    if (p === undefined)
+      console.warn(`agent ${this.name()} does not have prop '${name}'`);
     return p;
   }
 

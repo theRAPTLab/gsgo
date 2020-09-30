@@ -33,11 +33,13 @@ AGENT_TO_DOBJ.setObjectHandlers({
     dobj.x = agent.x();
     dobj.y = agent.y();
     dobj.skin = agent.skin();
+    dobj.frame = agent.prop('frame').value;
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x();
     dobj.y = agent.y();
     dobj.skin = agent.skin();
+    dobj.frame = agent.prop('frame').value;
   }
 });
 

@@ -28,6 +28,7 @@ import UR from '@gemstep/ursys/client';
 import AgentFactory from '../sim/agents/agentfactory';
 import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
 import { StackMachine } from '../sim/script/stackmachine';
+import NumberProp from '../sim/props/var-number';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,12 +55,19 @@ function TestAgentProgram() {
       setCostumes {1:"slowbee.png", 2:"fastbee.png"}
       showCostume 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.log(...PR('Making Flower Agent Template Function'));
-  AgentFactory.AddTemplate('Flower', agent => {
-    // all this is direct templating
-    agent.prop('x').setTo(100);
-    agent.prop('y').setTo(200);
-    agent.prop('skin').setTo('default');
+  console.log(...PR('Making Bunny Agent Template Function'));
+  let temp_num = 0;
+  AgentFactory.AddTemplate('Bunny', agent => {
+    // all this is direct object manipulation in JS, not SMC!!!
+
+    // note: test_smc_init overrides x,y...see stackmachine.ts
+    agent.prop('x').setTo(50 - 100 * Math.random());
+    agent.prop('y').setTo(100 - 200 * Math.random());
+    agent.prop('skin').setTo('bunny.json');
+    // frame is a temp thing, will be part of Costume feature
+    if (++temp_num > 4) temp_num = 1;
+    agent.addProp('frame', new NumberProp(temp_num));
+
     // agent
     //   .addProp('currentHealth', new NumberProp(100))
     //   .setMin(0)
@@ -75,10 +83,10 @@ function TestAgentProgram() {
   const names = [];
   const NUM_AGENTS = 50;
   console.log(...PR(`Making ${NUM_AGENTS} instances`));
-  for (let i = 0; i < NUM_AGENTS; i++) names.push(`flower${i}`);
+  for (let i = 0; i < NUM_AGENTS; i++) names.push(`bunbun${i}`);
   const smc_init = StackMachine.test_smc_init;
   names.forEach(name => {
-    const agent = AgentFactory.MakeAgent(name, { type: 'Flower' });
+    const agent = AgentFactory.MakeAgent(name, { type: 'Bunny' });
     StackMachine.ExecSMC(smc_init, agent);
   });
 
@@ -95,9 +103,9 @@ function TestAgentProgram() {
   /*/ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - \*\
     condition programming
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.log(...PR('Making Ticker Agent with Timer feature'));
-  const ticker = AgentFactory.MakeAgent('TickyTicky');
-  ticker.addFeature('Timer');
+  // console.log(...PR('Making Ticker Agent with Timer feature'));
+  // const ticker = AgentFactory.MakeAgent('TickyTicky');
+  // ticker.addFeature('Timer');
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,13 +114,13 @@ function TestAgentUpdate(/* frame */) {
   // console.log(healthProp.value, healthProp.nvalue);
   // if (healthProp.eq(5).true()) console.log('!!! 5 health');
   // healthProp.add(1);
-  const agents = AgentFactory.GetAgentsByType('Flower');
-  // test generic smc program
-  // const smc_update = StackMachine.test_smc_update;
-  // agents.forEach(agent => StackMachine.ExecSMC(smc_update, agent));
+  const agents = AgentFactory.GetAgentsByType('Bunny');
+  // HACK: load agent-update test program and execute it
+  const smc_update = StackMachine.test_smc_agent_update;
+  agents.forEach(agent => StackMachine.ExecSMC(smc_update, agent));
   // test agent queued exec
   agents.forEach(agent => agent.AGENTS_EXEC());
-}
+} //
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestJitterAgents(/* frame */) {
