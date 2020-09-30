@@ -26,6 +26,7 @@
 
 import UR from '@gemstep/ursys/client';
 import AgentFactory from '../sim/agents/agentfactory';
+import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
 import { StackMachine } from '../sim/script/stackmachine';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -112,6 +113,21 @@ function TestAgentUpdate(/* frame */) {
   // test agent queued exec
   agents.forEach(agent => agent.AGENTS_EXEC());
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function TestJitterAgents(/* frame */) {
+  const agents = AGENTS_GetArrayAll();
+  // move the agents around manually by random jiggle
+  agents.forEach(agent => {
+    const rx = Math.round(5 - Math.random() * 10);
+    const ry = Math.round(5 - Math.random() * 10);
+    const x = agent.x() + rx;
+    const y = agent.y() + ry;
+    agent.prop('x').value = x;
+    agent.prop('y').value = y;
+  });
+  return agents;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestAgentThink(/* frameNum */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -140,5 +156,6 @@ export {
   TestAgentProgram,
   TestAgentUpdate,
   TestAgentThink,
-  TestAgentExec
+  TestAgentExec,
+  TestJitterAgents
 };

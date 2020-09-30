@@ -8,6 +8,8 @@ import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
 import Visual, { MakeDraggable } from '../lib/class-visual';
 import SyncMap from '../lib/class-syncmap';
+import { TestRenderParameters } from '../../tests/renderer-functions';
+import * as DATACORE from '../runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,35 +64,27 @@ function Init(element) {
 
   // object handlers for 1-D2V
   let temp_num = 1;
-  const doScale = true;
-  const doRotate = true;
-  const doAlpha = true;
-
   RP_MODEL_TO_VOBJ.setObjectHandlers({
     onAdd: (dobj, vobj) => {
+      // copy parameters
+      vobj.setPosition(dobj.x, dobj.y);
+      if (!dobj.skin) {
+        const agent = DATACORE.AGENT_GetById(dobj.id);
+        console.log('crash skin on agent', agent);
+        debugger;
+      }
+      vobj.setTexture(dobj.skin);
+      // add drag-and-drop handlers
       MakeDraggable(vobj);
+      if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
+      // add to scene
       vobj.add(CONTAINERS.Root);
-      if (++temp_num > 4) temp_num = 1;
-      // vobj.setTextureById(2, temp_num);
-      vobj.setTexture('default');
-      vobj.setAngle(Math.random() * 180);
-      if (!vobj.sprite.draggin) vobj.setPosition(dobj.x, dobj.y);
     },
     onUpdate: (dobj, vobj) => {
       if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
-      // HACK: this should be a dobj.parm 'angle'
-      if (doRotate) {
-        vobj.turnAngle(vobj.refId % 2 ? 2 : -2);
-      }
-      // HACK: this should be a dobj.parm 'scale'
-      if (doScale) {
-        let { x } = vobj.getScale();
-        x += (Math.random() - 0.5) * 0.05;
-        if (x > 0.75) x = 0.5;
-        if (x < 0.1) x = 0.1;
-        vobj.setScale(x, x);
-      }
-      if (doAlpha) vobj.setAlpha(0.5);
+      // force vobj rotation, scale, alpha for PIXI testing
+      // see sim-agents.js for TestJitterAgents
+      // TestRenderParameters(dobj, vobj);
     },
     shouldRemove: vobj => true,
     onRemove: vobj => {}
@@ -147,8 +141,8 @@ function UpdateAnnotationList(dobjs) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Render() {
   RP_MODEL_TO_VOBJ.processSyncedObjects();
-  RP_PTRAK_SPR.processSyncedObjects();
-  RP_PTRAK_SPR.processSyncedObjects();
+  // RP_PTRAK_SPR.processSyncedObjects();
+  // RP_PTRAK_SPR.processSyncedObjects();
   const synced = RP_MODEL_TO_VOBJ.getSyncedObjects();
   HCON.plot('renderer called', 0);
   HCON.plot(`synced count ${synced.length}`, 0, 20);
