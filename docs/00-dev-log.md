@@ -68,35 +68,60 @@ This code just runs because it hooks early into the UR phase machine. We want to
 * **DisplayListRead**: reading a display list from elsewhere: frame-to-dobjs
 * **DisplayListRender**: interpreting the display list object(s): dobjs-to-sprite
 
-*FOR NOW* - let's just see if it works. I disabled runtime in Tracker and FakeTrack
+*FOR NOW* - let's just see if it works. I disabled runtime in Tracker and FakeTrack.
 
-* [ ] disable the auto jittering stuff in GENERATOR
+* [x] disable autoJitter in `sim-agents AgentUpdate()`.  Moved to `TestJitterAgents()` in `agent-functions`
+* [x] disable autoRotate in `renderer Init()` setup. Moved to `TestRenderParameters()` in `renderer-functions`
+* [ ] Look at `TestAgentProgram()` in `agent-functions` and make it update agent positions.
+  * [x] set the starting position to random
+  * [x] set the starting skin from agent definition
+  * [x] fix bugs in render chain
+  * [x] make sure that properties are being copied
+  * [ ] add agent update to its program
 
-* [ ] implement/test entity broadcasts
-* [ ] how to integrate multiple display lists together?
-* [ ] design device persistant naming and reconnection between reloads
-* [ ] maybe use JWT to establish identities? 
+**OOPS** there actually isn't a sample update SMC script in the Test Agent Template yet, because there was no way to see anything happen until now. So our NEXT STEP for WEDNESDAY is
+
+* [x] write an agent jitter SMC program function in `script/cmds/basic-cmds`
+
+* [x] make sure agent update is firing from `sim-agents` (calls `TestAgentUpdate()`)
+
+* [ ] `TestAgentUpdate()` is calling `AGENTS_EXEC()` on each agent, but there is nothing queued in it yet.
+
+* [x] Instead, force test by getting the `test_smc_update` program and shoving them into the `StackMachine.EXECSMC(program,agent)` interface
+
+* [x] ZOMG it works
+
+  
+
+  
+
+
+
 
 
 
 ---
 
 BACKLOG
-```[ ] Create DisplayObject Pool
-[ ] Renderer:
-[ ] * Implement Coordinate System
-[ ] * Write the Render Loop
+```
+Renderer + Display Lists
+[ ] implement/test entity broadcasts
+[ ] how to integrate multiple display lists together?
 
-[ ] Input:
-[ ] * Read Event List
-[ ] * Update Display Object from events that change things
-[ ] * Convert local interactions to Agent or Display Object changes
-[ ] * Write Event List
+Network:
+[ ] design device persistant naming and reconnection between reloads
+[ ] maybe use JWT to establish identities? 
 
-[ ] Runtime:
-[ ] * Create Agent Template
-[ ] * Instance Agent Template
-[ ] * Control
+Input:
+[ ] Read Event List
+[ ] Update Display Object from events that change things
+[ ] Convert local interactions to Agent or Display Object changes
+[ ] Write Event List
+
+Runtime:
+[ ] Create Agent Template
+[ ] Instance Agent Template
+[ ] Control
 ```
 ---
 

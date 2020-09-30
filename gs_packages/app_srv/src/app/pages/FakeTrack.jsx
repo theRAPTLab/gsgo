@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Generator - Main Application View
+  FakeTrack - Main Application View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -23,7 +23,7 @@ const HCON = UR.HTMLConsoleUtil('console-left');
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Tracker extends React.Component {
+class FakeTrack extends React.Component {
   componentDidMount() {
     // start URSYS
     UR.SystemConfig({ autoRun: true }); // initialize renderer
@@ -33,7 +33,7 @@ class Tracker extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount Tracker');
+    console.log('componentWillUnmount');
   }
 
   render() {
@@ -61,4 +61,4 @@ class Tracker extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(Tracker);
+export default withStyles(useStylesHOC)(FakeTrack);

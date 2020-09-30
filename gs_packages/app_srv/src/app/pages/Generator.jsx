@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Tracker - Main Application View
+  Generator - Main Application View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -23,9 +23,9 @@ const PR = UR.PrefixUtil('Generator', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
 const { PROJECT_NAME } = SETTINGS;
 
-/// HACK DEBUGGING STUFF //////////////////////////////////////////////////////
+/// CONSOLE-LEFT STATUS FAKERY ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// debugging stuff
+/// CONSOLE
 let X = 0;
 let INC = 1;
 const ZIP = '=@=';
@@ -47,7 +47,7 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
   if (Math.random() > 0.95) HCON.clear(6);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// END DEBUGGING STUFF ///////////////////////////////////////////////////////
+/// END STATUS FAKERY /////////////////////////////////////////////////////////
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,7 +62,7 @@ class Generator extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount Tracker');
+    console.log('componentWillUnmount');
   }
 
   render() {

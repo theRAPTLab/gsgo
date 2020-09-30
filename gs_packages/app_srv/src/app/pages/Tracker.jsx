@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Generator - Main Application View
+  Tracker - Main Application View
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -59,7 +59,7 @@ class Tracker extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount Tracker');
+    console.log('componentWillUnmount');
   }
 
   render() {

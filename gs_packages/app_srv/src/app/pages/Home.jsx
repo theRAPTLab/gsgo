@@ -52,7 +52,7 @@ class Home extends React.Component {
   componentDidMount() {}
 
   componentWillUnmount() {
-    console.log('componentWillUnmount Home');
+    console.log('componentWillUnmount');
   }
 
   render() {
