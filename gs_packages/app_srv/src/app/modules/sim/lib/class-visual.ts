@@ -212,10 +212,12 @@ function MakeDraggable(vobj: Visual) {
     if (agent) {
       console.log(`agent id ${agent.id} dropped`);
       this.tint = 0x00ff00;
-      const newPosition = this.data.getLocalPosition(this.parent);
-      const { x, y } = newPosition;
-      agent.prop('x').value = x;
-      agent.prop('y').setTo(y);
+      if (this.data) {
+        const newPosition = this.data.getLocalPosition(this.parent);
+        const { x, y } = newPosition;
+        agent.prop('x').value = x;
+        agent.prop('y').setTo(y);
+      }
     }
     // set the interaction data to null
     this.data = null;

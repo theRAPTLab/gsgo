@@ -28,8 +28,8 @@ const MAPPED_VISUALS = new SyncMap('DOBJ-TO-VOBJ', {
 function m_Initialize() {
   MAPPED_VISUALS.setObjectHandlers({
     onAdd: (dobj, vobj) => {
-      vobj.x = dobj.x;
-      vobj.y = dobj.y;
+      vobj.setPosition(dobj.x, dobj.y);
+      vobj.setSkin(dobj.skin());
     },
     onUpdate: (dobj, spr) => {
       spr.x = dobj.x;

@@ -59,7 +59,7 @@ function TestAgentProgram() {
     // all this is direct templating
     agent.prop('x').setTo(100);
     agent.prop('y').setTo(200);
-    agent.prop('skin').setTo('flower.png');
+    agent.prop('skin').setTo('default');
     // agent
     //   .addProp('currentHealth', new NumberProp(100))
     //   .setMin(0)

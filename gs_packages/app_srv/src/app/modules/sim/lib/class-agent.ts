@@ -44,7 +44,7 @@ class Agent extends SM_Object implements IAgent {
     this._name = new StringVar(agentName);
     this._x = new NumberVar();
     this._y = new NumberVar();
-    this._skin = new StringVar();
+    this._skin = new StringVar('default');
     // mirror basic props in props for conceptual symmetry
     this.props.set('name', this._name);
     this.props.set('x', this._x);
