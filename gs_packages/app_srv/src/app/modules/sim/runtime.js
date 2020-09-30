@@ -81,7 +81,7 @@ function m_StepSimulation(frameCount) {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// LOADING CONTROL ///////////////////////////////////////////////////////////
-function LoadSimulation() {
+function StageSimulation() {
   // load agents and assets
   // prep recording buffer
   (async () => {
@@ -103,7 +103,7 @@ function StartSimulation() {
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
-function UpdateSimulation() {
+function RestageSimulation() {
   // application host has changed
   console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
   GAME_LOOP.Execute('SYSEX');
@@ -144,11 +144,11 @@ const u_dump = (phases, index) => {
   else console.log(`.. executing ${index} ${phases[index]}`);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR', 'APP_STAGE', LoadSimulation);
+UR.SystemHook('UR', 'APP_STAGE', StageSimulation);
 UR.SystemHook('UR', 'APP_START', StartSimulation);
 UR.SystemHook('UR', 'APP_RUN', RunSimulation);
-UR.SystemHook('UR', 'APP_UPDATE', UpdateSimulation);
 UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
+UR.SystemHook('UR', 'APP_RESTAGE', RestageSimulation);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 GAME_LOOP.Hook('GLOOP_LOAD', u_dump);
 GAME_LOOP.Hook('GLOOP', u_dump);
@@ -156,7 +156,7 @@ GAME_LOOP.Hook('GLOOP', u_dump);
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  LoadSimulation,
+  StageSimulation,
   StartSimulation,
   PauseSimulation,
   EndSimulation,

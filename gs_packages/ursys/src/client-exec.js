@@ -51,8 +51,9 @@ const PHASES = {
     'APP_STAGE', // app modules receive reset params prior to starting
     'APP_START', // app modules start execution, all modules are ready
     'APP_RUN', // app modules enter run mode
-    'APP_UPDATE', // app modules configuration update
-    'APP_RESET' // app_module will jump back to APP_RUN
+    'APP_UPDATE', // periodic heartbeat
+    'APP_RESET', // app_module will jump back to APP_RUN
+    'APP_RESTAGE' // significant context change, should do deeper restart
   ],
   PHASE_PAUSED: [
     'APP_PAUSE', // app modules should enter "paused state"
@@ -147,7 +148,7 @@ async function SystemRun(options = {}) {
 async function SystemUpdate() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
-  await Execute('APP_UPDATE');
+  await Execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
   SystemRun();

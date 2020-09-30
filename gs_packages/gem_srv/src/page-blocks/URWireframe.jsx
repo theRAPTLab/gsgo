@@ -137,7 +137,7 @@ function WF(props) {
     summary ? <Box className={clsx(classes.summary)}>{summary}</Box> : '';
 
   // if you need read-only theme parameters directly in the component
-  // NOTE: [classes.WFroot] is a dynamic key for clsx...see docs
+  // NOTE: { [classes.WFroot]: isWF } equiv to { 'classname': true|false }
   return (
     <Box className={clsx(classes.root, { [classes.WFroot]: isWF })}>
       <Box display="flex" alignItems="center">

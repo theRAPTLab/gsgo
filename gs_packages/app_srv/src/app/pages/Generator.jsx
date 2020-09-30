@@ -7,40 +7,23 @@
 
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { Typography } from '@material-ui/core';
+import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
+import { useStylesHOC } from './page-styles';
 import SETTINGS from '../../../config/app.settings';
 import { Init, HookResize } from '../modules/sim/display/renderer';
+
+/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('Generator', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
-const BG_COLOR = '#F0F0F0';
-const BG_TITLE = '#404040';
 const { PROJECT_NAME } = SETTINGS;
 
-/// STYLES ////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const useStyles = theme => ({
-  root: {
-    display: 'grid',
-    width: '100vw',
-    height: '100vh',
-    gridTemplateColumns: '240px auto 120px',
-    //  gridTemplateColumns: 'repeat(12,1fr)',
-    gridTemplateRows: '50px 1fr 100px',
-    gridGap: theme.spacing(1)
-  },
-  cell: {
-    padding: '5px',
-    whiteSpace: 'prep',
-    fontFamily: 'monospace'
-  }
-});
-/// DEBUGGING STUFF ///////////////////////////////////////////////////////////
+/// HACK DEBUGGING STUFF //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // debugging stuff
 let X = 0;
@@ -86,47 +69,15 @@ class Generator extends React.Component {
     const { classes } = this.props;
     return (
       <div className={classes.root}>
-        <div
-          id="console-top"
-          className={classes.cell}
-          style={{
-            gridColumnEnd: 'span 3',
-            color: 'white',
-            backgroundColor: BG_TITLE
-          }}
-        >
+        <div id="console-top" className={clsx(classes.cell, classes.top)}>
           <span style={{ fontSize: '32px' }}>GENERATOR/TEST</span>
         </div>
-        <div
-          id="console-left"
-          className={classes.cell}
-          style={{ gridColumnEnd: 'span 1', backgroundColor: BG_COLOR }}
-        >
-          console-left
-        </div>
-        <div
-          id="root-renderer"
-          style={{
-            gridColumnEnd: 'span 1',
-            position: 'relative',
-            width: '100%',
-            height: '100%'
-          }}
-        >
-          mid
-        </div>
-        <div
-          id="console-right"
-          className={classes.cell}
-          style={{ gridColumnEnd: 'span 1', backgroundColor: BG_COLOR }}
-        >
+        <div id="console-left" className={clsx(classes.cell, classes.left)} />
+        <div id="root-renderer" className={classes.main} />
+        <div id="console-right" className={clsx(classes.cell, classes.right)}>
           console-right
         </div>
-        <div
-          id="console-bottom"
-          className={classes.cell}
-          style={{ gridColumnEnd: 'span 3', backgroundColor: BG_COLOR }}
-        >
+        <div id="console-bottom" className={clsx(classes.cell, classes.bottom)}>
           console-bottom
         </div>
       </div>
@@ -137,4 +88,4 @@ class Generator extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStyles)(Generator);
+export default withStyles(useStylesHOC)(Generator);
