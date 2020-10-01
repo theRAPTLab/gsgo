@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "local": "npm run dev:app",
+    "dev:srv": "node urdu dev-skip",
     "dev:app": "node urdu dev",
     "..ursys": "cd ../ursys && npm run local",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",

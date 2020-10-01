@@ -42,7 +42,7 @@ let m_server_handlers = new Map(); // message map storing sets of functions
 let m_remote_handlers = new Map(); // message map storing other handlers
 let m_socket_msgs_list = new Map(); // message map by uaddr
 // module object
-let UNET = {};
+let URNET = {};
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +54,7 @@ let UNET = {};
  *  @param {string} [options.uaddr] - default to DefaultServerUADDR() 'SVR_01'
  *  @returns {Object} complete configuration object
  */
-UNET.StartNetwork = (options = {}) => {
+URNET.StartNetwork = (options = {}) => {
   if (!options.runtimePath) {
     return Error('runtimePath required to start URSYS SERVER');
   }
@@ -98,7 +98,7 @@ UNET.StartNetwork = (options = {}) => {
  * @param {string} mesgName message to register a handler for
  * @param {function} handlerFunc function receiving 'data' object
  */
-UNET.NetSubscribe = (mesgName, handlerFunc) => {
+URNET.NetSubscribe = (mesgName, handlerFunc) => {
   if (typeof handlerFunc !== 'function') {
     TOUT(`${mesgName} subscription failure`);
     throw Error('arg2 must be a function');
@@ -116,7 +116,7 @@ UNET.NetSubscribe = (mesgName, handlerFunc) => {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-UNET.NetUnsubscribe = (mesgName, handlerFunc) => {
+URNET.NetUnsubscribe = (mesgName, handlerFunc) => {
   if (mesgName === undefined) {
     m_server_handlers.clear();
   } else if (handlerFunc === undefined) {
@@ -138,7 +138,7 @@ UNET.NetUnsubscribe = (mesgName, handlerFunc) => {
  * @param {function} handlerFunc function originally registered
  * @return {Array<Object>} array of returned data items
  */
-UNET.NetCall = async (mesgName, data) => {
+URNET.NetCall = async (mesgName, data) => {
   let pkt = new NetPacket(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   if (DBG.call)
@@ -152,12 +152,12 @@ UNET.NetCall = async (mesgName, data) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side local server subscription. It's the same as NetSubscribe
  */
-UNET.LocalSubscribe = UNET.NetSubscribe;
+URNET.LocalSubscribe = URNET.NetSubscribe;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side local server publishing. It executes synchronously, unlike the
  *  remote version. Doesn't return vsalues.
  */
-UNET.LocalPublish = (mesgName, data) => {
+URNET.LocalPublish = (mesgName, data) => {
   const handlers = m_server_handlers.get(mesgName);
   if (!handlers) return;
   const results = [];
@@ -172,7 +172,7 @@ UNET.LocalPublish = (mesgName, data) => {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-UNET.NetPublish = (mesgName, data) => {
+URNET.NetPublish = (mesgName, data) => {
   let pkt = new NetPacket(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   // we don't care about waiting for the promise to complete
@@ -186,21 +186,21 @@ UNET.NetPublish = (mesgName, data) => {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-UNET.NetSignal = (mesgName, data) => {
+URNET.NetSignal = (mesgName, data) => {
   TOUT('NOTE: Use NetPublish(), not NetSignal() since the server doesnt care.');
-  UNET.NetPublish(mesgName, data);
+  URNET.NetPublish(mesgName, data);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return list of registered server handlers
  */
-UNET.ServiceList = () => {
+URNET.ServiceList = () => {
   const serviceList = [...m_server_handlers.keys()];
   return serviceList;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return list of clients and registered handlers
  */
-UNET.ClientList = () => {
+URNET.ClientList = () => {
   const handlerList = [...m_remote_handlers.entries()];
   const clientsByMessage = {};
   handlerList.forEach(entry => {
@@ -216,7 +216,7 @@ UNET.ClientList = () => {
  * @param {NetPacket} pkt - NetPacket packet instance
  * @return {Object} object with registered property containing array of message
  */
-UNET.PKT_RegisterRemoteHandlers = pkt => {
+URNET.PKT_RegisterRemoteHandlers = pkt => {
   if (pkt.Message() !== 'NET:SRV_REG_HANDLERS')
     throw Error('not a registration packet');
   let uaddr = pkt.SourceAddress();
@@ -256,7 +256,7 @@ UNET.PKT_RegisterRemoteHandlers = pkt => {
  * @param {String} pkt.data.token - hashed session info
  * @return {Object} returned data payload
  */
-UNET.PKT_SessionLogin = pkt => {
+URNET.PKT_SessionLogin = pkt => {
   if (pkt.Message() !== 'NET:SRV_SESSION_LOGIN')
     throw Error('not a session login packet');
   const uaddr = pkt.SourceAddress();
@@ -292,7 +292,7 @@ UNET.PKT_SessionLogin = pkt => {
  * @param {String} pkt.data.token - hashed session info
  * @return {Object} returned data payload
  */
-UNET.PKT_SessionLogout = pkt => {
+URNET.PKT_SessionLogout = pkt => {
   if (pkt.Message() !== 'NET:SRV_SESSION_LOGOUT')
     throw Error('not a session logout packet');
   const uaddr = pkt.SourceAddress();
@@ -309,7 +309,7 @@ UNET.PKT_SessionLogout = pkt => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a session object based on the passed packet's stored credentials
  */
-UNET.PKT_Session = pkt => {
+URNET.PKT_Session = pkt => {
   const uaddr = pkt.SourceAddress();
   const sock = m_SocketLookup(uaddr);
   if (!sock) {
@@ -360,7 +360,7 @@ UNET.PKT_Session = pkt => {
   return sock.USESS;
 };
 
-/// END OF UNET PUBLIC API ////////////////////////////////////////////////////
+/// END OF URNET PUBLIC API ////////////////////////////////////////////////////
 
 /// MODULE HELPER FUNCTIONS ///////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -459,7 +459,7 @@ function m_SocketDelete(socket) {
   }
   if (DBG.init) log_ListSockets(`del ${socket.UADDR}`);
   // tell subscribers socket is gone
-  UNET.LocalPublish('SRV_SOCKET_DELETED', { uaddr });
+  URNET.LocalPublish('SRV_SOCKET_DELETED', { uaddr });
 } // end m_SocketDelete()
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -678,4 +678,4 @@ function log_PktTransaction(pkt, status, promises) {
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = UNET;
+module.exports = URNET;

@@ -32,83 +32,92 @@ const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
 const app = Express();
 let m_server; // server object returned by app.listen()
+function m_StartServer(opt = {}) {
+  if (!m_server) {
+    const ip = `\x1b[33m${IP.address()}\x1b[0m`;
+    const port = `\x1b[33m${PORT}\x1b[0m`;
+    m_server = app.listen(PORT, () => {
+      console.log(...PR(`webapp bundle: '${DIR_OUT}'`));
+      console.log(...PR(`webapp server listening ${ip} on port ${port}`));
+      if (!opt.skipWebCompile) console.log(...PR('LIVE RELOAD ENABLED'));
+    });
+  }
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start the express webserver on designated PORT
  */
-function Start() {
+function Start(opt = {}) {
+  const { skipWebCompile = false } = opt;
   console.log(
     ...PR('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...')
   );
   let promiseStart;
 
-  // RUN WEBPACK THROUGH API
-  // first create a webpack instance with our chosen config file
-  const webConfig = wpconf_packager();
+  if (!skipWebCompile) {
+    // RUN WEBPACK THROUGH API
+    // first create a webpack instance with our chosen config file
+    const webConfig = wpconf_packager();
 
-  const compiler = Webpack(webConfig);
-  // add webpack middleware to Express
-  // also add the hot module reloading middleware
-  const instance = DevServer(compiler, {
-    logLevel: 'silent', // turns off [wdm] messages
-    publicPath: webConfig.output.publicPath,
-    stats: 'errors-only' // see https://webpack.js.org/configuration/stats/
-  });
-  console.log(...PR('... starting hot devserver (this may take a while)'));
-
-  app.use(instance);
-  app.use(HotReload(compiler));
-
-  // compilation start message
-  // we'll start the server after webpack bundling is complete
-  // but we still have some configuration to do
-  // note that many hooks do not run in developer HMR mode
-  compiler.hooks.afterCompile.tap('StartServer', () => {
-    if (!m_server) {
-      const ip = `\x1b[33m${IP.address()}\x1b[0m`;
-      const port = `\x1b[33m${PORT}\x1b[0m`;
-      m_server = app.listen(PORT, () => {
-        console.log(...PR(`webapp bundle: '${DIR_OUT}'`));
-        console.log(...PR(`webapp server listening ${ip} on port ${port}`));
-        console.log(...PR('LIVE RELOAD ENABLED'));
-      });
-    }
-  });
-
-  // return promiseStart when server starts
-  promiseStart = new Promise((resolve, reject) => {
-    let INTERVAL_COUNT = 0;
-    const INTERVAL_MAX = 15;
-    let COMPILE_RESOLVED = false;
-    const INTERVAL_PERIOD = 2000;
-    const COMPILE_TIME = Math.floor((INTERVAL_MAX * INTERVAL_PERIOD) / 1000);
-
-    // start compile status update timer
-    let INTERVAL = setInterval(() => {
-      if (++INTERVAL_COUNT < INTERVAL_MAX) {
-        console.log(...PR('... transpiling bundle'));
-      } else {
-        clearInterval(INTERVAL);
-        const emsg = `webpack compile time > INTERVAL_MAX (${COMPILE_TIME} seconds)`;
-        const err = new Error(emsg);
-        reject(err);
-      }
-    }, INTERVAL_PERIOD);
-
-    // set resolver
-    compiler.hooks.afterCompile.tap('ResolvePromise', () => {
-      if (!COMPILE_RESOLVED) {
-        console.log(...PR('... transpiling complete!'));
-        clearInterval(INTERVAL);
-        resolve();
-        COMPILE_RESOLVED = true;
-      } else {
-        console.log(...PR('RECOMPILED SOURCE CODE and RELOADING'));
-      }
+    const compiler = Webpack(webConfig);
+    // add webpack middleware to Express
+    // also add the hot module reloading middleware
+    const instance = DevServer(compiler, {
+      logLevel: 'silent', // turns off [wdm] messages
+      publicPath: webConfig.output.publicPath,
+      stats: 'errors-only' // see https://webpack.js.org/configuration/stats/
     });
-  });
+    console.log(...PR('... starting hot devserver (this may take a while)'));
 
+    app.use(instance);
+    app.use(HotReload(compiler));
+
+    // compilation start message
+    // we'll start the server after webpack bundling is complete
+    // but we still have some configuration to do
+    // note that many hooks do not run in developer HMR mode
+    compiler.hooks.afterCompile.tap('StartServer', m_StartServer);
+
+    // return promiseStart when server starts
+    promiseStart = new Promise((resolve, reject) => {
+      let INTERVAL_COUNT = 0;
+      const INTERVAL_MAX = 15;
+      let COMPILE_RESOLVED = false;
+      const INTERVAL_PERIOD = 2000;
+      const COMPILE_TIME = Math.floor((INTERVAL_MAX * INTERVAL_PERIOD) / 1000);
+
+      // start compile status update timer
+      let INTERVAL = setInterval(() => {
+        if (++INTERVAL_COUNT < INTERVAL_MAX) {
+          console.log(...PR('... transpiling bundle'));
+        } else {
+          clearInterval(INTERVAL);
+          const emsg = `webpack compile time > INTERVAL_MAX (${COMPILE_TIME} seconds)`;
+          const err = new Error(emsg);
+          reject(err);
+        }
+      }, INTERVAL_PERIOD);
+
+      // set resolver
+      compiler.hooks.afterCompile.tap('ResolvePromise', () => {
+        if (!COMPILE_RESOLVED) {
+          console.log(...PR('... transpiling complete!'));
+          clearInterval(INTERVAL);
+          resolve();
+          COMPILE_RESOLVED = true;
+        } else {
+          console.log(...PR('RECOMPILED SOURCE CODE and RELOADING'));
+        }
+      });
+    });
+  } else {
+    const TS = '\x1b[33m';
+    const TE = '\x1b[0m';
+    console.log(...PR(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`));
+    console.log(...PR(`*** ${TS}HOT RELOAD DISABLED${TE}`));
+    m_StartServer(opt);
+  }
   // configure cookies middleware (appears in req.cookies)
   app.use(CookieP());
   // configure headers to allow cross-domain requests of media elements

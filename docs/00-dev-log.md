@@ -1,3 +1,5 @@
+
+
 [PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY S12 JUN 08-JUN 21**
@@ -82,18 +84,23 @@ This code just runs because it hooks early into the UR phase machine. We want to
 **OOPS** there actually isn't a sample update SMC script in the Test Agent Template yet, because there was no way to see anything happen until now. So our NEXT STEP for WEDNESDAY is
 
 * [x] write an agent jitter SMC program function in `script/cmds/basic-cmds`
-
 * [x] make sure agent update is firing from `sim-agents` (calls `TestAgentUpdate()`)
-
 * [ ] `TestAgentUpdate()` is calling `AGENTS_EXEC()` on each agent, but there is nothing queued in it yet.
-
 * [x] Instead, force test by getting the `test_smc_update` program and shoving them into the `StackMachine.EXECSMC(program,agent)` interface
-
 * [x] ZOMG it works
 
-  
+## SEP 30 WED - Display List Distribution
 
-  
+Next up: **can we ship display list information to Tracker?** 
+
+* [ ] Emit displayList via URSYS from `Generator` 
+* [ ] Make `Tracker` receive message, and shove the displayList into the Renderer
+
+Is URSYS working for NetCall, NetPublish? **NO**
+
+> We have to implement the full Network Communications stack, as it was never fully ported because we didn't need networking for the script development.
+
+**ASIDE**: I want to write some documentation about the project. So what do I need to convey to been really quickly? [Notes for Oct 5 Report](https://docs.google.com/document/d/1yEXqVN2yofWPvsBri53kFuoHuY36lDrONN3cyeteRUM/edit)_ 
 
 
 

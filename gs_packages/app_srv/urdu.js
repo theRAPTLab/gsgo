@@ -60,13 +60,18 @@ switch (cmd) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     RunDevServer();
     break;
+  case 'dev-skip':
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    RunDevServer({ skipWebCompile: true });
+
+    break;
   default:
     console.log('unknown command', cmd);
 }
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RunDevServer() {
+function RunDevServer(opt) {
   // git branch information
   const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
@@ -89,8 +94,8 @@ function RunDevServer() {
   });
   // run ursys
   (async () => {
-    await URPACK.Start();
-    await URSERVER.Initialize();
+    await URPACK.Start(opt);
+    await URSERVER.Initialize(opt);
     await URSERVER.StartServer({
       serverName: 'APP_SRV',
       runtimePath: RUNTIME_PATH
