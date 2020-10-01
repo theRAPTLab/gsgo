@@ -115,7 +115,7 @@ function Start(opt = {}) {
     const TS = '\x1b[33m';
     const TE = '\x1b[0m';
     console.log(...PR(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`));
-    console.log(...PR(`*** ${TS}HOT RELOAD DISABLED${TE}`));
+    console.log(...PR(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`));
     m_StartServer(opt);
   }
   // configure cookies middleware (appears in req.cookies)

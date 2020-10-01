@@ -5,11 +5,24 @@
   "main": "index.js",
   "scripts": {
     "local": "npm run dev:app",
-    "dev:srv": "node urdu dev-skip",
+    "dev:srv": "nodemon urdu.js dev-skip",
     "dev:app": "node urdu dev",
     "..ursys": "cd ../ursys && npm run local",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
     "test:app": "echo \"Error: no test specified\" && exit 1"
+  },
+  "nodemonConfig": {
+    "verbose": true,
+    "ignore": [
+      "node_modules",
+      ".next"
+    ],
+    "watch": [
+      "../ursys/server",
+      "../ursys/client",
+      "src/*.js"
+    ],
+    "ext": "js json"
   },
   "keywords": [],
   "author": "",
@@ -69,6 +82,7 @@
     "ip": "^1.1.5",
     "lokijs": "^1.5.8",
     "minimist": "^1.2.5",
+    "nodemon": "^2.0.3",
     "pixi.js": "^5.3.3",
     "prop-types": "^15.7.2",
     "react": "^16.13.1",
