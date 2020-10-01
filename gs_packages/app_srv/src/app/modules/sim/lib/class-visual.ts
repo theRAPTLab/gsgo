@@ -210,7 +210,7 @@ function MakeDraggable(vobj: Visual) {
     this.dragging = false;
     const agent = DATACORE.AGENT_GetById(vobj.id);
     if (agent) {
-      console.log(`agent id ${agent.id} '${agent.name}' dropped`);
+      console.log(`agent id ${agent.id} '${agent.name()}' dropped`, agent);
       this.tint = 0x00ff00;
       if (this.data) {
         const newPosition = this.data.getLocalPosition(this.parent);
