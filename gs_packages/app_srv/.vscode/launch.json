@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "npm server",
+      "name": "npm run local",
       "request": "launch",
       "runtimeArgs": ["run-script", "local"],
       "runtimeExecutable": "npm",
@@ -13,7 +13,15 @@
       "type": "pwa-node"
     },
     {
-      "name": "chrome localhost",
+      "name": "npm run dev:srv",
+      "request": "launch",
+      "runtimeArgs": ["run-script", "dev:srv"],
+      "runtimeExecutable": "npm",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "pwa-node"
+    },
+    {
+      "name": "last built webapp",
       "type": "pwa-chrome",
       "request": "launch",
       "url": "http://localhost/index.html",
@@ -22,8 +30,8 @@
   ],
   "compounds": [
     {
-      "name": "AppServe Server+Client",
-      "configurations": ["chrome localhost", "npm server"]
+      "name": "both npm + chrome",
+      "configurations": ["last built webapp", "npm run local"]
     }
   ]
 }
