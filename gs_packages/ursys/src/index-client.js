@@ -10,6 +10,7 @@ const URChannel = require('./client-channel');
 const URNet = require('./client-network');
 const URExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
+const DBGTEST = require('./util/client-debug');
 
 const PR = PROMPTS.makeStyleFormatter('UR');
 
@@ -38,8 +39,8 @@ const PubSub = {};
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const nc_sub = new URChannel('ursys-sub');
-const nc_pub = new URChannel('ursys-pub');
+const CHAN_LOCAL = new URChannel('ur-client');
+const CHAN_NET = new URChannel('ur-sender');
 let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
@@ -57,10 +58,15 @@ async function SystemStart() {
     'UR',
     'NET_CONNECT',
     () =>
-      new Promise((resolvbe, reject) =>
-        URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
+      new Promise((resolve, reject) =>
+        URNet.Connect(CHAN_NET, { success: resolve, failure: reject })
       )
   );
+  // autoregister messages
+  PhaseMachine.QueueHookFor('UR', 'APP_CONFIGURE', () => {
+    let result = CHAN_LOCAL.RegisterSubscribers();
+    console.log('APP_CONFIGURE got result', result);
+  });
   URSYS_RUNNING = true;
   return Promise.resolve();
 }
@@ -80,14 +86,18 @@ async function SystemStop() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = {
+const UR = {
   ...META,
   // FORWARDED PUB/SUB
-  Subscribe: nc_sub.Subscribe,
-  Unsubscribe: nc_sub.Unsubscribe,
-  Publish: nc_pub.LocalPublish,
-  Signal: nc_pub.LocalSignal,
-  Call: nc_pub.LocalCall,
+  Subscribe: CHAN_LOCAL.Subscribe,
+  NetSubscribe: CHAN_LOCAL.NetSubscribe,
+  Unsubscribe: CHAN_LOCAL.Unsubscribe,
+  Publish: CHAN_LOCAL.LocalPublish,
+  NetPublish: CHAN_LOCAL.NetPublish,
+  Signal: CHAN_LOCAL.LocalSignal,
+  NetSignal: CHAN_LOCAL.NetSignal,
+  Call: CHAN_LOCAL.LocalCall,
+  NetCall: CHAN_LOCAL.NetCall,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP
@@ -106,5 +116,10 @@ module.exports = {
   HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED CLASSES
-  class: { PhaseMachine }
+  class: { PhaseMachine },
+  // FORWARDED DEBUG UTILITY
+  AddConsoleTools: (ur = UR) => {
+    DBGTEST.AddConsoleTools(ur);
+  }
 };
+module.exports = UR;

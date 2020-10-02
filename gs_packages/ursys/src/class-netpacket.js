@@ -51,7 +51,7 @@ const VALID_CHANNELS = ['LOCAL', 'NET', 'STATE']; // * is all channels in list
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_id_counter = 0;
 let m_id_prefix = 'PKT';
-let m_transactions = {};
+let m_transactions = new Map();
 let m_netsocket = null;
 let m_group_id = null;
 let m_mode = M_INIT;
@@ -282,7 +282,8 @@ class NetPacket {
     ) {
       return this.s_uaddr;
     }
-    // this is a regular message forward to remote handlers
+    // this is a regular message forward to remote handlers, returning
+    // type 'res', seqlog > 1, seqlog[0] is not server
     return this.IsTransaction() ? this.seqlog[0] : this.s_uaddr;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -378,17 +379,18 @@ class NetPacket {
     let dbg = DBG.transact && !this.IsServerMessage();
     let p = new Promise((resolve, reject) => {
       let hash = m_GetHashKey(this);
-      if (m_transactions[hash]) {
+      if (m_transactions.has(hash)) {
         reject(Error(`${ERR_DUPE_TRANS}:${hash}`));
       } else {
         // save the resolve function in transactions table;
         // promise will resolve on remote invocation with data
-        m_transactions[hash] = data => {
+        m_transactions.set(hash, data => {
           if (dbg) {
-            console.log(PR, 'resolving promise with', JSON.stringify(data));
+            const json = JSON.stringify(data);
+            console.log(...PR('resolving promise with', json));
           }
           resolve(data);
-        };
+        });
         this.SocketSend(socket);
       }
     });
@@ -429,8 +431,13 @@ class NetPacket {
     return (
       this.rmode !== 'req' &&
       this.seqnum > 0 &&
-      this.seqlog[0] === NetPacket.UADDR
+      this.seqlog[0] !== NetPacket.UADDR
     );
+    /*
+    return this.rmode !== 'req' &&
+    this.seqnum > 0 &&
+    this.seqlog[0] === NetMessage.UADDR;
+    */
   }
 
   ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -460,15 +467,18 @@ class NetPacket {
   CompleteTransaction() {
     let dbg = DBG.transact && !this.IsServerMessage();
     let hash = m_GetHashKey(this);
-    let resolverFunc = m_transactions[hash];
+    let resolverFunc = m_transactions.get(hash);
     if (dbg) console.log(...PR('CompleteTransaction', hash));
     if (typeof resolverFunc !== 'function') {
-      throw Error(
-        `transaction [${hash}] resolverFunction is type ${typeof resolverFunc}`
+      console.log(
+        ...PR(
+          `ERROR: transaction [${hash}] resolverFunction is type ${typeof resolverFunc}`,
+          m_transactions.size
+        )
       );
     } else {
       resolverFunc(this.data);
-      Reflect.deleteProperty(m_transactions[hash]);
+      m_transactions.delete(hash);
     }
   }
 } // class NetPacket

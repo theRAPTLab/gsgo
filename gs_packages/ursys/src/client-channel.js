@@ -90,7 +90,9 @@ class URChan {
     this.Name = this.Name.bind(this);
     this.UADDR = this.UADDR.bind(this);
     this.Subscribe = this.Subscribe.bind(this);
+    this.NetSubscribe = this.NetSubscribe.bind(this);
     this.Unsubscribe = this.Unsubscribe.bind(this);
+    //
     this.Call = this.Call.bind(this);
     this.Publish = this.Publish.bind(this);
     this.Signal = this.Signal.bind(this);
@@ -100,6 +102,8 @@ class URChan {
     this.NetCall = this.NetCall.bind(this);
     this.NetPublish = this.NetPublish.bind(this);
     this.NetSignal = this.NetSignal.bind(this);
+    //
+    this.RegisterSubscribers = this.RegisterSubscribers.bind(this);
 
     // generate and save unique id
     this.uid = m_GetUniqueId();
@@ -275,7 +279,7 @@ class URChan {
    * If messages is empty, then it's assumed that we are registering all message
    * subscribers.
    */
-  RegisterSubscribers(messages = []) {
+  async RegisterSubscribers(messages = []) {
     if (URNet.IsStandaloneMode()) {
       console.warn(PR, 'STANDALONE MODE: RegisterMessagesPromise() suppressed!');
       return Promise.resolve();
@@ -287,8 +291,12 @@ class URChan {
       messages = MESSAGER.NetMessageNames();
     }
     // returns promise that resolve to data object
-    const result = this.NetCall('NET:SRV_REG_HANDLERS', { messages });
-    return result;
+    return new Promise((resolve, reject) => {
+      this.NetCall('NET:SRV_REG_HANDLERS', { messages }).then(data => {
+        if (data.error) reject(data.error);
+        resolve(data);
+      });
+    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**

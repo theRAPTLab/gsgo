@@ -49,6 +49,11 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// END STATUS FAKERY /////////////////////////////////////////////////////////
 
+UR.NetSubscribe('NET:HELLO', data => {
+  console.log('NET:HELLO processing', data);
+  return { str: 'generator got you' };
+});
+
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Generator extends React.Component {

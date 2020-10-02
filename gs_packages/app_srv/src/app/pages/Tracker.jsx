@@ -15,6 +15,13 @@ import { Init, HookResize } from '../modules/sim/display/renderer';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';
+UR.NetSubscribe('NET:DISPLAY_LIST', data => {
+  console.log('NET:DISPLAYLIST', data.length);
+});
+UR.NetSubscribe('NET:HELLO', data => {
+  console.log('NET:HELLO processing', data);
+  return { str: 'tracker got you' };
+});
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

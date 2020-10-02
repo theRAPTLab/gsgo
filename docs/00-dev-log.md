@@ -164,7 +164,8 @@ New problem: when the remote calls  pkt.ReturnTransaction() after invoking the l
   * [x] is server-network m_HandleMessage() receiving correct value? YES
   * [x] check server-network m_SocketOnMessage...is OK? **YES!**
   * [x] in CompleteTransaction,is the key generated incorrect? **NO**
-  * [ ] the logic 
+  * [ ] The issue was that index-client was using the same URCHAN endpoint in both NetConnect (client-network saves the instance and and for itself. They have to be different, otherwise the anti-echo breaks.
+  * [ ] MAKE A DIAGRAM of CHAN_LOCAL vs CHAN_NET uses by type of call and destination.
 
 
 ---

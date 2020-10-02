@@ -42,7 +42,7 @@ const TERM_COLORS = {
   //
   TagYellow: '\x1b[43;30m',
   TagRed: '\x1b[41;37m',
-  TagGreen: '\x1b[42;37m',
+  TagGreen: '\x1b[42;30m',
   TagCyan: '\x1b[46;37m',
   TagBlue: '\x1b[43;37m',
   TagPurple: '\x1b[45;37m',
@@ -146,14 +146,37 @@ function m_GetEnvColor(prompt, tagColor) {
 /** Returns an array suitable for destructuring inside console.log() in
  *  either Node or the browser with color
  */
-function m_MakeColorArray(prompt, tagColor) {
-  const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
+function m_MakeColorArray(prompt, colorName) {
+  const [dbg, color, reset] = m_GetEnvColor(prompt, colorName);
   // return empty array if debugging disabled in browser
   // or debugging is enabled but it's node (de morgan's law)
   if (!(dbg || IS_NODE)) return [];
   return IS_NODE
     ? [`${color}${m_PadString(prompt)}${reset}   `] // server
     : [`%c${m_PadString(prompt)}%c `, color, reset]; // browser
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Returns an environment-specific color wrapper function suitable for use
+ *  in debug output
+ */
+function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
+  return IS_NODE
+    ? (str, ...args) => {
+        console.log(
+          `${TERM_COLORS[colorName]}${m_PadString(prompt)}${TERM_COLORS.Reset}${
+            TERM_COLORS[resetName]
+          }    ${str}`,
+          ...args
+        );
+      }
+    : (str, ...args) => {
+        console.log(
+          `%c${m_PadString(prompt)}%c%c ${str}`,
+          CSS_COLORS.Reset,
+          CSS_COLORS[resetName],
+          ...args
+        );
+      };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDivText(id) {
@@ -258,16 +281,10 @@ function makeStyleFormatter(prompt, tagColor) {
  *  This works better for NodeJS since the empty [] still results in output
  *  unlike the browser. Use makeStyleFormatter for browsers
  */
-function makeTerminalOut(prompt, tagColor) {
-  const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
-  if (!dbg) return () => {};
-  const wrap = IS_NODE
-    ? (str, ...args) => {
-        console.log(`${color}${m_PadString(prompt)}${reset}    ${str}`, ...args);
-      }
-    : (str, ...args) => {
-        console.log(`%c${m_PadString(prompt)}%c ${str}`, color, reset, ...args);
-      };
+function makeTerminalOut(prompt, tagColor = DEFAULT_COLOR) {
+  const wrap = m_MakeColorPromptFunction(prompt, tagColor);
+  wrap.warn = m_MakeColorPromptFunction(prompt, 'TagGreen', 'Green');
+  wrap.error = m_MakeColorPromptFunction(prompt, 'TagRed', 'Red');
   return wrap;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
