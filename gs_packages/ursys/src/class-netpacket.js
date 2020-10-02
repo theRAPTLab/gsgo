@@ -343,7 +343,7 @@ class NetPacket {
       if (!socket) throw Error('SocketSend(sock) requires a valid socket');
       if (DBG.send) {
         let status = `sending '${this.Message()}' to ${dst}`;
-        console.log(PR, status);
+        console.log(...PR(status));
       }
       // for server-side ws library, send supports a function callback
       // for WebSocket, this is ignored
@@ -461,7 +461,7 @@ class NetPacket {
     let dbg = DBG.transact && !this.IsServerMessage();
     let hash = m_GetHashKey(this);
     let resolverFunc = m_transactions[hash];
-    if (dbg) console.log(PR, 'CompleteTransaction', hash);
+    if (dbg) console.log(...PR('CompleteTransaction', hash));
     if (typeof resolverFunc !== 'function') {
       throw Error(
         `transaction [${hash}] resolverFunction is type ${typeof resolverFunc}`
@@ -495,7 +495,7 @@ NetPacket.GlobalSetup = (config = {}) => {
     // NOTE: m_netsocket is set only on clients since on server, there are
     // multiple sockets
     if (typeof netsocket.send !== 'function') throw Error(ERR_BAD_SOCKET);
-    if (DBG.setup) console.log(PR, 'GlobalSetup: netsocket set, mode online');
+    if (DBG.setup) console.log(...PR('GlobalSetup: netsocket set, mode online'));
     m_netsocket = netsocket;
     m_mode = M_ONLINE;
   }

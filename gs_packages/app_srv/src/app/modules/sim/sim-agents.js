@@ -74,7 +74,9 @@ function AgentUpdate(frameTime) {
   const agents = AGENTS_GetArrayAll();
   AGENT_TO_DOBJ.syncFromArray(agents);
   AGENT_TO_DOBJ.processSyncedObjects();
-  RENDERER.UpdateModelList(AGENT_TO_DOBJ.getSyncedObjects());
+  const dobjs = AGENT_TO_DOBJ.getSyncedObjects();
+  RENDERER.UpdateModelList(dobjs);
+  UR.NetPublish('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {

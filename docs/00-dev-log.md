@@ -91,6 +91,8 @@ This code just runs because it hooks early into the UR phase machine. We want to
 
 ## SEP 30 WED - Display List Distribution
 
+**ASIDE**: I want to write some documentation about the project. So what do I need to convey to been really quickly? [Notes for Oct 5 Report](https://docs.google.com/document/d/1yEXqVN2yofWPvsBri53kFuoHuY36lDrONN3cyeteRUM/edit)_ 
+
 Next up: **can we ship display list information to Tracker?** 
 
 * [ ] Emit displayList via URSYS from `Generator` 
@@ -100,11 +102,69 @@ Is URSYS working for NetCall, NetPublish? **NO**
 
 > We have to implement the full Network Communications stack, as it was never fully ported because we didn't need networking for the script development.
 
-**ASIDE**: I want to write some documentation about the project. So what do I need to convey to been really quickly? [Notes for Oct 5 Report](https://docs.google.com/document/d/1yEXqVN2yofWPvsBri53kFuoHuY36lDrONN3cyeteRUM/edit)_ 
+**URSYS MESSAGE BROKERING**: I need to make sure this is back online, as there were some changes from MEME that did not make it over.
 
+**Q. Can we rapidly update the server without recompiling the webapp every time? The dist is already in place.**
 
+> A. We can used` nodemon`, which GEMSRV has a `nodemonConfig` section in `package.json` to tell it what files to watch. Since we don't use webpack on server files, this should be the fastest.
 
+**Q. For webapp building, can we just use a regular webpack build script, stealing from MEME or GEMSRV?**
 
+> A. Probably!  Let's try: 
+> `npx webpack --mode development --config ./config/wp.pack.webapp.js`
+> RESULT is that it still takes 25 seconds, so speeding this up means optimizing the bundle process. 
+
+**Q. What is going on in URNET anyway, and what's missing?**
+
+What works right now is SOCKET CONNECTIONS, but what's not working is MESSAGES being sent. Will need to debug that, and also restart the server.
+
+10 HOURS LATER...
+
+I have [blueprinted the entire URSYS chain](https://whimsical.com/Mbncdb3ZjsSA9D1hLqsRRJ), which is so clever I forgot how its arcane Javascript magic with closures, promises, and hash lookups accomplished so much. Anyway, I now know what I need to confirm to restore functionality to GEMSTEP.
+
+* [x] has the Messager class changed? **no** looks the same
+* [x] has the ULINK class changed? **no,** but it's `client-channel` now
+* [x] has ur-network changed? **no**
+* [x] has server-network changed? **minor**  `client-network`  `m_SocketClientAck()` doesn't send dbinfo (since no db)
+* [x] has NetMessage changed? **no**
+
+CHANGED
+
+* `SystemInit.Init() ` fetches `urnet/getinfo`  instead of having this info baked inot `index.html.ejs` as in MEME. These params are then provided to `SystemBoot()`
+
+So I think I'm just not calling it correct? Or I need to ensure that the URCHAN instances are the same.
+
+OR I am not using channels correctly.
+
+* [x] in Tracker:`UR.NetSubscribe('NET:DISPLAY_LIST',data=>{ ... })`
+* [x] in Generator: `UR.NetPublish('NET:DISPLAY_LIST', dobjs`)
+* [x] bugfix missing NetSubscribe binding in client-channel
+* [x] are Messages being registered? Tracker LazyLoads after `SystemStart()`(sets  NET_CONNECT handler) and `SystemBoot()` (PHASE_BOOT, PHASE_INIT, PHASE_CONNECT)
+* [x] in `UR.SystemStart()` hook into `NET_REGISTER` ... rash on missing socket
+
+Tracker is getting srcUID matcher handlerUID...srcUID appears to be missing
+
+* client-network Connect() receive URLINK from index.client and saves as m_urlink
+* client-network m_handleMessage() uses m_urlink to call pub
+* client-channel NetSubscribe() is invoked from index.client ... same URLINK!!!
+* **solution**: use CHAN_NET for Network.Connect(), CHAN_LOCAL for everyone else
+
+New problem: when the remote calls  pkt.ReturnTransaction() after invoking the local publish, the server is unable to refind it via pkt.CompleteTransaction(), reporting resolverFunction is undefined in class-netpacket...the hash isn't being found.
+
+* [x] convert m_transactions to hash (was Object)
+* [x] see that the transaction table is never getting cleared on the server
+* is the hash key incorrectly being calculated?
+  * [x] What is the outgoing hash? UADDR_01:PKT0100
+  * [x] what is the returning hash? SVR01:PKT0100
+* Why is the hash key mismatched?
+  * [x] incoming packet should have UADDR_01, but it has SVR01
+  * [x] is PromiseRemoteHandler() improperly setting the source? NO
+  * [x] is client-network recieving correct uaddr? YES
+  * [x] is client-network returning correct value? YES
+  * [x] is server-network m_HandleMessage() receiving correct value? YES
+  * [x] check server-network m_SocketOnMessage...is OK? **YES!**
+  * [x] in CompleteTransaction,is the key generated incorrect? **NO**
+  * [ ] the logic 
 
 
 ---
