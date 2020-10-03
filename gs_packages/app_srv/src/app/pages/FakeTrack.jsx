@@ -11,7 +11,7 @@ import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './page-styles';
-import { Init, HookResize } from '../modules/sim/display/renderer';
+import { Init, HookResize } from '../modules/render/api-render';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';

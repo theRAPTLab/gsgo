@@ -14,9 +14,9 @@ import {
   TestAgentExec,
   TestJitterAgents
 } from '../tests/agent-functions';
-import { AGENTS_GetArrayAll } from './runtime-datacore';
+import { AGENTS_GetArrayAll } from '../runtime-datacore';
 import SyncMap from './lib/class-syncmap';
-import * as RENDERER from './display/renderer';
+import * as RENDERER from '../render/api-render';
 import DisplayObject from './lib/class-display-object';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////

@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { IAgent, Program } from './t-smc';
-import { AGENTS } from '../runtime-datacore';
+import { AGENTS } from '../../runtime-datacore';
 import { WORLD } from '../agents/global';
 import Message from './class-sm-message';
 

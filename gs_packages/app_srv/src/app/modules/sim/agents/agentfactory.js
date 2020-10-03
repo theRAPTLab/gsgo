@@ -18,7 +18,11 @@
 
 import UR from '@gemstep/ursys/client';
 import Agent from '../lib/class-agent';
-import { AGENTS_Save, AGENTS_GetTypeSet, TEMPLATES } from '../runtime-datacore';
+import {
+  AGENTS_Save,
+  AGENTS_GetTypeSet,
+  TEMPLATES
+} from '../../runtime-datacore';
 import { WORLD } from './global';
 
 const PR = UR.PrefixUtil('AGT FACTORY');

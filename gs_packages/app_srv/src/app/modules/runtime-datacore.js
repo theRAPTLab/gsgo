@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import PixiTextureMgr from './lib/class-pixi-asset-mgr';
+import PixiTextureMgr from './sim/lib/class-pixi-asset-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

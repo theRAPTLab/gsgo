@@ -10,10 +10,10 @@
 import UR from '@gemstep/ursys/client';
 import Pool from '../sim/lib/class-pool';
 import MappedPool, { TestArrayEntities } from '../sim/lib/class-mapped-pool';
-import { AGENTS_GetArrayAll } from '../sim/runtime-datacore';
+import { AGENTS_GetArrayAll } from '../runtime-datacore';
 import DisplayObject, { TestValidDOBJs } from '../sim/lib/class-display-object';
 import Sprite from '../sim/lib/class-visual';
-import { UpdateModelList } from '../sim/display/renderer';
+import { UpdateModelList } from '../render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

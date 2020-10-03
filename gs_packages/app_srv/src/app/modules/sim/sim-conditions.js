@@ -7,7 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import AgentSet from './lib/class-agentset';
 import Condition from './lib/class-sm-condition';
-import { CONDITIONS } from './runtime-datacore';
+import { CONDITIONS } from '../runtime-datacore';
 
 import {
   push,

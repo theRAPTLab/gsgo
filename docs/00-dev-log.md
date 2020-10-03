@@ -207,12 +207,40 @@ let data = await response.json()
 
 clear the resource pool
 load all the sprites
-
-
-
 ```
 
+## OCT 03 SUN - Runtime Refactor
 
+Our first order of the day is to split the single `sim/runtime` into a runtime hierarchy. The general idea is to have a master runtime at the modules level, and the immediate directories below contain stand-alone modules that can be selectively imported at runtime in the root.
+
+* [x] move runtime.js, runtime-datacore.js
+* [x] make new sim/runtime-sim module runtime
+* [ ] move renderer out of sim (display objects only)
+
+To move renderer out of sim, we have to refactor it into several functions
+
+* creating the PIXIJS surface on Init
+
+* DisplayList Generation
+
+* DisplayList Rendering
+
+* Access to Init, UpdateDisplayList, GetDisplayList,  MakeDisplayList, Render 
+
+* Access to AssetManager
+
+* Render-specific Classes
+
+* What does it mean to import the runtime-renderer by itself for **implicit init**?
+
+  * it maintains its own frame update routines
+  * it does whatever it needs to do to support the functions
+
+* What does it mean when another module imports runtime to **access features**?
+
+  * the implicit init should work in this case.
+
+  
 
 
 ---
