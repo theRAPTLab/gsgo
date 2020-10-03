@@ -4,8 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IScopeable, TOpcode, TOpWait } from '../../lib/t-smc';
-import { setAgentPropValue } from '../ops/basic-ops';
+import { IAgent, IScopeable, TOpcode, TOpWait } from 'lib/t-smc';
+import { setAgentPropValue } from 'modules/sim/script/ops/basic-ops';
 
 /// AGENT DEFINITION STAGE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

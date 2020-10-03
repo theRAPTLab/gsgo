@@ -1,8 +1,17 @@
 {
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": "./",
-    "paths": {},
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "paths": {
+      "app/*": ["./app/*"],
+      "lib/*": ["app/lib/*"],
+      "modules/*": ["app/modules/*"],
+      "static/*": ["app/static/*"],
+      "script/*": ["app/modules/sim/script/*"],
+      "step/*": ["app/modules/step/*"],
+      "config/*": ["../config/*"]
+    },
     "jsx": "preserve",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true

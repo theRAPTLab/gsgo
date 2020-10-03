@@ -7,7 +7,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import SM_Object from '../lib/class-sm-object';
+import SM_Object from 'lib/class-sm-object';
+import { IScopeable } from 'lib/t-smc';
 import BooleanProp from './var-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -37,7 +38,7 @@ function u_CheckMinMax(vobj) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class NumberProp extends SM_Object {
+class NumberProp extends SM_Object implements IScopeable {
   nvalue: number;
   min: number;
   max: number;

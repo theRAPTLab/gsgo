@@ -14,10 +14,10 @@ import {
   FilterConfig,
   PoolInitConfig,
   PoolUpdateConfig
-} from './types/t-tracking';
+} from 'step/lib/t-tracking';
 import { LocationTransform, LocationDict } from './lib/class-location';
 import TrackerPiece from './lib/class-tracker-piece';
-import { EntityObject } from './types/t-ptrack';
+import { EntityObject } from './lib/t-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

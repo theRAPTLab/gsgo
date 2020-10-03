@@ -4,12 +4,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import SM_Object from '../lib/class-sm-object';
-import { IScopeable } from '../lib/t-smc';
+import SM_Object from 'lib/class-sm-object';
+import { IScopeable } from 'lib/t-smc';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class DictionaryProp extends SM_Object {
+class DictionaryProp extends SM_Object implements IScopeable {
   dict: Map<string, IScopeable>;
   constructor(name: string) {
     super(name);

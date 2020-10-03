@@ -8,12 +8,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { FEATURES } from 'app/modules/runtime-datacore';
+import NumberVar from 'modules/sim/props/var-number';
+import StringVar from 'modules/sim/props/var-string';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
 import { IAgent, IScopeable, TStackable, IMessage, Program } from './t-smc';
-import { FEATURES } from '../../runtime-datacore';
-import NumberVar from '../props/var-number';
-import StringVar from '../props/var-string';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

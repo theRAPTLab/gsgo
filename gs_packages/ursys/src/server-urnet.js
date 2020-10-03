@@ -223,7 +223,6 @@ URNET.NetPublish = (mesgName, data) => {
  * @param {function} handlerFunc function originally registered
  */
 URNET.NetSignal = (mesgName, data) => {
-  TERM('NOTE: Use NetPublish(), not NetSignal() since the server doesnt care.');
   URNET.NetPublish(mesgName, data);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -542,9 +541,9 @@ async function m_HandleMessage(socket, pkt) {
   // this is an error. If the message is a CALL, then report an error back to
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
-    const out = `${pkt.SourceAddress()} cannot find handler for '${pkt.Message()}'`;
-    const info = 'Using Publish/Call? They can only reach "non-self" U_ADDRs';
-    TERM.warn(out, info);
+    const out = `${pkt.SourceAddress()} can't find '${pkt.Message()}'`;
+    const info = 'Using Publish/Call? They can not target themselves.';
+    if (DBG.calls) TERM.warn(out, info);
     // return transaction to resolve callee
     pkt.SetData({
       code: NetPacket.CODE_NO_MESSAGE,

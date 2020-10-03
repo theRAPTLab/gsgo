@@ -11,8 +11,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IScopeable, TOpcode, TOpWait } from '../../lib/t-smc';
-import { setAgentPropValue } from '../ops/basic-ops';
+import { IAgent, IScopeable, TOpcode, TOpWait } from 'lib/t-smc';
+import { setAgentPropValue } from 'script/ops/basic-ops';
 
 /// AGENT DEFINITION STAGE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

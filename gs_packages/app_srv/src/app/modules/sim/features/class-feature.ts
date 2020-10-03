@@ -10,8 +10,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IFeature, TMethod, IAgent, IScopeable, TStackable } from '../lib/t-smc';
-import { DictionaryProp } from '../props/var';
+import { IFeature, TMethod, IAgent, IScopeable, TStackable } from 'lib/t-smc';
+import { DictionaryProp } from 'modules/sim/props/var';
 
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -9,13 +9,15 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
+// SELECT RUNTIME MODULES FOR APP
+import 'modules/sim/api-sim';
+//
 import UR from '@gemstep/ursys/client';
+import { Init, HookResize } from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
-import { Init, HookResize } from '../modules/render/api-render';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import RUNTIME from '../modules/sim/api-sim';
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

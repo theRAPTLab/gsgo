@@ -80,13 +80,17 @@ const WebpackLoaders = () => {
     resolve: {
       // make require() handle both .js and .jsx files (default only .js)
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
-      // create chrome webapp path aliases (webapps only)
+      // create webapp path aliases for module imports
+      // for visual studio code live linting, update eslintrc
       alias: {
         config: Path.resolve(__dirname, '../config'),
+        app: Path.resolve(__dirname, '../src/app'),
+        lib: Path.resolve(__dirname, '../src/app/lib'),
+        modules: Path.resolve(__dirname, '../src/app/modules'),
+        static: Path.resolve(__dirname, '../src/app/static')
         // ursys: Path.resolve(__dirname, '../ursys'),
         // util: Path.resolve(__dirname, '../src/util'),
         // step: Path.resolve(__dirname, '../src/step/'),
-        app: Path.resolve(__dirname, '../src/app')
       }
     }
   };

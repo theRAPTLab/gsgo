@@ -8,9 +8,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import SyncMap from './lib/class-syncmap';
-import Visual from './lib/class-visual';
-import { Render } from '../render/api-render';
+import SyncMap from 'lib/class-syncmap';
+import Visual from 'lib/class-visual';
+import { Render } from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

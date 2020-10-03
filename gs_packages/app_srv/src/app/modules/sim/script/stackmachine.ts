@@ -7,7 +7,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, Program } from '../lib/t-smc';
+import { IAgent, Program } from 'lib/t-smc';
+import { NumberProp } from 'modules/sim/props/var';
 import {
   setAgentPropValue,
   scopedFunction,
@@ -20,7 +21,6 @@ import {
   pop,
   dupe
 } from './ops/basic-ops';
-import { NumberProp } from '../props/var';
 import { addProp, addFeature } from './ops/template-ops';
 import {
   compareNumbers,

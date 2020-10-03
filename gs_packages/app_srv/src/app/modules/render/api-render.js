@@ -6,10 +6,10 @@
 import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
-import Visual, { MakeDraggable } from '../sim/lib/class-visual';
-import SyncMap from '../sim/lib/class-syncmap';
-import { TestRenderParameters } from '../tests/renderer-functions';
-import * as DATACORE from '../runtime-datacore';
+import Visual, { MakeDraggable } from 'lib/class-visual';
+import SyncMap from 'lib/class-syncmap';
+import { TestRenderParameters } from 'modules/tests/renderer-functions';
+import * as DATACORE from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

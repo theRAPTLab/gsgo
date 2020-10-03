@@ -1,6 +1,7 @@
-import SM_Object from '../lib/class-sm-object';
+import SM_Object from 'lib/class-sm-object';
+import { IScopeable } from 'lib/t-smc';
 
-class BooleanProp extends SM_Object {
+class BooleanProp extends SM_Object implements IScopeable {
   fuzzy: number;
   constructor(initial = true, fuzzy = 0) {
     super();
@@ -45,7 +46,7 @@ class BooleanProp extends SM_Object {
     this.value = this.value && this.fuzzy < -0.75;
     return this;
   }
-  serialize(): BooleanProp {
+  serialize() {
     const values = super.serialize();
     values.push('fuzzy', this.fuzzy);
     return values;

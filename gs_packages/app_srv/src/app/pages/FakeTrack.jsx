@@ -10,8 +10,8 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
+import { Init, HookResize } from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
-import { Init, HookResize } from '../modules/render/api-render';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';

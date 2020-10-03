@@ -2,8 +2,8 @@ import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 
 import * as PIXI from 'pixi.js';
-import Sprite from '../sim/lib/class-visual';
-import SyncMap from '../sim/lib/class-syncmap';
+import Sprite from 'lib/class-visual';
+import SyncMap from 'lib/class-syncmap';
 
 const PR = UR.PrefixUtil('TestRender');
 

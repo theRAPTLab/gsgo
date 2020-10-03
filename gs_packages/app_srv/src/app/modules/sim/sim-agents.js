@@ -5,6 +5,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import SyncMap from 'lib/class-syncmap';
+import DisplayObject from 'lib/class-display-object';
+
+import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
+import * as RENDERER from 'modules/render/api-render';
 import {
   TestAgentReset,
   TestAgentSelect,
@@ -13,11 +18,7 @@ import {
   TestAgentThink,
   TestAgentExec,
   TestJitterAgents
-} from '../tests/agent-functions';
-import { AGENTS_GetArrayAll } from '../runtime-datacore';
-import SyncMap from './lib/class-syncmap';
-import * as RENDERER from '../render/api-render';
-import DisplayObject from './lib/class-display-object';
+} from 'modules/tests/agent-functions';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

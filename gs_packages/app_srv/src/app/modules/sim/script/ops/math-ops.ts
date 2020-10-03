@@ -8,7 +8,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IState, TOpcode, TOpWait } from '../../lib/t-smc';
+import { IAgent, IState, TOpcode, TOpWait } from 'lib/t-smc';
 
 const DBG = false;
 

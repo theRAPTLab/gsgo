@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
-import * as DATACORE from '../../runtime-datacore';
+import * as DATACORE from 'modules/runtime-datacore';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool';
 

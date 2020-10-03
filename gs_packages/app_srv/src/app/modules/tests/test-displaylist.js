@@ -8,12 +8,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Pool from '../sim/lib/class-pool';
-import MappedPool, { TestArrayEntities } from '../sim/lib/class-mapped-pool';
-import { AGENTS_GetArrayAll } from '../runtime-datacore';
-import DisplayObject, { TestValidDOBJs } from '../sim/lib/class-display-object';
-import Sprite from '../sim/lib/class-visual';
-import { UpdateModelList } from '../render/api-render';
+import Pool from 'lib/class-pool';
+import MappedPool, { TestArrayEntities } from 'lib/class-mapped-pool';
+import DisplayObject, { TestValidDOBJs } from 'lib/class-display-object';
+import Sprite from 'lib/class-visual';
+import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
+import { UpdateModelList } from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

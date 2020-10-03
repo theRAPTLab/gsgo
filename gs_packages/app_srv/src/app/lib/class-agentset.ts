@@ -5,10 +5,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, Program } from './t-smc';
-import { AGENTS } from '../../runtime-datacore';
-import { WORLD } from '../agents/global';
+import { AGENTS } from 'modules/runtime-datacore';
+import { WORLD } from 'modules/sim/agents/global';
 import Message from './class-sm-message';
+import { IAgent, Program } from './t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

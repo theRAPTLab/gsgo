@@ -4,8 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Pool from '../sim/lib/class-pool';
-import MappedPool from '../sim/lib/class-mapped-pool';
+import Pool from 'lib/class-pool';
+import MappedPool from 'lib/class-mapped-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
