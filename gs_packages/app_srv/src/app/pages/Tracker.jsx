@@ -19,7 +19,7 @@ import { useStylesHOC } from './page-styles';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('Tracker', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('console-left');
+const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
@@ -41,8 +41,15 @@ UR.SystemHook(
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let updateCount = 0;
 UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
   if (ASSETS_LOADED) {
+    FCON.plot(
+      `${updateCount++} NET:DISPLAY_LIST received ${
+        remoteList.length
+      } DOBJs by TRACKER`,
+      0
+    );
     RENDERER.UpdateDisplayList(remoteList);
     RENDERER.Render();
   }
@@ -53,30 +60,6 @@ UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
 UR.NetSubscribe('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'tracker got you' };
-});
-
-/// CONSOLE-LEFT STATUS FAKERY ////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// CONSOLE
-let X = 0;
-let INC = 1;
-const ZIP = '=@=';
-const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
-UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
-  HCON.plot(`framecount: ${frameCount}`, 1);
-  if (frameCount % 6) return;
-  HCON.plot(ZIP_BLNK, 3, X);
-  X += INC;
-  HCON.plot(ZIP, 3, X);
-  const XS = `${X}`.padStart(3, ' ');
-  HCON.plot(`X: ${XS}`, 5);
-  if (X < 1) INC = 1;
-  if (X > 24) INC = -1;
-  if (Math.random() > 0.5) {
-    HCON.gotoRow(6);
-    HCON.print(`dummy datalog: ${Math.random().toFixed(2)}`);
-  }
-  if (Math.random() > 0.95) HCON.clear(6);
 });
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////

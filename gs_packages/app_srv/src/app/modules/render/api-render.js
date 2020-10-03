@@ -133,9 +133,13 @@ function SetGlobalConfig(opt) {
   SETTINGS.actable = actable || false; // default non-interative
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let updateFrames = 0;
 function UpdateDisplayList(dobjs) {
   RP_DOBJ_TO_VOBJ.syncFromArray(dobjs);
-  HCON.plot(`updated model list ${dobjs.length}`, 1);
+  HCON.plot(
+    `${updateFrames++} renderer updated ${dobjs.length} DOBJs in changelists`,
+    1
+  );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdatePTrackList(dobjs) {
@@ -151,13 +155,13 @@ function GetDisplayList() {
   return RP_DOBJ_TO_VOBJ.getSyncedObjects(); // array of display objects
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let renderFrames = 0;
 function Render() {
   RP_DOBJ_TO_VOBJ.processSyncedObjects();
   // RP_PTRAK_TO_VOBJ.processSyncedObjects();
   // RP_PTRAK_TO_VOBJ.processSyncedObjects();
   const synced = RP_DOBJ_TO_VOBJ.getSyncedObjects();
-  HCON.plot('renderer called', 0);
-  HCON.plot(`synced count ${synced.length}`, 0, 20);
+  HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

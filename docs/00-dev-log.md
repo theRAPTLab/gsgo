@@ -242,8 +242,47 @@ To move renderer out of sim, we have to refactor it into several functions
 * [x] add RENDERER.UpdateDisplayList() and RENDERER.Render() to NET:DISPLAY_LIST processing
 * [x] modify PHASE_LOAD in client-exec to have LOAD_CONFIG and LOAD_ASSETS
 * [x] load sprites
+* [x] make rendering work!
 
 `Tracker` uses its own renderer that happens when `NET:DISPLAY_LIST` occurs. Generator, though, uses `sim-render` to drive its rendering loop. However, the Rendering cycle has to wait.
+
+**IMPLEMENTING DRAG AND DROP** 
+
+Last thing to do for FakeTrack is to make only the generator sprites draggable, and update the underlying agent too.
+
+```
+The display list on GENERATOR has to take the selected state of the agents into account. However, the display list is generated from agents directly; there is no "draggable" state being set. Also, the dragging is happening on the SPRITE level.
+```
+
+* [ ] Can I rewrite MakeDraggable to update the agent itself as it moves?
+  * [x] add controlMode to agent auto, puppet, static with accessors
+  * [x] set controlMode to puppet on startDrag
+  * [x] pop controlMode on stopDrag
+  * [x] update agentToDobj in sim-agents to set `dobj.mode`
+  * [x] update dobjToSprite in api-render to check `dobj.mode` on creation
+  * [x] add isSelected, isHovered, isGrouped, isCaptive flags to class-visual with accessors
+  * [x] define `IActable` to represent group, hover, etc
+  * [x] add IActable to Visual, Dobj, Agent
+  * [x] in sim-agents, add dobj.dragging = agent.isCaptive
+  * [x] in api-render, add dobj.dragging to sprite updat
+
+```
+To make an agent "draggable" would be to apply a screen-space concept to a sim object, which violates our separation of concerns. Instead, I think making an agent have a state indicating it's being controlled or automated, or puppeted would translate. 
+```
+
+the problem is that dobjs on the render-only tracker can't access agent information, so it has to be in the dobj itself. 
+
+api-render serves two masters: Generator runs vobj through MakeDraggable if dobj=1 (puppeted). Tracker should NOT run through MakeDraggable. Also it has no access to Agents.
+
+* [x] add RENDERER.GlobalConfig({actable:true}) to Generator. Use actable:false for Tracker.
+* [x] api-render: is dobj.dragging set when agent.isCaptive? **yes**
+* [x] sim-agents: is dobj.dragging set when agent.isCaptive? **yes** but...
+* [x] sim-agents: is agent.isCaptive being set? **NO**
+  * [x] draggable: has to setCaptive() on the *AGENT* in Generator
+
+YAY, it seems to work!
+
+
 
 
 ---

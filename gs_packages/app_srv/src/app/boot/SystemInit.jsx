@@ -8,10 +8,6 @@
   It starts the URSYS lifecycle system, then spawns React SystemShell
   with a ReactRouter <HashRouter> that loades <SystemShell>
 
-  TYPESCRIPT NOTE
-  import Foo from 'App/modules/add'; // typescript test
-  console.log(Foo(1, 'a'));
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
