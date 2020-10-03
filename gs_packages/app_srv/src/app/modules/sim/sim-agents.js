@@ -7,41 +7,43 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-
 import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
+import { MakeDraggable } from 'lib/vis/draggable';
 import {
   TestAgentReset,
   TestAgentSelect,
   TestAgentProgram,
   TestAgentUpdate,
   TestAgentThink,
-  TestAgentExec,
-  TestJitterAgents
+  TestAgentExec
 } from 'modules/tests/agent-functions';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
 
-const AGENT_TO_DOBJ = new SyncMap('SAGT', {
+const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
   Constructor: DisplayObject,
   autoGrow: true
 });
 
-AGENT_TO_DOBJ.setObjectHandlers({
+DOBJ_SYNC_AGENT.setObjectHandlers({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x();
     dobj.y = agent.y();
     dobj.skin = agent.skin();
     dobj.frame = agent.prop('frame').value;
-    dobj.drag = agent.testDrag;
+    dobj.mode = agent.mode();
+    dobj.dragging = agent.isCaptive;
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x();
     dobj.y = agent.y();
     dobj.skin = agent.skin();
     dobj.frame = agent.prop('frame').value;
+    dobj.mode = agent.mode();
+    dobj.dragging = agent.isCaptive;
   }
 });
 
@@ -74,9 +76,9 @@ function AgentUpdate(frameTime) {
   // force agent movement for display list testing
   //
   const agents = AGENTS_GetArrayAll();
-  AGENT_TO_DOBJ.syncFromArray(agents);
-  AGENT_TO_DOBJ.processSyncedObjects();
-  const dobjs = AGENT_TO_DOBJ.getSyncedObjects();
+  DOBJ_SYNC_AGENT.syncFromArray(agents);
+  DOBJ_SYNC_AGENT.processSyncedObjects();
+  const dobjs = DOBJ_SYNC_AGENT.getSyncedObjects();
   RENDERER.UpdateDisplayList(dobjs);
   UR.NetPublish('NET:DISPLAY_LIST', dobjs);
 }

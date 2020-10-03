@@ -1,3 +1,4 @@
+/* eslint-disable no-return-assign */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   The Agent Class!
@@ -8,12 +9,13 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES } from 'app/modules/runtime-datacore';
+import { FEATURES } from 'modules/runtime-datacore';
 import NumberVar from 'modules/sim/props/var-number';
 import StringVar from 'modules/sim/props/var-string';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
 import { IAgent, IScopeable, TStackable, IMessage, Program } from './t-smc';
+import { ControlMode, IActable } from './t-interaction';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,8 +24,14 @@ let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Agent extends SM_Object implements IAgent {
+class Agent extends SM_Object implements IAgent, IActable {
   features: Map<string, any>;
+  controlMode: ControlMode;
+  controlModeHistory: ControlMode[];
+  isCaptive: boolean;
+  isSelected: boolean;
+  isHovered: boolean;
+  isGrouped: boolean;
   updateQueue: IMessage[];
   thinkQueue: IMessage[];
   execQueue: IMessage[];
@@ -39,7 +47,8 @@ class Agent extends SM_Object implements IAgent {
     this.features = new Map();
     this.execQueue = [];
     this.refId = REF_ID_COUNT++;
-
+    this.controlMode = ControlMode.puppet;
+    this.controlModeHistory = [];
     // declare agent basic properties
     this._name = new StringVar(agentName);
     this._x = new NumberVar();
@@ -51,6 +60,23 @@ class Agent extends SM_Object implements IAgent {
     this.props.set('y', this._y);
     this.props.set('skin', this._skin);
   }
+
+  // internal control mode properties
+  private pushMode = (mode: ControlMode) => this.controlModeHistory.push(mode);
+  mode = () => this.controlMode;
+  setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
+  setModePuppet = () => this.pushMode(ControlMode.puppet);
+  setModeAuto = () => this.pushMode(ControlMode.auto);
+  setModeStatic = () => this.pushMode(ControlMode.static);
+  isModePuppet = () => this.controlMode === ControlMode.puppet;
+  isModeAuto = () => this.controlMode === ControlMode.auto;
+  isModeStatic = () => this.controlMode === ControlMode.static;
+
+  // interactable states
+  setSelected = (mode = this.isSelected) => (this.isSelected = mode);
+  setHovered = (mode = this.isHovered) => (this.isHovered = mode);
+  setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
+  setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
 
   // accessor methods for built-in props
   name = () => this._name.value;

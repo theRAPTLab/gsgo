@@ -1,3 +1,4 @@
+/* eslint-disable no-return-assign */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   sprite class + manager, wrapping PixiJS.Sprite with additional methods
@@ -11,6 +12,7 @@ import * as PIXI from 'pixi.js';
 import * as DATACORE from 'modules/runtime-datacore';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool';
+import { IActable } from './t-interaction';
 import { MakeDraggable } from './vis/draggable';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -62,11 +64,15 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Visual implements IVisual, IPoolable {
+class Visual implements IVisual, IPoolable, IActable {
   // class
   refId?: number;
   // visual
   sprite: PIXI.Sprite;
+  isSelected: boolean;
+  isHovered: boolean;
+  isGrouped: boolean;
+  isCaptive: boolean;
   // poolable
   id: number;
   _pool_id: number;
@@ -80,7 +86,16 @@ class Visual implements IVisual, IPoolable {
     spr.pivot.y = spr.height / 2;
     this.sprite = spr;
     this.refId = REF_ID_COUNTER++;
+    this.isSelected = false; // use primary selection effect
+    this.isHovered = false; // use secondary highlight effect
+    this.isGrouped = false; // use tertiary grouped effect
+    this.isCaptive = false; // use tertiary grouped effect
   }
+
+  setSelected = (mode = this.isSelected) => (this.isSelected = mode);
+  setHovered = (mode = this.isHovered) => (this.isHovered = mode);
+  setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
+  setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
 
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))

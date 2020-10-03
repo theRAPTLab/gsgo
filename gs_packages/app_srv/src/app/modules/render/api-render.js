@@ -8,7 +8,6 @@ import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
 import Visual, { MakeDraggable } from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
-import { TestRenderParameters } from 'modules/tests/renderer-functions';
 import * as DATACORE from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -23,6 +22,8 @@ const CONTAINERS = {}; // PixiJS container reference
 let RP_DOBJ_TO_VOBJ; // renderpass for model sprites
 let RP_PTRAK_TO_VOBJ; // renderpass for ptrack marker sprites
 let RP_ANNOT_TO_VOBJ; // renderpass for annotation marker sprites
+/// SETTINGS
+let SETTINGS = {};
 
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,27 +68,28 @@ function Init(element) {
     onAdd: (dobj, vobj) => {
       // copy parameters
       vobj.setPosition(dobj.x, dobj.y);
-      if (!dobj.skin) {
-        const agent = DATACORE.AGENT_GetById(dobj.id);
-        console.log('crash skin on agent', agent);
-        debugger;
-      }
+      if (!dobj.skin) throw Error('missing skin property');
       vobj.setTexture(dobj.skin, dobj.frame);
       // add drag-and-drop handlers
-      if (dobj.drag) MakeDraggable(vobj);
-      if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
+      if (dobj.mode === 1 && SETTINGS.actable) MakeDraggable(vobj);
       // add to scene
       vobj.add(CONTAINERS.Root);
     },
     onUpdate: (dobj, vobj) => {
-      if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
-
+      if (!vobj.isDragging) vobj.setPosition(dobj.x, dobj.y);
+      if (!dobj.dragging) {
+        vobj.sprite.tint = 0xffffff;
+        vobj.sprite.alpha = 1;
+      } else {
+        vobj.sprite.tint = 0xff0000;
+        vobj.sprite.alpha = 0.5;
+      }
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
     },
-    shouldRemove: vobj => true,
-    onRemove: vobj => {}
+    shouldRemove: () => true,
+    onRemove: () => {}
   });
 
   // RP_DOBJ_TO_VOBJ.setObjectHandlers()
@@ -126,6 +128,11 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SetGlobalConfig(opt) {
+  const { actable } = opt;
+  SETTINGS.actable = actable || false; // default non-interative
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdateDisplayList(dobjs) {
   RP_DOBJ_TO_VOBJ.syncFromArray(dobjs);
   HCON.plot(`updated model list ${dobjs.length}`, 1);
@@ -156,6 +163,7 @@ function Render() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
+  SetGlobalConfig,
   Init,
   HookResize,
   UpdateDisplayList,

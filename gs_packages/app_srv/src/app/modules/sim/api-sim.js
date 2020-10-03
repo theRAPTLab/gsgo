@@ -69,7 +69,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
 
 /// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let SIM_FRAME_MS = interval(33);
+let SIM_FRAME_MS = interval((1 / 30) * 1000);
 let RX_SUB;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_StepSimulation(frameCount) {

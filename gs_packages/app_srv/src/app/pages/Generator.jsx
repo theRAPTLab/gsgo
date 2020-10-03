@@ -12,7 +12,7 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import SETTINGS from 'config/app.settings';
 import * as DATACORE from 'modules/runtime-datacore';
-import { Init, HookResize } from 'modules/render/api-render';
+import * as RENDERER from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
@@ -78,8 +78,9 @@ class Generator extends React.Component {
     UR.SystemConfig({ autoRun: true });
     // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
-    Init(renderRoot);
-    HookResize(window);
+    RENDERER.SetGlobalConfig({ actable: true });
+    RENDERER.Init(renderRoot);
+    RENDERER.HookResize(window);
     document.title = 'GENERATOR';
   }
 

@@ -86,6 +86,7 @@ class Tracker extends React.Component {
     // start URSYS
     UR.SystemConfig({ autoRun: true }); // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
+    RENDERER.SetGlobalConfig({ actable: false });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
