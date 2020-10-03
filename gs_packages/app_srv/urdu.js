@@ -84,19 +84,21 @@ function RunDevServer(opt) {
   // URSERV.Initialize({ apphost: 'devserver' });
   // URSERV.StartNetwork();
   // URSERV.StartWebServer();
-
+  const PORT = 2930;
   // trap connection errors when there is port conflict
   process.on('uncaughtException', err => {
     if (err.errno === 'EADDRINUSE')
-      TOUT(m_WrapErrorText('PORT 2929 is already in use. Aborting'));
+      TOUT(m_WrapErrorText(`port ${PORT} is already in use. Aborting`));
     else TOUT(err);
     PROCESS.exit(0);
   });
+
   // run ursys
   (async () => {
     await URPACK.Start(opt);
     await URSERVER.Initialize(opt);
     await URSERVER.StartServer({
+      port: PORT,
       serverName: 'APP_SRV',
       runtimePath: RUNTIME_PATH
     });
