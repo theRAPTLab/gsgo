@@ -14,7 +14,7 @@
 
   const ASSETS = new PixiAssetMgr();
   ASSETS.queue(id, name, url);
-  ASSETS.loadQueue().then(()=>{
+  ASSETS.promiseLoadQueue().then(()=>{
     // const tex = ASSETS.getTextureById(id);
     // const tex = ASSETS.getTexture(name);
   });
@@ -30,6 +30,7 @@ type QueueItem = { assetId: number; assetName: string; assetUrl: string };
 type AssetId = number;
 type AssetName = string;
 type AssetURL = string;
+type Manifest = { sprites: QueueItem[] };
 
 const PR = UR.PrefixUtil('ASSETS', 'TagPink');
 const DBG = true;
@@ -61,15 +62,19 @@ class PixiAssetManager {
     this._loader.onProgress.add(this._loadProgress);
     this._loadComplete = this._loadComplete.bind(this);
     this._loader.onComplete.add(this._loadComplete);
+
     // to ensure async compatibility, bind callback functions
-    this.loadQueue = this.loadQueue.bind(this);
+    this.queue = this.queue.bind(this);
+    this.queueArray = this.queueArray.bind(this);
+    this.loadManifest = this.loadManifest.bind(this);
+    this.promiseLoadQueue = this.promiseLoadQueue.bind(this);
     this.getAsset = this.getAsset.bind(this);
     this.getAssetById = this.getAssetById.bind(this);
   }
 
   load(id: AssetId, name: AssetName, url: AssetURL) {
     this.queue(id, name, url);
-    return this.loadQueue();
+    return this.promiseLoadQueue();
   }
 
   _loadProgress(loader: PIXI.Loader, resource: PIXI.LoaderResource) {
@@ -104,7 +109,7 @@ class PixiAssetManager {
     });
   }
 
-  loadQueue() {
+  promiseLoadQueue() {
     const i = this._loadCount;
     if (DBG) console.log(...PR(`[${i}] loading ${this._queue.length} items...`));
     // define function to return wrapped in promise
@@ -146,6 +151,12 @@ class PixiAssetManager {
     };
     return new Promise(loadAssets);
   }
+  async loadManifest(assetFile: string) {
+    const res = await fetch(assetFile);
+    const list = await res.json();
+    this.queueArray(list.sprites);
+    await this.promiseLoadQueue();
+  }
 
   getPixiLoader() {
     if (!this._loader.loading) return this._loader;
@@ -156,7 +167,7 @@ class PixiAssetManager {
   getAssetById(id: AssetId) {
     const tex = this._textures.get(id);
     if (tex) return tex;
-    console.warn(`assetId ${id} is not in library`);
+    console.warn(`assetId ${id} is not in library`, this._textures);
     if (this._loader.loading) console.log('note: asynch load still in progress');
     return undefined;
   }

@@ -13,7 +13,7 @@ import MappedPool, { TestArrayEntities } from 'lib/class-mapped-pool';
 import DisplayObject, { TestValidDOBJs } from 'lib/class-display-object';
 import Sprite from 'lib/class-visual';
 import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
-import { UpdateModelList } from 'modules/render/api-render';
+import { UpdateDisplayList } from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,7 +207,7 @@ function TestUpdateDisplayList(frameTime) {
   // console.log('dobj x,y=', dobj.x, dobj.y);
   const displayList = AGENT_TO_DOBJ_UPDATE.getSyncedObjects();
   // console.log(...PR('Update List'));
-  UpdateModelList(displayList);
+  UpdateDisplayList(displayList);
 }
 function TestInit() {
   console.log(...PR('Init'));

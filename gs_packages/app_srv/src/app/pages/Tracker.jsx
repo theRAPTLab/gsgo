@@ -10,31 +10,50 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 // SELECT RUNTIME MODULES FOR APP
-import 'modules/sim/api-sim';
+import * as RENDERER from 'modules/render/api-render';
+import * as DATACORE from 'modules/runtime-datacore';
 //
 import UR from '@gemstep/ursys/client';
-import { Init, HookResize } from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('Tracker', 'TagBlue');
+const HCON = UR.HTMLConsoleUtil('console-left');
+let ASSETS_LOADED = false;
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook(
+  'UR',
+  'LOAD_ASSETS',
+  () =>
+    new Promise((resolve, reject) => {
+      console.log(...PR('LOADING ASSET MANIFEST...'));
+      (async () => {
+        await DATACORE.ASSETS_LoadManifest('static/assets.json');
+        ASSETS_LOADED = true;
+        console.log(...PR('ASSETS LOADED'));
+      })();
+      resolve();
+    })
+);
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.NetSubscribe('NET:DISPLAY_LIST', data => {
-  console.log('NET:DISPLAYLIST', data.length);
+UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
+  if (ASSETS_LOADED) {
+    RENDERER.UpdateDisplayList(remoteList);
+    RENDERER.Render();
+  }
 });
+
 /// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.NetSubscribe('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'tracker got you' };
 });
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('FakeTrack', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('console-left');
 
 /// CONSOLE-LEFT STATUS FAKERY ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,8 +78,6 @@ UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
   }
   if (Math.random() > 0.95) HCON.clear(6);
 });
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// END STATUS FAKERY /////////////////////////////////////////////////////////
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,8 +86,9 @@ class Tracker extends React.Component {
     // start URSYS
     UR.SystemConfig({ autoRun: true }); // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
-    Init(renderRoot);
-    HookResize(window);
+    RENDERER.Init(renderRoot);
+    RENDERER.HookResize(window);
+    document.title = 'TRACKER';
   }
 
   componentWillUnmount() {

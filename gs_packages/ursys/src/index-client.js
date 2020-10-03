@@ -65,7 +65,7 @@ async function SystemStart() {
   // autoregister messages
   PhaseMachine.QueueHookFor('UR', 'APP_CONFIGURE', async () => {
     let result = await CHAN_LOCAL.RegisterSubscribers();
-    console.log(...PR('registered messages:', result));
+    console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
   return Promise.resolve();

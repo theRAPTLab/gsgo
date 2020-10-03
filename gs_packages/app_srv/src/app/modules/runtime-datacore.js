@@ -26,20 +26,11 @@ const CONDITIONS = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ASSET_MGR = new PixiTextureMgr();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// ASSET LOADING PHASE HOOK //////////////////////////////////////////////////
-UR.SystemHook('SIM', 'LOAD_ASSETS', async () => {
-  const response = await fetch('static/assets.json');
-  const manifest = await response.json();
-  console.log(manifest);
-  const { sprites } = manifest;
-  console.log('loaded sprite list', sprites);
-  ASSET_MGR.queueArray(sprites);
-  await ASSET_MGR.loadQueue();
-});
 
 /// ASSET LOADING API METHODS /////////////////////////////////////////////////
 const ASSETS_GetResource = ASSET_MGR.getAsset;
 const ASSETS_GetResourceById = ASSET_MGR.getAssetById;
+const ASSETS_LoadManifest = ASSET_MGR.loadManifest;
 
 /// AGENT SET UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,11 +108,12 @@ UR.SystemHook('SIM', 'RESET', OnSimReset);
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export shared data structures
-export { AGENTS, TEMPLATES, FEATURES, CONDITIONS };
+export { AGENTS, TEMPLATES, FEATURES, CONDITIONS, ASSET_MGR };
 /// export agent creation methods
 export {
   ASSETS_GetResource,
   ASSETS_GetResourceById,
+  ASSETS_LoadManifest,
   AGENTS_Save,
   AGENT_GetById,
   AGENTS_GetTypeSet,

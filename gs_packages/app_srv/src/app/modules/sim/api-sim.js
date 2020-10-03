@@ -145,7 +145,6 @@ const u_dump = (phases, index) => {
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('UR', 'APP_STAGE', StageSimulation);
-UR.SystemHook('UR', 'APP_START', StartSimulation);
 UR.SystemHook('UR', 'APP_RUN', RunSimulation);
 UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
 UR.SystemHook('UR', 'APP_RESTAGE', RestageSimulation);
@@ -155,7 +154,7 @@ GAME_LOOP.Hook('GLOOP', u_dump);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default {
+export {
   StageSimulation,
   StartSimulation,
   PauseSimulation,

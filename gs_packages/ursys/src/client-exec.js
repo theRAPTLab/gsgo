@@ -39,7 +39,8 @@ const PHASES = {
     'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
-    'APP_LOAD' // app modules can request asynchronous loads
+    'LOAD_CONFIG', // app modules can request asynchronous loads
+    'LOAD_ASSETS' // can use loaded configs to load assets
   ],
   PHASE_CONFIG: [
     'APP_CONFIGURE' // app modules can configure data structure from loaded data

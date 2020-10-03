@@ -35,6 +35,7 @@ AGENT_TO_DOBJ.setObjectHandlers({
     dobj.y = agent.y();
     dobj.skin = agent.skin();
     dobj.frame = agent.prop('frame').value;
+    dobj.drag = agent.testDrag;
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x();
@@ -76,7 +77,7 @@ function AgentUpdate(frameTime) {
   AGENT_TO_DOBJ.syncFromArray(agents);
   AGENT_TO_DOBJ.processSyncedObjects();
   const dobjs = AGENT_TO_DOBJ.getSyncedObjects();
-  RENDERER.UpdateModelList(dobjs);
+  RENDERER.UpdateDisplayList(dobjs);
   UR.NetPublish('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

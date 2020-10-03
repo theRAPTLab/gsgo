@@ -20,11 +20,11 @@ let PIXI_APP; // PixiJS instance
 let PIXI_DIV; // PixiJS root div element
 const CONTAINERS = {}; // PixiJS container reference
 /// RENDERPASS SYNCMAPS
-let RP_MODEL_TO_VOBJ; // renderpass for model sprites
-let RP_PTRAK_SPR; // renderpass for ptrack marker sprites
-let RP_ANNOT_SPR; // renderpass for annotation marker sprites
+let RP_DOBJ_TO_VOBJ; // renderpass for model sprites
+let RP_PTRAK_TO_VOBJ; // renderpass for ptrack marker sprites
+let RP_ANNOT_TO_VOBJ; // renderpass for annotation marker sprites
 
-/// MODULE HELPERS /////////////////////////////////////////////////////////////
+/// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
@@ -57,13 +57,13 @@ function Init(element) {
   CONTAINERS.Root = root;
 
   // map model display objects to sprites
-  RP_MODEL_TO_VOBJ = new SyncMap('1-D2V', {
+  RP_DOBJ_TO_VOBJ = new SyncMap('1-D2V', {
     Constructor: Visual,
     autoGrow: true
   });
 
   // object handlers for 1-D2V
-  RP_MODEL_TO_VOBJ.setObjectHandlers({
+  RP_DOBJ_TO_VOBJ.setObjectHandlers({
     onAdd: (dobj, vobj) => {
       // copy parameters
       vobj.setPosition(dobj.x, dobj.y);
@@ -74,7 +74,7 @@ function Init(element) {
       }
       vobj.setTexture(dobj.skin, dobj.frame);
       // add drag-and-drop handlers
-      MakeDraggable(vobj);
+      if (dobj.drag) MakeDraggable(vobj);
       if (!vobj.sprite.dragging) vobj.setPosition(dobj.x, dobj.y);
       // add to scene
       vobj.add(CONTAINERS.Root);
@@ -90,21 +90,21 @@ function Init(element) {
     onRemove: vobj => {}
   });
 
-  // RP_MODEL_TO_VOBJ.setObjectHandlers()
+  // RP_DOBJ_TO_VOBJ.setObjectHandlers()
 
   // map ptrack markers
-  RP_PTRAK_SPR = new SyncMap('2-PTK', {
+  RP_PTRAK_TO_VOBJ = new SyncMap('2-PTK', {
     Constructor: Visual,
     autoGrow: true
   });
-  // RP_PTRAK_SPR.setObjectHandlers()
+  // RP_PTRAK_TO_VOBJ.setObjectHandlers()
 
   // map student input controls
-  RP_ANNOT_SPR = new SyncMap('3-ANO', {
+  RP_ANNOT_TO_VOBJ = new SyncMap('3-ANO', {
     Constructor: Visual,
     autoGrow: true
   });
-  // RP_ANNOT_SPR.setObjectHandlers()
+  // RP_ANNOT_TO_VOBJ.setObjectHandlers()
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HookResize(element) {
@@ -126,41 +126,41 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UpdateModelList(dobjs) {
-  RP_MODEL_TO_VOBJ.syncFromArray(dobjs);
+function UpdateDisplayList(dobjs) {
+  RP_DOBJ_TO_VOBJ.syncFromArray(dobjs);
   HCON.plot(`updated model list ${dobjs.length}`, 1);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdatePTrackList(dobjs) {
-  RP_PTRAK_SPR.syncFromArray(dobjs);
+  RP_PTRAK_TO_VOBJ.syncFromArray(dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdateAnnotationList(dobjs) {
-  RP_ANNOT_SPR.syncFromArray(dobjs);
+  RP_ANNOT_TO_VOBJ.syncFromArray(dobjs);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDisplayList() {
+  // TODO: expand this to return all display objects from all render passes
+  return RP_DOBJ_TO_VOBJ.getSyncedObjects(); // array of display objects
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Render() {
-  RP_MODEL_TO_VOBJ.processSyncedObjects();
-  // RP_PTRAK_SPR.processSyncedObjects();
-  // RP_PTRAK_SPR.processSyncedObjects();
-  const synced = RP_MODEL_TO_VOBJ.getSyncedObjects();
+  RP_DOBJ_TO_VOBJ.processSyncedObjects();
+  // RP_PTRAK_TO_VOBJ.processSyncedObjects();
+  // RP_PTRAK_TO_VOBJ.processSyncedObjects();
+  const synced = RP_DOBJ_TO_VOBJ.getSyncedObjects();
   HCON.plot('renderer called', 0);
   HCON.plot(`synced count ${synced.length}`, 0, 20);
 }
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM', 'RESET', () => {
-  console.log(...PR('SIM.RESET'));
-});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   Init,
   HookResize,
-  UpdateModelList,
+  UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,
+  GetDisplayList,
   Render
 };

@@ -216,6 +216,11 @@ Our first order of the day is to split the single `sim/runtime` into a runtime h
 * [x] move runtime.js, runtime-datacore.js
 * [x] make new sim/runtime-sim module runtime
 * [x] move renderer out of sim (display objects only)
+```
+FIGURING OUT path resolution in viscode
+set it up in tsconfig.js, which will also update eslint, which will also make visual studio code work
+```
+* [x] add path aliases for importing app, lib, modules, config in tsconfig.js
 
 To move renderer out of sim, we have to refactor it into several functions
 
@@ -231,13 +236,14 @@ To move renderer out of sim, we have to refactor it into several functions
 * What does it mean when another module imports runtime to **access features**?
   * the implicit init should work in this case.
 
-```
-FIGURING OUT path resolution in viscode
-set it up in tsconfig.js, which will also update eslint, which will also make visual studio code work
-```
 
-* [x] add path aliases for importing app, lib, modules, config in tsconfig.js
-* [ ] 
+* [x] ensure that the mere act of including ``api-render` initalizes PIXI
+* [x] add RENDERER.Init() to TrackerJSX mount
+* [x] add RENDERER.UpdateDisplayList() and RENDERER.Render() to NET:DISPLAY_LIST processing
+* [x] modify PHASE_LOAD in client-exec to have LOAD_CONFIG and LOAD_ASSETS
+* [x] load sprites
+
+`Tracker` uses its own renderer that happens when `NET:DISPLAY_LIST` occurs. Generator, though, uses `sim-render` to drive its rendering loop. However, the Rendering cycle has to wait.
 
 
 ---

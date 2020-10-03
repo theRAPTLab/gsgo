@@ -11,12 +11,28 @@ import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
 import SETTINGS from 'config/app.settings';
+import * as DATACORE from 'modules/runtime-datacore';
 import { Init, HookResize } from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import '../modules/sim/api-sim';
+import * as SIM from '../modules/sim/api-sim';
 
+UR.SystemHook(
+  'UR',
+  'LOAD_ASSETS',
+  () =>
+    new Promise((resolve, reject) => {
+      console.log(...PR('LOADING ASSET MANIFEST...'));
+      (async () => {
+        let map = await DATACORE.ASSETS_LoadManifest('static/assets.json');
+        console.log(...PR('ASSETS LOADED'));
+        SIM.StartSimulation();
+        console.log(...PR('SIMULATION STARTED'));
+      })();
+      resolve();
+    })
+);
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('Generator', 'TagBlue');
@@ -64,6 +80,7 @@ class Generator extends React.Component {
     const renderRoot = document.getElementById('root-renderer');
     Init(renderRoot);
     HookResize(window);
+    document.title = 'GENERATOR';
   }
 
   componentWillUnmount() {
