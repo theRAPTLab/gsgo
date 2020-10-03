@@ -14,10 +14,16 @@ import { useStylesHOC } from './page-styles';
 import { Init, HookResize } from '../modules/sim/display/renderer';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// import '../modules/sim/runtime';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import RUNTIME from '../modules/sim/runtime';
+
+/// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.NetSubscribe('NET:DISPLAY_LIST', data => {
   console.log('NET:DISPLAYLIST', data.length);
 });
+/// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.NetSubscribe('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'tracker got you' };

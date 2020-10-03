@@ -25,25 +25,18 @@ const CONDITIONS = new Map();
 /// PIXI JS ASSET MANAGEMENT //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ASSET_MGR = new PixiTextureMgr();
-/* set the texture list */
-const texturelist = [
-  {
-    assetId: 1,
-    assetName: 'default',
-    assetUrl: 'static/sprites/default-sprite.png'
-  },
-  {
-    assetId: 2,
-    assetName: 'bunny.json',
-    assetUrl: 'static/sprites/bunny.json'
-  }
-];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// ASSET LOADING PHASE HOOK //////////////////////////////////////////////////
-UR.SystemHook('SIM', 'LOAD_ASSETS', () => {
-  console.log(...PR('loading sprites'));
-  ASSET_MGR.queueArray(texturelist);
-  return ASSET_MGR.loadQueue();
+UR.SystemHook('SIM', 'LOAD_ASSETS', async () => {
+  const response = await fetch('static/assets.json');
+  const manifest = await response.json();
+  console.log(manifest);
+  const { sprites } = manifest;
+  console.log('loaded sprite list', sprites);
+  ASSET_MGR.queueArray(sprites);
+  await ASSET_MGR.loadQueue();
 });
+
 /// ASSET LOADING API METHODS /////////////////////////////////////////////////
 const ASSETS_GetResource = ASSET_MGR.getAsset;
 const ASSETS_GetResourceById = ASSET_MGR.getAssetById;

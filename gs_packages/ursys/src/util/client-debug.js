@@ -11,7 +11,6 @@ let TOOLS;
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AddConsoleTools(UR) {
-  console.log('ur', UR);
   const PR = UR.PrefixUtil('URSYS DEBUG', 'TagRed');
   console.log(...PR('adding window debug tools'));
 

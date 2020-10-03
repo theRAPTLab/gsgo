@@ -164,8 +164,55 @@ New problem: when the remote calls  pkt.ReturnTransaction() after invoking the l
   * [x] is server-network m_HandleMessage() receiving correct value? YES
   * [x] check server-network m_SocketOnMessage...is OK? **YES!**
   * [x] in CompleteTransaction,is the key generated incorrect? **NO**
-  * [ ] The issue was that index-client was using the same URCHAN endpoint in both NetConnect (client-network saves the instance and and for itself. They have to be different, otherwise the anti-echo breaks.
-  * [ ] MAKE A DIAGRAM of CHAN_LOCAL vs CHAN_NET uses by type of call and destination.
+  * [x] The issue was that index-client was using the same URCHAN endpoint in both NetConnect (client-network saves the instance and and for itself. They have to be different, otherwise the anti-echo breaks.
+  * [x] MAKE A DIAGRAM of CHAN_LOCAL vs CHAN_NET uses by type of call and destination.
+
+## OCT 02 FRI - Rendering in Tracker
+
+Wednessday-Thursday were taken up by the URSYS bug fixing session, which yielded some great insight into how the message broker works. I'd like to make some small tweaks to the naming and other conventions. But that will come later.
+
+To **implement tracker rendering** requires two things:
+
+1. Receiving display list updates (done through URSYS)
+2. instantiating the renderer in Tracker somehow
+3. plotting placeholder default sprites
+4. added asset manager synchronization.
+
+Items 2 and 4 are the ones that require additional design thinking, so thinking aloud:
+
+**Instantiating Renderer**
+
+Because Tracker is a stand-alone webapp that shares a common set of modules, we can't shove the runtime code into the sim loop. We need a different loop. I think maybe we can implement that as a separate set of features. For example, the simloop is entirely part of the `app/modules/sim/*` hierarchy, implementing a phasemachine to manage it all. Why not do the same for a `tracker` module that can be instantiated in the same way?
+
+```
+PLUGIN MODULE
+entry point: implements PhaseMachine and calls subsequent modules. To activate it, you merely import it in the page route.
+
+runtime and runtime-datacore move out of sim, and a replacement file takes runtime's place in the sim directory.
+```
+
+How does Renderer hook into the Update cycle? Maybe there is a **central dispatch**. I think we can move `runtime` and `runtime-datacore` up so common data storage can be shared across modules.
+
+**Asset Manager Synchronization**
+
+The Asset Manager is two **lookup tables** of **name to id** and **id to resource**. The ids are hard coded by some truth of source, so the numbers don't change. 
+
+```
+define assets.json to load during ASSET_LOAD
+ASSET_MGR is in runtime-datacore
+
+
+let response = await fetch(url)
+let data = await response.json()
+
+clear the resource pool
+load all the sprites
+
+
+
+```
+
+
 
 
 ---
