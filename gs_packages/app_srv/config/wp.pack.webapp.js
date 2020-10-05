@@ -12,6 +12,7 @@
 const Path = require('path');
 const Webpack = require('webpack');
 const WebpackMerge = require('webpack-merge');
+const { PrefixUtil } = require('@gemstep/ursys/server');
 
 /// LOAD WEBPACK PLUGINS //////////////////////////////////////////////////////
 const CopyPlugin = require('copy-webpack-plugin');
@@ -19,12 +20,10 @@ const WriteFilesPlugin = require('write-file-webpack-plugin');
 // const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
-const PROMPTS = require('./prompts');
 const WebpackLoaders = require('./wp.base.loaders');
 
 /// DEFINE CONSTANTS //////////////////////////////////////////////////////////
-const { TERM_EXP: CW, CR } = PROMPTS;
-const PR = `${CW}${PROMPTS.Pad('WEBPACK')}${CR}`;
+const PR = PrefixUtil(' PACK/BDL');
 const DIR_ROOT = Path.resolve(__dirname, '..');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 const DIR_SRC = Path.join(DIR_ROOT, 'src/app');
@@ -40,11 +39,11 @@ const WebpackPacker = env => {
   // adjust build parameters based on mode
   env = env || { DEVELOPMENT: 'default' };
   if (env && env.PRODUCTION) {
-    console.log(PR, `... using webapp production config for packaging`);
+    console.log(...PR('... setting appsrv bundle rules (production)'));
     MODE = 'production';
   }
   if (env && env.DEVELOPMENT) {
-    console.log(PR, `... using webapp development config for packaging`);
+    console.log(...PR('... setting appsrv bundle rules (dev)'));
     // add hot reload for development version
     ENTRY_FILES.push('webpack-hot-middleware/client?reload=true');
     MODE = 'development';
@@ -53,17 +52,17 @@ const WebpackPacker = env => {
   // github.com/webpack-contrib/copy-webpack-plugin
   const COPY_FILES = [
     {
-      from: `web-index.html.ejs`,
-      to: `${DIR_OUT}/index.ejs`,
+      from: 'web-index.html',
+      to: `${DIR_OUT}/index.html`,
       toType: 'file'
     },
     {
-      from: `favicon.ico`,
+      from: 'favicon.ico',
       to: `${DIR_OUT}/favicon.ico`,
       toType: 'file'
     },
     {
-      from: `static`,
+      from: 'static',
       to: `${DIR_OUT}/static`,
       toType: 'dir'
     }

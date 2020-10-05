@@ -1,19 +1,21 @@
 {
   "extends": "../../tsconfig.build.json",
   "compilerOptions": {
-    "baseUrl": "./",
+    "moduleResolution": "node",
+    "baseUrl": "src",
     "paths": {
-      "ursys/*": ["ursys/*"],
-      "app/modules/*": ["src/app/modules/*"],
-      "app/*": ["src/app/*"],
-      "util/*": ["src/app/util/*"],
-      "step/*": ["src/step/*"],
-      "config/*": ["config/*"]
+      "app/*": ["./app/*"],
+      "lib/*": ["app/lib/*"],
+      "modules/*": ["app/modules/*"],
+      "static/*": ["app/static/*"],
+      "script/*": ["app/modules/sim/script/*"],
+      "step/*": ["app/modules/step/*"],
+      "config/*": ["../config/*"]
     },
     "jsx": "preserve",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   },
-  "include": ["src/**/*", "ursys/**/*", "config/*"],
+  "include": ["src/**/*", "./urdu.js"],
   "exclude": ["node_modules"]
 }

@@ -1,5 +1,3 @@
-
-
 **SUMMARY S15 JUL 20-AUG 02**
 
 * W1: opcode design, agent-script interaction design, diagram entire system

@@ -8,87 +8,65 @@
   It starts the URSYS lifecycle system, then spawns React SystemShell
   with a ReactRouter <HashRouter> that loades <SystemShell>
 
-  TYPESCRIPT NOTE
-  import Foo from 'App/modules/add'; // typescript test
-  console.log(Foo(1, 'a'));
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { HashRouter } from 'react-router-dom';
-import debounce from 'debounce';
+import { BrowserRouter } from 'react-router-dom';
 
 /// URSYS MODULES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import CCSS from 'app/modules/console-styles';
-import EXEC from 'ursys/chrome/ur-exec';
+import UR from '@gemstep/ursys/client';
 import SETTINGS from 'config/app.settings';
 import SystemShell from './SystemShell';
-
-const { cssur, cssreset } = CCSS;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
-
-/// DEBUG CONTROL /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
-
-/// SYSTEM-WIDE LANGUAGE EXTENSIONS ///////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// These are loaded in init to make sure they are available globally!
-/// You do not need to copy these extensions to your own module files
+const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
 
 /// URSYS STARTUP /////////////////////////////////////////////////////////////
-/// STARTUP HELPER FUNCTIONS
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PromiseRenderApp() {
-  if (DBG) console.log('%cINIT %cReactDOM.render() begin', 'color:blue', 'color:auto');
-  return new Promise(resolve => {
-    ReactDOM.render(
-      <HashRouter hashType="slash">
-        <SystemShell />
-      </HashRouter>,
-      document.getElementById('app-container'),
-      () => {
-        console.log('%cURSYS: START', cssur);
-        resolve();
-      }
-    );
-  }); // promise
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Init is called from the startup js file, usually in index.html.
+ *  This starts the multi-step URSYS lifecycle startup.
+ */
 function Init() {
-  console.log('%cURSYS: INITIALIZE', cssur);
-  // handle window resize events through URSYS
-  window.addEventListener('resize', debounce(() => {
-    // console.clear();
-  }, 500));
+  console.log(...PR('URSYS INITIALIZING...'));
   // initialize app when DOM is completely resolved
   document.addEventListener('DOMContentLoaded', () => {
-    if (DBG) console.log('%cINIT %cDOMContentLoaded. Starting URSYS Lifecycle!', cssur, cssreset);
-    // 1. preflight system routes
-    // 2. lifecycle startup
+    // reset body margins to 0
+    document.body.style.margin = '0px';
+    console.log(...PR('FYI: setting document.body.style.margin to 0'));
+    // initialize URSYS synchronously
     (async () => {
-      await EXEC.JoinNet();
-      await EXEC.EnterApp();
-      await m_PromiseRenderApp(); // compose React view
-      await EXEC.SetupDOM();
-      await EXEC.SetupRun();
-      /* everything is done, system is running */
-      if (DBG) console.log('%cINIT %cURSYS Lifecycle Init Complete', 'color:blue', 'color:auto');
+      console.log(...PR('URSYS CONNECTING...'));
+      const response = await fetch('/urnet/getinfo');
+      const netProps = await response.json();
+      await UR.SystemStart();
+      console.log(...PR(`${PROJECT_NAME.toUpperCase()} SYSTEM BOOT`));
+      // system boot runs BOOT,INIT,CONNECT phases
+      await UR.SystemBoot({ netProps });
+      // start React
+      ReactDOM.render(
+        <BrowserRouter forceRefresh>
+          <SystemShell />
+        </BrowserRouter>,
+        document.getElementById('app-container'),
+        () => {
+          console.log(...PR(`${PROJECT_NAME.toUpperCase()} REACT READY`));
+          UR.AddConsoleTools();
+        }
+      );
     })();
   });
+
   // handle disconnect event
   document.addEventListener('URSYSDisconnect', () => {
-    console.log(`${PROJECT_NAME} SERVER HAS DISCONNECTED`);
+    console.log(...PR(`${PROJECT_NAME.toUpperCase} SYSTEM DISCONNECTED`));
     document.location.reload();
   });
 }
-
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

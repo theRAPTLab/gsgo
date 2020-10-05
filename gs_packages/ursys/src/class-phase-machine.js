@@ -32,8 +32,15 @@ const PROMPTS = require('./util/prompts');
 
 /// DEBUG CONSTANTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { subs: true, ops: false, phases: false, init: true };
+const DBG = { subs: true, ops: false, phases: false, init: false };
 const IS_NODE = typeof window === 'undefined';
+
+const PR = PROMPTS.makeStyleFormatter('UR.PHM');
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const m_machines = new Map(); // store phasemachines <machinename,instance>
+const m_queue = new Map(); // store by <machinename,['op',f]>
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +54,30 @@ function m_InvokeHook(op, hook, ...args) {
   if (hook.f) return hook.f(...args);
   // if no hook.f, this hook was implicitly mocked
   return undefined;
-}
+} // end m_InvokeHook
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: process queued hooks for a phasemachine name.
+ */
+function m_ProcessQueueFor(pmkey) {
+  const pm = m_machines.get(pmkey);
+  if (!pm) {
+    console.warn(...PR(`${pmkey} not yet defined`));
+    return;
+  }
+  const qhooks = m_queue.get(pmkey) || [];
+  if (DBG.init)
+    console.log(...PR(`phasemachine '${pmkey}' has ${qhooks.length} queued ops`));
+  try {
+    qhooks.forEach(element => {
+      const [op, f] = element;
+      pm.Hook(op, f);
+    });
+    m_queue.delete(pmkey);
+  } catch (e) {
+    console.warn(...PR('Error while processing queued phasemachine hooks'));
+    throw Error(e.toString());
+  }
+} // end m_ProcessQueueFor
 
 /// URSYS PhaseMachine CLASS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,12 +85,14 @@ class PhaseMachine {
   /** CONSTRUCTOR: phases is an object of upper-case KEYS containing
    *  arrays of OPERATION strings.
    */
-  constructor(shortName, phases, dbgPrompt = '-') {
+  constructor(shortName, phases) {
     if (typeof shortName !== 'string') throw Error('arg1 must be string');
+    if (shortName.length < 1) throw Error('arg1 string.length must be > 1');
+    if (m_machines.has(shortName))
+      throw Error(`already registered '${shortName}'`);
     this.NAME = shortName;
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
-    this.PR = dbgPrompt ? PROMPTS.makeLogHelper(dbgPrompt) : () => [];
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {
@@ -75,27 +107,13 @@ class PhaseMachine {
     this.ExecutePhaseParallel = this.ExecutePhaseParallel.bind(this);
     this.GetHookFunctions = this.GetHookFunctions.bind(this);
     this.GetPhaseFunctionsAsMap = this.GetPhaseFunctionsAsMap.bind(this);
-    this.MockHook = this.MockHook.bind(this);
+    // save instance by name
+    m_machines.set(shortName, this);
+    if (DBG.init) console.log(...PR(`phasemachine '${shortName}' saved`));
+    // check queued hooks
+    m_ProcessQueueFor(shortName);
   } // end constructor
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Given a list of module objects, invoke the associated
-   *  name_ModuleInit() method. The 'name' parameter is set at initialization
-   *  time and is typically a short name. The client-exec.js module uses
-   *  'UR' as its phase machine name, so the corresponding initializer function
-   *  will be UR_ModuleInit() in each module to give it a chance to hook-in.
-   */
-  HookModules(moduleArray = []) {
-    const initializer = `${this.NAME}_ModuleInit`;
-    moduleArray.forEach((mod = {}) => {
-      if (typeof mod[initializer] !== 'function') {
-        console.warn(...this.PR(`missing ${initializer}() in module`, mod));
-        return Promise.reject();
-      }
-      mod[initializer](this); // pass phasemachine instance
-    });
-    return Promise.resolve();
-  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: register an Operations Handler. <op> is a string constant
    *  define in PHASES and converted into the MAP. <f> is a function that
@@ -109,7 +127,8 @@ class PhaseMachine {
     // does this operation name exist?
     if (typeof op !== 'string')
       throw Error("<arg2> must be PHASENAME (e.g. 'LOAD_ASSETS')");
-    if (!this.OP_HOOKS.has(op)) throw Error(`${op} is not a recognized phase`);
+    if (!this.OP_HOOKS.has(op))
+      throw Error(`Phase handler '${this.NAME}':'${op}' is not defined`);
     let status = 'REGD';
     if (!(f instanceof Function)) {
       // no function means "implicit mock"
@@ -119,7 +138,7 @@ class PhaseMachine {
     // and add the new promise
     const hook = { f, scope };
     this.OP_HOOKS.get(op).push(hook);
-    if (DBG) console.log(...this.PR(`${status} '${op}' Hook`));
+    if (DBG.init) console.log(...PR(`${status} '${this.NAME}.${op}' Hook`));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Execute all Promises associated with a op, completing when
@@ -136,7 +155,7 @@ class PhaseMachine {
     // check that there are promises to execute
     let hooks = this.OP_HOOKS.get(op);
     if (hooks.length === 0) {
-      if (DBG.ops) console.log(...this.PR(`[${op}] no subscribers`));
+      if (DBG.ops) console.log(...PR(`[${op}] no subscribers`));
       return Promise.resolve();
     }
 
@@ -153,21 +172,21 @@ class PhaseMachine {
       }
     });
     if (DBG.ops && hooks.length)
-      console.log(...this.PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
+      console.log(...PR(`[${op}] HANDLERS PROCESSED : ${hooks.length}`));
     if (DBG.ops && icount)
-      console.log(...this.PR(`[${op}] PROMISES QUEUED    : ${icount}`));
+      console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
 
     // wait for all promises to execute
     return Promise.all(promises)
       .then(values => {
         if (DBG.ops && values.length)
           console.log(
-            ...this.PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
+            ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
           );
         return values;
       })
       .catch(err => {
-        if (DBG.ops) console.log(...this.PR(`[${op}]: ${err}`));
+        if (DBG.ops) console.log(...PR(`[${op}]: ${err}`));
         throw Error(`[${op}]: ${err}`);
       });
   }
@@ -177,10 +196,11 @@ class PhaseMachine {
    *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
    */
   ExecutePhase(phaseName, ...args) {
-    if (DBG.phases) console.log(...this.PR(`ExecutePhase('${phaseName}')`));
+    if (DBG.phases) console.log(...PR(`ExecutePhase('${phaseName}')`));
     const ops = this.PHASES[phaseName];
+    if (ops === undefined)
+      throw Error(`Phase "${phaseName}" doesn't exist in ${this.NAME}`);
     const phaseHookFuncs = this.GetHookFunctions(phaseName);
-    if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
     let index = 0;
     return ops.reduce(
       async (previousPromise, nextOp) => {
@@ -208,7 +228,7 @@ class PhaseMachine {
    *  client-exec SystemRun()
    */
   GetHookFunctions(op) {
-    if (DBG.ops) console.log(...this.PR(`getting hook for '${op}'`));
+    if (DBG.ops) console.log(...PR(`getting hook for '${op}'`));
     return this.OP_HOOKS.get(op).map(hook => hook.f);
   }
 
@@ -218,8 +238,7 @@ class PhaseMachine {
   GetPhaseFunctionsAsMap(phaseName) {
     if (!phaseName.startsWith('PHASE_'))
       throw Error(`${phaseName} is not a Phase Group name`);
-    if (DBG.ops)
-      console.log(...this.PR(`getting hook map for phase '${phaseName}'`));
+    if (DBG.ops) console.log(...PR(`getting hook map for phase '${phaseName}'`));
     const phaseOps = this.PHASES[phaseName]; // list of operations in the phase
     const map = new WeakMap();
     phaseOps.forEach(pop => {
@@ -230,17 +249,30 @@ class PhaseMachine {
     });
     return map;
   }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** UTILITY: Print arguments for hook, with optional callback
-   */
-  MockHook(op, callback) {
-    this.Hook(op, (...args) => {
-      console.log(`MOCK ${op} recv:`, ...args);
-      if (typeof callback === 'function') callback(...args);
-    });
-  }
 }
+
+/// STATIC METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Queue hook requests even if machine isn't already defined.
+ *  This routine can be used as the standard hook method for UR clients.
+ */
+PhaseMachine.QueueHookFor = (pmName, op, f) => {
+  if (typeof pmName !== 'string') throw Error('arg1 must be phasemachine name');
+  if (typeof op !== 'string') throw Error('arg2 must be phaseop name');
+  if (typeof f !== 'function' && f !== undefined)
+    throw Error('arg3 must be function or undefined');
+  //
+  const pm = m_machines.get(pmName);
+  // if phasemachine is already valid, then just hook it directly
+  if (pm) {
+    pm.Hook(op, f);
+    return;
+  }
+  // otherwise, queue the request
+  if (!m_queue.has(pmName)) m_queue.set(pmName, []);
+  const q = m_queue.get(pmName);
+  q.push([op, f]); // array of 2-element arrays
+};
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

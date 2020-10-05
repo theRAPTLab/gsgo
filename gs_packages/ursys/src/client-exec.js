@@ -14,7 +14,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const URSession = require('./client-session');
 const URPhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeLogHelper('EXEC');
+const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -24,20 +24,23 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PHASES = {
   PHASE_BOOT: [
-    'TEST_INIT', // hook to set any testing parameters or modes
+    'TEST_INIT', // set any testing parameters or modes
     'SYS_BOOTSTRAP' // grab initial props to load the rest of URSYS
   ],
   PHASE_INIT: [
     'SYS_INIT', // initialize key runtime parameters
-    'DOM_READY' // the dom is stable
+    'DOM_READY', // the dom is stable
+    'TEST_LOCAL' // run local tests that don't require network calls
   ],
   PHASE_CONNECT: [
     'NET_CONNECT', // initiate connection
     'NET_REGISTER', // initiate registration
-    'NET_READY' // the network is stable
+    'NET_READY', // the network is stable
+    'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
-    'APP_LOAD' // app modules can request asynchronous loads
+    'LOAD_CONFIG', // app modules can request asynchronous loads
+    'LOAD_ASSETS' // can use loaded configs to load assets
   ],
   PHASE_CONFIG: [
     'APP_CONFIGURE' // app modules can configure data structure from loaded data
@@ -49,12 +52,13 @@ const PHASES = {
     'APP_STAGE', // app modules receive reset params prior to starting
     'APP_START', // app modules start execution, all modules are ready
     'APP_RUN', // app modules enter run mode
-    'APP_UPDATE', // app modules configuration update
-    'APP_RESET' // app_module will jump back to APP_RUN
+    'APP_UPDATE', // periodic heartbeat
+    'APP_RESET', // app_module will jump back to APP_RUN
+    'APP_RESTAGE' // significant context change, should do deeper restart
   ],
   PHASE_PAUSED: [
     'APP_PAUSE', // app modules should enter "paused state"
-    'APP_UPDATE', // app modules configuration update
+    'APP_PAUSED', // app modules receive configuration update
     'APP_UNPAUSE' // app modules cleanup, then back to 'APP_LOOP'
   ],
   PHASE_UNLOAD: [
@@ -70,7 +74,7 @@ const PHASES = {
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PHASE_MACHINE = new URPhaseMachine('UR', PHASES, '');
-const { ExecutePhase, Execute, Hook } = PHASE_MACHINE;
+const { ExecutePhase, Execute } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemBoot, etc
@@ -81,35 +85,38 @@ function m_CheckOptions(options) {
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
     throw Error('URSYS: bad option object');
-  } else if (DBG) console.log(...PR('info - L1_OPTION pass'));
+  }
   // return true if there were no unknown option properties
   return unknown.length === 0;
 }
 
 /// RUNTIME API CALLS /////////////////////////////////////////////////////////
-/** API: initialize the EXEC phase machines with all modules
- */
-async function HookModules(initializers = []) {
-  if (DBG) console.groupCollapsed('** URSYS: Init');
-  await PHASE_MACHINE.HookModules(initializers);
-  if (DBG) console.groupEnd();
-  return Promise.resolve();
-}
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: start the lifecycle state engine
+/** API: start the lifecycle state engine, connecting to the network
  */
 async function SystemBoot(options = {}) {
   //
   if (DBG) console.groupCollapsed('** URSYS: Boot');
+  //
   m_CheckOptions(options);
   URSession.InitializeNetProps(options.netProps);
   //
   await ExecutePhase('PHASE_BOOT');
   await ExecutePhase('PHASE_INIT');
   await ExecutePhase('PHASE_CONNECT');
+  //
+  if (DBG) console.groupEnd();
+}
+//// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: initialize, configure, and load data after SystemBoot
+ */
+async function SystemConfig(options = {}) {
+  //
+  if (DBG) console.groupCollapsed('** URSYS: Config');
+  //
   await ExecutePhase('PHASE_LOAD');
   await ExecutePhase('PHASE_CONFIG');
+  //
   await ExecutePhase('PHASE_READY');
   //
   if (options.autoRun) {
@@ -125,14 +132,16 @@ async function SystemBoot(options = {}) {
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function SystemRun(options = {}) {
-  // PART 1 - SYSTEM RUN
-  if (DBG) console.groupCollapsed('** URSYS: Run');
+  // PART 1 - SYSTEM RUN (part of PHASE_RUN group)
   m_CheckOptions(options);
   //
+  console.log(...PR('URSYS: STAGE START RUN'));
   await Execute('APP_STAGE');
   await Execute('APP_START');
   await Execute('APP_RUN');
-
+  console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
+  // PART 2 - after the run has started, there are no periodic updates
+  //          unless you add them yourself
   if (DBG) console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,12 +150,11 @@ async function SystemRun(options = {}) {
 async function SystemUpdate() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
-  await Execute('APP_UPDATE');
+  await Execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
   SystemRun();
 }
-/// - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
  */
@@ -182,9 +190,8 @@ async function SystemReboot() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  HookModules,
-  SystemHook: Hook,
   SystemBoot,
+  SystemConfig,
   SystemRun,
   SystemUpdate,
   SystemRestage,

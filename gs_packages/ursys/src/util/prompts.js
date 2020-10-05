@@ -6,10 +6,14 @@
 
 const IS_NODE = typeof window === 'undefined';
 const DEFAULT_PADDING = IS_NODE
-  ? 5 // nodejs
+  ? 10 // nodejs
   : 0; // not nodejs
+const DEFAULT_COLOR = 'TagGray';
+const CSS_PAD = 'padding:3px 5px;border-radius:2px';
+const CSS_TAB = '4px';
 
 const TERM_COLORS = {
+  // TOUT = makeTerminalOut(str); TOUT('hi')
   Reset: '\x1b[0m',
   Bright: '\x1b[1m',
   Dim: '\x1b[2m',
@@ -36,17 +40,21 @@ const TERM_COLORS = {
   BgPurple: '\x1b[45m',
   BgWhite: '\x1b[47m',
   //
-  TagBlue: '\x1b[34m',
-  TagGray: '\x1b[2m',
-  TagYellow: '\x1b[33m'
+  TagYellow: '\x1b[43;30m',
+  TagRed: '\x1b[41;37m',
+  TagGreen: '\x1b[42;30m',
+  TagCyan: '\x1b[46;37m',
+  TagBlue: '\x1b[43;37m',
+  TagPurple: '\x1b[45;37m',
+  TagPink: '\x1b[95;30m',
+  TagGray: '\x1b[2;37m',
+  TagNull: 'color:#999'
 };
 
-const CSS_PAD = 'padding:3px 5px;border-radius:2px';
-const CSS_TAB = '4px';
-
+// NAME LIST MUST MATCH TERM_COLORS!
 const CSS_COLORS = {
   Reset: 'color:auto;background-color:auto',
-  //
+  // COLOR FOREGROUND
   Black: 'color:black',
   White: 'color:white',
   Red: 'color:red',
@@ -55,7 +63,7 @@ const CSS_COLORS = {
   Cyan: 'color:cyan',
   Blue: 'color:blue',
   Magenta: 'color:magenta',
-  //
+  // COLOR BACKGROUND
   TagRed: `color:#000;background-color:#f66;${CSS_PAD}`,
   TagYellow: `color:#000;background-color:#fd4;${CSS_PAD}`,
   TagGreen: `color:#000;background-color:#5c8;${CSS_PAD}`,
@@ -65,11 +73,14 @@ const CSS_COLORS = {
   TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
   TagGray: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
   TagNull: 'color:#999',
-  //
+  // COLOR BACKGROUND DARK
   TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
   TagDkGreen: `color:white;background-color:green;${CSS_PAD}`,
   TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`
 };
+
+// div console
+const HTCONSOLES = {};
 
 /// OUTPUT CONTROL ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,32 +90,19 @@ const SHOW = true;
 const HIDE = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPT_DICT = {
-  'USYS': [SHOW, 'TagDkBlue'],
-  'SIML': [SHOW, 'TagPink'],
+  // URSYS-RELATED MODULES
+  'UR': [SHOW, 'TagRed'],
+  // SERVERS
+  'APPSRV': [SHOW, 'Yellow'],
+  'GEMSRV': [SHOW, 'Yellow'],
+  // SPECIAL
   '-': [SHOW, 'TagNull']
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Based on current detected enviroment, return either ANSI terminal or
- *  css based color markers for use in debugging messages. If tagColor is
- *  defined and corresponds to color definition, it is used to set the color.
- *  This is so users can set their own color prompts without editing
- *  PROMPTS_DICT structure.
- */
-function m_GetEnvColor(prompt, tagColor) {
-  const [dbg_mode, defcol] = PROMPT_DICT[prompt] || [SHOW, 'TagGray'];
-  const ucolor = IS_NODE ? TERM_COLORS[tagColor] : CSS_COLORS[tagColor];
-  const dcolor = IS_NODE ? TERM_COLORS[defcol] : CSS_COLORS[defcol];
-  const color = ucolor || dcolor;
-  const reset = IS_NODE ? TERM_COLORS.Reset : CSS_COLORS.Reset;
-  return [dbg_mode, color, reset];
-}
-
-/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Pad string to fixed length, with default padding depending on
  *  whether the environment is node or browser
  */
-function padString(str, padding = DEFAULT_PADDING) {
+function m_PadString(str, padding = DEFAULT_PADDING) {
   let len = str.length;
   if (IS_NODE) return `${str.padEnd(padding, ' ')}`;
   // must be non-node environment, so do dynamic string adjust
@@ -114,6 +112,143 @@ function padString(str, padding = DEFAULT_PADDING) {
   else str.padEnd(padding, ' ');
   return `${str}`;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** add a color to the PROMPT_DICT for a particular PREFIX */
+function m_SetPromptColors(match, color = DEFAULT_COLOR) {
+  if (typeof match !== 'string') throw Error('match prompt must be string');
+  match = match.trim();
+  if (match === '') throw Error('match prompt cannot be empty');
+  let colorTable = IS_NODE ? TERM_COLORS : CSS_COLORS;
+  let validColor = false;
+  validColor = colorTable[color] !== undefined;
+  if (!validColor) throw Error(`prompt color ${color} is not defined`);
+  // turn on color prompt
+  PROMPT_DICT[match] = [true, color];
+  return colorTable;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Based on current detected enviroment, return either ANSI terminal or
+ *  css based color markers for use in debugging messages. If tagColor is
+ *  defined and corresponds to color definition, it is used to set the color.
+ *  This is so users can set their own color prompts without editing
+ *  PROMPTS_DICT structure.
+ */
+function m_GetEnvColor(prompt, tagColor) {
+  const colorTable = m_SetPromptColors(prompt, tagColor);
+  const [dbg_mode, defcol] = PROMPT_DICT[prompt.trim()] || [SHOW, DEFAULT_COLOR];
+  const ucolor = colorTable[tagColor];
+  const dcolor = colorTable[defcol];
+  const color = ucolor || dcolor;
+  const reset = colorTable.Reset;
+  return [dbg_mode, color, reset];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Returns an array suitable for destructuring inside console.log() in
+ *  either Node or the browser with color
+ */
+function m_MakeColorArray(prompt, colorName) {
+  const [dbg, color, reset] = m_GetEnvColor(prompt, colorName);
+  // return empty array if debugging disabled in browser
+  // or debugging is enabled but it's node (de morgan's law)
+  if (!(dbg || IS_NODE)) return [];
+  return IS_NODE
+    ? [`${color}${m_PadString(prompt)}${reset}   `] // server
+    : [`%c${m_PadString(prompt)}%c `, color, reset]; // browser
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Returns an environment-specific color wrapper function suitable for use
+ *  in debug output
+ */
+function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
+  return IS_NODE
+    ? (str, ...args) => {
+        console.log(
+          `${TERM_COLORS[colorName]}${m_PadString(prompt)}${TERM_COLORS.Reset}${
+            TERM_COLORS[resetName]
+          }    ${str}`,
+          ...args
+        );
+      }
+    : (str, ...args) => {
+        console.log(
+          `%c${m_PadString(prompt)}%c%c ${str}`,
+          CSS_COLORS.Reset,
+          CSS_COLORS[resetName],
+          ...args
+        );
+      };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetDivText(id) {
+  const el = document.getElementById(id);
+  if (!el) throw Error(`GetDivText: element ${id} does not exist`);
+  const text = el.textContent;
+  if (text === undefined) {
+    console.log(`HTMLTextOut: element ${id} does not have textContent`);
+    return {};
+  }
+  el.style.whiteSpace = 'pre';
+  el.style.fontFamily = 'monospace';
+  return { element: el, text };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_HTMLTextJumpRow(row, lineBuffer, id) {
+  const { element, text } = m_GetDivText(id);
+  if (text === undefined) return lineBuffer;
+  // convert content to line buffer
+  if (lineBuffer.length === 0) {
+    console.log(`initializing linebuffer from element id='${id}'`);
+    lineBuffer = text.split('\n'); // creates a NEW array
+  }
+  // handle line underflow in buffer if row exceeds line buffer
+  if (row > lineBuffer.length - 1) {
+    const count = row + 1 - lineBuffer.length;
+    for (let i = count; i > 0; i--) lineBuffer.push('');
+  }
+  return lineBuffer;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_HTMLTextPrint(str = '', lineBuffer, id) {
+  const { element, text } = m_GetDivText(id);
+  if (!text) return lineBuffer;
+  // append text
+  lineBuffer.push(str);
+  element.textContent = lineBuffer.join('\n');
+  return lineBuffer;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Function to modify the text area of a passed HTML element. Always return
+ *  lineBuffer so we can reassign the reference, as the array often changes.
+ */
+function m_HTMLTextPlot(str = '', lineBuffer, id, row = 0, col = 0) {
+  const { element, text } = m_GetDivText(id);
+  if (!element) return lineBuffer;
+  if (text === undefined) {
+    console.log(`HTMLTextOut: element ${id} does not have textContent`);
+    return lineBuffer;
+  }
+  // ensure row exists
+  lineBuffer = m_HTMLTextJumpRow(row, lineBuffer, id);
+  // fetch line
+  let line = lineBuffer[row];
+  if (line === undefined) {
+    console.log(`HTMLTextOut: unexpected line error for line ${row}`);
+    return lineBuffer;
+  }
+  // handle column underflow in line if col exceeds line length
+  if (col + str.length > line.length + str.length) {
+    for (let i = 0; i < col + str.length - line.length; i++) line += ' ';
+  }
+  // insert str into line
+  let p1 = line.substr(0, col);
+  let p3 = line.substr(col + str.length, line.length - (col + str.length));
+  lineBuffer[row] = `${p1}${str}${p3}`;
+  // write buffer back out
+  element.textContent = lineBuffer.join('\n');
+  return lineBuffer;
+}
+
+/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a function that will prompt strings for you. The function will
  *  returns an array to destructure into console.log().
@@ -130,40 +265,58 @@ function padString(str, padding = DEFAULT_PADDING) {
  *
  *  NOTE: This doesn't work as expected on NodeJS, because empty arrays
  *  render as linefeeds so we just output it regardless. If you want to
- *  disable output, use the makeLogger() function instead.
+ *  disable output, use the makeTerminalOut() function instead.
  */
-function makeLogHelper(prompt, tagColor) {
-  const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
-  // return empty array if debugging disabled in browser
-  // or debugging is enabled but it's node (de morgan's law)
-  if (!(dbg || IS_NODE)) return () => [];
-  // return the appropriate array to deconstructr
-  const wrap = IS_NODE
-    ? (str, ...args) => {
-        return [`${color}${padString(prompt)}${reset} - ${str}`, ...args]; // server
-      }
-    : (str, ...args) => {
-        return [`%c${padString(prompt)}%c ${str}`, color, reset, ...args]; // browser
-      };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** allow modification of the PROMPT_DICT
+ */
+function makeStyleFormatter(prompt, tagColor) {
+  const outArray = m_MakeColorArray(prompt, tagColor);
+  if (outArray.length === 0) return () => [];
+  return (str, ...args) => [...outArray, str, ...args];
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return function to directly print to console instead of returning an array.
+ *  This works better for NodeJS since the empty [] still results in output
+ *  unlike the browser. Use makeStyleFormatter for browsers
+ */
+function makeTerminalOut(prompt, tagColor = DEFAULT_COLOR) {
+  const wrap = m_MakeColorPromptFunction(prompt, tagColor);
+  wrap.warn = m_MakeColorPromptFunction(prompt, 'TagGreen', 'Green');
+  wrap.error = m_MakeColorPromptFunction(prompt, 'TagRed', 'Red');
   return wrap;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Function to directly print to console instead of returning an array. This
- *  works better for NodeJS since the empty [] still results in output unlike
- *  the browser. Use makeLogHelper for browsers
+/** Return function to print a string, given a DIV id and optional row/column.
  */
-function makeLogger(prompt, tagColor) {
-  const [dbg, color, reset] = m_GetEnvColor(prompt, tagColor);
-  if (!dbg) return () => {};
-  const wrap = IS_NODE
-    ? (str, ...args) => {
-        console.log(`${color}${padString(prompt)}${reset} - ${str}`, ...args);
+function makeHTMLConsole(divId, row = 0, col = 0) {
+  let buffer = [];
+  if (typeof divId !== 'string') throw Error('bad id');
+  let hcon;
+  if (HTCONSOLES[divId]) {
+    hcon = HTCONSOLES[divId];
+  } else {
+    hcon = {
+      buffer: [],
+      plot: (str, y = row, x = col) => {
+        buffer = m_HTMLTextPlot(str, buffer, divId, y, x);
+      },
+      print: str => {
+        buffer = m_HTMLTextPrint(str, buffer, divId);
+      },
+      clear: (startRow = 0, endRow = buffer.length) => {
+        buffer.splice(startRow, endRow);
+      },
+      gotoRow: row => {
+        buffer = m_HTMLTextJumpRow(row, buffer, divId);
       }
-    : (str, ...args) => {
-        console.log(`%c${padString(prompt)}%c ${str}`, color, reset, ...args);
-      };
-  return wrap;
+    };
+    HTCONSOLES[divId] = hcon;
+  }
+  return hcon;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Print all Tag Colors
  */
@@ -178,7 +331,7 @@ function printTagColors() {
   colors.forEach(key => {
     const color = colortable[key];
     const items = IS_NODE
-      ? [`${padString(out)} - (node) ${color}${key}${reset}`]
+      ? [`${m_PadString(out)} - (node) ${color}${key}${reset}`]
       : [`(browser) %c${key}%c`, color, reset];
     console.log(...items);
   });
@@ -190,8 +343,10 @@ function printTagColors() {
 module.exports = {
   TERM: TERM_COLORS,
   CSS: CSS_COLORS,
-  padString,
-  makeLogHelper,
-  makeLogger,
-  printTagColors
+  m_PadString,
+  makeStyleFormatter,
+  makeTerminalOut,
+  makeHTMLConsole,
+  printTagColors,
+  m_SetPromptColors
 };

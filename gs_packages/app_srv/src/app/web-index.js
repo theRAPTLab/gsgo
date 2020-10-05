@@ -8,7 +8,7 @@
 /// These are loaded in init to make sure they are available globally!
 /// You do not need to copy these extensions to your own module files
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import System from './boot/SystemInit'; // MEME bootloader
+import System from './boot/SystemInit'; // URSYS bootloader
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

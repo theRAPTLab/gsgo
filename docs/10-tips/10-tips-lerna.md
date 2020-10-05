@@ -64,7 +64,13 @@ It also accepts [lerna filters](https://www.npmjs.com/package/@lerna/filter-opti
 > `npm add react-markdown --scope=gem_srv`
 > _note: this has to be executed at the TOP LEVEL of gsgs_
 
-## How do I add a reference one package from another?
+## How do I add a LOCAL UNPUBLISHED PACKAGE to another local package?
+```
+lerna add <package> <packages/otherpackage>
+```
+For example: `lerna add mypackage packages/ursys`
+
+## How do I add a REMOTE PACKAGE from NPM registry to another local package?
 
 If you want to add the new package as a dependency to other packages, use the `lerna add` command followed by `lerna bootstrap` from the root level of the monorepo.
 

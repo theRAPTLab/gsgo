@@ -11,8 +11,8 @@
 
 /// DEBUG  ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
-const PR = require('./util/prompts').makeLogHelper('SESS');
+const DBG = false;
+const PR = require('./util/prompts').makeStyleFormatter('UR.SES');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +36,7 @@ function InitializeNetProps(props: NetProps) {
   if (DBG) console.log(...PR('info - setting netprops'), props);
   const { broker } = props;
   NET_BROKER = broker;
-  console.log(...PR('session broker'), broker);
+  if (DBG) console.log(...PR('session broker'), broker);
 }
 function GetNetBroker() {
   return NET_BROKER;

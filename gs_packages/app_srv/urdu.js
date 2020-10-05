@@ -11,16 +11,31 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-const PR = 'URDU';
-
-/// LOAD BUILT-IN LIBRARIES ///////////////////////////////////////////////////
 const FS = require('fs');
 const PROCESS = require('process');
+const PATH = require('path');
+const shell = require('shelljs');
+const minimist = require('minimist');
+const URSERVER = require('@gemstep/ursys/server');
+const URPACK = require('./src/server-webpack');
 
-/// CHECK DEV DEPENDENCIES ////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = 'APPSRV-RUN';
+const TOUT = URSERVER.TermOut(PR);
+const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
+
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_WrapErrorText(str) {
+  return `\x1b[30;41m\x1b[37m ${str} \x1b[0m\n`;
+}
+
+/// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// CHECK NPM CI WAS RUN //////////////////////////////////////////////////////
 if (!FS.existsSync('./node_modules')) {
-  console.log(`\x1b[30;41m\x1b[37m ${PR} STARTUP ERROR \x1b[0m\n`);
+  console.log(m_WrapErrorText(`${PR} STARTUP ERROR`));
   let out = '';
   out += 'MISSING CRITICAL MODULE\n';
   out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
@@ -29,14 +44,6 @@ if (!FS.existsSync('./node_modules')) {
   console.log(out);
   PROCESS.exit(0);
 }
-
-/// LOAD EXTERNAL LIBRARIES ///////////////////////////////////////////////////
-const shell = require('shelljs');
-const minimist = require('minimist');
-
-/// LOAD SERVER MAIN MODULE ///////////////////////////////////////////////////
-const URSERV = require('./ursys/node/ursys-serve');
-
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
 if (!shell.which('git')) {
   shell.echo(
@@ -44,10 +51,7 @@ if (!shell.which('git')) {
   );
   shell.exit(0);
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// COMMAND DISPATCHER ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const argv = minimist(process.argv.slice(1));
 const cmd = argv._[1];
 
@@ -56,23 +60,47 @@ switch (cmd) {
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     RunDevServer();
     break;
+  case 'dev-skip':
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    RunDevServer({ skipWebCompile: true });
+
+    break;
   default:
     console.log('unknown command', cmd);
 }
 
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// RUN DEV ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RunDevServer() {
+function RunDevServer(opt) {
   // git branch information
   const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
   });
-  console.log(PR, 'Starting Development Server...');
-  if (error) console.log(PR, 'using repo <detached head>\n');
-  if (stdout) console.log(PR, `using repo '${stdout.trim()}' branch\n`);
+  TOUT('Starting Development Server...');
+  if (error) TOUT('using repo <detached head>\n');
+  if (stdout) TOUT(`using repo '${stdout.trim()}' branch\n`);
 
-  URSERV.Initialize({ apphost: 'devserver' });
-  URSERV.StartNetwork();
-  URSERV.StartWebServer();
+  // old ursys
+  // URSERV.Initialize({ apphost: 'devserver' });
+  // URSERV.StartNetwork();
+  // URSERV.StartWebServer();
+  const PORT = 2930;
+  // trap connection errors when there is port conflict
+  process.on('uncaughtException', err => {
+    if (err.errno === 'EADDRINUSE')
+      TOUT(m_WrapErrorText(`port ${PORT} is already in use. Aborting`));
+    else TOUT(err);
+    PROCESS.exit(0);
+  });
+
+  // run ursys
+  (async () => {
+    await URPACK.Start(opt);
+    await URSERVER.Initialize(opt);
+    await URSERVER.StartServer({
+      port: PORT,
+      serverName: 'APP_SRV',
+      runtimePath: RUNTIME_PATH
+    });
+  })();
 }

@@ -5,16 +5,20 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import dynamic from 'next/dynamic';
 import React, { useRef } from 'react';
 // left-side tabbed views
 import Home from '../page-tabs/Home';
 import ModelEdit from '../page-tabs/ModelEdit';
 import ModelRun from '../page-tabs/ModelRun';
+// import FakeTrack from '../page-tabs/FakeTrack';
 
 // ursys components
 import URSiteNav from '../page-blocks/URSiteNav';
 import URTabbedView from '../page-blocks/URTabbedView';
 import { URView, Row, CellFixed, TextView } from '../page-blocks/URLayout';
+
+const FakeTrack = dynamic(() => import('../page-tabs/FakeTrack'), { ssr: false });
 
 /// GLOBAL NOTES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,6 +56,7 @@ function Page() {
             <Home label="Home" />
             <ModelEdit label="Edit" />
             <ModelRun label="Run Model" />
+            <FakeTrack label="FakeTrack" />
           </URTabbedView>
         </CellFixed>
         {/* RIGHT SIDE */}
@@ -78,4 +83,4 @@ function Page() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default Page; // functional component
+export default dynamic(() => Promise.resolve(Page), { ssr: false });

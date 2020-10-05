@@ -4,7 +4,7 @@
       "path": "."
     },
     {
-      "path": "../../PUB/ursanode"
+      "path": "gs_packages/ursys"
     }
   ],
   "settings": {}

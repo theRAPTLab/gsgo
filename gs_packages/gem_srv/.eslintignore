@@ -1,2 +1,3 @@
 # don't lint anything in the docs_gem_srv directory
 docs_gem_srv/*
+tmp*

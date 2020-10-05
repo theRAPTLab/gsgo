@@ -10,6 +10,9 @@ const URChannel = require('./client-channel');
 const URNet = require('./client-network');
 const URExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
+const DBGTEST = require('./util/client-debug');
+
+const PR = PROMPTS.makeStyleFormatter('UR');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,32 +36,36 @@ const META = {
 const Events = {};
 const Extensions = {};
 const PubSub = {};
-const PR = PROMPTS.makeLogHelper('USYS');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const nc_sub = new URChannel('ursys-sub');
-const nc_pub = new URChannel('ursys-pub');
+const CHAN_LOCAL = new URChannel('ur-client');
+const CHAN_NET = new URChannel('ur-sender');
 let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** initialize modules that participate in UR EXEC PhaseMachine
+/** initialize modules that participate in UR EXEC PhaseMachine before running
+ *  SystemBoot, which starts the URSYS lifecycle.
  */
-async function SystemHookModules(initializers = []) {
+async function SystemStart() {
   if (URSYS_RUNNING) {
-    console.log(...PR('SystemModulesInit: URSYS already running!!!'));
+    console.log(...PR('SystemStart: URSYS already running!!!'));
     return Promise.reject();
   }
   // autoconnect to URSYS network during NET_CONNECT
-  URExec.HookModules(initializers).then(() => {
-    URExec.SystemHook(
-      'NET_CONNECT',
-      () =>
-        new Promise((resolvbe, reject) =>
-          URNet.Connect(nc_sub, { success: resolvbe, failure: reject })
-        )
-    );
+  PhaseMachine.QueueHookFor(
+    'UR',
+    'NET_CONNECT',
+    () =>
+      new Promise((resolve, reject) =>
+        URNet.Connect(CHAN_NET, { success: resolve, failure: reject })
+      )
+  );
+  // autoregister messages
+  PhaseMachine.QueueHookFor('UR', 'APP_CONFIGURE', async () => {
+    let result = await CHAN_LOCAL.RegisterSubscribers();
+    console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
   return Promise.resolve();
@@ -66,7 +73,7 @@ async function SystemHookModules(initializers = []) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize
  */
-async function SystemUnhookModules() {
+async function SystemStop() {
   if (!URSYS_RUNNING) {
     console.log(...PR('SystemModulesStop: URSYS is not running!!!'));
     return Promise.resolve();
@@ -79,28 +86,40 @@ async function SystemUnhookModules() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = {
+const UR = {
   ...META,
-  // SYSTEM PHASEMACHINE START/STOP
-  SystemHookModules,
-  SystemUnhookModules,
   // FORWARDED PUB/SUB
-  Subscribe: nc_sub.Subscribe,
-  Unsubscribe: nc_sub.Unsubscribe,
-  Publish: nc_pub.LocalPublish,
-  Signal: nc_pub.LocalSignal,
-  Call: nc_pub.LocalCall,
-  // FORWARDED UR EXEC PHASEMACHINE
+  Subscribe: CHAN_LOCAL.Subscribe,
+  NetSubscribe: CHAN_LOCAL.NetSubscribe,
+  Unsubscribe: CHAN_LOCAL.Unsubscribe,
+  Publish: CHAN_LOCAL.LocalPublish,
+  NetPublish: CHAN_LOCAL.NetPublish,
+  Signal: CHAN_LOCAL.LocalSignal,
+  NetSignal: CHAN_LOCAL.NetSignal,
+  Call: CHAN_LOCAL.LocalCall,
+  NetCall: CHAN_LOCAL.NetCall,
+  // FORWARDED GENERIC PHASE MACHINE
+  SystemHook: PhaseMachine.QueueHookFor,
+  // SYSTEM STARTUP
+  SystemStart,
+  SystemStop,
+  // FORWARDED SYSTEM CONTROL VIA UREXEC
   SystemBoot: URExec.SystemBoot,
-  SystemHook: URExec.SystemHook,
+  SystemConfig: URExec.SystemConfig,
   SystemRun: URExec.SystemRun,
   SystemRestage: URExec.SystemRestage,
   SystemReboot: URExec.SystemReboot,
   SystemUnload: URExec.SystemUnload,
-  // CONVENIENCE CLASS ACCESS
-  class: {
-    PhaseMachine
-  },
-  // CONVENIENCE MODULES ACCESS
-  util: { PROMPTS }
+  // FORWARDED PROMPT UTILITY
+  PrefixUtil: PROMPTS.makeStyleFormatter,
+  SetPromptColor: PROMPTS.setPromptColor,
+  HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
+  PrintTagColors: PROMPTS.printTagColors,
+  // FORWARDED CLASSES
+  class: { PhaseMachine },
+  // FORWARDED DEBUG UTILITY
+  AddConsoleTools: (ur = UR) => {
+    DBGTEST.AddConsoleTools(ur);
+  }
 };
+module.exports = UR;

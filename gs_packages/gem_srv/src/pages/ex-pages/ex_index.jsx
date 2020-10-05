@@ -6,9 +6,9 @@
 
 import React from 'react';
 // ursys components
-import URSiteNav from '../page-blocks/URSiteNav';
-import URTabbedView from '../page-blocks/URTabbedView';
-import { URView, Row, CellFixed, Cell } from '../page-blocks/URLayout';
+import URSiteNav from '../../page-blocks/URSiteNav';
+import URTabbedView from '../../page-blocks/URTabbedView';
+import { URView, Row, CellFixed, Cell } from '../../page-blocks/URLayout';
 
 /// MAIN COMPONENT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
