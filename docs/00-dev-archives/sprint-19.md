@@ -299,7 +299,7 @@ In the meantime, thinking about this architecture in the rendering with the abov
 
 * [ ] port of `test-renderer` into the runtime
   * [x] `HookResize()` in the debounced window resize
-  * [ ] **sim_agents** calls **test-agents** `TestAgentUpdate()` which just calls **SMC programs**
+  * [ ] **sim_agents** calls **test-agents** `TestAgentUpdate()` which just calls **SMprograms**
   * [ ] the actual agent updates are done in **sim_render** by didling the agent instances directly. We should move this to Agents Update, and separate the different sprite pools.
   * [ ] Maybe Sprites needs to maintain the big list itself. 
   * [ ] There are multiple channels of display object and now control objects (for input events from PTrack and FakeTrack, buttons, etc). Do they get their own display object channel too?
@@ -334,7 +334,7 @@ Does it work? Still not seeing agents OR the old bunny. Too much weird test code
 *  is renderer.Render() being called? Yes
 *  is renderer.UpdateModelList() being called? Yes
    *  who's calling it? test-display-list
-   *  are dobjs passed? yes, from AGENT_TO_DOBJ_UPDATE.getSyncedObjects()
+   *  are dobjs passed? yes, from AGENT_TO_DOBJ_UPDATE.getMappedObjects()
    *  the AgentList that's retrieved may not actually do something
 *  ended up being the wrong reference, because in test code they create their own dictionaries
 *  [x] in renderer, hacked in temporary sprite updater
@@ -414,7 +414,7 @@ All that was so I could specify a default sprite for the Sprite class, so I can 
 * AGENT_DOBJ defined, calls `agent.skin()`, which is a property that was set at Agent creation time
 * Agents are created in `agent-functions` 
 * **`sim-agents`** function `AgentUpdate()`  creates the DOBJ list and ships it to RENDERER
-* RENDERER manages the sprite pool for demo purposes in `RP_MODEL_SPR.setObjectHandlers()` 
+* RENDERER manages the sprite pool for demo purposes in `RP_MODEL_SPR.setMapFunctions()` 
 
 So at this point, we have a working minimum sprite engine that's reading from a display list and syncing the display list to sprites. We also have a fully async loader class that can be instanced into multiple pools. Pretty clean so far.
 

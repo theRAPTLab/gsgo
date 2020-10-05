@@ -83,7 +83,7 @@ This code just runs because it hooks early into the UR phase machine. We want to
 
 **OOPS** there actually isn't a sample update SMC script in the Test Agent Template yet, because there was no way to see anything happen until now. So our NEXT STEP for WEDNESDAY is
 
-* [x] write an agent jitter SMC program function in `script/cmds/basic-cmds`
+* [x] write an agent jitter SMprogram function in `script/cmds/basic-cmds`
 * [x] make sure agent update is firing from `sim-agents` (calls `TestAgentUpdate()`)
 * [ ] `TestAgentUpdate()` is calling `AGENTS_EXEC()` on each agent, but there is nothing queued in it yet.
 * [x] Instead, force test by getting the `test_smc_update` program and shoving them into the `StackMachine.EXECSMC(program,agent)` interface
