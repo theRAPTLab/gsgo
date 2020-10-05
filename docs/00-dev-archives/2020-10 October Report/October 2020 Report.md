@@ -45,7 +45,7 @@ Here's an outline of the technology pieces we discuss:
 
 ### GEM-STEP Renderer (September 2020)
 
-The first version of STEP (2014) was designed to run on a single powerful laptop running a web application. Feature extensions through subsequent STEP, PLAE, and iSTEP grants required an extension of the original system so we could handle multiple devices. The system started to strain under the load of video. For GEM-STEP, we believed that a fundamental system redesign was needed so we could manage a large constellation of different devices. One of the major components to  to redesign the system to distribute the visual display of simulation agents to other hosts on the network, which directly affects the design of **Renderer**. 
+The first version of STEP (2014) was designed to run on a single powerful laptop running a web application. Feature extensions through subsequent STEP, PLAE, and iSTEP grants required an extension of the original system so we could handle multiple devices. The system started to strain under the load of video. For GEM-STEP, we believed that a fundamental system redesign was needed so we could manage a larger constellation of interconnected devices.
 
 The basic concept of the Renderer is to process batches of agents and draw a visual representation on the screen based on their property settings. The three common properties of agents are **position** and **skin**, which is also the minimum information we need to render agents. This minimum information is packaged into a lightweight **DisplayObject**, which is the bridge between data-heavy **Agent** instances to the equally resource-intensive **VisualObject** instances that know how to draw themselves in our simulation world. 
 
@@ -145,7 +145,7 @@ Each new Agent is thus imbued with four distinct kinds of **scripted program**:
    * A **Test Program**, returning TRUE or FALSE
    * An **Effect Program** conditionally executed on TRUE or FALSE result from the preceding Test Program(s)
 
-Note: These programs are implemented internally not as GEMscript syntax, but are expressed in what we call **stack machine code** (aka SMC). More on that alter!
+Note: These programs are implemented internally not as GEMscript syntax, but are expressed in what we call **stack machine code** (aka SMC). More on that later!
 
 #### Handling Conditional Execution
 
@@ -236,7 +236,7 @@ The actual `SMoperation` implementation looks like this:
 
 ``` typescript
 // EXECUTABLE OPCODE EXAMPLE
-const add = (agent: IAgent, STATE: IState): TOpWait => {
+const add = (agent, STATE) => {
   const [a, b] = STATE.popArgs(2);
   STATE.pushArgs((a as number) + (b as number));
 };
@@ -263,7 +263,7 @@ const smc_add = () => {
 };
 ```
 
-The `add` function returns an anonymous function every time it is called. This is how we "compile" our opcodes directly into executable Javascript without going through a parser stage.We do require that the GEMscript UI will be able to call the appropriate opcode generators in-order to generate the program. 
+The `add` function returns an anonymous function every time it is called. This is how we "compile" our opcodes directly into executable Javascript without going through a parsing stage. We do require that the GEMscript UI is able to call the appropriate opcode generators to generate the program to make them work together, and that will be a challenge in its own right.
 
 As an example of program generation, here is a block of generated code, using 4 opcodes: 
 
@@ -301,7 +301,7 @@ This program just adds 1 and 2 and stores the value on the stack, which isn't ve
 ]
 ```
 
-ASIDE: There is a non-obvious Javascript thing happening: the variable assignment for `gv`, `num`, and `desc` are not visible in the code, but their passed values were captured at the time the opcode generator was run due to **closures**. This is the feature that allows us to write opcode generators that can take "immediate values". This is pretty common in Javascript but it is one of the trickier things to understand.
+ASIDE: There is a non-obvious Javascript thing happening: the variable assignment for `gv`, `num`, and `desc` are not visible in the code, but their passed values were captured at the time the opcode generator because of the **closures** language feature. We rely on this to write opcode generators that can take "immediate values" as in the opcode generator like `smc_PushValue(12)`. 
 
 To review the above relationships, here is another example:
 
@@ -339,19 +339,22 @@ agentArray.forEach( agent => {
 }
 ```
 
-The `SMC.Execute()` function declares a STATE object (containing a data stack, a scope stack, and a conditions register) and just calls every function in the program array. It looks something like this:
+The `Agent.execute()` method declares an empty STATE object (containing a data stack, a scope stack, and a conditions register) and just calls every function in the program array. It looks something like this:
 
 ``` typescript
 // SIMPLIFIED EXECUTION LOOP INTERNALS
 
 class Agent {
   ...
-  execute( programArray ) {  
+  execute( programArray, ...args ) {  
     const state = new SM_State( stack=[] );
-    program.forEach( op => op(this, state) )
+    state.stack.push([...args]);
+    program.forEach( op => op(this, state) );
+    return state;
   }
 }
 ```
+NOTE: To pass parameters to the program, you can pass additional parameters that are available on the stack when the program begins. If external Javascript needs to retrieve a return value, the `state` object is returned to pull results from the stack.
 
 ##### Expanding the Opcode Systems
 
@@ -369,9 +372,10 @@ function cmd_MyFancyCommand( names, places ) {
   // do any pre-calculations here and declare values you 
   // want bound to the generated opcode
   return (agent, stack) => {
-     // mutate the agent and stack as needed
-    // use any precalculated values here that will be bound
-    // through the magic of closures
+    // your code here!
+    // .. mutate the agent and stack as needed
+    // .. use any precalculated values here that will be bound
+    //    through the magic of closures
   }
 }
 ```
@@ -448,7 +452,7 @@ Other modules can attach to the same hook and they will be called. We can write 
 There are several other advantages to this approach:
 
 * You can see the entire map and order of execution in one place, which is great for reasoning about the system and enforcing order-of-execution.
-* It is easy to search the codebase for a specific implementor of a hook, since they are standardized strings. They mark exactly where code execution begins, which is not so easy with hardcoded function names.
+* It is easy to search the codebase for a specific implementor of a hook, since they are standardized strings. They mark exactly where code execution begins, which is not so easy with hard-coded function names.
 * Any module can tap-into the phase map *without having to reference another module*, eliminating some of the circular-dependency issues our earlier code faced even with careful dependency planning. 
 
 Here's a simplified example of a phase map definition using the PhaseMachine class.
@@ -555,7 +559,7 @@ Currently, URSYS-based systems have to be hosted by a central "message broker" t
 
 ## Next Tasks
 
-With the alpha deliveries of the Framework, the Simulation Script Engine, and the Renderer, we have most of the infrastructure to get to hands-up iteration. However, there are several major engineering sasks that are on our docket, roughly in the order we need to do them. They are all potentially lengthy and complexly interrelated tasks: 
+With the alpha deliveries of the Framework, the Simulation Script Engine, and the Renderer, we have most of the infrastructure to get to hands-up iteration. However, there are several major engineering tasks in our docket. They are all potentially complex time-consuming tasks: 
 
 #### GEMSTEP SYSTEM FEATURES
 
@@ -564,7 +568,7 @@ These are the next big systems on the immediate horizon. There is quite a lot of
 * **Review/Refinement of the Core Experience** - We see a lot of time coming up refining the model and improving the experience once you get your hands on it. While the bones of the system are in place, there are many details to suss out.
 * **Annotation Streaming, Run Capture, Run Saving and Restore, Asset Management** - The next phase of system design requires implementation of all these features. They're essential to the modeling experience.
 * **User Management and Administration** - We have quite a bit of past work to draw from, and we have a newer webapp framework that should be nice to work with. This task is what informs our Database design, as does the day-to-day workflow of students and teachers. 
-* **Database / Database Server Design** - While we have database code from previous projects, but the requirements of GEMstep mean we will have to redo a lot of it from scratch. There are a lot of kinds of data and many different groups and roles. 
+* **Database / Database Server Design** - While we have database code from previous projects, the requirements of GEM-STEP are more complex and we will have to spend time to redo a lot of it. 
 
 #### GEMSTEP INFRASTRUCTURE SUPPORT NEEDS
 
@@ -572,7 +576,7 @@ These tasks flesh out the larger scope of GEM-STEP operations for handling inter
 
 * **URSYS Device Addressing and Role Manager** - URSYS allows servers and devices to talk to each other seamlessly, but currently doesn't have the means to handle multiple logical groups of devices in an intuitive way. 
 * **Internet Support over WAN** - With COVID19, we are looking at how to support remote learning outside of the classroom network. This is potentially time consuming because of having to be concerned about increased latency and also security/privacy concerns. We are not experts in network security and may need to farm this out.
-* **WebRTC Video, Video Storage, and Synchronization with other Datastreams** - Running video reliably over the network is hard enough; we also need to support "scrubbing" of simulation runs and try to synchronize video with it. The approach we tried last time didn't work well, so we will have to look into ways of improving the experience. We have some ideas, buit this is expected to be very difficult if not impossible task. To our knowledge, there are NO realtime video scrubbing systems that work over the Internet inside a browser. 
+* **WebRTC Video, Video Storage, and Synchronization with other Datastreams** - Running video reliably over the network is hard enough; we also need to support "scrubbing" of simulation runs and try to synchronize video with it. The approach we tried last time didn't work well, so we will have to look into ways of improving the experience. We have some ideas, but may be a very difficult if not impossible task. Some things are just slow, and jumping around video streamed over a network is one of them. To our knowledge, there are NO realtime video scrubbing systems that work over the Internet inside a browser. 
 * **Mobile Device Support** - We again will be supporting two kinds of devices: (1) the "simulation server" for each group with a larger screen/more powerful processor, and (2) connected iPads with touch support to create Annotations and FakeTrack-style input into the modeling environment. We have had difficulties in the past with iPad performance with web video, which had made necessary the need for a custom app IOS app that sorta worked. IOS development is not our strong suit, so it will be a challenge to meet these needs without losing too much momentum. 
 
 If you got all the way down here, thanks for reading! :-)
