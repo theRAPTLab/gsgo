@@ -49,7 +49,9 @@ const NavItem = props => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
 class Home extends React.Component {
-  componentDidMount() {}
+  componentDidMount() {
+    document.title = 'GEMSTEP';
+  }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
