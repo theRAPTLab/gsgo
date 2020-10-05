@@ -6,7 +6,7 @@ For context, here are the highlights of GEM-STEP development to date:
 
 1. Made a **Development Environment for Managing Multiple Related Codebases**. With the number of independent servers and web application codebases, this was critical to make sure all related code was in one repository. 
 2. Extracted **Relevant Code from STEP/PLAE projects** to merge into our current development stack. Most notably this is the **PTrack** module.
-3. Built the **Admin Webapp Framework with NextJS**. This wraps our favored web technologies into a clean prototype building framework. To date it has been more useful for wireframing screen flow concepts, but when we start writing the admnin interfaces it will be an improvement over our old system. 
+3. Built the **Admin Web-app Framework with NextJS**. This wraps our favored web technologies into a clean prototype building framework. To date it has been more useful for wireframing screen flow concepts, but when we start writing the admnin interfaces it will be an improvement over our old system. 
 4. Made the **GEMscript Scriptable Simulation Engine** from the researcher specifications, further resolving details until we could implement. It's a stand-alone module that can exist in multiple code environments. 
 
 In August 2020 we had a working Scriptable Simulation engine, but did not have a way to actually see what it was doing or modify scripts outside the development environment. These are necessary for the research team to evaluate the scripting engine in a tangible way. To expedite the process, we started two parallel tracks of development: 
@@ -35,7 +35,7 @@ Here's an outline of the technology pieces we discuss:
   * GEMscript Program Design
   * Handling Conditional Execution
   * Stack Machine Code Model
-    * SMC Opoerations
+    * SMC Operations
     * SMprogram Generation
     * SMprogram Execution
     * Expanding the Opcode System
@@ -159,7 +159,7 @@ when prop x greaterThan prop xMax
 // interaction 2
 when Bee touches Flower insideRadius 10
     Bee.nectar get Flower.nectar
-	  Flower.pollen give Bee.pollen
+    Flower.pollen give Bee.pollen
 
 // interaction 3
 onFrame 
@@ -172,7 +172,7 @@ onFrame
 when TimerA expires
     Bees explode
     Flowers explode
- 	  TimerA reset
+     TimerA reset
 
 // interaction 5
 // stacked filters producing set of matching Bees
@@ -295,7 +295,7 @@ This program just adds 1 and 2 and stores the value on the stack, which isn't ve
     STATE.pushArgs(a+b);
   },
   (agent, state) => {			// debug print
-		const { stack } = STATE;
+    const { stack } = STATE;
     u_dump(num, stack, desc);	// num, desc are bound from generator
   }
 ]
@@ -346,9 +346,9 @@ The `SMC.Execute()` function declares a STATE object (containing a data stack, a
 
 class Agent {
   ...
-	execute( programArray ) {  
-		const state = new SM_State( stack=[] );
-		program.forEach( op => op(this, state) )
+  execute( programArray ) {  
+    const state = new SM_State( stack=[] );
+    program.forEach( op => op(this, state) )
   }
 }
 ```
@@ -369,10 +369,10 @@ function cmd_MyFancyCommand( names, places ) {
   // do any pre-calculations here and declare values you 
   // want bound to the generated opcode
   return (agent, stack) => {
- 		// mutate the agent and stack as needed
+     // mutate the agent and stack as needed
     // use any precalculated values here that will be bound
     // through the magic of closures
-	}
+  }
 }
 ```
 
