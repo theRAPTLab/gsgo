@@ -419,9 +419,9 @@ function DoGameLoop( intervalMs ) {
     PHYSICS.Update( intervalMs );
     LOGIC.Update( intervalMs );
     AGENTS.Think( intervalMs );
-  	AGENTS.Execute( intervalMs );
-		REFEREE.Evaluate( intervalMs );
-  	RENDERER.Render( intervalMs );
+    AGENTS.Execute( intervalMs );
+    REFEREE.Evaluate( intervalMs );
+    RENDERER.Render( intervalMs );
     GUI.Render( intervalMs );
 }
 ```
