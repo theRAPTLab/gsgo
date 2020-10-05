@@ -28,7 +28,7 @@ const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
   autoGrow: true
 });
 
-DOBJ_SYNC_AGENT.setObjectHandlers({
+DOBJ_SYNC_AGENT.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x();
     dobj.y = agent.y();
@@ -103,8 +103,8 @@ function AgentUpdate(frameTime) {
   //
   const agents = AGENTS_GetArrayAll();
   DOBJ_SYNC_AGENT.syncFromArray(agents);
-  DOBJ_SYNC_AGENT.processSyncedObjects();
-  const dobjs = DOBJ_SYNC_AGENT.getSyncedObjects();
+  DOBJ_SYNC_AGENT.mapObjects();
+  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
   FCON.plot(`GENERATOR created ${dobjs.length} DOBJs from Agents`, 0);
   FCON.plot(`NET:DISPLAY_LIST message sent ${dobjs.length} DOBJs`, 3);

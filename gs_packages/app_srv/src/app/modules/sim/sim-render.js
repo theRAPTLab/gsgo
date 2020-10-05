@@ -26,7 +26,7 @@ const MAPPED_VISUALS = new SyncMap('DOBJ-TO-VOBJ', {
  *  individual updates
  */
 function m_Initialize() {
-  MAPPED_VISUALS.setObjectHandlers({
+  MAPPED_VISUALS.setMapFunctions({
     onAdd: (dobj, vobj) => {
       vobj.setPosition(dobj.x, dobj.y);
       vobj.setSkin(dobj.skin());

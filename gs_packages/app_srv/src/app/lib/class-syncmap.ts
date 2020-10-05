@@ -10,12 +10,12 @@
   USAGE:
 
   const PTracker = new SyncMap('note',{ Constructor: DisplayObject });
-  PTracker.setObjectHandlers({ onAdd, onUpdate, shouldRemove, onRemove });
+  PTracker.setMapFunctions({ onAdd, onUpdate, shouldRemove, onRemove });
 
   const entities = INPUT.GetEntities(); // returns array
   PTracker.syncFromArray(entities); // alternative: syncFromMap()
 
-  const derived = PTracker.getSyncedObjects();
+  const derived = PTracker.getMappedObjects();
 
   NOTE: When
 
@@ -25,7 +25,7 @@ import UR from '@gemstep/ursys/client';
 import Pool, { IPoolable, IPoolOptions } from './class-pool';
 import { ISyncResults } from './t-pool';
 import MappedPool, {
-  SyncFunctions,
+  MapFunctions,
   TestFunction,
   AddFunction,
   UpdateFunction,
@@ -76,30 +76,30 @@ class SyncMap {
    *  if necessary. Null handlers that don't do anything are provided by
    *  default.
    */
-  setObjectHandlers(config: SyncFunctions) {
-    this.map.setObjectHandlers(config);
+  setMapFunctions(config: MapFunctions) {
+    this.map.setMapFunctions(config);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Callback receives (sobj, dobj) for initializing and copying props
    *  to new dobj */
   onAdd(onAdd: AddFunction) {
-    this.map.setObjectHandlers({ onAdd });
+    this.map.setMapFunctions({ onAdd });
   }
   /** Callback receives (sobj, dobj) for copying props to dobj*/
   onUpdate(onUpdate: UpdateFunction) {
-    this.map.setObjectHandlers({ onUpdate });
+    this.map.setMapFunctions({ onUpdate });
   }
   /** Callback receives (dobj) and returns true if it should be removed.
    *  This can be used to prevent derived objects from being removed immediately
    */
   shouldRemove(shouldRemove: TestFunction) {
-    this.map.setObjectHandlers({ shouldRemove });
+    this.map.setMapFunctions({ shouldRemove });
   }
   /** Callback receives (dobj) for cleaning up anything that might have to
    *  happen (Sprites deallocating textures, etc)
    */
   onRemove(onRemove: RemoveFunction) {
-    this.map.setObjectHandlers({ onRemove });
+    this.map.setMapFunctions({ onRemove });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Updates derived objects from source objects in map
@@ -124,32 +124,32 @@ class SyncMap {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute add, update, remove functions for the objects that were
-   *  synced through syncFromMap() or syncFromArray()
+   *  differenced through syncFromMap() or syncFromArray()
    */
-  processSyncedObjects() {
-    return this.map.processSyncedObjects();
+  mapObjects() {
+    return this.map.mapObjects();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return all the objects that are in use, which are stored in pool
    *  that was passed to the mapped pool.
    */
-  getSyncedObjects(): IPoolable[] {
+  getMappedObjects(): IPoolable[] {
     return this.pool.getAllocated();
   }
-  getSyncedObject(objId: number): IPoolable {
+  getMappedObject(objId: number): IPoolable {
     return this.pool.get(objId);
   }
-  clearSyncedObjects(): void {
+  clearMappedObjects(): void {
     this.pool.reset();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** ObjectId-based access. Note that this refers the original source key,
-   *  which is mirrored in the synced objects
+   *  which is mirrored in the mapped objects
    */
-  getSyncedIds(): number[] {
+  getMappedIds(): number[] {
     return this.pool.getAllocatedIds();
   }
-  hasSyncedId(objId: number): boolean {
+  hasMappedId(objId: number): boolean {
     return this.pool.has(objId);
   }
 }

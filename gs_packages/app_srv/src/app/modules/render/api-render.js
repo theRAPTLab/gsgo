@@ -64,7 +64,7 @@ function Init(element) {
   });
 
   // object handlers for 1-D2V
-  RP_DOBJ_TO_VOBJ.setObjectHandlers({
+  RP_DOBJ_TO_VOBJ.setMapFunctions({
     onAdd: (dobj, vobj) => {
       // copy parameters
       vobj.setPosition(dobj.x, dobj.y);
@@ -92,21 +92,21 @@ function Init(element) {
     onRemove: () => {}
   });
 
-  // RP_DOBJ_TO_VOBJ.setObjectHandlers()
+  // RP_DOBJ_TO_VOBJ.setMapFunctions()
 
   // map ptrack markers
   RP_PTRAK_TO_VOBJ = new SyncMap('2-PTK', {
     Constructor: Visual,
     autoGrow: true
   });
-  // RP_PTRAK_TO_VOBJ.setObjectHandlers()
+  // RP_PTRAK_TO_VOBJ.setMapFunctions()
 
   // map student input controls
   RP_ANNOT_TO_VOBJ = new SyncMap('3-ANO', {
     Constructor: Visual,
     autoGrow: true
   });
-  // RP_ANNOT_TO_VOBJ.setObjectHandlers()
+  // RP_ANNOT_TO_VOBJ.setMapFunctions()
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HookResize(element) {
@@ -152,15 +152,15 @@ function UpdateAnnotationList(dobjs) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetDisplayList() {
   // TODO: expand this to return all display objects from all render passes
-  return RP_DOBJ_TO_VOBJ.getSyncedObjects(); // array of display objects
+  return RP_DOBJ_TO_VOBJ.getMappedObjects(); // array of display objects
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
 function Render() {
-  RP_DOBJ_TO_VOBJ.processSyncedObjects();
-  // RP_PTRAK_TO_VOBJ.processSyncedObjects();
-  // RP_PTRAK_TO_VOBJ.processSyncedObjects();
-  const synced = RP_DOBJ_TO_VOBJ.getSyncedObjects();
+  RP_DOBJ_TO_VOBJ.mapObjects();
+  // RP_PTRAK_TO_VOBJ.mapObjects();
+  // RP_PTRAK_TO_VOBJ.mapObjects();
+  const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
   HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
 }
 

@@ -32,7 +32,7 @@ const DISPLAY_LIST = new SyncMap('DOB-SPR', {
   autoGrow: true
 });
 //
-DISPLAY_LIST.setObjectHandlers({
+DISPLAY_LIST.setMapFunctions({
   onAdd: (dobj, spr) => {
     spr.add(root);
     if (++num > 5) num = 1;

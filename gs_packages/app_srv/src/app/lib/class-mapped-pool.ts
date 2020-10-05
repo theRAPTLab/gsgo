@@ -18,7 +18,7 @@ export type AddFunction = (srcObj: IPoolable, newObj: IPoolable) => void;
 export type UpdateFunction = (srcObj: IPoolable, updateObj: IPoolable) => void;
 export type RemoveFunction = (removeObj: IPoolable) => void;
 
-export interface SyncFunctions {
+export interface MapFunctions {
   onAdd?: AddFunction;
   onUpdate?: UpdateFunction;
   shouldRemove?: TestFunction;
@@ -27,7 +27,7 @@ export interface SyncFunctions {
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_CheckConf(config: SyncFunctions) {
+function m_CheckConf(config: MapFunctions) {
   if (typeof config !== 'object') throw Error('arg1 is not config object');
   if (typeof config.onAdd !== 'function') throw Error('config missing onAdd');
   if (typeof config.onUpdate !== 'function')
@@ -68,9 +68,9 @@ export default class MappedPool {
   pool: Pool;
   deltas: ISyncResults;
 
-  constructor(pool: Pool, conf: SyncFunctions) {
+  constructor(pool: Pool, conf: MapFunctions) {
     // ensure that constructor has full complement of functions
-    this.setObjectHandlers(m_CheckConf(conf));
+    this.setMapFunctions(m_CheckConf(conf));
     this.pool = pool;
     // clear the pool just in case
     if (this.pool.allocatedCount() > 0) {
@@ -79,8 +79,8 @@ export default class MappedPool {
     }
   }
 
-  setObjectHandlers(conf: SyncFunctions) {
-    // we allow partial updates to SyncFunctions
+  setMapFunctions(conf: MapFunctions) {
+    // we allow partial updates to MapFunctions
     const { onAdd, onUpdate, onRemove, shouldRemove } = conf;
     if (typeof onAdd === 'function') this.cbAdder = onAdd;
     if (typeof onUpdate === 'function') this.cbUpdater = onUpdate;
@@ -133,7 +133,7 @@ export default class MappedPool {
     return this.deltas;
   }
 
-  processSyncedObjects() {
+  mapObjects() {
     if (!this.deltas) return;
     const { updated, added, removed } = this.deltas;
     // process all through the appropriate function
@@ -152,7 +152,7 @@ export default class MappedPool {
     this.deltas = undefined;
   }
 
-  getSyncedObjects() {
+  getMappedObjects() {
     return this.pool.getAllocated();
   }
 }

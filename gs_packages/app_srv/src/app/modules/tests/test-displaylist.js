@@ -156,7 +156,7 @@ function TestDisplayList() {
   console.assert(TestArrayEntities(agents), 'entities do not pass test');
 
   AGENT_TO_DOBJ.syncFromArray(agents);
-  const dobjs = AGENT_TO_DOBJ.getSyncedObjects();
+  const dobjs = AGENT_TO_DOBJ.getMappedObjects();
 
   console.log('agents', agents);
   console.log('display objects', dobjs);
@@ -201,11 +201,11 @@ function TestUpdateDisplayList(frameTime) {
     agent.prop('y').value = y;
   });
   AGENT_TO_DOBJ_UPDATE.syncFromArray(agents);
-  AGENT_TO_DOBJ_UPDATE.processSyncedObjects();
+  AGENT_TO_DOBJ_UPDATE.mapObjects();
   // test single object updates
   // const dobj = DOBJ_POOL.get(510);
   // console.log('dobj x,y=', dobj.x, dobj.y);
-  const displayList = AGENT_TO_DOBJ_UPDATE.getSyncedObjects();
+  const displayList = AGENT_TO_DOBJ_UPDATE.getMappedObjects();
   // console.log(...PR('Update List'));
   UpdateDisplayList(displayList);
 }
