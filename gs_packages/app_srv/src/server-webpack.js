@@ -130,18 +130,21 @@ function Start(opt = {}) {
     next();
   });
 
-  // set the templating engine
-  app.set('view engine', 'ejs');
-
-  // handle special case for root url to serve our ejs template
+  // handle special case for root url to serve our HTML file directly
+  // if using templating engine, do this instead:
+  // app.set('view engine', 'ejs');
+  // app.get('/', (req, res) => {
+  //   // index.ejs file
+  //   res.render(`${DIR_OUT}/index`);
+  // });
   app.get('/', (req, res) => {
-    res.render(`${DIR_OUT}/index`);
+    res.sendFile(`${DIR_OUT}/index.html`);
   });
   app.get('/app', (req, res) => {
-    res.render(`${DIR_OUT}/index`);
+    res.sendFile(`${DIR_OUT}/index.html`);
   });
   app.get('/app/*', (req, res) => {
-    res.render(`${DIR_OUT}/index`);
+    res.sendFile(`${DIR_OUT}/index.html`);
   });
 
   // handle urnet
