@@ -2,7 +2,6 @@
 import React from 'react';
 // URSYS
 import UR from '@gemstep/ursys/client';
-import * as SIM from '../modules/sim/api-sim';
 // XGUI
 import APP from './app-logic';
 import AppHome from './components/AppHome';
@@ -19,19 +18,6 @@ import './compiled-scss.css';
 UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
   console.log('got displaylist', remoteList.length);
 });
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
-  'UR',
-  'LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      (async () => {
-        SIM.StartSimulation();
-      })();
-      resolve();
-    })
-);
 
 class App extends React.Component {
   constructor() {

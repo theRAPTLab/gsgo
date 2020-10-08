@@ -9,7 +9,7 @@ import * as DATACORE from 'app/modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as SIM from '../modules/sim/api-sim';
 // XGUI
-import APP from './app-logic';
+import APPLOGIC from './app-logic';
 import AppHome from './components/AppHome';
 import AppEdit from './components/AppEdit';
 import AppRun from './components/AppRun';
@@ -19,6 +19,7 @@ import { TAB } from './constants';
 import DISPATCHER from './dispatcher';
 //
 import ModelPanel from './components/panels/ModelPanel';
+import InstancesPanel from './components/panels/InstancesPanel';
 import './compiled-scss.css';
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
@@ -52,14 +53,14 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = {
-      isLoggedIn: APP.GetLogin(),
+      isLoggedIn: APPLOGIC.GetLogin(),
       selectedAppTab: TAB.HOME,
       selectedModelId: undefined
     };
     this.OnLogin = this.OnLogin.bind(this);
     this.OnTabClick = this.OnTabClick.bind(this);
     // REGISTER as a Listener
-    APP.Subscribe(this);
+    APPLOGIC.Subscribe(this);
   }
 
   componentDidMount() {
@@ -69,7 +70,10 @@ class App extends React.Component {
   }
 
   HandleDATAUpdate(data) {
-    this.forceUpdate();
+    // this.forceUpdate();
+    this.setState({
+      instances: data.INSTANCES
+    });
   }
 
   HandleUIUpdate(data) {
@@ -82,7 +86,7 @@ class App extends React.Component {
 
   OnLogin() {
     this.setState({ isLoggedIn: true });
-    APP.SetLogin();
+    APPLOGIC.SetLogin();
   }
 
   OnTabClick(e) {
@@ -95,13 +99,13 @@ class App extends React.Component {
   }
 
   componentWillUnmount() {
-    APP.Unsubscribe(this);
+    APPLOGIC.Unsubscribe(this);
   }
 
   render() {
-    const { isLoggedIn, selectedAppTab, selectedModelId } = this.state;
+    const { instances, isLoggedIn, selectedAppTab, selectedModelId } = this.state;
     const { name } = this.props;
-    const modelName = APP.GetModelName();
+    const modelName = APPLOGIC.GetModelName();
     /*
        EDIT, RUN, and COLLABORATE should be hidden
        until the user selects a model.
@@ -110,9 +114,11 @@ class App extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>
+          <span style={{ fontSize: '32px' }}>XGUI AppTwo</span>
         </div>
-        <div id="console-left" className={clsx(classes.cell, classes.left)} />
+        <div id="console-left" className={clsx(classes.cell, classes.left)}>
+          <InstancesPanel agents={instances} viewOnly />
+        </div>
         <ModelPanel />
         <div id="console-right" className={clsx(classes.cell, classes.right)} />
         <div id="console-bottom" className={clsx(classes.cell, classes.bottom)} />
