@@ -1,4 +1,5 @@
 /* eslint-disable react/sort-comp */
+import UR from '@gemstep/ursys';
 import React from 'react';
 import AppHome from './components/AppHome';
 import AppEdit from './components/AppEdit';
@@ -9,6 +10,12 @@ import APP from './app-logic';
 import { TAB } from './constants';
 import DISPATCHER from './dispatcher';
 import './compiled-scss.css';
+
+/// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
+  console.log('got displaylist', remoteList.length);
+});
 
 class App extends React.Component {
   constructor() {
@@ -22,6 +29,11 @@ class App extends React.Component {
     this.OnTabClick = this.OnTabClick.bind(this);
     // REGISTER as a Listener
     APP.Subscribe(this);
+  }
+
+  componentDidMount() {
+    // required URSYS lifecycle startup
+    UR.SystemConfig({ autoRun: true }); // initialize renderer
   }
 
   HandleDATAUpdate(data) {
