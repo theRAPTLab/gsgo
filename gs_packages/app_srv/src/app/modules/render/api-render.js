@@ -55,7 +55,7 @@ function Init(element) {
   PIXI_DIV.appendChild(PIXI_APP.view);
   PIXI_APP.renderer.autoResize = true;
   // XGUI PROBLEM: Can't get accurate width/height
-  // PIXI_APP.renderer.resize(PIXI_DIV.offsetWidth, PIXI_DIV.offsetHeight);
+  PIXI_APP.renderer.resize(PIXI_DIV.offsetWidth, PIXI_DIV.offsetHeight);
   console.log(...PR('check dim', PIXI_DIV.width));
   // end XGUI problem
 

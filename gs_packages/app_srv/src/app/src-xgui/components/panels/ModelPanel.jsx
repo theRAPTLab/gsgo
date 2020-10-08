@@ -8,32 +8,14 @@ import APP from '../../app-logic';
 const DBG = false;
 const PR = UR.PrefixUtil('ModelPanel', 'Green');
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// hack in asset loader
-let ASSETS_LOADED = false;
-UR.SystemHook(
-  'UR',
-  'LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      console.log(...PR('LOADING ASSET MANIFEST...'));
-      (async () => {
-        await DATACORE.ASSETS_LoadManifest('static/assets.json');
-        ASSETS_LOADED = true;
-        console.log(...PR('ASSETS LOADED'));
-      })();
-      resolve();
-    })
-);
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// need to fix "where to put persistent PixiJS panel"
-UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
-  if (ASSETS_LOADED) {
-    RENDERER.UpdateDisplayList(remoteList);
-    RENDERER.Render();
-  }
-});
+// /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// // need to fix "where to put persistent PixiJS panel"
+// UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
+//   if (ASSETS_LOADED) {
+//     RENDERER.UpdateDisplayList(remoteList);
+//     RENDERER.Render();
+//   }
+// });
 
 class ModelPanel extends React.Component {
   constructor() {
@@ -53,12 +35,7 @@ class ModelPanel extends React.Component {
     APP.Subscribe(this);
   }
 
-  componentDidMount() {
-    const renderRoot = document.getElementById('root-renderer');
-    RENDERER.Init(renderRoot);
-    RENDERER.SetGlobalConfig({ actable: false });
-    RENDERER.HookResize(window);
-  }
+  componentDidMount() {}
 
   HandleDATAUpdate(data) {
     if (DBG) console.log(PR + 'Update data', data);
@@ -81,29 +58,7 @@ class ModelPanel extends React.Component {
   }
 
   render() {
-    return (
-      <div
-        className="modelpanel"
-        style={{
-          flexGrow: 1,
-          minWidth: '300px',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignContent: 'center',
-          overflow: 'scroll',
-          height: '100%',
-          width: '100%'
-        }}
-      >
-        <div className="syslabel dark">MODEL</div>
-        <div className="modelPane" style={{ flexGrow: 1 }}>
-          <div className="modelSurface" id="root-renderer">
-            renderer goes here
-          </div>
-        </div>
-      </div>
-    );
+    return <div id="root-renderer">renderer goes here</div>;
   }
 }
 
