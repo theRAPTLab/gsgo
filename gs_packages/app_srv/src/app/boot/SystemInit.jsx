@@ -55,7 +55,7 @@ function Init() {
         document.getElementById('app-container'),
         () => {
           console.log(...PR(`${PROJECT_NAME.toUpperCase()} REACT READY`));
-          UR.AddConsoleTools();
+          UR.addConsoleTools();
         }
       );
     })();

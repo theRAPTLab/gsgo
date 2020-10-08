@@ -102,7 +102,7 @@ const PROMPT_DICT = {
 /** Pad string to fixed length, with default padding depending on
  *  whether the environment is node or browser
  */
-function m_PadString(str, padding = DEFAULT_PADDING) {
+function padString(str, padding = DEFAULT_PADDING) {
   let len = str.length;
   if (IS_NODE) return `${str.padEnd(padding, ' ')}`;
   // must be non-node environment, so do dynamic string adjust
@@ -152,8 +152,8 @@ function m_MakeColorArray(prompt, colorName) {
   // or debugging is enabled but it's node (de morgan's law)
   if (!(dbg || IS_NODE)) return [];
   return IS_NODE
-    ? [`${color}${m_PadString(prompt)}${reset}   `] // server
-    : [`%c${m_PadString(prompt)}%c `, color, reset]; // browser
+    ? [`${color}${padString(prompt)}${reset}   `] // server
+    : [`%c${padString(prompt)}%c `, color, reset]; // browser
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns an environment-specific color wrapper function suitable for use
@@ -163,7 +163,7 @@ function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
   return IS_NODE
     ? (str, ...args) => {
         console.log(
-          `${TERM_COLORS[colorName]}${m_PadString(prompt)}${TERM_COLORS.Reset}${
+          `${TERM_COLORS[colorName]}${padString(prompt)}${TERM_COLORS.Reset}${
             TERM_COLORS[resetName]
           }    ${str}`,
           ...args
@@ -171,7 +171,7 @@ function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
       }
     : (str, ...args) => {
         console.log(
-          `%c${m_PadString(prompt)}%c%c ${str}`,
+          `%c${padString(prompt)}%c%c ${str}`,
           CSS_COLORS.Reset,
           CSS_COLORS[resetName],
           ...args
@@ -340,7 +340,7 @@ function printTagColors() {
   colors.forEach(key => {
     const color = colortable[key];
     const items = IS_NODE
-      ? [`${m_PadString(out)} - (node) ${color}${key}${reset}`]
+      ? [`${padString(out)} - (node) ${color}${key}${reset}`]
       : [`(browser) %c${key}%c`, color, reset];
     console.log(...items);
   });
@@ -352,10 +352,9 @@ function printTagColors() {
 module.exports = {
   TERM: TERM_COLORS,
   CSS: CSS_COLORS,
-  m_PadString,
+  padString,
   makeStyleFormatter,
   makeTerminalOut,
   makeHTMLConsole,
-  printTagColors,
-  m_SetPromptColors
+  printTagColors
 };

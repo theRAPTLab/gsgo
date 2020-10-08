@@ -118,8 +118,8 @@ const UR = {
   // FORWARDED CLASSES
   class: { PhaseMachine },
   // FORWARDED DEBUG UTILITY
-  AddConsoleTools: (ur = UR) => {
-    DBGTEST.AddConsoleTools(ur);
+  addConsoleTools: (ur = UR) => {
+    DBGTEST.addConsoleTools(ur);
   }
 };
 module.exports = UR;

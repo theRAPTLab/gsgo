@@ -10,7 +10,7 @@ let TOOLS;
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AddConsoleTools(UR) {
+function addConsoleTools(UR) {
   const PR = UR.PrefixUtil('URSYS DEBUG', 'TagRed');
   console.log(...PR('adding window debug tools'));
 
@@ -56,4 +56,4 @@ function AddConsoleTools(UR) {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { AddConsoleTools };
+module.exports = { addConsoleTools };
