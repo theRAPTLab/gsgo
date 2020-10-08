@@ -31,8 +31,18 @@ let SETTINGS = {};
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Init(element) {
+  // if PIXI_APP already exists, maybe we just need to reattach the canvas
+  if (PIXI_APP) {
+    if (!PIXI_DIV) throw Error('RendererInit: on reattach no valid div to use');
+    if (PIXI_DIV.hasChildNodes()) {
+      console.log(...PR('reattaching render canvas'));
+      PIXI_DIV.appendChild(PIXI_APP.view);
+      return;
+    }
+  }
+  // first time initialization
   // Initialize PIXI APP
-  if (PIXI_APP) throw Error('renderer already defined');
+  if (!element) throw Error('received null element for Renderer.Init()');
   PIXI.utils.skipHello();
   PIXI_APP = new PIXI.Application({ width: 512, height: 512 });
   // CSS styling
@@ -44,7 +54,10 @@ function Init(element) {
   //
   PIXI_DIV.appendChild(PIXI_APP.view);
   PIXI_APP.renderer.autoResize = true;
+  // XGUI PROBLEM: Can't get accurate width/height
   PIXI_APP.renderer.resize(PIXI_DIV.offsetWidth, PIXI_DIV.offsetHeight);
+  console.log(...PR('check dim', PIXI_DIV.width));
+  // end XGUI problem
 
   // create PIXI root container and add to renderer
   const root = new PIXI.Container();
@@ -135,11 +148,12 @@ function SetGlobalConfig(opt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateFrames = 0;
 function UpdateDisplayList(dobjs) {
+  if (!RP_DOBJ_TO_VOBJ) return;
   RP_DOBJ_TO_VOBJ.syncFromArray(dobjs);
-  HCON.plot(
-    `${updateFrames++} renderer updated ${dobjs.length} DOBJs in changelists`,
-    1
-  );
+  // HCON.plot(
+  //   `${updateFrames++} renderer updated ${dobjs.length} DOBJs in changelists`,
+  //   1
+  // );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function UpdatePTrackList(dobjs) {
@@ -157,11 +171,12 @@ function GetDisplayList() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
 function Render() {
+  if (!RP_DOBJ_TO_VOBJ) return;
   RP_DOBJ_TO_VOBJ.mapObjects();
   // RP_PTRAK_TO_VOBJ.mapObjects();
   // RP_PTRAK_TO_VOBJ.mapObjects();
   const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
-  HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
+  // HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -16,9 +16,11 @@ const setSkin = (path: string): TOpcode[] => [setAgentPropValue('skin', path)];
 
 /** Direct set property with passed property object */
 const jitterAgent = (): TOpcode => {
+  const mag = 5;
+  const mag2 = mag / 2;
   return (agent: IAgent): TOpWait => {
-    const rx = Math.round(5 - Math.random() * 10);
-    const ry = Math.round(5 - Math.random() * 10);
+    const rx = Math.round(mag2 - Math.random() * mag);
+    const ry = Math.round(mag2 - Math.random() * mag);
     const x = agent.x() + rx;
     const y = agent.y() + ry;
     agent.prop('x')._value = x;
