@@ -293,6 +293,15 @@ function makeTerminalOut(prompt, tagColor = DEFAULT_COLOR) {
 function makeHTMLConsole(divId, row = 0, col = 0) {
   let buffer = [];
   if (typeof divId !== 'string') throw Error('bad id');
+  if (!document.getElementById(divId)) {
+    console.log(`HTMLConsole: id '${divId}' doesn't exist`);
+    return {
+      print: () => {},
+      plot: () => {},
+      clear: () => {},
+      gotoRow: () => {}
+    };
+  }
   let hcon;
   if (HTCONSOLES[divId]) {
     hcon = HTCONSOLES[divId];

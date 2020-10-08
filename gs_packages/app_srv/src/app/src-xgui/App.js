@@ -1,12 +1,15 @@
 /* eslint-disable react/sort-comp */
-import UR from '@gemstep/ursys';
 import React from 'react';
+// URSYS
+import UR from '@gemstep/ursys/client';
+import * as SIM from '../modules/sim/api-sim';
+// XGUI
+import APP from './app-logic';
 import AppHome from './components/AppHome';
 import AppEdit from './components/AppEdit';
 import AppRun from './components/AppRun';
 import AppCollaborator from './components/AppCollaborator';
 import AppDev from './components/AppDev';
-import APP from './app-logic';
 import { TAB } from './constants';
 import DISPATCHER from './dispatcher';
 import './compiled-scss.css';
@@ -16,6 +19,19 @@ import './compiled-scss.css';
 UR.NetSubscribe('NET:DISPLAY_LIST', remoteList => {
   console.log('got displaylist', remoteList.length);
 });
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook(
+  'UR',
+  'LOAD_ASSETS',
+  () =>
+    new Promise((resolve, reject) => {
+      (async () => {
+        SIM.StartSimulation();
+      })();
+      resolve();
+    })
+);
 
 class App extends React.Component {
   constructor() {
@@ -34,6 +50,7 @@ class App extends React.Component {
   componentDidMount() {
     // required URSYS lifecycle startup
     UR.SystemConfig({ autoRun: true }); // initialize renderer
+    document.title = 'XGUI WIP';
   }
 
   HandleDATAUpdate(data) {
