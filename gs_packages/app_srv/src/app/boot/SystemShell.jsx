@@ -16,7 +16,8 @@ import {
   LazyGenerator,
   LazyFakeTrack,
   LazyHome,
-  LazyXGUI
+  LazyXGUI,
+  LazyXGUI2
 } from './SystemRoutes';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -47,6 +48,9 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/xgui">
           <LazyXGUI />
+        </Route>
+        <Route path="/app/xgui2">
+          <LazyXGUI2 />
         </Route>
         <Route path="/app/faketrack">
           <LazyFakeTrack />

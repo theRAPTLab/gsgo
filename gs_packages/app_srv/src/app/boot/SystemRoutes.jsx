@@ -7,6 +7,7 @@ const Generator = React.lazy(() => import('../pages/Generator'));
 const Tracker = React.lazy(() => import('../pages/Tracker'));
 const FakeTrack = React.lazy(() => import('../pages/FakeTrack'));
 const XGUI = React.lazy(() => import('../src-xgui/App'));
+const XGUI2 = React.lazy(() => import('../src-xgui/AppTwo'));
 /// LAZY COMPONENTS ///////////////////////////////////////////////////////////
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,6 +34,11 @@ export const LazyFakeTrack = () => (
 export const LazyXGUI = () => (
   <Suspense fallback={<div>loading</div>}>
     <XGUI />
+  </Suspense>
+);
+export const LazyXGUI2 = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <XGUI2 />
   </Suspense>
 );
 
