@@ -32,8 +32,7 @@ UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
 // hack in asset loader
 let ASSETS_LOADED = false;
 UR.SystemHook(
-  'UR',
-  'LOAD_ASSETS',
+  'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
       (async () => {
