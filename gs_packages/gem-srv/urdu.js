@@ -21,7 +21,7 @@ const URPACK = require('./src/server-webpack');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = 'APPSRV-RUN';
+const PR = 'GEMSRV-RUN';
 const TOUT = URSERVER.TermOut(PR);
 const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 

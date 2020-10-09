@@ -20,7 +20,7 @@ const handle = app.getRequestHandler();
 
 const SCRIPT_PATH = path.relative(`${__dirname}/../..`, __filename);
 const RUNTIME_PATH = path.join(__dirname, '/runtime');
-const TOUT = URSERVER.TermOut('GEMSRV-RUN');
+const TOUT = URSERVER.TermOut('ADMSRV-RUN');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -1,12 +1,12 @@
 {
-  "name": "@gemstep/app_srv",
+  "name": "@gemstep/gem-srv",
   "version": "0.0.1-alpha.7",
-  "description": "Example Express App Server",
+  "description": "GEM-STEP Server Prototype",
   "main": "index.js",
   "scripts": {
-    "local": "npm run dev:app",
+    "local": "npm run dev:gem",
     "dev:srv": "nodemon urdu.js dev-skip",
-    "dev:app": "node urdu dev",
+    "dev:gem": "node urdu dev",
     "..ursys": "cd ../ursys && npm run local",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
     "test:app": "echo \"Error: no test specified\" && exit 1"
