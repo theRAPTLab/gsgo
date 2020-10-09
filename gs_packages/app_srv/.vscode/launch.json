@@ -13,7 +13,7 @@
       "type": "pwa-node"
     },
     {
-      "name": "npm run dev:srv",
+      "name": "server/no web compile",
       "request": "launch",
       "runtimeArgs": ["run-script", "dev:srv"],
       "runtimeExecutable": "npm",
@@ -31,7 +31,7 @@
   "compounds": [
     {
       "name": "both npm + chrome",
-      "configurations": ["last built webapp", "npm run local"]
+      "configurations": ["server/no web compile", "last built webapp"]
     }
   ]
 }

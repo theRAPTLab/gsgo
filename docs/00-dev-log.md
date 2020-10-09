@@ -282,7 +282,17 @@ api-render serves two masters: Generator runs vobj through MakeDraggable if dobj
 
 YAY, it seems to work!
 
+* NEXT look at adding TAB SUPPORT for APP_SRV
 
+* after refactoring pass 1
+
+## OCT 09 FRI - Review, X-GEMSTEP-UI, Pre-integration
+
+We submitted the report on late Monday, and Tuesday was a rest day. Wednesday we started to talk about the next steps and what we could deliver by December 1. Thursday we ported X-GEMSTEP-UI. Today I started doing some pre-integration cleanup of the Messager Class and PhaseMachine to make the front-end message interface easier. Using the messager channels to set the toNet, toLocal calls worked out in simplifying things. Also I started confirming the method names so they follow the Javscript conventions, and I renamed the methods so they feel a little better. There's no more pblish and subscribe, but instead there's reigsterMessage, sendMessage, etc. Much better.
+
+Next, I want to do the same for phaseMachine. I've commited the last changes.
+
+* [ ] 
 
 
 ---

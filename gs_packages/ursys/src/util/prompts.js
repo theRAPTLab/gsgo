@@ -8,7 +8,7 @@ const IS_NODE = typeof window === 'undefined';
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
   : 0; // not nodejs
-const DEFAULT_COLOR = 'TagGray';
+const DEFAULT_COLOR = 'TagNull';
 const CSS_PAD = 'padding:3px 5px;border-radius:2px';
 const CSS_TAB = '4px';
 
@@ -44,11 +44,11 @@ const TERM_COLORS = {
   TagRed: '\x1b[41;37m',
   TagGreen: '\x1b[42;30m',
   TagCyan: '\x1b[46;37m',
-  TagBlue: '\x1b[43;37m',
+  TagBlue: '\x1b[44;37m',
   TagPurple: '\x1b[45;37m',
-  TagPink: '\x1b[95;30m',
-  TagGray: '\x1b[2;37m',
-  TagNull: 'color:#999'
+  TagPink: '\x1b[105;1m',
+  TagGray: '\x1b[100;37m',
+  TagNull: '\x1b[2;37m'
 };
 
 // NAME LIST MUST MATCH TERM_COLORS!
@@ -71,8 +71,8 @@ const CSS_COLORS = {
   TagBlue: `color:#000;background-color:#2bf;${CSS_PAD}`,
   TagPurple: `color:#000;background-color:#b6f;${CSS_PAD}`,
   TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
-  TagGray: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
-  TagNull: 'color:#999',
+  TagGray: `color:#fff;background-color:#999${CSS_PAD}`,
+  TagNull: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
   // COLOR BACKGROUND DARK
   TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
   TagDkGreen: `color:white;background-color:green;${CSS_PAD}`,
