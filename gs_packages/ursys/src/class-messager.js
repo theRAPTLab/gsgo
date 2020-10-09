@@ -7,13 +7,6 @@
     This is a low-level class used by other URSYS modules both by client
     browsers and nodejs.
 
-    NOTE: CallerReturnFunctions receive data object AND control object.
-    The control object has the "return" function that closes a transaction;
-    this is useful for async operations without Promises.
-
-    NOTE: When providing a handlerFunc, users should be aware of binding
-    context using Function.prototype.bind() or by using arrow functions
-\
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 // NOTE: This module uses the COMMONJS module format for compatibility
@@ -24,13 +17,57 @@ const NetPacket = require('./class-netpacket');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MSGR_IDCOUNT = 0;
 let DBG = true;
+const PR = require('./util/prompts').makeStyleFormatter('MESSAGER', 'TagRed');
+
+/// URSYS HELPER METHODS //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a string of form CHANNEL:MESSAGE return an object containing
+ *  channel, message, toNet, fromNet props */
+function m_DecodeMessage(msg) {
+  if (typeof msg !== 'string') throw Error(`${PR} arg1 must be string`);
+  const bits = msg.split(':');
+  if (bits.length > 2) throw Error(`${PR} too many colons in message name`);
+  if (bits.length < 2) {
+    return { channel: '', message: bits[0], toNet: false, toLocal: true };
+  }
+  const [channel, message] = bits;
+  const obj = {};
+  // got this far, is valid message
+  switch (channel) {
+    case 'NET':
+      obj.toNet = true;
+      obj.toLocal = false;
+      obj.isNet = true;
+      break;
+    case 'LOCAL':
+      obj.toNet = false;
+      obj.toLocal = true;
+      obj.isLocal = true;
+      break;
+    case '*': // both local and net
+      obj.toNet = true;
+      obj.toLocal = true;
+      obj.isLocal = true;
+      obj.isNet = true;
+      break;
+    case '': // no channel = local call only
+      obj.toNet = false;
+      obj.toLocal = true;
+      obj.isLocal = true;
+      break;
+    default:
+      throw Error(`${PR} unrecognized channel '${channel}'`);
+  }
+  obj.channel = channel;
+  obj.message = message;
+  return obj;
+}
 
 /// URSYS MESSAGER CLASS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Implement network-aware message passing scheme based on message strings passing
- * single data objects. Message table stores multiple message handlers as a set
- * to avoid multiple registered handlers
+/** Implements network-aware message passing scheme based on message strings
+ *  passing single data objects. Message table stores multiple message handlers
+ *  as a set to avoid multiple registered handlers
  */
 class Messager {
   constructor() {
@@ -40,33 +77,34 @@ class Messager {
 
   /// FIRE ONCE EVENTS //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Register a message string to a handler function that will receive a mutable
-   * data object that is returned at the end of the handler function
-   * @example Subscribe('MY_MESSAGE',(data)=>{ return data; });
-   * @param {string} mesgName message to register a handler for
-   * @param {function} handlerFunc function receiving 'data' object
-   * @param {Object} [options] options
-   * @param {string} [options.handlerUID] URSYS_ID identifies group, attaches handler
-   * @param {string} [options.info] description of message handler
-   * @param {Object} [options.syntax] dictionary of data object properties accepted
+  /** Register a message string to a handler function that will receive a mutable
+   *  data object that is returned at the end of the handler function
+   *  @example Subscribe('NET:MY_MESSAGE',(data)=>{ return data; });
+   *  @param {string} mesgName message to register a handler for
+   *  @param {function} handlerFunc function receiving 'data' object
+   *  @param {Object} [options] options
+   *  @param {string} [options.handlerUID] URSYS_ID identifies group, attaches handler
+   *  @param {string} [options.info] description of message handler
+   *  @param {Object} [options.syntax] dictionary of data object properties accepted
    */
-  Subscribe(mesgName, handlerFunc, options = {}) {
+  registerMessage(mesgName, handlerFunc, options = {}) {
+    // get parameters from options
     let { handlerUID } = options;
     let { syntax } = options;
-    let { fromNet } = options;
+    let { fromNet } = options; // replaced by isNet===true
+    // parameter error checking
     if (typeof handlerFunc !== 'function') {
       throw Error('arg2 must be a function');
     }
+    // do the work
     if (typeof handlerUID === 'string') {
       // bind the URChan uid to the handlerFunc function for convenient access
       // by the message dispatcher
       handlerFunc.ulink_id = handlerUID;
     }
-    if (typeof fromNet === 'boolean') {
-      // true if this subscriber wants to receive network messages
-      handlerFunc.fromNet = fromNet;
-    }
+    // parse message to set flags
+    const { isNet } = m_DecodeMessage(mesgName);
+    handlerFunc.isNetFunc = isNet === true; // registering NET:
     let handlers = this.handlerMap.get(mesgName);
     if (!handlers) {
       handlers = new Set();
@@ -80,13 +118,12 @@ class Messager {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Unsubscribe a handler function from a registered message. The handler
-   * function object must be the same one used to register it.
-   * @param {string} mesgName message to unregister a handler for
-   * @param {function} handlerFunc function originally registered
+  /** Unregister a handler function from a registered message. The handler
+   *  function object must be the same one used to register it.
+   *  @param {string} mesgName message to unregister a handler for
+   *  @param {function} handlerFunc function originally registered
    */
-  Unsubscribe(mesgName, handlerFunc) {
+  unregisterMessage(mesgName, handlerFunc) {
     if (!arguments.length) {
       this.handlerMap.clear();
     } else if (arguments.length === 1) {
@@ -101,77 +138,74 @@ class Messager {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Publish a message with data payload
-   * @param {string} mesgName message to send data to
-   * @param {Object} inData parameters for the message handler
-   * @param {Object} [options] options
-   * @param {string} [options.srcUID] URSYS_ID group that is sending the
-   * message. If this is set, then the sending URSYS_ID can receive its own
-   * message request.
-   * @param {string} [options.type] type of message (mcall)
-   * @param {boolean} [options.toLocal=true] send to local message handlers
-   * @param {boolean} [options.toNet=false] send to network message handlers
+  /** Send a message with data payload, one way no return data. Does NOT
+   *  reflect back to the originating srcUID endpoint
+   *  @param {string} mesgName message to send data to
+   *  @param {Object} inData parameters for the message handler
+   *  @param {Object} [options] options
+   *  @param {string} [options.srcUID] URSYS_ID group that is sending the
+   *  message. If this is set, then the sending URSYS_ID can receive its own
+   *  message request.
+   *  @param {string} [options.type] type of message (mcall)
+   *  @param {boolean} [options.toLocal=true] send to local message handlers
+   *  @param {boolean} [options.toNet=false] send to network message handlers
    */
-  Publish(mesgName, inData, options = {}) {
-    let { srcUID, type } = options;
-    let { toLocal = true, toNet = false } = options;
+  sendMessage(mesgName, inData, options = {}) {
+    let { srcUID, type, fromNet } = options;
     const handlers = this.handlerMap.get(mesgName);
+    const { toLocal, toNet } = m_DecodeMessage(mesgName);
     /// toLocal
-    if (handlers && toLocal)
+    if (handlers && (toLocal || fromNet)) {
       handlers.forEach(handlerFunc => {
         // handlerFunc signature: (data,dataReturn) => {}
         // handlerFunc has ulink_id property to note originating URCHAN object
         // skip "same origin" calls
         if (srcUID && handlerFunc.ulink_id === srcUID) {
           console.warn(
-            `MessagerSend: [${mesgName}] skip call since ${srcUID} = ${handlerFunc.ulink_id}`
+            `sendMessage: [${mesgName}] skip call since ${srcUID} = ${handlerFunc.ulink_id}`
           );
           return;
         }
         // trigger the local handler (no return expected)
         handlerFunc(inData, {}); // second param is for control message expansion
       }); // end handlers.forEach
-
+    }
     /// toNetwork
     if (toNet) {
       let pkt = new NetPacket(mesgName, inData, type);
       pkt.SocketSend();
+      return;
     } // end toNetwork
+    console.log(...PR('not handled', mesgName, options, toLocal, toNet));
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Publish message to everyone, local and network, and also mirrors back to self.
-   * This is a wrapper for Publish() that ensures that srcUID is overridden.
-   * @param {string} mesgName message to send data to
-   * @param {Object} inData parameters for the message handler
-   * @param {Object} [options] see Publish() for option details
+  /** Send message to everyone, local and network, and also mirrors back to self.
+   *  This is a wrapper for sendMessage() that ensures that srcUID is overridden.
+   *  @param {string} mesgName message to send data to
+   *  @param {Object} inData parameters for the message handler
+   *  @param {Object} [options] see sendMessage() for option details
    */
-  Signal(mesgName, data, options = {}) {
+  raiseMessage(mesgName, data, options = {}) {
     if (options.srcUID) {
       console.warn(
-        `overriding srcUID ${options.srcUID} with NULL because Signal() doesn't use it`
+        `overriding srcUID ${options.srcUID} with NULL because raiseMessage() doesn't use it`
       );
       options.srcUID = null;
     }
-    this.Publish(mesgName, data, options);
+    this.sendMessage(mesgName, data, options);
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Issue a message transaction. Returns an array of promises. Works across
-   * the network.
-   * @param {string} mesgName message to send data to
-   * @param {Object} inData parameters for the message handler
-   * @param {Object} [options] see Publish() for option details
-   * @returns {Array} an array of Promises
+  /** Issue a message transaction. Returns an array of promises. Works across
+   *  the network.
+   *  @param {string} mesgName message to send data to
+   *  @param {Object} inData parameters for the message handler
+   *  @param {Object} [options] see sendMessage() for option details
+   *  @returns {Array} an array of Promises
    */
-  async CallAsync(mesgName, inData, options = {}) {
+  async callMessage(mesgName, inData, options = {}) {
     let { srcUID, type } = options;
-    let { toLocal = true, toNet = true } = options;
     let { fromNet = false } = options;
-    const channel = NetPacket.ExtractChannel(mesgName);
+    const { channel, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
     const handlers = this.handlerMap.get(mesgName);
     let promises = [];
     /// handle a call from the network
@@ -186,7 +220,7 @@ class Messager {
           handlerFunc has fromNet property if it expects to receive network sourced calls
           /*/
           // skip calls that don't have their fromNet stat set if it's a net call
-          if (fromNet && !handlerFunc.fromNet) {
+          if (fromNet && !handlerFunc.isNetFunc) {
             if (DBG)
               console.warn(
                 `MessagerCall: [${mesgName}] skip netcall for handler uninterested in net`
@@ -227,7 +261,7 @@ class Messager {
     }
     /// toNetwork
     if (toNet) {
-      if (!channel.NET) throw Error('net calls must use NET: message prefix');
+      if (!isNet) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';
       let pkt = new NetPacket(mesgName, inData, type);
       let p = pkt.PromiseTransaction();
@@ -241,11 +275,10 @@ class Messager {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Get list of messages that are handled by this Messager instance.
-   * @returns {Array<string>} message name strings
+  /** Get list of messages that are handled by this Messager instance.
+   *  @returns {Array<string>} message name strings
    */
-  MessageNames() {
+  getAllMessageNames() {
     let handlers = [];
     this.handlerMap.forEach((set, key) => {
       handlers.push(key);
@@ -255,28 +288,26 @@ class Messager {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Get list of messages that are published to the network
-   * @returns {Array<string>} message name strings
+  /** Get list of messages that are published to the network
+   *  @returns {Array<string>} message name strings
    */
-  NetMessageNames() {
+  getNetMessageNames() {
     let handlers = [];
     this.handlerMap.forEach((set, key) => {
       let addMessage = false;
       // eslint-disable-next-line no-return-assign, no-bitwise
-      set.forEach(func => (addMessage |= func.fromNet === true));
+      set.forEach(func => (addMessage |= func.isNetFunc === true));
       if (addMessage) handlers.push(key);
     });
     return handlers;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Check to see if a message is handled by this Messager instance
-   * @param {string=''} msg message name to check
-   * @returns {boolean} true if message name is handled
+  /** Check to see if a message is handled by this Messager instance
+   *  @param {string=''} msg message name to check
+   *  @returns {boolean} true if message name is handled
    */
-  HasMessageName(msg = '') {
+  hasMessageName(msg = '') {
     return this.handlerMap.has(msg);
   }
 
@@ -286,12 +317,12 @@ class Messager {
    * instance
    * @param {Array<string>} msgs
    */
-  ValidateMessageNames(msgs = []) {
+  validateMessageNames(msgs = []) {
     const valid = [];
     msgs.forEach(name => {
-      if (this.HasMessageName(name)) valid.push(name);
+      if (this.hasMessageName(name)) valid.push(name);
       else
-        throw new Error(`ValidateMessageNames() found invalid message '${name}'`);
+        throw new Error(`validateMessageNames() found invalid message '${name}'`);
     });
     return valid;
   }
@@ -299,4 +330,5 @@ class Messager {
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// NOTE this is a dual-environment script, so use commonjs module format
 module.exports = Messager;

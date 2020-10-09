@@ -1,3 +1,4 @@
+/* tslint:disable */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   URSYS CLIENT MAIN ENTRY
@@ -64,7 +65,7 @@ async function SystemStart() {
   );
   // autoregister messages
   PhaseMachine.QueueHookFor('UR', 'APP_CONFIGURE', async () => {
-    let result = await CHAN_LOCAL.RegisterSubscribers();
+    let result = await CHAN_LOCAL.ursysRegisterMessages();
     console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
@@ -89,15 +90,10 @@ async function SystemStop() {
 const UR = {
   ...META,
   // FORWARDED PUB/SUB
-  Subscribe: CHAN_LOCAL.Subscribe,
-  NetSubscribe: CHAN_LOCAL.NetSubscribe,
-  Unsubscribe: CHAN_LOCAL.Unsubscribe,
-  Publish: CHAN_LOCAL.LocalPublish,
-  NetPublish: CHAN_LOCAL.NetPublish,
-  Signal: CHAN_LOCAL.LocalSignal,
-  NetSignal: CHAN_LOCAL.NetSignal,
-  Call: CHAN_LOCAL.LocalCall,
-  NetCall: CHAN_LOCAL.NetCall,
+  registerMessage: CHAN_LOCAL.registerMessage,
+  unregisterMessage: CHAN_LOCAL.unregisterMessage,
+  sendMessage: CHAN_LOCAL.sendMessage,
+  Call: CHAN_LOCAL.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP

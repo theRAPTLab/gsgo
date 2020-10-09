@@ -96,18 +96,18 @@ URNET.RegisterHandlers = () => {
   LOGGER.Write('registering network services');
 
   // start logging message
-  URNET.NetSubscribe('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  URNET.registerMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
 
   // register remote messages
-  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', URNET.PKT_RegisterRemoteHandlers);
+  URNET.registerMessage('NET:SRV_REG_HANDLERS', URNET.PKT_RegisterRemoteHandlers);
 
   // register sessions
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGIN', URNET.PKT_SessionLogin);
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGOUT', URNET.PKT_SessionLogout);
-  URNET.NetSubscribe('NET:SRV_SESSION', URNET.PKT_Session);
+  URNET.registerMessage('NET:SRV_SESSION_LOGIN', URNET.PKT_SessionLogin);
+  URNET.registerMessage('NET:SRV_SESSION_LOGOUT', URNET.PKT_SessionLogout);
+  URNET.registerMessage('NET:SRV_SESSION', URNET.PKT_Session);
 
   // ursys debug server utilities
-  URNET.NetSubscribe('NET:SRV_REFLECT', pkt => {
+  URNET.registerMessage('NET:SRV_REFLECT', pkt => {
     const data = pkt.Data();
     data.serverSays = 'REFLECTING';
     data.stack = data.stack || [];
@@ -115,7 +115,7 @@ URNET.RegisterHandlers = () => {
     TERM.warn('SRV_REFLECT setting data', data);
     return data;
   });
-  URNET.NetSubscribe('NET:SRV_SERVICE_LIST', pkt => {
+  URNET.registerMessage('NET:SRV_SERVICE_LIST', pkt => {
     TERM.warn('SRV_SERVICE_LIST got', pkt);
     const server = [...m_server_handlers.keys()];
     const handlers = [...m_remote_handlers.entries()];
@@ -134,7 +134,7 @@ URNET.RegisterHandlers = () => {
  * @param {string} mesgName message to register a handler for
  * @param {function} handlerFunc function receiving 'data' object
  */
-URNET.NetSubscribe = (mesgName, handlerFunc) => {
+URNET.registerMessage = (mesgName, handlerFunc) => {
   if (typeof handlerFunc !== 'function') {
     TERM(`${mesgName} subscription failure`);
     throw Error('arg2 must be a function');
@@ -145,7 +145,7 @@ URNET.NetSubscribe = (mesgName, handlerFunc) => {
     m_server_handlers.set(mesgName, handlers);
   }
   handlers.add(handlerFunc);
-}; // end NetSubscribe()
+}; // end registerMessage()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Revokes a handler function from a registered message. The handler function
  * object must be the same one used to register it.
@@ -186,9 +186,9 @@ URNET.NetCall = async (mesgName, data) => {
   return results; // array of data objects
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Server-side local server subscription. It's the same as NetSubscribe
+/** Server-side local server subscription. It's the same as registerMessage
  */
-URNET.LocalSubscribe = URNET.NetSubscribe;
+URNET.LocalSubscribe = URNET.registerMessage;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side local server publishing. It executes synchronously, unlike the
  *  remote version. Doesn't return vsalues.

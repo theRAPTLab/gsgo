@@ -40,7 +40,7 @@ const PROMPTS = require('./util/prompts');
 const PR = PROMPTS.makeStyleFormatter('UR.CHN');
 
 /** implements endpoints for talking to the URSYS network
- * @module URChan
+ * @module MessagerEndpoint
  */
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,9 +72,9 @@ let MESSAGER = new Messager(); // all urlinks share a common messager
  * send messages. Constructor receives an owner, which is inspected for
  * properties to determine how to classify the created messager for debugging
  * purposes
- * @memberof URChan
+ * @memberof MessagerEndpoint
  */
-class URChan {
+class MessagerEndpoint {
   /** constructor
    * @param {object} owner the class instance or code module object
    * @param {string} owner.name code module name set manually
@@ -86,24 +86,16 @@ class URChan {
       throw Error(BAD_NAME);
     }
     // bind function
-    this.UID = this.UID.bind(this);
-    this.Name = this.Name.bind(this);
-    this.UADDR = this.UADDR.bind(this);
-    this.Subscribe = this.Subscribe.bind(this);
-    this.NetSubscribe = this.NetSubscribe.bind(this);
-    this.Unsubscribe = this.Unsubscribe.bind(this);
+    this.getUID = this.getUID.bind(this);
+    this.getName = this.getName.bind(this);
+    this.getUADDR = this.getUADDR.bind(this);
+    this.registerMessage = this.registerMessage.bind(this);
+    this.unregisterMessage = this.unregisterMessage.bind(this);
     //
-    this.Call = this.Call.bind(this);
-    this.Publish = this.Publish.bind(this);
-    this.Signal = this.Signal.bind(this);
-    this.LocalCall = this.LocalCall.bind(this);
-    this.LocalPublish = this.LocalPublish.bind(this);
-    this.LocalSignal = this.LocalSignal.bind(this);
-    this.NetCall = this.NetCall.bind(this);
-    this.NetPublish = this.NetPublish.bind(this);
-    this.NetSignal = this.NetSignal.bind(this);
+    this.callMessage = this.callMessage.bind(this);
+    this.sendMessage = this.sendMessage.bind(this);
     //
-    this.RegisterSubscribers = this.RegisterSubscribers.bind(this);
+    this.ursysRegisterMessages = this.ursysRegisterMessages.bind(this);
 
     // generate and save unique id
     this.uid = m_GetUniqueId();
@@ -117,15 +109,15 @@ class URChan {
   /// UNIQUE URSYS ID for local application
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// this is used to differentiate sources of events so they don't echo
-  UID() {
+  getUID() {
     return this.uid;
   }
 
-  Name() {
+  getName() {
     return this.name;
   }
 
-  UADDR() {
+  getUADDR() {
     return URNet.SocketUADDR();
   }
 
@@ -134,7 +126,7 @@ class URChan {
   /** mesgName is a string, and is an official event that's defined by the
    * subclasser of UnisysNode
    */
-  Subscribe(mesgName, listener) {
+  registerMessage(mesgName, listener) {
     // uid is "source uid" of subscribing object, to avoid reflection
     // if the subscribing object is also the originating state changer
     if (DBG.register)
@@ -142,46 +134,29 @@ class URChan {
         `${this.uid} _${PR} `,
         `${this.name} handler added[${mesgName}]`
       );
-    MESSAGER.Subscribe(mesgName, listener, { handlerUID: this.UID() });
+    MESSAGER.registerMessage(mesgName, listener, { handlerUID: this.getUID() });
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** variation of Subscribe that receives from remotes as well
-   */
-  NetSubscribe(mesgName, listener) {
-    // uid is "source uid" of subscribing object, to avoid reflection
-    // if the subscribing object is also the originating state changer
-    if (DBG.register)
-      console.log(
-        `${this.uid} _${PR} `,
-        `${this.name} nethandler added[${mesgName}]`
-      );
-    MESSAGER.Subscribe(mesgName, listener, {
-      fromNet: true,
-      handlerUID: this.UID()
-    });
-  }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** remove a listener from message
    */
-  Unsubscribe(mesgName, listener) {
+  unregisterMessage(mesgName, listener) {
     if (DBG.register)
       console.log(
         `${this.uid} _${PR} `,
         `${this.name} handler removed[${mesgName}]`
       );
-    MESSAGER.Unsubscribe(mesgName, listener);
+    MESSAGER.unregisterMessage(mesgName, listener);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** URCHAN wraps Messager.CallAsync(), which returns an agregate data
+  /** URCHAN wraps Messager.callMessage(), which returns an agregate data
    * bundle after executing a bunch of promises async/await-style!
    */
-  Call(mesgName, inData = {}, options = {}) {
+  callMessage(mesgName, inData = {}, options = {}) {
     options = Object.assign(options, { type: 'mcall' });
-    options.srcUID = this.UID();
+    options.srcUID = this.getUID();
     // returns promise that resolves to data object
-    let result = MESSAGER.CallAsync(mesgName, inData, options);
+    let result = MESSAGER.callMessage(mesgName, inData, options);
     return result;
   }
 
@@ -189,86 +164,14 @@ class URChan {
   /** Sends the data to all message implementors UNLESS it is originating from
    *   the same URCHAN instance (avoid echoing back to self)
    */
-  Publish(mesgName, inData = {}, options = {}) {
+  sendMessage(mesgName, inData = {}, options = {}) {
     if (typeof inData === 'function')
-      throw Error('did you intend to use Subscribe() instead of Publish()?');
+      throw Error(
+        'did you intend to use registerMessage() instead of sendMessage()?'
+      );
     options = Object.assign(options, { type: 'msend' });
-    options.srcUID = this.UID();
-    MESSAGER.Publish(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Sends the data to all message implementors, irregardless of origin.
-   */
-  Signal(mesgName, inData = {}, options = {}) {
-    options = Object.assign(options, { type: 'msig' });
-    MESSAGER.Signal(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** version of Call that forces local-only calls
-   */
-  LocalCall(mesgName, inData, options = {}) {
-    options = Object.assign(options, { type: 'mcall' });
-    options.toLocal = true;
-    options.toNet = false;
-    // returns promise that resolve to data object
-    return this.Call(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** version of Send that force local-only calls
-   */
-  LocalPublish(mesgName, inData, options = {}) {
-    options = Object.assign(options, { type: 'msend' });
-    options.toLocal = true;
-    options.toNet = false;
-    this.Publish(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** version of Send that force local-only calls
-   */
-  LocalSignal(mesgName, inData, options = {}) {
-    options = Object.assign(options, { type: 'msig' });
-    options.toLocal = true;
-    options.toNet = false;
-    this.Signal(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** version of Call that forces network-only calls
-   */
-  NetCall(mesgName, inData, options = {}) {
-    options = Object.assign(options, { type: 'mcall' });
-    options.toLocal = false;
-    options.toNet = true;
-    // returns promise that resolve to data object
-    return this.Call(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** version of Send that force network-only calls
-   */
-  NetPublish(mesgName, inData, options = {}) {
-    options = Object.assign(options, { type: 'msend' });
-    options.toLocal = false;
-    options.toNet = true;
-    this.Publish(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** version of Signal that forces network-only signal
-   */
-  NetSignal(mesgName, inData, options = {}) {
-    options.toLocal = false;
-    options.toNet = true;
-    this.Signal(mesgName, inData, options);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  NullCallback() {
-    if (DBG.send) console.log(`${this.uid} _${PR} `, 'null_callback', this.UID());
+    options.srcUID = this.getUID();
+    MESSAGER.sendMessage(mesgName, inData, options);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -279,78 +182,27 @@ class URChan {
    * If messages is empty, then it's assumed that we are registering all message
    * subscribers.
    */
-  async RegisterSubscribers(messages = []) {
+  async ursysRegisterMessages(messages = []) {
     if (URNet.IsStandaloneMode()) {
-      console.warn(PR, 'STANDALONE MODE: RegisterMessagesPromise() suppressed!');
+      console.warn(PR, 'STANDALONE MODE: ursysRegisterMessages() suppressed!');
       return Promise.resolve();
     }
     // if there are no messages passed, then
     if (messages.length) {
-      messages = MESSAGER.ValidateMessageNames(messages);
+      messages = MESSAGER.validateMessageNames(messages);
     } else {
-      messages = MESSAGER.NetMessageNames();
+      messages = MESSAGER.getNetMessageNames();
     }
     // returns promise that resolve to data object
     return new Promise((resolve, reject) => {
-      this.NetCall('NET:SRV_REG_HANDLERS', { messages }).then(data => {
+      this.callMessage('NET:SRV_REG_HANDLERS', { messages }).then(data => {
         if (data.error) reject(data.error);
         resolve(data);
       });
     });
   }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Perform data operation to server. Do not call directly, but use
-   * UR.DBQuery(cmd,data). The cmd is looks up the corresponding URSYS
-   * message (e.g. add -> NET:SRV_DBADD)
-   * @example
-   * DataMap.DBQuery('add', { teachers: { name: 'NewTeacher' }});
-   */
-  _DBQuery(cmd, data) {
-    const opmsg = DataMap.GetCommandMessage(cmd);
-    if (!opmsg) return Promise.reject(`invalid operation '${cmd}'`);
-    if (data.cmd) return Promise.reject("do not include 'cmd' prop in data pack");
-    if (!data.key)
-      return Promise.reject("data must have access key 'key' defined");
-    data.cmd = cmd;
-    let res = DataMap.ValidateCollections(data);
-    if (!res) return Promise.reject(`no-op: no valid collections found ${res}`);
-    // got this far, so let's do the call!
-    // returns promise that resolve to data object
-    return this.NetCall(opmsg, data);
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Cooperative database element lock on server
-   */
-  _DBLock(data) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { dbkey, dbids, key } = data;
-    if (!DataMap.IsValidKey(dbkey))
-      return Promise.reject(`invalid dbkey ${dbkey}`);
-    if (!DataMap.IsValidIdsArray(dbids))
-      return Promise.reject('dbids must be array of ints');
-    if (!data.key)
-      return Promise.reject("data must have access key 'key' defined");
-    if (!data.uaddr) return Promise.reject('data must have uaddr defined');
-    return this.NetCall('NET:SRV_DBLOCK', data);
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** Cooperative database element release on server
-   */
-  _DBRelease(data) {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { dbkey, dbids, key } = data;
-    if (!DataMap.IsValidKey(dbkey))
-      return Promise.reject(`invalid dbkey ${dbkey}`);
-    if (!DataMap.IsValidIdsArray(dbids))
-      return Promise.reject('dbids must be array of ints');
-    if (!data.key)
-      return Promise.reject("data must have access key 'key' defined");
-    if (!data.uaddr) return Promise.reject('data must have uaddr defined');
-    return this.NetCall('NET:SRV_DBRELEASE', data);
-  }
-} // class URChan
+} // class MessagerEndpoint
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = URChan;
+module.exports = MessagerEndpoint;

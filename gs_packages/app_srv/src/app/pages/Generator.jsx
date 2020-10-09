@@ -15,6 +15,8 @@ import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
+const PR = UR.PrefixUtil('Generator', 'TagBlue');
+
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from '../modules/sim/api-sim';
 
@@ -35,14 +37,13 @@ UR.SystemHook(
 );
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('Generator', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
 const { PROJECT_NAME } = SETTINGS;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// END STATUS FAKERY /////////////////////////////////////////////////////////
 
-UR.NetSubscribe('NET:HELLO', data => {
+UR.registerMessage('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'generator got you' };
 });

@@ -8,14 +8,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const URSession = require('./client-session');
-const PR = require('./util/prompts').makeStyleFormatter('UR.NET');
+const PR = require('./util/prompts').makeStyleFormatter('UR.NET', 'TagRed');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { connect: false, hello: true, handle: false, reg: false };
 ///
+const ENDPOINT_NAME = 'MessagerEndpoint';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
-const ERR_BAD_URCHAN = "An instance of 'URChan' is required";
+const ERR_BAD_URCHAN = `An instance of '${ENDPOINT_NAME}' is required`;
 
 /// NETWORK ID VALUES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,29 +106,22 @@ function m_HandleMessage(msgEvent) {
   let data = pkt.Data();
   let type = pkt.Type();
   let dbgout = DBG.handle && !msg.startsWith('NET:SRV_');
-
   // (3) handle each packet type as necessary
   switch (type) {
     case 'state':
       // unimplemented netstate
       if (dbgout) console.log(...PR(`received state change ${msg}`));
       break;
-    case 'msig':
-      // network signal to raise
-      if (dbgout) cout_ReceivedStatus(pkt);
-      m_urlink.LocalSignal(msg, data, { fromNet: true });
-      pkt.ReturnTransaction();
-      break;
     case 'msend':
       // network message received
       if (dbgout) cout_ReceivedStatus(pkt);
-      m_urlink.LocalPublish(msg, data, { fromNet: true });
+      m_urlink.sendMessage(msg, data, { fromNet: true });
       pkt.ReturnTransaction();
       break;
     case 'mcall':
       // network call received
       if (dbgout) cout_ReceivedStatus(pkt);
-      m_urlink.LocalCall(msg, data, { fromNet: true }).then(result => {
+      m_urlink.callMessage(msg, data, { fromNet: true }).then(result => {
         if (dbgout) cout_ForwardedStatus(pkt, result);
         // now return the packet
         pkt.SetData(result);
@@ -179,7 +173,7 @@ NETWORK.Connect = (datalink, opt) => {
     m_status = M1_CONNECTING;
 
     // check and save parms
-    if (datalink.constructor.name !== 'URChan') {
+    if (datalink.constructor.name !== 'MessagerEndpoint') {
       throw Error(ERR_BAD_URCHAN);
     }
     if (!m_urlink) m_urlink = datalink;

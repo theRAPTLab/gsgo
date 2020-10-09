@@ -96,7 +96,7 @@ function m_CheckOptions(options) {
  */
 async function SystemBoot(options = {}) {
   //
-  if (DBG) console.groupCollapsed('** URSYS: Boot');
+  if (DBG) console.group('** URSYS: Boot');
   //
   m_CheckOptions(options);
   URSession.InitializeNetProps(options.netProps);
@@ -112,7 +112,7 @@ async function SystemBoot(options = {}) {
  */
 async function SystemConfig(options = {}) {
   //
-  if (DBG) console.groupCollapsed('** URSYS: Config');
+  if (DBG) console.group('** URSYS: Config');
   //
   await ExecutePhase('PHASE_LOAD');
   await ExecutePhase('PHASE_CONFIG');

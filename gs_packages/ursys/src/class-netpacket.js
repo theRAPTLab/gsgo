@@ -550,49 +550,6 @@ NetPacket.GlobalOfflineMode = () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Converts 'CHANNEL:MESSAGE' string to an object with channel, message
- * properties. If there is more than one : in the message string, it's left
- * as part of the message. All properties returned in are UPPERCASE.
- * @param {string} message - message with optional channel prefix
- * @returns {Object} - contains channel (UC) that are set
- * @example
- * const parsed = NetPacket.DecodeChannel('NET:MY_MESSAGE');
- * if (parsed.NET) console.log('this is true');
- * if (parsed.LOCAL) console.log('this is false');
- * console.log('message is',parsed.MESSAGE);
- */
-NetPacket.ExtractChannel = function ExtractChannel(msg) {
-  let [channel, MESSAGE] = msg.split(':', 2);
-  // no : found, must be local
-  if (!MESSAGE) {
-    MESSAGE = channel;
-    channel = '';
-  }
-  const parsed = { MESSAGE };
-  if (!channel) {
-    parsed.LOCAL = true;
-    return parsed;
-  }
-  if (channel === '*') {
-    VALID_CHANNELS.forEach(chan => {
-      parsed[chan] = true;
-    });
-    return parsed;
-  }
-  if (VALID_CHANNELS.includes(channel)) {
-    parsed[channel] = true;
-    return parsed;
-  }
-  // legacy messages use invalid channel names
-  // for now forward them as-is
-  console.warn(`'${msg}' replace : with _`);
-  parsed.LOCAL = true;
-  return parsed;
-  // this is what should actually happen
-  // throw Error(`invalid channel '${channel}'`);
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** NetPacket.SocketUADDR() is a static method returning the class-wide setting
  * of the browser UADDR. This is only used on browser code.
  * @function
