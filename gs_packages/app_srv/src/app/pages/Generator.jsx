@@ -5,20 +5,19 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
+import * as SIM from 'modules/sim/api-sim';
+
+import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-
-import UR from '@gemstep/ursys/client';
 import SETTINGS from 'config/app.settings';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
 const PR = UR.PrefixUtil('Generator', 'TagBlue');
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from '../modules/sim/api-sim';
 
 UR.SystemHook(
   'UR',
@@ -43,7 +42,7 @@ const { PROJECT_NAME } = SETTINGS;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// END STATUS FAKERY /////////////////////////////////////////////////////////
 
-UR.registerMessage('NET:HELLO', data => {
+UR.RegisterMessage('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'generator got you' };
 });

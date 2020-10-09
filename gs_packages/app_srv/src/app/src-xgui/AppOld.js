@@ -15,7 +15,7 @@ import './compiled-scss.css';
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.registerMessage('NET:DISPLAY_LIST', remoteList => {
+UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
   console.log('got displaylist', remoteList.length);
 });
 

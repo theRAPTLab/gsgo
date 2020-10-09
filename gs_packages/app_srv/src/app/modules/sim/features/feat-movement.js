@@ -33,7 +33,7 @@ class MovementPack extends Feature {
 
   initialize(pm) {
     super.initalize(pm);
-    pm.Hook('INPUT', this.HandleInput);
+    pm.hook('INPUT', this.HandleInput);
   }
 
   decorate(agent) {

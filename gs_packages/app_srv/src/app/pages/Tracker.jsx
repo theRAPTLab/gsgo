@@ -42,7 +42,7 @@ UR.SystemHook(
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateCount = 0;
-UR.registerMessage('NET:DISPLAY_LIST', remoteList => {
+UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
   if (ASSETS_LOADED) {
     FCON.plot(
       `${updateCount++} NET:DISPLAY_LIST received ${
@@ -57,7 +57,7 @@ UR.registerMessage('NET:DISPLAY_LIST', remoteList => {
 
 /// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.registerMessage('NET:HELLO', data => {
+UR.RegisterMessage('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'tracker got you' };
 });

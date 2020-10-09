@@ -3,7 +3,7 @@
 const TimerPack = {
   name: 'Timer',
   initialize: pm => {
-    pm.Hook('INPUT', this.HandleInput);
+    pm.hook('INPUT', this.HandleInput);
   },
   agentInit: agent => {
     this.agent = agent;

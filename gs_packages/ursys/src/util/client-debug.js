@@ -26,7 +26,7 @@ function addConsoleTools(UR) {
       return 'signal() is signalling to all implementors to NET:HELLO';
     },
     publish: (mesg = 'NET:HELLO', data = { type: 'publish' }) => {
-      UR.sendMessage(mesg, data);
+      UR.SendMessage(mesg, data);
       return 'publish() is sending to other implementors of NET:HELLO';
     },
     reflect: (data = { type: 'reflect' }) => {

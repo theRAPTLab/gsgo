@@ -108,7 +108,7 @@ function AgentUpdate(frameTime) {
   RENDERER.UpdateDisplayList(dobjs);
   FCON.plot(`GENERATOR created ${dobjs.length} DOBJs from Agents`, 0);
   FCON.plot(`NET:DISPLAY_LIST message sent ${dobjs.length} DOBJs`, 3);
-  UR.sendMessage('NET:DISPLAY_LIST', dobjs);
+  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {

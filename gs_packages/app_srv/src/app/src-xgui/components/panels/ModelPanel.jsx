@@ -10,7 +10,7 @@ const PR = UR.PrefixUtil('ModelPanel', 'Green');
 
 // /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // // need to fix "where to put persistent PixiJS panel"
-// UR.registerMessage('NET:DISPLAY_LIST', remoteList => {
+// UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
 //   if (ASSETS_LOADED) {
 //     RENDERER.UpdateDisplayList(remoteList);
 //     RENDERER.Render();

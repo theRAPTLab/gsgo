@@ -90,11 +90,11 @@ async function SystemStop() {
 const UR = {
   ...META,
   // FORWARDED PUB/SUB
-  registerMessage: CHAN_LOCAL.registerMessage,
-  unregisterMessage: CHAN_LOCAL.unregisterMessage,
-  sendMessage: CHAN_LOCAL.sendMessage,
-  raiseMessage: CHAN_LOCAL.raiseMessage,
-  callMessage: CHAN_LOCAL.callMessage,
+  RegisterMessage: CHAN_LOCAL.registerMessage,
+  UnregisterMessage: CHAN_LOCAL.unregisterMessage,
+  SendMessage: CHAN_LOCAL.sendMessage,
+  RaiseMessage: CHAN_LOCAL.raiseMessage,
+  CallMessage: CHAN_LOCAL.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP

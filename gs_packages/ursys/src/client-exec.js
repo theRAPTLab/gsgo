@@ -74,7 +74,7 @@ const PHASES = {
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PHASE_MACHINE = new URPhaseMachine('UR', PHASES, '');
-const { ExecutePhase, Execute } = PHASE_MACHINE;
+const { executePhase, execute } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemBoot, etc
@@ -101,9 +101,9 @@ async function SystemBoot(options = {}) {
   m_CheckOptions(options);
   URSession.InitializeNetProps(options.netProps);
   //
-  await ExecutePhase('PHASE_BOOT');
-  await ExecutePhase('PHASE_INIT');
-  await ExecutePhase('PHASE_CONNECT');
+  await executePhase('PHASE_BOOT');
+  await executePhase('PHASE_INIT');
+  await executePhase('PHASE_CONNECT');
   //
   if (DBG) console.groupEnd();
 }
@@ -114,10 +114,10 @@ async function SystemConfig(options = {}) {
   //
   if (DBG) console.group('** URSYS: Config');
   //
-  await ExecutePhase('PHASE_LOAD');
-  await ExecutePhase('PHASE_CONFIG');
+  await executePhase('PHASE_LOAD');
+  await executePhase('PHASE_CONFIG');
   //
-  await ExecutePhase('PHASE_READY');
+  await executePhase('PHASE_READY');
   //
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
@@ -136,9 +136,9 @@ async function SystemRun(options = {}) {
   m_CheckOptions(options);
   //
   console.log(...PR('URSYS: STAGE START RUN'));
-  await Execute('APP_STAGE');
-  await Execute('APP_START');
-  await Execute('APP_RUN');
+  await execute('APP_STAGE');
+  await execute('APP_START');
+  await execute('APP_RUN');
   console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
@@ -150,7 +150,7 @@ async function SystemRun(options = {}) {
 async function SystemUpdate() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
-  await Execute('APP_RESTAGE');
+  await execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
   SystemRun();
@@ -161,7 +161,7 @@ async function SystemUpdate() {
 async function SystemRestage() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
-  await Execute('APP_RESET');
+  await execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
   SystemRun();
@@ -172,7 +172,7 @@ async function SystemRestage() {
 async function SystemUnload() {
   if (DBG) console.groupCollapsed('** URSYS: Unload');
   //
-  await ExecutePhase('PHASE_UNLOAD');
+  await executePhase('PHASE_UNLOAD');
   //
   if (DBG) console.groupEnd();
 }
@@ -182,7 +182,7 @@ async function SystemUnload() {
 async function SystemReboot() {
   if (DBG) console.groupCollapsed('** URSYS: Reboot');
   //
-  await ExecutePhase('PHASE_REBOOT');
+  await executePhase('PHASE_REBOOT');
   //
   if (DBG) console.groupEnd();
 }
