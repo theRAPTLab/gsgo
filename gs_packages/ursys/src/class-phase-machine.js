@@ -30,6 +30,19 @@ const m_queue = new Map(); // store by <machinename,['op',f]>
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: extract the phase machine, phase from phaseSelector of form
+ *  SIM/UPDATE_ALL, where SIM is the phase machine and UPDATE_ALL is the phase
+ */
+function m_DecodePhase(psel) {
+  if (typeof psel !== 'string')
+    throw Error(...PR('arg must be non-empty string'));
+  const bits = psel.split('/');
+  if (bits.length !== 2)
+    throw Error(`${PR} malformed phase selector ('MACHINE/PHASE')`);
+  const [machine, phase] = bits;
+  return { machine, phase };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: call the hook object's function. This used to do additional
  *  checks to see if the function should be called based on the route.
  */
@@ -242,22 +255,23 @@ class PhaseMachine {
 /** Queue hook requests even if machine isn't already defined.
  *  This routine can be used as the standard hook method for UR clients.
  */
-PhaseMachine.QueueHookFor = (pmName, op, f) => {
-  if (typeof pmName !== 'string') throw Error('arg1 must be phasemachine name');
-  if (typeof op !== 'string') throw Error('arg2 must be phaseop name');
+PhaseMachine.QueueHookFor = (phaseSel, f) => {
+  if (typeof phaseSel !== 'string')
+    throw Error('arg1 must be phase selector like MACHINE/PHASE');
   if (typeof f !== 'function' && f !== undefined)
-    throw Error('arg3 must be function or undefined');
+    throw Error('arg2 must be function or undefined');
   //
-  const pm = m_machines.get(pmName);
+  const { machine, phase } = m_DecodePhase(phaseSel);
+  const pm = m_machines.get(machine);
   // if phasemachine is already valid, then just hook it directly
   if (pm) {
-    pm.hook(op, f);
+    pm.hook(phase, f);
     return;
   }
   // otherwise, queue the request
-  if (!m_queue.has(pmName)) m_queue.set(pmName, []);
-  const q = m_queue.get(pmName);
-  q.push([op, f]); // array of 2-element arrays
+  if (!m_queue.has(machine)) m_queue.set(machine, []);
+  const q = m_queue.get(machine);
+  q.push([phase, f]); // array of 2-element arrays
 };
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////

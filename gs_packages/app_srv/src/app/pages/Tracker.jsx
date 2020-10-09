@@ -25,8 +25,7 @@ let ASSETS_LOADED = false;
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook(
-  'UR',
-  'LOAD_ASSETS',
+  'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
       console.log(...PR('LOADING ASSET MANIFEST...'));

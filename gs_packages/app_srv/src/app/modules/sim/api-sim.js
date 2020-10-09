@@ -74,7 +74,7 @@ let RX_SUB;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_StepSimulation(frameCount) {
   /* insert conditional run control here */
-  GAME_LOOP.ExecutePhase('GLOOP', frameCount);
+  GAME_LOOP.executePhase('GLOOP', frameCount);
   /* insert game logic here */
 }
 
@@ -86,7 +86,7 @@ function StageSimulation() {
   // prep recording buffer
   (async () => {
     console.log(...PR('Loading Simulation'));
-    await GAME_LOOP.ExecutePhase('GLOOP_LOAD');
+    await GAME_LOOP.executePhase('GLOOP_LOAD');
     console.log(...PR('Simulation Loaded'));
   })();
 }
@@ -106,7 +106,7 @@ function StartSimulation() {
 function RestageSimulation() {
   // application host has changed
   console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
-  GAME_LOOP.Execute('SYSEX');
+  GAME_LOOP.execute('SYSEX');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PauseSimulation() {
@@ -131,7 +131,7 @@ function ResetSimulation() {
   // return simulation to starting state, ready to run
   (async () => {
     console.log(...PR('ResetSimulation'));
-    await GAME_LOOP.ExecutePhase('GLOOP_LOAD');
+    await GAME_LOOP.executePhase('GLOOP_LOAD');
   })();
 }
 
@@ -144,13 +144,13 @@ const u_dump = (phases, index) => {
   else console.log(`.. executing ${index} ${phases[index]}`);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR', 'APP_STAGE', StageSimulation);
-UR.SystemHook('UR', 'APP_RUN', RunSimulation);
-UR.SystemHook('UR', 'APP_RESET', ResetSimulation);
-UR.SystemHook('UR', 'APP_RESTAGE', RestageSimulation);
+UR.SystemHook('UR/APP_STAGE', StageSimulation);
+UR.SystemHook('UR/APP_RUN', RunSimulation);
+UR.SystemHook('UR/APP_RESET', ResetSimulation);
+UR.SystemHook('UR/APP_RESTAGE', RestageSimulation);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GAME_LOOP.Hook('GLOOP_LOAD', u_dump);
-GAME_LOOP.Hook('GLOOP', u_dump);
+GAME_LOOP.hook('GLOOP_LOAD', u_dump);
+GAME_LOOP.hook('GLOOP', u_dump);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

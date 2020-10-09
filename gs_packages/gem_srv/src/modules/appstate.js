@@ -50,19 +50,19 @@ function getRoute() {
   return ROUTE;
 }
 
-UR.SystemHook('UR', 'APP_CONFIGURE', () => {
+UR.SystemHook('UR/APP_CONFIGURE', () => {
   if (typeof window !== 'undefined') {
     console.log(
       ...PR('!!! SETTING imperative-style timer in declarative world!')
     );
     setInterval(() => {
-      UR.raiseMessage('APPSTATE_TICK', {
+      UR.RaiseMessage('APPSTATE_TICK', {
         source: 'src:5000ms timer',
         route: `current route ${ROUTE.currentRoute}`
       });
     }, 5000);
     //
-    UR.registerMessage('HELLO_URSYS', data => {
+    UR.RegisterMessage('HELLO_URSYS', data => {
       console.log(...PR('RESPONSE "HELLO_URSYS"'));
       let out = '. got';
       Object.keys(data).forEach(key => {

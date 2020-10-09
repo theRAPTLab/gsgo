@@ -38,7 +38,7 @@ function useInterval(callback, delay) {
  */
 function useRegisterMessage(message, callback) {
   useEffect(() => {
-    UR.registerMessage(message, callback);
+    UR.RegisterMessage(message, callback);
     return () => UR.unregisterMessage(message, callback);
   }, [message, callback]);
 }

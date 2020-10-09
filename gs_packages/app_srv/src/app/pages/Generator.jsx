@@ -20,8 +20,7 @@ import { useStylesHOC } from './page-styles';
 const PR = UR.PrefixUtil('Generator', 'TagBlue');
 
 UR.SystemHook(
-  'UR',
-  'LOAD_ASSETS',
+  'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
       console.log(...PR('LOADING ASSET MANIFEST...'));

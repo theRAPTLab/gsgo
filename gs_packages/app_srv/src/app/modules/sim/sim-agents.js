@@ -56,7 +56,7 @@ let X = 0;
 let INC = 1;
 const ZIP = '=@=';
 const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
-UR.SystemHook('SIM', 'VIS_UPDATE', frameCount => {
+UR.SystemHook('SIM/VIS_UPDATE', frameCount => {
   HCON.plot(`framecount: ${frameCount}`, 1);
   if (frameCount % 6) return;
   HCON.plot(ZIP_BLNK, 3, X);
@@ -126,12 +126,12 @@ function AgentReset(frameTime) {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM', 'RESET', AgentReset);
-UR.SystemHook('SIM', 'SETMODE', AgentSelect);
-UR.SystemHook('SIM', 'PROGRAM', AgentProgram);
-UR.SystemHook('SIM', 'AGENTS_UPDATE', AgentUpdate);
-UR.SystemHook('SIM', 'AGENTS_THINK', AgentThink);
-UR.SystemHook('SIM', 'AGENTS_EXEC', AgentExec);
+UR.SystemHook('SIM/RESET', AgentReset);
+UR.SystemHook('SIM/SETMODE', AgentSelect);
+UR.SystemHook('SIM/PROGRAM', AgentProgram);
+UR.SystemHook('SIM/AGENTS_UPDATE', AgentUpdate);
+UR.SystemHook('SIM/AGENTS_THINK', AgentThink);
+UR.SystemHook('SIM/AGENTS_EXEC', AgentExec);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

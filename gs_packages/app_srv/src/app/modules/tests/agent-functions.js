@@ -134,12 +134,12 @@ function TestAgentReset(/* frameNum */) {}
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.SystemHook('SIM', 'RESET', AgentReset);
-// UR.SystemHook('SIM', 'SETMODE', AgentSelect);
-// UR.SystemHook('SIM', 'PROGRAM', AgentProgram);
-// UR.SystemHook('SIM', 'AGENTS_UPDATE', AgentUpdate);
-// UR.SystemHook('SIM', 'AGENTS_THINK', AgentThink);
-// UR.SystemHook('SIM', 'AGENTS_EXEC', AgentExec);
+// UR.SystemHook('SIM/RESET', AgentReset);
+// UR.SystemHook('SIM/SETMODE', AgentSelect);
+// UR.SystemHook('SIM/PROGRAM', AgentProgram);
+// UR.SystemHook('SIM/AGENTS_UPDATE', AgentUpdate);
+// UR.SystemHook('SIM/AGENTS_THINK', AgentThink);
+// UR.SystemHook('SIM/AGENTS_EXEC', AgentExec);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

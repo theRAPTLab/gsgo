@@ -141,7 +141,7 @@ const counter = useRef();
   useRegisterMessage('APPSTATE_TICK', handleTick);
   //
   useInterval(() => {
-    UR.raiseMessage('APPSTATE_TICK', {
+    UR.RaiseMessage('APPSTATE_TICK', {
       source: 'src:1000ms timer',
       tick: counter.current++
     });

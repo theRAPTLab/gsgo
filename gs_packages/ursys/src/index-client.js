@@ -7,9 +7,9 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URChannel = require('./client-endpoint');
+const EndPoint = require('./client-endpoint');
 const URNet = require('./client-urnet');
-const URExec = require('./client-exec');
+const ClientExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
@@ -31,17 +31,10 @@ const META = {
   _VERSION: '0.0.1'
 };
 
-/// CLIENT-SIDE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// to be implemented
-const Events = {};
-const Extensions = {};
-const PubSub = {};
-
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const CHAN_LOCAL = new URChannel('ur-client');
-const CHAN_NET = new URChannel('ur-sender');
+const EP_LOCAL = new EndPoint('ur-client');
+const EP_NET = new EndPoint('ur-sender');
 let URSYS_RUNNING = false;
 
 /// MAIN API //////////////////////////////////////////////////////////////////
@@ -56,16 +49,15 @@ async function SystemStart() {
   }
   // autoconnect to URSYS network during NET_CONNECT
   PhaseMachine.QueueHookFor(
-    'UR',
-    'NET_CONNECT',
+    'UR/NET_CONNECT',
     () =>
       new Promise((resolve, reject) =>
-        URNet.Connect(CHAN_NET, { success: resolve, failure: reject })
+        URNet.Connect(EP_NET, { success: resolve, failure: reject })
       )
   );
   // autoregister messages
-  PhaseMachine.QueueHookFor('UR', 'APP_CONFIGURE', async () => {
-    let result = await CHAN_LOCAL.ursysRegisterMessages();
+  PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
+    let result = await EP_LOCAL.ursysRegisterMessages();
     console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
@@ -90,23 +82,23 @@ async function SystemStop() {
 const UR = {
   ...META,
   // FORWARDED PUB/SUB
-  RegisterMessage: CHAN_LOCAL.registerMessage,
-  UnregisterMessage: CHAN_LOCAL.unregisterMessage,
-  SendMessage: CHAN_LOCAL.sendMessage,
-  RaiseMessage: CHAN_LOCAL.raiseMessage,
-  CallMessage: CHAN_LOCAL.callMessage,
+  RegisterMessage: EP_LOCAL.registerMessage,
+  UnregisterMessage: EP_LOCAL.unregisterMessage,
+  SendMessage: EP_LOCAL.sendMessage,
+  RaiseMessage: EP_LOCAL.raiseMessage,
+  CallMessage: EP_LOCAL.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
   // FORWARDED SYSTEM CONTROL VIA UREXEC
-  SystemBoot: URExec.SystemBoot,
-  SystemConfig: URExec.SystemConfig,
-  SystemRun: URExec.SystemRun,
-  SystemRestage: URExec.SystemRestage,
-  SystemReboot: URExec.SystemReboot,
-  SystemUnload: URExec.SystemUnload,
+  SystemBoot: ClientExec.SystemBoot,
+  SystemConfig: ClientExec.SystemConfig,
+  SystemRun: ClientExec.SystemRun,
+  SystemRestage: ClientExec.SystemRestage,
+  SystemReboot: ClientExec.SystemReboot,
+  SystemUnload: ClientExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   SetPromptColor: PROMPTS.setPromptColor,
