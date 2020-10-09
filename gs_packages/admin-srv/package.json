@@ -1,0 +1,81 @@
+{
+  "name": "@gemstep/admin-srv",
+  "version": "0.0.1-alpha.8",
+  "description": "Admin Server Prototype",
+  "author": "Dave 'Sri' Seah <david@davidseah.com>",
+  "homepage": "",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
+  },
+  "scripts": {
+    "local": "npm run dev:admin",
+    "..ursys": "cd ../ursys && npm run local",
+    "..bootstrap": "cd ../.. && npm run bootstrap",
+    "local:dev": "npm run dev:admin",
+    "dev:admin:ursys": "cd ../ursys && npm run dev:ursys",
+    "dev:admin": "nodemon ./server/_start.js",
+    "build:gem": "next build",
+    "start:gem": "node ./server/_start",
+    "storybook": "start-storybook -p 6006"
+  },
+  "nodemonConfig": {
+    "verbose": true,
+    "ignore": [
+      "node_modules",
+      ".next"
+    ],
+    "watch": [
+      "server/_start.js",
+      "../ursys/server",
+      "../ursys/client",
+      "src/pages/_app.jsx",
+      "src/pages/_document.jsx"
+    ],
+    "ext": "js json"
+  },
+  "dependencies": {
+    "@gemstep/ursys": "^0.0.1-alpha.7",
+    "@material-ui/core": "^4.9.6",
+    "@material-ui/icons": "^4.9.1",
+    "clsx": "^1.1.0",
+    "cross-fetch": "^3.0.4",
+    "deepmerge": "^4.2.2",
+    "fs-extra": "^8.1.0",
+    "hashids": "^2.2.1",
+    "ip": "^1.1.5",
+    "jss": "^10.1.1",
+    "jss-plugin-extend": "^10.1.1",
+    "next": "^9.4.4",
+    "nodemon": "^2.0.3",
+    "pixi.js": "^5.3.3",
+    "prop-types": "^15.7.2",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-markdown": "^4.3.1",
+    "react-pixi-fiber": "^0.14.1",
+    "react-redux": "^7.2.0",
+    "react-use": "^14.2.0",
+    "redux": "^4.0.5",
+    "request-ip": "^2.1.3",
+    "rxjs": "^6.6.3",
+    "tracer": "^1.0.3",
+    "uuid": "^8.0.0",
+    "ws": "^7.2.5",
+    "xstate": "^4.10.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "@babel/core": "^7.9.6",
+    "@storybook/addon-actions": "^5.3.18",
+    "@storybook/addon-docs": "^5.3.18",
+    "@storybook/addon-links": "^5.3.18",
+    "@storybook/addon-storysource": "^5.3.18",
+    "@storybook/addons": "^5.3.18",
+    "@storybook/react": "^5.3.18",
+    "@zeit/next-source-maps": "0.0.3",
+    "babel-loader": "^8.1.0",
+    "multiview": "^3.0.1"
+  }
+}

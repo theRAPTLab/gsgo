@@ -127,7 +127,7 @@ This was added to `pages/index.jsx` during testing to print a counting tick hand
 
 ``` jsx
 import UR from '@gemstep/ursys';
-import { useURSubscribe, useInterval } from '../hooks/use-ursys';
+import { useRegisterMessage, useInterval } from '../hooks/use-ursys';
 
 function Page() {
 const counter = useRef();
@@ -138,10 +138,10 @@ const counter = useRef();
     const { tick = '', source = '', route = '' } = data;
     console.log(`TICK ${tick} ${source} ${route}`);
   }
-  useURSubscribe('APPSTATE_TICK', handleTick);
+  useRegisterMessage('APPSTATE_TICK', handleTick);
   //
   useInterval(() => {
-    UR.Signal('APPSTATE_TICK', {
+    UR.RaiseMessage('APPSTATE_TICK', {
       source: 'src:1000ms timer',
       tick: counter.current++
     });
@@ -160,7 +160,7 @@ const counter = useRef();
     console.log(out);
     return data;
   }
-  useURSubscribe('HELLO_URSYS', handleHello);
+  useRegisterMessage('HELLO_URSYS', handleHello);
 }
 
 

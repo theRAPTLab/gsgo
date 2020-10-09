@@ -5,13 +5,12 @@
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
     "audit": "lerna bootstrap && lerna-audit",
     "build": "lerna run build",
-    "start": "npm run build && multiview [npm run gem] [npm run app]",
-    "admin": "npm run build && lerna run dev:admin --stream --no-prefix",
+    "start": "npm run build && multiview [npm run gem] [npm run admin]",
     "ursys": "#ERR 'ursys is not runnable from lerna root'",
-    "app": "npm run build && lerna run dev:app --stream --no-prefix",
     "gem": "npm run build && lerna run dev:gem --stream --no-prefix",
+    "admin": "npm run build && lerna run dev:admin --stream --no-prefix",
     "xplay": "npm run build && lerna run dev:xplay --stream --no-prefix",
-    "list": "# use 'npm run admin | app | gem | xplay'",
+    "list": "# use 'npm run admin | gem | xplay'",
     "list:global": "npm list -g --depth=0"
   },
   "devDependencies": {

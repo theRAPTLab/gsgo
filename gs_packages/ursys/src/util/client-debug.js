@@ -10,7 +10,7 @@ let TOOLS;
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AddConsoleTools(UR) {
+function addConsoleTools(UR) {
   const PR = UR.PrefixUtil('URSYS DEBUG', 'TagRed');
   console.log(...PR('adding window debug tools'));
 
@@ -26,7 +26,7 @@ function AddConsoleTools(UR) {
       return 'signal() is signalling to all implementors to NET:HELLO';
     },
     publish: (mesg = 'NET:HELLO', data = { type: 'publish' }) => {
-      UR.NetPublish(mesg, data);
+      UR.SendMessage(mesg, data);
       return 'publish() is sending to other implementors of NET:HELLO';
     },
     reflect: (data = { type: 'reflect' }) => {
@@ -56,4 +56,4 @@ function AddConsoleTools(UR) {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { AddConsoleTools };
+module.exports = { addConsoleTools };
