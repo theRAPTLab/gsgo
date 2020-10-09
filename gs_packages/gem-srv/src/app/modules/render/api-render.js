@@ -56,7 +56,6 @@ function Init(element) {
   PIXI_APP.renderer.autoResize = true;
   // XGUI PROBLEM: Can't get accurate width/height
   PIXI_APP.renderer.resize(PIXI_DIV.offsetWidth, PIXI_DIV.offsetHeight);
-  console.log(...PR('check dim', PIXI_DIV.width));
   // end XGUI problem
 
   // create PIXI root container and add to renderer
