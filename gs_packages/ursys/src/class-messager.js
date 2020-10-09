@@ -169,6 +169,7 @@ class Messager {
         // trigger the local handler (no return expected)
         handlerFunc(inData, {}); // second param is for control message expansion
       }); // end handlers.forEach
+      return;
     }
     /// toNetwork ///
     if (toNet) {

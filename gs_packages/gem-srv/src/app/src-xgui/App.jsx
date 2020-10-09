@@ -24,11 +24,6 @@ import './compiled-scss.css';
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
-  console.log('got displaylist', remoteList.length);
-});
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // hack in asset loader
 let ASSETS_LOADED = false;
 UR.SystemHook(
@@ -48,6 +43,8 @@ UR.SystemHook(
     })
 );
 
+/// MAIN APPLICATION ROOT /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class App extends React.Component {
   constructor() {
     super();
