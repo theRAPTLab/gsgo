@@ -92,19 +92,19 @@ function m_HandleRegistrationMessage(msgEvent) {
  */
 function m_HandleMessage(msgEvent) {
   let pkt = new NetPacket(msgEvent.data);
-  let msg = pkt.Message();
+  let msg = pkt.getMessage();
   // (1) If this packet is a response packet, then it must be one of
   // our OWN previously-sent messages that we expected a return value.
   // Call CompleteTransaction() to invoke the function handler
-  if (pkt.IsResponse()) {
+  if (pkt.isResponse()) {
     if (DBG.handle) console.log(...PR(`completing transaction ${msg}`));
-    pkt.CompleteTransaction();
+    pkt.transactionComplete();
     return;
   }
   // (2) Otherwise, the incoming network message has been routed to
   // us to handle.
-  let data = pkt.Data();
-  let type = pkt.Type();
+  let data = pkt.getData();
+  let type = pkt.getType();
   let dbgout = DBG.handle && !msg.startsWith('NET:SRV_');
   // (3) handle each packet type as necessary
   switch (type) {
@@ -116,13 +116,13 @@ function m_HandleMessage(msgEvent) {
       // network message received
       if (dbgout) cout_ReceivedStatus(pkt);
       m_urlink.sendMessage(msg, data, { fromNet: true });
-      pkt.ReturnTransaction();
+      pkt.transactionReturn();
       break;
     case 'msig':
       // network signal to raise
       if (dbgout) cout_ReceivedStatus(pkt);
       m_urlink.raiseMessage(msg, data, { fromNet: true });
-      pkt.ReturnTransaction();
+      pkt.transactionReturn();
       break;
     case 'mcall':
       // network call received
@@ -130,8 +130,8 @@ function m_HandleMessage(msgEvent) {
       m_urlink.callMessage(msg, data, { fromNet: true }).then(result => {
         if (dbgout) cout_ForwardedStatus(pkt, result);
         // now return the packet
-        pkt.SetData(result);
-        pkt.ReturnTransaction();
+        pkt.setData(result);
+        pkt.transactionReturn();
       });
       break;
     default:
@@ -141,16 +141,16 @@ function m_HandleMessage(msgEvent) {
   function cout_ReceivedStatus(pkt) {
     console.warn(
       ...PR(
-        `ME_${NetPacket.SocketUADDR()} received '${pkt.Type()}' '${pkt.Message()}' from ${pkt.SourceAddress()}`
+        `ME_${NetPacket.SocketUADDR()} received '${pkt.getType()}' '${pkt.getMessage()}' from ${pkt.getSourceAddress()}`
       ),
-      pkt.Data()
+      pkt.getData()
     );
   }
   // DEBUG OUT UTILITY
   function cout_ForwardedStatus(pkt, result) {
     console.log(
       ...PR(
-        `ME_${NetPacket.SocketUADDR()} forwarded '${pkt.Message()}', returning ${JSON.stringify(
+        `ME_${NetPacket.SocketUADDR()} forwarded '${pkt.getMessage()}', returning ${JSON.stringify(
           result
         )}`
       )

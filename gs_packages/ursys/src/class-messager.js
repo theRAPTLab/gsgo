@@ -173,7 +173,7 @@ class Messager {
     /// toNetwork ///
     if (toNet) {
       let pkt = new NetPacket(mesgName, inData, type);
-      pkt.SocketSend();
+      pkt.socketSend();
       return;
     } // end toNetwork
     console.log(
@@ -272,7 +272,7 @@ class Messager {
       if (!isNet) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';
       let pkt = new NetPacket(mesgName, inData, type);
-      let p = pkt.PromiseTransaction();
+      let p = pkt.transactionStart();
       promises.push(p);
     } // end toNetwork
 

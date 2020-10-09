@@ -126,7 +126,7 @@ class NetPacket {
     this.data = data || {};
     this.msg = msg;
     // id and debugging memo support
-    this.id = this.MakeNewID();
+    this.id = this.makeNewId();
     this.rmode = TRANSACTION_MODE[0]; // is default 'request' (trans request)
     this.type = type || PACKET_TYPES[0]; // is default 'msend' (no return)
     this.memo = '';
@@ -144,7 +144,7 @@ class NetPacket {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.Type() returns the TRANSACTION_TYPE of this packet
    */
-  Type() {
+  getType() {
     return this.type;
   }
 
@@ -153,7 +153,7 @@ class NetPacket {
    * @param {string} type the type to compare with the packet's type
    * @returns {boolean}
    */
-  IsType(type) {
+  isType(type) {
     return this.type === type;
   }
 
@@ -161,7 +161,7 @@ class NetPacket {
   /** NetPacket.SetType() sets the type of the packet. Must be a known type
    * in PACKET_TYPES
    */
-  SetType(type) {
+  setType(type) {
     this.type = m_CheckType(type);
   }
 
@@ -169,35 +169,35 @@ class NetPacket {
   /** returns the message string of form CHANNEL:MESSAGE, where CHANNEL:
    * is optional
    */
-  Message() {
+  getMessage() {
     return this.msg;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns MESSAGE without the CHANNEL: prefix. The channel (e.g.
    * NET, LOCAL, STATE) is also set true
    */
-  DecodedMessage() {
+  getMessageParts() {
     return NetPacket.ExtractChannel(this.msg);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.Is() returns truthy value (this.data) if the passed msgstr
    *  matches the message associated with this NetPacket
    */
-  Is(msgstr) {
+  sameMessageAs(msgstr) {
     return msgstr === this.msg ? this.data : undefined;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.IsServerMessage() is a convenience function return true if
    * server message */
-  IsServerMessage() {
+  isServerMessage() {
     return this.msg.startsWith('NET:SRV_');
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.SetMessage() sets the message field
    */
-  SetMessage(msgstr) {
+  setMessage(msgstr) {
     this.msg = msgstr;
   }
 
@@ -205,7 +205,7 @@ class NetPacket {
   /** NetPacket.Data() returns the entire data payload or the property within
    * the data payload (can return undefined if property doesn't exist)
    */
-  Data(prop) {
+  getData(prop) {
     if (!prop) return this.data;
     if (typeof prop === 'string') return this.data[prop];
     throw Error(ERR_BAD_PROP);
@@ -215,7 +215,7 @@ class NetPacket {
   /**
    * Convenience method to set data object entirely
    */
-  SetData(propOrVal, val) {
+  setData(propOrVal, val) {
     if (typeof propOrVal === 'object') {
       this.data = propOrVal;
       return;
@@ -229,17 +229,17 @@ class NetPacket {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.Memo() returns the 'memo' field of the packet */
-  Memo() {
+  getMemo() {
     return this.memo;
   }
 
-  SetMemo(memo) {
+  setMemo(memo) {
     this.memo = memo;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.JSON() returns a stringified JSON version of the packet. */
-  JSON() {
+  json() {
     return JSON.stringify(this);
   }
 
@@ -247,7 +247,7 @@ class NetPacket {
   /** NetPacket.SourceGroupId() return the session group id associated with
    * this packet.
    */
-  SourceGroupID() {
+  getSourceGroupId() {
     return this.s_group;
   }
 
@@ -256,7 +256,7 @@ class NetPacket {
   /** NetPacket.SeqNum() returns a non-positive integer that is the number of
    * times this packet was reused during a transaction (e.g. 'mcall' types).
    */
-  SeqNum() {
+  getSeqNum() {
     return this.seqnum;
   }
 
@@ -266,7 +266,7 @@ class NetPacket {
    * after the URSYS server has received it, so it is invalid when a NetPacket
    * packet is first created.
    */
-  SourceAddress() {
+  getSourceAddress() {
     /*/ NOTE
 
         s_uaddr is the most recent sending browser.
@@ -284,13 +284,13 @@ class NetPacket {
     }
     // this is a regular message forward to remote handlers, returning
     // type 'res', seqlog > 1, seqlog[0] is not server
-    return this.IsTransaction() ? this.seqlog[0] : this.s_uaddr;
+    return this.isTransaction() ? this.seqlog[0] : this.s_uaddr;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return true if this pkt is from the server targeting remote handlers
    */
-  IsServerOrigin() {
-    return this.SourceAddress() === NetPacket.DefaultServerUADDR();
+  isServerOrigin() {
+    return this.getSourceAddress() === NetPacket.DefaultServerUADDR();
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -299,9 +299,9 @@ class NetPacket {
    * forwarding and returning packets between remotes.
    * @param {NetPacket} pkt - the packet to copy source from
    */
-  CopySourceAddress(pkt) {
+  copySourceAddress(pkt) {
     if (pkt.constructor.name !== 'NetPacket') throw Error(ERR_NOT_PACKET);
-    this.s_uaddr = pkt.SourceAddress();
+    this.s_uaddr = pkt.getSourceAddress();
   }
 
   /// - - - - - - - - server- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -309,13 +309,13 @@ class NetPacket {
    * @param {string} key - type of debug info (always 'src' currently)
    * @returns {string} source browser + group (if set)
    */
-  Info(key) {
+  getInfo(key) {
     switch (key) {
       case 'src': /* falls-through */
       default:
-        return this.SourceGroupID()
-          ? `${this.SourceAddress()} [${this.SourceGroupID()}]`
-          : `${this.SourceAddress()}`;
+        return this.getSourceGroupId()
+          ? `${this.getSourceAddress()} [${this.getSourceGroupId()}]`
+          : `${this.getSourceAddress()}`;
     }
   }
 
@@ -325,7 +325,7 @@ class NetPacket {
    * a packet a unique ID across the entire URSYS network.
    * @returns {string} unique id
    */
-  MakeNewID() {
+  makeNewId() {
     let idStr = (++m_id_counter).toString();
     this.id = m_id_prefix + idStr.padStart(5, '0');
     return this.id;
@@ -337,18 +337,18 @@ class NetPacket {
    * @param {Object=m_socket} socket - web socket object. m_socket
    * is defined only on browsers; see NetPacket.GlobalSetup()
    */
-  SocketSend(socket = m_netsocket) {
+  socketSend(socket = m_netsocket) {
     if (m_mode === M_ONLINE || m_mode === M_INIT) {
       this.s_group = NetPacket.GlobalGroupID();
       let dst = socket.UADDR || 'unregistered socket';
       if (!socket) throw Error('SocketSend(sock) requires a valid socket');
       if (DBG.send) {
-        let status = `sending '${this.Message()}' to ${dst}`;
+        let status = `sending '${this.getMessage()}' to ${dst}`;
         console.log(...PR(status));
       }
       // for server-side ws library, send supports a function callback
       // for WebSocket, this is ignored
-      socket.send(this.JSON(), err => {
+      socket.send(this.json(), err => {
         if (err) console.error(`\nsocket ${socket.UADDR} reports error ${err}\n`);
       });
     } else if (m_mode !== M_STANDALONE) {
@@ -367,7 +367,7 @@ class NetPacket {
    * @param {Object=m_socket} socket - web socket object. m_socket is defined
    * only on browsers; see NetPacket.GlobalSetup()
    */
-  PromiseTransaction(socket = m_netsocket) {
+  transactionStart(socket = m_netsocket) {
     if (m_mode === M_STANDALONE) {
       console.warn(PR, 'STANDALONE MODE: PromiseTransaction() suppressed!');
       return Promise.resolve();
@@ -376,7 +376,7 @@ class NetPacket {
     if (!socket) throw Error('PromiseTransaction(sock) requires a valid socket');
     // save our current UADDR
     this.seqlog.push(NetPacket.UADDR);
-    let dbg = DBG.transact && !this.IsServerMessage();
+    let dbg = DBG.transact && !this.isServerMessage();
     let p = new Promise((resolve, reject) => {
       let hash = m_GetHashKey(this);
       if (m_transactions.has(hash)) {
@@ -391,7 +391,7 @@ class NetPacket {
           }
           resolve(data);
         });
-        this.SocketSend(socket);
+        this.socketSend(socket);
       }
     });
     return p;
@@ -400,7 +400,7 @@ class NetPacket {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** NetPacket.RoutingMode() returns the direction of the packet to a
    * destination handler (req) or back to the origin (res).  */
-  RoutingMode() {
+  getRoutingMode() {
     return this.rmode;
   }
 
@@ -408,7 +408,7 @@ class NetPacket {
   /** NetPacket.IsRequest() returns true if this packet is one being sent
    * to a remote handler
    */
-  IsRequest() {
+  isRequest() {
     return this.rmode === 'req';
   }
 
@@ -417,7 +417,7 @@ class NetPacket {
    * being returned from a remote handler
    * @returns {boolean} true if this is a transaction response
    */
-  IsResponse() {
+  isResponse() {
     return this.rmode === 'res';
     // more bulletproof check, but unnecessary
     // return this.rmove ==='res' && this.SourceAddress() === NetPacket.UADDR;
@@ -427,7 +427,7 @@ class NetPacket {
   /** NetPacket.IsTransaction() tests whether the packet is a response to a
    * call that was sent out previously.
    */
-  IsTransaction() {
+  isTransaction() {
     return (
       this.rmode !== 'req' &&
       this.seqnum > 0 &&
@@ -447,7 +447,7 @@ class NetPacket {
    * @param {Object=m_socket} socket - web socket object. m_socket is defined
    * only on browsers; see NetPacket.GlobalSetup()
    */
-  ReturnTransaction(socket = m_netsocket) {
+  transactionReturn(socket = m_netsocket) {
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
     if (!socket) throw Error('ReturnTransaction(sock) requires a valid socket');
     // note: seqnum is already incremented by the constructor if this was
@@ -455,7 +455,7 @@ class NetPacket {
     // add this to the sequence log
     this.seqlog.push(NetPacket.UADDR);
     this.rmode = m_CheckRMode('res');
-    this.SocketSend(socket);
+    this.socketSend(socket);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -464,8 +464,8 @@ class NetPacket {
    * informed via the saved function handler created in
    * NetPacket.PromiseTransaction().
    */
-  CompleteTransaction() {
-    let dbg = DBG.transact && !this.IsServerMessage();
+  transactionComplete() {
+    let dbg = DBG.transact && !this.isServerMessage();
     let hash = m_GetHashKey(this);
     let resolverFunc = m_transactions.get(hash);
     if (dbg) console.log(...PR('CompleteTransaction', hash));
@@ -612,7 +612,7 @@ function m_SeqIncrement(pkt) {
  *  @return {string} hash key string
 /*/
 function m_GetHashKey(pkt) {
-  let hash = `${pkt.SourceAddress()}:${pkt.id}`;
+  let hash = `${pkt.getSourceAddress()}:${pkt.id}`;
   return hash;
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -178,7 +178,9 @@ URNET.NetCall = async (mesgName, data) => {
   let pkt = new NetPacket(mesgName, data);
   let promises = m_PromiseRemoteHandlers(pkt);
   if (DBG.call)
-    TERM(`${pkt.Info()} NETCALL ${pkt.Message()} to ${promises.length} remotes`);
+    TERM(
+      `${pkt.getInfo()} NETCALL ${pkt.getMessage()} to ${promises.length} remotes`
+    );
   /// MAGICAL ASYNC/AWAIT BLOCK ///////
   const results = await Promise.all(promises);
   /// END MAGICAL ASYNC/AWAIT BLOCK ///
@@ -213,7 +215,9 @@ URNET.NetPublish = (mesgName, data) => {
   let promises = m_PromiseRemoteHandlers(pkt);
   // we don't care about waiting for the promise to complete
   if (DBG.call)
-    TERM(`${pkt.Info()} NETSEND ${pkt.Message()} to ${promises.length} remotes`);
+    TERM(
+      `${pkt.getInfo()} NETSEND ${pkt.getMessage()} to ${promises.length} remotes`
+    );
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Alias for NetPublish(), kept for conceptual symmetry to the client-side URSYS
@@ -252,10 +256,10 @@ URNET.ClientList = () => {
  * @return {Object} object with registered property containing array of message
  */
 URNET.PKT_RegisterRemoteHandlers = pkt => {
-  if (pkt.Message() !== 'NET:SRV_REG_HANDLERS')
+  if (pkt.getMessage() !== 'NET:SRV_REG_HANDLERS')
     throw Error('not a registration packet');
-  let uaddr = pkt.SourceAddress();
-  let { messages = [] } = pkt.Data();
+  let uaddr = pkt.getSourceAddress();
+  let { messages = [] } = pkt.getData();
   // make sure there's no sneaky attempt to subvert the system messages
   const filtered = messages.filter(msg => !msg.startsWith('NET:SRV'));
   if (filtered.length !== messages.length) {
@@ -292,9 +296,9 @@ URNET.PKT_RegisterRemoteHandlers = pkt => {
  * @return {Object} returned data payload
  */
 URNET.PKT_SessionLogin = pkt => {
-  if (pkt.Message() !== 'NET:SRV_SESSION_LOGIN')
+  if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGIN')
     throw Error('not a session login packet');
-  const uaddr = pkt.SourceAddress();
+  const uaddr = pkt.getSourceAddress();
   const sock = m_SocketLookup(uaddr);
   if (!sock) throw Error(`uaddr '${uaddr}' not associated with a socket`);
   if (sock.USESS) {
@@ -303,7 +307,7 @@ URNET.PKT_SessionLogin = pkt => {
     )}'`;
     return { error, code: NetPacket.CODE_SES_RE_REGISTER };
   }
-  const { token } = pkt.Data();
+  const { token } = pkt.getData();
   if (!token || typeof token !== 'string')
     return { error: 'must provide token string' };
   const decoded = SESSION.DecodeToken(token);
@@ -328,11 +332,11 @@ URNET.PKT_SessionLogin = pkt => {
  * @return {Object} returned data payload
  */
 URNET.PKT_SessionLogout = pkt => {
-  if (pkt.Message() !== 'NET:SRV_SESSION_LOGOUT')
+  if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGOUT')
     throw Error('not a session logout packet');
-  const uaddr = pkt.SourceAddress();
+  const uaddr = pkt.getSourceAddress();
   const sock = m_SocketLookup(uaddr);
-  const { key } = pkt.Data();
+  const { key } = pkt.getData();
   if (sock.UKEY !== key)
     return { error: `uaddr '${uaddr}' key '${key}'!=='${sock.UKEY}'` };
   if (DBG.client) TERM(`${uaddr} user logout '${sock.USESS.token}'`);
@@ -345,7 +349,7 @@ URNET.PKT_SessionLogout = pkt => {
 /** Return a session object based on the passed packet's stored credentials
  */
 URNET.PKT_Session = pkt => {
-  const uaddr = pkt.SourceAddress();
+  const uaddr = pkt.getSourceAddress();
   const sock = m_SocketLookup(uaddr);
   if (!sock) {
     const error = `${uaddr} impossible socket lookup failure`;
@@ -457,7 +461,7 @@ function m_SocketClientAck(socket) {
 function m_SocketOnMessage(socket, json) {
   let pkt = new NetPacket(json);
   // figure out what to do
-  switch (pkt.Type()) {
+  switch (pkt.getType()) {
     case 'msig':
     case 'msend':
     case 'mcall':
@@ -467,7 +471,7 @@ function m_SocketOnMessage(socket, json) {
       // m_HandleState(socket, pkt);
       break;
     default:
-      throw new Error(`${TERM} unknown packet type '${pkt.Type()}'`);
+      throw new Error(`${TERM} unknown packet type '${pkt.getType()}'`);
   } // end switch
 } // end m_SocketOnMessage()
 
@@ -522,10 +526,12 @@ async function m_HandleMessage(socket, pkt) {
   // it and complete the transaction function. Note that dispatched messages comprise
   // of the original packet and the forwarded duplicate packet(s) that the server
   // recombines and returns to the original packet sender
-  if (pkt.IsResponse()) {
+  if (pkt.isResponse()) {
     if (DBG.calls)
-      TERM(`-- ${pkt.Message()} completing transaction ${pkt.seqlog.join(':')}`);
-    pkt.CompleteTransaction();
+      TERM(
+        `-- ${pkt.getMessage()} completing transaction ${pkt.seqlog.join(':')}`
+      );
+    pkt.transactionComplete();
     return;
   }
   // (2) If we got this far, it's a new message.
@@ -541,16 +547,16 @@ async function m_HandleMessage(socket, pkt) {
   // this is an error. If the message is a CALL, then report an error back to
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
-    const out = `${pkt.SourceAddress()} can't find '${pkt.Message()}'`;
+    const out = `${pkt.getSourceAddress()} can't find '${pkt.getMessage()}'`;
     const info = 'Using Publish/Call? They can not target themselves.';
     if (DBG.calls) TERM.warn(out, info);
     // return transaction to resolve callee
-    pkt.SetData({
+    pkt.setData({
       code: NetPacket.CODE_NO_MESSAGE,
       error: out,
       info
     });
-    if (pkt.IsType('mcall')) pkt.ReturnTransaction(socket);
+    if (pkt.isType('mcall')) pkt.transactionReturn(socket);
     return;
   }
 
@@ -561,7 +567,7 @@ async function m_HandleMessage(socket, pkt) {
   // the server!
 
   // Print some debugging messages
-  const DBG_NOSRV = !pkt.IsServerMessage();
+  const DBG_NOSRV = !pkt.isServerMessage();
   if (DBG.calls) log_PktDirection(pkt, 'call', promises);
   if (DBG.calls && DBG_NOSRV) log_PktTransaction(pkt, 'queuing', promises);
 
@@ -580,24 +586,25 @@ async function m_HandleMessage(socket, pkt) {
   }
 
   // (3e) If the call type doesn't expect return data, we are done!
-  if (!pkt.IsType('mcall')) return;
+  if (!pkt.isType('mcall')) return;
 
   // (3f) If the call type is 'mcall', and we need to return the original
   // message packet to the original caller. First merge the data into
   // one data object...
   let data = pktArray.reduce((d, p) => {
-    let pdata = p instanceof NetPacket ? p.Data() : p;
+    let pdata = p instanceof NetPacket ? p.getData() : p;
     let retval = Object.assign(d, pdata);
-    if (DBG_NOSRV) TERM(`'${pkt.Message()}' reduce`, JSON.stringify(retval));
+    if (DBG_NOSRV) TERM(`'${pkt.getMessage()}' reduce`, JSON.stringify(retval));
     return retval;
   }, {});
 
   // (3g) ...then return the combined data using NetPacket.ReturnTransaction()
   // on the caller's socket, which we have retained through the magic of closures!
   const dbgData = JSON.stringify(data);
-  pkt.SetData(data);
-  if (DBG_NOSRV) TERM(`'${pkt.Message()}' returning transaction data ${dbgData}`);
-  pkt.ReturnTransaction(socket);
+  pkt.setData(data);
+  if (DBG_NOSRV)
+    TERM(`'${pkt.getMessage()}' returning transaction data ${dbgData}`);
+  pkt.transactionReturn(socket);
 } // end m_HandleMessage()
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -617,7 +624,7 @@ async function m_HandleMessage(socket, pkt) {
  * @returns {Array<Promise>} promises objects to use with await
  */
 function m_PromiseServerHandlers(pkt) {
-  let mesgName = pkt.Message();
+  let mesgName = pkt.getMessage();
   const handlers = m_server_handlers.get(mesgName);
   /// create promises for all registered handlers in the set
   let promises = [];
@@ -649,16 +656,16 @@ function m_PromiseServerHandlers(pkt) {
  */
 function m_PromiseRemoteHandlers(pkt) {
   // debugging values
-  let s_uaddr = pkt.SourceAddress();
+  let s_uaddr = pkt.getSourceAddress();
   // logic values
-  let mesgName = pkt.Message();
-  let type = pkt.Type();
+  let mesgName = pkt.getMessage();
+  let type = pkt.getType();
   const publishOnly = type === 'msend' || type === 'mcall';
 
   // generate the list of promises
   let promises = [];
   // disallow NET:SYSTEM published messages from remote clients
-  if (!pkt.IsServerOrigin() && mesgName.startsWith('NET:SYSTEM')) return promises;
+  if (!pkt.isServerOrigin() && mesgName.startsWith('NET:SYSTEM')) return promises;
   // check for handlers
   let handlers = m_remote_handlers.get(mesgName);
   if (!handlers) return promises;
@@ -674,9 +681,9 @@ function m_PromiseRemoteHandlers(pkt) {
       let d_sock = mu_sockets.get(d_uaddr);
       if (d_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${d_uaddr}`);
       let newpkt = new NetPacket(pkt); // clone packet data to new packet
-      newpkt.MakeNewID(); // make new packet unique
-      newpkt.CopySourceAddress(pkt); // clone original source address
-      promises.push(newpkt.PromiseTransaction(d_sock));
+      newpkt.makeNewId(); // make new packet unique
+      newpkt.copySourceAddress(pkt); // clone original source address
+      promises.push(newpkt.transactionStart(d_sock));
     }
   }); // handlers.forEach
   return promises;
@@ -706,7 +713,7 @@ function log_PktDirection(pkt, direction, promises) {
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** helper debug output used by m_HandleMessage() */
 function log_PktTransaction(pkt, status, promises) {
-  const src = pkt.SourceAddress();
+  const src = pkt.getSourceAddress();
   if (promises && promises.length) {
     TERM(`${src} >> '${pkt.Message()}' ${status} ${promises.length} Promises`);
   } else {
