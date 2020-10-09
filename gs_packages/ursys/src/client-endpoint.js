@@ -21,7 +21,7 @@
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
 const Messager = require('./class-messager');
-const URNet = require('./client-network');
+const URNet = require('./client-urnet');
 const PROMPTS = require('./util/prompts');
 
 /** implements endpoints for talking to the URSYS network

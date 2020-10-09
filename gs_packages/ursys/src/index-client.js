@@ -7,8 +7,8 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URChannel = require('./client-channel');
-const URNet = require('./client-network');
+const URChannel = require('./client-endpoint');
+const URNet = require('./client-urnet');
 const URExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
