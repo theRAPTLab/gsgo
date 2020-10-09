@@ -44,7 +44,7 @@ function SystemHome() {
       <Row>
         <Cell>
           <MD>{`
-## Welcome to GEMSTEP
+## Welcome to GEM-STEP Admin
           `}</MD>
           <WF name="ModelList" expanded>
             <WFList name="List of Models">

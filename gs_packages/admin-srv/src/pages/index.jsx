@@ -43,7 +43,7 @@ function Page() {
   /// RENDER //////////////////////////////////////////////////////////////////
   return (
     <URView scrollable>
-      <URSiteNav title="GEMSTEP Laptop Controller" />
+      <URSiteNav title="GEM-STEP Admin System Prototype" />
       <Row>
         {/* LEFT SIDE */}
         <CellFixed
