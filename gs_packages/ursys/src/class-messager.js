@@ -154,7 +154,7 @@ class Messager {
     let { srcUID, type, fromNet } = options;
     const handlers = this.handlerMap.get(mesgName);
     const { toLocal, toNet } = m_DecodeMessage(mesgName);
-    /// toLocal
+    /// toLocal ///
     if (handlers && (toLocal || fromNet)) {
       handlers.forEach(handlerFunc => {
         // handlerFunc signature: (data,dataReturn) => {}
@@ -170,13 +170,21 @@ class Messager {
         handlerFunc(inData, {}); // second param is for control message expansion
       }); // end handlers.forEach
     }
-    /// toNetwork
+    /// toNetwork ///
     if (toNet) {
       let pkt = new NetPacket(mesgName, inData, type);
       pkt.SocketSend();
       return;
     } // end toNetwork
-    console.log(...PR('not handled', mesgName, options, toLocal, toNet));
+    console.log(
+      ...PR(
+        'unhandled message:',
+        `'${mesgName}' type:${options.type}`,
+        `toLocal:${toLocal} toNet:${toNet}`,
+        'handlerMap:',
+        this.handlerMap
+      )
+    );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Send message to everyone, local and network, and also mirrors back to self.

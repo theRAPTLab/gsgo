@@ -56,13 +56,13 @@ UR.SystemHook('UR', 'APP_CONFIGURE', () => {
       ...PR('!!! SETTING imperative-style timer in declarative world!')
     );
     setInterval(() => {
-      UR.Signal('APPSTATE_TICK', {
+      UR.raiseMessage('APPSTATE_TICK', {
         source: 'src:5000ms timer',
         route: `current route ${ROUTE.currentRoute}`
       });
     }, 5000);
     //
-    UR.Subscribe('HELLO_URSYS', data => {
+    UR.registerMessage('HELLO_URSYS', data => {
       console.log(...PR('RESPONSE "HELLO_URSYS"'));
       let out = '. got';
       Object.keys(data).forEach(key => {

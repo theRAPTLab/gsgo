@@ -36,13 +36,13 @@ function useInterval(callback, delay) {
  *    callLocalHandler();
  *  });
  */
-function useURSubscribe(message, callback) {
+function useRegisterMessage(message, callback) {
   useEffect(() => {
-    UR.Subscribe(message, callback);
-    return () => UR.Unsubscribe(message, callback);
+    UR.registerMessage(message, callback);
+    return () => UR.unregisterMessage(message, callback);
   }, [message, callback]);
 }
 
 /// EXPORT ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { useInterval, useURSubscribe };
+export { useInterval, useRegisterMessage };

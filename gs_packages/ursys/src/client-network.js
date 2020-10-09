@@ -118,6 +118,12 @@ function m_HandleMessage(msgEvent) {
       m_urlink.sendMessage(msg, data, { fromNet: true });
       pkt.ReturnTransaction();
       break;
+    case 'msig':
+      // network signal to raise
+      if (dbgout) cout_ReceivedStatus(pkt);
+      m_urlink.raiseMessage(msg, data, { fromNet: true });
+      pkt.ReturnTransaction();
+      break;
     case 'mcall':
       // network call received
       if (dbgout) cout_ReceivedStatus(pkt);

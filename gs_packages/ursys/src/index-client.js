@@ -93,7 +93,8 @@ const UR = {
   registerMessage: CHAN_LOCAL.registerMessage,
   unregisterMessage: CHAN_LOCAL.unregisterMessage,
   sendMessage: CHAN_LOCAL.sendMessage,
-  Call: CHAN_LOCAL.callMessage,
+  raiseMessage: CHAN_LOCAL.raiseMessage,
+  callMessage: CHAN_LOCAL.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP

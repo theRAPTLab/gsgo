@@ -4,27 +4,15 @@
 /* eslint-disable no-param-reassign */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    URSYS CHANNEL CLASS (URCHAN)
+    URSYS MESSAGER ENDPOINT
 
-    A URCHAN (channel) represents a connection to the URSYS message-passing
-    system for the app and optionally other entities on the URSYS Net.
-
-    Instances are created with URSYS.Connect() with a unique name for logging
-    purposes.
-
-    Additionally, each URCHAN has a unique local id (UID) that is assigned
-    a device address (UADDR). These are used together to make multiple URCHAN
-    instances in an UR App uniquely addressable, though users of URSYS
-    don't need to know that.
-
-    Channels can:
-
-    * subscribe to a named message, locally and from the network
-    * publish to a named message, locally and to the network
-    * call a named message and receive a response asychronously
-    * update state change message, locally and to the network
-    * synch a state change message, locally and from the network
-    * hook into a lifecycle message, locally and from the network
+    The class represents a specific connection to the URSYS message network.
+    It is essentially a wrapper for the Message object (of which there is
+    one instance in client-side URSYS) that includes a URSYS ID (UID) that
+    uniquely identifies each endpoint. This allows an app to create multiple
+    endpoints to handle different "groups" of messages. It affects the
+    semantics of raiseSignal() and sendMessage(); the latter checks to make
+    sure that the message isn't received by the same endpoint that sent it.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -33,18 +21,16 @@
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
 const Messager = require('./class-messager');
-const DataMap = require('./class-datamap');
 const URNet = require('./client-network');
 const PROMPTS = require('./util/prompts');
 
-const PR = PROMPTS.makeStyleFormatter('UR.CHN');
-
 /** implements endpoints for talking to the URSYS network
- * @module MessagerEndpoint
+ *  @module MessagerEndpoint
  */
 /// DEBUGGING /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { create: false, send: false, return: false, register: false };
+const PR = PROMPTS.makeStyleFormatter('UR.CHN');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const BAD_NAME = 'name parameter must be a string';
 const BAD_UID = 'unexpected non-unique UID';
@@ -64,7 +50,7 @@ function m_GetUniqueId() {
 
 /// GLOBAL MESSAGES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MESSAGER = new Messager(); // all urlinks share a common messager
+let MESSAGER = new Messager(); // note: endpoints share the same message dict
 
 /// URSYS NODE CLASS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,6 +144,13 @@ class MessagerEndpoint {
     // returns promise that resolves to data object
     let result = MESSAGER.callMessage(mesgName, inData, options);
     return result;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Sends the data to all message implementors, irregardless of origin.
+   */
+  raiseMessage(mesgName, inData = {}, options = {}) {
+    options = Object.assign(options, { type: 'msig' });
+    MESSAGER.raiseMessage(mesgName, inData, options);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
