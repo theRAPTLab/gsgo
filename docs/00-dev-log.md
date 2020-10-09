@@ -292,7 +292,12 @@ We submitted the report on late Monday, and Tuesday was a rest day. Wednesday we
 
 Next, I want to do the same for phaseMachine. I've commited the last changes.
 
-* [ ] 
+* [x] Fixed SystemHook('UR','APPLOAD') to now be SystemHook('UR/APPLOAD')
+* [x] Messages are now simply sendMessage, callMessage, and raiseMessage with the NET:MSG syntax to direct to the network.
+* [x] DECISION: For classes, we'll obey the camelCase conventions. However, for non-instanced objects like a module, I'll continue to use the PascalCase conventions, as well as for static class methods, because these are Big Fat Functions.
+* [x] renamed `gem_srv` to `admin_srv`, and `app_srv` to `gem_srv`. Also removed the old `adm_srv` because it was old reference code that I don't think we need anymore.
+
+
 
 
 ---
