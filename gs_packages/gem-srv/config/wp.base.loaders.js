@@ -25,6 +25,8 @@ const DIR_ROOT = Path.resolve(__dirname, '../');
 // For an Electron-binary debug server using webpack middleware, you may need
 // to add the additional paths where the built files are located
 const DIR_INCLUDES = [Path.join(DIR_ROOT, 'src')];
+const BABEL_CACHE = [Path.join(DIR_ROOT, 'built/cache/babel-loader')];
+const LOADER_CACHE = Path.join(DIR_ROOT, 'built/cache/cache-loader');
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,21 +35,38 @@ const WebpackLoaders = () => {
   return {
     module: {
       rules: [
+        // CACHE OPTION 1: ENABLE BUILD CACHE PLUGIN
+        // caches source maps
         {
-          test: /\.jsx?$/,
-          loader: 'babel-loader',
+          test: /\.(jsx?|tsx?)$/,
+          use: [
+            `cache-loader?cacheDirectory=${LOADER_CACHE}`,
+            'source-map-loader'
+          ],
+          include: DIR_INCLUDES
+        },
+        // TRANSPILE OPTION 1: use Babel to handle JS and TS
+        // .babelrc adds @babel/preset-typescript to make possible
+        {
+          test: /\.(jsx?|tsx?)$/,
+          // CACHE OPTION 2: USE BUILT-IN BABEL CACHE
+          loader: `babel-loader?cacheDirectory=${BABEL_CACHE}`,
           include: DIR_INCLUDES,
           // don't process js/jsx in node_modules
           exclude: /node_modules/
         },
-        {
-          test: /\.tsx?$/,
-          loader: 'ts-loader',
-          // don't process ts/tsx in node_modules
-          exclude: /node_modules/
-        },
+        // TRANSPILE OPTION 2: use ts-loader to handle JS and TS
+        // broken: compiles but bootstrap doesn't start the code
+        // {
+        //   test: /\.(tsx?|jsx?)$/,
+        //   loader: 'ts-loader',
+        //   include: DIR_INCLUDES,
+        //   // don't process ts/tsx in node_modules
+        //   exclude: /node_modules/
+        // }
         {
           test: /\.css$/,
+          include: DIR_INCLUDES,
           use: [{ loader: 'style-loader' }, { loader: 'css-loader' }]
           // some static css is in node_modules, so don't exclude it
         },
@@ -57,6 +76,7 @@ const WebpackLoaders = () => {
           // this loader runs after all js files are produced (?)
           enforce: 'pre', // webpack.js.org/configuration/module/#ruleenforce
           test: /\.js$/,
+          include: DIR_INCLUDES,
           loader: 'source-map-loader'
         },
         {

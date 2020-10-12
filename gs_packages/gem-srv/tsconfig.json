@@ -14,7 +14,8 @@
     },
     "jsx": "preserve",
     "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true
   },
   "include": ["src/**/*", "./urdu.js"],
   "exclude": ["node_modules"]

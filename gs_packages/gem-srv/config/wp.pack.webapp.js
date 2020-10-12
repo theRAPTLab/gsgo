@@ -86,7 +86,7 @@ const WebpackPacker = env => {
       __filename: true,
       __dirname: true
     },
-    devtool: 'source-map',
+    devtool: 'cheap-module-eval-source-map',
     // apply these additional plugins
     plugins: [
       new Webpack.DefinePlugin({
