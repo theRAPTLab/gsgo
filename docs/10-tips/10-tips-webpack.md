@@ -13,7 +13,7 @@ Changes made:
 Caching is also possible, halving recompile times to about **3 seconds**
 
 * in `wp.base.loaders.js`,  change loader to `babel-loader?cacheDirectory=${DIR_CACHE}`
-* note: DIR_CACHE is an array of one directory
+* note: DIR_CACHE is an array of one director
 
 Alternatively use `cache-loader`, which can cache other output than babel if that's important. Here we are caching source maps:
 
@@ -28,6 +28,30 @@ module: {
   	...
   ],
 ```
+
+Other optimizations:
+
+* upgraded webpack and other plugins (this didn't seem to have an effect initially)
+
+  * ​    "ts-loader": "^7.0.4", to  **8.0.3**
+
+    ​    "typescript": "^3.8.3", -> **4.0.3**
+
+    ​    "webpack": "^4.41.5", -> **4.44.2**
+
+    ​    "webpack-cli": "^3.3.11", -> **3.3.11**
+
+* changed `dev-tool` to `cheap-module-eval-source-map` from `source-map`, which might have been more expensive
+
+In **additional test confirmation**, I'm finding that restoring the original config isn't resulting in the very long compile times as before. They are longer, but still around 10 seconds instead of 25-30 seconds. So it's possible that it's actually due to some change in webpack itself (I updated it). I tested:
+
+* changing `dev-tool` back to `source-map` 
+* re-enabling `ts-loader` as before, but putting it in over `babel-loader` . That said, I believe that the tools are run in REVERSE order...it didn't seem to make a difference,
+* Testing the original problematic build but with the additional includes for ts-loader and babel-loader and style/css loader and pre
+* If I remove **include** from babel...about the same (a little longer). If I remove includes from tsx, a little longer still. 
+* removing **include** from source-map-loader is what **killed** the compile time. The long pause when the dev server is loading before it actually starts transpiler is probably due to this. It drops a good 10-12 seconds to the time. 
+* There is a small improvement in time from using babel-loader exclusively, about 3 seconds.
+* There are noticeable improvements from using babel-loader cache; less so with the source ma
 
 
 
