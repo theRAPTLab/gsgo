@@ -33,21 +33,28 @@ const WebpackLoaders = () => {
   return {
     module: {
       rules: [
+        // OPTION 1: use Babel to handle JS and TS
+        // .babelrc adds @babel/preset-typescript to make possible
         {
-          test: /\.jsx?$/,
+          test: /\.(jsx?|tsx?)$/,
           loader: 'babel-loader',
           include: DIR_INCLUDES,
           // don't process js/jsx in node_modules
           exclude: /node_modules/
         },
-        {
-          test: /\.tsx?$/,
-          loader: 'ts-loader',
-          // don't process ts/tsx in node_modules
-          exclude: /node_modules/
-        },
+        // OPTION 2: use ts-loader to handle JS and TS
+        // broken: compiles but bootstrap doesn't start the code
+        // {
+        //   test: /\.(tsx?|jsx?)$/,
+        //   loader: 'ts-loader',
+        //   include: DIR_INCLUDES,
+        //   // don't process ts/tsx in node_modules
+        //   exclude: /node_modules/
+        // }
+
         {
           test: /\.css$/,
+          include: DIR_INCLUDES,
           use: [{ loader: 'style-loader' }, { loader: 'css-loader' }]
           // some static css is in node_modules, so don't exclude it
         },
@@ -57,6 +64,7 @@ const WebpackLoaders = () => {
           // this loader runs after all js files are produced (?)
           enforce: 'pre', // webpack.js.org/configuration/module/#ruleenforce
           test: /\.js$/,
+          include: DIR_INCLUDES,
           loader: 'source-map-loader'
         },
         {
