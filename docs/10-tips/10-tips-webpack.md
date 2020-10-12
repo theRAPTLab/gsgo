@@ -10,6 +10,27 @@ Changes made:
 * also comment-out the `ts-loader` test, since babel will be handling it all now
 * in `.babelrc`, add  ` "@babel/preset-typescript"` to end of presets. 
 
+Caching is also possible, halving recompile times to about **3 seconds**
+
+* in `wp.base.loaders.js`,  change loader to `babel-loader?cacheDirectory=${DIR_CACHE}`
+* note: DIR_CACHE is an array of one directory
+
+Alternatively use `cache-loader`, which can cache other output than babel if that's important. Here we are caching source maps:
+
+```
+module: {
+  rules: [
+    {
+      test: /\.(jsx?|tsx?)$/,
+      use: ['cache-loader?cacheDirectory=${DIR_CACHE[0]}', 'source-map-loader'],
+      include: DIR_INCLUDES
+    },
+  	...
+  ],
+```
+
+
+
 ---
 
 ## GEM-SRV webpack config
