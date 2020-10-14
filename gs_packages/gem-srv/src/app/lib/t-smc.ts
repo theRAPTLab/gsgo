@@ -37,7 +37,7 @@ export interface IAgent extends IScopeable {
   thinkQueue: IMessage[];
   execQueue: IMessage[];
   queue: (msg: IMessage) => void;
-  exec_smc: (prog: Program, initStack?: TStackable[]) => TStackable[];
+  exec_smc: (prog: TProgram, initStack?: TStackable[]) => TStackable[];
   feature: (name: string) => any;
   addFeature: (name: string) => void;
   name: () => string;
@@ -72,14 +72,14 @@ export type TOpcode = (
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is
  */
-export type TMethod = Program | Function;
+export type TMethod = TProgram | Function;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine program is an array of opcodes that are read from the
  *  beginning and executed one-after-the-other. Each function is invoked
  *  with the current data and scope stacks, as well as flags object that
  *  can be updated by conditional opcodes
  */
-export type Program = TOpcode[];
+export type TProgram = TOpcode[];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,
  *  and a flags object. This state is passed, along with agent, to every
@@ -145,6 +145,6 @@ export interface IMessage {
   channel: string;
   message: string;
   data?: any;
-  programs?: Program[];
+  programs?: TProgram[];
   inputs?: any;
 }

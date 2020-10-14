@@ -8,7 +8,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IState, TOpcode, TOpWait, Program, TStackable } from 'lib/t-smc';
+import {
+  IAgent,
+  IState,
+  TOpcode,
+  TOpWait,
+  TProgram,
+  TStackable
+} from 'lib/t-smc';
 
 const DBG = false;
 
@@ -37,7 +44,7 @@ const compareStrings = (): TOpcode => {
 
 /// CONDITIONAL ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifLT = (program: Program): TOpcode => {
+const ifLT = (program: TProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.LT()) {
       // pass current stack as vars to program
@@ -47,7 +54,7 @@ const ifLT = (program: Program): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifGT = (program: Program): TOpcode => {
+const ifGT = (program: TProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.GT()) {
       // alternate way to use a substack instead of passing existing
@@ -57,7 +64,7 @@ const ifGT = (program: Program): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifLTE = (program: Program): TOpcode => {
+const ifLTE = (program: TProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.LTE()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);
@@ -66,7 +73,7 @@ const ifLTE = (program: Program): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifGTE = (program: Program): TOpcode => {
+const ifGTE = (program: TProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.GTE()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);
@@ -75,7 +82,7 @@ const ifGTE = (program: Program): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifEQ = (program: Program): TOpcode => {
+const ifEQ = (program: TProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.EQ()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);
@@ -84,7 +91,7 @@ const ifEQ = (program: Program): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifNEQ = (program: Program): TOpcode => {
+const ifNEQ = (program: TProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.NEQ()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);

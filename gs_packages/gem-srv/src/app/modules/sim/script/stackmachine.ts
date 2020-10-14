@@ -7,7 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, Program } from 'lib/t-smc';
+import { IAgent, TProgram } from 'lib/t-smc';
 import { NumberProp } from 'modules/sim/props/var';
 import {
   setAgentPropValue,
@@ -38,7 +38,7 @@ import { jitterAgent } from './cmds/agent-cmds';
 /// TEST FUNCTIONS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initializing an agent means setting properties */
-const test_smc_init: Program = [
+const test_smc_init: TProgram = [
   // define program
   addProp('currentHealth', NumberProp),
   addFeature('Movement'),
@@ -55,7 +55,7 @@ const test_smc_init: Program = [
   scopePop()
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const test_smc_update: Program = [
+const test_smc_update: TProgram = [
   // run during Agent.Update phase
   // if agent.currentHealth < 10
   //   agent.currentHealth++
@@ -73,14 +73,14 @@ const test_smc_update: Program = [
   ])
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const test_smc_agent_update: Program = [
+const test_smc_agent_update: TProgram = [
   // run during Agent.Update phase
   // if agent.currentHealth < 10
   //   agent.currentHealth++
   jitterAgent()
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const test_smc_condition: Program = [
+const test_smc_condition: TProgram = [
   // debugMessage('moof:pickle')
 ];
 
@@ -88,7 +88,7 @@ const test_smc_condition: Program = [
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Run an SM_Program on an agent
  */
-function ExecSMC(smc: Program, agent: IAgent) {
+function ExecSMC(smc: TProgram, agent: IAgent) {
   try {
     agent.exec_smc(smc);
   } catch (e) {

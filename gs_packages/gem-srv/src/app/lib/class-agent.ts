@@ -14,7 +14,7 @@ import NumberVar from 'modules/sim/props/var-number';
 import StringVar from 'modules/sim/props/var-string';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { IAgent, IScopeable, TStackable, IMessage, Program } from './t-smc';
+import { IAgent, IScopeable, TStackable, IMessage, TProgram } from './t-smc';
 import { ControlMode, IActable } from './t-interaction';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
@@ -168,7 +168,7 @@ class Agent extends SM_Object implements IAgent, IActable {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: Program, stack = []) {
+  exec_smc(program: TProgram, stack = []) {
     const state = new SM_State(stack);
     // console.log('exec got program', program.length);
     try {
