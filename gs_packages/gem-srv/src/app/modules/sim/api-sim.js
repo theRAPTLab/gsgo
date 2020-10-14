@@ -103,8 +103,9 @@ function StartSimulation() {
   console.log(...PR('Simulation Timestep Started'));
   RX_SUB = SIM_FRAME_MS.subscribe(m_StepSimulation);
   // run test installed by converter.ts
-  window.linesToPrograms();
-  window.tokenToCompo();
+  window.listSource();
+  window.sourceToProgram();
+  window.sourceToReact();
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////

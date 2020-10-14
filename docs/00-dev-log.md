@@ -154,8 +154,74 @@ the question is where to put the script controller. Maybe somewhere in sim?
 * [x] script...we need to figure some stuff out with the plan so switch to paper
 * [x] in `converter` we're prototyping data structures...first
 * [x] basic compiler pattern for defTemplate and defProp
-* [ ] 
+* [x] basic render pattern for rendering source
 
+This actually worked fairly well...there's a `CMD` data structure that has the keywords defined for the leading command, which includes **args** for syntax, **compile** for generating smc_code, **render** for generating JSX, and some **meta** for scope checking.
+
+* How can we have all components **update their specific code** element?
+
+  * the root statement holds a reference to an object that represents the line that it rendered
+  * the root statement is responsible for drawing all its children, and uses the line to generate it
+  * when a change occurs on a statement, the reference to the object is updated
+  * when the object is updated in any way, the UI refreshes and forces the entire tree to draw
+  * will this work?
+
+* Each source line that walks also maintains a scope so subsequent commands can rely on it. This might not be necessary if the commands use full agent.prop addressing all the time; then we use the scope feature to know what parameters to use. ScopeIn and ScopeOut have to be carefully written for each CMD.
+
+* **There is LEFT-to-RIGHT evaluation that happens for real commands.** For example:
+
+  * refer to an agent instance or agent set
+  * refer to an agentset global property (like count)
+  * set an agent prop value to immediate or calculation group (expression)
+  * copy an agent prop value
+    * to another prop
+    * part of a calculation group (via stack)
+  * invoke an agent method or feature method to do something
+  * perform a calculation on a property
+  * perform an arbirary arithmetic calculation
+    * immediate values
+    * smobject prop values
+    * available operators
+  * compare a calculation to a property value or calculation
+  * conditionally execute program if true or false
+
+* for **interactions**, we have a complicated declaration
+
+  
+
+```
+whenAgentSet filterCondition -> AgentSet to Iterate
+  conditionProgram(for each agent)
+
+filterCondition = [
+  agentset conditionalTest
+  agentset conditionalTest
+]
+
+whenAgentSet filterCondition creates a unique hash which stores the filter condition in a table of tests that are run early in the simulation cycle
+
+whenTwoAgentSet filterTwoCondition -> AgentSet1, AgentSet2 to Iterate
+```
+
+## OCT 14 WED - more operations
+
+We have the definitions section, which is easy, working OK. Now we need to express programs that can manipulate other things.
+
+### handling properties and methods in agents
+
+### handling arithmetic expressions and calculations
+
+### handling arbitrary program blocks
+
+### handling comparisons and conditional execution of programs
+
+### handling interactions
+
+### handling messaging between agents (queuing)
+
+### handling system events (like tick)
+
+### handling conditional triggers and trigger events
 
 
 
