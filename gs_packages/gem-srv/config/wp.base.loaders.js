@@ -104,14 +104,12 @@ const WebpackLoaders = () => {
       // create webapp path aliases for module imports
       // for visual studio code live linting, update eslintrc
       alias: {
+        // make sure to check tsconfig.json as well
         config: Path.resolve(__dirname, '../config'),
         app: Path.resolve(__dirname, '../src/app'),
         lib: Path.resolve(__dirname, '../src/app/lib'),
-        modules: Path.resolve(__dirname, '../src/app/modules'),
-        static: Path.resolve(__dirname, '../src/app/static')
-        // ursys: Path.resolve(__dirname, '../ursys'),
-        // util: Path.resolve(__dirname, '../src/util'),
-        // step: Path.resolve(__dirname, '../src/step/'),
+        static: Path.resolve(__dirname, '../src/app/static'),
+        modules: Path.resolve(__dirname, '../src/app/modules')
       }
     }
   };

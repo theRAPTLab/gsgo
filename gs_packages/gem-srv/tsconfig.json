@@ -4,15 +4,11 @@
     "moduleResolution": "node",
     "baseUrl": "src",
     "paths": {
+      "config/*": ["../config/*"],
       "app/*": ["./app/*"],
       "lib/*": ["app/lib/*"],
       "modules/*": ["app/modules/*"],
-      "static/*": ["app/static/*"],
-      "render/*": ["app/modules/render/*"],
-      "sim/*": ["app/modules/sim/*"],
-      "script/*": ["app/modules/sim/script/*"],
-      "step/*": ["app/modules/step/*"],
-      "config/*": ["../config/*"]
+      "static/*": ["app/static/*"]
     },
     "jsx": "preserve",
     "esModuleInterop": true,
