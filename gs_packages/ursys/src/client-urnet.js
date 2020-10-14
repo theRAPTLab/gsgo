@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const URSession = require('./client-session');
-const PR = require('./util/prompts').makeStyleFormatter('UR.NET', 'TagRed');
+const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,7 +65,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_RemoveListener('message', m_HandleRegistrationMessage);
   m_status = M3_REGISTERED;
   // (2) initialize global settings for netmessage
-  if (DBG.connect || DBG.hello) console.log(...PR(`'${HELLO}'`));
+  if (DBG.connect || DBG.hello) console.log(...PR(`URNET SAYS '${HELLO}'`));
   m_socket.UADDR = NetPacket.DefaultServerUADDR();
   NetPacket.GlobalSetup({
     uaddr: UADDR,

@@ -8,6 +8,8 @@
       "lib/*": ["app/lib/*"],
       "modules/*": ["app/modules/*"],
       "static/*": ["app/static/*"],
+      "render/*": ["app/modules/render/*"],
+      "sim/*": ["app/modules/sim/*"],
       "script/*": ["app/modules/sim/script/*"],
       "step/*": ["app/modules/step/*"],
       "config/*": ["../config/*"]

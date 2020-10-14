@@ -32,8 +32,8 @@ type AssetName = string;
 type AssetURL = string;
 type Manifest = { sprites: QueueItem[] };
 
-const PR = UR.PrefixUtil('ASSETS', 'TagPink');
-const DBG = true;
+const PR = UR.PrefixUtil('ASSETS');
+const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

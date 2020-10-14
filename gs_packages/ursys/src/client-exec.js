@@ -18,7 +18,7 @@ const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
 /// PRIVATE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,7 +96,8 @@ function m_CheckOptions(options) {
  */
 async function SystemBoot(options = {}) {
   //
-  if (DBG) console.group('** URSYS: Boot');
+  if (DBG) console.groupCollapsed('** URSYS: Boot');
+  else console.log(...PR('EXEC PHASE_BOOT, PHASE_INIT, PHASE_CONNECT'));
   //
   m_CheckOptions(options);
   URSession.InitializeNetProps(options.netProps);
@@ -112,7 +113,8 @@ async function SystemBoot(options = {}) {
  */
 async function SystemConfig(options = {}) {
   //
-  if (DBG) console.group('** URSYS: Config');
+  if (DBG) console.groupCollapsed('** URSYS: Config');
+  else console.log(...PR('EXEC PHASE_LOAD, PHASE_CONFIG, PHASE_READY'));
   //
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
@@ -135,11 +137,12 @@ async function SystemRun(options = {}) {
   // PART 1 - SYSTEM RUN (part of PHASE_RUN group)
   m_CheckOptions(options);
   //
-  console.log(...PR('URSYS: STAGE START RUN'));
+  if (DBG) console.log(...PR('URSYS: STAGE START RUN'));
+  else console.log(...PR('EXEC APP_STAGE APP_START APP_RUN'));
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
+  if (DBG) console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();

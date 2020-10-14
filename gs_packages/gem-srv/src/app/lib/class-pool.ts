@@ -109,7 +109,8 @@ class Pool {
       if (this._auto_grow) {
         this.increaseSize(/* default */);
         const { _name, _size, _batch_size } = this;
-        console.warn(`'${_name}' pool grew by ${_batch_size} (now ${_size})`);
+        if (DBG)
+          console.warn(`'${_name}' pool grew by ${_batch_size} (now ${_size})`);
       } else {
         if (DBG) console.log('available', JSON.stringify(this.avail_objs));
         throw Error(`'${this._name}' maxsize ${this._size} (autoGrow false)`);

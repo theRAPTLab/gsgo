@@ -26,6 +26,7 @@ import {
 import { WORLD } from './global';
 
 const PR = UR.PrefixUtil('AGT FACTORY');
+const DBG = false;
 
 /// FACTORY UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,7 +47,7 @@ function AddTemplate(name, f_Decorate) {
     agent.meta.type = name;
     return agent;
   };
-  console.log(...PR(`storing template: '${name}'`));
+  if (DBG) console.log(...PR(`storing template: '${name}'`));
   TEMPLATES.set(name, factoryFunc);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

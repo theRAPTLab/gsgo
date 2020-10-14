@@ -14,6 +14,7 @@ const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
 const PR = PROMPTS.makeStyleFormatter('UR');
+const DBG = false;
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,7 +59,8 @@ async function SystemStart() {
   // autoregister messages
   PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
     let result = await EP_LOCAL.ursysRegisterMessages();
-    console.log(...PR('message handlers registered with URNET:', result));
+    if (DBG)
+      console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
   return Promise.resolve();

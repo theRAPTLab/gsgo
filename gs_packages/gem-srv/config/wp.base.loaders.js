@@ -77,6 +77,7 @@ const WebpackLoaders = () => {
           enforce: 'pre', // webpack.js.org/configuration/module/#ruleenforce
           test: /\.js$/,
           include: DIR_INCLUDES,
+          exclude: /node_modules/,
           loader: 'source-map-loader'
         },
         {

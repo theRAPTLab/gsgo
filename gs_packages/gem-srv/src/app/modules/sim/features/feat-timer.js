@@ -29,6 +29,7 @@ import Feature from './class-feature';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TimerFeature');
+const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,7 +38,7 @@ const PR = UR.PrefixUtil('TimerFeature');
 class TimerFeature extends Feature {
   constructor(name) {
     super(name);
-    console.log(...PR('construct'));
+    if (DBG) console.log(...PR('construct'));
   }
 
   // super.agentInit(agent)

@@ -22,6 +22,7 @@ import {
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
+const DBG = false;
 
 const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
   Constructor: DisplayObject,
@@ -76,14 +77,14 @@ UR.SystemHook('SIM/VIS_UPDATE', frameCount => {
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
-  console.log(...PR('should inspect mode and change agent settings'));
+  if (DBG) console.log(...PR('should inspect mode and change agent settings'));
   TestAgentSelect();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
-  console.groupCollapsed(...PR('Programming Test Agents'));
+  if (DBG) console.groupCollapsed(...PR('Programming Test Agents'));
   TestAgentProgram();
-  console.groupEnd();
+  if (DBG) console.groupEnd();
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -120,7 +121,7 @@ function AgentExec(frameTime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
-  console.log(...PR('should reset all agents'));
+  if (DBG) console.log(...PR('should reset all agents'));
   TestAgentReset(frameTime);
 }
 

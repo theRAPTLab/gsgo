@@ -291,10 +291,11 @@ function makeTerminalOut(prompt, tagColor = DEFAULT_COLOR) {
 /** Return function to print a string, given a DIV id and optional row/column.
  */
 function makeHTMLConsole(divId, row = 0, col = 0) {
+  const ERP = makeStyleFormatter('makeHTMLConsole', 'Red');
   let buffer = [];
   if (typeof divId !== 'string') throw Error('bad id');
   if (!document.getElementById(divId)) {
-    console.log(`HTMLConsole: id '${divId}' doesn't exist`);
+    console.log(...ERP(`id '${divId}' doesn't exist`));
     return {
       print: () => {},
       plot: () => {},

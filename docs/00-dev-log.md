@@ -109,6 +109,55 @@ Changes made:
 * also comment-out the `ts-loader` test, since babel will be handling it all now
 * in `.babelrc`, add  ` "@babel/preset-typescript"` to end of presets. 
 
+### Digging into X-GEMSTEP-GUI
+
+First looking at the data structures.
+
+## OCT 13 TUE - Next Steps on the GUI Integration
+
+There's two things I want to do initially:
+
+1. Figure of it it's possible to actually connect the current X-GUI to the script engine. It might be doable if we write replacements in the script engine.
+2. Think of how I will actually save agent templates and agent instances, because this will be the structured data that the script engine ultimately has to read. I'd like to simplify the highly-coupled elements of the database structure and eliminate as many id-based operations needed to render the UI and instead make use of initial constraints to implicitly define scope.
+
+I'll probably start with 2 first, and then maybe do the TAB SYSTEM afterwards. I think 2 is going to be the bottleneck for moving forward.
+
+### Define Concepts
+
+There are some concepts to nail down their definitions in the database too, so they conform to the internal script engine naming, which itself is strongly bound to the GEM-STEP specifications that were laid out. 
+
+* There are only 4 main kinds of object in the system: Agent, Property, Variable, and Feature.
+* Then there are two main kinds of context specifiers in WHEN conditions for agents: the TWO AGENT version and the SINGLE AGENT version. These limit what you can choose for follow-up filtering conditions on the left-side of the expression, though you can refer to agentsets of instances and individual instances I think.
+* Then there are the global built-in time and simulation conditions.
+
+Every one of the 4 main kinds of object in the system can expose its properties and methods, so these are what are used to populate dropdowns based on what the scoping object is. Then the selected dropdown object provides the next set of dropdowns, and so on.
+
+### Prototype Advanced Visual Representations
+
+I'd like to also design a representation of a real expression (as in algebraic) layout, though I don't think we can deliver this by December. It would be nice to know what it looks like. The minimum is how to represent parenthesis.
+
+* [ ] how to save agent templates as a serializable format
+* [ ] how to represent agent templates as a block-editable UI structure
+* [ ] make a list of all the statement types in Whimsical
+  * [ ] assignment
+  * [ ] comparison
+  * [ ] event
+  * [ ] method invocation
+  * [ ] arithmetic expression
+  * [ ] code block
+* [ ] make a list of all the SMObjects that can define the lead of something
+
+#### LATE NIGHT KICKOFF
+
+the question is where to put the script controller. Maybe somewhere in sim?
+
+* [x] script...we need to figure some stuff out with the plan so switch to paper
+* [x] in `converter` we're prototyping data structures...first
+* [x] basic compiler pattern for defTemplate and defProp
+* [ ] 
+
+
+
 
 ---
 

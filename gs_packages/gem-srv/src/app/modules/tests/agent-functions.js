@@ -33,6 +33,7 @@ import NumberProp from 'modules/sim//props/var-number';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TEST AGT');
+const DBG = false;
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,7 +56,7 @@ function TestAgentProgram() {
       setCostumes {1:"slowbee.png", 2:"fastbee.png"}
       showCostume 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.log(...PR('Making Bunny Agent Template Function'));
+  if (DBG) console.log(...PR('Making Bunny Agent Template Function'));
   let temp_num = 0;
   AgentFactory.AddTemplate('Bunny', agent => {
     // all this is direct object manipulation in JS, not SMC!!!
@@ -82,7 +83,7 @@ function TestAgentProgram() {
 
   const names = [];
   const NUM_AGENTS = 50;
-  console.log(...PR(`Making ${NUM_AGENTS} instances`));
+  if (DBG) console.log(...PR(`Making ${NUM_AGENTS} instances`));
   for (let i = 0; i < NUM_AGENTS; i++) names.push(`bunbun${i}`);
   const smc_init = StackMachine.test_smc_init;
   names.forEach(name => {
@@ -95,7 +96,7 @@ function TestAgentProgram() {
       @MyTimer reset
       World.pollution add 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  console.log(...PR('Making World template with Timer feature'));
+  if (DBG) console.log(...PR('Making World template with Timer feature'));
   AgentFactory.AddTemplate('World', world => {
     world.addFeature('Timer');
   });
