@@ -18,6 +18,8 @@ import './sim-agents';
 import './sim-referee';
 import './sim-features';
 import './sim-render';
+// test routines
+import './script/converter';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,6 +102,9 @@ function RunSimulation() {
 function StartSimulation() {
   console.log(...PR('Simulation Timestep Started'));
   RX_SUB = SIM_FRAME_MS.subscribe(m_StepSimulation);
+  // run test installed by converter.ts
+  window.linesToPrograms();
+  window.tokenToCompo();
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
