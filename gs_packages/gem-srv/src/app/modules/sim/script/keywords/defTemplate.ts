@@ -13,7 +13,6 @@ export class DefTemplate extends SM_Keyword {
   // base properties defined in SM_Keyword
   constructor() {
     super('defTemplate');
-    console.log(this);
     this.args = ['templateName string', 'baseTemplate string'];
     this.req_scope.add('_EMPTY_');
     this.key_scope.add('defProp');

@@ -10,7 +10,7 @@ import { TOpcode } from 'lib/t-smc';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const KEYWORDS: Map<string, SM_Keyword> = new Map();
-const DBG = true;
+const DBG = false;
 const PR = UR.PrefixUtil('SM_Keyword');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
@@ -105,7 +105,7 @@ function CompileSource(source: string[]) {
   // this has to look through the output to determine what to compiler
   source.forEach(line => {
     const programs = m_CompileLine(line);
-    console.log(line, '->', programs);
+    if (DBG) console.log(line, '->', programs);
     const {
       template_define: define,
       template_defaults: defaults,
@@ -116,18 +116,8 @@ function CompileSource(source: string[]) {
     if (defaults && defaults.length) output.template_defaults.push(...define);
     if (cond && cond.length) output.template_conditions.push(...define);
     if (init && init.length) output.agent_init.push(...define);
-    return output;
   });
-  console.log(...PR('program output (definition, defaults, conditions)'));
-  output.template_define.forEach(statement =>
-    console.log('definition:', statement)
-  );
-  output.template_defaults.forEach(statement =>
-    console.log('defaults:  ', statement)
-  );
-  output.template_conditions.forEach(statement =>
-    console.log('conditions:', statement)
-  );
+  return output;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render a source array into react components or whatever */
@@ -137,8 +127,7 @@ function RenderSource(source: string[]) {
     const jsx = m_RenderLine(line);
     react.push(jsx);
   });
-  console.log(...PR('JSX output (would require correct order in source)'));
-  react.forEach(component => console.log(component));
+  return react;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a KeywordConstructor function, add to the KEYWORDS dictionary */

@@ -13,7 +13,6 @@ export class DefProp extends SM_Keyword {
   // base properties defined in SM_Keyword
   constructor() {
     super('defProp');
-    console.log(this);
     this.args = ['propName string', 'propType string', 'initValue any'];
     this.req_scope.add('defTemplate');
     this.key_scope.add('unknown');

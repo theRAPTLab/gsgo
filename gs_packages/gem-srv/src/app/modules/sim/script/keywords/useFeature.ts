@@ -13,7 +13,6 @@ export class UseFeature extends SM_Keyword {
   // base properties defined in SM_Keyword
   constructor() {
     super('useFeature');
-    console.log(this);
     this.args = ['featureName string'];
     this.req_scope.add('defTemplate');
     this.key_scope.add('TBD');

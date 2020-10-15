@@ -17,14 +17,14 @@ import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
-const PR = UR.PrefixUtil('Generator');
-const DBG = false;
+const PR = UR.PrefixUtil('Generator', 'TagGreen');
+const DBG = true;
 
 UR.SystemHook(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
-      if (DBG) console.log(...PR('LOADING ASSET MANIFEST...'));
+      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
         let map = await DATACORE.ASSETS_LoadManifest('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));

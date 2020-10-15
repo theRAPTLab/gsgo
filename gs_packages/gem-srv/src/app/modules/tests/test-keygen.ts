@@ -49,14 +49,26 @@ function TestListSource(source = SOURCE) {
 function TestSourceToProgram(source = SOURCE) {
   // the idea is to create a data structure we can generate and then parse
   console.log(...PR('line compiler test'));
-  KEYGEN.CompileSource(source);
+  // get the output
+  const output = KEYGEN.CompileSource(source);
+  //  print the output
+  output.template_define.forEach(statement =>
+    console.log('definition:', statement)
+  );
+  output.template_defaults.forEach(statement =>
+    console.log('defaults:  ', statement)
+  );
+  output.template_conditions.forEach(statement =>
+    console.log('conditions:', statement)
+  );
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestSourceToReact(source = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('line renderer test'));
-  KEYGEN.RenderSource(source);
+  const react = KEYGEN.RenderSource(source);
+  react.forEach(component => console.log(component));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
