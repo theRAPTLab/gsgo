@@ -19,7 +19,7 @@ import './sim-referee';
 import './sim-features';
 import './sim-render';
 // test routines
-import './script/converter';
+import KEYGEN from '../tests/test-keygen';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -103,9 +103,9 @@ function StartSimulation() {
   console.log(...PR('Simulation Timestep Started'));
   RX_SUB = SIM_FRAME_MS.subscribe(m_StepSimulation);
   // run test installed by converter.ts
-  window.listSource();
-  window.sourceToProgram();
-  window.sourceToReact();
+  KEYGEN.TestListSource();
+  KEYGEN.TestSourceToProgram();
+  KEYGEN.TestSourceToReact();
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////

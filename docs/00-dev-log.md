@@ -207,6 +207,15 @@ whenTwoAgentSet filterTwoCondition -> AgentSet1, AgentSet2 to Iterate
 
 We have the definitions section, which is easy, working OK. Now we need to express programs that can manipulate other things.
 
+* [x] made the base class `SM_Keyword`, implemented `defTemplate`
+* [x] implement `defProp`and `useFeature`
+* [x] move the compiler and renderer functions into `SM_Keyword` as static methods
+* [x] remove window tests, formalize converter.ts as a test module, move to tests
+
+## Next Steps!
+
+We want to start implementing the following keywords.
+
 ### handling properties and methods in agents
 
 ### handling arithmetic expressions and calculations
@@ -222,6 +231,10 @@ We have the definitions section, which is easy, working OK. Now we need to expre
 ### handling system events (like tick)
 
 ### handling conditional triggers and trigger events
+
+
+
+
 
 
 

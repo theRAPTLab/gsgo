@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { SM_Keyword } from 'app/lib/class-sm-keywords';
+import { ITemplatePrograms, SM_Keyword } from 'lib/class-sm-keyword';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +21,7 @@ export class DefTemplate extends SM_Keyword {
 
   /** create smc template code objects with programs to run in any of
    *  the appropriate phases */
-  compile(parms: string[]) {
+  compile(parms: string[]): ITemplatePrograms {
     // defTemplate.compile knows what to expect incl types
     // the args type array is for the GUI to know how to render a component
     const templateName = parms.shift();
@@ -38,7 +38,7 @@ export class DefTemplate extends SM_Keyword {
   }
 
   /** render to HTML */
-  render(parms: string[], children: string[]) {
+  render(parms: string[], children: string[]): any {
     const templateName = parms.shift();
     const baseTemplate = parms.shift() || 'Agent';
     return `<Template label='${templateName}' extends='${baseTemplate}'>`;
@@ -60,7 +60,7 @@ export class EndTemplate extends SM_Keyword {
 
   /** create smc template code objects with programs to run in any of
    *  the appropriate phases */
-  compile(parms: string[]) {
+  compile(parms: string[]): ITemplatePrograms {
     const progout = [];
     progout.push('smc_nop()');
     return {
@@ -69,7 +69,7 @@ export class EndTemplate extends SM_Keyword {
   }
 
   /** render to HTML */
-  render(parms: string[], children: string[]) {
+  render(parms: string[], children: string[]): any {
     return '</Template>';
   }
 } // end of EndDefTemplate
