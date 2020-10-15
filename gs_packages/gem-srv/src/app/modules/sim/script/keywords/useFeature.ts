@@ -18,8 +18,7 @@ export class UseFeature extends SM_Keyword {
     this.key_scope.add('TBD');
   }
 
-  /** create smc template code objects with programs to run in any of
-   *  the appropriate phases */
+  /** create smc template code objects */
   compile(parms: string[]): ITemplatePrograms {
     const featureName = parms.shift();
     const progout = [];
@@ -31,7 +30,7 @@ export class UseFeature extends SM_Keyword {
     };
   }
 
-  /** render to HTML */
+  /** return rendered component representation */
   render(parms: string[], children: string[]): any {
     const featureName = parms.shift();
     return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;

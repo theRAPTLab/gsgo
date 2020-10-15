@@ -17,9 +17,8 @@ import { KEYGEN } from 'lib/class-sm-keyword';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CONVERTER', 'TagDkRed');
 
-/// COMMAND DEFINITIONS ///////////////////////////////////////////////////////
+/// LOAD KEYWORD DICTIONARY ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** define a template */
 KEYGEN.AddKeyword(EndTemplate);
 KEYGEN.AddKeyword(DefTemplate);
 KEYGEN.AddKeyword(DefProp);
@@ -40,7 +39,7 @@ const SOURCE = [
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestListSource(source = SOURCE) {
-  console.log(...PR('source lines (made by GUI, saved/loaded from db)'));
+  console.log(...PR('Source Lines - (made by GUI, saved/loaded from network)'));
   source.forEach((line, index) => {
     console.log(index, line);
   });
@@ -48,7 +47,9 @@ function TestListSource(source = SOURCE) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestSourceToProgram(source = SOURCE) {
   // the idea is to create a data structure we can generate and then parse
-  console.log(...PR('line compiler test'));
+  console.log(
+    ...PR('KEYGEN.CompileSource() - create template smc program arrays')
+  );
   // get the output
   const output = KEYGEN.CompileSource(source);
   //  print the output
@@ -66,7 +67,7 @@ function TestSourceToProgram(source = SOURCE) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestSourceToReact(source = SOURCE) {
   // the idea is to parse data structure into react
-  console.log(...PR('line renderer test'));
+  console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   const react = KEYGEN.RenderSource(source);
   react.forEach(component => console.log(component));
 }

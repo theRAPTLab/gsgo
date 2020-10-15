@@ -7,7 +7,7 @@
 
 import { ITemplatePrograms, SM_Keyword } from 'lib/class-sm-keyword';
 
-/// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class DefProp extends SM_Keyword {
   // base properties defined in SM_Keyword
@@ -18,11 +18,8 @@ export class DefProp extends SM_Keyword {
     this.key_scope.add('unknown');
   }
 
-  /** create smc template code objects with programs to run in any of
-   *  the appropriate phases */
+  /** create smc template code objects */
   compile(parms: string[]): ITemplatePrograms {
-    // DefProp.compile knows what to expect incl types
-    // the args type array is for the GUI to know how to render a component
     const propName = parms.shift();
     const propType = parms.shift();
     const initValue = parms.shift();
@@ -37,7 +34,7 @@ export class DefProp extends SM_Keyword {
     };
   }
 
-  /** render to HTML */
+  /** return rendered component representation */
   render(parms: string[], children: string[]): any {
     const propName = parms.shift();
     const propType = parms.shift();

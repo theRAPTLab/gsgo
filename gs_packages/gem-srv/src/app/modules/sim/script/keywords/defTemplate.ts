@@ -18,11 +18,8 @@ export class DefTemplate extends SM_Keyword {
     this.key_scope.add('defProp');
   }
 
-  /** create smc template code objects with programs to run in any of
-   *  the appropriate phases */
+  /** create smc template code objects */
   compile(parms: string[]): ITemplatePrograms {
-    // defTemplate.compile knows what to expect incl types
-    // the args type array is for the GUI to know how to render a component
     const templateName = parms.shift();
     const baseTemplate = parms.shift() || '';
     const progout = [];
@@ -36,7 +33,7 @@ export class DefTemplate extends SM_Keyword {
     };
   }
 
-  /** render to HTML */
+  /** return rendered component representation */
   render(parms: string[], children: string[]): any {
     const templateName = parms.shift();
     const baseTemplate = parms.shift() || 'Agent';
@@ -57,9 +54,9 @@ export class EndTemplate extends SM_Keyword {
     this.req_scope.add('defTemplate');
   }
 
-  /** create smc template code objects with programs to run in any of
-   *  the appropriate phases */
-  compile(parms: string[]): ITemplatePrograms {
+  /** create smc template code objects */ compile(
+    parms: string[]
+  ): ITemplatePrograms {
     const progout = [];
     progout.push('smc_nop()');
     return {
