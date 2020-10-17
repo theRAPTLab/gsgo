@@ -28,15 +28,15 @@ KEYGEN.AddKeyword(UseFeature);
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SOURCE = [
-  'defTemplate Bee',
-  'defProp nectarAmount GSNumber 0',
-  'useFeature FishCounter',
-  'useFeature BeanCounter',
-  'useFeature Movement',
-  'endTemplate',
-  'defTemplate HoneyBee Bee',
-  'defProp honeySacks GSNumber 0',
-  'endTemplate'
+  ['defTemplate', 'Bee'],
+  ['defProp', 'nectarAmount', 'GSNumber', 0],
+  ['useFeature', 'FishCounter'],
+  ['useFeature', 'BeanCounter'],
+  ['useFeature', 'Movement'],
+  ['endTemplate'],
+  ['defTemplate', 'HoneyBee', 'Bee'],
+  ['defProp', 'honeySacks', 'GSNumber', 0],
+  ['endTemplate']
 ];
 const SOURCE2 = ['defTemplate Cheese', 'defProp type GSString', 'endTemplate'];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +67,7 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function TestSourceToReact(source = SOURCE) {
+async function TestSourceToReact(source: string[] | any[][] = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   const react = KEYGEN.RenderSource(source);

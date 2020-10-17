@@ -34,33 +34,48 @@ type TupleString = string;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** ensures that line returns a tokenized array.
+ *  NOTE that when returning a copy of the array, elements of the array
+ *  are not duplicated. This is OK because the result of m_TokenQueue returns
+ *  a structure that will be used as a queue
+ */
+function m_TokenQueue(input: string | any[]): any[] {
+  if (typeof input === 'string') return input.split(' '); // tokenize
+  if (Array.isArray(input)) return input.map(el => el); // return new array!!!
+  throw Error(`ERR: can not tokenize input ${input}`);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives an actual line of code like 'defTemplate Bee' */
-function m_CompileLine(line: string): ITemplatePrograms {
-  const bits = line.split(' '); // tokenize
+function m_CompileLine(input: string | any[]): ITemplatePrograms {
+  const qbits = m_TokenQueue(input);
   // what is the command?
-  let cmdName = bits.shift();
+  let cmdName = qbits.shift();
   // how do we compile it?
   const cmdObj = KEYWORDS.get(cmdName);
   if (!cmdObj) {
     throw Error(
-      `smc_error( 'ERR: unknown command:"${cmdName}" parms:"${bits.join(' ')}" )`
+      `smc_error( 'COMPILE ERR: unknown command:"${cmdName}" parms:"${qbits.join(
+        ' '
+      )}" )`
     );
   }
-  return cmdObj.compile(bits); // bits is the subsequent parameters
+  return cmdObj.compile(qbits); // qbits is the subsequent parameters
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render an actual line of code like 'defTemplate Bee' */
-function m_RenderLine(line) {
-  const bits = line.split(' '); // tokenize
+function m_RenderLine(input: string | any[]) {
+  const qbits = m_TokenQueue(input);
   // what is the command?
-  let cmdName = bits.shift();
+  let cmdName = qbits.shift();
   // how do we compile it?
   const cmdObj = KEYWORDS.get(cmdName);
   if (!cmdObj)
     return [
-      `smc_error( 'ERR: unknown command:"${cmdName}" parms:"${bits.join(' ')}" )`
+      `smc_error( 'RENDER ERR: unknown command:"${cmdName}" parms:"${qbits.join(
+        ' '
+      )}" )`
     ];
-  return cmdObj.render(bits); // bits is the subsequent parameters
+  return cmdObj.render(qbits); // qbits is the subsequent parameters
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// GARBAGE ID GENERATOR //////////////////////////////////////////////////////
@@ -104,7 +119,7 @@ export class SM_Keyword {
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** compile an array of lines of code */
-function CompileSource(source: string[]) {
+function CompileSource(source: string[] | any[][]) {
   const output = {
     template_define: [],
     template_defaults: [],
@@ -131,7 +146,7 @@ function CompileSource(source: string[]) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** render a source array into react components or whatever */
-function RenderSource(source: string[]) {
+function RenderSource(source: string[] | any[]) {
   const react = [];
   source.forEach(line => {
     const jsx = m_RenderLine(line);

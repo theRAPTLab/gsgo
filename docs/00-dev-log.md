@@ -412,8 +412,9 @@ Yesteday I figured out a few questions to try:
   * [x] look into rudimentary tree walker code (not tuned)
   * [x] note that returning jsx is a bit slow
   * [x] try jamming the JSX into Generator
-* [ ] move `modules/` out of `app/` since they aren't necessarily part of an app
-* [ ] update the program source format to use arrays to make sure that works
+* [x] move `modules/` out of `app/` since they aren't necessarily part of an app
+* [x] update the program source format to use arrays to make sure that works
+  * [x] Now accepts both a string format to tokenize and an array format of object literals
 * [ ] sketch out the remaining keywords, using a placeholder for expressions (we don't need to actually calculate them yet. We just want to generate programs that refer to them)
 
 
