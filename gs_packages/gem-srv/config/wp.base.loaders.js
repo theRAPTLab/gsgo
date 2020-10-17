@@ -106,10 +106,11 @@ const WebpackLoaders = () => {
       alias: {
         // make sure to check tsconfig.json as well
         config: Path.resolve(__dirname, '../config'),
+        script: Path.resolve(__dirname, '../src/modules/sim/script'),
         app: Path.resolve(__dirname, '../src/app'),
-        lib: Path.resolve(__dirname, '../src/app/lib'),
+        lib: Path.resolve(__dirname, '../src/lib'),
         static: Path.resolve(__dirname, '../src/app/static'),
-        modules: Path.resolve(__dirname, '../src/app/modules')
+        modules: Path.resolve(__dirname, '../src/modules')
       }
     }
   };

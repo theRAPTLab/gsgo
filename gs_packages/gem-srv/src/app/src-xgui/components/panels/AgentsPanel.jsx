@@ -1,8 +1,8 @@
-import React from "react";
-import AgentsList from "./AgentsList";
-import AgentEditor from "./AgentEditor";
-import APP from "../../app-logic";
-import DISPATCHER from "../../dispatcher";
+import React from 'react';
+import AgentsList from './AgentsList';
+import AgentEditor from './AgentEditor';
+import APP from '../../app-logic';
+import DISPATCHER from '../../dispatcher';
 
 class AgentsPanel extends React.Component {
   constructor() {
@@ -16,7 +16,7 @@ class AgentsPanel extends React.Component {
   AddAgent() {
     DISPATCHER.Do({
       action: DISPATCHER.ACTION.AddAgent,
-      params: {},
+      params: {}
     });
   }
 
@@ -25,8 +25,8 @@ class AgentsPanel extends React.Component {
     DISPATCHER.Do({
       action: DISPATCHER.ACTION.SelectAgent,
       params: {
-        agentId: undefined,
-      },
+        agentId: undefined
+      }
     });
   }
 
@@ -41,31 +41,33 @@ class AgentsPanel extends React.Component {
       <div
         className="agentspanel"
         style={{
-          display: "flex",
-          justifyContent: "flex-start",
-          alignContent: "center",
-          overflow: "hidden",
+          display: 'flex',
+          justifyContent: 'flex-start',
+          alignContent: 'center',
+          overflow: 'hidden'
         }}
       >
         <div
           style={{
             flexGrow: 1,
-            display: "flex",
-            flexDirection: "column",
-            overflow: "hidden",
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden'
           }}
         >
-          <div style={{ display: "flex" }}>
-            <div className="syslabel" style={{ flexGrow: 1 }}>AGENT TEMPLATES</div>
+          <div style={{ display: 'flex' }}>
+            <div className="syslabel" style={{ flexGrow: 1 }}>
+              AGENT TEMPLATES
+            </div>
             {selectedAgent && <button onClick={this.DoMinimize}>&lt;</button>}
           </div>
-          <div style={{ flexGrow: 1, display: "flex", overflow: "hidden" }}>
+          <div style={{ flexGrow: 1, display: 'flex', overflow: 'hidden' }}>
             <div
               style={{
                 flexGrow: 1,
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center'
               }}
             >
               <AgentsList

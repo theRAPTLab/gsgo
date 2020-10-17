@@ -5,10 +5,11 @@
     "baseUrl": "src",
     "paths": {
       "config/*": ["../config/*"],
+      "script/*": ["./modules/sim/script/*"],
       "app/*": ["./app/*"],
-      "lib/*": ["app/lib/*"],
-      "modules/*": ["app/modules/*"],
-      "static/*": ["app/static/*"]
+      "lib/*": ["./lib/*"],
+      "modules/*": ["./modules/*"],
+      "static/*": ["./app/static/*"]
     },
     "jsx": "preserve",
     "esModuleInterop": true,

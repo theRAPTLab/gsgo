@@ -70,10 +70,10 @@ class Pool {
     const pool_size = this.pool_objs.length;
     if (newSize < pool_size) return;
     //
-    let addCount = newSize - pool_size;
-    if (addCount < this._batch_size) addCount = this._batch_size;
-    if (DBG) console.log('adding', addCount, 'objects');
-    this.increaseSize(addCount);
+    let add_count = newSize - pool_size;
+    if (add_count < this._batch_size) add_count = this._batch_size;
+    if (DBG) console.log('adding', add_count, 'objects');
+    this.increaseSize(add_count);
   }
 
   /** add a number of objects to the pool */

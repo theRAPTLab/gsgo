@@ -54,7 +54,7 @@ export class EndTemplate extends SM_Keyword {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;
-  //
+
   constructor() {
     super('endTemplate');
     this.req_scope.add('defTemplate');
