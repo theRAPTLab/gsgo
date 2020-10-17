@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import React from 'react';
 import { ITemplatePrograms, SM_Keyword } from 'lib/class-sm-keyword';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -33,7 +34,12 @@ export class UseFeature extends SM_Keyword {
   /** return rendered component representation */
   render(parms: string[], children: string[]): any {
     const featureName = parms.shift();
-    return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
+    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
+    return (
+      <div key={this.generateKey()} className="useFeature">
+        feature {featureName} has props, methods
+      </div>
+    );
   }
 } // end of UseFeature
 

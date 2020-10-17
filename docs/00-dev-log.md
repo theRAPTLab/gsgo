@@ -212,29 +212,208 @@ We have the definitions section, which is easy, working OK. Now we need to expre
 * [x] move the compiler and renderer functions into `SM_Keyword` as static methods
 * [x] remove window tests, formalize converter.ts as a test module, move to tests
 
-## Next Steps!
+## OCT 15 THU - implementing additional keywords
 
 We want to start implementing the following keywords.
 
 ### handling properties and methods in agents
 
+free writing mode engaged! I'm trying to  get moving on the next bit, which is to try to assign properties and stuff. So let's see if we can do that I might need to sketch this out. 
+
+```
+let's think about expressions for a bit:
+
+paren_expr : '(' expr ')';
+expr : test | id '=' expr;
+test : sum | sum '<' sum;
+sum  : term | sum '+' term | sum '-' term;
+term : id | integer | paren_expr;
+id : STRING
+integer : INT
+STRING : [a-z]+
+INT : [0-9]+
+WS : [ rnt] -> skip
+```
+
+In the example above we're declaring a grammar for TinyC. So what does it mean?
+
+```
+A terminal is the smallest block in an EBNF grammar. These are the atomic units.
+A non-terminal is anything that groups terminals and other non-terminals into a hierarchy.
+
+KINDS OF EBNF TERMINAL
+identifiers = name of variables, etc
+keywords = strings to identify start of definition, modifier, or control flow
+literals = values, characters
+separators and delimiters = colons, semicolons, etc
+whitespace = ignored
+```
+
+The biggest bugaboo I'm looking at is how to handle expressions cleanly. Ben took a stab at it and it seems a bit cumbersome because it wraps stuff in both a UI layer and an implied conceptual layer; there is no baseline representation like we have with our simple keyword-based language.
+
+The ideal cases might look like this:
+
+```
+// 1. assign a literal to a property belonging to an agent
+agent.prop = 1 
+
+// 2. assign an expression that evalutes to a value
+// to a property belonging to an agent
+agent.prop = agentB.prop + ( agent.prop + 1 + 2) * 3
+
+// 3. comparison of property belonging to agent with expression 
+// that evaluates to a value and yielding TRUE to invoke method
+// of agent
+if (agent.prop < ((agentB.prop + 10) * 5)) agent.method
+```
+
+I'm not sure what we learn from this, but I' tempted to break each one down.
+
+Example 1:
+
+* agentPropAssignValue(name,value)
+
+Example 2:
+
+*  `scopePushAgentProp(agent)`
+* `agentPropPushValue(agentB,'prop'), pushNumber(1), add(), pushNumber(2), add(), pushNumber(3), mul(), add()`
+* `scopedPropPopValue()`
+
+In Example 2, we have a bunch of stack operations. Can we convert it back into GEMscript equivalent? Let's scan it left-to-right and see if we can do it
+
+```
+// agent.prop = agentB.prop + ( agent.prop + 1 + 2) * 3
+// always start with push
+opPush agentProp   // FIRST ON STACK
+// see "+ (" force push for new expression group
+opPush agentB.prop // SECOND ON STACK
+// + select add and value = 
+opAdd 1 
+opAdd 2 // still 2nd value
+// see ") *" so get operand
+opMul 3
+opMul 3 // transformed value on stack
+```
+
+I think I need to read more about **parsing** and **evaluation of expressions**...let's do that.
+
 ### handling arithmetic expressions and calculations
+
+Ok, the basics!
+
+* the tokenizer creates a bunch of nodes that have a TYPE and a VALUE
+* the parser walks through the tokens one at a time, and recursively creates an Abstract Syntax Tree. The parser code is written in such a way that order of precedence rules are part of the tree builder, and it builds a tree that can simply be walked to be "evaluated"
+* the evaluator takes the AST produced by the parser and is "walked" to calculate the value.
+
+Here is a [simple buggy implementation](https://github.com/philipszdavido/expr_parser_js) and here is an [advanced implementation](https://github.com/plantain-00/expression-engine) as examples I found on the Internet. 
+
+I think we just need an **expression parser**, not a full GEMscript parser. Everywhere we can put an expression, we have a special **ExpressionComponent** that itself produces the tokens that will be handled by our owb ExpressionParser. Then it can be plugged into any of the keywords we're developing!
+
+That also means that I can just **use an expression placeholder** and to work out the rest of these keywords for quicker coverage.
+
+Also note that expressions are no longer just strings, but actual array of javascript literals (including objects and arrays)
+
+```
+agentMethod methodName ...args
+setProperty propName expr => value in agentProperty
+calc expr => value on stack
+if exprString programBlockTrue programBlockFalse
+
+whenAgent template expr => agentSet on stack
+filterAgentSet template expr => agentSet on stack
+programBlock
+
+whenAgentPair template1 template2 testname => agentPairSet on stack
+filterAgentPairSet template1 template2 exprString => agentPairSet on stack
+programBlock
+```
 
 ### handling arbitrary program blocks
 
+The keywords probably need a block designator. 
+
+```
+defineBlock
+... keywords
+endBlock -- left on stack...is this a new var type?
+
+var-agentset
+var-agentpairset
+var-program 
+var-array
+var-dict
+```
+
+This `defineBlock` keyword compiles each of the keywords into an array that can be pushed right on the stack for execution. 
+
+**I'm not sure how to provide program blocks as arguments to keywords** 
+
+For our simpler commands, we have literals as numbers and strings and booleans, but they're strings.
+
+`defineProp propName value`
+
+**Instead of using strings, maybe we send arrays of objects from the serialized components**, that way we don't have to do data conversion from strings, and we can have datatypes like arrays, objects, etc.
+
 ### handling comparisons and conditional execution of programs
+
+Handled by the expression engine, which leaves values on the stack which can then be invoked by pushing it on the scope stack
 
 ### handling interactions
 
+an interaction looks like
+
+```
+whenAgent template expr => agentSet on stack
+filterAgentSet template expr => agentSet on stack
+programBlock
+
+whenAgentPair template1 template2 testname => agentPairSet on stack
+filterAgentPairSet template1 template2 exprString => agentPairSet on stack
+programBlock
+```
+
 ### handling messaging between agents (queuing)
+
+```
+defineEvent eventName { }
+sendAgentSet template 
+```
+
+defineEvent.compile has a source line that looks like `['defineEvent','eventName',args]`
 
 ### handling system events (like tick)
 
+```
+onTick programBlock
+
+onCondition expr programBlock
+```
+
 ### handling conditional triggers and trigger events
 
+```
+onCondition exprString programBlock
+agentSet send 'event' {data}
+```
 
+### addressing instances
 
+our program source can't include actual instances, and we are not using ids as an addressible element. Instead, we address them by name, group, and other properties to create the appropriate set. Instances can have unique names so scripts can be written to **select** them.
 
+```
+forAllAgents templateName testExpr programBlock
+```
+
+## OCT 16 FRI - Three Questions to Answer
+
+Yesteday I figured out a few questions to try:
+
+* [x] see if I can emit JSX from the current keyword definitions, and render a cheesy string of components
+  * [x] look into rudimentary tree walker code (not tuned)
+  * [x] note that returning jsx is a bit slow
+  * [x] try jamming the JSX into Generator
+* [ ] update the program source format to use arrays to make sure that works
+* [ ] sketch out the remaining keywords, using a placeholder for expressions (we don't need to actually calculate them yet. We just want to generate programs that refer to them)
 
 
 

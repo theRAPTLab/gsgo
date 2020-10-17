@@ -50,6 +50,13 @@ UR.RegisterMessage('NET:HELLO', data => {
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Generator extends React.Component {
+  constructor() {
+    super();
+    // prep
+    this.state = { jsx: <div /> };
+    // bind
+    this.dataUpdate = this.dataUpdate.bind(this);
+  }
   componentDidMount() {
     // start URSYS
     UR.SystemConfig({ autoRun: true });
@@ -59,10 +66,16 @@ class Generator extends React.Component {
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
     document.title = 'GENERATOR';
+    // hook
+    UR.RegisterMessage('KEYWORD_TEST_RENDER', this.dataUpdate);
   }
-
   componentWillUnmount() {
     console.log('componentWillUnmount');
+    UR.UnregisterMessage('KEYWORD_TEST_RENDER', this.dataUpdate);
+  }
+
+  dataUpdate(jsx) {
+    this.setState({ jsx });
   }
 
   render() {
@@ -72,7 +85,9 @@ class Generator extends React.Component {
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
           <span style={{ fontSize: '32px' }}>GENERATOR/TEST</span>
         </div>
-        <div id="console-left" className={clsx(classes.cell, classes.left)} />
+        <div id="console-left" className={clsx(classes.cell, classes.left)}>
+          {this.state.jsx}
+        </div>
         <div id="root-renderer" className={classes.main} />
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
           console-right

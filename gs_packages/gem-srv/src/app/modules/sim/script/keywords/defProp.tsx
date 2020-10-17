@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import React from 'react';
 import { ITemplatePrograms, SM_Keyword } from 'lib/class-sm-keyword';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -39,7 +40,12 @@ export class DefProp extends SM_Keyword {
     const propName = parms.shift();
     const propType = parms.shift();
     const initValue = parms.shift();
-    return `<PropEditor label='${propName}' type='${propType}' value={${initValue}} />`;
+    // return `<PropEditor label='${propName}' type='${propType}' value={${initValue}} />`;
+    return (
+      <div key={this.generateKey()} className="defProp">
+        prop {propName} is type {propType} w/value {initValue}
+      </div>
+    );
   }
 } // end of DefProp
 

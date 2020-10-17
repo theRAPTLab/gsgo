@@ -1,6 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  class that implements a keyword object
+  Implement a "Keyword Object" base class that manages the compile() and
+  render() output for a particular script keyword. This module also exposes
+  static methods for compiling and rendering source arrays
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -60,6 +62,9 @@ function m_RenderLine(line) {
     ];
   return cmdObj.render(bits); // bits is the subsequent parameters
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// GARBAGE ID GENERATOR //////////////////////////////////////////////////////
+let ID_GENERATOR = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,6 +93,11 @@ export class SM_Keyword {
   /** override in subclass */
   render(parms: string[], children?: string[]): any {
     throw Error(`${this.keyword}.render() must be overridden by subclassers`);
+  }
+
+  /** cheese key id generator */
+  generateKey() {
+    return ID_GENERATOR++;
   }
 } // end of SM_Keyword
 

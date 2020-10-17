@@ -5,6 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import React from 'react';
 import { ITemplatePrograms, SM_Keyword } from 'lib/class-sm-keyword';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -37,7 +38,12 @@ export class DefTemplate extends SM_Keyword {
   render(parms: string[], children: string[]): any {
     const templateName = parms.shift();
     const baseTemplate = parms.shift() || 'Agent';
-    return `<Template label='${templateName}' extends='${baseTemplate}'>`;
+    // return `<Template label='${templateName}' extends='${baseTemplate}'>`;
+    return (
+      <div key={this.generateKey()} className="defTemplate">
+        {templateName} extends {baseTemplate}
+      </div>
+    );
   }
 } // end of DefTemplate
 
@@ -66,7 +72,7 @@ export class EndTemplate extends SM_Keyword {
 
   /** render to HTML */
   render(parms: string[], children: string[]): any {
-    return '</Template>';
+    return undefined; // need to solve template embedding
   }
 } // end of EndDefTemplate
 

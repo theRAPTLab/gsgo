@@ -12,6 +12,7 @@ import {
 import { DefProp } from 'modules/sim/script/keywords/defProp';
 import { UseFeature } from 'modules/sim/script/keywords/useFeature';
 import { KEYGEN } from 'lib/class-sm-keyword';
+import reactTreeWalker from 'lib/util-react-tree-walker';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,6 +38,7 @@ const SOURCE = [
   'defProp honeySacks GSNumber 0',
   'endTemplate'
 ];
+const SOURCE2 = ['defTemplate Cheese', 'defProp type GSString', 'endTemplate'];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestListSource(source = SOURCE) {
   console.log(...PR('Source Lines - (made by GUI, saved/loaded from network)'));
@@ -65,12 +67,33 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToReact(source = SOURCE) {
+async function TestSourceToReact(source = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   const react = KEYGEN.RenderSource(source);
-  react.forEach(component => console.log(component));
+  UR.RaiseMessage('KEYWORD_TEST_RENDER', react);
+
+  // TEST: render react components
+  // react.forEach(component => console.log(component));
+
+  // TEST: try this neat function to walk tree
+  function visitor(element, instance, ctx, childCtx) {
+    if (element && element.props) {
+      const id = element.props.className;
+      if (id) console.log(`<${id}>`, element.props.children.join(''));
+    }
+    // console.log(element, instance);
+  }
+  console.log(...PR('TEST TREE WALKER'));
+  await reactTreeWalker(react, visitor);
+  console.log(...PR('TEST END'));
 }
+
+/// WINDOW DEBUG //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(window as any).triggerSourceChange = () => {
+  TestSourceToReact(SOURCE2);
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
