@@ -27,6 +27,7 @@ KEYGEN.AddKeyword(UseFeature);
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let REACT_ROOT;
 const SOURCE = [
   ['defTemplate', 'Bee'],
   ['defProp', 'nectarAmount', 'GSNumber', 0],
@@ -50,10 +51,10 @@ function TestListSource(source = SOURCE) {
 function TestSourceToProgram(source = SOURCE) {
   // the idea is to create a data structure we can generate and then parse
   console.log(
-    ...PR('KEYGEN.CompileSource() - create template smc program arrays')
+    ...PR('KEYGEN.CompileTemplate() - create template smc program arrays')
   );
   // get the output
-  const output = KEYGEN.CompileSource(source);
+  const output = KEYGEN.CompileTemplate(source);
   //  print the output
   output.template_define.forEach(statement =>
     console.log('definition:', statement)
@@ -67,27 +68,34 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function TestSourceToReact(source: string[] | any[][] = SOURCE) {
+function TestSourceToReact(source: string[] | any[][] = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
-  const react = KEYGEN.RenderSource(source);
-  UR.RaiseMessage('KEYWORD_TEST_RENDER', react);
+  REACT_ROOT = KEYGEN.RenderSource(source);
+  UR.RaiseMessage('KEYWORD_TEST_RENDER', REACT_ROOT);
+}
 
-  // TEST: render react components
-  // react.forEach(component => console.log(component));
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function TestReadReact() {
   // TEST: try this neat function to walk tree
+  const decompile = [];
   function visitor(element, instance, ctx, childCtx) {
     if (element && element.props) {
-      const id = element.props.className;
-      if (id) console.log(`<${id}>`, element.props.children.join(''));
+      const id = element.props.className || element.props.keyword;
+      const kids = element.props.children
+        ? element.props.children
+        : (instance && instance.state) || [];
+      if (id) {
+        console.log(`<${id}>`, kids, instance);
+        decompile.push(id, kids);
+      }
     }
-    // console.log(element, instance);
   }
-  console.log(...PR('TEST TREE WALKER'));
-  await reactTreeWalker(react, visitor);
-  console.log(...PR('TEST END'));
+  console.log(...PR('READ REACT'));
+  await reactTreeWalker(REACT_ROOT, visitor);
+  console.log(...PR('DECOMP', decompile));
 }
+UR.RegisterMessage('KEYWORD_TEST_READ', TestReadReact);
 
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -415,7 +415,97 @@ Yesteday I figured out a few questions to try:
 * [x] move `modules/` out of `app/` since they aren't necessarily part of an app
 * [x] update the program source format to use arrays to make sure that works
   * [x] Now accepts both a string format to tokenize and an array format of object literals
-* [ ] sketch out the remaining keywords, using a placeholder for expressions (we don't need to actually calculate them yet. We just want to generate programs that refer to them)
+
+That went pretty well! Not only did it largely work for proof-of-concept, but it didn't take that long either.
+
+* [ ] sketch out the **remaining keywords**, using a placeholder for expressions (we don't need to actually calculate them yet. We just want to generate programs that refer to them)
+
+```
+onCondition condName condExpr programBlock
+whenAgentSet template condExp programBlock w/AgentScope
+whenAgentPairSet template template condExp programBlock w/AgentPairScope
+doCondition condName data ...
+agentSend messageName data ...
+agentQueue messageName data ...
+forAgentSet template programBlock w/AgentScope
+agentProp propName setTo expr
+agentProp propName value
+-- also look at the opcodes --
+```
+
+## OCT 17 SAT - Looking at a Keyword Helper component
+
+Will resume with the **keyword** stuff on Sunday. In the meantime, I want to try something with the keyword class.
+
+```
+function ScriptElement(props) {
+	const { keyword, args, children } = props;
+	return (
+	<>{children}</>
+	}
+}
+<ScriptElement keyword="defTemplate" args={args}>
+	{children}
+</ScriptElement>
+```
+
+Ok, there is some **complexity** here:
+
+* `class-sm-keyword` is not a React component, so it does not maintain any kind of React state
+* the subclassers of `SM_Keyword` are not React components either, so its rendered JSX output has no state that can be managed by React events unless it's expanded.
+* Therefore, we need to make some kind of **composite** object to handle React state (so we can write UI stuff) and also be self-contained with the logic to render stuff. 
+* This suggests a **revised sm-keyword** pattern, where the React component is created using data from SM keyword
+
+I'm a little ways through structuring this. `defTemplate` has the beginnings of defining the STATE in each of these components. I can walk the tree, but I need to pull the state out of each element somehow and I don't see this. 
+
+* [x] how to read the changed values from the components? Is it possible?
+  * [x] It doesn't seem to be possible; we are stuck with the original state which mutates and probably makes NEW objects under-the-hood
+* [ ] ALTERNATIVE is to maintain our own LIVE data structure to regenerate JSX so we can change our own  source structure and then rerender JSX from that.
+
+The effect hooks in react work in a similar way, maintaining order by  virtual of the order that the hooks are created by render function. 
+
+So when we generate our data structure, we're rendering from source directly into JSX. We need to pass an additional index to the generator.
+
+* [x] in `class-sm-keyword` `m_RenderLine` now calls `cmdObj.render()` with an extra index line so this index will be passed to the rendered 
+* [ ] We also need to cache the parameters so we can update them when we receive `{index, state}` from a UI update, then do a render again.
+* [ ] Basically, `RenderSource()` is an initial render, and updates to it should be something called `UpdateSource()` which rerenders the JSX with the new aggregate state.
+
+## OCT 18 SUN - Add State Object Render Representation
+
+How does this work? 
+
+* source line decomposed into mirroring { keyword, id, parameters  } UIState
+* UIState is used to render JSX, which is sent back onChange
+* source compiler updates its datastructures and rerenders again
+
+```
+SM_Keyword.RenderSource(SOURCE) has to maintain a list of objects
+RenderKeywordObjects(source) {
+	KEYWORD_STATES = [];
+	source.foreach 
+		const kobj = m_MakeKeywordState(index,source) // returns {index, keyword, ...args }
+		KEYWORD_STATES[index] = kobj;
+}
+RenderKeywordState() {
+	KEYWORD_STATES.forEach( (kobj,index)=> {
+		const cmdObj = KEYWORDS.get(kobj.keyword);
+		return = cmdObj.render(kobj); // kobj has index	
+	});
+}
+UpdateKeywordState(kobj) {
+	const { index } = kobj;
+	KEYWORD_STATES[index] = kobj;
+	RenderKeywords
+}
+		
+UR.RegisterMessage('KEYWORD_STATE_UPDATE', kobj=> {
+	KEYWORD
+});
+```
+
+
+
+
 
 
 

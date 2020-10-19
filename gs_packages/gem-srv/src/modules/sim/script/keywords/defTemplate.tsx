@@ -1,3 +1,4 @@
+/* eslint-disable react/prefer-stateless-function */
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -5,10 +6,53 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import React from 'react';
-import { ITemplatePrograms, SM_Keyword } from 'lib/class-sm-keyword';
+import { ITemplatePrograms, SM_Keyword, KEYGEN } from 'lib/class-sm-keyword';
 
-/// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
+/// REACT COMPONENT ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** implement interactive react component for this keyword, saving information
+ *  in the local state
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+type MyProps = {
+  keyword: string;
+  args: any[];
+};
+type MyState = { templateName: string; baseTemplate: string };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class ScriptElement extends React.Component<MyProps, MyState> {
+  constructor(props: MyProps) {
+    super(props);
+    const { keyword, args } = props;
+    this.state = {
+      templateName: args[0],
+      baseTemplate: args[1]
+    };
+    this.onChange = this.onChange.bind(this);
+  }
+  onChange(e) {
+    this.setState({ templateName: e.currentTarget.value }, () => {
+      UR.RaiseMessage('KEYWORD_TEST_UPDATE');
+    });
+  }
+  getState() {
+    return this.state;
+  }
+  render() {
+    const { templateName, baseTemplate } = this.state;
+    const { keyword } = this.props;
+    return (
+      <div>
+        templateName
+        <input onChange={this.onChange} type="text" value={templateName} />
+      </div>
+    );
+  }
+} // end script element
+
+/// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class DefTemplate extends SM_Keyword {
   // base properties defined in SM_Keyword
@@ -35,14 +79,14 @@ export class DefTemplate extends SM_Keyword {
   }
 
   /** return rendered component representation */
-  render(parms: string[], children: string[]): any {
-    const templateName = parms.shift();
-    const baseTemplate = parms.shift() || 'Agent';
+  render(parms: (string | any)[], children: string[]): any {
     // return `<Template label='${templateName}' extends='${baseTemplate}'>`;
     return (
-      <div key={this.generateKey()} className="defTemplate">
-        {templateName} extends {baseTemplate}
-      </div>
+      <ScriptElement
+        key={KEYGEN.UniqueKeyProp()}
+        keyword="defTemplate"
+        args={parms}
+      />
     );
   }
 } // end of DefTemplate

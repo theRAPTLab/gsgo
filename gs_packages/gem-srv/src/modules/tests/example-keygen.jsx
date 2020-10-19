@@ -26,7 +26,7 @@ const SOURCE = [
 ];
 
 /// generate template from source
-const template = KEYGEN.CompileSource(SOURCE);
+const template = KEYGEN.CompileTemplate(SOURCE);
 DATACORE.RegisterTemplate(template);
 
 /// generate jsx from source (pseudocode)
