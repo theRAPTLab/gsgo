@@ -474,36 +474,22 @@ So when we generate our data structure, we're rendering from source directly int
 
 How does this work? 
 
-* source line decomposed into mirroring { keyword, id, parameters  } UIState
-* UIState is used to render JSX, which is sent back onChange
-* source compiler updates its datastructures and rerenders again
+* [x] implement base SM_Keyword` keywordObj(parms: string[]): KeywordObject`
+* [x] add `m_RenderKeywordObject(): KeywordObject` 
+* [x] add `RenderSourceStates(source)`
+* [x] update `defTemplate` w/ `keywordObj()`
+* [x] update `defProp` w/ `keywordObj()`
+* [x] update `useFeature` w/ `keywordObj()`
 
-```
-SM_Keyword.RenderSource(SOURCE) has to maintain a list of objects
-RenderKeywordObjects(source) {
-	KEYWORD_STATES = [];
-	source.foreach 
-		const kobj = m_MakeKeywordState(index,source) // returns {index, keyword, ...args }
-		KEYWORD_STATES[index] = kobj;
-}
-RenderKeywordState() {
-	KEYWORD_STATES.forEach( (kobj,index)=> {
-		const cmdObj = KEYWORDS.get(kobj.keyword);
-		return = cmdObj.render(kobj); // kobj has index	
-	});
-}
-UpdateKeywordState(kobj) {
-	const { index } = kobj;
-	KEYWORD_STATES[index] = kobj;
-	RenderKeywords
-}
-		
-UR.RegisterMessage('KEYWORD_STATE_UPDATE', kobj=> {
-	KEYWORD
-});
-```
+Ok, test-keygen is now getind the render source states. Now we render those.
 
+* [x] `Generator.uiUpdate()` is now obsolete
+* [x] `defTemplate.render()` 
+* [x] endTemplate.render()
+* [x] defProp.render()
+* [x] useFeature.render()
 
+Yay, the state is now being updated outside of React through our update mechanism. We will write source from our outside-react state!
 
 
 

@@ -28,6 +28,8 @@ KEYGEN.AddKeyword(UseFeature);
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let REACT_ROOT;
+let KEYWORD_STATES;
+
 const SOURCE = [
   ['defTemplate', 'Bee'],
   ['defProp', 'nectarAmount', 'GSNumber', 0],
@@ -71,8 +73,8 @@ function TestSourceToProgram(source = SOURCE) {
 function TestSourceToReact(source: string[] | any[][] = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
-  REACT_ROOT = KEYGEN.RenderSource(source);
-  UR.RaiseMessage('KEYWORD_TEST_RENDER', REACT_ROOT);
+  // REACT_ROOT = KEYGEN.RenderSourceToJSX(source);
+  // UR.RaiseMessage('KEYWORD_TEST_RENDER', REACT_ROOT);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -101,6 +103,16 @@ UR.RegisterMessage('KEYWORD_TEST_READ', TestReadReact);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 (window as any).triggerSourceChange = () => {
   TestSourceToReact(SOURCE2);
+};
+UR.RegisterMessage('KEYWORD_TEST_UPDATE', event => {
+  const { index, state } = event;
+  console.log('state', index, state);
+});
+(window as any).RenderSourceStates = () => {
+  KEYWORD_STATES = KEYGEN.MakeKeywordObjs(SOURCE);
+  console.log(KEYWORD_STATES);
+  const jsx = KEYGEN.RenderKeywordObjs(KEYWORD_STATES);
+  UR.RaiseMessage('KEYWORD_TEST_RENDER', jsx);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

@@ -14,6 +14,7 @@ import { TOpcode } from 'lib/t-smc';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const KEYWORDS: Map<string, SM_Keyword> = new Map();
+
 const DBG = false;
 const PR = UR.PrefixUtil('SM_Keyword');
 
@@ -35,6 +36,11 @@ export interface ITemplatePrograms {
   template_conditions?: TOpcode[];
   agent_init?: TOpcode[];
 }
+export type KeywordObj = {
+  index?: number;
+  keyword: string;
+  arg: any; // could be an object, could be anything
+};
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +70,7 @@ function m_CompileLine(input: string | any[]): ITemplatePrograms {
   return cmdObj.compile(qbits); // qbits is the subsequent parameters
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** render an actual line of code like 'defTemplate Bee' */
+/** (deprecated) render an actual line of code like 'defTemplate Bee' */
 function m_RenderLine(input: string | any[]) {
   const qbits = m_TokenQueue(input);
   // what is the command?
@@ -77,6 +83,32 @@ function m_RenderLine(input: string | any[]) {
     );
   return cmdObj.render(qbits); // qbits is the subsequent parameters
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** compile source line into keyword object */
+function m_MakeKeywordObj(input: string | any[]): KeywordObj {
+  const qbits = m_TokenQueue(input);
+  // what is the command?
+  let keyword = qbits.shift();
+  // how do we compile it?
+  const cmdObj = KEYWORDS.get(keyword);
+  if (!cmdObj)
+    throw Error(`KEYOBJ ERR: "${keyword}" unknown, parms:"${qbits.join(' ')}"`);
+  // this has {
+  return cmdObj.keywordObj(qbits);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** take a KeywordObj and call the keyword renderer */
+function m_RenderKeywordObj(index: number, kobj: KeywordObj, children?: any[]) {
+  const { keyword, arg } = kobj;
+  const cmdObj = KEYWORDS.get(keyword);
+  if (!cmdObj) {
+    console.log(`can't render ${index}:${keyword}`, kobj);
+    return '';
+  }
+  // this has {
+  return cmdObj.render(index, arg);
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This generates an ever-increased ID for rendered React list elements.
  *  They are all unique because our rendering loop just rerenders the entire
@@ -93,7 +125,7 @@ function m_GenerateKey() {
   EXPORTED STATIC METHODS
 
   AddKeyword( KeywordConstructor )
-    Adds a KeywordObject to the KEYWORD map, which maps keyword (string)
+    Adds a KeywordObj to the KEYWORD map, which maps keyword (string)
     to SM_Keyword instances for lookup.
 
   CompileTemplate( source ) returns ITemplatePrograms
@@ -140,12 +172,32 @@ function CompileTemplate(source: string[] | any[][]) {
   return output;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** render a source array into react components or whatever */
-function RenderSource(source: string[] | any[]) {
+/** (deprecated) render a source array into react components or whatever */
+function RenderSourceToJSX(source: string[] | any[]) {
   const react = [];
   RENDER_COUNTER = 0;
   source.forEach(line => {
     const jsx = m_RenderLine(line);
+    react.push(jsx);
+  });
+  return react;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MakeKeywordObjs(source: (string | any)[]): KeywordObj[] {
+  const temp: KeywordObj[] = [];
+  source.forEach((line, index) => {
+    const kobj = m_MakeKeywordObj(line);
+    kobj.index = index; // save index
+    temp[index] = kobj;
+  });
+  return temp;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** (deprecated) render a source array into react components or whatever */
+function RenderKeywordObjs(kobjs: KeywordObj[]) {
+  const react = [];
+  kobjs.forEach((kobj, index) => {
+    const jsx = m_RenderKeywordObj(index, kobj);
     react.push(jsx);
   });
   return react;
@@ -189,12 +241,16 @@ export class SM_Keyword {
   }
 
   /** override in subclass */
-  compile(parms: string[]): ITemplatePrograms {
+  compile(parms: any[]): ITemplatePrograms {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
 
+  keywordObj(parms: any[]): KeywordObj {
+    throw Error(`${this.keyword}.keywordObj() must be overridden by subclassers`);
+  }
+
   /** override in subclass */
-  render(parms: string[], children?: string[]): any {
+  render(index: number, keywordObject: object, children?: any[]): any {
     throw Error(`${this.keyword}.render() must be overridden by subclassers`);
   }
 
@@ -209,7 +265,9 @@ export class SM_Keyword {
 /// see additional exports above
 export const KEYGEN = {
   CompileTemplate,
-  RenderSource,
+  RenderSourceToJSX,
+  MakeKeywordObjs,
+  RenderKeywordObjs,
   AddKeyword,
   UniqueKeyProp: m_GenerateKey
 };

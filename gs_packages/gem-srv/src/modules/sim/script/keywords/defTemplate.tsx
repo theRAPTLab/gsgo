@@ -8,7 +8,12 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import { ITemplatePrograms, SM_Keyword, KEYGEN } from 'lib/class-sm-keyword';
+import {
+  ITemplatePrograms,
+  SM_Keyword,
+  KeywordObj,
+  KEYGEN
+} from 'lib/class-sm-keyword';
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,32 +22,39 @@ import { ITemplatePrograms, SM_Keyword, KEYGEN } from 'lib/class-sm-keyword';
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyProps = {
+  index: number;
   keyword: string;
-  args: any[];
+  arg: any;
 };
 type MyState = { templateName: string; baseTemplate: string };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptElement extends React.Component<MyProps, MyState> {
+  index: number; // ui index
+  keyword: string; // keyword
   constructor(props: MyProps) {
     super(props);
-    const { keyword, args } = props;
+    const { index, keyword, arg } = props;
+    this.index = index;
+    this.keyword = keyword;
+    const { templateName, baseTemplate } = arg;
     this.state = {
-      templateName: args[0],
-      baseTemplate: args[1]
+      templateName,
+      baseTemplate
     };
     this.onChange = this.onChange.bind(this);
   }
+
   onChange(e) {
     this.setState({ templateName: e.currentTarget.value }, () => {
-      UR.RaiseMessage('KEYWORD_TEST_UPDATE');
+      UR.RaiseMessage('KEYWORD_TEST_UPDATE', {
+        index: this.index,
+        state: this.state
+      });
     });
   }
-  getState() {
-    return this.state;
-  }
+
   render() {
     const { templateName, baseTemplate } = this.state;
-    const { keyword } = this.props;
     return (
       <div>
         templateName
@@ -65,8 +77,8 @@ export class DefTemplate extends SM_Keyword {
 
   /** create smc template code objects */
   compile(parms: string[]): ITemplatePrograms {
-    const templateName = parms.shift();
-    const baseTemplate = parms.shift() || '';
+    const templateName = parms[0];
+    const baseTemplate = parms[1];
     const progout = [];
     progout.push(
       `smc_defTemplate( ${templateName}, ${baseTemplate || 'Agent'} )`
@@ -78,14 +90,25 @@ export class DefTemplate extends SM_Keyword {
     };
   }
 
+  /** return a state object that can be used to initialize render()*/
+  keywordObj(parms: any[]): KeywordObj {
+    const templateName = parms[0];
+    const baseTemplate = parms[1];
+    return {
+      keyword: this.keyword,
+      arg: { templateName, baseTemplate }
+    };
+  }
+
   /** return rendered component representation */
-  render(parms: (string | any)[], children: string[]): any {
-    // return `<Template label='${templateName}' extends='${baseTemplate}'>`;
+  render(index: number, arg: any, children?: any[]): any {
+    const { templateName, baseTemplate } = arg;
     return (
       <ScriptElement
         key={KEYGEN.UniqueKeyProp()}
-        keyword="defTemplate"
-        args={parms}
+        index={index}
+        keyword={this.keyword}
+        arg={{ templateName, baseTemplate }}
       />
     );
   }
@@ -111,6 +134,14 @@ export class EndTemplate extends SM_Keyword {
     progout.push('smc_nop()');
     return {
       template_define: progout
+    };
+  }
+
+  /** return a state object that can be used to initialize render()*/
+  keywordObj(parms: any[]): KeywordObj {
+    return {
+      keyword: this.keyword,
+      state: {}
     };
   }
 

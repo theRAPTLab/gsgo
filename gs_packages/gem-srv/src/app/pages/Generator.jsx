@@ -57,7 +57,6 @@ class Generator extends React.Component {
     this.state = { jsx: <div /> };
     // bind
     this.dataUpdate = this.dataUpdate.bind(this);
-    this.uiUpdate = this.uiUpdate.bind(this);
   }
   componentDidMount() {
     // start URSYS
@@ -70,7 +69,6 @@ class Generator extends React.Component {
     document.title = 'GENERATOR';
     // hook
     UR.RegisterMessage('KEYWORD_TEST_RENDER', this.dataUpdate);
-    UR.RegisterMessage('KEYWORD_TEST_UPDATE', this.uiUpdate);
   }
   componentWillUnmount() {
     console.log('componentWillUnmount');
