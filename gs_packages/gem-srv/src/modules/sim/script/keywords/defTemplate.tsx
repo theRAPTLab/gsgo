@@ -12,6 +12,7 @@ import {
   ITemplatePrograms,
   SM_Keyword,
   KeywordObj,
+  KeywordUpdateData,
   KEYGEN
 } from 'lib/class-sm-keyword';
 
@@ -46,10 +47,13 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
   onChange(e) {
     this.setState({ templateName: e.currentTarget.value }, () => {
-      UR.RaiseMessage('KEYWORD_TEST_UPDATE', {
+      const { templateName, baseTemplate } = this.state;
+      const data: KeywordUpdateData = {
+        keyword: this.keyword,
         index: this.index,
-        state: this.state
-      });
+        state: [templateName, baseTemplate]
+      };
+      UR.RaiseMessage('KEYWORD_TEST_UPDATE', data);
     });
   }
 

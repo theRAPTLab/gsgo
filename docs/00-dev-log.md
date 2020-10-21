@@ -504,7 +504,7 @@ Anyway, I'm letting React update its components, but also mirroring state change
 
 First up: I want to change the `arg` object in a KeywordObject to be an array. The advantage of this is that the order of parameters is preserved for regenerating source code. The meaning of the argument value is also documented by the KeyWord instance's `args` array.
 
-* [x] **remove** KEYGEN.RenderSourceToJSX(source) is old method
+* [x] **remove** `KEYGEN.RenderSourceToJSX(source)` is old method
 * [x] update `MakeKeywordObjs()`
   * [x] this is stored in the KeywordClassInstances
   * [x] update defProp, defTemplate, useFeature
@@ -513,6 +513,10 @@ First up: I want to change the `arg` object in a KeywordObject to be an array. T
 * [x] update arg to args in  `KEYGEN.MakeKeywordObjs()`
 * [x] update arg to args in  `KEYGEN.RenderKeywordObjs()`
 * [x] update arg to args in round-trip back to state update in `<ScriptElement>` implementations
+* [x] write `KEYGEN.KeyObjsToSource()`
+
+Yay it works! Commit!
+
 * [ ] rethink naming for KeywordObject and SM_Keyword...they are not the same thing. 
 
 

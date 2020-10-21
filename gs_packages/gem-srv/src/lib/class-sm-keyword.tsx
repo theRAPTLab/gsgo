@@ -42,6 +42,12 @@ export type KeywordObj = {
   keyword: string; // keyword of this object
   args: any[]; // values provided to the keyword
 };
+/** sent by change events in the UI to state manager */
+export type KeywordUpdateData = {
+  index: number;
+  keyword: string;
+  state: any[];
+};
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -223,6 +229,19 @@ function RenderKeywordObjs(kobjs: KeywordObj[]) {
   return react;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a list of keyword objects, generate a script source */
+function DecompileKeywordObjs(kobjs: KeywordObj[]) {
+  const source = [];
+  console.log('decompiling', kobjs);
+  kobjs.forEach((kobj, index) => {
+    const { keyword, args } = kobj;
+    console.log(index, keyword, ...args);
+    source.push([keyword, ...args]);
+  });
+  return source;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see additional exports above
@@ -230,6 +249,7 @@ export const KEYGEN = {
   CompileTemplate,
   MakeKeywordObjs,
   RenderKeywordObjs,
+  DecompileKeywordObjs,
   AddKeyword,
   UniqueKeyProp: m_GenerateKey
 };

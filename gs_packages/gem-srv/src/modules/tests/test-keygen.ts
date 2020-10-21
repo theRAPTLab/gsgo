@@ -101,18 +101,25 @@ UR.RegisterMessage('KEYWORD_TEST_READ', TestReadReact);
 
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-(window as any).triggerSourceChange = () => {
-  TestSourceToReact(SOURCE2);
-};
 UR.RegisterMessage('KEYWORD_TEST_UPDATE', event => {
-  const { index, state } = event;
-  console.log('state', index, state);
+  const { index, keyword, state } = event;
+  KEYWORD_STATES[index] = { keyword, args: state };
+  console.log(...PR('wrote state', KEYWORD_STATES[index]));
 });
-(window as any).RenderSourceStates = () => {
+(window as any).RenderKeywordObjs = () => {
   KEYWORD_STATES = KEYGEN.MakeKeywordObjs(SOURCE);
   console.log(KEYWORD_STATES);
   const jsx = KEYGEN.RenderKeywordObjs(KEYWORD_STATES);
   UR.RaiseMessage('KEYWORD_TEST_RENDER', jsx);
+};
+(window as any).DecompileKeywordObjs = () => {
+  const source = KEYGEN.DecompileKeywordObjs(KEYWORD_STATES);
+  console.log(...PR('DECOMPILED'));
+  source.forEach((line, index) => {
+    console.log(index, line);
+  });
+  console.log(...PR('RECOMPILE'));
+  TestSourceToProgram(source);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
