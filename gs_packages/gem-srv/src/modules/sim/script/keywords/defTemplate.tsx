@@ -96,13 +96,13 @@ export class DefTemplate extends SM_Keyword {
     const baseTemplate = parms[1];
     return {
       keyword: this.keyword,
-      arg: { templateName, baseTemplate }
+      args: [templateName, baseTemplate]
     };
   }
 
   /** return rendered component representation */
-  render(index: number, arg: any, children?: any[]): any {
-    const { templateName, baseTemplate } = arg;
+  render(index: number, args: any[], children?: any[]): any {
+    const [templateName, baseTemplate] = args;
     return (
       <ScriptElement
         key={KEYGEN.UniqueKeyProp()}
@@ -141,12 +141,12 @@ export class EndTemplate extends SM_Keyword {
   keywordObj(parms: any[]): KeywordObj {
     return {
       keyword: this.keyword,
-      state: {}
+      args: []
     };
   }
 
   /** render to HTML */
-  render(parms: string[], children: string[]): any {
+  render(index: number, args: any[], children: any[]): any {
     return undefined; // need to solve template embedding
   }
 } // end of EndDefTemplate

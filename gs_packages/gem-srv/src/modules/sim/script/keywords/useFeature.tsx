@@ -36,12 +36,12 @@ export class UseFeature extends SM_Keyword {
     const featureName = parms[0];
     return {
       keyword: this.keyword,
-      arg: { featureName }
+      args: [featureName]
     };
   }
   /** return rendered component representation */
-  render(index: number, arg: any, children?: any[]): any {
-    const { featureName } = arg;
+  render(index: number, args: any, children?: any[]): any {
+    const [featureName] = args;
     // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
     return (
       <div key={this.generateKey()} className="useFeature">

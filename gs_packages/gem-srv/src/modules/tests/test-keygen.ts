@@ -70,7 +70,7 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToReact(source: string[] | any[][] = SOURCE) {
+function TestSourceToReact(source: any[][] = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   // REACT_ROOT = KEYGEN.RenderSourceToJSX(source);

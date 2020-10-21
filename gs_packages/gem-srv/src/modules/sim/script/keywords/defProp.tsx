@@ -42,14 +42,13 @@ export class DefProp extends SM_Keyword {
     const initValue = parms[2];
     return {
       keyword: this.keyword,
-      arg: { propName, propType, initValue }
+      args: [propName, propType, initValue]
     };
   }
 
   /** return rendered component representation */
-  render(index: number, arg: any, children?: any[]): any {
-    const { propName, propType, initValue } = arg;
-    // return `<PropEditor label='${propName}' type='${propType}' value={${initValue}} />`;
+  render(index: number, args: any[], children?: any[]): any {
+    const [propName, propType, initValue] = args;
     return (
       <div key={this.generateKey()} className="defProp">
         prop {propName} is type {propType} w/value {initValue}

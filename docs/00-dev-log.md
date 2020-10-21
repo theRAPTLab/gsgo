@@ -49,7 +49,7 @@
 
 **SUMMARY S21 OCT 12 - OCT 25**
 
-* W1: 
+* W1: fast compile. source-to-script/ui compilers.
 * W2: 
 
 ---
@@ -490,6 +490,30 @@ Ok, test-keygen is now getind the render source states. Now we render those.
 * [x] useFeature.render()
 
 Yay, the state is now being updated outside of React through our update mechanism. We will write source from our outside-react state!
+
+## OCT 19-20 MON - Bonus Coding
+
+Leaving off form last night, here is where we are right now. Mondays, Tuesdays are not serious work days and are reserved for meetings and such so deep coding work is not usually something I can get to.
+
+Anyway, I'm letting React update its components, but also mirroring state changes on the keyword level back to our own structure of "Keyword Objects". These Keyword Objects can compiled back into source code. 
+
+1. change the `arg` object back to array to preserve order of parameter definition
+2. write `KeywordObjToSource()` function
+
+## OCT 21 WED - Resuming Changes
+
+First up: I want to change the `arg` object in a KeywordObject to be an array. The advantage of this is that the order of parameters is preserved for regenerating source code. The meaning of the argument value is also documented by the KeyWord instance's `args` array.
+
+* [x] **remove** KEYGEN.RenderSourceToJSX(source) is old method
+* [x] update `MakeKeywordObjs()`
+  * [x] this is stored in the KeywordClassInstances
+  * [x] update defProp, defTemplate, useFeature
+* [x] update arg to args in `KEYGEN.RenderKeywordObjs()`
+* [x] update arg to args in all `keywordObj()` implementors 
+* [x] update arg to args in  `KEYGEN.MakeKeywordObjs()`
+* [x] update arg to args in  `KEYGEN.RenderKeywordObjs()`
+* [x] update arg to args in round-trip back to state update in `<ScriptElement>` implementations
+* [ ] rethink naming for KeywordObject and SM_Keyword...they are not the same thing. 
 
 
 
