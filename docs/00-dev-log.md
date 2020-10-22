@@ -267,7 +267,7 @@ agent.prop = agentB.prop + ( agent.prop + 1 + 2) * 3
 if (agent.prop < ((agentB.prop + 10) * 5)) agent.method
 ```
 
-I'm not sure what we learn from this, but I' tempted to break each one down.
+I'm not sure what we learn from this, but I'm tempted to break each one down.
 
 Example 1:
 
@@ -524,6 +524,236 @@ Yay it works! Commit!
 * [x] rethink naming for KeywordObject and SM_Keyword...they are not the same thing. 
 
 Commit! It works and it's clean. One small wrinkle is the issue with Typescript not working wiht destructuring arrays (incorrectly infers type)
+
+## OCT 22 THU - Expressions
+
+*Review **[OCT 15](#OCT 15 THU - implementing additional keywords)** notes for parsing and expressions with regards to GEMscript.*
+
+To recap, here's how the expression stuff works:
+
+1. tokenize input into token objects that also contain values (e.g. `ADD` has `value` that is part of the token.
+2. parse the tokens, recursively creating a tree based on each token, and applying rules that enforce order of operation. This creates a tree.
+3. evaluate the expression by walking the tree from the top and visiting each node.
+
+I'm not very clear on how 2 and 3 work, so I'll implement some test code based on [advanced example](https://github.com/plantain-00/expression-engine). 
+
+```
+note: expression.peg defines all the token types
+```
+
+#### tokenizer
+
+```
+nextToken() checks char-by-char and generates:
+nextStringToken() - any " or ' string
+nextPunctuator() - any punctuation not arithmetic
+nextNumericToken() - parses any float
+nextIdentiferToken() - delimited keywords, identifier
+```
+
+#### parser
+
+There are a lot of complicated token parsing things. We only need a few of them though. I'll mark them with a star.
+
+This reorganizes the tokens into a tree of "expressions" that can be walked, returning actual values. Each type of expression has custom properties that are used by the evaluator.
+
+```
+recusrive entry point: parseExpession()
+
+  tokens.length determines:
+* length 1: literal
+* length 2: unary expression
+  compare first/last { } : object literal
+* length: 3: process left,operator,right
+  punctuator?
+*   parseMemberExpression if callOperators (. or ?.)
+    => arrowFunctionExpression left.type, right.type
+    parseBinaryExpression if binaryOperator
+  length 4:
+    parseExpression for '%' right value
+*   parseExpression parseGroup if any '('
+    parseArrayLiteral parseExpression if '['
+    parseMemberOrCallExpression if '(
+    postfixUnaryOperators
+    prefixUnaryOperators
+*   parsePreviousExpression if prioritizedBinaryOperators
+  length 5:
+*   parseConditionExpression
+  otherwise:
+    is arrow function expression?
+  otherwise:
+    error
+```
+
+#### evaluator
+
+```
+entrypoint evaluateExpression
+  expression, context { [name:string]:unknown }, local 
+  
+there is a global evalutate function and a method called evalutate.
+the method version calls the global cersion
+class Evaluator
+	has evalutate(expression, context, isFirst, this)
+
+global evalutate(
+express, context, isFirst, protocol (the class instance)	
+```
+
+#### usage
+
+```
+const tokens = tokenizeExpression('a + b')
+const ast = parseExpression(tokens)
+const result = evaluateExpression(ast, { a:10, b:20 }
+const expression = printExpression(ast)
+```
+
+### Implications for us
+
+An expression is anything that produces a value. We want to parse expressions that are of the form:
+
+```
+RIGHT HAND SIDE: 
+.propName -- return value of global propName
+.propName methodName -- return result of invoking method on global prop
+methodName -- return result of global methodName
+bee.propName --- return prop value
+bee.propName methodName args -- return result of [propName].method
+bee methodName args -- return result of bee.method
+1 - return literal number
+"hi" - return literal string
+1 + 2 * (3) -- arithmetic expressions returning value
+if (expr condition expr) -- test returning boolean
+
+LEFT HAND SIDE for ASSIGNMENTS
+.propName = 
+bee.propName = 
+```
+
+Keywords build expressions. Args can also be an expression.
+
+**So what to do?** 
+
+Our keyword-based script engine compiles programs of smc_ops from source lines that are similar to the above. Because we're hand-coded the scripts directly, our expression evaluation can be limited to the stuff above. But what do these keywords look like?
+
+```
+defTemplate Bee
+  defProp .lemons GSNumber 1
+  .lemons = .x + 1
+  .lemons = agent("leader").lemons + .lemons
+  .lemons = agentSet("Bee") count + 10
+  
+  when Bee touches Fish
+  and Bee.lemon > 10 + Fish.pollen
+  	Bee.lemon increment
+  	Fish.pollen decrement
+```
+
+In terms of our script engine, these turn into the following keywords
+
+```
+[
+  defTemplate Bee
+  defProp lemons GSNumber 1
+  setProp lemons .x + 1
+  setProp lemons agent("leader").lemons + .lemons
+  setProp lemons agentSet("Bee").count + 1
+  agentPairTest Bee Fish touch -> PairSet on stack
+  filterPairSet Bee.lemon > 10 + Fish.pollen
+  ifTrue [ Bee.lemons increment, Fish.pollen decrement ] 
+]
+```
+
+The expressions are:
+
+```
+.x + 1 // (left, operator, right) 
+agent("leader").lemons + .lemons // multiple expressions
+agentSet("Bee").count + 1 // multiple expressions
+Bee.lemon > 10 + Fish.pollen // multiple expressions
+```
+
+To evaluate these expressions, what do we need to do?
+
+* **tokenize!** Ben's old code attempted to do this in the UI, but it was cumbesome with nesting of components. We can instead use a simpler expression builder to build our tokens for us chunk-by-chunk.
+* **parse!** Our parser has to recurvely consume each token to build the expressions of the AST. The AST is what is executed by evaluate
+* **evaluate!** the AST is recursively walked, each recursed call either calling itself or returning value
+
+### Creating Token Types for GEMscript Expressions
+
+Let's break out three examples and try manually creating the TOKENS that we eventually have to PARSE then EVALUATE.
+
+#### Binary Expression
+
+```
+.x + 1
+---
+PROPVAL { value: x }
+OPERATOR { value: + }
+LITERAL { value: 1 }
+```
+
+#### Compound Expression
+
+```
+agent("leader").lemons + .lemons
+---
+KEYWORD { type: agent, value: leader }
+DOT
+PROPVAL { value: lemons }
+OPERATOR { value: + }
+PROP { value: lemons }
+```
+
+#### Conditional Expression
+
+```
+Bee.lemon > 10 + Fish.pollen
+---
+SET { value: Bee }
+DOT
+PROPVAL { value: lemon }
+OP { type: conditional, value:'>' }
+LITERAL { value: 10 }
+OP { type: math, value '+' }
+SET { value: Fish }
+DOT
+PROPVAL { value: pollen }
+```
+
+At this point, we might as well try stealing code out of the expression-engine, or we could just use it as-is.
+
+### Reviewing Token, Expression data types
+
+I did a bit of review of the expression-engine code in [this file](01-architecture/03-expressions.md).  Followup questions:
+
+* What **doesn't** this code handle? 
+* What does the AST look like for a number of expressions?
+* Do I need to work backwards from the evaluator?
+* My version of the evaluator produces **compiled smc programs** that have to work with the other keyword. That means it works with the same state model.
+
+#### What doesn't the code handle?
+
+Looking at [this program source definition](https://cs.lmu.edu/~ray/notes/esprima/) for comparison:
+
+* there are no declarations (functions, vars, class)
+* no block statements, returns, breaks, continue, if, switches, while..
+* no method definitions.
+* no assignment to storage?
+
+However, there are all kinds of Expressions. **Anything that can produce a value is an expression.** 
+
+#### What does the AST look like?
+
+Let's see if we can import the expression-engine. There are a couple more options:
+
+* [expression-eval](https://github.com/donmccurdy/expression-eva) is built on [jsep](https://github.com/EricSmekens/jsep), a simple javascript expression parser. This looks cleaner than the code I was looking at
+* playing with it in `test-expression`, and it is much cleaner than the other implementation as it build on `jsep`. I think I can modify the `evaluate()` function in here to produce smc-code directly
+
+
+
+
 
 
 

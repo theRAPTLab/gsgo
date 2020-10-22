@@ -8,6 +8,7 @@
     "dev:srv": "nodemon urdu.js dev-skip",
     "dev:gem": "node urdu dev",
     "..ursys": "cd ../ursys && npm run local",
+    "..bootstrap": "cd ../../ && npm run bootstrap",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
     "test:app": "echo \"Error: no test specified\" && exit 1"
   },
@@ -81,6 +82,7 @@
     "hashids": "^2.2.1",
     "http-proxy-middleware": "^1.0.3",
     "ip": "^1.1.5",
+    "jsep": "^0.3.5",
     "lokijs": "^1.5.8",
     "minimist": "^1.2.5",
     "nodemon": "^2.0.3",

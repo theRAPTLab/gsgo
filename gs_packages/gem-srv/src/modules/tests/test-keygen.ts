@@ -12,6 +12,7 @@ import {
 import { DefProp } from 'modules/sim/script/keywords/defProp';
 import { UseFeature } from 'modules/sim/script/keywords/useFeature';
 import { KEYGEN, SRCLine, UIUpdate } from 'lib/class-keyword-helper';
+import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
