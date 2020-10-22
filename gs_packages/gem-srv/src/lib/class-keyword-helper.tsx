@@ -12,7 +12,7 @@ import { TOpcode } from 'lib/t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const KEYWORDS: Map<string, SM_Keyword> = new Map();
+const KEYWORDS: Map<string, KeywordHelper> = new Map();
 const DBG = false;
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ const DBG = false;
 /** constructor type
  */
 export interface IKeywordConstructor {
-  new (keyword?: string): SM_Keyword;
+  new (keyword?: string): KeywordHelper;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
@@ -70,11 +70,11 @@ function UniqueReactKey() {
 
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The SM_Keyword class is the base class for all GEMscript keywords.
+  The KeywordHelper class is the base class for all GEMscript keywords.
   There is one keyword that begins a GEMscript source line, which is processed
   by the appropriate subclass that is defined to handle it.
 
-  Each SM_Keyword implements:
+  Each KeywordHelper implements:
   1. An array of strings that defines the name and type of each argument
      accepted by this keyword. This is used to help label the dropdown options
      for each GUI element and for documenting the keyword itself.
@@ -89,7 +89,7 @@ function UniqueReactKey() {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class SM_Keyword {
+export class KeywordHelper {
   keyword: string;
   args: string[];
   req_scope: Set<string>;
@@ -97,8 +97,8 @@ export class SM_Keyword {
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
-      throw Error('SM_Keyword requires string, not undefined');
-    else if (DBG) console.log('SM_Keyword constructing:', keyword);
+      throw Error('KeywordHelper requires string, not undefined');
+    else if (DBG) console.log('KeywordHelper constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
     this.req_scope = new Set();
@@ -123,15 +123,15 @@ export class SM_Keyword {
   generateKey() {
     return UniqueReactKey();
   }
-} // end of SM_Keyword
+} // end of KeywordHelper
 
 /*////////////////////////////////// API \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   EXPORTED STATIC METHODS
 
-  AddKeyword( KeywordConstructor )
+  AddKeywordHelper( KeywordConstructor )
     Adds a KeywordObj to the KEYWORD map, which maps keyword (string)
-    to SM_Keyword instances for lookup.
+    to KeywordHelper instances for lookup.
 
   CompileTemplate( source ) returns IAgentTemplate
     Given gemscript source, compiles and returns template program arrays that
@@ -148,7 +148,7 @@ export class SM_Keyword {
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /** given a KeywordConstructor function, add to the KEYWORDS dictionary */
-function AddKeyword(KeywordConstructor: IKeywordConstructor) {
+function AddKeywordHelper(KeywordConstructor: IKeywordConstructor) {
   const kobj = new KeywordConstructor();
   KEYWORDS.set(kobj.keyword, kobj);
 }
@@ -224,6 +224,6 @@ export const KEYGEN = {
   CompileTemplate,
   RenderSource,
   RegenSRCLine,
-  AddKeyword,
+  AddKeywordHelper,
   UniqueReactKey
 };

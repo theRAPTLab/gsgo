@@ -6,12 +6,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IAgentTemplate, SM_Keyword, SRCLine } from 'lib/class-sm-keyword';
+import { IAgentTemplate, KeywordHelper, SRCLine } from 'lib/class-keyword-helper';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class UseFeature extends SM_Keyword {
-  // base properties defined in SM_Keyword
+export class UseFeature extends KeywordHelper {
+  // base properties defined in KeywordHelper
   constructor() {
     super('useFeature');
     this.args = ['featureName string'];

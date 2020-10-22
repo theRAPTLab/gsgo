@@ -6,12 +6,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IAgentTemplate, SM_Keyword, SRCLine } from 'lib/class-sm-keyword';
+import { IAgentTemplate, KeywordHelper, SRCLine } from 'lib/class-keyword-helper';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefProp extends SM_Keyword {
-  // base properties defined in SM_Keyword
+export class DefProp extends KeywordHelper {
+  // base properties defined in KeywordHelper
   constructor() {
     super('defProp');
     this.args = ['propName string', 'propType string', 'initValue any'];

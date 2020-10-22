@@ -10,11 +10,11 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import {
   IAgentTemplate,
-  SM_Keyword,
+  KeywordHelper,
   UIUpdate,
   SRCLine,
   KEYGEN
-} from 'lib/class-sm-keyword';
+} from 'lib/class-keyword-helper';
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,8 +65,8 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends SM_Keyword {
-  // base properties defined in SM_Keyword
+export class DefTemplate extends KeywordHelper {
+  // base properties defined in KeywordHelper
   constructor() {
     super('defTemplate');
     this.args = ['templateName string', 'baseTemplate string'];
@@ -115,7 +115,7 @@ export class DefTemplate extends SM_Keyword {
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** closing tag, not shown in GUI but required when using DefTemplate */
-export class EndTemplate extends SM_Keyword {
+export class EndTemplate extends KeywordHelper {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;

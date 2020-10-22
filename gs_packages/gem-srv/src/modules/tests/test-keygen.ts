@@ -11,7 +11,7 @@ import {
 } from 'modules/sim/script/keywords/defTemplate';
 import { DefProp } from 'modules/sim/script/keywords/defProp';
 import { UseFeature } from 'modules/sim/script/keywords/useFeature';
-import { KEYGEN, SRCLine, UIUpdate } from 'lib/class-sm-keyword';
+import { KEYGEN, SRCLine, UIUpdate } from 'lib/class-keyword-helper';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,10 +19,10 @@ const PR = UR.PrefixUtil('CONVERTER', 'TagDkRed');
 
 /// LOAD KEYWORD DICTIONARY ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-KEYGEN.AddKeyword(EndTemplate);
-KEYGEN.AddKeyword(DefTemplate);
-KEYGEN.AddKeyword(DefProp);
-KEYGEN.AddKeyword(UseFeature);
+KEYGEN.AddKeywordHelper(EndTemplate);
+KEYGEN.AddKeywordHelper(DefTemplate);
+KEYGEN.AddKeywordHelper(DefProp);
+KEYGEN.AddKeywordHelper(UseFeature);
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
