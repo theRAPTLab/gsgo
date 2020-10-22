@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { ITemplatePrograms, SM_Keyword, KeywordObj } from 'lib/class-sm-keyword';
+import { IAgentTemplate, SM_Keyword, SRCLine } from 'lib/class-sm-keyword';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,7 +20,7 @@ export class UseFeature extends SM_Keyword {
   }
 
   /** create smc template code objects */
-  compile(parms: string[]): ITemplatePrograms {
+  compile(parms: string[]): IAgentTemplate {
     const featureName = parms[0];
     const progout = [];
     progout.push(`smc_useFeature( ${featureName} )`);
@@ -31,14 +31,12 @@ export class UseFeature extends SM_Keyword {
     };
   }
 
-  /** return a state object that can be used to initialize render()*/
-  keywordObj(parms: any[]): KeywordObj {
-    const featureName = parms[0];
-    return {
-      keyword: this.keyword,
-      args: [featureName]
-    };
+  /** return a state object that turn react state back into source */
+  serialize(state: any): SRCLine {
+    const { featureName } = state;
+    return [this.keyword, featureName];
   }
+
   /** return rendered component representation */
   render(index: number, args: any, children?: any[]): any {
     const [featureName] = args;

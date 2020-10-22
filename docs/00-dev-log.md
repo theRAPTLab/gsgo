@@ -517,7 +517,13 @@ First up: I want to change the `arg` object in a KeywordObject to be an array. T
 
 Yay it works! Commit!
 
-* [ ] rethink naming for KeywordObject and SM_Keyword...they are not the same thing. 
+* [x] now **document** it so Ben understands the setup
+* [x] add `serialize() ` method  
+* [x] change handler for `defTemplate` use serialize instead
+* [x] rewrite `TEST_UPDATE` loop to use `UIUpdate`  
+* [x] rethink naming for KeywordObject and SM_Keyword...they are not the same thing. 
+
+Commit! It works and it's clean. One small wrinkle is the issue with Typescript not working wiht destructuring arrays (incorrectly infers type)
 
 
 

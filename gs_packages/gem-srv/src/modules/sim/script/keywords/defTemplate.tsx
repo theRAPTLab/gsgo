@@ -9,10 +9,10 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import {
-  ITemplatePrograms,
+  IAgentTemplate,
   SM_Keyword,
-  KeywordObj,
-  KeywordUpdateData,
+  UIUpdate,
+  SRCLine,
   KEYGEN
 } from 'lib/class-sm-keyword';
 
@@ -22,38 +22,33 @@ import {
  *  in the local state
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+type MyState = { templateName: string; baseTemplate: string };
 type MyProps = {
   index: number;
   keyword: string;
-  arg: any;
+  state: MyState;
 };
-type MyState = { templateName: string; baseTemplate: string };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptElement extends React.Component<MyProps, MyState> {
   index: number; // ui index
   keyword: string; // keyword
   constructor(props: MyProps) {
     super(props);
-    const { index, keyword, arg } = props;
+    const { index, keyword, state } = props;
     this.index = index;
     this.keyword = keyword;
-    const { templateName, baseTemplate } = arg;
-    this.state = {
-      templateName,
-      baseTemplate
-    };
+    this.state = { ...state }; // copy state prop
     this.onChange = this.onChange.bind(this);
   }
 
   onChange(e) {
     this.setState({ templateName: e.currentTarget.value }, () => {
-      const { templateName, baseTemplate } = this.state;
-      const data: KeywordUpdateData = {
-        keyword: this.keyword,
+      const updata: UIUpdate = {
         index: this.index,
-        state: [templateName, baseTemplate]
+        keyword: this.keyword,
+        state: this.state
       };
-      UR.RaiseMessage('KEYWORD_TEST_UPDATE', data);
+      UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
     });
   }
 
@@ -80,7 +75,7 @@ export class DefTemplate extends SM_Keyword {
   }
 
   /** create smc template code objects */
-  compile(parms: string[]): ITemplatePrograms {
+  compile(parms: any[]): IAgentTemplate {
     const templateName = parms[0];
     const baseTemplate = parms[1];
     const progout = [];
@@ -94,25 +89,24 @@ export class DefTemplate extends SM_Keyword {
     };
   }
 
-  /** return a state object that can be used to initialize render()*/
-  keywordObj(parms: any[]): KeywordObj {
-    const templateName = parms[0];
-    const baseTemplate = parms[1];
-    return {
-      keyword: this.keyword,
-      args: [templateName, baseTemplate]
-    };
+  /** return a state object that turn react state back into source */
+  serialize(state: any): SRCLine {
+    const { templateName, baseTemplate } = state;
+    return [this.keyword, templateName, baseTemplate];
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const [templateName, baseTemplate] = args;
+  render(index: number, srcLine: SRCLine, children?: any[]): any {
+    const state = {
+      templateName: srcLine[1],
+      baseTemplate: srcLine[2]
+    };
     return (
       <ScriptElement
-        key={KEYGEN.UniqueKeyProp()}
+        key={KEYGEN.UniqueReactKey()}
         index={index}
         keyword={this.keyword}
-        arg={{ templateName, baseTemplate }}
+        state={state}
       />
     );
   }
@@ -133,7 +127,7 @@ export class EndTemplate extends SM_Keyword {
 
   /** create smc template code objects */ compile(
     parms: string[]
-  ): ITemplatePrograms {
+  ): IAgentTemplate {
     const progout = [];
     progout.push('smc_nop()');
     return {
@@ -141,12 +135,9 @@ export class EndTemplate extends SM_Keyword {
     };
   }
 
-  /** return a state object that can be used to initialize render()*/
-  keywordObj(parms: any[]): KeywordObj {
-    return {
-      keyword: this.keyword,
-      args: []
-    };
+  /** return a state object that turn react state back into source */
+  serialize(state: any): SRCLine {
+    return [this.keyword];
   }
 
   /** render to HTML */

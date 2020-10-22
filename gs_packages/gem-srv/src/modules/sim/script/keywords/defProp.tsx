@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { ITemplatePrograms, SM_Keyword, KeywordObj } from 'lib/class-sm-keyword';
+import { IAgentTemplate, SM_Keyword, SRCLine } from 'lib/class-sm-keyword';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,7 +20,7 @@ export class DefProp extends SM_Keyword {
   }
 
   /** create smc template code objects */
-  compile(parms: string[]): ITemplatePrograms {
+  compile(parms: string[]): IAgentTemplate {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
@@ -35,15 +35,10 @@ export class DefProp extends SM_Keyword {
     };
   }
 
-  /** return a state object that can be used to initialize render()*/
-  keywordObj(parms: any[]): KeywordObj {
-    const propName = parms[0];
-    const propType = parms[1];
-    const initValue = parms[2];
-    return {
-      keyword: this.keyword,
-      args: [propName, propType, initValue]
-    };
+  /** return a state object that turn react state back into source */
+  serialize(state: any): SRCLine {
+    const { propName, propType, initValue } = state;
+    return [this.keyword, propName, propType, initValue];
   }
 
   /** return rendered component representation */

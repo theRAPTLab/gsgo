@@ -11,8 +11,7 @@ import {
 } from 'modules/sim/script/keywords/defTemplate';
 import { DefProp } from 'modules/sim/script/keywords/defProp';
 import { UseFeature } from 'modules/sim/script/keywords/useFeature';
-import { KEYGEN } from 'lib/class-sm-keyword';
-import reactTreeWalker from 'lib/util-react-tree-walker';
+import { KEYGEN, SRCLine, UIUpdate } from 'lib/class-sm-keyword';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,10 +26,7 @@ KEYGEN.AddKeyword(UseFeature);
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let REACT_ROOT;
-let KEYWORD_STATES;
-
-const SOURCE = [
+const SOURCE: SRCLine[] = [
   ['defTemplate', 'Bee'],
   ['defProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
@@ -41,7 +37,6 @@ const SOURCE = [
   ['defProp', 'honeySacks', 'GSNumber', 0],
   ['endTemplate']
 ];
-const SOURCE2 = ['defTemplate Cheese', 'defProp type GSString', 'endTemplate'];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestListSource(source = SOURCE) {
   console.log(...PR('Source Lines - (made by GUI, saved/loaded from network)'));
@@ -70,56 +65,28 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToReact(source: any[][] = SOURCE) {
+function TestSourceToUI(source: SRCLine[] = SOURCE) {
   // the idea is to parse data structure into react
   console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
-  // REACT_ROOT = KEYGEN.RenderSourceToJSX(source);
-  // UR.RaiseMessage('KEYWORD_TEST_RENDER', REACT_ROOT);
+  const jsx = KEYGEN.RenderSource(source);
+  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 }
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function TestReadReact() {
-  // TEST: try this neat function to walk tree
-  const decompile = [];
-  function visitor(element, instance, ctx, childCtx) {
-    if (element && element.props) {
-      const id = element.props.className || element.props.keyword;
-      const kids = element.props.children
-        ? element.props.children
-        : (instance && instance.state) || [];
-      if (id) {
-        console.log(`<${id}>`, kids, instance);
-        decompile.push(id, kids);
-      }
-    }
-  }
-  console.log(...PR('READ REACT'));
-  await reactTreeWalker(REACT_ROOT, visitor);
-  console.log(...PR('DECOMP', decompile));
-}
-UR.RegisterMessage('KEYWORD_TEST_READ', TestReadReact);
 
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('KEYWORD_TEST_UPDATE', event => {
-  const { index, keyword, state } = event;
-  KEYWORD_STATES[index] = { keyword, args: state };
-  console.log(...PR('wrote state', KEYWORD_STATES[index]));
+/** receives the react state object */
+UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: UIUpdate) => {
+  const { index, srcLine } = KEYGEN.RegenSRCLine(updata);
+  SOURCE[index] = srcLine;
+  console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
 });
-(window as any).RenderKeywordObjs = () => {
-  KEYWORD_STATES = KEYGEN.MakeKeywordObjs(SOURCE);
-  console.log(KEYWORD_STATES);
-  const jsx = KEYGEN.RenderKeywordObjs(KEYWORD_STATES);
-  UR.RaiseMessage('KEYWORD_TEST_RENDER', jsx);
+(window as any).RenderSource = (source = SOURCE) => {
+  const jsx = KEYGEN.RenderSource(source);
+  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 };
-(window as any).DecompileKeywordObjs = () => {
-  const source = KEYGEN.DecompileKeywordObjs(KEYWORD_STATES);
-  console.log(...PR('DECOMPILED'));
-  source.forEach((line, index) => {
-    console.log(index, line);
-  });
-  console.log(...PR('RECOMPILE'));
-  TestSourceToProgram(source);
+(window as any).CompileSource = (source = SOURCE) => {
+  const jsx = KEYGEN.RenderSource(source);
+  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -127,5 +94,5 @@ UR.RegisterMessage('KEYWORD_TEST_UPDATE', event => {
 export default {
   TestListSource,
   TestSourceToProgram,
-  TestSourceToReact
+  TestSourceToUI
 };

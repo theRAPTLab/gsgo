@@ -15,7 +15,6 @@ import clsx from 'clsx';
 import SETTINGS from 'config/app.settings';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
-import reactTreeWalker from 'lib/util-react-tree-walker';
 import { useStylesHOC } from './page-styles';
 
 const PR = UR.PrefixUtil('Generator', 'TagGreen');
@@ -68,32 +67,15 @@ class Generator extends React.Component {
     RENDERER.HookResize(window);
     document.title = 'GENERATOR';
     // hook
-    UR.RegisterMessage('KEYWORD_TEST_RENDER', this.dataUpdate);
+    UR.RegisterMessage('SCRIPT_UI_RENDER', this.dataUpdate);
   }
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnregisterMessage('KEYWORD_TEST_RENDER', this.dataUpdate);
+    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.dataUpdate);
   }
 
   dataUpdate(jsx) {
     this.setState({ jsx });
-  }
-
-  uiUpdate() {
-    const decompile = [];
-    function visitor(element, instance, ctx, childCtx) {
-      if (element && element.props) {
-        const id = element.props.className || element.props.keyword;
-        const kids = element.props.children
-          ? element.props.children
-          : (instance && instance.state) || [];
-        if (id) {
-          // console.log(`<${id}>`, kids, instance);
-          decompile.push(id, kids);
-        }
-      }
-    }
-    reactTreeWalker(this.state.jsx, visitor);
   }
 
   render() {

@@ -8,45 +8,41 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import { TOpcode } from 'lib/t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const KEYWORDS: Map<string, SM_Keyword> = new Map();
-
 const DBG = false;
-const PR = UR.PrefixUtil('SM_Keyword');
-
-let RENDER_COUNTER = 0;
-function m_GetIndex() {
-  return RENDER_COUNTER++;
-}
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** constructor type
+ */
 export interface IKeywordConstructor {
   new (keyword?: string): SM_Keyword;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
-export interface ITemplatePrograms {
+export interface IAgentTemplate {
   template_define?: TOpcode[];
   template_defaults?: TOpcode[];
   template_conditions?: TOpcode[];
   agent_init?: TOpcode[];
 }
-/** exported by the 'keywordObj' method */
-export type KeywordObj = {
-  index?: number; // used for reverse-mapping state changes from components
-  keyword: string; // keyword of this object
-  args: any[]; // values provided to the keyword
-};
-/** sent by change events in the UI to state manager */
-export type KeywordUpdateData = {
+/** UI update type sent by UI tp RegenSRCLine */
+export type UIUpdate = {
   index: number;
   keyword: string;
-  state: any[];
+  state: object;
+};
+/** a source line starts with keyword followed by variable number of args */
+export type SRCLine = [string, ...any[]];
+/** sent by UI change handler after source is regeneraed through RegenSRCLine()
+ */
+export type SRCUpdate = {
+  index: number;
+  srcLine: SRCLine;
 };
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -68,7 +64,7 @@ function m_TokenQueue(input: string | any[]): any[] {
  */
 let ID_GENERATOR = 0;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_GenerateKey() {
+function UniqueReactKey() {
   return ID_GENERATOR++;
 }
 
@@ -110,22 +106,22 @@ export class SM_Keyword {
   }
 
   /** override in subclass */
-  compile(parms: any[]): ITemplatePrograms {
+  compile(parms: any[]): IAgentTemplate {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
 
-  keywordObj(parms: any[]): KeywordObj {
-    throw Error(`${this.keyword}.keywordObj() must be overridden by subclassers`);
+  serialize(state: object): SRCLine {
+    throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
   }
 
   /** override in subclass */
-  render(index: number, args: any[], children?: any[]): any {
+  render(index: number, state: object, children?: any[]): any {
     throw Error(`${this.keyword}.render() must be overridden by subclassers`);
   }
 
   /** cheese key id generator (deprecated) */
   generateKey() {
-    return m_GenerateKey();
+    return UniqueReactKey();
   }
 } // end of SM_Keyword
 
@@ -137,13 +133,17 @@ export class SM_Keyword {
     Adds a KeywordObj to the KEYWORD map, which maps keyword (string)
     to SM_Keyword instances for lookup.
 
-  CompileTemplate( source ) returns ITemplatePrograms
+  CompileTemplate( source ) returns IAgentTemplate
     Given gemscript source, compiles and returns template program arrays that
     are used to instantiate an instance.
 
   RenderSource( source ) returns React.element
     Given gemscript source, renders the React elements that can be used
     to modify them in the GUI.
+
+  RegenSRCLine( UIstate ) returns index, sourceLine
+    given a UIstate representation from a component update,
+    regenerate the source line that represents it
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -152,10 +152,9 @@ function AddKeyword(KeywordConstructor: IKeywordConstructor) {
   const kobj = new KeywordConstructor();
   KEYWORDS.set(kobj.keyword, kobj);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** compile an array of lines of code */
-function CompileTemplate(source: string[] | any[][]) {
+function CompileTemplate(source: SRCLine[]): IAgentTemplate {
   const output = {
     template_define: [],
     template_defaults: [],
@@ -170,11 +169,7 @@ function CompileTemplate(source: string[] | any[][]) {
     let cmdName = qbits.shift();
     // get keyword
     const cmdObj = KEYWORDS.get(cmdName);
-    if (!cmdObj) {
-      throw Error(
-        `COMPILE ERR: unknown command:"${cmdName}" parms:"${qbits.join(' ')}"`
-      );
-    }
+    if (!cmdObj) throw Error(`COMPILE ERR: unknown command:"${cmdName}"`);
     const programs = cmdObj.compile(qbits); // qbits is the subsequent parameters
     if (DBG) console.log(line, '->', programs);
     const {
@@ -190,56 +185,36 @@ function CompileTemplate(source: string[] | any[][]) {
   });
   return output;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** First argument is the keyword and subsequent arguments are the parameters
- *  that will be passed to the keyword handling object
- */
-function MakeKeywordObjs(source: any[]): KeywordObj[] {
-  const temp: KeywordObj[] = [];
-  source.forEach((line, index) => {
-    const qbits = m_TokenQueue(line);
-    // extract keyword from front of qbits
-    let keyword = qbits.shift();
-    // get keyword
-    const cmdObj = KEYWORDS.get(keyword);
-    if (!cmdObj)
-      throw Error(`KEYOBJ ERR: "${keyword}" unknown, parms:"${qbits.join(' ')}"`);
-    // this has {
-    const kobj = cmdObj.keywordObj(qbits);
-    kobj.index = index; // save index
-    temp[index] = kobj;
-  });
-  return temp;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** render keyword objects into react components or whatever */
-function RenderKeywordObjs(kobjs: KeywordObj[]) {
-  const react = [];
-  kobjs.forEach((kobj, index) => {
-    const { keyword, args } = kobj;
-    const cmdObj = KEYWORDS.get(keyword);
-    if (!cmdObj) {
-      console.log(`can't render ${index}:${keyword}`, kobj);
-      return '';
-    }
-    // this has {
-    const jsx = cmdObj.render(index, args);
-    react.push(jsx);
-  });
-  return react;
-}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a list of keyword objects, generate a script source */
-function DecompileKeywordObjs(kobjs: KeywordObj[]) {
-  const source = [];
-  console.log('decompiling', kobjs);
-  kobjs.forEach((kobj, index) => {
-    const { keyword, args } = kobj;
-    console.log(index, keyword, ...args);
-    source.push([keyword, ...args]);
+/** Given an array of source lines, return JSX keyword components for each line
+ *  as rendered by the corresponding KeywordHelper object
+ */
+function RenderSource(source: SRCLine[]): any[] {
+  const sourceJSX = [];
+  source.forEach((srcLine, index) => {
+    const keyword = srcLine[0];
+    const cmdObj = KEYWORDS.get(keyword);
+    if (!cmdObj) throw Error(`can't render ${index}:${keyword}`);
+    sourceJSX.push(cmdObj.render(index, srcLine));
   });
-  return source;
+  return sourceJSX;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given a UIUpdate object from the UI, return an object through the
+ *  KeywordHelper object.
+ *  NOTE: the ideal format for UIUpdate would be to return the correct
+ *  array, but Typescript has a bug with inferring destructured arrays.
+ */
+function RegenSRCLine(updata: UIUpdate): SRCUpdate {
+  const { index, keyword, state } = updata;
+  const cmdObj = KEYWORDS.get(keyword);
+  if (!cmdObj) throw Error(`UIUpdate ERR: "${keyword}" unknown`);
+  // typescript has a bug where it returns the wrong type info
+  // so we're working around it until Typescript 4.1 is available
+  // return [index, cmdObj.serialize(state)];
+  const srcLine = cmdObj.serialize(state);
+  return { index, srcLine };
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -247,9 +222,8 @@ function DecompileKeywordObjs(kobjs: KeywordObj[]) {
 /// see additional exports above
 export const KEYGEN = {
   CompileTemplate,
-  MakeKeywordObjs,
-  RenderKeywordObjs,
-  DecompileKeywordObjs,
+  RenderSource,
+  RegenSRCLine,
   AddKeyword,
-  UniqueKeyProp: m_GenerateKey
+  UniqueReactKey
 };

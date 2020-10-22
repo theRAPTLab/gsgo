@@ -105,7 +105,7 @@ function StartSimulation() {
   // run test installed by converter.ts
   KEYGEN.TestListSource();
   KEYGEN.TestSourceToProgram();
-  KEYGEN.TestSourceToReact();
+  KEYGEN.TestSourceToUI();
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
