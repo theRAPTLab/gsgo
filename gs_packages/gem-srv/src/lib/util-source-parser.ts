@@ -1,3 +1,4 @@
+/* eslint-disable no-lonely-if */
 /* eslint-disable no-cond-assign */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -101,6 +102,7 @@ const literals = {
 const this_str = 'this';
 // Returns the precedence of a binary operator or `0` if it isn't a binary operator
 function binaryPrecedence(op_val) {
+  console.log('binary prec', op_val, binary_ops[op_val]);
   return binary_ops[op_val] || 0;
 }
 // Utility function (gets called from multiple places)
@@ -137,6 +139,8 @@ function isIdentifierPart(ch) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// THIS IS THE BIG CHEESE FUNCTION CONTAINING MULTIPLE FUNCTIONS
+/// THE REFER TO TOP-LEVEL VARS LIKE INDEX
 export function parse(expr: string) {
   // character access functions
   const charcode_at = expr.charCodeAt;
@@ -228,12 +232,11 @@ export function parse(expr: string) {
     }
     // Otherwise, we need to gobble the entire expression string
     // but we don't have to actually convert it into an AST representation
+    biop_info = { value: biop, prec: binaryPrecedence(biop) };
     right = gobbleToken();
     if (!right) {
       throw Error(`Expected expression after ${biop}, char:${index}`);
     }
-    /** here is line 244 of jsep.js **/
-    /* placeholder, should return something */
     stack = [left, biop_info, right];
 
     // Properly deal with precedence using [recursive descent](http://www.engr.mun.ca/~theo/Misc/exp_parsing.htm)
@@ -247,6 +250,7 @@ export function parse(expr: string) {
 
       cur_biop = biop;
       // Reduce: make a binary expression from the three topmost entries.
+      console.log('stack', stack);
       while (stack.length > 2 && prec <= stack[stack.length - 2].prec) {
         right = stack.pop();
         biop = stack.pop().value;
@@ -615,6 +619,36 @@ export function parse(expr: string) {
     return args;
   }
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // JSEP PARSE continues...
+  let nodes = [];
+  let ch_i;
+  let node;
+  while (index < length) {
+    ch_i = exprICode(index);
+
+    // Expressions can be separated by semicolons, commas, or just inferred without any
+    // separators
+    if (ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
+      index++; // ignore separators
+    } else {
+      // Try to gobble each expression individually
+      if ((node = gobbleExpression())) {
+        nodes.push(node);
+        // If we weren't able to find a binary expression and are out of room, then
+        // the expression passed in probably has too much
+      } else if (index < length) {
+        throw Error(`Unexpected "${exprI(index)}" at index:${index}`);
+      }
+    }
+    // If there's only one expression just try returning the expression
+    if (nodes.length === 1) {
+      return nodes[0];
+    }
+    return {
+      type: COMPOUND,
+      body: nodes
+    };
+  }
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 } // end of jsep function

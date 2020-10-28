@@ -6,6 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as EV from 'lib/util-expression';
+import { parse } from 'lib/util-source-parser';
 
 const PR = UR.PrefixUtil('EX-EVAL', 'TagDkOrange');
 
@@ -26,4 +27,7 @@ function Compile(expr: string, context: {}) {
 };
 (window as any).com = (expr: string = '', ctx: {}) => {
   return Compile(expr, ctx);
+};
+(window as any).parse = (expr: string = '') => {
+  return parse(expr);
 };
