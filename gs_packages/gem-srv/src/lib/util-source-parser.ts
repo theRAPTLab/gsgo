@@ -1,26 +1,15 @@
+/* eslint-disable func-names */
 /* eslint-disable no-lonely-if */
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable prefer-template */
+/* eslint-disable vars-on-top */
+/* eslint-disable no-else-return */
+/* eslint-disable object-shorthand */
 /* eslint-disable no-cond-assign */
-/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+/* eslint-disable no-restricted-syntax */
+/* eslint-disable one-var */
+/* eslint-disable no-var */
 
-  the intention: parse a string and break it into strings, numbers, identifiers,
-  and expressions.
-
-  * a string begins/ends with ' or "
-  * a number begins with -/+ or a digit, and can contain a
-    single decimal point.
-  * an identifier begins with and alphabetic character and
-    is followed by alphanumeric chars until a punctuator or whitespace
-  * an expression exists on either side of the assignment
-  * is the = sign treated special?
-
-  in jsep, the gobble code walks literals until
-
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const WS_CODES = [32, 9, 10, 13];
-//
 const COMPOUND = 'Compound';
 const IDENTIFIER = 'Identifier';
 const MEMBER_EXP = 'MemberExpression';
@@ -44,8 +33,16 @@ const CBRACK_CODE = 93; // ]
 const QUMARK_CODE = 63; // ?
 const SEMCOL_CODE = 59; // ;
 const COLON_CODE = 58; // :
+const throwError = function (message, index) {
+  var error = new Error(message + ' at character ' + index);
+  error.index = index;
+  error.description = message;
+  throw error;
+};
+// Operations
+// ----------
 
-// Set 't' to 'true' to save space (when minified, not gzipped)
+// Set `t` to `true` to save space (when minified, not gzipped)
 const t = true;
 // Use a quickly-accessible map to store all of the unary operators
 // Values are set to `true` (it really doesn't matter)
@@ -76,17 +73,17 @@ const binary_ops = {
   '/': 10,
   '%': 10
 };
-/// MODULE HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function getMaxKeyLen(obj) {
-  let max_len = 0;
-  let len;
-  Object.keys(obj).forEach(key => {
-    len = key.length;
-    if (len > max_len) max_len = len;
-  });
+// Get return the longest key length of any object
+const getMaxKeyLen = function (obj) {
+  var max_len = 0,
+    len;
+  for (var key in obj) {
+    if ((len = key.length) > max_len && obj.hasOwnProperty(key)) {
+      max_len = len;
+    }
+  }
   return max_len;
-}
+};
 const max_unop_len = getMaxKeyLen(unary_ops);
 const max_binop_len = getMaxKeyLen(binary_ops);
 // Literals
@@ -97,26 +94,28 @@ const literals = {
   'false': false,
   'null': null
 };
-// Except for `this`, which is special. This could be changed to something like
-// 'self' as well
+// Except for `this`, which is special. This could be changed to something like `'self'` as well
 const this_str = 'this';
 // Returns the precedence of a binary operator or `0` if it isn't a binary operator
-function binaryPrecedence(op_val) {
-  console.log('binary prec', op_val, binary_ops[op_val]);
+const binaryPrecedence = function (op_val) {
   return binary_ops[op_val] || 0;
-}
+};
 // Utility function (gets called from multiple places)
 // Also note that `a && b` and `a || b` are *logical* expressions, not binary expressions
-function createBinaryExpression(operator, left, right) {
-  let type = operator === '||' || operator === '&&' ? LOGICAL_EXP : BINARY_EXP;
-  return { type, operator, left, right };
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const createBinaryExpression = function (operator, left, right) {
+  var type = operator === '||' || operator === '&&' ? LOGICAL_EXP : BINARY_EXP;
+  return {
+    type: type,
+    operator: operator,
+    left: left,
+    right: right
+  };
+};
 // `ch` is a character code in the next three functions
-function isDecimalDigit(ch) {
+const isDecimalDigit = function (ch) {
   return ch >= 48 && ch <= 57; // 0...9
-}
-function isIdentifierStart(ch) {
+};
+const isIdentifierStart = function (ch) {
   return (
     ch === 36 ||
     ch === 95 || // `$` and `_`
@@ -124,9 +123,8 @@ function isIdentifierStart(ch) {
     (ch >= 97 && ch <= 122) || // a...z
     (ch >= 128 && !binary_ops[String.fromCharCode(ch)])
   ); // any non-ASCII that is not an operator
-}
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function isIdentifierPart(ch) {
+};
+const isIdentifierPart = function (ch) {
   return (
     ch === 36 ||
     ch === 95 || // `$` and `_`
@@ -135,72 +133,79 @@ function isIdentifierPart(ch) {
     (ch >= 48 && ch <= 57) || // 0...9
     (ch >= 128 && !binary_ops[String.fromCharCode(ch)])
   ); // any non-ASCII that is not an operator
-}
-
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// THIS IS THE BIG CHEESE FUNCTION CONTAINING MULTIPLE FUNCTIONS
-/// THE REFER TO TOP-LEVEL VARS LIKE INDEX
-export function parse(expr: string) {
-  // character access functions
-  const charcode_at = expr.charCodeAt;
-  const char_at = expr.charAt;
-  const exprI = i => char_at.call(expr, i);
-  const exprICode = i => charcode_at.call(expr, i);
-  // counters
+};
+// Parsing
+// -------
+// `expr` is a string with the passed in expression
+function parse(expr) {
+  // `index` stores the character number we are currently at while `length` is a constant
+  // All of the gobbles below will modify `index` as we move along
   let index = 0;
-  let length = expr.length;
-
-  /// UTITLITY FUNCTIONS //////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  function gobbleSpaces() {
-    let ch = exprICode(index);
-    while (WS_CODES.includes(ch)) ch = exprICode(++index);
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  function gobbleExpression() {
-    const test = gobbleBinaryExpression();
-    let consequent;
-    let alternate;
+  const charAtFunc = expr.charAt;
+  const charCodeAtFunc = expr.charCodeAt;
+  const exprI = function (i) {
+    return charAtFunc.call(expr, i);
+  };
+  const exprICode = function (i) {
+    return charCodeAtFunc.call(expr, i);
+  };
+  const length = expr.length;
+  // Push `index` up to the next non-space character
+  const gobbleSpaces = function () {
+    var ch = exprICode(index);
+    // space or tab
+    while (ch === 32 || ch === 9 || ch === 10 || ch === 13) {
+      ch = exprICode(++index);
+    }
+  };
+  // The main parsing function. Much of this code is dedicated to ternary expressions
+  const gobbleExpression = function () {
+    var test = gobbleBinaryExpression(),
+      consequent,
+      alternate;
     gobbleSpaces();
     if (exprICode(index) === QUMARK_CODE) {
       // Ternary expression: test ? consequent : alternate
       index++;
       consequent = gobbleExpression();
       if (!consequent) {
-        throw Error(`Expected expression at index:${index}`);
+        throwError('Expected expression', index);
       }
       gobbleSpaces();
       if (exprICode(index) === COLON_CODE) {
         index++;
         alternate = gobbleExpression();
         if (!alternate) {
-          throw Error(`Expected expression at index:${index}`);
+          throwError('Expected expression', index);
         }
         return {
           type: CONDITIONAL_EXP,
-          test,
-          consequent,
-          alternate
+          test: test,
+          consequent: consequent,
+          alternate: alternate
         };
+      } else {
+        throwError('Expected :', index);
       }
-      throw Error(`Expected : at index:${index}`);
     } else {
       return test;
     }
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  function gobbleBinaryOp() {
+  };
+  // Search for the operation portion of the string (e.g. `+`, `===`)
+  // Start by taking the longest possible binary operations (3 characters: `===`, `!==`, `>>>`)
+  // and move down from 3 to 2 to 1 character until a matching binary operation is found
+  // then, return that binary operation
+  const gobbleBinaryOp = function () {
     gobbleSpaces();
-    let biop;
-    let to_check = expr.substr(index, max_binop_len);
-    let tc_len = to_check.length;
+    var biop,
+      to_check = expr.substr(index, max_binop_len),
+      tc_len = to_check.length;
     while (tc_len > 0) {
       // Don't accept a binary op when it is an identifier.
       // Binary ops that start with a identifier-valid character must be followed
       // by a non identifier-part valid character
       if (
-        binary_ops[to_check] &&
+        binary_ops.hasOwnProperty(to_check) &&
         (!isIdentifierStart(exprICode(index)) ||
           (index + to_check.length < expr.length &&
             !isIdentifierPart(exprICode(index + to_check.length))))
@@ -211,31 +216,29 @@ export function parse(expr: string) {
       to_check = to_check.substr(0, --tc_len);
     }
     return false;
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  function gobbleBinaryExpression() {
-    let ch_i;
-    let node;
-    let biop;
-    let prec;
-    let stack;
-    let biop_info;
-    let left;
-    let right;
-    let i;
-    let cur_biop;
+  };
+  // This function is responsible for gobbling an individual expression,
+  // e.g. `1`, `1+2`, `a+(b*2)-Math.sqrt(2)`
+  const gobbleBinaryExpression = function () {
+    var ch_i, node, biop, prec, stack, biop_info, left, right, i, cur_biop;
+
+    // First, try to get the leftmost thing
+    // Then, check to see if there's a binary operator operating on that leftmost thing
     left = gobbleToken();
     biop = gobbleBinaryOp();
+
     // If there wasn't a binary operator, just return the leftmost node
     if (!biop) {
       return left;
     }
-    // Otherwise, we need to gobble the entire expression string
-    // but we don't have to actually convert it into an AST representation
+
+    // Otherwise, we need to start a stack to properly place the binary operations in their
+    // precedence structure
     biop_info = { value: biop, prec: binaryPrecedence(biop) };
+
     right = gobbleToken();
     if (!right) {
-      throw Error(`Expected expression after ${biop}, char:${index}`);
+      throwError('Expected expression after ' + biop, index);
     }
     stack = [left, biop_info, right];
 
@@ -246,11 +249,10 @@ export function parse(expr: string) {
       if (prec === 0) {
         break;
       }
-      biop_info = { value: biop, prec };
+      biop_info = { value: biop, prec: prec };
 
       cur_biop = biop;
       // Reduce: make a binary expression from the three topmost entries.
-      console.log('stack', stack);
       while (stack.length > 2 && prec <= stack[stack.length - 2].prec) {
         right = stack.pop();
         biop = stack.pop().value;
@@ -261,7 +263,7 @@ export function parse(expr: string) {
 
       node = gobbleToken();
       if (!node) {
-        throw Error(`Expected expression after ${cur_biop} at index:${index}`);
+        throwError('Expected expression after ' + cur_biop, index);
       }
       stack.push(biop_info, node);
     }
@@ -273,15 +275,11 @@ export function parse(expr: string) {
       i -= 2;
     }
     return node;
-  }
-
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  };
   // An individual part of a binary expression:
   // e.g. `foo.bar(baz)`, `1`, `"abc"`, `(a % 2)` (because it's in parenthesis)
-  function gobbleToken() {
-    let ch;
-    let to_check;
-    let tc_len;
+  const gobbleToken = function () {
+    var ch, to_check, tc_len;
 
     gobbleSpaces();
     ch = exprICode(index);
@@ -289,51 +287,50 @@ export function parse(expr: string) {
     if (isDecimalDigit(ch) || ch === PERIOD_CODE) {
       // Char code 46 is a dot `.` which can start off a numeric literal
       return gobbleNumericLiteral();
-    }
-    if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
+    } else if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
       // Single or double quotes
       return gobbleStringLiteral();
-    }
-    if (ch === OBRACK_CODE) {
+    } else if (ch === OBRACK_CODE) {
       return gobbleArray();
-    }
-    to_check = expr.substr(index, max_unop_len);
-    tc_len = to_check.length;
-    while (tc_len > 0) {
-      // Don't accept an unary op when it is an identifier.
-      // Unary ops that start with a identifier-valid character must be followed
-      // by a non identifier-part valid character
-      if (
-        unary_ops[to_check] &&
-        (!isIdentifierStart(exprICode(index)) ||
-          (index + to_check.length < expr.length &&
-            !isIdentifierPart(exprICode(index + to_check.length))))
-      ) {
-        index += tc_len;
-        return {
-          type: UNARY_EXP,
-          operator: to_check,
-          argument: gobbleToken(),
-          prefix: true
-        };
+    } else {
+      to_check = expr.substr(index, max_unop_len);
+      tc_len = to_check.length;
+      while (tc_len > 0) {
+        // Don't accept an unary op when it is an identifier.
+        // Unary ops that start with a identifier-valid character must be followed
+        // by a non identifier-part valid character
+        if (
+          unary_ops.hasOwnProperty(to_check) &&
+          (!isIdentifierStart(exprICode(index)) ||
+            (index + to_check.length < expr.length &&
+              !isIdentifierPart(exprICode(index + to_check.length))))
+        ) {
+          index += tc_len;
+          return {
+            type: UNARY_EXP,
+            operator: to_check,
+            argument: gobbleToken(),
+            prefix: true
+          };
+        }
+        to_check = to_check.substr(0, --tc_len);
       }
-      to_check = to_check.substr(0, --tc_len);
+
+      if (isIdentifierStart(ch) || ch === OPAREN_CODE) {
+        // open parenthesis
+        // `foo`, `bar.baz`
+        return gobbleVariable();
+      }
     }
-    if (isIdentifierStart(ch) || ch === OPAREN_CODE) {
-      // open parenthesis
-      // `foo`, `bar.baz`
-      return gobbleVariable();
-    }
+
     return false;
-  } // gobbleToken
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string
-  // to keep track of everything in the numeric literal and then calling
-  // `parseFloat` on that string
-  function gobbleNumericLiteral() {
-    let number = '';
-    let ch;
-    let chCode;
+  };
+  // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
+  // keep track of everything in the numeric literal and then calling `parseFloat` on that string
+  const gobbleNumericLiteral = function () {
+    var number = '',
+      ch,
+      chCode;
     while (isDecimalDigit(exprICode(index))) {
       number += exprI(index++);
     }
@@ -361,18 +358,22 @@ export function parse(expr: string) {
         number += exprI(index++);
       }
       if (!isDecimalDigit(exprICode(index - 1))) {
-        throw Error(`Expected exponent (${number}${exprI(index)})`);
+        throwError('Expected exponent (' + number + exprI(index) + ')', index);
       }
     }
 
     chCode = exprICode(index);
     // Check to make sure this isn't a variable name that start with a number (123abc)
     if (isIdentifierStart(chCode)) {
-      throw Error(
-        `Variable names cannot start with a number (${number}${exprI(index)})`
+      throwError(
+        'Variable names cannot start with a number (' +
+          number +
+          exprI(index) +
+          ')',
+        index
       );
     } else if (chCode === PERIOD_CODE) {
-      throw Error(`Unexpected period at index ${index}`);
+      throwError('Unexpected period', index);
     }
 
     return {
@@ -380,16 +381,14 @@ export function parse(expr: string) {
       value: parseFloat(number),
       raw: number
     };
-  } // gobbleNumericLiteral
-
-  // Parses a string literal, staring with single or double quotes with basic
-  // support for escape codes e.g. `"hello world"`, `'this is\nJSEP'`
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  function gobbleStringLiteral() {
-    let str = '';
-    let quote = exprI(index++);
-    let closed = false;
-    let ch;
+  };
+  // Parses a string literal, staring with single or double quotes with basic support for escape codes
+  // e.g. `"hello world"`, `'this is\nJSEP'`
+  const gobbleStringLiteral = function () {
+    var str = '',
+      quote = exprI(index++),
+      closed = false,
+      ch;
 
     while (index < length) {
       ch = exprI(index++);
@@ -427,7 +426,7 @@ export function parse(expr: string) {
     }
 
     if (!closed) {
-      throw Error(`Unclosed quote after "' + str + '" index:${index}`);
+      throwError('Unclosed quote after "' + str + '"', index);
     }
 
     return {
@@ -435,21 +434,20 @@ export function parse(expr: string) {
       value: str,
       raw: quote + str + quote
     };
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  };
   // Gobbles only identifiers
   // e.g.: `foo`, `_value`, `$x1`
   // Also, this function checks if that identifier is a literal:
   // (e.g. `true`, `false`, `null`) or `this`
-  function gobbleIdentifier() {
-    let ch = exprICode(index);
-    let start = index;
-    let identifier;
+  const gobbleIdentifier = function () {
+    var ch = exprICode(index),
+      start = index,
+      identifier;
 
     if (isIdentifierStart(ch)) {
       index++;
     } else {
-      throw Error(`Unexpected ${exprI(index)}`);
+      throwError('Unexpected ' + exprI(index), index);
     }
 
     while (index < length) {
@@ -462,29 +460,83 @@ export function parse(expr: string) {
     }
     identifier = expr.slice(start, index);
 
-    if (literals[identifier]) {
+    if (literals.hasOwnProperty(identifier)) {
       return {
         type: LITERAL,
         value: literals[identifier],
         raw: identifier
       };
-    }
-    if (identifier === this_str) {
+    } else if (identifier === this_str) {
       return { type: THIS_EXP };
+    } else {
+      return {
+        type: IDENTIFIER,
+        name: identifier
+      };
     }
-    return {
-      type: IDENTIFIER,
-      name: identifier
-    };
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  };
+  // Gobbles a list of arguments within the context of a function call
+  // or array literal. This function also assumes that the opening character
+  // `(` or `[` has already been gobbled, and gobbles expressions and commas
+  // until the terminator character `)` or `]` is encountered.
+  // e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
+  const gobbleArguments = function (termination) {
+    var ch_i,
+      args = [],
+      node,
+      closed = false;
+    var separator_count = 0;
+    while (index < length) {
+      gobbleSpaces();
+      ch_i = exprICode(index);
+      if (ch_i === termination) {
+        // done parsing
+        closed = true;
+        index++;
+        if (
+          termination === CPAREN_CODE &&
+          separator_count &&
+          separator_count >= args.length
+        ) {
+          throwError(
+            'Unexpected token ' + String.fromCharCode(termination),
+            index
+          );
+        }
+        break;
+      } else if (ch_i === COMMA_CODE) {
+        // between expressions
+        index++;
+        separator_count++;
+        if (separator_count !== args.length) {
+          // missing argument
+          if (termination === CPAREN_CODE) {
+            throwError('Unexpected token ,', index);
+          } else if (termination === CBRACK_CODE) {
+            for (var arg = args.length; arg < separator_count; arg++) {
+              args.push(null);
+            }
+          }
+        }
+      } else {
+        node = gobbleExpression();
+        if (!node || node.type === COMPOUND) {
+          throwError('Expected comma', index);
+        }
+        args.push(node);
+      }
+    }
+    if (!closed) {
+      throwError('Expected ' + String.fromCharCode(termination), index);
+    }
+    return args;
+  };
   // Gobble a non-literal variable name. This variable name may include properties
   // e.g. `foo`, `bar.baz`, `foo['bar'].baz`
   // It also gobbles function calls:
   // e.g. `Math.acos(obj.angle)`
-  function gobbleVariable() {
-    let ch_i;
-    let node;
+  const gobbleVariable = function () {
+    var ch_i, node;
     ch_i = exprICode(index);
 
     if (ch_i === OPAREN_CODE) {
@@ -514,7 +566,7 @@ export function parse(expr: string) {
         gobbleSpaces();
         ch_i = exprICode(index);
         if (ch_i !== CBRACK_CODE) {
-          throw Error(`Unclosed [ at index:${index}`);
+          throwError('Unclosed [', index);
         }
         index++;
       } else if (ch_i === OPAREN_CODE) {
@@ -529,100 +581,38 @@ export function parse(expr: string) {
       ch_i = exprICode(index);
     }
     return node;
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  };
   // Responsible for parsing a group of things within parentheses `()`
   // This function assumes that it needs to gobble the opening parenthesis
   // and then tries to gobble everything within that parenthesis, assuming
   // that the next thing it should see is the close parenthesis. If not,
   // then the expression probably doesn't have a `)`
-  function gobbleGroup() {
+  const gobbleGroup = function () {
     index++;
-    let node = gobbleExpression();
+    var node = gobbleExpression();
     gobbleSpaces();
     if (exprICode(index) === CPAREN_CODE) {
       index++;
       return node;
+    } else {
+      throwError('Unclosed (', index);
     }
-    throw Error('Unclosed ( at index:{$index}');
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  };
   // Responsible for parsing Array literals `[1, 2, 3]`
   // This function assumes that it needs to gobble the opening bracket
   // and then tries to gobble the expressions as arguments.
-  function gobbleArray() {
+  const gobbleArray = function () {
     index++;
     return {
       type: ARRAY_EXP,
       elements: gobbleArguments(CBRACK_CODE)
     };
-  }
+  };
 
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // Gobbles a list of arguments within the context of a function call
-  // or array literal. This function also assumes that the opening character
-  // `(` or `[` has already been gobbled, and gobbles expressions and commas
-  // until the terminator character `)` or `]` is encountered.
-  // e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
-  function gobbleArguments(termination) {
-    let ch_i;
-    let args = [];
-    let node;
-    let closed = false;
-    let separator_count = 0;
-    while (index < length) {
-      gobbleSpaces();
-      ch_i = exprICode(index);
-      if (ch_i === termination) {
-        // done parsing
-        closed = true;
-        index++;
-        if (
-          termination === CPAREN_CODE &&
-          separator_count &&
-          separator_count >= args.length
-        ) {
-          throw Error(
-            `Unexpected token ${String.fromCharCode(
-              termination
-            )} at index:${index}`
-          );
-        }
-        break;
-      } else if (ch_i === COMMA_CODE) {
-        // between expressions
-        index++;
-        separator_count++;
-        if (separator_count !== args.length) {
-          // missing argument
-          if (termination === CPAREN_CODE) {
-            throw Error(`Unexpected token , at index:${index}`);
-          } else if (termination === CBRACK_CODE) {
-            for (let arg = args.length; arg < separator_count; arg++) {
-              args.push(null);
-            }
-          }
-        }
-      } else {
-        node = gobbleExpression();
-        if (!node || node.type === COMPOUND) {
-          throw Error(`Expected comma at index:${index}`);
-        }
-        args.push(node);
-      }
-    }
-    if (!closed) {
-      throw Error(
-        `Expected ${String.fromCharCode(termination)} at index:${index}`
-      );
-    }
-    return args;
-  }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // JSEP PARSE continues...
-  let nodes = [];
+  const nodes = [];
   let ch_i;
   let node;
+
   while (index < length) {
     ch_i = exprICode(index);
 
@@ -637,34 +627,26 @@ export function parse(expr: string) {
         // If we weren't able to find a binary expression and are out of room, then
         // the expression passed in probably has too much
       } else if (index < length) {
-        throw Error(`Unexpected "${exprI(index)}" at index:${index}`);
+        throwError('Unexpected "' + exprI(index) + '"', index);
       }
     }
-    // If there's only one expression just try returning the expression
-    if (nodes.length === 1) {
-      return nodes[0];
-    }
+  }
+
+  // If there's only one expression just try returning the expression
+  if (nodes.length === 1) {
+    return nodes[0];
+  } else {
     return {
       type: COMPOUND,
       body: nodes
     };
   }
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-} // end of jsep function
+}
 
-/// STATIC METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// To be filled in by the template
+parse.version = '<%= version %>';
+parse.toString = function () {
+  return 'JavaScript Expression Parser (JSEP) v' + parse.version;
+};
 
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// EXPORTS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// es6: export default MODULEorCLASS;
-///      export { A, B };
-/// cjs: module.exports = MODULEorCLASS;
-///      module.exports = { A, B };
+export default parse;

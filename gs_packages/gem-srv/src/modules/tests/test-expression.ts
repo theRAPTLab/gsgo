@@ -6,12 +6,13 @@
 
 import UR from '@gemstep/ursys/client';
 import * as EV from 'lib/util-expression';
-import { parse } from 'lib/util-source-parser';
+import parse from 'lib/util-source-parser';
 
 const PR = UR.PrefixUtil('EX-EVAL', 'TagDkOrange');
 
 function Eval(expr: string, context: {}) {
   const ast = EV.parse(expr);
+  console.log(...PR('AST', ast));
   const val = EV.eval(ast, context);
   console.log(...PR('RETVAL:', val));
   return JSON.stringify(ast);
