@@ -106,9 +106,30 @@ A good chunk of the next six weeks will be for just getting the UI to talk to th
 
 *NOTE:* I lost some progress notes between October 22 and 26. Grr. So now I have to remember what I did.
 
-Over th
+**sidetrack:** was having trouble getting Intellisense to work with global typings files. [This answer's 2020 update](https://stackoverflow.com/questions/42233987/how-to-configure-custom-global-interfaces-d-ts-files-for-typescript) indicates maybe why it doesn't work: any `import` or `export` will break automatic type discovery. This is because typescript tags use of import/export as a MODULE, otherwise it's a SCRIPT. That said, "ambient modules" that magically define everything is discouraged these days.
 
+## OCT 28 WED - Resuming the Parser Whacking
 
+I didn't quite get started on this yesterday. Where am I? I'm writing a parser of some kind to **turn a line of text into our source array format**. 
+
+Let's do some free writing... 
+
+The intention: parse a string and break it into:
+
+* strings
+* numbers
+* identifiers.
+* expressions
+
+I think if we include a custom version of JSEP we can just expose their tokenizer for our use? But then again. We need this code to identify expressions, which are a new construct in the GEMscript language.
+
+* [ ] port parts of jsep over
+  * [x] `gobbleBinaryExpression()`
+  * [x] `gobbleToken()`
+  * [x] `gobbleNumericLiteral()`
+  * [x] `gobbleStringLiteral()`
+  * [x] `gobbleIdentifiers()`
+  * [x] `gobbleArray()`
 
 ---
 

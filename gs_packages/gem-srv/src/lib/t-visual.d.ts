@@ -4,8 +4,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IPoolable } from './t-pool';
-import { IActable } from './t-interaction';
+import * as PIXI from 'pixi.js';
+import { IPoolable } from 'lib/t-pool';
+import { IActable } from 'lib/t-interaction';
 
 /// VISUALS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

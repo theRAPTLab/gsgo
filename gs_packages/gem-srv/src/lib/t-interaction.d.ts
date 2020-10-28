@@ -4,8 +4,6 @@ export enum ControlMode {
   auto
 }
 
-export const modeName = (mode: ControlMode) => ControlMode[mode];
-
 export interface IActable {
   isSelected: boolean;
   isHovered: boolean;

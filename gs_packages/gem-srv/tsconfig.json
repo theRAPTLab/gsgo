@@ -16,6 +16,6 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true
   },
-  "include": ["src/**/*", "./urdu.js"],
+  "include": ["src/**/*.ts", "./urdu.js"],
   "exclude": ["node_modules"]
 }
