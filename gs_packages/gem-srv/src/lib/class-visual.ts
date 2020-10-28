@@ -11,7 +11,7 @@
 import * as PIXI from 'pixi.js';
 import * as DATACORE from 'modules/runtime-datacore';
 import { IVisual } from './t-visual';
-import { IPoolable } from './t-pool';
+import { IPoolable } from './t-pool.d';
 import { IActable } from './t-interaction';
 import { MakeDraggable } from './vis/draggable';
 

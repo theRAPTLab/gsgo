@@ -23,7 +23,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Pool, { IPoolable, IPoolOptions } from './class-pool';
-import { ISyncResults } from './t-pool';
+import { ISyncResults } from './t-pool.d';
 import MappedPool, {
   MapFunctions,
   TestFunction,

@@ -123,13 +123,17 @@ The intention: parse a string and break it into:
 
 I think if we include a custom version of JSEP we can just expose their tokenizer for our use? But then again. We need this code to identify expressions, which are a new construct in the GEMscript language.
 
-* [ ] port parts of jsep over
+* [x] port parts of jsep over
   * [x] `gobbleBinaryExpression()`
   * [x] `gobbleToken()`
   * [x] `gobbleNumericLiteral()`
   * [x] `gobbleStringLiteral()`
   * [x] `gobbleIdentifiers()`
   * [x] `gobbleArray()`
+
+Next we want to **fail** on particular things we don't support, and also just emit the tokens as pure values.
+
+* [ ] does it actually work?
 
 ---
 

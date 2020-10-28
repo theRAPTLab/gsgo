@@ -14,8 +14,8 @@ import NumberVar from 'modules/sim/props/var-number';
 import StringVar from 'modules/sim/props/var-string';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { IAgent, IScopeable, TStackable, IMessage, TProgram } from './t-smc';
-import { ControlMode, IActable } from './t-interaction';
+import { IAgent, IScopeable, TStackable, IMessage, TProgram } from './t-smc.d';
+import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

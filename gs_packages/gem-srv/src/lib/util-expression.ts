@@ -8,8 +8,9 @@ import jsep from 'jsep';
  * Evaluation code from JSEP project, under MIT License.
  * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
  *
- * Modifications to code for SMC compilation
- * d.sri seah 2020
+ * Modifications to code for SMC compilation, removed async
+ * versions of calls.
+ * d.sri seah 2020 for gemstep script compiler
  */
 
 const binops = {
@@ -49,23 +50,10 @@ function evaluateArray(list, context) {
   });
 }
 
-async function evaluateArrayAsync(list, context) {
-  const res = await Promise.all(list.map(v => evalAsync(v, context)));
-  return res;
-}
-
 function evaluateMember(node, context) {
   const object = evaluate(node.object, context);
   if (node.computed) {
     return [object, object[evaluate(node.property, context)]];
-  }
-  return [object, object[node.property.name]];
-}
-
-async function evaluateMemberAsync(node, context) {
-  const object = await evalAsync(node.object, context);
-  if (node.computed) {
-    return [object, object[await evalAsync(node.property, context)]];
   }
   return [object, object[node.property.name]];
 }
@@ -132,89 +120,8 @@ function evaluate(node, context) {
   }
 }
 
-async function evalAsync(node, context) {
-  switch (node.type) {
-    case 'ArrayExpression':
-      return await evaluateArrayAsync(node.elements, context);
-
-    case 'BinaryExpression': {
-      const [left, right] = await Promise.all([
-        evalAsync(node.left, context),
-        evalAsync(node.right, context)
-      ]);
-      return binops[node.operator](left, right);
-    }
-
-    case 'CallExpression': {
-      let caller, fn, assign;
-      if (node.callee.type === 'MemberExpression') {
-        assign = await evaluateMemberAsync(node.callee, context);
-        caller = assign[0];
-        fn = assign[1];
-      } else {
-        fn = await evalAsync(node.callee, context);
-      }
-      if (typeof fn !== 'function') {
-        return undefined;
-      }
-      return await fn.apply(
-        caller,
-        await evaluateArrayAsync(node.arguments, context)
-      );
-    }
-    case 'ConditionalExpression':
-      return (await evalAsync(node.test, context))
-        ? await evalAsync(node.consequent, context)
-        : await evalAsync(node.alternate, context);
-
-    case 'Identifier':
-      return context[node.name];
-
-    case 'Literal':
-      return node.value;
-
-    case 'LogicalExpression': {
-      if (node.operator === '||') {
-        return (
-          (await evalAsync(node.left, context)) ||
-          (await evalAsync(node.right, context))
-        );
-      }
-      if (node.operator === '&&') {
-        return (
-          (await evalAsync(node.left, context)) &&
-          (await evalAsync(node.right, context))
-        );
-      }
-
-      const [left, right] = await Promise.all([
-        evalAsync(node.left, context),
-        evalAsync(node.right, context)
-      ]);
-
-      return binops[node.operator](left, right);
-    }
-
-    case 'MemberExpression':
-      return (await evaluateMemberAsync(node, context))[1];
-
-    case 'ThisExpression':
-      return context;
-
-    case 'UnaryExpression':
-      return unops[node.operator](await evalAsync(node.argument, context));
-
-    default:
-      return undefined;
-  }
-}
-
 function compile(expression) {
   return evaluate.bind(null, jsep(expression));
-}
-
-function compileAsync(expression) {
-  return evalAsync.bind(null, jsep(expression));
 }
 
 // Added functions to inject Custom Unary Operators (and override existing ones)
@@ -229,12 +136,4 @@ function addBinaryOp(operator, _function, prec?) {
   binops[operator] = _function;
 }
 
-export {
-  jsep as parse,
-  evaluate as eval,
-  evalAsync,
-  compile,
-  compileAsync,
-  addUnaryOp,
-  addBinaryOp
-};
+export { jsep as parse, evaluate as eval, compile, addUnaryOp, addBinaryOp };

@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { ISyncResults } from './t-pool';
+import { ISyncResults } from './t-pool.d';
 import Pool, { IPoolable } from './class-pool';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
