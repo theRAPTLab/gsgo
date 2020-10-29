@@ -1,3 +1,15 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  SourceString to SourceLine
+  Given a GEMscript source string, create a GEMscript sourceLine, which is an
+  array of arrays of form ['keyword',...args:any].
+  The source array is used to drive the actual compilation into opcodes
+
+  This code is ported from jsep and adapted to produce our desired output
+  https://ericsmekens.github.io/jsep/
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 /* eslint-disable func-names */
 /* eslint-disable no-lonely-if */
 /* eslint-disable no-prototype-builtins */
@@ -15,7 +27,7 @@ const IDENTIFIER = 'Identifier';
 const MEMBER_EXP = 'MemberExpression';
 const LITERAL = 'Literal';
 const THIS_EXP = 'ThisExpression';
-const CALL_EXP = 'CallExpression';
+// const CALL_EXP = 'CallExpression'; /* HACK we don't need these */
 const UNARY_EXP = 'UnaryExpression';
 const BINARY_EXP = 'BinaryExpression';
 const LOGICAL_EXP = 'LogicalExpression';
@@ -33,12 +45,7 @@ const CBRACK_CODE = 93; // ]
 const QUMARK_CODE = 63; // ?
 const SEMCOL_CODE = 59; // ;
 const COLON_CODE = 58; // :
-const throwError = function (message, index) {
-  var error = new Error(message + ' at character ' + index);
-  error.index = index;
-  error.description = message;
-  throw error;
-};
+
 // Operations
 // ----------
 
@@ -141,6 +148,7 @@ function parse(expr) {
   // `index` stores the character number we are currently at while `length` is a constant
   // All of the gobbles below will modify `index` as we move along
   let index = 0;
+  let lastIndex = index; /* HACK add our own range thing */
   const charAtFunc = expr.charAt;
   const charCodeAtFunc = expr.charCodeAt;
   const exprI = function (i) {
@@ -169,14 +177,14 @@ function parse(expr) {
       index++;
       consequent = gobbleExpression();
       if (!consequent) {
-        throwError('Expected expression', index);
+        throw Error(`Expected expression at ${index}`);
       }
       gobbleSpaces();
       if (exprICode(index) === COLON_CODE) {
         index++;
         alternate = gobbleExpression();
         if (!alternate) {
-          throwError('Expected expression', index);
+          throw Error(`Expected expression at ${index}`);
         }
         return {
           type: CONDITIONAL_EXP,
@@ -185,7 +193,7 @@ function parse(expr) {
           alternate: alternate
         };
       } else {
-        throwError('Expected :', index);
+        throw Error(`Expected : ${index}`);
       }
     } else {
       return test;
@@ -238,7 +246,7 @@ function parse(expr) {
 
     right = gobbleToken();
     if (!right) {
-      throwError('Expected expression after ' + biop, index);
+      throw Error(`Expected expression after ${biop} at ${index}`);
     }
     stack = [left, biop_info, right];
 
@@ -263,7 +271,7 @@ function parse(expr) {
 
       node = gobbleToken();
       if (!node) {
-        throwError('Expected expression after ' + cur_biop, index);
+        throw Error(`Expected expression after ${cur_biop} at ${index}`);
       }
       stack.push(biop_info, node);
     }
@@ -358,22 +366,20 @@ function parse(expr) {
         number += exprI(index++);
       }
       if (!isDecimalDigit(exprICode(index - 1))) {
-        throwError('Expected exponent (' + number + exprI(index) + ')', index);
+        throw Error(`Expected exponent (${number + exprI(index)}) at ${index}`);
       }
     }
 
     chCode = exprICode(index);
     // Check to make sure this isn't a variable name that start with a number (123abc)
     if (isIdentifierStart(chCode)) {
-      throwError(
-        'Variable names cannot start with a number (' +
-          number +
-          exprI(index) +
-          ')',
-        index
+      throw Error(
+        `Variable names cannot start with a number (${
+          number + exprI(index)
+        }) at ${index}`
       );
     } else if (chCode === PERIOD_CODE) {
-      throwError('Unexpected period', index);
+      throw Error(`Unexpected period at ${index}`);
     }
 
     return {
@@ -425,9 +431,7 @@ function parse(expr) {
       }
     }
 
-    if (!closed) {
-      throwError('Unclosed quote after "' + str + '"', index);
-    }
+    if (!closed) throw Error(`Unclosed quote after "${str}" at ${index}`);
 
     return {
       type: LITERAL,
@@ -447,7 +451,7 @@ function parse(expr) {
     if (isIdentifierStart(ch)) {
       index++;
     } else {
-      throwError('Unexpected ' + exprI(index), index);
+      throw Error(`Unexpected ${exprI(index)} at ${index}`);
     }
 
     while (index < length) {
@@ -498,9 +502,8 @@ function parse(expr) {
           separator_count &&
           separator_count >= args.length
         ) {
-          throwError(
-            'Unexpected token ' + String.fromCharCode(termination),
-            index
+          throw Error(
+            `Unexpected token ${String.fromCharCode(termination)} at ${index}`
           );
         }
         break;
@@ -511,7 +514,7 @@ function parse(expr) {
         if (separator_count !== args.length) {
           // missing argument
           if (termination === CPAREN_CODE) {
-            throwError('Unexpected token ,', index);
+            throw Error(`Unexpected token at ${index}`);
           } else if (termination === CBRACK_CODE) {
             for (var arg = args.length; arg < separator_count; arg++) {
               args.push(null);
@@ -521,13 +524,13 @@ function parse(expr) {
       } else {
         node = gobbleExpression();
         if (!node || node.type === COMPOUND) {
-          throwError('Expected comma', index);
+          throw Error(`Expected comma at ${index}`);
         }
         args.push(node);
       }
     }
     if (!closed) {
-      throwError('Expected ' + String.fromCharCode(termination), index);
+      throw Error(`Expected ${String.fromCharCode(termination)} at ${index}`);
     }
     return args;
   };
@@ -546,7 +549,10 @@ function parse(expr) {
     }
     gobbleSpaces();
     ch_i = exprICode(index);
+    /* HACK we don't want to process call expressions
     while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
+    END HACK */
+    while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE) {
       index++;
       if (ch_i === PERIOD_CODE) {
         gobbleSpaces();
@@ -566,17 +572,18 @@ function parse(expr) {
         gobbleSpaces();
         ch_i = exprICode(index);
         if (ch_i !== CBRACK_CODE) {
-          throwError('Unclosed [', index);
+          throw Error(`Unclosed [ at ${index}`);
         }
         index++;
-      } else if (ch_i === OPAREN_CODE) {
+      } /* HACK - remove processing of call expressions!
+        else if (ch_i === OPAREN_CODE) {
         // A function call is being made; gobble all the arguments
         node = {
           type: CALL_EXP,
           'arguments': gobbleArguments(CPAREN_CODE),
           callee: node
         };
-      }
+      } END HACK */
       gobbleSpaces();
       ch_i = exprICode(index);
     }
@@ -595,7 +602,7 @@ function parse(expr) {
       index++;
       return node;
     } else {
-      throwError('Unclosed (', index);
+      throw Error(`Unclosed ( at ${index}`);
     }
   };
   // Responsible for parsing Array literals `[1, 2, 3]`
@@ -609,25 +616,38 @@ function parse(expr) {
     };
   };
 
+  /** START OF TOKENIZING ****************************************************/
+
   const nodes = [];
   let ch_i;
   let node;
 
   while (index < length) {
+    /* HACK initialize lastIndex */
+    lastIndex = index;
+    /* END HACK */
     ch_i = exprICode(index);
 
-    // Expressions can be separated by semicolons, commas, or just inferred without any
-    // separators
+    // Expressions can be separated by semicolons, commas, or just inferred
+    // without any separators
     if (ch_i === SEMCOL_CODE || ch_i === COMMA_CODE) {
       index++; // ignore separators
     } else {
+      /* HACK save starting index position */
+      lastIndex = index;
       // Try to gobble each expression individually
       if ((node = gobbleExpression())) {
+        /* HACK add our range calculation */
+        const excerpt = expr.substring(lastIndex, index);
+        node.range = [lastIndex, index];
+        node.raw = excerpt;
+        lastIndex = index;
+        /* END HACK */
         nodes.push(node);
         // If we weren't able to find a binary expression and are out of room, then
         // the expression passed in probably has too much
       } else if (index < length) {
-        throwError('Unexpected "' + exprI(index) + '"', index);
+        throw Error(`Unexpected "${exprI(index)}" at ${index}`);
       }
     }
   }
@@ -649,4 +669,28 @@ parse.toString = function () {
   return 'JavaScript Expression Parser (JSEP) v' + parse.version;
 };
 
-export default parse;
+/** HACKED ON EXTENSIO *****************************************************/
+
+function parseToSource(line) {
+  const source = [];
+  const typeHandlers = {
+    'Compound': node => node.body,
+    'Literal': node => node.value,
+    'Identifier': node => node.name,
+    'BinaryExpression': node => `expr{${node.raw}}`
+  };
+  const cnode = parse(line);
+  if (cnode.type !== 'Compound') throw Error(`unexpected type ${cnode.type}`);
+  if (!cnode.body) throw Error(`missing 'body' prop in ${cnode.type} node`);
+  if (!Array.isArray(cnode.body)) throw Error("'body' prop is not an array");
+  cnode.body.forEach((node, index) => {
+    console.log(index, 'processing', node);
+    const type = node.type;
+    const func = typeHandlers[type];
+    if (!func) throw Error(`unhandled node type '${type}'`);
+    source.push(func(node));
+  });
+  return source;
+}
+
+export { parse, parseToSource };

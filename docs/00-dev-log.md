@@ -131,9 +131,83 @@ I think if we include a custom version of JSEP we can just expose their tokenize
   * [x] `gobbleIdentifiers()`
   * [x] `gobbleArray()`
 
+let's make sure this still works:
+
+* [x] does it actually work? YES, apparently
+* [x] try some expressions like arrays
+* [x] note that **assignment** doesn't work here (it's just an expression parser)
+
 Next we want to **fail** on particular things we don't support, and also just emit the tokens as pure values.
 
-* [ ] does it actually work?
+* [x] the code works just by starting at the start of the screen and continually trying to read expressions.
+* [x] for gemscript, our lines look like `keyword identifier or whatnot` 
+  * [x] what happens if we pass it an actual keyword? what is the syntax tree?
+  * [x] reimport jsep raw again...something got nuked in it in the previous port
+
+The `jsep` code (implemented as `parse`) returns an abstract syntax tree for evaluation. We actually just want to grab the individual keywords. Let's test the output of likely gemscript syntax things:
+
+```
+// this is interpreted as 3: keyword, identifier, expression
+"setPropValue health 1 + this.pollen"
+
+// this is interpreted as 3: keyword, 
+"setPropValue alpha 1 + ((this.pollen +1/ 10)) + 1"
+
+// this is interpreted as 2: keyword, beta(expression) + 1
+"setPropValue beta ((1 + this.pollen) / 10) + 1"
+
+// this is interpreted as 2: beta + expression
+"setPropValue beta +((1 + this.pollen) / 10) + 1"
+
+// this is interpreted as 3: prop.foo setTo expr
+"prop .foo setTo 1 + this.pollen"
+```
+
+So I've noticed:
+
+* **whitespace** is not sufficient to separate keywords, particularly 
+* **dot** will look like a member expression if it's preceded by an identifier. It's not space delimited.
+* **parenthesis** will look like a call expression if there is an identifier before it
+
+So that means we have to impose some of our own rules.
+
+## OCT 29 THU - Emit a Range
+
+#### When I pick this up on Thursday...
+
+* [x] what happens if I just remove the call member check? (this works by removing check for code)
+* [ ] what if I make the space somehow hard when processing property expressions? probably not as an identifier. **this is not straigtforward** because of whitespace rules. Whitespace is insignificant in this tokenizer
+
+The current state of the tokenizer codebase in `util-source-parser`: 
+
+* it is hacked to ignore procedure calls
+
+I want to add:
+
+* emit the string that is the expression, wrapped in `_EXPR{}` 
+* parse the contents of `_EXPR{}` to feed it to a keyword.
+
+Ok, to **emit the string** I think I have to modify util-source-parser to examine its ranges. I don't know if this actually has ranges unlike some of the other ones. 
+
+* the `jsep` tokenizer doesn't output character ranges. Therefore we have to save them ourselves by using `index` in a clever way. I'm trying`lastIndex`
+* This tokenizer also isn't recursive, so we have to track ranges ourselves.
+* The top-level call is `gobbleExpression()`in a loop of nodes, so I think we can just s**tuff the string directly into the node!**
+* I think I can then inspect the node type, which is `Compound` containing `Identity`, `Literal`, or `BinaryExpression` to **reconstruct** the source array!
+
+Ok, let's try to wedge this code in there:
+
+* [x] modify `util-source-parser` to store `range` and `raw` properties in the returned compound.body
+* [x] write a `ParseToSource()` decompiler function
+
+ZOMG it works. 
+
+* [x] clean up util-source-parcer
+* [x] move ParseToSource to util-source-parcer
+* [x] confirm test-expression still seems to work
+* [x] replace jsep, expression-eval...does it **still work** with `test-expression` and `test-keygen`? **yes**
+* [ ] commit cleaned up work-in-progress
+
+
 
 ---
 

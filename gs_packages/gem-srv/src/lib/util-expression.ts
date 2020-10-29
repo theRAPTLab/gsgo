@@ -1,16 +1,24 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  expression-engine
+  from https://github.com/plantain-00/expression-engine
+
+  Modified to create GEMscript SMC programs.
+  Asynchronous versions removed
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 /* eslint-disable no-return-await */
 /* eslint-disable one-var */
 /* eslint-disable eqeqeq */
 /* eslint-disable func-names */
-import jsep from 'jsep';
+// import jsep from 'jsep';
+
+import { parse as jsep } from 'lib/util-source-parser';
 
 /**
  * Evaluation code from JSEP project, under MIT License.
  * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
- *
- * Modifications to code for SMC compilation, removed async
- * versions of calls.
- * d.sri seah 2020 for gemstep script compiler
  */
 
 const binops = {
@@ -124,16 +132,4 @@ function compile(expression) {
   return evaluate.bind(null, jsep(expression));
 }
 
-// Added functions to inject Custom Unary Operators (and override existing ones)
-function addUnaryOp(operator, _function) {
-  jsep.addUnaryOp(operator);
-  unops[operator] = _function;
-}
-
-// Added functions to inject Custom Binary Operators (and override existing ones)
-function addBinaryOp(operator, _function, prec?) {
-  jsep.addBinaryOp(operator, prec);
-  binops[operator] = _function;
-}
-
-export { jsep as parse, evaluate as eval, compile, addUnaryOp, addBinaryOp };
+export { jsep as parse, evaluate as eval, compile };

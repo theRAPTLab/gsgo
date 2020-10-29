@@ -17,6 +17,7 @@ import './test-expression';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CONVERTER', 'TagDkRed');
+const DBG = true;
 
 /// LOAD KEYWORD DICTIONARY ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,35 +41,38 @@ const SOURCE: SRCLine[] = [
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestListSource(source = SOURCE) {
-  console.log(...PR('Source Lines - (made by GUI, saved/loaded from network)'));
+  if (DBG)
+    console.log(...PR('Source Lines - (made by GUI, saved/loaded from network)'));
   source.forEach((line, index) => {
-    console.log(index, line);
+    if (DBG) console.log(index, line);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestSourceToProgram(source = SOURCE) {
   // the idea is to create a data structure we can generate and then parse
-  console.log(
-    ...PR('KEYGEN.CompileTemplate() - create template smc program arrays')
-  );
+  if (DBG)
+    console.log(
+      ...PR('KEYGEN.CompileTemplate() - create template smc program arrays')
+    );
   // get the output
   const output = KEYGEN.CompileTemplate(source);
   //  print the output
-  output.template_define.forEach(statement =>
-    console.log('definition:', statement)
+  output.template_define.forEach(
+    statement => DBG && console.log('definition:', statement)
   );
-  output.template_defaults.forEach(statement =>
-    console.log('defaults:  ', statement)
+  output.template_defaults.forEach(
+    statement => DBG && console.log('defaults:  ', statement)
   );
-  output.template_conditions.forEach(statement =>
-    console.log('conditions:', statement)
+  output.template_conditions.forEach(
+    statement => DBG && console.log('conditions:', statement)
   );
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestSourceToUI(source: SRCLine[] = SOURCE) {
   // the idea is to parse data structure into react
-  console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
+  if (DBG)
+    console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   const jsx = KEYGEN.RenderSource(source);
   UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 }
@@ -79,15 +83,16 @@ function TestSourceToUI(source: SRCLine[] = SOURCE) {
 UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: UIUpdate) => {
   const { index, srcLine } = KEYGEN.RegenSRCLine(updata);
   SOURCE[index] = srcLine;
-  console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
+  if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
 });
-(window as any).RenderSource = (source = SOURCE) => {
+(window as any).sourceRender = (source: SRCLine[] = SOURCE) => {
+  console.log(...PR('rendering test source'));
   const jsx = KEYGEN.RenderSource(source);
   UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 };
-(window as any).CompileSource = (source = SOURCE) => {
-  const jsx = KEYGEN.RenderSource(source);
-  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+(window as any).sourceCompile = (source: SRCLine[] = SOURCE) => {
+  console.log(...PR('compiling test source'));
+  TestSourceToProgram(source);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
