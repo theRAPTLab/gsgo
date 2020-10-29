@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Home - Main Application View
+  Compiler - Script Parsing and Compiling
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -10,40 +10,16 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
+// this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('HOME', 'TagBlue');
+const PR = UR.PrefixUtil('COMPILER', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
 
 /// UI HELPERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** convenience utility to use nice JSX in sidebar navigation */
-const NavItem = props => {
-  const { route, children } = props;
-  const disabled = route.charAt(0) === '-';
-  const linkName = `${route.toUpperCase()}`;
-  const style = {
-    fontSize: '150%',
-    fontWeight: 'bold',
-    display: 'block',
-    color: 'gray'
-  };
-  const NavLink = () =>
-    disabled ? (
-      <span style={style}>{linkName}</span>
-    ) : (
-      <a href={`/app/${route}`}>{linkName}</a>
-    );
-
-  return (
-    <li>
-      <NavLink />
-      {children}
-    </li>
-  );
-};
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,25 +36,25 @@ class Home extends React.Component {
   render() {
     const { classes } = this.props;
     return (
-      <div className={classes.root}>
-        <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>INDEX</span>
+      <div className={classes.root} style={{ gridTemplateColumns: 'auto auto' }}>
+        <div
+          id="console-top"
+          className={clsx(classes.cell, classes.top)}
+          style={{ gridColumnEnd: 'span 2' }}
+        >
+          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span>
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <b className={classes.title}>Available Routes</b>
-          <ul className={classes.list}>
-            <NavItem route="generator">generate npc entities</NavItem>
-            <NavItem route="tracker">display all entities in system</NavItem>
-            <NavItem route="compiler">script compiler tests</NavItem>
-            <NavItem route="xgui">standalone xgui port</NavItem>
-            <NavItem route="-faketrack">testbed for annotation input</NavItem>
-          </ul>
+          source
         </div>
-        <div id="root-renderer" className={classes.main} />
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
-          console-right
+          ui
         </div>
-        <div id="console-bottom" className={clsx(classes.cell, classes.bottom)}>
+        <div
+          id="console-bottom"
+          className={clsx(classes.cell, classes.bottom)}
+          style={{ gridColumnEnd: 'span 2' }}
+        >
           console-bottom
         </div>
       </div>

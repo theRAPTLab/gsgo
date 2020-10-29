@@ -205,7 +205,13 @@ ZOMG it works.
 * [x] move ParseToSource to util-source-parcer
 * [x] confirm test-expression still seems to work
 * [x] replace jsep, expression-eval...does it **still work** with `test-expression` and `test-keygen`? **yes**
-* [ ] commit cleaned up work-in-progress
+* [x] commit cleaned up work-in-progress
+
+>  **NOTE**
+>
+> It just occurred to me that the **smc compiler** will need to have an expression parser that accepts the string and saves its ast. The evaluation of this AST has to be saved at templatae creation time, so it's available for evaluation.
+
+Next: let's add a TEXTFIELD that contains a bunch of lines with a COMPILE button
 
 
 
