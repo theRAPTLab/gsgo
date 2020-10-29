@@ -211,7 +211,14 @@ ZOMG it works.
 >
 > It just occurred to me that the **smc compiler** will need to have an expression parser that accepts the string and saves its ast. The evaluation of this AST has to be saved at templatae creation time, so it's available for evaluation.
 
-Next: let's add a TEXTFIELD that contains a bunch of lines with a COMPILE button
+Next: let's add a TEXTFIELD that contains a bunch of lines with a COMPILE button.
+
+* [x] add 'compiler' route with`<Compiler>`
+* [x] move code from `<Generator>` and `api-sim` to `<Compiler>`
+* [x] change layout to be two-column, one side source and the other react
+* [ ] render source into 'source column'
+
+
 
 
 
