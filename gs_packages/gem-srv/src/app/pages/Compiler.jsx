@@ -8,11 +8,8 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-
 import UR from '@gemstep/ursys/client';
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import { KEYGEN, ScriptUnit, UIUpdate } from 'lib/class-kw-definition';
+import * as KEYDICT from 'modules/sim/script/keyword-dict';
 import TESTKEYGEN from 'modules/tests/test-keygen';
 import { parseToSource } from 'lib/util-source-parser';
 
@@ -95,7 +92,7 @@ class Compiler extends React.Component {
     });
     console.log('sourceLines', sourceLines);
     console.log('3. process array of sourceLines using KEYGEN.RenderSource');
-    const jsx = KEYGEN.RenderSource(sourceLines);
+    const jsx = KEYDICT.RenderSource(sourceLines);
     console.log('jsx', jsx);
     console.log('4. use KEYGEN to shove JSX into React side of things.');
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);

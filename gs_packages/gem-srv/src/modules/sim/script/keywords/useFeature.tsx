@@ -6,16 +6,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import {
-  IAgentTemplate,
-  KeywordDefinition,
-  ScriptUnit
-} from 'lib/class-kw-definition';
+import { KeywordDef } from 'lib/class-kw-definition';
+import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from '../keyword-dict';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class UseFeature extends KeywordDefinition {
-  // base properties defined in KeywordDefinition
+export class UseFeature extends KeywordDef {
+  // base properties defined in KeywordDef
   constructor() {
     super('useFeature');
     this.args = ['featureName string'];
@@ -55,4 +53,6 @@ export class UseFeature extends KeywordDefinition {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see exports above
+/// make sure you import this at some point with
+/// import from 'file'
+RegisterKeyword(UseFeature);

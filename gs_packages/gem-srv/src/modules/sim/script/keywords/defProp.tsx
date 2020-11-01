@@ -6,16 +6,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import {
-  IAgentTemplate,
-  KeywordDefinition,
-  ScriptUnit
-} from 'lib/class-kw-definition';
+import { KeywordDef } from 'lib/class-kw-definition';
+import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from '../keyword-dict';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefProp extends KeywordDefinition {
-  // base properties defined in KeywordDefinition
+export class DefProp extends KeywordDef {
+  // base properties defined in KeywordDef
   constructor() {
     super('defProp');
     this.args = ['propName string', 'propType string', 'initValue any'];
@@ -58,4 +56,6 @@ export class DefProp extends KeywordDefinition {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see exports above
+/// make sure you import this at some point with
+/// import from 'file'
+RegisterKeyword(DefProp);

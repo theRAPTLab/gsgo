@@ -275,7 +275,18 @@ The conversion processes are handled in **KeywordDef** classes
   * [x] when a JSX element change event happens, it must update and send an array
   * [x] passes serialize from ScriptElement rendered component
   * [x] remove RegenSRCLine because no longer needed
-* [ ] 
+
+**breaking down test-keygen**
+
+this adds keyword helpers and creates a source.
+
+* [x] move source to agent-template class
+* [x] move keyword declarations to a keyword dictionary class
+* [x] Reorganize classes into a semblance of organization.
+
+eval/parse for script-to-jsx and jsx-to-source
+
+
 
 
 

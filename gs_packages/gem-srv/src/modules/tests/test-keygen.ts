@@ -5,26 +5,17 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import {
-  DefTemplate,
-  EndTemplate
-} from 'modules/sim/script/keywords/defTemplate';
-import { DefProp } from 'modules/sim/script/keywords/defProp';
-import { UseFeature } from 'modules/sim/script/keywords/useFeature';
-import { KEYGEN, ScriptUnit, UIUpdate } from 'lib/class-kw-definition';
+import * as KEYDICT from 'modules/sim/script/keyword-dict';
+import { ScriptUnit, ScriptUpdate } from 'lib/t-script';
+import 'modules/sim/script/keywords/defTemplate';
+import 'modules/sim/script/keywords/defProp';
+import 'modules/sim/script/keywords/useFeature';
 import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CONVERTER', 'TagDkRed');
 const DBG = true;
-
-/// LOAD KEYWORD DICTIONARY ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-KEYGEN.AddKeywordHelper(EndTemplate);
-KEYGEN.AddKeywordHelper(DefTemplate);
-KEYGEN.AddKeywordHelper(DefProp);
-KEYGEN.AddKeywordHelper(UseFeature);
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,7 +46,7 @@ function TestSourceToProgram(source = SOURCE) {
       ...PR('KEYGEN.CompileTemplate() - create template smc program arrays')
     );
   // get the output
-  const output = KEYGEN.CompileTemplate(source);
+  const output = KEYDICT.CompileSource(source);
   //  print the output
   output.template_define.forEach(
     statement => DBG && console.log('definition:', statement)
@@ -73,14 +64,14 @@ function TestSourceToUI(source: ScriptUnit[] = SOURCE) {
   // the idea is to parse data structure into react
   if (DBG)
     console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
-  const jsx = KEYGEN.RenderSource(source);
+  const jsx = KEYDICT.RenderSource(source);
   UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 }
 
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives the react state object */
-UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: UIUpdate) => {
+UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: ScriptUpdate) => {
   const { index, scriptUnit } = updata;
   SOURCE[index] = scriptUnit;
   if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
@@ -89,7 +80,7 @@ UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: UIUpdate) => {
 
 (window as any).sourceRender = (source: ScriptUnit[] = SOURCE) => {
   console.log(...PR('rendering test source'));
-  const jsx = KEYGEN.RenderSource(source);
+  const jsx = KEYDICT.RenderSource(source);
   UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 };
 (window as any).sourceCompile = (source: ScriptUnit[] = SOURCE) => {

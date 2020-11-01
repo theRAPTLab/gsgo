@@ -8,13 +8,9 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import {
-  IAgentTemplate,
-  KeywordDefinition,
-  UIUpdate,
-  ScriptUnit,
-  KEYGEN
-} from 'lib/class-kw-definition';
+import { KeywordDef } from 'lib/class-kw-definition';
+import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from '../keyword-dict';
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +40,7 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
   onChange(e) {
     this.setState({ templateName: e.currentTarget.value }, () => {
-      const updata: UIUpdate = {
+      const updata: ScriptUpdate = {
         index: this.index,
         scriptUnit: this.serialize(this.state)
       };
@@ -65,8 +61,8 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends KeywordDefinition {
-  // base properties defined in KeywordDefinition
+export class DefTemplate extends KeywordDef {
+  // base properties defined in KeywordDef
   constructor() {
     super('defTemplate');
     this.args = ['templateName string', 'baseTemplate string'];
@@ -104,7 +100,7 @@ export class DefTemplate extends KeywordDefinition {
     };
     return (
       <ScriptElement
-        key={KEYGEN.UniqueReactKey()}
+        key={this.generateKey()}
         index={index}
         state={state}
         serialize={this.serialize}
@@ -116,7 +112,7 @@ export class DefTemplate extends KeywordDefinition {
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** closing tag, not shown in GUI but required when using DefTemplate */
-export class EndTemplate extends KeywordDefinition {
+export class EndTemplate extends KeywordDef {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;
@@ -149,4 +145,7 @@ export class EndTemplate extends KeywordDefinition {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see exports above
+/// make sure you import this at some point with
+/// import from 'file'
+RegisterKeyword(DefTemplate);
+RegisterKeyword(EndTemplate);
