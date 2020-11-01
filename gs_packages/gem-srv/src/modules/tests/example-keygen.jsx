@@ -7,7 +7,7 @@ import { DefProp } from 'script/keywords/defProp';
 import { UseFeature } from 'script/keywords/useFeature';
 
 // import the KEYWORD GENERATOR API from class
-import { KEYGEN } from 'lib/class-keyword-helper';
+import { KEYGEN } from 'lib/class-kw-definition';
 
 /// add keywords to the KEYWORD dictionary
 KEYGEN.AddKeywordHelper(EndTemplate);

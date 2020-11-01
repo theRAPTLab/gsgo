@@ -216,9 +216,66 @@ Next: let's add a TEXTFIELD that contains a bunch of lines with a COMPILE button
 * [x] add 'compiler' route with`<Compiler>`
 * [x] move code from `<Generator>` and `api-sim` to `<Compiler>`
 * [x] change layout to be two-column, one side source and the other react
+
+Render source into the left side, then generate compiled JSX on the right side, replacing the hardcoded tests.
+
 * [ ] render source into 'source column'
+* [ ] when sourceToReact button clicked, compile script into JSX programmatically
+  * [ ] hook button to handler
 
+trying to separate the lines so we are parsing stuff that looks like
 
+`keyword identifier|literal|binary_expression ...`
+
+I think it's crashing on endTemplate because there are no arguments, so it's parsing emptystring? NO, it's that sometimes there isn't a Compound type if it's just a single argument (the keyword) so we handle Compound as a special case.
+
+OK, it works going from SOURCE to REACT, not not the other way back yet. I don't think we have something that generates it. 
+
+* we have to change our internal representation of SOURCE to REACTUI to SOURCE to SOURCELINES to REACT
+* then change REACT to update SOURCELINES, which should then update UISOURCE
+
+## OCT 30 FRI - Review and Condense
+
+* [ ] disconnect test-keygen, test-expression
+* [ ] create new `script-source` module to combine functions together, to replace KEYGEN export from `class-keyword-helper`
+
+## OCT 31 SAT - Refactor
+
+The Agent Template Compiler has access to
+
+* KEYWORD master dictionary
+* returns AgentTemplate object with the 4 kinds of SMC programs
+
+The Keyword Master Dictionary contains:
+
+* loaded KeywordDefs in a Map<string, KeywordDef>
+* methods to compile, serialize, and render by keyword
+
+The KeyworDef declares:
+
+* compiler function
+* renderer function
+* serialize function
+
+The current AgentTemplate being edited consists of:
+
+* SOURCE: an indexed array of ScriptUnit, which are arrays of parameters
+* handle update of SOURCE given a ScriptUnit
+
+The conversion processes are handled in **KeywordDef** classes
+
+1. convert a string to ScriptUnit
+2. convert a ScriptUnit to a string
+3. convert ScriptUnit to SMC equivalent
+4. convert ScriptUnit to JSX
+
+**Fixes**
+
+* [x] first let's make this work with ScriptUnit arrays again, not stateobjects
+  * [x] when a JSX element change event happens, it must update and send an array
+  * [x] passes serialize from ScriptElement rendered component
+  * [x] remove RegenSRCLine because no longer needed
+* [ ] 
 
 
 

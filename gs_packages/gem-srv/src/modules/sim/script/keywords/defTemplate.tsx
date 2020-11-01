@@ -10,11 +10,11 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import {
   IAgentTemplate,
-  KeywordHelper,
+  KeywordDefinition,
   UIUpdate,
-  SRCLine,
+  ScriptUnit,
   KEYGEN
-} from 'lib/class-keyword-helper';
+} from 'lib/class-kw-definition';
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,19 +25,20 @@ import {
 type MyState = { templateName: string; baseTemplate: string };
 type MyProps = {
   index: number;
-  keyword: string;
   state: MyState;
+  serialize: (state: MyState) => ScriptUnit;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptElement extends React.Component<MyProps, MyState> {
   index: number; // ui index
   keyword: string; // keyword
+  serialize: (state: MyState) => ScriptUnit;
   constructor(props: MyProps) {
     super(props);
-    const { index, keyword, state } = props;
+    const { index, state, serialize } = props;
     this.index = index;
-    this.keyword = keyword;
     this.state = { ...state }; // copy state prop
+    this.serialize = serialize;
     this.onChange = this.onChange.bind(this);
   }
 
@@ -45,8 +46,7 @@ class ScriptElement extends React.Component<MyProps, MyState> {
     this.setState({ templateName: e.currentTarget.value }, () => {
       const updata: UIUpdate = {
         index: this.index,
-        keyword: this.keyword,
-        state: this.state
+        scriptUnit: this.serialize(this.state)
       };
       UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
     });
@@ -65,16 +65,17 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends KeywordHelper {
-  // base properties defined in KeywordHelper
+export class DefTemplate extends KeywordDefinition {
+  // base properties defined in KeywordDefinition
   constructor() {
     super('defTemplate');
     this.args = ['templateName string', 'baseTemplate string'];
-    this.req_scope.add('_EMPTY_');
-    this.key_scope.add('defProp');
+    this.serialize = this.serialize.bind(this);
+    this.compile = this.compile.bind(this);
+    this.render = this.render.bind(this);
   }
 
-  /** create smc template code objects */
+  /** create smc template code objects for this unit */
   compile(parms: any[]): IAgentTemplate {
     const templateName = parms[0];
     const baseTemplate = parms[1];
@@ -89,14 +90,14 @@ export class DefTemplate extends KeywordHelper {
     };
   }
 
-  /** return a state object that turn react state back into source */
-  serialize(state: any): SRCLine {
+  /** return a ScriptUnit made from current state */
+  serialize(state: any): ScriptUnit {
     const { templateName, baseTemplate } = state;
     return [this.keyword, templateName, baseTemplate];
   }
 
   /** return rendered component representation */
-  render(index: number, srcLine: SRCLine, children?: any[]): any {
+  render(index: number, srcLine: ScriptUnit, children?: any[]): any {
     const state = {
       templateName: srcLine[1],
       baseTemplate: srcLine[2]
@@ -105,8 +106,8 @@ export class DefTemplate extends KeywordHelper {
       <ScriptElement
         key={KEYGEN.UniqueReactKey()}
         index={index}
-        keyword={this.keyword}
         state={state}
+        serialize={this.serialize}
       />
     );
   }
@@ -115,7 +116,7 @@ export class DefTemplate extends KeywordHelper {
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** closing tag, not shown in GUI but required when using DefTemplate */
-export class EndTemplate extends KeywordHelper {
+export class EndTemplate extends KeywordDefinition {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;
@@ -136,7 +137,7 @@ export class EndTemplate extends KeywordHelper {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): SRCLine {
+  serialize(state: any): ScriptUnit {
     return [this.keyword];
   }
 

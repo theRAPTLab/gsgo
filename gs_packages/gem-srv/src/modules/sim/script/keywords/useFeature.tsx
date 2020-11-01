@@ -6,12 +6,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IAgentTemplate, KeywordHelper, SRCLine } from 'lib/class-keyword-helper';
+import {
+  IAgentTemplate,
+  KeywordDefinition,
+  ScriptUnit
+} from 'lib/class-kw-definition';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class UseFeature extends KeywordHelper {
-  // base properties defined in KeywordHelper
+export class UseFeature extends KeywordDefinition {
+  // base properties defined in KeywordDefinition
   constructor() {
     super('useFeature');
     this.args = ['featureName string'];
@@ -32,7 +36,7 @@ export class UseFeature extends KeywordHelper {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): SRCLine {
+  serialize(state: any): ScriptUnit {
     const { featureName } = state;
     return [this.keyword, featureName];
   }

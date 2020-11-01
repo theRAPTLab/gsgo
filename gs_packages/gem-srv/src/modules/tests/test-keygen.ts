@@ -11,7 +11,7 @@ import {
 } from 'modules/sim/script/keywords/defTemplate';
 import { DefProp } from 'modules/sim/script/keywords/defProp';
 import { UseFeature } from 'modules/sim/script/keywords/useFeature';
-import { KEYGEN, SRCLine, UIUpdate } from 'lib/class-keyword-helper';
+import { KEYGEN, ScriptUnit, UIUpdate } from 'lib/class-kw-definition';
 import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -28,7 +28,7 @@ KEYGEN.AddKeywordHelper(UseFeature);
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SOURCE: SRCLine[] = [
+const SOURCE: ScriptUnit[] = [
   ['defTemplate', 'Bee'],
   ['defProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
@@ -69,7 +69,7 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToUI(source: SRCLine[] = SOURCE) {
+function TestSourceToUI(source: ScriptUnit[] = SOURCE) {
   // the idea is to parse data structure into react
   if (DBG)
     console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
@@ -81,16 +81,18 @@ function TestSourceToUI(source: SRCLine[] = SOURCE) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives the react state object */
 UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: UIUpdate) => {
-  const { index, srcLine } = KEYGEN.RegenSRCLine(updata);
-  SOURCE[index] = srcLine;
+  const { index, scriptUnit } = updata;
+  SOURCE[index] = scriptUnit;
   if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
 });
-(window as any).sourceRender = (source: SRCLine[] = SOURCE) => {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+(window as any).sourceRender = (source: ScriptUnit[] = SOURCE) => {
   console.log(...PR('rendering test source'));
   const jsx = KEYGEN.RenderSource(source);
   UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 };
-(window as any).sourceCompile = (source: SRCLine[] = SOURCE) => {
+(window as any).sourceCompile = (source: ScriptUnit[] = SOURCE) => {
   console.log(...PR('compiling test source'));
   TestSourceToProgram(source);
 };

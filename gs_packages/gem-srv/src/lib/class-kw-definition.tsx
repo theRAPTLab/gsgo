@@ -12,7 +12,7 @@ import { TOpcode } from 'lib/t-smc';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const KEYWORDS: Map<string, KeywordHelper> = new Map();
+const KEYWORDS: Map<string, KeywordDefinition> = new Map();
 const DBG = false;
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
@@ -20,7 +20,7 @@ const DBG = false;
 /** constructor type
  */
 export interface IKeywordConstructor {
-  new (keyword?: string): KeywordHelper;
+  new (keyword?: string): KeywordDefinition;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
@@ -33,16 +33,15 @@ export interface IAgentTemplate {
 /** UI update type sent by UI tp RegenSRCLine */
 export type UIUpdate = {
   index: number;
-  keyword: string;
-  state: object;
+  scriptUnit: ScriptUnit;
 };
 /** a source line starts with keyword followed by variable number of args */
-export type SRCLine = [string, ...any[]];
+export type ScriptUnit = [string, ...any[]];
 /** sent by UI change handler after source is regeneraed through RegenSRCLine()
  */
 export type SRCUpdate = {
   index: number;
-  srcLine: SRCLine;
+  srcLine: ScriptUnit;
 };
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -70,11 +69,11 @@ function UniqueReactKey() {
 
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The KeywordHelper class is the base class for all GEMscript keywords.
+  The KeywordDefinition class is the base class for all GEMscript keywords.
   There is one keyword that begins a GEMscript source line, which is processed
   by the appropriate subclass that is defined to handle it.
 
-  Each KeywordHelper implements:
+  Each KeywordDefinition implements:
   1. An array of strings that defines the name and type of each argument
      accepted by this keyword. This is used to help label the dropdown options
      for each GUI element and for documenting the keyword itself.
@@ -89,7 +88,7 @@ function UniqueReactKey() {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class KeywordHelper {
+export class KeywordDefinition {
   keyword: string;
   args: string[];
   req_scope: Set<string>;
@@ -97,8 +96,8 @@ export class KeywordHelper {
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
-      throw Error('KeywordHelper requires string, not undefined');
-    else if (DBG) console.log('KeywordHelper constructing:', keyword);
+      throw Error('KeywordDefinition requires string, not undefined');
+    else if (DBG) console.log('KeywordDefinition constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
     this.req_scope = new Set();
@@ -110,7 +109,7 @@ export class KeywordHelper {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
 
-  serialize(state: object): SRCLine {
+  serialize(state: object): ScriptUnit {
     throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
   }
 
@@ -123,7 +122,7 @@ export class KeywordHelper {
   generateKey() {
     return UniqueReactKey();
   }
-} // end of KeywordHelper
+} // end of KeywordDefinition
 
 /*////////////////////////////////// API \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -131,7 +130,7 @@ export class KeywordHelper {
 
   AddKeywordHelper( KeywordConstructor )
     Adds a KeywordObj to the KEYWORD map, which maps keyword (string)
-    to KeywordHelper instances for lookup.
+    to KeywordDefinition instances for lookup.
 
   CompileTemplate( source ) returns IAgentTemplate
     Given gemscript source, compiles and returns template program arrays that
@@ -154,7 +153,7 @@ function AddKeywordHelper(KeywordConstructor: IKeywordConstructor) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** compile an array of lines of code */
-function CompileTemplate(source: SRCLine[]): IAgentTemplate {
+function CompileTemplate(source: ScriptUnit[]): IAgentTemplate {
   const output = {
     template_define: [],
     template_defaults: [],
@@ -188,33 +187,18 @@ function CompileTemplate(source: SRCLine[]): IAgentTemplate {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of source lines, return JSX keyword components for each line
- *  as rendered by the corresponding KeywordHelper object
+ *  as rendered by the corresponding KeywordDefinition object
  */
-function RenderSource(source: SRCLine[]): any[] {
+function RenderSource(source: ScriptUnit[]): any[] {
   const sourceJSX = [];
   source.forEach((srcLine, index) => {
+    console.log(index, srcLine);
     const keyword = srcLine[0];
     const cmdObj = KEYWORDS.get(keyword);
     if (!cmdObj) throw Error(`can't render ${index}:${keyword}`);
     sourceJSX.push(cmdObj.render(index, srcLine));
   });
   return sourceJSX;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given a UIUpdate object from the UI, return an object through the
- *  KeywordHelper object.
- *  NOTE: the ideal format for UIUpdate would be to return the correct
- *  array, but Typescript has a bug with inferring destructured arrays.
- */
-function RegenSRCLine(updata: UIUpdate): SRCUpdate {
-  const { index, keyword, state } = updata;
-  const cmdObj = KEYWORDS.get(keyword);
-  if (!cmdObj) throw Error(`UIUpdate ERR: "${keyword}" unknown`);
-  // typescript has a bug where it returns the wrong type info
-  // so we're working around it until Typescript 4.1 is available
-  // return [index, cmdObj.serialize(state)];
-  const srcLine = cmdObj.serialize(state);
-  return { index, srcLine };
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -223,7 +207,6 @@ function RegenSRCLine(updata: UIUpdate): SRCUpdate {
 export const KEYGEN = {
   CompileTemplate,
   RenderSource,
-  RegenSRCLine,
   AddKeywordHelper,
   UniqueReactKey
 };

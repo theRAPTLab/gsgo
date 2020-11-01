@@ -671,7 +671,8 @@ parse.toString = function () {
 
 /** HACKED ON EXTENSIO *****************************************************/
 
-function parseToSource(line) {
+function parseToSource(expr) {
+  const line = expr.trim();
   const source = [];
   const typeHandlers = {
     'Compound': node => node.body,
@@ -679,17 +680,23 @@ function parseToSource(line) {
     'Identifier': node => node.name,
     'BinaryExpression': node => `expr{${node.raw}}`
   };
-  const cnode = parse(line);
-  if (cnode.type !== 'Compound') throw Error(`unexpected type ${cnode.type}`);
-  if (!cnode.body) throw Error(`missing 'body' prop in ${cnode.type} node`);
-  if (!Array.isArray(cnode.body)) throw Error("'body' prop is not an array");
-  cnode.body.forEach((node, index) => {
-    console.log(index, 'processing', node);
-    const type = node.type;
+
+  function processNode(n) {
+    const type = n.type;
     const func = typeHandlers[type];
     if (!func) throw Error(`unhandled node type '${type}'`);
-    source.push(func(node));
-  });
+    source.push(func(n));
+  }
+
+  if (!line.length) return source;
+  const cnode = parse(line);
+  // if it's a compound node, body contains an array of expressions
+  if (cnode.type === 'Compound') {
+    if (!cnode.body) throw Error(`missing 'body' prop in ${cnode.type} node`);
+    if (!Array.isArray(cnode.body)) throw Error("'body' prop is not an array");
+    cnode.body.forEach((node, index) => processNode(node));
+  } else processNode(cnode);
+
   return source;
 }
 

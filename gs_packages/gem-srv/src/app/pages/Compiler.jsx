@@ -12,7 +12,9 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import KEYGEN from 'modules/tests/test-keygen';
+import { KEYGEN, ScriptUnit, UIUpdate } from 'lib/class-kw-definition';
+import TESTKEYGEN from 'modules/tests/test-keygen';
+import { parseToSource } from 'lib/util-source-parser';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -24,7 +26,7 @@ const HCON = UR.HTMLConsoleUtil('console-left');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const source = `
+const defaultSource = `
 defTemplate Bee
 defProp nectarAmount GSNumber 0
 useFeature FishCounter
@@ -42,9 +44,11 @@ class Compiler extends React.Component {
   constructor() {
     super();
     // prep
-    this.state = { jsx: <div />, source };
+    this.state = { jsx: <div />, source: defaultSource };
     // bind
     this.dataUpdate = this.dataUpdate.bind(this);
+    this.doReact = this.doReact.bind(this);
+    this.updateText = this.updateText.bind(this);
     // hook
     UR.RegisterMessage('SCRIPT_UI_RENDER', this.dataUpdate);
   }
@@ -52,9 +56,9 @@ class Compiler extends React.Component {
   componentDidMount() {
     document.title = 'GEMSTEP';
     // run test installed by converter.ts
-    KEYGEN.TestListSource();
-    KEYGEN.TestSourceToProgram();
-    KEYGEN.TestSourceToUI();
+    TESTKEYGEN.TestListSource();
+    TESTKEYGEN.TestSourceToProgram();
+    TESTKEYGEN.TestSourceToUI();
   }
 
   componentWillUnmount() {
@@ -66,6 +70,43 @@ class Compiler extends React.Component {
     console.log('update');
     this.setState({ jsx });
   }
+
+  updateText(evt) {
+    this.setState({ source: evt.target.value });
+  }
+  /**/
+  /**/
+  /**/
+  /**/
+  /**/
+  doReact() {
+    console.group(...PR('doreact'));
+    //
+    console.log('0. grab source from text field');
+    //
+    console.log('1. convert source to array of lines');
+    const sourceStrings = this.state.source.split('\n'); // pc line endings would screw this
+    // result is strings...need to break them into sourceLines [keyword, ...args]
+    console.log('2. convert sourceStrings to sourceLines');
+    const sourceLines = [];
+    sourceStrings.forEach(str => {
+      str = str.trim();
+      if (str.length) sourceLines.push(parseToSource(str));
+    });
+    console.log('sourceLines', sourceLines);
+    console.log('3. process array of sourceLines using KEYGEN.RenderSource');
+    const jsx = KEYGEN.RenderSource(sourceLines);
+    console.log('jsx', jsx);
+    console.log('4. use KEYGEN to shove JSX into React side of things.');
+    UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+    console.groupEnd();
+  }
+  /**/
+  /**/
+  /**/
+  /**/
+  /**/
+  /**/
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
@@ -83,13 +124,14 @@ class Compiler extends React.Component {
           <span style={{ fontSize: '32px' }}>COMPILER/TEST</span>
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <h3>SCRIPT PROTO</h3>
+          <h3>DEVELOPER TEST INPUT</h3>
           <textarea
             rows={20}
             style={{ boxSizing: 'border-box', width: '100%' }}
-            defaultValue="tbd"
+            defaultValue={this.state.source}
+            onChange={this.updateText}
           />
-          <button type="button" name="toReact">
+          <button type="button" name="toReact" onClick={this.doReact}>
             Source To React
           </button>{' '}
           <button type="button" name="toSMC">
