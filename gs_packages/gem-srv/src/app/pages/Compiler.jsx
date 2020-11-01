@@ -9,9 +9,10 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'modules/sim/script/keyword-dict';
-import TESTKEYGEN from 'modules/tests/test-keygen';
-import { parseToSource } from 'lib/util-source-parser';
+import * as KEYDICT from 'script/keyword-dict';
+import AgentTemplate from 'lib/class-agent-template';
+
+// import TESTKEYGEN from 'modules/tests/test-keygen';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -20,8 +21,9 @@ import { useStylesHOC } from './page-styles';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('COMPILER', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
+const DBG = false;
 
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// HARCODED SOURCE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultSource = `
 defTemplate Bee
@@ -42,68 +44,71 @@ class Compiler extends React.Component {
     super();
     // prep
     this.state = { jsx: <div />, source: defaultSource };
+    this.source = [];
     // bind
-    this.dataUpdate = this.dataUpdate.bind(this);
-    this.doReact = this.doReact.bind(this);
-    this.updateText = this.updateText.bind(this);
-    // hook
-    UR.RegisterMessage('SCRIPT_UI_RENDER', this.dataUpdate);
+    this.btnToReact = this.btnToReact.bind(this);
+    this.btnToSource = this.btnToSource.bind(this);
+    this.btnToSMC = this.btnToSMC.bind(this);
+    this.uiRenderScriptWizard = this.uiRenderScriptWizard.bind(this);
+    this.uiScriptWizardChanged = this.uiScriptWizardChanged.bind(this);
+    this.updateSourceText = this.updateSourceText.bind(this);
+    // hooks
+    UR.RegisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
+    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
   }
 
   componentDidMount() {
     document.title = 'GEMSTEP';
-    // run test installed by converter.ts
-    TESTKEYGEN.TestListSource();
-    TESTKEYGEN.TestSourceToProgram();
-    TESTKEYGEN.TestSourceToUI();
+    // TESTKEYGEN.TestListSource();
+    // TESTKEYGEN.TestSourceToProgram();
+    // TESTKEYGEN.TestSourceToUI();
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.dataUpdate);
+    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
+    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
   }
 
-  dataUpdate(jsx) {
-    console.log('update');
+  // called by ScriptWizard component change
+  uiScriptWizardChanged(updata) {
+    const { index, scriptUnit } = updata;
+    this.source[index] = scriptUnit;
+    console.log(...PR(`SOURCE[${index}] updated:`, this.source[index]));
+  }
+
+  // called by message 'SCRIPT_UI_RENDER'
+  uiRenderScriptWizard(jsx) {
     this.setState({ jsx });
   }
 
-  updateText(evt) {
+  // echo typing in SourceText to state
+  updateSourceText(evt) {
     this.setState({ source: evt.target.value });
   }
-  /**/
-  /**/
-  /**/
-  /**/
-  /**/
-  doReact() {
-    console.group(...PR('doreact'));
-    //
-    console.log('0. grab source from text field');
-    //
-    console.log('1. convert source to array of lines');
-    const sourceStrings = this.state.source.split('\n'); // pc line endings would screw this
-    // result is strings...need to break them into sourceLines [keyword, ...args]
-    console.log('2. convert sourceStrings to sourceLines');
-    const sourceLines = [];
-    sourceStrings.forEach(str => {
-      str = str.trim();
-      if (str.length) sourceLines.push(parseToSource(str));
-    });
-    console.log('sourceLines', sourceLines);
-    console.log('3. process array of sourceLines using KEYGEN.RenderSource');
-    const jsx = KEYDICT.RenderSource(sourceLines);
-    console.log('jsx', jsx);
-    console.log('4. use KEYGEN to shove JSX into React side of things.');
+
+  // compile source to jsx
+  btnToReact() {
+    if (DBG) console.group(...PR('toReact'));
+    this.source = KEYDICT.ScriptifyText(this.state.source);
+    const jsx = KEYDICT.RenderSource(this.source);
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
-    console.groupEnd();
+    if (DBG) console.groupEnd();
   }
-  /**/
-  /**/
-  /**/
-  /**/
-  /**/
-  /**/
+
+  // compile jsx back to source
+  btnToSource() {
+    if (DBG) console.group(...PR('toSource'));
+    this.setState({ source: KEYDICT.DecompileSource(this.source) });
+    if (DBG) console.groupEnd();
+  }
+
+  // compile source to smc
+  btnToSMC() {
+    if (DBG) console.group(...PR('toSMC'));
+
+    if (DBG) console.groupEnd();
+  }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
@@ -121,23 +126,26 @@ class Compiler extends React.Component {
           <span style={{ fontSize: '32px' }}>COMPILER/TEST</span>
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <h3>DEVELOPER TEST INPUT</h3>
+          <h3>DEVELOPER SOURCE TESTER</h3>
           <textarea
             rows={20}
             style={{ boxSizing: 'border-box', width: '100%' }}
-            defaultValue={this.state.source}
-            onChange={this.updateText}
+            value={this.state.source}
+            onChange={this.updateSourceText}
           />
-          <button type="button" name="toReact" onClick={this.doReact}>
+          <button type="button" name="toReact" onClick={this.btnToReact}>
             Source To React
           </button>{' '}
-          <button type="button" name="toSMC">
+          <button type="button" name="toSMC" onClick={this.btnToSMC}>
             Source To SMC
           </button>
         </div>
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
-          <h3>UI PROTO</h3>
+          <h3>SCRIPT WIZARD</h3>
           {this.state.jsx}
+          <button type="button" name="toSource" onClick={this.btnToSource}>
+            React to Source
+          </button>
         </div>
         <div
           id="console-bottom"

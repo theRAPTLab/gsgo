@@ -1,35 +1,28 @@
-import { IKeyword, ScriptUnit, Script } from 'lib/t-script';
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-class AgentTemplate {
-  source: Script;
+  AgentTemplate class holds an instance of a particular script and associated
+  template program
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+/// load bases
+import { ScriptUnit } from 'lib/t-script';
+import { TProgram } from 'lib/t-smc';
+/// load all keywords for template use
+import 'script/keywords/defTemplate';
+import 'script/keywords/defProp';
+import 'script/keywords/useFeature';
+import * as KEYDICT from 'script/keyword-dict';
+
+export class AgentTemplate {
+  script: ScriptUnit[];
+  program: TProgram;
   constructor() {
-    this.source = []; // array of keywordArr source
+    this.script = []; // array of ScriptUnits
   }
-  /** convert exprStr to keywordArr */
-  parseString(exprStr: string): ScriptUnit {
-    console.log('convert a string into a keyword array');
-    return ['keyword'];
-  }
-  // convert updata to keywordArr + index
-  // this is a UI interface receiving a specific message from the ui
-  convertStateToKeywordArr(updata, index) {
-    console.log('convert incoming update data to a keyword array');
-    return ['keywordArr', index];
-  }
-
-  // compile the source to template
-  compileTemplate() {
-    console.log('compiling this.source to templates');
-  }
-
-  // given source, update it
-  renderSource() {
-    console.log('return sourceJSX');
-  }
-
-  updateSource(updata) {
-    console.log('update the source through serialize of object');
-  }
-
   //
 }
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see above for exports

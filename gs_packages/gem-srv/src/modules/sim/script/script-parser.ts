@@ -1,9 +1,10 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  SourceString to SourceLine
-  Given a GEMscript source string, create a GEMscript sourceLine, which is an
-  array of arrays of form ['keyword',...args:any].
-  The source array is used to drive the actual compilation into opcodes
+  SourceString to ScriptObject
+
+  Given a GEMscript source string, create a GEMscript ScriptUnit, which is an
+  array of arrays of form ['keyword',...args:any]. The source array is used to
+  drive the actual compilation into opcodes
 
   This code is ported from jsep and adapted to produce our desired output
   https://ericsmekens.github.io/jsep/
@@ -21,6 +22,8 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable one-var */
 /* eslint-disable no-var */
+
+import { ScriptUnit } from 'lib/t-script';
 
 const COMPOUND = 'Compound';
 const IDENTIFIER = 'Identifier';
@@ -144,7 +147,7 @@ const isIdentifierPart = function (ch) {
 // Parsing
 // -------
 // `expr` is a string with the passed in expression
-function parse(expr) {
+function Parse(expr) {
   // `index` stores the character number we are currently at while `length` is a constant
   // All of the gobbles below will modify `index` as we move along
   let index = 0;
@@ -664,14 +667,14 @@ function parse(expr) {
 }
 
 // To be filled in by the template
-parse.version = '<%= version %>';
-parse.toString = function () {
-  return 'JavaScript Expression Parser (JSEP) v' + parse.version;
+Parse.version = '<%= version %>';
+Parse.toString = function () {
+  return 'JavaScript Expression Parser (JSEP) v' + Parse.version;
 };
 
-/** HACKED ON EXTENSIO *****************************************************/
-
-function parseToSource(expr) {
+/** HACKED ON EXTENSION *****************************************************/
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ScriptifyString(expr): ScriptUnit[] {
   const line = expr.trim();
   const source = [];
   const typeHandlers = {
@@ -689,7 +692,7 @@ function parseToSource(expr) {
   }
 
   if (!line.length) return source;
-  const cnode = parse(line);
+  const cnode = Parse(line);
   // if it's a compound node, body contains an array of expressions
   if (cnode.type === 'Compound') {
     if (!cnode.body) throw Error(`missing 'body' prop in ${cnode.type} node`);
@@ -699,5 +702,18 @@ function parseToSource(expr) {
 
   return source;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ScriptifyText(text: string): ScriptUnit[] {
+  /* HACK pc line endings would screw this, need more robust check */
+  const sourceStrings = text.split('\n');
+  const scriptUnits = [];
+  sourceStrings.forEach(str => {
+    str = str.trim();
+    if (str.length) scriptUnits.push(ScriptifyString(str));
+  });
+  return scriptUnits;
+}
 
-export { parse, parseToSource };
+/// EXPORT ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { Parse, ScriptifyString, ScriptifyText };

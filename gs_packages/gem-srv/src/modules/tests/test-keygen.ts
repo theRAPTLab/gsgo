@@ -5,11 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'modules/sim/script/keyword-dict';
+import * as KEYDICT from 'script/keyword-dict';
 import { ScriptUnit, ScriptUpdate } from 'lib/t-script';
-import 'modules/sim/script/keywords/defTemplate';
-import 'modules/sim/script/keywords/defProp';
-import 'modules/sim/script/keywords/useFeature';
 import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

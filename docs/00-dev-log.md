@@ -286,7 +286,18 @@ this adds keyword helpers and creates a source.
 
 eval/parse for script-to-jsx and jsx-to-source
 
+* [x] source-to-react uses parseToSource in util-source-parser
+* [x] move modules
+* [x] consolidate keyword-dict as main module
+* [x] keyword-dict export util-parser, util-evaluate
+* [x] update Compiler to use only KeyDict
 
+We have the basic round-trip installed now!
+
+**what's next?**
+
+* [ ] compile SMC in UI
+* [ ] AgentTemplate hookup
 
 
 

@@ -1,12 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  test expression engine to see how it works
+  test expression engine and parser to see how it works
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as EV from 'lib/util-expression';
-import { parse } from 'lib/util-source-parser';
+import * as EV from 'script/script-evaluator';
+import { Parse, ScriptifyString } from 'script/script-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,7 +17,7 @@ const EX_DECOMPILE = true;
 /// MAIN HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Eval(expr: string, context: {}) {
-  const ast = EV.parse(expr);
+  const ast = EV.Parse(expr);
   console.log(...PR('AST', ast));
   const val = EV.eval(ast, context);
   console.log(...PR('RETVAL:', val));
@@ -36,7 +36,7 @@ function Compile(expr: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** print out the results of a parsed line */
 function EmitAST(line) {
-  const ast = parse(line);
+  const ast = Parse(line);
   console.groupCollapsed(`AST from '${line}'`);
   if (ast.type === 'Compound') {
     ast.body.forEach((node, index) => {
@@ -45,37 +45,12 @@ function EmitAST(line) {
   } else console.log('Unknown type', ast.type);
   console.groupEnd();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is available as parseToSource() in `util-source-parser` */
-function ParseToSource(line) {
-  const source = [];
-  const typeHandlers = {
-    'Compound': node => node.body,
-    'Literal': node => node.value,
-    'Identifier': node => node.name,
-    'BinaryExpression': node => `expr{${node.raw}}`
-  };
-  const cnode = parse(line);
-  if (cnode.type !== 'Compound') throw Error(`unexpected type ${cnode.type}`);
-  if (!cnode.body) throw Error(`missing 'body' prop in ${cnode.type} node`);
-  if (!Array.isArray(cnode.body)) throw Error("'body' prop is not an array");
-  console.groupCollapsed(`ParseToSource from '${line}'`);
-  cnode.body.forEach(node => {
-    console.log(node);
-    const t = node.type;
-    const f = typeHandlers[t];
-    if (!f) throw Error(`unhandled node type '${t}'`);
-    source.push(f(node));
-  });
-  console.groupEnd();
-  return source;
-}
 
 /// INTERMEDIATE TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (EX_DECOMPILE) {
   let p = 'setPropValue health 1 + this.pollen; prop "string" 10';
-  const source = ParseToSource(p);
+  const source = ScriptifyString(p);
   console.log(...PR('decompiled', source));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,5 +92,5 @@ if (EX_PARSE) {
 };
 /** return the AST from the line */
 (window as any).getExprAST = (expr: string = '') => {
-  return parse(expr);
+  return Parse(expr);
 };

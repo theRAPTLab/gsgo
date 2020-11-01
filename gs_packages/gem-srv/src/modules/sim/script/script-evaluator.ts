@@ -14,8 +14,6 @@
 /* eslint-disable func-names */
 // import jsep from 'jsep';
 
-import { parse as jsep } from 'lib/util-source-parser';
-
 /**
  * Evaluation code from JSEP project, under MIT License.
  * Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
@@ -128,8 +126,6 @@ function evaluate(node, context) {
   }
 }
 
-function compile(expression) {
-  return evaluate.bind(null, jsep(expression));
-}
-
-export { jsep as parse, evaluate as eval, compile };
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { evaluate as Evaluate };
