@@ -7,14 +7,14 @@
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
+import * as DATACORE from 'modules/runtime-datacore';
+import * as RENDERER from 'modules/render/api-render';
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import SETTINGS from 'config/app.settings';
-import * as DATACORE from 'modules/runtime-datacore';
-import * as RENDERER from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
 const PR = UR.PrefixUtil('Generator', 'TagGreen');

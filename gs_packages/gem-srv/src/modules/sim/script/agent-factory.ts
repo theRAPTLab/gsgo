@@ -12,7 +12,7 @@ import { TProgram } from 'lib/t-smc';
 import 'script/keywords/defTemplate';
 import 'script/keywords/defProp';
 import 'script/keywords/useFeature';
-import * as KEYDICT from 'script/keyword-dict';
+import * as KeywordFactory from 'script/keyword-dict';
 
 export class AgentTemplate {
   script: ScriptUnit[];
@@ -23,6 +23,8 @@ export class AgentTemplate {
   //
 }
 
+const AgentFactory = {};
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see above for exports
+export { AgentFactory, KeywordFactory };

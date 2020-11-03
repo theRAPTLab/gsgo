@@ -51,28 +51,28 @@ DOBJ_SYNC_AGENT.setMapFunctions({
 /// CONSOLE-LEFT STATUS FAKERY ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// CONSOLE
-const HCON = UR.HTMLConsoleUtil('console-left');
-const FCON = UR.HTMLConsoleUtil('console-bottom');
+let HCON;
+let FCON;
 let X = 0;
 let INC = 1;
 const ZIP = '=@=';
 const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
-UR.SystemHook('SIM/VIS_UPDATE', frameCount => {
-  HCON.plot(`framecount: ${frameCount}`, 1);
-  if (frameCount % 6) return;
-  HCON.plot(ZIP_BLNK, 3, X);
-  X += INC;
-  HCON.plot(ZIP, 3, X);
-  const XS = `${X}`.padStart(3, ' ');
-  HCON.plot(`X: ${XS}`, 5);
-  if (X < 1) INC = 1;
-  if (X > 24) INC = -1;
-  if (Math.random() > 0.5) {
-    HCON.gotoRow(6);
-    HCON.print(`dummy datalog: ${Math.random().toFixed(2)}`);
-  }
-  if (Math.random() > 0.95) HCON.clear(6);
-});
+// UR.SystemHook('SIM/VIS_UPDATE', frameCount => {
+//   HCON.plot(`framecount: ${frameCount}`, 1);
+//   if (frameCount % 6) return;
+//   HCON.plot(ZIP_BLNK, 3, X);
+//   X += INC;
+//   HCON.plot(ZIP, 3, X);
+//   const XS = `${X}`.padStart(3, ' ');
+//   HCON.plot(`X: ${XS}`, 5);
+//   if (X < 1) INC = 1;
+//   if (X > 24) INC = -1;
+//   if (Math.random() > 0.5) {
+//     HCON.gotoRow(6);
+//     HCON.print(`dummy datalog: ${Math.random().toFixed(2)}`);
+//   }
+//   if (Math.random() > 0.95) HCON.clear(6);
+// });
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,8 +107,6 @@ function AgentUpdate(frameTime) {
   DOBJ_SYNC_AGENT.mapObjects();
   const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
-  FCON.plot(`GENERATOR created ${dobjs.length} DOBJs from Agents`, 0);
-  FCON.plot(`NET:DISPLAY_LIST message sent ${dobjs.length} DOBJs`, 3);
   UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

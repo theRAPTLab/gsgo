@@ -296,7 +296,7 @@ function makeHTMLConsole(divId, row = 0, col = 0) {
   let buffer = [];
   if (typeof divId !== 'string') throw Error('bad id');
   if (!document.getElementById(divId)) {
-    console.log(...ERP(`id '${divId}' doesn't exist`));
+    console.warn(...ERP(`id '${divId}' doesn't exist`));
     return {
       print: () => {},
       plot: () => {},

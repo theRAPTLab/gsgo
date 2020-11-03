@@ -8,12 +8,10 @@ import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
 import Visual, { MakeDraggable } from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
-import * as DATACORE from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('RENDER');
-const HCON = UR.HTMLConsoleUtil('console-bottom');
 /// PIXI & HTML DOM
 let PIXI_APP; // PixiJS instance
 let PIXI_DIV; // PixiJS root div element

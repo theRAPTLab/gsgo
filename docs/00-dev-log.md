@@ -306,7 +306,7 @@ Hooked up SourceToSMC. Now need to make it actually do something.
 ## NOV 03 TUE - Make the SOURCE/GUI tab one pane
 
 * [x] make source/wizard overlap each other
-* [ ] show rendering area
+* [x] show rendering area
 * [ ] make one instance
 
 

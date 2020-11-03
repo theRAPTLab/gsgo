@@ -9,10 +9,12 @@ import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'script/keyword-dict';
-import AgentTemplate from 'lib/class-agent-template';
 
-// import TESTKEYGEN from 'modules/tests/test-keygen';
+/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
+import * as SIM from 'modules/sim/api-sim';
+import * as DATACORE from 'modules/runtime-datacore';
+import * as RENDERER from 'modules/render/api-render';
+import { AgentFactory, KeywordFactory } from 'script/agent-factory';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -20,8 +22,24 @@ import { useStylesHOC } from './page-styles';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('COMPILER', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('console-left');
 const DBG = true;
+
+/// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook(
+  'UR/LOAD_ASSETS',
+  () =>
+    new Promise((resolve, reject) => {
+      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
+      (async () => {
+        let map = await DATACORE.ASSETS_LoadManifest('static/assets.json');
+        if (DBG) console.log(...PR('ASSETS LOADED'));
+        SIM.StartSimulation();
+        if (DBG) console.log(...PR('SIMULATION STARTED'));
+      })();
+      resolve();
+    })
+);
 
 /// HARCODED SOURCE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,9 +61,9 @@ class Compiler extends React.Component {
   constructor() {
     super();
     // prep
-    this.source = KEYDICT.ScriptifyText(defaultSource);
+    this.source = KeywordFactory.ScriptifyText(defaultSource);
     this.state = {
-      jsx: KEYDICT.RenderSource(this.source),
+      jsx: KeywordFactory.RenderSource(this.source),
       source: defaultSource,
       tabIndex: 0
     };
@@ -64,9 +82,13 @@ class Compiler extends React.Component {
 
   componentDidMount() {
     document.title = 'GEMSTEP';
-    // TESTKEYGEN.TestListSource();
-    // TESTKEYGEN.TestSourceToProgram();
-    // TESTKEYGEN.TestSourceToUI();
+    // start URSYS
+    UR.SystemConfig({ autoRun: true });
+    // initialize renderer
+    const renderRoot = document.getElementById('root-renderer');
+    RENDERER.SetGlobalConfig({ actable: true });
+    RENDERER.Init(renderRoot);
+    RENDERER.HookResize(window);
   }
 
   componentWillUnmount() {
@@ -100,8 +122,8 @@ class Compiler extends React.Component {
   // compile source to jsx
   btnToReact() {
     if (DBG) console.group(...PR('toReact'));
-    this.source = KEYDICT.ScriptifyText(this.state.source);
-    const jsx = KEYDICT.RenderSource(this.source);
+    this.source = KeywordFactory.ScriptifyText(this.state.source);
+    const jsx = KeywordFactory.RenderSource(this.source);
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
     if (DBG) console.groupEnd();
   }
@@ -109,15 +131,15 @@ class Compiler extends React.Component {
   // compile jsx back to source
   btnToSource() {
     if (DBG) console.group(...PR('toSource'));
-    this.setState({ source: KEYDICT.DecompileSource(this.source) });
+    this.setState({ source: KeywordFactory.DecompileSource(this.source) });
     if (DBG) console.groupEnd();
   }
 
   // compile source to smc
   btnToSMC() {
     if (DBG) console.group(...PR('toSMC'));
-    this.source = KEYDICT.ScriptifyText(this.state.source);
-    const template = KEYDICT.CompileSource(this.source);
+    this.source = KeywordFactory.ScriptifyText(this.state.source);
+    const template = KeywordFactory.CompileSource(this.source);
     const { init, conditions, defaults, define } = template;
     if (init.length) console.log(...PR('instance'), init);
     if (define.length) console.log(...PR('define'), define);
@@ -183,7 +205,7 @@ class Compiler extends React.Component {
           <h3>DEVELOPER SOURCE TESTER</h3>
           {tab}
         </div>
-        <div id="console-right" className={clsx(classes.cell, classes.right)}>
+        <div id="root-renderer" className={classes.main}>
           world view
         </div>
         <div
