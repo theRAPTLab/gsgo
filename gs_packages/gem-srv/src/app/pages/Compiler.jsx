@@ -43,8 +43,12 @@ class Compiler extends React.Component {
   constructor() {
     super();
     // prep
-    this.state = { jsx: <div />, source: defaultSource };
-    this.source = [];
+    this.source = KEYDICT.ScriptifyText(defaultSource);
+    this.state = {
+      jsx: KEYDICT.RenderSource(this.source),
+      source: defaultSource,
+      tabIndex: 0
+    };
     // bind
     this.btnToReact = this.btnToReact.bind(this);
     this.btnToSource = this.btnToSource.bind(this);
@@ -52,6 +56,7 @@ class Compiler extends React.Component {
     this.uiRenderScriptWizard = this.uiRenderScriptWizard.bind(this);
     this.uiScriptWizardChanged = this.uiScriptWizardChanged.bind(this);
     this.updateSourceText = this.updateSourceText.bind(this);
+    this.selectTab = this.selectTab.bind(this);
     // hooks
     UR.RegisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
     UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
@@ -85,6 +90,11 @@ class Compiler extends React.Component {
   // echo typing in SourceText to state
   updateSourceText(evt) {
     this.setState({ source: evt.target.value });
+  }
+
+  // handle the "tabs"
+  selectTab(evt) {
+    this.setState({ tabIndex: Number(evt.target.value) });
   }
 
   // compile source to jsx
@@ -122,17 +132,11 @@ class Compiler extends React.Component {
    */
   render() {
     const { classes } = this.props;
-    return (
-      <div className={classes.root} style={{ gridTemplateColumns: '50% 50%' }}>
-        <div
-          id="console-top"
-          className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 2' }}
-        >
-          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span>
-        </div>
-        <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <h3>DEVELOPER SOURCE TESTER</h3>
+    const index = this.state.tabIndex;
+    let tab = <p>unknown tab {index}</p>;
+    if (index === 0) {
+      tab = (
+        <div id="script-text">
           <textarea
             rows={20}
             style={{ boxSizing: 'border-box', width: '100%' }}
@@ -146,12 +150,41 @@ class Compiler extends React.Component {
             Source To SMC
           </button>
         </div>
-        <div id="console-right" className={clsx(classes.cell, classes.right)}>
+      );
+    }
+    if (index === 1) {
+      tab = (
+        <div id="script-wizard">
           <h3>SCRIPT WIZARD</h3>
           {this.state.jsx}
           <button type="button" name="toSource" onClick={this.btnToSource}>
             React to Source
           </button>
+        </div>
+      );
+    }
+    //
+    return (
+      <div className={classes.root} style={{ gridTemplateColumns: '25% 70%' }}>
+        <div
+          id="console-top"
+          className={clsx(classes.cell, classes.top)}
+          style={{ gridColumnEnd: 'span 2' }}
+        >
+          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span>
+        </div>
+        <div id="console-left" className={clsx(classes.cell, classes.left)}>
+          <button type="button" onClick={this.selectTab} value={0}>
+            SOURCE
+          </button>
+          <button type="button" onClick={this.selectTab} value={1}>
+            WIZARD
+          </button>
+          <h3>DEVELOPER SOURCE TESTER</h3>
+          {tab}
+        </div>
+        <div id="console-right" className={clsx(classes.cell, classes.right)}>
+          world view
         </div>
         <div
           id="console-bottom"
