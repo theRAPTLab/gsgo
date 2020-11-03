@@ -159,6 +159,7 @@ class Compiler extends React.Component {
     if (index === 0) {
       tab = (
         <div id="script-text">
+          <h3>DEVELOPER SOURCE TESTER</h3>
           <textarea
             rows={20}
             style={{ boxSizing: 'border-box', width: '100%' }}
@@ -193,7 +194,8 @@ class Compiler extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span>
+          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span> UGLY DEVELOPER
+          MODE
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <button type="button" onClick={this.selectTab} value={0}>
@@ -202,7 +204,6 @@ class Compiler extends React.Component {
           <button type="button" onClick={this.selectTab} value={1}>
             WIZARD
           </button>
-          <h3>DEVELOPER SOURCE TESTER</h3>
           {tab}
         </div>
         <div id="root-renderer" className={classes.main}>
