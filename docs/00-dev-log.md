@@ -50,10 +50,10 @@
 * W1: fast compile. source-to-script/ui compilers.
 * W2: researched and integrated arithmetic expressions
 
-**SUMMARY S22 OCT 26 - NOV 01**
+**SUMMARY S22 OCT 26 - NOV 08**
 
-* W1: 
-* W2: 
+* W1: parser/tokenizer/evaluator, compiler/decompiler
+* W2:
 
 ---
 
@@ -298,6 +298,15 @@ We have the basic round-trip installed now!
 
 * [ ] compile SMC in UI
 * [ ] AgentTemplate hookup
+
+## NOV 02 MON - Look at SMC in UI
+
+Hooked up SourceToSMC. Now need to make it actually do something.
+
+* [ ] show rendering area
+* [ ] make one instance
+
+
 
 
 

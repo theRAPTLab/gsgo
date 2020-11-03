@@ -31,9 +31,9 @@ export class DefProp extends KeywordDef {
       `smc_defProp( ${propName}, ${propType}, ${initValue || '<defaultVal>'} )`
     );
     return {
-      template_define: progout,
-      template_defaults: [],
-      template_conditions: []
+      define: progout,
+      defaults: [],
+      conditions: []
     };
   }
 

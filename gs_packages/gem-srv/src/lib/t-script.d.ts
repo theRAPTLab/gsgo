@@ -20,10 +20,10 @@ export interface IKeyword {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
 export interface IAgentTemplate {
-  template_define?: TOpcode[];
-  template_defaults?: TOpcode[];
-  template_conditions?: TOpcode[];
-  agent_init?: TOpcode[];
+  define?: TOpcode[];
+  defaults?: TOpcode[];
+  conditions?: TOpcode[];
+  init?: TOpcode[];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UI update type sent by UI tp RegenSRCLine */

@@ -21,7 +21,7 @@ import { useStylesHOC } from './page-styles';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('COMPILER', 'TagBlue');
 const HCON = UR.HTMLConsoleUtil('console-left');
-const DBG = false;
+const DBG = true;
 
 /// HARCODED SOURCE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,7 +106,13 @@ class Compiler extends React.Component {
   // compile source to smc
   btnToSMC() {
     if (DBG) console.group(...PR('toSMC'));
-
+    this.source = KEYDICT.ScriptifyText(this.state.source);
+    const template = KEYDICT.CompileSource(this.source);
+    const { init, conditions, defaults, define } = template;
+    if (init.length) console.log(...PR('instance'), init);
+    if (define.length) console.log(...PR('define'), define);
+    if (defaults.length) console.log(...PR('defaults'), defaults);
+    if (conditions.length) console.log(...PR('conditions'), conditions);
     if (DBG) console.groupEnd();
   }
 

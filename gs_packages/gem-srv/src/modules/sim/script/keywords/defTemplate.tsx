@@ -80,9 +80,9 @@ export class DefTemplate extends KeywordDef {
       `smc_defTemplate( ${templateName}, ${baseTemplate || 'Agent'} )`
     );
     return {
-      template_define: progout,
-      template_defaults: [],
-      template_conditions: []
+      define: progout,
+      defaults: [],
+      conditions: []
     };
   }
 

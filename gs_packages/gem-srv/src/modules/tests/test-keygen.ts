@@ -45,13 +45,13 @@ function TestSourceToProgram(source = SOURCE) {
   // get the output
   const output = KEYDICT.CompileSource(source);
   //  print the output
-  output.template_define.forEach(
+  output.define.forEach(
     statement => DBG && console.log('definition:', statement)
   );
-  output.template_defaults.forEach(
+  output.defaults.forEach(
     statement => DBG && console.log('defaults:  ', statement)
   );
-  output.template_conditions.forEach(
+  output.conditions.forEach(
     statement => DBG && console.log('conditions:', statement)
   );
   return 'end test';

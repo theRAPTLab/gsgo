@@ -27,9 +27,9 @@ export class UseFeature extends KeywordDef {
     const progout = [];
     progout.push(`smc_useFeature( ${featureName} )`);
     return {
-      template_define: progout,
-      template_defaults: [],
-      template_conditions: []
+      define: progout,
+      defaults: [],
+      conditions: []
     };
   }
 

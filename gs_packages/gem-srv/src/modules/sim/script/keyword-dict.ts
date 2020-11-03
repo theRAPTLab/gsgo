@@ -42,10 +42,10 @@ function RegisterKeyword(Ctor: IKeywordCtor) {
 /** compile an array of ScriptUnit */
 function CompileSource(units: ScriptUnit[]): IAgentTemplate {
   const program = {
-    template_define: [],
-    template_defaults: [],
-    template_conditions: [],
-    agent_init: []
+    define: [],
+    defaults: [],
+    conditions: [],
+    init: []
   };
   // this has to look through the output to determine what to compile
   units.forEach(unit => {
@@ -58,15 +58,15 @@ function CompileSource(units: ScriptUnit[]): IAgentTemplate {
     const programs = cmdObj.compile(qbits); // qbits is the subsequent parameters
     if (DBG) console.log(unit, '->', programs);
     const {
-      template_define: define,
-      template_defaults: defaults,
-      template_conditions: cond,
-      agent_init: init
+      define: define,
+      defaults: defaults,
+      conditions: cond,
+      init: init
     } = programs;
-    if (define && define.length) program.template_define.push(...define);
-    if (defaults && defaults.length) program.template_defaults.push(...define);
-    if (cond && cond.length) program.template_conditions.push(...define);
-    if (init && init.length) program.agent_init.push(...define);
+    if (define && define.length) program.define.push(...define);
+    if (defaults && defaults.length) program.defaults.push(...define);
+    if (cond && cond.length) program.conditions.push(...define);
+    if (init && init.length) program.init.push(...define);
   });
   return program;
 }
