@@ -32,8 +32,10 @@ export type ScriptUpdate = {
   scriptUnit: ScriptUnit;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** a source line starts with keyword followed by variable number of args */
-export type ScriptUnit = [string, ...any[]];
+/** a source line starts with keyword followed by variable number of args.
+ *  an empty ScriptUnit is allowed also.
+ */
+export type ScriptUnit = [string?, ...any[]];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** sent by UI change handler after source is regeneraed through RegenSRCLine()
  */

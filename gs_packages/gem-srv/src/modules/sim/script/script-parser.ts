@@ -674,24 +674,27 @@ Parse.toString = function () {
 
 /** HACKED ON EXTENSION *****************************************************/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ScriptifyString(expr): ScriptUnit[] {
+function TokenizeToScriptUnit(expr): ScriptUnit {
   const line = expr.trim();
-  const source = [];
+  const unit = [];
   const typeHandlers = {
     'Compound': node => node.body,
     'Literal': node => node.value,
     'Identifier': node => node.name,
-    'BinaryExpression': node => `expr{${node.raw}}`
+    'BinaryExpression': node => `expr{${node.raw}}`,
+    'UnaryExpression': node => node.raw
   };
 
   function processNode(n) {
     const type = n.type;
     const func = typeHandlers[type];
-    if (!func) throw Error(`unhandled node type '${type}'`);
-    source.push(func(n));
+    if (!func) {
+      console.warn(`unknown node type '${type}'`, n);
+    }
+    unit.push(func(n));
   }
 
-  if (!line.length) return source;
+  if (!line.length) return unit;
   const cnode = Parse(line);
   // if it's a compound node, body contains an array of expressions
   if (cnode.type === 'Compound') {
@@ -700,20 +703,20 @@ function ScriptifyString(expr): ScriptUnit[] {
     cnode.body.forEach((node, index) => processNode(node));
   } else processNode(cnode);
 
-  return source;
+  return unit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ScriptifyText(text: string): ScriptUnit[] {
+function TokenizeToSource(text: string): ScriptUnit[] {
   /* HACK pc line endings would screw this, need more robust check */
   const sourceStrings = text.split('\n');
   const scriptUnits = [];
   sourceStrings.forEach(str => {
     str = str.trim();
-    if (str.length) scriptUnits.push(ScriptifyString(str));
+    if (str.length) scriptUnits.push(TokenizeToScriptUnit(str));
   });
   return scriptUnits;
 }
 
 /// EXPORT ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Parse, ScriptifyString, ScriptifyText };
+export { Parse, TokenizeToScriptUnit, TokenizeToSource };

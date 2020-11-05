@@ -6,7 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as EV from 'script/script-evaluator';
-import { Parse, ScriptifyString } from 'script/script-parser';
+import { Parse, TokenizeToScriptUnit } from 'script/script-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,7 +50,7 @@ function EmitAST(line) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (EX_DECOMPILE) {
   let p = 'setPropValue health 1 + this.pollen; prop "string" 10';
-  const source = ScriptifyString(p);
+  const source = TokenizeToScriptUnit(p);
   console.log(...PR('decompiled', source));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

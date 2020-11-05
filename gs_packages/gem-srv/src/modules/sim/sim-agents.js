@@ -10,19 +10,12 @@ import DisplayObject from 'lib/class-display-object';
 import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
-import {
-  TestAgentReset,
-  TestAgentSelect,
-  TestAgentProgram,
-  TestAgentUpdate,
-  TestAgentThink,
-  TestAgentExec
-} from 'modules/tests/agent-functions';
+import * as TEST from 'modules/tests/test-agents';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
-const DBG = false;
+const DBG = true;
 
 const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
   Constructor: DisplayObject,
@@ -78,12 +71,12 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
   if (DBG) console.log(...PR('should inspect mode and change agent settings'));
-  TestAgentSelect();
+  TEST.TestAgentSelect();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
   if (DBG) console.groupCollapsed(...PR('Programming Test Agents'));
-  TestAgentProgram();
+  TEST.TestAgentProgram();
   if (DBG) console.groupEnd();
 }
 
@@ -91,7 +84,7 @@ function AgentProgram() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
   // execute agent programs
-  TestAgentUpdate(frameTime);
+  TEST.TestAgentUpdate(frameTime);
 
   // TEMP HACK: force the agents to move outside of programming
   // by diddling their properties directly
@@ -111,16 +104,16 @@ function AgentUpdate(frameTime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  TestAgentThink(frameTime);
+  TEST.TestAgentThink(frameTime);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  TestAgentExec(frameTime);
+  TEST.TestAgentExec(frameTime);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
   if (DBG) console.log(...PR('should reset all agents'));
-  TestAgentReset(frameTime);
+  TEST.TestAgentReset(frameTime);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

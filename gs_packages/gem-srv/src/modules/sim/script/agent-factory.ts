@@ -12,6 +12,7 @@ import { TProgram } from 'lib/t-smc';
 import 'script/keywords/defTemplate';
 import 'script/keywords/defProp';
 import 'script/keywords/useFeature';
+import 'script/keywords/dbgError';
 import * as KeywordFactory from 'script/keyword-dict';
 
 export class AgentTemplate {

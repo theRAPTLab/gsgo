@@ -40,17 +40,17 @@ UR.SystemHook(
       resolve();
     })
 );
-
 /// HARCODED SOURCE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultSource = `
-defTemplate Bee
-defProp nectarAmount GSNumber 0
-useFeature FishCounter
-useFeature BeanCounter
-endTemplate
-defTemplate HoneyBee Bee
-defProp honeySacks GSNumber 0
+defTemplate Bunny
+defProp spriteFrame GSNumber random 0 3
+defProp currentHealth GSNumber 100
+defProp isAlive GSBoolean true
+useFeature Movement
+prop x setTo (50)
+prop y setTo (-50)
+prop skin setTo 'bunny.json'
 endTemplate
 `.trim();
 
@@ -61,7 +61,7 @@ class Compiler extends React.Component {
   constructor() {
     super();
     // prep
-    this.source = KeywordFactory.ScriptifyText(defaultSource);
+    this.source = KeywordFactory.TokenizeToSource(defaultSource);
     this.state = {
       jsx: KeywordFactory.RenderSource(this.source),
       source: defaultSource,
@@ -122,7 +122,7 @@ class Compiler extends React.Component {
   // compile source to jsx
   btnToReact() {
     if (DBG) console.group(...PR('toReact'));
-    this.source = KeywordFactory.ScriptifyText(this.state.source);
+    this.source = KeywordFactory.TokenizeToSource(this.state.source);
     const jsx = KeywordFactory.RenderSource(this.source);
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
     if (DBG) console.groupEnd();
@@ -138,7 +138,7 @@ class Compiler extends React.Component {
   // compile source to smc
   btnToSMC() {
     if (DBG) console.group(...PR('toSMC'));
-    this.source = KeywordFactory.ScriptifyText(this.state.source);
+    this.source = KeywordFactory.TokenizeToSource(this.state.source);
     const template = KeywordFactory.CompileSource(this.source);
     const { init, conditions, defaults, define } = template;
     if (init.length) console.log(...PR('instance'), init);
@@ -162,7 +162,10 @@ class Compiler extends React.Component {
           <h3>DEVELOPER SOURCE TESTER</h3>
           <textarea
             rows={20}
-            style={{ boxSizing: 'border-box', width: '100%' }}
+            style={{
+              boxSizing: 'border-box',
+              width: '100%'
+            }}
             value={this.state.source}
             onChange={this.updateSourceText}
           />

@@ -17,6 +17,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import React from 'react';
 import { IKeyword, IAgentTemplate, ScriptUnit } from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

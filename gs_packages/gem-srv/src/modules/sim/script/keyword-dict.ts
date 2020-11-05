@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { ScriptUnit, IAgentTemplate, IKeyword, IKeywordCtor } from 'lib/t-script';
-import { Parse, ScriptifyString, ScriptifyText } from './script-parser';
+import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -53,19 +53,13 @@ function CompileSource(units: ScriptUnit[]): IAgentTemplate {
     // extract keyword from front of qbits
     let cmdName = qbits.shift();
     // get keyword
-    const cmdObj = KEYWORDS.get(cmdName);
-    if (!cmdObj) throw Error(`COMPILE ERR: unknown command:"${cmdName}"`);
+    const cmdObj = KEYWORDS.get(cmdName) || KEYWORDS.get('dbgError');
     const programs = cmdObj.compile(qbits); // qbits is the subsequent parameters
     if (DBG) console.log(unit, '->', programs);
-    const {
-      define: define,
-      defaults: defaults,
-      conditions: cond,
-      init: init
-    } = programs;
+    const { define, defaults, conditions, init } = programs;
     if (define && define.length) program.define.push(...define);
     if (defaults && defaults.length) program.defaults.push(...define);
-    if (cond && cond.length) program.conditions.push(...define);
+    if (conditions && conditions.length) program.conditions.push(...define);
     if (init && init.length) program.init.push(...define);
   });
   return program;
@@ -75,15 +69,13 @@ function CompileSource(units: ScriptUnit[]): IAgentTemplate {
  *  as rendered by the corresponding KeywordDef object
  */
 function RenderSource(units: ScriptUnit[]): any[] {
+  console.log(units);
+
   const sourceJSX = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
     const keyword = unit[0];
-    const cmdObj = KEYWORDS.get(keyword);
-    if (!cmdObj) {
-      console.log(KEYWORDS);
-      throw Error(`can't render ${index}:${keyword}`);
-    }
+    const cmdObj = KEYWORDS.get(keyword) || KEYWORDS.get('dbgError');
     sourceJSX.push(cmdObj.render(index, unit));
   });
   return sourceJSX;
@@ -92,6 +84,7 @@ function RenderSource(units: ScriptUnit[]): any[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
 function DecompileSource(units: ScriptUnit[]): string {
+  console.log(units);
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
@@ -102,10 +95,23 @@ function DecompileSource(units: ScriptUnit[]): string {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { RegisterKeyword };
-export { CompileSource, RenderSource, DecompileSource };
-/// Parse creates AST from a string expression
-/// ScriptifyString converts expression to ScriptUnit keywords
-/// ScriptifyText parses a string of lines into ScriptUnit[]
-export { Parse, ScriptifyString, ScriptifyText };
-export { Evaluate };
+export {
+  RegisterKeyword // Ctor => store in KEYWORDS table by keyword
+};
+/// Source is ScriptUnit[], produced by GUI
+export {
+  CompileSource, // ScriptUnit[] => IAgentTemplate
+  RenderSource, // ScriptUnit[] => JSX
+  DecompileSource // ScriptUnit[] => produce source text from units
+};
+/// for expression evaluation
+export {
+  Parse, // expr => AST
+  Evaluate // (AST,context)=>computed value
+  // MakeEvaluator // (AST,context)=> smc_program
+};
+/// for converting text to ScriptUnit Source
+export {
+  TokenizeToScriptUnit, // expr => ScriptUnit
+  TokenizeToSource // exprs => ScriptUnit[]
+};
