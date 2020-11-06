@@ -9,11 +9,8 @@
 import { ScriptUnit } from 'lib/t-script';
 import { TProgram } from 'lib/t-smc';
 /// load all keywords for template use
-import 'script/keywords/defTemplate';
-import 'script/keywords/defProp';
-import 'script/keywords/useFeature';
-import 'script/keywords/dbgError';
-import * as KeywordFactory from 'script/keyword-dict';
+import 'script/keywords/keyword-imports';
+import * as KeywordFactory from 'script/keyword-factory';
 
 export class AgentTemplate {
   script: ScriptUnit[];

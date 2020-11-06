@@ -9,7 +9,8 @@
 
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-smc';
-import BooleanProp from './var-boolean';
+import { RegisterSMObjectCtor } from 'script/keyword-factory';
+import { BooleanProp } from './var-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,7 +39,7 @@ function u_CheckMinMax(vobj) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class NumberProp extends SM_Object implements IScopeable {
+export class NumberProp extends SM_Object implements IScopeable {
   nvalue: number;
   min: number;
   max: number;
@@ -111,4 +112,5 @@ class NumberProp extends SM_Object implements IScopeable {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default NumberProp;
+/// see class export above
+RegisterSMObjectCtor('GSNumber', NumberProp);

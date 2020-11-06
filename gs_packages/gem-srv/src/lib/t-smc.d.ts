@@ -28,6 +28,11 @@ export interface IScopeable {
   get: () => TValue;
   set: (key: string, value: TValue) => void;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface IScopeableCtor {
+  new (value?: any, ...args: any[]): IScopeable;
+}
+
 /// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of IScopeable */

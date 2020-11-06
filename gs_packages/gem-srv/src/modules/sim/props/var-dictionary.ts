@@ -9,7 +9,7 @@ import { IScopeable } from 'lib/t-smc';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class DictionaryProp extends SM_Object implements IScopeable {
+export class DictionaryProp extends SM_Object implements IScopeable {
   dict: Map<string, IScopeable>;
   constructor(name: string) {
     super(name);
@@ -32,4 +32,4 @@ class DictionaryProp extends SM_Object implements IScopeable {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default DictionaryProp;
+/// see class export above

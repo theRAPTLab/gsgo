@@ -71,12 +71,12 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
   if (DBG) console.log(...PR('should inspect mode and change agent settings'));
-  TEST.TestAgentSelect();
+  // TEST.TestAgentSelect();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
   if (DBG) console.groupCollapsed(...PR('Programming Test Agents'));
-  TEST.TestAgentProgram();
+  // TEST.TestAgentProgram();
   if (DBG) console.groupEnd();
 }
 
@@ -84,7 +84,7 @@ function AgentProgram() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
   // execute agent programs
-  TEST.TestAgentUpdate(frameTime);
+  // TEST.TestAgentUpdate(frameTime);
 
   // TEMP HACK: force the agents to move outside of programming
   // by diddling their properties directly
@@ -104,16 +104,16 @@ function AgentUpdate(frameTime) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  TEST.TestAgentThink(frameTime);
+  // TEST.TestAgentThink(frameTime);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  TEST.TestAgentExec(frameTime);
+  // TEST.TestAgentExec(frameTime);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
   if (DBG) console.log(...PR('should reset all agents'));
-  TEST.TestAgentReset(frameTime);
+  // TEST.TestAgentReset(frameTime);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

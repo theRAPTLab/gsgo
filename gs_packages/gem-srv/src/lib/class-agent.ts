@@ -10,8 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { FEATURES } from 'modules/runtime-datacore';
-import NumberVar from 'modules/sim/props/var-number';
-import StringVar from 'modules/sim/props/var-string';
+import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
 import { IAgent, IScopeable, TStackable, IMessage, TProgram } from './t-smc.d';
@@ -35,10 +34,10 @@ class Agent extends SM_Object implements IAgent, IActable {
   updateQueue: IMessage[];
   thinkQueue: IMessage[];
   execQueue: IMessage[];
-  _name: StringVar;
-  _x: NumberVar;
-  _y: NumberVar;
-  _skin: StringVar;
+  _name: StringProp;
+  _x: NumberProp;
+  _y: NumberProp;
+  _skin: StringProp;
   //
   constructor(agentName = '<anon>') {
     super(agentName); // sets _value to agentName, which is only for debugging
@@ -50,10 +49,10 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.controlMode = ControlMode.puppet;
     this.controlModeHistory = [];
     // declare agent basic properties
-    this._name = new StringVar(agentName);
-    this._x = new NumberVar();
-    this._y = new NumberVar();
-    this._skin = new StringVar('default');
+    this._name = new StringProp(agentName);
+    this._x = new NumberProp();
+    this._y = new NumberProp();
+    this._skin = new StringProp('default');
     // mirror basic props in props for conceptual symmetry
     this.props.set('name', this._name);
     this.props.set('x', this._x);

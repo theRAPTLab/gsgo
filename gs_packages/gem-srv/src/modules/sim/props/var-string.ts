@@ -6,11 +6,12 @@
 
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-smc';
-import BooleanProp from './var-boolean';
+import { RegisterSMObjectCtor } from 'script/keyword-factory';
+import { BooleanProp } from './var-boolean';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class StringProp extends SM_Object implements IScopeable {
+export class StringProp extends SM_Object implements IScopeable {
   constructor(initial?: string) {
     super();
     this.meta.type = Symbol.for('StringProp');
@@ -27,4 +28,5 @@ class StringProp extends SM_Object implements IScopeable {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default StringProp;
+/// see class export above
+RegisterSMObjectCtor('GSString', StringProp);

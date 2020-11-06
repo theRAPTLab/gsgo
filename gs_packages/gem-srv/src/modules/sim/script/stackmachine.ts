@@ -20,7 +20,7 @@ import {
   scopePop,
   pop,
   dupe
-} from './ops/basic-ops';
+} from './ops/stack-ops';
 import { addProp, addFeature } from './ops/template-ops';
 import {
   compareNumbers,

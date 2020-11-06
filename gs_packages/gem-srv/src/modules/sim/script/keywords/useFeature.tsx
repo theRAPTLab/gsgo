@@ -8,7 +8,7 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-dict';
+import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

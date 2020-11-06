@@ -7,6 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { IScopeable, IScopeableCtor } from 'lib/t-smc';
 import { ScriptUnit, IAgentTemplate, IKeyword, IKeywordCtor } from 'lib/t-script';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
@@ -16,7 +17,9 @@ import { Evaluate } from './script-evaluator';
 const PR = UR.PrefixUtil('KWDICT', 'TagDkRed');
 const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// these should be moved to DATACORE
 const KEYWORDS: Map<string, IKeyword> = new Map();
+const SMOBJS: Map<string, IScopeableCtor> = new Map();
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,11 +36,25 @@ function m_TokenQueue(input: string | any[]): any[] {
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a KeywordConstructor function, add to the KEYWORDS dictionary */
+/** given a Keyword Constructor function, add to the KEYWORDS dictionary */
 function RegisterKeyword(Ctor: IKeywordCtor) {
   const kobj = new Ctor();
   KEYWORDS.set(kobj.keyword, kobj);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a SMObject, store in SMOBJS */
+function RegisterSMObjectCtor(name: string, ctor: IScopeableCtor) {
+  if (SMOBJS.has(name)) throw Error(`RegisterSMObjectCtor: ${name} exists`);
+  SMOBJS.set(name, ctor);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** get the registered SMObject constructor by name */
+function GetSMObjectCtor(name: string): IScopeableCtor {
+  if (!SMOBJS.has(name)) throw Error(`GetSMObjectCtor: ${name} `);
+  return SMOBJS.get(name);
+}
+
+/// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** compile an array of ScriptUnit */
 function CompileSource(units: ScriptUnit[]): IAgentTemplate {
@@ -69,8 +86,6 @@ function CompileSource(units: ScriptUnit[]): IAgentTemplate {
  *  as rendered by the corresponding KeywordDef object
  */
 function RenderSource(units: ScriptUnit[]): any[] {
-  console.log(units);
-
   const sourceJSX = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
@@ -96,7 +111,9 @@ function DecompileSource(units: ScriptUnit[]): string {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  RegisterKeyword // Ctor => store in KEYWORDS table by keyword
+  RegisterKeyword, // Ctor => store in KEYWORDS table by keyword
+  RegisterSMObjectCtor,
+  GetSMObjectCtor
 };
 /// Source is ScriptUnit[], produced by GUI
 export {

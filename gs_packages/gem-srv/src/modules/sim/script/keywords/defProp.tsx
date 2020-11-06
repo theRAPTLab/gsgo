@@ -8,7 +8,8 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-dict';
+import { addProp } from 'script/ops/op-imports';
+import { RegisterKeyword, GetSMObjectCtor } from '../keyword-factory';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,10 +27,9 @@ export class DefProp extends KeywordDef {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
+    const propCtor = GetSMObjectCtor(propType);
     const progout = [];
-    progout.push(
-      `smc_defProp( ${propName}, ${propType}, ${initValue || '<defaultVal>'} )`
-    );
+    progout.push(addProp(propName, propCtor));
     return {
       define: progout,
       defaults: [],

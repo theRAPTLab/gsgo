@@ -1,7 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Mathematics Stack Machine Operations
-  see basic-ops.ts for description of stack machine
+  see stack-ops.ts for description of stack machine
 
   Mathematics ops use RPN stack mathematics, returning the result
   on the stack.

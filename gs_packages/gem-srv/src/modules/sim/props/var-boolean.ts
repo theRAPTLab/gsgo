@@ -1,7 +1,8 @@
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-smc';
+import { RegisterSMObjectCtor } from 'script/keyword-factory';
 
-class BooleanProp extends SM_Object implements IScopeable {
+export class BooleanProp extends SM_Object implements IScopeable {
   fuzzy: number;
   constructor(initial = true, fuzzy = 0) {
     super();
@@ -53,4 +54,7 @@ class BooleanProp extends SM_Object implements IScopeable {
   }
 }
 
-export default BooleanProp;
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see class export above
+RegisterSMObjectCtor('GSBoolean', BooleanProp);

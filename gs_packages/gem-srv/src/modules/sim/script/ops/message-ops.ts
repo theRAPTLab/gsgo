@@ -2,7 +2,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Conditions Stack Machine Operations
-  see basic-ops.ts for description of stack machine
+  see stack-ops.ts for description of stack machine
 
   These conditions work with the STATE FLAGS object, which sets a number
   of "registers" when a comparison is less-than, equal, or zero.

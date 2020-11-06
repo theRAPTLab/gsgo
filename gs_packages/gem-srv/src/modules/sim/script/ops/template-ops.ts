@@ -1,7 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Agent Templating Stack Machine Operations
-  see basic-ops.ts for description of stack machine
+  see stack-ops.ts for description of stack machine
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,10 +11,12 @@ import { IAgent, TOpcode, TOpWait, IScopeable } from 'lib/t-smc';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const addProp = (
   name: string,
-  NewFunc: { new (...args): IScopeable }
+  PropTypeCTor: { new (...args): IScopeable }
 ): TOpcode => {
   return (agent: IAgent): TOpWait => {
-    agent.addProp(name, new NewFunc(name));
+    const prop = new PropTypeCTor(name);
+    console.log('need to check for initial value');
+    agent.addProp(name, new PropTypeCTor(name));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

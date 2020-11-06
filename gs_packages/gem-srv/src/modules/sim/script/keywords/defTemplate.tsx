@@ -10,7 +10,58 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-dict';
+import { nop } from 'script/ops/debug-ops';
+import { RegisterKeyword } from '../keyword-factory';
+
+/// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export class DefTemplate extends KeywordDef {
+  // base properties defined in KeywordDef
+  constructor() {
+    super('defTemplate');
+    this.args = ['templateName string', 'baseTemplate string'];
+    this.serialize = this.serialize.bind(this);
+    this.compile = this.compile.bind(this);
+    this.render = this.render.bind(this);
+  }
+
+  /** create smc template code objects for this unit */
+  compile(parms: any[]): IAgentTemplate {
+    const templateName = parms[0];
+    const baseTemplate = parms[1];
+    const progout = [];
+    // this is a no-operation
+    progout.push(nop());
+
+    return {
+      define: progout,
+      defaults: [],
+      conditions: []
+    };
+  }
+
+  /** return a ScriptUnit made from current state */
+  serialize(state: any): ScriptUnit {
+    const { templateName, baseTemplate } = state;
+    return [this.keyword, templateName, baseTemplate];
+  }
+
+  /** return rendered component representation */
+  render(index: number, srcLine: ScriptUnit, children?: any[]): any {
+    const state = {
+      templateName: srcLine[1],
+      baseTemplate: srcLine[2]
+    };
+    return (
+      <ScriptElement
+        key={this.generateKey()}
+        index={index}
+        state={state}
+        serialize={this.serialize}
+      />
+    );
+  }
+} // end of DefTemplate
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,93 +110,8 @@ class ScriptElement extends React.Component<MyProps, MyState> {
   }
 } // end script element
 
-/// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends KeywordDef {
-  // base properties defined in KeywordDef
-  constructor() {
-    super('defTemplate');
-    this.args = ['templateName string', 'baseTemplate string'];
-    this.serialize = this.serialize.bind(this);
-    this.compile = this.compile.bind(this);
-    this.render = this.render.bind(this);
-  }
-
-  /** create smc template code objects for this unit */
-  compile(parms: any[]): IAgentTemplate {
-    const templateName = parms[0];
-    const baseTemplate = parms[1];
-    const progout = [];
-    progout.push(
-      `smc_defTemplate( ${templateName}, ${baseTemplate || 'Agent'} )`
-    );
-    return {
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
-  }
-
-  /** return a ScriptUnit made from current state */
-  serialize(state: any): ScriptUnit {
-    const { templateName, baseTemplate } = state;
-    return [this.keyword, templateName, baseTemplate];
-  }
-
-  /** return rendered component representation */
-  render(index: number, srcLine: ScriptUnit, children?: any[]): any {
-    const state = {
-      templateName: srcLine[1],
-      baseTemplate: srcLine[2]
-    };
-    return (
-      <ScriptElement
-        key={this.generateKey()}
-        index={index}
-        state={state}
-        serialize={this.serialize}
-      />
-    );
-  }
-} // end of DefTemplate
-
-/// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** closing tag, not shown in GUI but required when using DefTemplate */
-export class EndTemplate extends KeywordDef {
-  args: string[];
-  reg_scope: Set<string>;
-  key_scope: Set<string>;
-
-  constructor() {
-    super('endTemplate');
-    this.req_scope.add('defTemplate');
-  }
-
-  /** create smc template code objects */ compile(
-    parms: string[]
-  ): IAgentTemplate {
-    const progout = [];
-    progout.push('smc_nop()');
-    return {
-      template_define: progout
-    };
-  }
-
-  /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
-    return [this.keyword];
-  }
-
-  /** render to HTML */
-  render(index: number, args: any[], children: any[]): any {
-    return undefined; // need to solve template embedding
-  }
-} // end of EndDefTemplate
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// make sure you import this at some point with
 /// import from 'file'
 RegisterKeyword(DefTemplate);
-RegisterKeyword(EndTemplate);

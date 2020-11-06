@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { IAgent, IScopeable, TOpcode, TOpWait } from 'lib/t-smc';
-import { setAgentPropValue } from 'script/ops/basic-ops';
+import { setAgentPropValue } from 'script/ops/stack-ops';
 
 /// AGENT DEFINITION STAGE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

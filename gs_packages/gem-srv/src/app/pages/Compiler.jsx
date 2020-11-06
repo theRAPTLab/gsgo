@@ -42,7 +42,8 @@ UR.SystemHook(
 );
 /// HARCODED SOURCE ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const defaultSource = `
+
+const defaultText = `
 defTemplate Bunny
 defProp spriteFrame GSNumber random 0 3
 defProp currentHealth GSNumber 100
@@ -51,8 +52,24 @@ useFeature Movement
 prop x setTo (50)
 prop y setTo (-50)
 prop skin setTo 'bunny.json'
+on frame jitterPos
 endTemplate
 `.trim();
+
+const defaultSource = [
+  ['defTemplate', 'Bunny'],
+  ['defProp', 'spriteFrame', 'GSNumber', 100],
+  ['defProp', 'currentHealth', 'GSNumber', 100],
+  ['defProp', 'isAlive', 'GSBoolean', true],
+  ['useFeature', 'Movement'],
+  ['random', -50, 50],
+  ['propPop', 'x'],
+  ['random', -50, 50],
+  ['propPop', 'y'],
+  ['prop', 'skin', 'setTo', 'bunny.json'],
+  ['on', 'frame', ['jitterPos']],
+  ['endTemplate']
+];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,11 +78,12 @@ class Compiler extends React.Component {
   constructor() {
     super();
     // prep
-    this.source = KeywordFactory.TokenizeToSource(defaultSource);
+    // this.source = KeywordFactory.TokenizeToSource(defaultText);
+    this.source = defaultSource;
     this.state = {
       jsx: KeywordFactory.RenderSource(this.source),
-      source: defaultSource,
-      tabIndex: 0
+      source: defaultText,
+      tabIndex: 1
     };
     // bind
     this.btnToReact = this.btnToReact.bind(this);

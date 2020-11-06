@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'script/keyword-dict';
+import * as KEYDICT from 'script/keyword-factory';
 import { ScriptUnit, ScriptUpdate } from 'lib/t-script';
 import './test-expression';
 
