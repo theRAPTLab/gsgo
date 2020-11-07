@@ -16,6 +16,7 @@ import * as TEST from 'modules/tests/test-agents';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
+const DO_TESTS = false;
 
 const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
   Constructor: DisplayObject,
@@ -71,12 +72,14 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {
   if (DBG) console.log(...PR('should inspect mode and change agent settings'));
-  // TEST.TestAgentSelect();
+  if (DO_TESTS) {
+    TEST.TestAgentSelect();
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentProgram() {
   if (DBG) console.groupCollapsed(...PR('Programming Test Agents'));
-  // TEST.TestAgentProgram();
+  if (DO_TESTS) TEST.TestAgentProgram();
   if (DBG) console.groupEnd();
 }
 
@@ -84,36 +87,37 @@ function AgentProgram() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
   // execute agent programs
-  // TEST.TestAgentUpdate(frameTime);
+  if (DO_TESTS) {
+    TEST.TestAgentUpdate(frameTime);
 
-  // TEMP HACK: force the agents to move outside of programming
-  // by diddling their properties directly
-  // also see renderer.js for TestRenderParameters()
-  //
-  // TestJitterAgents(frameTime);
+    // TEMP HACK: force the agents to move outside of programming
+    // by diddling their properties directly
+    // also see renderer.js for TestRenderParameters()
+    //
+    // TestJitterAgents(frameTime);
 
-  // TEMP HACK: This should move to the DisplayListOut phase
-  // force agent movement for display list testing
-  //
-  const agents = AGENTS_GetArrayAll();
-  DOBJ_SYNC_AGENT.syncFromArray(agents);
-  DOBJ_SYNC_AGENT.mapObjects();
-  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
-  RENDERER.UpdateDisplayList(dobjs);
-  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
+    // TEMP HACK: This should move to the DisplayListOut phase
+    // force agent movement for display list testing
+    const agents = AGENTS_GetArrayAll();
+    DOBJ_SYNC_AGENT.syncFromArray(agents);
+    DOBJ_SYNC_AGENT.mapObjects();
+    const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
+    RENDERER.UpdateDisplayList(dobjs);
+    UR.SendMessage('NET:DISPLAY_LIST', dobjs);
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
-  // TEST.TestAgentThink(frameTime);
+  if (DO_TESTS) TEST.TestAgentThink(frameTime);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  // TEST.TestAgentExec(frameTime);
+  if (DO_TESTS) TEST.TestAgentExec(frameTime);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
   if (DBG) console.log(...PR('should reset all agents'));
-  // TEST.TestAgentReset(frameTime);
+  if (DO_TESTS) TEST.TestAgentReset(frameTime);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

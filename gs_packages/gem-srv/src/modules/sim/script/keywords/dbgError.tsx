@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -19,8 +19,8 @@ export class dbgError extends KeywordDef {
     this.args = ['...parms'];
   }
 
-  /** create smc template code objects */
-  compile(parms: any[]): IAgentTemplate {
+  /** create smc blueprint code objects */
+  compile(parms: any[]): IAgentBlueprint {
     const progout = [];
     progout.push(`?${this.keyword}, ${parms.join(', ')}`);
     return {

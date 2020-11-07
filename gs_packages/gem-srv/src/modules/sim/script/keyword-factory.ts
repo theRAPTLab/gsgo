@@ -8,7 +8,12 @@
 
 import UR from '@gemstep/ursys/client';
 import { IScopeable, IScopeableCtor, TMethod } from 'lib/t-smc';
-import { ScriptUnit, IAgentTemplate, IKeyword, IKeywordCtor } from 'lib/t-script';
+import {
+  ScriptUnit,
+  IAgentBlueprint,
+  IKeyword,
+  IKeywordCtor
+} from 'lib/t-script';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
 
@@ -69,7 +74,7 @@ function GetTest(name: string) {
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** compile an array of ScriptUnit */
-function CompileSource(units: ScriptUnit[]): IAgentTemplate {
+function CompileSource(units: ScriptUnit[]): IAgentBlueprint {
   const program = {
     define: [],
     defaults: [],
@@ -139,7 +144,7 @@ export {
 };
 /// Source is ScriptUnit[], produced by GUI
 export {
-  CompileSource, // ScriptUnit[] => IAgentTemplate
+  CompileSource, // ScriptUnit[] => IAgentBlueprint
   RenderSource, // ScriptUnit[] => JSX
   DecompileSource // ScriptUnit[] => produce source text from units
 };

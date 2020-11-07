@@ -17,15 +17,15 @@ const DBG = true;
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SOURCE: ScriptUnit[] = [
-  ['defTemplate', 'Bee'],
+  ['defBlueprint', 'Bee'],
   ['defProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
   ['useFeature', 'BeanCounter'],
   ['useFeature', 'Movement'],
-  ['endTemplate'],
-  ['defTemplate', 'HoneyBee', 'Bee'],
+  ['endBlueprint'],
+  ['defBlueprint', 'HoneyBee', 'Bee'],
   ['defProp', 'honeySacks', 'GSNumber', 0],
-  ['endTemplate']
+  ['endBlueprint']
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestListSource(source = SOURCE) {
@@ -40,7 +40,7 @@ function TestSourceToProgram(source = SOURCE) {
   // the idea is to create a data structure we can generate and then parse
   if (DBG)
     console.log(
-      ...PR('KEYGEN.CompileTemplate() - create template smc program arrays')
+      ...PR('KEYGEN.CompileTemplate() - create blueprint smc program arrays')
     );
   // get the output
   const output = KEYDICT.CompileSource(source);

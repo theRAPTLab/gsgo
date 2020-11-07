@@ -2,7 +2,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   StackMachine Commander
-  programming template: done in AgentFactory.MakeTemplate
+  programming blueprint: done in AgentFactory.MakeTemplate
   initializing props: smcode program
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -21,7 +21,6 @@ import {
   pop,
   dupe
 } from './ops/stack-ops';
-import { addProp, addFeature } from './ops/template-ops';
 import {
   compareNumbers,
   clearCondition,
@@ -31,6 +30,7 @@ import {
   ifGTE,
   ifEQ
 } from './ops/condition-ops';
+import { addProp, addFeature } from './ops/blueprint-ops';
 import { agentQueue, agentSend, dbgMessage } from './ops/message-ops';
 import { dbgOut } from './ops/debug-ops';
 import { jitterAgent } from './cmds/agent-cmds';

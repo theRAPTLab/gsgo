@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/op-imports';
 import { RegisterKeyword, GetSMObjectCtor } from '../keyword-factory';
 
@@ -18,12 +18,12 @@ export class DefProp extends KeywordDef {
   constructor() {
     super('defProp');
     this.args = ['propName string', 'propType string', 'initValue any'];
-    this.req_scope.add('defTemplate');
+    this.req_scope.add('defBlueprint');
     this.key_scope.add('unknown');
   }
 
-  /** create smc template code objects */
-  compile(parms: any[]): IAgentTemplate {
+  /** create smc blueprint code objects */
+  compile(parms: any[]): IAgentBlueprint {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];

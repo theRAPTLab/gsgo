@@ -48,7 +48,7 @@ freeform scripting is disabled
 `.trim();
 
 const defaultSource = [
-  ['defTemplate', 'Bunny'],
+  ['defBlueprint', 'Bunny'],
   ['defProp', 'spriteFrame', 'GSNumber', 100],
   ['defProp', 'currentHealth', 'GSNumber', 100],
   ['defProp', 'isAlive', 'GSBoolean', true],
@@ -56,7 +56,7 @@ const defaultSource = [
   ['randomPos', -50, 50],
   ['prop', 'skin', 'setTo', 'bunny.json'],
   ['onCondition', 'frame', ['jitterPos']],
-  ['endTemplate']
+  ['endBlueprint']
 ];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
@@ -145,8 +145,8 @@ class Compiler extends React.Component {
   btnToSMC() {
     if (DBG) console.group(...PR('toSMC'));
     // this.source = KeywordFactory.TokenizeToSource(this.state.source);
-    const template = KeywordFactory.CompileSource(this.source);
-    const { init, conditions, defaults, define } = template;
+    const blueprint = KeywordFactory.CompileSource(this.source);
+    const { init, conditions, defaults, define } = blueprint;
     if (init.length) console.log('instance', init);
     if (define.length) console.log('define', define);
     if (defaults.length) console.log('defaults', defaults);

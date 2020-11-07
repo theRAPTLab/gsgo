@@ -11,4 +11,4 @@ export interface Agent {}
 /// TYPE DEFINITIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type AnyFunction = (...args: any[]) => any;
-export type AgentTemplateFunction = (agentName: string) => Agent;
+export type AgentBlueprintFunction = (agentName: string) => Agent;

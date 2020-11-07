@@ -2,31 +2,31 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword endTemplate command object
+  implementation of keyword endBlueprint command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** closing tag, not shown in GUI but required when using DefTemplate */
-export class EndTemplate extends KeywordDef {
+export class endBlueprint extends KeywordDef {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;
 
   constructor() {
-    super('endTemplate');
+    super('endBlueprint');
   }
 
-  /** create smc template code objects */ compile(
+  /** create smc blueprint code objects */ compile(
     parms: string[]
-  ): IAgentTemplate {
+  ): IAgentBlueprint {
     const progout = [];
     progout.push(() => console.log('no op'));
     return {
@@ -41,7 +41,7 @@ export class EndTemplate extends KeywordDef {
 
   /** render to HTML */
   render(index: number, args: any[], children: any[]): any {
-    return undefined; // need to solve template embedding
+    return undefined; // need to solve blueprint embedding
   }
 } // end of EndDefTemplate
 
@@ -49,4 +49,4 @@ export class EndTemplate extends KeywordDef {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// make sure you import this at some point with
 /// import from 'file'
-RegisterKeyword(EndTemplate);
+RegisterKeyword(endBlueprint);

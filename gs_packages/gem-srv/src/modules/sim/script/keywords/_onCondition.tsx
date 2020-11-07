@@ -7,7 +7,7 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgent, IScopeable, IState } from 'lib/t-smc';
-import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from '../keyword-factory';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -28,8 +28,8 @@ export class OnCondition extends KeywordDef {
     this.args = ['testName:string', 'consequent:smc', 'alternate:smc'];
   }
 
-  /** create smc template code objects */
-  compile(parms: any[]): IAgentTemplate {
+  /** create smc blueprint code objects */
+  compile(parms: any[]): IAgentBlueprint {
     const testName = parms[0];
     const consq = parms[1];
     const alter = parms[2];

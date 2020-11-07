@@ -57,7 +57,7 @@ class AgentsPanel extends React.Component {
         >
           <div style={{ display: 'flex' }}>
             <div className="syslabel" style={{ flexGrow: 1 }}>
-              AGENT TEMPLATES
+              AGENT BLUEPRINTS
             </div>
             {selectedAgent && <button onClick={this.DoMinimize}>&lt;</button>}
           </div>

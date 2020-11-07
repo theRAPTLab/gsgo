@@ -13,13 +13,13 @@ import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
 const PR = UR.PrefixUtil('RUNTIME-CORE');
 
 /// INSTANCE MAPS /////////////////////////////////////////////////////////////
-const AGENTS = new Map(); // template => Map<id,Agent>
+const AGENTS = new Map(); // blueprint => Map<id,Agent>
 const AGENT_DICT = new Map(); // id => Agent
 
 /// SCRIPT MACHINE ASSETS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATURES = new Map();
-const TEMPLATES = new Map();
+const BLUEPRINTS = new Map();
 const CONDITIONS = new Map();
 
 /// PIXI JS ASSET MANAGEMENT //////////////////////////////////////////////////
@@ -108,7 +108,7 @@ UR.SystemHook('SIM/RESET', OnSimReset);
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export shared data structures
-export { AGENTS, TEMPLATES, FEATURES, CONDITIONS, ASSET_MGR };
+export { AGENTS, BLUEPRINTS, FEATURES, CONDITIONS, ASSET_MGR };
 /// export agent creation methods
 export {
   ASSETS_GetResource,

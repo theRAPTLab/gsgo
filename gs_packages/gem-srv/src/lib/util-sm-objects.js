@@ -46,7 +46,7 @@ function AddMethod(agent, method, func) {
  */
 function AddFeature(agent, feature) {
   if (agent.features.has(feature))
-    throw Error(`feature '${feature}' already to template`);
+    throw Error(`feature '${feature}' already to blueprint`);
   const fpack = FEATURES.get(feature);
   if (!fpack) throw Error(`'${feature}' is not an available feature`);
   agent.features.set(fpack.name, fpack);

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/op-imports';
 import { RegisterKeyword } from '../keyword-factory';
 
@@ -18,12 +18,12 @@ export class UseFeature extends KeywordDef {
   constructor() {
     super('useFeature');
     this.args = ['featureName string'];
-    this.req_scope.add('defTemplate');
+    this.req_scope.add('defBlueprint');
     this.key_scope.add('TBD');
   }
 
-  /** create smc template code objects */
-  compile(parms: any[]): IAgentTemplate {
+  /** create smc blueprint code objects */
+  compile(parms: any[]): IAgentBlueprint {
     const featureName = parms[0];
     const progout = [];
     progout.push(addFeature(featureName));

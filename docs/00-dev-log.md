@@ -359,6 +359,71 @@ So we won't worry about that right away.
 * [ ] launch the simulation with the new instance
 * [ ] delete the old `agentfactory` module
 
+## NOV 06 FRI - Where are we?
+
+The parsing side will have to wait. We'll use ScriptUnits for generating all of our source code for now, since it is the common element for sourceText, UIRendering, Compiling.
+
+So I just need to wedge-in the AgentTemplate building. We'll continue on with the current work with AgentTemplates conversion and not worry about expression parsing yet.
+
+Our **compiler functions** will be based on **keywords** now, but the same SMC protocol will be used. There are also **glue operations** that we already have to manipulate stack results.
+
+**ScriptUnits as the intermediate script** 
+
+* ScriptUnits
+* SetProp only take the top value of the stack
+* Rules: ScriptUnits are it can handle simple expressions
+* Rules: ScriptUnits handle assignment and data featuching as sdistinct operations on a stack
+* Just need to think in terms of the stack machine for implementing the INTENT of a keyword; later can see how to simplify it.
+* **ScriptUnit Centric** use OPS, CMDS and the SMC Protocol (data stack, agent, ref stack)
+
+FIRST UP: Write a dummy Script from ScriptUnits
+
+**Compiler** has defaultText which is compiled to Source, which is an array of ScriptUnits.
+
+A ScriptUnit is an array of parameters, but maybe it should be an object.
+
+* [x] start coding directly in ScriptUnits
+
+* [x] make sure we have keywords for everything
+
+  * [x] defTemplate
+  * [x] defProp
+  * [x] useFeature
+  * [ ] ~~random~~
+  * [ ] ~~propPop~~
+  * [x] randomPosition
+  * [x] prop
+  * [x] on
+
+  
+
+Next: **can we look at the template function???**
+
+> we have a template available now. The program is compiled from source, which creates the blueprint. Let's rename template to blueprint while we're at it.
+
+**TIME FOR A REST**
+
+will actually implement the template invocation tomorrow.
+
+## NOV 07 SAT - Rehydration Day
+
+I am very dehydrated today, so drinking a ton of water. But **where did we leave off?** It's time for **TEMPLATE INVOCATION**
+
+**Q. Where are Templates Stored?**
+
+> Right now **Source** is in Compiler.JSX, and it will have to be moved. Templates have to first be compiled, then instanced. The existing code examples are in (1) test-agents and (2) sim-agents
+
+(1) In TestAgentProgram(), we have some code that adds a `TemplateFunction` through `AgentFactory.AddTemplate` by name, but surely this is no longer the case. 
+
+(2) In sim-agents, our update syncs display objects to agents, which are then rendered. In datacore, `AGENTS_Save()` stores the agents into an AGENT map by type into AgentFactory.AddTemplate. These are decoration functions. The key functions are **AddBluePrint()** and **MakeAgent()**. there's a program called `test_smc_agent_update` that's defined in **stackmachine.ts** that is what's actually running. 
+
+(3) There are **two** agent factories. The old one stores blueprint decorators and creates new instances from them. The newer one doesn't really do anything yet, but is probably intended to host the new style of managing templates. 
+
+* [ ] confirm that the test program still runs by re-enabling test-agents
+  * [ ] 
+
+
+
 
 
 

@@ -12,14 +12,14 @@ export interface IKeywordCtor {
 export interface IKeyword {
   keyword: string;
   args: string[];
-  compile(parms: any[]): IAgentTemplate;
+  compile(parms: any[]): IAgentBlueprint;
   serialize(state: object): ScriptUnit;
   render(index: number, state: object, children?: any[]): any;
   generateKey(): any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
-export interface IAgentTemplate {
+export interface IAgentBlueprint {
   define?: TOpcode[];
   defaults?: TOpcode[];
   conditions?: TOpcode[];

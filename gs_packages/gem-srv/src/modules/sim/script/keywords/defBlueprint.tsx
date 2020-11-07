@@ -2,14 +2,14 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword defTemplate command object
+  implementation of keyword defBlueprint command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { nop } from 'script/ops/debug-ops';
 import { RegisterKeyword } from '../keyword-factory';
 
@@ -18,17 +18,17 @@ import { RegisterKeyword } from '../keyword-factory';
 export class DefTemplate extends KeywordDef {
   // base properties defined in KeywordDef
   constructor() {
-    super('defTemplate');
-    this.args = ['templateName string', 'baseTemplate string'];
+    super('defBlueprint');
+    this.args = ['blueprintName string', 'baseBlueprint string'];
     this.serialize = this.serialize.bind(this);
     this.compile = this.compile.bind(this);
     this.render = this.render.bind(this);
   }
 
-  /** create smc template code objects for this unit */
-  compile(parms: any[]): IAgentTemplate {
-    const templateName = parms[0];
-    const baseTemplate = parms[1];
+  /** create smc blueprint code objects for this unit */
+  compile(parms: any[]): IAgentBlueprint {
+    const blueprintName = parms[0];
+    const baseBlueprint = parms[1];
     const progout = [];
     // this is a no-operation
     progout.push(nop());
@@ -42,15 +42,15 @@ export class DefTemplate extends KeywordDef {
 
   /** return a ScriptUnit made from current state */
   serialize(state: any): ScriptUnit {
-    const { templateName, baseTemplate } = state;
-    return [this.keyword, templateName, baseTemplate];
+    const { blueprintName, baseBlueprint } = state;
+    return [this.keyword, blueprintName, baseBlueprint];
   }
 
   /** return rendered component representation */
   render(index: number, srcLine: ScriptUnit, children?: any[]): any {
     const state = {
-      templateName: srcLine[1],
-      baseTemplate: srcLine[2]
+      blueprintName: srcLine[1],
+      baseBlueprint: srcLine[2]
     };
     return (
       <ScriptElement
@@ -69,7 +69,7 @@ export class DefTemplate extends KeywordDef {
  *  in the local state
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-type MyState = { templateName: string; baseTemplate: string };
+type MyState = { blueprintName: string; baseBlueprint: string };
 type MyProps = {
   index: number;
   state: MyState;
@@ -90,7 +90,7 @@ class ScriptElement extends React.Component<MyProps, MyState> {
   }
 
   onChange(e) {
-    this.setState({ templateName: e.currentTarget.value }, () => {
+    this.setState({ blueprintName: e.currentTarget.value }, () => {
       const updata: ScriptUpdate = {
         index: this.index,
         scriptUnit: this.serialize(this.state)
@@ -100,11 +100,11 @@ class ScriptElement extends React.Component<MyProps, MyState> {
   }
 
   render() {
-    const { templateName, baseTemplate } = this.state;
+    const { blueprintName, baseBlueprint } = this.state;
     return (
       <div>
-        templateName
-        <input onChange={this.onChange} type="text" value={templateName} />
+        blueprintName
+        <input onChange={this.onChange} type="text" value={blueprintName} />
       </div>
     );
   }

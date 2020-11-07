@@ -104,9 +104,9 @@ class Agent extends SM_Object implements IAgent, IActable {
    */
   addFeature(fName: string): void {
     const { features } = this;
-    // does key already exist in this agent? double define in template!
+    // does key already exist in this agent? double define in blueprint!
     if (features.has(fName))
-      throw Error(`feature '${fName}' already in template`);
+      throw Error(`feature '${fName}' already in blueprint`);
     // save the FeaturePack object reference in agent.feature map
     const fpack = FEATURES.get(fName);
     if (!fpack) throw Error(`'${fName}' is not an available feature`);

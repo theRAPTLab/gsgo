@@ -44,7 +44,7 @@ class Feature implements IFeature {
   }
 
   /**
-   *  called by agent template function when creating new agent
+   *  called by agent blueprint function when creating new agent
    *  note: subclassers must override this method as necessary
    */
   decorate(agent: IAgent) {

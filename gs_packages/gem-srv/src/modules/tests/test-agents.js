@@ -56,9 +56,9 @@ function TestAgentProgram() {
       setCostumes {1:"slowbee.png", 2:"fastbee.png"}
       showCostume 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  if (DBG) console.log(...PR('Making Bunny Agent Template Function'));
+  if (DBG) console.log(...PR('Making Bunny Agent Blueprint Function'));
   let temp_num = 0;
-  AgentFactory.AddTemplate('Bunny', agent => {
+  AgentFactory.AddBlueprint('Bunny', agent => {
     // all this is direct object manipulation in JS, not SMC!!!
 
     // note: test_smc_init overrides x,y...see stackmachine.ts
@@ -96,8 +96,8 @@ function TestAgentProgram() {
       @MyTimer reset
       World.pollution add 1
   \*\ - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - /*/
-  if (DBG) console.log(...PR('Making World template with Timer feature'));
-  AgentFactory.AddTemplate('World', world => {
+  if (DBG) console.log(...PR('Making World blueprint with Timer feature'));
+  AgentFactory.AddBlueprint('World', world => {
     world.addFeature('Timer');
   });
 

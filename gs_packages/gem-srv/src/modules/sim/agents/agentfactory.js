@@ -2,14 +2,14 @@
 
   The Agent Factory!
 
-  we have an agent template that is an object with props and methods defined.
+  we have an agent blueprint that is an object with props and methods defined.
   however, we want to make agent instances from this object, so how is
   that done?
 
-  1. the template must have instructions in it for creating a new object,
+  1. the blueprint must have instructions in it for creating a new object,
      probably stored inside a function that returns an object.
-  2. the template must be look-upable by name.
-  3. derived agents must be able to decorate the template object by
+  2. the blueprint must be look-upable by name.
+  3. derived agents must be able to decorate the blueprint object by
      retrieving the base agent and composing it together with new methods,
      properties, and feature references.
   4. features need to initialize their storage inside the function in (1)
@@ -21,7 +21,7 @@ import Agent from 'lib/class-agent';
 import {
   AGENTS_Save,
   AGENTS_GetTypeSet,
-  TEMPLATES
+  BLUEPRINTS
 } from 'modules/runtime-datacore';
 import { WORLD } from './global';
 
@@ -32,29 +32,30 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  *  Templates are factory functions that are stored by name in the
- *  TEMPLATES map. The factory function accepts an agentName that
+ *  BLUEPRINTS map. The factory function accepts an agentName that
  *  is used to create the base agent.
- *  When calling this function, provide the templateName and a function
+ *  When calling this function, provide the blueprintName and a function
  *  that will be used to add additional properties, features, and methods
  *  to the agent. Use the AgentFactory methods
  *  modify.
  */
-function AddTemplate(name, f_Decorate) {
-  if (TEMPLATES.has(name)) throw Error(`state template '${name}' already exists`);
+function AddBlueprint(name, f_Decorate) {
+  if (BLUEPRINTS.has(name))
+    throw Error(`state blueprint '${name}' already exists`);
   const factoryFunc = agentName => {
     const agent = new Agent(agentName);
     f_Decorate(agent);
     agent.meta.type = name;
     return agent;
   };
-  if (DBG) console.log(...PR(`storing template: '${name}'`));
-  TEMPLATES.set(name, factoryFunc);
+  if (DBG) console.log(...PR(`storing blueprint: '${name}'`));
+  BLUEPRINTS.set(name, factoryFunc);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
  *  Factory method to return a new Agent
  *  @param {string} agentName - name of this instance
- *  @param {string} template - name of the template to use (default 'Agent')
+ *  @param {string} blueprint - name of the blueprint to use (default 'Agent')
  */
 function MakeAgent(agentName, options = {}) {
   const { type } = options;
@@ -62,9 +63,9 @@ function MakeAgent(agentName, options = {}) {
   if (type === undefined) {
     agent = new Agent(agentName);
   } else {
-    const factoryFunc = TEMPLATES.get(type);
-    if (!factoryFunc) throw Error(`agent template for '${type}' not defined`);
-    // return the created agent from template
+    const factoryFunc = BLUEPRINTS.get(type);
+    if (!factoryFunc) throw Error(`agent blueprint for '${type}' not defined`);
+    // return the created agent from blueprint
     agent = factoryFunc(agentName);
   }
   return AGENTS_Save(agent);
@@ -117,9 +118,9 @@ function GetWorldAgent() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  MakeAgent, // create an agent instance from template
-  AddTemplate, // add template function by name
+  MakeAgent, // create an agent instance from blueprint
+  AddBlueprint, // add blueprint function by name
   ExportAgent, // return serializable object representing an agent instance
-  GetAgentsByType, // return a list of agents by type
+  GetAgentsByType, // return a list of agents by blueprint type type
   GetWorldAgent // return world agent
 };
