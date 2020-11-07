@@ -16,16 +16,13 @@ export class dbgError extends KeywordDef {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgError');
-    this.args = ['error string'];
-    this.req_scope.add('TBD');
-    this.key_scope.add('TBD');
+    this.args = ['...parms'];
   }
 
   /** create smc template code objects */
-  compile(parms: string[]): IAgentTemplate {
-    const error = parms[0];
+  compile(parms: any[]): IAgentTemplate {
     const progout = [];
-    progout.push(`smc_dbg_err( ${error} )`);
+    progout.push(`?${this.keyword}, ${parms.join(', ')}`);
     return {
       define: progout,
       defaults: [],

@@ -66,12 +66,16 @@ function CompileSource(units: ScriptUnit[]): IAgentTemplate {
   };
   // this has to look through the output to determine what to compile
   units.forEach(unit => {
-    const qbits = m_TokenQueue(unit);
-    // extract keyword from front of qbits
-    let cmdName = qbits.shift();
+    // extract keyword first unit
+    let cmdName = unit[0];
     // get keyword
-    const cmdObj = KEYWORDS.get(cmdName) || KEYWORDS.get('dbgError');
-    const programs = cmdObj.compile(qbits); // qbits is the subsequent parameters
+    let cmdObj = KEYWORDS.get(cmdName);
+    if (!cmdObj) {
+      cmdObj = KEYWORDS.get('dbgError');
+      cmdObj.keyword = cmdName;
+    }
+    const parms = unit.slice(1);
+    const programs = cmdObj.compile(parms); // qbits is the subsequent parameters
     if (DBG) console.log(unit, '->', programs);
     const { define, defaults, conditions, init } = programs;
     if (define && define.length) program.define.push(...define);
@@ -90,7 +94,11 @@ function RenderSource(units: ScriptUnit[]): any[] {
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
     const keyword = unit[0];
-    const cmdObj = KEYWORDS.get(keyword) || KEYWORDS.get('dbgError');
+    let cmdObj = KEYWORDS.get(keyword);
+    if (!cmdObj) {
+      cmdObj = KEYWORDS.get('dbgError');
+      cmdObj.keyword = keyword;
+    }
     sourceJSX.push(cmdObj.render(index, unit));
   });
   return sourceJSX;

@@ -140,7 +140,7 @@ class Compiler extends React.Component {
   // compile source to jsx
   btnToReact() {
     if (DBG) console.group(...PR('toReact'));
-    this.source = KeywordFactory.TokenizeToSource(this.state.source);
+    // this.source = KeywordFactory.TokenizeToSource(this.state.source);
     const jsx = KeywordFactory.RenderSource(this.source);
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
     if (DBG) console.groupEnd();
@@ -156,13 +156,13 @@ class Compiler extends React.Component {
   // compile source to smc
   btnToSMC() {
     if (DBG) console.group(...PR('toSMC'));
-    this.source = KeywordFactory.TokenizeToSource(this.state.source);
+    // this.source = KeywordFactory.TokenizeToSource(this.state.source);
     const template = KeywordFactory.CompileSource(this.source);
     const { init, conditions, defaults, define } = template;
-    if (init.length) console.log(...PR('instance'), init);
-    if (define.length) console.log(...PR('define'), define);
-    if (defaults.length) console.log(...PR('defaults'), defaults);
-    if (conditions.length) console.log(...PR('conditions'), conditions);
+    if (init.length) console.log('instance', init);
+    if (define.length) console.log('define', define);
+    if (defaults.length) console.log('defaults', defaults);
+    if (conditions.length) console.log('conditions', conditions);
     if (DBG) console.groupEnd();
   }
 
@@ -177,7 +177,7 @@ class Compiler extends React.Component {
     if (index === 0) {
       tab = (
         <div id="script-text">
-          <h3>DEVELOPER SOURCE TESTER</h3>
+          <h3>TEXT VIEW (placeholder)</h3>
           <textarea
             rows={20}
             style={{
@@ -203,6 +203,9 @@ class Compiler extends React.Component {
           {this.state.jsx}
           <button type="button" name="toSource" onClick={this.btnToSource}>
             React to Source
+          </button>{' '}
+          <button type="button" name="toSMC" onClick={this.btnToSMC}>
+            Source To SMC
           </button>
         </div>
       );
@@ -219,10 +222,22 @@ class Compiler extends React.Component {
           MODE
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <button type="button" onClick={this.selectTab} value={0}>
-            SOURCE
+          <button
+            style={{ border: '0px' }}
+            disabled={index === 0}
+            type="button"
+            onClick={this.selectTab}
+            value={0}
+          >
+            TEXT
           </button>
-          <button type="button" onClick={this.selectTab} value={1}>
+          <button
+            style={{ border: '0px' }}
+            disabled={index === 1}
+            type="button"
+            onClick={this.selectTab}
+            value={1}
+          >
             WIZARD
           </button>
           {tab}

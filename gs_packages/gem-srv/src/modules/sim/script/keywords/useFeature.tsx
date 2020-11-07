@@ -8,6 +8,7 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgentTemplate, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { addFeature } from 'script/ops/op-imports';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -22,10 +23,10 @@ export class UseFeature extends KeywordDef {
   }
 
   /** create smc template code objects */
-  compile(parms: string[]): IAgentTemplate {
+  compile(parms: any[]): IAgentTemplate {
     const featureName = parms[0];
     const progout = [];
-    progout.push(`smc_useFeature( ${featureName} )`);
+    progout.push(addFeature(featureName));
     return {
       define: progout,
       defaults: [],

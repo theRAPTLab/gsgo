@@ -23,7 +23,7 @@ export class DefProp extends KeywordDef {
   }
 
   /** create smc template code objects */
-  compile(parms: string[]): IAgentTemplate {
+  compile(parms: any[]): IAgentTemplate {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
