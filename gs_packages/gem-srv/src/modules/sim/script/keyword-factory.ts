@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { IScopeable, IScopeableCtor } from 'lib/t-smc';
+import { IScopeable, IScopeableCtor, TMethod } from 'lib/t-smc';
 import { ScriptUnit, IAgentTemplate, IKeyword, IKeywordCtor } from 'lib/t-script';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
@@ -20,6 +20,7 @@ const DBG = false;
 /// these should be moved to DATACORE
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const SMOBJS: Map<string, IScopeableCtor> = new Map();
+const TESTS: Map<string, TMethod> = new Map();
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,6 +54,17 @@ function GetSMObjectCtor(name: string): IScopeableCtor {
   if (!SMOBJS.has(name)) throw Error(`GetSMObjectCtor: ${name} `);
   return SMOBJS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RegisterTest(name: string, smc: TMethod) {
+  if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
+  TESTS.set(name, smc);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetTest(name: string) {
+  if (!TESTS.has(name)) {
+    console.warn(...PR(`test ${name} doesn't exist`));
+  } else return TESTS.get(name);
+}
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,9 +91,9 @@ function CompileSource(units: ScriptUnit[]): IAgentTemplate {
     if (DBG) console.log(unit, '->', programs);
     const { define, defaults, conditions, init } = programs;
     if (define && define.length) program.define.push(...define);
-    if (defaults && defaults.length) program.defaults.push(...define);
-    if (conditions && conditions.length) program.conditions.push(...define);
-    if (init && init.length) program.init.push(...define);
+    if (defaults && defaults.length) program.defaults.push(...defaults);
+    if (conditions && conditions.length) program.conditions.push(...conditions);
+    if (init && init.length) program.init.push(...init);
   });
   return program;
 }
@@ -121,7 +133,9 @@ function DecompileSource(units: ScriptUnit[]): string {
 export {
   RegisterKeyword, // Ctor => store in KEYWORDS table by keyword
   RegisterSMObjectCtor,
-  GetSMObjectCtor
+  GetSMObjectCtor,
+  RegisterTest,
+  GetTest
 };
 /// Source is ScriptUnit[], produced by GUI
 export {

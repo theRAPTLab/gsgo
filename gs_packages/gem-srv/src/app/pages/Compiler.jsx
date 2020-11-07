@@ -44,16 +44,7 @@ UR.SystemHook(
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const defaultText = `
-defTemplate Bunny
-defProp spriteFrame GSNumber random 0 3
-defProp currentHealth GSNumber 100
-defProp isAlive GSBoolean true
-useFeature Movement
-prop x setTo (50)
-prop y setTo (-50)
-prop skin setTo 'bunny.json'
-on frame jitterPos
-endTemplate
+freeform scripting is disabled
 `.trim();
 
 const defaultSource = [
@@ -62,12 +53,9 @@ const defaultSource = [
   ['defProp', 'currentHealth', 'GSNumber', 100],
   ['defProp', 'isAlive', 'GSBoolean', true],
   ['useFeature', 'Movement'],
-  ['random', -50, 50],
-  ['propPop', 'x'],
-  ['random', -50, 50],
-  ['propPop', 'y'],
+  ['randomPos', -50, 50],
   ['prop', 'skin', 'setTo', 'bunny.json'],
-  ['on', 'frame', ['jitterPos']],
+  ['onCondition', 'frame', ['jitterPos']],
   ['endTemplate']
 ];
 

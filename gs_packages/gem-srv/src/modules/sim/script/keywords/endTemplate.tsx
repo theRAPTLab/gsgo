@@ -28,7 +28,7 @@ export class EndTemplate extends KeywordDef {
     parms: string[]
   ): IAgentTemplate {
     const progout = [];
-    progout.push('smc_nop()');
+    progout.push(() => console.log('no op'));
     return {
       define: progout
     };

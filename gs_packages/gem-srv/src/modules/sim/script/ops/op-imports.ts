@@ -1,3 +1,9 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  implementation of keyword useFeature command object
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 export * from './stack-ops';
 export * from './debug-ops';
 export * from './math-ops';

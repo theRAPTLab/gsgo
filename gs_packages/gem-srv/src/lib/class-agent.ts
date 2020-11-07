@@ -13,7 +13,14 @@ import { FEATURES } from 'modules/runtime-datacore';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { IAgent, IScopeable, TStackable, IMessage, TProgram } from './t-smc.d';
+import {
+  IAgent,
+  IScopeable,
+  TStackable,
+  IMessage,
+  TMethod,
+  TProgram
+} from './t-smc.d';
 import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
@@ -121,12 +128,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   /** Invoke method by name. functions return values, smc programs return stack
    *  This overrides sm-object method()
    */
-  method(name: string, ...args: any): TStackable[] {
+  method(name: string, ...args: any): any {
     const m = this.methods.get(name);
-    if (m === undefined) throw Error(`no method named '${name}'`);
-    if (typeof m === 'function') return m.apply(this, ...args);
-    if (Array.isArray(m)) return this.exec_smc(m, [...args]);
-    throw Error(`method ${name} object is neither function or ops array`);
+    return this.exec(m, ...args);
   }
 
   /** retrieve the feature reference */
@@ -163,6 +167,16 @@ class Agent extends SM_Object implements IAgent, IActable {
     }
   }
 
+  /** Execute either a smc_program or function depending on the
+   *  method passed-in with arguments
+   */
+  exec(m: TMethod, ...args): any {
+    if (m === undefined) throw Error('no method passed');
+    if (typeof m === 'function') return this.exec_func(m, [...args]);
+    if (Array.isArray(m)) return this.exec_smc(m, [...args]);
+    if (typeof m === 'string') return this.exec_program(m, [...args]);
+    throw Error('method object is neither function or smc');
+  }
   /** Execute agent stack machine program. Note that commander also
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
@@ -180,6 +194,12 @@ class Agent extends SM_Object implements IAgent, IActable {
     // return the stack as a result, though
     return state.stack;
   }
+  /** Execute a method that is a Javascript function */
+  exec_func(program: Function, args: any[]): any {
+    return program.apply(this, args);
+  }
+  /** Execute a named program stored in global program store */
+  exec_program(progName: string, args: any[]) {}
 
   // serialization
   serialize() {

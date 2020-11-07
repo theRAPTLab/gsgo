@@ -42,7 +42,7 @@ export interface IAgent extends IScopeable {
   thinkQueue: IMessage[];
   execQueue: IMessage[];
   queue: (msg: IMessage) => void;
-  exec_smc: (prog: TProgram, initStack?: TStackable[]) => TStackable[];
+  exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
   addFeature: (name: string) => void;
   name: () => string;
