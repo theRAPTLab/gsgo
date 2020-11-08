@@ -67,7 +67,7 @@ class Compiler extends React.Component {
       jsx: KeywordFactory.RenderSource(this.source),
       text: defaultText,
       source: [],
-      tabIndex: 1
+      tabIndex: 0
     };
     // bind
     this.btnToJSX = this.btnToJSX.bind(this);
@@ -116,7 +116,7 @@ class Compiler extends React.Component {
   updateSourceText(evt) {
     const text = evt.target.value;
     this.text = text;
-    this.setState({ text }, () => console.log(this.text));
+    this.setState({ text });
   }
 
   // handle the "tabs"
@@ -205,15 +205,11 @@ class Compiler extends React.Component {
         <div id="script-wizard">
           <h3>WIZARD VIEW</h3>
           {this.state.jsx}
+          <button type="button" name="renderJSX" onClick={this.btnToJSX}>
+            SourceToJSX
+          </button>{' '}
           <button type="button" name="updateText" onClick={this.btnUpdateText}>
             WizardToText
-          </button>{' '}
-          <button
-            type="button"
-            name="compileBlueprint"
-            onClick={this.btnCompileBlueprint}
-          >
-            SourceToSMC
           </button>
         </div>
       );

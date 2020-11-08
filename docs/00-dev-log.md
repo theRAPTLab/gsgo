@@ -447,10 +447,14 @@ Before we start, we'll commit `dev-sri/script-bridge` and make a new branch `dev
 
 What does it take to **define what blueprints to instance**?
 
+* [x] get text-to-source working well enough for testing
+
+The compile button should somehow send the program to sim-agent.
+
 * [ ] instance list: `[['blueprint', 'name', smc_program],[]]`
 * [ ] iterates over the instance list, creating each agent
 
-let's see if `KEYDICT.TokenToScriptUnit` works
+
 
 
 
