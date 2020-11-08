@@ -16,7 +16,7 @@ import * as TEST from 'modules/tests/test-agents';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
-const DO_TESTS = false;
+const DO_TESTS = !UR.IsRoute('/app/compiler');
 
 const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
   Constructor: DisplayObject,

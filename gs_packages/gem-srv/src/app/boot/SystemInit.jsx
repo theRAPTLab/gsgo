@@ -42,7 +42,7 @@ function Init() {
     (async () => {
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
-      await UR.SystemStart();
+      await UR.SystemStart(document.location.pathname);
       // system boot runs BOOT,INIT,CONNECT phases
       await UR.SystemBoot({ netProps });
       // start React
