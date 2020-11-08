@@ -44,20 +44,16 @@ UR.SystemHook(
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const defaultText = `
-freeform scripting is disabled
+defBlueprint Bunny
+defProp spriteFrame GSNumber 100
+defProp currentHealth GSNumber 100
+defProp isALive GSBoolean true
+useFeature Movement
+randomPos -50 50
+prop skin setTo 'bunny.json'
+onCondition frame 'jitterPos'
+endBlueprint
 `.trim();
-
-const defaultSource = [
-  ['defBlueprint', 'Bunny'],
-  ['defProp', 'spriteFrame', 'GSNumber', 100],
-  ['defProp', 'currentHealth', 'GSNumber', 100],
-  ['defProp', 'isAlive', 'GSBoolean', true],
-  ['useFeature', 'Movement'],
-  ['randomPos', -50, 50],
-  ['prop', 'skin', 'setTo', 'bunny.json'],
-  ['onCondition', 'frame', ['jitterPos']],
-  ['endBlueprint']
-];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,18 +61,19 @@ const defaultSource = [
 class Compiler extends React.Component {
   constructor() {
     super();
-    // prep
-    // this.source = KeywordFactory.TokenizeToSource(defaultText);
-    this.source = defaultSource;
+    this.text = defaultText;
+    this.source = KeywordFactory.TokenizeToSource(this.text);
     this.state = {
       jsx: KeywordFactory.RenderSource(this.source),
-      source: defaultText,
+      text: defaultText,
+      source: [],
       tabIndex: 1
     };
     // bind
-    this.btnToReact = this.btnToReact.bind(this);
-    this.btnToSource = this.btnToSource.bind(this);
-    this.btnToSMC = this.btnToSMC.bind(this);
+    this.btnToJSX = this.btnToJSX.bind(this);
+    this.btnUpdateText = this.btnUpdateText.bind(this);
+    this.btnCompileBlueprint = this.btnCompileBlueprint.bind(this);
+    this.btnCompileText = this.btnCompileText.bind(this);
     this.uiRenderScriptWizard = this.uiRenderScriptWizard.bind(this);
     this.uiScriptWizardChanged = this.uiScriptWizardChanged.bind(this);
     this.updateSourceText = this.updateSourceText.bind(this);
@@ -117,7 +114,9 @@ class Compiler extends React.Component {
 
   // echo typing in SourceText to state
   updateSourceText(evt) {
-    this.setState({ source: evt.target.value });
+    const text = evt.target.value;
+    this.text = text;
+    this.setState({ text }, () => console.log(this.text));
   }
 
   // handle the "tabs"
@@ -126,32 +125,45 @@ class Compiler extends React.Component {
   }
 
   // compile source to jsx
-  btnToReact() {
+  btnToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = KeywordFactory.TokenizeToSource(this.state.source);
+    // this.source = KeywordFactory.TokenizeToSource(this.state.text);
     const jsx = KeywordFactory.RenderSource(this.source);
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
     if (DBG) console.groupEnd();
   }
 
   // compile jsx back to source
-  btnToSource() {
+  btnUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    this.setState({ source: KeywordFactory.DecompileSource(this.source) });
+    const text = KeywordFactory.DecompileSource(this.source);
+    this.setState({ text });
+    this.text = text;
     if (DBG) console.groupEnd();
   }
 
+  // compile text to source
+  btnCompileText() {
+    // this.text isn't updated
+    const source = KeywordFactory.TokenizeToSource(this.text);
+    this.source = source;
+    this.setState({ source: JSON.stringify(source) });
+  }
+
   // compile source to smc
-  btnToSMC() {
+  btnCompileBlueprint() {
     if (DBG) console.group(...PR('toSMC'));
-    // this.source = KeywordFactory.TokenizeToSource(this.state.source);
+    // this.source = KeywordFactory.TokenizeToSource(this.state.text);
     const blueprint = KeywordFactory.CompileSource(this.source);
     const { init, conditions, defaults, define } = blueprint;
-    if (init.length) console.log('instance', init);
-    if (define.length) console.log('define', define);
-    if (defaults.length) console.log('defaults', defaults);
-    if (conditions.length) console.log('conditions', conditions);
     if (DBG) console.groupEnd();
+    let source = 'SMC: ';
+    if (init.length) source += `instance: ${init.length}; `;
+    if (define.length) source += `define: ${define.length}; `;
+    if (defaults.length) source += `defaults: ${define.length}; `;
+    if (conditions.length) source += `conditions: ${conditions.length};`;
+    console.log(source);
+    this.setState({ source });
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -165,21 +177,25 @@ class Compiler extends React.Component {
     if (index === 0) {
       tab = (
         <div id="script-text">
-          <h3>TEXT VIEW (placeholder)</h3>
+          <h3>SCRIPT VIEW</h3>
           <textarea
             rows={20}
             style={{
               boxSizing: 'border-box',
               width: '100%'
             }}
-            value={this.state.source}
+            value={this.state.text}
             onChange={this.updateSourceText}
           />
-          <button type="button" name="toReact" onClick={this.btnToReact}>
-            Source To React
+          <button type="button" name="compileText" onClick={this.btnCompileText}>
+            TextToSource
           </button>{' '}
-          <button type="button" name="toSMC" onClick={this.btnToSMC}>
-            Source To SMC
+          <button
+            type="button"
+            name="compileBlueprint"
+            onClick={this.btnCompileBlueprint}
+          >
+            SourceToSMC
           </button>
         </div>
       );
@@ -187,13 +203,17 @@ class Compiler extends React.Component {
     if (index === 1) {
       tab = (
         <div id="script-wizard">
-          <h3>SCRIPT WIZARD</h3>
+          <h3>WIZARD VIEW</h3>
           {this.state.jsx}
-          <button type="button" name="toSource" onClick={this.btnToSource}>
-            React to Source
+          <button type="button" name="updateText" onClick={this.btnUpdateText}>
+            WizardToText
           </button>{' '}
-          <button type="button" name="toSMC" onClick={this.btnToSMC}>
-            Source To SMC
+          <button
+            type="button"
+            name="compileBlueprint"
+            onClick={this.btnCompileBlueprint}
+          >
+            SourceToSMC
           </button>
         </div>
       );
@@ -217,7 +237,7 @@ class Compiler extends React.Component {
             onClick={this.selectTab}
             value={0}
           >
-            TEXT
+            show script view
           </button>
           <button
             style={{ border: '0px' }}
@@ -226,9 +246,11 @@ class Compiler extends React.Component {
             onClick={this.selectTab}
             value={1}
           >
-            WIZARD
+            show wizard view
           </button>
           {tab}
+          <hr />
+          {this.state.source}
         </div>
         <div id="root-renderer" className={classes.main}>
           world view

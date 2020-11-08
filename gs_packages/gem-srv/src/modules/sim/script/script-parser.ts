@@ -672,27 +672,59 @@ Parse.toString = function () {
   return 'JavaScript Expression Parser (JSEP) v' + Parse.version;
 };
 
-/** HACKED ON EXTENSION *****************************************************/
+/** HACKED ON EXTENSION ******************************************************/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TokenizeToScriptUnit(expr): ScriptUnit {
+/** this is a VERY cheesy tokenizer. to fix it, need to rewrite Parse above
+ *  to expose the gobble methods, perhaps as a class
+ */
+function TokenizeToScriptUnit(str: string): ScriptUnit {
+  const bits = str.trim().split(' ');
+  const signs = [45, 43]; // - +
+  const unit = [];
+  bits.forEach(bit => {
+    let i = 0;
+    let ch = bit.charCodeAt(i);
+    // quoted string
+    if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
+      unit.push(bit.substring(1, bit.length - 1));
+      return;
+    }
+    // signed number
+    if (signs.includes(ch) && isDecimalDigit(bit.charCodeAt(i + 1))) {
+      unit.push(Number(bit));
+      return;
+    }
+    // number
+    if (isDecimalDigit(ch)) {
+      unit.push(Number(bit));
+      return;
+    }
+    // identifier
+    unit.push(bit);
+  });
+  return unit;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const typeHandlers = {
+  'Compound': node => node.body,
+  'Literal': node => node.value,
+  'Identifier': node => node.name,
+  'BinaryExpression': node => `expr{${node.raw}}`,
+  'UnaryExpression': node => node.raw
+};
+
+function processNode(n) {
+  const type = n.type;
+  const func = typeHandlers[type];
+  if (!func) {
+    console.warn(`unknown node type '${type}'`, n);
+  }
+  return func(n);
+}
+/** new tokenizer ... not yet working with expressions */
+function TokenizeToScriptUnit2(expr): ScriptUnit {
   const line = expr.trim();
   const unit = [];
-  const typeHandlers = {
-    'Compound': node => node.body,
-    'Literal': node => node.value,
-    'Identifier': node => node.name,
-    'BinaryExpression': node => `expr{${node.raw}}`,
-    'UnaryExpression': node => node.raw
-  };
-
-  function processNode(n) {
-    const type = n.type;
-    const func = typeHandlers[type];
-    if (!func) {
-      console.warn(`unknown node type '${type}'`, n);
-    }
-    unit.push(func(n));
-  }
 
   if (!line.length) return unit;
   const cnode = Parse(line);
@@ -700,8 +732,8 @@ function TokenizeToScriptUnit(expr): ScriptUnit {
   if (cnode.type === 'Compound') {
     if (!cnode.body) throw Error(`missing 'body' prop in ${cnode.type} node`);
     if (!Array.isArray(cnode.body)) throw Error("'body' prop is not an array");
-    cnode.body.forEach((node, index) => processNode(node));
-  } else processNode(cnode);
+    cnode.body.forEach((node, index) => unit.push(processNode(node)));
+  } else unit.push(processNode(cnode));
 
   return unit;
 }

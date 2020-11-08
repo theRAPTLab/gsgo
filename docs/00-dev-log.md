@@ -419,10 +419,38 @@ I am very dehydrated today, so drinking a ton of water. But **where did we leave
 
 (3) There are **two** agent factories. The old one stores blueprint decorators and creates new instances from them. The newer one doesn't really do anything yet, but is probably intended to host the new style of managing templates. 
 
-* [ ] confirm that the test program still runs by re-enabling test-agents
-  * [ ] 
+* [x] confirm that the test program still runs by re-enabling test-agents
+* [x] add DO_TESTS flag to sim-agents
 
+A **Blueprint** is an object with several arrays that are the programs that run at different times:
 
+* `define` define templates, agents, and features in use
+* `defaults` are the initial value setting programs, running after define
+* `conditions` are programs to run and receive updates
+* `init` are all other code that might run in the agent
+
+So here's what needs to happen in the order it needs to happen:
+
+1. compile blueprint source
+2. store the compiled blueprint somewhere
+
+Before we start, we'll commit `dev-sri/script-bridge` and make a new branch `dev-sri/model-loop`
+
+### Compile & Store Blueprints
+
+```
+[ ] update the source in Compiler
+[ ] compile the blueprint and store it to AGENT_BLUEPRINTS
+[ ] instance blueprint in AGENTS
+[ ] restart simulator via sim-api
+```
+
+What does it take to **define what blueprints to instance**?
+
+* [ ] instance list: `[['blueprint', 'name', smc_program],[]]`
+* [ ] iterates over the instance list, creating each agent
+
+let's see if `KEYDICT.TokenToScriptUnit` works
 
 
 
