@@ -216,11 +216,14 @@ class Compiler extends React.Component {
     }
     //
     return (
-      <div className={classes.root} style={{ gridTemplateColumns: '25% 70%' }}>
+      <div
+        className={classes.root}
+        style={{ gridTemplateColumns: '30% auto 0px' }}
+      >
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 2' }}
+          style={{ gridColumnEnd: 'span 3' }}
         >
           <span style={{ fontSize: '32px' }}>COMPILER/TEST</span> UGLY DEVELOPER
           MODE
@@ -254,7 +257,7 @@ class Compiler extends React.Component {
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
-          style={{ gridColumnEnd: 'span 2' }}
+          style={{ gridColumnEnd: 'span 3' }}
         >
           console-bottom
         </div>

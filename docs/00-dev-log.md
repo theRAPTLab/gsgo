@@ -438,6 +438,18 @@ Before we start, we'll commit `dev-sri/script-bridge` and make a new branch `dev
 
 ### Compile & Store Blueprints
 
+What does it take to **define what blueprints to instance**?
+
+The compile button should somehow send the program to sim-agent.
+
+* [ ] instance list: `[['blueprint', 'name', smc_program],[]]`
+* [ ] iterates over the instance list, creating each agent
+
+* [x] get text-to-source working well enough for testing
+
+## NOV 08 SUN - Instancing Blueprints
+
+### 1. Save the Agent Blueprint
 ```
 [ ] update the source in Compiler
 [ ] compile the blueprint and store it to AGENT_BLUEPRINTS
@@ -445,14 +457,6 @@ Before we start, we'll commit `dev-sri/script-bridge` and make a new branch `dev
 [ ] restart simulator via sim-api
 ```
 
-What does it take to **define what blueprints to instance**?
-
-* [x] get text-to-source working well enough for testing
-
-The compile button should somehow send the program to sim-agent.
-
-* [ ] instance list: `[['blueprint', 'name', smc_program],[]]`
-* [ ] iterates over the instance list, creating each agent
 
 
 
