@@ -451,13 +451,17 @@ The compile button should somehow send the program to sim-agent.
 
 ### 1. Save the Agent Blueprint
 ```
-[ ] update the source in Compiler
-[ ] compile the blueprint and store it to AGENT_BLUEPRINTS
+[X] update the source in Compiler
+[X] compile the blueprint and store it to AGENT_BLUEPRINTS
 [ ] instance blueprint in AGENTS
 [ ] restart simulator via sim-api
 ```
 
+`KeywordFactory` contains all the compiler methods, and blueprints.
 
+The simulation needs to be running constantly
+
+* AgentSelect - 
 
 
 

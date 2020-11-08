@@ -46,11 +46,8 @@ UR.SystemHook(
 const defaultText = `
 defBlueprint Bunny
 defProp spriteFrame GSNumber 100
-defProp currentHealth GSNumber 100
-defProp isALive GSBoolean true
-useFeature Movement
-randomPos -50 50
 prop skin setTo 'bunny.json'
+randomPos -50 50
 onCondition frame 'jitterPos'
 endBlueprint
 `.trim();
@@ -72,7 +69,7 @@ class Compiler extends React.Component {
     // bind
     this.btnToJSX = this.btnToJSX.bind(this);
     this.btnUpdateText = this.btnUpdateText.bind(this);
-    this.btnCompileBlueprint = this.btnCompileBlueprint.bind(this);
+    this.btnSaveBlueprint = this.btnSaveBlueprint.bind(this);
     this.btnCompileText = this.btnCompileText.bind(this);
     this.uiRenderScriptWizard = this.uiRenderScriptWizard.bind(this);
     this.uiScriptWizardChanged = this.uiScriptWizardChanged.bind(this);
@@ -151,19 +148,18 @@ class Compiler extends React.Component {
   }
 
   // compile source to smc
-  btnCompileBlueprint() {
-    if (DBG) console.group(...PR('toSMC'));
-    // this.source = KeywordFactory.TokenizeToSource(this.state.text);
-    const blueprint = KeywordFactory.CompileSource(this.source);
-    const { init, conditions, defaults, define } = blueprint;
-    if (DBG) console.groupEnd();
-    let source = 'SMC: ';
-    if (init.length) source += `instance: ${init.length}; `;
-    if (define.length) source += `define: ${define.length}; `;
-    if (defaults.length) source += `defaults: ${define.length}; `;
-    if (conditions.length) source += `conditions: ${conditions.length};`;
-    console.log(source);
-    this.setState({ source });
+  btnSaveBlueprint() {
+    // convert text to source (from btnCompileText)
+    const source = KeywordFactory.TokenizeToSource(this.text);
+    this.source = source;
+    this.setState({ source: JSON.stringify(source) });
+    // save the blueprint to default
+    KeywordFactory.MakeBlueprint('default', this.source);
+    // just test that we can load the blueprint
+    const blueprint = KeywordFactory.GetBlueprint('default');
+    // also update jsx (from btnToJSX)
+    const jsx = KeywordFactory.RenderSource(this.source);
+    UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -187,15 +183,12 @@ class Compiler extends React.Component {
             value={this.state.text}
             onChange={this.updateSourceText}
           />
-          <button type="button" name="compileText" onClick={this.btnCompileText}>
-            TextToSource
-          </button>{' '}
           <button
             type="button"
-            name="compileBlueprint"
-            onClick={this.btnCompileBlueprint}
+            name="saveBlueprint"
+            onClick={this.btnSaveBlueprint}
           >
-            SourceToSMC
+            Save Blueprint
           </button>
         </div>
       );
@@ -205,11 +198,9 @@ class Compiler extends React.Component {
         <div id="script-wizard">
           <h3>WIZARD VIEW</h3>
           {this.state.jsx}
-          <button type="button" name="renderJSX" onClick={this.btnToJSX}>
-            SourceToJSX
-          </button>{' '}
+          <hr />
           <button type="button" name="updateText" onClick={this.btnUpdateText}>
-            WizardToText
+            Update Blueprint
           </button>
         </div>
       );

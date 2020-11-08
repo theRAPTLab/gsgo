@@ -26,6 +26,7 @@ const DBG = false;
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const SMOBJS: Map<string, IScopeableCtor> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
+const BLUEPRINTS: Map<string, IAgentBlueprint> = new Map();
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,6 +134,28 @@ function DecompileSource(units: ScriptUnit[]): string {
   return lines.join('\n');
 }
 
+/// BLUEPRINT /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MakeBlueprint(name: string, units: ScriptUnit[]): IAgentBlueprint {
+  if (typeof name !== 'string' && units === undefined) {
+    units = name;
+    name = 'default';
+  }
+  if (BLUEPRINTS.has(name))
+    console.log(...PR(`updating ${name} w/ ${units.length} lines`));
+  else console.log(...PR(`new blueprint ${name} w/ ${units.length} lines`));
+  const bp = CompileSource(units);
+  BLUEPRINTS.set(name, bp);
+  return bp;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetBlueprint(name: string): IAgentBlueprint {
+  name = name || 'default';
+  const bp = BLUEPRINTS.get(name);
+  if (!bp) console.warn(`blueprint '${name}' does not exist`);
+  return bp;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
@@ -148,6 +171,8 @@ export {
   RenderSource, // ScriptUnit[] => JSX
   DecompileSource // ScriptUnit[] => produce source text from units
 };
+/// Blueprint Management
+export { MakeBlueprint, GetBlueprint };
 /// for expression evaluation
 export {
   Parse, // expr => AST
