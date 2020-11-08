@@ -263,7 +263,7 @@ MOD.GetInstanceProperties = instanceId => {
   return instance ? instance.properties : [];
 };
 /**
- * This retrieves the array of features from the Agent Template!
+ * This retrieves the array of features from the Agent Blueprint!
  * Then loads the saved instance overrides
  * @param {String} instanceId
  */
@@ -636,7 +636,7 @@ MOD.AddProperty = agentId => {
   MOD.UpdateAgent(agent);
 };
 /**
- * Add Feature to Agent Template
+ * Add Feature to Agent Blueprint
  */
 MOD.AddFeature = agentId => {
   if (DBG) console.log(PR, 'AddFeature');

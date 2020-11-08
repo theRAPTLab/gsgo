@@ -69,6 +69,7 @@ class Home extends React.Component {
           <ul className={classes.list}>
             <NavItem route="generator">generate npc entities</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
+            <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="xgui">standalone xgui port</NavItem>
             <NavItem route="-faketrack">testbed for annotation input</NavItem>
           </ul>

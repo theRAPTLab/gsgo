@@ -73,10 +73,11 @@ const CSS_COLORS = {
   TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
   TagGray: `color:#fff;background-color:#999${CSS_PAD}`,
   TagNull: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
-  // COLOR BACKGROUND DARK
+  // COLOR BACKGROUND DARK (BROWSER ONLY)
   TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
   TagDkGreen: `color:white;background-color:green;${CSS_PAD}`,
-  TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`
+  TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`,
+  TagDkOrange: `color:white;background-color:orange;${CSS_PAD}`
 };
 
 // div console
@@ -291,10 +292,11 @@ function makeTerminalOut(prompt, tagColor = DEFAULT_COLOR) {
 /** Return function to print a string, given a DIV id and optional row/column.
  */
 function makeHTMLConsole(divId, row = 0, col = 0) {
+  const ERP = makeStyleFormatter('makeHTMLConsole', 'Red');
   let buffer = [];
   if (typeof divId !== 'string') throw Error('bad id');
   if (!document.getElementById(divId)) {
-    console.log(`HTMLConsole: id '${divId}' doesn't exist`);
+    console.warn(...ERP(`id '${divId}' doesn't exist`));
     return {
       print: () => {},
       plot: () => {},

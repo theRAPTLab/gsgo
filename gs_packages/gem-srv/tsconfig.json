@@ -4,19 +4,18 @@
     "moduleResolution": "node",
     "baseUrl": "src",
     "paths": {
+      "config/*": ["../config/*"],
+      "script/*": ["./modules/sim/script/*"],
       "app/*": ["./app/*"],
-      "lib/*": ["app/lib/*"],
-      "modules/*": ["app/modules/*"],
-      "static/*": ["app/static/*"],
-      "script/*": ["app/modules/sim/script/*"],
-      "step/*": ["app/modules/step/*"],
-      "config/*": ["../config/*"]
+      "lib/*": ["./lib/*"],
+      "modules/*": ["./modules/*"],
+      "static/*": ["./app/static/*"]
     },
     "jsx": "preserve",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "sourceMap": true
   },
-  "include": ["src/**/*", "./urdu.js"],
+  "include": ["src/**/*.ts", "./urdu.js"],
   "exclude": ["node_modules"]
 }

@@ -7,28 +7,29 @@
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
+import * as DATACORE from 'modules/runtime-datacore';
+import * as RENDERER from 'modules/render/api-render';
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import SETTINGS from 'config/app.settings';
-import * as DATACORE from 'modules/runtime-datacore';
-import * as RENDERER from 'modules/render/api-render';
 import { useStylesHOC } from './page-styles';
 
-const PR = UR.PrefixUtil('Generator', 'TagBlue');
+const PR = UR.PrefixUtil('Generator', 'TagGreen');
+const DBG = true;
 
 UR.SystemHook(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
-      console.log(...PR('LOADING ASSET MANIFEST...'));
+      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
         let map = await DATACORE.ASSETS_LoadManifest('static/assets.json');
-        console.log(...PR('ASSETS LOADED'));
+        if (DBG) console.log(...PR('ASSETS LOADED'));
         SIM.StartSimulation();
-        console.log(...PR('SIMULATION STARTED'));
+        if (DBG) console.log(...PR('SIMULATION STARTED'));
       })();
       resolve();
     })
@@ -59,7 +60,6 @@ class Generator extends React.Component {
     RENDERER.HookResize(window);
     document.title = 'GENERATOR';
   }
-
   componentWillUnmount() {
     console.log('componentWillUnmount');
   }
@@ -71,7 +71,9 @@ class Generator extends React.Component {
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
           <span style={{ fontSize: '32px' }}>GENERATOR/TEST</span>
         </div>
-        <div id="console-left" className={clsx(classes.cell, classes.left)} />
+        <div id="console-left" className={clsx(classes.cell, classes.left)}>
+          console-left
+        </div>
         <div id="root-renderer" className={classes.main} />
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
           console-right

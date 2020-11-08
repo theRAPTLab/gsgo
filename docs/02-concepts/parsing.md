@@ -106,5 +106,7 @@ expression     ::= addition | multiplication | number
 
 
 
+## Parsing and Expressions
 
+To review, parsing consists of 
 

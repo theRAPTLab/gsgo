@@ -14,6 +14,7 @@ const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
 const PR = PROMPTS.makeStyleFormatter('UR');
+const DBG = false;
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,16 +37,23 @@ const META = {
 const EP_LOCAL = new EndPoint('ur-client');
 const EP_NET = new EndPoint('ur-sender');
 let URSYS_RUNNING = false;
+let URSYS_ROUTE = '';
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
  *  SystemBoot, which starts the URSYS lifecycle.
  */
-async function SystemStart() {
+async function SystemStart(route) {
   if (URSYS_RUNNING) {
-    console.log(...PR('SystemStart: URSYS already running!!!'));
-    return Promise.reject();
+    const out = 'SystemStart: URSYS already running!!!';
+    console.log(...PR(out));
+    return Promise.reject(out);
+  }
+  if (route === undefined) {
+    const out = 'SystemStart: arg1 must be a route/path';
+    console.log(...PR(out));
+    return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
   PhaseMachine.QueueHookFor(
@@ -58,9 +66,11 @@ async function SystemStart() {
   // autoregister messages
   PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
     let result = await EP_LOCAL.ursysRegisterMessages();
-    console.log(...PR('message handlers registered with URNET:', result));
+    if (DBG)
+      console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
+  URSYS_ROUTE = route;
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,6 +102,8 @@ const UR = {
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
+  // ROUTE INFO
+  IsRoute: route => URSYS_ROUTE === route,
   // FORWARDED SYSTEM CONTROL VIA UREXEC
   SystemBoot: ClientExec.SystemBoot,
   SystemConfig: ClientExec.SystemConfig,

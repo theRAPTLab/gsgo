@@ -40,11 +40,9 @@ function Init() {
     console.log(...PR('FYI: setting document.body.style.margin to 0'));
     // initialize URSYS synchronously
     (async () => {
-      console.log(...PR('URSYS CONNECTING...'));
       const response = await fetch('/urnet/getinfo');
       const netProps = await response.json();
-      await UR.SystemStart();
-      console.log(...PR(`${PROJECT_NAME.toUpperCase()} SYSTEM BOOT`));
+      await UR.SystemStart(document.location.pathname);
       // system boot runs BOOT,INIT,CONNECT phases
       await UR.SystemBoot({ netProps });
       // start React
@@ -54,7 +52,6 @@ function Init() {
         </BrowserRouter>,
         document.getElementById('app-container'),
         () => {
-          console.log(...PR(`${PROJECT_NAME.toUpperCase()} REACT READY`));
           UR.addConsoleTools();
         }
       );

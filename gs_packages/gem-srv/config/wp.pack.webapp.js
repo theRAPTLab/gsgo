@@ -50,23 +50,25 @@ const WebpackPacker = env => {
   }
   // files/folders to copy as-is via the copy plugin
   // github.com/webpack-contrib/copy-webpack-plugin
-  const COPY_FILES = [
-    {
-      from: 'web-index.html',
-      to: `${DIR_OUT}/index.html`,
-      toType: 'file'
-    },
-    {
-      from: 'favicon.ico',
-      to: `${DIR_OUT}/favicon.ico`,
-      toType: 'file'
-    },
-    {
-      from: 'static',
-      to: `${DIR_OUT}/static`,
-      toType: 'dir'
-    }
-  ];
+  const COPY_FILES = {
+    patterns: [
+      {
+        from: 'web-index.html',
+        to: `${DIR_OUT}/index.html`,
+        toType: 'file'
+      },
+      {
+        from: 'favicon.ico',
+        to: `${DIR_OUT}/favicon.ico`,
+        toType: 'file'
+      },
+      {
+        from: 'static',
+        to: `${DIR_OUT}/static`,
+        toType: 'dir'
+      }
+    ]
+  };
 
   // return package-related config parameters
   return {

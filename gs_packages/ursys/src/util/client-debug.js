@@ -12,7 +12,7 @@ let TOOLS;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function addConsoleTools(UR) {
   const PR = UR.PrefixUtil('URSYS DEBUG', 'TagRed');
-  console.log(...PR('adding window debug tools'));
+  console.groupCollapsed(...PR('adding window debug tools'));
 
   TOOLS = {
     call: (mesg = 'NET:HELLO', data = { type: 'call' }) => {
@@ -52,6 +52,7 @@ function addConsoleTools(UR) {
     console.log(...PR(`.. window.${key}()`));
     window[key] = f;
   });
+  console.groupEnd();
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////

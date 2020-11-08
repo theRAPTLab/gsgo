@@ -5,9 +5,9 @@ import clsx from 'clsx';
 // URSYS
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from 'app/pages/page-styles';
-import * as DATACORE from 'app/modules/runtime-datacore';
+import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
-import * as SIM from '../modules/sim/api-sim';
+import * as SIM from 'modules/sim/api-sim';
 // XGUI
 import APPLOGIC from './app-logic';
 import AppHome from './components/AppHome';
@@ -22,26 +22,10 @@ import ModelPanel from './components/panels/ModelPanel';
 import InstancesPanel from './components/panels/InstancesPanel';
 import './compiled-scss.css';
 
-/// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// hack in asset loader
-let ASSETS_LOADED = false;
-UR.SystemHook(
-  'UR/LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      (async () => {
-        await DATACORE.ASSETS_LoadManifest('static/assets.json');
-        ASSETS_LOADED = true;
-        const renderRoot = document.getElementById('root-renderer');
-        SIM.StartSimulation();
-        RENDERER.Init(renderRoot);
-        RENDERER.SetGlobalConfig({ actable: false });
-        RENDERER.HookResize(window);
-      })();
-      resolve();
-    })
-);
+const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
+const DBG = true;
 
 /// MAIN APPLICATION ROOT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

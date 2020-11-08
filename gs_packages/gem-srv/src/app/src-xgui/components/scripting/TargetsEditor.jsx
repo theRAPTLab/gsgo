@@ -1,9 +1,9 @@
 /*
 
     Comparisons are implicitly with the same type of object.
-    So we can make some inferences about what to show based on the 
+    So we can make some inferences about what to show based on the
     the nature of the object.
-    
+
     targetTypes -- The data type of the object to be compared to the source
         agent
         number
@@ -12,7 +12,7 @@
         dict
 
     targetOptions
-    
+
     Select Value / Agent
     if agent, Property
 
@@ -23,8 +23,8 @@
       <value> <input>
       -- or --
       <agent> <property>
-      
-      
+
+
     e.g. "value"
         Option    Selection
         ------    ---------
@@ -54,24 +54,24 @@
 
 */
 
-import React from "react";
-import APP from "../../app-logic";
-import Menu from "./Menu";
-import AgentPropertySelector from "./AgentPropertySelector";
+import React from 'react';
+import APP from '../../app-logic';
+import Menu from './Menu';
+import AgentPropertySelector from './AgentPropertySelector';
 
-const TARGETOPTION_AGENT = { id: "agent", label: "agent" };
-const TARGETOPTION_AGENTPROPERTY = { id: "agentprop", label: "agent property" };
-const TARGETOPTION_VALUE = { id: "value", label: "value" };
+const TARGETOPTION_AGENT = { id: 'agent', label: 'agent' };
+const TARGETOPTION_AGENTPROPERTY = { id: 'agentprop', label: 'agent property' };
+const TARGETOPTION_VALUE = { id: 'value', label: 'value' };
 
 class TargetsEditor extends React.Component {
   constructor() {
     super();
 
     this.state = {
-      optype: "agent",
+      optype: 'agent',
       selectedTargetOption: undefined,
       selectedTarget: undefined,
-      selectedTargetAgentPropertyId: undefined,
+      selectedTargetAgentPropertyId: undefined
     };
 
     this.GetTargetOptions = this.GetTargetOptions.bind(this);
@@ -84,16 +84,16 @@ class TargetsEditor extends React.Component {
   } // constructor
 
   GetTargetOptions(targetType) {
-    console.log("getting target options for ", targetType);
+    console.log('getting target options for ', targetType);
     let targetOptions = [];
     switch (targetType) {
-      case "agent":
+      case 'agent':
         targetOptions = APP.GetModelAgents();
         break;
-      case "number":
+      case 'number':
         targetOptions = [TARGETOPTION_VALUE, ...APP.GetModelAgents()];
         break;
-      case "string":
+      case 'string':
         targetOptions = [TARGETOPTION_VALUE, ...APP.GetModelAgents()];
         break;
     }
@@ -105,22 +105,22 @@ class TargetsEditor extends React.Component {
   }
 
   OnTargetSelect(e) {
-    console.log("selected", e.target.value);
+    console.log('selected', e.target.value);
   }
 
   OnTargetAgentPropertySelect(e) {
-    console.log("selected agent property", e.target.value);
+    console.log('selected agent property', e.target.value);
   }
 
   RenderTargetSelector(selectedTargetOption) {
     // if "value" then show input
-    // if "agent-template" is selected then show agent properties
+    // if "agent-blueprint" is selected then show agent properties
     let jsx;
     if (this.props.targetType === undefined) {
       // source or operation was deselected
-    } else if (this.props.targetType === "agent") {
+    } else if (this.props.targetType === 'agent') {
       // Agent is already rendered, no second selection needed
-    } else if (selectedTargetOption === "value") {
+    } else if (selectedTargetOption === 'value') {
       // user has selected "value"
       jsx = <input type="text" value={this.props.filter.target.value} />;
     } else {
@@ -128,7 +128,7 @@ class TargetsEditor extends React.Component {
       // and the targetType is "number" or "string"
       // So show value or viable agent properties
       if (selectedTargetOption === undefined) {
-        jsx = "";
+        jsx = '';
       } else {
         const agentId = Number(selectedTargetOption);
         jsx = (
@@ -158,7 +158,7 @@ class TargetsEditor extends React.Component {
     const targetSelector = this.RenderTargetSelector(selectedTargetOption);
 
     return (
-      <div style={{ display: "flex", flexDirection: "row" }}>
+      <div style={{ display: 'flex', flexDirection: 'row' }}>
         <Menu
           options={targetOptions}
           selectedOptionId={selectedTargetOption}
