@@ -112,13 +112,43 @@ The blueprint class has to also store the source (`ScriptUnit[]`) .
 * `defBlueprint` is no longer needed; a single blueprint object contains only source for a single blueprint.
 * blueprint contains the associated `smc` objects that represent particular things. They are arrays of `smc_ops` and so on
 
+## NOV 10 TUE - Restarting Hermit Burn
 
+We're in hermit mode. The world is dead to us for the next 48 hours. Where did I leave off?
 
+* [x] `StageSimulation()` calls `GLOOP_LOAD` hooks (including program)
+* [x] `StartSimulation()` calls `GLOOP` to step (including update)
 
+* [x] `sim-agents:AgentProgram()`  attempts to make an agent through `AgentFactory.MakeAgent()`, but the blueprint isn't compiled yet
 
+**Q. How to use a blueprint bundle to make an instance?**
 
+A. blueprints consist of smc_programs or a function. We need to create an agent instance, then run the various programs on them to set things up.
 
+**Q. Problem: sm_object methods aren't working**
 
+this is crashing on `prop skin setTo 'bunny.json'`, which is doing this:
+
+```
+const progout = [];
+progout.push((agent: IAgent, state: IState) => {
+  const prop = agent.prop(propName);
+  prop.method(methodName, [...args]);
+});
+```
+
+The retrieved prop has its method called on it, but that's disallowed because props are of a var type; they must be invoked directly. 
+
+* [x] fix `AgentProgram()` in `sim-agents`
+* [x] fix `AgentUpdate()` in `sim-agents` 
+
+* [x] Fixed issue with addProp not setting an initial value
+
+Yay, it minimally works! Can write script and it updates. However:
+
+* [ ] SAVE reprograms and restarts
+* [ ] CONDITIONS need to run
+* [ ] EXPRESSIONS need to gobble strings
 
 
 ---

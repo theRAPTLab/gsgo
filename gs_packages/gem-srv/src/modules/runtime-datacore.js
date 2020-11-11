@@ -10,7 +10,7 @@ import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RUNTIME-CORE');
+const PR = UR.PrefixUtil('RUNTIME-CORE', 'TagRed');
 
 /// INSTANCE MAPS /////////////////////////////////////////////////////////////
 const AGENTS = new Map(); // blueprint => Map<id,Agent>
@@ -19,7 +19,8 @@ const AGENT_DICT = new Map(); // id => Agent
 /// SCRIPT MACHINE ASSETS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FEATURES = new Map();
-const BLUEPRINTS = new Map();
+const TEMPLATES = new Map(); // old
+const BLUEPRINTS = new Map(); // Map<string, ISMCBundle>
 const CONDITIONS = new Map();
 
 /// PIXI JS ASSET MANAGEMENT //////////////////////////////////////////////////
@@ -36,8 +37,8 @@ const ASSETS_LoadManifest = ASSET_MGR.loadManifest;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** save agent by type into agent map, which contains weaksets of types */
 function AGENTS_Save(agent) {
-  const { type } = agent.meta;
-  const { id } = agent;
+  const { id, blueprint } = agent;
+  const type = blueprint.name;
   if (!AGENTS.has(type)) AGENTS.set(type, new Map());
   // agents is a Map of agents
   const agents = AGENTS.get(type);
@@ -72,6 +73,10 @@ function AGENTS_GetArrayAll() {
     arr.push(...map.values());
   });
   return arr;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AGENTS_Reset() {
+  AGENTS.clear();
 }
 
 /// CONDITION UTILITIES ///////////////////////////////////////////////////////
@@ -108,7 +113,7 @@ UR.SystemHook('SIM/RESET', OnSimReset);
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export shared data structures
-export { AGENTS, BLUEPRINTS, FEATURES, CONDITIONS, ASSET_MGR };
+export { AGENTS, TEMPLATES, BLUEPRINTS, FEATURES, CONDITIONS, ASSET_MGR };
 /// export agent creation methods
 export {
   ASSETS_GetResource,
@@ -118,6 +123,7 @@ export {
   AGENT_GetById,
   AGENTS_GetTypeSet,
   AGENTS_GetArrayAll,
+  AGENTS_Reset,
   CONDITION_All,
   CONDITION_Save,
   CONDITION_Get,

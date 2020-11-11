@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 export * from './dbgError';
-export * from './defProp';
+export * from './addProp';
 export * from './defBlueprint';
 export * from './prop';
 export * from './endBlueprint';

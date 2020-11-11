@@ -6,7 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as KEYDICT from 'script/keyword-factory';
-import { ScriptUnit, ScriptUpdate } from 'lib/t-script';
+import { ScriptUnit, TScriptUpdate } from 'lib/t-script';
 import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -18,13 +18,13 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SOURCE: ScriptUnit[] = [
   ['defBlueprint', 'Bee'],
-  ['defProp', 'nectarAmount', 'GSNumber', 0],
+  ['addProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
   ['useFeature', 'BeanCounter'],
   ['useFeature', 'Movement'],
   ['endBlueprint'],
   ['defBlueprint', 'HoneyBee', 'Bee'],
-  ['defProp', 'honeySacks', 'GSNumber', 0],
+  ['addProp', 'honeySacks', 'GSNumber', 0],
   ['endBlueprint']
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,7 +68,7 @@ function TestSourceToUI(source: ScriptUnit[] = SOURCE) {
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives the react state object */
-UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: ScriptUpdate) => {
+UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: TScriptUpdate) => {
   const { index, scriptUnit } = updata;
   SOURCE[index] = scriptUnit;
   if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));

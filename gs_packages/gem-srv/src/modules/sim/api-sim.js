@@ -14,14 +14,14 @@ import { interval } from 'rxjs';
 // these have their own phasemachine interface hooks
 import './sim-inputs';
 import './sim-conditions';
-import './sim-agents';
+import * as Agents from './sim-agents';
 import './sim-referee';
 import './sim-features';
-import './sim-render';
+import * as Render from './sim-render';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SIM_RUNTIME', 'TagCyan');
+const PR = UR.PrefixUtil('SIM_RUNTIME');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
@@ -134,6 +134,16 @@ function ResetSimulation() {
     await GAME_LOOP.executePhase('GLOOP_LOAD');
   })();
 }
+
+/// AGENT PROGRAMMING /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AgentProgram(blueprint) {
+  Agents.AgentProgram(blueprint);
+}
+
+/// URSYS MESSAGE /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.RegisterMessage('AGENT_PROGRAM', AgentProgram);
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -21,7 +21,7 @@ import { useStylesHOC } from './page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('COMPILER', 'TagBlue');
+const PR = UR.PrefixUtil('COMPILER');
 const DBG = true;
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
@@ -45,10 +45,9 @@ UR.SystemHook(
 
 const defaultText = `
 defBlueprint Bunny
-defProp spriteFrame GSNumber 100
+addProp frame GSNumber 0
 prop skin setTo 'bunny.json'
-randomPos -50 50
-onCondition frame 'jitterPos'
+randomPos -5 5
 endBlueprint
 `.trim();
 
@@ -78,6 +77,9 @@ class Compiler extends React.Component {
     // hooks
     UR.RegisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
     UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
+    // temp: make sure the blueprint
+    // eventually this needs to be part of application startup
+    AgentFactory.MakeBlueprint(this.source);
   }
 
   componentDidMount() {
@@ -154,12 +156,11 @@ class Compiler extends React.Component {
     this.source = source;
     this.setState({ source: JSON.stringify(source) });
     // save the blueprint to default
-    KeywordFactory.MakeBlueprint('default', this.source);
-    // just test that we can load the blueprint
-    const blueprint = KeywordFactory.GetBlueprint('default');
+    const bp = AgentFactory.MakeBlueprint(this.source);
     // also update jsx (from btnToJSX)
     const jsx = KeywordFactory.RenderSource(this.source);
     UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+    UR.RaiseMessage('AGENT_PROGRAM', bp.name);
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -227,7 +228,7 @@ class Compiler extends React.Component {
             onClick={this.selectTab}
             value={0}
           >
-            show script view
+            script view
           </button>
           <button
             style={{ border: '0px' }}
@@ -236,7 +237,7 @@ class Compiler extends React.Component {
             onClick={this.selectTab}
             value={1}
           >
-            show wizard view
+            wizard view
           </button>
           {tab}
           <hr />

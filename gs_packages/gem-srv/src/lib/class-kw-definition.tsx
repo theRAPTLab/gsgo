@@ -18,7 +18,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IKeyword, IAgentBlueprint, ScriptUnit } from 'lib/t-script';
+import { IKeyword, ISMCBundle, ScriptUnit } from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,7 +49,7 @@ export class KeywordDef implements IKeyword {
   }
 
   /** override in subclass */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
 

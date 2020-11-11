@@ -7,7 +7,7 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IScopeable } from 'lib/t-smc';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -29,19 +29,22 @@ export class RandomPos extends KeywordDef {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const min = parms[0];
     const max = parms[1];
     const floor = parms[2] || false;
     const progout = [];
     progout.push((agent: IScopeable) => {
-      agent.set('x', m_Random(min, max, floor));
-      agent.set('y', m_Random(min, max, floor));
+      const x = m_Random(min, max, floor);
+      const y = m_Random(min, max, floor);
+      agent.prop('x')._value += x;
+      agent.prop('y')._value += y;
     });
     return {
       define: [],
       defaults: [],
-      conditions: progout
+      conditions: progout,
+      update: progout
     };
   }
 

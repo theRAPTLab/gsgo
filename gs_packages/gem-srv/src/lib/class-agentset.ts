@@ -44,6 +44,9 @@ class AgentSet {
     // case 1: return an array of a single agent array
     if (len === 1) {
       const ags = AGENTS.get(this.agentTypes[0]);
+      if (!ags) {
+        throw Error(`undefined ${this.agentTypes[0]}`);
+      }
       retval = [[...ags.values()]];
     }
     // case 2: return an array of two agent arrays

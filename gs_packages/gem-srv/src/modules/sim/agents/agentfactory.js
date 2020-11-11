@@ -21,7 +21,7 @@ import Agent from 'lib/class-agent';
 import {
   AGENTS_Save,
   AGENTS_GetTypeSet,
-  BLUEPRINTS
+  TEMPLATES
 } from 'modules/runtime-datacore';
 import { WORLD } from './global';
 
@@ -40,7 +40,7 @@ const DBG = false;
  *  modify.
  */
 function AddBlueprint(name, f_Decorate) {
-  if (BLUEPRINTS.has(name))
+  if (TEMPLATES.has(name))
     throw Error(`state blueprint '${name}' already exists`);
   const factoryFunc = agentName => {
     const agent = new Agent(agentName);
@@ -49,7 +49,7 @@ function AddBlueprint(name, f_Decorate) {
     return agent;
   };
   if (DBG) console.log(...PR(`storing blueprint: '${name}'`));
-  BLUEPRINTS.set(name, factoryFunc);
+  TEMPLATES.set(name, factoryFunc);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API:
@@ -58,12 +58,13 @@ function AddBlueprint(name, f_Decorate) {
  *  @param {string} blueprint - name of the blueprint to use (default 'Agent')
  */
 function MakeAgent(agentName, options = {}) {
+  console.warn('deprecated');
   const { type } = options;
   let agent;
   if (type === undefined) {
     agent = new Agent(agentName);
   } else {
-    const factoryFunc = BLUEPRINTS.get(type);
+    const factoryFunc = TEMPLATES.get(type);
     if (!factoryFunc) throw Error(`agent blueprint for '${type}' not defined`);
     // return the created agent from blueprint
     agent = factoryFunc(agentName);

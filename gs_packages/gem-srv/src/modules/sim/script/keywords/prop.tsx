@@ -7,7 +7,7 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgent, IScopeable, IState } from 'lib/t-smc';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from '../keyword-factory';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -24,12 +24,13 @@ export class Prop extends KeywordDef {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const [propName, methodName, ...args] = parms;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       const prop = agent.prop(propName);
-      prop.method(methodName, [...args]);
+      // prop.method(methodName, [...args]);
+      prop[methodName](...args);
     });
     return {
       define: [],

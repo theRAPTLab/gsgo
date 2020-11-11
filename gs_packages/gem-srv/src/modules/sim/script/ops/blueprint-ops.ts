@@ -11,12 +11,11 @@ import { IAgent, TOpcode, TOpWait, IScopeable } from 'lib/t-smc';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const addProp = (
   name: string,
-  PropTypeCTor: { new (...args): IScopeable }
+  PropTypeCTor: { new (...args): IScopeable },
+  initValue: any
 ): TOpcode => {
   return (agent: IAgent): TOpWait => {
-    const prop = new PropTypeCTor(name);
-    console.log('need to check for initial value');
-    agent.addProp(name, new PropTypeCTor(name));
+    agent.addProp(name, new PropTypeCTor(initValue));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

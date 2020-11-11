@@ -25,7 +25,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import AgentFactory from 'modules/sim//agents/agentfactory';
+import AgentFactory from 'modules/sim/agents/agentfactory';
 import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
 import { StackMachine } from 'modules/sim//script/stackmachine';
 import { NumberProp } from 'modules/sim/props/var';

@@ -676,6 +676,7 @@ Parse.toString = function () {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this is a VERY cheesy tokenizer. to fix it, need to rewrite Parse above
  *  to expose the gobble methods, perhaps as a class
+ *  BREAKS on strings with spaces until Parse is rewritten
  */
 function TokenizeToScriptUnit(str: string): ScriptUnit {
   const bits = str.trim().split(' ');

@@ -11,6 +11,7 @@ import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TEST from 'modules/tests/test-agents';
+import { AgentFactory, KeywordFactory } from 'script/agent-factory';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,54 +71,54 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentSelect() {
-  if (DBG) console.log(...PR('should inspect mode and change agent settings'));
-  if (DO_TESTS) {
-    TEST.TestAgentSelect();
-  }
-}
+function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentProgram() {
-  if (DBG) console.groupCollapsed(...PR('Programming Test Agents'));
-  if (DO_TESTS) TEST.TestAgentProgram();
-  if (DBG) console.groupEnd();
+export function AgentProgram(blueprint) {
+  AgentFactory.ClearAllAgents();
+  if (!blueprint) return console.warn(...PR('no blueprint'));
+  for (let i = 0; i < 20; i++) AgentFactory.MakeAgent(`bun${i}`, { blueprint });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
-  // execute agent programs
-  if (DO_TESTS) {
-    TEST.TestAgentUpdate(frameTime);
+  // HACK: execute agent program for default agent
+  const tagents = AGENTS_GetArrayAll();
+  tagents.forEach(agent => {
+    agent.update(frameTime);
+    /* run update */
+  });
+  tagents.forEach(agent => {
+    /* run queued exec */
+  });
 
-    // TEMP HACK: force the agents to move outside of programming
-    // by diddling their properties directly
-    // also see renderer.js for TestRenderParameters()
-    //
-    // TestJitterAgents(frameTime);
+  // TEMP HACK: force the agents to move outside of programming
+  // by diddling their properties directly
+  // also see renderer.js for TestRenderParameters()
+  //
+  // TestJitterAgents(frameTime);
 
-    // TEMP HACK: This should move to the DisplayListOut phase
-    // force agent movement for display list testing
-    const agents = AGENTS_GetArrayAll();
-    DOBJ_SYNC_AGENT.syncFromArray(agents);
-    DOBJ_SYNC_AGENT.mapObjects();
-    const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
-    RENDERER.UpdateDisplayList(dobjs);
-    UR.SendMessage('NET:DISPLAY_LIST', dobjs);
-  }
+  // TEMP HACK: This should move to the DisplayListOut phase
+  // force agent movement for display list testing
+  const agents = AGENTS_GetArrayAll();
+  DOBJ_SYNC_AGENT.syncFromArray(agents);
+  DOBJ_SYNC_AGENT.mapObjects();
+  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
+  RENDERER.UpdateDisplayList(dobjs);
+  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentThink(frameTime) {
-  if (DO_TESTS) TEST.TestAgentThink(frameTime);
-}
+function AgentThink(frameTime) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  if (DO_TESTS) TEST.TestAgentExec(frameTime);
+  const agents = AGENTS_GetArrayAll();
+  agents.forEach(agent => {
+    /* exec function */
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
-  if (DBG) console.log(...PR('should reset all agents'));
-  if (DO_TESTS) TEST.TestAgentReset(frameTime);
+  /* reset agent */
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

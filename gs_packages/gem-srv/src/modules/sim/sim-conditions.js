@@ -90,16 +90,17 @@ const exec_test = [
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ModuleInit(/* gloop */) {
+  // these are tests for conditions
   CONDITIONS.set('distx5', interaction_test);
   CONDITIONS.set('health5', filter_test);
   CONDITIONS.set('exectest', exec_test);
-
-  for (let i = 0; i < 100; i++) {
-    const cond = new Condition(new AgentSet('Bunny'));
-    cond.addTest(filter_test);
-    cond.addExec(exec_test);
-    conds.push(cond);
-  }
+  // this was a load test
+  // for (let i = 0; i < 100; i++) {
+  //   const cond = new Condition(new AgentSet('Bunny'));
+  //   cond.addTest(filter_test);
+  //   cond.addExec(exec_test);
+  //   conds.push(cond);
+  // }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Update(/* frame */) {

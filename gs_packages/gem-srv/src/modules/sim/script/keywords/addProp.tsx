@@ -7,29 +7,29 @@
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, ScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/op-imports';
 import { RegisterKeyword, GetSMObjectCtor } from '../keyword-factory';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefProp extends KeywordDef {
+export class AddProp extends KeywordDef {
   // base properties defined in KeywordDef
   constructor() {
-    super('defProp');
+    super('addProp');
     this.args = ['propName string', 'propType string', 'initValue any'];
     this.req_scope.add('defBlueprint');
     this.key_scope.add('unknown');
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
     const propCtor = GetSMObjectCtor(propType);
     const progout = [];
-    progout.push(addProp(propName, propCtor));
+    progout.push(addProp(propName, propCtor, initValue));
     return {
       define: progout,
       defaults: [],
@@ -47,7 +47,7 @@ export class DefProp extends KeywordDef {
   render(index: number, args: any[], children?: any[]): any {
     const [propName, propType, initValue] = args;
     return (
-      <div key={this.generateKey()} className="defProp">
+      <div key={this.generateKey()} className="addProp">
         prop {propName} is type {propType} w/value {initValue}
       </div>
     );
@@ -58,4 +58,4 @@ export class DefProp extends KeywordDef {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// make sure you import this at some point with
 /// import from 'file'
-RegisterKeyword(DefProp);
+RegisterKeyword(AddProp);

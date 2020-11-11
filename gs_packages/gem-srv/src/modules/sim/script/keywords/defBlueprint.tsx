@@ -9,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { nop } from 'script/ops/debug-ops';
 import { RegisterKeyword } from '../keyword-factory';
 
@@ -26,7 +26,7 @@ export class DefTemplate extends KeywordDef {
   }
 
   /** create smc blueprint code objects for this unit */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const blueprintName = parms[0];
     const baseBlueprint = parms[1];
     const progout = [];
@@ -34,6 +34,7 @@ export class DefTemplate extends KeywordDef {
     progout.push(nop());
 
     return {
+      name: blueprintName,
       define: progout,
       defaults: [],
       conditions: []

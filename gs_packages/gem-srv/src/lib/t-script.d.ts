@@ -1,4 +1,4 @@
-import { TOpcode } from 'lib/t-smc';
+import { TOpcode, TProgram } from 'lib/t-smc';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -12,22 +12,27 @@ export interface IKeywordCtor {
 export interface IKeyword {
   keyword: string;
   args: string[];
-  compile(parms: any[]): IAgentBlueprint;
+  compile(parms: any[]): ISMCBundle;
   serialize(state: object): ScriptUnit;
   render(index: number, state: object, children?: any[]): any;
   generateKey(): any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
-export interface IAgentBlueprint {
-  define?: TOpcode[];
-  defaults?: TOpcode[];
-  conditions?: TOpcode[];
-  init?: TOpcode[];
+export interface ISMCBundle {
+  name?: string; // the determined name of the blueprint
+  define?: TProgram; // def template, props, features
+  defaults?: TProgram; // set default values
+  conditions?: TProgram; // register conditions
+  update?: TProgram; // other runtime init
+  // conditions
+  test?: TProgram; // program returning true on stack
+  consequent?: TProgram; // program to run on true
+  alternate?: TProgram; // program to run otherwise
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UI update type sent by UI tp RegenSRCLine */
-export type ScriptUpdate = {
+export type TScriptUpdate = {
   index: number;
   scriptUnit: ScriptUnit;
 };
@@ -36,7 +41,5 @@ export type ScriptUpdate = {
  *  an empty ScriptUnit is allowed also.
  */
 export type ScriptUnit = [string?, ...any[]];
+export type TSource = ScriptUnit[]; // not generally used
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** sent by UI change handler after source is regeneraed through RegenSRCLine()
- */
-export type Script = ScriptUnit[];

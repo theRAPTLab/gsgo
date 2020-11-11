@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, ScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/op-imports';
 import { RegisterKeyword } from '../keyword-factory';
 
@@ -23,7 +23,7 @@ export class UseFeature extends KeywordDef {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const featureName = parms[0];
     const progout = [];
     progout.push(addFeature(featureName));

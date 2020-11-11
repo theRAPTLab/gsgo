@@ -7,13 +7,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { IScopeable, IScopeableCtor, TMethod } from 'lib/t-smc';
-import {
-  ScriptUnit,
-  IAgentBlueprint,
-  IKeyword,
-  IKeywordCtor
-} from 'lib/t-script';
+import { IScopeableCtor, TMethod } from 'lib/t-smc';
+import { ScriptUnit, ISMCBundle, IKeyword, IKeywordCtor } from 'lib/t-script';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
 
@@ -26,7 +21,6 @@ const DBG = false;
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const SMOBJS: Map<string, IScopeableCtor> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
-const BLUEPRINTS: Map<string, IAgentBlueprint> = new Map();
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,19 +62,20 @@ function RegisterTest(name: string, smc: TMethod) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetTest(name: string) {
   if (!TESTS.has(name)) {
-    console.warn(...PR(`test ${name} doesn't exist`));
+    console.log(...PR(`test '${name}' doesn't exist`));
   } else return TESTS.get(name);
 }
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** compile an array of ScriptUnit */
-function CompileSource(units: ScriptUnit[]): IAgentBlueprint {
-  const program = {
+/** compile an array of ScriptUnit, representing one complete blueprint */
+function CompileSource(units: ScriptUnit[]): ISMCBundle {
+  const bdl: ISMCBundle = {
+    name: undefined,
     define: [],
     defaults: [],
     conditions: [],
-    init: []
+    update: []
   };
   // this has to look through the output to determine what to compile
   units.forEach(unit => {
@@ -93,15 +88,21 @@ function CompileSource(units: ScriptUnit[]): IAgentBlueprint {
       cmdObj.keyword = cmdName;
     }
     const parms = unit.slice(1);
-    const programs = cmdObj.compile(parms); // qbits is the subsequent parameters
-    if (DBG) console.log(unit, '->', programs);
-    const { define, defaults, conditions, init } = programs;
-    if (define && define.length) program.define.push(...define);
-    if (defaults && defaults.length) program.defaults.push(...defaults);
-    if (conditions && conditions.length) program.conditions.push(...conditions);
-    if (init && init.length) program.init.push(...init);
+    const bundle = cmdObj.compile(parms); // qbits is the subsequent parameters
+    if (DBG) console.log(unit, '->', bundle);
+    const { name, define, defaults, conditions, update } = bundle;
+    if (name) {
+      if (bdl.name === undefined) bdl.name = name;
+      else throw Error('CompileSource: multiple defBlueprint in source');
+    }
+    if (define) bdl.define.push(...define);
+    if (defaults) bdl.defaults.push(...defaults);
+    if (conditions) bdl.conditions.push(...conditions);
+    if (update) bdl.update.push(...update);
   });
-  return program;
+  if (bdl.name === undefined) throw Error('CompileSource: missing defBlueprint');
+  if (DBG) console.log(...PR(`compiled ${bdl.name}`));
+  return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
@@ -125,35 +126,12 @@ function RenderSource(units: ScriptUnit[]): any[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
 function DecompileSource(units: ScriptUnit[]): string {
-  console.log(units);
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
     lines.push(`${unit.join(' ')}`);
   });
   return lines.join('\n');
-}
-
-/// BLUEPRINT /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function MakeBlueprint(name: string, units: ScriptUnit[]): IAgentBlueprint {
-  if (typeof name !== 'string' && units === undefined) {
-    units = name;
-    name = 'default';
-  }
-  if (BLUEPRINTS.has(name))
-    console.log(...PR(`updating ${name} w/ ${units.length} lines`));
-  else console.log(...PR(`new blueprint ${name} w/ ${units.length} lines`));
-  const bp = CompileSource(units);
-  BLUEPRINTS.set(name, bp);
-  return bp;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetBlueprint(name: string): IAgentBlueprint {
-  name = name || 'default';
-  const bp = BLUEPRINTS.get(name);
-  if (!bp) console.warn(`blueprint '${name}' does not exist`);
-  return bp;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -167,12 +145,10 @@ export {
 };
 /// Source is ScriptUnit[], produced by GUI
 export {
-  CompileSource, // ScriptUnit[] => IAgentBlueprint
+  CompileSource, // ScriptUnit[] => ISMCBundle
   RenderSource, // ScriptUnit[] => JSX
   DecompileSource // ScriptUnit[] => produce source text from units
 };
-/// Blueprint Management
-export { MakeBlueprint, GetBlueprint };
 /// for expression evaluation
 export {
   Parse, // expr => AST
