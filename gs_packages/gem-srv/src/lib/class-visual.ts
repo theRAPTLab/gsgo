@@ -100,14 +100,14 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = DATACORE.ASSETS_GetResourceById(assetId);
+    const rsrc = DATACORE.GetAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
   }
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const rsrc: PIXI.LoaderResource = DATACORE.ASSETS_GetResource(name);
+    const rsrc: PIXI.LoaderResource = DATACORE.GetAsset(name);
     if (rsrc === undefined) {
       console.log(`ERR: couldn't find resource '${name}'`);
       (window as any).DC = DATACORE;

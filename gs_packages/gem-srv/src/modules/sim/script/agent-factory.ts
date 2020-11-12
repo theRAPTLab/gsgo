@@ -10,10 +10,11 @@ import UR from '@gemstep/ursys/client';
 import Agent from 'lib/class-agent';
 import Blueprint from 'lib/class-blueprint';
 import {
-  AGENTS_Save,
-  AGENTS_Reset,
-  AGENTS_GetTypeSet,
-  BLUEPRINTS
+  SaveAgent,
+  DeleteAllAgents,
+  GetAgentsByType,
+  SaveBlueprint,
+  GetBlueprint
 } from 'modules/runtime-datacore';
 import { ScriptUnit, ISMCBundle } from 'lib/t-script';
 import { TProgram } from 'lib/t-smc';
@@ -27,21 +28,11 @@ const PR = UR.PrefixUtil('AG-FAC');
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function MakeBlueprint(units: ScriptUnit[]): ISMCBundle {
-  const bp = KeywordFactory.CompileSource(units);
-  const { name } = bp;
-  if (BLUEPRINTS.has(name))
-    console.log(...PR(`updating ${name} w/ ${units.length} lines`));
-  else console.log(...PR(`new blueprint ${name} w/ ${units.length} lines`));
-  BLUEPRINTS.set(name, bp);
-  return bp;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetBlueprint(name: string): ISMCBundle {
-  name = name || 'default';
-  const bdl = BLUEPRINTS.get(name);
-  if (!bdl) console.warn(`blueprint '${name}' does not exist`);
-  return bdl;
+export function MakeBlueprint(units: ScriptUnit[]): ISMCBundle {
+  const bp = KeywordFactory.CompileSource(units);
+  SaveBlueprint(bp);
+  return bp;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MakeAgent(agentName: string, options?: { blueprint: string }) {
@@ -50,33 +41,24 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (blueprint !== undefined) {
-    const bp = BLUEPRINTS.get(blueprint);
+    const bp = GetBlueprint(blueprint);
     if (!bp) throw Error(`agent blueprint for '${blueprint}' not defined`);
 
     console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bp);
     console.groupEnd();
   }
-  return AGENTS_Save(agent);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetAgentsByType(blueprint: string) {
-  return [...AGENTS_GetTypeSet(blueprint)];
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ClearAllAgents() {
-  AGENTS_Reset();
+  return SaveAgent(agent);
 }
 
+/// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const AgentFactory = {
   MakeBlueprint,
   GetBlueprint,
   MakeAgent,
   GetAgentsByType,
-  ClearAllAgents
+  DeleteAllAgents
 };
-
-/// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { AgentFactory, KeywordFactory };

@@ -7,10 +7,9 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
+import { GetAllAgents } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
-import * as TEST from 'modules/tests/test-agents';
 import { AgentFactory, KeywordFactory } from 'script/agent-factory';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -74,7 +73,7 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function AgentProgram(blueprint) {
-  AgentFactory.ClearAllAgents();
+  AgentFactory.DeleteAllAgents();
   if (!blueprint) return console.warn(...PR('no blueprint'));
   for (let i = 0; i < 20; i++) AgentFactory.MakeAgent(`bun${i}`, { blueprint });
 }
@@ -83,7 +82,7 @@ export function AgentProgram(blueprint) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
   // HACK: execute agent program for default agent
-  const tagents = AGENTS_GetArrayAll();
+  const tagents = GetAllAgents();
   tagents.forEach(agent => {
     agent.update(frameTime);
     /* run update */
@@ -100,7 +99,7 @@ function AgentUpdate(frameTime) {
 
   // TEMP HACK: This should move to the DisplayListOut phase
   // force agent movement for display list testing
-  const agents = AGENTS_GetArrayAll();
+  const agents = GetAllAgents();
   DOBJ_SYNC_AGENT.syncFromArray(agents);
   DOBJ_SYNC_AGENT.mapObjects();
   const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
@@ -111,7 +110,7 @@ function AgentUpdate(frameTime) {
 function AgentThink(frameTime) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  const agents = AGENTS_GetArrayAll();
+  const agents = GetAllAgents();
   agents.forEach(agent => {
     /* exec function */
   });
@@ -121,11 +120,14 @@ function AgentReset(frameTime) {
   /* reset agent */
 }
 
+/// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.RegisterMessage('SIM_RESET', AgentReset);
+UR.RegisterMessage('SIM_MODE', AgentSelect);
+UR.RegisterMessage('SIM_PROGRAM', AgentProgram);
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/RESET', AgentReset);
-UR.SystemHook('SIM/SETMODE', AgentSelect);
-UR.SystemHook('SIM/PROGRAM', AgentProgram);
 UR.SystemHook('SIM/AGENTS_UPDATE', AgentUpdate);
 UR.SystemHook('SIM/AGENTS_THINK', AgentThink);
 UR.SystemHook('SIM/AGENTS_EXEC', AgentExec);

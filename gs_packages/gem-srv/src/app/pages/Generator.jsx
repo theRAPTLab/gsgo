@@ -26,7 +26,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
-        let map = await DATACORE.ASSETS_LoadManifest('static/assets.json');
+        let map = await DATACORE.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         SIM.StartSimulation();
         if (DBG) console.log(...PR('SIMULATION STARTED'));

@@ -7,36 +7,55 @@
 
 import UR from '@gemstep/ursys/client';
 import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
+import { IScopeableCtor, IFeature, TMethod } from 'lib/t-smc';
+import { ScriptUnit, ISMCBundle, IKeyword, IKeywordCtor } from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('RUNTIME-CORE', 'TagRed');
 
-/// INSTANCE MAPS /////////////////////////////////////////////////////////////
+/// DATA STORAGE MAPS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const AGENTS = new Map(); // blueprint => Map<id,Agent>
 const AGENT_DICT = new Map(); // id => Agent
-
-/// SCRIPT MACHINE ASSETS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const FEATURES = new Map();
-const TEMPLATES = new Map(); // old
-const BLUEPRINTS = new Map(); // Map<string, ISMCBundle>
-const CONDITIONS = new Map();
-
-/// PIXI JS ASSET MANAGEMENT //////////////////////////////////////////////////
+const SMO_DICT: Map<string, IScopeableCtor> = new Map();
+const FEATURES: Map<string, IFeature> = new Map();
+const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
+const KEYWORDS: Map<string, IKeyword> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const CONDITIONS: Map<string, TMethod> = new Map();
+const TESTS: Map<string, TMethod> = new Map();
+const PROGRAMS: Map<string, TMethod> = new Map();
 const ASSET_MGR = new PixiTextureMgr();
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// ASSET LOADING API METHODS /////////////////////////////////////////////////
-const ASSETS_GetResource = ASSET_MGR.getAsset;
-const ASSETS_GetResourceById = ASSET_MGR.getAssetById;
-const ASSETS_LoadManifest = ASSET_MGR.loadManifest;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const GetAsset = ASSET_MGR.getAsset;
+export const GetAssetById = ASSET_MGR.getAssetById;
+export const LoadAssets = ASSET_MGR.loadManifest;
 
-/// AGENT SET UTILITIES ///////////////////////////////////////////////////////
+/// BLUEPRINT /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function SaveBlueprint(bp: ISMCBundle) {
+  const { name } = bp;
+  if (BLUEPRINTS.has(name))
+    console.warn(...PR(`overwriting blueprint '${name}'`));
+  BLUEPRINTS.set(name, bp);
+  return bp;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetBlueprint(name: string): ISMCBundle {
+  name = name || 'default';
+  const bdl = BLUEPRINTS.get(name);
+  if (!bdl) console.warn(`blueprint '${name}' does not exist`);
+  return bdl;
+}
+
+/// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** save agent by type into agent map, which contains weaksets of types */
-function AGENTS_Save(agent) {
+export function SaveAgent(agent) {
   const { id, blueprint } = agent;
   const type = blueprint.name;
   if (!AGENTS.has(type)) AGENTS.set(type, new Map());
@@ -52,21 +71,21 @@ function AGENTS_Save(agent) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return agent set by type */
-function AGENTS_GetTypeSet(type) {
-  const agentSet = AGENTS.get(type);
+export function GetAgentsByType(bpType) {
+  const agentSet = AGENTS.get(bpType);
   if (agentSet) return [...agentSet.values()];
-  console.warn(...PR(`agentset '${type}' not in AGENTS`));
+  console.warn(...PR(`agents of '${bpType}' don't exist`));
   return [];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AGENT_GetById(id) {
+export function GetAgentById(id) {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
   console.warn(...PR(`agent ${id} not in AGENT_DICT`));
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AGENTS_GetArrayAll() {
+export function GetAllAgents() {
   const arr = [];
   const maps = [...AGENTS.values()];
   maps.forEach(map => {
@@ -75,57 +94,32 @@ function AGENTS_GetArrayAll() {
   return arr;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AGENTS_Reset() {
+export function DeleteAllAgents() {
   AGENTS.clear();
 }
 
 /// CONDITION UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CONDITION_Save(condition) {
+export function SaveCondition(condition) {
   console.log('unimplemented; got', condition);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CONDITION_Get(signature) {
+export function GetCondition(signature) {
   console.log('unimplemented; got', signature);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CONDITION_All() {
+export function GetAllConditions() {
   const conditions = CONDITIONS.entries();
   return [...conditions];
 }
 
-/// TESTING UTILITIES /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** test agent set */
-function TestAgentSets(type) {
-  const agents = AGENTS.get(type);
-  return [...agents] || [];
-}
-
-/// TESTING UTILITIES /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function OnSimReset() {}
-
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/RESET', OnSimReset);
+/// for erasing data structures
+UR.SystemHook('SIM/RESET', () => {});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// export shared data structures
-export { AGENTS, TEMPLATES, BLUEPRINTS, FEATURES, CONDITIONS, ASSET_MGR };
-/// export agent creation methods
-export {
-  ASSETS_GetResource,
-  ASSETS_GetResourceById,
-  ASSETS_LoadManifest,
-  AGENTS_Save,
-  AGENT_GetById,
-  AGENTS_GetTypeSet,
-  AGENTS_GetArrayAll,
-  AGENTS_Reset,
-  CONDITION_All,
-  CONDITION_Save,
-  CONDITION_Get,
-  TestAgentSets
-};
+/// see above for exported functions
+/// expose maps and managers
+export { AGENTS, BLUEPRINTS, FEATURES, CONDITIONS };
