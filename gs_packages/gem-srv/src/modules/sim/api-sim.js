@@ -21,7 +21,7 @@ import * as Render from './sim-render';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SIM_RUNTIME');
+const PR = UR.PrefixUtil('SIM');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////

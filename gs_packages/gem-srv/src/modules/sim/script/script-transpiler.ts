@@ -22,7 +22,7 @@ import 'script/keywords/_all';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('KWDICT', 'TagDkRed');
+const PR = UR.PrefixUtil('TRNPLR');
 const DBG = false;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -131,7 +131,7 @@ function DecompileSource(units: TScriptUnit[]): string {
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function MakeBlueprint(units: TScriptUnit[]): ISMCBundle {
+function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
   const bp = CompileSource(units);
   SaveBlueprint(bp);
   return bp;
@@ -164,7 +164,7 @@ export {
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
-  MakeBlueprint // TScriptUnit[] => ISMCBundle
+  RegisterBlueprint // TScriptUnit[] => ISMCBundle
 };
 /// for expression evaluation
 export {

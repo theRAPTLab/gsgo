@@ -96,7 +96,7 @@ class ScriptElement extends React.Component<MyProps, MyState> {
         index: this.index,
         scriptUnit: this.serialize(this.state)
       };
-      UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
+      UR.RaiseMessage('SCRIPT_SRC_CHANGED', updata);
     });
   }
 

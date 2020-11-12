@@ -62,13 +62,13 @@ function TestSourceToUI(source: TScriptUnit[] = SOURCE) {
   if (DBG)
     console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   const jsx = KEYDICT.RenderSource(source);
-  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+  UR.RaiseMessage('SCRIPT_JSX_CHANGED', jsx);
 }
 
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives the react state object */
-UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: IScriptUpdate) => {
+UR.RegisterMessage('SCRIPT_SRC_CHANGED', (updata: IScriptUpdate) => {
   const { index, scriptUnit } = updata;
   SOURCE[index] = scriptUnit;
   if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
@@ -78,7 +78,7 @@ UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: IScriptUpdate) => {
 (window as any).sourceRender = (source: TScriptUnit[] = SOURCE) => {
   console.log(...PR('rendering test source'));
   const jsx = KEYDICT.RenderSource(source);
-  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+  UR.RaiseMessage('SCRIPT_JSX_CHANGED', jsx);
 };
 (window as any).sourceCompile = (source: TScriptUnit[] = SOURCE) => {
   console.log(...PR('compiling test source'));

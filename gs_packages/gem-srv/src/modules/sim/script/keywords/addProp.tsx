@@ -9,7 +9,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/_all';
-import { RegisterKeyword, GetValueCtor } from 'modules/runtime-datacore';
+import { RegisterKeyword, GetVarCtor } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,7 +25,7 @@ export class AddProp extends Keyword {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
-    const propCtor = GetValueCtor(propType);
+    const propCtor = GetVarCtor(propType);
     const progout = [];
     progout.push(addProp(propName, propCtor, initValue));
     return {

@@ -21,7 +21,7 @@ import { useStylesHOC } from './page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('COMPILER');
+const PR = UR.PrefixUtil('APP');
 const DBG = true;
 
 /// HARCODED SOURCE ///////////////////////////////////////////////////////////
@@ -78,11 +78,11 @@ class Compiler extends React.Component {
     this.updateText = this.updateText.bind(this);
     this.updateTabSelect = this.updateTabSelect.bind(this);
     // hooks
-    UR.RegisterMessage('SCRIPT_UI_RENDER', this.updateJSX);
-    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.updateSource);
+    UR.RegisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
+    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    TRANSPILER.MakeBlueprint(this.source);
+    TRANSPILER.RegisterBlueprint(this.source);
   }
 
   componentDidMount() {
@@ -98,8 +98,8 @@ class Compiler extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.updateJSX);
-    UR.UnregisterMessage('SCRIPT_UI_CHANGED', this.updateSource);
+    UR.UnregisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
+    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
   }
 
   // called by ScriptWizard component change
@@ -109,7 +109,7 @@ class Compiler extends React.Component {
     console.log(...PR(`SOURCE[${index}] updated:`, this.source[index]));
   }
 
-  // called by message 'SCRIPT_UI_RENDER'
+  // called by message 'SCRIPT_JSX_CHANGED'
   updateJSX(jsx) {
     this.setState({ jsx });
   }
@@ -155,7 +155,7 @@ class Compiler extends React.Component {
   userSaveBlueprint() {
     this.userCompileText();
     // save the blueprint to default and reprogram sim
-    const bp = TRANSPILER.MakeBlueprint(this.source);
+    const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
     const jsx = TRANSPILER.RenderSource(this.source);

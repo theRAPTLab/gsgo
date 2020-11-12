@@ -1,6 +1,6 @@
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-script';
-import { RegisterValueCTor } from 'modules/runtime-datacore';
+import { RegisterVarCTor } from 'modules/runtime-datacore';
 
 export class BooleanProp extends SM_Object implements IScopeable {
   fuzzy: number;
@@ -57,4 +57,4 @@ export class BooleanProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterValueCTor('Boolean', BooleanProp);
+RegisterVarCTor('Boolean', BooleanProp);

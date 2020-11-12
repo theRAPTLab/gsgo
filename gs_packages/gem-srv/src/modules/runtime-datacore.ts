@@ -11,6 +11,7 @@ import {
   IScopeableCtor,
   IFeature,
   TMethod,
+  TScriptUnit,
   ISMCBundle,
   IKeyword,
   IKeywordCtor
@@ -18,18 +19,19 @@ import {
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RUNTIME-CORE', 'TagRed');
+const PR = UR.PrefixUtil('DCORE', 'TagRed');
 
 /// DATA STORAGE MAPS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const AGENTS = new Map(); // blueprint => Map<id,Agent>
 const AGENT_DICT = new Map(); // id => Agent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SMO_DICT: Map<string, IScopeableCtor> = new Map();
+const VAR_DICT: Map<string, IScopeableCtor> = new Map();
 const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SOURCE: Map<string, TScriptUnit[]> = new Map();
 const CONDITIONS: Map<string, TMethod> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
 const PROGRAMS: Map<string, TMethod> = new Map();
@@ -55,15 +57,54 @@ export function GetKeyword(name: string): IKeyword {
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARTYPES */
-export function RegisterValueCTor(name: string, ctor: IScopeableCtor) {
-  if (SMO_DICT.has(name)) throw Error(`RegisterValueCTor: ${name} exists`);
-  SMO_DICT.set(name, ctor);
+export function RegisterVarCTor(name: string, ctor: IScopeableCtor) {
+  if (VAR_DICT.has(name)) throw Error(`RegisterVarCTor: ${name} exists`);
+  VAR_DICT.set(name, ctor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** get the registered SMObject constructor by name */
-export function GetValueCtor(name: string): IScopeableCtor {
-  if (!SMO_DICT.has(name)) throw Error(`GetValueCtor: ${name} `);
-  return SMO_DICT.get(name);
+export function GetVarCtor(name: string): IScopeableCtor {
+  if (!VAR_DICT.has(name)) throw Error(`GetVarCtor: ${name} `);
+  return VAR_DICT.get(name);
+}
+
+/// SOURCE UNITS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** WIP centralized source manager */
+export function SaveSource(name: string, source: TScriptUnit[]): boolean {
+  if (SOURCE.has(name)) console.warn(...PR(`overwriting source '${name}'`));
+  if (!Array.isArray(source)) {
+    console.warn(...PR(`SaveSource: '${name}' source must be array`));
+    return false;
+  }
+  SOURCE.set(name, source);
+  return true;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** WIP centralized source updater */
+function UpdateSourceIndex(name: string, i: number, u: TScriptUnit): boolean {
+  const source = SOURCE.get(name);
+  try {
+    if (!source) throw Error(`'${name}' doesn't exist`);
+    if (typeof i !== 'number') throw Error(`index must be number, not ${i}`);
+    if (i < 0 || i > u.length) throw Error(`index ${i} out of range`);
+  } catch (e) {
+    console.warn(...PR(e));
+    return false;
+  }
+  source[i] = u;
+  return true;
+}
+export { UpdateSourceIndex };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** WIP centralized source deleter */
+export function DeleteSource(name: string): boolean {
+  if (SOURCE.has(name)) {
+    SOURCE.delete(name);
+    return true;
+  }
+  console.warn(...PR(`source '${name}' doesn't exist`));
+  return false;
 }
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
