@@ -1,65 +1,57 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  implementation of keyword featureProp command object
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { IScopeable } from 'lib/t-smc';
+import { IAgent, IScopeable, IState } from 'lib/t-smc';
 import { ISMCBundle, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-factory';
+import { RegisterKeyword, GetTest } from '../keyword-factory';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_Random(min: number, max: number, floor: boolean = true) {
-  const n = Math.random() * (max - min) + min;
-  if (floor) return Math.floor(n);
-  return n;
-}
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class RandomPos extends KeywordDef {
+export class FeatureCall extends KeywordDef {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('randomPos');
-    this.args = ['min:number', 'max:number', 'floor:boolean'];
+    super('featureCall');
+    this.args = ['featureName:string', 'methodName:string', '...args'];
   }
 
   /** create smc blueprint code objects */
   compile(parms: any[]): ISMCBundle {
-    const min = parms[0];
-    const max = parms[1];
-    const floor = parms[2] || false;
+    const [featName, methodName, ...args] = parms;
     const progout = [];
-    progout.push((agent: IScopeable) => {
-      const x = m_Random(min, max, floor);
-      const y = m_Random(min, max, floor);
-      agent.prop('x')._value = x;
-      agent.prop('y')._value = y;
+    progout.push((agent: IAgent, state: IState) => {
+      // invoke the feature on the agent
+      const feat = agent.feature(featName);
+      feat.method(agent, methodName, ...args);
     });
     return {
       define: [],
       defaults: [],
-      conditions: progout,
-      update: progout // hack for testing
+      conditions: [],
+      update: progout
     };
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): ScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
+    const { feature, method, ...args } = state;
+    return [this.keyword, feature, method, args];
   }
 
   /** return rendered component representation */
-  render(index: number, args: any, children?: any[]): any {
-    const min = args[1];
-    const max = args[2];
-    const floor = args[3];
+  render(index: number, parms: any[], children?: any[]): any {
+    const [kw, featName, method, ...args] = parms;
     return (
-      <div key={this.generateKey()} className="randomPos">
-        random between ({min},{max}) (floor={floor})
+      <div key={this.generateKey()} className="featureMethod">
+        feature {featName}.{method}({args.join(',')})
       </div>
     );
   }
@@ -69,4 +61,4 @@ export class RandomPos extends KeywordDef {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// make sure you import this at some point with
 /// import from 'file'
-RegisterKeyword(RandomPos);
+RegisterKeyword(FeatureCall);

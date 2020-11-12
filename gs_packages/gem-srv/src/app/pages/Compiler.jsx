@@ -24,6 +24,19 @@ import { useStylesHOC } from './page-styles';
 const PR = UR.PrefixUtil('COMPILER');
 const DBG = true;
 
+/// HARCODED SOURCE ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const defaultText = `
+// definitions
+defBlueprint Bunny
+addProp frame Number 0
+useFeature Movement
+// defaults
+prop skin 'bunny.json'
+// runtime
+Movement.jitterPos -5 5
+`.trim();
+
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook(
@@ -40,16 +53,6 @@ UR.SystemHook(
       resolve();
     })
 );
-/// HARCODED SOURCE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-const defaultText = `
-defBlueprint Bunny
-addProp frame GSNumber 0
-prop skin setTo 'bunny.json'
-randomPos -5 5
-endBlueprint
-`.trim();
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

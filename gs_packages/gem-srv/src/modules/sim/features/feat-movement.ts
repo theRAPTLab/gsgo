@@ -24,16 +24,18 @@ class MovementPack extends Feature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));
-    // super.meta
-    // super.methods
     // super.decorate(agent)
-    // super.prop()
-    // super.method()
+    // super.prop(agent, key)
+    // super.method(agent, key, ...args)
+    this.handleInput = this.handleInput.bind(this);
+    this.defineMethod('jitterPos', this.jitterPos);
+    this.defineMethod('setController', this.setController);
   }
 
+  /** This runs once to initialize the feature for all agents */
   initialize(pm) {
-    super.initalize(pm);
-    pm.hook('INPUT', this.HandleInput);
+    super.initialize(pm);
+    pm.hook('INPUT', this.handleInput);
   }
 
   decorate(agent) {
@@ -41,10 +43,30 @@ class MovementPack extends Feature {
     this.addProp(agent, 'controller', new StringProp());
   }
 
+  handleInput() {
+    // hook into INPUT phase and do what needs doing for
+    // the feature as a whole
+  }
+
   setController(agent, x) {
     if (DBG) console.log(...PR(`setting control to ${x}`));
-    this.prop(agent, 'controller').value = x;
+    agent.prop('controller')._value = x;
   }
+
+  jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
+    const x = m_Random(min, max, round);
+    const y = m_Random(min, max, round);
+    agent.prop('x')._value += x;
+    agent.prop('y')._value += y;
+  }
+} // end of feature class
+
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_Random(min, max, round) {
+  const n = Math.random() * (max - min) + min;
+  if (round) return Math.round(n);
+  return n;
 }
 
 /// EXPORT SINGLETON //////////////////////////////////////////////////////////

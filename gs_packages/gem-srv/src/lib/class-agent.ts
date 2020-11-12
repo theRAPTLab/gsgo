@@ -184,9 +184,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   /** Execute either a smc_program or function depending on the
    *  method passed-in with arguments
    */
-  exec(m: TMethod, ...args): any {
+  exec(m: TMethod, ...args: any[]): any {
     if (m === undefined) throw Error('no method passed');
-    if (typeof m === 'function') return this.exec_func(m, [...args]);
+    if (typeof m === 'function') return this.exec_func(m, ...args);
     if (Array.isArray(m)) return this.exec_smc(m, [...args]);
     if (typeof m === 'string') return this.exec_program(m, [...args]);
     throw Error('method object is neither function or smc');
@@ -198,18 +198,22 @@ class Agent extends SM_Object implements IAgent, IActable {
   exec_smc(program: TProgram, stack = []) {
     const state = new SM_State(stack);
     program.forEach((op, index) => {
+      if (typeof op !== 'function') console.warn(op, index);
       op(this, state);
     });
     // return the stack as a result, though
     return state.stack;
   }
-  /** Execute a method that is a Javascript function */
-  exec_func(program: Function, args: any[]): any {
-    return program.apply(this, args);
+  /** Execute a method that is a Javascript function with
+   *  agent as the execution context
+   */
+  exec_func(program: Function, ...args: any[]): any {
+    return program.call(this, this, ...args);
   }
   /** Execute a named program stored in global program store */
-  exec_program(progName: string, args: any[]) {}
-
+  exec_program(progName: string, args: any[]) {
+    throw Error('global programs not implemented');
+  }
   // serialization
   serialize() {
     // call serialize on all features

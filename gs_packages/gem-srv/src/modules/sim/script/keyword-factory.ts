@@ -68,7 +68,9 @@ function GetTest(name: string) {
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** compile an array of ScriptUnit, representing one complete blueprint */
+/** compile an array of ScriptUnit, representing one complete blueprint
+ *  proof of concept
+ */
 function CompileSource(units: ScriptUnit[]): ISMCBundle {
   const bdl: ISMCBundle = {
     name: undefined,
@@ -79,14 +81,25 @@ function CompileSource(units: ScriptUnit[]): ISMCBundle {
   };
   // this has to look through the output to determine what to compile
   units.forEach(unit => {
-    // extract keyword first unit
-    let cmdName = unit[0];
-    // get keyword
-    let cmdObj = KEYWORDS.get(cmdName);
+    // detect comments
+    if (unit[0] === '//') return;
+    // extract keyword first unit, assume that . means Feature
+    let cmdName = unit[0].split('.');
+    // handle regular keyword
+    let cmdObj;
+    if (cmdName.length === 1) {
+      cmdObj = KEYWORDS.get(cmdName[0]);
+    } else if (cmdName.length === 2) {
+      const [fname, method] = cmdName;
+      cmdObj = KEYWORDS.get('featureCall');
+      unit = ['featureCall', fname, method, ...unit.slice(1)];
+    } else console.warn(...PR('parsing error', unit[0]));
+    // resume processing
     if (!cmdObj) {
       cmdObj = KEYWORDS.get('dbgError');
-      cmdObj.keyword = cmdName;
+      cmdObj.keyword = cmdName[0];
     }
+    // continue!
     const parms = unit.slice(1);
     const bundle = cmdObj.compile(parms); // qbits is the subsequent parameters
     if (DBG) console.log(unit, '->', bundle);
@@ -99,7 +112,7 @@ function CompileSource(units: ScriptUnit[]): ISMCBundle {
     if (defaults) bdl.defaults.push(...defaults);
     if (conditions) bdl.conditions.push(...conditions);
     if (update) bdl.update.push(...update);
-  });
+  }); // units.forEach
   if (bdl.name === undefined) throw Error('CompileSource: missing defBlueprint');
   if (DBG) console.log(...PR(`compiled ${bdl.name}`));
   return bdl;
@@ -113,7 +126,18 @@ function RenderSource(units: ScriptUnit[]): any[] {
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
     const keyword = unit[0];
-    let cmdObj = KEYWORDS.get(keyword);
+    // comment processing
+    if (keyword === '//') {
+      sourceJSX.push(unit.join(' '));
+      return;
+    }
+    let cmdObj;
+    if (!keyword.includes('.')) cmdObj = KEYWORDS.get(keyword);
+    else {
+      cmdObj = KEYWORDS.get('featureCall');
+      const [fname, method] = keyword.split('.');
+      unit = ['featureCall', fname, method, ...unit.slice(1)];
+    }
     if (!cmdObj) {
       cmdObj = KEYWORDS.get('dbgError');
       cmdObj.keyword = keyword;

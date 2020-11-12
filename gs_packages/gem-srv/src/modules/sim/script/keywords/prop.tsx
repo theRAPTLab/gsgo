@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword useFeature command object
+  implementation of keyword prop keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -20,17 +20,16 @@ export class Prop extends KeywordDef {
 
   constructor() {
     super('prop');
-    this.args = ['propName:string', 'methodName:string', '...args'];
+    this.args = ['propName:string', 'value:any'];
   }
 
   /** create smc blueprint code objects */
   compile(parms: any[]): ISMCBundle {
-    const [propName, methodName, ...args] = parms;
+    const [propName, value] = parms;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       const prop = agent.prop(propName);
-      // prop.method(methodName, [...args]);
-      prop[methodName](...args);
+      prop._value = value;
     });
     return {
       define: [],
@@ -41,19 +40,17 @@ export class Prop extends KeywordDef {
 
   /** return a state object that turn react state back into source */
   serialize(state: any): ScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
+    const { propName, value } = state;
+    return [this.keyword, propName, value];
   }
 
   /** return rendered component representation */
   render(index: number, args: any[], children?: any[]): any {
-    const testName = args[1];
-    const conseq = args[2];
-    const alter = args[3];
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
+    const propName = args[1];
+    const value = args[2];
     return (
-      <div key={this.generateKey()} className="useFeature">
-        on {testName} TRUE {conseq}, ELSE {alter}
+      <div key={this.generateKey()} className="prop">
+        prop {propName} set to {value}
       </div>
     );
   }
