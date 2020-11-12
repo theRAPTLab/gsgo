@@ -7,7 +7,7 @@
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
 import { IAgent, IScopeable, IState } from 'lib/t-smc';
-import { ISMCBundle, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from '../keyword-factory';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////

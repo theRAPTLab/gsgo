@@ -9,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { ISMCBundle, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { nop } from 'script/ops/debug-ops';
 import { RegisterKeyword } from '../keyword-factory';
 
@@ -92,7 +92,7 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
   onChange(e) {
     this.setState({ blueprintName: e.currentTarget.value }, () => {
-      const updata: ScriptUpdate = {
+      const updata: TScriptUpdate = {
         index: this.index,
         scriptUnit: this.serialize(this.state)
       };

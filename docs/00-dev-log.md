@@ -146,7 +146,7 @@ The retrieved prop has its method called on it, but that's disallowed because pr
 
 Yay, it minimally works! Can write script and it updates. However:
 
-* [ ] SAVE reprograms and restarts
+* [x] SAVE reprograms and restarts
 * [ ] CONDITIONS need to run
 * [ ] EXPRESSIONS need to gobble strings
 

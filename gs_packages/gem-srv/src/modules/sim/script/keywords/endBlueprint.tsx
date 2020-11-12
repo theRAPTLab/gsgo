@@ -9,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { ISMCBundle, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
@@ -24,7 +24,8 @@ export class endBlueprint extends KeywordDef {
     super('endBlueprint');
   }
 
-  /** create smc blueprint code objects */ compile(parms: string[]): ISMCBundle {
+  /** create smc blueprint code objects */
+  compile(parms: string[]): ISMCBundle {
     const progout = [];
     return {
       define: progout

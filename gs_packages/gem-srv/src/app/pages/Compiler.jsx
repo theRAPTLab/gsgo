@@ -96,7 +96,7 @@ class Compiler extends React.Component {
   componentWillUnmount() {
     console.log('componentWillUnmount');
     UR.UnregisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
-    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
+    UR.UnregisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
   }
 
   // called by ScriptWizard component change

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { KeywordDef } from 'lib/class-kw-definition';
-import { ISMCBundle, ScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/op-imports';
 import { RegisterKeyword } from '../keyword-factory';
 
