@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword useFeature command object
+  implementation of keyword _onCondition command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -58,9 +58,8 @@ export class OnCondition extends KeywordDef {
     const testName = args[1];
     const conseq = args[2];
     const alter = args[3];
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
     return (
-      <div key={this.generateKey()} className="useFeature">
+      <div key={this.generateKey()} className="onCondition">
         on {testName} TRUE {conseq}, ELSE {alter}
       </div>
     );

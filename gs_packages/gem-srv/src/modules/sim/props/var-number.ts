@@ -113,4 +113,4 @@ export class NumberProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterSMObjectCtor('GSNumber', NumberProp);
+RegisterSMObjectCtor('Number', NumberProp);

@@ -43,10 +43,9 @@ export class UseFeature extends KeywordDef {
   /** return rendered component representation */
   render(index: number, args: any, children?: any[]): any {
     const [featureName] = args;
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
     return (
       <div key={this.generateKey()} className="useFeature">
-        feature {featureName} has props, methods
+        feature {featureName}
       </div>
     );
   }

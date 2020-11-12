@@ -29,4 +29,4 @@ export class StringProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterSMObjectCtor('GSString', StringProp);
+RegisterSMObjectCtor('String', StringProp);

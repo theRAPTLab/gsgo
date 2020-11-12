@@ -150,6 +150,15 @@ Yay, it minimally works! Can write script and it updates. However:
 * [ ] CONDITIONS need to run
 * [ ] EXPRESSIONS need to gobble strings
 
+## NOV 12 THU - Cleanup and Refactor
+
+Want to **document** and also do some expansion of **features**
+
+* [x] remake `randomPos` into test keyword
+* [x] add `jitterPos` to `Movement` feature
+
+
+
 
 ---
 

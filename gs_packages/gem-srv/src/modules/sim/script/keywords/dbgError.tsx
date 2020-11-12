@@ -41,7 +41,6 @@ export class dbgError extends KeywordDef {
   /** return rendered component representation */
   render(index: number, args: any, children?: any[]): any {
     const [error] = args;
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
     return (
       <div key={this.generateKey()} className="dbgError" style={{ color: 'red' }}>
         unknown keyword: {`'${error}'`}

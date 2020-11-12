@@ -57,4 +57,4 @@ export class BooleanProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterSMObjectCtor('GSBoolean', BooleanProp);
+RegisterSMObjectCtor('Boolean', BooleanProp);
