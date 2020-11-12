@@ -147,8 +147,6 @@ The retrieved prop has its method called on it, but that's disallowed because pr
 Yay, it minimally works! Can write script and it updates. However:
 
 * [x] SAVE reprograms and restarts
-* [ ] CONDITIONS need to run
-* [ ] EXPRESSIONS need to gobble strings
 
 ## NOV 12 THU - Cleanup and Refactor
 
@@ -170,9 +168,14 @@ Here are things I'd like to do:
 * [x] move KEYWORDS
 * [x] move KEYWORD management to class-keyword for automatic keyword registration
 * [x] change `btn*` to `user*` to indicate these are user-initiated  actions
-* [ ] keyword factory is really a **program factory**? 
-* [ ] text script format `[define]` to output a define bundle, etc
-* [ ] difference between PhaseMachine and messages is synchronous vs asynchronous handling!!!
+* [x] consolidate agent-factory, keyword-factory into `script-transpiler`
+
+Ok, that's all done! **next up**:
+
+* [ ] CONDITIONS need to run
+* [ ] EXPRESSIONS need to gobble strings
+* [ ] extension: text script format `[define]` to output a define bundle, etc
+* [ ] note: difference between PhaseMachine and messages is synchronous vs asynchronous handling!!!
 
 
 
