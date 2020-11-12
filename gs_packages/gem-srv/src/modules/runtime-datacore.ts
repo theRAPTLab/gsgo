@@ -8,7 +8,7 @@
 import UR from '@gemstep/ursys/client';
 import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
 import { IScopeableCtor, IFeature, TMethod } from 'lib/t-smc';
-import { ScriptUnit, ISMCBundle, IKeyword, IKeywordCtor } from 'lib/t-script';
+import { ISMCBundle, IKeyword, IKeywordCtor } from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,6 +34,31 @@ const ASSET_MGR = new PixiTextureMgr();
 export const GetAsset = ASSET_MGR.getAsset;
 export const GetAssetById = ASSET_MGR.getAssetById;
 export const LoadAssets = ASSET_MGR.loadManifest;
+
+/// KEYWORD UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function RegisterKeyword(Ctor: IKeywordCtor) {
+  const kobj = new Ctor();
+  KEYWORDS.set(kobj.keyword, kobj);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetKeyword(name: string): IKeyword {
+  return KEYWORDS.get(name);
+}
+
+/// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a SMObject, store in VARTYPES */
+export function RegisterValueCTor(name: string, ctor: IScopeableCtor) {
+  if (SMO_DICT.has(name)) throw Error(`RegisterValueCTor: ${name} exists`);
+  SMO_DICT.set(name, ctor);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** get the registered SMObject constructor by name */
+export function GetValueCtor(name: string): IScopeableCtor {
+  if (!SMO_DICT.has(name)) throw Error(`GetValueCtor: ${name} `);
+  return SMO_DICT.get(name);
+}
 
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -111,6 +136,32 @@ export function GetCondition(signature) {
 export function GetAllConditions() {
   const conditions = CONDITIONS.entries();
   return [...conditions];
+}
+
+/// TEST UTILITIES ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function RegisterTest(name: string, f_or_smc: TMethod) {
+  if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
+  TESTS.set(name, f_or_smc);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetTest(name: string): TMethod {
+  if (!TESTS.has(name)) {
+    console.log(...PR(`test '${name}' doesn't exist`));
+  } else return TESTS.get(name);
+}
+
+/// PROGRAM UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function RegisterProgram(name: string, f_or_smc: TMethod) {
+  if (PROGRAMS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
+  PROGRAMS.set(name, f_or_smc);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetProgram(name: string): TMethod {
+  if (!PROGRAMS.has(name)) {
+    console.log(...PR(`program '${name}' doesn't exist`));
+  } else return PROGRAMS.get(name);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

@@ -9,7 +9,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, ScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/op-imports';
-import { RegisterKeyword, GetSMObjectCtor } from '../keyword-factory';
+import { RegisterKeyword, GetValueCtor } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,8 +18,6 @@ export class AddProp extends Keyword {
   constructor() {
     super('addProp');
     this.args = ['propName string', 'propType string', 'initValue any'];
-    this.req_scope.add('defBlueprint');
-    this.key_scope.add('unknown');
   }
 
   /** create smc blueprint code objects */
@@ -27,7 +25,7 @@ export class AddProp extends Keyword {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
-    const propCtor = GetSMObjectCtor(propType);
+    const propCtor = GetValueCtor(propType);
     const progout = [];
     progout.push(addProp(propName, propCtor, initValue));
     return {
@@ -56,6 +54,5 @@ export class AddProp extends Keyword {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(AddProp);

@@ -11,7 +11,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { nop } from 'script/ops/debug-ops';
-import { RegisterKeyword } from '../keyword-factory';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,6 +113,5 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(DefTemplate);

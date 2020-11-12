@@ -10,7 +10,7 @@ import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-factory';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,6 +45,5 @@ export class endBlueprint extends Keyword {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(endBlueprint);

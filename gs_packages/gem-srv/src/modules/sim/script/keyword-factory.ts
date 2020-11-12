@@ -7,8 +7,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { IScopeableCtor, TMethod } from 'lib/t-smc';
-import { ScriptUnit, ISMCBundle, IKeyword, IKeywordCtor } from 'lib/t-script';
+import { ScriptUnit, ISMCBundle } from 'lib/t-script';
+import { GetKeyword } from 'modules/runtime-datacore';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
 
@@ -16,11 +16,6 @@ import { Evaluate } from './script-evaluator';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('KWDICT', 'TagDkRed');
 const DBG = false;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// these should be moved to DATACORE
-const KEYWORDS: Map<string, IKeyword> = new Map();
-const SMOBJS: Map<string, IScopeableCtor> = new Map();
-const TESTS: Map<string, TMethod> = new Map();
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,38 +29,6 @@ function m_TokenQueue(input: string | any[]): any[] {
   if (Array.isArray(input)) return input.map(el => el); // return new array!!!
   throw Error(`ERR: can not tokenize input ${input}`);
 }
-
-/// UTILITIES /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a Keyword Constructor function, add to the KEYWORDS dictionary */
-function RegisterKeyword(Ctor: IKeywordCtor) {
-  const kobj = new Ctor();
-  KEYWORDS.set(kobj.keyword, kobj);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a SMObject, store in SMOBJS */
-function RegisterSMObjectCtor(name: string, ctor: IScopeableCtor) {
-  if (SMOBJS.has(name)) throw Error(`RegisterSMObjectCtor: ${name} exists`);
-  SMOBJS.set(name, ctor);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** get the registered SMObject constructor by name */
-function GetSMObjectCtor(name: string): IScopeableCtor {
-  if (!SMOBJS.has(name)) throw Error(`GetSMObjectCtor: ${name} `);
-  return SMOBJS.get(name);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterTest(name: string, smc: TMethod) {
-  if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
-  TESTS.set(name, smc);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetTest(name: string): TMethod {
-  if (!TESTS.has(name)) {
-    console.log(...PR(`test '${name}' doesn't exist`));
-  } else return TESTS.get(name);
-}
-
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** compile an array of ScriptUnit, representing one complete blueprint
@@ -88,15 +51,15 @@ function CompileSource(units: ScriptUnit[]): ISMCBundle {
     // handle regular keyword
     let cmdObj;
     if (cmdName.length === 1) {
-      cmdObj = KEYWORDS.get(cmdName[0]);
+      cmdObj = GetKeyword(cmdName[0]);
     } else if (cmdName.length === 2) {
       const [fname, method] = cmdName;
-      cmdObj = KEYWORDS.get('featureCall');
+      cmdObj = GetKeyword('featureCall');
       unit = ['featureCall', fname, method, ...unit.slice(1)];
     } else console.warn(...PR('parsing error', unit[0]));
     // resume processing
     if (!cmdObj) {
-      cmdObj = KEYWORDS.get('dbgError');
+      cmdObj = GetKeyword('dbgError');
       cmdObj.keyword = cmdName[0];
     }
     // continue!
@@ -132,14 +95,14 @@ function RenderSource(units: ScriptUnit[]): any[] {
       return;
     }
     let cmdObj;
-    if (!keyword.includes('.')) cmdObj = KEYWORDS.get(keyword);
+    if (!keyword.includes('.')) cmdObj = GetKeyword(keyword);
     else {
-      cmdObj = KEYWORDS.get('featureCall');
+      cmdObj = GetKeyword('featureCall');
       const [fname, method] = keyword.split('.');
       unit = ['featureCall', fname, method, ...unit.slice(1)];
     }
     if (!cmdObj) {
-      cmdObj = KEYWORDS.get('dbgError');
+      cmdObj = GetKeyword('dbgError');
       cmdObj.keyword = keyword;
     }
     sourceJSX.push(cmdObj.render(index, unit));
@@ -160,13 +123,6 @@ function DecompileSource(units: ScriptUnit[]): string {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  RegisterKeyword, // Ctor => store in KEYWORDS table by keyword
-  RegisterSMObjectCtor,
-  GetSMObjectCtor,
-  RegisterTest,
-  GetTest
-};
 /// Source is ScriptUnit[], produced by GUI
 export {
   CompileSource, // ScriptUnit[] => ISMCBundle

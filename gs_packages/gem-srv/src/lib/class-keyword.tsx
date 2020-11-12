@@ -19,6 +19,7 @@
 
 import React from 'react';
 import { IKeyword, ISMCBundle, ScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,8 +36,6 @@ let ID_GENERATOR = 0;
 export class Keyword implements IKeyword {
   keyword: string;
   args: string[];
-  req_scope: Set<string>;
-  key_scope: Set<string>;
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
@@ -44,8 +43,6 @@ export class Keyword implements IKeyword {
     else if (DBG) console.log('Keyword constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
-    this.req_scope = new Set();
-    this.key_scope = new Set();
   }
   /** override in subclass */
   compile(args: any[]): ISMCBundle {

@@ -9,7 +9,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/op-imports';
-import { RegisterKeyword } from '../keyword-factory';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,8 +18,6 @@ export class UseFeature extends Keyword {
   constructor() {
     super('useFeature');
     this.args = ['featureName string'];
-    this.req_scope.add('defBlueprint');
-    this.key_scope.add('TBD');
   }
 
   /** create smc blueprint code objects */
@@ -53,6 +51,5 @@ export class UseFeature extends Keyword {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(UseFeature);

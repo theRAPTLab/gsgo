@@ -6,7 +6,7 @@
 
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-smc';
-import { RegisterSMObjectCtor } from 'script/keyword-factory';
+import { RegisterValueCTor } from 'modules/runtime-datacore';
 import { BooleanProp } from './var-boolean';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -29,4 +29,4 @@ export class StringProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterSMObjectCtor('String', StringProp);
+RegisterValueCTor('String', StringProp);

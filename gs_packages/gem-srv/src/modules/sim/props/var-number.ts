@@ -9,7 +9,7 @@
 
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-smc';
-import { RegisterSMObjectCtor } from 'script/keyword-factory';
+import { RegisterValueCTor } from 'modules/runtime-datacore';
 import { BooleanProp } from './var-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -113,4 +113,4 @@ export class NumberProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterSMObjectCtor('Number', NumberProp);
+RegisterValueCTor('Number', NumberProp);

@@ -6,9 +6,9 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IScopeable, IState } from 'lib/t-smc';
+import { IAgent, IState } from 'lib/t-smc';
 import { ISMCBundle, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, GetTest } from '../keyword-factory';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,6 +59,5 @@ export class FeatureCall extends Keyword {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(FeatureCall);
