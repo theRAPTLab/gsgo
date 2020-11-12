@@ -8,14 +8,14 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** closing tag, not shown in GUI but required when using DefTemplate */
-export class endBlueprint extends KeywordDef {
+export class endBlueprint extends Keyword {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;

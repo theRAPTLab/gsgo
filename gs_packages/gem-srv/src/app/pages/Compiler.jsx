@@ -69,17 +69,17 @@ class Compiler extends React.Component {
       tabIndex: 0
     };
     // bind
-    this.btnToJSX = this.btnToJSX.bind(this);
-    this.btnUpdateText = this.btnUpdateText.bind(this);
-    this.btnSaveBlueprint = this.btnSaveBlueprint.bind(this);
-    this.btnCompileText = this.btnCompileText.bind(this);
-    this.uiRenderScriptWizard = this.uiRenderScriptWizard.bind(this);
-    this.uiScriptWizardChanged = this.uiScriptWizardChanged.bind(this);
-    this.updateSourceText = this.updateSourceText.bind(this);
-    this.selectTab = this.selectTab.bind(this);
+    this.userToJSX = this.userToJSX.bind(this);
+    this.userUpdateText = this.userUpdateText.bind(this);
+    this.userSaveBlueprint = this.userSaveBlueprint.bind(this);
+    this.userCompileText = this.userCompileText.bind(this);
+    this.updateJSX = this.updateJSX.bind(this);
+    this.updateSource = this.updateSource.bind(this);
+    this.updateText = this.updateText.bind(this);
+    this.updateTabSelect = this.updateTabSelect.bind(this);
     // hooks
-    UR.RegisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
-    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
+    UR.RegisterMessage('SCRIPT_UI_RENDER', this.updateJSX);
+    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.updateSource);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     AgentFactory.MakeBlueprint(this.source);
@@ -98,45 +98,45 @@ class Compiler extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
-    UR.UnregisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
+    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.updateJSX);
+    UR.UnregisterMessage('SCRIPT_UI_CHANGED', this.updateSource);
   }
 
   // called by ScriptWizard component change
-  uiScriptWizardChanged(updata) {
+  updateSource(updata) {
     const { index, scriptUnit } = updata;
     this.source[index] = scriptUnit;
     console.log(...PR(`SOURCE[${index}] updated:`, this.source[index]));
   }
 
   // called by message 'SCRIPT_UI_RENDER'
-  uiRenderScriptWizard(jsx) {
+  updateJSX(jsx) {
     this.setState({ jsx });
   }
 
   // echo typing in SourceText to state
-  updateSourceText(evt) {
+  updateText(evt) {
     const text = evt.target.value;
     this.text = text;
     this.setState({ text });
   }
 
   // handle the "tabs"
-  selectTab(evt) {
+  updateTabSelect(evt) {
     this.setState({ tabIndex: Number(evt.target.value) });
   }
 
   // compile source to jsx
-  btnToJSX() {
+  userToJSX() {
     if (DBG) console.group(...PR('toReact'));
     // this.source = KeywordFactory.TokenizeToSource(this.state.text);
     const jsx = KeywordFactory.RenderSource(this.source);
-    UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+    this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
 
   // compile jsx back to source
-  btnUpdateText() {
+  userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
     const text = KeywordFactory.DecompileSource(this.source);
     this.setState({ text });
@@ -145,25 +145,21 @@ class Compiler extends React.Component {
   }
 
   // compile text to source
-  btnCompileText() {
-    // this.text isn't updated
+  userCompileText() {
     const source = KeywordFactory.TokenizeToSource(this.text);
     this.source = source;
     this.setState({ source: JSON.stringify(source) });
   }
 
   // compile source to smc
-  btnSaveBlueprint() {
-    // convert text to source (from btnCompileText)
-    const source = KeywordFactory.TokenizeToSource(this.text);
-    this.source = source;
-    this.setState({ source: JSON.stringify(source) });
-    // save the blueprint to default
+  userSaveBlueprint() {
+    this.userCompileText();
+    // save the blueprint to default and reprogram sim
     const bp = AgentFactory.MakeBlueprint(this.source);
-    // also update jsx (from btnToJSX)
-    const jsx = KeywordFactory.RenderSource(this.source);
-    UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
+    // update local jsx render
+    const jsx = KeywordFactory.RenderSource(this.source);
+    this.setState({ jsx });
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -185,12 +181,12 @@ class Compiler extends React.Component {
               width: '100%'
             }}
             value={this.state.text}
-            onChange={this.updateSourceText}
+            onChange={this.updateText}
           />
           <button
             type="button"
             name="saveBlueprint"
-            onClick={this.btnSaveBlueprint}
+            onClick={this.userSaveBlueprint}
           >
             Save Blueprint
           </button>
@@ -203,7 +199,7 @@ class Compiler extends React.Component {
           <h3>WIZARD VIEW</h3>
           {this.state.jsx}
           <hr />
-          <button type="button" name="updateText" onClick={this.btnUpdateText}>
+          <button type="button" name="updateText" onClick={this.userUpdateText}>
             Update Blueprint
           </button>
         </div>
@@ -228,7 +224,7 @@ class Compiler extends React.Component {
             style={{ border: '0px' }}
             disabled={index === 0}
             type="button"
-            onClick={this.selectTab}
+            onClick={this.updateTabSelect}
             value={0}
           >
             script view
@@ -237,7 +233,7 @@ class Compiler extends React.Component {
             style={{ border: '0px' }}
             disabled={index === 1}
             type="button"
-            onClick={this.selectTab}
+            onClick={this.updateTabSelect}
             value={1}
           >
             wizard view

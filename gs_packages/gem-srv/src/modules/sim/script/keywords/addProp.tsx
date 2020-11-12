@@ -6,14 +6,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, ScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/op-imports';
 import { RegisterKeyword, GetSMObjectCtor } from '../keyword-factory';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class AddProp extends KeywordDef {
+export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addProp');
@@ -45,10 +45,10 @@ export class AddProp extends KeywordDef {
 
   /** return rendered component representation */
   render(index: number, args: any[], children?: any[]): any {
-    const [propName, propType, initValue] = args;
+    const [kw, propName, propType, initValue] = args;
     return (
       <div key={this.generateKey()} className="addProp">
-        prop {propName} is type {propType} w/value {initValue}
+        addProp {propName} = {initValue} :{propType}
       </div>
     );
   }

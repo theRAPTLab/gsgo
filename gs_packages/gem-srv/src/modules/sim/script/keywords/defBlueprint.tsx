@@ -8,14 +8,14 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { nop } from 'script/ops/debug-ops';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends KeywordDef {
+export class DefTemplate extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('defBlueprint');

@@ -6,13 +6,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgError extends KeywordDef {
+export class dbgError extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgError');

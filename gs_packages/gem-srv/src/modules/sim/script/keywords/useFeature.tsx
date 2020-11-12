@@ -6,14 +6,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/op-imports';
 import { RegisterKeyword } from '../keyword-factory';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class UseFeature extends KeywordDef {
+export class UseFeature extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('useFeature');
@@ -42,10 +42,10 @@ export class UseFeature extends KeywordDef {
 
   /** return rendered component representation */
   render(index: number, args: any, children?: any[]): any {
-    const [featureName] = args;
+    const [kw, featureName] = args;
     return (
       <div key={this.generateKey()} className="useFeature">
-        feature {featureName}
+        useFeature {featureName}
       </div>
     );
   }

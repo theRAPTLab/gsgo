@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { IAgent, IScopeable, IState } from 'lib/t-smc';
 import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from '../keyword-factory';
@@ -20,7 +20,7 @@ function m_Random(min: number, max: number, floor: boolean = true) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class OnCondition extends KeywordDef {
+export class OnCondition extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {

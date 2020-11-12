@@ -3,7 +3,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
+import { Keyword } from 'lib/class-keyword';
 import { IScopeable } from 'lib/t-smc';
 import { ISMCBundle, ScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from '../keyword-factory';
@@ -18,7 +18,7 @@ function m_Random(min: number, max: number, floor: boolean = true) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class RandomPos extends KeywordDef {
+export class RandomPos extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {

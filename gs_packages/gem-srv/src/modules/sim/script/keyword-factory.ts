@@ -60,7 +60,7 @@ function RegisterTest(name: string, smc: TMethod) {
   TESTS.set(name, smc);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetTest(name: string) {
+function GetTest(name: string): TMethod {
   if (!TESTS.has(name)) {
     console.log(...PR(`test '${name}' doesn't exist`));
   } else return TESTS.get(name);
