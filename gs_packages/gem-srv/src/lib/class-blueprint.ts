@@ -6,9 +6,8 @@
 
 import UR from '@gemstep/ursys/client';
 import { BLUEPRINTS } from 'modules/runtime-datacore';
-import { TMethod } from 'lib/t-script';
 import { ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { CompileSource } from 'script/keyword-factory';
+import { CompileSource } from 'script/script-transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

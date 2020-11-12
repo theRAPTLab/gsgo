@@ -7,10 +7,10 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { GetAllAgents } from 'modules/runtime-datacore';
+import { GetAllAgents, DeleteAllAgents } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
-import { AgentFactory, KeywordFactory } from 'script/agent-factory';
+import * as TRANSPILER from 'script/script-transpiler';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,9 +73,9 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function AgentProgram(blueprint) {
-  AgentFactory.DeleteAllAgents();
+  DeleteAllAgents();
   if (!blueprint) return console.warn(...PR('no blueprint'));
-  for (let i = 0; i < 20; i++) AgentFactory.MakeAgent(`bun${i}`, { blueprint });
+  for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////

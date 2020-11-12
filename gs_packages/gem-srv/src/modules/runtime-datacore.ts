@@ -179,4 +179,4 @@ UR.SystemHook('SIM/RESET', () => {});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exported functions
 /// expose maps and managers
-export { AGENTS, BLUEPRINTS, FEATURES, CONDITIONS };
+export { AGENTS, KEYWORDS, BLUEPRINTS, FEATURES, CONDITIONS };

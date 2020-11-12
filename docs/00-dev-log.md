@@ -165,10 +165,10 @@ Here are things I'd like to do:
 
 * [x] rename KeywordDef to just Keyword
 * [x] move BLUEPRINTS
-* [ ] move SMOBJS
-* [ ] move TESTS
-* [ ] move KEYWORDS
-* [ ] move KEYWORD management to class-keyword for automatic keyword registration
+* [x] move SMOBJS
+* [x] move TESTS
+* [x] move KEYWORDS
+* [x] move KEYWORD management to class-keyword for automatic keyword registration
 * [x] change `btn*` to `user*` to indicate these are user-initiated  actions
 * [ ] keyword factory is really a **program factory**? 
 * [ ] text script format `[define]` to output a define bundle, etc

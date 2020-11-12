@@ -6,9 +6,8 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IScopeable, IState } from 'lib/t-script';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
+import { IAgent, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +26,7 @@ export class PropMethod extends Keyword {
   compile(parms: any[]): ISMCBundle {
     const [propName, methodName, ...args] = parms;
     const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
+    progout.push((agent: IAgent) => {
       const prop = agent.prop(propName);
       prop[methodName](...args);
     });

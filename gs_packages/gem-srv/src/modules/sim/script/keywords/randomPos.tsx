@@ -4,8 +4,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IScopeable } from 'lib/t-script';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IScopeable, ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////

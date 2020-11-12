@@ -6,9 +6,8 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IScopeable, IState } from 'lib/t-script';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
+import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

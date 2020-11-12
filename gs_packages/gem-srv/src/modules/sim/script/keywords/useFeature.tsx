@@ -7,8 +7,8 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
-import { addFeature } from 'script/ops/op-imports';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { addFeature } from 'script/ops/_all';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////

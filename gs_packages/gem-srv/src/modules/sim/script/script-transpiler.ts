@@ -7,10 +7,18 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import Agent from 'lib/class-agent';
 import { TScriptUnit, ISMCBundle } from 'lib/t-script';
-import { GetKeyword } from 'modules/runtime-datacore';
+import {
+  GetKeyword,
+  SaveAgent,
+  SaveBlueprint,
+  GetBlueprint
+} from 'modules/runtime-datacore';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
+// critical imports
+import 'script/keywords/_all';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -121,6 +129,30 @@ function DecompileSource(units: TScriptUnit[]): string {
   return lines.join('\n');
 }
 
+/// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MakeBlueprint(units: TScriptUnit[]): ISMCBundle {
+  const bp = CompileSource(units);
+  SaveBlueprint(bp);
+  return bp;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function MakeAgent(agentName: string, options?: { blueprint: string }) {
+  const { blueprint } = options || {};
+  const agent = new Agent(agentName);
+  // handle extension of base agent
+  // TODO: doesn't handle recursive agent definitions
+  if (blueprint !== undefined) {
+    const bp = GetBlueprint(blueprint);
+    if (!bp) throw Error(`agent blueprint for '${blueprint}' not defined`);
+
+    console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
+    agent.setBlueprint(bp);
+    console.groupEnd();
+  }
+  return SaveAgent(agent);
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Source is TScriptUnit[], produced by GUI
@@ -128,6 +160,11 @@ export {
   CompileSource, // TScriptUnit[] => ISMCBundle
   RenderSource, // TScriptUnit[] => JSX
   DecompileSource // TScriptUnit[] => produce source text from units
+};
+/// for blueprint operations
+export {
+  MakeAgent, // BlueprintName => Agent
+  MakeBlueprint // TScriptUnit[] => ISMCBundle
 };
 /// for expression evaluation
 export {

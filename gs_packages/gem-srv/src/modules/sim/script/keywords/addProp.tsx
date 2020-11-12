@@ -8,7 +8,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { addProp } from 'script/ops/op-imports';
+import { addProp } from 'script/ops/_all';
 import { RegisterKeyword, GetValueCtor } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////

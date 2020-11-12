@@ -15,7 +15,7 @@ import {
   stackToScope,
   scopedPropValue,
   scopePop
-} from './script/ops/op-imports';
+} from './script/ops/_all';
 import {
   compareNumbers,
   clearCondition,

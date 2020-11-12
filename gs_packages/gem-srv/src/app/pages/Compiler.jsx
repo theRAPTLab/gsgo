@@ -14,7 +14,7 @@ import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
-import { AgentFactory, KeywordFactory } from 'script/agent-factory';
+import * as TRANSPILER from 'script/script-transpiler';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -61,9 +61,9 @@ class Compiler extends React.Component {
   constructor() {
     super();
     this.text = defaultText;
-    this.source = KeywordFactory.TokenizeToSource(this.text);
+    this.source = TRANSPILER.TokenizeToSource(this.text);
     this.state = {
-      jsx: KeywordFactory.RenderSource(this.source),
+      jsx: TRANSPILER.RenderSource(this.source),
       text: defaultText,
       source: [],
       tabIndex: 0
@@ -82,7 +82,7 @@ class Compiler extends React.Component {
     UR.RegisterMessage('SCRIPT_UI_CHANGED', this.updateSource);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    AgentFactory.MakeBlueprint(this.source);
+    TRANSPILER.MakeBlueprint(this.source);
   }
 
   componentDidMount() {
@@ -129,8 +129,8 @@ class Compiler extends React.Component {
   // compile source to jsx
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = KeywordFactory.TokenizeToSource(this.state.text);
-    const jsx = KeywordFactory.RenderSource(this.source);
+    // this.source = TRANSPILER.TokenizeToSource(this.state.text);
+    const jsx = TRANSPILER.RenderSource(this.source);
     this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
@@ -138,7 +138,7 @@ class Compiler extends React.Component {
   // compile jsx back to source
   userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    const text = KeywordFactory.DecompileSource(this.source);
+    const text = TRANSPILER.DecompileSource(this.source);
     this.setState({ text });
     this.text = text;
     if (DBG) console.groupEnd();
@@ -146,7 +146,7 @@ class Compiler extends React.Component {
 
   // compile text to source
   userCompileText() {
-    const source = KeywordFactory.TokenizeToSource(this.text);
+    const source = TRANSPILER.TokenizeToSource(this.text);
     this.source = source;
     this.setState({ source: JSON.stringify(source) });
   }
@@ -155,10 +155,10 @@ class Compiler extends React.Component {
   userSaveBlueprint() {
     this.userCompileText();
     // save the blueprint to default and reprogram sim
-    const bp = AgentFactory.MakeBlueprint(this.source);
+    const bp = TRANSPILER.MakeBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
-    const jsx = KeywordFactory.RenderSource(this.source);
+    const jsx = TRANSPILER.RenderSource(this.source);
     this.setState({ jsx });
   }
 

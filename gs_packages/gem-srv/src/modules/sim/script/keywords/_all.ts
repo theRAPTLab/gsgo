@@ -13,5 +13,5 @@ export * from './endBlueprint';
 export * from './useFeature';
 export * from './featureCall';
 export * from './featureProp';
-export * from './_randomPos'; // experimental placeholder
-export * from './_onCondition'; // experimental placeholder
+export * from './randomPos'; // experimental placeholder
+export * from './onCondition'; // experimental placeholder

@@ -13,8 +13,14 @@ import { FEATURES } from 'modules/runtime-datacore';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { IAgent, IScopeable, IMessage, TMethod, TSMCProgram } from './t-script';
-import { ISMCBundle } from './t-script';
+import {
+  IAgent,
+  IScopeable,
+  IMessage,
+  TMethod,
+  TSMCProgram,
+  ISMCBundle
+} from './t-script';
 import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
