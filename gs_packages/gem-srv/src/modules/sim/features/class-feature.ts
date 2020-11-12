@@ -13,7 +13,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IFeature, TMethod, IAgent, IScopeable, TStackable } from 'lib/t-smc';
+import { IFeature, TMethod, IAgent, IScopeable, TStackable } from 'lib/t-script';
 import { DictionaryProp } from 'modules/sim/props/var';
 
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////

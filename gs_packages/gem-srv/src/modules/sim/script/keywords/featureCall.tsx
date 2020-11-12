@@ -6,8 +6,8 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState } from 'lib/t-smc';
-import { ISMCBundle, ScriptUnit } from 'lib/t-script';
+import { IAgent, IState } from 'lib/t-script';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -41,7 +41,7 @@ export class FeatureCall extends Keyword {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { feature, method, ...args } = state;
     return [this.keyword, feature, method, args];
   }

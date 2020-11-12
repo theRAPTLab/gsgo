@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { ScriptUnit, ISMCBundle } from 'lib/t-script';
+import { TScriptUnit, ISMCBundle } from 'lib/t-script';
 import { GetKeyword } from 'modules/runtime-datacore';
 import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
 import { Evaluate } from './script-evaluator';
@@ -31,10 +31,10 @@ function m_TokenQueue(input: string | any[]): any[] {
 }
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** compile an array of ScriptUnit, representing one complete blueprint
+/** compile an array of TScriptUnit, representing one complete blueprint
  *  proof of concept
  */
-function CompileSource(units: ScriptUnit[]): ISMCBundle {
+function CompileSource(units: TScriptUnit[]): ISMCBundle {
   const bdl: ISMCBundle = {
     name: undefined,
     define: [],
@@ -84,7 +84,7 @@ function CompileSource(units: ScriptUnit[]): ISMCBundle {
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
  */
-function RenderSource(units: ScriptUnit[]): any[] {
+function RenderSource(units: TScriptUnit[]): any[] {
   const sourceJSX = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
@@ -112,7 +112,7 @@ function RenderSource(units: ScriptUnit[]): any[] {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
-function DecompileSource(units: ScriptUnit[]): string {
+function DecompileSource(units: TScriptUnit[]): string {
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
@@ -123,11 +123,11 @@ function DecompileSource(units: ScriptUnit[]): string {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Source is ScriptUnit[], produced by GUI
+/// Source is TScriptUnit[], produced by GUI
 export {
-  CompileSource, // ScriptUnit[] => ISMCBundle
-  RenderSource, // ScriptUnit[] => JSX
-  DecompileSource // ScriptUnit[] => produce source text from units
+  CompileSource, // TScriptUnit[] => ISMCBundle
+  RenderSource, // TScriptUnit[] => JSX
+  DecompileSource // TScriptUnit[] => produce source text from units
 };
 /// for expression evaluation
 export {
@@ -135,8 +135,8 @@ export {
   Evaluate // (AST,context)=>computed value
   // MakeEvaluator // (AST,context)=> smc_program
 };
-/// for converting text to ScriptUnit Source
+/// for converting text to TScriptUnit Source
 export {
-  TokenizeToScriptUnit, // expr => ScriptUnit
-  TokenizeToSource // exprs => ScriptUnit[]
+  TokenizeToScriptUnit, // expr => TScriptUnit
+  TokenizeToSource // exprs => TScriptUnit[]
 };

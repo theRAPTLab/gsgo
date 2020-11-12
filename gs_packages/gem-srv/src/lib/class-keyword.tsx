@@ -18,7 +18,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IKeyword, ISMCBundle, ScriptUnit } from 'lib/t-script';
+import { IKeyword, ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -49,7 +49,7 @@ export class Keyword implements IKeyword {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /** override to output a serialized array representation for eventual reserialization */
-  serialize(state: object): ScriptUnit {
+  serialize(state: object): TScriptUnit {
     throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
   }
   /** override in subclass */

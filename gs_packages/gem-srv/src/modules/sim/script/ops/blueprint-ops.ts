@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, TOpcode, TOpWait, IScopeable } from 'lib/t-smc';
+import { IAgent, TOpcode, TOpWait, IScopeable } from 'lib/t-script';
 
 /// AGENT TEMPLATE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

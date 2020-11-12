@@ -6,7 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as KEYDICT from 'script/keyword-factory';
-import { ScriptUnit, TScriptUpdate } from 'lib/t-script';
+import { TScriptUnit, IScriptUpdate } from 'lib/t-script';
 import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -16,7 +16,7 @@ const DBG = true;
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SOURCE: ScriptUnit[] = [
+const SOURCE: TScriptUnit[] = [
   ['defBlueprint', 'Bee'],
   ['addProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
@@ -57,7 +57,7 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToUI(source: ScriptUnit[] = SOURCE) {
+function TestSourceToUI(source: TScriptUnit[] = SOURCE) {
   // the idea is to parse data structure into react
   if (DBG)
     console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
@@ -68,19 +68,19 @@ function TestSourceToUI(source: ScriptUnit[] = SOURCE) {
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives the react state object */
-UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: TScriptUpdate) => {
+UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: IScriptUpdate) => {
   const { index, scriptUnit } = updata;
   SOURCE[index] = scriptUnit;
   if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-(window as any).sourceRender = (source: ScriptUnit[] = SOURCE) => {
+(window as any).sourceRender = (source: TScriptUnit[] = SOURCE) => {
   console.log(...PR('rendering test source'));
   const jsx = KEYDICT.RenderSource(source);
   UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
 };
-(window as any).sourceCompile = (source: ScriptUnit[] = SOURCE) => {
+(window as any).sourceCompile = (source: TScriptUnit[] = SOURCE) => {
   console.log(...PR('compiling test source'));
   TestSourceToProgram(source);
 };

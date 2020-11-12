@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/op-imports';
 import { RegisterKeyword, GetValueCtor } from 'modules/runtime-datacore';
 
@@ -36,7 +36,7 @@ export class AddProp extends Keyword {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { propName, propType, initValue } = state;
     return [this.keyword, propName, propType, initValue];
   }

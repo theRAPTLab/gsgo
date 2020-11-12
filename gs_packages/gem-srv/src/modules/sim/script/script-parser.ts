@@ -2,7 +2,7 @@
 
   SourceString to ScriptObject
 
-  Given a GEMscript source string, create a GEMscript ScriptUnit, which is an
+  Given a GEMscript source string, create a GEMscript TScriptUnit, which is an
   array of arrays of form ['keyword',...args:any]. The source array is used to
   drive the actual compilation into opcodes
 
@@ -23,7 +23,7 @@
 /* eslint-disable one-var */
 /* eslint-disable no-var */
 
-import { ScriptUnit } from 'lib/t-script';
+import { TScriptUnit } from 'lib/t-script';
 
 const COMPOUND = 'Compound';
 const IDENTIFIER = 'Identifier';
@@ -678,7 +678,7 @@ Parse.toString = function () {
  *  to expose the gobble methods, perhaps as a class
  *  BREAKS on strings with spaces until Parse is rewritten
  */
-function TokenizeToScriptUnit(str: string): ScriptUnit {
+function TokenizeToScriptUnit(str: string): TScriptUnit {
   const bits = str.trim().split(' ');
   const signs = [45, 43]; // - +
   const unit = [];
@@ -723,7 +723,7 @@ function processNode(n) {
   return func(n);
 }
 /** new tokenizer ... not yet working with expressions */
-function TokenizeToScriptUnit2(expr): ScriptUnit {
+function TokenizeToScriptUnit2(expr): TScriptUnit {
   const line = expr.trim();
   const unit = [];
 
@@ -739,7 +739,7 @@ function TokenizeToScriptUnit2(expr): ScriptUnit {
   return unit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TokenizeToSource(text: string): ScriptUnit[] {
+function TokenizeToSource(text: string): TScriptUnit[] {
   /* HACK pc line endings would screw this, need more robust check */
   const sourceStrings = text.split('\n');
   const scriptUnits = [];

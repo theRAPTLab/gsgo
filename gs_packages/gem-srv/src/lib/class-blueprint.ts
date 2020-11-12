@@ -6,8 +6,8 @@
 
 import UR from '@gemstep/ursys/client';
 import { BLUEPRINTS } from 'modules/runtime-datacore';
-import { TMethod } from 'lib/t-smc';
-import { ISMCBundle, ScriptUnit } from 'lib/t-script';
+import { TMethod } from 'lib/t-script';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { CompileSource } from 'script/keyword-factory';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -27,7 +27,7 @@ export default class Blueprint {
   }
 
   /** compile passed source and save by name */
-  save(units: ScriptUnit[]) {
+  save(units: TScriptUnit[]) {
     const bp: ISMCBundle = CompileSource(units);
     const name = bp.name;
     if (DBG) {

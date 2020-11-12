@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TOpcode, TProgram, IMessage } from './t-smc';
+import { TOpcode, TSMCProgram, IMessage } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +34,7 @@ export default class SM_Message implements IMessage {
   channel: string;
   message: string;
   inputs?: any;
-  programs?: TProgram[];
+  programs?: TSMCProgram[];
   data: object;
   //
   constructor(msg: string, init: any = {}) {

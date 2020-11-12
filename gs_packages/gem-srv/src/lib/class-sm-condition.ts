@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TProgram } from './t-smc';
+import { TSMCProgram } from './t-script';
 import AgentSet from './class-agentset';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -18,9 +18,9 @@ const BAD_INIT_ERR = 'constructor requires AgentSet instance';
 class SimCondition {
   hashid: string; // unique hash for this condition, generated from sig
   agset: AgentSet; // the agents this condition applies to
-  tests: TProgram[]; // test(s) run on each agent in set
+  tests: TSMCProgram[]; // test(s) run on each agent in set
   execsStack: any[]; // initial arguments to pass to execs
-  execs: TProgram[]; // exec(s) queued to each agent in set that passed
+  execs: TSMCProgram[]; // exec(s) queued to each agent in set that passed
   dim: number; // dimension (1 for filter, 2 for pair)
   /** */
   constructor(ags: AgentSet) {
@@ -33,11 +33,11 @@ class SimCondition {
     this.dim = -1;
   }
   /** add test tests */
-  addTest(test: TProgram) {
+  addTest(test: TSMCProgram) {
     this.tests.push(test);
   }
   /** add executables */
-  addExec(exec: TProgram, args: any[] = []) {
+  addExec(exec: TSMCProgram, args: any[] = []) {
     this.execs.push(exec);
     if (!Array.isArray(args)) throw Error('exec args not array');
     this.execsStack.push(args);
@@ -45,7 +45,7 @@ class SimCondition {
   /** process filtering on single set
    *  TODO: multiple tests should refine filter set
    */
-  filterTest(tests: TProgram[] = this.tests) {
+  filterTest(tests: TSMCProgram[] = this.tests) {
     if (this.dim > 0) {
       console.warn('already filtered...skipping');
       return;
@@ -59,7 +59,7 @@ class SimCondition {
   /** process pairing with A or A B depending on
    *  the number of types in AgentSet
    */
-  pairTest(tests: TProgram[] = this.tests) {
+  pairTest(tests: TSMCProgram[] = this.tests) {
     if (this.dim > 0) {
       console.warn('already paired...skipping');
       return;
@@ -72,7 +72,10 @@ class SimCondition {
 
   /** process test results and inform members
    */
-  sendResults(execs: TProgram[] = this.execs, stacks: any[] = this.execsStack) {
+  sendResults(
+    execs: TSMCProgram[] = this.execs,
+    stacks: any[] = this.execsStack
+  ) {
     if (this.dim < 0) throw Error('test not run');
     if (this.dim > 2) throw Error('dim > 2');
     if (this.dim < 1) throw Error('dim < 1');

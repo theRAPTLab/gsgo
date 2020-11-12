@@ -8,7 +8,7 @@
 import { AGENTS } from 'modules/runtime-datacore';
 import { WORLD } from 'modules/sim/agents/global';
 import Message from './class-sm-message';
-import { IAgent, TProgram } from './t-smc';
+import { IAgent, TSMCProgram } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +60,7 @@ class AgentSet {
   }
 
   /** uses the test function to filter the agent set into members array */
-  filter(test: TProgram): void {
+  filter(test: TSMCProgram): void {
     if (!test) throw Error('undefined filter test');
     const len = this.agentTypes.length;
     if (len !== 1) throw Error('set count must be 1, not 2');
@@ -79,7 +79,7 @@ class AgentSet {
    *  that ingests either one or two agents on the stack and returns
    *  either true or false on the stack. The test stack
    */
-  pair(test: TProgram): void {
+  pair(test: TSMCProgram): void {
     if (!test) throw Error('undefined pair test');
     const len = this.agentTypes.length;
     if (len < 1 || len > 2) throw Error(`set count != 1 or 2; got ${len}`);
@@ -91,7 +91,7 @@ class AgentSet {
    *  similar to interact(), but does not produce duplicate pairs
    *
    */
-  singlePair(test: TProgram): void {
+  singlePair(test: TSMCProgram): void {
     // always run the first type only
     const [agents] = this.getAgents();
     for (let i = 0; i < agents.length; i++) {
@@ -114,7 +114,7 @@ class AgentSet {
    *  the AgentSet results and streamline the functions as much
    *  as possible
    */
-  doublePair(test: TProgram): void {
+  doublePair(test: TSMCProgram): void {
     // getAgents returns the smaller set first
     const [SET_A, SET_B] = this.getAgents();
     //
@@ -143,7 +143,7 @@ class AgentSet {
   }
 
   /** notify */
-  notifyMatches(execs: TProgram[], stacks: any[]): void {
+  notifyMatches(execs: TSMCProgram[], stacks: any[]): void {
     this.getMembers().forEach(agent => {
       const msg = new Message('exec', {
         programs: execs,
@@ -153,7 +153,7 @@ class AgentSet {
     });
     this.reset();
   }
-  notifyPairs(execs: TProgram[], stacks: any[]): void {
+  notifyPairs(execs: TSMCProgram[], stacks: any[]): void {
     if (!Array.isArray(execs)) execs = [execs];
     this.getPairs().forEach(pair => {
       const [agentA, agentB] = pair;

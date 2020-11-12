@@ -9,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { nop } from 'script/ops/debug-ops';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
@@ -41,14 +41,14 @@ export class DefTemplate extends Keyword {
     };
   }
 
-  /** return a ScriptUnit made from current state */
-  serialize(state: any): ScriptUnit {
+  /** return a TScriptUnit made from current state */
+  serialize(state: any): TScriptUnit {
     const { blueprintName, baseBlueprint } = state;
     return [this.keyword, blueprintName, baseBlueprint];
   }
 
   /** return rendered component representation */
-  render(index: number, srcLine: ScriptUnit, children?: any[]): any {
+  render(index: number, srcLine: TScriptUnit, children?: any[]): any {
     const state = {
       blueprintName: srcLine[1],
       baseBlueprint: srcLine[2]
@@ -74,13 +74,13 @@ type MyState = { blueprintName: string; baseBlueprint: string };
 type MyProps = {
   index: number;
   state: MyState;
-  serialize: (state: MyState) => ScriptUnit;
+  serialize: (state: MyState) => TScriptUnit;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptElement extends React.Component<MyProps, MyState> {
   index: number; // ui index
   keyword: string; // keyword
-  serialize: (state: MyState) => ScriptUnit;
+  serialize: (state: MyState) => TScriptUnit;
   constructor(props: MyProps) {
     super(props);
     const { index, state, serialize } = props;
@@ -92,7 +92,7 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 
   onChange(e) {
     this.setState({ blueprintName: e.currentTarget.value }, () => {
-      const updata: TScriptUpdate = {
+      const updata: IScriptUpdate = {
         index: this.index,
         scriptUnit: this.serialize(this.state)
       };

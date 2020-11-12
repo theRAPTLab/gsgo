@@ -13,8 +13,8 @@ import { FEATURES } from 'modules/runtime-datacore';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import { IAgent, IScopeable, IMessage, TMethod, TProgram } from './t-smc.d';
-import { ISMCBundle } from './t-script.d';
+import { IAgent, IScopeable, IMessage, TMethod, TSMCProgram } from './t-script';
+import { ISMCBundle } from './t-script';
 import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
@@ -195,7 +195,7 @@ class Agent extends SM_Object implements IAgent, IActable {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: TProgram, stack = []) {
+  exec_smc(program: TSMCProgram, stack = []) {
     const state = new SM_State(stack);
     program.forEach((op, index) => {
       if (typeof op !== 'function') console.warn(op, index);

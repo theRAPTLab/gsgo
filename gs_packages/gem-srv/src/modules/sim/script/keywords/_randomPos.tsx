@@ -4,8 +4,8 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IScopeable } from 'lib/t-smc';
-import { ISMCBundle, ScriptUnit } from 'lib/t-script';
+import { IScopeable } from 'lib/t-script';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -47,7 +47,7 @@ export class RandomPos extends Keyword {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { min, max, floor } = state;
     return [this.keyword, min, max, floor];
   }

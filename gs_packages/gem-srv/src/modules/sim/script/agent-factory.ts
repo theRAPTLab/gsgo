@@ -16,8 +16,8 @@ import {
   SaveBlueprint,
   GetBlueprint
 } from 'modules/runtime-datacore';
-import { ScriptUnit, ISMCBundle } from 'lib/t-script';
-import { TProgram } from 'lib/t-smc';
+import { TScriptUnit, ISMCBundle } from 'lib/t-script';
+import { TSMCProgram } from 'lib/t-script';
 /// load all keywords for blueprint use
 import 'script/keywords/keyword-imports';
 import * as KeywordFactory from 'script/keyword-factory';
@@ -29,7 +29,7 @@ const PR = UR.PrefixUtil('AG-FAC');
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function MakeBlueprint(units: ScriptUnit[]): ISMCBundle {
+export function MakeBlueprint(units: TScriptUnit[]): ISMCBundle {
   const bp = KeywordFactory.CompileSource(units);
   SaveBlueprint(bp);
   return bp;

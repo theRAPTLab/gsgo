@@ -7,8 +7,14 @@
 
 import UR from '@gemstep/ursys/client';
 import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
-import { IScopeableCtor, IFeature, TMethod } from 'lib/t-smc';
-import { ISMCBundle, IKeyword, IKeywordCtor } from 'lib/t-script';
+import {
+  IScopeableCtor,
+  IFeature,
+  TMethod,
+  ISMCBundle,
+  IKeyword,
+  IKeywordCtor
+} from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

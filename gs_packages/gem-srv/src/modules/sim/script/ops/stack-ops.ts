@@ -21,7 +21,7 @@ import {
   IState,
   TOpcode,
   TOpWait
-} from 'lib/t-smc';
+} from 'lib/t-script';
 import SM_Object from 'lib/class-sm-object';
 
 /// STACK OPCODES /////////////////////////////////////////////////////////////

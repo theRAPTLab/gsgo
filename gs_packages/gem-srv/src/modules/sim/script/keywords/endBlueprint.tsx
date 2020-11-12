@@ -9,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@ export class endBlueprint extends Keyword {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     return [this.keyword];
   }
 

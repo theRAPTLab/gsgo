@@ -13,9 +13,9 @@ import {
   IState,
   TOpcode,
   TOpWait,
-  TProgram,
+  TSMCProgram,
   TStackable
-} from 'lib/t-smc';
+} from 'lib/t-script';
 
 const DBG = false;
 
@@ -44,7 +44,7 @@ const compareStrings = (): TOpcode => {
 
 /// CONDITIONAL ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifLT = (program: TProgram): TOpcode => {
+const ifLT = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.LT()) {
       // pass current stack as vars to program
@@ -54,7 +54,7 @@ const ifLT = (program: TProgram): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifGT = (program: TProgram): TOpcode => {
+const ifGT = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.GT()) {
       // alternate way to use a substack instead of passing existing
@@ -64,7 +64,7 @@ const ifGT = (program: TProgram): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifLTE = (program: TProgram): TOpcode => {
+const ifLTE = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.LTE()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);
@@ -73,7 +73,7 @@ const ifLTE = (program: TProgram): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifGTE = (program: TProgram): TOpcode => {
+const ifGTE = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.GTE()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);
@@ -82,7 +82,7 @@ const ifGTE = (program: TProgram): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifEQ = (program: TProgram): TOpcode => {
+const ifEQ = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.EQ()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);
@@ -91,7 +91,7 @@ const ifEQ = (program: TProgram): TOpcode => {
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ifNEQ = (program: TProgram): TOpcode => {
+const ifNEQ = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.NEQ()) {
       const results: TStackable[] = agent.exec_smc(program, STATE.stack);

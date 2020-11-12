@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, TOpcode, TOpWait, IState } from 'lib/t-smc';
+import { IAgent, TOpcode, TOpWait, IState } from 'lib/t-script';
 import { GetMessageParts } from 'lib/class-sm-message';
 
 /// STATE FLAG OPERATIONS /////////////////////////////////////////////////////

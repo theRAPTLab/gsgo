@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUpdate, ScriptUnit } from 'lib/t-script';
+import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/op-imports';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
@@ -33,7 +33,7 @@ export class UseFeature extends Keyword {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { featureName } = state;
     return [this.keyword, featureName];
   }
