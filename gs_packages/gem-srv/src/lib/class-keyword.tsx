@@ -1,10 +1,10 @@
 /*///////////////////////////////// CLASS \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The KeywordDef class is the base class for all GEMscript keywords.
+  The Keyword class is the base class for all GEMscript keywords.
   There is one keyword that begins a GEMscript source line, which is processed
   by the appropriate subclass that is defined to handle it.
 
-  Each KeywordDef implements:
+  Each Keyword implements:
   1. An array of strings that defines the name and type of each argument
      accepted by this keyword. This is used to help label the dropdown options
      for each GUI element and for documenting the keyword itself.
@@ -18,7 +18,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IKeyword, IAgentBlueprint, ScriptUnit } from 'lib/t-script';
+import { IKeyword, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,41 +33,34 @@ let ID_GENERATOR = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class KeywordDef implements IKeyword {
+export class Keyword implements IKeyword {
   keyword: string;
   args: string[];
-  req_scope: Set<string>;
-  key_scope: Set<string>;
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
-      throw Error('KeywordDef requires string, not undefined');
-    else if (DBG) console.log('KeywordDef constructing:', keyword);
+      throw Error('Keyword requires string, not undefined');
+    else if (DBG) console.log('Keyword constructing:', keyword);
     this.keyword = keyword;
     this.args = [];
-    this.req_scope = new Set();
-    this.key_scope = new Set();
   }
-
   /** override in subclass */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(args: any[]): ISMCBundle {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
-
-  serialize(state: object): ScriptUnit {
+  /** override to output a serialized array representation for eventual reserialization */
+  serialize(state: object): TScriptUnit {
     throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
   }
-
   /** override in subclass */
   render(index: number, state: object, children?: any[]): any {
     throw Error(`${this.keyword}.render() must be overridden by subclassers`);
   }
-
   /** cheese key id generator (deprecated) */
   generateKey() {
     return ID_GENERATOR++;
   }
-} // end of KeywordDef
+} // end of Keyword
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

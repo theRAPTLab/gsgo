@@ -1,12 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword prop keyword object
+  implementation of keyword propCall keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -14,21 +14,21 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class Prop extends Keyword {
+export class PropMethod extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('prop');
-    this.args = ['propName:string', 'value:any'];
+    super('propMethod');
+    this.args = ['propName:string', 'methodName:string', '...args'];
   }
 
   /** create smc blueprint code objects */
   compile(parms: any[]): ISMCBundle {
-    const [propName, value] = parms;
+    const [propName, methodName, ...args] = parms;
     const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
+    progout.push((agent: IAgent) => {
       const prop = agent.prop(propName);
-      prop._value = value;
+      prop[methodName](...args);
     });
     return {
       define: [],
@@ -39,17 +39,16 @@ export class Prop extends Keyword {
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { propName, value } = state;
-    return [this.keyword, propName, value];
+    const { propName, methodName, ...args } = state;
+    return [this.keyword, propName, ...args];
   }
 
   /** return rendered component representation */
   render(index: number, args: any[], children?: any[]): any {
-    const propName = args[1];
-    const value = args[2];
+    const [kw, propName, methodName, ...arg] = args;
     return (
-      <div key={this.generateKey()} className="prop">
-        prop {propName} = {value}
+      <div key={this.generateKey()} className="propMethod">
+        prop {propName}.{methodName}({arg.join(' ')})
       </div>
     );
   }
@@ -58,4 +57,4 @@ export class Prop extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(Prop);
+RegisterKeyword(PropMethod);

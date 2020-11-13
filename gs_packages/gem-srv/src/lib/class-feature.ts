@@ -4,13 +4,16 @@
   The Feature Class!
 
   This is the "FeaturePack" base class, which you can extend to implement
-  your own features.
+  your own features. It is "Scopeable" in that it understands SMObject
+  semantics, but isn't an SMObject itself as it is used to reference
+  a collection of code routines that operate ON agents, not decorate
+  agents with code routines
 
   TODO: add methods for initialization management
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IFeature, TMethod, IAgent, IScopeable, TStackable } from 'lib/t-smc';
+import { IFeature, TMethod, IAgent, IScopeable, TStackable } from 'lib/t-script';
 import { DictionaryProp } from 'modules/sim/props/var';
 
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
@@ -36,16 +39,18 @@ class Feature implements IFeature {
     // because features are not instance per agent, but instead
     // are code libraries. agents provide memory context and props
   }
-  /**
-   *  hook into lifecycle methods
+  /** hook into lifecycle methods
+   *  a phasemachine instance is passed to initialize if the feature
+   *  needs to access any part of the hook. In general, the pm is
+   *  SIM, defined in api-sim.js
    */
-  initialize(phaseMachine: any) {
+  initialize(phaseMachine: object) {
     // do something
   }
-
-  /**
-   *  called by agent blueprint function when creating new agent
-   *  note: subclassers must override this method as necessary
+  /** called during blueprint instantiation of an agent.
+   *  used to add properties specific to the feature.
+   *  note: subclassers call super.decorate(agent) to ensure that
+   *  the properties are initialized in the agent's prop map
    */
   decorate(agent: IAgent) {
     if (DBG)
@@ -59,41 +64,49 @@ class Feature implements IFeature {
     else throw Error(`decorate: agent already has props.${this.name}`);
   }
 
-  /**
-   *  return name of this feature feature, used for adding a GSDictionary
+  /** return name of this feature feature, used for adding a GSDictionary
    *  property by name to Agent.props
    */
   name(): string {
     return this.meta.feature;
   }
 
-  /**
-   *  return prop located in the agent
-   *  remember: there is a single instance of all methods for the feature
-   *  note: this is a mirror implementation of SM_Object.prop
+  /** Add property stored in an agent instance, used by decorate().
+   *  This is a mirror implementation of SM_Object.prop, modified
+   *  to store props in a DictionaryProp stored in the agent prop
    */
   addProp(agent: IAgent, key: string, prop: IScopeable) {
     // agent.props = Map<string, IScopeable>;
     const dict = agent.props.get(this.name()) as DictionaryProp;
     dict.addItem(key, prop);
   }
-  /**
-   *  Return prop given the passed agent and key. This prop is stored
+  /** Return prop given the passed agent and key. This prop is stored
    *  in the agent's props map as a DictionaryProp, so this version
-   *  of prop returns the contents of the DictionaryProp! */
+   *  of prop returns the contents of the DictionaryProp!
+   */
   prop(agent: IAgent, key: string): IScopeable {
+    console.log('feature', agent);
     const dict = agent.props.get(this.name()) as DictionaryProp;
     return dict.getItem(key);
   }
-  /** return method or function for feature invocation
+  /** Define a method to this feature instance. Note that there is only one
+   *  instance of a Feature at a time, so the code for instance methods
+   *  exist in only one place, and require that an agent instance is
+   *  passed to it. This is a mirror of SM_Object.addMethod, modified
+   *  to use the local method map
+   */
+  defineMethod(name: string, smc_or_f: TMethod) {
+    const { methods } = this;
+    if (methods.has(name)) throw Error(`method '${name}' already added`);
+    methods.set(name, smc_or_f);
+  }
+  /** invoke method or function stored in feature's method map.
    *  remember: there is a single instance of all methods for the feature
-   *  note: this is a mirror implementation of SM_Object.prop
+   *  note: this is a mirror implementation of SM_Object.method
    */
   method(agent: IAgent, key: string, ...args: any): any {
-    const m = this.methods.get(key);
-    if (typeof m === 'function') return m(agent, ...args);
-    if (Array.isArray(m)) return agent.exec_smc(m);
-    throw Error(`${NOT_METHOD_ERR} ${typeof m}`);
+    const smc_or_f = this.methods.get(key);
+    return agent.exec(smc_or_f, ...args);
   }
 } // end of class
 

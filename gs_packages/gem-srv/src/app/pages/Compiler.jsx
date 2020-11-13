@@ -14,15 +14,28 @@ import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
-import { AgentFactory, KeywordFactory } from 'script/agent-factory';
+import * as TRANSPILER from 'script/script-transpiler';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('COMPILER', 'TagBlue');
+const PR = UR.PrefixUtil('APP');
 const DBG = true;
+
+/// HARCODED SOURCE ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const defaultText = `
+// definitions
+defBlueprint Bunny
+addProp frame Number 0
+useFeature Movement
+// defaults
+prop skin 'bunny.json'
+// runtime
+Movement.jitterPos -5 5
+`.trim();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,7 +45,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
-        let map = await DATACORE.ASSETS_LoadManifest('static/assets.json');
+        let map = await DATACORE.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         SIM.StartSimulation();
         if (DBG) console.log(...PR('SIMULATION STARTED'));
@@ -40,24 +53,6 @@ UR.SystemHook(
       resolve();
     })
 );
-/// HARCODED SOURCE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-const defaultText = `
-freeform scripting is disabled
-`.trim();
-
-const defaultSource = [
-  ['defBlueprint', 'Bunny'],
-  ['defProp', 'spriteFrame', 'GSNumber', 100],
-  ['defProp', 'currentHealth', 'GSNumber', 100],
-  ['defProp', 'isAlive', 'GSBoolean', true],
-  ['useFeature', 'Movement'],
-  ['randomPos', -50, 50],
-  ['prop', 'skin', 'setTo', 'bunny.json'],
-  ['onCondition', 'frame', ['jitterPos']],
-  ['endBlueprint']
-];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,25 +60,29 @@ const defaultSource = [
 class Compiler extends React.Component {
   constructor() {
     super();
-    // prep
-    // this.source = KeywordFactory.TokenizeToSource(defaultText);
-    this.source = defaultSource;
+    this.text = defaultText;
+    this.source = TRANSPILER.TokenizeToSource(this.text);
     this.state = {
-      jsx: KeywordFactory.RenderSource(this.source),
-      source: defaultText,
-      tabIndex: 1
+      jsx: TRANSPILER.RenderSource(this.source),
+      text: defaultText,
+      source: [],
+      tabIndex: 0
     };
     // bind
-    this.btnToReact = this.btnToReact.bind(this);
-    this.btnToSource = this.btnToSource.bind(this);
-    this.btnToSMC = this.btnToSMC.bind(this);
-    this.uiRenderScriptWizard = this.uiRenderScriptWizard.bind(this);
-    this.uiScriptWizardChanged = this.uiScriptWizardChanged.bind(this);
-    this.updateSourceText = this.updateSourceText.bind(this);
-    this.selectTab = this.selectTab.bind(this);
+    this.userToJSX = this.userToJSX.bind(this);
+    this.userUpdateText = this.userUpdateText.bind(this);
+    this.userSaveBlueprint = this.userSaveBlueprint.bind(this);
+    this.userCompileText = this.userCompileText.bind(this);
+    this.updateJSX = this.updateJSX.bind(this);
+    this.updateSource = this.updateSource.bind(this);
+    this.updateText = this.updateText.bind(this);
+    this.updateTabSelect = this.updateTabSelect.bind(this);
     // hooks
-    UR.RegisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
-    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
+    UR.RegisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
+    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
+    // temp: make sure the blueprint
+    // eventually this needs to be part of application startup
+    TRANSPILER.RegisterBlueprint(this.source);
   }
 
   componentDidMount() {
@@ -99,59 +98,68 @@ class Compiler extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnregisterMessage('SCRIPT_UI_RENDER', this.uiRenderScriptWizard);
-    UR.RegisterMessage('SCRIPT_UI_CHANGED', this.uiScriptWizardChanged);
+    UR.UnregisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
+    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
   }
 
   // called by ScriptWizard component change
-  uiScriptWizardChanged(updata) {
+  updateSource(updata) {
     const { index, scriptUnit } = updata;
     this.source[index] = scriptUnit;
     console.log(...PR(`SOURCE[${index}] updated:`, this.source[index]));
   }
 
-  // called by message 'SCRIPT_UI_RENDER'
-  uiRenderScriptWizard(jsx) {
+  // called by message 'SCRIPT_JSX_CHANGED'
+  updateJSX(jsx) {
     this.setState({ jsx });
   }
 
   // echo typing in SourceText to state
-  updateSourceText(evt) {
-    this.setState({ source: evt.target.value });
+  updateText(evt) {
+    const text = evt.target.value;
+    this.text = text;
+    this.setState({ text });
   }
 
   // handle the "tabs"
-  selectTab(evt) {
+  updateTabSelect(evt) {
     this.setState({ tabIndex: Number(evt.target.value) });
   }
 
   // compile source to jsx
-  btnToReact() {
+  userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = KeywordFactory.TokenizeToSource(this.state.source);
-    const jsx = KeywordFactory.RenderSource(this.source);
-    UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+    // this.source = TRANSPILER.TokenizeToSource(this.state.text);
+    const jsx = TRANSPILER.RenderSource(this.source);
+    this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
 
   // compile jsx back to source
-  btnToSource() {
+  userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    this.setState({ source: KeywordFactory.DecompileSource(this.source) });
+    const text = TRANSPILER.DecompileSource(this.source);
+    this.setState({ text });
+    this.text = text;
     if (DBG) console.groupEnd();
   }
 
+  // compile text to source
+  userCompileText() {
+    const source = TRANSPILER.TokenizeToSource(this.text);
+    this.source = source;
+    this.setState({ source: JSON.stringify(source) });
+  }
+
   // compile source to smc
-  btnToSMC() {
-    if (DBG) console.group(...PR('toSMC'));
-    // this.source = KeywordFactory.TokenizeToSource(this.state.source);
-    const blueprint = KeywordFactory.CompileSource(this.source);
-    const { init, conditions, defaults, define } = blueprint;
-    if (init.length) console.log('instance', init);
-    if (define.length) console.log('define', define);
-    if (defaults.length) console.log('defaults', defaults);
-    if (conditions.length) console.log('conditions', conditions);
-    if (DBG) console.groupEnd();
+  userSaveBlueprint() {
+    this.userCompileText();
+    // save the blueprint to default and reprogram sim
+    const bp = TRANSPILER.RegisterBlueprint(this.source);
+    UR.RaiseMessage('AGENT_PROGRAM', bp.name);
+    // update local jsx render
+    const jsx = TRANSPILER.RenderSource(this.source);
+    this.setState({ jsx });
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -165,21 +173,22 @@ class Compiler extends React.Component {
     if (index === 0) {
       tab = (
         <div id="script-text">
-          <h3>TEXT VIEW (placeholder)</h3>
+          <h3>SCRIPT VIEW</h3>
           <textarea
             rows={20}
             style={{
               boxSizing: 'border-box',
               width: '100%'
             }}
-            value={this.state.source}
-            onChange={this.updateSourceText}
+            value={this.state.text}
+            onChange={this.updateText}
           />
-          <button type="button" name="toReact" onClick={this.btnToReact}>
-            Source To React
-          </button>{' '}
-          <button type="button" name="toSMC" onClick={this.btnToSMC}>
-            Source To SMC
+          <button
+            type="button"
+            name="saveBlueprint"
+            onClick={this.userSaveBlueprint}
+          >
+            Save Blueprint
           </button>
         </div>
       );
@@ -187,24 +196,25 @@ class Compiler extends React.Component {
     if (index === 1) {
       tab = (
         <div id="script-wizard">
-          <h3>SCRIPT WIZARD</h3>
+          <h3>WIZARD VIEW</h3>
           {this.state.jsx}
-          <button type="button" name="toSource" onClick={this.btnToSource}>
-            React to Source
-          </button>{' '}
-          <button type="button" name="toSMC" onClick={this.btnToSMC}>
-            Source To SMC
+          <hr />
+          <button type="button" name="updateText" onClick={this.userUpdateText}>
+            Update Blueprint
           </button>
         </div>
       );
     }
     //
     return (
-      <div className={classes.root} style={{ gridTemplateColumns: '25% 70%' }}>
+      <div
+        className={classes.root}
+        style={{ gridTemplateColumns: '30% auto 0px' }}
+      >
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 2' }}
+          style={{ gridColumnEnd: 'span 3' }}
         >
           <span style={{ fontSize: '32px' }}>COMPILER/TEST</span> UGLY DEVELOPER
           MODE
@@ -214,21 +224,23 @@ class Compiler extends React.Component {
             style={{ border: '0px' }}
             disabled={index === 0}
             type="button"
-            onClick={this.selectTab}
+            onClick={this.updateTabSelect}
             value={0}
           >
-            TEXT
+            script view
           </button>
           <button
             style={{ border: '0px' }}
             disabled={index === 1}
             type="button"
-            onClick={this.selectTab}
+            onClick={this.updateTabSelect}
             value={1}
           >
-            WIZARD
+            wizard view
           </button>
           {tab}
+          <hr />
+          {this.state.source}
         </div>
         <div id="root-renderer" className={classes.main}>
           world view
@@ -236,7 +248,7 @@ class Compiler extends React.Component {
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
-          style={{ gridColumnEnd: 'span 2' }}
+          style={{ gridColumnEnd: 'span 3' }}
         >
           console-bottom
         </div>

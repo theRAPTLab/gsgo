@@ -8,14 +8,14 @@
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-factory';
+import { Keyword } from 'lib/class-keyword';
+import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** closing tag, not shown in GUI but required when using DefTemplate */
-export class endBlueprint extends KeywordDef {
+export class endBlueprint extends Keyword {
   args: string[];
   reg_scope: Set<string>;
   key_scope: Set<string>;
@@ -24,18 +24,16 @@ export class endBlueprint extends KeywordDef {
     super('endBlueprint');
   }
 
-  /** create smc blueprint code objects */ compile(
-    parms: string[]
-  ): IAgentBlueprint {
+  /** create smc blueprint code objects */
+  compile(parms: string[]): ISMCBundle {
     const progout = [];
-    progout.push(() => console.log('no op'));
     return {
       define: progout
     };
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     return [this.keyword];
   }
 
@@ -47,6 +45,5 @@ export class endBlueprint extends KeywordDef {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(endBlueprint);

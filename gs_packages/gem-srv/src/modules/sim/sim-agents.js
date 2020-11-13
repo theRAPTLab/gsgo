@@ -7,10 +7,10 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
+import { GetAllAgents, DeleteAllAgents } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
-import * as TEST from 'modules/tests/test-agents';
+import * as TRANSPILER from 'script/script-transpiler';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,61 +70,64 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 
 /// PROGRAMMING INTERFACE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentSelect() {
-  if (DBG) console.log(...PR('should inspect mode and change agent settings'));
-  if (DO_TESTS) {
-    TEST.TestAgentSelect();
-  }
-}
+function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentProgram() {
-  if (DBG) console.groupCollapsed(...PR('Programming Test Agents'));
-  if (DO_TESTS) TEST.TestAgentProgram();
-  if (DBG) console.groupEnd();
+export function AgentProgram(blueprint) {
+  DeleteAllAgents();
+  if (!blueprint) return console.warn(...PR('no blueprint'));
+  for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
-  // execute agent programs
-  if (DO_TESTS) {
-    TEST.TestAgentUpdate(frameTime);
+  // HACK: execute agent program for default agent
+  const tagents = GetAllAgents();
+  tagents.forEach(agent => {
+    agent.update(frameTime);
+    /* run update */
+  });
+  tagents.forEach(agent => {
+    /* run queued exec */
+  });
 
-    // TEMP HACK: force the agents to move outside of programming
-    // by diddling their properties directly
-    // also see renderer.js for TestRenderParameters()
-    //
-    // TestJitterAgents(frameTime);
+  // TEMP HACK: force the agents to move outside of programming
+  // by diddling their properties directly
+  // also see renderer.js for TestRenderParameters()
+  //
+  // TestJitterAgents(frameTime);
 
-    // TEMP HACK: This should move to the DisplayListOut phase
-    // force agent movement for display list testing
-    const agents = AGENTS_GetArrayAll();
-    DOBJ_SYNC_AGENT.syncFromArray(agents);
-    DOBJ_SYNC_AGENT.mapObjects();
-    const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
-    RENDERER.UpdateDisplayList(dobjs);
-    UR.SendMessage('NET:DISPLAY_LIST', dobjs);
-  }
+  // TEMP HACK: This should move to the DisplayListOut phase
+  // force agent movement for display list testing
+  const agents = GetAllAgents();
+  DOBJ_SYNC_AGENT.syncFromArray(agents);
+  DOBJ_SYNC_AGENT.mapObjects();
+  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
+  RENDERER.UpdateDisplayList(dobjs);
+  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentThink(frameTime) {
-  if (DO_TESTS) TEST.TestAgentThink(frameTime);
-}
+function AgentThink(frameTime) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  if (DO_TESTS) TEST.TestAgentExec(frameTime);
+  const agents = GetAllAgents();
+  agents.forEach(agent => {
+    /* exec function */
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentReset(frameTime) {
-  if (DBG) console.log(...PR('should reset all agents'));
-  if (DO_TESTS) TEST.TestAgentReset(frameTime);
+  /* reset agent */
 }
+
+/// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.RegisterMessage('SIM_RESET', AgentReset);
+UR.RegisterMessage('SIM_MODE', AgentSelect);
+UR.RegisterMessage('SIM_PROGRAM', AgentProgram);
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/RESET', AgentReset);
-UR.SystemHook('SIM/SETMODE', AgentSelect);
-UR.SystemHook('SIM/PROGRAM', AgentProgram);
 UR.SystemHook('SIM/AGENTS_UPDATE', AgentUpdate);
 UR.SystemHook('SIM/AGENTS_THINK', AgentThink);
 UR.SystemHook('SIM/AGENTS_EXEC', AgentExec);

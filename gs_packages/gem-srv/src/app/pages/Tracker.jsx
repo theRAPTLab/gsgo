@@ -30,7 +30,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       console.log(...PR('LOADING ASSET MANIFEST...'));
       (async () => {
-        await DATACORE.ASSETS_LoadManifest('static/assets.json');
+        await DATACORE.LoadAssets('static/assets.json');
         ASSETS_LOADED = true;
         console.log(...PR('ASSETS LOADED'));
       })();

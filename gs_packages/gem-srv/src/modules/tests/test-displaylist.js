@@ -12,7 +12,7 @@ import Pool from 'lib/class-pool';
 import MappedPool, { TestArrayEntities } from 'lib/class-mapped-pool';
 import DisplayObject, { TestValidDOBJs } from 'lib/class-display-object';
 import Sprite from 'lib/class-visual';
-import { AGENTS_GetArrayAll } from 'modules/runtime-datacore';
+import { GetAllAgents } from 'modules/runtime-datacore';
 import { UpdateDisplayList } from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -81,7 +81,7 @@ function TestSyncAgents() {
     onRemove: u_NullRemove
   });
   // the AGENTS map is keyed by type, containing Sets of agent instances
-  const agents = AGENTS_GetArrayAll();
+  const agents = GetAllAgents();
   const startCount = agents.length;
   console.assert(TestArrayEntities(agents), 'agents do not pass test');
 
@@ -151,7 +151,7 @@ function TestDisplayList() {
   });
   /* TEST 4 - Inspect Display List */
   // the AGENTS map is keyed by type, containing Sets of agent instances
-  const agents = AGENTS_GetArrayAll();
+  const agents = GetAllAgents();
   const startCount = agents.length;
   console.assert(TestArrayEntities(agents), 'entities do not pass test');
 
@@ -190,7 +190,7 @@ const AGENT_TO_DOBJ_UPDATE = new MappedPool(DOBJ_POOL, {
 });
 
 function TestUpdateDisplayList(frameTime) {
-  const agents = AGENTS_GetArrayAll();
+  const agents = GetAllAgents();
   // move the agents around manually by random jiggle
   agents.forEach(agent => {
     const rx = Math.round(5 - Math.random() * 10);

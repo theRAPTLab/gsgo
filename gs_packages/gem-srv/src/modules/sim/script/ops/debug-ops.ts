@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IState, TOpcode, TOpWait } from 'lib/t-smc';
+import { IAgent, IState, TOpcode, TOpWait } from 'lib/t-script';
 
 /// DEBUG OPCODES /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

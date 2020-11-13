@@ -16,11 +16,11 @@ import SM_State from './class-sm-state';
 import {
   IAgent,
   IScopeable,
-  TStackable,
   IMessage,
   TMethod,
-  TProgram
-} from './t-smc.d';
+  TSMCProgram,
+  ISMCBundle
+} from './t-script';
 import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
@@ -31,6 +31,7 @@ let REF_ID_COUNT = 0;
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Agent extends SM_Object implements IAgent, IActable {
+  blueprint: ISMCBundle;
   features: Map<string, any>;
   controlMode: ControlMode;
   controlModeHistory: ControlMode[];
@@ -48,8 +49,10 @@ class Agent extends SM_Object implements IAgent, IActable {
   //
   constructor(agentName = '<anon>') {
     super(agentName); // sets _value to agentName, which is only for debugging
+    this.meta.type = Symbol.for('Agent');
     // this.props map defined in SM_Object
     // this.methods map defined in SM_Object
+    this.blueprint = undefined;
     this.features = new Map();
     this.execQueue = [];
     this.refId = REF_ID_COUNT++;
@@ -65,6 +68,24 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.props.set('x', this._x);
     this.props.set('y', this._y);
     this.props.set('skin', this._skin);
+  }
+
+  // blueprint initialize
+  setBlueprint(bp: ISMCBundle) {
+    if (!bp) throw Error('setBlueprint expects an ISMCBundle');
+    if (!bp.name) throw Error('setBlueprint got bp without name');
+    this.blueprint = bp;
+    // call initialization
+    this.exec(bp.define);
+    this.exec(bp.defaults);
+    this.exec(bp.conditions);
+  }
+
+  // blueprint invocations
+  update() {
+    if (this.blueprint && this.blueprint.update) {
+      this.exec(this.blueprint.update);
+    }
   }
 
   // internal control mode properties
@@ -142,7 +163,6 @@ class Agent extends SM_Object implements IAgent, IActable {
 
   /** PhaseMachine Lifecycle Execution */
   AGENTS_EXEC() {
-    // if (this.execQueue.length) console.log('execQueue', this.execQueue.length);
     this.execQueue.forEach(msg => {
       const stack = msg.inputs;
       msg.programs.forEach(program => this.exec_smc(program, stack));
@@ -170,9 +190,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   /** Execute either a smc_program or function depending on the
    *  method passed-in with arguments
    */
-  exec(m: TMethod, ...args): any {
+  exec(m: TMethod, ...args: any[]): any {
     if (m === undefined) throw Error('no method passed');
-    if (typeof m === 'function') return this.exec_func(m, [...args]);
+    if (typeof m === 'function') return this.exec_func(m, ...args);
     if (Array.isArray(m)) return this.exec_smc(m, [...args]);
     if (typeof m === 'string') return this.exec_program(m, [...args]);
     throw Error('method object is neither function or smc');
@@ -181,26 +201,25 @@ class Agent extends SM_Object implements IAgent, IActable {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: TProgram, stack = []) {
+  exec_smc(program: TSMCProgram, stack = []) {
     const state = new SM_State(stack);
-    // console.log('exec got program', program.length);
-    try {
-      // run the program with the passed stack, if any
-      program.forEach(op => op(this, state));
-    } catch (e) {
-      console.log(e);
-      throw Error(e);
-    }
+    program.forEach((op, index) => {
+      if (typeof op !== 'function') console.warn(op, index);
+      op(this, state);
+    });
     // return the stack as a result, though
     return state.stack;
   }
-  /** Execute a method that is a Javascript function */
-  exec_func(program: Function, args: any[]): any {
-    return program.apply(this, args);
+  /** Execute a method that is a Javascript function with
+   *  agent as the execution context
+   */
+  exec_func(program: Function, ...args: any[]): any {
+    return program.call(this, this, ...args);
   }
   /** Execute a named program stored in global program store */
-  exec_program(progName: string, args: any[]) {}
-
+  exec_program(progName: string, args: any[]) {
+    throw Error('global programs not implemented');
+  }
   // serialization
   serialize() {
     // call serialize on all features

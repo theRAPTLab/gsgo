@@ -6,30 +6,28 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { addProp } from 'script/ops/op-imports';
-import { RegisterKeyword, GetSMObjectCtor } from '../keyword-factory';
+import { Keyword } from 'lib/class-keyword';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { addProp } from 'script/ops/_all';
+import { RegisterKeyword, GetVarCtor } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefProp extends KeywordDef {
+export class AddProp extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('defProp');
+    super('addProp');
     this.args = ['propName string', 'propType string', 'initValue any'];
-    this.req_scope.add('defBlueprint');
-    this.key_scope.add('unknown');
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const propName = parms[0];
     const propType = parms[1];
     const initValue = parms[2];
-    const propCtor = GetSMObjectCtor(propType);
+    const propCtor = GetVarCtor(propType);
     const progout = [];
-    progout.push(addProp(propName, propCtor));
+    progout.push(addProp(propName, propCtor, initValue));
     return {
       define: progout,
       defaults: [],
@@ -38,17 +36,17 @@ export class DefProp extends KeywordDef {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { propName, propType, initValue } = state;
     return [this.keyword, propName, propType, initValue];
   }
 
   /** return rendered component representation */
   render(index: number, args: any[], children?: any[]): any {
-    const [propName, propType, initValue] = args;
+    const [kw, propName, propType, initValue] = args;
     return (
-      <div key={this.generateKey()} className="defProp">
-        prop {propName} is type {propType} w/value {initValue}
+      <div key={this.generateKey()} className="addProp">
+        addProp {propName} = {initValue} :{propType}
       </div>
     );
   }
@@ -56,6 +54,5 @@ export class DefProp extends KeywordDef {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
-RegisterKeyword(DefProp);
+/// see above for keyword export
+RegisterKeyword(AddProp);

@@ -6,13 +6,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-factory';
+import { Keyword } from 'lib/class-keyword';
+import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgError extends KeywordDef {
+export class dbgError extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgError');
@@ -20,9 +20,11 @@ export class dbgError extends KeywordDef {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const progout = [];
-    progout.push(`?${this.keyword}, ${parms.join(', ')}`);
+    progout.push(() => {
+      console.warn(`unknown: ${this.keyword}(${parms.join(', ')})`);
+    });
     return {
       define: progout,
       defaults: [],
@@ -31,7 +33,7 @@ export class dbgError extends KeywordDef {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { error } = state;
     return [this.keyword, error];
   }
@@ -39,7 +41,6 @@ export class dbgError extends KeywordDef {
   /** return rendered component representation */
   render(index: number, args: any, children?: any[]): any {
     const [error] = args;
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
     return (
       <div key={this.generateKey()} className="dbgError" style={{ color: 'red' }}>
         unknown keyword: {`'${error}'`}
@@ -50,6 +51,5 @@ export class dbgError extends KeywordDef {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(dbgError);

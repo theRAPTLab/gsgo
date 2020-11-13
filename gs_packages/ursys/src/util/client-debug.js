@@ -11,13 +11,13 @@ let TOOLS;
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function addConsoleTools(UR) {
-  const PR = UR.PrefixUtil('URSYS DEBUG', 'TagRed');
+  const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
   console.groupCollapsed(...PR('adding window debug tools'));
 
   TOOLS = {
     call: (mesg = 'NET:HELLO', data = { type: 'call' }) => {
-      UR.NetCall(mesg, data).then(data => {
-        console.log('NET:HELLO returned', data);
+      UR.NetCall(mesg, data).then(rdata => {
+        console.log('NET:HELLO returned', rdata);
       });
       return 'call() is calling NET:HELLO...';
     },
@@ -34,8 +34,8 @@ function addConsoleTools(UR) {
         console.log(`packaging string '${data}' as { data:'${data}' }`);
         data = { data };
       }
-      UR.NetCall('NET:SRV_REFLECT', data).then(data => {
-        console.log('NET:SRV_REFLECT returned', data);
+      UR.NetCall('NET:SRV_REFLECT', data).then(rdata => {
+        console.log('NET:SRV_REFLECT returned', rdata);
       });
       return 'reflect() is calling NET:SRV_REFLECT...';
     },

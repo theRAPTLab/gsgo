@@ -1,14 +1,11 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword useFeature command object
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
-import { IScopeable } from 'lib/t-smc';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from '../keyword-factory';
+import { Keyword } from 'lib/class-keyword';
+import { IScopeable, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,7 +17,7 @@ function m_Random(min: number, max: number, floor: boolean = true) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class RandomPos extends KeywordDef {
+export class RandomPos extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -29,24 +26,27 @@ export class RandomPos extends KeywordDef {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const min = parms[0];
     const max = parms[1];
     const floor = parms[2] || false;
     const progout = [];
     progout.push((agent: IScopeable) => {
-      agent.set('x', m_Random(min, max, floor));
-      agent.set('y', m_Random(min, max, floor));
+      const x = m_Random(min, max, floor);
+      const y = m_Random(min, max, floor);
+      agent.prop('x')._value = x;
+      agent.prop('y')._value = y;
     });
     return {
       define: [],
       defaults: [],
-      conditions: progout
+      conditions: progout,
+      update: progout // hack for testing
     };
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { min, max, floor } = state;
     return [this.keyword, min, max, floor];
   }
@@ -56,10 +56,9 @@ export class RandomPos extends KeywordDef {
     const min = args[1];
     const max = args[2];
     const floor = args[3];
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
     return (
-      <div key={this.generateKey()} className="useFeature">
-        random between {min}-{max} (floor={floor})
+      <div key={this.generateKey()} className="randomPos">
+        random between ({min},{max}) (floor={floor})
       </div>
     );
   }
@@ -67,6 +66,5 @@ export class RandomPos extends KeywordDef {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(RandomPos);

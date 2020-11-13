@@ -5,8 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'script/keyword-factory';
-import { ScriptUnit, ScriptUpdate } from 'lib/t-script';
+import * as KEYDICT from 'script/script-transpiler';
+import { TScriptUnit, IScriptUpdate } from 'lib/t-script';
 import './test-expression';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -16,15 +16,15 @@ const DBG = true;
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SOURCE: ScriptUnit[] = [
+const SOURCE: TScriptUnit[] = [
   ['defBlueprint', 'Bee'],
-  ['defProp', 'nectarAmount', 'GSNumber', 0],
+  ['addProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
   ['useFeature', 'BeanCounter'],
   ['useFeature', 'Movement'],
   ['endBlueprint'],
   ['defBlueprint', 'HoneyBee', 'Bee'],
-  ['defProp', 'honeySacks', 'GSNumber', 0],
+  ['addProp', 'honeySacks', 'GSNumber', 0],
   ['endBlueprint']
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,30 +57,30 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToUI(source: ScriptUnit[] = SOURCE) {
+function TestSourceToUI(source: TScriptUnit[] = SOURCE) {
   // the idea is to parse data structure into react
   if (DBG)
     console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
   const jsx = KEYDICT.RenderSource(source);
-  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+  UR.RaiseMessage('SCRIPT_JSX_CHANGED', jsx);
 }
 
 /// WINDOW DEBUG //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** receives the react state object */
-UR.RegisterMessage('SCRIPT_UI_CHANGED', (updata: ScriptUpdate) => {
+UR.RegisterMessage('SCRIPT_SRC_CHANGED', (updata: IScriptUpdate) => {
   const { index, scriptUnit } = updata;
   SOURCE[index] = scriptUnit;
   if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-(window as any).sourceRender = (source: ScriptUnit[] = SOURCE) => {
+(window as any).sourceRender = (source: TScriptUnit[] = SOURCE) => {
   console.log(...PR('rendering test source'));
   const jsx = KEYDICT.RenderSource(source);
-  UR.RaiseMessage('SCRIPT_UI_RENDER', jsx);
+  UR.RaiseMessage('SCRIPT_JSX_CHANGED', jsx);
 };
-(window as any).sourceCompile = (source: ScriptUnit[] = SOURCE) => {
+(window as any).sourceCompile = (source: TScriptUnit[] = SOURCE) => {
   console.log(...PR('compiling test source'));
   TestSourceToProgram(source);
 };

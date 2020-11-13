@@ -5,7 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import SM_Object from 'lib/class-sm-object';
-import { IScopeable } from 'lib/t-smc';
+import { IScopeable } from 'lib/t-script';
+import { RegisterVarCTor } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,3 +34,4 @@ export class DictionaryProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
+RegisterVarCTor('Dictionary', DictionaryProp);

@@ -6,24 +6,22 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { KeywordDef } from 'lib/class-kw-definition';
-import { IAgentBlueprint, ScriptUpdate, ScriptUnit } from 'lib/t-script';
-import { addFeature } from 'script/ops/op-imports';
-import { RegisterKeyword } from '../keyword-factory';
+import { Keyword } from 'lib/class-keyword';
+import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { addFeature } from 'script/ops/_all';
+import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class UseFeature extends KeywordDef {
+export class UseFeature extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('useFeature');
     this.args = ['featureName string'];
-    this.req_scope.add('defBlueprint');
-    this.key_scope.add('TBD');
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): IAgentBlueprint {
+  compile(parms: any[]): ISMCBundle {
     const featureName = parms[0];
     const progout = [];
     progout.push(addFeature(featureName));
@@ -35,18 +33,17 @@ export class UseFeature extends KeywordDef {
   }
 
   /** return a state object that turn react state back into source */
-  serialize(state: any): ScriptUnit {
+  serialize(state: any): TScriptUnit {
     const { featureName } = state;
     return [this.keyword, featureName];
   }
 
   /** return rendered component representation */
   render(index: number, args: any, children?: any[]): any {
-    const [featureName] = args;
-    // return `<UseFeature label='${featureName}'><PropList/><MethodList/></UseFeature>`;
+    const [kw, featureName] = args;
     return (
       <div key={this.generateKey()} className="useFeature">
-        feature {featureName} has props, methods
+        useFeature {featureName}
       </div>
     );
   }
@@ -54,6 +51,5 @@ export class UseFeature extends KeywordDef {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// make sure you import this at some point with
-/// import from 'file'
+/// see above for keyword export
 RegisterKeyword(UseFeature);

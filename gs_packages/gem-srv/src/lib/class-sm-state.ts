@@ -1,4 +1,4 @@
-import { IState, TStackable, IScopeable, IComparator } from './t-smc';
+import { IState, TStackable, IScopeable, IComparator } from './t-script';
 import SM_Comparator from './class-sm-comparator';
 
 export default class SM_State implements IState {

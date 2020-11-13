@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword prop keyword object
+  implementation of keyword featureProp command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,42 +14,43 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class Prop extends Keyword {
+export class FeatureCall extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('prop');
-    this.args = ['propName:string', 'value:any'];
+    super('featureCall');
+    this.args = ['featureName:string', 'methodName:string', '...args'];
   }
 
   /** create smc blueprint code objects */
   compile(parms: any[]): ISMCBundle {
-    const [propName, value] = parms;
+    const [featName, methodName, ...args] = parms;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const prop = agent.prop(propName);
-      prop._value = value;
+      // invoke the feature on the agent
+      const feat = agent.feature(featName);
+      feat.method(agent, methodName, ...args);
     });
     return {
       define: [],
       defaults: [],
-      conditions: progout
+      conditions: [],
+      update: progout
     };
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { propName, value } = state;
-    return [this.keyword, propName, value];
+    const { feature, method, ...args } = state;
+    return [this.keyword, feature, method, args];
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const propName = args[1];
-    const value = args[2];
+  render(index: number, parms: any[], children?: any[]): any {
+    const [kw, featName, method, ...args] = parms;
     return (
-      <div key={this.generateKey()} className="prop">
-        prop {propName} = {value}
+      <div key={this.generateKey()} className="featureMethod">
+        feature {featName}.{method}({args.join(',')})
       </div>
     );
   }
@@ -58,4 +59,4 @@ export class Prop extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(Prop);
+RegisterKeyword(FeatureCall);

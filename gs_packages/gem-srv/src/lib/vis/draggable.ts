@@ -1,6 +1,6 @@
 /** given a VOBJ, decorate it to add new features */
 import { Visual } from 'lib/t-visual';
-import { AGENT_GetById } from 'modules/runtime-datacore';
+import { GetAgentById } from 'modules/runtime-datacore';
 
 export function MakeDraggable(vobj: Visual) {
   function onDragStart(event) {
@@ -13,7 +13,7 @@ export function MakeDraggable(vobj: Visual) {
     this.alpha = 0.5;
     this.tint = 0xff8080;
     //
-    const agent = AGENT_GetById(vobj.id);
+    const agent = GetAgentById(vobj.id);
     if (agent) {
       agent.setModePuppet();
       agent.setCaptive(true);
@@ -24,7 +24,7 @@ export function MakeDraggable(vobj: Visual) {
     this.alpha = 1;
     this.tint = 0xffffff;
     //
-    const agent = AGENT_GetById(vobj.id);
+    const agent = GetAgentById(vobj.id);
     if (agent) {
       agent.setPreviousMode();
       agent.setCaptive(false);
@@ -46,7 +46,7 @@ export function MakeDraggable(vobj: Visual) {
       const { x, y } = this.data.getLocalPosition(this.parent);
       this.x = x;
       this.y = y;
-      const agent = AGENT_GetById(vobj.id);
+      const agent = GetAgentById(vobj.id);
       if (agent) {
         agent.prop('x').value = x;
         agent.prop('y').setTo(y); // alt way of setting

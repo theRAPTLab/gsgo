@@ -24,7 +24,7 @@ const TimerPack = {
 /// URSYS PROMPT //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
-import Feature from './class-feature';
+import Feature from 'lib/class-feature';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
