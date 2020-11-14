@@ -30,7 +30,7 @@ const IDENTIFIER = 'Identifier';
 const MEMBER_EXP = 'MemberExpression';
 const LITERAL = 'Literal';
 const THIS_EXP = 'ThisExpression';
-// const CALL_EXP = 'CallExpression'; /* HACK we don't need these */
+const CALL_EXP = 'CallExpression';
 const UNARY_EXP = 'UnaryExpression';
 const BINARY_EXP = 'BinaryExpression';
 const LOGICAL_EXP = 'LogicalExpression';
@@ -552,10 +552,7 @@ function Parse(expr) {
     }
     gobbleSpaces();
     ch_i = exprICode(index);
-    /* HACK we don't want to process call expressions
     while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
-    END HACK */
-    while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE) {
       index++;
       if (ch_i === PERIOD_CODE) {
         gobbleSpaces();
@@ -578,15 +575,14 @@ function Parse(expr) {
           throw Error(`Unclosed [ at ${index}`);
         }
         index++;
-      } /* HACK - remove processing of call expressions!
-        else if (ch_i === OPAREN_CODE) {
+      } else if (ch_i === OPAREN_CODE) {
         // A function call is being made; gobble all the arguments
         node = {
           type: CALL_EXP,
           'arguments': gobbleArguments(CPAREN_CODE),
           callee: node
         };
-      } END HACK */
+      }
       gobbleSpaces();
       ch_i = exprICode(index);
     }

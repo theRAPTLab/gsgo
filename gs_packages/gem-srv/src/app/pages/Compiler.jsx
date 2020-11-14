@@ -15,6 +15,8 @@ import * as SIM from 'modules/sim/api-sim';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/script-transpiler';
+/// TESTS /////////////////////////////////////////////////////////////////////
+import 'modules/tests/test-parser';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';

@@ -170,12 +170,89 @@ Here are things I'd like to do:
 * [x] change `btn*` to `user*` to indicate these are user-initiated  actions
 * [x] consolidate agent-factory, keyword-factory into `script-transpiler`
 
-Ok, that's all done! **next up**:
+Ok, that's all done! **next up**: conditions, expressions
 
-* [ ] CONDITIONS need to run
-* [ ] EXPRESSIONS need to gobble strings
+## NOV 13 FRI - Conditions Review
+
+Ok, first up! Expression parser review! 
+
+* [ ] Review Expression Parser and Tokenizer originals
+  * [x] `expression-eval` not significant changes
+  * [ ] `script-parser` based on `jsep`
+    line 581: removed call expression parsing CALL_EXP
+    line 629: added lastIndex tracking
+    line 643: added range calculation, .range property
+
+I want to be able to parse object dot notation, conditions, and expressions. The challenge is that the script language is based on spaces delimiting alphanermic, but not for punctuators. So something like `Movement.property()` will not work because the node turns into a call expression.
+
+**RESEARCH** - I turned script-parser (based on jsep) into class-parser-gobbler. It seems to now work with expressions and calls; just need to **pass the context object into the evaluator**. It's possible to pass ANY object into the evaluator, even references to built-in objects like `Math`. 
+
+There are **two choices**: 
+
+1. evaluate expressions at runtime by passing the saved ast
+2. compile ast into GEMscript
+
+It might be easier to evaluate expressions at runtime for now.
+
+NOTE: The evaluator can't do **assignments** to context.
+
+* [x] How to write GEMscript source that allows **expressions**?
+  A string beginning with `\x02` and ending with`\x03` (STX, ETX). Check `charCodeAt(0)` and end of string; if it is, then it's an expression and run the string through the expression parser. Alternatively, use `{{ }}` or `[[ ]]` as delimiters, which is probably better.
+  use `string.substring(0,2)` and `string.slice(string.length-2)` to read the first and last character pairs of a string.
+* [x] How to do GEMscript **conditional expressions**
+  An expression evaluator is fed the AST and a context object (like `{agenta, agentb}`) , and produces the result `true` or `false`. 
+* [x] How to do GEMscript **assignment**
+  The persistent variables are our **agent properties**, so the regular `prop setTo expression` works. The expression can contain reference to agent property values inside of math.
+
+* [x] How do CONDITIONS get saved and evaluated at runtime?
+  A condition is a `TMethod` that returns true, false plus `TMethod`s that run if true or false. TMethods can be a **function** following `TOpcode` semantics, or an **array** of `TOpcode` function. In either case, a `TState` object consisting of a data stack, a scope stack, and a condition register are passed to and from the `TMethod`.  A **keyword** for conditions might exist, accepting an expression string or a TEST (scriptunit(s)), and then either a program name or a scriptunit (an array) or a source (array of scriptunits). 
+
+## NOV 14 SAT - TODO
+
+ScriptUnit, ScriptUnit[] are the "human readable" source comprised of an array of literal values, with the added literal "expression" of the form `"{{ expression string }}"`.
+
+**Assignment keywords** can be assigned an expression or a literal value. 
+
+The generated code for an assignment keyword with an expression argument think-aloud
+
+```
+SCRIPTUNIT: ["setAgentProp","x", ""{{ 1 + agent.prop('y') }}"]
+=>
+setAgentProp(propName, expr) {
+  let ast = parse(expr);
+  return (agent,state)=>{
+    let result = evaluate(ast,{agent});
+    agent.prop(propName)._value = result;  
+  }
+}
+
+SCRIPTUNIT: ["agentProp","x", "setTo", "{{ 2 }}"]
+=>
+agentProp(propName, methodName, ...args) {
+  args.forEach( arg => expressify(arg) };
+  return (agent,state)=>{
+    const m = agent.prop(propName)[methodName];
+    if (!m) return `no method ${methodName}`;
+    m.call(agent,..args);
+  };
+}
+// convert expression strings in an arglist to ast objects
+expressify(arg) {
+  if (typeof arg!=='string') return arg;
+  if (arg.substring(0,2)!=="{{") return arg;
+  if (arg.slice(arg.length-2)!=="}}") return arg;
+  // return an ast object
+  let expr = arg.substring(2,arg.length-2);
+  return parse(expr);
+}
+```
+
+
+
+
+
 * [ ] extension: text script format `[define]` to output a define bundle, etc
-* [ ] note: difference between PhaseMachine and messages is synchronous vs asynchronous handling!!!
+* [ ] *note: difference between PhaseMachine and messages is synchronous vs asynchronous handling!!!*
 
 
 

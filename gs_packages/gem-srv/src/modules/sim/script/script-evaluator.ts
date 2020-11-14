@@ -126,6 +126,10 @@ function evaluate(node, context) {
   }
 }
 
+function Compile(ast) {
+  return 'compiler disabled';
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { evaluate as Evaluate };
+export { evaluate as Evaluate, Compile };
