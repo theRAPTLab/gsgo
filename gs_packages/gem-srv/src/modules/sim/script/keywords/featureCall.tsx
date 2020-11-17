@@ -50,7 +50,7 @@ export class FeatureCall extends Keyword {
     const [kw, featName, method, ...args] = parms;
     return (
       <div key={this.generateKey()} className="featureMethod">
-        feature {featName}.{method}({args.join(',')})
+        featureCall {featName} {method} {args.join(' ')}
       </div>
     );
   }

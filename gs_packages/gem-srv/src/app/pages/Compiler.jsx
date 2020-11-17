@@ -15,8 +15,9 @@ import * as SIM from 'modules/sim/api-sim';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/script-transpiler';
+
 /// TESTS /////////////////////////////////////////////////////////////////////
-import 'modules/tests/test-parser';
+// import 'modules/tests/test-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -30,13 +31,13 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultText = `
 // definitions
-defBlueprint Bunny
+defBlueprint "Bunny"
 addProp frame Number 0
 useFeature Movement
 // defaults
 prop skin 'bunny.json'
 // runtime
-Movement.jitterPos -5 5
+featureCall Movement jitterPos 5 -5
 `.trim();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
@@ -64,10 +65,11 @@ class Compiler extends React.Component {
     super();
     this.text = defaultText;
     this.source = TRANSPILER.TokenizeToSource(this.text);
+    const jsx = TRANSPILER.RenderSource(this.source);
     this.state = {
-      jsx: TRANSPILER.RenderSource(this.source),
+      jsx,
       text: defaultText,
-      source: [],
+      source: '',
       tabIndex: 0
     };
     // bind
@@ -96,6 +98,10 @@ class Compiler extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+  }
+
+  componentDidCatch(e) {
+    console.log(e);
   }
 
   componentWillUnmount() {

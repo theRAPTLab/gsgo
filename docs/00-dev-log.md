@@ -61,10 +61,16 @@
 an agent or agent template that can be created
 static or faketrack controls
 
-+ set the skin from a list of assets?
-+ some way to load/save?
-+ simple prop set like nectar count
-  Possible Content Areas: Aquatic Ecosystem, Decomposition, Moths, and Water solutions
++ set the skin from a list of assets? - good
++ some way to load/save? - make cheese API to save a file (port)
+  + include both templates and instance list
++ simple prop set like nectar count - we have
++ get faketrack integrated into Movement feature
++ spawn list for instancing
++ how to show the selection dropdown for each type
++ Target Content Areas
+  + Use Fish/Algae content area to model: x-gemscript (aquatic_blueprints001.gs)
+  + If we get done, move to blueprints002.gs (advanced)
 
 A good chunk of the next six weeks will be for just getting the UI to talk to the SIM engine, decoding. 
 
@@ -207,7 +213,7 @@ NOTE: The evaluator can't do **assignments** to context.
 * [x] How do CONDITIONS get saved and evaluated at runtime?
   A condition is a `TMethod` that returns true, false plus `TMethod`s that run if true or false. TMethods can be a **function** following `TOpcode` semantics, or an **array** of `TOpcode` function. In either case, a `TState` object consisting of a data stack, a scope stack, and a condition register are passed to and from the `TMethod`.  A **keyword** for conditions might exist, accepting an expression string or a TEST (scriptunit(s)), and then either a program name or a scriptunit (an array) or a source (array of scriptunits). 
 
-## NOV 14 SAT - TODO
+## NOV 14 SAT/SUN - TODO
 
 ScriptUnit, ScriptUnit[] are the "human readable" source comprised of an array of literal values, with the added literal "expression" of the form `"{{ expression string }}"`.
 
@@ -247,14 +253,24 @@ expressify(arg) {
 }
 ```
 
+**SUNDAY** hopping in for an hour or two max. Where I left off on Friday was:
+
+* [x] add the `{{ expression }}` argument support in script language
+
+## NOV 16 MON - Adding Expressions/Conditions
+
+Last night I got expressions out of `{{ }}` working. However, I need to fix the script tokenizer so it recognizes strings.
+
+* [x] import `class-expr-parser` into `script-parser`, replace `Parse`
+* [x] update text tokenizer so I can test scripts directly with strings
+  * [x] where is it? The key routine is in `script-parser/TokenizeToScriptUnit`
+  * [x] `TokenizeToScriptUnit()` uses simple string split. We need to actually parse.
+  * [x] make parser ignore // lines
+  * [x] make new parser `class-script-tokenizer` just for our TScriptUnit format
 
 
 
-
-* [ ] extension: text script format `[define]` to output a define bundle, etc
-* [ ] *note: difference between PhaseMachine and messages is synchronous vs asynchronous handling!!!*
-
-
+**Target For Wednesday** - 1200 EST - be ready to start scripting the aquatic with Ben peer programming kind of thing. 
 
 
 
@@ -284,6 +300,10 @@ Runtime:
 [ ] Create Agent Template
 [ ] Instance Agent Template
 [ ] Control
+
+Observations:
+[ ] NOTE: The difference between PhaseMachine and messages synchronicity
+[ ] extension: text script format `[define]` to output a define bundle, etc
 ```
 
 ---

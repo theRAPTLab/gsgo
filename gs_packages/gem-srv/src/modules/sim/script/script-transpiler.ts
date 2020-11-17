@@ -15,7 +15,12 @@ import {
   SaveBlueprint,
   GetBlueprint
 } from 'modules/runtime-datacore';
-import { Parse, TokenizeToScriptUnit, TokenizeToSource } from './script-parser';
+import {
+  Parse,
+  Tokenize,
+  TokenizeToScriptUnit,
+  TokenizeToSource
+} from './script-parser';
 import { Evaluate } from './script-evaluator';
 // critical imports
 import 'script/keywords/_all';
@@ -23,23 +28,33 @@ import 'script/keywords/_all';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR');
-const DBG = false;
+const DBG = true;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** ensures that line returns a tokenized array.
- *  NOTE that when returning a copy of the array, elements of the array
- *  are not duplicated. This is OK because the result of m_TokenQueue returns
- *  a structure that will be used as a queue
+/** Scan argument list and convert expression to an AST. This is called for
+ *  each ScriptUnit line after the keyword
  */
-function m_TokenQueue(input: string | any[]): any[] {
-  if (typeof input === 'string') return input.split(' '); // tokenize
-  if (Array.isArray(input)) return input.map(el => el); // return new array!!!
-  throw Error(`ERR: can not tokenize input ${input}`);
+function m_Expressify(unit: TScriptUnit): TScriptUnit {
+  const res: TScriptUnit = unit.map((arg, idx) => {
+    // arg is an array of elements in the ScriptUnit
+    // skip first arg, which is the keyword
+    if (idx === 0) return arg;
+    // don't process anything other than strings
+    if (typeof arg !== 'string') return arg;
+    if (arg.substring(0, 2) !== '{{') return arg;
+    if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
+    // got this far? we need to parse the expression into an ast
+    const ex = arg.substring(2, arg.length - 2).trim();
+    const ast = Parse(ex);
+    return ast;
+  });
+  return res;
 }
+
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** compile an array of TScriptUnit, representing one complete blueprint
+/** Compile an array of TScriptUnit, representing one complete blueprint
  *  proof of concept
  */
 function CompileSource(units: TScriptUnit[]): ISMCBundle {
@@ -50,21 +65,16 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
     conditions: [],
     update: []
   };
+  console.log(...PR('COMPILING', units));
   // this has to look through the output to determine what to compile
-  units.forEach(unit => {
+  units.forEach((rawUnit, idx) => {
     // detect comments
-    if (unit[0] === '//') return;
+    if (rawUnit[0] === '//') return;
     // extract keyword first unit, assume that . means Feature
-    let cmdName = unit[0].split('.');
-    // handle regular keyword
-    let cmdObj;
-    if (cmdName.length === 1) {
-      cmdObj = GetKeyword(cmdName[0]);
-    } else if (cmdName.length === 2) {
-      const [fname, method] = cmdName;
-      cmdObj = GetKeyword('featureCall');
-      unit = ['featureCall', fname, method, ...unit.slice(1)];
-    } else console.warn(...PR('parsing error', unit[0]));
+    let unit = m_Expressify(rawUnit);
+    // first in array is keyword aka 'cmdName'
+    let cmdName = unit[0];
+    let cmdObj = GetKeyword(cmdName);
     // resume processing
     if (!cmdObj) {
       cmdObj = GetKeyword('dbgError');
@@ -95,20 +105,14 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
 function RenderSource(units: TScriptUnit[]): any[] {
   const sourceJSX = [];
   units.forEach((unit, index) => {
-    if (DBG) console.log(index, unit);
+    if (DBG) console.log(...PR('rendering', index, unit));
     const keyword = unit[0];
     // comment processing
     if (keyword === '//') {
       sourceJSX.push(unit.join(' '));
       return;
     }
-    let cmdObj;
-    if (!keyword.includes('.')) cmdObj = GetKeyword(keyword);
-    else {
-      cmdObj = GetKeyword('featureCall');
-      const [fname, method] = keyword.split('.');
-      unit = ['featureCall', fname, method, ...unit.slice(1)];
-    }
+    let cmdObj = GetKeyword(keyword);
     if (!cmdObj) {
       cmdObj = GetKeyword('dbgError');
       cmdObj.keyword = keyword;
@@ -168,7 +172,7 @@ export {
 };
 /// for expression evaluation
 export {
-  Parse, // expr => AST
+  Tokenize, // expr => AST
   Evaluate // (AST,context)=>computed value
   // MakeEvaluator // (AST,context)=> smc_program
 };

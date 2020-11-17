@@ -1,6 +1,17 @@
-/* eslint-disable no-cond-assign */
+/* eslint-disable func-names */
 /* eslint-disable no-prototype-builtins */
-const string = 'class-parser-gobbler';
+/* eslint-disable no-cond-assign */
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  This code is ported from jsep and adapted to produce our desired output
+  https://ericsmekens.github.io/jsep/
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+const string = 'class-expr-parser';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 
@@ -15,6 +26,7 @@ const BINARY_EXP = 'BinaryExpression';
 const LOGICAL_EXP = 'LogicalExpression';
 const CONDITIONAL_EXP = 'ConditionalExpression';
 const ARRAY_EXP = 'ArrayExpression';
+const COMMENT = 'Comment'; /* HACK add comment type */
 //
 const PERIOD_CODE = 46; // '.'
 const COMMA_CODE = 44; // ','
@@ -61,6 +73,9 @@ const binary_ops = {
   '/': 10,
   '%': 10
 };
+
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get return the longest key length of any object
 const getMaxKeyLen = obj => {
   let max_len = 0;
@@ -117,7 +132,9 @@ const isIdentifierPart = function (ch) {
   ); // any non-ASCII that is not an operator
 };
 
-export class ParserGobbler {
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+class ExpressionParser {
   constructor() {
     this.expr = '';
     this.index = 0;
@@ -125,14 +142,28 @@ export class ParserGobbler {
     this.length = 0;
   }
   /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
   /** PARSER *****************************************************************/
   parse(expr) {
     this.expr = expr;
+    this.length = this.expr.length;
+    this.index = 0;
+    this.lastIndex = this.index;
+
     let nodes = [];
     let ch_i;
     let node;
-    this.index = 0;
-    this.length = expr.length;
+
+    /* HACK IN COMMENT DETECTION */
+    if (expr.substring(0, 2) === '//' || expr.charAt(0) === '#') {
+      return {
+        type: COMMENT,
+        raw: expr
+      };
+    }
+    /* END HACK */
 
     while (this.index < this.length) {
       /* HACK initialize lastIndex */
@@ -172,6 +203,10 @@ export class ParserGobbler {
     };
   }
   /** END PARSER *************************************************************/
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////
   /////////////////////////////////////////////////////////////////////////////
 
   exprI(i) {
@@ -653,3 +688,23 @@ export class ParserGobbler {
     };
   }
 }
+
+/// MODULE EXPORTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export default ExpressionParser;
+export { isIdentifierPart, isIdentifierStart, isDecimalDigit };
+export {
+  unary_ops,
+  binary_ops,
+  PERIOD_CODE,
+  COMMA_CODE,
+  SQUOTE_CODE,
+  DQUOTE_CODE,
+  OPAREN_CODE,
+  CPAREN_CODE,
+  OBRACK_CODE,
+  CBRACK_CODE,
+  QUMARK_CODE,
+  SEMCOL_CODE,
+  COLON_CODE
+};
