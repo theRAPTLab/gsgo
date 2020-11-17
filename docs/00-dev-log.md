@@ -267,6 +267,26 @@ Last night I got expressions out of `{{ }}` working. However, I need to fix the 
   * [x] `TokenizeToScriptUnit()` uses simple string split. We need to actually parse.
   * [x] make parser ignore // lines
   * [x] make new parser `class-script-tokenizer` just for our TScriptUnit format
+  * [x] we now have TWO parsers: one for Text, one for Source that also handles expressions
+
+Now that we have baked expressions into the system, when do we evaluate them?
+
+* [ ] agent.exec_func has to detect an expression object
+* [ ] agent.exec_smc has to detect an expression object
+
+for functions, they expect to receive a value, so we want to evaluate before it's called. 
+
+**Where are all the places we can either Parse or Evaluate?**
+
+## NOV 17 TUE - Adding Evaluator to Keyword Class
+
+* [x] added `evaluateArgs(...args)` to agent class
+* [x] update featureCall to use `evaluateArgs()`
+* [x] update addProp to use evaluateArgs
+
+The general process:
+
+* wherever the `TOpcode` pattern is followed, we can use `agent.evaluate()` to parse an array of args or a single args, and it will resolve the stored AST to a runtime value using `agent` as the context. 
 
 
 

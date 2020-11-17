@@ -32,12 +32,12 @@ const DBG = true;
 const defaultText = `
 // definitions
 defBlueprint "Bunny"
-addProp frame Number 0
+addProp frame Number 2
 useFeature Movement
 // defaults
 prop skin 'bunny.json'
 // runtime
-featureCall Movement jitterPos 5 -5
+featureCall Movement jitterPos {{0-5}} {{0+5}}
 `.trim();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////

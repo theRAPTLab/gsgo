@@ -42,6 +42,7 @@ export interface IAgent extends IScopeable {
   thinkQueue: IMessage[];
   execQueue: IMessage[];
   queue: (msg: IMessage) => void;
+  evaluate: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
   addFeature: (name: string) => void;

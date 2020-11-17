@@ -10,6 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { FEATURES } from 'modules/runtime-datacore';
+import { Evaluate } from 'script/script-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -161,13 +162,36 @@ class Agent extends SM_Object implements IAgent, IActable {
     return f;
   }
 
-  /** PhaseMachine Lifecycle Execution */
+  /** PhaseMachine Lifecycle Execution QUEUE */
   AGENTS_EXEC() {
     this.execQueue.forEach(msg => {
       const stack = msg.inputs;
       msg.programs.forEach(program => this.exec_smc(program, stack));
     });
     this.execQueue = [];
+  }
+
+  /** evaluator mutator, can accept an array of args or a single arg
+   *  note that args is MUTATED by Evaluate, so it's important that
+   *  when you call this you are not actually creating a new array.
+   *  However, this also returns the passed argument(s) so you can
+   *  also assign them or spread them directly.
+   */
+  evaluate(args: any, context: object = this): any {
+    if (typeof args === 'object' && args.type !== undefined)
+      return Evaluate(args, this);
+
+    if (Array.isArray(args)) {
+      // mutate array if there are expressions
+      args.forEach((arg, index, arr) => {
+        if (typeof arg !== 'object') return;
+        if (arg.type === undefined) return;
+        arr[index] = Evaluate(arg, context);
+      });
+      return args;
+    }
+    // numbers, strings, booleans return as-is
+    return args;
   }
 
   /** handle queue */

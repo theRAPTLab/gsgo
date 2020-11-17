@@ -32,10 +32,6 @@ class SystemShell extends React.Component {
     this.state = { hasError: false };
   }
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error };
-  }
-
   render() {
     const { hasError, error } = this.state;
     // omg an error???

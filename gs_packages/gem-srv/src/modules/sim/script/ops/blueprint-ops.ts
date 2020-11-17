@@ -15,7 +15,7 @@ const addProp = (
   initValue: any
 ): TOpcode => {
   return (agent: IAgent): TOpWait => {
-    agent.addProp(name, new PropTypeCTor(initValue));
+    agent.addProp(name, new PropTypeCTor(agent.evaluate(initValue)));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
