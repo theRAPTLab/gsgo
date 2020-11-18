@@ -38,10 +38,12 @@ export interface IScopeableCtor {
 /** Agents have additional properties on top of IScopeable */
 export interface IAgent extends IScopeable {
   features: Map<string, any>;
-  updateQueue: IMessage[];
-  thinkQueue: IMessage[];
-  execQueue: IMessage[];
-  queue: (msg: IMessage) => void;
+  updateQueue: TMethod[];
+  thinkQueue: TMethod[];
+  execQueue: TMethod[];
+  queueUpdateAction: (action: TMethod) => void;
+  queueThinkAction: (action: TMethod) => void;
+  queueExecAction: (action: TMethod) => void;
   evaluate: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
@@ -92,12 +94,12 @@ export interface ISMCBundle {
   name?: string; // the determined name of the blueprint
   define?: TSMCProgram; // def template, props, features
   defaults?: TSMCProgram; // set default values
-  conditions?: TSMCProgram; // register conditions
   update?: TSMCProgram; // other runtime init
   // conditions
+  conditions?: TSMCProgram; // this might be the below
   test?: TSMCProgram; // program returning true on stack
-  consequent?: TSMCProgram; // program to run on true
-  alternate?: TSMCProgram; // program to run otherwise
+  conseq?: TSMCProgram; // program to run on true
+  alter?: TSMCProgram; // program to run otherwise
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,

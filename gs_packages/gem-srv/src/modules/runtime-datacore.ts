@@ -30,11 +30,13 @@ const VAR_DICT: Map<string, IScopeableCtor> = new Map();
 const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const SOURCE: Map<string, TScriptUnit[]> = new Map();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const CONDITIONS: Map<string, TMethod> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
 const PROGRAMS: Map<string, TMethod> = new Map();
+const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ASSET_MGR = new PixiTextureMgr();
 
 /// ASSET LOADING API METHODS /////////////////////////////////////////////////
@@ -197,6 +199,23 @@ export function GetTest(name: string): TMethod {
     console.log(...PR(`test '${name}' doesn't exist`));
   } else return TESTS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function MakeTestResultKey(...args: string[]) {
+  if (!Array.isArray(args)) args = [args];
+  return `TK_${args.join(':')}`;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function SaveTestResults(key: string, passed: any[], failed: any[]) {
+  TEST_RESULTS.set(key, { passed, failed });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetTestResults(key: string) {
+  return TEST_RESULTS.get(key) || { passed: [], failed: [] };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function PurgeTestResults() {
+  TEST_RESULTS.clear();
+}
 
 /// PROGRAM UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -220,4 +239,4 @@ UR.SystemHook('SIM/RESET', () => {});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exported functions
 /// expose maps and managers
-export { AGENTS, KEYWORDS, BLUEPRINTS, FEATURES, CONDITIONS };
+export { AGENTS, KEYWORDS, BLUEPRINTS, FEATURES, CONDITIONS, TEST_RESULTS };

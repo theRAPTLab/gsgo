@@ -14,19 +14,11 @@ import { Evaluate } from 'script/script-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object, { AddProp, AddMethod } from './class-sm-object';
 import SM_State from './class-sm-state';
-import {
-  IAgent,
-  IScopeable,
-  IMessage,
-  TMethod,
-  TSMCProgram,
-  ISMCBundle
-} from './t-script';
+import { IAgent, IScopeable, TMethod, TSMCProgram, ISMCBundle } from './t-script';
 import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ERR_WHATMSG = 'unhandled message; got';
 let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -40,9 +32,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
-  updateQueue: IMessage[];
-  thinkQueue: IMessage[];
-  execQueue: IMessage[];
+  updateQueue: TMethod[];
+  thinkQueue: TMethod[];
+  execQueue: TMethod[];
   _name: StringProp;
   _x: NumberProp;
   _y: NumberProp;
@@ -55,6 +47,8 @@ class Agent extends SM_Object implements IAgent, IActable {
     // this.methods map defined in SM_Object
     this.blueprint = undefined;
     this.features = new Map();
+    this.updateQueue = [];
+    this.thinkQueue = [];
     this.execQueue = [];
     this.refId = REF_ID_COUNT++;
     this.controlMode = ControlMode.puppet;
@@ -162,12 +156,17 @@ class Agent extends SM_Object implements IAgent, IActable {
     return f;
   }
 
-  /** PhaseMachine Lifecycle Execution QUEUE */
-  AGENTS_EXEC() {
-    this.execQueue.forEach(msg => {
-      const stack = msg.inputs;
-      msg.programs.forEach(program => this.exec_smc(program, stack));
-    });
+  /** PhaseMachine Lifecycle Execution QUEUES */
+  agentUPDATE() {
+    this.updateQueue.forEach(action => this.exec(action));
+    this.updateQueue = [];
+  }
+  agentTHINK() {
+    this.thinkQueue.forEach(action => this.exec(action));
+    this.thinkQueue = [];
+  }
+  agentEXEC() {
+    this.execQueue.forEach(action => this.exec(action));
     this.execQueue = [];
   }
 
@@ -194,21 +193,15 @@ class Agent extends SM_Object implements IAgent, IActable {
     return args;
   }
 
-  /** handle queue */
-  queue(msg: IMessage) {
-    switch (msg.message) {
-      case 'update':
-        this.updateQueue.push(msg);
-        break;
-      case 'think':
-        this.thinkQueue.push(msg);
-        break;
-      case 'exec':
-        this.execQueue.push(msg);
-        break;
-      default:
-        throw Error(`${ERR_WHATMSG} ${msg.message}`);
-    }
+  /** handle queue (placeholder) */
+  queueUpdateAction(action: TMethod) {
+    this.updateQueue.push(action);
+  }
+  queueThinkAction(action: TMethod) {
+    this.thinkQueue.push(action);
+  }
+  queueExecAction(action: TMethod) {
+    this.execQueue.push(action);
   }
 
   /** Execute either a smc_program or function depending on the
