@@ -395,6 +395,61 @@ B. at runtime, iterate over TEST_CANDIDATES keys and grab all the test functions
 
 Some tests can be hardcoded, to the `(a,b)=>boolean` convention. However, some might be generated on the fly through an expression. These will probably just generate a random test name then rather than attempt to reuse something similar.
 
+## NOV 18 WED - SYNC WITH BEN
+
+Focus: try to make programs that "do things"
+
+* Currently, the program source is written in `Compiler.jsx` as `defaultText`
+
+* there is a cheeseball text language with this format (this is called "the text")
+
+  ```
+  // comment in front of line
+  // [keyword] [string|expr|number|boolean]
+  // keyword ...args
+  defBlueprint "Bunny"
+  addProp frame Number 2
+  useFeature Movement
+  prop skin 'bunny.json'
+  featureCall Movement jitterPos {{0-5}} {{0+5}}
+  prop "maximum fun"
+  ```
+
+* **keywords** are defined in `modules/sim/script/keywords/_all.ts`, which imports all the other keywords that are in that directory, so it's easier to import all the keywords at once
+* each keyword is an instance of `lib/class-keyword.tsx`, which is the **translator** between "source code" (tokenized version of "text" into `ScriptUnit`, which is an array of the form `["keyword", ...args]`
+* each keyword implementation is responsible for
+  * converting a single ScriptUnit into compiled lines of code to be added to a program being assembled (e.g. making blueprint program)
+  * converting a single ScriptUnit into rendered JSX, for insertion into an element in a GUI somewhere. this includes the component definition itself,
+  * handles serialization between a React-style state object and ScriptUnit (converts object to array, basically)
+
+
+
+QUESTIONS FOR MEEE
+
+**Q. How to set 'AI' versus 'STUDENT' inputs in the Movement feature in these two cases**
+
+* a student is controlling an agent, and it's dead, stops reacting, but moves with input
+* an ai-controlled fish, on the otherhand, just stops moving
+
+**Q. How to access properties inside of an expression `{{ agent.prop('x') }}`** 
+
+**Q. Should we rename ScriptUnit to SourceUnit? I THINK SO**
+
+**Q. How to make compiler tell you about unimplemented keywords politely instead of crashing**
+
+* if keyword is unrecognized in sourceText (not sourceUnit), emit a null keyword that won't crash program, but still let you know that something was supposed to happen
+
+**Q. How to define getter/setter in Typescript interface? (e.g. prop.tsx)**
+
+**Q. For singleton Agent, have `defInstance` keyword instead of `defBlueprint?`**
+
+**Q. Resolve defining conditions in the GEMscript Text**
+
+* can we do multiline? How do you delimit a subprogram in the text format
+* this means more parser work, **by implementing a stack and delimiter keywords**
+
+
+
 
 
 >  **Target For Wednesday** - 1200 EST - be ready to start scripting the aquatic with Ben peer programming kind of thing. 

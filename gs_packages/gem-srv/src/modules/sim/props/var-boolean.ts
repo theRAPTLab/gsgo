@@ -16,6 +16,10 @@ export class BooleanProp extends SM_Object implements IScopeable {
   false(): boolean {
     return !this.value;
   }
+  invert(): boolean {
+    this.value = !this.value;
+    return this.value;
+  }
   and(comparison: any): BooleanProp {
     if (!this.fuzzy) throw Error("'and' incompatible with fuzzy logic");
     this.value &= comparison;

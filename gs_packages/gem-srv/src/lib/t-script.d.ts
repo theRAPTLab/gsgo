@@ -25,7 +25,7 @@ export interface IScopeable {
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
   _value: any;
-  get: () => TValue;
+  get: (key) => TValue;
   set: (key: string, value: TValue) => void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
