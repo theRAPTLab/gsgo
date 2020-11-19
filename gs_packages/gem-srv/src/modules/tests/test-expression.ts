@@ -5,8 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { Evaluate, Compile as FauxCompile } from 'script/script-evaluator';
-import { Parse, TokenizeToScriptUnit } from 'script/script-parser';
+import { Evaluate, Compile as FauxCompile } from 'lib/script-evaluator';
+import { Parse, TokenizeToScriptUnit } from 'lib/script-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

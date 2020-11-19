@@ -32,8 +32,8 @@ export class Prop extends Keyword {
     });
     return {
       define: [],
-      defaults: [],
-      conditions: progout
+      defaults: progout,
+      conditions: []
     };
   }
 
@@ -44,13 +44,15 @@ export class Prop extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const propName = args[1];
-    const value = args[2];
-    return (
-      <div key={this.generateKey()} className="prop">
+  jsx(index: number, srcLine: any[], children?: any[]): any {
+    const propName = srcLine[1];
+    const value = srcLine[2];
+    return super.jsx(
+      index,
+      srcLine,
+      <>
         prop {propName} = {value}
-      </div>
+      </>
     );
   }
 } // end of UseFeature

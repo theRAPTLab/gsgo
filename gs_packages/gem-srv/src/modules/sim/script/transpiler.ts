@@ -16,41 +16,19 @@ import {
   GetBlueprint
 } from 'modules/runtime-datacore';
 import {
-  Parse,
+  ExpandScriptUnit,
   Tokenize,
   TokenizeToScriptUnit,
   TokenizeToSource
-} from './script-parser';
-import { Evaluate } from './script-evaluator';
+} from 'lib/script-parser';
+import { Evaluate } from 'lib/script-evaluator';
 // critical imports
-import 'script/keywords/_all';
+import 'script/keywords/_all_keywords';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR');
-const DBG = false;
-
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Scan argument list and convert expression to an AST. This is called for
- *  each ScriptUnit line after the keyword
- */
-function m_Expressify(unit: TScriptUnit): TScriptUnit {
-  const res: TScriptUnit = unit.map((arg, idx) => {
-    // arg is an array of elements in the ScriptUnit
-    // skip first arg, which is the keyword
-    if (idx === 0) return arg;
-    // don't process anything other than strings
-    if (typeof arg !== 'string') return arg;
-    if (arg.substring(0, 2) !== '{{') return arg;
-    if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
-    // got this far? we need to parse the expression into an ast
-    const ex = arg.substring(2, arg.length - 2).trim();
-    const ast = Parse(ex);
-    return ast;
-  });
-  return res;
-}
+const DBG = true;
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,13 +43,21 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
     conditions: [],
     update: []
   };
-  console.log(...PR('COMPILING', units));
+  if (DBG) console.groupCollapsed(...PR(`COMPILING ${units[1]}`));
+  let out = '\n';
+  units.forEach(unit => {
+    unit.forEach(item => {
+      out += `${item} `;
+    });
+    out = `${out.trim()}\n`;
+  });
+  if (DBG) console.log(`SOURCE\n${out.trim()}`);
   // this has to look through the output to determine what to compile
   units.forEach((rawUnit, idx) => {
     // detect comments
     if (rawUnit[0] === '//') return;
     // extract keyword first unit, assume that . means Feature
-    let unit = m_Expressify(rawUnit);
+    let unit = ExpandScriptUnit(rawUnit);
     // first in array is keyword aka 'cmdName'
     let cmdName = unit[0];
     let cmdObj = GetKeyword(cmdName);
@@ -96,6 +82,7 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
   }); // units.forEach
   if (bdl.name === undefined) throw Error('CompileSource: missing defBlueprint');
   if (DBG) console.log(...PR(`compiled ${bdl.name}`));
+  if (DBG) console.groupEnd();
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,12 +91,14 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
  */
 function RenderSource(units: TScriptUnit[]): any[] {
   const sourceJSX = [];
+  let out = [];
+  if (DBG) console.groupCollapsed(...PR(`RENDERING ${units[0][1]}`));
   units.forEach((unit, index) => {
-    if (DBG) console.log(...PR('rendering', index, unit));
     const keyword = unit[0];
     // comment processing
     if (keyword === '//') {
-      sourceJSX.push(unit.join(' '));
+      sourceJSX.push(undefined); // no jsx to render for comments
+      if (DBG) console.groupEnd();
       return;
     }
     let cmdObj = GetKeyword(keyword);
@@ -117,8 +106,13 @@ function RenderSource(units: TScriptUnit[]): any[] {
       cmdObj = GetKeyword('dbgError');
       cmdObj.keyword = keyword;
     }
-    sourceJSX.push(cmdObj.render(index, unit));
+    const jsx = cmdObj.jsx(index, unit);
+    sourceJSX.push(jsx);
+    out.push(`<${cmdObj.getName()} ... />\n`);
   });
+
+  if (DBG) console.log(`JSX (SIMULATED)\n${out.join('')}`);
+  if (DBG) console.groupEnd();
   return sourceJSX;
 }
 
@@ -138,6 +132,16 @@ function DecompileSource(units: TScriptUnit[]): string {
 function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
   const bp = CompileSource(units);
   SaveBlueprint(bp);
+  // run conditional programming in template
+  // this is a stack of functions that run in global context
+  const { conditions } = bp;
+  let out = [];
+  if (DBG) console.groupCollapsed(...PR(`CONDITIONS for ${bp.name}`));
+  conditions.forEach(regFunc => {
+    out.push(regFunc());
+  });
+  if (DBG) console.groupEnd();
+
   return bp;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -150,7 +154,7 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
     const bp = GetBlueprint(blueprint);
     if (!bp) throw Error(`agent blueprint for '${blueprint}' not defined`);
 
-    console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
+    // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bp);
     console.groupEnd();
   }
@@ -174,7 +178,6 @@ export {
 export {
   Tokenize, // expr => AST
   Evaluate // (AST,context)=>computed value
-  // MakeEvaluator // (AST,context)=> smc_program
 };
 /// for converting text to TScriptUnit Source
 export {

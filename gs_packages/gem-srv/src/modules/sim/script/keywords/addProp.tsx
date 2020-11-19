@@ -42,12 +42,14 @@ export class AddProp extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const [kw, propName, propType, initValue] = args;
-    return (
-      <div key={this.generateKey()} className="addProp">
+  jsx(index: number, srcLine: any[], children?: any[]): any {
+    const [kw, propName, propType, initValue] = srcLine;
+    return super.jsx(
+      index,
+      srcLine,
+      <>
         addProp {propName} = {initValue} :{propType}
-      </div>
+      </>
     );
   }
 } // end of DefProp

@@ -50,7 +50,37 @@ function TokenizeToSource(text: string): TScriptUnit[] {
   });
   return scriptUnits;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ExpandArg(arg: any): any {
+  // don't process anything other than strings
+  if (typeof arg !== 'string') return arg;
+  if (arg.substring(0, 2) !== '{{') return arg;
+  if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
+  // got this far? we need to parse the expression into an ast
+  const ex = arg.substring(2, arg.length - 2).trim();
+  const ast = Parse(ex);
+  return ast;
+}
+/** Scan argument list and convert expression to an AST. This is called for
+ *  each ScriptUnit line after the keyword
+ */
+function ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
+  const res: TScriptUnit = unit.map((arg, idx) => {
+    // arg is an array of elements in the ScriptUnit
+    // skip first arg, which is the keyword
+    if (idx === 0) return arg;
+    return ExpandArg(arg);
+  });
+  return res;
+}
 
 /// EXPORT ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Parse, Tokenize, TokenizeToScriptUnit, TokenizeToSource };
+export {
+  Parse,
+  Tokenize,
+  TokenizeToScriptUnit,
+  TokenizeToSource,
+  ExpandArg,
+  ExpandScriptUnit
+};

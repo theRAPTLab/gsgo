@@ -23,7 +23,7 @@ export class DefTemplate extends Keyword {
     this.args = ['blueprintName string', 'baseBlueprint string'];
     this.serialize = this.serialize.bind(this);
     this.compile = this.compile.bind(this);
-    this.render = this.render.bind(this);
+    this.jsx = this.jsx.bind(this);
   }
 
   /** create smc blueprint code objects for this unit
@@ -38,14 +38,7 @@ export class DefTemplate extends Keyword {
     // of form TOpcode, which is:
     // (agent, state) => { do your stuff }
     // can use closures, which makes this work.
-    progout.push((agent, state) => {
-      console.log('agent blueprint', blueprintName);
-      state.stack.push(100);
-    });
-    progout.push((agent, state) => {
-      const a = state.stack.pop();
-      console.log('received', a, 'from previous operation');
-    });
+    progout.push((agent, state) => {});
     // return the ISMCBundle, which is used by compiler
     // to assemble a blueprint by concatenating these arrays
     // into the master blueprint
@@ -65,18 +58,15 @@ export class DefTemplate extends Keyword {
 
   /** return rendered component representation */
   // TScriptUnit is [ 'keyword', parm1, parm2, ... ]
-  render(index: number, srcLine: TScriptUnit, children?: any[]): any {
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
     const state = {
       blueprintName: srcLine[1],
       baseBlueprint: srcLine[2]
     };
-    return (
-      <ScriptElement
-        key={this.generateKey()}
-        index={index}
-        state={state}
-        serialize={this.serialize}
-      />
+    return super.jsx(
+      index,
+      srcLine,
+      <ScriptElement index={index} state={state} serialize={this.serialize} />
     );
   }
 } // end of DefTemplate

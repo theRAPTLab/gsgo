@@ -10,10 +10,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetAgentsByType, MakeTestResultKey } from 'modules/runtime-datacore';
-import { Parse } from 'script/script-parser';
+import { GetAgentsByType } from 'modules/runtime-datacore';
+import { Parse } from 'lib/script-parser';
 import { ISMCBundle } from 'lib/t-script';
-import { Evaluate } from 'script/script-evaluator';
+import { Evaluate } from 'lib/script-evaluator';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

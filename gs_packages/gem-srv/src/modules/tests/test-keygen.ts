@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'script/script-transpiler';
+import * as KEYDICT from 'script/transpiler';
 import { TScriptUnit, IScriptUpdate } from 'lib/t-script';
 import './test-expression';
 

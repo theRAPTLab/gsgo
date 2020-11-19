@@ -44,12 +44,14 @@ export class PropMethod extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const [kw, propName, methodName, ...arg] = args;
-    return (
-      <div key={this.generateKey()} className="propMethod">
+  jsx(index: number, srcLine: any[], children?: any[]): any {
+    const [kw, propName, methodName, ...arg] = srcLine;
+    return super.jsx(
+      index,
+      srcLine,
+      <>
         prop {propName}.{methodName}({arg.join(' ')})
-      </div>
+      </>
     );
   }
 } // end of UseFeature

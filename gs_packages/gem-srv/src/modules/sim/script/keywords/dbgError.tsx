@@ -39,13 +39,9 @@ export class dbgError extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any, children?: any[]): any {
-    const [error] = args;
-    return (
-      <div key={this.generateKey()} className="dbgError" style={{ color: 'red' }}>
-        unknown keyword: {`'${error}'`}
-      </div>
-    );
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+    const [error] = srcLine;
+    return super.jsx(index, srcLine, <>unknown keyword: {`'${error}'`}</>);
   }
 } // end of UseFeature
 

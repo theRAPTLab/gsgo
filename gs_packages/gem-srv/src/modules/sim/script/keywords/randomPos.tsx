@@ -52,14 +52,16 @@ export class RandomPos extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any, children?: any[]): any {
-    const min = args[1];
-    const max = args[2];
-    const floor = args[3];
-    return (
-      <div key={this.generateKey()} className="randomPos">
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+    const min = srcLine[1];
+    const max = srcLine[2];
+    const floor = srcLine[3];
+    return super.jsx(
+      index,
+      srcLine,
+      <>
         random between ({min},{max}) (floor={floor})
-      </div>
+      </>
     );
   }
 } // end of UseFeature

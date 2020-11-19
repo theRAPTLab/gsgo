@@ -12,9 +12,9 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/runtime-globals';
 import * as RENDERER from 'modules/render/api-render';
-import * as TRANSPILER from 'script/script-transpiler';
+import * as TRANSPILER from 'script/transpiler';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -37,7 +37,11 @@ useFeature Movement
 // defaults
 prop skin 'bunny.json'
 // runtime
-featureCall Movement jitterPos {{0-5}} {{0+5}}
+featureCall Movement jitterPos -5 5
+// conditions
+addTest BunnyTest {{ agent.prop('frame')._value }}
+ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
+// agentSet Bunny
 `.trim();
 
 const defineGlobalAgent = `
@@ -94,7 +98,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
-        let map = await DATACORE.LoadAssets('static/assets.json');
+        let map = await GLOBAL.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         SIM.StartSimulation();
         if (DBG) console.log(...PR('SIMULATION STARTED'));

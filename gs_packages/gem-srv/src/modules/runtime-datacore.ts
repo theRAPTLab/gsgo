@@ -3,10 +3,15 @@
   Simulation Data is a pure data module that can be included anywhere
   to access global data.
 
+  IMPORTANT:
+  Do not import other modules into here unless you are absolutely
+  sure it will not create a circular dependency!
+  This module is intended to be "pure" so any module can import
+  it and access its
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
 import {
   IScopeableCtor,
   IFeature,
@@ -36,14 +41,6 @@ const CONDITIONS: Map<string, TMethod> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
 const PROGRAMS: Map<string, TMethod> = new Map();
 const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ASSET_MGR = new PixiTextureMgr();
-
-/// ASSET LOADING API METHODS /////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const GetAsset = ASSET_MGR.getAsset;
-export const GetAssetById = ASSET_MGR.getAssetById;
-export const LoadAssets = ASSET_MGR.loadManifest;
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -113,8 +110,7 @@ export function DeleteSource(name: string): boolean {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SaveBlueprint(bp: ISMCBundle) {
   const { name } = bp;
-  if (BLUEPRINTS.has(name))
-    console.warn(...PR(`overwriting blueprint '${name}'`));
+  // just overwrite it
   BLUEPRINTS.set(name, bp);
   return bp;
 }
@@ -189,9 +185,12 @@ export function GetAllConditions() {
 
 /// TEST UTILITIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RegisterTest(name: string, f_or_smc: TMethod) {
-  if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
+/** returns true if test was saved for the first time, false otherwise */
+export function RegisterTest(name: string, f_or_smc: TMethod): boolean {
+  // if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
+  const newRegistration = !TESTS.has(name);
   TESTS.set(name, f_or_smc);
+  return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetTest(name: string): TMethod {
@@ -199,6 +198,8 @@ export function GetTest(name: string): TMethod {
     console.log(...PR(`test '${name}' doesn't exist`));
   } else return TESTS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetTests() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function MakeTestResultKey(...args: string[]) {
   if (!Array.isArray(args)) args = [args];

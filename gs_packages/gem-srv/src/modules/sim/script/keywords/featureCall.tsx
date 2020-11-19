@@ -50,13 +50,9 @@ export class FeatureCall extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, parms: any[], children?: any[]): any {
-    const [kw, featName, method, ...args] = parms;
-    return (
-      <div key={this.generateKey()} className="featureMethod">
-        featureCall {featName} {method} {args.join(' ')}
-      </div>
-    );
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+    const [kw, featName, method, ...args] = srcLine;
+    return super.jsx(index, srcLine, <>{srcLine.join(' ')}</>);
   }
 } // end of UseFeature
 

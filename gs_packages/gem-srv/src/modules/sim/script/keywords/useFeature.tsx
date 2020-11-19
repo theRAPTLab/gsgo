@@ -39,13 +39,9 @@ export class UseFeature extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any, children?: any[]): any {
-    const [kw, featureName] = args;
-    return (
-      <div key={this.generateKey()} className="useFeature">
-        useFeature {featureName}
-      </div>
-    );
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+    const [kw, featureName] = srcLine;
+    return super.jsx(index, srcLine, <>useFeature {featureName}</>);
   }
 } // end of UseFeature
 

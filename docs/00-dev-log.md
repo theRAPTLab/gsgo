@@ -388,12 +388,36 @@ B. at runtime, iterate over TEST_CANDIDATES keys and grab all the test functions
 
 **I'm still fuzzy on this logic** so I will need to diagram it
 
-* key: TESTNAME, value: (a,b)=>boolean
-* key: AGENTA+AGENTB+TESTNAME, value: test function set 
-* key: AGENTA+AGENTB+TESTNAME, value: { passed, failed }
-* key: AGENTA+AGENTB+TESTNAME, value: ISMCbundle with conseq, alter functions
+* Map1: key: TESTNAME, value: (a,b)=>boolean
+* Map2: key: AGENTA+AGENTB+TESTNAME, value: test function set 
+* Map3: key: AGENTA+AGENTB+TESTNAME, value: { passed, failed }
+* Map4: key: AGENTA+AGENTB+TESTNAME, value: ISMCbundle with conseq, alter functions
 
 Some tests can be hardcoded, to the `(a,b)=>boolean` convention. However, some might be generated on the fly through an expression. These will probably just generate a random test name then rather than attempt to reuse something similar.
+
+Expressions used as a test when defining conditions will be added to the TESTTABLE with a unqiue name, so it can at least use the same runtime engine without special-casing it. PRE-DEFINED test though, like `touch` will be handcoded for efficiency, and therefore will always create the same key signature:
+
+```
+AgentA, AgentB, 'touches'
+const testFunction = GetTest('touches');
+runtime test key: "AgentA:AgentB:touches"
+testFunction is AgentPairTest: looks like (a,b)=>{ return {passed:[{a,b}],fail:[{a,b}]}
+save testFunction to ConditionMap<key,testFunction>
+at runtime:
+	(A. filter)
+	iterate over ConditionMap for every key,value
+	value is the test function to give to the agentpair filter engine
+	run the loop for AgentA, AgentB instances, running the test based on the key
+	(B. execute consequent for passing agent pairs)
+	load the array from CONSEQUENT table 
+	each element fo the array is a consequent (e.g. a program)
+	apply every consequent to the agent pair to make it do the thing
+	
+run the consequent for all passing agent pairs, which does the thing to each
+'AgentA:AgentB:touches' => (a,b)=>{ /* something that implements the touch test for agents */
+```
+
+WHERE IS THE CONSEQUENT/ALTER arrays saved when compiling the blueprint? And how do we run them. 
 
 ## NOV 18 WED - SYNC WITH BEN
 
@@ -433,7 +457,7 @@ QUESTIONS FOR MEEE
 
 **Q. How to access properties inside of an expression `{{ agent.prop('x') }}`** 
 
-**Q. Should we rename ScriptUnit to SourceUnit? I THINK SO**
+**Q. Should we rename ScriptUnit to SourceUnit? I THINK SO**, but maybe it's a different kind of Script. a "script" versus "objscript" vs "gemscript" or ughscript"
 
 **Q. How to make compiler tell you about unimplemented keywords politely instead of crashing**
 
@@ -448,7 +472,52 @@ QUESTIONS FOR MEEE
 * can we do multiline? How do you delimit a subprogram in the text format
 * this means more parser work, **by implementing a stack and delimiter keywords**
 
+**Q. What are the function signatures for `exec-*` in Agent?**
 
+* `exec(TMethod, ...args)`
+* `exec_smc(TSMCProgram, stack, ctx)` - default [...args] { args, agent }
+* `exec_function(function, ctx, ...args)` - default { args, agent }, ...arrgs
+* `exec_program(progName, [...args], ctx)` - default [...args], { args, agent }
+* `exec_ast(TExpressionAST, ctx)` - default { args, agent }
+
+#### How to add a route
+
+To add a route for `CompilerGUI`:
+
+Duplicate src/app/pages/Compiler to CompilerGUI
+edit src/app/boot files to add the route:
+
+* SystemRoutes to export LazyCompilerGUI
+* SystemShell import LazyCompilerGUI, and add to render function
+
+## NOV 19 THU - Last Push on Conditions (I hope)
+
+* [x] where did I leave off? Let's rename Source to ObjScript? NAH...HOLD OFF
+* [ ] try to register condition programs at blueprint compile time
+  * [x] move script-parser, script-evaluator to lib (they are pure modules)
+  * [x] `addTest BunnyTest {{ A.prop('frame')._value }}`
+    * [x] `addTest.tsx` to implement - uses an expression for the test
+      * [x] access `ExpressifyArg` from `lib/script-parser`
+      * [x] access `RegisterTest` from `runtime-datacore`
+    * [x] run `addTest` conditions in `agent.setBlueprint`
+  * [x] make a global agent instance ub `class-agent`
+  * [ ] make `runtime-globals` module
+  * [ ] can we execute the condition through global agent?
+    * [x] Where does it run? `SIM/CONDITIONS`
+    * [x] move old sim condition code to `test-conditions`
+    * [x] make new `ifTest` for runtime tests of named conditional
+    * [ ] where to run it? during **agents update** so it runs every time
+
+**MAJOR PROBLEM** - when defining an expression as the test, we don't have a way to pass in the agent context to the expression at evaluation time.
+
+* when is the test evaluated? `ifTest(testName,conseq)`produces an SMC program. Note  that `conseq` also needs a context.
+* what should the context be? it's always an agent object. maybe we have to pass-it-in as context explicitly, or as a third parameter. 
+
+* [x] add ctx to IState and implementor SM_State as constructor for it
+* [x] add context as a third optional ctx argument for `agent.exec`
+* [x] fix all the agent.exec subcalls to pass along the optional ctx prop
+
+**ifTest works!!!** we can now execute some kind of consequent by calling `agent.exec` again
 
 
 

@@ -11,7 +11,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
-import { SingleAgentConditional } from 'script/script-conditionals';
+import { SingleAgentConditional } from 'script/conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,14 +44,16 @@ export class OnCondition extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const testName = args[1];
-    const conseq = args[2];
-    const alter = args[3];
-    return (
-      <div key={this.generateKey()} className="onCondition">
+  jsx(index: number, srcLine: any[], children?: any[]): any {
+    const testName = srcLine[1];
+    const conseq = srcLine[2];
+    const alter = srcLine[3];
+    return super.jsx(
+      index,
+      srcLine,
+      <>
         on {testName} TRUE {conseq}, ELSE {alter}
-      </div>
+      </>
     );
   }
 } // end of UseFeature

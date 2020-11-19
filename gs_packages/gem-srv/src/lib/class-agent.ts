@@ -10,11 +10,19 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { FEATURES } from 'modules/runtime-datacore';
-import { Evaluate } from 'script/script-evaluator';
+import * as GLOBAL from 'modules/runtime-globals';
+import { Evaluate } from 'lib/script-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
-import SM_Object, { AddProp, AddMethod } from './class-sm-object';
+import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
-import { IAgent, IScopeable, TMethod, TSMCProgram, ISMCBundle } from './t-script';
+import {
+  IAgent,
+  IScopeable,
+  TMethod,
+  TExpressionAST,
+  TSMCProgram,
+  ISMCBundle
+} from './t-script';
 import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
@@ -73,7 +81,6 @@ class Agent extends SM_Object implements IAgent, IActable {
     // call initialization
     this.exec(bp.define);
     this.exec(bp.defaults);
-    this.exec(bp.conditions);
   }
 
   // blueprint invocations
@@ -209,17 +216,19 @@ class Agent extends SM_Object implements IAgent, IActable {
    */
   exec(m: TMethod, ...args: any[]): any {
     if (m === undefined) throw Error('no method passed');
-    if (typeof m === 'function') return this.exec_func(m, ...args);
-    if (Array.isArray(m)) return this.exec_smc(m, [...args]);
-    if (typeof m === 'string') return this.exec_program(m, [...args]);
+    const ctx = { args, agent: this, global: GLOBAL };
+    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
+    if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
+    if (typeof m === 'string') return this.exec_program(m, [...args], ctx);
+    if (typeof m === 'object') return this.exec_ast(m, ctx);
     throw Error('method object is neither function or smc');
   }
   /** Execute agent stack machine program. Note that commander also
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: TSMCProgram, stack = []) {
-    const state = new SM_State(stack);
+  exec_smc(program: TSMCProgram, stack, ctx) {
+    const state = new SM_State(stack, ctx);
     program.forEach((op, index) => {
       if (typeof op !== 'function') console.warn(op, index);
       op(this, state);
@@ -230,12 +239,15 @@ class Agent extends SM_Object implements IAgent, IActable {
   /** Execute a method that is a Javascript function with
    *  agent as the execution context
    */
-  exec_func(program: Function, ...args: any[]): any {
+  exec_func(program: Function, ctx, ...args: any[]): any {
     return program.call(this, this, ...args);
   }
   /** Execute a named program stored in global program store */
-  exec_program(progName: string, args: any[]) {
+  exec_program(progName: string, [...args], context) {
     throw Error('global programs not implemented');
+  }
+  exec_ast(ast: TExpressionAST, ctx) {
+    return Evaluate(ast, ctx);
   }
   // serialization
   serialize() {
@@ -258,11 +270,15 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
 } // end of Agent class
 
+/// GLOBAL INSTANCES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const GLOBAL_AGENT = new Agent();
+function GetGlobalAgent() {
+  return GLOBAL_AGENT;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
 export default Agent;
-export { AddMethod, AddProp };
-/*/ use as
-    import Agent, {AddMethod, AddProp} from './class-agent'
-/*/
+export { GetGlobalAgent };

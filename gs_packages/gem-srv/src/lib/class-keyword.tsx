@@ -53,14 +53,34 @@ export class Keyword implements IKeyword {
     throw Error(`${this.keyword}.serialize() must be overridden by subclassers`);
   }
   /** override in subclass */
-  render(index: number, state: object, children?: any[]): any {
-    throw Error(`${this.keyword}.render() must be overridden by subclassers`);
+  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
+    return (
+      <div
+        key={this.generateKey()}
+        style={{ padding: '0.5em', borderBottom: '1px dotted gray' }}
+      >
+        {index}:{children}
+      </div>
+    );
   }
+  /// UTILITY METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** cheese key id generator (deprecated) */
   generateKey() {
     return ID_GENERATOR++;
   }
-} // end of Keyword
+  /** return keyword */
+  getName() {
+    return this.keyword;
+  }
+  /** get topmost value of returned value, if it's an array or
+   *  a value
+   */
+  topValue(thing: any): any {
+    if (Array.isArray(thing)) return thing.shift();
+    return thing;
+  }
+} // end of Keyword Class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

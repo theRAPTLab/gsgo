@@ -10,7 +10,7 @@ import DisplayObject from 'lib/class-display-object';
 import { GetAllAgents, DeleteAllAgents } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
-import * as TRANSPILER from 'script/script-transpiler';
+import * as TRANSPILER from 'script/transpiler';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

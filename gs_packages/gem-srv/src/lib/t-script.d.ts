@@ -76,11 +76,12 @@ export type TOpcode = (
   agent: IAgent, // REQUIRED memory context
   sm_state: IState // machine state
 ) => TOpWait;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine method can be either a stackmachine program OR a regular
- *  function. The invocation method will check what it is
+/** a shim for "Registration Code", which runs globally and has a
+ *  different function signature than TOpcode
  */
-export type TMethod = TSMCProgram | Function;
+export type TRegcode = (
+  agent?: IAgent // OPTIONAL memory context
+) => void;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine program is an array of opcodes that are read from the
  *  beginning and executed one-after-the-other. Each function is invoked
@@ -88,6 +89,14 @@ export type TMethod = TSMCProgram | Function;
  *  can be updated by conditional opcodes
  */
 export type TSMCProgram = TOpcode[];
+export type TSMCGlobalProgram = TRegcode[];
+/** Also could be an AST, which is an object with a type property */
+export type TExpressionAST = { type: string };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine method can be either a stackmachine program OR a regular
+ *  function. The invocation method will check what it is
+ */
+export type TMethod = TSMCProgram | Function | TExpressionAST;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
 export interface ISMCBundle {
@@ -96,7 +105,7 @@ export interface ISMCBundle {
   defaults?: TSMCProgram; // set default values
   update?: TSMCProgram; // other runtime init
   // conditions
-  conditions?: TSMCProgram; // this might be the below
+  conditions?: TRegcode[]; // this might be
   test?: TSMCProgram; // program returning true on stack
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
@@ -108,6 +117,7 @@ export interface ISMCBundle {
  */
 export interface IState {
   stack: TStackable[]; // data stack (pass values in/out)
+  ctx: {}; // a context object (dependent on caller)
   scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
@@ -196,6 +206,8 @@ export interface IKeyword {
   args: string[];
   compile(parms: any[]): ISMCBundle;
   serialize(state: object): TScriptUnit;
-  render(index: number, state: object, children?: any[]): any;
+  jsx(index: number, state: object, children?: any[]): any;
   generateKey(): any;
+  getName(): string;
+  topValue(thing: any): any;
 }
