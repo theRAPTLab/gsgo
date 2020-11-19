@@ -10,6 +10,7 @@
 
 import * as PIXI from 'pixi.js';
 import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/runtime-globals';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-interaction';
@@ -100,17 +101,18 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = DATACORE.GetAssetById(assetId);
+    const rsrc = GLOBAL.GetAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
   }
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const rsrc: PIXI.LoaderResource = DATACORE.GetAsset(name);
+    const rsrc: PIXI.LoaderResource = GLOBAL.GetAsset(name);
     if (rsrc === undefined) {
       console.log(`ERR: couldn't find resource '${name}'`);
       (window as any).DC = DATACORE;
+      (window as any).GLOB = GLOBAL;
       return;
     }
     // is this a spritesheet?

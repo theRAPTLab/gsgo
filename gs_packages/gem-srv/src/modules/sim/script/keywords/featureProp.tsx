@@ -43,14 +43,14 @@ export class FeatureProp extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, args: any[], children?: any[]): any {
-    const featName = args[1];
-    const propName = args[2];
-    const value = args[3];
+  jsx(index: number, srcLine: any[], children?: any[]): any {
+    const featName = srcLine[1];
+    const propName = srcLine[2];
+    const value = srcLine[3];
     return (
-      <div key={this.generateKey()} className="prop">
+      <>
         Feature {featName}.{propName} set to {value}
-      </div>
+      </>
     );
   }
 } // end of UseFeature

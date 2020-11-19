@@ -15,3 +15,6 @@ export * from './featureCall';
 export * from './featureProp';
 export * from './randomPos'; // experimental placeholder
 export * from './onCondition'; // experimental placeholder
+// conditions
+export * from './addTest'; // add a named test
+export * from './ifTest'; // run a named test during agent runtime

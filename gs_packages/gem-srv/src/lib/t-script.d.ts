@@ -25,7 +25,7 @@ export interface IScopeable {
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
   _value: any;
-  get: () => TValue;
+  get: (key) => TValue;
   set: (key: string, value: TValue) => void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,10 +38,13 @@ export interface IScopeableCtor {
 /** Agents have additional properties on top of IScopeable */
 export interface IAgent extends IScopeable {
   features: Map<string, any>;
-  updateQueue: IMessage[];
-  thinkQueue: IMessage[];
-  execQueue: IMessage[];
-  queue: (msg: IMessage) => void;
+  updateQueue: TMethod[];
+  thinkQueue: TMethod[];
+  execQueue: TMethod[];
+  queueUpdateAction: (action: TMethod) => void;
+  queueThinkAction: (action: TMethod) => void;
+  queueExecAction: (action: TMethod) => void;
+  evaluate: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
   addFeature: (name: string) => void;
@@ -73,11 +76,12 @@ export type TOpcode = (
   agent: IAgent, // REQUIRED memory context
   sm_state: IState // machine state
 ) => TOpWait;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine method can be either a stackmachine program OR a regular
- *  function. The invocation method will check what it is
+/** a shim for "Registration Code", which runs globally and has a
+ *  different function signature than TOpcode
  */
-export type TMethod = TSMCProgram | Function;
+export type TRegcode = (
+  agent?: IAgent // OPTIONAL memory context
+) => void;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine program is an array of opcodes that are read from the
  *  beginning and executed one-after-the-other. Each function is invoked
@@ -85,18 +89,26 @@ export type TMethod = TSMCProgram | Function;
  *  can be updated by conditional opcodes
  */
 export type TSMCProgram = TOpcode[];
+export type TSMCGlobalProgram = TRegcode[];
+/** Also could be an AST, which is an object with a type property */
+export type TExpressionAST = { type: string };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine method can be either a stackmachine program OR a regular
+ *  function. The invocation method will check what it is
+ */
+export type TMethod = TSMCProgram | Function | TExpressionAST;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
 export interface ISMCBundle {
   name?: string; // the determined name of the blueprint
   define?: TSMCProgram; // def template, props, features
   defaults?: TSMCProgram; // set default values
-  conditions?: TSMCProgram; // register conditions
   update?: TSMCProgram; // other runtime init
   // conditions
+  conditions?: TRegcode[]; // this might be
   test?: TSMCProgram; // program returning true on stack
-  consequent?: TSMCProgram; // program to run on true
-  alternate?: TSMCProgram; // program to run otherwise
+  conseq?: TSMCProgram; // program to run on true
+  alter?: TSMCProgram; // program to run otherwise
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,
@@ -105,6 +117,7 @@ export interface ISMCBundle {
  */
 export interface IState {
   stack: TStackable[]; // data stack (pass values in/out)
+  ctx: {}; // a context object (dependent on caller)
   scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
@@ -193,6 +206,8 @@ export interface IKeyword {
   args: string[];
   compile(parms: any[]): ISMCBundle;
   serialize(state: object): TScriptUnit;
-  render(index: number, state: object, children?: any[]): any;
+  jsx(index: number, state: object, children?: any[]): any;
   generateKey(): any;
+  getName(): string;
+  topValue(thing: any): any;
 }

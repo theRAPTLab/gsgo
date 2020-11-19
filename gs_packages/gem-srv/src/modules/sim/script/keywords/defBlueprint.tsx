@@ -19,20 +19,29 @@ export class DefTemplate extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('defBlueprint');
+    // defTemplate 'HoneyBee' 'Bee'
     this.args = ['blueprintName string', 'baseBlueprint string'];
     this.serialize = this.serialize.bind(this);
     this.compile = this.compile.bind(this);
-    this.render = this.render.bind(this);
+    this.jsx = this.jsx.bind(this);
   }
 
-  /** create smc blueprint code objects for this unit */
+  /** create smc blueprint code objects for this unit
+   *  derived from ScriptUnit, everything after the keyword
+   *  e.g. 'HoneyBee', 'Bee'
+   */
   compile(parms: any[]): ISMCBundle {
     const blueprintName = parms[0];
     const baseBlueprint = parms[1];
     const progout = [];
-    // this is a no-operation
-    progout.push(nop());
-
+    // the compiler format is just an array of functions
+    // of form TOpcode, which is:
+    // (agent, state) => { do your stuff }
+    // can use closures, which makes this work.
+    progout.push((agent, state) => {});
+    // return the ISMCBundle, which is used by compiler
+    // to assemble a blueprint by concatenating these arrays
+    // into the master blueprint
     return {
       name: blueprintName,
       define: progout,
@@ -48,18 +57,16 @@ export class DefTemplate extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, srcLine: TScriptUnit, children?: any[]): any {
+  // TScriptUnit is [ 'keyword', parm1, parm2, ... ]
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
     const state = {
       blueprintName: srcLine[1],
       baseBlueprint: srcLine[2]
     };
-    return (
-      <ScriptElement
-        key={this.generateKey()}
-        index={index}
-        state={state}
-        serialize={this.serialize}
-      />
+    return super.jsx(
+      index,
+      srcLine,
+      <ScriptElement index={index} state={state} serialize={this.serialize} />
     );
   }
 } // end of DefTemplate
@@ -77,10 +84,12 @@ type MyProps = {
   serialize: (state: MyState) => TScriptUnit;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** define a React component */
 class ScriptElement extends React.Component<MyProps, MyState> {
   index: number; // ui index
   keyword: string; // keyword
   serialize: (state: MyState) => TScriptUnit;
+  //
   constructor(props: MyProps) {
     super(props);
     const { index, state, serialize } = props;
@@ -90,6 +99,8 @@ class ScriptElement extends React.Component<MyProps, MyState> {
     this.onChange = this.onChange.bind(this);
   }
 
+  // this (1) updates the local ui (2) sends the change to the app
+  // renderer, so it can update the source array
   onChange(e) {
     this.setState({ blueprintName: e.currentTarget.value }, () => {
       const updata: IScriptUpdate = {

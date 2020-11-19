@@ -10,14 +10,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { FEATURES } from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/runtime-globals';
+import { Evaluate } from 'lib/script-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
-import SM_Object, { AddProp, AddMethod } from './class-sm-object';
+import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
 import {
   IAgent,
   IScopeable,
-  IMessage,
   TMethod,
+  TExpressionAST,
   TSMCProgram,
   ISMCBundle
 } from './t-script';
@@ -25,7 +27,6 @@ import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ERR_WHATMSG = 'unhandled message; got';
 let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -39,9 +40,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
-  updateQueue: IMessage[];
-  thinkQueue: IMessage[];
-  execQueue: IMessage[];
+  updateQueue: TMethod[];
+  thinkQueue: TMethod[];
+  execQueue: TMethod[];
   _name: StringProp;
   _x: NumberProp;
   _y: NumberProp;
@@ -54,6 +55,8 @@ class Agent extends SM_Object implements IAgent, IActable {
     // this.methods map defined in SM_Object
     this.blueprint = undefined;
     this.features = new Map();
+    this.updateQueue = [];
+    this.thinkQueue = [];
     this.execQueue = [];
     this.refId = REF_ID_COUNT++;
     this.controlMode = ControlMode.puppet;
@@ -78,7 +81,6 @@ class Agent extends SM_Object implements IAgent, IActable {
     // call initialization
     this.exec(bp.define);
     this.exec(bp.defaults);
-    this.exec(bp.conditions);
   }
 
   // blueprint invocations
@@ -161,30 +163,52 @@ class Agent extends SM_Object implements IAgent, IActable {
     return f;
   }
 
-  /** PhaseMachine Lifecycle Execution */
-  AGENTS_EXEC() {
-    this.execQueue.forEach(msg => {
-      const stack = msg.inputs;
-      msg.programs.forEach(program => this.exec_smc(program, stack));
-    });
+  /** PhaseMachine Lifecycle Execution QUEUES */
+  agentUPDATE() {
+    this.updateQueue.forEach(action => this.exec(action));
+    this.updateQueue = [];
+  }
+  agentTHINK() {
+    this.thinkQueue.forEach(action => this.exec(action));
+    this.thinkQueue = [];
+  }
+  agentEXEC() {
+    this.execQueue.forEach(action => this.exec(action));
     this.execQueue = [];
   }
 
-  /** handle queue */
-  queue(msg: IMessage) {
-    switch (msg.message) {
-      case 'update':
-        this.updateQueue.push(msg);
-        break;
-      case 'think':
-        this.thinkQueue.push(msg);
-        break;
-      case 'exec':
-        this.execQueue.push(msg);
-        break;
-      default:
-        throw Error(`${ERR_WHATMSG} ${msg.message}`);
+  /** evaluator mutator, can accept an array of args or a single arg
+   *  note that args is MUTATED by Evaluate, so it's important that
+   *  when you call this you are not actually creating a new array.
+   *  However, this also returns the passed argument(s) so you can
+   *  also assign them or spread them directly.
+   */
+  evaluate(args: any, context: object = this): any {
+    if (typeof args === 'object' && args.type !== undefined)
+      return Evaluate(args, this);
+
+    if (Array.isArray(args)) {
+      // mutate array if there are expressions
+      args.forEach((arg, index, arr) => {
+        if (typeof arg !== 'object') return;
+        if (arg.type === undefined) return;
+        arr[index] = Evaluate(arg, context);
+      });
+      return args;
     }
+    // numbers, strings, booleans return as-is
+    return args;
+  }
+
+  /** handle queue (placeholder) */
+  queueUpdateAction(action: TMethod) {
+    this.updateQueue.push(action);
+  }
+  queueThinkAction(action: TMethod) {
+    this.thinkQueue.push(action);
+  }
+  queueExecAction(action: TMethod) {
+    this.execQueue.push(action);
   }
 
   /** Execute either a smc_program or function depending on the
@@ -192,17 +216,19 @@ class Agent extends SM_Object implements IAgent, IActable {
    */
   exec(m: TMethod, ...args: any[]): any {
     if (m === undefined) throw Error('no method passed');
-    if (typeof m === 'function') return this.exec_func(m, ...args);
-    if (Array.isArray(m)) return this.exec_smc(m, [...args]);
-    if (typeof m === 'string') return this.exec_program(m, [...args]);
+    const ctx = { args, agent: this, global: GLOBAL };
+    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
+    if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
+    if (typeof m === 'string') return this.exec_program(m, [...args], ctx);
+    if (typeof m === 'object') return this.exec_ast(m, ctx);
     throw Error('method object is neither function or smc');
   }
   /** Execute agent stack machine program. Note that commander also
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: TSMCProgram, stack = []) {
-    const state = new SM_State(stack);
+  exec_smc(program: TSMCProgram, stack, ctx) {
+    const state = new SM_State(stack, ctx);
     program.forEach((op, index) => {
       if (typeof op !== 'function') console.warn(op, index);
       op(this, state);
@@ -213,12 +239,15 @@ class Agent extends SM_Object implements IAgent, IActable {
   /** Execute a method that is a Javascript function with
    *  agent as the execution context
    */
-  exec_func(program: Function, ...args: any[]): any {
+  exec_func(program: Function, ctx, ...args: any[]): any {
     return program.call(this, this, ...args);
   }
   /** Execute a named program stored in global program store */
-  exec_program(progName: string, args: any[]) {
+  exec_program(progName: string, [...args], context) {
     throw Error('global programs not implemented');
+  }
+  exec_ast(ast: TExpressionAST, ctx) {
+    return Evaluate(ast, ctx);
   }
   // serialization
   serialize() {
@@ -241,11 +270,15 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
 } // end of Agent class
 
+/// GLOBAL INSTANCES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const GLOBAL_AGENT = new Agent();
+function GetGlobalAgent() {
+  return GLOBAL_AGENT;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
 export default Agent;
-export { AddMethod, AddProp };
-/*/ use as
-    import Agent, {AddMethod, AddProp} from './class-agent'
-/*/
+export { GetGlobalAgent };

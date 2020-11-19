@@ -38,7 +38,7 @@ export class endBlueprint extends Keyword {
   }
 
   /** render to HTML */
-  render(index: number, args: any[], children: any[]): any {
+  jsx(index: number, args: any[], children: any[]): any {
     return undefined; // need to solve blueprint embedding
   }
 } // end of EndDefTemplate

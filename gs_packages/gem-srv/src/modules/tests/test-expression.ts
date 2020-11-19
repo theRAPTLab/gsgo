@@ -5,8 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as EV from 'script/script-evaluator';
-import { Parse, TokenizeToScriptUnit } from 'script/script-parser';
+import { Evaluate, Compile as FauxCompile } from 'lib/script-evaluator';
+import { Parse, TokenizeToScriptUnit } from 'lib/script-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,9 +17,9 @@ const EX_DECOMPILE = true;
 /// MAIN HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Eval(expr: string, context: {}) {
-  const ast = EV.Parse(expr);
+  const ast = Parse(expr);
   console.log(...PR('AST', ast));
-  const val = EV.eval(ast, context);
+  const val = Evaluate(ast, context);
   console.log(...PR('RETVAL:', val));
   return JSON.stringify(ast);
 }
@@ -29,7 +29,7 @@ function Eval(expr: string, context: {}) {
  *  expression library we grabbed
  */
 function Compile(expr: string) {
-  const fn = EV.compile(expr);
+  const fn = FauxCompile(expr);
   console.log(...PR('FUNCTION', fn));
   return fn; // call with context object
 }

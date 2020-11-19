@@ -29,7 +29,11 @@ export class FeatureCall extends Keyword {
     progout.push((agent: IAgent, state: IState) => {
       // invoke the feature on the agent
       const feat = agent.feature(featName);
-      feat.method(agent, methodName, ...args);
+      // spread [...args] handles case when args is a single item, not an array
+      // then the argument passed to evaluate() is always an array
+      // agent.evaluate() mutates the returned array so we spread it
+      const vals = [...args];
+      feat.method(agent, methodName, ...agent.evaluate(vals));
     });
     return {
       define: [],
@@ -46,13 +50,9 @@ export class FeatureCall extends Keyword {
   }
 
   /** return rendered component representation */
-  render(index: number, parms: any[], children?: any[]): any {
-    const [kw, featName, method, ...args] = parms;
-    return (
-      <div key={this.generateKey()} className="featureMethod">
-        feature {featName}.{method}({args.join(',')})
-      </div>
-    );
+  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+    const [kw, featName, method, ...args] = srcLine;
+    return super.jsx(index, srcLine, <>{srcLine.join(' ')}</>);
   }
 } // end of UseFeature
 

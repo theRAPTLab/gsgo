@@ -12,9 +12,12 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/runtime-globals';
 import * as RENDERER from 'modules/render/api-render';
-import * as TRANSPILER from 'script/script-transpiler';
+import * as TRANSPILER from 'script/transpiler';
+
+/// TESTS /////////////////////////////////////////////////////////////////////
+// import 'modules/tests/test-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -28,13 +31,63 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultText = `
 // definitions
-defBlueprint Bunny
-addProp frame Number 0
+defBlueprint "Bunny"
+addProp frame Number 2
 useFeature Movement
 // defaults
 prop skin 'bunny.json'
 // runtime
-Movement.jitterPos -5 5
+featureCall Movement jitterPos -5 5
+// conditions
+addTest BunnyTest {{ agent.prop('frame')._value }}
+ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
+// agentSet Bunny
+`.trim();
+
+const defineGlobalAgent = `
+defGlobalAgent World
+  addProp time Number 10
+  addProp daytime Boolean true
+  // runtime
+  // condition
+  when Interval 1000
+    prop time decrement
+    defCondition "memo:switch"
+    {{ prop time < 0 }}
+    prop time setTo 10
+    prop daytime invert
+`.trim();
+
+// try to make a fish!
+/** fish just wander around the screen
+ *
+ */
+const defineFish = `
+// define/default program
+defBlueprint Fish
+addProp foodLevel Number 50
+prop foodLevel setMin 0
+prop foodLevel setMax 100
+prop skin setTo 'alive.png'
+useFeature Movement
+
+featureProp inputType setTo 'runtime'
+// runtime program (runs only for runtime mode?)
+featureCall Movement randomWalk 15 2
+
+// condition programs
+// every second decrement foodlevel
+when Interval 1000
+  prop foodLevel increment
+  defCondition "memo:dead"
+    {{ prop foodLevel < 1 }}
+    prop isActive false
+    prop skin setTo "dead.png"
+    featureProp inputType setTo 'static'
+  defCondition "memo:worldtimer"
+    globalAgentProp World daytime
+    {{ globalAgentProp World daytime === true}}
+    prop skin setTo "happy.png"
 `.trim();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
@@ -45,7 +98,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
-        let map = await DATACORE.LoadAssets('static/assets.json');
+        let map = await GLOBAL.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         SIM.StartSimulation();
         if (DBG) console.log(...PR('SIMULATION STARTED'));
@@ -62,10 +115,11 @@ class Compiler extends React.Component {
     super();
     this.text = defaultText;
     this.source = TRANSPILER.TokenizeToSource(this.text);
+    const jsx = TRANSPILER.RenderSource(this.source);
     this.state = {
-      jsx: TRANSPILER.RenderSource(this.source),
+      jsx,
       text: defaultText,
-      source: [],
+      source: '',
       tabIndex: 0
     };
     // bind
@@ -94,6 +148,10 @@ class Compiler extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+  }
+
+  componentDidCatch(e) {
+    console.log(e);
   }
 
   componentWillUnmount() {
