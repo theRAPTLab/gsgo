@@ -2,7 +2,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword defBlueprint command object
+  implementation of keyword "defBlueprint" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -15,11 +15,11 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends Keyword {
+export class defBlueprint extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('defBlueprint');
-    // defTemplate 'HoneyBee' 'Bee'
+    // defBlueprint 'HoneyBee' 'Bee'
     this.args = ['blueprintName string', 'baseBlueprint string'];
     this.serialize = this.serialize.bind(this);
     this.compile = this.compile.bind(this);
@@ -69,7 +69,7 @@ export class DefTemplate extends Keyword {
       <ScriptElement index={index} state={state} serialize={this.serialize} />
     );
   }
-} // end of DefTemplate
+} // end of DefBlueprint
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,4 +125,4 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(DefTemplate);
+RegisterKeyword(defBlueprint);

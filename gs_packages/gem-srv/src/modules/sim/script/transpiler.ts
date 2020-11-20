@@ -30,6 +30,19 @@ import 'script/keywords/_all_keywords';
 const PR = UR.PrefixUtil('TRNPLR');
 const DBG = true;
 
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_PrintSourceText(units: TScriptUnit[]): string {
+  let out = '\n';
+  units.forEach(unit => {
+    unit.forEach(item => {
+      out += `${item} `;
+    });
+    out = `${out.trim()}\n`;
+  });
+  return out;
+}
+
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile an array of TScriptUnit, representing one complete blueprint
@@ -43,22 +56,19 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
     conditions: [],
     update: []
   };
-  if (DBG) console.groupCollapsed(...PR(`COMPILING ${units[1]}`));
-  let out = '\n';
-  units.forEach(unit => {
-    unit.forEach(item => {
-      out += `${item} `;
-    });
-    out = `${out.trim()}\n`;
-  });
-  if (DBG) console.log(`SOURCE\n${out.trim()}`);
+  if (DBG) {
+    console.groupCollapsed(...PR(`COMPILING ${units[1]}`));
+    const out = m_PrintSourceText(units);
+    console.log(`SOURCE\n${out.trim()}`);
+  }
+  // START COMPILING //////////////////////////////////////////////////////////
   // this has to look through the output to determine what to compile
   units.forEach((rawUnit, idx) => {
-    // detect comments
-    if (rawUnit[0] === '//') return;
     // extract keyword first unit, assume that . means Feature
     let unit = ExpandScriptUnit(rawUnit);
     // first in array is keyword aka 'cmdName'
+    // detect comments
+    if (unit[0] === '//') unit[0] = 'comment';
     let cmdName = unit[0];
     let cmdObj = GetKeyword(cmdName);
     // resume processing

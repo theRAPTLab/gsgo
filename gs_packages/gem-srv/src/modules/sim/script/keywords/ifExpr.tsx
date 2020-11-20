@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword IfExpr command object
+  implementation of keyword "ifExpr" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -12,7 +12,7 @@ import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class IfExpr extends Keyword {
+export class ifExpr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('ifExpr');
@@ -59,4 +59,4 @@ export class IfExpr extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(IfExpr);
+RegisterKeyword(ifExpr);

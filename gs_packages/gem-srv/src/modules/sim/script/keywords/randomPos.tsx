@@ -1,5 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+implementation of keyword "randomPos" keyword object
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -17,7 +19,7 @@ function m_Random(min: number, max: number, floor: boolean = true) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class RandomPos extends Keyword {
+export class randomPos extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -69,4 +71,4 @@ export class RandomPos extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(RandomPos);
+RegisterKeyword(randomPos);

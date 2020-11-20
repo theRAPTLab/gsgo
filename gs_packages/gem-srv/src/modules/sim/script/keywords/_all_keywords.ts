@@ -19,3 +19,4 @@ export * from './onCondition'; // experimental placeholder
 export * from './addTest'; // add a named test
 export * from './ifExpr'; // run an expression test
 export * from './ifTest'; // run a named test during agent runtime
+export * from './comment'; // embed comment data

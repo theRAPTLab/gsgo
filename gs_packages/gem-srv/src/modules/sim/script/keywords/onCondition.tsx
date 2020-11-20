@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword onCondition command object
+  implementation of keyword "onCondition" command object
   What is this supposed to do? Implement expression conditionals
   on an agent. These are run during the CONDITIONALS part of the
   simulation lifecycle
@@ -15,7 +15,7 @@ import { SingleAgentConditional } from 'script/conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class OnCondition extends Keyword {
+export class onCondition extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -61,4 +61,4 @@ export class OnCondition extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(OnCondition);
+RegisterKeyword(onCondition);

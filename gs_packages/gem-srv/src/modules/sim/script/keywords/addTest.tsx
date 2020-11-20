@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword AddTest command object
+  implementation of keyword "addTest" command object
   adds a named test to the TESTS table so we can refer to it later
   this particular test is for a condition that runs inside of an agent,
   so we want SMC-compatible code here.
@@ -15,7 +15,7 @@ import { RegisterKeyword, RegisterTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class AddTest extends Keyword {
+export class addTest extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addTest');
@@ -65,4 +65,4 @@ export class AddTest extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(AddTest);
+RegisterKeyword(addTest);
