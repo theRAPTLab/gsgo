@@ -24,9 +24,7 @@ export interface IScopeable {
   serialize: () => any[];
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
-  _value: any;
-  get: (key) => TValue;
-  set: (key: string, value: TValue) => void;
+  value: any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IScopeableCtor {

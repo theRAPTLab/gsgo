@@ -59,7 +59,7 @@ const pushAgentProp = (propName: string): TOpcode => {
 /** push agent.prop.value on stack */
 const pushAgentPropValue = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    STATE.stack.push(agent.prop(propName)._value);
+    STATE.stack.push(agent.prop(propName).value);
   };
 };
 /** Pop object from stack, read its value, then assign to agent.prop
@@ -68,9 +68,9 @@ const popAgentPropValue = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     const element = STATE.pop();
     if (element instanceof SM_Object) {
-      agent.prop(propName)._value = element.value;
+      agent.prop(propName).value = element.value;
     } else {
-      agent.prop(propName)._value = element;
+      agent.prop(propName).value = element;
     }
   };
 };
@@ -81,7 +81,7 @@ const popAgentPropValue = (propName: string): TOpcode => {
 const setAgentPropValue = (propName: string, value: any): TOpcode => {
   return (agent: IAgent): TOpWait => {
     const prop = agent.prop(propName);
-    prop._value = value;
+    prop.value = value;
   };
 };
 /** There is no getAgentPropValue. Use popAgentPropValue */
@@ -145,7 +145,7 @@ const scopedPropValue = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     const { scope, stack } = STATE;
     const SOBJ: TStackable = scope[scope.length - 1];
-    stack.push(SOBJ.prop(propName)._value);
+    stack.push(SOBJ.prop(propName).value);
   };
 };
 /** Invoke method() from scoped object, return onto stack

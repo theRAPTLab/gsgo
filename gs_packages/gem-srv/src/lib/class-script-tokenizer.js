@@ -305,7 +305,7 @@ class ScriptTokenizer {
     return str;
   }
   // Gobbles only identifiers
-  // e.g.: `foo`, `_value`, `$x1`
+  // e.g.: `foo`, `value`, `$x1`
   // Also, this function checks if that identifier is a literal:
   // (e.g. `true`, `false`, `null`) or `this`
   gobbleIdentifier() {

@@ -49,7 +49,7 @@ class Agent extends SM_Object implements IAgent, IActable {
   _skin: StringProp;
   //
   constructor(agentName = '<anon>') {
-    super(agentName); // sets _value to agentName, which is only for debugging
+    super(agentName); // sets value to agentName, which is only for debugging
     this.meta.type = Symbol.for('Agent');
     // this.props map defined in SM_Object
     // this.methods map defined in SM_Object

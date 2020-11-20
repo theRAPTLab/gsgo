@@ -39,10 +39,38 @@ prop skin 'bunny.json'
 // runtime
 featureCall Movement jitterPos -5 5
 // condition test 1
-addTest BunnyTest {{ agent.prop('frame')._value }}
+addTest BunnyTest {{ agent.prop('frame').value }}
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
 ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
+`.trim();
+
+const defineBlockSyntax = `
+if {{ agent.prop('foo') }} [[
+  if {{ agent.prop('bar') }} [[
+    featureCall Movement jitterPos -5 5
+  ]] [[
+    dbgOut('false')
+  ]]
+]]
+
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+  exec {{ agent.prop('x').increment }}
+  exec [[ programName ]]
+  setProp 'x' 0
+  // the expression context passed is agent, subjectA, subjectAB
+]]
+
+onAgent Bee [[
+  // return boolean
+  agentProp x lessThan 0
+]] [[
+  // do something with subjectA
+]]
+
+on Tick [[
+  agentProp x something
+]]
 `.trim();
 
 const defineGlobalAgent = `

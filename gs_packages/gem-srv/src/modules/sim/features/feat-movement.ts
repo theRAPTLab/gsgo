@@ -50,14 +50,14 @@ class MovementPack extends Feature {
 
   setController(agent, x) {
     if (DBG) console.log(...PR(`setting control to ${x}`));
-    agent.prop('controller')._value = x;
+    agent.prop('controller').value = x;
   }
 
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
     const x = m_Random(min, max, round);
     const y = m_Random(min, max, round);
-    agent.prop('x')._value += x;
-    agent.prop('y')._value += y;
+    agent.prop('x').value += x;
+    agent.prop('y').value += y;
   }
 } // end of feature class
 

@@ -27,8 +27,8 @@ export class Prop extends Keyword {
     const [propName, value] = parms;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const prop = agent.prop(propName);
-      prop._value = value;
+      const p = agent.prop(propName);
+      p.value = value;
     });
     return {
       define: [],
