@@ -114,10 +114,10 @@ class ScriptElement extends React.Component<MyProps, MyState> {
   render() {
     const { blueprintName, baseBlueprint } = this.state;
     return (
-      <div>
-        blueprintName
+      <>
+        <span>blueprintName</span>{' '}
         <input onChange={this.onChange} type="text" value={blueprintName} />
-      </div>
+      </>
     );
   }
 } // end script element

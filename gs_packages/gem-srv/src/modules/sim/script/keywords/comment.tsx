@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -16,32 +17,24 @@ export class comment extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('comment');
-    this.args = ['...parms'];
+    this.args = ['...args:any'];
   }
 
   /** create smc blueprint code objects */
   compile(parms: any[]): ISMCBundle {
-    const progout = [];
-    progout.push(() => {
-      console.warn(`unknown: ${this.keyword}(${parms.join(', ')})`);
-    });
-    return {
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return {};
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
+    const { comment } = state;
+    return ['//', comment];
   }
 
   /** return rendered component representation */
   jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [error] = srcLine;
-    return super.jsx(index, srcLine, <>unknown keyword: {`'${error}'`}</>);
+    const [kw, cmt] = srcLine;
+    return super.jsx(index, srcLine, <i style={{ color: 'gray' }}>{`${cmt}`}</i>);
   }
 } // end of UseFeature
 

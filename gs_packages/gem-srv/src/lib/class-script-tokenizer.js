@@ -2,15 +2,19 @@
 
   ScriptTokenizer takes a text input and produces a TScriptUnit, which is
   an array of form ['keyword', ...args]. Arrays of TScriptUnits form our
-  "script object code"909o
+  "script object code"
 
-  This code is based on a refactored version of jsep, and adapted to produce
-  our script unit format
-  https://ericsmekens.github.io/jsep/
+  The main entry point of the class instance is:
+  tokenize(expr:string)
+
+  This code is a refactored version of jsep, modified to produce
+  our script unit format of [keyword, ...args] instead of an AST.
+  -
+  JSEP project, under MIT License.
+  Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
+  see: https://ericsmekens.github.io/jsep/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
-// import { TScriptUnit } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,8 +35,8 @@ const OBRACK_CODE = 91; // [
 const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
-const COMMENT_1 = '#';
-const COMMENT_2 = '//';
+const PROG_OUTPUT = '##';
+const COMMENT_1 = '//';
 const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
   '||': 1,
@@ -120,14 +124,16 @@ class ScriptTokenizer {
     let nodes = [];
     let node;
 
-    if (expr.substring(0, 2) === COMMENT_2) return undefined;
-    if (expr.charAt(0) === COMMENT_1) return undefined;
+    /* HACK ADDITION for GEMSCRIPT COMMENTS */
+    if (expr.substring(0, 2) === COMMENT_1) return this.gobbleComment();
+    /** END HACK **/
     while (this.index < this.length) {
       this.gobbleSpaces();
       this.lastIndex = this.index;
       // start tokenizing
       node = this.gobbleToken();
-      if (node) nodes.push(node);
+      if (Array.isArray(node)) nodes.push(...node);
+      else nodes.push(node);
     }
     return nodes;
   }
@@ -156,6 +162,18 @@ class ScriptTokenizer {
     let to_check;
     let tc_len;
 
+    /* HACK GEMSCRIPT ADDITION FOR {{ expr }} */
+    if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
+      this.index++;
+      return this.gobbleExpressionString();
+    }
+    /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
+    if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
+      this.index++;
+      return this.gobbleTMethodName();
+    }
+    /* END HACK */
+
     if (isDecimalDigit(ch) || ch === PERIOD_CODE) {
       // Char code 46 is a dot `.` which can start off a numeric literal
       return this.gobbleNumericLiteral();
@@ -166,10 +184,6 @@ class ScriptTokenizer {
     }
     if (ch === OBRACK_CODE) {
       return this.gobbleArray();
-    }
-    if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
-      this.index++;
-      return this.gobbleExpressionString();
     }
 
     to_check = this.expr.substr(this.index, max_unop_len);
@@ -445,6 +459,7 @@ class ScriptTokenizer {
     }
     throw Error(`Unclosed ( at ${this.index}`);
   }
+  /* HACK ADDITION for text script expressions */
   // in GEMscript text, a {{ }} indicates an expression, and should
   // be captured as one long string including the {{ }}
   gobbleExpressionString() {
@@ -455,14 +470,47 @@ class ScriptTokenizer {
     while (this.index < this.length) {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
+
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
         this.index++;
         return `{{${str}}}`;
       }
       str += String.fromCharCode(ch);
     }
-    throw Error(`Unclosed {{ at ${this.index} for ${str}`);
+    throw Error(`Unclosed inline {{ at ${this.index} for ${str}`);
   }
+  /* HACK ADDITION for text script tmethod names */
+  // in GEMSCRIPT text, a [[ ]] on a single line designates a
+  // named TMethod. There are several possible locations of the
+  // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
+  // implementor to know which one it is
+  gobbleTMethodName() {
+    let ch;
+    let cch;
+    let str = '';
+    this.index++;
+    while (this.index < this.length) {
+      ch = this.exprICode(this.index++);
+      cch = this.exprICode(this.index);
+
+      if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
+        this.index++;
+        return `[[${str}]]`;
+      }
+      str += String.fromCharCode(ch);
+    }
+    throw Error(`Unclosed inline [[ at ${this.index} for ${str}`);
+  }
+  /* HACK ADDITION for text script comments // and -- */
+  // skip the first two // and output the entire rest of the line
+  gobbleComment() {
+    const eol = this.expr.length;
+    const cstring = this.expr.substring(2, eol).trim();
+    this.index = eol;
+    return ['comment', cstring];
+  }
+  /* END OF HACK HACKS */
+
   // Responsible for parsing Array literals `[1, 2, 3]`
   // This function assumes that it needs to gobble the opening bracket
   // and then tries to gobble the expressions as arguments.
