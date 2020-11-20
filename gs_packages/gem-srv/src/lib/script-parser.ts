@@ -6,31 +6,36 @@
   array of arrays of form ['keyword',...args:any]. The source array is used to
   drive the actual compilation into opcodes
 
-  This code is ported from jsep and adapted to produce our desired output
-  https://ericsmekens.github.io/jsep/
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script';
 import ScriptTokenizer from 'lib/class-script-tokenizer';
 import ExpressionParser from 'lib/class-expr-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('PARSE', 'TagRed');
+/// NOTE: TOKENIZER and PARSER are not directly related to each other
+/// The tokenizer converts GEMscript text source into GEMscript code, which can
+/// contain expression strings. The parser creates an AST from the contents of
+/// the expression which is evaluated at runtime.
 const tokenizer = new ScriptTokenizer();
 const parser = new ExpressionParser();
 
 /// PARSER INTERFACE //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Parse(expr: string) {
-  return parser.parse(expr);
-}
+/** GEMscript Text Tokenizer */
 function Tokenize(expr: string) {
   return tokenizer.tokenize(expr);
 }
+/** Expression Parser */
+function Parse(expr: string) {
+  return parser.parse(expr);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** uses the parse tree to emit ScriptUnit items, parsing one line */
-function TokenizeToScriptUnit(expr): TScriptUnit {
+/** tokenizes a line of text, returning a ScriptUnit */
+function LineToScriptUnit(expr): TScriptUnit {
   const line = expr.trim();
   const unit = [];
   if (!line.length) return ['dbgError', 'empty line'];
@@ -39,13 +44,15 @@ function TokenizeToScriptUnit(expr): TScriptUnit {
   return unit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TokenizeToSource(text: string): TScriptUnit[] {
+/** tokenizes the text line-by-line into ScriptUnit[]
+ */
+function TextToScriptUnits(text: string): TScriptUnit[] {
   /* HACK pc line endings would screw this, need more robust check */
   const sourceStrings = text.split('\n');
   const scriptUnits = [];
   sourceStrings.forEach(str => {
     str = str.trim();
-    const unit = TokenizeToScriptUnit(str);
+    const unit = LineToScriptUnit(str);
     if (unit.length && unit[0] !== undefined) scriptUnits.push(unit);
   });
   return scriptUnits;
@@ -79,8 +86,8 @@ function ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
 export {
   Parse,
   Tokenize,
-  TokenizeToScriptUnit,
-  TokenizeToSource,
+  LineToScriptUnit,
+  TextToScriptUnits,
   ExpandArg,
   ExpandScriptUnit
 };

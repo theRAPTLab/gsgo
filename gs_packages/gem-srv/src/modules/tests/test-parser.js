@@ -11,7 +11,7 @@ import ExpressionParser from 'lib/class-expr-parser';
 import ScriptTokenizer from 'lib/class-script-tokenizer';
 import parse from 'jsep';
 import { Evaluate } from 'script/script-evaluator';
-import { TokenizeToScriptUnit } from 'script/script-parser';
+import { LineToScriptUnit } from 'script/script-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

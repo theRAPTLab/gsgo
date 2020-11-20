@@ -15,13 +15,13 @@ import {
   SaveBlueprint,
   GetBlueprint
 } from 'modules/runtime-datacore';
+import { Evaluate } from 'lib/script-evaluator';
 import {
   ExpandScriptUnit,
   Tokenize,
-  TokenizeToScriptUnit,
-  TokenizeToSource
+  LineToScriptUnit,
+  TextToScriptUnits
 } from 'lib/script-parser';
-import { Evaluate } from 'lib/script-evaluator';
 // critical imports
 import 'script/keywords/_all_keywords';
 
@@ -69,6 +69,7 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
     // first in array is keyword aka 'cmdName'
     // detect comments
     if (unit[0] === '//') unit[0] = 'comment';
+    if (unit[0] === '--') unit[0] = 'comment';
     let cmdName = unit[0];
     let cmdObj = GetKeyword(cmdName);
     // resume processing
@@ -132,6 +133,7 @@ function DecompileSource(units: TScriptUnit[]): string {
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
+    if (unit[0] === 'comment') unit[0] = '//';
     lines.push(`${unit.join(' ')}`);
   });
   return lines.join('\n');
@@ -191,6 +193,6 @@ export {
 };
 /// for converting text to TScriptUnit Source
 export {
-  TokenizeToScriptUnit, // expr => TScriptUnit
-  TokenizeToSource // exprs => TScriptUnit[]
+  LineToScriptUnit, // expr => TScriptUnit
+  TextToScriptUnits // exprs => TScriptUnit[]
 };
