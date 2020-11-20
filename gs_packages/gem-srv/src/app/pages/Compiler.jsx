@@ -38,10 +38,11 @@ useFeature Movement
 prop skin 'bunny.json'
 // runtime
 featureCall Movement jitterPos -5 5
-// conditions
+// condition test 1
 addTest BunnyTest {{ agent.prop('frame')._value }}
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
-// agentSet Bunny
+// condition test 2
+ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
 `.trim();
 
 const defineGlobalAgent = `
