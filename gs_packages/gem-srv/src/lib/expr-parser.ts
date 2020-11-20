@@ -1,37 +1,39 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  SourceString to ScriptObject
+  GEMscript Text to ScriptUnits
 
   Given a GEMscript source string, create a GEMscript TScriptUnit, which is an
   array of arrays of form ['keyword',...args:any]. The source array is used to
   drive the actual compilation into opcodes
 
+  Also includes Expression Parsing through the
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script';
-import ScriptTokenizer from 'lib/class-script-tokenizer';
+import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import ExpressionParser from 'lib/class-expr-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('PARSE', 'TagRed');
+const PR = UR.PrefixUtil('PARSER', 'TagRed');
 /// NOTE: TOKENIZER and PARSER are not directly related to each other
 /// The tokenizer converts GEMscript text source into GEMscript code, which can
 /// contain expression strings. The parser creates an AST from the contents of
 /// the expression which is evaluated at runtime.
-const tokenizer = new ScriptTokenizer();
-const parser = new ExpressionParser();
+const scriptConverter = new GScriptTokenizer();
+const exprParser = new ExpressionParser();
 
 /// PARSER INTERFACE //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** GEMscript Text Tokenizer */
-function Tokenize(expr: string) {
-  return tokenizer.tokenize(expr);
+function ConvertScript(scriptText: string) {
+  return scriptConverter.tokenize(scriptText);
 }
 /** Expression Parser */
-function Parse(expr: string) {
-  return parser.parse(expr);
+function ParseExpression(expr: string) {
+  return exprParser.parse(expr);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokenizes a line of text, returning a ScriptUnit */
@@ -39,7 +41,7 @@ function LineToScriptUnit(expr): TScriptUnit {
   const line = expr.trim();
   const unit = [];
   if (!line.length) return ['dbgError', 'empty line'];
-  const toks = Tokenize(line);
+  const toks = ConvertScript(line);
   if (toks) unit.push(...toks);
   return unit;
 }
@@ -63,9 +65,9 @@ function ExpandArg(arg: any): any {
   if (typeof arg !== 'string') return arg;
   if (arg.substring(0, 2) !== '{{') return arg;
   if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
-  // got this far? we need to parse the expression into an ast
+  // got this far? we need to ParseExpression the expression into an ast
   const ex = arg.substring(2, arg.length - 2).trim();
-  const ast = Parse(ex);
+  const ast = ParseExpression(ex);
   return ast;
 }
 /** Scan argument list and convert expression to an AST. This is called for
@@ -84,8 +86,8 @@ function ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
 /// EXPORT ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
-  Parse,
-  Tokenize,
+  ParseExpression,
+  ConvertScript,
   LineToScriptUnit,
   TextToScriptUnits,
   ExpandArg,

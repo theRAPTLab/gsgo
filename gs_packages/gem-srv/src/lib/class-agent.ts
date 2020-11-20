@@ -11,7 +11,7 @@
 
 import { FEATURES } from 'modules/runtime-datacore';
 import * as GLOBAL from 'modules/runtime-globals';
-import { Evaluate } from 'lib/script-evaluator';
+import { Evaluate } from 'lib/expr-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';

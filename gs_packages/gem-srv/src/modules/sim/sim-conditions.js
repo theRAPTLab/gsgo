@@ -7,7 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import { GetTest } from 'modules/runtime-datacore';
 import { GetGlobalAgent } from 'lib/class-agent';
-import { Evaluate } from 'lib/script-evaluator';
+import { Evaluate } from 'lib/expr-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

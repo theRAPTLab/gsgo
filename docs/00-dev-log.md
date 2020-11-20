@@ -583,6 +583,14 @@ line processor:
 
 ```
 
+* [x] Why are comments being turned into an array of letters?
+  * [x] script-parser Tokenize() is returning everything...wascrashing in jsx output because of `comment` shadowing of variable (was picking up the class, not the local var!)
+
+**that was a sidetrack** but now we can get back to **[[ ]] blocks**...
+
+* [ ] CompileSource receiveds ScriptUnits, so **what makes ScriptUnits from text?**
+* [ ] **script-parser** is what has `Tokenize()` and `TextToScriptUnits()` for full text and single lines, and it relies on **class-script-tokenizer** to do its
+* [ ] We can add a function similar to `gobbleExpressionString()`, for the `[[ progname ]]` syntax
 
 
 

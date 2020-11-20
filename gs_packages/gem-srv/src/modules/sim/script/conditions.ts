@@ -11,9 +11,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { GetAgentsByType } from 'modules/runtime-datacore';
-import { Parse } from 'lib/script-parser';
+import { ParseExpression } from 'lib/expr-parser';
 import { ISMCBundle } from 'lib/t-script';
-import { Evaluate } from 'lib/script-evaluator';
+import { Evaluate } from 'lib/expr-evaluator';
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,14 +69,14 @@ function PairAgentFilter(typeA, typeB, testAB) {
 /** return a testA function for the passed expression */
 function MakeAgentExprTest(exprA) {
   const isAST = typeof exprA === 'object' && exprA.type;
-  const ast = isAST ? exprA : Parse(exprA);
+  const ast = isAST ? exprA : ParseExpression(exprA);
   return agent => Evaluate(ast, { A: agent });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return a testAB function for the passed expression */
 function MakePairAgentExprTest(exprAB) {
   const isAST = typeof exprAB === 'object' && exprAB.type;
-  const ast = isAST ? exprAB : Parse(exprAB);
+  const ast = isAST ? exprAB : ParseExpression(exprAB);
   return (a, b) => Evaluate(ast, { A: a, B: b });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

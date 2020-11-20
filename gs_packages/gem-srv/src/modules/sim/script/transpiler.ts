@@ -15,13 +15,13 @@ import {
   SaveBlueprint,
   GetBlueprint
 } from 'modules/runtime-datacore';
-import { Evaluate } from 'lib/script-evaluator';
+import { Evaluate } from 'lib/expr-evaluator';
 import {
   ExpandScriptUnit,
   Tokenize,
   LineToScriptUnit,
   TextToScriptUnits
-} from 'lib/script-parser';
+} from 'lib/expr-parser';
 // critical imports
 import 'script/keywords/_all_keywords';
 
