@@ -19,11 +19,21 @@
 
 import React from 'react';
 import { IKeyword, ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+const styleIndex = {
+  fontWeight: 'bold' as 'bold', // this dumb typescriptery css workaround
+  backgroundColor: 'black',
+  color: 'white',
+  padding: '2px 4px',
+  display: 'inline-block',
+  minWidth: '1.25em',
+  textAlign: 'right' as 'right' // this dumb typescriptery css workaround
+};
+const styleLine = { padding: '0.5em', borderBottom: '1px dotted gray' };
+const styleContent = { padding: '0.5em' };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** HACK: used to generate ever-increasing ID for rendering. They are all unique
  *  because our rendering loop just rerenders the entire list into a GUI every
@@ -54,12 +64,13 @@ export class Keyword implements IKeyword {
   }
   /** override in subclass */
   jsx(index: number, srcLine: TScriptUnit, children?: any): any {
+    // note that styleIndex below has to have weird typescript
+    // stuff for originally hyphenated CSS properties so it doesn't
+    // get marked by the linter as invalid CSS
     return (
-      <div
-        key={this.generateKey()}
-        style={{ padding: '0.5em', borderBottom: '1px dotted gray' }}
-      >
-        {index}:{children}
+      <div key={this.generateKey()} style={styleLine}>
+        <span style={styleIndex}>{index}</span>
+        <span style={styleContent}>{children}</span>
       </div>
     );
   }
