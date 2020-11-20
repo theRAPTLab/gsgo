@@ -31,8 +31,8 @@ export class ifExpr extends Keyword {
     code.push((agent, state) => {
       const method = test;
       const result = this.topValue(agent.exec(method, [], state.ctx));
-      if (result) agent.exec(consq);
-      else agent.exec(alter);
+      if (result && consq) agent.exec(consq);
+      if (!result && alter) agent.exec(alter);
     });
     return {
       update: code
@@ -48,10 +48,14 @@ export class ifExpr extends Keyword {
   /** return rendered component representation */
   jsx(index: number, srcLine: TScriptUnit, children?: any): any {
     const [kw, testName, consequent, alternate] = srcLine;
+    const cc = consequent ? 'TRUE:[consequent]' : '';
+    const aa = alternate ? 'FALSE:[alternate]' : '';
     return super.jsx(
       index,
       srcLine,
-      <>ifTest {testName} then run [consequent]</>
+      <>
+        ifExpr {testName} {cc} {aa}
+      </>
     );
   }
 } // end of DefProp

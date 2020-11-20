@@ -32,8 +32,8 @@ export class ifTest extends Keyword {
       const ast = GetTest(testName);
       if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
       const result = this.topValue(agent.exec(ast, [], state.ctx));
-      if (result) agent.exec(consq);
-      else agent.exec(alter);
+      if (result && consq) agent.exec(consq);
+      if (!result && alter) agent.exec(alter);
     });
     return {
       update: code
@@ -49,10 +49,14 @@ export class ifTest extends Keyword {
   /** return rendered component representation */
   jsx(index: number, srcLine: TScriptUnit, children?: any): any {
     const [kw, testName, consequent, alternate] = srcLine;
+    const cc = consequent ? 'TRUE:[consequent]' : '';
+    const aa = alternate ? 'FALSE:[alternate]' : '';
     return super.jsx(
       index,
       srcLine,
-      <>ifTest {testName} then run [consequent]</>
+      <>
+        ifTest {testName} {cc} {aa}
+      </>
     );
   }
 } // end of DefProp
