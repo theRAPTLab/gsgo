@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as KEYDICT from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler';
 import { TScriptUnit, IScriptUpdate } from 'lib/t-script';
 import './test-expression';
 
@@ -16,7 +16,7 @@ const DBG = true;
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SOURCE: TScriptUnit[] = [
+const SCRIPT: TScriptUnit[] = [
   ['defBlueprint', 'Bee'],
   ['addProp', 'nectarAmount', 'GSNumber', 0],
   ['useFeature', 'FishCounter'],
@@ -28,7 +28,7 @@ const SOURCE: TScriptUnit[] = [
   ['endBlueprint']
 ];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestListSource(source = SOURCE) {
+function TestListScript(source = SCRIPT) {
   if (DBG)
     console.log(...PR('Source Lines - (made by GUI, saved/loaded from network)'));
   source.forEach((line, index) => {
@@ -36,14 +36,14 @@ function TestListSource(source = SOURCE) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToProgram(source = SOURCE) {
+function TestScriptToProgram(source = SCRIPT) {
   // the idea is to create a data structure we can generate and then parse
   if (DBG)
     console.log(
       ...PR('KEYGEN.CompileTemplate() - create blueprint smc program arrays')
     );
   // get the output
-  const output = KEYDICT.CompileSource(source);
+  const output = TRANSPILER.CompileScript(source);
   //  print the output
   output.define.forEach(
     statement => DBG && console.log('definition:', statement)
@@ -57,11 +57,11 @@ function TestSourceToProgram(source = SOURCE) {
   return 'end test';
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestSourceToUI(source: TScriptUnit[] = SOURCE) {
+function TestScriptToUI(source: TScriptUnit[] = SCRIPT) {
   // the idea is to parse data structure into react
   if (DBG)
-    console.log(...PR('KEYGEN.RenderSource() - generate renderable components'));
-  const jsx = KEYDICT.RenderSource(source);
+    console.log(...PR('KEYGEN.RenderScript() - generate renderable components'));
+  const jsx = TRANSPILER.RenderScript(source);
   UR.RaiseMessage('SCRIPT_JSX_CHANGED', jsx);
 }
 
@@ -70,25 +70,25 @@ function TestSourceToUI(source: TScriptUnit[] = SOURCE) {
 /** receives the react state object */
 UR.RegisterMessage('SCRIPT_SRC_CHANGED', (updata: IScriptUpdate) => {
   const { index, scriptUnit } = updata;
-  SOURCE[index] = scriptUnit;
-  if (DBG) console.log(...PR(`SOURCE[${index}] updated:`, SOURCE[index]));
+  SCRIPT[index] = scriptUnit;
+  if (DBG) console.log(...PR(`SCRIPT[${index}] updated:`, SCRIPT[index]));
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-(window as any).sourceRender = (source: TScriptUnit[] = SOURCE) => {
+(window as any).sourceRender = (source: TScriptUnit[] = SCRIPT) => {
   console.log(...PR('rendering test source'));
-  const jsx = KEYDICT.RenderSource(source);
+  const jsx = TRANSPILER.RenderScript(source);
   UR.RaiseMessage('SCRIPT_JSX_CHANGED', jsx);
 };
-(window as any).sourceCompile = (source: TScriptUnit[] = SOURCE) => {
+(window as any).sourceCompile = (source: TScriptUnit[] = SCRIPT) => {
   console.log(...PR('compiling test source'));
-  TestSourceToProgram(source);
+  TestScriptToProgram(source);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default {
-  TestListSource,
-  TestSourceToProgram,
-  TestSourceToUI
+  TestListScript,
+  TestScriptToProgram,
+  TestScriptToUI
 };

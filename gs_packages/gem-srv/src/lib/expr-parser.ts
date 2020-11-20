@@ -25,30 +25,28 @@ const PR = UR.PrefixUtil('PARSER', 'TagRed');
 const scriptConverter = new GScriptTokenizer();
 const exprParser = new ExpressionParser();
 
-/// PARSER INTERFACE //////////////////////////////////////////////////////////
+/// EXPRESSION PARSER INTERFACE ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** GEMscript Text Tokenizer */
-function ConvertScript(scriptText: string) {
-  return scriptConverter.tokenize(scriptText);
-}
 /** Expression Parser */
 function ParseExpression(expr: string) {
   return exprParser.parse(expr);
 }
+
+/// SCRIPT/TEXT PARSER INTERFACE //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokenizes a line of text, returning a ScriptUnit */
 function LineToScriptUnit(expr): TScriptUnit {
   const line = expr.trim();
   const unit = [];
   if (!line.length) return ['dbgError', 'empty line'];
-  const toks = ConvertScript(line);
+  const toks = scriptConverter.tokenize(line);
   if (toks) unit.push(...toks);
   return unit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokenizes the text line-by-line into ScriptUnit[]
  */
-function SourcifyText(text: string): TScriptUnit[] {
+function ScriptifyText(text: string): TScriptUnit[] {
   /* HACK pc line endings would screw this, need more robust check */
   const sourceStrings = text.split('\n');
   const scriptUnits = [];
@@ -87,9 +85,8 @@ function ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export {
   ParseExpression,
-  ConvertScript,
   LineToScriptUnit,
-  SourcifyText,
+  ScriptifyText,
   ExpandArg,
   ExpandScriptUnit
 };

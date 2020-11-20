@@ -35,7 +35,7 @@ const VAR_DICT: Map<string, IScopeableCtor> = new Map();
 const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
-const SOURCE: Map<string, TScriptUnit[]> = new Map();
+const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const CONDITIONS: Map<string, TMethod> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
@@ -67,22 +67,22 @@ export function GetVarCtor(name: string): IScopeableCtor {
   return VAR_DICT.get(name);
 }
 
-/// SOURCE UNITS //////////////////////////////////////////////////////////////
+/// SCRIPT UNITS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source manager */
-export function SaveSource(name: string, source: TScriptUnit[]): boolean {
-  if (SOURCE.has(name)) console.warn(...PR(`overwriting source '${name}'`));
+export function SaveScript(name: string, source: TScriptUnit[]): boolean {
+  if (SCRIPTS.has(name)) console.warn(...PR(`overwriting source '${name}'`));
   if (!Array.isArray(source)) {
-    console.warn(...PR(`SaveSource: '${name}' source must be array`));
+    console.warn(...PR(`SaveScript: '${name}' source must be array`));
     return false;
   }
-  SOURCE.set(name, source);
+  SCRIPTS.set(name, source);
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source updater */
-function UpdateSourceIndex(name: string, i: number, u: TScriptUnit): boolean {
-  const source = SOURCE.get(name);
+function UpdateScriptIndex(name: string, i: number, u: TScriptUnit): boolean {
+  const source = SCRIPTS.get(name);
   try {
     if (!source) throw Error(`'${name}' doesn't exist`);
     if (typeof i !== 'number') throw Error(`index must be number, not ${i}`);
@@ -94,12 +94,12 @@ function UpdateSourceIndex(name: string, i: number, u: TScriptUnit): boolean {
   source[i] = u;
   return true;
 }
-export { UpdateSourceIndex };
+export { UpdateScriptIndex };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source deleter */
-export function DeleteSource(name: string): boolean {
-  if (SOURCE.has(name)) {
-    SOURCE.delete(name);
+export function DeleteScript(name: string): boolean {
+  if (SCRIPTS.has(name)) {
+    SCRIPTS.delete(name);
     return true;
   }
   console.warn(...PR(`source '${name}' doesn't exist`));

@@ -178,13 +178,13 @@ export interface IMessage {
   inputs?: any;
 }
 
-/// SCRIPTUNIT / SOURCE DECLARATIONS //////////////////////////////////////////
+/// SCRIPT UNIT / SCRIPT DECLARATIONS /////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a source line starts with keyword followed by variable number of args.
  *  an empty TScriptUnit is allowed also.
  */
 export type TScriptUnit = [string?, ...any[]];
-export type TSource = TScriptUnit[]; // not generally used\
+export type TScript = TScriptUnit[]; // not generally used\
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UI update type sent by UI tp RegenSRCLine */
 export interface IScriptUpdate {

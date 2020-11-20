@@ -2,7 +2,7 @@
 
   Implement a "Keyword Dictionary" that manages the compile() and render()
   output for a particular script keyword. This module also exposes static
-  methods for compiling and rendering source arrays
+  methods for compiling and rendering TScriptUnit[] arrays
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -15,12 +15,10 @@ import {
   SaveBlueprint,
   GetBlueprint
 } from 'modules/runtime-datacore';
-import { Evaluate } from 'lib/expr-evaluator';
 import {
   ExpandScriptUnit,
-  Tokenize,
   LineToScriptUnit,
-  SourcifyText
+  ScriptifyText
 } from 'lib/expr-parser';
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -32,7 +30,7 @@ const DBG = true;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PrintSourceText(units: TScriptUnit[]): string {
+function m_PrintScriptToText(units: TScriptUnit[]): string {
   let out = '\n';
   units.forEach(unit => {
     unit.forEach(item => {
@@ -58,7 +56,7 @@ function m_Tokenify(item: any): any {
 /** Compile an array of TScriptUnit, representing one complete blueprint
  *  proof of concept
  */
-function CompileSource(units: TScriptUnit[]): ISMCBundle {
+function CompileScript(units: TScriptUnit[]): ISMCBundle {
   const bdl: ISMCBundle = {
     name: undefined,
     define: [],
@@ -68,8 +66,8 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
   };
   if (DBG) {
     console.groupCollapsed(...PR(`COMPILING ${units[1]}`));
-    const out = m_PrintSourceText(units);
-    console.log(`SOURCE\n${out.trim()}`);
+    const out = m_PrintScriptToText(units);
+    console.log(`SCRIPT\n${out.trim()}`);
   }
   // START COMPILING //////////////////////////////////////////////////////////
   // this has to look through the output to determine what to compile
@@ -94,14 +92,14 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
     const { name, define, defaults, conditions, update } = bundle;
     if (name) {
       if (bdl.name === undefined) bdl.name = name;
-      else throw Error('CompileSource: multiple defBlueprint in source');
+      else throw Error('CompileScript: multiple defBlueprint in source');
     }
     if (define) bdl.define.push(...define);
     if (defaults) bdl.defaults.push(...defaults);
     if (conditions) bdl.conditions.push(...conditions);
     if (update) bdl.update.push(...update);
   }); // units.forEach
-  if (bdl.name === undefined) throw Error('CompileSource: missing defBlueprint');
+  if (bdl.name === undefined) throw Error('CompileScript: missing defBlueprint');
   if (DBG) console.log(...PR(`compiled ${bdl.name}`));
   if (DBG) console.groupEnd();
   return bdl;
@@ -110,7 +108,7 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
  */
-function RenderSource(units: TScriptUnit[]): any[] {
+function RenderScript(units: TScriptUnit[]): any[] {
   const sourceJSX = [];
   let out = [];
   if (DBG) console.groupCollapsed(...PR(`RENDERING ${units[0][1]}`));
@@ -139,7 +137,7 @@ function RenderSource(units: TScriptUnit[]): any[] {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
-function TextifySource(units: TScriptUnit[]): string {
+function TextifyScript(units: TScriptUnit[]): string {
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
@@ -157,7 +155,7 @@ function TextifySource(units: TScriptUnit[]): string {
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
-  const bp = CompileSource(units);
+  const bp = CompileScript(units);
   SaveBlueprint(bp);
   // run conditional programming in template
   // this is a stack of functions that run in global context
@@ -190,24 +188,19 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Source is TScriptUnit[], produced by GUI
+/// Script is TScriptUnit[], produced by GUI
 export {
-  CompileSource, // TScriptUnit[] => ISMCBundle
-  RenderSource, // TScriptUnit[] => JSX
-  TextifySource // TScriptUnit[] => produce source text from units
+  CompileScript, // TScriptUnit[] => ISMCBundle
+  RenderScript, // TScriptUnit[] => JSX
+  TextifyScript // TScriptUnit[] => produce source text from units
 };
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
   RegisterBlueprint // TScriptUnit[] => ISMCBundle
 };
-/// for expression evaluation
-export {
-  Tokenize, // expr => AST
-  Evaluate // (AST,context)=>computed value
-};
-/// for converting text to TScriptUnit Source
+/// for converting text to TScriptUnit Script
 export {
   LineToScriptUnit, // expr => TScriptUnit
-  SourcifyText // exprs => TScriptUnit[]
+  ScriptifyText // exprs => TScriptUnit[]
 };

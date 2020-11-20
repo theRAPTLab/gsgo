@@ -27,7 +27,7 @@ import { useStylesHOC } from './page-styles';
 const PR = UR.PrefixUtil('APP');
 const DBG = true;
 
-/// HARCODED SOURCE ///////////////////////////////////////////////////////////
+/// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultText = `
 // definitions
@@ -143,8 +143,8 @@ class Compiler extends React.Component {
   constructor() {
     super();
     this.text = defaultText;
-    this.source = TRANSPILER.SourcifyText(this.text);
-    const jsx = TRANSPILER.RenderSource(this.source);
+    this.source = TRANSPILER.ScriptifyText(this.text);
+    const jsx = TRANSPILER.RenderScript(this.source);
     this.state = {
       jsx,
       text: defaultText,
@@ -157,12 +157,12 @@ class Compiler extends React.Component {
     this.userSaveBlueprint = this.userSaveBlueprint.bind(this);
     this.userCompileText = this.userCompileText.bind(this);
     this.updateJSX = this.updateJSX.bind(this);
-    this.updateSource = this.updateSource.bind(this);
+    this.updateScript = this.updateScript.bind(this);
     this.updateText = this.updateText.bind(this);
     this.updateTabSelect = this.updateTabSelect.bind(this);
     // hooks
     UR.RegisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
-    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
+    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     TRANSPILER.RegisterBlueprint(this.source);
@@ -186,14 +186,14 @@ class Compiler extends React.Component {
   componentWillUnmount() {
     console.log('componentWillUnmount');
     UR.UnregisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
-    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
+    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
   }
 
   // called by ScriptWizard component change
-  updateSource(updata) {
+  updateScript(updata) {
     const { index, scriptUnit } = updata;
     this.source[index] = scriptUnit;
-    console.log(...PR(`SOURCE[${index}] updated:`, this.source[index]));
+    console.log(...PR(`SCRIPT[${index}] updated:`, this.source[index]));
   }
 
   // called by message 'SCRIPT_JSX_CHANGED'
@@ -201,7 +201,7 @@ class Compiler extends React.Component {
     this.setState({ jsx });
   }
 
-  // echo typing in SourceText to state
+  // echo typing in ScriptText to state
   updateText(evt) {
     const text = evt.target.value;
     this.text = text;
@@ -216,8 +216,8 @@ class Compiler extends React.Component {
   // compile source to jsx
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = TRANSPILER.SourcifyText(this.state.text);
-    const jsx = TRANSPILER.RenderSource(this.source);
+    // this.source = TRANSPILER.ScriptifyText(this.state.text);
+    const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
@@ -225,7 +225,7 @@ class Compiler extends React.Component {
   // compile jsx back to source
   userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    const text = TRANSPILER.TextifySource(this.source);
+    const text = TRANSPILER.TextifyScript(this.source);
     this.setState({ text });
     this.text = text;
     if (DBG) console.groupEnd();
@@ -233,7 +233,7 @@ class Compiler extends React.Component {
 
   // compile text to source
   userCompileText() {
-    const source = TRANSPILER.SourcifyText(this.text);
+    const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
     this.setState({ source: JSON.stringify(source) });
   }
@@ -245,7 +245,7 @@ class Compiler extends React.Component {
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
-    const jsx = TRANSPILER.RenderSource(this.source);
+    const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
   }
 
