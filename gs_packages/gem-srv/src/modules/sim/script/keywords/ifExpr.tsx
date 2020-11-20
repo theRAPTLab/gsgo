@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword IfTest command object
+  implementation of keyword IfExpr command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -12,11 +12,11 @@ import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class IfTest extends Keyword {
+export class IfExpr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('ifTest');
-    this.args = ['testName:string', 'consequent:TMethod', 'alternate:TMethod'];
+    super('ifExpr');
+    this.args = ['test:TMethod', 'consequent:TMethod', 'alternate:TMethod'];
   }
 
   /** create smc blueprint code objects
@@ -24,14 +24,13 @@ export class IfTest extends Keyword {
    *  from {{ }} to a ParseTree
    */
   compile(parms: any[]): ISMCBundle {
-    const testName = parms[0];
+    const test = parms[0]; // any TMethod returning boolean
     const consq = parms[1]; // could be any TMethod
     const alter = parms[2]; // also a TMethod
     const code = [];
     code.push((agent, state) => {
-      const ast = GetTest(testName);
-      if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
-      const result = this.topValue(agent.exec(ast, [], state.ctx));
+      const method = test;
+      const result = this.topValue(agent.exec(method, [], state.ctx));
       if (result) agent.exec(consq);
       else agent.exec(alter);
     });
@@ -60,4 +59,4 @@ export class IfTest extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(IfTest);
+RegisterKeyword(IfExpr);

@@ -521,7 +521,13 @@ edit src/app/boot files to add the route:
 
 
 
->  **Target For Wednesday** - 1200 EST - be ready to start scripting the aquatic with Ben peer programming kind of thing. 
+## NOV 20 FRI - Last Push on Conditions Part II
+
+We got one of the 4 conditions done. It occurred to me that **immediate expression test** doesn't need to store an anonymous function; it can just store the ast directly.
+
+* [x] add `ifExpr {{ expr }} {{ conseq }} {{ alter }}` support...10 minutes to write!
+
+
 
 
 

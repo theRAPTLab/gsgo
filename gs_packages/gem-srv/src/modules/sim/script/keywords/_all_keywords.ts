@@ -17,4 +17,5 @@ export * from './randomPos'; // experimental placeholder
 export * from './onCondition'; // experimental placeholder
 // conditions
 export * from './addTest'; // add a named test
+export * from './ifExpr'; // run an expression test
 export * from './ifTest'; // run a named test during agent runtime
