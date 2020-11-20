@@ -11,7 +11,7 @@ import clsx from 'clsx';
 
 // SELECT RUNTIME MODULES FOR APP
 import * as RENDERER from 'modules/render/api-render';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/runtime-globals';
 //
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './page-styles';
@@ -30,7 +30,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       console.log(...PR('LOADING ASSET MANIFEST...'));
       (async () => {
-        await DATACORE.LoadAssets('static/assets.json');
+        await GLOBAL.LoadAssets('static/assets.json');
         ASSETS_LOADED = true;
         console.log(...PR('ASSETS LOADED'));
       })();
