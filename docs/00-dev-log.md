@@ -527,7 +527,61 @@ We got one of the 4 conditions done. It occurred to me that **immediate expressi
 
 * [x] add `ifExpr {{ expr }} {{ conseq }} {{ alter }}` support...10 minutes to write!
 
+To implement the last three  AgentSet, AgentPairSet, and Event conditions, we need to extend text parsing to **support multiline input**. Technically we don't need to do this because the keyword generators can emit TMethods directly, but without a GUI we need to expand the text interface.
 
+Here's the script syntax I'm thinking:
+
+```
+if {{ agent.prop('foo') }} [[
+  if {{ agent.prop('bar') }} [[
+    featureCall Movement jitterPos -5 5
+  ]] [[
+    dbgOut('false')
+  ]]
+]]
+
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+  exec {{ agent.prop('x').increment }}
+  exec [[ programName ]]
+  setProp 'x' 0
+  // the expression context passed is agent, subjectA, subjectAB
+]]
+
+onAgent Bee [[
+  // return boolean
+  agentProp x lessThan 0
+]] [[
+  // do something with subjectA
+]]
+
+on Tick [[
+  agentProp x something
+]]
+```
+
+So how do I **parse** this into ScriptUnits? Currently, processing a script line-by-line creates ScriptUnits pushed onto a `program` array. So the *extension to `class-script-tokenizer`* might look like this:
+
+```
+programStack = []
+index = 0
+function CompileSource(units:TScriptUnit[]) : ISMCBundle
+	- 
+function ExpandScriptUnit(unit:TScriptUnit) : TScriptUnit
+	- returns new ScriptUnit with "{{ }}" and "[[ ]]" expanded
+	
+THE ALGORITHM!!!
+line processor:
+	check for leading // - quit
+	check for [[
+		if [[ and EOL
+			index++
+		if [[ and NOT EOL
+			check for ]] on same line
+			this will expand into [[ program ]] syntax
+	check for leading ]]
+		index--
+
+```
 
 
 
