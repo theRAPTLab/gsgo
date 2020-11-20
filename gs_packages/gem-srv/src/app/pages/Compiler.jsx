@@ -143,7 +143,7 @@ class Compiler extends React.Component {
   constructor() {
     super();
     this.text = defaultText;
-    this.source = TRANSPILER.TextToScriptUnits(this.text);
+    this.source = TRANSPILER.SourcifyText(this.text);
     const jsx = TRANSPILER.RenderSource(this.source);
     this.state = {
       jsx,
@@ -216,7 +216,7 @@ class Compiler extends React.Component {
   // compile source to jsx
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = TRANSPILER.TextToScriptUnits(this.state.text);
+    // this.source = TRANSPILER.SourcifyText(this.state.text);
     const jsx = TRANSPILER.RenderSource(this.source);
     this.setState({ jsx });
     if (DBG) console.groupEnd();
@@ -225,7 +225,7 @@ class Compiler extends React.Component {
   // compile jsx back to source
   userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    const text = TRANSPILER.DecompileSource(this.source);
+    const text = TRANSPILER.TextifySource(this.source);
     this.setState({ text });
     this.text = text;
     if (DBG) console.groupEnd();
@@ -233,7 +233,7 @@ class Compiler extends React.Component {
 
   // compile text to source
   userCompileText() {
-    const source = TRANSPILER.TextToScriptUnits(this.text);
+    const source = TRANSPILER.SourcifyText(this.text);
     this.source = source;
     this.setState({ source: JSON.stringify(source) });
   }

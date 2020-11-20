@@ -48,7 +48,7 @@ function LineToScriptUnit(expr): TScriptUnit {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokenizes the text line-by-line into ScriptUnit[]
  */
-function TextToScriptUnits(text: string): TScriptUnit[] {
+function SourcifyText(text: string): TScriptUnit[] {
   /* HACK pc line endings would screw this, need more robust check */
   const sourceStrings = text.split('\n');
   const scriptUnits = [];
@@ -89,7 +89,7 @@ export {
   ParseExpression,
   ConvertScript,
   LineToScriptUnit,
-  TextToScriptUnits,
+  SourcifyText,
   ExpandArg,
   ExpandScriptUnit
 };

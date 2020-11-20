@@ -20,7 +20,7 @@ import {
   ExpandScriptUnit,
   Tokenize,
   LineToScriptUnit,
-  TextToScriptUnits
+  SourcifyText
 } from 'lib/expr-parser';
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -129,7 +129,7 @@ function RenderSource(units: TScriptUnit[]): any[] {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
-function DecompileSource(units: TScriptUnit[]): string {
+function TextifySource(units: TScriptUnit[]): string {
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
@@ -179,7 +179,7 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 export {
   CompileSource, // TScriptUnit[] => ISMCBundle
   RenderSource, // TScriptUnit[] => JSX
-  DecompileSource // TScriptUnit[] => produce source text from units
+  TextifySource // TScriptUnit[] => produce source text from units
 };
 /// for blueprint operations
 export {
@@ -194,5 +194,5 @@ export {
 /// for converting text to TScriptUnit Source
 export {
   LineToScriptUnit, // expr => TScriptUnit
-  TextToScriptUnits // exprs => TScriptUnit[]
+  SourcifyText // exprs => TScriptUnit[]
 };
