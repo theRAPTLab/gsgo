@@ -42,6 +42,16 @@ function m_PrintSourceText(units: TScriptUnit[]): string {
   });
   return out;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_Tokenify(item: any): any {
+  const type = typeof item;
+  if (type === 'string') {
+    const subtype = item.substring(0, 2);
+    if (subtype === '{{') return item;
+    return `'${item}'`;
+  }
+  return item;
+}
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -134,7 +144,12 @@ function TextifySource(units: TScriptUnit[]): string {
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
     if (unit[0] === 'comment') unit[0] = '//';
-    lines.push(`${unit.join(' ')}`);
+    const toks = [];
+    unit.forEach((tok, uidx) => {
+      if (uidx === 0) toks.push(tok);
+      else toks.push(m_Tokenify(tok));
+    });
+    lines.push(`${toks.join(' ')}`);
   });
   return lines.join('\n');
 }
