@@ -7,7 +7,11 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { GetAllAgents, DeleteAllAgents } from 'modules/runtime-datacore';
+import {
+  GetAllAgents,
+  DeleteAllAgents,
+  DeleteAllTests
+} from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TRANSPILER from 'script/transpiler';
@@ -72,6 +76,7 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** placeholder */
 export function AgentProgram(blueprint) {
   DeleteAllAgents();
   if (!blueprint) return console.warn(...PR('no blueprint'));

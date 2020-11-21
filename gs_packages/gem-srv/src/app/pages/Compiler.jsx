@@ -13,6 +13,7 @@ import UR from '@gemstep/ursys/client';
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
 import * as GLOBAL from 'modules/runtime-globals';
+import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
 
@@ -233,6 +234,7 @@ class Compiler extends React.Component {
 
   // compile text to source
   userCompileText() {
+    DATACORE.DeleteAllTests();
     const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
     this.setState({ source: JSON.stringify(source) });

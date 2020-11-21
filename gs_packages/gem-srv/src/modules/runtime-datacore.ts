@@ -199,6 +199,10 @@ export function GetTest(name: string): TMethod {
   } else return TESTS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllTests() {
+  TESTS.clear();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetTests() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function MakeTestResultKey(...args: string[]) {
