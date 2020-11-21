@@ -174,14 +174,11 @@ function m_StitchifyBlocks(nodes) {
           line += ']] ';
           return;
         }
-        if (item.slice(-2) === '}}') {
-          line += `${item} `;
-          return;
-        }
         if (item.slice(0, 2) === '//') {
           // skip comments
           return;
         }
+        // add line delimiter ';' in safe place
         line += `${item}; `;
       });
     }
