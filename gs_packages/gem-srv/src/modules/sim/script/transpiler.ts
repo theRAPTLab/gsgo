@@ -24,7 +24,7 @@ import 'script/keywords/_all_keywords';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR');
 const scriptConverter = new GScriptTokenizer();
-const DBG = true;
+const DBG = false;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,11 +50,11 @@ function m_Tokenify(item: any): any {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** tokenizes a line of text, returning a ScriptUnit */
-function m_LineToScriptUnit(expr): TScriptUnit {
-  const line = expr.trim();
+function m_LineToScriptUnit(line: string): TScriptUnit {
+  const str = line.trim();
   const unit = [];
-  if (!line.length) return ['dbgError', 'empty line'];
-  const toks = scriptConverter.tokenize(line);
+  if (!str.length) return ['dbgError', 'empty line'];
+  const toks = scriptConverter.tokenize(str);
   if (toks) unit.push(...toks);
   return unit;
 }
@@ -82,6 +82,128 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
   });
   return res;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_DeblockifyText(text: string) {
+  const sourceStrings = text.split('\n');
+  let level = 0;
+  const nodes = [];
+  let buffer = [];
+  // first lets start scanning each line
+  sourceStrings.forEach((str, idx) => {
+    str = str.trim();
+    if (DBG) console.log(`${idx} ${str} level:${level}\t`, buffer);
+    if (str.length === 0) return;
+    if (str.slice(0, 2) === '//') return;
+    // block delimiters
+    // note: inline [[ progName ]] is handled by gscript-tokenizer
+    const startBlock = str.slice(-2) === '[[';
+    const endBlock = str.slice(0, 2) === ']]';
+    // case 3 - adjacent blocks
+    if (endBlock && startBlock) {
+      if (level === 1) {
+        buffer.push(']]');
+        nodes.push(buffer);
+        buffer = ['[['];
+      }
+      return;
+    }
+    // case 1 - start of a block
+    if (startBlock) {
+      level++;
+      const sub = str.slice(0, str.length - 2).trim();
+      if (sub.length) buffer.push(sub);
+      if (level === 1) {
+        if (buffer.length) {
+          nodes.push(buffer);
+          buffer = [];
+        }
+      }
+      buffer.push('[[');
+      return;
+    }
+    // case 2 - end of a block
+    if (endBlock) {
+      level--;
+      buffer.push(']]');
+      if (level === 0) {
+        // closed outside [[ ]]? clear buffer
+        nodes.push(buffer);
+        buffer = [];
+      }
+      return;
+    }
+    // case 4 - normal line
+    buffer.push(str);
+  });
+  if (level !== 0) {
+    console.log(
+      ...PR(
+        `error: unbalanced block level ${
+          // eslint-disable-next-line no-nested-ternary
+          level > 0 ? '+' : level < 0 ? '' : ' '
+        }${level}`
+      )
+    );
+    return undefined;
+  }
+  // return a sequence
+  return nodes;
+}
+function m_StitchifyBlocks(nodes) {
+  let level = 0;
+  let line = '';
+  nodes.forEach((node, ii) => {
+    /*/
+    nodes are "normal string segments" and "blocks"
+    if node.length is 1, then it's normal string
+    otherwise, it's a block to stitch together
+    /*/
+    if (node.length === 1) {
+      line += `${node[0]} `;
+    } else {
+      node.forEach((item, jj) => {
+        if (jj === item.length - 2) {
+          line += `${item} `;
+          return;
+        }
+        if (item === '[[') {
+          line += '[[ ';
+          return;
+        }
+        if (item === ']]') {
+          line += ']] ';
+          return;
+        }
+        if (item.slice(-2) === '}}') {
+          line += `${item} `;
+          return;
+        }
+        if (item.slice(0, 2) === '//') {
+          // skip comments
+          return;
+        }
+        line += `${item}; `;
+      });
+    }
+  });
+  return line;
+}
+/// - - -
+const txt = `
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+  {{ agent.prop('x').increment }}
+  [[ TEST:programName ]]
+  setProp 'x' 0
+  // the expression context passed is agent, subjectA, subjectAB
+]]
+// on Tick [[
+//   agentProp x something
+// ]]
+
+`;
+// console.log(...PR('\nblocks parsed', m_DeblockifyText(txt)));
+console.log(...PR(`\n${m_StitchifyBlocks(m_DeblockifyText(txt))}`));
+// console.log(...PR('\nsplits', txt.split(/\s*[;\n]+\s*/)));
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,7 +288,6 @@ function RenderScript(units: TScriptUnit[]): any[] {
   if (DBG) console.groupEnd();
   return sourceJSX;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
 function TextifyScript(units: TScriptUnit[]): string {
@@ -189,6 +310,7 @@ function TextifyScript(units: TScriptUnit[]): string {
 function ScriptifyText(text: string): TScriptUnit[] {
   /* HACK pc line endings would screw this, need more robust check */
   const sourceStrings = text.split('\n');
+  // now compile the updated strings
   const scriptUnits = [];
   sourceStrings.forEach(str => {
     str = str.trim();

@@ -592,6 +592,38 @@ line processor:
 * [ ] **script-parser** is what has `Tokenize()` and `TextToScriptUnits()` for full text and single lines, and it relies on **class-script-tokenizer** to do its
 * [ ] We can add a function similar to `gobbleExpressionString()`, for the `[[ progname ]]` syntax
 
+```
+EXPORTS FROM TRANSPILER
+CompileScript     : Script => SMCBundle
+RenderScript 	    : Script => JSX
+TextifyScript     : Script => Text
+ScriptifyText     : Text   => Script
+
+To insert our [[ ]] processor, ScriptifyText is the routine we need to look at. It's been moved to `transpiler`. 
+
+splits lines at \n
+each line is trimmed and put through m_LineToScriptUnit
+the ScriptUnits are returned as a whole Script
+
+in m_lineToScriptUnit, it calls the scriptConverter class tokenizer
+in class-gscript-tokenizer, tokenize(line) is the main entry point. It sho
+
+* in tokenize(line), we can look for **inline [[ ]]**
+* to gobble multiple lines, though, we need to push this logic into m_lineToScriptUnit
+
+```
+
+The `ScriptifyText` calls `m_LineToScriptUnit` per line. We have to first **merge lines** based on the `[[` and `]]` found. 
+
+**Algorithm Continues**
+
+* we want to parse sequential blocks until the final `]]` is detected
+* the algorithm is find all the top-level open/closing `[[` and `]]`
+* it's called `m_DeblockifyText()` in `TRANSPILER`
+* It produces a `sequence` array of
+
+
+
 
 
 ---
