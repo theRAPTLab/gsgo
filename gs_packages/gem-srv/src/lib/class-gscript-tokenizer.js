@@ -107,7 +107,7 @@ const isIdentifierPart = ch => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptTokenizer {
   constructor() {
-    this.expr = '';
+    this.line = '';
     this.index = 0;
     this.lastIndex = this.index;
     this.length = 0;
@@ -115,9 +115,9 @@ class ScriptTokenizer {
 
   /////////////////////////////////////////////////////////////////////////////
   /** TOKENIZER **************************************************************/
-  tokenize(expr) {
-    this.expr = expr;
-    this.length = this.expr.length;
+  tokenize(line) {
+    this.line = line;
+    this.length = this.line.length;
     this.index = 0;
     this.lastIndex = this.index;
 
@@ -125,7 +125,7 @@ class ScriptTokenizer {
     let node;
 
     /* HACK ADDITION for GEMSCRIPT COMMENTS */
-    if (expr.substring(0, 2) === COMMENT_1) return this.gobbleComment();
+    if (line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
     /** END HACK **/
     while (this.index < this.length) {
       this.gobbleSpaces();
@@ -141,10 +141,10 @@ class ScriptTokenizer {
   /////////////////////////////////////////////////////////////////////////////
 
   exprI(i) {
-    return charAtFunc.call(this.expr, i);
+    return charAtFunc.call(this.line, i);
   }
   exprICode(i) {
-    return charCodeAtFunc.call(this.expr, i);
+    return charCodeAtFunc.call(this.line, i);
   }
   // Push `this.index` up to the next non-space character
   gobbleSpaces() {
@@ -186,7 +186,7 @@ class ScriptTokenizer {
       return this.gobbleArray();
     }
 
-    to_check = this.expr.substr(this.index, max_unop_len);
+    to_check = this.line.substr(this.index, max_unop_len);
     tc_len = to_check.length;
     while (tc_len > 0) {
       // Don't accept an unary op when it is an identifier.
@@ -195,7 +195,7 @@ class ScriptTokenizer {
       if (
         Object.prototype.hasOwnProperty.call(unary_ops, to_check) &&
         (!isIdentifierStart(this.exprICode(this.index)) ||
-          (this.index + to_check.length < this.expr.length &&
+          (this.index + to_check.length < this.line.length &&
             !isIdentifierPart(this.exprICode(this.index + to_check.length))))
       ) {
         this.index += tc_len;
@@ -341,7 +341,7 @@ class ScriptTokenizer {
         break;
       }
     }
-    identifier = this.expr.slice(start, this.index);
+    identifier = this.line.slice(start, this.index);
 
     if (Object.prototype.hasOwnProperty.call(literals, identifier)) {
       return literals[identifier];
@@ -504,8 +504,8 @@ class ScriptTokenizer {
   /* HACK ADDITION for text script comments // and -- */
   // skip the first two // and output the entire rest of the line
   gobbleComment() {
-    const eol = this.expr.length;
-    const cstring = this.expr.substring(2, eol).trim();
+    const eol = this.line.length;
+    const cstring = this.line.substring(2, eol).trim();
     this.index = eol;
     return ['comment', cstring];
   }
