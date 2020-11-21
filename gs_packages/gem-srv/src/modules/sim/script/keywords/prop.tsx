@@ -23,8 +23,8 @@ export class prop extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [propName, value] = parms;
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, propName, value] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       const p = agent.prop(propName);
@@ -44,12 +44,12 @@ export class prop extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const propName = srcLine[1];
-    const value = srcLine[2];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const propName = unit[1];
+    const value = unit[2];
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         prop {propName} = {value}
       </>

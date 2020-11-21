@@ -28,14 +28,12 @@ export class randomPos extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const min = parms[0];
-    const max = parms[1];
-    const floor = parms[2] || false;
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, min, max, floor] = unit;
     const progout = [];
     progout.push((agent: IScopeable) => {
-      const x = m_Random(min, max, floor);
-      const y = m_Random(min, max, floor);
+      const x = m_Random(min, max, floor || false);
+      const y = m_Random(min, max, floor || false);
       agent.prop('x').value = x;
       agent.prop('y').value = y;
     });
@@ -54,13 +52,13 @@ export class randomPos extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const min = srcLine[1];
-    const max = srcLine[2];
-    const floor = srcLine[3];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const min = unit[1];
+    const max = unit[2];
+    const floor = unit[3];
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         random between ({min},{max}) (floor={floor})
       </>

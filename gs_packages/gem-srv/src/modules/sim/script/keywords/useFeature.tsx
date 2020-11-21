@@ -21,8 +21,8 @@ export class useFeature extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const featureName = parms[0];
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, featureName] = unit;
     const progout = [];
     progout.push(addFeature(featureName));
     return {
@@ -39,9 +39,9 @@ export class useFeature extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [kw, featureName] = srcLine;
-    return super.jsx(index, srcLine, <>useFeature {featureName}</>);
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, featureName] = unit;
+    return super.jsx(index, unit, <>useFeature {featureName}</>);
   }
 } // end of useFeature
 

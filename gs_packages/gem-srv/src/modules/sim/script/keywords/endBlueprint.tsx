@@ -25,7 +25,7 @@ export class endBlueprint extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: string[]): ISMCBundle {
+  compile(unit: TScriptUnit): ISMCBundle {
     const progout = [];
     return {
       define: progout

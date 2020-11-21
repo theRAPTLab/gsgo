@@ -21,7 +21,7 @@ export class comment extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
+  compile(unit: TScriptUnit): ISMCBundle {
     return {};
   }
 
@@ -32,9 +32,9 @@ export class comment extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [kw, cmt] = srcLine;
-    return super.jsx(index, srcLine, <i style={{ color: 'gray' }}>{`${cmt}`}</i>);
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, cmt] = unit;
+    return super.jsx(index, unit, <i style={{ color: 'gray' }}>{`${cmt}`}</i>);
   }
 } // end of UseFeature
 

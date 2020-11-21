@@ -23,8 +23,8 @@ export class featureCall extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [featName, methodName, ...args] = parms;
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, featName, methodName, ...args] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       // invoke the feature on the agent
@@ -50,9 +50,9 @@ export class featureCall extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [kw, featName, method, ...args] = srcLine;
-    return super.jsx(index, srcLine, <>{srcLine.join(' ')}</>);
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, featName, method, ...args] = unit;
+    return super.jsx(index, unit, <>{unit.join(' ')}</>);
   }
 } // end of UseFeature
 

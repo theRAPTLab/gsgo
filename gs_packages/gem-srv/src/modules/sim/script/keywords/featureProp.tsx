@@ -20,8 +20,8 @@ export class featureProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [featureName, propName, value] = parms;
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, featureName, propName, value] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       const feat = agent.feature(featureName);
@@ -43,10 +43,10 @@ export class featureProp extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const featName = srcLine[1];
-    const propName = srcLine[2];
-    const value = srcLine[3];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const featName = unit[1];
+    const propName = unit[2];
+    const value = unit[3];
     return (
       <>
         Feature {featName}.{propName} set to {value}

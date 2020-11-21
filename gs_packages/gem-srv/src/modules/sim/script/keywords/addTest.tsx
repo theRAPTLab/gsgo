@@ -26,9 +26,8 @@ export class addTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(parms: any[]): ISMCBundle {
-    const testName = parms[0];
-    const test = parms[1]; // could be TMethod, including AST
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, testName, test] = unit;
     const conds = [
       agent => {
         if (RegisterTest(testName, test))
@@ -50,11 +49,11 @@ export class addTest extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    const [kw, testName, expr] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
+    const [kw, testName, expr] = unit;
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         addTest {testName} = {expr}
       </>

@@ -24,10 +24,8 @@ export class onCondition extends Keyword {
   }
   /* NOTE THIS IS NONFUNCTIONAL */
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const testExpr = parms[0]; // {{ expr }}
-    const consq = parms[1];
-    const alter = parms[2];
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, testExpr, consq, alter] = unit;
     const cout = [];
     cout.push();
     return {
@@ -44,13 +42,13 @@ export class onCondition extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const testName = srcLine[1];
-    const conseq = srcLine[2];
-    const alter = srcLine[3];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const testName = unit[1];
+    const conseq = unit[2];
+    const alter = unit[3];
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         on {testName} TRUE {conseq}, ELSE {alter}
       </>

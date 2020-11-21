@@ -228,20 +228,20 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
   units.forEach((rawUnit, idx) => {
     // extract keyword first unit, assume that . means Feature
     let unit = m_ExpandScriptUnit(rawUnit);
-    // first in array is keyword aka 'cmdName'
-    // detect comments
+    // detect comments, if they were not filtered out somehow
+    // the should be filtered out
     if (unit[0] === '//') unit[0] = 'comment';
     if (unit[0] === '--') unit[0] = 'comment';
-    let cmdName = unit[0];
-    let cmdObj = GetKeyword(cmdName);
+    // first array element is keyword aka 'kw'
+    let kw = unit[0];
+    let kwProcessor = GetKeyword(kw);
     // resume processing
-    if (!cmdObj) {
-      cmdObj = GetKeyword('dbgError');
-      cmdObj.keyword = cmdName[0];
+    if (!kwProcessor) {
+      kwProcessor = GetKeyword('dbgError');
+      kwProcessor.keyword = kw[0];
     }
     // continue!
-    const parms = unit.slice(1);
-    const bundle = cmdObj.compile(parms); // qbits is the subsequent parameters
+    const bundle = kwProcessor.compile(unit); // qbits is the subsequent parameters
     if (DBG) console.log(unit, '->', bundle);
     const { name, define, defaults, conditions, update } = bundle;
     if (name) {
@@ -274,14 +274,14 @@ function RenderScript(units: TScriptUnit[]): any[] {
       if (DBG) console.groupEnd();
       return;
     }
-    let cmdObj = GetKeyword(keyword);
-    if (!cmdObj) {
-      cmdObj = GetKeyword('dbgError');
-      cmdObj.keyword = keyword;
+    let kwProcessor = GetKeyword(keyword);
+    if (!kwProcessor) {
+      kwProcessor = GetKeyword('dbgError');
+      kwProcessor.keyword = keyword;
     }
-    const jsx = cmdObj.jsx(index, unit);
+    const jsx = kwProcessor.jsx(index, unit);
     sourceJSX.push(jsx);
-    out.push(`<${cmdObj.getName()} ... />\n`);
+    out.push(`<${kwProcessor.getName()} ... />\n`);
   });
 
   if (DBG) console.log(`JSX (SIMULATED)\n${out.join('')}`);

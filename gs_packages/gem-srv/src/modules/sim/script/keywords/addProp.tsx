@@ -21,10 +21,8 @@ export class AddProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const propName = parms[0];
-    const propType = parms[1];
-    const initValue = parms[2];
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, propName, propType, initValue] = unit;
     const propCtor = GetVarCtor(propType);
     const progout = [];
     progout.push(addProp(propName, propCtor, initValue));
@@ -42,11 +40,11 @@ export class AddProp extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const [kw, propName, propType, initValue] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, propName, propType, initValue] = unit;
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         addProp {propName} = {initValue} :{propType}
       </>

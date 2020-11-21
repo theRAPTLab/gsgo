@@ -30,9 +30,8 @@ export class defBlueprint extends Keyword {
    *  derived from ScriptUnit, everything after the keyword
    *  e.g. 'HoneyBee', 'Bee'
    */
-  compile(parms: any[]): ISMCBundle {
-    const blueprintName = parms[0];
-    const baseBlueprint = parms[1];
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, blueprintName, baseBlueprint] = unit;
     const progout = [];
     // the compiler format is just an array of functions
     // of form TOpcode, which is:
@@ -58,14 +57,14 @@ export class defBlueprint extends Keyword {
 
   /** return rendered component representation */
   // TScriptUnit is [ 'keyword', parm1, parm2, ... ]
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const state = {
-      blueprintName: srcLine[1],
-      baseBlueprint: srcLine[2]
+      blueprintName: unit[1],
+      baseBlueprint: unit[2]
     };
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <ScriptElement index={index} state={state} serialize={this.serialize} />
     );
   }

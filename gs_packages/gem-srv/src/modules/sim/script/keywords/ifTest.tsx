@@ -23,10 +23,8 @@ export class ifTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(parms: any[]): ISMCBundle {
-    const testName = parms[0];
-    const consq = parms[1]; // could be any TMethod
-    const alter = parms[2]; // also a TMethod
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, testName, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
       const ast = GetTest(testName);
@@ -47,13 +45,13 @@ export class ifTest extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
+    const [kw, testName, consequent, alternate] = unit;
     const cc = consequent ? 'TRUE:[consequent]' : '';
     const aa = alternate ? 'FALSE:[alternate]' : '';
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         ifTest {testName} {cc} {aa}
       </>

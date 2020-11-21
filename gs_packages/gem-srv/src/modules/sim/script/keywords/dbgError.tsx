@@ -16,14 +16,14 @@ export class dbgError extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('dbgError');
-    this.args = ['...parms'];
+    this.args = ['...args'];
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
+  compile(unit: TScriptUnit): ISMCBundle {
     const progout = [];
     progout.push(() => {
-      console.warn(`unknown: ${this.keyword}(${parms.join(', ')})`);
+      console.warn(`unknown: ${unit.join(', ')})`);
     });
     return {
       define: progout,
@@ -39,9 +39,9 @@ export class dbgError extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [error] = srcLine;
-    return super.jsx(index, srcLine, <>unknown keyword: {`'${error}'`}</>);
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [error] = unit;
+    return super.jsx(index, unit, <>unknown keyword: {`'${error}'`}</>);
   }
 } // end of UseFeature
 

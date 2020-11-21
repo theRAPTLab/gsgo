@@ -23,8 +23,8 @@ export class propMethod extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [propName, methodName, ...args] = parms;
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, propName, methodName, ...args] = unit;
     const progout = [];
     progout.push((agent: IAgent) => {
       const prop = agent.prop(propName);
@@ -44,11 +44,11 @@ export class propMethod extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const [kw, propName, methodName, ...arg] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, propName, methodName, ...arg] = unit;
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         prop {propName}.{methodName}({arg.join(' ')})
       </>

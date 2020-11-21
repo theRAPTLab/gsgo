@@ -23,10 +23,8 @@ export class ifExpr extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(parms: any[]): ISMCBundle {
-    const test = parms[0]; // any TMethod returning boolean
-    const consq = parms[1]; // could be any TMethod
-    const alter = parms[2]; // also a TMethod
+  compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
       const method = test;
@@ -46,13 +44,13 @@ export class ifExpr extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
+    const [kw, testName, consequent, alternate] = unit;
     const cc = consequent ? 'TRUE:[consequent]' : '';
     const aa = alternate ? 'FALSE:[alternate]' : '';
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         ifExpr {testName} {cc} {aa}
       </>
