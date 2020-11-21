@@ -15,17 +15,15 @@ import {
   SaveBlueprint,
   GetBlueprint
 } from 'modules/runtime-datacore';
-import {
-  ExpandScriptUnit,
-  LineToScriptUnit,
-  ScriptifyText
-} from 'lib/expr-parser';
+import { ParseExpression } from 'lib/expr-parser';
+import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 // critical imports
 import 'script/keywords/_all_keywords';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR');
+const scriptConverter = new GScriptTokenizer();
 const DBG = true;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -50,6 +48,40 @@ function m_Tokenify(item: any): any {
   }
   return item;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** tokenizes a line of text, returning a ScriptUnit */
+function m_LineToScriptUnit(expr): TScriptUnit {
+  const line = expr.trim();
+  const unit = [];
+  if (!line.length) return ['dbgError', 'empty line'];
+  const toks = scriptConverter.tokenize(line);
+  if (toks) unit.push(...toks);
+  return unit;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_ExpandArg(arg: any): any {
+  // don't process anything other than strings
+  if (typeof arg !== 'string') return arg;
+  if (arg.substring(0, 2) !== '{{') return arg;
+  if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
+  // got this far? we need to ParseExpression the expression into an ast
+  const ex = arg.substring(2, arg.length - 2).trim();
+  const ast = ParseExpression(ex);
+  return ast;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Scan argument list and convert expression to an AST. This is called for
+ *  each ScriptUnit line after the keyword
+ */
+function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
+  const res: TScriptUnit = unit.map((arg, idx) => {
+    // arg is an array of elements in the ScriptUnit
+    // skip first arg, which is the keyword
+    if (idx === 0) return arg;
+    return m_ExpandArg(arg);
+  });
+  return res;
+}
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,7 +105,7 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
   // this has to look through the output to determine what to compile
   units.forEach((rawUnit, idx) => {
     // extract keyword first unit, assume that . means Feature
-    let unit = ExpandScriptUnit(rawUnit);
+    let unit = m_ExpandScriptUnit(rawUnit);
     // first in array is keyword aka 'cmdName'
     // detect comments
     if (unit[0] === '//') unit[0] = 'comment';
@@ -151,6 +183,20 @@ function TextifyScript(units: TScriptUnit[]): string {
   });
   return lines.join('\n');
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** tokenizes the text line-by-line into ScriptUnit[]
+ */
+function ScriptifyText(text: string): TScriptUnit[] {
+  /* HACK pc line endings would screw this, need more robust check */
+  const sourceStrings = text.split('\n');
+  const scriptUnits = [];
+  sourceStrings.forEach(str => {
+    str = str.trim();
+    const unit = m_LineToScriptUnit(str);
+    if (unit.length && unit[0] !== undefined) scriptUnits.push(unit);
+  });
+  return scriptUnits;
+}
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -188,19 +234,15 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Script is TScriptUnit[], produced by GUI
+/// Script is TScriptUnit[], the base representation of gemscript
 export {
   CompileScript, // TScriptUnit[] => ISMCBundle
   RenderScript, // TScriptUnit[] => JSX
-  TextifyScript // TScriptUnit[] => produce source text from units
+  TextifyScript, // TScriptUnit[] => produce source text from units
+  ScriptifyText // exprs => TScriptUnit[]
 };
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
   RegisterBlueprint // TScriptUnit[] => ISMCBundle
-};
-/// for converting text to TScriptUnit Script
-export {
-  LineToScriptUnit, // expr => TScriptUnit
-  ScriptifyText // exprs => TScriptUnit[]
 };

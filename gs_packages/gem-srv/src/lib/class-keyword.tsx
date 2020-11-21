@@ -28,12 +28,13 @@ const styleIndex = {
   backgroundColor: 'black',
   color: 'white',
   padding: '2px 4px',
-  display: 'inline-block',
+  marginTop: '-1px',
   minWidth: '1.25em',
+  float: 'left' as 'left',
   textAlign: 'right' as 'right' // this dumb typescriptery css workaround
 };
-const styleLine = { padding: '0.5em', borderBottom: '1px dotted gray' };
-const styleContent = { padding: '0.5em' };
+const styleLine = { borderTop: '1px dotted gray' };
+const styleContent = { padding: '0.5em', overflow: 'hidden' };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** HACK: used to generate ever-increasing ID for rendering. They are all unique
  *  because our rendering loop just rerenders the entire list into a GUI every
@@ -69,8 +70,8 @@ export class Keyword implements IKeyword {
     // get marked by the linter as invalid CSS
     return (
       <div key={this.generateKey()} style={styleLine}>
-        <span style={styleIndex}>{index}</span>
-        <span style={styleContent}>{children}</span>
+        <div style={styleIndex}>{index}</div>
+        <div style={styleContent}>{children}</div>
       </div>
     );
   }
