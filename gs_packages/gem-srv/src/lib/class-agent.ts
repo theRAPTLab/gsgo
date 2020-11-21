@@ -177,13 +177,14 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.execQueue = [];
   }
 
-  /** evaluator mutator, can accept an array of args or a single arg
-   *  note that args is MUTATED by Evaluate, so it's important that
-   *  when you call this you are not actually creating a new array.
-   *  However, this also returns the passed argument(s) so you can
-   *  also assign them or spread them directly.
+  /** utility that checks whether an argument is an expression.
+   *  if it is, then Evaluate() is called on it to return an actual
+   *  value.
+   *  NOTE: args are MUTATED IN-PLACE.
+   *  The mutated array is also returned if you want to assign
+   *  it directly.
    */
-  evaluate(args: any, context: object = this): any {
+  evaluateArgs(args: any, context: object = this): any {
     if (typeof args === 'object' && args.type !== undefined)
       return Evaluate(args, this);
 

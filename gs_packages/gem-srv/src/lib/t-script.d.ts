@@ -42,7 +42,7 @@ export interface IAgent extends IScopeable {
   queueUpdateAction: (action: TMethod) => void;
   queueThinkAction: (action: TMethod) => void;
   queueExecAction: (action: TMethod) => void;
-  evaluate: (...args: any) => any;
+  evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
   addFeature: (name: string) => void;

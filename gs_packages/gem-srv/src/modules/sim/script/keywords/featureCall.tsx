@@ -31,9 +31,9 @@ export class featureCall extends Keyword {
       const feat = agent.feature(featName);
       // spread [...args] handles case when args is a single item, not an array
       // then the argument passed to evaluate() is always an array
-      // agent.evaluate() mutates the returned array so we spread it
+      // agent.evaluateArgs() mutates the returned array so we spread it
       const vals = [...args];
-      feat.method(agent, methodName, ...agent.evaluate(vals));
+      feat.method(agent, methodName, ...agent.evaluateArgs(vals));
     });
     return {
       define: [],
