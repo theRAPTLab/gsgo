@@ -31,6 +31,12 @@ const DBG = false;
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultText = `
+// onAgent Bee [[
+//   // return boolean
+//   agentProp x lessThan 0
+// ]] [[
+//   // do something with subjectA
+// ]]
 // definitions
 defBlueprint "Bunny"
 addProp frame Number 2

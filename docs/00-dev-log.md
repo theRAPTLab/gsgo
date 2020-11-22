@@ -640,7 +640,7 @@ So I can detect the blocks now...but how do I compile them recursively? Insert `
 
   Tomorrow, rewrite `ScriptifyText()` so it can walk the new datastructure and create **program arrays** on the fly as it parses each line.
 
-## NOV 21 SAT - Compiling/Executing Program Blocks
+## NOV 21 SAT - (Aside) Compiling/Executing Program Blocks
 
 The Deblockifier takes the GEMscriptText with our new syntax and emits an array of captured strings of that are demarqued with [[ ]], which is similar to how we package expressions with {{ }}.
 
@@ -660,8 +660,10 @@ onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
 turns into a long string:
 
 ```
-onAgentPair Bee touches Honey {{ agent.prop('range') }} [[ {{ agent.prop('x').increment }} [[ TEST:programName ]]; setProp 'x' 0; ]] 
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[ {{ agent.prop('x').increment }}; [[ TEST:programName ]]; setProp 'x' 0; ]] 
 ```
+
+**NOTE** There are **line terminators** in the form of a **semi-colon** added to the inside of the main block. This is used to reconstruct the ScriptText string array so they can be reprocessed by the compiler.
 
 This condition has compiled into a new TextLine of the form "keyword ...args" which can then be parsed by `m_LineToScriptUnit()` to emit a ScriptUnit of this form:
 
@@ -669,7 +671,7 @@ This condition has compiled into a new TextLine of the form "keyword ...args" wh
 [ 'onAgentPair', 'Bee', 'touches', 'Honey', '{{expr}}', '[[block]]' ]
 ```
 
-NOTE the ScriptUnit is comprised of either strings or numbers, so it is completely serialized. This is our base representation of GEMscript code. A complete Script is just an array of ScriptUnits.
+**NOTE** The ScriptUnit is comprised of either strings or numbers, so it is completely serialized. This is our base representation of GEMscript code. A complete Script is just an array of ScriptUnits.
 
 At compile time, **CompileScript** takes a Script (an array of ScriptUnits) and does its keyword processing. The algorithm currently just walks the array of ScriptUnits unit-by-unit, performing the following steps on each:
 
@@ -696,6 +698,12 @@ Theoretically, I can add the processing of [[ ]] blocks to the **ScriptUnitExpan
 2. **In evaluateArgs()**, if an Array is received assume it is a PROGRAM and run agent.exec()  on it, replacing the argument with the returned value from the program. Unlike ScriptUnitExpander, this doesn't need to run recursively because the program blocks have already been "inlined" by the compiler's recursive pass (I think)
 
 So that's the next immediate goal for today.
+
+* [ ] `m_ExpandScriptUnit()`: can I detect `[[ ]]`?
+  * [x] Look at `m_ExpandArg(arg)`, add `m_expanders` expansion table
+  * [ ] insert `m_ExtractBlocks()` and `m_StitchifyBlocks` into `ScriptifyText()`
+    * [x] the output of extracted blocks is `[ [ "normal line", ], ["[["],...,["]]"] ]`
+    * [ ]  fix `m_StitchifyBlocks` to emit appropriate 
 
 ---
 

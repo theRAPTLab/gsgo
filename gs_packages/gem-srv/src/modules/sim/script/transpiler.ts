@@ -24,7 +24,7 @@ import 'script/keywords/_all_keywords';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR');
 const scriptConverter = new GScriptTokenizer();
-const DBG = false;
+const DBG = true;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,15 +59,25 @@ function m_LineToScriptUnit(line: string): TScriptUnit {
   return unit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const m_expanders = {
+  '{{': (arg: string) => {
+    if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
+    const ex = arg.substring(2, arg.length - 2).trim();
+    const ast = ParseExpression(ex);
+    return ast;
+  },
+  '[[': (arg: string) => {
+    if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
+    const block = arg.substring(2, arg.length - 2).trim();
+    return block;
+  }
+};
 function m_ExpandArg(arg: any): any {
   // don't process anything other than strings
   if (typeof arg !== 'string') return arg;
-  if (arg.substring(0, 2) !== '{{') return arg;
-  if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
-  // got this far? we need to ParseExpression the expression into an ast
-  const ex = arg.substring(2, arg.length - 2).trim();
-  const ast = ParseExpression(ex);
-  return ast;
+  const strTest = m_expanders[arg.substring(0, 2)];
+  if (strTest) return strTest(arg);
+  return arg;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Scan argument list and convert expression to an AST. This is called for
@@ -83,31 +93,37 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
   return res;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_DeblockifyText(text: string) {
+/** Given a text with multiline blocks, emit an array of strings corresponding
+ *  to regular strings and [[ ]] demarked lines. The output nodes are processed
+ *  back into a single line with m_StitchifyBlocks()
+ */
+function m_ExtractBlocks(text: string): Array<string[]> {
   const sourceStrings = text.split('\n');
   let level = 0;
   const nodes = [];
   let buffer = [];
+  // "add sub brackets" to output
+  const ASB = true;
   // first lets start scanning each line
   sourceStrings.forEach((str, idx) => {
     str = str.trim();
-    if (DBG) console.log(`${idx} ${str} level:${level}\t`, buffer);
     if (str.length === 0) return;
     if (str.slice(0, 2) === '//') return;
     // block delimiters
     // note: inline [[ progName ]] is handled by gscript-tokenizer
     const startBlock = str.slice(-2) === '[[';
     const endBlock = str.slice(0, 2) === ']]';
-    // case 3 - adjacent blocks
+
+    // case 3 - adjacent blocks ]] [[
     if (endBlock && startBlock) {
       if (level === 1) {
-        buffer.push(']]');
+        if (ASB) buffer.push(']]');
         nodes.push(buffer);
-        buffer = ['[['];
+        if (ASB) buffer = ['[['];
       }
       return;
     }
-    // case 1 - start of a block
+    // case 1 - start of a block ...[[
     if (startBlock) {
       level++;
       const sub = str.slice(0, str.length - 2).trim();
@@ -118,23 +134,24 @@ function m_DeblockifyText(text: string) {
           buffer = [];
         }
       }
-      buffer.push('[[');
+      if (ASB) buffer.push('[[');
       return;
     }
-    // case 2 - end of a block
+    // case 2 - end of a block ]]...
     if (endBlock) {
       level--;
-      buffer.push(']]');
+      if (ASB) buffer.push(']]');
       if (level === 0) {
-        // closed outside [[ ]]? clear buffer
         nodes.push(buffer);
         buffer = [];
       }
       return;
     }
-    // case 4 - normal line
+    // case 4 - non-marker line
     buffer.push(str);
   });
+  // cleanup
+  if (buffer.length > 0) nodes.push(buffer);
   if (level !== 0) {
     console.log(
       ...PR(
@@ -146,22 +163,30 @@ function m_DeblockifyText(text: string) {
     );
     return undefined;
   }
-  // return a sequence
+  // at this point, the nodes array contains arrays of strings
+  // (1) if the first element has a [[, it's a block and should be merged
+  // (2) otherwise, it's regular strings
   return nodes;
 }
-function m_StitchifyBlocks(nodes) {
-  let level = 0;
-  let line = '';
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given the node output of m_ExtractBlocks, re-stitch them back into
+ *  text suitable for CompileScript(). Semi-colons are inserted to demarque
+ *  line breaks for recursive blocked script compilation. The result is a
+ *  single long string.
+ */
+function m_StitchifyBlocks(nodes: Array<string[]>): string[] {
+  const lines = [];
   nodes.forEach((node, ii) => {
-    /*/
-    nodes are "normal string segments" and "blocks"
-    if node.length is 1, then it's normal string
-    otherwise, it's a block to stitch together
-    /*/
-    if (node.length === 1) {
-      line += `${node[0]} `;
+    // nodes contains arrays of strings :
+    // "blocks" are special case with node[0]==='[['
+    // "normal string segments" otherwise
+    if (node[0] !== '[[') {
+      node.forEach(item => lines.push(item));
     } else {
+      let line = '';
       node.forEach((item, jj) => {
+        // each item in the node is a string to be stitched together
+        // the [[ and ]] appear on their own lines
         if (jj === item.length - 2) {
           line += `${item} `;
           return;
@@ -181,26 +206,15 @@ function m_StitchifyBlocks(nodes) {
         // add line delimiter ';' in safe place
         line += `${item}; `;
       });
+      if (lines.length > 0) {
+        lines[lines.length - 1] += ` ${line.trim()}`;
+        // let lastLine = lines[lines.length - 1];
+        // console.log(`modifying '${lastLine}' with '${line}`);
+      }
     }
   });
-  return line;
+  return lines;
 }
-/// - - -
-const txt = `
-onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
-  {{ agent.prop('x').increment }}
-  [[ TEST:programName ]]
-  setProp 'x' 0
-  // the expression context passed is agent, subjectA, subjectAB
-]]
-// on Tick [[
-//   agentProp x something
-// ]]
-
-`;
-// console.log(...PR('\nblocks parsed', m_DeblockifyText(txt)));
-console.log(...PR(`\n${m_StitchifyBlocks(m_DeblockifyText(txt))}`));
-// console.log(...PR('\nsplits', txt.split(/\s*[;\n]+\s*/)));
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -305,18 +319,20 @@ function TextifyScript(units: TScriptUnit[]): string {
 /** tokenizes the text line-by-line into ScriptUnit[]
  */
 function ScriptifyText(text: string): TScriptUnit[] {
-  /* HACK pc line endings would screw this, need more robust check */
-  const sourceStrings = text.split('\n');
-  // now compile the updated strings
+  const sourceStrings = m_StitchifyBlocks(m_ExtractBlocks(text));
+  // was: const sourceStrings = text.split('\n');
+
   const scriptUnits = [];
+
+  // now compile the updated strings
   sourceStrings.forEach(str => {
     str = str.trim();
     const unit = m_LineToScriptUnit(str);
     if (unit.length && unit[0] !== undefined) scriptUnits.push(unit);
   });
+
   return scriptUnits;
 }
-
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
@@ -350,6 +366,47 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
   }
   return SaveAgent(agent);
 }
+
+/// TEST CODE /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const txt = `
+// definitions
+defBlueprint "Bunny"
+addProp frame Number 2
+// conditions
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+  {{ agent.prop('x').increment }}
+  [[ TEST:testName ]]
+  setProp 'x' 0
+  // the expression context passed is agent, subjectA, subjectAB
+]]
+addProp sprite "bunny.json"
+on Tick [[
+  agentProp 'x' something
+]] [[
+  agentProp "y" something else
+]]
+onAgent Bee [[
+  // return boolean
+  agentProp x lessThan 0
+]] [[
+  PROGRAM:programName
+]]
+// definitions
+useFeature Movement
+// defaults
+prop skin 'bunny.json'
+// runtime
+featureCall Movement jitterPos -5 5
+// condition test 1
+addTest BunnyTest {{ agent.prop('frame').value }}
+ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
+// condition test 2
+ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
+`;
+// console.log(...PR('\nblocks parsed', m_ExtractBlocks(txt)));
+// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ExtractBlocks(txt))));
+// console.log(...PR('\nsplits', txt.split(/\s*[;\n]+\s*/)));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
