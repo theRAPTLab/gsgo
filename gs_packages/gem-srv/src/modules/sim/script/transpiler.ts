@@ -233,9 +233,9 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
   };
   if (!(units.length > 0)) return bdl;
   if (DBG) {
-    console.groupCollapsed(...PR(`COMPILING ${units[1]}`));
+    console.groupCollapsed(...PR('COMPILING SCRIPT'));
     const out = m_PrintScriptToText(units);
-    console.log(`SCRIPT\n${out.trim()}`);
+    console.log(`PARSING TEXT\n${out.trim()}`);
   }
   // START COMPILING //////////////////////////////////////////////////////////
   // this has to look through the output to determine what to compile
@@ -268,7 +268,7 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
     if (update) bdl.update.push(...update);
   }); // units.forEach
   if (bdl.name === undefined) throw Error('CompileScript: missing defBlueprint');
-  if (DBG) console.log(...PR(`compiled ${bdl.name}`));
+  if (DBG) console.log(...PR(`COMPILED ${bdl.name}`, bdl));
   if (DBG) console.groupEnd();
   return bdl;
 }
@@ -280,7 +280,7 @@ function RenderScript(units: TScriptUnit[]): any[] {
   const sourceJSX = [];
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
-  if (DBG) console.groupCollapsed(...PR(`RENDERING ${units[0][1]}`));
+  if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
   units.forEach((unit, index) => {
     const keyword = unit[0];
     // comment processing
@@ -342,12 +342,12 @@ function ScriptifyText(text: string): TScriptUnit[] {
 function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
   const bp = CompileScript(units);
   if (!(units.length > 0)) return bp;
+  if (DBG) console.groupCollapsed(...PR(`SAVING BLUEPRINT for ${bp.name}`));
   SaveBlueprint(bp);
   // run conditional programming in template
   // this is a stack of functions that run in global context
   const { conditions } = bp;
   let out = [];
-  if (DBG) console.groupCollapsed(...PR(`CONDITIONS for ${bp.name}`));
   conditions.forEach(regFunc => {
     out.push(regFunc());
   });
