@@ -23,7 +23,7 @@ export class dbgError extends Keyword {
   compile(unit: TScriptUnit): ISMCBundle {
     const progout = [];
     progout.push(() => {
-      console.warn(`unknown: ${unit.join(', ')})`);
+      console.warn(`unknown keyword: ${unit.join(', ')}`);
     });
     return {
       define: progout,

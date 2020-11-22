@@ -35,7 +35,6 @@ const OBRACK_CODE = 91; // [
 const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
-const PROG_OUTPUT = '##';
 const COMMENT_1 = '//';
 const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
@@ -127,6 +126,7 @@ class ScriptTokenizer {
     /* HACK ADDITION for GEMSCRIPT COMMENTS */
     if (line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
     /** END HACK **/
+
     while (this.index < this.length) {
       this.gobbleSpaces();
       this.lastIndex = this.index;
@@ -139,6 +139,23 @@ class ScriptTokenizer {
   }
   /** END TOKENIZER **********************************************************/
   /////////////////////////////////////////////////////////////////////////////
+  showProgress(prompt) {
+    const s1 = this.line.substring(0, this.index);
+    const s2 = this.line[this.index];
+    const s3 = this.line.substring(this.index + 1);
+    const pr = prompt === undefined ? '' : `! ${prompt} !\n`;
+    console.log(
+      `%c${pr}%c${s1}%c${s2}%c${s3}`,
+      'color:white;background-color:#FF0000;padding:2px 0 2px 0',
+      'color:black;',
+      'background-color:#FFB000',
+      'color:#C0C0C0'
+    );
+  }
+  throwError(err) {
+    this.showProgress('ERROR');
+    throw Error(err);
+  }
 
   exprI(i) {
     return charAtFunc.call(this.line, i);
@@ -182,6 +199,7 @@ class ScriptTokenizer {
       // Single or double quotes
       return this.gobbleStringLiteral();
     }
+
     if (ch === OBRACK_CODE) {
       return this.gobbleArray();
     }
@@ -250,7 +268,7 @@ class ScriptTokenizer {
         number += this.exprI(this.index++);
       }
       if (!isDecimalDigit(this.exprICode(this.index - 1))) {
-        throw Error(
+        this.throwError(
           `Expected exponent (${number + this.exprI(this.index)}) at ${
             this.index
           }`
@@ -261,13 +279,13 @@ class ScriptTokenizer {
     chCode = this.exprICode(this.index);
     // Check to make sure this isn't a variable name that start with a number (123abc)
     if (isIdentifierStart(chCode)) {
-      throw Error(
+      this.throwError(
         `Variable names cannot start with a number (${
           number + this.exprI(this.index)
         }) at ${this.index}`
       );
     } else if (chCode === PERIOD_CODE) {
-      throw Error(`Unexpected period at ${this.index}`);
+      this.throwError(`Unexpected period at ${this.index}`);
     }
 
     return parseFloat(number);
@@ -315,7 +333,8 @@ class ScriptTokenizer {
       }
     }
 
-    if (!closed) throw Error(`Unclosed quote after "${str}" at ${this.index}`);
+    if (!closed)
+      this.throwError(`Unclosed quote after "${str}" at ${this.index}`);
     return str;
   }
   // Gobbles only identifiers
@@ -330,7 +349,7 @@ class ScriptTokenizer {
     if (isIdentifierStart(ch)) {
       this.index++;
     } else {
-      throw Error(`Unexpected ${this.exprI(this.index)} at ${this.index}`);
+      this.throwError(`Unexpected ${this.exprI(this.index)} at ${this.index}`);
     }
 
     while (this.index < this.length) {
@@ -371,7 +390,7 @@ class ScriptTokenizer {
           separator_count &&
           separator_count >= args.length
         ) {
-          throw Error(
+          this.throwError(
             `Unexpected token ${String.fromCharCode(termination)} at ${
               this.index
             }`
@@ -385,7 +404,7 @@ class ScriptTokenizer {
         if (separator_count !== args.length) {
           // missing argument
           if (termination === CPAREN_CODE) {
-            throw Error(`Unexpected token at ${this.index}`);
+            this.throwError(`Unexpected token at ${this.index}`);
           } else if (termination === CBRACK_CODE) {
             for (let arg = args.length; arg < separator_count; arg++) {
               args.push(null);
@@ -395,13 +414,13 @@ class ScriptTokenizer {
       } else {
         node = this.gobbleToken();
         if (!node) {
-          throw Error(`Expected comma at ${this.index}`);
+          this.throwError(`Expected comma at ${this.index}`);
         }
         args.push(node);
       }
     }
     if (!closed) {
-      throw Error(
+      this.throwError(
         `Expected ${String.fromCharCode(termination)} at ${this.index}`
       );
     }
@@ -432,7 +451,7 @@ class ScriptTokenizer {
         this.gobbleSpaces();
         ch_i = this.exprICode(this.index);
         if (ch_i !== CBRACK_CODE) {
-          throw Error(`Unclosed [ at ${this.index}`);
+          this.throwError(`Unclosed [ at ${this.index}`);
         }
         this.index++;
       } else if (ch_i === OPAREN_CODE) {
@@ -457,7 +476,7 @@ class ScriptTokenizer {
       this.index++;
       return node;
     }
-    throw Error(`Unclosed ( at ${this.index}`);
+    this.throwError(`Unclosed ( at ${this.index}`);
   }
   /* HACK ADDITION for text script expressions */
   // in GEMscript text, a {{ }} indicates an expression, and should
@@ -477,14 +496,16 @@ class ScriptTokenizer {
       }
       str += String.fromCharCode(ch);
     }
-    throw Error(`Unclosed inline {{ at ${this.index} for ${str}`);
+    this.throwError(`Unclosed inline {{ at ${this.index} for ${str}`);
   }
   /* HACK ADDITION for text script tmethod names */
   // in GEMSCRIPT text, a [[ ]] on a single line designates a
   // named TMethod. There are several possible locations of the
   // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
   // implementor to know which one it is
-  gobbleTMethodName() {
+  gobbleTMethod() {
+    console.log('TMETHOD', this.line);
+    console.log('TMETHOD', '^'.padStart(this.index + 1));
     let ch;
     let cch;
     let str = '';
@@ -499,7 +520,7 @@ class ScriptTokenizer {
       }
       str += String.fromCharCode(ch);
     }
-    throw Error(`Unclosed inline [[ at ${this.index} for ${str}`);
+    this.throwError(`Unclosed inline [[ at ${this.index} for ${str}`);
   }
   /* HACK ADDITION for text script comments // and -- */
   // skip the first two // and output the entire rest of the line

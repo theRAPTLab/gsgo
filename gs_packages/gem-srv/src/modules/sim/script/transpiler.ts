@@ -22,7 +22,7 @@ import 'script/keywords/_all_keywords';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRNPLR');
+const PR = UR.PrefixUtil('TRNPLR', 'TagRed');
 const scriptConverter = new GScriptTokenizer();
 const DBG = true;
 
@@ -69,9 +69,11 @@ const m_expanders = {
   '[[': (arg: string) => {
     if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
     const block = arg.substring(2, arg.length - 2).trim();
+    console.log(...PR('ExpandArg: block expansion not implemented'));
     return block;
   }
 };
+/** given an argument check if it is either an expression or program block */
 function m_ExpandArg(arg: any): any {
   // don't process anything other than strings
   if (typeof arg !== 'string') return arg;
@@ -229,6 +231,7 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
     conditions: [],
     update: []
   };
+  if (!(units.length > 0)) return bdl;
   if (DBG) {
     console.groupCollapsed(...PR(`COMPILING ${units[1]}`));
     const out = m_PrintScriptToText(units);
@@ -275,6 +278,7 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
  */
 function RenderScript(units: TScriptUnit[]): any[] {
   const sourceJSX = [];
+  if (!(units.length > 0)) return sourceJSX;
   let out = [];
   if (DBG) console.groupCollapsed(...PR(`RENDERING ${units[0][1]}`));
   units.forEach((unit, index) => {
@@ -327,7 +331,7 @@ function ScriptifyText(text: string): TScriptUnit[] {
   // now compile the updated strings
   sourceStrings.forEach(str => {
     str = str.trim();
-    const unit = m_LineToScriptUnit(str);
+    const unit = m_LineToScriptUnit(str); // invoke script tokenizer for line
     if (unit.length && unit[0] !== undefined) scriptUnits.push(unit);
   });
 
@@ -337,6 +341,7 @@ function ScriptifyText(text: string): TScriptUnit[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
   const bp = CompileScript(units);
+  if (!(units.length > 0)) return bp;
   SaveBlueprint(bp);
   // run conditional programming in template
   // this is a stack of functions that run in global context

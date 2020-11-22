@@ -150,7 +150,7 @@ class Compiler extends React.Component {
   constructor() {
     super();
     this.text = defaultText;
-    this.source = TRANSPILER.ScriptifyText(this.text);
+    this.source = [];
     const jsx = TRANSPILER.RenderScript(this.source);
     this.state = {
       jsx,

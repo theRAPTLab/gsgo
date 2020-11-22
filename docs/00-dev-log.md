@@ -699,11 +699,19 @@ Theoretically, I can add the processing of [[ ]] blocks to the **ScriptUnitExpan
 
 So that's the next immediate goal for today.
 
-* [ ] `m_ExpandScriptUnit()`: can I detect `[[ ]]`?
+CAN I CREATE THE TEXT BLOCK FORMAT IN SCRIPT UNIT FORMAT 2.0?
+* [x] insert `m_ExtractBlocks()` and `m_StitchifyBlocks` into `ScriptifyText()`
+  * [x] the output of extracted blocks is `[ [ "normal line", ], ["[["],...,["]]"] ]`
+  * [x]  fix `m_StitchifyBlocks` to emit appropriate text format
+
+Now, let's if we can actually expand blocks into programs
+
+* [x] `m_ExpandScriptUnit()`: can I detect `[[ ]]`?
   * [x] Look at `m_ExpandArg(arg)`, add `m_expanders` expansion table
-  * [ ] insert `m_ExtractBlocks()` and `m_StitchifyBlocks` into `ScriptifyText()`
-    * [x] the output of extracted blocks is `[ [ "normal line", ], ["[["],...,["]]"] ]`
-    * [ ]  fix `m_StitchifyBlocks` to emit appropriate 
+* [ ] update `gscript-tokenizer` to handle `[[ ]]`
+  * [ ] 
+
+
 
 ---
 
