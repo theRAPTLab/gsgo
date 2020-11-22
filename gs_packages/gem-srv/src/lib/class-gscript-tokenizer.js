@@ -179,15 +179,15 @@ class ScriptTokenizer {
     let to_check;
     let tc_len;
 
+    /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
+    if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
+      this.index++;
+      return this.gobbleTMethod();
+    }
     /* HACK GEMSCRIPT ADDITION FOR {{ expr }} */
     if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
       this.index++;
       return this.gobbleExpressionString();
-    }
-    /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
-    if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
-      this.index++;
-      return this.gobbleTMethodName();
     }
     /* END HACK */
 
@@ -447,6 +447,11 @@ class ScriptTokenizer {
         this.gobbleSpaces();
         node = this.gobbleIdentifier();
       } else if (ch_i === OBRACK_CODE) {
+        /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
+        if (this.exprICode(this.index) === OBRACK_CODE) {
+          return this.gobbleTMethod();
+        }
+        /* END HACK */
         node = this.gobbleToken();
         this.gobbleSpaces();
         ch_i = this.exprICode(this.index);
@@ -476,7 +481,7 @@ class ScriptTokenizer {
       this.index++;
       return node;
     }
-    this.throwError(`Unclosed ( at ${this.index}`);
+    return this.throwError(`Unclosed ( at ${this.index}`);
   }
   /* HACK ADDITION for text script expressions */
   // in GEMscript text, a {{ }} indicates an expression, and should
@@ -492,11 +497,11 @@ class ScriptTokenizer {
 
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
         this.index++;
-        return `{{${str}}}`;
+        return `{{ ${str.trim()} }}`;
       }
       str += String.fromCharCode(ch);
     }
-    this.throwError(`Unclosed inline {{ at ${this.index} for ${str}`);
+    return this.throwError(`Unclosed inline {{ at ${this.index} for ${str}`);
   }
   /* HACK ADDITION for text script tmethod names */
   // in GEMSCRIPT text, a [[ ]] on a single line designates a
@@ -504,23 +509,23 @@ class ScriptTokenizer {
   // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
   // implementor to know which one it is
   gobbleTMethod() {
-    console.log('TMETHOD', this.line);
-    console.log('TMETHOD', '^'.padStart(this.index + 1));
+    // when this is called from gobbleVariable, we're already pointing
+    // at the second [ in [[
     let ch;
     let cch;
     let str = '';
     this.index++;
+    // start reading inside [[
     while (this.index < this.length) {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
-
       if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
         this.index++;
-        return `[[${str}]]`;
+        return `[[ ${str.trim()} ]]`;
       }
       str += String.fromCharCode(ch);
     }
-    this.throwError(`Unclosed inline [[ at ${this.index} for ${str}`);
+    return this.throwError(`Unclosed inline [[ at ${this.index} for ${str}`);
   }
   /* HACK ADDITION for text script comments // and -- */
   // skip the first two // and output the entire rest of the line
