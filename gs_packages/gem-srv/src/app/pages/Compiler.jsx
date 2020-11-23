@@ -30,28 +30,7 @@ const DBG = false;
 
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const defaultText = `
-onAgent Bee [[
-  // return boolean
-  agentProp x lessThan 0
-]] [[
-  agentProp y
-]]
-[[ expr ]]
-// definitions
-defBlueprint "Bunny"
-addProp frame Number 2
-useFeature Movement
-// defaults
-prop skin 'bunny.json'
-// runtime
-featureCall Movement jitterPos -5 5
-// condition test 1
-addTest BunnyTest {{ agent.prop('frame').value }}
-ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
-// condition test 2
-ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-`.trim();
+const defaultText = DATACORE.GetDefaultText();
 
 const defineBlockSyntax = `
 if {{ agent.prop('foo') }} [[

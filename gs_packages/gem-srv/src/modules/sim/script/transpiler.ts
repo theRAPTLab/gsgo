@@ -17,6 +17,7 @@ import {
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
+import * as DATACORE from 'modules/runtime-datacore';
 // critical imports
 import 'script/keywords/_all_keywords';
 
@@ -24,6 +25,8 @@ import 'script/keywords/_all_keywords';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR', 'TagRed');
 const scriptConverter = new GScriptTokenizer();
+const LSEP = '\r'; // non-printing line sep character
+//
 const DBG = true;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -53,7 +56,7 @@ function m_Tokenify(item: any): any {
 function m_LineToScriptUnit(line: string): TScriptUnit {
   const str = line.trim();
   const unit = [];
-  if (!str.length) return ['dbgError', 'empty line'];
+  if (str.length === 0) return ['dbgError', 'empty line'];
   const toks = scriptConverter.tokenize(str);
   if (toks) unit.push(...toks);
   return unit;
@@ -68,9 +71,16 @@ const m_expanders = {
   },
   '[[': (arg: string) => {
     if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
-    const block = arg.substring(2, arg.length - 2).trim();
-    console.log(...PR('ExpandArg: block expansion not implemented'));
-    return block;
+    const script = [];
+    const lines = arg.substring(2, arg.length - 2).split(LSEP);
+    // process all the block contents
+    lines.forEach(line => {
+      const ex = line.trim();
+      const rawUnit = m_LineToScriptUnit(ex);
+      const unit = m_ExpandScriptUnit(rawUnit);
+      script.push(unit);
+    });
+    return script;
   }
 };
 /** given an argument check if it is either an expression or program block */
@@ -97,7 +107,8 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given a text with multiline blocks, emit an array of strings corresponding
  *  to regular strings and [[ ]] demarked lines. The output nodes are processed
- *  back into a single line with m_StitchifyBlocks()
+ *  back into a single line with m_StitchifyBlocks(). Returns an array of
+ *  string arrays.
  */
 function m_ExtractBlocks(text: string): Array<string[]> {
   const sourceStrings = text.split('\n');
@@ -114,10 +125,12 @@ function m_ExtractBlocks(text: string): Array<string[]> {
     // block delimiters
     // note: inline [[ progName ]] is handled by gscript-tokenizer
     const startBlock = str.slice(-2) === '[[';
-    const endBlock = str.slice(0, 2) === ']]';
+    const endBlock = str.length === 2 && str.slice(0, 2) === ']]';
+    const endStartBlock =
+      str.length > 3 && startBlock && str.slice(0, 2) === ']]';
 
     // case 3 - adjacent blocks ]] [[
-    if (endBlock && startBlock) {
+    if (endStartBlock) {
       if (level === 1) {
         if (ASB) buffer.push(']]');
         nodes.push(buffer);
@@ -129,9 +142,9 @@ function m_ExtractBlocks(text: string): Array<string[]> {
     if (startBlock) {
       level++;
       const sub = str.slice(0, str.length - 2).trim();
-      if (sub.length) buffer.push(sub);
+      if (sub.length > 0) buffer.push(sub);
       if (level === 1) {
-        if (buffer.length) {
+        if (buffer.length > 0) {
           nodes.push(buffer);
           buffer = [];
         }
@@ -145,6 +158,7 @@ function m_ExtractBlocks(text: string): Array<string[]> {
       if (ASB) buffer.push(']]');
       if (level === 0) {
         nodes.push(buffer);
+        nodes.push('EOB');
         buffer = [];
       }
       return;
@@ -179,7 +193,13 @@ function m_ExtractBlocks(text: string): Array<string[]> {
 function m_StitchifyBlocks(nodes: Array<string[]>): string[] {
   const lines = [];
   nodes.forEach((node, ii) => {
-    // nodes contains arrays of strings :
+    // if a node is not an array, then it's a special marker
+    if (!Array.isArray(node)) {
+      // skip 'EOB' markers, which are currently just to delineate blocks
+      // in the nodes format
+      if (node === 'EOB') return;
+    }
+    // nodes contains arrays of strings : 7
     // "blocks" are special case with node[0]==='[['
     // "normal string segments" otherwise
     if (node[0] !== '[[') {
@@ -205,8 +225,12 @@ function m_StitchifyBlocks(nodes: Array<string[]>): string[] {
           // skip comments
           return;
         }
+        if (item.slice(-2) === '}}') {
+          line += `${item}${LSEP} `; //
+          return;
+        }
         // add line delimiter ';' in safe place
-        line += `${item}; `;
+        line += `${item}${LSEP} `;
       });
       if (lines.length > 0) {
         lines[lines.length - 1] += ` ${line.trim()}`;
@@ -233,7 +257,7 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
   };
   if (!(units.length > 0)) return bdl;
   if (DBG) {
-    console.groupCollapsed(...PR('COMPILING SCRIPT'));
+    console.group(...PR('COMPILING SCRIPT'));
     const out = m_PrintScriptToText(units);
     console.log(`PARSING TEXT\n${out.trim()}`);
   }
@@ -242,6 +266,7 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
   units.forEach((rawUnit, idx) => {
     // extract keyword first unit, assume that . means Feature
     let unit = m_ExpandScriptUnit(rawUnit);
+    console.log('expanded', unit);
     // detect comments, if they were not filtered out somehow
     // the should be filtered out
     if (unit[0] === '//') unit[0] = 'comment';
@@ -256,7 +281,6 @@ function CompileScript(units: TScriptUnit[]): ISMCBundle {
     }
     // continue!
     const bundle = kwProcessor.compile(unit); // qbits is the subsequent parameters
-    if (DBG) console.log(unit, '->', bundle);
     const { name, define, defaults, conditions, update } = bundle;
     if (name) {
       if (bdl.name === undefined) bdl.name = name;
@@ -332,7 +356,7 @@ function ScriptifyText(text: string): TScriptUnit[] {
   sourceStrings.forEach(str => {
     str = str.trim();
     const unit = m_LineToScriptUnit(str); // invoke script tokenizer for line
-    if (unit.length && unit[0] !== undefined) scriptUnits.push(unit);
+    if (unit.length > 0 && unit[0] !== undefined) scriptUnits.push(unit);
   });
 
   return scriptUnits;
@@ -374,44 +398,9 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const txt = `
-// definitions
-defBlueprint "Bunny"
-addProp frame Number 2
-// conditions
-onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
-  {{ agent.prop('x').increment }}
-  [[ TEST:testName ]]
-  setProp 'x' 0
-  // the expression context passed is agent, subjectA, subjectAB
-]]
-addProp sprite "bunny.json"
-on Tick [[
-  agentProp 'x' something
-]] [[
-  agentProp "y" something else
-]]
-onAgent Bee [[
-  // return boolean
-  agentProp x lessThan 0
-]] [[
-  PROGRAM:programName
-]]
-// definitions
-useFeature Movement
-// defaults
-prop skin 'bunny.json'
-// runtime
-featureCall Movement jitterPos -5 5
-// condition test 1
-addTest BunnyTest {{ agent.prop('frame').value }}
-ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
-// condition test 2
-ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-`;
-// console.log(...PR('\nblocks parsed', m_ExtractBlocks(txt)));
-// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ExtractBlocks(txt))));
-// console.log(...PR('\nsplits', txt.split(/\s*[;\n]+\s*/)));
+const txt = DATACORE.GetDefaultText();
+console.log(...PR('\nblocks parsed', m_ExtractBlocks(txt)));
+console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ExtractBlocks(txt))));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -182,7 +182,7 @@ class ScriptTokenizer {
     /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
-      return this.gobbleTMethod();
+      return this.gobbleBlock();
     }
     /* HACK GEMSCRIPT ADDITION FOR {{ expr }} */
     if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
@@ -449,7 +449,7 @@ class ScriptTokenizer {
       } else if (ch_i === OBRACK_CODE) {
         /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
         if (this.exprICode(this.index) === OBRACK_CODE) {
-          return this.gobbleTMethod();
+          return this.gobbleBlock();
         }
         /* END HACK */
         node = this.gobbleToken();
@@ -508,24 +508,37 @@ class ScriptTokenizer {
   // named TMethod. There are several possible locations of the
   // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
   // implementor to know which one it is
-  gobbleTMethod() {
+  gobbleBlock() {
     // when this is called from gobbleVariable, we're already pointing
-    // at the second [ in [[
+    // at tshe second [ in [[
     let ch;
     let cch;
     let str = '';
+    let level = 1;
     this.index++;
+
     // start reading inside [[
     while (this.index < this.length) {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
+      // check for closing bracket level 0
       if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
         this.index++;
-        return `[[ ${str.trim()} ]]`;
+        level--;
+        if (level === 0) {
+          // console.log(`[[ ${str.trim()} ]]`);
+          return `[[ ${str.trim()} ]]`;
+        }
+      } else if (ch === OBRACK_CODE && cch === OBRACK_CODE) {
+        this.index++;
+        level++;
+      } else {
+        str += String.fromCharCode(ch);
       }
-      str += String.fromCharCode(ch);
     }
-    return this.throwError(`Unclosed inline [[ at ${this.index} for ${str}`);
+    return this.throwError(
+      `Unclosed inline [[ at ${this.index} for ${str} level ${level}`
+    );
   }
   /* HACK ADDITION for text script comments // and -- */
   // skip the first two // and output the entire rest of the line

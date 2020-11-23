@@ -21,10 +21,15 @@ export class dbgError extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): ISMCBundle {
+    const [kw, error] = unit;
     const progout = [];
     progout.push(() => {
       const err = unit.join(', ');
-      console.log(`%cERROR%c bad keyword '${err}'`, 'color:red', 'color:black');
+      console.log(
+        `%cERROR%c ${error || 'bad keyword'}: '${err}'`,
+        'color:red',
+        'color:black'
+      );
       // throw Error(`unknown keyword: ${err}`);
     });
     return {

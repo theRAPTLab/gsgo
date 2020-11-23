@@ -235,6 +235,39 @@ export function GetProgram(name: string): TMethod {
   } else return PROGRAMS.get(name);
 }
 
+/// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DEFAULT_TEXT = `
+onAgent Bee [[
+  // return boolean
+  agentProp x lessThan 0
+]] [[
+  if {{ true }} [[
+    prop x
+    prop y
+  ]]
+]]
+// definitions
+defBlueprint "Bunny"
+addProp frame Number 2
+useFeature Movement
+// defaults
+prop skin 'bunny.json'
+// runtime
+featureCall Movement jitterPos -5 5
+// condition test 1
+addTest BunnyTest {{ agent.prop('frame').value }}
+ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
+// condition test 2
+ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
+onTick [[
+  gogo gadget
+]]
+`;
+export function GetDefaultText() {
+  return DEFAULT_TEXT;
+}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// for erasing data structures

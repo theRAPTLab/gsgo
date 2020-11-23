@@ -708,10 +708,96 @@ Now, let's if we can actually expand blocks into programs
 
 * [x] `m_ExpandScriptUnit()`: can I detect `[[ ]]`?
   * [x] Look at `m_ExpandArg(arg)`, add `m_expanders` expansion table
-* [ ] update `gscript-tokenizer` to handle `[[ ]]`
-  * [ ] 
+* [x] update `gscript-tokenizer` to handle `[[ ]]`
+  * [x] add to `gobbleToken()`
+  * [x] add to `gobbleVariable()`
 
+Finally, we have to update **m_expanders** in `transpiler` to handle the block expansion.
 
+* [x] Can we call `ScriptifyText()` from inside `m_expanders`?Apparently **YES**
+* [ ] bug with gscript-tokenizer: the **gobbleBlock** actually needs to keep track of levels, using a similar approach to levels as `m_ExtractBlocks`
+
+HOW TO PROCESS THIS?
+
+```
+[[ if {{ true }}; [[ prop x; prop y ]] ]]
+- or -
+[[ if {{ true }}; [[ {{ prop x }}; ]] -- here the ; shouldn't be there because the ; should be used to demarque the end of a textscript line, not separate terms
+```
+
+**The problem happens during compile, when it's doing the recursive call** and the lines with the **semi-colons** are not being split correctly.
+
+The semi-colons are currently used to glue-together the output of `m_ExtractBlocks` but this isn't entirely correct. We need to remember the original lines somehow so we know how far to go. Maybe there is a specific `marker` array (an empty array?) that designates the EOL. **We actually don't know where the end of the keyword is** for multi-line statements. We can probably **infer it** as the terminal `]]` by itself marks the end of a keyword.
+
+PICK UP FROM:
+
+* handling **semi-colons** correctly as EOBs?
+* trying an **EOB** marker if it's necessary
+* recursive script building...what should it look like as a final data format?
+* **special block syntax**: a `]]` by itself is END OF MULTI LINE, and a continuous chain of blocks must be linked by a `]] [[`. A block `[[` can start anywhere at the end of a line.
+
+## NOV 22 SUN - ARGH
+
+there are three operations
+
+* convert text to blockArray
+* convert blockArray to textLine
+* process textLine into ScriptUnits, recursively expanding block arrays into programs
+
+1. extract blocks produces array of string arrays. each entry in the array has either a "normal strings" array or a "block strings" array. The block strings array can contain additional "normal" or "block" string arrays. It can also have an "EOB" marker, indiating the end of a keyword has been reached after a series of [[ ]] blocks one after the other. These have to be inserted everywhere there is a detected end of statement.
+
+2. when converting blocks into strings, we have to do the following:
+
+```
+if array is normal
+	iterate over lines
+	set lastLine to line
+	add line to lines[]
+if array is EOB 
+	reset lastLine to ''
+if array is a block, we're adding to lastLine
+	iterate over blines
+	if [[ lastLine += [[
+	if ]] lastLine += ]]
+	otherwise lastLine += bline+\r to encode linefeed
+	update lines[lines.length-1]=lastLine
+```
+
+3. to parse a block expression through `m_expandify`, we need a recursive builder
+
+```
+compile: onAgent Bee [[ agentProp x lessThan 0\r ]] [[ if {{true}} [[ prop x\r prop y\r ]] ]]
+	expandify: [[ agentProp x lessThan 0\r ]] and [[ if {{true}} [[ prop x\r prop y\r ]] ]]
+		process a: [[ agentProp x lessThan 0\r ]]
+			lines = 'agentProp x lessThan 0'.split(\r)
+			compile lines by line in progA
+			return progA
+		process b: [[ if {{true}} [[ prop x\r prop y\r ]] ]]
+			lines = 'if {{true}} [[ prop x\r prop y\r ]]'.split(\r) ** ERROR **
+The algorithm has to defer compilation to the innermost [[ ]], so that's a scan operation
+
+NEW ALGORITHM - FIND INNERMOST EXPRESSIONS
+the expandify block has to expandArgs each time
+
+"onAgent Bee [[ agentProp x lessThan 0\r ]] [[ if {{true}} [[ prop x\r prop y\r ]] ]]"
+- expandify: ... "Bee [[ agentProp x lessThan 0\r ]] [[ if {{true}} [[ prop x\r prop y\r ]] ]]"
+	return string, [block1] [block2]
+	- expandify [block1]: ... "x lessThan 0"
+		return string, string, number
+	- expandify [block2]: ... "{{true}} [[ prop x\r prop y\r ]]"
+		return expr, [block3]
+		- expandify [block3.1]: ... "x"
+			return string
+		- expandify [block3.2]: ... "y"
+			return string
+		
+So the basic idea is to call expandify until they all return.
+And the m_expanders block code has to expand every line
+			
+```
+
+* [x] check algorithm in `m_ExtractBlocks`
+* [ ] check algorithm recursion in `m_ExpandArg`
 
 ---
 
