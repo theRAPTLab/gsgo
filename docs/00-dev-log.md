@@ -959,15 +959,25 @@ But first:
 
 That's out of the way now, so we can move on to the major attractions:
 
-* [ ] rewrite block compiler to be the main script unit compiler
+**Rewriting the compiler**
+
+* [x] make a test case file
+* [x] import `transpiler-2` into `test-compiler` code and invoke test cases
+* [x] confirm that the compiler is trying to compile them.
+* [x] call the block compiler to examine its output
+  * [x] rewrite ExtractifyBlocks to output pure lines
+    * [x] for `expr then block`: emit a clean line list
+* [x] does it look correct for all tests? Add signature verifier
+
+Part 2
+
+* [ ] add ScriptUnit buffer `unit` inside the loop
+
+
+
 * [ ] change the keywords to emit a single prog, not a bundle (let block compiler handle it)
 * [ ] change the block compiler to also redirect to a specific bundle
 * [ ] add the new unknown keyword handling
-
-**Rewriting the compiler**
-* [x] make a test case file
-* [ ] confirm that the compiler can actually compile them.
-* [ ] 
 
 ---
 

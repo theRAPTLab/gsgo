@@ -32,67 +32,99 @@ const DBG = true;
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given a text with multiline blocks, emit an array of strings corresponding
- *  to regular strings and << >> demarked lines. The output nodes are processed
+ *  to regular strings and [[ ]] demarked lines. The output nodes are processed
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
 function m_ExtractBlocks(text: string): Array<string[]> {
   const sourceStrings = text.split('\n');
   let level = 0;
+  // text debugging
   const nodes = [];
-  let buffer = [];
-  // "add sub brackets" to output
-  const ASB = true;
+  let buffer = '';
+  // script compiler output
+  const unit = [];
+  const script = [];
+
   // first lets start scanning each line
   sourceStrings.forEach((str, idx) => {
     str = str.trim();
     if (str.length === 0) return;
     if (str.slice(0, 2) === '//') return;
-    // block delimiters
-    // note: inline << progName >> is handled by gscript-tokenizer
-    const startBlock = str.slice(-2) === '<<';
-    const endBlock = str.length === 2 && str.slice(0, 2) === '>>';
+    // block delimiter tests
+    // note: inline [[ progName ]] is handled by gscript-tokenizer
+    const startBlock = str.slice(-2) === '[[';
+    const soloStart = startBlock && str.length === 2;
+    const soloEnd = str.length === 2 && str.slice(0, 2) === ']]';
+    const endBlockBlock = str.length > 5 && str.slice(0, 2) === ']]';
+    const ocnt = (str.match(/\[\[/g) || []).length;
+    const ccnt = (str.match(/\]\]/g) || []).length;
+    const inlineBlock = str.length > 3 && ocnt + ccnt > 2;
     const endStartBlock =
-      str.length > 3 && startBlock && str.slice(0, 2) === '>>';
+      str.length > 3 && startBlock && str.slice(0, 2) === ']]';
 
-    // case 3 - adjacent blocks >> <<
-    if (endStartBlock) {
-      if (level === 1) {
-        // we are in a block so push two '>>
-        if (ASB) buffer.push('>>');
-        nodes.push(buffer);
-        if (ASB) buffer = ['<<'];
-      }
+    // START PROCESSING CASES
+    // - - - - - - - - - - - - - - - - - - - - - - -- - - - - - - - - - - - - -
+    // closing block after one or more inline blocks
+    if (ccnt > 1 && ccnt > ocnt && endBlockBlock) {
+      level -= ccnt - ocnt;
+      buffer += str;
+      nodes.push(buffer);
+      buffer = '';
       return;
     }
-    // case 1 - start of a block ...<<
+
+    // any inline block followed by a block
+    if (inlineBlock && soloEnd) {
+      const part = str.slice(0, str.length - 2).trim();
+      if (DBG) console.log('found inline', part, ocnt, ccnt);
+      buffer += '[[';
+      nodes.push(buffer);
+      buffer = '';
+      nodes.push(part);
+      nodes.push(']] [[');
+      return;
+    }
+    // a block followed by another block in same statement ]] [[
+    if (endStartBlock) {
+      if (buffer.length > 0) {
+        nodes.push(buffer);
+        buffer = '';
+      }
+      nodes.push(']] [[');
+      return;
+    }
+    // a solo [[ starting a block
+    if (soloStart) {
+      level++;
+      if (buffer.length > 0) nodes.push(buffer);
+      buffer = '';
+      nodes.push('[[');
+      return;
+    }
+    // a continuing block from trailing [[ at end of line
     if (startBlock) {
       level++;
-      const sub = str.slice(0, str.length - 2).trim();
-      if (sub.length > 0) buffer.push(sub);
-      if (level === 1) {
-        // trickiness
-        if (buffer.length > 0) {
-          nodes.push(buffer);
-          buffer = [];
-        }
-      }
-      if (ASB) buffer.push('<<');
+      const part = str.slice(0, str.length - 2).trim();
+      if (part.length > 0) buffer += part;
+      buffer += ' [['; // start new subprogram
+      nodes.push(buffer);
+      buffer = '';
       return;
     }
-    // case 2 - end of a block >>...
-    if (endBlock) {
+    // a solo ]] ending the block and the statement
+    if (soloEnd) {
       level--;
-      if (ASB) buffer.push('>>');
-      if (level === 0) {
-        nodes.push(buffer);
-        nodes.push('EOB');
-        buffer = [];
-      }
+      buffer += ']]';
+      nodes.push(buffer);
+      nodes.push('EOB');
+      buffer = '';
       return;
     }
-    // case 4 - non-marker line
-    buffer.push(str);
+    // a non-blocked line; process as-is
+    buffer += str;
+    nodes.push(buffer);
+    buffer = '';
   });
   // cleanup
   if (buffer.length > 0) nodes.push(buffer);
@@ -108,7 +140,7 @@ function m_ExtractBlocks(text: string): Array<string[]> {
     return undefined;
   }
   // at this point, the nodes array contains arrays of strings
-  // (1) if the first element has a <<, it's a block and should be merged
+  // (1) if the first element has a [[, it's a block and should be merged
   // (2) otherwise, it's regular strings
   return nodes;
 }
@@ -128,25 +160,25 @@ function m_StitchifyBlocks(nodes: Array<string[]>): string[] {
       if (node === 'EOB') return;
     }
     // nodes contains arrays of strings : 7
-    // "blocks" are special case with node[0]==='<<'
+    // "blocks" are special case with node[0]==='[['
     // "normal string segments" otherwise
-    if (node[0] !== '<<') {
+    if (node[0] !== '[[') {
       node.forEach(item => lines.push(item));
     } else {
       let line = '';
       node.forEach((item, jj) => {
         // each item in the node is a string to be stitched together
-        // the << and >> appear on their own lines
+        // the [[ and ]] appear on their own lines
         if (jj === item.length - 2) {
           line += `${item} `;
           return;
         }
-        if (item === '<<') {
-          line += '<< ';
+        if (item === '[[') {
+          line += '[[ ';
           return;
         }
-        if (item === '>>') {
-          line += '>> ';
+        if (item === ']]') {
+          line += ']] ';
           return;
         }
         if (item.slice(0, 2) === '//') {
@@ -218,8 +250,8 @@ const m_expanders = {
     const ast = ParseExpression(ex);
     return ast;
   },
-  '<<': (arg: string) => {
-    if (arg.substring(arg.length - 2, arg.length) !== '>>') return arg;
+  '[[': (arg: string) => {
+    if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
     const prog: TOpcode[] = [];
     const extract = arg.substring(2, arg.length - 2).trim();
     const lines = m_SeparateBlockLines(extract);
@@ -464,3 +496,5 @@ export {
   MakeAgent, // BlueprintName => Agent
   RegisterBlueprint // TScriptUnit[] => ISMCBundle
 };
+/// for testing methods
+export { m_ExtractBlocks as ExtractifyBlocks };
