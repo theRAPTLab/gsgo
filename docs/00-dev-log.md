@@ -797,7 +797,172 @@ And the m_expanders block code has to expand every line
 ```
 
 * [x] check algorithm in `m_ExtractBlocks`
+
 * [ ] check algorithm recursion in `m_ExpandArg`
+
+  * [x] it seems to work, but it's hard to see what it's compiling
+
+  * [ ] losing last word before EOB. units are gone. This is happening on the restitched code.
+
+    * [x] `gscript-tokenizer` isn't emiting the first argument after keyword as token
+
+    * [x] the tokenizer SEEMS to be returning the Bee identifier, but it's breaking here:
+
+      ```
+      in gobbleVariable()
+      
+      /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
+      if (this.exprICode(this.index) === OBRACK_CODE) {
+        this.showProgress();
+        return this.gobbleBlock(); // in gobbleToken() also
+      }
+      /* END HACK */
+      ```
+
+    * [ ] the issue is that gobbleToken() is hitting [[ after an identifier and is assuming it's an array instead of gobbling it. And this is overriding the found identifier so it disappears.  We need to change the logic OR change the identifier from `[[ ]]` to `<< >>` as a temporary workaround
+
+      * [ ] changed to << >> in gscript-tokenizer
+      * [ ] change to << >> in transpiler
+      * [ ] there's some string issue in the runtime compiling...the recursion is passing an entire string that has some elements already converted to stuff?
+
+  
+
+  OK this is super annoying already. I think the output of the << >> is being hosed somewhere, but I can't find it. It's happening during SUB compilation at runtime. I see the error happening in **<< prop me ifProg {{ true }} << prop x prop y prop AA prop BB >>** which is incorrect... there's a missing close/reopen which is why text parsing is broken.
+
+  
+
+  This is seen in PARSING TEXT right now, so that means the units are busted.
+
+  * fixed bug in transpile `endStartBlock` that needed to check if level > 0, not level ==1 (this might have some side effect)
+
+  Still seeing a problem parsing the ifProg units that are nested 2 deep. The epansion at the top level seems to work.
+
+  I'm seeing the problm in deblockfied: it's **split** in a weird place. It's because I pushed the node in deblockfy when `>> <<` is detected. 
+
+  The issue seems to be here:
+
+  ```
+  m_expanders:
+    '<<': (arg: string) => {
+    	...
+      const extract = arg.substring(2, arg.length - 2).trim();
+      const lines = extract.split(LSEP);
+      console.log(`converting "${extract}" into lines`, lines);
+  ```
+
+  At this point we don't want to expand all the lines, because it breaks all the pieces into weird bits.
+
+  We need to break lines only in level 0, and preserve the rest of them. 
+
+  
+
+  Again, I see the issue with the third term of onAgent
+
+  ```
+  << prop me \r ifProg {{ true }} << prop x \r prop y \r >> << prop AA \r prop BB >> >>
+  ```
+
+  being converted into THREE ScriptUnits
+
+  * expand `prop me`
+  * expand `ifProg`, `{{ true }}`
+  * expand `<< prop x \r prop y >>`, `<< prop AA prop BB >>`
+
+  This should be just TWO ScriptUnits
+
+  * `prop me`
+  * `ifProg`, `{{ true }}`, `<< prop x \r prop y >>`, `<< prop AA \r prop BB >>`
+
+  The routine that is tokenizing the line is having a hard time finding the {{ }} << ... >> pattern, because there's a linefeed being inserted by the block extractor.
+
+  * AHHH, the moment we hit the second << then the level check pushes the buffer
+
+  
+
+  
+
+  * [ ] also not seeing the compiled block arrays appear
+    * [ ] seems they aren't being returns by the argument...changed so prog pushes **spread** program array
+
+### BACK TO THE DRAWING BOARD
+
+I need to restate this algorithm succinctly instead of relying on code to hold it together. That's stupid.
+
+Given this syntax:
+
+```
+onAgent Bee <<
+  prop x
+>> <<
+  prop me
+  ifProg {{ true }} <<
+  	prop x
+  	prop y
+  >> <<
+  	prop AA
+  	prop BB
+  >>
+>>
+```
+
+... I want to see SCRIPTUNITS at the end of all this ...
+
+```
+block code:
+onAgent Bee
+<<, prop x, >>
+<<, prop me, ifProg {{ true }} << blockified format >>
+```
+
+ExtractBlocks  puts the `<<` and `>>` as separate items in the array. 
+
+*** NEED TO BURN IT DOWN AND REBUILD ***
+
+---
+
+## NOV 23 MON - Task List to Recover
+
+### Completing the Compiler
+
+1. step away from the text block parser because it isn't easy or obvious.
+2. make examples for manual ScriptUnit compiling by hand
+3. make tests for examples
+4. specifically parsing of: expressions, program blocks
+5. integrate faketrack into simulation input
+6. once that works, can actually write interactions, conditions
+
+### Making Script Examples for IU/Vanderbilt
+
+1. start with aquatic and try writing direct ScriptUnit code
+
+### Framing the December 1st Deliverable - Ben will keep the flame here
+
+* can we have them program anything with direct scriptunit entry?
+* provide some basic keywords that make things change on the screen
+* provide some basic features to handle movement
+* provide some basic sprites they can use
+* for unimplemented keywords: print out the keyword (like debug printing code style) so researchers can at least make-up placeholders on the fly as they try to write programs.
+
+RIGHT NOW
+
+* Ben is de-facto in charge of scripting development of keywords, needed features, using/defining the syntax in terms of what it needs to do with what parameters
+* Sri is creating the final bits of the compiler to handle conditions which are comprised of a test, a p-consequent, and a p-alternate.
+* When the compiler text-to-blueprint works, we can focus on the stuff Ben has been working on above. And then implementing whatever needs to be there for the basic experience.
+
+## NOV 25 WED - RESETTING
+
+I have to rewrite the block extractor and script unit maker so it is **one** module producing script units directly. This should hopefully solve the problem I had yesterday and it will also allow me to bring back the `[[ ]]` syntax!
+
+But first:
+
+* [X] make unknown keyword handling part of the script engine for ben.
+
+That's out of the way now, so we can move on to the major attractions:
+
+* [ ] rewrite block compiler to be the main script unit compiler
+* [ ] change the keywords to emit a single prog, not a bundle (let block compiler handle it)
+* [ ] change the block compiler to also redirect to a specific bundle
+* [ ] add the new unknown keyword handling
 
 ---
 

@@ -33,31 +33,31 @@ const DBG = false;
 const defaultText = DATACORE.GetDefaultText();
 
 const defineBlockSyntax = `
-if {{ agent.prop('foo') }} [[
-  if {{ agent.prop('bar') }} [[
+if {{ agent.prop('foo') }} <<
+  if {{ agent.prop('bar') }} <<
     featureCall Movement jitterPos -5 5
-  ]] [[
+  >> <<
     dbgOut('false')
-  ]]
-]]
+  >>
+>>
 
-onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+onAgentPair Bee touches Honey {{ agent.prop('range') }} <<
   exec {{ agent.prop('x').increment }}
-  exec [[ programName ]]
+  exec << programName >>
   setProp 'x' 0
   // the expression context passed is agent, subjectA, subjectAB
-]]
+>>
 
-onAgent Bee [[
+onAgent Bee <<
   // return boolean
   agentProp x lessThan 0
-]] [[
+>> <<
   // do something with subjectA
-]]
+>>
 
-on Tick [[
+on Tick <<
   agentProp x something
-]]
+>>
 `.trim();
 
 const defineGlobalAgent = `

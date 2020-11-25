@@ -35,6 +35,8 @@ const OBRACK_CODE = 91; // [
 const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
+const OBLOCK_CODE = 60; // <
+const CBLOCK_CODE = 62; // >
 const COMMENT_1 = '//';
 const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
@@ -51,9 +53,10 @@ const binary_ops = {
   '>': 7,
   '<=': 7,
   '>=': 7,
-  '<<': 8,
-  '>>': 8,
-  '>>>': 8,
+  /* HACK disable because we use << >> for block delimiters */
+  // '<<': 8,
+  // '>>': 8,
+  // '>>>': 8,
   '+': 9,
   '-': 9,
   '*': 10,
@@ -128,6 +131,7 @@ class ScriptTokenizer {
     /** END HACK **/
 
     while (this.index < this.length) {
+      this.showProgress();
       this.gobbleSpaces();
       this.lastIndex = this.index;
       // start tokenizing
@@ -178,11 +182,10 @@ class ScriptTokenizer {
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
-
-    /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
-    if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
+    /* HACK GEMSCRIPT ADDITION FOR << tmethod >> */
+    if (ch === OBLOCK_CODE && chn === OBLOCK_CODE) {
       this.index++;
-      return this.gobbleBlock();
+      return this.gobbleBlock(); // in gobbleVariable() also
     }
     /* HACK GEMSCRIPT ADDITION FOR {{ expr }} */
     if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
@@ -435,23 +438,24 @@ class ScriptTokenizer {
     let node;
     ch_i = this.exprICode(this.index);
     if (ch_i === OPAREN_CODE) {
+      // is group ( expression )?
       node = this.gobbleGroup();
     } else {
-      node = this.gobbleIdentifier();
+      node = this.gobbleIdentifier(); // otherwise it's an identifier
     }
+    // note: check for subsequent identifier variations
+    // note: identifier check for dot property, array
     this.gobbleSpaces();
     ch_i = this.exprICode(this.index);
+    // this all gets skipped if it's not dot, array, call, or group
     while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
       this.index++;
       if (ch_i === PERIOD_CODE) {
+        // dot property
         this.gobbleSpaces();
         node = this.gobbleIdentifier();
       } else if (ch_i === OBRACK_CODE) {
-        /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
-        if (this.exprICode(this.index) === OBRACK_CODE) {
-          return this.gobbleBlock();
-        }
-        /* END HACK */
+        // array gobble
         node = this.gobbleToken();
         this.gobbleSpaces();
         ch_i = this.exprICode(this.index);
@@ -494,9 +498,8 @@ class ScriptTokenizer {
     while (this.index < this.length) {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
-
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
-        this.index++;
+        this.index += 2;
         return `{{ ${str.trim()} }}`;
       }
       str += String.fromCharCode(ch);
@@ -504,40 +507,39 @@ class ScriptTokenizer {
     return this.throwError(`Unclosed inline {{ at ${this.index} for ${str}`);
   }
   /* HACK ADDITION for text script tmethod names */
-  // in GEMSCRIPT text, a [[ ]] on a single line designates a
+  // in GEMSCRIPT text, a << >> on a single line designates a
   // named TMethod. There are several possible locations of the
   // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
   // implementor to know which one it is
   gobbleBlock() {
     // when this is called from gobbleVariable, we're already pointing
-    // at tshe second [ in [[
+    // at tshe second [ in <<
     let ch;
     let cch;
     let str = '';
     let level = 1;
     this.index++;
 
-    // start reading inside [[
+    // start reading inside <<
     while (this.index < this.length) {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
       // check for closing bracket level 0
-      if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
+      if (ch === CBLOCK_CODE && cch === CBLOCK_CODE) {
         this.index++;
         level--;
-        if (level === 0) {
-          // console.log(`[[ ${str.trim()} ]]`);
-          return `[[ ${str.trim()} ]]`;
-        }
-      } else if (ch === OBRACK_CODE && cch === OBRACK_CODE) {
+        if (level === 0) return `<< ${str.trim()} >>`;
+        str += '>>';
+      } else if (ch === OBLOCK_CODE && cch === OBLOCK_CODE) {
         this.index++;
         level++;
+        str += '<<';
       } else {
         str += String.fromCharCode(ch);
       }
     }
     return this.throwError(
-      `Unclosed inline [[ at ${this.index} for ${str} level ${level}`
+      `Unclosed inline << at ${this.index} for ${str} level ${level}`
     );
   }
   /* HACK ADDITION for text script comments // and -- */

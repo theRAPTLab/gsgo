@@ -238,17 +238,20 @@ export function GetProgram(name: string): TMethod {
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_TEXT = `
-onAgent Bee [[
-  // return boolean
-  agentProp x lessThan 0
-]] [[
-  if {{ true }} [[
-    prop x
-    prop y
-  ]]
-]]
 // definitions
 defBlueprint "Bunny"
+onAgent Bee <<
+  prop x
+>> <<
+  prop me\r
+  ifProg {{ true }} <<
+    prop x
+    prop y
+  >> <<
+    prop AA
+    prop BB
+  >>
+>>
 addProp frame Number 2
 useFeature Movement
 // defaults
@@ -260,9 +263,9 @@ addTest BunnyTest {{ agent.prop('frame').value }}
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
 ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-onTick [[
-  gogo gadget
-]]
+onTick <<
+  prop z
+>>
 `;
 export function GetDefaultText() {
   return DEFAULT_TEXT;

@@ -36,9 +36,10 @@ const binops = {
   '>': (a, b) => a > b,
   '<=': (a, b) => a <= b,
   '>=': (a, b) => a >= b,
-  '<<': (a, b) => a << b,
-  '>>': (a, b) => a >> b,
-  '>>>': (a, b) => a >>> b,
+  /* HACK disable because we use << >> for block delimiters */
+  // '<<': (a, b) => a << b,
+  // '>>': (a, b) => a >> b,
+  // '>>>': (a, b) => a >>> b,
   '+': (a, b) => a + b,
   '-': (a, b) => a - b,
   '*': (a, b) => a * b,
