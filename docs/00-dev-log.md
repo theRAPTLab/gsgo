@@ -964,6 +964,11 @@ That's out of the way now, so we can move on to the major attractions:
 * [ ] change the block compiler to also redirect to a specific bundle
 * [ ] add the new unknown keyword handling
 
+**Rewriting the compiler**
+* [x] make a test case file
+* [ ] confirm that the compiler can actually compile them.
+* [ ] 
+
 ---
 
 BACKLOG

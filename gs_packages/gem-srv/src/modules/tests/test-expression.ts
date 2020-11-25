@@ -6,7 +6,8 @@
 
 import UR from '@gemstep/ursys/client';
 import { Evaluate, Compile as FauxCompile } from 'lib/expr-evaluator';
-import { ParseExpression, LineToScriptUnit } from 'lib/expr-parser';
+import { ParseExpression } from 'lib/expr-parser';
+import { LineToScriptUnit } from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

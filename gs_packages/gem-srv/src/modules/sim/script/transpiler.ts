@@ -447,8 +447,8 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const txt = DATACORE.GetDefaultText();
-console.log(...PR('\nblocks parsed', m_ExtractBlocks(txt)));
-console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ExtractBlocks(txt))));
+// console.log(...PR('\nblocks parsed', m_ExtractBlocks(txt)));
+// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ExtractBlocks(txt))));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -464,3 +464,5 @@ export {
   MakeAgent, // BlueprintName => Agent
   RegisterBlueprint // TScriptUnit[] => ISMCBundle
 };
+/// for test modules
+export { m_LineToScriptUnit as LineToScriptUnit };

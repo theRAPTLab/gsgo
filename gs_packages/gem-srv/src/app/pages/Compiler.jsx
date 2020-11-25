@@ -19,6 +19,7 @@ import * as TRANSPILER from 'script/transpiler';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
+import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -31,80 +32,6 @@ const DBG = false;
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const defaultText = DATACORE.GetDefaultText();
-
-const defineBlockSyntax = `
-if {{ agent.prop('foo') }} <<
-  if {{ agent.prop('bar') }} <<
-    featureCall Movement jitterPos -5 5
-  >> <<
-    dbgOut('false')
-  >>
->>
-
-onAgentPair Bee touches Honey {{ agent.prop('range') }} <<
-  exec {{ agent.prop('x').increment }}
-  exec << programName >>
-  setProp 'x' 0
-  // the expression context passed is agent, subjectA, subjectAB
->>
-
-onAgent Bee <<
-  // return boolean
-  agentProp x lessThan 0
->> <<
-  // do something with subjectA
->>
-
-on Tick <<
-  agentProp x something
->>
-`.trim();
-
-const defineGlobalAgent = `
-defGlobalAgent World
-  addProp time Number 10
-  addProp daytime Boolean true
-  // runtime
-  // condition
-  when Interval 1000
-    prop time decrement
-    defCondition "memo:switch"
-    {{ prop time < 0 }}
-    prop time setTo 10
-    prop daytime invert
-`.trim();
-
-// try to make a fish!
-/** fish just wander around the screen
- *
- */
-const defineFish = `
-// define/default program
-defBlueprint Fish
-addProp foodLevel Number 50
-prop foodLevel setMin 0
-prop foodLevel setMax 100
-prop skin setTo 'alive.png'
-useFeature Movement
-
-featureProp inputType setTo 'runtime'
-// runtime program (runs only for runtime mode?)
-featureCall Movement randomWalk 15 2
-
-// condition programs
-// every second decrement foodlevel
-when Interval 1000
-  prop foodLevel increment
-  defCondition "memo:dead"
-    {{ prop foodLevel < 1 }}
-    prop isActive false
-    prop skin setTo "dead.png"
-    featureProp inputType setTo 'static'
-  defCondition "memo:worldtimer"
-    globalAgentProp World daytime
-    {{ globalAgentProp World daytime === true}}
-    prop skin setTo "happy.png"
-`.trim();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
