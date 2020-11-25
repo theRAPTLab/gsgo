@@ -63,8 +63,9 @@ function CompileSource(units: TScriptUnit[]): ISMCBundle {
     let cmdObj = GetKeyword(cmdName);
     // resume processing
     if (!cmdObj) {
-      cmdObj = GetKeyword('dbgError');
-      cmdObj.keyword = cmdName[0];
+      cmdObj = GetKeyword('unknownKeyword');
+      unit.splice(1, 0, false); // insert 'repeat:false' into unknown keyword.
+      cmdObj.keyword = cmdName;
     }
     // continue!
     const parms = unit.slice(1);
@@ -103,7 +104,7 @@ function RenderSource(units: TScriptUnit[]): any[] {
     }
     let cmdObj = GetKeyword(keyword);
     if (!cmdObj) {
-      cmdObj = GetKeyword('dbgError');
+      cmdObj = GetKeyword('unknownKeyword');
       cmdObj.keyword = keyword;
     }
     const jsx = cmdObj.jsx(index, unit);

@@ -39,6 +39,7 @@ prop skin 'bunny.json'
 // runtime
 featureCall Movement jitterPos -5 5
 // condition test 1
+moop param Vamp 10
 addTest BunnyTest {{ agent.prop('frame')._value }}
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
