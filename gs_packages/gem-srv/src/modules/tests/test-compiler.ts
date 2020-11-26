@@ -34,6 +34,7 @@ function TestCompiler(index?: number) {
       console.log('---\nBLOCKS:');
       nodes.forEach(block => console.log(block));
       console.log(`---\nKEY:\n"${key}"`);
+      if (!match) console.log(`"${verify}"`);
       console.log('---\nSCRIPT (array of unit arrays):\n', script);
       console.groupEnd();
     }

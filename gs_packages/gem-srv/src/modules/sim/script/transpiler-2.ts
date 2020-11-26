@@ -41,10 +41,22 @@ function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
   let level = 0;
   // text debugging
   const nodes = [];
-  let buffer = '';
+  const levelbuffers = [];
+  let buffer = [];
   // script compiler output
   const unit = [];
   const script = [];
+
+  function _addBuf(s: string) {
+    if (!buffer[level]) buffer[level] = '';
+    buffer[level] += s;
+  }
+  function _buf() {
+    return buffer[level] || '';
+  }
+  function _clearBuf() {
+    buffer[level] = '';
+  }
 
   // first lets start scanning each line
   sourceStrings.forEach((str, idx) => {
@@ -68,9 +80,9 @@ function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
     // closing block after one or more inline blocks
     if (ccnt > 1 && ccnt > ocnt && endBlockBlock) {
       level -= ccnt - ocnt;
-      buffer += str;
-      nodes.push(buffer);
-      buffer = '';
+      _addBuf(str);
+      nodes.push(_buf());
+      _clearBuf();
       return;
     }
 
@@ -78,62 +90,68 @@ function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
     if (inlineBlock && soloEnd) {
       const part = str.slice(0, str.length - 2).trim();
       if (DBG) console.log('found inline', part, ocnt, ccnt);
-      buffer += '[[';
-      nodes.push(buffer);
-      buffer = '';
+      _addBuf('[[');
+      nodes.push(_buf());
+      //
+      _clearBuf();
       nodes.push(part);
       nodes.push(']] [[');
       return;
     }
+
     // a block followed by another block in same statement ]] [[
     if (endStartBlock) {
-      if (buffer.length > 0) {
-        nodes.push(buffer);
-        buffer = '';
+      if (_buf().length > 0) {
+        nodes.push(_buf());
+        _clearBuf();
       }
       nodes.push(']] [[');
       return;
     }
+
     // a solo [[ starting a block
     if (soloStart) {
-      level++;
-      if (buffer.length > 0) nodes.push(buffer);
-      buffer = '';
+      if (_buf().length > 0) nodes.push(_buf());
+      _clearBuf();
       nodes.push('[[');
-      return;
-    }
-    // a continuing block from trailing [[ at end of line
-    if (startBlock) {
       level++;
-      const part = str.slice(0, str.length - 2).trim();
-      if (part.length > 0) buffer += part;
-      buffer += ' [['; // start new subprogram
-      nodes.push(buffer);
-      buffer = '';
       return;
     }
+
+    // a block started from trailing [[
+    if (startBlock) {
+      const part = str.slice(0, str.length - 2).trim();
+      if (part.length > 0) _addBuf(part);
+      _addBuf(' [['); // start new subprogram
+      nodes.push(_buf());
+      _clearBuf();
+      level++;
+      return;
+    }
+
     // a solo ]] ending the block and the statement
     if (soloEnd) {
       level--;
-      buffer += ']]';
-      nodes.push(buffer);
+      _addBuf(']]');
+      nodes.push(_buf());
       nodes.push('EOB');
-      buffer = '';
+      _clearBuf();
       return;
     }
-    // a non-blocked line; process as-is
-    buffer += str;
+
+    // a line outside a block; process as-is
+    _addBuf(str);
     //
-    unit.push(scriptConverter.tokenize(buffer));
+    unit.push(scriptConverter.tokenize(_buf()));
     //
-    nodes.push(buffer);
-    buffer = '';
+    nodes.push(_buf());
+    _clearBuf();
   }); // end of sourceStrings.forEach
 
   // cleanup
-  if (buffer.length > 0) {
-    unit.push(...scriptConverter.tokenize(buffer));
-    nodes.push(buffer);
+  if (_buf().length > 0) {
+    unit.push(...scriptConverter.tokenize(_buf()));
+    nodes.push(_buf());
   }
   script.push(unit);
 
