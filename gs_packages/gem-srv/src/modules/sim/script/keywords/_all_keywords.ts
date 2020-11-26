@@ -4,6 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+export * from './pragma';
+export * from './dbgOut';
 export * from './dbgError';
 export * from './addProp';
 export * from './defBlueprint';

@@ -8,7 +8,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
@@ -21,8 +21,8 @@ export class comment extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
-    return {};
+  compile(unit: TScriptUnit): TOpcode[] {
+    return [];
   }
 
   /** return a state object that turn react state back into source */

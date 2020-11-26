@@ -969,20 +969,24 @@ That's out of the way now, so we can move on to the major attractions:
     * [x] for `expr then block`: emit a clean line list
 * [x] does it look correct for all tests? Add signature verifier
 
-Part 2
+I ended up **throwing away** ScriptifyText() and made a new version of `gscript-tokenizer` to emit the script units for me. It handles nesting too!
 
-* [ ] add ScriptUnit buffer `unit` inside the loop
-  * [ ] add buffer levels
-  * [ ] on trailing `[[`, capture lines in between to compile to `]]`...
-  * [ ] can I do a clean output of program arrays without [[ ]]?
-  * [ ] A little stuck, so taking a step back...
+Next up: **compiling the script units**.
 
-I think I need to rewrite the gscript-tokenizer to very specifically handle just expressions, inline-program blocks, and blocks overall. All this has to do is make ScriptUnits; then the compiler shoudl be able to detect the two string types and arrays to expand at compile time.
+### What is Compiling?
 
-* [ ] can I emit linestart/lineend markers? yes, but the nesting problem bites us on the ass
-* [ ] we'll have to look at gScript Tokenizer
+This is using the keyword system to emit. We have to make some changes though to how keywords express their payload.
 
+* [x] all keywords now emit TOpcode[] instead of ISMCBundle
+* [ ] add `#bundle name`  by parsing the source itself
+* [ ] in `CompileScript()` need to know the blueprint name AND understand compiler directives.
 
+So how does that actually work in the new system?
+
+* [x] add `#` compiled directives to tokenizer
+* [x] compiler has to check for `#` keyword, defBlueprint in loop
+* [ ] test compiler works...now to re-enable SaveAgent
+* [ ] 
 
 **Other Things Afterwards**
 

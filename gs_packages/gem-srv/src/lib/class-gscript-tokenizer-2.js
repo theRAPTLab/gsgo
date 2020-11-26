@@ -9,7 +9,7 @@
 
   All this version of the tokenizer needs to do is detect {{ }}, [[ ]],
   and [[ ... lines ]]. It returns the tokenized values in raw string or array
-  format.
+  format. It also detected comments // and directives #
 
   This code is a refactored version of jsep, modified to produce
   our script unit format of [keyword, ...args] instead of an AST.
@@ -25,7 +25,6 @@
 const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
-const t = true;
 const DBG = true;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
@@ -41,8 +40,8 @@ const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
 const COMMENT_1 = '//';
+const DIRECTIVE = '#';
 
-const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
   '||': 1,
   '&&': 2,
@@ -74,17 +73,6 @@ const literals = {
 };
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Get return the longest key length of any object
-const getMaxKeyLen = obj => {
-  let max_len = 0;
-  let len;
-  Object.keys(obj).forEach(key => {
-    len = key.length;
-    if (len > max_len) max_len = len;
-  });
-  return max_len;
-};
-const max_unop_len = getMaxKeyLen(unary_ops);
 /** `ch` is a character code in the next three functions */
 const isDecimalDigit = ch => {
   return ch >= 48 && ch <= 57; // 0...9
@@ -218,16 +206,29 @@ class ScriptTokenizer {
   gobbleLine() {
     let nodes = [];
     let node;
-    /** process line **/
+
     this.nextLine();
+
+    /* special cases for gemscript */
     if (this.line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
+    if (this.line.substring(0, 1) === DIRECTIVE) return this.gobbleDirective();
+
     while (this.index < this.length) {
       this.gobbleSpaces();
-      // start tokenizing
       node = this.gobbleToken();
-      // assemble the node
       nodes.push(node);
-    } // end while index<line.length
+    }
+
+    return nodes;
+  }
+
+  // grab a compiler directive
+  gobbleDirective() {
+    const nodes = ['#'];
+    while (++this.index < this.length) {
+      this.gobbleSpaces();
+      nodes.push(this.gobbleToken());
+    }
     return nodes;
   }
 

@@ -98,7 +98,7 @@ export type TMethod = TSMCProgram | Function | TExpressionAST;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
 export interface ISMCBundle {
-  name?: string; // the determined name of the blueprint
+  name?: TValue; // the determined name of the blueprint
   define?: TSMCProgram; // def template, props, features
   defaults?: TSMCProgram; // set default values
   update?: TSMCProgram; // other runtime init
@@ -108,6 +108,7 @@ export interface ISMCBundle {
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,
  *  and a flags object. This state is passed, along with agent, to every
@@ -202,7 +203,7 @@ export interface IKeywordCtor {
 export interface IKeyword {
   keyword: string;
   args: string[];
-  compile(parms: any[]): ISMCBundle;
+  compile(unit: TScriptUnit): TOpcode[];
   serialize(state: object): TScriptUnit;
   jsx(index: number, state: object, children?: any[]): any;
   generateKey(): any;

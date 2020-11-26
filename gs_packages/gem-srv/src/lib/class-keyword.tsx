@@ -56,7 +56,7 @@ export class Keyword implements IKeyword {
     this.args = [];
   }
   /** override in subclass */
-  compile(args: any[]): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /** override to output a serialized array representation for eventual reserialization */

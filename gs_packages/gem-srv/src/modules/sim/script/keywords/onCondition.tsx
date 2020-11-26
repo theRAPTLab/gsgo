@@ -9,7 +9,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 import { SingleAgentConditional } from 'script/conditions';
 
@@ -24,15 +24,11 @@ export class onCondition extends Keyword {
   }
   /* NOTE THIS IS NONFUNCTIONAL */
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, testExpr, consq, alter] = unit;
     const cout = [];
     cout.push();
-    return {
-      define: [],
-      defaults: [],
-      conditions: cout
-    };
+    return cout;
   }
 
   /** return a state object that turn react state back into source */

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/_all';
 import { RegisterKeyword, GetVarCtor } from 'modules/runtime-datacore';
 
@@ -21,16 +21,12 @@ export class AddProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, propName, propType, initValue] = unit;
     const propCtor = GetVarCtor(propType);
     const progout = [];
     progout.push(addProp(propName, propCtor, initValue));
-    return {
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */

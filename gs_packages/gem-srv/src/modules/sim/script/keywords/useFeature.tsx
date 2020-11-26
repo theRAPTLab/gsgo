@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/_all';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
@@ -21,15 +21,11 @@ export class useFeature extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, featureName] = unit;
     const progout = [];
     progout.push(addFeature(featureName));
-    return {
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */

@@ -6,7 +6,7 @@ implementation of keyword "randomPos" keyword object
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IScopeable, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IScopeable, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -28,7 +28,7 @@ export class randomPos extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, min, max, floor] = unit;
     const progout = [];
     progout.push((agent: IScopeable) => {
@@ -37,12 +37,7 @@ export class randomPos extends Keyword {
       agent.prop('x').value = x;
       agent.prop('y').value = y;
     });
-    return {
-      define: [],
-      defaults: [],
-      conditions: progout,
-      update: progout // hack for testing
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */

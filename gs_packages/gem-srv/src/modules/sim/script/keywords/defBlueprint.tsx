@@ -9,8 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
-import { nop } from 'script/ops/debug-ops';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
@@ -30,7 +29,7 @@ export class defBlueprint extends Keyword {
    *  derived from ScriptUnit, everything after the keyword
    *  e.g. 'HoneyBee', 'Bee'
    */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, blueprintName, baseBlueprint] = unit;
     const progout = [];
     // the compiler format is just an array of functions
@@ -41,12 +40,7 @@ export class defBlueprint extends Keyword {
     // return the ISMCBundle, which is used by compiler
     // to assemble a blueprint by concatenating these arrays
     // into the master blueprint
-    return {
-      name: blueprintName,
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a TScriptUnit made from current state */

@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -23,18 +23,14 @@ export class propMethod extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, propName, methodName, ...args] = unit;
     const progout = [];
     progout.push((agent: IAgent) => {
       const prop = agent.prop(propName);
       prop[methodName](...args);
     });
-    return {
-      define: [],
-      defaults: [],
-      conditions: progout
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */

@@ -9,7 +9,7 @@ import {
   ExtractifyBlocks,
   ScriptifyText,
   CompileScript
-} from 'script/transpiler-2';
+} from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -25,8 +25,9 @@ function TestCompiler(index?: number) {
   else console.log(...PR('running', TT.length, 'tests'));
   TT.forEach((test, idx) => {
     if (!singleTest || index === idx) {
-      const [desc, text, verify] = test;
+      const [desc, text] = test;
       const { script } = ExtractifyBlocks(text);
+      const bundle = CompileScript(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
       else console.groupCollapsed('test', lead, '-', desc);
@@ -35,31 +36,7 @@ function TestCompiler(index?: number) {
       script.forEach((unit, unitLine) =>
         console.log(`${unitLine}`.padStart(3, '0'), JSON.stringify(unit))
       );
-      console.groupEnd();
-    }
-  });
-}
-
-function TestCompiler2(index?: number) {
-  const singleTest = typeof index === 'number';
-  if (singleTest) console.log(...PR('running test #', index));
-  else console.log(...PR('running', TT.length, 'tests'));
-  TT.forEach((test, idx) => {
-    if (!singleTest || index === idx) {
-      const [desc, text, verify] = test;
-      console.log('EXTRACTING BLOCKS', idx);
-      const { nodes, script } = ExtractifyBlocks(text);
-      const key = nodes.join('|NL|');
-      const match = key === verify;
-      const groupLabel = match ? desc : `*** FAILED *** ${desc}`;
-      if (singleTest) console.group(...PR(idx, groupLabel));
-      else console.groupCollapsed(...PR(idx, groupLabel));
-      console.log(`TEXT:\n${text}`);
-      console.log('---\nBLOCKS:');
-      nodes.forEach(block => console.log(block));
-      console.log(`---\nKEY:\n"${key}"`);
-      if (!match) console.log(`"${verify}"`);
-      console.log('---\nSCRIPT (array of unit arrays):\n', script);
+      console.log('---\nBUNDLE:', bundle);
       console.groupEnd();
     }
   });
@@ -68,20 +45,19 @@ function TestCompiler2(index?: number) {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
-  'blueprint definition',
+  'define Blueprint',
   `defBlueprint AgentA Agent
-`.trim(),
-  'defBlueprint AgentA Agent'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'property definition and assignment',
   `
   defBlueprint Bee
+  # bundle default
     addProp time Number 10
     prop skin setTo 'happy.png'
-`.trim(),
-  "defBlueprint Bee|NL|addProp time Number 10|NL|prop skin setTo 'happy.png'"
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -89,8 +65,7 @@ TT.push([
   `
   defBlueprint Cat
     prop x setTo {{ agent.x + 1 }}
-`.trim(),
-  'defBlueprint Cat|NL|prop x setTo {{ agent.x + 1 }}'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -102,8 +77,7 @@ TT.push([
       E F
       G H
     ]]
-`.trim(),
-  'defBlueprint Dog|NL|A B C|NL|ifExpr {{ D }} [[|NL|E F|NL|G H|NL|]]|NL|EOB'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -118,8 +92,7 @@ TT.push([
       E
       F
     ]]
-`.trim(),
-  'defBlueprint Elephant|NL|A|NL|ifExpr {{ B }} [[|NL|C|NL|D|NL|]] [[|NL|E|NL|F|NL|]]|NL|EOB'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -141,8 +114,7 @@ TT.push([
       J
       K
     ]]
-`.trim(),
-  'defBlueprint Falcon|NL|A|NL|ifExpr {{ B }} [[|NL|C|NL|D|NL|]] [[|NL|E|NL|F|NL|]]|NL|EOB|NL|ifExpr {{ G }} [[|NL|H|NL|I|NL|]] [[|NL|J|NL|K|NL|]]|NL|EOB'
+`.trim()
 ]);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,8 +130,7 @@ TT.push([
       ]]
     ]]
   endBlueprint
-`.trim(),
-  'defBlueprint Giraffe|NL|A|NL|ifExpr {{ B }} [[|NL|C|NL|if {{ D }} [[|NL|E|NL|]]|NL|EOB|NL|]]|NL|EOB|NL|endBlueprint'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -167,8 +138,7 @@ TT.push([
   `
   defBlueprint HorseNuts1
     ifTest [[ A ]] [[ B ]] [[ C ]]
-`.trim(),
-  'defBlueprint HorseNuts1|NL|ifTest [[ A ]] [[ B ]] [[ C ]]'
+`.trim()
 ]);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -180,8 +150,7 @@ TT.push([
       C {{ D }}
       E
     ]]
-`.trim(),
-  'defBlueprint HorseNuts2|NL|ifTest [[ A ]] [[ B ]] [[|NL|C {{ D }}|NL|E|NL|]]|NL|EOB'
+`.trim()
 ]);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -193,8 +162,7 @@ TT.push([
       B
       C
     ]] [[ D ]]
-`.trim(),
-  'defBlueprint HorseNuts3|NL|ifTest [[ A ]] [[|NL|B|NL|C|NL|]] [[ D ]]'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -204,8 +172,7 @@ TT.push([
     ifTest [[
       A
     ]] [[ B ]] [[ C ]]
-`.trim(),
-  'defBlueprint HorseNuts4|NL|ifTest [[|NL|A|NL|]] [[ B ]] [[ C ]]'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -217,8 +184,7 @@ TT.push([
     ]] [[
       prop skin setTo 'ok.png'
     ]] [[ prop skin setTo 'boo.png' ]]
-`.trim(),
-  "defBlueprint HorseNuts5|NL|ifTest [[|NL|prop y greaterThan 100|NL|]] [[|NL|prop skin setTo 'ok.png'|NL|]] [[ prop skin setTo 'boo.png' ]]"
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -230,8 +196,7 @@ TT.push([
     ]] [[ prop skin setTo 'ok.png' ]] [[
       prop skin setTo 'boo.png'
     ]]
-`.trim(),
-  "defBlueprint HorseNuts6|NL|ifTest [[|NL|prop y greaterThan 100|NL|]] [[|NL|prop skin setTo 'boo.png'|NL|]]|NL|EOB"
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -247,8 +212,7 @@ TT.push([
       prop altitude setTo {{ agent.prop('y') * 1000 }}
       prop skin setTo 'flap.png'
     ]]
-`.trim(),
-  "defBlueprint HorseNuts7|NL|addProp altitude Number 10000|NL|ifTest [[ prop y greaterThan 100 ]] [[|NL|prop y setTo 100|NL|prop altitude setTo 10000|NL|prop skin setTo 'bonk.png'|NL|]] [[|NL|prop altitude setTo {{ agent.prop('y') * 1000 }}|NL|prop skin setTo 'flap.png'|NL|]]|NL|EOB"
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -266,8 +230,7 @@ TT.push([
       prop altitude setTo {{ agent.prop('y') * 1000 }}
       prop skin setTo 'flap.png'
     ]]
-`.trim(),
-  "defBlueprint HorseNuts8|NL|addProp altitude Number 10000|NL|ifTest [[|NL|prop y greaterThan 100|NL|]] [[|NL|prop y setTo 100|NL|prop altitude setTo 10000|NL|prop skin setTo 'bonk.png'|NL|]] [[|NL|prop altitude setTo {{ agent.prop('y') * 1000 }}|NL|prop skin setTo 'flap.png'|NL|]]|NL|EOB"
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -277,8 +240,7 @@ TT.push([
     [[
       A
     ]]
-`.trim(),
-  'defBlueprint Icicle1|NL|[[|NL|A|NL|]]|NL|EOB'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -291,8 +253,7 @@ TT.push([
     [[
       B
     ]]
-`.trim(),
-  'defBlueprint Icicle2|NL|[[|NL|A|NL|]]|NL|EOB|NL|[[|NL|B|NL|]]|NL|EOB'
+`.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
@@ -332,7 +293,8 @@ defBlueprint JackFish
 TT.push([
   'global agent with timer',
   `
-defGlobalAgent Klugelhorn
+  defBlueprint Klugelhorn
+  defGlobalAgent Klugelhorn
   addProp time Number 10
   addProp daytime Boolean true
   // runtime

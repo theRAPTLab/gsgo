@@ -9,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 2 ////////////////////////////////////////////////////////
@@ -25,11 +25,9 @@ export class endBlueprint extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const progout = [];
-    return {
-      define: progout
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */

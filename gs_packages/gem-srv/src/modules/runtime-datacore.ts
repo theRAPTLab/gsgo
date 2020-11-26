@@ -15,6 +15,7 @@ import UR from '@gemstep/ursys/client';
 import {
   IScopeableCtor,
   IFeature,
+  TOpcode,
   TMethod,
   TScriptUnit,
   ISMCBundle,
@@ -41,6 +42,18 @@ const CONDITIONS: Map<string, TMethod> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
 const PROGRAMS: Map<string, TMethod> = new Map();
 const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// valid names are defined in ISMCBundle
+const BUNDLE_TYPES = {
+  name: 'string',
+  defaults: 'program',
+  update: 'program',
+  conditions: 'regcode',
+  test: 'program',
+  conseq: 'program',
+  alter: 'program'
+};
+let BUNDLE_OUT = 'defaults';
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -234,38 +247,59 @@ export function GetProgram(name: string): TMethod {
     console.log(...PR(`program '${name}' doesn't exist`));
   } else return PROGRAMS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function IsValidBundleName(name: string): boolean {
+  return BUNDLE_TYPES[name] !== undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function SetBundleOut(name: string): boolean {
+  if (IsValidBundleName(name)) {
+    BUNDLE_OUT = name;
+    return true;
+  }
+  return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function AddToBundle(bdl: {}, prog: TOpcode[]) {
+  if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
+  if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
+  // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
+  bdl[BUNDLE_OUT].push(...prog);
+}
 
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_TEXT = `
-// definitions
-defBlueprint "Bunny"
-onAgent Bee <<
+# blueprint: "Bee"
+# bundle: conditions
+onAgent Bee [[
   prop x
->> <<
+]] [[
   prop me\r
-  ifProg {{ true }} <<
+  ifProg {{ true }} [[
     prop x
     prop y
-  >> <<
+  ]] [[
     prop AA
     prop BB
-  >>
->>
+  ]]
+]]
+# bundle: initialize
 addProp frame Number 2
 useFeature Movement
-// defaults
+
+# bundle: default
 prop skin 'bunny.json'
-// runtime
+# bundle: runtime
 featureCall Movement jitterPos -5 5
 // condition test 1
 addTest BunnyTest {{ agent.prop('frame').value }}
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
 ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-onTick <<
+onTick [[
   prop z
->>
+]]
 `;
 export function GetDefaultText() {
   return DEFAULT_TEXT;

@@ -10,7 +10,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, RegisterTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -26,7 +26,7 @@ export class addTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, testName, test] = unit;
     const conds = [
       agent => {
@@ -37,9 +37,7 @@ export class addTest extends Keyword {
         return testName;
       }
     ];
-    return {
-      conditions: conds
-    };
+    return conds;
   }
 
   /** return a state object that turn react state back into source */

@@ -7,7 +7,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ export class ifExpr extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
@@ -32,9 +32,7 @@ export class ifExpr extends Keyword {
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });
-    return {
-      update: code
-    };
+    return code;
   }
 
   /** return a state object that turn react state back into source */

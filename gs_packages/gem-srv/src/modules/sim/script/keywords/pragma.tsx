@@ -1,50 +1,63 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "onAgent" command object
+  implementation of keyword "pragma" keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/runtime-datacore';
-import { SingleAgentConditional } from 'script/conditions';
+import {
+  RegisterKeyword,
+  IsValidBundleName,
+  SetBundleOut
+} from 'modules/runtime-datacore';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PRAGMA = {
+  'blueprint': blueprintName => {
+    return (agent, state) => state.stack.push('blueprint', blueprintName);
+  },
+  'bundle': bundleName => SetBundleOut(bundleName)
+};
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class onAgent extends Keyword {
-  // base properties defined in KeywordDef
+export class pragma extends Keyword {
+  // base pragmaerties defined in KeywordDef
 
   constructor() {
-    super('onAgent');
-    this.args = ['agentType:string', 'termA', 'termB'];
+    super('pragma');
+    this.args = ['pragmaName:string', 'value:any'];
   }
-  /* NOTE THIS IS NONFUNCTIONAL */
+
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, agentType, termA, termB] = unit;
-    console.log('onAgent terms type:', agentType, 'A:', termA, 'B:', termB);
-    const cout = [];
-    cout.push();
-    return cout;
+    const [kw, pragmaName, value] = unit;
+    return [
+      (agent: IAgent, state: IState) => {
+        state.stack.push(pragmaName);
+        state.stack.push(value);
+      }
+    ];
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
+    const { pragmaName, value } = state;
+    return [this.keyword, pragmaName, value];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const testName = unit[1];
-    const conseq = unit[2];
-    const alter = unit[3];
+    const pragmaName = unit[1];
+    const value = unit[2];
     return super.jsx(
       index,
       unit,
       <>
-        on {testName} TRUE {conseq}, ELSE {alter}
+        pragma {pragmaName} = {value}
       </>
     );
   }
@@ -53,4 +66,4 @@ export class onAgent extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(onAgent);
+RegisterKeyword(pragma);

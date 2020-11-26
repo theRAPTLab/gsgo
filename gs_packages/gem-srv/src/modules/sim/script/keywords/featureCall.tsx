@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -23,7 +23,7 @@ export class featureCall extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     const [kw, featName, methodName, ...args] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
@@ -35,12 +35,7 @@ export class featureCall extends Keyword {
       const vals = [...args];
       feat.method(agent, methodName, ...agent.evaluateArgs(vals));
     });
-    return {
-      define: [],
-      defaults: [],
-      conditions: [],
-      update: progout
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
