@@ -972,8 +972,19 @@ That's out of the way now, so we can move on to the major attractions:
 Part 2
 
 * [ ] add ScriptUnit buffer `unit` inside the loop
+  * [ ] add buffer levels
+  * [ ] on trailing `[[`, capture lines in between to compile to `]]`...
+  * [ ] can I do a clean output of program arrays without [[ ]]?
+  * [ ] A little stuck, so taking a step back...
+
+I think I need to rewrite the gscript-tokenizer to very specifically handle just expressions, inline-program blocks, and blocks overall. All this has to do is make ScriptUnits; then the compiler shoudl be able to detect the two string types and arrays to expand at compile time.
+
+* [ ] can I emit linestart/lineend markers? yes, but the nesting problem bites us on the ass
+* [ ] we'll have to look at gScript Tokenizer
 
 
+
+**Other Things Afterwards**
 
 * [ ] change the keywords to emit a single prog, not a bundle (let block compiler handle it)
 * [ ] change the block compiler to also redirect to a specific bundle

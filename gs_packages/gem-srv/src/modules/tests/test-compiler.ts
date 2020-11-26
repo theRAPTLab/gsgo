@@ -15,20 +15,44 @@ import {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('T-COMPILER', 'TagDkOrange');
 const TT = [];
+const TESTNUM = undefined;
 
 /// FUNCTIONS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestCompiler(index?: number) {
-  if (index) console.log(...PR('running test #', index));
+  const singleTest = typeof index === 'number';
+  if (singleTest) console.log(...PR('running test #', index));
   else console.log(...PR('running', TT.length, 'tests'));
   TT.forEach((test, idx) => {
-    if (!index || index === idx) {
+    if (!singleTest || index === idx) {
       const [desc, text, verify] = test;
+      const { script } = ExtractifyBlocks(text);
+      const lead = `${idx}`.padStart(2, '0');
+      if (singleTest) console.group('test', lead, '-', desc);
+      else console.groupCollapsed('test', lead, '-', desc);
+      console.log(`TEXT:\n${text}`);
+      console.log('---\nSCRIPT:');
+      script.forEach((unit, unitLine) =>
+        console.log(`${unitLine}`.padStart(3, '0'), JSON.stringify(unit))
+      );
+      console.groupEnd();
+    }
+  });
+}
+
+function TestCompiler2(index?: number) {
+  const singleTest = typeof index === 'number';
+  if (singleTest) console.log(...PR('running test #', index));
+  else console.log(...PR('running', TT.length, 'tests'));
+  TT.forEach((test, idx) => {
+    if (!singleTest || index === idx) {
+      const [desc, text, verify] = test;
+      console.log('EXTRACTING BLOCKS', idx);
       const { nodes, script } = ExtractifyBlocks(text);
       const key = nodes.join('|NL|');
       const match = key === verify;
       const groupLabel = match ? desc : `*** FAILED *** ${desc}`;
-      if (index) console.group(...PR(idx, groupLabel));
+      if (singleTest) console.group(...PR(idx, groupLabel));
       else console.groupCollapsed(...PR(idx, groupLabel));
       console.log(`TEXT:\n${text}`);
       console.log('---\nBLOCKS:');
@@ -287,17 +311,20 @@ defBlueprint JackFish
 
   // condition programs
   // every second decrement foodlevel
-  when Interval 1000
+  when Interval 1000 [[
     prop foodLevel increment
-    defCondition "memo:dead"
+    defCondition "memo:dead" [[
       {{ prop foodLevel < 1 }}
       prop isActive false
       prop skin setTo "dead.png"
       featureProp inputType setTo 'static'
-    defCondition "memo:worldtimer"
+    ]]
+    defCondition "memo:worldtimer" [[
       globalAgentProp World daytime
       {{ globalAgentProp World daytime === true}}
       prop skin setTo "happy.png"
+    ]]
+  ]]
   endBlueprint
 `.trim()
 ]);
@@ -322,4 +349,4 @@ endBlueprint
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TestCompiler();
+TestCompiler(TESTNUM);

@@ -16,7 +16,7 @@ import {
   GetBlueprint
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer';
+import GScriptTokenizer from 'lib/class-gscript-tokenizer-2';
 import * as DATACORE from 'modules/runtime-datacore';
 // critical imports
 import 'script/keywords/_all_keywords';
@@ -36,7 +36,13 @@ const DBG = true;
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
-function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
+function m_ScriptifyText(text: string): { script: TOpcode[] } {
+  const sourceStrings = text.split('\n');
+  const script = scriptConverter.tokenize(sourceStrings);
+  return { script };
+}
+
+function m_ExtractBlocks2(text: string): { script: TOpcode[]; nodes: string[] } {
   const sourceStrings = text.split('\n');
   let level = 0;
   // text debugging
@@ -142,7 +148,7 @@ function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
     // a line outside a block; process as-is
     _addBuf(str);
     //
-    unit.push(scriptConverter.tokenize(_buf()));
+    unit.push(...scriptConverter.tokenize(_buf()));
     //
     nodes.push(_buf());
     _clearBuf();
@@ -174,7 +180,7 @@ function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
   return { nodes, script };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given the node output of m_ExtractBlocks, re-stitch them back into
+/** given the node output of m_ScriptifyText, re-stitch them back into
  *  text suitable for CompileScript(). Semi-colons are inserted to demarque
  *  line breaks for recursive blocked script compilation. The result is a
  *  single long string.
@@ -456,17 +462,17 @@ function TextifyScript(units: TScriptUnit[]): string {
 /** tokenizes the text line-by-line into ScriptUnit[]
  */
 function ScriptifyText(text: string): TScriptUnit[] {
-  const sourceStrings = m_StitchifyBlocks(m_ExtractBlocks(text));
+  // const sourceStrings = m_StitchifyBlocks(m_ScriptifyText(text));
   // was: const sourceStrings = text.split('\n');
 
   const scriptUnits = [];
 
-  // now compile the updated strings
-  sourceStrings.forEach(str => {
-    str = str.trim();
-    const unit = m_LineToScriptUnit(str); // invoke script tokenizer for line
-    if (unit.length > 0 && unit[0] !== undefined) scriptUnits.push(unit);
-  });
+  // // now compile the updated strings
+  // sourceStrings.forEach(str => {
+  //   str = str.trim();
+  //   const unit = m_LineToScriptUnit(str); // invoke script tokenizer for line
+  //   if (unit.length > 0 && unit[0] !== undefined) scriptUnits.push(unit);
+  // });
 
   return scriptUnits;
 }
@@ -508,8 +514,8 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const txt = DATACORE.GetDefaultText();
-// console.log(...PR('\nblocks parsed', m_ExtractBlocks(txt)));
-// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ExtractBlocks(txt))));
+// console.log(...PR('\nblocks parsed', m_ScriptifyText(txt)));
+// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ScriptifyText(txt))));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -526,4 +532,4 @@ export {
   RegisterBlueprint // TScriptUnit[] => ISMCBundle
 };
 /// for testing methods
-export { m_ExtractBlocks as ExtractifyBlocks };
+export { m_ScriptifyText as ExtractifyBlocks };
