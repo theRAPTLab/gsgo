@@ -25,6 +25,7 @@
 const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
+const t = true;
 const DBG = true;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
@@ -41,7 +42,7 @@ const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
 const COMMENT_1 = '//';
 const DIRECTIVE = '#';
-
+const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
   '||': 1,
   '&&': 2,
@@ -73,6 +74,17 @@ const literals = {
 };
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// Get return the longest key length of any object
+const getMaxKeyLen = obj => {
+  let max_len = 0;
+  let len;
+  Object.keys(obj).forEach(key => {
+    len = key.length;
+    if (len > max_len) max_len = len;
+  });
+  return max_len;
+};
+const max_unop_len = getMaxKeyLen(unary_ops);
 /** `ch` is a character code in the next three functions */
 const isDecimalDigit = ch => {
   return ch >= 48 && ch <= 57; // 0...9
@@ -245,6 +257,8 @@ class ScriptTokenizer {
   gobbleToken() {
     let ch = this.exprICode(this.index);
     let chn = this.exprICode(this.index + 1);
+    let to_check;
+    let tc_len;
 
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
@@ -264,6 +278,29 @@ class ScriptTokenizer {
     if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
       // Single or double quotes
       return this.gobbleStringLiteral();
+    }
+    to_check = this.line.substr(this.index, max_unop_len);
+    tc_len = to_check.length;
+    while (tc_len > 0) {
+      // Don't accept an unary op when it is an identifier.
+      // Unary ops that start with a identifier-valid character must be followed
+      // by a non identifier-part valid character
+      if (
+        Object.prototype.hasOwnProperty.call(unary_ops, to_check) &&
+        (!isIdentifierStart(this.exprICode(this.index)) ||
+          (this.index + to_check.length < this.line.length &&
+            !isIdentifierPart(this.exprICode(this.index + to_check.length))))
+      ) {
+        this.index += tc_len;
+        let arg = this.gobbleToken();
+        // { '-': t, '!': t, '~': t, '+': t };
+        // skip + for unary operator
+        if (to_check === '-') arg = -arg;
+        else if (to_check === '!') arg = !arg;
+        else if (to_check === '~') arg = ~arg;
+        return arg;
+      }
+      to_check = to_check.substr(0, --tc_len);
     }
 
     return this.gobbleIdentifier();

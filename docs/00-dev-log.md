@@ -986,7 +986,8 @@ So how does that actually work in the new system?
 * [x] add `#` compiled directives to tokenizer
 * [x] compiler has to check for `#` keyword, defBlueprint in loop
 * [ ] test compiler works...now to re-enable SaveAgent
-* [ ] 
+* [ ] CURRENT BORKED...
+  * [ ] MakeAgent is not getting the bundle name set for some reason.
 
 **Other Things Afterwards**
 

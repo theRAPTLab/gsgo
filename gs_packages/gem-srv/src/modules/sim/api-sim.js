@@ -135,16 +135,6 @@ function ResetSimulation() {
   })();
 }
 
-/// AGENT PROGRAMMING /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentProgram(blueprint) {
-  Agents.AgentProgram(blueprint);
-}
-
-/// URSYS MESSAGE /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('AGENT_PROGRAM', AgentProgram);
-
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const u_dump = (phases, index) => {

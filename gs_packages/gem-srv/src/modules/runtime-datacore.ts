@@ -122,6 +122,7 @@ export function DeleteScript(name: string): boolean {
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SaveBlueprint(bp: ISMCBundle) {
+  console.log('saving', bp);
   const { name } = bp;
   // just overwrite it
   BLUEPRINTS.set(name, bp);
@@ -270,30 +271,15 @@ export function AddToBundle(bdl: {}, prog: TOpcode[]) {
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_TEXT = `
-# blueprint: "Bee"
-# bundle: conditions
-onAgent Bee [[
-  prop x
-]] [[
-  prop me\r
-  ifProg {{ true }} [[
-    prop x
-    prop y
-  ]] [[
-    prop AA
-    prop BB
-  ]]
-]]
-# bundle: initialize
+defBlueprint Bee
+# bundle: defaults
 addProp frame Number 2
-useFeature Movement
-
-# bundle: default
-prop skin 'bunny.json'
-# bundle: runtime
-featureCall Movement jitterPos -5 5
 // condition test 1
 addTest BunnyTest {{ agent.prop('frame').value }}
+useFeature Movement
+prop skin 'bunny.json'
+# bundle: update
+featureCall Movement jitterPos -5 5
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
 ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}

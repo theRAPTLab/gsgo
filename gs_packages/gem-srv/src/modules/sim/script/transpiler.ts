@@ -42,7 +42,7 @@ const DBG = true;
 function m_ScriptifyText(text: string): { script: TScriptUnit[] } {
   const sourceStrings = text.split('\n');
   const script = scriptConverter.tokenize(sourceStrings);
-  return { script };
+  return script;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PrintScriptToText(units: TScriptUnit[]): string {
@@ -79,6 +79,7 @@ const m_expanders = {
     console.log(
       `m_expanders: inline references are not yet implemented\n- ${arg}\n`
     );
+    return arg;
   }
 };
 
@@ -92,7 +93,10 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
     // skip first arg, which is the keyword
     if (idx === 0) return arg;
     if (Array.isArray(arg)) {
-      // program block
+      const script = scriptConverter.tokenize(arg);
+      const objcode = CompileLoop({}, script);
+      console.log('compiled object code', arg, objcode);
+      return objcode; // this is the compiled script
     }
     if (typeof arg !== 'string') return arg;
     const strTest = m_expanders[arg.substring(0, 2)];
@@ -114,6 +118,7 @@ function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
   // if (tag) console.log(`...${tag}`, unit);
   // else console.log('COMPILING', unit);
   // let's compile!
+  if (typeof kw !== 'string') return [];
   kwProcessor = GetKeyword(kw);
   // resume processing
   if (!kwProcessor) {
@@ -127,19 +132,22 @@ function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function CompileLoop(bdl: ISMCBundle, units: TScriptUnit[]) {
+  let objcode;
   units.forEach((unit, idx) => {
     if (unit[0] === 'defBlueprint') bdl.name = unit[1];
     if (unit[0] === '#') {
       // pragmas run the program directly to effect system change
       // for example setting the bundle output
-      const runcode = CompileRawUnit(['pragma', ...unit.slice(1)]);
-      runcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
-    } else {
-      // otherwise compile the code
-      const objcode = CompileRawUnit(unit); // qbits is the subsequent parameters
-      AddToBundle(bdl, objcode);
+      const temp = ['pragma', ...unit.slice(1)];
+      console.log('pragma', temp);
+      objcode = CompileRawUnit(temp);
+      objcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
     }
+    // otherwise compile the code
+    objcode = CompileRawUnit(unit); // qbits is the subsequent parameters
+    AddToBundle(bdl, objcode);
   }); // units.forEach
+  return objcode;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile an array of TScriptUnit, representing one complete blueprint
@@ -205,24 +213,6 @@ function TextifyScript(units: TScriptUnit[]): string {
   });
   return lines.join('\n');
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** tokenizes the text line-by-line into ScriptUnit[]
- */
-function ScriptifyText(text: string): TScriptUnit[] {
-  // const sourceStrings = m_StitchifyBlocks(m_ScriptifyText(text));
-  // was: const sourceStrings = text.split('\n');
-
-  const scriptUnits = [];
-
-  // // now compile the updated strings
-  // sourceStrings.forEach(str => {
-  //   str = str.trim();
-  //   const unit = m_LineToScriptUnit(str); // invoke script tokenizer for line
-  //   if (unit.length > 0 && unit[0] !== undefined) scriptUnits.push(unit);
-  // });
-
-  return scriptUnits;
-}
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
@@ -247,13 +237,14 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
   const agent = new Agent(agentName);
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
-  if (blueprint !== undefined) {
+  if (typeof blueprint === 'string') {
     const bp = GetBlueprint(blueprint);
     if (!bp) throw Error(`agent blueprint for '${blueprint}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bp);
+    return SaveAgent(agent);
   }
-  return SaveAgent(agent);
+  throw Error(`MakeAgent(): bad blueprint name ${blueprint}`, blueprint);
 }
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
@@ -269,12 +260,10 @@ export {
   CompileScript, // TScriptUnit[] => ISMCBundle
   RenderScript, // TScriptUnit[] => JSX
   TextifyScript, // TScriptUnit[] => produce source text from units
-  ScriptifyText // exprs => TScriptUnit[]
+  m_ScriptifyText as ScriptifyText // exprs => TScriptUnit[]
 };
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
   RegisterBlueprint // TScriptUnit[] => ISMCBundle
 };
-/// for testing methods
-export { m_ScriptifyText as ExtractifyBlocks };

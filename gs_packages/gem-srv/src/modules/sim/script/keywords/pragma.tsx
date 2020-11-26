@@ -7,11 +7,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import {
-  RegisterKeyword,
-  IsValidBundleName,
-  SetBundleOut
-} from 'modules/runtime-datacore';
+import { RegisterKeyword, SetBundleOut } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -19,7 +15,10 @@ const PRAGMA = {
   'blueprint': blueprintName => {
     return (agent, state) => state.stack.push('blueprint', blueprintName);
   },
-  'bundle': bundleName => SetBundleOut(bundleName)
+  'bundle': bundleName => {
+    // console.log('bundle to', bundleName);
+    SetBundleOut(bundleName);
+  }
 };
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -35,6 +34,7 @@ export class pragma extends Keyword {
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, pragmaName, value] = unit;
+    const run = PRAGMA[pragmaName](value);
     return [
       (agent: IAgent, state: IState) => {
         state.stack.push(pragmaName);

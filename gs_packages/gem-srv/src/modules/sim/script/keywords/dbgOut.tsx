@@ -23,9 +23,14 @@ export class dbgOut extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, error] = unit;
     const progout = [];
-    progout.push(() => {
-      const unknown = unit.join(', ');
-      console.log(`?${unknown}`);
+
+    progout.push(agent => {
+      if (agent.aaa === undefined) agent.aaa = 10;
+      if (agent.aaa > 0) {
+        const unknown = unit.join(', ');
+        console.log(`?${unknown}`);
+        agent.aaa--;
+      }
     });
     return progout;
   }

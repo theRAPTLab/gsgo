@@ -129,7 +129,8 @@ function AgentReset(frameTime) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.RegisterMessage('SIM_RESET', AgentReset);
 UR.RegisterMessage('SIM_MODE', AgentSelect);
-UR.RegisterMessage('SIM_PROGRAM', AgentProgram);
+// UR.RegisterMessage('SIM_PROGRAM', AgentProgram);
+UR.RegisterMessage('AGENT_PROGRAM', AgentProgram);
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

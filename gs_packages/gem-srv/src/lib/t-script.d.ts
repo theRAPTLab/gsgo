@@ -98,7 +98,7 @@ export type TMethod = TSMCProgram | Function | TExpressionAST;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** exported by the 'compile' method */
 export interface ISMCBundle {
-  name?: TValue; // the determined name of the blueprint
+  name?: string; // the determined name of the blueprint
   define?: TSMCProgram; // def template, props, features
   defaults?: TSMCProgram; // set default values
   update?: TSMCProgram; // other runtime init
