@@ -24,16 +24,17 @@ function TestCompiler(index?: number) {
   TT.forEach((test, idx) => {
     if (!index || index === idx) {
       const [desc, text, verify] = test;
-      const blocks = ExtractifyBlocks(text);
-      const key = blocks.join('|NL|');
+      const { nodes, script } = ExtractifyBlocks(text);
+      const key = nodes.join('|NL|');
       const match = key === verify;
       const groupLabel = match ? desc : `*** FAILED *** ${desc}`;
       if (index) console.group(...PR(idx, groupLabel));
       else console.groupCollapsed(...PR(idx, groupLabel));
       console.log(`TEXT:\n${text}`);
       console.log('---\nBLOCKS:');
-      blocks.forEach(block => console.log(block));
+      nodes.forEach(block => console.log(block));
       console.log(`---\nKEY:\n"${key}"`);
+      console.log('---\nSCRIPT (array of unit arrays):\n', script);
       console.groupEnd();
     }
   });

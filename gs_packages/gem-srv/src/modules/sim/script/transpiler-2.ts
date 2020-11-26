@@ -36,7 +36,7 @@ const DBG = true;
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
-function m_ExtractBlocks(text: string): Array<string[]> {
+function m_ExtractBlocks(text: string): { script: TOpcode[]; nodes: string[] } {
   const sourceStrings = text.split('\n');
   let level = 0;
   // text debugging
@@ -123,11 +123,21 @@ function m_ExtractBlocks(text: string): Array<string[]> {
     }
     // a non-blocked line; process as-is
     buffer += str;
+    //
+    unit.push(scriptConverter.tokenize(buffer));
+    //
     nodes.push(buffer);
     buffer = '';
-  });
+  }); // end of sourceStrings.forEach
+
   // cleanup
-  if (buffer.length > 0) nodes.push(buffer);
+  if (buffer.length > 0) {
+    unit.push(...scriptConverter.tokenize(buffer));
+    nodes.push(buffer);
+  }
+  script.push(unit);
+
+  // check for unbalanced [[ ]]
   if (level !== 0) {
     console.log(
       ...PR(
@@ -139,10 +149,11 @@ function m_ExtractBlocks(text: string): Array<string[]> {
     );
     return undefined;
   }
+
   // at this point, the nodes array contains arrays of strings
   // (1) if the first element has a [[, it's a block and should be merged
   // (2) otherwise, it's regular strings
-  return nodes;
+  return { nodes, script };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given the node output of m_ExtractBlocks, re-stitch them back into

@@ -22,6 +22,7 @@ const string = 'class-script-tokenizer';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
+const DBG = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -148,13 +149,14 @@ class ScriptTokenizer {
     const s2 = this.line[this.index];
     const s3 = this.line.substring(this.index + 1);
     const pr = prompt === undefined ? '' : `! ${prompt} !\n`;
-    console.log(
-      `%c${pr}%c${s1}%c${s2}%c${s3}`,
-      'color:white;background-color:#FF0000;padding:2px 0 2px 0',
-      'color:black;',
-      'background-color:#FFB000',
-      'color:#C0C0C0'
-    );
+    if (DBG)
+      console.log(
+        `%c${pr}%c${s1}%c${s2}%c${s3}`,
+        'color:white;background-color:#FF0000;padding:2px 0 2px 0',
+        'color:black;',
+        'background-color:#FFB000',
+        'color:#C0C0C0'
+      );
   }
   throwError(err) {
     this.showProgress('ERROR');
