@@ -2,15 +2,19 @@
 
   ScriptTokenizer takes a text input and produces a TScriptUnit, which is
   an array of form ['keyword', ...args]. Arrays of TScriptUnits form our
-  "script object code"909o
+  "script object code"
 
-  This code is based on a refactored version of jsep, and adapted to produce
-  our script unit format
-  https://ericsmekens.github.io/jsep/
+  The main entry point of the class instance is:
+  tokenize(expr:string)
+
+  This code is a refactored version of jsep, modified to produce
+  our script unit format of [keyword, ...args] instead of an AST.
+  -
+  JSEP project, under MIT License.
+  Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
+  see: https://ericsmekens.github.io/jsep/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
-// import { TScriptUnit } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,6 +22,7 @@ const string = 'class-script-tokenizer';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
+const DBG = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,8 +36,9 @@ const OBRACK_CODE = 91; // [
 const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
-const COMMENT_1 = '#';
-const COMMENT_2 = '//';
+const OBLOCK_CODE = 60; // <
+const CBLOCK_CODE = 62; // >
+const COMMENT_1 = '//';
 const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
   '||': 1,
@@ -48,9 +54,10 @@ const binary_ops = {
   '>': 7,
   '<=': 7,
   '>=': 7,
-  '<<': 8,
-  '>>': 8,
-  '>>>': 8,
+  /* HACK disable because we use << >> for block delimiters */
+  // '<<': 8,
+  // '>>': 8,
+  // '>>>': 8,
   '+': 9,
   '-': 9,
   '*': 10,
@@ -103,7 +110,7 @@ const isIdentifierPart = ch => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptTokenizer {
   constructor() {
-    this.expr = '';
+    this.line = '';
     this.index = 0;
     this.lastIndex = this.index;
     this.length = 0;
@@ -111,34 +118,56 @@ class ScriptTokenizer {
 
   /////////////////////////////////////////////////////////////////////////////
   /** TOKENIZER **************************************************************/
-  tokenize(expr) {
-    this.expr = expr;
-    this.length = this.expr.length;
+  tokenize(line) {
+    this.line = line;
+    this.length = this.line.length;
     this.index = 0;
     this.lastIndex = this.index;
 
     let nodes = [];
     let node;
 
-    if (expr.substring(0, 2) === COMMENT_2) return undefined;
-    if (expr.charAt(0) === COMMENT_1) return undefined;
+    /* HACK ADDITION for GEMSCRIPT COMMENTS */
+    if (line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
+    /** END HACK **/
+
     while (this.index < this.length) {
+      this.showProgress();
       this.gobbleSpaces();
       this.lastIndex = this.index;
       // start tokenizing
       node = this.gobbleToken();
-      if (node) nodes.push(node);
+      if (Array.isArray(node)) nodes.push(...node);
+      else nodes.push(node);
     }
     return nodes;
   }
   /** END TOKENIZER **********************************************************/
   /////////////////////////////////////////////////////////////////////////////
+  showProgress(prompt) {
+    const s1 = this.line.substring(0, this.index);
+    const s2 = this.line[this.index];
+    const s3 = this.line.substring(this.index + 1);
+    const pr = prompt === undefined ? '' : `! ${prompt} !\n`;
+    if (DBG)
+      console.log(
+        `%c${pr}%c${s1}%c${s2}%c${s3}`,
+        'color:white;background-color:#FF0000;padding:2px 0 2px 0',
+        'color:black;',
+        'background-color:#FFB000',
+        'color:#C0C0C0'
+      );
+  }
+  throwError(err) {
+    this.showProgress('ERROR');
+    throw Error(err);
+  }
 
   exprI(i) {
-    return charAtFunc.call(this.expr, i);
+    return charAtFunc.call(this.line, i);
   }
   exprICode(i) {
-    return charCodeAtFunc.call(this.expr, i);
+    return charCodeAtFunc.call(this.line, i);
   }
   // Push `this.index` up to the next non-space character
   gobbleSpaces() {
@@ -155,6 +184,17 @@ class ScriptTokenizer {
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
+    /* HACK GEMSCRIPT ADDITION FOR << tmethod >> */
+    if (ch === OBLOCK_CODE && chn === OBLOCK_CODE) {
+      this.index++;
+      return this.gobbleBlock(); // in gobbleVariable() also
+    }
+    /* HACK GEMSCRIPT ADDITION FOR {{ expr }} */
+    if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
+      this.index++;
+      return this.gobbleExpressionString();
+    }
+    /* END HACK */
 
     if (isDecimalDigit(ch) || ch === PERIOD_CODE) {
       // Char code 46 is a dot `.` which can start off a numeric literal
@@ -164,15 +204,12 @@ class ScriptTokenizer {
       // Single or double quotes
       return this.gobbleStringLiteral();
     }
+
     if (ch === OBRACK_CODE) {
       return this.gobbleArray();
     }
-    if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
-      this.index++;
-      return this.gobbleExpressionString();
-    }
 
-    to_check = this.expr.substr(this.index, max_unop_len);
+    to_check = this.line.substr(this.index, max_unop_len);
     tc_len = to_check.length;
     while (tc_len > 0) {
       // Don't accept an unary op when it is an identifier.
@@ -181,7 +218,7 @@ class ScriptTokenizer {
       if (
         Object.prototype.hasOwnProperty.call(unary_ops, to_check) &&
         (!isIdentifierStart(this.exprICode(this.index)) ||
-          (this.index + to_check.length < this.expr.length &&
+          (this.index + to_check.length < this.line.length &&
             !isIdentifierPart(this.exprICode(this.index + to_check.length))))
       ) {
         this.index += tc_len;
@@ -236,7 +273,7 @@ class ScriptTokenizer {
         number += this.exprI(this.index++);
       }
       if (!isDecimalDigit(this.exprICode(this.index - 1))) {
-        throw Error(
+        this.throwError(
           `Expected exponent (${number + this.exprI(this.index)}) at ${
             this.index
           }`
@@ -247,13 +284,13 @@ class ScriptTokenizer {
     chCode = this.exprICode(this.index);
     // Check to make sure this isn't a variable name that start with a number (123abc)
     if (isIdentifierStart(chCode)) {
-      throw Error(
+      this.throwError(
         `Variable names cannot start with a number (${
           number + this.exprI(this.index)
         }) at ${this.index}`
       );
     } else if (chCode === PERIOD_CODE) {
-      throw Error(`Unexpected period at ${this.index}`);
+      this.throwError(`Unexpected period at ${this.index}`);
     }
 
     return parseFloat(number);
@@ -301,11 +338,12 @@ class ScriptTokenizer {
       }
     }
 
-    if (!closed) throw Error(`Unclosed quote after "${str}" at ${this.index}`);
+    if (!closed)
+      this.throwError(`Unclosed quote after "${str}" at ${this.index}`);
     return str;
   }
   // Gobbles only identifiers
-  // e.g.: `foo`, `_value`, `$x1`
+  // e.g.: `foo`, `value`, `$x1`
   // Also, this function checks if that identifier is a literal:
   // (e.g. `true`, `false`, `null`) or `this`
   gobbleIdentifier() {
@@ -316,7 +354,7 @@ class ScriptTokenizer {
     if (isIdentifierStart(ch)) {
       this.index++;
     } else {
-      throw Error(`Unexpected ${this.exprI(this.index)} at ${this.index}`);
+      this.throwError(`Unexpected ${this.exprI(this.index)} at ${this.index}`);
     }
 
     while (this.index < this.length) {
@@ -327,7 +365,7 @@ class ScriptTokenizer {
         break;
       }
     }
-    identifier = this.expr.slice(start, this.index);
+    identifier = this.line.slice(start, this.index);
 
     if (Object.prototype.hasOwnProperty.call(literals, identifier)) {
       return literals[identifier];
@@ -357,7 +395,7 @@ class ScriptTokenizer {
           separator_count &&
           separator_count >= args.length
         ) {
-          throw Error(
+          this.throwError(
             `Unexpected token ${String.fromCharCode(termination)} at ${
               this.index
             }`
@@ -371,7 +409,7 @@ class ScriptTokenizer {
         if (separator_count !== args.length) {
           // missing argument
           if (termination === CPAREN_CODE) {
-            throw Error(`Unexpected token at ${this.index}`);
+            this.throwError(`Unexpected token at ${this.index}`);
           } else if (termination === CBRACK_CODE) {
             for (let arg = args.length; arg < separator_count; arg++) {
               args.push(null);
@@ -381,13 +419,13 @@ class ScriptTokenizer {
       } else {
         node = this.gobbleToken();
         if (!node) {
-          throw Error(`Expected comma at ${this.index}`);
+          this.throwError(`Expected comma at ${this.index}`);
         }
         args.push(node);
       }
     }
     if (!closed) {
-      throw Error(
+      this.throwError(
         `Expected ${String.fromCharCode(termination)} at ${this.index}`
       );
     }
@@ -402,23 +440,29 @@ class ScriptTokenizer {
     let node;
     ch_i = this.exprICode(this.index);
     if (ch_i === OPAREN_CODE) {
+      // is group ( expression )?
       node = this.gobbleGroup();
     } else {
-      node = this.gobbleIdentifier();
+      node = this.gobbleIdentifier(); // otherwise it's an identifier
     }
+    // note: check for subsequent identifier variations
+    // note: identifier check for dot property, array
     this.gobbleSpaces();
     ch_i = this.exprICode(this.index);
+    // this all gets skipped if it's not dot, array, call, or group
     while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
       this.index++;
       if (ch_i === PERIOD_CODE) {
+        // dot property
         this.gobbleSpaces();
         node = this.gobbleIdentifier();
       } else if (ch_i === OBRACK_CODE) {
+        // array gobble
         node = this.gobbleToken();
         this.gobbleSpaces();
         ch_i = this.exprICode(this.index);
         if (ch_i !== CBRACK_CODE) {
-          throw Error(`Unclosed [ at ${this.index}`);
+          this.throwError(`Unclosed [ at ${this.index}`);
         }
         this.index++;
       } else if (ch_i === OPAREN_CODE) {
@@ -443,8 +487,9 @@ class ScriptTokenizer {
       this.index++;
       return node;
     }
-    throw Error(`Unclosed ( at ${this.index}`);
+    return this.throwError(`Unclosed ( at ${this.index}`);
   }
+  /* HACK ADDITION for text script expressions */
   // in GEMscript text, a {{ }} indicates an expression, and should
   // be captured as one long string including the {{ }}
   gobbleExpressionString() {
@@ -456,13 +501,59 @@ class ScriptTokenizer {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
-        this.index++;
-        return `{{${str}}}`;
+        this.index += 2;
+        return `{{ ${str.trim()} }}`;
       }
       str += String.fromCharCode(ch);
     }
-    throw Error(`Unclosed {{ at ${this.index} for ${str}`);
+    return this.throwError(`Unclosed inline {{ at ${this.index} for ${str}`);
   }
+  /* HACK ADDITION for text script tmethod names */
+  // in GEMSCRIPT text, a << >> on a single line designates a
+  // named TMethod. There are several possible locations of the
+  // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
+  // implementor to know which one it is
+  gobbleBlock() {
+    // when this is called from gobbleVariable, we're already pointing
+    // at tshe second [ in <<
+    let ch;
+    let cch;
+    let str = '';
+    let level = 1;
+    this.index++;
+
+    // start reading inside <<
+    while (this.index < this.length) {
+      ch = this.exprICode(this.index++);
+      cch = this.exprICode(this.index);
+      // check for closing bracket level 0
+      if (ch === CBLOCK_CODE && cch === CBLOCK_CODE) {
+        this.index++;
+        level--;
+        if (level === 0) return `<< ${str.trim()} >>`;
+        str += '>>';
+      } else if (ch === OBLOCK_CODE && cch === OBLOCK_CODE) {
+        this.index++;
+        level++;
+        str += '<<';
+      } else {
+        str += String.fromCharCode(ch);
+      }
+    }
+    return this.throwError(
+      `Unclosed inline << at ${this.index} for ${str} level ${level}`
+    );
+  }
+  /* HACK ADDITION for text script comments // and -- */
+  // skip the first two // and output the entire rest of the line
+  gobbleComment() {
+    const eol = this.line.length;
+    const cstring = this.line.substring(2, eol).trim();
+    this.index = eol;
+    return ['comment', cstring];
+  }
+  /* END OF HACK HACKS */
+
   // Responsible for parsing Array literals `[1, 2, 3]`
   // This function assumes that it needs to gobble the opening bracket
   // and then tries to gobble the expressions as arguments.

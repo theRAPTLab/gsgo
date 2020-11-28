@@ -1,19 +1,19 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword useFeature command object
+  implementation of keyword "useFeature" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { addFeature } from 'script/ops/_all';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class UseFeature extends Keyword {
+export class useFeature extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('useFeature');
@@ -21,15 +21,11 @@ export class UseFeature extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const featureName = parms[0];
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, featureName] = unit;
     const progout = [];
     progout.push(addFeature(featureName));
-    return {
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
@@ -39,13 +35,13 @@ export class UseFeature extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [kw, featureName] = srcLine;
-    return super.jsx(index, srcLine, <>useFeature {featureName}</>);
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, featureName] = unit;
+    return super.jsx(index, unit, <>useFeature {featureName}</>);
   }
-} // end of UseFeature
+} // end of useFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(UseFeature);
+RegisterKeyword(useFeature);

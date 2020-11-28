@@ -1,18 +1,18 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword IfExpr command object
+  implementation of keyword "ifExpr" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class IfExpr extends Keyword {
+export class ifExpr extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('ifExpr');
@@ -23,20 +23,16 @@ export class IfExpr extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(parms: any[]): ISMCBundle {
-    const test = parms[0]; // any TMethod returning boolean
-    const consq = parms[1]; // could be any TMethod
-    const alter = parms[2]; // also a TMethod
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
       const method = test;
-      const result = this.topValue(agent.exec(method, [], state.ctx));
-      if (result) agent.exec(consq);
-      else agent.exec(alter);
+      const result = this.firstValue(agent.exec(method, [], state.ctx));
+      if (result && consq) agent.exec(consq);
+      if (!result && alter) agent.exec(alter);
     });
-    return {
-      update: code
-    };
+    return code;
   }
 
   /** return a state object that turn react state back into source */
@@ -46,12 +42,16 @@ export class IfExpr extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
+    const [kw, testName, consequent, alternate] = unit;
+    const cc = consequent ? 'TRUE:[consequent]' : '';
+    const aa = alternate ? 'FALSE:[alternate]' : '';
     return super.jsx(
       index,
-      srcLine,
-      <>ifTest {testName} then run [consequent]</>
+      unit,
+      <>
+        ifExpr {testName} {cc} {aa}
+      </>
     );
   }
 } // end of DefProp
@@ -59,4 +59,4 @@ export class IfExpr extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(IfExpr);
+RegisterKeyword(ifExpr);

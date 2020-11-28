@@ -6,8 +6,8 @@
 
 import UR from '@gemstep/ursys/client';
 import { BLUEPRINTS } from 'modules/runtime-datacore';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { CompileSource } from 'script/transpiler';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
+import { CompileScript } from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +27,7 @@ export default class Blueprint {
 
   /** compile passed source and save by name */
   save(units: TScriptUnit[]) {
-    const bp: ISMCBundle = CompileSource(units);
+    const bp: ISMCBundle = CompileScript(units);
     const name = bp.name;
     if (DBG) {
       if (BLUEPRINTS.has(name)) log(...PR(`updating ${name}`));

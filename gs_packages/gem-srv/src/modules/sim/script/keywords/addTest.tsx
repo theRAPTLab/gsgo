@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword AddTest command object
+  implementation of keyword "addTest" command object
   adds a named test to the TESTS table so we can refer to it later
   this particular test is for a condition that runs inside of an agent,
   so we want SMC-compatible code here.
@@ -10,12 +10,12 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, RegisterTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class AddTest extends Keyword {
+export class addTest extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('addTest');
@@ -26,9 +26,8 @@ export class AddTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(parms: any[]): ISMCBundle {
-    const testName = parms[0];
-    const test = parms[1]; // could be TMethod, including AST
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, testName, test] = unit;
     const conds = [
       agent => {
         if (RegisterTest(testName, test))
@@ -38,9 +37,7 @@ export class AddTest extends Keyword {
         return testName;
       }
     ];
-    return {
-      conditions: conds
-    };
+    return conds;
   }
 
   /** return a state object that turn react state back into source */
@@ -50,11 +47,11 @@ export class AddTest extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    const [kw, testName, expr] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
+    const [kw, testName, expr] = unit;
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         addTest {testName} = {expr}
       </>
@@ -65,4 +62,4 @@ export class AddTest extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(AddTest);
+RegisterKeyword(addTest);

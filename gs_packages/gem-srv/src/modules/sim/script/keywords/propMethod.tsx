@@ -1,12 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword propCall keyword object
+  implementation of keyword "propMethod" keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class PropMethod extends Keyword {
+export class propMethod extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -23,18 +23,15 @@ export class PropMethod extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [propName, methodName, ...args] = parms;
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, propName, methodName, ...args] = unit;
     const progout = [];
-    progout.push((agent: IAgent) => {
+    progout.push((agent: IAgent, state: IState) => {
       const prop = agent.prop(propName);
-      prop[methodName](...args);
+      const res = prop[methodName](...args).value;
+      if (res !== undefined) state.pushArgs(res);
     });
-    return {
-      define: [],
-      defaults: [],
-      conditions: progout
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
@@ -44,11 +41,11 @@ export class PropMethod extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const [kw, propName, methodName, ...arg] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, propName, methodName, ...arg] = unit;
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         prop {propName}.{methodName}({arg.join(' ')})
       </>
@@ -59,4 +56,4 @@ export class PropMethod extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(PropMethod);
+RegisterKeyword(propMethod);

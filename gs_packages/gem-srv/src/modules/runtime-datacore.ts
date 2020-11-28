@@ -15,16 +15,36 @@ import UR from '@gemstep/ursys/client';
 import {
   IScopeableCtor,
   IFeature,
-  TMethod,
+  TOpcode,
+  TSMCProgram,
   TScriptUnit,
   ISMCBundle,
+  EBundleType,
   IKeyword,
   IKeywordCtor
-} from 'lib/t-script';
+} from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCORE', 'TagRed');
+
+/// valid keys are defined in ISMCBundle, and values indicate the
+/// context that these program
+const BUNDLE_CONTEXTS = [
+  'define',
+  'init',
+  'update',
+  'think',
+  'exec',
+  'condition',
+  'test',
+  'conseq',
+  'alter'
+];
+
+/// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let BUNDLE_OUT = 'define';
 
 /// DATA STORAGE MAPS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,11 +55,11 @@ const VAR_DICT: Map<string, IScopeableCtor> = new Map();
 const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
-const SOURCE: Map<string, TScriptUnit[]> = new Map();
+const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const CONDITIONS: Map<string, TMethod> = new Map();
-const TESTS: Map<string, TMethod> = new Map();
-const PROGRAMS: Map<string, TMethod> = new Map();
+const CONDITIONS: Map<string, TSMCProgram> = new Map();
+const TESTS: Map<string, TSMCProgram> = new Map();
+const PROGRAMS: Map<string, TSMCProgram> = new Map();
 const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
@@ -67,22 +87,22 @@ export function GetVarCtor(name: string): IScopeableCtor {
   return VAR_DICT.get(name);
 }
 
-/// SOURCE UNITS //////////////////////////////////////////////////////////////
+/// SCRIPT UNITS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source manager */
-export function SaveSource(name: string, source: TScriptUnit[]): boolean {
-  if (SOURCE.has(name)) console.warn(...PR(`overwriting source '${name}'`));
+export function SaveScript(name: string, source: TScriptUnit[]): boolean {
+  if (SCRIPTS.has(name)) console.warn(...PR(`overwriting source '${name}'`));
   if (!Array.isArray(source)) {
-    console.warn(...PR(`SaveSource: '${name}' source must be array`));
+    console.warn(...PR(`SaveScript: '${name}' source must be array`));
     return false;
   }
-  SOURCE.set(name, source);
+  SCRIPTS.set(name, source);
   return true;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source updater */
-function UpdateSourceIndex(name: string, i: number, u: TScriptUnit): boolean {
-  const source = SOURCE.get(name);
+function UpdateScriptIndex(name: string, i: number, u: TScriptUnit): boolean {
+  const source = SCRIPTS.get(name);
   try {
     if (!source) throw Error(`'${name}' doesn't exist`);
     if (typeof i !== 'number') throw Error(`index must be number, not ${i}`);
@@ -94,12 +114,12 @@ function UpdateSourceIndex(name: string, i: number, u: TScriptUnit): boolean {
   source[i] = u;
   return true;
 }
-export { UpdateSourceIndex };
+export { UpdateScriptIndex };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** WIP centralized source deleter */
-export function DeleteSource(name: string): boolean {
-  if (SOURCE.has(name)) {
-    SOURCE.delete(name);
+export function DeleteScript(name: string): boolean {
+  if (SCRIPTS.has(name)) {
+    SCRIPTS.delete(name);
     return true;
   }
   console.warn(...PR(`source '${name}' doesn't exist`));
@@ -109,6 +129,7 @@ export function DeleteSource(name: string): boolean {
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SaveBlueprint(bp: ISMCBundle) {
+  console.log('saving', bp);
   const { name } = bp;
   // just overwrite it
   BLUEPRINTS.set(name, bp);
@@ -186,20 +207,20 @@ export function GetAllConditions() {
 /// TEST UTILITIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
-export function RegisterTest(name: string, f_or_smc: TMethod): boolean {
+export function RegisterTest(name: string, program: TSMCProgram): boolean {
   // if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
   const newRegistration = !TESTS.has(name);
-  TESTS.set(name, f_or_smc);
+  TESTS.set(name, program);
   return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetTest(name: string): TMethod {
-  if (!TESTS.has(name)) {
-    console.log(...PR(`test '${name}' doesn't exist`));
-  } else return TESTS.get(name);
+export function GetTest(name: string): TSMCProgram {
+  return TESTS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetTests() {}
+export function DeleteAllTests() {
+  TESTS.clear();
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function MakeTestResultKey(...args: string[]) {
   if (!Array.isArray(args)) args = [args];
@@ -220,15 +241,73 @@ export function PurgeTestResults() {
 
 /// PROGRAM UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RegisterProgram(name: string, f_or_smc: TMethod) {
+export function RegisterProgram(name: string, program: TSMCProgram) {
   if (PROGRAMS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
-  PROGRAMS.set(name, f_or_smc);
+  PROGRAMS.set(name, program);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetProgram(name: string): TMethod {
-  if (!PROGRAMS.has(name)) {
-    console.log(...PR(`program '${name}' doesn't exist`));
-  } else return PROGRAMS.get(name);
+export function GetProgram(name: string): TSMCProgram {
+  return PROGRAMS.get(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function IsValidBundleProgram(name: string): boolean {
+  return BUNDLE_CONTEXTS.includes(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return true if the passed bundle string is valid */
+export function IsValidBundleType(type: EBundleType) {
+  return Object.values(EBundleType).includes(type as any);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** set the datacore global var BUNDLE_OUT to name, which tells the
+ *  AddToBundle(bdl,prog) call where the program should be added
+ */
+export function SetBundleOut(name: string): boolean {
+  if (IsValidBundleProgram(name)) {
+    BUNDLE_OUT = name;
+    return true;
+  }
+  return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** main API for add a program to a bundle. It does not check the bundle
+ *  type because it may not have been set yet.
+ */
+export function AddToBundle(bdl: ISMCBundle, prog: TOpcode[]) {
+  if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
+  if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
+  // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
+  bdl[BUNDLE_OUT].push(...prog);
+}
+
+/// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DEFAULT_TEXT = `
+# BLUEPRINT Bee Agent
+# DEFINE
+addProp frame Number 2
+useFeature Movement
+prop skin 'bunny.json'
+# CONDITION
+addTest BunnyTest [[
+  propMethod y gt 1000
+  dbgStack
+]]
+# UPDATE
+featureCall Movement jitterPos -5 5
+ifTest [[ BunnyTest ]] {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
+// condition test 2
+ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(-100) }}
+ifProg [[ BunnyTest ]] [[
+  propMethod x setTo 100
+  propMethod y setTo 100
+]] [[
+  propMethod x setTo -100
+  propMethod y setTo -100
+]]
+`;
+export function GetDefaultText() {
+  return DEFAULT_TEXT;
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

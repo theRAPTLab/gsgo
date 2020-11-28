@@ -1,12 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword prop keyword object
+  implementation of keyword "prop" keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class Prop extends Keyword {
+export class prop extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -23,18 +23,14 @@ export class Prop extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [propName, value] = parms;
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, propName, value] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const prop = agent.prop(propName);
-      prop._value = value;
+      const p = agent.prop(propName);
+      p.value = value;
     });
-    return {
-      define: [],
-      defaults: progout,
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
@@ -44,12 +40,12 @@ export class Prop extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const propName = srcLine[1];
-    const value = srcLine[2];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const propName = unit[1];
+    const value = unit[2];
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         prop {propName} = {value}
       </>
@@ -60,4 +56,4 @@ export class Prop extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(Prop);
+RegisterKeyword(prop);

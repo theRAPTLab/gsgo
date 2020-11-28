@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword onCondition command object
+  implementation of keyword "onCondition" command object
   What is this supposed to do? Implement expression conditionals
   on an agent. These are run during the CONDITIONALS part of the
   simulation lifecycle
@@ -9,13 +9,13 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 import { SingleAgentConditional } from 'script/conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class OnCondition extends Keyword {
+export class onCondition extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -24,17 +24,11 @@ export class OnCondition extends Keyword {
   }
   /* NOTE THIS IS NONFUNCTIONAL */
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const testExpr = parms[0]; // {{ expr }}
-    const consq = parms[1];
-    const alter = parms[2];
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, testExpr, consq, alter] = unit;
     const cout = [];
     cout.push();
-    return {
-      define: [],
-      defaults: [],
-      conditions: cout
-    };
+    return cout;
   }
 
   /** return a state object that turn react state back into source */
@@ -44,13 +38,13 @@ export class OnCondition extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const testName = srcLine[1];
-    const conseq = srcLine[2];
-    const alter = srcLine[3];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const testName = unit[1];
+    const conseq = unit[2];
+    const alter = unit[3];
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         on {testName} TRUE {conseq}, ELSE {alter}
       </>
@@ -61,4 +55,4 @@ export class OnCondition extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(OnCondition);
+RegisterKeyword(onCondition);

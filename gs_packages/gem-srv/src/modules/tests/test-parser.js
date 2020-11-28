@@ -8,10 +8,10 @@
 
 import UR from '@gemstep/ursys/client';
 import ExpressionParser from 'lib/class-expr-parser';
-import ScriptTokenizer from 'lib/class-script-tokenizer';
+import ScriptTokenizer from 'lib/class-gscript-tokenizer';
 import parse from 'jsep';
-import { Evaluate } from 'script/script-evaluator';
-import { TokenizeToScriptUnit } from 'script/script-parser';
+import { Evaluate } from 'lib/expr-evaluator';
+import { LineToScriptUnit } from 'lib/expr-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

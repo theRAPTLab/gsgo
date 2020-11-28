@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////
+/// BASE SIMULATION OBJECTS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A "scopeable" object is one that can represent the current execution
  *  context for ops using method(), prop() or value-related assignments.
@@ -24,11 +24,12 @@ export interface IScopeable {
   serialize: () => any[];
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
-  _value: any;
-  get: (key) => TValue;
-  set: (key: string, value: TValue) => void;
+  value: any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Weird Typescript syntax for declaring a Constructor of a IScopeable,
+ *  when these are passed to a class that manages instances of other classes
+ */
 export interface IScopeableCtor {
   new (value?: any, ...args: any[]): IScopeable;
 }
@@ -44,72 +45,121 @@ export interface IAgent extends IScopeable {
   queueUpdateAction: (action: TMethod) => void;
   queueThinkAction: (action: TMethod) => void;
   queueExecAction: (action: TMethod) => void;
-  evaluate: (...args: any) => any;
+  evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
   addFeature: (name: string) => void;
-  name: () => string;
+  name: (match?: string) => string;
   x: () => number;
   y: () => number;
   skin: () => string;
 }
+
+/// FEATURE DECLARATIONS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Allowed "literal values" on the data stack */
-export type TValue = string | number | boolean;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A "stackable" object is one that can be pushed on the data stack. */
-export type TStackable = IScopeable | TValue;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Stackmachine operations return a Promise if it is operating asynchronously
- *  though this may not be necessary. I thought it might be cool
+/** Features are very similar to IScopeable interface in method
  */
-export type TOpWait = Promise<any> | void;
+export interface IFeature {
+  meta: { feature: string };
+  methods: Map<string, TMethod>;
+  initialize(pm: any): void;
+  name(): string;
+  decorate(agent: IAgent): void;
+  addProp(agent: IAgent, key: string, prop: IScopeable): void;
+  prop(agent: IAgent, key: string): IScopeable;
+  method: (agent: IAgent, key: string, ...args: any) => any;
+}
+
+/// INTERMEDIATE SCRIPT REPRESENTATION ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine operation or "opcode" is a function that receives mutable
- *  agent, stack, scope, and condition flag objects. This is how agents
- *  and their props are changed by the scripting engine. The agent is
- *  the memory context, and the stack is used to pass values in/out.
- *  It returns void, but we are also allowing Promise as a return type
- *  in case we want to have asynchronous opcodes.
+/** Our "script" format is a serializeable format that can be converted to
+ *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
+ *  renderable JSX for a UI.
  */
-export type TOpcode = (
-  agent: IAgent, // REQUIRED memory context
-  sm_state: IState // machine state
-) => TOpWait;
-/** a shim for "Registration Code", which runs globally and has a
- *  different function signature than TOpcode
- */
-export type TRegcode = (
-  agent?: IAgent // OPTIONAL memory context
-) => void;
+export type TScriptUnit = [string?, ...any[]];
+export type TScript = TScriptUnit[]; // not generally used\
+
+/// COMPILER OUPUT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine program is an array of opcodes that are read from the
- *  beginning and executed one-after-the-other. Each function is invoked
- *  with the current data and scope stacks, as well as flags object that
- *  can be updated by conditional opcodes
- */
-export type TSMCProgram = TOpcode[];
-export type TSMCGlobalProgram = TRegcode[];
-/** Also could be an AST, which is an object with a type property */
-export type TExpressionAST = { type: string };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine method can be either a stackmachine program OR a regular
- *  function. The invocation method will check what it is
- */
-export type TMethod = TSMCProgram | Function | TExpressionAST;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** exported by the 'compile' method */
-export interface ISMCBundle {
-  name?: string; // the determined name of the blueprint
-  define?: TSMCProgram; // def template, props, features
-  defaults?: TSMCProgram; // set default values
-  update?: TSMCProgram; // other runtime init
-  // conditions
-  conditions?: TRegcode[]; // this might be
+/** An object that contains one of several types of program array */
+export interface ISMCPrograms {
+  // blueprint
+  define?: TSMCProgram; // def blueprint, props, features
+  init?: TSMCProgram; // allocate mem/define default values for instance
+  update?: TSMCProgram; // run during instance update cycle
+  think?: TSMCProgram; // run during instance think phase
+  exec?: TSMCProgram; // run during instance exec phase
+  // global conditions
+  condition?: TSMCProgram;
+  // local condition (one per bundle)
   test?: TSMCProgram; // program returning true on stack
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
 }
+/** An ISMCBundle is a dictionary of TSCMPrograms. See also runtime-datacore
+ *  for the BUNDLE_OUTS definition, which maps the bundle props to a
+ *  particular runtime context (e.g. BLUEPRINT)
+ *  A TSMCProgram is just TOpcode[]
+ *  A TSMCGlobalProgram is just TRegcode[]
+ */
+export interface ISMCBundle extends ISMCPrograms {
+  name?: string; // the name of the bundle, if any
+  type?: EBundleType; // enum type (see below)
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** defines the kinds of bundles */
+export enum EBundleType {
+  PROG = 'program', // a program type
+  COND = 'condition', // test, conseq, alter program,
+  BLUEPRINT = 'blueprint', // blueprint for initializing agents
+  G_PROG = 'gprogram', // named program to store in global
+  G_COND = 'gcondition', // named global state based on condition
+  G_TEST = 'gtest' // named global test returning true or false
+}
+
+/// SCRIPT UNIT TRANSPILER ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** related keyword interface  */
+export interface IKeyword {
+  keyword: string;
+  args: string[];
+  compile(unit: TScriptUnit): TOpcode[];
+  serialize(state: object): TScriptUnit;
+  jsx(index: number, state: object, children?: any[]): any;
+  generateKey(): any;
+  getName(): string;
+  firstValue(thing: any): any;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** weird Typescript constructor definition used by Transpiler
+ *  see fettblog.eu/typescript-interface-constructor-pattern/
+ */
+export interface IKeywordCtor {
+  new (keyword?: string): IKeyword;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A payload received from a Wizard UI component that has the reconstructed
+ *  ScriptUnit
+ */
+export interface IScriptUpdate {
+  index: number;
+  scriptUnit: TScriptUnit;
+}
+
+/// SIMULATION RUNTIME ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine Message, which consists of a message and an SMCProgram.
+ */
+export interface IMessage {
+  id: number;
+  channel: string;
+  message: string;
+  data?: any;
+  programs?: TSMCProgram[];
+  inputs?: any;
+}
+
+/// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,
  *  and a flags object. This state is passed, along with agent, to every
@@ -124,7 +174,16 @@ export interface IState {
   pop(): TStackable;
   popArgs(num: number): TStackable[];
   pushArgs(...args: number[]): void;
+  reset(): void;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A "stackable" object is one that can be pushed on the data stack in the
+ *  stack machine.
+ */
+export type TStackable = IScopeable | TValue;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Allowed "literal values" on the data stack */
+export type TValue = string | number | boolean;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine condition
  */
@@ -156,58 +215,43 @@ export interface IComparator {
   NZ(): boolean;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine feature
+/** A stackmachine operation or "opcode" is a function that receives mutable
+ *  agent, stack, scope, and condition flag objects. This is how agents
+ *  and their props are changed by the scripting engine. The agent is
+ *  the memory context, and the stack is used to pass values in/out.
+ *  It returns void, but we are also allowing Promise as a return type
+ *  in case we want to have asynchronous opcodes.
  */
-export interface IFeature {
-  meta: { feature: string };
-  methods: Map<string, TMethod>;
-  initialize(pm: any): void;
-  name(): string;
-  decorate(agent: IAgent): void;
-  addProp(agent: IAgent, key: string, prop: IScopeable): void;
-  prop(agent: IAgent, key: string): IScopeable;
-  method: (agent: IAgent, key: string, ...args: any) => any;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine Message
- */
-export interface IMessage {
-  id: number;
-  channel: string;
-  message: string;
-  data?: any;
-  programs?: TSMCProgram[];
-  inputs?: any;
-}
+export type TOpcode = (
+  agent?: IAgent, // memory context (an agent instance)
+  sm_state?: IState // machine state
+) => TOpWait;
 
-/// SCRIPTUNIT / SOURCE DECLARATIONS //////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** a source line starts with keyword followed by variable number of args.
- *  an empty TScriptUnit is allowed also.
+/** Stackmachine operations return a Promise if it is operating asynchronously
+ *  though this may not be necessary. I thought it might be cool
  */
-export type TScriptUnit = [string?, ...any[]];
-export type TSource = TScriptUnit[]; // not generally used\
+export type TOpWait = Promise<any> | void;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UI update type sent by UI tp RegenSRCLine */
-export interface IScriptUpdate {
-  index: number;
-  scriptUnit: TScriptUnit;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** constructor interface
- *  see fettblog.eu/typescript-interface-constructor-pattern/
+/** a shim for "Registration Code", which runs globally and has a
+ *  different function signature than TOpcode. Used for code that runs outside
+ *  of an instanced Agent.
  */
-export interface IKeywordCtor {
-  new (keyword?: string): IKeyword;
-}
-/** related keyword interface  */
-export interface IKeyword {
-  keyword: string;
-  args: string[];
-  compile(parms: any[]): ISMCBundle;
-  serialize(state: object): TScriptUnit;
-  jsx(index: number, state: object, children?: any[]): any;
-  generateKey(): any;
-  getName(): string;
-  topValue(thing: any): any;
-}
+export type TRegcode = (
+  agent?: IAgent // OPTIONAL memory context
+) => void;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine program is an array of opcodes that are read from the
+ *  beginning and executed one-after-the-other. Each function is invoked
+ *  with the current data and scope stacks, as well as flags object that
+ *  can be updated by conditional opcodes
+ */
+export type TSMCProgram = TOpcode[];
+export type TSMCGlobalProgram = TRegcode[];
+/** Also could be an AST, which is an object with a type property */
+export type TExpressionAST = { type: string };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine method can be either a stackmachine program OR a regular
+ *  function. The invocation method will check what it is
+ */
+export type TMethod = TSMCProgram | Function | TExpressionAST;

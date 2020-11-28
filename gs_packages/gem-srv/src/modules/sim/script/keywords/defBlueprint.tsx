@@ -2,24 +2,23 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword defBlueprint command object
+  implementation of keyword "defBlueprint" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, IScriptUpdate, TScriptUnit } from 'lib/t-script';
-import { nop } from 'script/ops/debug-ops';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DefTemplate extends Keyword {
+export class defBlueprint extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('defBlueprint');
-    // defTemplate 'HoneyBee' 'Bee'
+    // defBlueprint 'HoneyBee' 'Bee'
     this.args = ['blueprintName string', 'baseBlueprint string'];
     this.serialize = this.serialize.bind(this);
     this.compile = this.compile.bind(this);
@@ -30,9 +29,8 @@ export class DefTemplate extends Keyword {
    *  derived from ScriptUnit, everything after the keyword
    *  e.g. 'HoneyBee', 'Bee'
    */
-  compile(parms: any[]): ISMCBundle {
-    const blueprintName = parms[0];
-    const baseBlueprint = parms[1];
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, blueprintName, baseBlueprint] = unit;
     const progout = [];
     // the compiler format is just an array of functions
     // of form TOpcode, which is:
@@ -42,12 +40,7 @@ export class DefTemplate extends Keyword {
     // return the ISMCBundle, which is used by compiler
     // to assemble a blueprint by concatenating these arrays
     // into the master blueprint
-    return {
-      name: blueprintName,
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a TScriptUnit made from current state */
@@ -58,18 +51,18 @@ export class DefTemplate extends Keyword {
 
   /** return rendered component representation */
   // TScriptUnit is [ 'keyword', parm1, parm2, ... ]
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const state = {
-      blueprintName: srcLine[1],
-      baseBlueprint: srcLine[2]
+      blueprintName: unit[1],
+      baseBlueprint: unit[2]
     };
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <ScriptElement index={index} state={state} serialize={this.serialize} />
     );
   }
-} // end of DefTemplate
+} // end of DefBlueprint
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,10 +107,10 @@ class ScriptElement extends React.Component<MyProps, MyState> {
   render() {
     const { blueprintName, baseBlueprint } = this.state;
     return (
-      <div>
-        blueprintName
+      <>
+        <span>blueprintName</span>{' '}
         <input onChange={this.onChange} type="text" value={blueprintName} />
-      </div>
+      </>
     );
   }
 } // end script element
@@ -125,4 +118,4 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(DefTemplate);
+RegisterKeyword(defBlueprint);

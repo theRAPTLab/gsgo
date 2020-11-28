@@ -1,10 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+implementation of keyword "randomPos" keyword object
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IScopeable, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IScopeable, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -17,7 +19,7 @@ function m_Random(min: number, max: number, floor: boolean = true) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class RandomPos extends Keyword {
+export class randomPos extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -26,23 +28,16 @@ export class RandomPos extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const min = parms[0];
-    const max = parms[1];
-    const floor = parms[2] || false;
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, min, max, floor] = unit;
     const progout = [];
     progout.push((agent: IScopeable) => {
-      const x = m_Random(min, max, floor);
-      const y = m_Random(min, max, floor);
-      agent.prop('x')._value = x;
-      agent.prop('y')._value = y;
+      const x = m_Random(min, max, floor || false);
+      const y = m_Random(min, max, floor || false);
+      agent.prop('x').value = x;
+      agent.prop('y').value = y;
     });
-    return {
-      define: [],
-      defaults: [],
-      conditions: progout,
-      update: progout // hack for testing
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
@@ -52,13 +47,13 @@ export class RandomPos extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const min = srcLine[1];
-    const max = srcLine[2];
-    const floor = srcLine[3];
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const min = unit[1];
+    const max = unit[2];
+    const floor = unit[3];
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         random between ({min},{max}) (floor={floor})
       </>
@@ -69,4 +64,4 @@ export class RandomPos extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(RandomPos);
+RegisterKeyword(randomPos);

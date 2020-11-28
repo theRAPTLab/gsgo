@@ -1,13 +1,13 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword DefProp command object
+  implementation of keyword "AddProp" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/_all';
 import { RegisterKeyword, GetVarCtor } from 'modules/runtime-datacore';
 
@@ -21,18 +21,12 @@ export class AddProp extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const propName = parms[0];
-    const propType = parms[1];
-    const initValue = parms[2];
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, propName, propType, initValue] = unit;
     const propCtor = GetVarCtor(propType);
     const progout = [];
     progout.push(addProp(propName, propCtor, initValue));
-    return {
-      define: progout,
-      defaults: [],
-      conditions: []
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
@@ -42,11 +36,11 @@ export class AddProp extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: any[], children?: any[]): any {
-    const [kw, propName, propType, initValue] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, propName, propType, initValue] = unit;
     return super.jsx(
       index,
-      srcLine,
+      unit,
       <>
         addProp {propName} = {initValue} :{propType}
       </>

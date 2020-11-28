@@ -7,7 +7,7 @@
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/runtime-globals';
 import * as RENDERER from 'modules/render/api-render';
 
 import UR from '@gemstep/ursys/client';
@@ -26,7 +26,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
-        let map = await DATACORE.LoadAssets('static/assets.json');
+        let map = await GLOBAL.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         SIM.StartSimulation();
         if (DBG) console.log(...PR('SIMULATION STARTED'));

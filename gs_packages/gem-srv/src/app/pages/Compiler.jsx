@@ -13,11 +13,13 @@ import UR from '@gemstep/ursys/client';
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
 import * as GLOBAL from 'modules/runtime-globals';
+import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
+// import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -25,72 +27,11 @@ import { useStylesHOC } from './page-styles';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('APP');
-const DBG = true;
+const DBG = false;
 
-/// HARCODED SOURCE ///////////////////////////////////////////////////////////
+/// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const defaultText = `
-// definitions
-defBlueprint "Bunny"
-addProp frame Number 2
-useFeature Movement
-// defaults
-prop skin 'bunny.json'
-// runtime
-featureCall Movement jitterPos -5 5
-// condition test 1
-moop param Vamp 10
-addTest BunnyTest {{ agent.prop('frame')._value }}
-ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
-// condition test 2
-ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-`.trim();
-
-const defineGlobalAgent = `
-defGlobalAgent World
-  addProp time Number 10
-  addProp daytime Boolean true
-  // runtime
-  // condition
-  when Interval 1000
-    prop time decrement
-    defCondition "memo:switch"
-    {{ prop time < 0 }}
-    prop time setTo 10
-    prop daytime invert
-`.trim();
-
-// try to make a fish!
-/** fish just wander around the screen
- *
- */
-const defineFish = `
-// define/default program
-defBlueprint Fish
-addProp foodLevel Number 50
-prop foodLevel setMin 0
-prop foodLevel setMax 100
-prop skin setTo 'alive.png'
-useFeature Movement
-
-featureProp inputType setTo 'runtime'
-// runtime program (runs only for runtime mode?)
-featureCall Movement randomWalk 15 2
-
-// condition programs
-// every second decrement foodlevel
-when Interval 1000
-  prop foodLevel increment
-  defCondition "memo:dead"
-    {{ prop foodLevel < 1 }}
-    prop isActive false
-    prop skin setTo "dead.png"
-    featureProp inputType setTo 'static'
-  defCondition "memo:worldtimer"
-    globalAgentProp World daytime
-    {{ globalAgentProp World daytime === true}}
-    prop skin setTo "happy.png"
-`.trim();
+const defaultText = DATACORE.GetDefaultText();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,8 +57,8 @@ class Compiler extends React.Component {
   constructor() {
     super();
     this.text = defaultText;
-    this.source = TRANSPILER.TokenizeToSource(this.text);
-    const jsx = TRANSPILER.RenderSource(this.source);
+    this.source = [];
+    const jsx = TRANSPILER.RenderScript(this.source);
     this.state = {
       jsx,
       text: defaultText,
@@ -130,12 +71,12 @@ class Compiler extends React.Component {
     this.userSaveBlueprint = this.userSaveBlueprint.bind(this);
     this.userCompileText = this.userCompileText.bind(this);
     this.updateJSX = this.updateJSX.bind(this);
-    this.updateSource = this.updateSource.bind(this);
+    this.updateScript = this.updateScript.bind(this);
     this.updateText = this.updateText.bind(this);
     this.updateTabSelect = this.updateTabSelect.bind(this);
     // hooks
     UR.RegisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
-    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
+    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     TRANSPILER.RegisterBlueprint(this.source);
@@ -159,14 +100,14 @@ class Compiler extends React.Component {
   componentWillUnmount() {
     console.log('componentWillUnmount');
     UR.UnregisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
-    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateSource);
+    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
   }
 
   // called by ScriptWizard component change
-  updateSource(updata) {
+  updateScript(updata) {
     const { index, scriptUnit } = updata;
     this.source[index] = scriptUnit;
-    console.log(...PR(`SOURCE[${index}] updated:`, this.source[index]));
+    console.log(...PR(`SCRIPT[${index}] updated:`, this.source[index]));
   }
 
   // called by message 'SCRIPT_JSX_CHANGED'
@@ -174,7 +115,7 @@ class Compiler extends React.Component {
     this.setState({ jsx });
   }
 
-  // echo typing in SourceText to state
+  // echo typing in ScriptText to state
   updateText(evt) {
     const text = evt.target.value;
     this.text = text;
@@ -189,8 +130,8 @@ class Compiler extends React.Component {
   // compile source to jsx
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = TRANSPILER.TokenizeToSource(this.state.text);
-    const jsx = TRANSPILER.RenderSource(this.source);
+    // this.source = TRANSPILER.ScriptifyText(this.state.text);
+    const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
@@ -198,7 +139,7 @@ class Compiler extends React.Component {
   // compile jsx back to source
   userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    const text = TRANSPILER.DecompileSource(this.source);
+    const text = TRANSPILER.TextifyScript(this.source);
     this.setState({ text });
     this.text = text;
     if (DBG) console.groupEnd();
@@ -206,7 +147,8 @@ class Compiler extends React.Component {
 
   // compile text to source
   userCompileText() {
-    const source = TRANSPILER.TokenizeToSource(this.text);
+    DATACORE.DeleteAllTests();
+    const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
     this.setState({ source: JSON.stringify(source) });
   }
@@ -218,7 +160,7 @@ class Compiler extends React.Component {
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
-    const jsx = TRANSPILER.RenderSource(this.source);
+    const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
   }
 

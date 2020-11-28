@@ -18,12 +18,23 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IKeyword, ISMCBundle, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/runtime-datacore';
+import { IKeyword, TOpcode, TScriptUnit } from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
+const styleIndex = {
+  fontWeight: 'bold' as 'bold', // this dumb typescriptery css workaround
+  backgroundColor: 'black',
+  color: 'white',
+  padding: '2px 4px',
+  marginTop: '-1px',
+  minWidth: '1.25em',
+  float: 'left' as 'left',
+  textAlign: 'right' as 'right' // this dumb typescriptery css workaround
+};
+const styleLine = { borderTop: '1px dotted gray' };
+const styleContent = { padding: '0.5em', overflow: 'hidden' };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** HACK: used to generate ever-increasing ID for rendering. They are all unique
  *  because our rendering loop just rerenders the entire list into a GUI every
@@ -45,7 +56,7 @@ export class Keyword implements IKeyword {
     this.args = [];
   }
   /** override in subclass */
-  compile(args: any[]): ISMCBundle {
+  compile(unit: TScriptUnit): TOpcode[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /** override to output a serialized array representation for eventual reserialization */
@@ -54,29 +65,35 @@ export class Keyword implements IKeyword {
   }
   /** override in subclass */
   jsx(index: number, srcLine: TScriptUnit, children?: any): any {
+    // note that styleIndex below has to have weird typescript
+    // stuff for originally hyphenated CSS properties so it doesn't
+    // get marked by the linter as invalid CSS
     return (
-      <div
-        key={this.generateKey()}
-        style={{ padding: '0.5em', borderBottom: '1px dotted gray' }}
-      >
-        {index}:{children}
+      <div key={this.generateKey()} style={styleLine}>
+        <div style={styleIndex}>{index}</div>
+        <div style={styleContent}>{children}</div>
       </div>
     );
   }
   /// UTILITY METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** cheese key id generator (deprecated) */
+  /** Key id generator used by the base jsx() wrapper to create unique
+   *  keys so React doesn't complain. This is probably bad and inefficient
+   *  but it works for now.
+   */
   generateKey() {
     return ID_GENERATOR++;
   }
-  /** return keyword */
+  /** return the name of this keyword */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   getName() {
     return this.keyword;
   }
-  /** get topmost value of returned value, if it's an array or
-   *  a value
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given a return value from a TMethod that is either a TOpcode stack OR a
+   *  regular function, return a single value
    */
-  topValue(thing: any): any {
+  firstValue(thing: any): any {
     if (Array.isArray(thing)) return thing.shift();
     return thing;
   }

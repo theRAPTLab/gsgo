@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "featureProp" keyword object
+  implementation of keyword "ifProg" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -8,43 +8,49 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
+import { SingleAgentConditional } from 'script/conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class featureProp extends Keyword {
+export class ifProg extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('featureProp');
-    this.args = ['featureName:string', 'propName:string', 'value:any'];
+    super('ifProg');
+    this.args = ['test', 'consq', 'alter'];
   }
 
-  /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, featureName, propName, value] = unit;
-    const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
-      const feat = agent.feature(featureName);
-      const prop = feat.prop(propName);
-      prop[propName].value = value;
+    // the incoming parameters are already expanded into their runtime
+    // equivalents (AST for expressions, TSMCProgram for blocks)
+    const [kw, test, consq, alter] = unit;
+    const cout = [];
+    cout.push((agent, state) => {
+      if (agent.name('bun0')) {
+        const res = agent.exec(test);
+        if (res) agent.exec(consq);
+        else agent.exec(alter);
+      }
     });
-    return progout;
+    return cout;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { featureName, propName, value } = state;
-    return [this.keyword, featureName, propName, value];
+    const { min, max, floor } = state;
+    return [this.keyword, min, max, floor];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const featName = unit[1];
-    const propName = unit[2];
-    const value = unit[3];
-    return (
+    const testName = unit[1];
+    const conseq = unit[2];
+    const alter = unit[3];
+    return super.jsx(
+      index,
+      unit,
       <>
-        Feature {featName}.{propName} set to {value}
+        on {testName} TRUE {conseq}, ELSE {alter}
       </>
     );
   }
@@ -53,4 +59,4 @@ export class featureProp extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(featureProp);
+RegisterKeyword(ifProg);

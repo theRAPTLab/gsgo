@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "dbgError" command object
+  implementation of keyword "comment" object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -12,43 +13,32 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgError extends Keyword {
+export class comment extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('dbgError');
-    this.args = ['...args'];
+    super('comment');
+    this.args = ['...args:any'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, error] = unit;
-    const progout = [];
-    progout.push(() => {
-      const err = unit.join(', ');
-      console.log(
-        `%cERROR%c ${error || 'bad keyword'}: '${err}'`,
-        'color:red',
-        'color:black'
-      );
-      // throw Error(`unknown keyword: ${err}`);
-    });
-    return progout;
+    return [];
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
+    const { comment } = state;
+    return ['//', comment];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [error] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${error}'`}</>);
+    const [kw, cmt] = unit;
+    return super.jsx(index, unit, <i style={{ color: 'gray' }}>{`${cmt}`}</i>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(dbgError);
+RegisterKeyword(comment);

@@ -1,54 +1,56 @@
-/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "dbgError" command object
+  implementation of keyword "onAgent" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
+import { SingleAgentConditional } from 'script/conditions';
 
-/// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgError extends Keyword {
+export class onAgent extends Keyword {
   // base properties defined in KeywordDef
-  constructor() {
-    super('dbgError');
-    this.args = ['...args'];
-  }
 
+  constructor() {
+    super('onAgent');
+    this.args = ['agentType:string', 'termA', 'termB'];
+  }
+  /* NOTE THIS IS NONFUNCTIONAL */
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, error] = unit;
-    const progout = [];
-    progout.push(() => {
-      const err = unit.join(', ');
-      console.log(
-        `%cERROR%c ${error || 'bad keyword'}: '${err}'`,
-        'color:red',
-        'color:black'
-      );
-      // throw Error(`unknown keyword: ${err}`);
-    });
-    return progout;
+    const [kw, agentType, termA, termB] = unit;
+    console.log('onAgent terms type:', agentType, 'A:', termA, 'B:', termB);
+    const cout = [];
+    cout.push();
+    return cout;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { error } = state;
-    return [this.keyword, error];
+    const { min, max, floor } = state;
+    return [this.keyword, min, max, floor];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [error] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${error}'`}</>);
+    const testName = unit[1];
+    const conseq = unit[2];
+    const alter = unit[3];
+    return super.jsx(
+      index,
+      unit,
+      <>
+        on {testName} TRUE {conseq}, ELSE {alter}
+      </>
+    );
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(dbgError);
+RegisterKeyword(onAgent);

@@ -527,8 +527,506 @@ We got one of the 4 conditions done. It occurred to me that **immediate expressi
 
 * [x] add `ifExpr {{ expr }} {{ conseq }} {{ alter }}` support...10 minutes to write!
 
+To implement the last three  AgentSet, AgentPairSet, and Event conditions, we need to extend text parsing to **support multiline input**. Technically we don't need to do this because the keyword generators can emit TMethods directly, but without a GUI we need to expand the text interface.
 
+Here's the script syntax I'm thinking:
 
+```
+if {{ agent.prop('foo') }} [[
+  if {{ agent.prop('bar') }} [[
+    featureCall Movement jitterPos -5 5
+  ]] [[
+    dbgOut('false')
+  ]]
+]]
+
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+  exec {{ agent.prop('x').increment }}
+  exec [[ programName ]]
+  setProp 'x' 0
+  // the expression context passed is agent, subjectA, subjectAB
+]]
+
+onAgent Bee [[
+  // return boolean
+  agentProp x lessThan 0
+]] [[
+  // do something with subjectA
+]]
+
+on Tick [[
+  agentProp x something
+]]
+```
+
+So how do I **parse** this into ScriptUnits? Currently, processing a script line-by-line creates ScriptUnits pushed onto a `program` array. So the *extension to `class-script-tokenizer`* might look like this:
+
+```
+programStack = []
+index = 0
+function CompileSource(units:TScriptUnit[]) : ISMCBundle
+	- 
+function ExpandScriptUnit(unit:TScriptUnit) : TScriptUnit
+	- returns new ScriptUnit with "{{ }}" and "[[ ]]" expanded
+	
+THE ALGORITHM!!!
+line processor:
+	check for leading // - quit
+	check for [[
+		if [[ and EOL
+			index++
+		if [[ and NOT EOL
+			check for ]] on same line
+			this will expand into [[ program ]] syntax
+	check for leading ]]
+		index--
+
+```
+
+* [x] Why are comments being turned into an array of letters?
+  * [x] script-parser Tokenize() is returning everything...wascrashing in jsx output because of `comment` shadowing of variable (was picking up the class, not the local var!)
+
+**that was a sidetrack** but now we can get back to **[[ ]] blocks**...
+
+* [ ] CompileSource receiveds ScriptUnits, so **what makes ScriptUnits from text?**
+* [ ] **script-parser** is what has `Tokenize()` and `TextToScriptUnits()` for full text and single lines, and it relies on **class-script-tokenizer** to do its
+* [ ] We can add a function similar to `gobbleExpressionString()`, for the `[[ progname ]]` syntax
+
+```
+EXPORTS FROM TRANSPILER
+CompileScript     : Script => SMCBundle
+RenderScript 	    : Script => JSX
+TextifyScript     : Script => Text
+ScriptifyText     : Text   => Script
+
+To insert our [[ ]] processor, ScriptifyText is the routine we need to look at. It's been moved to `transpiler`. 
+
+splits lines at \n
+each line is trimmed and put through m_LineToScriptUnit
+the ScriptUnits are returned as a whole Script
+
+in m_lineToScriptUnit, it calls the scriptConverter class tokenizer
+in class-gscript-tokenizer, tokenize(line) is the main entry point. It sho
+
+* in tokenize(line), we can look for **inline [[ ]]**
+* to gobble multiple lines, though, we need to push this logic into m_lineToScriptUnit
+
+```
+
+The `ScriptifyText` calls `m_LineToScriptUnit` per line. We have to first **merge lines** based on the `[[` and `]]` found. 
+
+**PreTokenizer Algorithm Continues**
+
+* we want to parse sequential blocks until the final `]]` is detected
+* the algorithm is find all the top-level open/closing `[[` and `]]`
+* it's called `m_DeblockifyText()` in `TRANSPILER`
+* It extracts all the blocks independent of the rest of the text
+
+So I can detect the blocks now...but how do I compile them recursively? Insert `;` delimiters?
+
+**This will split by linefeeds and ;** `txt.split(/\s*[;\n]+\s*/)`
+
+* I think we have to make an intermediate version of the block format by using ;  parsing in the script tokenizer. We can combine the text back together.
+
+* At this point, I need to be able to parse a `[[ ]]` as a **subprogram**, so I need to recursively scan for these blocks of lines, and ScriptifyText() each block. 
+
+* ScriptifyText() will split the first level, and use DeblockifyText to create a `[[ ... ]]` string that is a **parameter** for a keyword. Like expressions, blocks use special syntax inline to designate. 
+
+  * If a block node has just one element, it's parsed as a **program name**, so the scriptifier will automatically generate a `exec programName arg arg` whenever it sees ``[[ progrname ]]` syntax
+  * **When compiling the text to scriptunits, the block start/end marks transitions for program compiling into program array.**
+  * blockstrings are resolved before `m_LineToScriptUnit()`, it should call ScriptifyText on that block string. this is handled inthe gsccript-tokenizer
+
+  
+
+  Tomorrow, rewrite `ScriptifyText()` so it can walk the new datastructure and create **program arrays** on the fly as it parses each line.
+
+## NOV 21 SAT - (Aside) Compiling/Executing Program Blocks
+
+The Deblockifier takes the GEMscriptText with our new syntax and emits an array of captured strings of that are demarqued with [[ ]], which is similar to how we package expressions with {{ }}.
+
+The produced array consists of groups of "regular keyword arguments" and "block arguments" in the aforementioned [[ ]] wrapper. The array is then turned back into text strings.
+
+For example:
+
+```
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[
+  {{ agent.prop('x').increment }}
+  [[ TEST:programName ]]
+  setProp 'x' 0
+  // the expression context passed is agent, subjectA, subjectAB
+]]
+```
+
+turns into a long string:
+
+```
+onAgentPair Bee touches Honey {{ agent.prop('range') }} [[ {{ agent.prop('x').increment }}; [[ TEST:programName ]]; setProp 'x' 0; ]] 
+```
+
+**NOTE** There are **line terminators** in the form of a **semi-colon** added to the inside of the main block. This is used to reconstruct the ScriptText string array so they can be reprocessed by the compiler.
+
+This condition has compiled into a new TextLine of the form "keyword ...args" which can then be parsed by `m_LineToScriptUnit()` to emit a ScriptUnit of this form:
+
+```
+[ 'onAgentPair', 'Bee', 'touches', 'Honey', '{{expr}}', '[[block]]' ]
+```
+
+**NOTE** The ScriptUnit is comprised of either strings or numbers, so it is completely serialized. This is our base representation of GEMscript code. A complete Script is just an array of ScriptUnits.
+
+At compile time, **CompileScript** takes a Script (an array of ScriptUnits) and does its keyword processing. The algorithm currently just walks the array of ScriptUnits unit-by-unit, performing the following steps on each:
+
+1. apply ScriptUnitExpander to the entire unit array
+2. read keyword from unit[0]
+3. get keywordProcessor kwp for the keyword
+4. call kwp.compile(unit) and receives a bundle of programs
+5. add the bundle programs into the blueprint data structure, which is an object with named program types like default, update, conditions...
+6. back to (1) until all ScriptUnits in the Script have been processed
+
+The completed blueprint object is the sum of all programs generated by all keywords, in the order it is processed.
+
+THE TRICKY PART
+
+Expressions are represented as strings of the form "{{ expr }}" in a ScriptUnit, but the compiled output needs to evaluate the expression. This is handled through the **ScriptUnitExpander** in the compile loop. What this does is check a string to see if it has the {{ }} wrapper, and if it does it uses ParseExpression() to convert the string into an **Abstract Syntax Tree** (aka **AST**) object node, which then replaces the original string in the ScriptUnit. Only then does the keywordProcessor compile the expanded ScriptUnit.
+
+The compiler expects parameters of specific type *in the order they are passed*. In other words, it's  up to the compiler method to know how to handle each type. Since compiled methods always receive an agent instance, the utility method agent.evaluteArgs() can be used to get the actual value of the expression at runtime. 
+
+THE ADDITION OF PROGRAM BLOCKS
+
+Theoretically, I can add the processing of [[ ]] blocks to the **ScriptUnitExpander** and **agent.evaluateArgs()**:
+
+1. **In ScriptUnitExpander**, replace the "[[ ]]" with the compiled contents of the block. This means running compile recursively to generate all the programs (and potential nested programs) so they can be stored with the program output
+2. **In evaluateArgs()**, if an Array is received assume it is a PROGRAM and run agent.exec()  on it, replacing the argument with the returned value from the program. Unlike ScriptUnitExpander, this doesn't need to run recursively because the program blocks have already been "inlined" by the compiler's recursive pass (I think)
+
+So that's the next immediate goal for today.
+
+CAN I CREATE THE TEXT BLOCK FORMAT IN SCRIPT UNIT FORMAT 2.0?
+* [x] insert `m_ExtractBlocks()` and `m_StitchifyBlocks` into `ScriptifyText()`
+  * [x] the output of extracted blocks is `[ [ "normal line", ], ["[["],...,["]]"] ]`
+  * [x]  fix `m_StitchifyBlocks` to emit appropriate text format
+
+Now, let's if we can actually expand blocks into programs
+
+* [x] `m_ExpandScriptUnit()`: can I detect `[[ ]]`?
+  * [x] Look at `m_ExpandArg(arg)`, add `m_expanders` expansion table
+* [x] update `gscript-tokenizer` to handle `[[ ]]`
+  * [x] add to `gobbleToken()`
+  * [x] add to `gobbleVariable()`
+
+Finally, we have to update **m_expanders** in `transpiler` to handle the block expansion.
+
+* [x] Can we call `ScriptifyText()` from inside `m_expanders`?Apparently **YES**
+* [ ] bug with gscript-tokenizer: the **gobbleBlock** actually needs to keep track of levels, using a similar approach to levels as `m_ExtractBlocks`
+
+HOW TO PROCESS THIS?
+
+```
+[[ if {{ true }}; [[ prop x; prop y ]] ]]
+- or -
+[[ if {{ true }}; [[ {{ prop x }}; ]] -- here the ; shouldn't be there because the ; should be used to demarque the end of a textscript line, not separate terms
+```
+
+**The problem happens during compile, when it's doing the recursive call** and the lines with the **semi-colons** are not being split correctly.
+
+The semi-colons are currently used to glue-together the output of `m_ExtractBlocks` but this isn't entirely correct. We need to remember the original lines somehow so we know how far to go. Maybe there is a specific `marker` array (an empty array?) that designates the EOL. **We actually don't know where the end of the keyword is** for multi-line statements. We can probably **infer it** as the terminal `]]` by itself marks the end of a keyword.
+
+PICK UP FROM:
+
+* handling **semi-colons** correctly as EOBs?
+* trying an **EOB** marker if it's necessary
+* recursive script building...what should it look like as a final data format?
+* **special block syntax**: a `]]` by itself is END OF MULTI LINE, and a continuous chain of blocks must be linked by a `]] [[`. A block `[[` can start anywhere at the end of a line.
+
+## NOV 22 SUN - ARGH
+
+there are three operations
+
+* convert text to blockArray
+* convert blockArray to textLine
+* process textLine into ScriptUnits, recursively expanding block arrays into programs
+
+1. extract blocks produces array of string arrays. each entry in the array has either a "normal strings" array or a "block strings" array. The block strings array can contain additional "normal" or "block" string arrays. It can also have an "EOB" marker, indiating the end of a keyword has been reached after a series of [[ ]] blocks one after the other. These have to be inserted everywhere there is a detected end of statement.
+
+2. when converting blocks into strings, we have to do the following:
+
+```
+if array is normal
+	iterate over lines
+	set lastLine to line
+	add line to lines[]
+if array is EOB 
+	reset lastLine to ''
+if array is a block, we're adding to lastLine
+	iterate over blines
+	if [[ lastLine += [[
+	if ]] lastLine += ]]
+	otherwise lastLine += bline+\r to encode linefeed
+	update lines[lines.length-1]=lastLine
+```
+
+3. to parse a block expression through `m_expandify`, we need a recursive builder
+
+```
+compile: onAgent Bee [[ agentProp x lessThan 0\r ]] [[ if {{true}} [[ prop x\r prop y\r ]] ]]
+	expandify: [[ agentProp x lessThan 0\r ]] and [[ if {{true}} [[ prop x\r prop y\r ]] ]]
+		process a: [[ agentProp x lessThan 0\r ]]
+			lines = 'agentProp x lessThan 0'.split(\r)
+			compile lines by line in progA
+			return progA
+		process b: [[ if {{true}} [[ prop x\r prop y\r ]] ]]
+			lines = 'if {{true}} [[ prop x\r prop y\r ]]'.split(\r) ** ERROR **
+The algorithm has to defer compilation to the innermost [[ ]], so that's a scan operation
+
+NEW ALGORITHM - FIND INNERMOST EXPRESSIONS
+the expandify block has to expandArgs each time
+
+"onAgent Bee [[ agentProp x lessThan 0\r ]] [[ if {{true}} [[ prop x\r prop y\r ]] ]]"
+- expandify: ... "Bee [[ agentProp x lessThan 0\r ]] [[ if {{true}} [[ prop x\r prop y\r ]] ]]"
+	return string, [block1] [block2]
+	- expandify [block1]: ... "x lessThan 0"
+		return string, string, number
+	- expandify [block2]: ... "{{true}} [[ prop x\r prop y\r ]]"
+		return expr, [block3]
+		- expandify [block3.1]: ... "x"
+			return string
+		- expandify [block3.2]: ... "y"
+			return string
+		
+So the basic idea is to call expandify until they all return.
+And the m_expanders block code has to expand every line
+			
+```
+
+* [x] check algorithm in `m_ExtractBlocks`
+
+* [ ] check algorithm recursion in `m_ExpandArg`
+
+  * [x] it seems to work, but it's hard to see what it's compiling
+
+  * [ ] losing last word before EOB. units are gone. This is happening on the restitched code.
+
+    * [x] `gscript-tokenizer` isn't emiting the first argument after keyword as token
+
+    * [x] the tokenizer SEEMS to be returning the Bee identifier, but it's breaking here:
+
+      ```
+      in gobbleVariable()
+      
+      /* HACK GEMSCRIPT ADDITION FOR [[ tmethod ]] */
+      if (this.exprICode(this.index) === OBRACK_CODE) {
+        this.showProgress();
+        return this.gobbleBlock(); // in gobbleToken() also
+      }
+      /* END HACK */
+      ```
+
+    * [ ] the issue is that gobbleToken() is hitting [[ after an identifier and is assuming it's an array instead of gobbling it. And this is overriding the found identifier so it disappears.  We need to change the logic OR change the identifier from `[[ ]]` to `<< >>` as a temporary workaround
+
+      * [ ] changed to << >> in gscript-tokenizer
+      * [ ] change to << >> in transpiler
+      * [ ] there's some string issue in the runtime compiling...the recursion is passing an entire string that has some elements already converted to stuff?
+
+  
+
+  OK this is super annoying already. I think the output of the << >> is being hosed somewhere, but I can't find it. It's happening during SUB compilation at runtime. I see the error happening in **<< prop me ifProg {{ true }} << prop x prop y prop AA prop BB >>** which is incorrect... there's a missing close/reopen which is why text parsing is broken.
+
+  
+
+  This is seen in PARSING TEXT right now, so that means the units are busted.
+
+  * fixed bug in transpile `endStartBlock` that needed to check if level > 0, not level ==1 (this might have some side effect)
+
+  Still seeing a problem parsing the ifProg units that are nested 2 deep. The epansion at the top level seems to work.
+
+  I'm seeing the problm in deblockfied: it's **split** in a weird place. It's because I pushed the node in deblockfy when `>> <<` is detected. 
+
+  The issue seems to be here:
+
+  ```
+  m_expanders:
+    '<<': (arg: string) => {
+    	...
+      const extract = arg.substring(2, arg.length - 2).trim();
+      const lines = extract.split(LSEP);
+      console.log(`converting "${extract}" into lines`, lines);
+  ```
+
+  At this point we don't want to expand all the lines, because it breaks all the pieces into weird bits.
+
+  We need to break lines only in level 0, and preserve the rest of them. 
+
+  
+
+  Again, I see the issue with the third term of onAgent
+
+  ```
+  << prop me \r ifProg {{ true }} << prop x \r prop y \r >> << prop AA \r prop BB >> >>
+  ```
+
+  being converted into THREE ScriptUnits
+
+  * expand `prop me`
+  * expand `ifProg`, `{{ true }}`
+  * expand `<< prop x \r prop y >>`, `<< prop AA prop BB >>`
+
+  This should be just TWO ScriptUnits
+
+  * `prop me`
+  * `ifProg`, `{{ true }}`, `<< prop x \r prop y >>`, `<< prop AA \r prop BB >>`
+
+  The routine that is tokenizing the line is having a hard time finding the {{ }} << ... >> pattern, because there's a linefeed being inserted by the block extractor.
+
+  * AHHH, the moment we hit the second << then the level check pushes the buffer
+
+  
+
+  
+
+  * [ ] also not seeing the compiled block arrays appear
+    * [ ] seems they aren't being returns by the argument...changed so prog pushes **spread** program array
+
+### BACK TO THE DRAWING BOARD
+
+I need to restate this algorithm succinctly instead of relying on code to hold it together. That's stupid.
+
+Given this syntax:
+
+```
+onAgent Bee <<
+  prop x
+>> <<
+  prop me
+  ifProg {{ true }} <<
+  	prop x
+  	prop y
+  >> <<
+  	prop AA
+  	prop BB
+  >>
+>>
+```
+
+... I want to see SCRIPTUNITS at the end of all this ...
+
+```
+block code:
+onAgent Bee
+<<, prop x, >>
+<<, prop me, ifProg {{ true }} << blockified format >>
+```
+
+ExtractBlocks  puts the `<<` and `>>` as separate items in the array. 
+
+*** NEED TO BURN IT DOWN AND REBUILD ***
+
+---
+
+## NOV 23 MON - Task List to Recover
+
+### Completing the Compiler
+
+1. step away from the text block parser because it isn't easy or obvious.
+2. make examples for manual ScriptUnit compiling by hand
+3. make tests for examples
+4. specifically parsing of: expressions, program blocks
+5. integrate faketrack into simulation input
+6. once that works, can actually write interactions, conditions
+
+### Making Script Examples for IU/Vanderbilt
+
+1. start with aquatic and try writing direct ScriptUnit code
+
+### Framing the December 1st Deliverable - Ben will keep the flame here
+
+* can we have them program anything with direct scriptunit entry?
+* provide some basic keywords that make things change on the screen
+* provide some basic features to handle movement
+* provide some basic sprites they can use
+* for unimplemented keywords: print out the keyword (like debug printing code style) so researchers can at least make-up placeholders on the fly as they try to write programs.
+
+RIGHT NOW
+
+* Ben is de-facto in charge of scripting development of keywords, needed features, using/defining the syntax in terms of what it needs to do with what parameters
+* Sri is creating the final bits of the compiler to handle conditions which are comprised of a test, a p-consequent, and a p-alternate.
+* When the compiler text-to-blueprint works, we can focus on the stuff Ben has been working on above. And then implementing whatever needs to be there for the basic experience.
+
+## NOV 25 WED - RESETTING
+
+I have to rewrite the block extractor and script unit maker so it is **one** module producing script units directly. This should hopefully solve the problem I had yesterday and it will also allow me to bring back the `[[ ]]` syntax!
+
+But first:
+
+* [X] make unknown keyword handling part of the script engine for ben.
+
+That's out of the way now, so we can move on to the major attractions:
+
+**Rewriting the compiler**
+
+* [x] make a test case file
+* [x] import `transpiler-2` into `test-compiler` code and invoke test cases
+* [x] confirm that the compiler is trying to compile them.
+* [x] call the block compiler to examine its output
+  * [x] rewrite ExtractifyBlocks to output pure lines
+    * [x] for `expr then block`: emit a clean line list
+* [x] does it look correct for all tests? Add signature verifier
+
+I ended up **throwing away** ScriptifyText() and made a new version of `gscript-tokenizer` to emit the script units for me. It handles nesting too!
+
+Next up: **compiling the script units**.
+
+### What is Compiling?
+
+This is using the keyword system to emit. We have to make some changes though to how keywords express their payload.
+
+* [x] all keywords now emit TOpcode[] instead of ISMCBundle
+* [x] add `#bundle name`  by parsing the source itself
+* [x] in `CompileScript()` need to know the blueprint name AND understand compiler directives.
+
+So how does that actually work in the new system?
+
+* [x] **add `#` compiler directives to tokenizer**
+* [x] compiler has to check for `#` keyword, defBlueprint in loop
+* [x] test compiler works...now to re-enable SaveAgent
+* [x] make sure to watch out for returning `{script}` instead of `script`, where script is a `TOpcode[]`. 
+
+Now **fix MakeAgent**
+
+* [x] make sure that the PROGRAM ARRAYS are actually being generated correctly, and are running.
+* [x] change the keywords to emit a single prog, not a bundle (let block compiler handle it)
+* [x] change the block compiler to also redirect to a specific bundle
+* [x] add the new unknown keyword handling `dbgOut`
+
+## NOV 27 FRI - GRANULAR COMPILER OUTPUT
+
+At this point, `MakeAgent()` is working but we have to refine the way that bundles in a template are used. The `ISMCBundle` interface defines the kinds of programs we can expect to run.
+
+**Making the Compiler Output Directives**
+
+I've defined the TSMCBundleType, which describes what kind of bundle it is. We need to do different things depending on the bundle type. We have to write our scripts to emit the right bundle programs to the right parts of the simulation engine!
+
+* [x] update default script to emit programs to the right execution context
+
+  * [x] pragma in `pragma` keyword update to be case insensitive
+  * [x] add `SMCBundle` class and support
+  * [x] make Transpiler CompileScript use `SMCBundle`
+  * [x] update code to insert it in the right place, in `RegisterBlueprint()`
+  * [x] **restore blueprint** with granular program access from SMCBundle!
+  * [x] add simUpdate, simThink, simExec to class-agent, update sim-agents
+
+**Executing Program Blocks and Conditions**
+
+This is the final hurdle, which I'll tackle in several stages:
+
+* [x] work on`ifProg {{ }} [[ program ]]` to ensure it's working as expected
+* [ ] the program blocks are not being expanded...why?
+  * [x] are they being processed? In `m_ExpandScriptUnit()` but **no objcode is produced**. 
+  * [x] are they being saved? **no**
+  * [x] make a new `CompileBlock()` method for recursive expansion of parameters
+  * [x] rename `CompileLoop()` to `CompileToBundle()`
+  * [x] test in `ifProg` which is our basic IF statement
+
+The **var** props return a value, which gets put on the stack. **We need to clean up the stack semantics!!!**
+
+* [ ] the `var-*` property classes return values. When they're invoked inside `propMethod.tsx` at runtime, 
 
 
 

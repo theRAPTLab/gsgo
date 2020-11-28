@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "dbgError" command object
+  implementation of keyword "dbgStack" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -12,25 +12,26 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgError extends Keyword {
+export class dbgStack extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('dbgError');
-    this.args = ['...args'];
+    super('dbgStack');
+    this.args = ['numpop:number'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, error] = unit;
+    const [kw, numpop] = unit;
     const progout = [];
-    progout.push(() => {
-      const err = unit.join(', ');
-      console.log(
-        `%cERROR%c ${error || 'bad keyword'}: '${err}'`,
-        'color:red',
-        'color:black'
-      );
-      // throw Error(`unknown keyword: ${err}`);
+
+    progout.push((agent, state) => {
+      if (agent.aaa === undefined) agent.aaa = 1;
+      if (agent.aaa !== 0) {
+        --agent.aaa;
+        console.groupCollapsed(`agent '${agent.name()}' stack`);
+        state.stack.forEach((item, idx) => console.log(idx, item));
+        console.groupEnd();
+      }
     });
     return progout;
   }
@@ -43,12 +44,12 @@ export class dbgError extends Keyword {
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [error] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${error}'`}</>);
+    const [kw] = unit;
+    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(dbgError);
+RegisterKeyword(dbgStack);

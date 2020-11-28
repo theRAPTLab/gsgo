@@ -1,12 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword featureProp command object
+  implementation of keyword "featureCall" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -14,7 +14,7 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class FeatureCall extends Keyword {
+export class featureCall extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
@@ -23,24 +23,19 @@ export class FeatureCall extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(parms: any[]): ISMCBundle {
-    const [featName, methodName, ...args] = parms;
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, featName, methodName, ...args] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       // invoke the feature on the agent
       const feat = agent.feature(featName);
       // spread [...args] handles case when args is a single item, not an array
       // then the argument passed to evaluate() is always an array
-      // agent.evaluate() mutates the returned array so we spread it
+      // agent.evaluateArgs() mutates the returned array so we spread it
       const vals = [...args];
-      feat.method(agent, methodName, ...agent.evaluate(vals));
+      feat.method(agent, methodName, ...agent.evaluateArgs(vals));
     });
-    return {
-      define: [],
-      defaults: [],
-      conditions: [],
-      update: progout
-    };
+    return progout;
   }
 
   /** return a state object that turn react state back into source */
@@ -50,13 +45,13 @@ export class FeatureCall extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any[]): any {
-    const [kw, featName, method, ...args] = srcLine;
-    return super.jsx(index, srcLine, <>{srcLine.join(' ')}</>);
+  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+    const [kw, featName, method, ...args] = unit;
+    return super.jsx(index, unit, <>{unit.join(' ')}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(FeatureCall);
+RegisterKeyword(featureCall);

@@ -9,9 +9,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES } from 'modules/runtime-datacore';
+import { FEATURES, GetProgram, GetTest } from 'modules/runtime-datacore';
 import * as GLOBAL from 'modules/runtime-globals';
-import { Evaluate } from 'lib/script-evaluator';
+import { Evaluate } from 'lib/expr-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -49,7 +49,7 @@ class Agent extends SM_Object implements IAgent, IActable {
   _skin: StringProp;
   //
   constructor(agentName = '<anon>') {
-    super(agentName); // sets _value to agentName, which is only for debugging
+    super(agentName); // sets value to agentName, which is only for debugging
     this.meta.type = Symbol.for('Agent');
     // this.props map defined in SM_Object
     // this.methods map defined in SM_Object
@@ -74,19 +74,31 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
 
   // blueprint initialize
-  setBlueprint(bp: ISMCBundle) {
-    if (!bp) throw Error('setBlueprint expects an ISMCBundle');
-    if (!bp.name) throw Error('setBlueprint got bp without name');
-    this.blueprint = bp;
+  setBlueprint(bdl: ISMCBundle) {
+    if (!bdl) throw Error('setBlueprint expects an ISMCBundle');
+    if (!bdl.name) throw Error('setBlueprint got bp without name');
+    this.blueprint = bdl;
     // call initialization
-    this.exec(bp.define);
-    this.exec(bp.defaults);
+    this.exec(bdl.define);
+    this.exec(bdl.init);
   }
 
   // blueprint invocations
-  update() {
+  simUpdate(frameTime: number) {
     if (this.blueprint && this.blueprint.update) {
       this.exec(this.blueprint.update);
+    }
+  }
+
+  simThink(frameTime: number) {
+    if (this.blueprint && this.blueprint.think) {
+      this.exec(this.blueprint.think);
+    }
+  }
+
+  simExec(frameTime: number) {
+    if (this.blueprint && this.blueprint.exec) {
+      this.exec(this.blueprint.exec);
     }
   }
 
@@ -108,7 +120,10 @@ class Agent extends SM_Object implements IAgent, IActable {
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
 
   // accessor methods for built-in props
-  name = () => this._name.value;
+  name = (match?: string) => {
+    if (typeof match === 'string' && match !== this._name.value) return undefined;
+    return this._name.value;
+  };
   x = () => this._x.value;
   y = () => this._y.value;
   skin = () => this._skin.value;
@@ -177,13 +192,14 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.execQueue = [];
   }
 
-  /** evaluator mutator, can accept an array of args or a single arg
-   *  note that args is MUTATED by Evaluate, so it's important that
-   *  when you call this you are not actually creating a new array.
-   *  However, this also returns the passed argument(s) so you can
-   *  also assign them or spread them directly.
+  /** utility that checks whether an argument is an expression.
+   *  if it is, then Evaluate() is called on it to return an actual
+   *  value.
+   *  NOTE: args are MUTATED IN-PLACE.
+   *  The mutated array is also returned if you want to assign
+   *  it directly.
    */
-  evaluate(args: any, context: object = this): any {
+  evaluateArgs(args: any, context: object = this): any {
     if (typeof args === 'object' && args.type !== undefined)
       return Evaluate(args, this);
 
@@ -215,7 +231,7 @@ class Agent extends SM_Object implements IAgent, IActable {
    *  method passed-in with arguments
    */
   exec(m: TMethod, ...args: any[]): any {
-    if (m === undefined) throw Error('no method passed');
+    if (m === undefined) return undefined;
     const ctx = { args, agent: this, global: GLOBAL };
     if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
     if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
@@ -244,7 +260,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
   /** Execute a named program stored in global program store */
   exec_program(progName: string, [...args], context) {
-    throw Error('global programs not implemented');
+    const prog = GetProgram(progName) || GetTest(progName);
+    if (prog !== undefined) return this.exec(prog, args, context);
+    throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }
   exec_ast(ast: TExpressionAST, ctx) {
     return Evaluate(ast, ctx);

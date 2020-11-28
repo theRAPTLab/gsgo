@@ -1,18 +1,17 @@
-/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword IfTest command object
+  implementation of keyword "ifTest" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class IfTest extends Keyword {
+export class ifTest extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
     super('ifTest');
@@ -23,21 +22,17 @@ export class IfTest extends Keyword {
    *  NOTE: when compile is called, all arguments have already been expanded
    *  from {{ }} to a ParseTree
    */
-  compile(parms: any[]): ISMCBundle {
-    const testName = parms[0];
-    const consq = parms[1]; // could be any TMethod
-    const alter = parms[2]; // also a TMethod
+  compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, testName, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
       const ast = GetTest(testName);
       if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
-      const result = this.topValue(agent.exec(ast, [], state.ctx));
-      if (result) agent.exec(consq);
-      else agent.exec(alter);
+      const result = this.firstValue(agent.exec(ast, [], state.ctx));
+      if (result && consq) agent.exec(consq);
+      if (!result && alter) agent.exec(alter);
     });
-    return {
-      update: code
-    };
+    return code;
   }
 
   /** return a state object that turn react state back into source */
@@ -47,12 +42,16 @@ export class IfTest extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, srcLine: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = srcLine;
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
+    const [kw, testName, consequent, alternate] = unit;
+    const cc = consequent ? 'TRUE:[consequent]' : '';
+    const aa = alternate ? 'FALSE:[alternate]' : '';
     return super.jsx(
       index,
-      srcLine,
-      <>ifTest {testName} then run [consequent]</>
+      unit,
+      <>
+        ifTest {testName} {cc} {aa}
+      </>
     );
   }
 } // end of DefProp
@@ -60,4 +59,4 @@ export class IfTest extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(IfTest);
+RegisterKeyword(ifTest);

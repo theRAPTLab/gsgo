@@ -5,8 +5,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { Evaluate, Compile as FauxCompile } from 'lib/script-evaluator';
-import { Parse, TokenizeToScriptUnit } from 'lib/script-parser';
+import { Evaluate, Compile as FauxCompile } from 'lib/expr-evaluator';
+import { ParseExpression } from 'lib/expr-parser';
+import { LineToScriptUnit } from 'script/transpiler-old';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,7 +18,7 @@ const EX_DECOMPILE = true;
 /// MAIN HELPERS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Eval(expr: string, context: {}) {
-  const ast = Parse(expr);
+  const ast = ParseExpression(expr);
   console.log(...PR('AST', ast));
   const val = Evaluate(ast, context);
   console.log(...PR('RETVAL:', val));
@@ -36,7 +37,7 @@ function Compile(expr: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** print out the results of a parsed line */
 function EmitAST(line) {
-  const ast = Parse(line);
+  const ast = ParseExpression(line);
   console.groupCollapsed(`AST from '${line}'`);
   if (ast.type === 'Compound') {
     ast.body.forEach((node, index) => {
@@ -50,7 +51,7 @@ function EmitAST(line) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (EX_DECOMPILE) {
   let p = 'setPropValue health 1 + this.pollen; prop "string" 10';
-  const source = TokenizeToScriptUnit(p);
+  const source = LineToScriptUnit(p);
   console.log(...PR('decompiled', source));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,5 +93,5 @@ if (EX_PARSE) {
 };
 /** return the AST from the line */
 (window as any).getExprAST = (expr: string = '') => {
-  return Parse(expr);
+  return ParseExpression(expr);
 };
