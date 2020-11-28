@@ -28,4 +28,10 @@ export default class SM_State implements IState {
   pushArgs(...args: number[]): void {
     this.stack.push(...args);
   }
+  reset(): void {
+    this.stack = [];
+    this.scope = [];
+    this.ctx = {};
+    this.flags.reset();
+  }
 }

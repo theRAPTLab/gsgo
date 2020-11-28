@@ -28,7 +28,7 @@ export class ifExpr extends Keyword {
     const code = [];
     code.push((agent, state) => {
       const method = test;
-      const result = this.topValue(agent.exec(method, [], state.ctx));
+      const result = this.firstValue(agent.exec(method, [], state.ctx));
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });

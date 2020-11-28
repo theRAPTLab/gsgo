@@ -19,13 +19,25 @@ export class ifProg extends Keyword {
     super('ifProg');
     this.args = ['test', 'consq', 'alter'];
   }
-  /* NOTE THIS IS NONFUNCTIONAL */
-  /** create smc blueprint code objects */
+
   compile(unit: TScriptUnit): TOpcode[] {
+    // the incoming parameters are already expanded into their runtime
+    // equivalents (AST for expressions, TSMCProgram for blocks)
     const [kw, test, consq, alter] = unit;
     console.log(kw, 'ifProg test:', test, 'then:', consq, 'else', alter);
     const cout = [];
-    cout.push();
+    cout.push((agent, state) => {
+      if (agent.name('bun0')) {
+        const res = agent.exec(test);
+        if (res) {
+          // console.log('running consq', consq);
+          agent.exec(consq);
+        } else {
+          // console.log('running alter', alter);
+          agent.exec(alter);
+        }
+      }
+    });
     return cout;
   }
 

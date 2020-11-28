@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Agent from 'lib/class-agent';
-import { TScriptUnit, TOpcode, ISMCBundle } from 'lib/t-script';
+import { TScriptUnit, TOpcode, ISM_Bundle } from 'lib/t-script';
 import {
   GetKeyword,
   SaveAgent,
@@ -18,6 +18,7 @@ import {
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer-2';
+import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
 import * as DATACORE from 'modules/runtime-datacore';
 // critical imports
@@ -94,7 +95,7 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
     if (idx === 0) return arg;
     if (Array.isArray(arg)) {
       const script = scriptConverter.tokenize(arg);
-      const objcode = CompileLoop({}, script);
+      const objcode = CompileLoop(new SM_Bundle(), script);
       console.log('compiled object code', arg, objcode);
       return objcode; // this is the compiled script
     }
@@ -131,36 +132,49 @@ function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
   return compiledStatement;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CompileLoop(bdl: ISMCBundle, units: TScriptUnit[]) {
-  let objcode;
+function CompileLoop(bdl: SM_Bundle, units: TScriptUnit[]) {
+  let objcode; // holder for compiled code
+  let defined = false;
   units.forEach((unit, idx) => {
-    if (unit[0] === 'defBlueprint') bdl.name = unit[1];
+    // pragmas run the program directly to effect system change
     if (unit[0] === '#') {
-      // pragmas run the program directly to effect system change
-      // for example setting the bundle output
-      const temp = ['pragma', ...unit.slice(1)];
-      console.log('pragma', temp);
-      objcode = CompileRawUnit(temp);
+      // (1A) is this a pragma directive? then execute its program
+      // which could affect compiler state
+      // see keywords/pragma.ts for all valid options
+      objcode = CompileRawUnit(['pragma', ...unit.slice(1)]);
       objcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
+      const results = COMPILER_STATE.stack;
+      if (results[0] === 'defBlueprint') {
+        if (!defined) {
+          bdl.setName(unit[1]);
+          defined = true;
+          return;
+        }
+        throw Error(`#BLUEPRINT used more than once (got '${unit[1]})'`);
+      }
+      return;
     }
-    // otherwise compile the code
+    if (unit[0] === 'defBlueprint') {
+      // (1B) also scan for defBlueprint keywords to set the name
+      if (!defined) {
+        bdl.setName(unit[1]);
+        defined = true;
+        return;
+      }
+      throw Error(`defBlueprint used more than once (got '${unit[1]}')`);
+    }
+    // (2) otherwise compile the code
     objcode = CompileRawUnit(unit); // qbits is the subsequent parameters
-    AddToBundle(bdl, objcode);
+    // (3) and then push this code into the passed bundle
+    AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
-  return objcode;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile an array of TScriptUnit, representing one complete blueprint
  *  proof of concept
  */
-function CompileScript(units: TScriptUnit[]): ISMCBundle {
-  const bdl: ISMCBundle = {
-    name: undefined,
-    define: [],
-    defaults: [],
-    conditions: [],
-    update: []
-  };
+function CompileScript(units: TScriptUnit[]): ISM_Bundle {
+  const bdl: SM_Bundle = new SM_Bundle();
   if (!(units.length > 0)) return bdl;
   CompileLoop(bdl, units);
   if (bdl.name === undefined) throw Error('CompileScript: missing defBlueprint');
@@ -215,21 +229,20 @@ function TextifyScript(units: TScriptUnit[]): string {
 }
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterBlueprint(units: TScriptUnit[]): ISMCBundle {
-  const bp = CompileScript(units);
-  if (!(units.length > 0)) return bp;
-  if (DBG) console.groupCollapsed(...PR(`SAVING BLUEPRINT for ${bp.name}`));
-  SaveBlueprint(bp);
+function RegisterBlueprint(units: TScriptUnit[]): ISM_Bundle {
+  const bdl: SM_Bundle = CompileScript(units);
+  if (!(units.length > 0)) return bdl;
+  if (DBG) console.groupCollapsed(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+  SaveBlueprint(bdl);
   // run conditional programming in template
   // this is a stack of functions that run in global context
-  const { conditions } = bp;
-  let out = [];
-  conditions.forEach(regFunc => {
-    out.push(regFunc());
-  });
+  console.log('registering blueprint', bdl);
+  // run all the pertinent global blueprint programs
+  // initialize any global conditions
+  const { condition } = bdl.getPrograms();
+  if (condition) condition.forEach(regFunc => regFunc());
   if (DBG) console.groupEnd();
-
-  return bp;
+  return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MakeAgent(agentName: string, options?: { blueprint: string }) {
@@ -238,13 +251,13 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof blueprint === 'string') {
-    const bp = GetBlueprint(blueprint);
-    if (!bp) throw Error(`agent blueprint for '${blueprint}' not defined`);
+    const bdl = GetBlueprint(blueprint);
+    if (!bdl) throw Error(`agent blueprint for '${blueprint}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
-    agent.setBlueprint(bp);
+    agent.setBlueprint(bdl);
     return SaveAgent(agent);
   }
-  throw Error(`MakeAgent(): bad blueprint name ${blueprint}`, blueprint);
+  throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);
 }
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
@@ -257,7 +270,7 @@ const txt = DATACORE.GetDefaultText();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Script is TScriptUnit[], the base representation of gemscript
 export {
-  CompileScript, // TScriptUnit[] => ISMCBundle
+  CompileScript, // TScriptUnit[] => ISM_Bundle
   RenderScript, // TScriptUnit[] => JSX
   TextifyScript, // TScriptUnit[] => produce source text from units
   m_ScriptifyText as ScriptifyText // exprs => TScriptUnit[]
@@ -265,5 +278,5 @@ export {
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
-  RegisterBlueprint // TScriptUnit[] => ISMCBundle
+  RegisterBlueprint // TScriptUnit[] => ISM_Bundle
 };

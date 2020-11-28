@@ -11,14 +11,25 @@ import { RegisterKeyword, SetBundleOut } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** the pragma directives (e.g. #BUNDLE bundletype) return SMCPrograms that
+ *  are run IMMEDIATELY after the pragma is invoked, using a dummy agent
+ *  and state object inside CompileRawUnit() of Transpiler
+ */
 const PRAGMA = {
-  'blueprint': blueprintName => {
-    return (agent, state) => state.stack.push('blueprint', blueprintName);
+  'BLUEPRINT': (blueprintName, baseBlueprint) => {
+    return (agent, state) => {
+      state.stack.push('defBlueprint', blueprintName, baseBlueprint);
+    };
   },
-  'bundle': bundleName => {
-    // console.log('bundle to', bundleName);
-    SetBundleOut(bundleName);
-  }
+  'DEFINE': () => SetBundleOut('define'),
+  'INIT': () => SetBundleOut('init'),
+  'UPDATE': () => SetBundleOut('update'),
+  'THINK': () => SetBundleOut('think'),
+  'EXEC': () => SetBundleOut('exec'),
+  'CONDITION': () => SetBundleOut('condition'),
+  'TEST': () => SetBundleOut('test'),
+  'ALTERNATE': () => SetBundleOut('alter'),
+  'CONSEQUENT': () => SetBundleOut('conseq')
 };
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -28,19 +39,22 @@ export class pragma extends Keyword {
 
   constructor() {
     super('pragma');
-    this.args = ['pragmaName:string', 'value:any'];
+    this.args = ['pragmaName:string', '...args'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, pragmaName, value] = unit;
-    const run = PRAGMA[pragmaName](value);
-    return [
-      (agent: IAgent, state: IState) => {
-        state.stack.push(pragmaName);
-        state.stack.push(value);
-      }
-    ];
+    const [kw, pragmaName, ...args] = unit;
+    const pragmatizer = PRAGMA[pragmaName.toUpperCase()];
+    const program = pragmatizer(...args);
+    // the output of the pragmatizer is either a TOpcode,
+    // a TOpcode[], or nothing. This program receives
+    // a compiler agent and a compiler state that is unique
+    // to the compile loop.
+    if (Array.isArray(program)) return program;
+    if (typeof program === 'function') return [program];
+    // if nothing returns, reset the COMPILER_STATE
+    return [(agent, state) => state.reset()];
   }
 
   /** return a state object that turn react state back into source */

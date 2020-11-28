@@ -978,22 +978,50 @@ Next up: **compiling the script units**.
 This is using the keyword system to emit. We have to make some changes though to how keywords express their payload.
 
 * [x] all keywords now emit TOpcode[] instead of ISMCBundle
-* [ ] add `#bundle name`  by parsing the source itself
-* [ ] in `CompileScript()` need to know the blueprint name AND understand compiler directives.
+* [x] add `#bundle name`  by parsing the source itself
+* [x] in `CompileScript()` need to know the blueprint name AND understand compiler directives.
 
 So how does that actually work in the new system?
 
-* [x] add `#` compiled directives to tokenizer
+* [x] **add `#` compiler directives to tokenizer**
 * [x] compiler has to check for `#` keyword, defBlueprint in loop
-* [ ] test compiler works...now to re-enable SaveAgent
-* [ ] CURRENT BORKED...
-  * [ ] MakeAgent is not getting the bundle name set for some reason.
+* [x] test compiler works...now to re-enable SaveAgent
+* [x] make sure to watch out for returning `{script}` instead of `script`, where script is a `TOpcode[]`. 
 
-**Other Things Afterwards**
+Now **fix MakeAgent**
 
-* [ ] change the keywords to emit a single prog, not a bundle (let block compiler handle it)
-* [ ] change the block compiler to also redirect to a specific bundle
-* [ ] add the new unknown keyword handling
+* [x] make sure that the PROGRAM ARRAYS are actually being generated correctly, and are running.
+* [x] change the keywords to emit a single prog, not a bundle (let block compiler handle it)
+* [x] change the block compiler to also redirect to a specific bundle
+* [x] add the new unknown keyword handling `dbgOut`
+
+## NOV 27 FRI - GRANULAR COMPILER OUTPUT
+
+At this point, `MakeAgent()` is working but we have to refine the way that bundles in a template are used. The `ISMCBundle` interface defines the kinds of programs we can expect to run.
+
+**Making the Compiler Output Directives**
+
+I've defined the TSMCBundleType, which describes what kind of bundle it is. We need to do different things depending on the bundle type. We have to write our scripts to emit the right bundle programs to the right parts of the simulation engine!
+
+* [x] update default script to emit programs to the right execution context
+
+  * [x] pragma in `pragma` keyword update to be case insensitive
+  * [x] add `SMCBundle` class and support
+  * [x] make Transpiler CompileScript use `SMCBundle`
+  * [x] update code to insert it in the right place, in `RegisterBlueprint()`
+  * [x] **restore blueprint** with granular program access from SMCBundle!
+  * [x] add simUpdate, simThink, simExec to class-agent, update sim-agents
+
+**Executing Program Blocks and Conditions**
+
+This is the final hurdle, which I'll tackle in several stages:
+
+* [x] work on`ifProg {{ }} [[ program ]]` to ensure it's working as expected
+* [ ] the program blocks are not being expanded...why?
+  * [ ] are they being processed?
+  * [ ] are they being saved?
+
+
 
 ---
 

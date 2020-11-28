@@ -18,7 +18,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { IKeyword, ISMCBundle, TScriptUnit } from 'lib/t-script';
+import { IKeyword, TOpcode, TScriptUnit } from 'lib/t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,18 +77,23 @@ export class Keyword implements IKeyword {
   }
   /// UTILITY METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** cheese key id generator (deprecated) */
+  /** Key id generator used by the base jsx() wrapper to create unique
+   *  keys so React doesn't complain. This is probably bad and inefficient
+   *  but it works for now.
+   */
   generateKey() {
     return ID_GENERATOR++;
   }
-  /** return keyword */
+  /** return the name of this keyword */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   getName() {
     return this.keyword;
   }
-  /** get topmost value of returned value, if it's an array or
-   *  a value
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** given a return value from a TMethod that is either a TOpcode stack OR a
+   *  regular function, return a single value
    */
-  topValue(thing: any): any {
+  firstValue(thing: any): any {
     if (Array.isArray(thing)) return thing.shift();
     return thing;
   }

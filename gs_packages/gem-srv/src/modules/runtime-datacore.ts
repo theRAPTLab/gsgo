@@ -19,13 +19,32 @@ import {
   TMethod,
   TScriptUnit,
   ISMCBundle,
+  EBundleType,
   IKeyword,
   IKeywordCtor
-} from 'lib/t-script';
+} from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCORE', 'TagRed');
+
+/// valid keys are defined in ISMCBundle, and values indicate the
+/// context that these program
+const BUNDLE_CONTEXTS = [
+  'define',
+  'init',
+  'update',
+  'think',
+  'exec',
+  'condition',
+  'test',
+  'conseq',
+  'alter'
+];
+
+/// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let BUNDLE_OUT = 'define';
 
 /// DATA STORAGE MAPS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,18 +61,6 @@ const CONDITIONS: Map<string, TMethod> = new Map();
 const TESTS: Map<string, TMethod> = new Map();
 const PROGRAMS: Map<string, TMethod> = new Map();
 const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// valid names are defined in ISMCBundle
-const BUNDLE_TYPES = {
-  name: 'string',
-  defaults: 'program',
-  update: 'program',
-  conditions: 'regcode',
-  test: 'program',
-  conseq: 'program',
-  alter: 'program'
-};
-let BUNDLE_OUT = 'defaults';
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -249,19 +256,30 @@ export function GetProgram(name: string): TMethod {
   } else return PROGRAMS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function IsValidBundleName(name: string): boolean {
-  return BUNDLE_TYPES[name] !== undefined;
+export function IsValidBundleProgram(name: string): boolean {
+  return BUNDLE_CONTEXTS.includes(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return true if the passed bundle string is valid */
+export function IsValidBundleType(type: EBundleType) {
+  return Object.values(EBundleType).includes(type as any);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** set the datacore global var BUNDLE_OUT to name, which tells the
+ *  AddToBundle(bdl,prog) call where the program should be added
+ */
 export function SetBundleOut(name: string): boolean {
-  if (IsValidBundleName(name)) {
+  if (IsValidBundleProgram(name)) {
     BUNDLE_OUT = name;
     return true;
   }
   return false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function AddToBundle(bdl: {}, prog: TOpcode[]) {
+/** main API for add a program to a bundle. It does not check the bundle
+ *  type because it may not have been set yet.
+ */
+export function AddToBundle(bdl: ISMCBundle, prog: TOpcode[]) {
   if (typeof bdl !== 'object') throw Error(`${bdl} is not an object`);
   if (!bdl[BUNDLE_OUT]) bdl[BUNDLE_OUT] = [];
   // console.log(`writing ${prog.length} opcode(s) to [${BUNDLE_OUT}]`);
@@ -271,21 +289,21 @@ export function AddToBundle(bdl: {}, prog: TOpcode[]) {
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_TEXT = `
-defBlueprint Bee
-# bundle: defaults
+# BLUEPRINT Bee Agent
+# DEFINE
 addProp frame Number 2
-// condition test 1
-addTest BunnyTest {{ agent.prop('frame').value }}
 useFeature Movement
 prop skin 'bunny.json'
-# bundle: update
+# CONDITION
+addTest BunnyTest {{ agent.prop('frame').value }}
+# UPDATE
 featureCall Movement jitterPos -5 5
 ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
 ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-onTick [[
+ifProg {{ global.LibMath.random()>0.5 }} [[
   prop z
-]]
+]]debug pro
 `;
 export function GetDefaultText() {
   return DEFAULT_TEXT;

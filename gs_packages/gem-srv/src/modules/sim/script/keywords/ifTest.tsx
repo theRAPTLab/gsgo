@@ -1,4 +1,3 @@
-/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   implementation of keyword "ifTest" command object
@@ -29,7 +28,7 @@ export class ifTest extends Keyword {
     code.push((agent, state) => {
       const ast = GetTest(testName);
       if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
-      const result = this.topValue(agent.exec(ast, [], state.ctx));
+      const result = this.firstValue(agent.exec(ast, [], state.ctx));
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });

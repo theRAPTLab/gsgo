@@ -86,38 +86,31 @@ export function AgentProgram(blueprint) {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentUpdate(frameTime) {
-  // HACK: execute agent program for default agent
-  const tagents = GetAllAgents();
-  tagents.forEach(agent => {
-    agent.update(frameTime);
-    /* run update */
-  });
-  tagents.forEach(agent => {
-    /* run queued exec */
+  const allAgents = GetAllAgents();
+  allAgents.forEach(agent => {
+    agent.simUpdate(frameTime);
   });
 
-  // TEMP HACK: force the agents to move outside of programming
-  // by diddling their properties directly
-  // also see renderer.js for TestRenderParameters()
-  //
-  // TestJitterAgents(frameTime);
-
-  // TEMP HACK: This should move to the DisplayListOut phase
+  // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
   // force agent movement for display list testing
-  const agents = GetAllAgents();
-  DOBJ_SYNC_AGENT.syncFromArray(agents);
+  DOBJ_SYNC_AGENT.syncFromArray(allAgents);
   DOBJ_SYNC_AGENT.mapObjects();
   const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
   RENDERER.UpdateDisplayList(dobjs);
   UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentThink(frameTime) {}
+function AgentThink(frameTime) {
+  const allAgents = GetAllAgents();
+  allAgents.forEach(agent => {
+    agent.simThink(frameTime);
+  });
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
-  const agents = GetAllAgents();
-  agents.forEach(agent => {
-    /* exec function */
+  const allAgents = GetAllAgents();
+  allAgents.forEach(agent => {
+    agent.simExec(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

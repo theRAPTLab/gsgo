@@ -74,19 +74,31 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
 
   // blueprint initialize
-  setBlueprint(bp: ISMCBundle) {
-    if (!bp) throw Error('setBlueprint expects an ISMCBundle');
-    if (!bp.name) throw Error('setBlueprint got bp without name');
-    this.blueprint = bp;
+  setBlueprint(bdl: ISMCBundle) {
+    if (!bdl) throw Error('setBlueprint expects an ISMCBundle');
+    if (!bdl.name) throw Error('setBlueprint got bp without name');
+    this.blueprint = bdl;
     // call initialization
-    this.exec(bp.define);
-    this.exec(bp.defaults);
+    this.exec(bdl.define);
+    this.exec(bdl.init);
   }
 
   // blueprint invocations
-  update() {
+  simUpdate(frameTime: number) {
     if (this.blueprint && this.blueprint.update) {
       this.exec(this.blueprint.update);
+    }
+  }
+
+  simThink(frameTime: number) {
+    if (this.blueprint && this.blueprint.think) {
+      this.exec(this.blueprint.think);
+    }
+  }
+
+  simExec(frameTime: number) {
+    if (this.blueprint && this.blueprint.exec) {
+      this.exec(this.blueprint.exec);
     }
   }
 
@@ -108,7 +120,10 @@ class Agent extends SM_Object implements IAgent, IActable {
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
 
   // accessor methods for built-in props
-  name = () => this._name.value;
+  name = (match: string) => {
+    if (typeof match === 'string' && match !== this._name.value) return undefined;
+    return this._name.value;
+  };
   x = () => this._x.value;
   y = () => this._y.value;
   skin = () => this._skin.value;
@@ -216,7 +231,7 @@ class Agent extends SM_Object implements IAgent, IActable {
    *  method passed-in with arguments
    */
   exec(m: TMethod, ...args: any[]): any {
-    if (m === undefined) throw Error('no method passed');
+    if (m === undefined) return undefined;
     const ctx = { args, agent: this, global: GLOBAL };
     if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
     if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
