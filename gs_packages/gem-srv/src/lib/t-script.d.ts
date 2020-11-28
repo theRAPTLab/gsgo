@@ -91,7 +91,7 @@ export interface ISMCPrograms {
   exec?: TSMCProgram; // run during instance exec phase
   // global conditions
   condition?: TSMCProgram;
-  // location condition (one per bundle)
+  // local condition (one per bundle)
   test?: TSMCProgram; // program returning true on stack
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
@@ -109,7 +109,7 @@ export interface ISMCBundle extends ISMCPrograms {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles */
 export enum EBundleType {
-  PROG = 'program', // an named program type
+  PROG = 'program', // a program type
   COND = 'condition', // test, conseq, alter program,
   BLUEPRINT = 'blueprint', // blueprint for initializing agents
   G_PROG = 'gprogram', // named program to store in global
