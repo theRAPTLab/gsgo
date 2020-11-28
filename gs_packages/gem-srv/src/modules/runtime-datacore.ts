@@ -16,7 +16,7 @@ import {
   IScopeableCtor,
   IFeature,
   TOpcode,
-  TMethod,
+  TSMCProgram,
   TScriptUnit,
   ISMCBundle,
   EBundleType,
@@ -57,9 +57,9 @@ const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const CONDITIONS: Map<string, TMethod> = new Map();
-const TESTS: Map<string, TMethod> = new Map();
-const PROGRAMS: Map<string, TMethod> = new Map();
+const CONDITIONS: Map<string, TSMCProgram> = new Map();
+const TESTS: Map<string, TSMCProgram> = new Map();
+const PROGRAMS: Map<string, TSMCProgram> = new Map();
 const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
@@ -207,24 +207,20 @@ export function GetAllConditions() {
 /// TEST UTILITIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
-export function RegisterTest(name: string, f_or_smc: TMethod): boolean {
+export function RegisterTest(name: string, program: TSMCProgram): boolean {
   // if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
   const newRegistration = !TESTS.has(name);
-  TESTS.set(name, f_or_smc);
+  TESTS.set(name, program);
   return newRegistration;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetTest(name: string): TMethod {
-  if (!TESTS.has(name)) {
-    console.log(...PR(`test '${name}' doesn't exist`));
-  } else return TESTS.get(name);
+export function GetTest(name: string): TSMCProgram {
+  return TESTS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllTests() {
   TESTS.clear();
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetTests() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function MakeTestResultKey(...args: string[]) {
   if (!Array.isArray(args)) args = [args];
@@ -245,15 +241,13 @@ export function PurgeTestResults() {
 
 /// PROGRAM UTILITIES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function RegisterProgram(name: string, f_or_smc: TMethod) {
+export function RegisterProgram(name: string, program: TSMCProgram) {
   if (PROGRAMS.has(name)) throw Error(`RegisterProgram: ${name} exists`);
-  PROGRAMS.set(name, f_or_smc);
+  PROGRAMS.set(name, program);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetProgram(name: string): TMethod {
-  if (!PROGRAMS.has(name)) {
-    console.log(...PR(`program '${name}' doesn't exist`));
-  } else return PROGRAMS.get(name);
+export function GetProgram(name: string): TSMCProgram {
+  return PROGRAMS.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function IsValidBundleProgram(name: string): boolean {
@@ -295,15 +289,22 @@ addProp frame Number 2
 useFeature Movement
 prop skin 'bunny.json'
 # CONDITION
-addTest BunnyTest {{ agent.prop('frame').value }}
+addTest BunnyTest [[
+  propMethod y gt 1000
+  dbgStack
+]]
 # UPDATE
 featureCall Movement jitterPos -5 5
-ifTest BunnyTest {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
+ifTest [[ BunnyTest ]] {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
 // condition test 2
-ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(0) }}
-ifProg {{ global.LibMath.random()>0.5 }} [[
-  prop z
-]]debug pro
+ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(-100) }}
+ifProg [[ BunnyTest ]] [[
+  propMethod x setTo 100
+  propMethod y setTo 100
+]] [[
+  propMethod x setTo -100
+  propMethod y setTo -100
+]]
 `;
 export function GetDefaultText() {
   return DEFAULT_TEXT;

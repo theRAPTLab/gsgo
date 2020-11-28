@@ -6,7 +6,7 @@
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, TOpcode, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -26,9 +26,10 @@ export class propMethod extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, propName, methodName, ...args] = unit;
     const progout = [];
-    progout.push((agent: IAgent) => {
+    progout.push((agent: IAgent, state: IState) => {
       const prop = agent.prop(propName);
-      prop[methodName](...args);
+      const res = prop[methodName](...args).value;
+      if (res !== undefined) state.pushArgs(res);
     });
     return progout;
   }

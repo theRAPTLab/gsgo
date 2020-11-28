@@ -16,7 +16,6 @@
 
 import {
   TOpcode,
-  IState,
   TRegcode,
   ISMCBundle,
   ISMCPrograms,
@@ -44,9 +43,10 @@ export default class SM_Bundle implements ISMCBundle {
   conseq: TOpcode[]; // run if true
   alter: TOpcode[]; // run if false
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  constructor(name?: string) {
-    if (name !== undefined) this.setName(name);
-    this.type = EBundleType.PROG;
+  constructor(name?: string, type?: string) {
+    if (typeof name === 'string') this.setName(name);
+    if (typeof type === 'string') this.setType(type);
+    else this.setType(EBundleType.PROG);
     //
     this.define = []; // allocate data structures (agents, features, modules)
     this.init = []; // initialize data structures (a,f,m)
@@ -65,7 +65,7 @@ export default class SM_Bundle implements ISMCBundle {
     this.name = name;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  initAsType(type: EBundleType) {
+  setType(type: EBundleType) {
     const valid = Object.values(EBundleType).includes(type as any);
     if (!valid) throw Error(`invalid bundle type '${type}'`);
     this.type = type;

@@ -24,18 +24,12 @@ export class ifProg extends Keyword {
     // the incoming parameters are already expanded into their runtime
     // equivalents (AST for expressions, TSMCProgram for blocks)
     const [kw, test, consq, alter] = unit;
-    console.log(kw, 'ifProg test:', test, 'then:', consq, 'else', alter);
     const cout = [];
     cout.push((agent, state) => {
       if (agent.name('bun0')) {
         const res = agent.exec(test);
-        if (res) {
-          // console.log('running consq', consq);
-          agent.exec(consq);
-        } else {
-          // console.log('running alter', alter);
-          agent.exec(alter);
-        }
+        if (res) agent.exec(consq);
+        else agent.exec(alter);
       }
     });
     return cout;

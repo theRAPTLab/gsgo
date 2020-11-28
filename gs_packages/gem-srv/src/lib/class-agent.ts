@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES } from 'modules/runtime-datacore';
+import { FEATURES, GetProgram, GetTest } from 'modules/runtime-datacore';
 import * as GLOBAL from 'modules/runtime-globals';
 import { Evaluate } from 'lib/expr-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
@@ -120,7 +120,7 @@ class Agent extends SM_Object implements IAgent, IActable {
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
 
   // accessor methods for built-in props
-  name = (match: string) => {
+  name = (match?: string) => {
     if (typeof match === 'string' && match !== this._name.value) return undefined;
     return this._name.value;
   };
@@ -260,7 +260,9 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
   /** Execute a named program stored in global program store */
   exec_program(progName: string, [...args], context) {
-    throw Error('global programs not implemented');
+    const prog = GetProgram(progName) || GetTest(progName);
+    if (prog !== undefined) return this.exec(prog, args, context);
+    throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }
   exec_ast(ast: TExpressionAST, ctx) {
     return Evaluate(ast, ctx);

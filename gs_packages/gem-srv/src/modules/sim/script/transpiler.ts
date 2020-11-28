@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Agent from 'lib/class-agent';
-import { TScriptUnit, TOpcode, ISM_Bundle } from 'lib/t-script';
+import { TScriptUnit, TOpcode, EBundleType } from 'lib/t-script.d';
 import {
   GetKeyword,
   SaveAgent,
@@ -77,10 +77,7 @@ const m_expanders = {
   },
   '[[': (arg: string) => {
     if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
-    console.log(
-      `m_expanders: inline references are not yet implemented\n- ${arg}\n`
-    );
-    return arg;
+    return arg.substring(2, arg.length - 2).trim();
   }
 };
 
@@ -95,8 +92,7 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
     if (idx === 0) return arg;
     if (Array.isArray(arg)) {
       const script = scriptConverter.tokenize(arg);
-      const objcode = CompileLoop(new SM_Bundle(), script);
-      console.log('compiled object code', arg, objcode);
+      const objcode = CompileBlock(script);
       return objcode; // this is the compiled script
     }
     if (typeof arg !== 'string') return arg;
@@ -132,7 +128,22 @@ function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
   return compiledStatement;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CompileLoop(bdl: SM_Bundle, units: TScriptUnit[]) {
+/** Compile a script block, returning objcode */
+function CompileBlock(units: TScriptUnit[]): TOpcode[] {
+  const objcode = []; // holder for compiled code
+  let out; // holder for compiled unit
+  units.forEach((unit, idx) => {
+    // skip all pragmas
+    if (unit[0] === '#') return;
+    // recursive compile through m_ExpandScriptUnit()
+    out = CompileRawUnit(unit);
+    // save the obj code
+    objcode.push(...out); // spread the output functions and push 'em
+  });
+  return objcode;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
   let objcode; // holder for compiled code
   let defined = false;
   units.forEach((unit, idx) => {
@@ -169,15 +180,18 @@ function CompileLoop(bdl: SM_Bundle, units: TScriptUnit[]) {
     AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile an array of TScriptUnit, representing one complete blueprint
  *  proof of concept
  */
-function CompileScript(units: TScriptUnit[]): ISM_Bundle {
+function CompileScript(units: TScriptUnit[]): SM_Bundle {
   const bdl: SM_Bundle = new SM_Bundle();
-  if (!(units.length > 0)) return bdl;
-  CompileLoop(bdl, units);
+  // no units? just return empty bundle
+  if (units.length === 0) return bdl;
+  CompileToBundle(units, bdl);
   if (bdl.name === undefined) throw Error('CompileScript: missing defBlueprint');
+  bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -229,7 +243,7 @@ function TextifyScript(units: TScriptUnit[]): string {
 }
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterBlueprint(units: TScriptUnit[]): ISM_Bundle {
+function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   const bdl: SM_Bundle = CompileScript(units);
   if (!(units.length > 0)) return bdl;
   if (DBG) console.groupCollapsed(...PR(`SAVING BLUEPRINT for ${bdl.name}`));

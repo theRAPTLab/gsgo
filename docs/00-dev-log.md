@@ -1018,8 +1018,15 @@ This is the final hurdle, which I'll tackle in several stages:
 
 * [x] work on`ifProg {{ }} [[ program ]]` to ensure it's working as expected
 * [ ] the program blocks are not being expanded...why?
-  * [ ] are they being processed?
-  * [ ] are they being saved?
+  * [x] are they being processed? In `m_ExpandScriptUnit()` but **no objcode is produced**. 
+  * [x] are they being saved? **no**
+  * [x] make a new `CompileBlock()` method for recursive expansion of parameters
+  * [x] rename `CompileLoop()` to `CompileToBundle()`
+  * [x] test in `ifProg` which is our basic IF statement
+
+The **var** props return a value, which gets put on the stack. **We need to clean up the stack semantics!!!**
+
+* [ ] the `var-*` property classes return values. When they're invoked inside `propMethod.tsx` at runtime, 
 
 
 

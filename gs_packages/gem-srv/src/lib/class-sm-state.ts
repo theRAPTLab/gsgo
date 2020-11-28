@@ -26,7 +26,8 @@ export default class SM_State implements IState {
     return arr;
   }
   pushArgs(...args: number[]): void {
-    this.stack.push(...args);
+    if (Array.isArray(args)) this.stack.push(...args);
+    else this.stack.push(args);
   }
   reset(): void {
     this.stack = [];

@@ -6,10 +6,11 @@
 
 export * from './pragma';
 export * from './dbgOut';
+export * from './dbgStack';
 export * from './dbgError';
 export * from './addProp';
 export * from './defBlueprint';
-export * from './propCall';
+export * from './propMethod';
 export * from './prop';
 export * from './endBlueprint';
 export * from './useFeature';
