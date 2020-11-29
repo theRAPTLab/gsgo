@@ -5,8 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GetTest } from 'modules/runtime-datacore';
 import { GetGlobalAgent } from 'lib/class-agent';
+import { GetAllGlobalConditions } from 'modules/runtime-datacore';
 import { Evaluate } from 'lib/expr-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -25,9 +25,11 @@ function ModuleInit(/* gloop */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** invoked via SIM/CONDITIONS_UPDATE */
 function Update(frame) {
-  // console.log('condition frame update', frame);
-  // const bunnyTest = GetTest('BunnyTest');
-  // console.log('evaluating', Evaluate(bunnyTest, { global: GLOBAL }));
+  const conds = [...GetAllGlobalConditions()];
+  conds.forEach(entry => {
+    const [key, value] = entry;
+    GLOBAL.exec(value);
+  });
 }
 
 /// MODULE INITIALIZATION /////////////////////////////////////////////////////

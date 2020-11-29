@@ -42,9 +42,9 @@ export interface IAgent extends IScopeable {
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
-  queueUpdateAction: (action: TMethod) => void;
-  queueThinkAction: (action: TMethod) => void;
-  queueExecAction: (action: TMethod) => void;
+  queueUpdateMessage: (msg: IMessage) => void;
+  queueThinkMessage: (msg: IMessage) => void;
+  queueExecAction: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
   feature: (name: string) => any;
@@ -68,6 +68,19 @@ export interface IFeature {
   addProp(agent: IAgent, key: string, prop: IScopeable): void;
   prop(agent: IAgent, key: string): IScopeable;
   method: (agent: IAgent, key: string, ...args: any) => any;
+}
+
+/// SIMULATION RUNTIME ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A stackmachine Message, which consists of a message and an SMCProgram.
+ */
+export interface IMessage {
+  id?: number;
+  channel?: string;
+  message?: string;
+  context?: {}; // context object for expressions, programs
+  actions?: TSMCProgram[];
+  inputs?: any;
 }
 
 /// INTERMEDIATE SCRIPT REPRESENTATION ////////////////////////////////////////
@@ -144,19 +157,6 @@ export interface IKeywordCtor {
 export interface IScriptUpdate {
   index: number;
   scriptUnit: TScriptUnit;
-}
-
-/// SIMULATION RUNTIME ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** A stackmachine Message, which consists of a message and an SMCProgram.
- */
-export interface IMessage {
-  id: number;
-  channel: string;
-  message: string;
-  data?: any;
-  programs?: TSMCProgram[];
-  inputs?: any;
 }
 
 /// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////

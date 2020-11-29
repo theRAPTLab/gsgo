@@ -14,7 +14,8 @@ import {
   SaveAgent,
   SaveBlueprint,
   GetBlueprint,
-  AddToBundle
+  AddToBundle,
+  AddGlobalCondition
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
@@ -67,6 +68,23 @@ function m_Tokenify(item: any): any {
   return item;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** parse-out strings in the code array, which are errors */
+function m_CheckForError(code: TOpcode[], ...args) {
+  const out = code.filter(f => {
+    if (typeof f === 'function') return true;
+    if (Array.isArray(f)) {
+      // didn't get a function return, so it must be an error code
+      const [err, line] = f as any[];
+      const where = line !== undefined ? `line ${line}` : '';
+      console.log(...PR(`ERR: ${err} ${where}`));
+    }
+    if (typeof f === 'string')
+      console.log(...PR(`ERR: '${f}' ${args.join(' ')}`));
+    return false;
+  });
+  return out;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** EXPANDER TABLE */
 const m_expanders = {
   '{{': (arg: string) => {
@@ -105,7 +123,7 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
+function CompileRawUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
   // extract keyword first unit, assume that . means Feature
   // console.group('Expanding', rawUnit);
   let kwProcessor;
@@ -124,30 +142,31 @@ function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
   }
   // console.groupEnd();
   // continue!
-  const compiledStatement = kwProcessor.compile(unit); // qbits is the subsequent parameters
+  const compiledStatement = kwProcessor.compile(unit, idx); // qbits is the subsequent parameters
   return compiledStatement;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile a script block, returning objcode */
 function CompileBlock(units: TScriptUnit[]): TOpcode[] {
   const objcode = []; // holder for compiled code
-  let out; // holder for compiled unit
+  let code; // holder for compiled unit
   units.forEach((unit, idx) => {
     // skip all pragmas
     if (unit[0] === '#') return;
     // recursive compile through m_ExpandScriptUnit()
-    out = CompileRawUnit(unit);
-    // save the obj code
-    objcode.push(...out); // spread the output functions and push 'em
+    code = CompileRawUnit(unit, idx);
+    code = m_CheckForError(code);
+    objcode.push(...code);
   });
   return objcode;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Main Script Compiler */
 function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
   let objcode; // holder for compiled code
-  let defined = false;
+  let bpWasSet = false;
   units.forEach((unit, idx) => {
-    // pragmas run the program directly to effect system change
+    // CASE (1) is pragma
     if (unit[0] === '#') {
       // (1A) is this a pragma directive? then execute its program
       // which could affect compiler state
@@ -155,28 +174,34 @@ function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
       objcode = CompileRawUnit(['_pragma', ...unit.slice(1)]);
       objcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
       const results = COMPILER_STATE.stack;
+      // CASE (1A) check for blueprint setting
       if (results[0] === '_blueprint') {
-        if (!defined) {
-          bdl.setName(unit[1]);
-          defined = true;
+        if (!bpWasSet) {
+          bdl.setName(unit[2]);
+          bpWasSet = true;
           return;
         }
         throw Error(`# BLUEPRINT used more than once (got '${unit[1]})'`);
       }
       return;
     }
+
+    // CASE (2) is system keyword
     if (unit[0] === '_blueprint') {
       // (1B) also scan for system blueprint keyword to set the name
-      if (!defined) {
-        bdl.setName(unit[1]);
-        defined = true;
+      if (!bpWasSet) {
+        bdl.setName(unit[2]);
+        bpWasSet = true;
         return;
       }
       throw Error(`blueprint name used more than once (got '${unit[1]}')`);
     }
-    // (2) otherwise compile the code
-    objcode = CompileRawUnit(unit); // qbits is the subsequent parameters
-    // (3) and then push this code into the passed bundle
+
+    // CASE (3) otherwise compile a normal keyword
+    objcode = CompileRawUnit(unit, idx); // qbits is the subsequent parameters
+    objcode = m_CheckForError(objcode);
+
+    // FINALLY push this unit's code into the passed bundle and repeat
     AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
 }
@@ -248,15 +273,14 @@ function TextifyScript(units: TScriptUnit[]): string {
 function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   const bdl: SM_Bundle = CompileScript(units);
   if (!(units.length > 0)) return bdl;
-  if (DBG) console.groupCollapsed(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+  if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
   SaveBlueprint(bdl);
   // run conditional programming in template
   // this is a stack of functions that run in global context
   console.log('registering blueprint', bdl);
   // run all the pertinent global blueprint programs
-  // initialize any global conditions
   const { condition } = bdl.getPrograms();
-  if (condition) condition.forEach(regFunc => regFunc());
+  AddGlobalCondition(bdl.name, condition);
   if (DBG) console.groupEnd();
   return bdl;
 }

@@ -157,6 +157,9 @@ class Compiler extends React.Component {
   userSaveBlueprint() {
     this.userCompileText();
     // save the blueprint to default and reprogram sim
+    DATACORE.DeleteAllTests();
+    DATACORE.DeleteAllGlobalConditions();
+    DATACORE.DeleteAllAgents();
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render

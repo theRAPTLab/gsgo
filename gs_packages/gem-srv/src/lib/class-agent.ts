@@ -13,6 +13,7 @@ import { FEATURES, GetProgram, GetTest } from 'modules/runtime-datacore';
 import * as GLOBAL from 'modules/runtime-globals';
 import { Evaluate } from 'lib/expr-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
+import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
 import {
@@ -81,25 +82,6 @@ class Agent extends SM_Object implements IAgent, IActable {
     // call initialization
     this.exec(bdl.define);
     this.exec(bdl.init);
-  }
-
-  // blueprint invocations
-  simUpdate(frameTime: number) {
-    if (this.blueprint && this.blueprint.update) {
-      this.exec(this.blueprint.update);
-    }
-  }
-
-  simThink(frameTime: number) {
-    if (this.blueprint && this.blueprint.think) {
-      this.exec(this.blueprint.think);
-    }
-  }
-
-  simExec(frameTime: number) {
-    if (this.blueprint && this.blueprint.exec) {
-      this.exec(this.blueprint.exec);
-    }
   }
 
   // internal control mode properties
@@ -179,16 +161,34 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
 
   /** PhaseMachine Lifecycle Execution QUEUES */
-  agentUPDATE() {
-    this.updateQueue.forEach(action => this.exec(action));
+  agentUPDATE(frameTime: number) {
+    if (this.blueprint && this.blueprint.update) {
+      this.exec(this.blueprint.update);
+    }
+    this.updateQueue.forEach(action => {
+      // console.log(this.name(), 'updateAction', this.exec(action));
+      this.exec(action);
+    });
     this.updateQueue = [];
   }
-  agentTHINK() {
-    this.thinkQueue.forEach(action => this.exec(action));
+  agentTHINK(frameTime: number) {
+    if (this.blueprint && this.blueprint.think) {
+      this.exec(this.blueprint.think);
+    }
+    this.thinkQueue.forEach(action => {
+      // console.log(this.name(), 'thinkAction', this.exec(action));
+      this.exec(action);
+    });
     this.thinkQueue = [];
   }
-  agentEXEC() {
-    this.execQueue.forEach(action => this.exec(action));
+  agentEXEC(frameTime: number) {
+    if (this.blueprint && this.blueprint.exec) {
+      this.exec(this.blueprint.exec);
+    }
+    this.thinkQueue.forEach(action => {
+      // console.log(this.name(), 'execAction', this.exec(action));
+      this.exec(action);
+    });
     this.execQueue = [];
   }
 
@@ -217,14 +217,17 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
 
   /** handle queue (placeholder) */
-  queueUpdateAction(action: TMethod) {
-    this.updateQueue.push(action);
+  queueUpdateMessage(message: SM_Message) {
+    const { actions } = message;
+    this.updateQueue.push(...actions);
   }
-  queueThinkAction(action: TMethod) {
-    this.thinkQueue.push(action);
+  queueThinkMessage(message: SM_Message) {
+    const { actions } = message;
+    this.thinkQueue.push(...actions);
   }
-  queueExecAction(action: TMethod) {
-    this.execQueue.push(action);
+  queueExecAction(message: SM_Message) {
+    const { actions } = message;
+    this.execQueue.push(...actions);
   }
 
   /** Execute either a smc_program or function depending on the
