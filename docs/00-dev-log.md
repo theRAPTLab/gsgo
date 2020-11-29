@@ -1048,7 +1048,7 @@ when AgentA [[ test ]] [[
 
 OK...let's just make a when keyword and see what we can do with it.
 
-* [ ] clean up 
+* [x] clean up 
 
 
 

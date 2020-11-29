@@ -17,7 +17,7 @@ import {
   AddToBundle
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer-2';
+import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
 import * as DATACORE from 'modules/runtime-datacore';
@@ -40,7 +40,7 @@ const DBG = true;
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
-function m_ScriptifyText(text: string): { script: TScriptUnit[] } {
+function ScriptifyText(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
   const script = scriptConverter.tokenize(sourceStrings);
   return script;
@@ -152,27 +152,27 @@ function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
       // (1A) is this a pragma directive? then execute its program
       // which could affect compiler state
       // see keywords/pragma.ts for all valid options
-      objcode = CompileRawUnit(['pragma', ...unit.slice(1)]);
+      objcode = CompileRawUnit(['_pragma', ...unit.slice(1)]);
       objcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
       const results = COMPILER_STATE.stack;
-      if (results[0] === 'defBlueprint') {
+      if (results[0] === '_blueprint') {
         if (!defined) {
           bdl.setName(unit[1]);
           defined = true;
           return;
         }
-        throw Error(`#BLUEPRINT used more than once (got '${unit[1]})'`);
+        throw Error(`# BLUEPRINT used more than once (got '${unit[1]})'`);
       }
       return;
     }
-    if (unit[0] === 'defBlueprint') {
-      // (1B) also scan for defBlueprint keywords to set the name
+    if (unit[0] === '_blueprint') {
+      // (1B) also scan for system blueprint keyword to set the name
       if (!defined) {
         bdl.setName(unit[1]);
         defined = true;
         return;
       }
-      throw Error(`defBlueprint used more than once (got '${unit[1]}')`);
+      throw Error(`blueprint name used more than once (got '${unit[1]}')`);
     }
     // (2) otherwise compile the code
     objcode = CompileRawUnit(unit); // qbits is the subsequent parameters
@@ -186,11 +186,13 @@ function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
  *  proof of concept
  */
 function CompileScript(units: TScriptUnit[]): SM_Bundle {
+  if (!Array.isArray(units))
+    throw Error(`CompileScript can't compile '${typeof units}'`);
   const bdl: SM_Bundle = new SM_Bundle();
   // no units? just return empty bundle
   if (units.length === 0) return bdl;
   CompileToBundle(units, bdl);
-  if (bdl.name === undefined) throw Error('CompileScript: missing defBlueprint');
+  if (bdl.name === undefined) throw Error('CompileScript: missing _blueprint');
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
@@ -231,7 +233,7 @@ function TextifyScript(units: TScriptUnit[]): string {
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
-    if (unit[0] === 'comment') unit[0] = '//';
+    if (unit[0] === '_comment') unit[0] = '//';
     const toks = [];
     unit.forEach((tok, uidx) => {
       if (uidx === 0) toks.push(tok);
@@ -277,17 +279,18 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const txt = DATACORE.GetDefaultText();
-// console.log(...PR('\nblocks parsed', m_ScriptifyText(txt)));
-// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ScriptifyText(txt))));
+// console.log(...PR('\nblocks parsed', ScriptifyText(txt)));
+// console.log(...PR('\nrestitched', m_StitchifyBlocks(ScriptifyText(txt))));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Script is TScriptUnit[], the base representation of gemscript
 export {
-  CompileScript, // TScriptUnit[] => ISM_Bundle
+  CompileToBundle, // TScriptUnit[] => ISM_Bundle
+  CompileScript, //
   RenderScript, // TScriptUnit[] => JSX
   TextifyScript, // TScriptUnit[] => produce source text from units
-  m_ScriptifyText as ScriptifyText // exprs => TScriptUnit[]
+  ScriptifyText // text w/ newlines => TScriptUnit[]
 };
 /// for blueprint operations
 export {

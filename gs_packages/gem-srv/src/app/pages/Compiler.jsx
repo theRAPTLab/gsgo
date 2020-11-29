@@ -17,7 +17,7 @@ import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
 
-/// TESTS /////////////////////////////////////////////////////////////////////
+/// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 // import 'modules/tests/test-compiler'; // test compiler
 

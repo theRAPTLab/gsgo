@@ -2,7 +2,12 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "defBlueprint" command object
+  implementation of keyword "_blueprint" command object. It is a little hacky
+  because this is how the blueprint name is inserted into the ScriptUnit
+  when the # BLUEPRINT syntax is encountered in a ScriptText being converted
+
+  NOTE: This is a SYSTEM KEYWORD used for # BLUEPRINT syntax, and not intended
+  for direct use. See _pragma.tsx also.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,11 +19,11 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// GEMSCRIPT KEYWORD DEFINITION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class defBlueprint extends Keyword {
+export class _blueprint extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('defBlueprint');
-    // defBlueprint 'HoneyBee' 'Bee'
+    super('_blueprint');
+    // _blueprint 'HoneyBee' 'Bee'
     this.args = ['blueprintName string', 'baseBlueprint string'];
     this.serialize = this.serialize.bind(this);
     this.compile = this.compile.bind(this);
@@ -62,7 +67,7 @@ export class defBlueprint extends Keyword {
       <ScriptElement index={index} state={state} serialize={this.serialize} />
     );
   }
-} // end of DefBlueprint
+} // end of _blueprint
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -118,4 +123,4 @@ class ScriptElement extends React.Component<MyProps, MyState> {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(defBlueprint);
+RegisterKeyword(_blueprint);
