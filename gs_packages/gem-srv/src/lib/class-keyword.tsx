@@ -46,7 +46,7 @@ let ID_GENERATOR = 0;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class Keyword implements IKeyword {
   keyword: string;
-  args: string[];
+  args: any[]; // document only. can have array[][] for alt signatures
   //
   constructor(keyword: string) {
     if (typeof keyword !== 'string')
@@ -56,7 +56,7 @@ export class Keyword implements IKeyword {
     this.args = [];
   }
   /** override in subclass */
-  compile(unit: TScriptUnit): TOpcode[] {
+  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     throw Error(`${this.keyword}.compile() must be overridden by subclassers`);
   }
   /** override to output a serialized array representation for eventual reserialization */
@@ -96,6 +96,11 @@ export class Keyword implements IKeyword {
   firstValue(thing: any): any {
     if (Array.isArray(thing)) return thing.shift();
     return thing;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  errLine(err: string, idx?: number) {
+    if (idx !== undefined) return [err, idx];
+    return [err];
   }
 } // end of Keyword Class
 

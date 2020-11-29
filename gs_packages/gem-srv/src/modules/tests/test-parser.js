@@ -7,17 +7,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import ExpressionParser from 'lib/class-expr-parser';
 import ScriptTokenizer from 'lib/class-gscript-tokenizer';
+import ExpressionParser from 'lib/class-expr-parser';
 import parse from 'jsep';
 import { Evaluate } from 'lib/expr-evaluator';
-import { LineToScriptUnit } from 'lib/expr-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PARSER TEST', 'TagDkRed');
+const tokenizer = new ScriptTokenizer({ show: true });
 const gobbler = new ExpressionParser();
-const tokenizer = new ScriptTokenizer();
 
 /// COMPARE EXPRESSION PARSERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,12 +71,19 @@ function GobblerTest() {
 
 /// TOKENIZER TRIALS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TokenizeTest(str) {
-  const nodes = tokenizer.tokenize(str);
-  console.log(...PR(`TokenizeTest\n${str}`), nodes);
+function TokenizeTest(text) {
+  const lines = text.split('\n');
+  const nodes = tokenizer.tokenize(lines);
+  console.log(...PR(`TokenizeTest\n${lines}`), nodes);
 }
 
 /// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TokenizeTest(`defTemplate "French's Fried Potatoes" {{12+3/agent.pi}} 'Agent'`);
+TokenizeTest(
+  `
+  prop x
+  propCall y setTo 1
+  {{12+3/agent.pi}}
+`.trim()
+);
 GobblerTest();

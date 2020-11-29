@@ -146,10 +146,10 @@ class AgentSet {
   notifyMatches(execs: TSMCProgram[], stacks: any[]): void {
     this.getMembers().forEach(agent => {
       const msg = new Message('exec', {
-        programs: execs,
+        actions: execs,
         inputs: stacks.slice(0).concat(agent)
       });
-      agent.queue(msg);
+      agent.queueUpdateMessage(msg);
     });
     this.reset();
   }
@@ -158,15 +158,15 @@ class AgentSet {
     this.getPairs().forEach(pair => {
       const [agentA, agentB] = pair;
       const msgA = new Message('exec', {
-        programs: execs,
+        actions: execs,
         inputs: stacks.slice(0).concat(agentB)
       });
       const msgB = new Message('exec', {
-        programs: execs,
+        actions: execs,
         inputs: stacks.slice(0).concat(agentA)
       });
-      agentA.queue(msgA);
-      agentB.queue(msgB);
+      agentA.queueUpdateMessage(msgA);
+      agentB.queueUpdateMessage(msgB);
     });
     this.reset();
   }

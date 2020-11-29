@@ -29,7 +29,6 @@ import {
 export default class SM_Bundle implements ISMCBundle {
   name: string; // the name of the bundle, if any
   type: EBundleType; // enum type (see t-script.d)
-  lookup: Map<EBundleType, Function>;
   // lifecycle programs (can be in multiple types)
   define: TOpcode[]; // allocation phase
   init: TOpcode[]; // initialize phase
@@ -43,9 +42,9 @@ export default class SM_Bundle implements ISMCBundle {
   conseq: TOpcode[]; // run if true
   alter: TOpcode[]; // run if false
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  constructor(name?: string, type?: string) {
+  constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);
-    if (typeof type === 'string') this.setType(type);
+    if (type !== undefined) this.setType(type);
     else this.setType(EBundleType.PROG);
     //
     this.define = []; // allocate data structures (agents, features, modules)

@@ -30,6 +30,7 @@ export class dbgOut extends Keyword {
         const unknown = unit.join(', ');
         console.log(`?${unknown}`);
         agent.aaa--;
+        if (agent.aaa === 0) console.log(`agent ${agent.id} suppress dbgOut`);
       }
     });
     return progout;

@@ -14,10 +14,11 @@ import {
   SaveAgent,
   SaveBlueprint,
   GetBlueprint,
-  AddToBundle
+  AddToBundle,
+  AddGlobalCondition
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer-2';
+import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
 import * as DATACORE from 'modules/runtime-datacore';
@@ -40,7 +41,7 @@ const DBG = true;
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
-function m_ScriptifyText(text: string): { script: TScriptUnit[] } {
+function ScriptifyText(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
   const script = scriptConverter.tokenize(sourceStrings);
   return script;
@@ -65,6 +66,23 @@ function m_Tokenify(item: any): any {
     return `'${item}'`;
   }
   return item;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** parse-out strings in the code array, which are errors */
+function m_CheckForError(code: TOpcode[], ...args) {
+  const out = code.filter(f => {
+    if (typeof f === 'function') return true;
+    if (Array.isArray(f)) {
+      // didn't get a function return, so it must be an error code
+      const [err, line] = f as any[];
+      const where = line !== undefined ? `line ${line}` : '';
+      console.log(...PR(`ERR: ${err} ${where}`));
+    }
+    if (typeof f === 'string')
+      console.log(...PR(`ERR: '${f}' ${args.join(' ')}`));
+    return false;
+  });
+  return out;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** EXPANDER TABLE */
@@ -105,7 +123,7 @@ function m_ExpandScriptUnit(unit: TScriptUnit): TScriptUnit {
 
 /// CONVERTERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
+function CompileRawUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
   // extract keyword first unit, assume that . means Feature
   // console.group('Expanding', rawUnit);
   let kwProcessor;
@@ -124,59 +142,66 @@ function CompileRawUnit(rawUnit: TScriptUnit, tag: string = ''): TOpcode[] {
   }
   // console.groupEnd();
   // continue!
-  const compiledStatement = kwProcessor.compile(unit); // qbits is the subsequent parameters
+  const compiledStatement = kwProcessor.compile(unit, idx); // qbits is the subsequent parameters
   return compiledStatement;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile a script block, returning objcode */
 function CompileBlock(units: TScriptUnit[]): TOpcode[] {
   const objcode = []; // holder for compiled code
-  let out; // holder for compiled unit
+  let code; // holder for compiled unit
   units.forEach((unit, idx) => {
     // skip all pragmas
     if (unit[0] === '#') return;
     // recursive compile through m_ExpandScriptUnit()
-    out = CompileRawUnit(unit);
-    // save the obj code
-    objcode.push(...out); // spread the output functions and push 'em
+    code = CompileRawUnit(unit, idx);
+    code = m_CheckForError(code);
+    objcode.push(...code);
   });
   return objcode;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Main Script Compiler */
 function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
   let objcode; // holder for compiled code
-  let defined = false;
+  let bpWasSet = false;
   units.forEach((unit, idx) => {
-    // pragmas run the program directly to effect system change
+    // CASE (1) is pragma
     if (unit[0] === '#') {
       // (1A) is this a pragma directive? then execute its program
       // which could affect compiler state
       // see keywords/pragma.ts for all valid options
-      objcode = CompileRawUnit(['pragma', ...unit.slice(1)]);
+      objcode = CompileRawUnit(['_pragma', ...unit.slice(1)]);
       objcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
       const results = COMPILER_STATE.stack;
-      if (results[0] === 'defBlueprint') {
-        if (!defined) {
-          bdl.setName(unit[1]);
-          defined = true;
+      // CASE (1A) check for blueprint setting
+      if (results[0] === '_blueprint') {
+        if (!bpWasSet) {
+          bdl.setName(unit[2]);
+          bpWasSet = true;
           return;
         }
-        throw Error(`#BLUEPRINT used more than once (got '${unit[1]})'`);
+        throw Error(`# BLUEPRINT used more than once (got '${unit[1]})'`);
       }
       return;
     }
-    if (unit[0] === 'defBlueprint') {
-      // (1B) also scan for defBlueprint keywords to set the name
-      if (!defined) {
-        bdl.setName(unit[1]);
-        defined = true;
+
+    // CASE (2) is system keyword
+    if (unit[0] === '_blueprint') {
+      // (1B) also scan for system blueprint keyword to set the name
+      if (!bpWasSet) {
+        bdl.setName(unit[2]);
+        bpWasSet = true;
         return;
       }
-      throw Error(`defBlueprint used more than once (got '${unit[1]}')`);
+      throw Error(`blueprint name used more than once (got '${unit[1]}')`);
     }
-    // (2) otherwise compile the code
-    objcode = CompileRawUnit(unit); // qbits is the subsequent parameters
-    // (3) and then push this code into the passed bundle
+
+    // CASE (3) otherwise compile a normal keyword
+    objcode = CompileRawUnit(unit, idx); // qbits is the subsequent parameters
+    objcode = m_CheckForError(objcode);
+
+    // FINALLY push this unit's code into the passed bundle and repeat
     AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
 }
@@ -186,11 +211,13 @@ function CompileToBundle(units: TScriptUnit[], bdl: SM_Bundle) {
  *  proof of concept
  */
 function CompileScript(units: TScriptUnit[]): SM_Bundle {
+  if (!Array.isArray(units))
+    throw Error(`CompileScript can't compile '${typeof units}'`);
   const bdl: SM_Bundle = new SM_Bundle();
   // no units? just return empty bundle
   if (units.length === 0) return bdl;
   CompileToBundle(units, bdl);
-  if (bdl.name === undefined) throw Error('CompileScript: missing defBlueprint');
+  if (bdl.name === undefined) throw Error('CompileScript: missing _blueprint');
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
@@ -231,7 +258,7 @@ function TextifyScript(units: TScriptUnit[]): string {
   const lines = [];
   units.forEach((unit, index) => {
     if (DBG) console.log(index, unit);
-    if (unit[0] === 'comment') unit[0] = '//';
+    if (unit[0] === '_comment') unit[0] = '//';
     const toks = [];
     unit.forEach((tok, uidx) => {
       if (uidx === 0) toks.push(tok);
@@ -246,15 +273,14 @@ function TextifyScript(units: TScriptUnit[]): string {
 function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   const bdl: SM_Bundle = CompileScript(units);
   if (!(units.length > 0)) return bdl;
-  if (DBG) console.groupCollapsed(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+  if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
   SaveBlueprint(bdl);
   // run conditional programming in template
   // this is a stack of functions that run in global context
   console.log('registering blueprint', bdl);
   // run all the pertinent global blueprint programs
-  // initialize any global conditions
   const { condition } = bdl.getPrograms();
-  if (condition) condition.forEach(regFunc => regFunc());
+  AddGlobalCondition(bdl.name, condition);
   if (DBG) console.groupEnd();
   return bdl;
 }
@@ -277,17 +303,18 @@ function MakeAgent(agentName: string, options?: { blueprint: string }) {
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const txt = DATACORE.GetDefaultText();
-// console.log(...PR('\nblocks parsed', m_ScriptifyText(txt)));
-// console.log(...PR('\nrestitched', m_StitchifyBlocks(m_ScriptifyText(txt))));
+// console.log(...PR('\nblocks parsed', ScriptifyText(txt)));
+// console.log(...PR('\nrestitched', m_StitchifyBlocks(ScriptifyText(txt))));
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Script is TScriptUnit[], the base representation of gemscript
 export {
-  CompileScript, // TScriptUnit[] => ISM_Bundle
+  CompileToBundle, // TScriptUnit[] => ISM_Bundle
+  CompileScript, //
   RenderScript, // TScriptUnit[] => JSX
   TextifyScript, // TScriptUnit[] => produce source text from units
-  m_ScriptifyText as ScriptifyText // exprs => TScriptUnit[]
+  ScriptifyText // text w/ newlines => TScriptUnit[]
 };
 /// for blueprint operations
 export {

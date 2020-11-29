@@ -5,7 +5,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TOpcode, TSMCProgram, IMessage } from './t-script';
+import { IMessage, TSMCProgram } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,21 +28,26 @@ function GetMessageParts(msg: string): string[] {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of a stack machine message
+ *  this implementation seems inefficient ...but just making it work for now
  */
 export default class SM_Message implements IMessage {
   id: number;
-  channel: string;
-  message: string;
+  channel?: string;
+  message?: string;
   inputs?: any;
-  programs?: TSMCProgram[];
-  data: object;
+  actions?: TSMCProgram[]; // array of array of topcodes!
+  data?: object;
   //
-  constructor(msg: string, init: any = {}) {
+  constructor(msg: string, init: IMessage) {
     this.id = MSG_COUNTER++;
+    this.init(msg, init);
+  }
+
+  init(msg: string, init: IMessage) {
     const [channel, message] = GetMessageParts(msg);
     this.channel = channel;
     this.message = message;
-    if (init.programs) this.programs = init.programs;
+    if (init.actions) this.actions = init.actions;
     if (init.inputs) this.inputs = init.inputs;
     if (init.data) this.data = init.data;
     this.data = init;

@@ -1,6 +1,10 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "pragma" keyword object
+  implementation of keyword "_pragma" keyword object
+
+  NOTE: This is a SYSTEM KEYWORD used for "# DIRECTIVE" syntax, and not
+  intended for direct use. It implements a number of compiler directives,
+  which are defined in the PRAGMA dictionary below.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -11,14 +15,14 @@ import { RegisterKeyword, SetBundleOut } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** the pragma directives (e.g. #BUNDLE bundletype) return SMCPrograms that
- *  are run IMMEDIATELY after the pragma is invoked, using a dummy agent
+/** the _pragma directives (e.g. #BUNDLE bundletype) return SMCPrograms that
+ *  are run IMMEDIATELY after the _pragma is invoked, using a dummy agent
  *  and state object inside CompileRawUnit() of Transpiler
  */
 const PRAGMA = {
   'BLUEPRINT': (blueprintName, baseBlueprint) => {
     return (agent, state) => {
-      state.stack.push('defBlueprint', blueprintName, baseBlueprint);
+      state.stack.push('_blueprint', blueprintName, baseBlueprint);
     };
   },
   'DEFINE': () => SetBundleOut('define'),
@@ -34,11 +38,11 @@ const PRAGMA = {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class pragma extends Keyword {
+export class _pragma extends Keyword {
   // base pragmaerties defined in KeywordDef
 
   constructor() {
-    super('pragma');
+    super('_pragma');
     this.args = ['pragmaName:string', '...args'];
   }
 
@@ -71,7 +75,7 @@ export class pragma extends Keyword {
       index,
       unit,
       <>
-        pragma {pragmaName} = {value}
+        _pragma {pragmaName} = {value}
       </>
     );
   }
@@ -80,4 +84,4 @@ export class pragma extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(pragma);
+RegisterKeyword(_pragma);

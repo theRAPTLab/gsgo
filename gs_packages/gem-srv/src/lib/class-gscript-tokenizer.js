@@ -7,6 +7,10 @@
   The main entry point of the class instance is:
   tokenize(expr:string)
 
+  All this version of the tokenizer needs to do is detect {{ }}, [[ ]],
+  and [[ ... lines ]]. It returns the tokenized values in raw string or array
+  format. It also detected comments // and directives #
+
   This code is a refactored version of jsep, modified to produce
   our script unit format of [keyword, ...args] instead of an AST.
   -
@@ -18,11 +22,11 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string = 'class-script-tokenizer';
+const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-const DBG = false;
+const DBG = true;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,9 +40,8 @@ const OBRACK_CODE = 91; // [
 const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
-const OBLOCK_CODE = 60; // <
-const CBLOCK_CODE = 62; // >
 const COMMENT_1 = '//';
+const DIRECTIVE = '#';
 const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
   '||': 1,
@@ -109,45 +112,22 @@ const isIdentifierPart = ch => {
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ScriptTokenizer {
-  constructor() {
+  //
+  constructor(doFlags) {
+    doFlags = doFlags || {
+      show: false // show progress
+    };
+    this.do = doFlags;
     this.line = '';
     this.index = 0;
     this.lastIndex = this.index;
     this.length = 0;
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  /** TOKENIZER **************************************************************/
-  tokenize(line) {
-    this.line = line;
-    this.length = this.line.length;
-    this.index = 0;
-    this.lastIndex = this.index;
-
-    let nodes = [];
-    let node;
-
-    /* HACK ADDITION for GEMSCRIPT COMMENTS */
-    if (line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
-    /** END HACK **/
-
-    while (this.index < this.length) {
-      this.showProgress();
-      this.gobbleSpaces();
-      this.lastIndex = this.index;
-      // start tokenizing
-      node = this.gobbleToken();
-      if (Array.isArray(node)) nodes.push(...node);
-      else nodes.push(node);
-    }
-    return nodes;
-  }
-  /** END TOKENIZER **********************************************************/
-  /////////////////////////////////////////////////////////////////////////////
   showProgress(prompt) {
     const s1 = this.line.substring(0, this.index);
-    const s2 = this.line[this.index];
-    const s3 = this.line.substring(this.index + 1);
+    const s2 = this.line[this.index] || 'EOL';
+    const s3 = this.line.substring(this.index + 1) || '';
     const pr = prompt === undefined ? '' : `! ${prompt} !\n`;
     if (DBG)
       console.log(
@@ -162,13 +142,114 @@ class ScriptTokenizer {
     this.showProgress('ERROR');
     throw Error(err);
   }
-
   exprI(i) {
     return charAtFunc.call(this.line, i);
   }
   exprICode(i) {
     return charCodeAtFunc.call(this.line, i);
   }
+  nextLine() {
+    this.index = 0;
+    while (this.linesIndex < this.linesCount) {
+      this.line = this.lines[this.linesIndex++].trim();
+      this.length = this.line.length;
+      if (this.length > 0) return;
+    }
+    this.line = '';
+    this.length = 0;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  /** TOKENIZER **************************************************************/
+  tokenize(lines) {
+    this.lines = lines; // an array of strings
+    this.linesCount = this.lines.length;
+    this.linesIndex = 0;
+
+    this.line = '';
+    this.index = 0;
+    this.length = this.line.length;
+
+    let units = [];
+
+    while (this.linesIndex < this.linesCount) {
+      if (this.do.show) this.showProgress();
+      // get line
+      const nodes = this.gobbleLine();
+      // push units
+      units.push(nodes);
+    } // end while lines<lines.length
+
+    // return a Script array of ScriptUnit arrays
+    return units;
+  }
+  /** END TOKENIZER **********************************************************/
+  /////////////////////////////////////////////////////////////////////////////
+
+  /* HACK ADDITION to gobble lines */
+  gobbleMultiBlock() {
+    // we are here because of an unbalanced [[
+    // so we must scan for it
+    const block = [];
+    let str = '';
+    let level = 1; // starting from level 1
+
+    while (level > 0 && this.linesIndex < this.linesCount + 1) {
+      this.nextLine();
+      this.gobbleSpaces();
+      str = '';
+      while (level > 0 && this.index < this.length) {
+        let ch = this.exprICode(this.index++);
+        let chn = this.exprICode(this.index);
+        if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
+          level++;
+          this.index++;
+          break;
+        }
+        if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
+          level--;
+          this.index++;
+          break;
+        }
+        // otherwise save string
+        str += String.fromCharCode(ch);
+      } // while index<length
+      if (str.length > 0) block.push(str);
+    }
+    // either we're out of lines or level is 0
+    if (level === 0) return block;
+    return this.throwError('Unclosed [[ in text');
+  }
+
+  gobbleLine() {
+    let nodes = [];
+    let node;
+
+    this.nextLine();
+
+    /* special cases for gemscript */
+    if (this.line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
+    if (this.line.substring(0, 1) === DIRECTIVE) return this.gobbleDirective();
+
+    while (this.index < this.length) {
+      this.gobbleSpaces();
+      node = this.gobbleToken();
+      nodes.push(node);
+    }
+
+    return nodes;
+  }
+
+  // grab a compiler directive
+  gobbleDirective() {
+    const nodes = ['#'];
+    while (++this.index < this.length) {
+      this.gobbleSpaces();
+      nodes.push(this.gobbleToken());
+    }
+    return nodes;
+  }
+
   // Push `this.index` up to the next non-space character
   gobbleSpaces() {
     let ch = this.exprICode(this.index);
@@ -184,8 +265,11 @@ class ScriptTokenizer {
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
-    /* HACK GEMSCRIPT ADDITION FOR << tmethod >> */
-    if (ch === OBLOCK_CODE && chn === OBLOCK_CODE) {
+
+    if (this.do.show) this.showProgress();
+
+    /* HACK GEMSCRIPT ADDITION FOR [[ ]] */
+    if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
       return this.gobbleBlock(); // in gobbleVariable() also
     }
@@ -200,15 +284,11 @@ class ScriptTokenizer {
       // Char code 46 is a dot `.` which can start off a numeric literal
       return this.gobbleNumericLiteral();
     }
+
     if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
       // Single or double quotes
       return this.gobbleStringLiteral();
     }
-
-    if (ch === OBRACK_CODE) {
-      return this.gobbleArray();
-    }
-
     to_check = this.line.substr(this.index, max_unop_len);
     tc_len = to_check.length;
     while (tc_len > 0) {
@@ -233,13 +313,9 @@ class ScriptTokenizer {
       to_check = to_check.substr(0, --tc_len);
     }
 
-    if (isIdentifierStart(ch) || ch === OPAREN_CODE) {
-      // open parenthesis
-      // `foo`, `bar.baz`
-      return this.gobbleVariable();
-    }
     return this.gobbleIdentifier();
   }
+
   // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
   // keep track of everything in the numeric literal and then calling `parseFloat` on that string
   gobbleNumericLiteral() {
@@ -295,6 +371,7 @@ class ScriptTokenizer {
 
     return parseFloat(number);
   }
+
   // Parses a string literal, staring with single or double quotes with basic support for escape codes
   // e.g. `"hello world"`, `'this is\nJSEP'`
   gobbleStringLiteral() {
@@ -527,30 +604,31 @@ class ScriptTokenizer {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
       // check for closing bracket level 0
-      if (ch === CBLOCK_CODE && cch === CBLOCK_CODE) {
+      if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
         this.index++;
         level--;
-        if (level === 0) return `<< ${str.trim()} >>`;
-        str += '>>';
-      } else if (ch === OBLOCK_CODE && cch === OBLOCK_CODE) {
+        if (level === 0) return `[[ ${str.trim()} ]]`;
+        str += ']]';
+      } else if (ch === OBRACK_CODE && cch === OBRACK_CODE) {
         this.index++;
         level++;
-        str += '<<';
+        str += '[[';
       } else {
         str += String.fromCharCode(ch);
       }
     }
-    return this.throwError(
-      `Unclosed inline << at ${this.index} for ${str} level ${level}`
-    );
+
+    // if got this far, an unclosed [[ means we need to read lines
+    return this.gobbleMultiBlock();
   }
+
   /* HACK ADDITION for text script comments // and -- */
   // skip the first two // and output the entire rest of the line
   gobbleComment() {
     const eol = this.line.length;
     const cstring = this.line.substring(2, eol).trim();
     this.index = eol;
-    return ['comment', cstring];
+    return ['_comment', cstring]; // comment keyword
   }
   /* END OF HACK HACKS */
 

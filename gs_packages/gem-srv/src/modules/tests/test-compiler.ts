@@ -22,7 +22,7 @@ function TestCompiler(index?: number) {
   TT.forEach((test, idx) => {
     if (!singleTest || index === idx) {
       const [desc, text] = test;
-      const { script } = ScriptifyText(text);
+      const script = ScriptifyText(text);
       const bundle = CompileScript(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
@@ -42,15 +42,17 @@ function TestCompiler(index?: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'define Blueprint',
-  `defBlueprint AgentA Agent
+  `
+  # BLUEPRINT AgentA Agent
+  // my comment is here
 `.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'property definition and assignment',
   `
-  defBlueprint Bee
-  # bundle default
+  # BLUEPRINT Bee
+  # DEFINE
     addProp time Number 10
     prop skin setTo 'happy.png'
 `.trim()
@@ -59,7 +61,7 @@ TT.push([
 TT.push([
   'built-in property set to expression w/ agent context',
   `
-  defBlueprint Cat
+  # BLUEPRINT Cat
     prop x setTo {{ agent.x + 1 }}
 `.trim()
 ]);
@@ -67,7 +69,7 @@ TT.push([
 TT.push([
   'if expression then block',
   `
-  defBlueprint Dog
+  # BLUEPRINT Dog
     A B C
     ifExpr {{ D }} [[
       E F
@@ -79,7 +81,7 @@ TT.push([
 TT.push([
   'if expression then/else blocks',
   `
-  defBlueprint Elephant
+  # BLUEPRINT Elephant
     A
     ifExpr {{ B }} [[
       C
@@ -94,7 +96,7 @@ TT.push([
 TT.push([
   'two if expression then/else blocks',
   `
-  defBlueprint Falcon
+  # BLUEPRINT Falcon
     A
     ifExpr {{ B }} [[
       C
@@ -117,7 +119,7 @@ TT.push([
 TT.push([
   'if expression then w/ nested if block',
   `
-  defBlueprint Giraffe
+  # BLUEPRINT Giraffe
     A
     ifExpr {{ B }} [[
       C
@@ -125,14 +127,13 @@ TT.push([
         E
       ]]
     ]]
-  endBlueprint
 `.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'if [inline] [inline] [inline]',
   `
-  defBlueprint HorseNuts1
+  # BLUEPRINT HorseNuts1
     ifTest [[ A ]] [[ B ]] [[ C ]]
 `.trim()
 ]);
@@ -141,7 +142,7 @@ TT.push([
 TT.push([
   'if [inline] [inline] [block]',
   `
-  defBlueprint HorseNuts2
+  # BLUEPRINT HorseNuts2
     ifTest [[ A ]] [[ B ]] [[
       C {{ D }}
       E
@@ -153,7 +154,7 @@ TT.push([
 TT.push([
   'if [inline] [block] [inline]',
   `
-  defBlueprint HorseNuts3
+  # BLUEPRINT HorseNuts3
     ifTest [[ A ]] [[
       B
       C
@@ -164,7 +165,7 @@ TT.push([
 TT.push([
   'if [block] [inline] [inline]',
   `
-  defBlueprint HorseNuts4
+  # BLUEPRINT HorseNuts4
     ifTest [[
       A
     ]] [[ B ]] [[ C ]]
@@ -174,7 +175,7 @@ TT.push([
 TT.push([
   'if [block] [block] [inline]',
   `
-  defBlueprint HorseNuts5
+  # BLUEPRINT HorseNuts5
     ifTest [[
       prop y greaterThan 100
     ]] [[
@@ -186,7 +187,7 @@ TT.push([
 TT.push([
   'if [block] [inline] [block]',
   `
-  defBlueprint HorseNuts6
+  # BLUEPRINT HorseNuts6
     ifTest [[
       prop y greaterThan 100
     ]] [[ prop skin setTo 'ok.png' ]] [[
@@ -198,7 +199,7 @@ TT.push([
 TT.push([
   'if [inline] [block] [block]',
   `
-  defBlueprint HorseNuts7
+  # BLUEPRINT HorseNuts7
     addProp altitude Number 10000
     ifTest [[ prop y greaterThan 100 ]] [[
       prop y setTo 100
@@ -214,7 +215,7 @@ TT.push([
 TT.push([
   'if [block] [block] [block]',
   `
-  defBlueprint HorseNuts8
+  # BLUEPRINT HorseNuts8
     addProp altitude Number 10000
     ifTest [[
       prop y greaterThan 100
@@ -232,7 +233,7 @@ TT.push([
 TT.push([
   '[block]',
   `
-  defBlueprint Icicle1
+  # BLUEPRINT Icicle1
     [[
       A
     ]]
@@ -242,7 +243,7 @@ TT.push([
 TT.push([
   '[block] [block]',
   `
-  defBlueprint Icicle2
+  # BLUEPRINT Icicle2
     [[
       A
     ]]
@@ -255,7 +256,7 @@ TT.push([
 TT.push([
   'aquatic example',
   `
-defBlueprint JackFish
+# BLUEPRINT JackFish
   addProp foodLevel Number 50
   prop foodLevel setMin 0
   prop foodLevel setMax 100
@@ -282,14 +283,13 @@ defBlueprint JackFish
       prop skin setTo "happy.png"
     ]]
   ]]
-  endBlueprint
 `.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'global agent with timer',
   `
-  defBlueprint Klugelhorn
+  # BLUEPRINT Klugelhorn
   defGlobalAgent Klugelhorn
   addProp time Number 10
   addProp daytime Boolean true
@@ -301,7 +301,6 @@ TT.push([
     {{ prop time < 0 }}
     prop time setTo 10
     prop daytime invert
-endBlueprint
 `.trim()
 ]);
 

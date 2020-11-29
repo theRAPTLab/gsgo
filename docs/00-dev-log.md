@@ -1028,7 +1028,50 @@ The **var** props return a value, which gets put on the stack. **We need to clea
 
 * [ ] the `var-*` property classes return values. When they're invoked inside `propMethod.tsx` at runtime, 
 
+## NOV 28 SAT - LAST CONDITIONALS
 
+The first conditional is **when**, which looks something like:
+
+```
+when AgentA touches AgentB [[
+	consequent
+]]
+
+when AgentA [[ test ]] [[
+	consequent
+]]
+```
+
+* This creates a "global condition" bundle, consisting of the starting parameter, a filtering test function, and a consequent program block.
+* The program consequent is executed for all agents referenced, and they should be passed in the **global context** at runtime. I'm not sure how this will be passed.
+* These global conditions can be defined anywhere. If they are defined inside an Agent blueprint, this is a **special case** that includes those agent instances as the global context. However, we probably won't support that for now, as it's tricky.
+
+OK...let's just make a when keyword and see what we can do with it.
+
+* [x] first make `when.tsx` and detect the two signatures for singles or pairs
+* [x] why is bundle.name = BLUEPRINT? off-by-one because `#` is the keyword and `BLUEPRINT` is the next arg, not name
+* [ ] `GetAgentsByType()` is being called before the agents are created when `SaveBlueprint()` is called by the Compiler interface. **LIFECYCLE BUG**
+* [x] The conditions have to run globally though...are they? **NO**
+  * [x] they are run once at blueprint compile time, which is wrong. It should be stored in the CONDITIONS dictionary in runtime-datacore
+* [x] Integrate CONDITIONS into sim lifecycle
+  * [x] implement datacore `SaveCondition(condition)`
+  * [x] implement datacore `GetCondition(signature)`
+  * [x] implement datacore `GetAllConditions()`
+  * [x] add `DeleteAllConditions()`
+  * [x] in `sim-conditions`, add the execution
+    * [x] CONDITIONS gets erased too at runtime by AgentProgram **LIFECYCLE BUG**
+    * [x] move the clear into `Compiler` for now, so AgentProgram doesn't clobber during AGENT_PROGRAM message
+    * [x] add the wiring back for queueing messages and executing them later
+
+#### IT WORKS!!!
+
+Doesn't do very much, but the conditions seem to be working and executing. Things to do next:
+
+* **parameter passing** between scripts is kind of ambiguous, because of the number of execution contexts. Need to document all the execution contexts and try to make sense of it.
+* no filter result caching in place yet
+* no real tests implemented yet
+* the state object needs to have its context loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
+* provide a better debug output experience
 
 ---
 

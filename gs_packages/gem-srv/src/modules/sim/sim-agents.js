@@ -7,11 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import {
-  GetAllAgents,
-  DeleteAllAgents,
-  DeleteAllTests
-} from 'modules/runtime-datacore';
+import { GetAllAgents } from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TRANSPILER from 'script/transpiler';
@@ -76,9 +72,10 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** placeholder */
+/** placeholder function
+ *  this creates a bunch of agents, and is called
+ */
 export function AgentProgram(blueprint) {
-  DeleteAllAgents();
   if (!blueprint) return console.warn(...PR('no blueprint'));
   for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
 }
@@ -88,7 +85,7 @@ export function AgentProgram(blueprint) {
 function AgentUpdate(frameTime) {
   const allAgents = GetAllAgents();
   allAgents.forEach(agent => {
-    agent.simUpdate(frameTime);
+    agent.agentUPDATE(frameTime);
   });
 
   // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
@@ -103,14 +100,14 @@ function AgentUpdate(frameTime) {
 function AgentThink(frameTime) {
   const allAgents = GetAllAgents();
   allAgents.forEach(agent => {
-    agent.simThink(frameTime);
+    agent.agentTHINK(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentExec(frameTime) {
   const allAgents = GetAllAgents();
   allAgents.forEach(agent => {
-    agent.simExec(frameTime);
+    agent.agentEXEC(frameTime);
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

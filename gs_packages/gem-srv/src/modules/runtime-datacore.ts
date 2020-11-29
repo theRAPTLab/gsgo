@@ -13,6 +13,7 @@
 
 import UR from '@gemstep/ursys/client';
 import {
+  IAgent,
   IScopeableCtor,
   IFeature,
   TOpcode,
@@ -48,8 +49,8 @@ let BUNDLE_OUT = 'define';
 
 /// DATA STORAGE MAPS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const AGENTS = new Map(); // blueprint => Map<id,Agent>
-const AGENT_DICT = new Map(); // id => Agent
+const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
+const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VAR_DICT: Map<string, IScopeableCtor> = new Map();
 const FEATURES: Map<string, IFeature> = new Map();
@@ -58,6 +59,7 @@ const KEYWORDS: Map<string, IKeyword> = new Map();
 const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const CONDITIONS: Map<string, TSMCProgram> = new Map();
+const FUNCTIONS: Map<string, Function> = new Map();
 const TESTS: Map<string, TSMCProgram> = new Map();
 const PROGRAMS: Map<string, TSMCProgram> = new Map();
 const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
@@ -129,7 +131,7 @@ export function DeleteScript(name: string): boolean {
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SaveBlueprint(bp: ISMCBundle) {
-  console.log('saving', bp);
+  console.log('saving', bp.name);
   const { name } = bp;
   // just overwrite it
   BLUEPRINTS.set(name, bp);
@@ -145,15 +147,18 @@ export function GetBlueprint(name: string): ISMCBundle {
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** save agent by type into agent map, which contains weaksets of types */
+/** save agent by type into agent map, which contains weaksets of types
+ *  AGENTS has instances by blueprint name, which is a Map of agents
+ *  AGENT_DICT has instances by id
+ */
 export function SaveAgent(agent) {
   const { id, blueprint } = agent;
-  const type = blueprint.name;
-  if (!AGENTS.has(type)) AGENTS.set(type, new Map());
-  // agents is a Map of agents
-  const agents = AGENTS.get(type);
-  // retrieve the set
-  if (agents.has(id)) throw Error(`agent id ${id} already in ${type} list`);
+  const name = blueprint.name;
+  //
+  if (!AGENTS.has(name)) AGENTS.set(name, new Map());
+  const agents = AGENTS.get(name);
+  if (agents.has(id)) throw Error(`agent id ${id} already in ${name} list`);
+  // save the agent
   agents.set(id, agent);
   // also save the id global lookup table
   if (AGENT_DICT.has(id)) throw Error(`agent id ${id} already in global dict`);
@@ -162,11 +167,13 @@ export function SaveAgent(agent) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return agent set by type */
-export function GetAgentsByType(bpType) {
-  const agentSet = AGENTS.get(bpType);
-  if (agentSet) return [...agentSet.values()];
-  console.warn(...PR(`agents of '${bpType}' don't exist`));
-  return [];
+export function GetAgentsByType(bpName) {
+  const agentSet = AGENTS.get(bpName);
+  if (!agentSet) {
+    console.warn(...PR(`agents of '${bpName}' don't exist...yet?`));
+    return [];
+  }
+  return [...agentSet.values()];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetAgentById(id) {
@@ -191,20 +198,43 @@ export function DeleteAllAgents() {
 
 /// CONDITION UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function SaveCondition(condition) {
-  console.log('unimplemented; got', condition);
+export function AddGlobalCondition(sig: string, condprog: TSMCProgram) {
+  if (!CONDITIONS.has(sig)) CONDITIONS.set(sig, []);
+  const master = CONDITIONS.get(sig);
+  // add all the instructions from conditional program to the master
+  master.push(...condprog);
+  console.log(...PR(`saved condition '${sig}' (has ${master.length} opcodes)`));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetCondition(signature) {
-  console.log('unimplemented; got', signature);
+export function GetGlobalCondition(sig: string) {
+  const master = CONDITIONS.get(sig);
+  console.log(...PR(`getting condition '${sig}' (has ${master.length} opcodes)`));
+  return master;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllConditions() {
+export function GetAllGlobalConditions() {
   const conditions = CONDITIONS.entries();
-  return [...conditions];
+  return conditions;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllGlobalConditions() {
+  CONDITIONS.clear();
 }
 
 /// TEST UTILITIES ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function RegisterFunction(name: string, func: Function): boolean {
+  const newRegistration = !FUNCTIONS.has(name);
+  FUNCTIONS.set(name, func);
+  return newRegistration;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetFunction(name: string): Function {
+  let f = FUNCTIONS.get(name);
+  // return always random results if the test doesn't exist
+  if (!f) f = () => Math.random() > 0.5;
+  return f;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */
 export function RegisterTest(name: string, program: TSMCProgram): boolean {
@@ -237,6 +267,58 @@ export function GetTestResults(key: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function PurgeTestResults() {
   TEST_RESULTS.clear();
+}
+
+/// SET FILTERING /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Durstenfeld Shuffle (shuffles in-place)
+ *  also see:
+ *  en.wikipedia.org/wiki/Fisher-Yates_shuffle#The_modern_algorithm
+ *  stackoverflow.com/a/12646864/2684520
+ *  blog.codinghorror.com/the-danger-of-naivete/
+ */
+export function ShuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return agents of type AgentType that pass test
+ *  test looks like (agent)=>boolean
+ *  FUTURE OPTIMIZATION will cache the results based on key
+ */
+export function SingleAgentFilter(type: string, testA: string) {
+  const agents = GetAgentsByType(type);
+  const testFunc = GetFunction(testA);
+  ShuffleArray(agents);
+  const pass = [];
+  const fail = [];
+  agents.forEach(agent => {
+    if (testFunc(agent)) pass.push(agent);
+    else fail.push(agent);
+  });
+  return [pass, fail];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return pairs of agents the pass testAB
+ *  test looks like (agentA, agentB)=>boolean
+ */
+export function PairAgentFilter(typeA: string, typeB: string, testAB: string) {
+  const setA = GetAgentsByType(typeA);
+  const setB = GetAgentsByType(typeB);
+  const testFunc = GetFunction(testAB);
+  ShuffleArray(setA);
+  ShuffleArray(setB);
+  const pass = [];
+  const fail = [];
+  setA.forEach(a =>
+    setB.forEach(b => {
+      if (testFunc(a, b)) pass.push([a, b]);
+      else fail.push([a, b]);
+    })
+  );
+  return [pass, fail];
 }
 
 /// PROGRAM UTILITIES /////////////////////////////////////////////////////////
@@ -283,27 +365,19 @@ export function AddToBundle(bdl: ISMCBundle, prog: TOpcode[]) {
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_TEXT = `
-# BLUEPRINT Bee Agent
+# BLUEPRINT Bee
 # DEFINE
-addProp frame Number 2
+addProp frame Number 3
 useFeature Movement
 prop skin 'bunny.json'
-# CONDITION
-addTest BunnyTest [[
-  propMethod y gt 1000
-  dbgStack
-]]
 # UPDATE
 featureCall Movement jitterPos -5 5
-ifTest [[ BunnyTest ]] {{ agent.prop('x').setTo(global.LibMath.sin(global._frame()/10)*100) }}
-// condition test 2
-ifExpr {{ global.LibMath.random() < 0.01 }} {{ agent.prop('y').setTo(100) }} {{ agent.prop('y').setTo(-100) }}
-ifProg [[ BunnyTest ]] [[
-  propMethod x setTo 100
-  propMethod y setTo 100
-]] [[
-  propMethod x setTo -100
-  propMethod y setTo -100
+# CONDITION
+when Bee sometest [[
+  // dbgOut SingleTest
+]]
+when Bee sometest Bee [[
+  dbgOut PairTest
 ]]
 `;
 export function GetDefaultText() {
