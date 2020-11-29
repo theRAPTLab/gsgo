@@ -1028,6 +1028,28 @@ The **var** props return a value, which gets put on the stack. **We need to clea
 
 * [ ] the `var-*` property classes return values. When they're invoked inside `propMethod.tsx` at runtime, 
 
+## NOV 28 SAT - LAST CONDITIONALS
+
+The first conditional is **when**, which looks something like:
+
+```
+when AgentA touches AgentB [[
+	consequent
+]]
+
+when AgentA [[ test ]] [[
+	consequent
+]]
+```
+
+* This creates a "global condition" bundle, consisting of the starting parameter, a filtering test function, and a consequent program block.
+* The program consequent is executed for all agents referenced, and they should be passed in the **global context** at runtime. I'm not sure how this will be passed.
+* These global conditions can be defined anywhere. If they are defined inside an Agent blueprint, this is a **special case** that includes those agent instances as the global context. However, we probably won't support that for now, as it's tricky.
+
+OK...let's just make a when keyword and see what we can do with it.
+
+* [ ] clean up 
+
 
 
 ---
