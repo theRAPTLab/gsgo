@@ -75,7 +75,7 @@ export class _pragma extends Keyword {
       index,
       unit,
       <>
-        _pragma {pragmaName} = {value}
+        # {pragmaName} {unit.slice(2).join(' ')}
       </>
     );
   }

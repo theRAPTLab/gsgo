@@ -33,9 +33,7 @@ export * from './ifExpr'; // run an expression test
 export * from './ifTest'; // run a named test during agent runtime
 export * from './ifProg'; // experimental placeholder
 export * from './when'; // filtering global condition
-// export * from './onCondition'; // experimental placeholder
-// export * from './onAgent'; // experimental placeholder
-// export * from './onTick'; // experimental placeholder
+export * from './onEvent'; // script event processing
 
 // debug keywords (very slow performance)
 export * from './dbgOut';

@@ -231,13 +231,14 @@ function RenderScript(units: TScriptUnit[]): any[] {
   let out = [];
   if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
   units.forEach((unit, index) => {
-    const keyword = unit[0];
+    let keyword = unit[0];
     // comment processing
     if (keyword === '//') {
       sourceJSX.push(undefined); // no jsx to render for comments
       if (DBG) console.groupEnd();
       return;
     }
+    if (keyword === '#') keyword = '_pragma';
     let kwProcessor = GetKeyword(keyword);
     if (!kwProcessor) {
       kwProcessor = GetKeyword('dbgError');

@@ -1050,7 +1050,7 @@ OK...let's just make a when keyword and see what we can do with it.
 
 * [x] first make `when.tsx` and detect the two signatures for singles or pairs
 * [x] why is bundle.name = BLUEPRINT? off-by-one because `#` is the keyword and `BLUEPRINT` is the next arg, not name
-* [ ] `GetAgentsByType()` is being called before the agents are created when `SaveBlueprint()` is called by the Compiler interface. **LIFECYCLE BUG**
+* [x] `GetAgentsByType()` is being called before the agents are created when `SaveBlueprint()` is called by the Compiler interface. **LIFECYCLE BUG**
 * [x] The conditions have to run globally though...are they? **NO**
   * [x] they are run once at blueprint compile time, which is wrong. It should be stored in the CONDITIONS dictionary in runtime-datacore
 * [x] Integrate CONDITIONS into sim lifecycle
@@ -1065,15 +1065,49 @@ OK...let's just make a when keyword and see what we can do with it.
 
 #### IT WORKS!!!
 
-Doesn't do very much, but the conditions seem to be working and executing. Things to do next:
+Doesn't do very much, but the conditions seem to be working and executing. 
+
+## NOV 29 SUN - EVENTS
+
+ScriptEvents are detected and delivered to an AgentSet that has subscribed to it.
+
+syntax: `on ScriptEvent args [[ block ]]` where `ScriptEvent` is something like **Tick** or **Interval**
+
+The `on` keyword emits a program that does...?
+
+* [ ] if 
+
+```
+on 'Tick' ...args [[
+	// do something for the agent
+]]
+
+need:
+* blueprint name
+* tick interval to fire
+
+need to:
+* scan args for the first block, and assume everything before that are parameters for tick
+* infer the blueprint in effect. 
+
+the 'on' keyword has to register this blueprint to the 'Tick 10' event with 
+```
+
+
+
+
+
+---
+
+**TODO** AFTER ALPHA DEC 1
 
 * **parameter passing** between scripts is kind of ambiguous, because of the number of execution contexts. Need to document all the execution contexts and try to make sense of it.
 * no filter result caching in place yet
 * no real tests implemented yet
-* the state object needs to have its context loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
+* the state object needs to have its **context** loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
 * provide a better debug output experience
-
----
+* `queueSequence [[ ]] [[ ]] [[ ]] ...`
+* `on TimeElapsed 1000 [[ ... ]]`
 
 BACKLOG
 
