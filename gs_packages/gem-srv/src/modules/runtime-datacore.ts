@@ -87,7 +87,6 @@ export function GetKeyword(name: string): IKeyword {
  *  SCRIPT_EVENTS: Map<string, Map<string,TSMCProgram[]>> = new Map();
  *                eventName->Map(blueprintName)->TSMCProgram[]
  */
-export function AddScriptEvent() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SubscribeToScriptEvent(
   evtName: string,
@@ -236,6 +235,10 @@ export function DeleteAllAgents() {
 /// CONDITION UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function AddGlobalCondition(sig: string, condprog: TSMCProgram) {
+  if (!Array.isArray(condprog)) {
+    console.log(...PR(condprog, 'is not a program...skipping'));
+    return;
+  }
   if (!CONDITIONS.has(sig)) CONDITIONS.set(sig, []);
   const master = CONDITIONS.get(sig);
   // add all the instructions from conditional program to the master
@@ -455,7 +458,6 @@ export function AddToBundle(bdl: ISMCBundle, prog: TOpcode[]) {
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEFAULT_TEXT = `
-
 # BLUEPRINT Bee
 # DEFINE
 addProp frame Number 3
@@ -465,10 +467,10 @@ setProp skin 'bunny.json'
 featureCall Movement jitterPos -5 5
 # EVENT
 onEvent Tick [[
-  // control number of times dbgOut fires
-  ifExpr {{ agent.prop('name').value==='bun0' }}
-  [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
     dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
   ]]
   setProp 'x'  0
   setProp 'y'  0
