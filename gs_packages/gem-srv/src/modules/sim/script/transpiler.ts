@@ -224,6 +224,7 @@ function RenderScript(units: TScriptUnit[]): any[] {
   let out = [];
   if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
   units.forEach((unit, index) => {
+    if (unit.length === 0) return;
     let keyword = unit[0];
     // comment processing
     if (keyword === '//') {
