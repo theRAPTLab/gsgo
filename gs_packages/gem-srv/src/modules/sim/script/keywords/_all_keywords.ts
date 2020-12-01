@@ -9,8 +9,9 @@
 /// STABLE KEYWORDS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './addProp';
+export * from './setProp';
 export * from './prop';
-export * from './propMethod';
+export * from './propValue';
 export * from './useFeature';
 export * from './featureProp';
 export * from './featureCall';
@@ -39,4 +40,5 @@ export * from './onEvent'; // script event processing
 export * from './dbgOut';
 export * from './dbgStack';
 export * from './dbgError';
+export * from './keywordErr';
 // export * from './unknownKeyword';

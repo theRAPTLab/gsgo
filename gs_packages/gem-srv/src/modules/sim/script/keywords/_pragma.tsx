@@ -31,6 +31,7 @@ const PRAGMA = {
   'THINK': () => SetBundleOut('think'),
   'EXEC': () => SetBundleOut('exec'),
   'CONDITION': () => SetBundleOut('condition'),
+  'EVENT': () => SetBundleOut('event'),
   'TEST': () => SetBundleOut('test'),
   'ALTERNATE': () => SetBundleOut('alter'),
   'CONSEQUENT': () => SetBundleOut('conseq')

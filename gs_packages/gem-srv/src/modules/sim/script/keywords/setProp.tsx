@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "propMethod" keyword object
+  implementation of keyword "setProp" keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,40 +14,40 @@ import { RegisterKeyword } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class propMethod extends Keyword {
+export class setProp extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('propMethod');
-    this.args = ['propName:string', 'methodName:string', '...args'];
+    super('setProp');
+    this.args = ['propName:string', 'value:any'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, propName, methodName, ...args] = unit;
+    const [kw, propName, value] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const prop = agent.prop(propName);
-      const res = prop[methodName](...args).value;
-      if (res !== undefined) state.pushArgs(res);
+      const p = agent.prop(propName);
+      p.value = value;
     });
     return progout;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { propName, methodName, ...args } = state;
-    return [this.keyword, propName, ...args];
+    const { propName, value } = state;
+    return [this.keyword, propName, value];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, propName, methodName, ...arg] = unit;
+    const propName = unit[1];
+    const value = unit[2];
     return super.jsx(
       index,
       unit,
       <>
-        prop {propName}.{methodName}({arg.join(' ')})
+        setProp {propName} = {value}
       </>
     );
   }
@@ -56,4 +56,4 @@ export class propMethod extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(propMethod);
+RegisterKeyword(setProp);

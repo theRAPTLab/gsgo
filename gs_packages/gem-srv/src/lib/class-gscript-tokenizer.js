@@ -27,6 +27,7 @@ const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
 const DBG = true;
+const DBG_SHOW = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,7 +116,7 @@ class ScriptTokenizer {
   //
   constructor(doFlags) {
     doFlags = doFlags || {
-      show: false // show progress
+      show: DBG_SHOW // show progress
     };
     this.do = doFlags;
     this.line = '';
@@ -574,11 +575,13 @@ class ScriptTokenizer {
     let cch;
     let str = '';
     this.index++;
+    this.gobbleSpaces();
     while (this.index < this.length) {
       ch = this.exprICode(this.index++);
       cch = this.exprICode(this.index);
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
         this.index += 2;
+        this.gobbleSpaces();
         return `{{ ${str.trim()} }}`;
       }
       str += String.fromCharCode(ch);

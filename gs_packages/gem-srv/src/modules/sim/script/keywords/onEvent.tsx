@@ -7,9 +7,13 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import SM_Message from 'lib/class-sm-message';
-
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, RegisterEvent } from 'modules/runtime-datacore';
+import {
+  RegisterKeyword,
+  CompilerState,
+  UtilDerefArg,
+  SubscribeToScriptEvent
+} from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,14 +26,13 @@ export class onEvent extends Keyword {
   }
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
-    const [kw, event, consq] = unit;
-    RegisterEvent(event, consq);
+    let [kw, event, consq] = unit;
+    consq = UtilDerefArg(consq);
+    const { bundleName } = CompilerState();
+    console.log('*** onEvent compile', event, bundleName, consq);
+    SubscribeToScriptEvent(event, bundleName, consq);
     // this runs in global context
-    return [
-      (agent, state) => {
-        // not sure what to do yet
-      }
-    ];
+    return [];
   }
 
   /** return a state object that turn react state back into source */

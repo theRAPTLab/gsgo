@@ -1075,37 +1075,39 @@ syntax: `on ScriptEvent args [[ block ]]` where `ScriptEvent` is something like 
 
 The `on` keyword emits a program that does...?
 
-* [ ] if 
+* [ ] after compiliing the bundle, check if there are any event registration program arrays
+* [ ] We need to pass it the **blueprint name** when running the context, so the generated code can call runtime-datacore `RegisterEvent()` 
+
+I've added **SubscribeToScriptEvent** and **HandleSimEvent** to receive events. 
+
+What's still missing is a way to specify parameters for the tetst.
 
 ```
-on 'Tick' ...args [[
-	// do something for the agent
-]]
-
-need:
-* blueprint name
-* tick interval to fire
-
-need to:
-* scan args for the first block, and assume everything before that are parameters for tick
-* infer the blueprint in effect. 
-
-the 'on' keyword has to register this blueprint to the 'Tick 10' event with 
+When an event is fired, it's intercepted by the ScriptEvent handler that determines what to do.
+* look up all the registered 
 ```
 
+## NOV 30 MON - EVENTS IMPLEMENTATION / DELIVERY
 
+need to add **event registration** as part of RegisterBlueprint. It already runs "AddGlobalCondition" for all the condition programs.
 
-
+It's roughly working, but there is a block compiler error with ifExpr {{ }} [[ ... ]]
 
 ---
+
+**TODO** NOV 30
+
+* After I get OnTick working as the basic scriptevent in the user event system, will outline what's in the current engine as of today for the team, with an eye toward using this a foundation for introducing how to write simulations with it (a kind of informational and concise primer?) Then afterwards document the most recent things.
 
 **TODO** AFTER ALPHA DEC 1
 
 * **parameter passing** between scripts is kind of ambiguous, because of the number of execution contexts. Need to document all the execution contexts and try to make sense of it.
 * no filter result caching in place yet
 * no real tests implemented yet
+* combine test functions into functions table, require that name begins with TEST_AB, TEST_A, or TEST
 * the state object needs to have its **context** loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
 * provide a better debug output experience
+* make sure that Agent blueprint inheritance is implemented
 * `queueSequence [[ ]] [[ ]] [[ ]] ...`
 * `on TimeElapsed 1000 [[ ... ]]`
 
