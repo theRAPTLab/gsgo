@@ -9,8 +9,9 @@
 /// STABLE KEYWORDS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './addProp';
+export * from './setProp';
 export * from './prop';
-export * from './propMethod';
+export * from './propValue';
 export * from './useFeature';
 export * from './featureProp';
 export * from './featureCall';
@@ -33,12 +34,11 @@ export * from './ifExpr'; // run an expression test
 export * from './ifTest'; // run a named test during agent runtime
 export * from './ifProg'; // experimental placeholder
 export * from './when'; // filtering global condition
-// export * from './onCondition'; // experimental placeholder
-// export * from './onAgent'; // experimental placeholder
-// export * from './onTick'; // experimental placeholder
+export * from './onEvent'; // script event processing
 
 // debug keywords (very slow performance)
 export * from './dbgOut';
 export * from './dbgStack';
 export * from './dbgError';
+export * from './keywordErr';
 // export * from './unknownKeyword';

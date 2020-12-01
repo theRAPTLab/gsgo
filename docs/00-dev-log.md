@@ -1050,7 +1050,7 @@ OK...let's just make a when keyword and see what we can do with it.
 
 * [x] first make `when.tsx` and detect the two signatures for singles or pairs
 * [x] why is bundle.name = BLUEPRINT? off-by-one because `#` is the keyword and `BLUEPRINT` is the next arg, not name
-* [ ] `GetAgentsByType()` is being called before the agents are created when `SaveBlueprint()` is called by the Compiler interface. **LIFECYCLE BUG**
+* [x] `GetAgentsByType()` is being called before the agents are created when `SaveBlueprint()` is called by the Compiler interface. **LIFECYCLE BUG**
 * [x] The conditions have to run globally though...are they? **NO**
   * [x] they are run once at blueprint compile time, which is wrong. It should be stored in the CONDITIONS dictionary in runtime-datacore
 * [x] Integrate CONDITIONS into sim lifecycle
@@ -1065,15 +1065,91 @@ OK...let's just make a when keyword and see what we can do with it.
 
 #### IT WORKS!!!
 
-Doesn't do very much, but the conditions seem to be working and executing. Things to do next:
+Doesn't do very much, but the conditions seem to be working and executing. 
+
+## NOV 29 SUN - EVENTS
+
+ScriptEvents are detected and delivered to an AgentSet that has subscribed to it.
+
+syntax: `on ScriptEvent args [[ block ]]` where `ScriptEvent` is something like **Tick** or **Interval**
+
+The `on` keyword emits a program that does...?
+
+* [ ] after compiliing the bundle, check if there are any event registration program arrays
+* [ ] We need to pass it the **blueprint name** when running the context, so the generated code can call runtime-datacore `RegisterEvent()` 
+
+I've added **SubscribeToScriptEvent** and **HandleSimEvent** to receive events. 
+
+What's still missing is a way to specify parameters for the tetst.
+
+```
+When an event is fired, it's intercepted by the ScriptEvent handler that determines what to do.
+* look up all the registered 
+```
+
+## NOV 30 MON - EVENTS IMPLEMENTATION / DELIVERY
+
+need to add **event registration** as part of RegisterBlueprint. It already runs "AddGlobalCondition" for all the condition programs.
+
+It's roughly working, but there is a block compiler error with `ifExpr {{ }} [[ ... ]]`
+
+```
+["onEvent","Tick", [
+	"// control number of times dbgOut fires",
+	"ifExpr {{ agent.prop('name').value==='bun0' }} ",
+	// SHOULD BE
+  // "ifExpr", "{{ agent.prop('name').value==='bun0' }}", 
+  // MISSING [[
+  	"dbgOut", 'mytick', 'agent instance', {{ agent.prop('name').value }}
+  // SHOULD BE
+	//"dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}",
+	// missing [[
+	"setProp 'x'  0",
+	"setProp 'y'  0"
+	// missing ]] 
+	]
+]
+
+```
+
+The script tokenizer is missing the containing block in an array, and is just dumping it.
+
+* tokenize goes through each line one at a time, recieving a "nodes" array
+  * units get the nodes arrayfrom gobbleLIne
+* gobbleLine
+  * next line, check for comment or directive
+  * otherwise process this line by gobbleToken
+* The bug is happening on the SUBSEQUENT pass during EXPAND ARGS
+
+```
+upper level compile onEvent Tick [array 5]
+this is fed by scriptifytext, which tokenizes source strings.
+I think by gobbling space with trim(), I threw off the string parsing counts? 
+```
+
+The dbgOut is running twice for bun0, which means the expression is somehow evaluating true. I'm not sure why it started working again. There was an issue with Conditions Registrations throwing an error, but I don't see how this would fix things. 
+
+Seems to work now though...committing careful changes. **NOTE** that some of the problem might have been related to stale scriptevent handlers in the system before I wrote DeleteAllScriptEvents().
+
+
+
+---
+
+**TODO** NOV 30
+
+* After I get OnTick working as the basic scriptevent in the user event system, will outline what's in the current engine as of today for the team, with an eye toward using this a foundation for introducing how to write simulations with it (a kind of informational and concise primer?) Then afterwards document the most recent things.
+
+**TODO** AFTER ALPHA DEC 1
 
 * **parameter passing** between scripts is kind of ambiguous, because of the number of execution contexts. Need to document all the execution contexts and try to make sense of it.
 * no filter result caching in place yet
 * no real tests implemented yet
-* the state object needs to have its context loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
+* combine test functions into functions table, require that name begins with TEST_AB, TEST_A, or TEST
+* the state object needs to have its **context** loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
 * provide a better debug output experience
-
----
+* make sure that Agent blueprint inheritance is implemented
+* `queueSequence [[ ]] [[ ]] [[ ]] ...`
+* `on TimeElapsed 1000 [[ ... ]]`
 
 BACKLOG
 

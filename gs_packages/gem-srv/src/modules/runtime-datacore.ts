@@ -38,6 +38,7 @@ const BUNDLE_CONTEXTS = [
   'think',
   'exec',
   'condition',
+  'event',
   'test',
   'conseq',
   'alter'
@@ -45,7 +46,8 @@ const BUNDLE_CONTEXTS = [
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let BUNDLE_OUT = 'define';
+let BUNDLE_NAME = ''; // the current compiling bundle name (blueprint)
+let BUNDLE_OUT = 'define'; // the current compiler output track
 
 /// DATA STORAGE MAPS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,6 +59,8 @@ const FEATURES: Map<string, IFeature> = new Map();
 const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 const KEYWORDS: Map<string, IKeyword> = new Map();
 const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const CONDITIONS: Map<string, TSMCProgram> = new Map();
 const FUNCTIONS: Map<string, Function> = new Map();
@@ -73,6 +77,42 @@ export function RegisterKeyword(Ctor: IKeywordCtor) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetKeyword(name: string): IKeyword {
   return KEYWORDS.get(name);
+}
+
+/// SCRIPT EVENTS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Register an agentset to a particular handler. It's a TSMCProgram[] (an
+ *  array of program arrays consisting of a stack of functions) that will
+ *  get run when the EventHandler receives it.
+ *  SCRIPT_EVENTS: Map<string, Map<string,TSMCProgram[]>> = new Map();
+ *                eventName->Map(blueprintName)->TSMCProgram[]
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function SubscribeToScriptEvent(
+  evtName: string,
+  bpName: string,
+  consq: TSMCProgram
+) {
+  if (!SCRIPT_EVENTS.has(evtName)) SCRIPT_EVENTS.set(evtName, new Map());
+  const subbedBPs = SCRIPT_EVENTS.get(evtName); // event->blueprint codearr
+  if (!subbedBPs.has(bpName)) subbedBPs.set(bpName, []);
+  // get the blueprint array for bpName, created if necessary
+  const codearr = subbedBPs.get(bpName);
+  if (typeof consq === 'function') codearr.push(consq);
+  else codearr.push(...consq);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetScriptEventHandlers(evtName: string) {
+  const subbedBPs = SCRIPT_EVENTS.get(evtName); // event->blueprint codearr
+  const handlers = [];
+  subbedBPs.forEach((handler, agentType) => {
+    handlers.push({ agentType, handler });
+  });
+  return handlers;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllScriptEvents() {
+  SCRIPT_EVENTS.clear();
 }
 
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
@@ -131,7 +171,6 @@ export function DeleteScript(name: string): boolean {
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SaveBlueprint(bp: ISMCBundle) {
-  console.log('saving', bp.name);
   const { name } = bp;
   // just overwrite it
   BLUEPRINTS.set(name, bp);
@@ -199,11 +238,14 @@ export function DeleteAllAgents() {
 /// CONDITION UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function AddGlobalCondition(sig: string, condprog: TSMCProgram) {
+  if (!Array.isArray(condprog)) {
+    console.warn(...PR(condprog, 'is not a program...skipping'));
+    return;
+  }
   if (!CONDITIONS.has(sig)) CONDITIONS.set(sig, []);
   const master = CONDITIONS.get(sig);
   // add all the instructions from conditional program to the master
   master.push(...condprog);
-  console.log(...PR(`saved condition '${sig}' (has ${master.length} opcodes)`));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetGlobalCondition(sig: string) {
@@ -341,15 +383,68 @@ export function IsValidBundleType(type: EBundleType) {
   return Object.values(EBundleType).includes(type as any);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** set the datacore global var BUNDLE_OUT to name, which tells the
+/** set the datacore global var BUNDLE_NAME to to bpName, which tells the
  *  AddToBundle(bdl,prog) call where the program should be added
  */
-export function SetBundleOut(name: string): boolean {
-  if (IsValidBundleProgram(name)) {
-    BUNDLE_OUT = name;
+export function SetBundleName(
+  bdl: ISMCBundle,
+  bpName: string,
+  bpParent?: string
+): boolean {
+  if (typeof bdl !== 'object') {
+    console.warn('arg1 is not a bundle, got:', bdl);
+    return false;
+  }
+  if (typeof bpName !== 'string') {
+    console.warn('arg2 is not bundleName, got:', bpName);
+    return false;
+  }
+  if (bpParent !== undefined && typeof bpParent !== 'string') {
+    console.warn('arg3 is not bundleParent, got:', bpParent);
+    return false;
+  }
+  // set the bundle name AND save it
+  bdl.name = bpName;
+  BUNDLE_NAME = bpName;
+  return true;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** set the datacore global var BUNDLE_OUT to bdlKey, which tells the
+ *  AddToBundle(bdl,prog) call where the program should be added
+ */
+export function SetBundleOut(bdlKey: string): boolean {
+  if (IsValidBundleProgram(bdlKey)) {
+    BUNDLE_OUT = bdlKey;
     return true;
   }
   return false;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function CompilerState() {
+  return {
+    bundleName: BUNDLE_NAME,
+    bundleOut: BUNDLE_OUT
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** a program name [[progname]] might be passed, which needs to be dereferenced
+ *  into a TSMCProgram stored in the FUNCTIONS table
+ */
+export function UtilDerefArg(arg: any) {
+  const type = typeof arg;
+  if (type === 'number') return arg;
+  if (type !== 'string') return arg;
+  if (arg.substring(0, 2) !== '[[') return arg;
+  if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
+  const progName = arg.substring(2, arg.length - 2).trim();
+  const prog = GetFunction(progName);
+  if (prog !== undefined) return prog;
+  throw Error(`could not deference "${arg}" to named program "${progName}"`);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function UtilFirstValue(thing: any): any {
+  if (Array.isArray(thing)) return thing.shift();
+  return thing;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** main API for add a program to a bundle. It does not check the bundle
@@ -369,15 +464,25 @@ const DEFAULT_TEXT = `
 # DEFINE
 addProp frame Number 3
 useFeature Movement
-prop skin 'bunny.json'
 # UPDATE
+setProp skin 'bunny.json'
 featureCall Movement jitterPos -5 5
+# EVENT
+onEvent Tick [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
+  ]]
+  setProp 'x'  0
+  setProp 'y'  0
+]]
 # CONDITION
 when Bee sometest [[
   // dbgOut SingleTest
 ]]
 when Bee sometest Bee [[
-  dbgOut PairTest
+  // dbgOut PairTest
 ]]
 `;
 export function GetDefaultText() {

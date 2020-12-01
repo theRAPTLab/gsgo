@@ -31,6 +31,7 @@ const PRAGMA = {
   'THINK': () => SetBundleOut('think'),
   'EXEC': () => SetBundleOut('exec'),
   'CONDITION': () => SetBundleOut('condition'),
+  'EVENT': () => SetBundleOut('event'),
   'TEST': () => SetBundleOut('test'),
   'ALTERNATE': () => SetBundleOut('alter'),
   'CONSEQUENT': () => SetBundleOut('conseq')
@@ -75,7 +76,7 @@ export class _pragma extends Keyword {
       index,
       unit,
       <>
-        _pragma {pragmaName} = {value}
+        # {pragmaName} {unit.slice(2).join(' ')}
       </>
     );
   }

@@ -8,13 +8,12 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import SM_Message from 'lib/class-sm-message';
 
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import {
   RegisterKeyword,
   SingleAgentFilter,
   PairAgentFilter
 } from 'modules/runtime-datacore';
-import { SingleAgentConditional } from 'script/conditions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,16 +75,18 @@ export class when extends Keyword {
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const testName = unit[1];
-    const conseq = unit[2];
-    const alter = unit[3];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        on {testName} TRUE {conseq}, ELSE {alter}
-      </>
-    );
+    let out;
+    if (unit.length < 4 || unit.length > 5) {
+      const [kw] = unit;
+      out = `${kw} invalid number of arguments`;
+    } else if (unit.length === 4) {
+      const [kw, A, testName, consq] = unit;
+      out = `${kw} ${A} ${testName} run ${consq.length} ops`;
+    } else if (unit.length === 5) {
+      const [kw, A, B, testName, consq] = unit;
+      out = `${kw} ${A} ${testName} ${B} run ${consq.length} ops`;
+    }
+    return super.jsx(index, unit, <>{out}</>);
   }
 } // end of UseFeature
 

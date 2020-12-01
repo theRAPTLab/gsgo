@@ -19,6 +19,7 @@
 
 import React from 'react';
 import { IKeyword, TOpcode, TScriptUnit } from 'lib/t-script';
+import { GetFunction } from 'modules/runtime-datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,14 +91,10 @@ export class Keyword implements IKeyword {
     return this.keyword;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** given a return value from a TMethod that is either a TOpcode stack OR a
-   *  regular function, return a single value
+  /** utility to return an array with non-functions, signaling to the caller
+   *  thate there was an error to process. The linenumber idx is passed in
+   *  from the caller invoking compile()
    */
-  firstValue(thing: any): any {
-    if (Array.isArray(thing)) return thing.shift();
-    return thing;
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   errLine(err: string, idx?: number) {
     if (idx !== undefined) return [err, idx];
     return [err];

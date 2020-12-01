@@ -28,6 +28,7 @@ import {
  */
 export default class SM_Bundle implements ISMCBundle {
   name: string; // the name of the bundle, if any
+  parent: string; // the name of parent bundle, if any
   type: EBundleType; // enum type (see t-script.d)
   // lifecycle programs (can be in multiple types)
   define: TOpcode[]; // allocation phase
@@ -58,10 +59,11 @@ export default class SM_Bundle implements ISMCBundle {
     this.alter = []; // program
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  setName(name: string) {
+  setName(name: string, parent?: string) {
     if (!name) throw Error('a name is required');
     if (typeof name !== 'string') throw Error('name must be string');
     this.name = name;
+    this.parent = parent;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setType(type: EBundleType) {

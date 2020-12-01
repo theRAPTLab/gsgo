@@ -74,7 +74,8 @@ function GobblerTest() {
 function TokenizeTest(text) {
   const lines = text.split('\n');
   const nodes = tokenizer.tokenize(lines);
-  console.log(...PR(`TokenizeTest\n${lines}`), nodes);
+  console.log(...PR('TokenizeTest Lines\n', lines));
+  console.log(...PR('TokenizeTest Nodes\n', nodes));
 }
 
 /// RUN TESTS /////////////////////////////////////////////////////////////////

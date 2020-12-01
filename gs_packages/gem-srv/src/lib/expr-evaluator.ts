@@ -18,6 +18,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { TScriptUnit } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -130,10 +131,24 @@ function evaluate(node, context) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Compile(ast) {
-  return 'compiler disabled';
+/** checks a given argument, and if it's an object we'll assume it's an
+ *  AST and evaluate it. Otherwise, just return the value as-is
+ */
+function EvalArg(arg: any, context: {}): any {
+  if (typeof arg !== 'object') return arg;
+  return evaluate(arg, context);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** called by keywords that need to do runtime evaluation of an expression from
+ *  within the returned program
+ */
+function EvalUnitArgs(unit: TScriptUnit, context: {}): any {
+  if (!Array.isArray(unit)) throw Error('arg must be TScriptUnit, an array');
+  // note that unit is passed at creation time, so it's immutable within
+  // the TOpcode. We need to return a copy through map()
+  return unit.map(arg => EvalArg(arg, context));
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { evaluate as Evaluate, Compile };
+export { evaluate as Evaluate, EvalArg, EvalUnitArgs };

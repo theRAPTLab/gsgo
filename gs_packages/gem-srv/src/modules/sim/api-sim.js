@@ -14,10 +14,10 @@ import { interval } from 'rxjs';
 // these have their own phasemachine interface hooks
 import './sim-inputs';
 import './sim-conditions';
-import * as Agents from './sim-agents';
+import './sim-agents';
 import './sim-referee';
 import './sim-features';
-import * as Render from './sim-render';
+import './sim-render';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -71,10 +71,13 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let SIM_FRAME_MS = interval((1 / 30) * 1000);
 let RX_SUB;
+let SIM_RATE = 0; // 0 = stopped, 1 = going. HACKY for DEC 1
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_StepSimulation(frameCount) {
   /* insert conditional run control here */
   GAME_LOOP.executePhase('GLOOP', frameCount);
+  if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
   /* insert game logic here */
 }
 
@@ -98,7 +101,12 @@ function RunSimulation() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** once the simluation is initialized, start the periodic frame update */
 function StartSimulation() {
+  if (SIM_RATE === 1) {
+    console.log(...PR('Simulation already started'));
+    return;
+  }
   console.log(...PR('Simulation Timestep Started'));
+  SIM_RATE = 1;
   RX_SUB = SIM_FRAME_MS.subscribe(m_StepSimulation);
 }
 
@@ -119,6 +127,7 @@ function EndSimulation() {
   // stop simulation
   console.log(...PR('EndSimulation'));
   RX_SUB.unsubscribe();
+  SIM_RATE = 0;
 }
 
 /// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////

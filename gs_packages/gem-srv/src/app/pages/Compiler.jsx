@@ -18,8 +18,8 @@ import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
-// import 'modules/tests/test-compiler'; // test compiler
+import 'modules/tests/test-parser'; // test parser evaluation
+import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -43,8 +43,9 @@ UR.SystemHook(
       (async () => {
         let map = await GLOBAL.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
-        SIM.StartSimulation();
-        if (DBG) console.log(...PR('SIMULATION STARTED'));
+        console.log(...PR('Waiting for user input'));
+        // SIM.StartSimulation();
+        // if (DBG) console.log(...PR('SIMULATION STARTED'));
       })();
       resolve();
     })
@@ -159,12 +160,14 @@ class Compiler extends React.Component {
     // save the blueprint to default and reprogram sim
     DATACORE.DeleteAllTests();
     DATACORE.DeleteAllGlobalConditions();
+    DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
     const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
+    SIM.StartSimulation();
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.

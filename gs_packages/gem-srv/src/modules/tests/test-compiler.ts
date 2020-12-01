@@ -11,7 +11,7 @@ import { ScriptifyText, CompileScript } from 'script/transpiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('T-COMPILER', 'TagDkOrange');
 const TT = [];
-const TESTNUM = undefined;
+const TESTNUM = undefined; // undefined for all tests
 
 /// FUNCTIONS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,6 +39,50 @@ function TestCompiler(index?: number) {
 }
 
 /// TESTS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TT.push([
+//   'onEvent Tick then block w/ nested if',
+//   `
+//   # BLUEPRINT Dog2
+//   # EVENT
+//   onEvent Tick [[
+//     ifExpr {{ agent.prop('name').value==='bun0' }} [[
+//       dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+//     ]]
+//     setProp 'x'  0
+//     setProp 'y'  0
+//   ]]  `.trim()
+// ]);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+TT.push([
+  'onEvent Tick then block w/ nested if',
+  `
+  # BLUEPRINT Bee
+  # DEFINE
+  addProp frame Number 3
+  useFeature Movement
+  # UPDATE
+  setProp skin 'bunny.json'
+  featureCall Movement jitterPos -5 5
+  # EVENT
+  onEvent Tick [[
+    ifExpr {{ agent.prop('name').value==='bun0' }} [[
+      dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    ]]
+    setProp 'x'  0
+    setProp 'y'  0
+  ]]
+  # CONDITION
+  when Bee sometest [[
+    // dbgOut SingleTest
+  ]]
+  when Bee sometest Bee [[
+    // dbgOut PairTest
+  ]]
+  `.trim()
+]);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'define Blueprint',
@@ -202,12 +246,12 @@ TT.push([
   # BLUEPRINT HorseNuts7
     addProp altitude Number 10000
     ifTest [[ prop y greaterThan 100 ]] [[
-      prop y setTo 100
-      prop altitude setTo 10000
-      prop skin setTo 'bonk.png'
+      setProp y 100
+      setProp altitude 10000
+      setProp skin 'bonk.png'
     ]] [[
-      prop altitude setTo {{ agent.prop('y') * 1000 }}
-      prop skin setTo 'flap.png'
+      setProp altitude {{ agent.prop('y') * 1000 }}
+      setProp skin 'flap.png'
     ]]
 `.trim()
 ]);
@@ -220,12 +264,12 @@ TT.push([
     ifTest [[
       prop y greaterThan 100
     ]] [[
-      prop y setTo 100
-      prop altitude setTo 10000
-      prop skin setTo 'bonk.png'
+      setProp y 100
+      setProp altitude 10000
+      setProp skin 'bonk.png'
     ]] [[
-      prop altitude setTo {{ agent.prop('y') * 1000 }}
-      prop skin setTo 'flap.png'
+      setProp altitude {{ agent.prop('y') * 1000 }}
+      setProp skin 'flap.png'
     ]]
 `.trim()
 ]);
@@ -260,7 +304,7 @@ TT.push([
   addProp foodLevel Number 50
   prop foodLevel setMin 0
   prop foodLevel setMax 100
-  prop skin setTo 'alive.png'
+  setProp skin 'alive.png'
   useFeature Movement
   featureProp inputType setTo 'runtime'
 
@@ -273,14 +317,14 @@ TT.push([
     prop foodLevel increment
     defCondition "memo:dead" [[
       {{ prop foodLevel < 1 }}
-      prop isActive false
-      prop skin setTo "dead.png"
+      setProp isActive false
+      setProp skin "dead.png"
       featureProp inputType setTo 'static'
     ]]
     defCondition "memo:worldtimer" [[
       globalAgentProp World daytime
       {{ globalAgentProp World daytime === true}}
-      prop skin setTo "happy.png"
+      setProp skin  "happy.png"
     ]]
   ]]
 `.trim()
@@ -295,12 +339,13 @@ TT.push([
   addProp daytime Boolean true
   // runtime
   // condition
-  when Interval 1000
+  when Interval 1000 [[
     prop time decrement
     defCondition "memo:switch"
     {{ prop time < 0 }}
     prop time setTo 10
     prop daytime invert
+  ]]
 `.trim()
 ]);
 

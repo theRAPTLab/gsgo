@@ -1,56 +1,45 @@
+/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "onAgent" command object
+  implementation of keyword "keywordErr" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
-import { SingleAgentConditional } from 'script/conditions';
+import { EvalUnitArgs } from 'lib/expr-evaluator';
 
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class onAgent extends Keyword {
+export class keywordErr extends Keyword {
   // base properties defined in KeywordDef
-
   constructor() {
-    super('onAgent');
-    this.args = ['agentType:string', 'termA', 'termB'];
+    super('keywordErr');
+    this.args = ['...args'];
   }
-  /* NOTE THIS IS NONFUNCTIONAL */
+
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, agentType, termA, termB] = unit;
-    console.log('onAgent terms type:', agentType, 'A:', termA, 'B:', termB);
-    const cout = [];
-    cout.push();
-    return cout;
+    return [];
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { min, max, floor } = state;
-    return [this.keyword, min, max, floor];
+    const { error } = state;
+    return [this.keyword, error];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const testName = unit[1];
-    const conseq = unit[2];
-    const alter = unit[3];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        on {testName} TRUE {conseq}, ELSE {alter}
-      </>
-    );
+    const [kw] = unit;
+    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(onAgent);
+RegisterKeyword(keywordErr);

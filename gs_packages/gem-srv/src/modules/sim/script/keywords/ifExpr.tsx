@@ -8,7 +8,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
+import { RegisterKeyword, UtilFirstValue } from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,8 +27,8 @@ export class ifExpr extends Keyword {
     const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
-      const method = test;
-      const result = this.firstValue(agent.exec(method, [], state.ctx));
+      const vals = agent.exec(test, [], state.ctx);
+      const result = UtilFirstValue(vals);
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });

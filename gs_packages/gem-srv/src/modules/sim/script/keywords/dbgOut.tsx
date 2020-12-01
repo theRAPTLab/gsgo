@@ -6,9 +6,20 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/runtime-datacore';
+import { EvalUnitArgs } from 'lib/expr-evaluator';
+
+/// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let MAX_OUT = 100;
+let COUNTER = MAX_OUT;
+UR.RegisterMessage('AGENT_PROGRAM', () => {
+  console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
+  COUNTER = MAX_OUT;
+});
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,17 +32,12 @@ export class dbgOut extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, error] = unit;
     const progout = [];
 
     progout.push(agent => {
-      if (agent.aaa === undefined) agent.aaa = 10;
-      if (agent.aaa > 0) {
-        const unknown = unit.join(', ');
-        console.log(`?${unknown}`);
-        agent.aaa--;
-        if (agent.aaa === 0) console.log(`agent ${agent.id} suppress dbgOut`);
-      }
+      if (COUNTER-- > 0)
+        console.log(`?${EvalUnitArgs(unit, { agent }).join(' ')}`);
+      if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });
     return progout;
   }

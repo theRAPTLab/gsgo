@@ -1,53 +1,53 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "propMethod" keyword object
+  implementation of keyword "onEvent" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
+import SM_Message from 'lib/class-sm-message';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/runtime-datacore';
-
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+import {
+  RegisterKeyword,
+  CompilerState,
+  UtilDerefArg,
+  SubscribeToScriptEvent
+} from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class propMethod extends Keyword {
+export class onEvent extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('propMethod');
-    this.args = ['propName:string', 'methodName:string', '...args'];
+    super('onEvent');
+    this.args = ['event:string', 'consq:smcprogram'];
   }
 
-  /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, propName, methodName, ...args] = unit;
-    const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
-      const prop = agent.prop(propName);
-      const res = prop[methodName](...args).value;
-      if (res !== undefined) state.pushArgs(res);
-    });
-    return progout;
+  compile(unit: TScriptUnit, idx?: number): TOpcode[] {
+    let [kw, event, consq] = unit;
+    consq = UtilDerefArg(consq);
+    const { bundleName } = CompilerState();
+    SubscribeToScriptEvent(event, bundleName, consq);
+    // this runs in global context
+    return [];
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { propName, methodName, ...args } = state;
-    return [this.keyword, propName, ...args];
+    const { event, consq } = state;
+    return [this.keyword, event, consq];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, propName, methodName, ...arg] = unit;
+    const [kw, event, consq] = unit;
     return super.jsx(
       index,
       unit,
       <>
-        prop {propName}.{methodName}({arg.join(' ')})
+        onEvent {`'${event}'`} run {consq.length} ops
       </>
     );
   }
@@ -56,4 +56,4 @@ export class propMethod extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(propMethod);
+RegisterKeyword(onEvent);

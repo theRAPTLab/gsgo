@@ -94,7 +94,7 @@ export type TScript = TScriptUnit[]; // not generally used\
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** An object that contains one of several types of program array */
+/** These are the kind of programs  */
 export interface ISMCPrograms {
   // blueprint
   define?: TSMCProgram; // def blueprint, props, features
@@ -103,7 +103,9 @@ export interface ISMCPrograms {
   think?: TSMCProgram; // run during instance think phase
   exec?: TSMCProgram; // run during instance exec phase
   // global conditions
-  condition?: TSMCProgram;
+  condition?: TSMCProgram; // condition handlers to run
+  // global script events
+  event?: TSMCProgram; // event handlers to run
   // local condition (one per bundle)
   test?: TSMCProgram; // program returning true on stack
   conseq?: TSMCProgram; // program to run on true
@@ -116,7 +118,8 @@ export interface ISMCPrograms {
  *  A TSMCGlobalProgram is just TRegcode[]
  */
 export interface ISMCBundle extends ISMCPrograms {
-  name?: string; // the name of the bundle, if any
+  name?: string; // the blueprint name of the bundle, if any
+  parent?: string; // the parent bundle, if any
   type?: EBundleType; // enum type (see below)
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,7 +144,6 @@ export interface IKeyword {
   jsx(index: number, state: object, children?: any[]): any;
   generateKey(): any;
   getName(): string;
-  firstValue(thing: any): any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** weird Typescript constructor definition used by Transpiler

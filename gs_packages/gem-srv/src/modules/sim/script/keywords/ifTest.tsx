@@ -7,7 +7,11 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, GetTest } from 'modules/runtime-datacore';
+import {
+  RegisterKeyword,
+  GetTest,
+  UtilFirstValue
+} from 'modules/runtime-datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,7 +32,7 @@ export class ifTest extends Keyword {
     code.push((agent, state) => {
       const ast = GetTest(testName);
       if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
-      const result = this.firstValue(agent.exec(ast, [], state.ctx));
+      const result = UtilFirstValue(agent.exec(ast, [], state.ctx));
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });
