@@ -100,7 +100,6 @@ export function SubscribeToScriptEvent(
   const codearr = subbedBPs.get(bpName);
   if (typeof consq === 'function') codearr.push(consq);
   else codearr.push(...consq);
-  console.log(`subscribed ${evtName} to ${bpName}`, codearr);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetScriptEventHandlers(evtName: string) {
@@ -111,6 +110,11 @@ export function GetScriptEventHandlers(evtName: string) {
   });
   return handlers;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllScriptEvents() {
+  SCRIPT_EVENTS.clear();
+}
+
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a SMObject, store in VARTYPES */
@@ -167,7 +171,6 @@ export function DeleteScript(name: string): boolean {
 /// BLUEPRINT /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SaveBlueprint(bp: ISMCBundle) {
-  console.log('saving', bp.name);
   const { name } = bp;
   // just overwrite it
   BLUEPRINTS.set(name, bp);
@@ -236,14 +239,13 @@ export function DeleteAllAgents() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function AddGlobalCondition(sig: string, condprog: TSMCProgram) {
   if (!Array.isArray(condprog)) {
-    console.log(...PR(condprog, 'is not a program...skipping'));
+    console.warn(...PR(condprog, 'is not a program...skipping'));
     return;
   }
   if (!CONDITIONS.has(sig)) CONDITIONS.set(sig, []);
   const master = CONDITIONS.get(sig);
   // add all the instructions from conditional program to the master
   master.push(...condprog);
-  console.log(...PR(`saved condition '${sig}' (has ${master.length} opcodes)`));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetGlobalCondition(sig: string) {

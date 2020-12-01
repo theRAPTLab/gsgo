@@ -19,7 +19,7 @@ import * as TRANSPILER from 'script/transpiler';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
-import 'modules/tests/test-compiler'; // test compiler
+// import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -160,6 +160,7 @@ class Compiler extends React.Component {
     // save the blueprint to default and reprogram sim
     DATACORE.DeleteAllTests();
     DATACORE.DeleteAllGlobalConditions();
+    DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
