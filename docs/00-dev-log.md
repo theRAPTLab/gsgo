@@ -1091,7 +1091,47 @@ When an event is fired, it's intercepted by the ScriptEvent handler that determi
 
 need to add **event registration** as part of RegisterBlueprint. It already runs "AddGlobalCondition" for all the condition programs.
 
-It's roughly working, but there is a block compiler error with ifExpr {{ }} [[ ... ]]
+It's roughly working, but there is a block compiler error with `ifExpr {{ }} [[ ... ]]`
+
+```
+["onEvent","Tick", [
+	"// control number of times dbgOut fires",
+	"ifExpr {{ agent.prop('name').value==='bun0' }} ",
+	// SHOULD BE
+  // "ifExpr", "{{ agent.prop('name').value==='bun0' }}", 
+  // MISSING [[
+  	"dbgOut", 'mytick', 'agent instance', {{ agent.prop('name').value }}
+  // SHOULD BE
+	//"dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}",
+	// missing [[
+	"setProp 'x'  0",
+	"setProp 'y'  0"
+	// missing ]] 
+	]
+]
+
+```
+
+The script tokenizer is missing the containing block in an array, and is just dumping it.
+
+* tokenize goes through each line one at a time, recieving a "nodes" array
+  * units get the nodes arrayfrom gobbleLIne
+* gobbleLine
+  * next line, check for comment or directive
+  * otherwise process this line by gobbleToken
+* The bug is happening on the SUBSEQUENT pass during EXPAND ARGS
+
+```
+upper level compile onEvent Tick [array 5]
+this is fed by scriptifytext, which tokenizes source strings.
+I think by gobbling space with trim(), I threw off the string parsing counts? 
+```
+
+The dbgOut is running twice for bun0, which means the expression is somehow evaluating true. I'm not sure why it started working again. There was an issue with Conditions Registrations throwing an error, but I don't see how this would fix things. 
+
+Seems to work now though...committing careful changes. **NOTE** that some of the problem might have been related to stale scriptevent handlers in the system before I wrote DeleteAllScriptEvents().
+
+
 
 ---
 

@@ -11,7 +11,7 @@ import { ScriptifyText, CompileScript } from 'script/transpiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('T-COMPILER', 'TagDkOrange');
 const TT = [];
-const TESTNUM = 0; // undefined for all tests
+const TESTNUM = undefined; // undefined for all tests
 
 /// FUNCTIONS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,20 +40,49 @@ function TestCompiler(index?: number) {
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// TT.push([
+//   'onEvent Tick then block w/ nested if',
+//   `
+//   # BLUEPRINT Dog2
+//   # EVENT
+//   onEvent Tick [[
+//     ifExpr {{ agent.prop('name').value==='bun0' }} [[
+//       dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+//     ]]
+//     setProp 'x'  0
+//     setProp 'y'  0
+//   ]]  `.trim()
+// ]);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'onEvent Tick then block w/ nested if',
   `
-  # BLUEPRINT Dog2
+  # BLUEPRINT Bee
+  # DEFINE
+  addProp frame Number 3
+  useFeature Movement
+  # UPDATE
+  setProp skin 'bunny.json'
+  featureCall Movement jitterPos -5 5
   # EVENT
   onEvent Tick [[
-    // control number of times dbgOut fires
     ifExpr {{ agent.prop('name').value==='bun0' }} [[
       dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
     ]]
     setProp 'x'  0
     setProp 'y'  0
-  ]]  `.trim()
+  ]]
+  # CONDITION
+  when Bee sometest [[
+    // dbgOut SingleTest
+  ]]
+  when Bee sometest Bee [[
+    // dbgOut PairTest
+  ]]
+  `.trim()
 ]);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'define Blueprint',

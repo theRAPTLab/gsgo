@@ -29,7 +29,6 @@ export class onEvent extends Keyword {
     let [kw, event, consq] = unit;
     consq = UtilDerefArg(consq);
     const { bundleName } = CompilerState();
-    console.log('*** onEvent compile', event, bundleName, consq);
     SubscribeToScriptEvent(event, bundleName, consq);
     // this runs in global context
     return [];

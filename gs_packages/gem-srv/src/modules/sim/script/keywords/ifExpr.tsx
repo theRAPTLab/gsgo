@@ -27,9 +27,8 @@ export class ifExpr extends Keyword {
     const [kw, test, consq, alter] = unit;
     const code = [];
     code.push((agent, state) => {
-      const method = test;
-      const result = UtilFirstValue(agent.exec(method, [], state.ctx));
-      if (result) console.log(agent.name().value, 'true', consq, alter);
+      const vals = agent.exec(test, [], state.ctx);
+      const result = UtilFirstValue(vals);
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });

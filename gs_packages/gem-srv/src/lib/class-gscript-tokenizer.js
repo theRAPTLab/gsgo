@@ -115,6 +115,8 @@ const isIdentifierPart = ch => {
 class ScriptTokenizer {
   //
   constructor(doFlags) {
+    if (doFlags)
+      console.log('ScriptTokenizer initialized with showProgress tracing');
     doFlags = doFlags || {
       show: DBG_SHOW // show progress
     };
@@ -139,6 +141,7 @@ class ScriptTokenizer {
         'color:#C0C0C0'
       );
   }
+
   throwError(err) {
     this.showProgress('ERROR');
     throw Error(err);

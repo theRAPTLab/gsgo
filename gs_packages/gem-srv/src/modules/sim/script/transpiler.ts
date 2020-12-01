@@ -34,7 +34,7 @@ const scriptConverter = new GScriptTokenizer();
 const COMPILER_AGENT = new Agent();
 const COMPILER_STATE = new SM_State();
 //
-const DBG = true;
+const DBG = false;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -126,7 +126,9 @@ function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
     if (idx === 0) return arg;
     if (Array.isArray(arg)) {
       const script = scriptConverter.tokenize(arg);
+      if (DBG) console.group('recursive compile', idx, unit);
       const objcode = r_CompileBlock(script);
+      if (DBG) console.groupEnd();
       return objcode; // this is the compiled script
     }
     if (typeof arg !== 'string') return arg;
@@ -203,9 +205,10 @@ function CompileScript(units: TScriptUnit[]) {
     }
 
     // Normal case: otherwise compile a normal keyword
+    if (DBG) console.group('upper level compile', idx, unit);
     objcode = r_CompileUnit(unit, idx); // qbits is the subsequent parameters
+    if (DBG) console.groupEnd();
     objcode = m_CheckForError(objcode, unit);
-
     // FINALLY push this unit's code into the passed bundle and repeat
     AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
@@ -256,7 +259,6 @@ function RenderScript(units: TScriptUnit[]): any[] {
 function ScriptifyText(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
   const script = scriptConverter.tokenize(sourceStrings);
-  console.log(script);
   return script;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -286,28 +288,12 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   // run conditional programming in template
   // this is a stack of functions that run in global context
   console.log('registering blueprint', bdl);
-  // initialize global programs int he bundle
-  //
-  const { condition } = bdl.getPrograms();
+  // initialize global programs in the bundle
+  const { condition, event } = bdl.getPrograms();
   AddGlobalCondition(bdl.name, condition);
   if (DBG) console.groupEnd();
   return bdl;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_InitializeGlobals(bpList: string[]) {
-  if (!Array.isArray(bpList))
-    throw Error('an array of blueprint names is required');
-  bpList.forEach(bpName => {
-    const bdl = GetBlueprint(bpName);
-    if (!bdl) console.warn(`blueprint ${bpName} doesn't exist`);
-    const { condition, event } = bdl;
-    AddGlobalCondition(bdl.name, condition);
-    // we have the bp, we have the name of a blueprint to yank conditions
-    // from
-    // AddScriptEvent(bdl.name, scr_event);
-  });
-}
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MakeAgent(agentName: string, options?: { blueprint: string }) {
   const { blueprint } = options || {};
