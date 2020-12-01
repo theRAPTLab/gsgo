@@ -16,8 +16,7 @@ import {
   GetBlueprint,
   AddToBundle,
   AddGlobalCondition,
-  SetBundleName,
-  AddScriptEvent
+  SetBundleName
 } from 'modules/runtime-datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
