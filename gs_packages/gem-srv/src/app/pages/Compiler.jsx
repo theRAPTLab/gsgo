@@ -16,6 +16,9 @@ import * as GLOBAL from 'modules/runtime-globals';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
+import * as Prism from '../../util/prism';
+import { CodeJar } from '../../util/codejar';
+import '../../util/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 import 'modules/tests/test-parser'; // test parser evaluation
@@ -57,12 +60,12 @@ UR.SystemHook(
 class Compiler extends React.Component {
   constructor() {
     super();
-    this.text = defaultText;
+    this.text = defaultText.trim();
     this.source = [];
     const jsx = TRANSPILER.RenderScript(this.source);
     this.state = {
       jsx,
-      text: defaultText,
+      text: this.text,
       source: '',
       tabIndex: 0
     };
@@ -81,6 +84,9 @@ class Compiler extends React.Component {
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     TRANSPILER.RegisterBlueprint(this.source);
+    // codejar
+    this.jarRef = React.createRef();
+    this.jar = '';
   }
 
   componentDidMount() {
@@ -92,6 +98,15 @@ class Compiler extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    // initialize codejar
+    const highlight = editor => {
+      Prism.highlightElement(editor);
+    };
+    const editor = this.jarRef.current;
+    this.jar = CodeJar(editor, highlight);
+    this.jar.onUpdate(code => {
+      this.text = code;
+    });
   }
 
   componentDidCatch(e) {
@@ -182,6 +197,15 @@ class Compiler extends React.Component {
       tab = (
         <div id="script-text">
           <h3>SCRIPT VIEW</h3>
+          <pre
+            className="line-numbers"
+            style={{ fontSize: '10px', lineHeight: 1, whiteSpace: 'pre-line' }}
+          >
+            <code id="codejar" ref={this.jarRef}>
+              {this.state.text}
+            </code>
+          </pre>
+          {/*
           <textarea
             rows={20}
             style={{
@@ -190,7 +214,7 @@ class Compiler extends React.Component {
             }}
             value={this.state.text}
             onChange={this.updateText}
-          />
+          /> */}
           <button
             type="button"
             name="saveBlueprint"
