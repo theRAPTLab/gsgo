@@ -60,12 +60,12 @@ UR.SystemHook(
 class Compiler extends React.Component {
   constructor() {
     super();
-    this.text = defaultText;
+    this.text = defaultText.trim();
     this.source = [];
     const jsx = TRANSPILER.RenderScript(this.source);
     this.state = {
       jsx,
-      text: defaultText,
+      text: this.text,
       source: '',
       tabIndex: 0
     };
@@ -85,6 +85,7 @@ class Compiler extends React.Component {
     // eventually this needs to be part of application startup
     TRANSPILER.RegisterBlueprint(this.source);
     // codejar
+    this.jarRef = React.createRef();
     this.jar = '';
   }
 
@@ -99,12 +100,9 @@ class Compiler extends React.Component {
     RENDERER.HookResize(window);
     // initialize codejar
     const highlight = editor => {
-      const code = editor.textContent;
-      // Do something with code and set html.
       Prism.highlightElement(editor);
-      editor.innerHTML = code;
     };
-    const editor = document.getElementById('codejar');
+    const editor = this.jarRef.current;
     this.jar = CodeJar(editor, highlight);
     this.jar.onUpdate(code => {
       this.text = code;
@@ -197,10 +195,15 @@ class Compiler extends React.Component {
     let tab = <p>unknown tab {index}</p>;
     if (index === 0) {
       tab = (
-        <div id="script-text" className="line-numbers">
+        <div id="script-text">
           <h3>SCRIPT VIEW</h3>
-          <pre style={{ fontSize: '10px', lineHeight: 1 }}>
-            <code id="codejar">{this.state.text}</code>
+          <pre
+            className="line-numbers"
+            style={{ fontSize: '10px', lineHeight: 1, whiteSpace: 'pre-line' }}
+          >
+            <code id="codejar" ref={this.jarRef}>
+              {this.state.text}
+            </code>
           </pre>
           {/*
           <textarea
