@@ -16,6 +16,9 @@ import * as GLOBAL from 'modules/runtime-globals';
 import * as DATACORE from 'modules/runtime-datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
+import * as Prism from '../../util/prism';
+import { CodeJar } from '../../util/codejar';
+import '../../util/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 import 'modules/tests/test-parser'; // test parser evaluation
@@ -81,6 +84,8 @@ class Compiler extends React.Component {
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     TRANSPILER.RegisterBlueprint(this.source);
+    // codejar
+    this.jar = '';
   }
 
   componentDidMount() {
@@ -92,6 +97,17 @@ class Compiler extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    // initialize codejar
+    const highlight = editor => {
+      const code = editor.textContent;
+      // Do something with code and set html.
+      editor.innerHTML = code;
+    };
+    const editor = document.getElementById('codejar');
+    this.jar = CodeJar(editor, highlight);
+    this.jar.onUpdate(code => {
+      this.text = code;
+    });
   }
 
   componentDidCatch(e) {
@@ -182,6 +198,10 @@ class Compiler extends React.Component {
       tab = (
         <div id="script-text">
           <h3>SCRIPT VIEW</h3>
+          <div id="codejar" style={{ width: '100%', height: '50vh' }}>
+            {this.state.text}
+          </div>
+          {/*
           <textarea
             rows={20}
             style={{
@@ -190,7 +210,7 @@ class Compiler extends React.Component {
             }}
             value={this.state.text}
             onChange={this.updateText}
-          />
+          /> */}
           <button
             type="button"
             name="saveBlueprint"
