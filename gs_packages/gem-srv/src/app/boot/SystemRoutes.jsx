@@ -8,6 +8,7 @@ const Tracker = React.lazy(() => import('../pages/Tracker'));
 const FakeTrack = React.lazy(() => import('../pages/FakeTrack'));
 const XGUI = React.lazy(() => import('../src-xgui/App'));
 const Compiler = React.lazy(() => import('../pages/Compiler'));
+const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 
 /// LAZY COMPONENTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,6 +40,11 @@ export const LazyXGUI = () => (
 export const LazyCompiler = () => (
   <Suspense fallback={<div>loading</div>}>
     <Compiler />
+  </Suspense>
+);
+export const LazyScriptEditor = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <ScriptEditor />
   </Suspense>
 );
 
