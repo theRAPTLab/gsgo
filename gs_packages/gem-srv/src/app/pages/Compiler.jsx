@@ -101,6 +101,7 @@ class Compiler extends React.Component {
     const highlight = editor => {
       const code = editor.textContent;
       // Do something with code and set html.
+      Prism.highlightElement(editor);
       editor.innerHTML = code;
     };
     const editor = document.getElementById('codejar');
@@ -196,11 +197,11 @@ class Compiler extends React.Component {
     let tab = <p>unknown tab {index}</p>;
     if (index === 0) {
       tab = (
-        <div id="script-text">
+        <div id="script-text" className="line-numbers">
           <h3>SCRIPT VIEW</h3>
-          <div id="codejar" style={{ width: '100%', height: '50vh' }}>
-            {this.state.text}
-          </div>
+          <pre style={{ fontSize: '10px', lineHeight: 1 }}>
+            <code id="codejar">{this.state.text}</code>
+          </pre>
           {/*
           <textarea
             rows={20}
