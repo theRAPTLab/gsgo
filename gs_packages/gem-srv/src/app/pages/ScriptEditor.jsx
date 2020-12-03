@@ -5,16 +5,16 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React from 'react';
+import React, { useState } from 'react';
+import * as Prism from '../../util/prism_extended';
+import { CodeJar } from '../../util/codejar';
+import '../../util/prism_extended.css';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as GLOBAL from 'modules/runtime-globals';
-import icon from './codicon.ttf';
-import test from './test.css';
-// import * as monaco from 'monaco-editor';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
