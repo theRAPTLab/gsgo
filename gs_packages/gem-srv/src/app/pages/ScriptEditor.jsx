@@ -91,6 +91,8 @@ when Interval 1000
     prop skin setTo "happy.png"
 `.trim();
 
+const jsSnippet = 'function() { console.log("Hello World"): }';
+
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook(
@@ -115,16 +117,25 @@ UR.SystemHook(
 class ScriptEditor extends React.Component {
   constructor() {
     super();
-    // monaco.editor.create(document.getElementById('editor'), {
-    //   value: ['function x() {', '\tconsole.log("Hello world!");', '}'].join('\n'),
-    //   language: 'javascrpt'
-    // });
+    // codejar
+    this.jarRef = React.createRef();
+    this.jar = '';
+
   }
 
   componentDidMount() {
     document.title = 'GEMSTEP SCRIPT EDITOR';
     // start URSYS
     UR.SystemConfig({ autoRun: true });
+    // initialize codejar
+    const highlight = editor => {
+      Prism.highlightElement(editor);
+    };
+    const editor = this.jarRef.current;
+    this.jar = CodeJar(editor, highlight);
+    this.jar.onUpdate(code => {
+      this.text = code;
+    });
   }
 
   componentDidCatch(e) {
@@ -151,7 +162,7 @@ class ScriptEditor extends React.Component {
     return (
       <div
         className={classes.root}
-        style={{ gridTemplateColumns: '30% auto 0px' }}
+        style={{ gridTemplateColumns: '40% auto 0px' }}
       >
         <div
           id="console-top"
@@ -162,7 +173,20 @@ class ScriptEditor extends React.Component {
           MODE
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <div id="editor">code icon</div>
+          <div>
+            <pre
+              className="language-javascript line-numbers match-braces"
+              style={{ fontSize: '10px', lineHeight: 1, whiteSpace: 'pre-line' }}
+            >
+              <code
+                id="codejar"
+                ref={this.jarRef}
+                style={{ width: '100%', height: '50vh' }}
+              >
+                {defineFish}
+              </code>
+            </pre>
+          </div>
         </div>
         <div id="root-renderer" className={classes.main}>
           world view
