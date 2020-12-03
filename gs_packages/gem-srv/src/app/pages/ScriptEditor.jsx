@@ -121,6 +121,9 @@ class ScriptEditor extends React.Component {
     this.jarRef = React.createRef();
     this.jar = '';
 
+    // Hack in gem-script keywords as javascript
+    // gem-script keywords are at the end of the regex expression
+    Prism.languages.javascript.keyword[1].pattern = /(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|(?:get|set)(?=\s*[\[$\w\xA0-\uFFFF])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield|defBlueprint|addProp|prop|useFeature|featureProp|featureCall|defCondition)\b/;
   }
 
   componentDidMount() {
