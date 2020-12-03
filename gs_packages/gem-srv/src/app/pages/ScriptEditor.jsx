@@ -6,15 +6,17 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
-import * as Prism from '../../util/prism_extended';
-import { CodeJar } from '../../util/codejar';
-import '../../util/prism_extended.css';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as GLOBAL from 'modules/runtime-globals';
+
+/// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
+import * as Prism from '../../util/prism_extended';
+import { CodeJar } from '../../util/codejar';
+import '../../util/prism_extended.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -65,6 +67,7 @@ defGlobalAgent World
  */
 const defineFish = `
 // define/default program
+# blueprint agent baseagent
 defBlueprint Fish
 addProp foodLevel Number 50
 prop foodLevel setMin 0
@@ -91,7 +94,51 @@ when Interval 1000
     prop skin setTo "happy.png"
 `.trim();
 
+const model5 = `# BLUEPRINT Bee
+# DEFINE
+addProp frame Number 3
+useFeature Movement
+# UPDATE
+setProp skin 'bunny.json'
+featureCall Movement jitterPos -5 5
+# EVENT
+onEvent Tick [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
+  ]]
+  setProp 'x'  0
+  setProp 'y'  0
+]]
+# CONDITION
+when Bee sometest [[
+  // dbgOut SingleTest
+]]
+when Bee sometest Bee [[
+  // dbgOut PairTest
+]]
+`;
+
 const jsSnippet = 'function() { console.log("Hello World"): }';
+
+/// PRISM GEMSCRIPT DEFINITION ////////////////////////////////////////////////
+const keywords = [
+  'addProp',
+  'setProp',
+  'useFeature',
+  'featureCall',
+  'onEvent',
+  'ifExpr',
+  'when',
+  'dbgOut'
+];
+const keywords_regex = new RegExp(keywords.reduce((acc, cur) => `${acc}|${cur}`));
+
+const types = ['Number', 'String', 'Boolean'];
+const types_regex = new RegExp(types.reduce((acc, cur) => `${acc}|${cur}`));
+
+console.log('keywords', keywords_regex);
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -121,9 +168,14 @@ class ScriptEditor extends React.Component {
     this.jarRef = React.createRef();
     this.jar = '';
 
-    // Hack in gem-script keywords as javascript
-    // gem-script keywords are at the end of the regex expression
-    Prism.languages.javascript.keyword[1].pattern = /(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|(?:get|set)(?=\s*[\[$\w\xA0-\uFFFF])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield|defBlueprint|addProp|prop|useFeature|featureProp|featureCall|defCondition)\b/;
+    // The keys map to token definitions in the prism css file.
+    Prism.languages.gemscript = Prism.languages.extend('javascript', {
+      'keyword': keywords_regex,
+      'namespace': /(^|[^\\:])# \w*/,
+      'inserted': types_regex
+    });
+    // Prism.languages.javascript.keyword[1].pattern = /(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|when|(?:get|set)(?=\s*[\[$\w\xA0-\uFFFF])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield|defBlueprint|addProp|prop|setTo|useFeature|featureProp|featureCall|defCondition|increment|decrement)\b/;
+    //      'keyword': /(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|when|(?:get|set)(?=\s*[\[$\w\xA0-\uFFFF])|defBlueprint|addProp|prop|setTo|useFeature|featureProp|featureCall|defCondition|increment|decrement)\b/,
   }
 
   componentDidMount() {
@@ -165,7 +217,7 @@ class ScriptEditor extends React.Component {
     return (
       <div
         className={classes.root}
-        style={{ gridTemplateColumns: '40% auto 0px' }}
+        style={{ gridTemplateColumns: '50% auto 0px' }}
       >
         <div
           id="console-top"
@@ -178,7 +230,7 @@ class ScriptEditor extends React.Component {
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <div>
             <pre
-              className="language-javascript line-numbers match-braces"
+              className="language-gemscript line-numbers match-braces"
               style={{ fontSize: '10px', lineHeight: 1, whiteSpace: 'pre-line' }}
             >
               <code
@@ -186,7 +238,7 @@ class ScriptEditor extends React.Component {
                 ref={this.jarRef}
                 style={{ width: '100%', height: '50vh' }}
               >
-                {defineFish}
+                {model5}
               </code>
             </pre>
           </div>
