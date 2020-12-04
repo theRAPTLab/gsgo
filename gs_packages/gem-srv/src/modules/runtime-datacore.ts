@@ -78,6 +78,14 @@ export function RegisterKeyword(Ctor: IKeywordCtor) {
 export function GetKeyword(name: string): IKeyword {
   return KEYWORDS.get(name);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAllKeywords() {
+  const arr = [];
+  KEYWORDS.forEach((value, key) => {
+    arr.push(key);
+  });
+  return arr;
+}
 
 /// SCRIPT EVENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

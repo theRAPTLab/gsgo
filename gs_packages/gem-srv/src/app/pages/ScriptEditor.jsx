@@ -11,7 +11,9 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
+import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
 import * as GLOBAL from 'modules/runtime-globals';
+import * as DATACORE from 'modules/runtime-datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
 import * as Prism from '../../util/prism_extended';
@@ -118,27 +120,28 @@ when Bee sometest [[
 when Bee sometest Bee [[
   // dbgOut PairTest
 ]]
+
+// Bad Matches
+preaddProp
+addPropPost
+not a # pragma
+addProp comment // comment after
 `;
 
 const jsSnippet = 'function() { console.log("Hello World"): }';
 
 /// PRISM GEMSCRIPT DEFINITION ////////////////////////////////////////////////
-const keywords = [
-  'addProp',
-  'setProp',
-  'useFeature',
-  'featureCall',
-  'onEvent',
-  'ifExpr',
-  'when',
-  'dbgOut'
-];
-const keywords_regex = new RegExp(keywords.reduce((acc, cur) => `${acc}|${cur}`));
+const keywords = DATACORE.GetAllKeywords();
+const keywords_regex = new RegExp(
+  '\\b(' + keywords.reduce((acc, cur) => `${acc}|${cur}`) + ')\\b'
+);
+console.log('PRISM gemscript keywords', keywords_regex);
 
 const types = ['Number', 'String', 'Boolean'];
-const types_regex = new RegExp(types.reduce((acc, cur) => `${acc}|${cur}`));
-
-console.log('keywords', keywords_regex);
+const types_regex = new RegExp(
+  '\\b(' + types.reduce((acc, cur) => `${acc}|${cur}`) + ')\\b'
+);
+console.log('PRISM gemscript types', types_regex);
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
