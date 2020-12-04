@@ -174,7 +174,7 @@ class ScriptEditor extends React.Component {
     // The keys map to token definitions in the prism css file.
     Prism.languages.gemscript = Prism.languages.extend('javascript', {
       'keyword': keywords_regex,
-      'namespace': /(^|[^\\:])# \w*/,
+      'namespace': /^# \W*/gm, // multiline
       'inserted': types_regex
     });
     // Prism.languages.javascript.keyword[1].pattern = /(^|[^.]|\.\.\.\s*)\b(?:as|async(?=\s*(?:function\b|\(|[$\w\xA0-\uFFFF]|$))|await|break|case|class|const|continue|debugger|default|delete|do|else|enum|export|extends|for|from|function|when|(?:get|set)(?=\s*[\[$\w\xA0-\uFFFF])|if|implements|import|in|instanceof|interface|let|new|null|of|package|private|protected|public|return|static|super|switch|this|throw|try|typeof|undefined|var|void|while|with|yield|defBlueprint|addProp|prop|setTo|useFeature|featureProp|featureCall|defCondition|increment|decrement)\b/;
