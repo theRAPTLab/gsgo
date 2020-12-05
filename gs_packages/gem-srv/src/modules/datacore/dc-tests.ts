@@ -9,8 +9,11 @@ import { TSMCProgram } from 'lib/t-script.d';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// const PR = UR.PrefixUtil('DCTEST', 'TagRed');
-const TESTS: Map<string, TSMCProgram> = new Map();
-const TEST_RESULTS: Map<string, { passed: any[]; failed: any[] }> = new Map();
+export const TESTS: Map<string, TSMCProgram> = new Map();
+export const TEST_RESULTS: Map<
+  string,
+  { passed: any[]; failed: any[] }
+> = new Map();
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns true if test was saved for the first time, false otherwise */

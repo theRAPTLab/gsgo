@@ -10,8 +10,8 @@ import { IAgent } from 'lib/t-script.d';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCAGNT', 'TagRed');
-const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
-const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
+export const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
+export const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

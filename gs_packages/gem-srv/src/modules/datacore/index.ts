@@ -17,6 +17,7 @@ import { IScopeableCtor, IFeature } from 'lib/t-script.d';
 /// FORWARDED EXPORTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './dc-agents';
+export * from './dc-features';
 export * from './dc-script-bundle';
 export * from './dc-script';
 export * from './dc-programs';
@@ -30,7 +31,6 @@ export * from './dc-tests';
 /// DATA STORAGE MAPS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VAR_DICT: Map<string, IScopeableCtor> = new Map();
-const FEATURES: Map<string, IFeature> = new Map();
 
 /// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,9 +82,3 @@ export function GetDefaultText() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// for erasing data structures
 UR.SystemHook('SIM/RESET', () => {});
-
-/// EXPORTS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see above for exported functions
-/// expose maps and managers
-export { FEATURES };

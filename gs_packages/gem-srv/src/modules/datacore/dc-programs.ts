@@ -11,9 +11,9 @@ import { TSMCProgram } from 'lib/t-script.d';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCPROGS', 'TagRed');
 
-const CONDITIONS: Map<string, TSMCProgram> = new Map();
-const FUNCTIONS: Map<string, Function> = new Map();
-const PROGRAMS: Map<string, TSMCProgram> = new Map();
+export const CONDITIONS: Map<string, TSMCProgram> = new Map();
+export const FUNCTIONS: Map<string, Function> = new Map();
+export const PROGRAMS: Map<string, TSMCProgram> = new Map();
 
 /// CONDITION UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

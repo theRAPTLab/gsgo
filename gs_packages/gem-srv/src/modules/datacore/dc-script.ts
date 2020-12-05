@@ -18,11 +18,11 @@ import { GetFunction } from './dc-programs';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCSCRP', 'TagRed');
 
-const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
-const KEYWORDS: Map<string, IKeyword> = new Map();
-const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
+export const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
+export const KEYWORDS: Map<string, IKeyword> = new Map();
+export const SCRIPTS: Map<string, TScriptUnit[]> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
+export const SCRIPT_EVENTS: Map<string, Map<string, TSMCProgram>> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// KEYWORD UTILITIES /////////////////////////////////////////////////////////
