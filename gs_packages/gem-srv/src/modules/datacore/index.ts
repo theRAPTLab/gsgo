@@ -12,10 +12,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { IScopeableCtor } from 'lib/t-script.d';
 
 /// FORWARDED EXPORTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export * from './dc-varprops';
 export * from './dc-agents';
 export * from './dc-features';
 export * from './dc-script-bundle';
@@ -27,24 +27,6 @@ export * from './dc-tests';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// const PR = UR.PrefixUtil('DCORE', 'TagRed');
-
-/// DATA STORAGE MAPS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const VAR_DICT: Map<string, IScopeableCtor> = new Map();
-
-/// VALUE TYPE UTILITIES //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a SMObject, store in VARTYPES */
-export function RegisterVarCTor(name: string, ctor: IScopeableCtor) {
-  if (VAR_DICT.has(name)) throw Error(`RegisterVarCTor: ${name} exists`);
-  VAR_DICT.set(name, ctor);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** get the registered SMObject constructor by name */
-export function GetVarCtor(name: string): IScopeableCtor {
-  if (!VAR_DICT.has(name)) throw Error(`GetVarCtor: ${name} `);
-  return VAR_DICT.get(name);
-}
 
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,6 +56,8 @@ when Bee sometest Bee [[
   // dbgOut PairTest
 ]]
 `;
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetDefaultText() {
   return DEFAULT_TEXT;
 }
