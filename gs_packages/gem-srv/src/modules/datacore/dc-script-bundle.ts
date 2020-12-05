@@ -4,7 +4,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import { TOpcode, ISMCBundle, EBundleType } from 'lib/t-script.d';
 
 /// valid keys are defined in ISMCBundle, and values indicate the
@@ -24,7 +23,7 @@ const BUNDLE_CONTEXTS = [
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('DCBDL', 'TagRed');
+/// const PR = UR.PrefixUtil('DCBDL', 'TagRed');
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

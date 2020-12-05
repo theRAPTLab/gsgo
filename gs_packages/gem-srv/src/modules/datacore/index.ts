@@ -12,7 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { IScopeableCtor, IFeature } from 'lib/t-script.d';
+import { IScopeableCtor } from 'lib/t-script.d';
 
 /// FORWARDED EXPORTS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
