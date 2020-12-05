@@ -11,7 +11,7 @@ import clsx from 'clsx';
 
 // SELECT RUNTIME MODULES FOR APP
 import * as RENDERER from 'modules/render/api-render';
-import * as GLOBAL from 'modules/runtime-globals';
+import * as GLOBAL from 'modules/datacore/dc-globals';
 //
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './page-styles';

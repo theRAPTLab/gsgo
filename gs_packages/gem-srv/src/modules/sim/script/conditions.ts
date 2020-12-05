@@ -12,7 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetAgentsByType } from 'modules/runtime-datacore';
+import { GetAgentsByType } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import { ISMCBundle } from 'lib/t-script';
 import { Evaluate } from 'lib/expr-evaluator';

@@ -13,7 +13,7 @@ import {
   RegisterKeyword,
   SingleAgentFilter,
   PairAgentFilter
-} from 'modules/runtime-datacore';
+} from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

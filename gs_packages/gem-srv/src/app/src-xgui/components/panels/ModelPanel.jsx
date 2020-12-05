@@ -1,7 +1,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as RENDERER from 'modules/render/api-render';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as DATACORE from 'modules/datacore';
 
 import APP from '../../app-logic';
 

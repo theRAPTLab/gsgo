@@ -19,7 +19,7 @@
 
 import React from 'react';
 import { IKeyword, TOpcode, TScriptUnit } from 'lib/t-script';
-import { GetFunction } from 'modules/runtime-datacore';
+import { GetFunction } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

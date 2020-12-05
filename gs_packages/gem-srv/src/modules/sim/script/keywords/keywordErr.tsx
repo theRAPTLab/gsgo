@@ -9,7 +9,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/runtime-datacore';
+import { RegisterKeyword } from 'modules/datacore';
 import { EvalUnitArgs } from 'lib/expr-evaluator';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////

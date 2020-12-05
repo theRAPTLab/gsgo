@@ -11,7 +11,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, SetBundleOut } from 'modules/runtime-datacore';
+import { RegisterKeyword, SetBundleOut } from 'modules/datacore';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

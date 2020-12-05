@@ -7,11 +7,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import {
-  RegisterKeyword,
-  GetTest,
-  UtilFirstValue
-} from 'modules/runtime-datacore';
+import { RegisterKeyword, GetTest, UtilFirstValue } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

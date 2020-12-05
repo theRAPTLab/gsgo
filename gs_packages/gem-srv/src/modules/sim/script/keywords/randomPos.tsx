@@ -7,7 +7,7 @@ implementation of keyword "randomPos" keyword object
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IScopeable, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword } from 'modules/runtime-datacore';
+import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

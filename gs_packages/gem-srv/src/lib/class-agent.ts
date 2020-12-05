@@ -9,8 +9,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES, GetProgram, GetTest } from 'modules/runtime-datacore';
-import * as GLOBAL from 'modules/runtime-globals';
+import { FEATURES, GetProgram, GetTest } from 'modules/datacore';
+import * as GLOBAL from 'modules/datacore/dc-globals';
 import { Evaluate } from 'lib/expr-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
 import SM_Message from './class-sm-message';

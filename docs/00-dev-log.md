@@ -314,10 +314,31 @@ sim runstates:
 
 Let's do some initial code outlining:
 
-* [ ] there are some run modes in sim, and some resources. So probably looking in `api-sim` is a good place to start.
-* [ ] make a new branch
+* [x] there are some run modes in sim, and some resources. So probably looking in `api-sim` is a good place to start.
+* [x] make a new branch `mission-control`
+* [x] review `api-sim`, write reference into WHIMSICAL document
+  * [ ] the script interface is essential a text window that is named for the blueprint. It uses TRANSPILER to convert the text into ScriptUnits, which are then saved to the db and synchronized with the mission control
+  * [ ] the blueprint editor might have you choose the default sprite from there
+  * [ ] the **instancer** allows you to create a bunch of instances by dragging it into the window. 
+  * [ ] the **input assigned** tells mission control how to handle **inputs** from other devices, which are comprised of:
+    * a role, jwt-token, uaddr identifies the input
+    * inputs received from the input, and when they are allowed (some are controls, other are data updates)
+    * for inputs: a **map** of the role/input data to a **simulation entity** : these are either an agent factory (the name of a blueprint) or a pointer factory (the position only). Ultimately both end up consolidating to an instance on the screen
+    * annotations are directed to the appropriate widget that handles it (widgets are probably implemented as feature classes)
+  * [ ] The user interface for input assignment is a list of devices that can be added to a column pool that sorts into:
+    * simulation controller (run/stop/free)
+    * script controller
+    * instance controller
+    * annotation controller
+    * observer controller
+* [ ] What does the **free run** look like from the MISSION CONTROLLER perspective
+  * gather the list of instances to run! A list of blueprints. Let's call this **InstanceList**
 
 
+
+FREE WRITING
+
+We have three modes: the "sim off", "free run sim" mode, the "recording" mode, the "annotation" mode, and the "playback" mode
 
 
 

@@ -12,8 +12,8 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim';
-import * as GLOBAL from 'modules/runtime-globals';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
 import * as Prism from '../../util/prism';
@@ -47,7 +47,7 @@ UR.SystemHook(
         let map = await GLOBAL.LoadAssets('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         console.log(...PR('Waiting for user input'));
-        // SIM.StartSimulation();
+        // SIM.Start();
         // if (DBG) console.log(...PR('SIMULATION STARTED'));
       })();
       resolve();
@@ -90,7 +90,7 @@ class Compiler extends React.Component {
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP';
+    document.title = 'COMPILER';
     // start URSYS
     UR.SystemConfig({ autoRun: true });
     // initialize renderer
@@ -182,7 +182,7 @@ class Compiler extends React.Component {
     // update local jsx render
     const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
-    SIM.StartSimulation();
+    SIM.Start();
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.

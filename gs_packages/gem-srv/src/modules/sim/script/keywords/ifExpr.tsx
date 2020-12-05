@@ -8,7 +8,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, UtilFirstValue } from 'modules/runtime-datacore';
+import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
