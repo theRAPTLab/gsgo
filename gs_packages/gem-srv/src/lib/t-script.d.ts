@@ -111,11 +111,10 @@ export interface ISMCPrograms {
   conseq?: TSMCProgram; // program to run on true
   alter?: TSMCProgram; // program to run otherwise
 }
-/** An ISMCBundle is a dictionary of TSCMPrograms. See also runtime-datacore
- *  for the BUNDLE_OUTS definition, which maps the bundle props to a
- *  particular runtime context (e.g. BLUEPRINT)
- *  A TSMCProgram is just TOpcode[]
- *  A TSMCGlobalProgram is just TRegcode[]
+/** An ISMCBundle is a dictionary of TSCMPrograms. See also dc-script-bundle for
+ *  the BUNDLE_OUTS definition, which maps the bundle props to a particular
+ *  runtime context (e.g. BLUEPRINT) A TSMCProgram is just TOpcode[] A
+ *  TSMCGlobalProgram is just TRegcode[]
  */
 export interface ISMCBundle extends ISMCPrograms {
   name?: string; // the blueprint name of the bundle, if any
