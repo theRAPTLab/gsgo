@@ -133,7 +133,7 @@ class PanelScript extends React.Component {
       'inserted': types_regex
     });
 
-    this.OnSaveClick = this.OnSaveClick.bind(this);
+    this.OnButtonClick = this.OnButtonClick.bind(this);
   }
 
   componentDidMount() {
@@ -150,26 +150,52 @@ class PanelScript extends React.Component {
     });
   }
 
-  OnSaveClick() {
+  OnButtonClick(action) {
     // This should save to URSYS
     // HACK now to go back to select screen
+    // This calls the ScriptEditor onClick handler
+    // to reconfigure the panels
     const { onClick } = this.props;
-    onClick('select');
+    onClick(action);
   }
 
   render() {
     const { title, script } = this.state;
     const { id, onClick, classes } = this.props;
 
+    const BackBtn = (
+      <button
+        type="button"
+        className={classes.button}
+        style={{ alignSelf: 'flex-end' }}
+        onClick={() => this.OnButtonClick('select')}
+      >
+        &lt; Select Script
+      </button>
+    );
+
     const SaveBtn = (
       <button
         type="button"
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
-        onClick={this.OnSaveClick}
+        onClick={() => console.log('Save to server...not implemented')}
       >
         SAVE TO SERVER
       </button>
+    );
+
+    const BottomBar = (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'row',
+          justifyContent: 'space-between'
+        }}
+      >
+        {BackBtn}
+        {SaveBtn}
+      </div>
     );
 
     return (
@@ -177,7 +203,7 @@ class PanelScript extends React.Component {
         id={id} // used by click handler to identify panel
         title={title}
         onClick={onClick}
-        bottombar={SaveBtn}
+        bottombar={BottomBar}
       >
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <pre
