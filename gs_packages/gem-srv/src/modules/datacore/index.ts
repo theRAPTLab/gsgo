@@ -23,6 +23,7 @@ export * from './dc-script';
 export * from './dc-programs';
 export * from './dc-filters';
 export * from './dc-tests';
+export * from './dc-sim';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
