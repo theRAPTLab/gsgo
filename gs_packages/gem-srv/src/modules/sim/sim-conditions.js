@@ -10,7 +10,7 @@ import {
   GetAllGlobalConditions,
   GetScriptEventHandlers,
   GetAgentsByType
-} from 'modules/runtime-datacore';
+} from 'modules/datacore';
 import { Evaluate } from 'lib/expr-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { CONDITIONS } from 'modules/runtime-datacore';
+import { CONDITIONS } from 'modules/datacore';
 import AgentSet from 'lib/class-agentset';
 import Condition from 'lib/class-sm-condition';
 

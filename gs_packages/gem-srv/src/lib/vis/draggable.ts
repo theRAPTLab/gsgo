@@ -1,6 +1,6 @@
 /** given a VOBJ, decorate it to add new features */
 import { Visual } from 'lib/t-visual';
-import { GetAgentById } from 'modules/runtime-datacore';
+import { GetAgentById } from 'modules/datacore';
 
 export function MakeDraggable(vobj: Visual) {
   function onDragStart(event) {

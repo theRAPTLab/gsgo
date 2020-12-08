@@ -17,12 +17,12 @@ import {
   AddToBundle,
   AddGlobalCondition,
   SetBundleName
-} from 'modules/runtime-datacore';
+} from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as DATACORE from 'modules/datacore';
 // critical imports
 import 'script/keywords/_all_keywords';
 

@@ -11,7 +11,7 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, RegisterTest } from 'modules/runtime-datacore';
+import { RegisterKeyword, RegisterTest } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

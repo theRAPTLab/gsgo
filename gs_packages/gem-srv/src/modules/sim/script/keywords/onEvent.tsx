@@ -13,7 +13,7 @@ import {
   CompilerState,
   UtilDerefArg,
   SubscribeToScriptEvent
-} from 'modules/runtime-datacore';
+} from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

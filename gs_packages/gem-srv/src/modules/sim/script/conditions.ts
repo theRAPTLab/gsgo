@@ -8,11 +8,9 @@
   pair set test: touch(AgentSet1, AgentSet2) -> PairSet
   timer condition: elapsed [interval]
 
-  This stuff has been moved into runtime-datacore
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { GetAgentsByType } from 'modules/runtime-datacore';
+import { GetAgentsByType } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import { ISMCBundle } from 'lib/t-script';
 import { Evaluate } from 'lib/expr-evaluator';
