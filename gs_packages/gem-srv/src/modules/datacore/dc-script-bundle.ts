@@ -69,7 +69,8 @@ export function SetBundleName(
 /** set the datacore global var BUNDLE_OUT to bdlKey, which tells the
  *  AddToBundle(bdl,prog) call where the program should be added
  */
-export function SetBundleOut(bdlKey: string): boolean {
+export function SetBundleOut(str: string): boolean {
+  const bdlKey = str.toLowerCase();
   if (IsValidBundleProgram(bdlKey)) {
     BUNDLE_OUT = bdlKey;
     return true;

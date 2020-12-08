@@ -42,7 +42,12 @@
 
 ## DEC 08 TUE - Picking Up
 
-Ben's been implementing some kind of scripting UI. I
+Ben's been implementing some kind of scripting UI. I'm trying to remember what to do next. I just **refactored datacore** in anticipation of managing the `INSTANCES` map. This is an array of initializer programs for each agent instance, since they could all be different. These can be null programs too, but this is what we need to maintain a list of instances.
+
+So...how does this work?
+
+* Instances have an initialization program that sets unique starting values. This is produced by the transpiler as the `init` program in TSMCBundle.
+* I should change the pragma also for output libraries.
 
 
 

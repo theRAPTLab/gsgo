@@ -21,8 +21,8 @@ import { CodeJar } from '../../util/codejar';
 import '../../util/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
-import 'modules/tests/test-parser'; // test parser evaluation
-import 'modules/tests/test-compiler'; // test compiler
+// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
