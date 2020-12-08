@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys/client';
 import Agent from 'lib/class-agent';
-import { TScriptUnit, TOpcode, EBundleType } from 'lib/t-script.d';
+import { TScriptUnit, TOpcode, TInstance, EBundleType } from 'lib/t-script.d';
 import {
   GetKeyword,
   SaveAgent,
@@ -294,9 +294,12 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function MakeAgent(agentName: string, options?: { blueprint: string }) {
-  const { blueprint } = options || {};
-  const agent = new Agent(agentName);
+/** Utility to make an Agent. This has to be done in a module outside of
+ *  dc-agents, because datacore modules must be pure definition
+ */
+function MakeAgent(instanceDef: TInstance) {
+  const { blueprint, name } = instanceDef;
+  const agent = new Agent(name);
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof blueprint === 'string') {

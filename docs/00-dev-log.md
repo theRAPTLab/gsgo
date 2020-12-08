@@ -47,7 +47,21 @@ Ben's been implementing some kind of scripting UI. I'm trying to remember what t
 So...how does this work?
 
 * Instances have an initialization program that sets unique starting values. This is produced by the transpiler as the `init` program in TSMCBundle.
-* I should change the pragma also for output libraries.
+* I should change the pragma also for output libraries...done
+
+Freewriting...the instancing operation would look something like this:
+
+* user drags a blueprint into the world
+* The blueprint is instanced per usual
+* the instance appears in a panel
+* clicking an instance allows you to change the name and starting property values. The name is stored in the instance itself
+
+When saving state, we need to save the blueprint, the name, and the initial values. The initial values are a program like `setProp frame 1`, so it's a program array again.
+
+* [x] Define TInstanceMap and TInstance in dc-sim
+* [x] `DefineInstance(name,bp,init)`
+* [x] Rewrite Transpiler.MakeAgent to use new TInstance class
+* [x] Rewrite sim-agents.AgentProgram to define instances then make them
 
 
 

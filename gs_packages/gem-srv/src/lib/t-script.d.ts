@@ -160,6 +160,16 @@ export interface IScriptUpdate {
   scriptUnit: TScriptUnit;
 }
 
+/// AGENT INSTANCING //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export type TInstance = {
+  blueprint: string;
+  id?: number;
+  name?: string;
+  init?: TScriptUnit[];
+};
+export type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name
+
 /// STACKMACHINE TYPE DECLARATIONS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine maintains state in form of a data stack, a scope stack,

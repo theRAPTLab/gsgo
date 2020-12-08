@@ -1,17 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  SIM RUNTIME
+  SIM RUNTIME ENUMERATIONS
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
-import { TSMCProgram } from 'lib/t-script';
-import { GetAgentsByType } from './dc-agents';
-import { GetFunction } from './dc-programs';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// blueprint -> array of initializer programs for each instance
-const INSTANCES: Map<string, TSMCProgram[]> = new Map();
 
 /// ENUMS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -177,6 +177,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllGlobalConditions();
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
+    DATACORE.DeleteAllInstances();
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
