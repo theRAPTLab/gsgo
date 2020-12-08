@@ -19,62 +19,20 @@ import './sim-referee';
 import './sim-features';
 import './sim-render';
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+// import submodules
+import { GAME_LOOP, MODES } from './api-sim-gameloop';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM');
-const DBG = false;
-
-/// DECLARATIONS //////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// create PhaseMachine to manage gameloop
-const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
-  GLOOP_LOAD: [
-    'LOAD_ASSETS',
-    'RESET',
-    'SETMODE',
-    'WAIT',
-    'PROGRAM',
-    'INIT',
-    'READY'
-  ],
-  GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
-  GLOOP: [
-    // get state and queue derived state
-    'INPUTS',
-    'PHYSICS',
-    'TIMERS',
-    // agent/groups autonomous updates
-    'AGENTS_UPDATE',
-    'GROUPS_UPDATE',
-    'FEATURES_UPDATE',
-    // process conditions and collection
-    'CONDITIONS_UPDATE',
-    // agent/groups script execution and queue actions
-    'FEATURES_THINK',
-    'GROUPS_THINK',
-    'AGENTS_THINK',
-    'GROUPS_VETO',
-    // agent/groups execute queue actions
-    'FEATURES_EXEC',
-    'AGENTS_EXEC',
-    'GROUPS_EXEC',
-    // simulation
-    'SIM_EVAL',
-    'REFEREE_EVAL',
-    // display output
-    'VIS_UPDATE',
-    'VIS_RENDER'
-  ]
-});
 
 /// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let SIM_FRAME_MS = interval((1 / 30) * 1000);
 let RX_SUB;
 let SIM_RATE = 0; // 0 = stopped, 1 = going. HACKY for DEC 1
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_StepSimulation(frameCount) {
+function m_Step(frameCount) {
   /* insert conditional run control here */
   GAME_LOOP.executePhase('GLOOP', frameCount);
   if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
@@ -84,7 +42,7 @@ function m_StepSimulation(frameCount) {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// LOADING CONTROL ///////////////////////////////////////////////////////////
-function StageSimulation() {
+function Stage() {
   // load agents and assets
   // prep recording buffer
   (async () => {
@@ -95,79 +53,63 @@ function StageSimulation() {
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
-function RunSimulation() {
+function Run() {
   // prepare to run simulation and do first-time setup
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** once the simluation is initialized, start the periodic frame update */
-function StartSimulation() {
+function Start() {
   if (SIM_RATE === 1) {
     console.log(...PR('Simulation already started'));
     return;
   }
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
-  RX_SUB = SIM_FRAME_MS.subscribe(m_StepSimulation);
+  RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
-function RestageSimulation() {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function Restage() {
   // application host has changed
   console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
   GAME_LOOP.execute('SYSEX');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function PauseSimulation() {
+function Pause() {
   // set the playback rate from 0 to 10
   // can we support backing up in the buffer?
   // can we offer forward simulation from the playback buffer
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function EndSimulation() {
+function End() {
   // stop simulation
-  console.log(...PR('EndSimulation'));
+  console.log(...PR('End'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
 }
 
 /// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ExportSimulation() {
+function Export() {
   // grab data from the simulation
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ResetSimulation() {
+function Reset() {
   // return simulation to starting state, ready to run
   (async () => {
-    console.log(...PR('ResetSimulation'));
+    console.log(...PR('Reset'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
   })();
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const u_dump = (phases, index) => {
-  if (!DBG) return;
-  if (index === 0) console.log('start of PHASE', index);
-  if (index === phases.length) console.log('end of PHASE', index);
-  else console.log(`.. executing ${index} ${phases[index]}`);
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/APP_STAGE', StageSimulation);
-UR.SystemHook('UR/APP_RUN', RunSimulation);
-UR.SystemHook('UR/APP_RESET', ResetSimulation);
-UR.SystemHook('UR/APP_RESTAGE', RestageSimulation);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-GAME_LOOP.hook('GLOOP_LOAD', u_dump);
-GAME_LOOP.hook('GLOOP', u_dump);
+UR.SystemHook('UR/APP_STAGE', Stage);
+UR.SystemHook('UR/APP_RUN', Run);
+UR.SystemHook('UR/APP_RESET', Reset);
+UR.SystemHook('UR/APP_RESTAGE', Restage);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export {
-  StageSimulation,
-  StartSimulation,
-  PauseSimulation,
-  EndSimulation,
-  ExportSimulation,
-  ResetSimulation
-};
+export { Stage, Start, Pause, End, Export, Reset };

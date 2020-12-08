@@ -9,8 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
-import * as DATACORE from 'modules/runtime-datacore';
-import * as GLOBAL from 'modules/runtime-globals';
+import * as DATACORE from 'modules/datacore';
+import * as GLOBAL from 'modules/datacore/dc-globals';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-interaction';

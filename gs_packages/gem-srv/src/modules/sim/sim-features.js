@@ -9,7 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { FEATURES } from 'modules/runtime-datacore';
+import { FEATURES } from 'modules/datacore';
 import MovementPack from './features/feat-movement';
 import TimerPack from './features/feat-timer';
 

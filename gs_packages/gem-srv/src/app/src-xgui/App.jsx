@@ -5,7 +5,7 @@ import clsx from 'clsx';
 // URSYS
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from 'app/pages/page-styles';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as SIM from 'modules/sim/api-sim';
 // XGUI

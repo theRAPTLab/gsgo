@@ -4,8 +4,8 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/runtime-globals';
-import * as DATACORE from 'modules/runtime-datacore';
+import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as DATACORE from 'modules/datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
 import * as Prism from '../../../util/prism_extended';

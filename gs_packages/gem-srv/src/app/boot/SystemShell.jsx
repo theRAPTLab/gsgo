@@ -13,7 +13,6 @@ import { Switch, Route } from 'react-router-dom';
 
 import {
   LazyTracker,
-  LazyGenerator,
   LazyFakeTrack,
   LazyCompiler,
   LazyLogin,
@@ -65,9 +64,6 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/scripteditor">
           <LazyScriptEditor />
-        </Route>
-        <Route path="/app/generator">
-          <LazyGenerator />
         </Route>
         <Route exact path="/app">
           <LazyHome />

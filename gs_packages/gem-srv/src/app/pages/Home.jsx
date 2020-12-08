@@ -67,9 +67,8 @@ class Home extends React.Component {
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <b className={classes.title}>Available Routes</b>
           <ul className={classes.list}>
-            <NavItem route="generator">generate npc entities</NavItem>
-            <NavItem route="tracker">display all entities in system</NavItem>
             <NavItem route="compiler">script compiler tests</NavItem>
+            <NavItem route="tracker">display all entities in system</NavItem>
             <NavItem route="login">login</NavItem>
             <NavItem route="missioncontrol">mission control</NavItem>
             <NavItem route="scripteditor">script editor</NavItem>
