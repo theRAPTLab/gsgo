@@ -21,8 +21,8 @@ import { CodeJar } from '../../util/codejar';
 import '../../util/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
-import 'modules/tests/test-parser'; // test parser evaluation
-import 'modules/tests/test-compiler'; // test compiler
+// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './page-styles';
@@ -177,6 +177,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllGlobalConditions();
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
+    DATACORE.DeleteAllInstances();
     const bp = TRANSPILER.RegisterBlueprint(this.source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render

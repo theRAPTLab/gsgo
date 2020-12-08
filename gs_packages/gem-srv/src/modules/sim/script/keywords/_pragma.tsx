@@ -11,7 +11,8 @@
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import { RegisterKeyword, SetBundleOut } from 'modules/datacore';
+import { SetBundleOut } from 'modules/datacore/dc-script-bundle';
+import { RegisterKeyword } from 'modules/datacore/dc-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,19 +23,13 @@ import { RegisterKeyword, SetBundleOut } from 'modules/datacore';
 const PRAGMA = {
   'BLUEPRINT': (blueprintName, baseBlueprint) => {
     return (agent, state) => {
+      // The stack is read by transpiler if a BLUEPRINT pragma
+      // is detected as a special case. This is how the transpiler
+      // knows what the blueprintname is!
       state.stack.push('_blueprint', blueprintName, baseBlueprint);
     };
   },
-  'DEFINE': () => SetBundleOut('define'),
-  'INIT': () => SetBundleOut('init'),
-  'UPDATE': () => SetBundleOut('update'),
-  'THINK': () => SetBundleOut('think'),
-  'EXEC': () => SetBundleOut('exec'),
-  'CONDITION': () => SetBundleOut('condition'),
-  'EVENT': () => SetBundleOut('event'),
-  'TEST': () => SetBundleOut('test'),
-  'ALTERNATE': () => SetBundleOut('alter'),
-  'CONSEQUENT': () => SetBundleOut('conseq')
+  'PROGRAM': libName => SetBundleOut(libName)
 };
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
@@ -53,9 +48,11 @@ export class _pragma extends Keyword {
     const pragmatizer = PRAGMA[pragmaName.toUpperCase()];
     const program = pragmatizer(...args);
     // the output of the pragmatizer is either a TOpcode,
-    // a TOpcode[], or nothing. This program receives
-    // a compiler agent and a compiler state that is unique
-    // to the compile loop.
+    // a TOpcode[], boolean, or void.
+    // Note that the runtime context is different for
+    // pragma TOpcode[]. It's transpile-time, not
+    // during runtime.
+
     if (Array.isArray(program)) return program;
     if (typeof program === 'function') return [program];
     // if nothing returns, reset the COMPILER_STATE
