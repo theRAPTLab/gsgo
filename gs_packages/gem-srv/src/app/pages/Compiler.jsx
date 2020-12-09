@@ -156,6 +156,7 @@ class Compiler extends React.Component {
   remoteCompileText(data) {
     const { text } = data;
     this.setState({ text });
+    this.jar.updateCode(text);
     this.text = text;
     this.userSaveBlueprint();
   }
