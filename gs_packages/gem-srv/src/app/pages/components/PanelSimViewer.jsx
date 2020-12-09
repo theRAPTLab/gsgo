@@ -23,6 +23,7 @@ UR.SystemHook('UR/LOAD_ASSETS', () => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {
       let map = await GLOBAL.LoadAssets('static/assets.json');
+      ASSETS_LOADED = true;
       if (DBG) console.log(...PR('ASSETS LOADED'));
       console.log(...PR('Waiting for user input'));
     })();
@@ -66,9 +67,7 @@ class PanelSimViewer extends React.Component {
   componentDidMount() {
     const renderRoot = document.getElementById('root-renderer');
     RENDERER.SetGlobalConfig({ actable: false });
-    console.log('componentDidMount; About to REDNERER.Init');
     RENDERER.Init(renderRoot);
-    console.log('componentDidMount; About to hooresize.Init');
     RENDERER.HookResize(window);
   }
 
