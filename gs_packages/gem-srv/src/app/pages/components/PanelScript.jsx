@@ -125,6 +125,7 @@ class PanelScript extends React.Component {
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
+    this.hackSendText = this.hackSendText.bind(this);
 
     // The keys map to token definitions in the prism css file.
     Prism.languages.gemscript = Prism.languages.extend('javascript', {
@@ -146,6 +147,11 @@ class PanelScript extends React.Component {
     this.jar.onUpdate(code => {
       this.text = code;
     });
+  }
+
+  hackSendText() {
+    const text = this.jar.toString();
+    UR.RaiseMessage('NET:HACK_RECEIVE_TEXT', { text });
   }
 
   OnButtonClick(action) {
@@ -177,7 +183,7 @@ class PanelScript extends React.Component {
         type="button"
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
-        onClick={() => console.log('Save to server...not implemented')}
+        onClick={() => this.hackSendText()}
       >
         SAVE TO SERVER
       </button>

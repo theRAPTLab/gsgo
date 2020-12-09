@@ -29,7 +29,7 @@ import { useStylesHOC } from './page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('APP');
+const PR = UR.PrefixUtil('APP', 'TagRed');
 const DBG = false;
 
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
@@ -72,6 +72,7 @@ class Compiler extends React.Component {
     this.userUpdateText = this.userUpdateText.bind(this);
     this.userSaveBlueprint = this.userSaveBlueprint.bind(this);
     this.userCompileText = this.userCompileText.bind(this);
+    this.remoteCompileText = this.remoteCompileText.bind(this);
     this.updateJSX = this.updateJSX.bind(this);
     this.updateScript = this.updateScript.bind(this);
     this.updateText = this.updateText.bind(this);
@@ -85,6 +86,7 @@ class Compiler extends React.Component {
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
+    UR.RegisterMessage('NET:HACK_RECEIVE_TEXT', this.remoteCompileText);
   }
 
   componentDidMount() {
@@ -148,6 +150,14 @@ class Compiler extends React.Component {
     const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
     if (DBG) console.groupEnd();
+  }
+
+  // hack: remote compiler
+  remoteCompileText(data) {
+    const { text } = data;
+    this.setState({ text });
+    this.text = text;
+    this.userSaveBlueprint();
   }
 
   // compile jsx back to source
