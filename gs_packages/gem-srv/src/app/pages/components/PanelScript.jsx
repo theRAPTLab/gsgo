@@ -22,7 +22,9 @@ const PR = UR.PrefixUtil('PANELSCRIPT');
 const DBG = true;
 
 /// DEMO SCRIPT ///////////////////////////////////////////////////////////////
-const demoscript = `# BLUEPRINT Bee
+
+// Script text for testing Prism highlighting and scrolling
+const highlighting_test_script = `# BLUEPRINT Bee
 # DEFINE
 addProp frame Number 3
 useFeature Movement
@@ -53,7 +55,7 @@ addPropPost
 not a # pragma
 addProp comment // comment after
 
-// EXTRA LONG SCRIPT
+// EXTRA LONG SCRIPT TO TEST SCROLLING
 # DEFINE
 addProp frame Number 3
 useFeature Movement
@@ -77,7 +79,33 @@ when Bee sometest [[
 when Bee sometest Bee [[
   // dbgOut PairTest
 ]]
+`;
 
+// Working demoscript
+const demoscript = `# BLUEPRINT BunBun
+# DEFINE
+addProp frame Number 3
+useFeature Movement
+# UPDATE
+setProp skin 'bunny.json'
+featureCall Movement jitterPos -5 5
+# EVENT
+onEvent Tick [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
+  ]]
+  setProp 'x'  0
+  setProp 'y'  0
+]]
+# CONDITION
+when Bee sometest [[
+  // dbgOut SingleTest
+]]
+when Bee sometest Bee [[
+  // dbgOut PairTest
+]]
 `;
 
 /// PRISM GEMSCRIPT DEFINITION ////////////////////////////////////////////////
@@ -92,25 +120,6 @@ const types_regex = new RegExp(
   '\\b(' + types.reduce((acc, cur) => `${acc}|${cur}`) + ')\\b'
 );
 console.log('PRISM gemscript types', types_regex);
-
-/// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Is this necessary?  Causing async "Uncaught (in promise) undefined" error
-// UR.SystemHook(
-//   'UR/LOAD_ASSETS',
-//   () =>
-//     new Promise((resolve, reject) => {
-//       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-//       (async () => {
-//         let map = await GLOBAL.LoadAssets('static/assets.json');
-//         if (DBG) console.log(...PR('ASSETS LOADED'));
-//         // Compiler.jsx starts sim, but we shouldn't need to?
-//         // SIM.StartSimulation();
-//         // if (DBG) console.log(...PR('SIMULATION STARTED'));
-//       })();
-//       resolve();
-//     })
-// );
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
