@@ -15,40 +15,16 @@ import PanelChrome from './PanelChrome';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PanelSimViewer', 'TagBlue');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
+const DBG = true;
 let ASSETS_LOADED = false;
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.SystemHook(
-//   'UR/LOAD_ASSETS',
-//   () =>
-//     new Promise((resolve, reject) => {
-//       console.error(...PR('LOADING ASSET MANIFEST...'));
-//       (async () => {
-//         await GLOBAL.LoadAssets('static/assets.json');
-//         ASSETS_LOADED = true;
-//         console.log(...PR('ASSETS LOADED'));
-//       })();
-//       resolve();
-//     })
-// );
-
-// For some reason LOAD_ASSETS is getting invoked twice
-// resulting in a promise error.  Add a flag to
-// temporarily test for it
-let LOAD_ASSETS_ALREADY_INVOKED = false;
 UR.SystemHook('UR/LOAD_ASSETS', () => {
-  if (LOAD_ASSETS_ALREADY_INVOKED) {
-    console.error('skipping');
-    return;
-  }
-  new Promise((resolve, reject) => {
-    LOAD_ASSETS_ALREADY_INVOKED = true;
-    console.error(...PR('LOADING ASSET MANIFEST...'));
+  return new Promise((resolve, reject) => {
+    if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {
-      await GLOBAL.LoadAssets('static/assets.json');
-      ASSETS_LOADED = true;
-      console.log(...PR('ASSETS LOADED'));
+      let map = await GLOBAL.LoadAssets('static/assets.json');
+      if (DBG) console.log(...PR('ASSETS LOADED'));
+      console.log(...PR('Waiting for user input'));
     })();
     resolve();
   });
@@ -88,8 +64,6 @@ class PanelSimViewer extends React.Component {
   }
 
   componentDidMount() {
-    // start URSYS
-    UR.SystemConfig({ autoRun: true }); // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
     RENDERER.SetGlobalConfig({ actable: false });
     console.log('componentDidMount; About to REDNERER.Init');

@@ -137,8 +137,6 @@ class PanelScript extends React.Component {
   }
 
   componentDidMount() {
-    // start URSYS
-    UR.SystemConfig({ autoRun: true });
     // initialize codejar
     const highlight = editor => {
       Prism.highlightElement(editor);

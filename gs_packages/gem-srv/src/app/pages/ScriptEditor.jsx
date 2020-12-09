@@ -37,28 +37,6 @@ import { useStylesHOC } from './page-xui-styles';
 const PR = UR.PrefixUtil('SCRIPTEDITOR');
 const DBG = true;
 
-/// HARCODED SOURCE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Is this necessary?  Causing async "Uncaught (in promise) undefined" error
-// UR.SystemHook(
-//   'UR/LOAD_ASSETS',
-//   () =>
-//     new Promise((resolve, reject) => {
-//       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-//       (async () => {
-//         let map = await GLOBAL.LoadAssets('static/assets.json');
-//         if (DBG) console.log(...PR('ASSETS LOADED'));
-//         // Compiler.jsx starts sim, but we shouldn't need to?
-//         // SIM.StartSimulation();
-//         // if (DBG) console.log(...PR('SIMULATION STARTED'));
-//       })();
-//       resolve();
-//     })
-// );
-
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const panelConfig = new Map();
 panelConfig.set('select', '50% auto 0px'); // columns

@@ -38,21 +38,19 @@ const defaultText = DATACORE.GetDefaultText();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
-  'UR/LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-      (async () => {
-        let map = await GLOBAL.LoadAssets('static/assets.json');
-        if (DBG) console.log(...PR('ASSETS LOADED'));
-        console.log(...PR('Waiting for user input'));
-        // SIM.Start();
-        // if (DBG) console.log(...PR('SIMULATION STARTED'));
-      })();
-      resolve();
-    })
-);
+UR.SystemHook('UR/LOAD_ASSETS', () => {
+  return new Promise((resolve, reject) => {
+    if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
+    (async () => {
+      let map = await GLOBAL.LoadAssets('static/assets.json');
+      if (DBG) console.log(...PR('ASSETS LOADED'));
+      console.log(...PR('Waiting for user input'));
+      // SIM.Start();
+      // if (DBG) console.log(...PR('SIMULATION STARTED'));
+    })();
+    resolve();
+  });
+});
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
