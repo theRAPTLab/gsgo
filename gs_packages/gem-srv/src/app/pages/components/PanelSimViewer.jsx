@@ -26,6 +26,7 @@ UR.SystemHook('UR/LOAD_ASSETS', () => {
       if (DBG) console.log(...PR('ASSETS LOADED'));
       console.log(...PR('Waiting for user input'));
     })();
+    ASSETS_LOADED = true;
     resolve();
   });
 });
