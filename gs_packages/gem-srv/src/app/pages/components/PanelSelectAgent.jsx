@@ -38,24 +38,31 @@ class PanelSelectAgent extends React.Component {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-around',
+              alignContent: 'center',
               width: '200px',
               padding: '30px'
             }}
           >
             {options.map(m => (
-              <button
-                type="button"
-                disabled={m.editor !== undefined}
-                className={
-                  m.editor
-                    ? `${classes.button} ${classes.buttonDisabled}`
-                    : classes.button
-                }
-                key={m.id}
-                onClick={() => this.onClick(m.id)}
-              >
-                {m.label}
-              </button>
+              <div key={m.id}>
+                <button
+                  type="button"
+                  disabled={m.editor !== undefined}
+                  className={
+                    m.editor
+                      ? `${classes.button} ${classes.buttonDisabled}`
+                      : classes.button
+                  }
+                  onClick={() => this.onClick(m.id)}
+                >
+                  {m.label}
+                </button>
+                <div className={classes.instructions}>
+                  {m.editor ? `EDITING: ${m.editor}` : ''}
+                  <br />
+                  <br />
+                </div>
+              </div>
             ))}
           </div>
         </div>
