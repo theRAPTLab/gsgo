@@ -1,4 +1,5 @@
 import React from 'react';
+import * as DATACORE from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../page-xui-styles';
 
@@ -45,6 +46,10 @@ class PanelInstances extends React.Component {
         instances: [{ label: 'LightBeam01' }]
       }
     ];
+
+    // TEST GetAllINstances Call
+    const instances = DATACORE.GetAllInstances();
+    console.error('GetAllInstances gets', instances);
 
     const onClick = () => {
       // To be implemented
