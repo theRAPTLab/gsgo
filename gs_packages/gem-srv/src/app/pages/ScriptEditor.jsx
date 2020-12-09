@@ -21,7 +21,7 @@ import { CodeJar } from '../../util/codejar';
 import '../../util/prism_extended.css';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelSim from './components/PanelSim';
+import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectAgent from './components/PanelSelectAgent';
 import PanelScript from './components/PanelScript';
 import PanelInspector from './components/PanelInspector';
@@ -141,8 +141,8 @@ class ScriptEditor extends React.Component {
             </p>
           </div>
         </div>
-        <div id="root-renderer" className={classes.main}>
-          <PanelSim id="sim" onClick={this.OnPanelClick} />
+        <div id="console-main" className={classes.main}>
+          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
             <PanelInspector isActive />
             <PanelInspector />

@@ -22,7 +22,7 @@ import '../../util/prism_extended.css';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelMap from './components/PanelMap';
-import PanelSim from './components/PanelSim';
+import PanelSimViewer from './components/PanelSimViewer';
 import PanelPlayback from './components/PanelPlayback';
 import PanelInspector from './components/PanelInspector';
 import PanelInstances from './components/PanelInstances';
@@ -135,7 +135,7 @@ class MissionControl extends React.Component {
           <PanelInspector isActive />
         </div>
         <div id="root-renderer" className={classes.main}>
-          <PanelSim id="sim" onClick={this.OnPanelClick} />
+          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
           <PanelPlayback id="playback" />

@@ -14,7 +14,7 @@ import UR from '@gemstep/ursys/client';
 import PanelLogin from './components/PanelLogin';
 import PanelSelectSimulation from './components/PanelSelectSimulation';
 import PanelSelect from './components/PanelSelect';
-import PanelSim from './components/PanelSim';
+import PanelSimViewer from './components/PanelSimViewer';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -131,7 +131,7 @@ class Login extends React.Component {
           )}
         </div>
         <div id="root-renderer" className={classes.main}>
-          <PanelSim id="sim" onClick={this.OnPanelClick} />
+          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div
           id="console-bottom"

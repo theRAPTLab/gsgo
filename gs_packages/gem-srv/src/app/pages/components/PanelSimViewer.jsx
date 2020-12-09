@@ -1,0 +1,124 @@
+import React from 'react';
+
+// SELECT RUNTIME MODULES FOR APP
+import * as RENDERER from 'modules/render/api-render';
+import * as GLOBAL from 'modules/datacore/dc-globals';
+//
+import UR from '@gemstep/ursys/client';
+
+import { withStyles } from '@material-ui/core/styles';
+import { useStylesHOC } from '../page-xui-styles';
+
+import PanelChrome from './PanelChrome';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('PanelSimViewer', 'TagBlue');
+const FCON = UR.HTMLConsoleUtil('console-bottom');
+let ASSETS_LOADED = false;
+
+/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// UR.SystemHook(
+//   'UR/LOAD_ASSETS',
+//   () =>
+//     new Promise((resolve, reject) => {
+//       console.error(...PR('LOADING ASSET MANIFEST...'));
+//       (async () => {
+//         await GLOBAL.LoadAssets('static/assets.json');
+//         ASSETS_LOADED = true;
+//         console.log(...PR('ASSETS LOADED'));
+//       })();
+//       resolve();
+//     })
+// );
+
+// For some reason LOAD_ASSETS is getting invoked twice
+// resulting in a promise error.  Add a flag to
+// temporarily test for it
+let LOAD_ASSETS_ALREADY_INVOKED = false;
+UR.SystemHook('UR/LOAD_ASSETS', () => {
+  if (LOAD_ASSETS_ALREADY_INVOKED) {
+    console.error('skipping');
+    return;
+  }
+  new Promise((resolve, reject) => {
+    LOAD_ASSETS_ALREADY_INVOKED = true;
+    console.error(...PR('LOADING ASSET MANIFEST...'));
+    (async () => {
+      await GLOBAL.LoadAssets('static/assets.json');
+      ASSETS_LOADED = true;
+      console.log(...PR('ASSETS LOADED'));
+    })();
+    resolve();
+  });
+});
+
+/// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let updateCount = 0;
+UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
+  if (ASSETS_LOADED) {
+    FCON.plot(
+      `${updateCount++} NET:DISPLAY_LIST received ${
+        remoteList.length
+      } DOBJs by TRACKER`,
+      0
+    );
+    RENDERER.UpdateDisplayList(remoteList);
+    RENDERER.Render();
+  }
+});
+
+/// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.RegisterMessage('NET:HELLO', data => {
+  console.log('NET:HELLO processing', data);
+  return { str: 'tracker got you' };
+});
+
+class PanelSimViewer extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      title: 'SIM (Viewer)',
+      color: '#33FF33',
+      bgcolor: 'rgba(0,256,0,0.1)'
+    };
+  }
+
+  componentDidMount() {
+    // start URSYS
+    UR.SystemConfig({ autoRun: true }); // initialize renderer
+    const renderRoot = document.getElementById('root-renderer');
+    RENDERER.SetGlobalConfig({ actable: false });
+    console.log('componentDidMount; About to REDNERER.Init');
+    RENDERER.Init(renderRoot);
+    console.log('componentDidMount; About to hooresize.Init');
+    RENDERER.HookResize(window);
+  }
+
+  componentWillUnmount() {
+    console.log('componentWillUnmount');
+  }
+
+  render() {
+    const { title, bgcolor, color } = this.state;
+    const { id, onClick } = this.props;
+    return (
+      <PanelChrome
+        id={id} // used by click handler to identify panel
+        title={title}
+        color={color}
+        bgcolor={bgcolor}
+        onClick={onClick}
+      >
+        <div id="root-renderer" style={{ color: bgcolor, height: '500px' }}>
+          Ho this is the sim!
+        </div>
+      </PanelChrome>
+    );
+  }
+}
+
+export default withStyles(useStylesHOC)(PanelSimViewer);
