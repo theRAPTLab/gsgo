@@ -44,7 +44,7 @@ function TestCompiler(index?: number) {
 //   'onEvent Tick then block w/ nested if',
 //   `
 //   # BLUEPRINT Dog2
-//   # EVENT
+//   # PROGRAM EVENT
 //   onEvent Tick [[
 //     ifExpr {{ agent.prop('name').value==='bun0' }} [[
 //       dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
@@ -58,13 +58,13 @@ TT.push([
   'onEvent Tick then block w/ nested if',
   `
   # BLUEPRINT Bee
-  # DEFINE
+  # PROGRAM DEFINE
   addProp frame Number 3
   useFeature Movement
-  # UPDATE
+  # PROGRAM UPDATE
   setProp skin 'bunny.json'
   featureCall Movement jitterPos -5 5
-  # EVENT
+  # PROGRAM EVENT
   onEvent Tick [[
     ifExpr {{ agent.prop('name').value==='bun0' }} [[
       dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
@@ -72,7 +72,7 @@ TT.push([
     setProp 'x'  0
     setProp 'y'  0
   ]]
-  # CONDITION
+  # PROGRAM CONDITION
   when Bee sometest [[
     // dbgOut SingleTest
   ]]
@@ -96,7 +96,7 @@ TT.push([
   'property definition and assignment',
   `
   # BLUEPRINT Bee
-  # DEFINE
+  # PROGRAM DEFINE
     addProp time Number 10
     prop skin setTo 'happy.png'
 `.trim()

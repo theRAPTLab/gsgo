@@ -7,7 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { GetAllAgents } from 'modules/datacore';
+import { GetAllAgents, DefineInstance, GetAllInstances } from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TRANSPILER from 'script/transpiler';
@@ -73,11 +73,19 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** placeholder function
- *  this creates a bunch of agents, and is called
+ *  this creates a bunch of agents just for testing
  */
 export function AgentProgram(blueprint) {
   if (!blueprint) return console.warn(...PR('no blueprint'));
-  for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
+  // old initializer
+  // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
+  // new initializer
+  for (let i = 0; i < 20; i++) {
+    DefineInstance({ blueprint, name: `bun${i}`, init: [] });
+  }
+  let instances = GetAllInstances();
+  console.log(...PR('creating', instances.length, 'instances'));
+  instances.forEach(i => TRANSPILER.MakeAgent(i));
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
