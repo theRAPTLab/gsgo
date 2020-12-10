@@ -119,6 +119,7 @@ module.exports = {
     'no-plusplus': 'off',
     'prefer-const': 'off',
     'prefer-destructuring': 'off',
-    'class-methods-use-this': 'off'
+    'class-methods-use-this': 'off',
+    'jsx-a11y/label-has-associated-control': 'off'
   }
 };
