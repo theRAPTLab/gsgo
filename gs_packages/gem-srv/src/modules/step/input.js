@@ -1,3 +1,40 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  INPUT is the home of all inputs into the system. Its primary purpose is to
+  handle the OpenPTrack "tracks" of position data from kids tracked in the
+  "physical world".
+
+  API: INITIALIZE ONCE
+  * InitializeConnection (token, serverAddress )
+  * InitializeTrackerPiecePool ({ count: cstrFunc: initFunc })
+
+  API: CALL PERIODICALLY
+  * UpdateTrackerPieces ( ms, createFunc,lostFunc )
+  * GetValidTrackerPieces ()
+
+  LOCATION and WORLD TRANSFORMS
+  * SetLocationTransform ( locationObj )
+  * SetWorldTransform ( dimObj )
+
+  OVERRIDE DEFAULT NOISE FILTERING PARAMETERS
+  * UpdateFilterSettings ()
+  * SetFilterTimeout ( nop )
+  * SetFilterAgeThreshold ( age )
+  * SetFilterFreshnessThreshold ( threshold )
+  * SetFilterRadius ( rad )
+
+  RAW DATA ACCESS
+  MapEntities ( pieceDict, intervalMS )
+  PTrackEntityDict ()
+
+  INPUT SAVING AND PLAYBACK (DISABLED)
+  * SelectReplayFile ( filename )
+  * ReplayTrackerData ( filename )
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+/// ESLINT OVERRIDES //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /* eslint-disable no-constant-condition */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-restricted-properties */
@@ -13,78 +50,30 @@
 // PTRACK
 // TrackerPiece
 
-const SYSLOOP = {}; // MOCK
-const XSETTINGS = {}; // MOCK
-const UISTATE = {}; // MOCK
-const $ = {}; // MOCK
-const TrackerPiece = () => {}; // MOCK
-const TrackerObject = () => {}; // MOCK
-const PTRACK = {}; // MOCK
-const THREE = {}; // MOCK
-
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DBGOUT = false;
 let DBGEDGE = false;
 
-///////////////////////////////////////////////////////////////////////////////
-/**	HOW INPUT WORKS **********************************************************\
-
-  INPUT is the home of all inputs into InqSim. Its primary purpose is to
-  handle the OpenPTrack "tracks" of position data from kids tracked in the
-  "physical world". It applies a transformation from physical space to
-  "game world" coordinates. In the future, this module may handle additional
-  data types.
-
-  PTRACK CONNECTION AND MAPPING
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  InitializeConnection (token, serverAddress )
-  -
-  InitializeTrackerPiecePool ({ count: cstrFunc: initFunc })
-  UpdateTrackerPieces ( ms, createFunc )
-  GetValidTrackerPieces ()
-
-  LOCATION USER INTERFACE BINDING
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  BindLocationUI ( viewmodel )
-
-
-  SET LOCATION (PTRACK) AND GAME WORLD TRANSFORMS
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  SetLocationTransform ( locationObj )
-  SetWorldTransform ( dimObj )
-
-  NOISE REJECTION PARAMETERS & RAW DATA ACCESS
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  UpdateFilterSettings ()
-  SetFilterTimeout ( nop )
-  SetFilterAgeThreshold ( age )
-  SetFilterFreshnessThreshold ( threshold )
-  SetFilterRadius ( rad )
-  -
-  MapEntities ( pieceDict, intervalMS )
-  PTrackEntityDict ()
-
-  INPUT SAVING AND PLAYBACK
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  SelectReplayFile ( filename )
-  ReplayTrackerData ( filename )
-
-
-///////////////////////////////////////////////////////////////////////////////
-/** PRIVATE DECLARATIONS *****************************************************/
+/// MOCKED OBJECTS TO REPLACE
+const XSETTINGS = {};
+const UISTATE = {};
+const $ = {};
+const PTRACK = {};
+const THREE = {};
+const TrackerPiece = () => {};
+const TrackerObject = () => {};
 
 // maintain list of all connected input submodules
 // contents of m_input_modules are descriptor objects
 let m_input_modules = []; // stack of registered input modules
-
 // piece management utilities
 let m_inputs = []; // activity-wide tracker piece pool
 let m_pieces = []; // valid tracker pieces
-
 // master object for location transform properties
 let m_transform = {};
 // master object for webrtc address
 let m_webrtc = {};
-
 // module flags
 let _enable_ui_handlers = null; // control event handler processing
 let m_location_subscribers = [];
@@ -108,35 +97,27 @@ let m_saved_vm = null;
 // pool creation parameters
 let m_pool_parm = null;
 
-///////////////////////////////////////////////////////////////////////////////
-/**	PUBLIC API DEFINITION ****************************************************/
-
-let API = SYSLOOP.New('Input');
+let API = {};
 
 /// TRANSFORM VALUES DATA BIND ////////////////////////////////////////////////
-/*/
-    (1) When the location_id changes, INPUT has to respond by loading the
-    location object and sending transforma data back to the UI to display.
-    (2) When the transform changes in the UI, we want to update that too.
-    (3) On startup, we send the entire location object (including location_id)
-    to the UI
-/*/
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ (1) handle UI change of location dropdown
-/*/ API.HandleUILocationChange = function (
-  prop,
-  loc_id
-) {
+/** (1) When the location_id changes, INPUT has to respond by loading the
+ *  location object and sending transforma data back to the UI to display.
+ *  (2) When the transform changes in the UI, we want to update that too.
+ *  (3) On startup, we send the entire location object (including location_id)
+ *  to the UI
+ */
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// handle location change
+function HandleUILocationChange(prop, loc_id) {
   if (prop !== 'location_id')
     throw Error('location_id handler got incorrect property');
-  API.ChangeLocation(loc_id);
-};
+  ChangeLocation(loc_id);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ (2) Call this whenever there is a UI update to update values.
-/*/ API.HandleUIXFormChange = function (
-  prop,
-  val
-) {
+/** (2) Call this whenever there is a UI update to update values.
+ */
+function HandleUIXFormChange(prop, val) {
   if (!_enable_ui_handlers) {
     console.log('INPUT.HandleChangedUI ui not enabled');
     return;
@@ -211,31 +192,30 @@ let API = SYSLOOP.New('Input');
       m_TimedAutoSave();
       break;
   }
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Handle Location change. Does not set location_id again to avoid loop.
-/*/ API.ChangeLocation = function (
-  locId
-) {
+/** Handle Location change. Does not set location_id again to avoid loop.
+ */
+function ChangeLocation(locId) {
   locId = locId || XSETTINGS.CurrentLocationId();
   let lobj = XSETTINGS.SelectLocation(locId);
-  API.SetLocationTransform(lobj);
+  SetLocationTransform(lobj);
   // inform subscribers to INPUT location changes
   m_UpdateLocationSubscribers(lobj);
   m_UpdateUIXformState(lobj);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ for subscribers to changes in location state change
-/*/ API.AddLocationListener = function (
-  subFunc
-) {
+/** for subscribers to changes in location state change
+ */
+function AddLocationListener(subFunc) {
   if (typeof subFunc === 'function') m_location_subscribers.push(subFunc);
   else throw Error('LocationSubscribe() expects a function');
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Add change handlers for Knockout databound fields, so when a UI element
-  in the location changes transforms are updated and saved to cache
-/*/ API.UI_EnableProcessing = function () {
+/** Add change handlers for Knockout databound fields, so when a UI element
+ *  in the location changes transforms are updated and saved to cache
+ */
+function UI_EnableProcessing() {
   // these elements are now valid
   ui_udp_status = $('#ui-ptrack-udp-status');
   ui_ptrack_entities = $('#ui-ptrack-entities');
@@ -247,9 +227,9 @@ let API = SYSLOOP.New('Input');
     console.warn('EnableUIProcessing() was called unnecessarily again');
   }
   // hook into UISTATE
-  API.HandleUILocationChange.name = 'HandleUILocationChange';
-  API.HandleUIXFormChange.name = 'HandleUIXFormChange';
-  UISTATE.AddPropListener(API, 'location_id', API.HandleUILocationChange);
+  HandleUILocationChange.name = 'HandleUILocationChange';
+  HandleUIXFormChange.name = 'HandleUIXFormChange';
+  UISTATE.AddPropListener(API, 'location_id', HandleUILocationChange);
   let transprops = [
     'sx',
     'sy',
@@ -266,28 +246,26 @@ let API = SYSLOOP.New('Input');
     'webrtc_port'
   ];
   for (let i = 0; i < transprops.length; i++) {
-    UISTATE.AddPropListener(API, transprops[i], API.HandleUIXFormChange);
+    UISTATE.AddPropListener(API, transprops[i], HandleUIXFormChange);
   }
   // one-time update of location_id
   // because INPUT.ChangeLocation() does not update this value
   let loc_id = XSETTINGS.CurrentLocationId();
   UISTATE.SetProp(API, 'location_id', loc_id);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by m_TimedAutoSave() and also by ChangeLocation()
-/*/ function m_UpdateLocationSubscribers(
-  lobj
-) {
+/** called by m_TimedAutoSave() and also by ChangeLocation()
+ */
+function m_UpdateLocationSubscribers(lobj) {
   for (let i = 0; i < m_location_subscribers.length; i++) {
     m_location_subscribers[i](lobj);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called by ChangeLocation() to send transform state back to UI,
+/** called by ChangeLocation() to send transform state back to UI,
     which doesn't include location_id
-/*/ function m_UpdateUIXformState(
-  lobj
-) {
+ */
+function m_UpdateUIXformState(lobj) {
   let state = {};
   if (lobj.sx !== undefined) state.sx = lobj.sx;
   if (lobj.sy !== undefined) state.sy = lobj.sy;
@@ -307,10 +285,11 @@ let API = SYSLOOP.New('Input');
 
 /// AUTOSAVETIMOUT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Attempt to autosave once despite multiple updates. This happens because
-  loading location data triggers multiple subscription events, so we wait
-  a bit before triggering a single save.
-/*/ function m_TimedAutoSave() {
+/** Attempt to autosave once despite multiple updates. This happens because
+ *  loading location data triggers multiple subscription events, so we wait
+ *  a bit before triggering a single save.
+ */
+function m_TimedAutoSave() {
   if (m_AutoSave) {
     clearTimeout(m_AutoSave);
   }
@@ -335,11 +314,10 @@ let API = SYSLOOP.New('Input');
 
 /// SIMPLIFIED TRACKER INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Resize the input pool for tracker objects, if needed. Pass createFunc
-  to receive a piece to further initialize as needed.
-/*/ API.InitializeTrackerPiecePool = function (
-  parm
-) {
+/** Resize the input pool for tracker objects, if needed. Pass createFunc
+ *  to receive a piece to further initialize as needed.
+ */
+function InitializeTrackerPiecePool(parm) {
   if (typeof parm !== 'object')
     throw Error('InitializeTrackerPiecePool: must pass parameter object');
   parm.count = parm.count || 5;
@@ -370,20 +348,18 @@ let API = SYSLOOP.New('Input');
     console.log('TrackerPoolSize is already >', count);
   }
   return m_inputs;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ MAIN ROUTINE for handling entity mapping to pieces.
-  m_inputs    List of pieces that are assigned TrackerObjects
-        by INPUT.MapEntities(). This is a pool of pieces used
-        for TrackerObject mapping.
-  m_pieces    List of pieces that the player considers "active",
-        constructed every frame by scanning the list of valid
-        pieces in m_inputs. When writing player logic, you should
-        be using m_pieces, not m_inputs
-/*/ API.UpdateTrackerPieces = function (
-  ms,
-  parm
-) {
+/** MAIN ROUTINE for handling entity mapping to pieces.
+ *  m_inputs    List of pieces that are assigned TrackerObjects
+ *        by INPUT.MapEntities(). This is a pool of pieces used
+ *        for TrackerObject mapping.
+ *  m_pieces    List of pieces that the player considers "active",
+ *        constructed every frame by scanning the list of valid
+ *        pieces in m_inputs. When writing player logic, you should
+ *        be using m_pieces, not m_inputs
+ */
+function UpdateTrackerPieces(ms, parm) {
   let lostFunc = parm.lostFunc; // used by MapEntities to clear
   let addedFunc = parm.addedFunc; // used by MapEntities to set
 
@@ -432,7 +408,7 @@ let API = SYSLOOP.New('Input');
     if (piecesToCreate > 0) {
       piecesToCreate += m_inputs.length;
       m_pool_parm.count = piecesToCreate;
-      API.InitializeTrackerPiecePool(m_pool_parm);
+      InitializeTrackerPiecePool(m_pool_parm);
     }
   }
 
@@ -456,15 +432,17 @@ let API = SYSLOOP.New('Input');
 
   // return the valid piece list
   return m_pieces;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Return the TrackerObject pool
-/*/ API.GetValidTrackerPieces = function () {
+/** Return the TrackerObject pool
+ */
+function GetValidTrackerPieces() {
   return m_pieces;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Display UDP Connection Status
-/*/ API.UI_ShowUDPConnectStatus = function () {
+/** Display UDP Connection Status
+ */
+function UI_ShowUDPConnectStatus() {
   let sdict = PTRACK.GetConnectStatusDict();
   let out =
     "<div style='font-family:monospace;font-size:smaller;white-space:pre'>";
@@ -486,13 +464,12 @@ let API = SYSLOOP.New('Input');
   }
   out += '</div>';
   if (ui_udp_status) ui_udp_status.html(out);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Update Transformed Entities UI Field. Accepts React state object
-  Used to accept KNOCKOUT viewmodel
-/*/ API.UI_ShowPieceInformation = function (
-  state
-) {
+/** Update Transformed Entities UI Field. Accepts React state object
+ *  Used to accept KNOCKOUT viewmodel
+ */
+function UI_ShowPieceInformation(state) {
   let c_out = '';
   let hw = state.width / 2;
   let hh = state.depth / 2;
@@ -521,46 +498,47 @@ let API = SYSLOOP.New('Input');
   }
   c_out += '</div>';
   if (ui_xformed_entities) ui_xformed_entities.html(c_out);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Override the default mode and create seeker-style trackerpieces
-/*/ API.SetTrackerPiecesToSeekMode = function () {
+/** Override the default mode and create seeker-style trackerpieces
+ */
+function SetTrackerPiecesToSeekMode() {
   TrackerObject.ConstructorTrackMode(TrackerObject.MODE_SEEK);
   for (let i = 0; i < m_inputs.length; i++) {
     m_inputs[i].tracker_object.mode = TrackerObject.MODE_SEEK;
   }
-};
+}
 
 /// TRACKER ENTITY FILTERING PARAMETERS ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-API.UpdateFilterSettings = function () {
+function UpdateFilterSettings() {
   // 	needs update to use Settings
   //	MAX_NOP = XSETTINGS.CurrentLocationKeyValue('ptrackTimeout');
   //	MIN_AGE = XSETTINGS.CurrentLocationKeyValue('ptrackMinAge');
   //	SRADIUS = XSETTINGS.CurrentLocationKeyValue('ptrackSRadius');
   //	MIN_NOP = MIN_AGE / 2;
   console.log('SET PTRACK FILTER VALUES', MAX_NOP, MIN_AGE, SRADIUS);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-API.SetFilterTimeout = function (nop) {
+function SetFilterTimeout(nop) {
   if (nop === undefined) return;
   if (nop < MIN_AGE) {
     console.warn('Timeout', nop, "can't be less than Age Threshold", MIN_AGE);
     return;
   }
   MAX_NOP = nop;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-API.SetFilterAgeThreshold = function (age) {
+function SetFilterAgeThreshold(age) {
   if (age === undefined) return;
   if (age > MAX_NOP) {
     console.warn('Age', age, "can't be greater than timeout", MAX_NOP);
     return;
   }
   MIN_AGE = age;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-API.SetFilterFreshnessThreshold = function (threshold) {
+function SetFilterFreshnessThreshold(threshold) {
   if (threshold === undefined) return;
   if (threshold > MIN_AGE / 2) {
     console.log(
@@ -570,24 +548,23 @@ API.SetFilterFreshnessThreshold = function (threshold) {
     );
   }
   MIN_NOP = threshold;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-API.SetFilterRadius = function (rad) {
+function SetFilterRadius(rad) {
   if (rad === undefined) return;
   if (Number.isNaN(rad)) {
     console.warn('SetFilterRadius expects a number, not', rad);
     return;
   }
   SRADIUS = rad;
-};
+}
 
 /// TRANSFORMATIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Copies transform parameters from passed object. Locations are defined
-  in the master settings file
-/*/ API.SetLocationTransform = function (
-  locationObj
-) {
+/** Copies transform parameters from passed object. Locations are defined
+ *  in the master settings file
+ */
+function SetLocationTransform(locationObj) {
   let lobj = locationObj;
   if (!lobj) {
     console.error('locationObject is undefined');
@@ -615,36 +592,33 @@ API.SetFilterRadius = function (rad) {
     console.log('Setting Location Parms');
     window.show_xform();
   }
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Used to scale normalized tracker entity coordinates into desired "world"
-  coordinates. This is the final transform applied to the tracker entities
-/*/ API.SetWorldTransform = function (
-  dimObj
-) {
+/** Used to scale normalized tracker entity coordinates into desired "world"
+ *  coordinates. This is the final transform applied to the tracker entities
+ */
+function SetWorldTransform(dimObj) {
   dimObj.offx = dimObj.offx || 0;
   dimObj.offy = dimObj.offy || 0;
   m_transform.g_width = dimObj.width;
   m_transform.g_depth = dimObj.depth;
   m_transform.g_halfwidth = dimObj.width / 2;
   m_transform.g_halfdepth = dimObj.depth / 2;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-API.WorldDimensions = function () {
+function WorldDimensions() {
   return {
     width: m_transform.g_width,
     depth: m_transform.g_depth,
     hwidth: m_transform.g_halfwidth,
     hdepth: m_transform.g_halfwidth
   };
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Copies location properties from sobj to dobj. Checks for existence of src
-  but writes dst property regardless (important for init)
-/*/ function m_MagicCopyLocationProps(
-  sobj,
-  dobj
-) {
+/** Copies location properties from sobj to dobj. Checks for existence of src
+ *  but writes dst property regardless (important for init)
+ */
+function m_MagicCopyLocationProps(sobj, dobj) {
   let props = [
     'sx',
     'sy',
@@ -692,10 +666,9 @@ API.WorldDimensions = function () {
   } // end for
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Read the LocationTransform from UI fields
-/*/ function m_ReadTransformFromUI(
-  viewmodel
-) {
+/** Read the LocationTransform from UI fields
+ */
+function m_ReadTransformFromUI(viewmodel) {
   let VM = viewmodel || m_saved_vm;
 
   // read initial values
@@ -712,10 +685,9 @@ API.WorldDimensions = function () {
   m_transform.t_halfdepth = m_transform.t_depth / 2;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Write the LocationTransform to the UI fields
-/*/ function m_WriteTransformToUI(
-  viewmodel
-) {
+/** Write the LocationTransform to the UI fields
+ */
+function m_WriteTransformToUI(viewmodel) {
   let RCOMP = viewmodel || m_saved_vm;
 
   // set UI values
@@ -737,11 +709,12 @@ window.show_xform = function () {
   return m_transform;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Create Transform from saved transform values. These values are either
-  set via SetLocationTransform() (on location change/startup)
-  Called whenever a value changes in the
-  user interface by KO.
-/*/ function m_UpdateLocationTransform() {
+/** Create Transform from saved transform values. These values are either
+ *  set via SetLocationTransform() (on location change/startup)
+ *  Called whenever a value changes in the
+ *  user interface by KO.
+ */
+function m_UpdateLocationTransform() {
   // calculate transforms
   let convertRadians = Math.PI / 180;
 
@@ -777,22 +750,18 @@ window.show_xform = function () {
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Initialize the Input System to connect to server
-/*/ API.InitializeConnection = function (
-  token,
-  serverAddress
-) {
+/** Initialize the Input System to connect to server
+ */
+function InitializeConnection(token, serverAddress) {
   m_Initialize(token, serverAddress);
   this.UpdateFilterSettings();
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Called by API.Initialize().
-  token is reserved for future use
-  serverAddress is the broadcast UDP address that PTRACK is on
-/*/ function m_Initialize(
-  token,
-  serverAddress
-) {
+/** Called by Initialize().
+ *  token is reserved for future use
+ *  serverAddress is the broadcast UDP address that PTRACK is on
+ */
+function m_Initialize(token, serverAddress) {
   console.assert(serverAddress, 'Must pass ServerAddress?');
   //	Initialize PTRACK
   PTRACK.Initialize(token);
@@ -801,13 +770,12 @@ window.show_xform = function () {
   m_RegisterInputModule(PTRACK);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ called during INPUT initialization (and possibly asynchronously later)
-  to register an input module with the system. This creates an EntityMap
-  object that is stored here in INPUT, and is shared with the input_module
-  to be the "data bridge"
-/*/ function m_RegisterInputModule(
-  input_module
-) {
+/** called during INPUT initialization (and possibly asynchronously later)
+ *  to register an input module with the system. This creates an EntityMap
+ *  object that is stored here in INPUT, and is shared with the input_module
+ *  to be the "data bridge"
+ */
+function m_RegisterInputModule(input_module) {
   console.assert(input_module, 'Must call with valid input module');
   // desc.name = descriptive name of input module
   // desc.id = unique name assigned by INPUT to input module
@@ -836,24 +804,23 @@ window.show_xform = function () {
 
 /// Tracker Services //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EnumerateTrackers returns a list of inputs of type "tracker", which are
-  input modules that are PTRACK-style
-/*/ API.EnumerateTrackers = function () {
+/** EnumerateTrackers returns a list of inputs of type "tracker", which are
+ *  input modules that are PTRACK-style
+ */
+function EnumerateTrackers() {
   return m_Enumerate({ type: 'tracker' });
-};
+}
 //	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EnumerateInputTypes returns a list of all input modules, filtered by
-  optional search object.
-/*/ API.Enumerate = function (
-  searchObj
-) {
+/** EnumerateInputTypes returns a list of all input modules, filtered by
+ *  optional search object.
+ */
+function Enumerate(searchObj) {
   return m_Enumerate(searchObj);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ returns a list of inputs in descriptor format
-/*/ function m_Enumerate(
-  searchObj
-) {
+/** returns a list of inputs in descriptor format
+ */
+function m_Enumerate(searchObj) {
   console.assert(m_input_modules.length, 'ERROR: no registered input modules');
 
   let filtered = [];
@@ -888,45 +855,38 @@ window.show_xform = function () {
 
 /// RAW ENTITY SERVICES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ MapEntities() accepts a pieceDict and the current timestep interval.
-  The pieces in pieceDict are assigned a TrackerObject, which the pieces
-  will track automatically and LERP toward. Pieces are assigned a new
-  TrackerObject when invalid. MapEntities returns an array of unassigned
-  trackerids if any are leftover; use this to create more pieces as needed.
-/*/ API.MapEntities = function (
-  pieceDict,
-  intervalMS,
-  addedFunc,
-  lostFunc
-) {
+/** MapEntities() accepts a pieceDict and the current timestep interval.
+ *  The pieces in pieceDict are assigned a TrackerObject, which the pieces
+ *  will track automatically and LERP toward. Pieces are assigned a new
+ *  TrackerObject when invalid. MapEntities returns an array of unassigned
+ *  trackerids if any are leftover; use this to create more pieces as needed.
+ */
+function MapEntities(pieceDict, intervalMS, addedFunc, lostFunc) {
   console.assert(intervalMS, 'MapEntities requires interval in');
   return m_MapEntities(pieceDict, intervalMS, addedFunc, lostFunc);
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ EntityDict() returns the PTrack Entity Dictionary
-/*/ API.PTrackEntityDict = function () {
+/** EntityDict() returns the PTrack Entity Dictionary
+ */
+function PTrackEntityDict() {
   // dict: entityid -> { id,x,y,h,nop }
   let entityDict = PTRACK.GetEntityDict();
   return entityDict;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ KEY FUNCTION: Maps TrackerEntities to Pieces every frame in the form
-  of a TrackerObject, which is similar to TrackerEntity but has gameworld
-  coordinates instead. Algorithm:
-    Maintain a list of "active entity ids" from which to allocate.
-    Check list of pieces "tracker object", and get entity id.
-    Update entity id if it's in the pool of active entity ids
-    .. otherwise, add piece to list of "orphaned/lost pieces"
-    .. remove updated id from the list of "active entity ids"
-    If there are any active entity ids left, then:
-    .. assign them to "orphaned/lost" pieces
-    .. assign remainder to "new pieces" (didn't have a TrackerObject)
-/*/ function m_MapEntities(
-  pieceList,
-  intervalMS,
-  addedFunc,
-  lostFunc
-) {
+/** KEY FUNCTION: Maps TrackerEntities to Pieces every frame in the form
+ *  of a TrackerObject, which is similar to TrackerEntity but has gameworld
+ *  coordinates instead. Algorithm:
+ *    Maintain a list of "active entity ids" from which to allocate.
+ *    Check list of pieces "tracker object", and get entity id.
+ *    Update entity id if it's in the pool of active entity ids
+ *    .. otherwise, add piece to list of "orphaned/lost pieces"
+ *    .. remove updated id from the list of "active entity ids"
+ *    If there are any active entity ids left, then:
+ *    .. assign them to "orphaned/lost" pieces
+ *    .. assign remainder to "new pieces" (didn't have a TrackerObject)
+ */
+function m_MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // dict: entityid -> { id,x,y,h,nop }
   let entityDict = PTRACK.GetEntityDict();
 
@@ -1017,15 +977,14 @@ window.show_xform = function () {
   if (ui_ptrack_entities) ui_ptrack_entities.html(ui_out);
 
   /// UPDATING ////////////////////////////////////////////////////////
-
-  /*/
-    UPDATE THE PIECES
-    if there is a trackerobject,
-    .. get its id and look it up in entityDict
-    .. copy values with transform
-    .. remove id from idsActive (use for later assignment)
-    !! if id invalid, save piece and zero trackerobject
-    /*/
+  /**
+   *  UPDATE THE PIECES
+   *  if there is a trackerobject,
+   *  .. get its id and look it up in entityDict
+   *  .. copy values with transform
+   *  .. remove id from idsActive (use for later assignment)
+   *  !! if id invalid, save piece and zero trackerobject
+   */
   let piecesLost = [];
   let piecesNew = [];
   // update pieces
@@ -1059,9 +1018,7 @@ window.show_xform = function () {
   // put the new pieces on the end of the lost array
   let piecesToAssign = piecesLost.concat(piecesNew);
 
-  /*/
-    ASSIGN ORPHANED/UNASSIGNED PIECES
-    /*/
+  // ASSIGN ORPHANED/UNASSIGNED PIECES
   for (i = 0; i < piecesToAssign.length; i++) {
     p = piecesToAssign[i];
     id = idsActive.shift();
@@ -1075,7 +1032,7 @@ window.show_xform = function () {
     } else if (DBGEDGE) console.log('ran out of entities for', p.id);
   }
 
-  /* debug */
+  /* DEBUG */
   if (!window.show_entities)
     window.show_entities = function (mode) {
       console.log('active tracker entities');
@@ -1097,12 +1054,10 @@ window.show_xform = function () {
 } // end of m_MapEntities()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_places = 2;
-/*/ Utility function to format a string to a padding length.
-  Used by Tracker Utility
-/*/ function u_format(
-  num,
-  fixed = 2
-) {
+/** Utility function to format a string to a padding length.
+ *  Used by Tracker Utility
+ */
+function u_format(num, fixed = 2) {
   // HACK *****  to deal with string input
   // marco is always sending a string now to deal with a nan
   // data for some orientation and pose predictions
@@ -1114,24 +1069,20 @@ let m_places = 2;
   return str;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Utility function to clip a string to given length
-  http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng
-/*/ function u_pad(
-  str,
-  padLeft
-) {
+/** Utility function to clip a string to given length
+ *  http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng
+ */
+function u_pad(str, padLeft) {
   let pad = '            '; // 15 spaces
   if (padLeft) return (pad + str).slice(-pad.length);
   return (str + pad).substring(0, pad.length);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ Convert entity coordinates to gameworld gameworld coordinates.
-    entity: { id, x, y, h, nop } - tracker coords
-    trackerObject: { id, pos, valid } - game coords
-/*/ function m_TransformAndUpdate(
-  entity,
-  trackerObj
-) {
+/** Convert entity coordinates to gameworld gameworld coordinates.
+ *  entity: { id, x, y, h, nop } - tracker coords
+ *  trackerObject: { id, pos, valid } - game coords
+ */
+function m_TransformAndUpdate(entity, trackerObj) {
   // tracker space position
   let x = entity.x;
   let y = entity.y;
@@ -1181,13 +1132,10 @@ let m_places = 2;
   trackerObj.pose = entity.pose;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/ entity is checked against other entities in idsActive
-  it's assumed that idsActive does NOT contain entity
-/*/ function m_IsOldestInRadius(
-  entity,
-  idsActive,
-  entityDict
-) {
+/** entity is checked against other entities in idsActive
+ *  it's assumed that idsActive does NOT contain entity
+ */
+function m_IsOldestInRadius(entity, idsActive, entityDict) {
   let rad2 = SRADIUS * SRADIUS;
   let result = true;
   for (let i = 0; i < idsActive.length; i++) {
@@ -1208,5 +1156,6 @@ let m_places = 2;
   return result;
 }
 
-/// Return RequireJS Module //////////////////////////////////////////////////
+/// MODULE EXPORT /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default API;
