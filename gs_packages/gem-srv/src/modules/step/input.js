@@ -12,10 +12,6 @@
   * UpdateTrackerPieces ( ms, createFunc,lostFunc )
   * GetValidTrackerPieces ()
 
-  LOCATION and WORLD TRANSFORMS
-  * SetLocationTransform ( locationObj )
-  * SetWorldTransform ( dimObj )
-
   OVERRIDE DEFAULT NOISE FILTERING PARAMETERS
   * UpdateFilterSettings ()
   * SetFilterTimeout ( nop )
@@ -26,10 +22,6 @@
   RAW DATA ACCESS
   MapEntities ( pieceDict, intervalMS )
   PTrackEntityDict ()
-
-  INPUT SAVING AND PLAYBACK (DISABLED)
-  * SelectReplayFile ( filename )
-  * ReplayTrackerData ( filename )
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -96,221 +88,6 @@ let m_saved_vm = null;
 
 // pool creation parameters
 let m_pool_parm = null;
-
-let API = {};
-
-/// TRANSFORM VALUES DATA BIND ////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** (1) When the location_id changes, INPUT has to respond by loading the
- *  location object and sending transforma data back to the UI to display.
- *  (2) When the transform changes in the UI, we want to update that too.
- *  (3) On startup, we send the entire location object (including location_id)
- *  to the UI
- */
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// handle location change
-function HandleUILocationChange(prop, loc_id) {
-  if (prop !== 'location_id')
-    throw Error('location_id handler got incorrect property');
-  ChangeLocation(loc_id);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** (2) Call this whenever there is a UI update to update values.
- */
-function HandleUIXFormChange(prop, val) {
-  if (!_enable_ui_handlers) {
-    console.log('INPUT.HandleChangedUI ui not enabled');
-    return;
-  }
-  if (DBGOUT)
-    console.log('INPUT.HandleChangedUI received', prop.squote(), ':', val);
-  switch (prop) {
-    case 'sx':
-      m_transform.sx = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'sy':
-      m_transform.sy = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'sz':
-      m_transform.sz = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'rx':
-      m_transform.rx = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'ry':
-      m_transform.ry = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'rz':
-      m_transform.rz = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'tx':
-      m_transform.tx = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'ty':
-      m_transform.ty = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'tz':
-      m_transform.tz = val;
-      m_UpdateLocationTransform();
-      m_TimedAutoSave();
-      break;
-    case 'width':
-      m_transform.width = parseFloat(val);
-      m_transform.t_width = m_transform.width;
-      m_transform.t_halfwidth = m_transform.t_width / 2;
-      m_TimedAutoSave();
-      break;
-    case 'depth':
-      m_transform.depth = parseFloat(val);
-      m_transform.t_depth = m_transform.width;
-      m_transform.t_halfdepth = m_transform.t_width / 2;
-      m_TimedAutoSave();
-      break;
-    case 'webrtc_ip':
-      m_webrtc.ip = val;
-      m_TimedAutoSave();
-      break;
-    case 'webrtc_port':
-      // eslint-disable-next-line radix
-      m_webrtc.port = parseInt(val);
-      m_TimedAutoSave();
-      break;
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Handle Location change. Does not set location_id again to avoid loop.
- */
-function ChangeLocation(locId) {
-  locId = locId || XSETTINGS.CurrentLocationId();
-  let lobj = XSETTINGS.SelectLocation(locId);
-  SetLocationTransform(lobj);
-  // inform subscribers to INPUT location changes
-  m_UpdateLocationSubscribers(lobj);
-  m_UpdateUIXformState(lobj);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** for subscribers to changes in location state change
- */
-function AddLocationListener(subFunc) {
-  if (typeof subFunc === 'function') m_location_subscribers.push(subFunc);
-  else throw Error('LocationSubscribe() expects a function');
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Add change handlers for Knockout databound fields, so when a UI element
- *  in the location changes transforms are updated and saved to cache
- */
-function UI_EnableProcessing() {
-  // these elements are now valid
-  ui_udp_status = $('#ui-ptrack-udp-status');
-  ui_ptrack_entities = $('#ui-ptrack-entities');
-  ui_xformed_entities = $('#ui-transformed-entities');
-  // initialize ui handle blocking handlers
-  if (_enable_ui_handlers === null) {
-    _enable_ui_handlers = true;
-  } else {
-    console.warn('EnableUIProcessing() was called unnecessarily again');
-  }
-  // hook into UISTATE
-  HandleUILocationChange.name = 'HandleUILocationChange';
-  HandleUIXFormChange.name = 'HandleUIXFormChange';
-  UISTATE.AddPropListener(API, 'location_id', HandleUILocationChange);
-  let transprops = [
-    'sx',
-    'sy',
-    'sz',
-    'rx',
-    'ry',
-    'rz',
-    'tx',
-    'ty',
-    'tz',
-    'width',
-    'depth',
-    'webrtc_ip',
-    'webrtc_port'
-  ];
-  for (let i = 0; i < transprops.length; i++) {
-    UISTATE.AddPropListener(API, transprops[i], HandleUIXFormChange);
-  }
-  // one-time update of location_id
-  // because INPUT.ChangeLocation() does not update this value
-  let loc_id = XSETTINGS.CurrentLocationId();
-  UISTATE.SetProp(API, 'location_id', loc_id);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** called by m_TimedAutoSave() and also by ChangeLocation()
- */
-function m_UpdateLocationSubscribers(lobj) {
-  for (let i = 0; i < m_location_subscribers.length; i++) {
-    m_location_subscribers[i](lobj);
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** called by ChangeLocation() to send transform state back to UI,
-    which doesn't include location_id
- */
-function m_UpdateUIXformState(lobj) {
-  let state = {};
-  if (lobj.sx !== undefined) state.sx = lobj.sx;
-  if (lobj.sy !== undefined) state.sy = lobj.sy;
-  if (lobj.sz !== undefined) state.sz = lobj.sz;
-  if (lobj.rx !== undefined) state.rx = lobj.rx;
-  if (lobj.ry !== undefined) state.ry = lobj.ry;
-  if (lobj.rz !== undefined) state.rz = lobj.rz;
-  if (lobj.tx !== undefined) state.tx = lobj.tx;
-  if (lobj.ty !== undefined) state.ty = lobj.ty;
-  if (lobj.tz !== undefined) state.tz = lobj.tz;
-  if (lobj.width !== undefined) state.width = lobj.width;
-  if (lobj.depth !== undefined) state.depth = lobj.depth;
-  if (lobj.webrtc_ip !== undefined) state.webrtc_ip = lobj.webrtc_ip;
-  if (lobj.webrtc_port !== undefined) state.webrtc_port = lobj.webrtc_port;
-  UISTATE.Set(API, state);
-}
-
-/// AUTOSAVETIMOUT //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Attempt to autosave once despite multiple updates. This happens because
- *  loading location data triggers multiple subscription events, so we wait
- *  a bit before triggering a single save.
- */
-function m_TimedAutoSave() {
-  if (m_AutoSave) {
-    clearTimeout(m_AutoSave);
-  }
-  m_AutoSave = setTimeout(function () {
-    // update S.cached location object
-    // console.log("m_TimedAutoSave");
-    let lobj = XSETTINGS.CurrentLocationObj();
-    // note that lobj is a reference to the location obj
-    // so this magic copy will update the xsettings data
-    // before StepCacheSave() executes. I think.
-    m_MagicCopyLocationProps(m_transform, lobj);
-    // also copy webrtc
-    lobj.webrtc_ip = m_webrtc.ip;
-    lobj.webrtc_port = m_webrtc.port;
-    XSETTINGS.StepCacheSave();
-    // inform subscribers
-    m_UpdateLocationSubscribers(lobj);
-    // done!
-    m_AutoSave = null;
-  }, 250);
-}
 
 /// SIMPLIFIED TRACKER INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -440,66 +217,6 @@ function GetValidTrackerPieces() {
   return m_pieces;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Display UDP Connection Status
- */
-function UI_ShowUDPConnectStatus() {
-  let sdict = PTRACK.GetConnectStatusDict();
-  let out =
-    "<div style='font-family:monospace;font-size:smaller;white-space:pre'>";
-  out += 'DATA FROM      COUNT  /  SEQ NUM\n';
-  out += '-----------------------------------\n';
-
-  // process each entry
-  let keys = Object.keys(sdict);
-  for (let i = 0; i < keys.length; i++) {
-    let entry = keys[i];
-    let istate = sdict[entry];
-    // show entry
-    // show lastse
-    // count of entities
-    out += `${u_pad(entry) + u_format(istate.lastcount, 0)} ${u_format(
-      istate.lastseq,
-      0
-    )}\n`;
-  }
-  out += '</div>';
-  if (ui_udp_status) ui_udp_status.html(out);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Update Transformed Entities UI Field. Accepts React state object
- *  Used to accept KNOCKOUT viewmodel
- */
-function UI_ShowPieceInformation(state) {
-  let c_out = '';
-  let hw = state.width / 2;
-  let hh = state.depth / 2;
-  //		c_out += "<p>Set Interaction Bounds so transformed entities fall within red rectangle</p>";
-  c_out += "<div style='font-family:monospace;white-space:pre'>";
-  c_out += `gameworld is ${u_format(m_transform.g_halfwidth * 2)}, ${u_format(
-    m_transform.g_halfdepth * 2
-  )}\n`;
-  c_out += `PTRAK div by ${u_format(hw)}, ${u_format(hh)}\n`;
-  c_out += `      mul by ${u_format(m_transform.g_halfwidth)}, ${u_format(
-    m_transform.g_halfdepth
-  )}\n`;
-  c_out += '---\n';
-  for (let i = 0; i < m_pieces.length; i++) {
-    let p = m_pieces[i];
-    let tobj = p.TrackerObject();
-    if (tobj) {
-      let id = tobj.id;
-      let x = tobj.pos.x;
-      let y = tobj.pos.y;
-      let a = tobj.age / 1000;
-      c_out += `${u_pad(id) + u_format(x)}, ${u_format(y)} ${u_format(a, 1)}\n`;
-      // if (i==0) { robotPiece.SetPositionXY(x,y); console.log(p.name,x,y); }
-      // if (i==1) { p.SetPosition(x,y); console.log(p.name,x,y);}
-    }
-  }
-  c_out += '</div>';
-  if (ui_xformed_entities) ui_xformed_entities.html(c_out);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Override the default mode and create seeker-style trackerpieces
  */
 function SetTrackerPiecesToSeekMode() {
@@ -557,195 +274,6 @@ function SetFilterRadius(rad) {
     return;
   }
   SRADIUS = rad;
-}
-
-/// TRANSFORMATIONS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Copies transform parameters from passed object. Locations are defined
- *  in the master settings file
- */
-function SetLocationTransform(locationObj) {
-  let lobj = locationObj;
-  if (!lobj) {
-    console.error('locationObject is undefined');
-  }
-
-  // console.log("SetLocationTransform",lobj);
-  m_MagicCopyLocationProps(lobj, m_transform);
-
-  if (m_transform.width === undefined) m_transform.width = +1;
-  if (m_transform.depth === undefined) m_transform.depth = +1;
-
-  // precalculations
-  m_transform.t_width = m_transform.width;
-  m_transform.t_halfwidth = m_transform.t_width / 2;
-  m_transform.t_depth = m_transform.depth;
-  m_transform.t_halfdepth = m_transform.t_depth / 2;
-
-  // now update everything
-  m_UpdateLocationTransform();
-  // no longer necessary with React
-  // handled
-  // m_WriteTransformToUI();
-
-  if (DBGOUT) {
-    console.log('Setting Location Parms');
-    window.show_xform();
-  }
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Used to scale normalized tracker entity coordinates into desired "world"
- *  coordinates. This is the final transform applied to the tracker entities
- */
-function SetWorldTransform(dimObj) {
-  dimObj.offx = dimObj.offx || 0;
-  dimObj.offy = dimObj.offy || 0;
-  m_transform.g_width = dimObj.width;
-  m_transform.g_depth = dimObj.depth;
-  m_transform.g_halfwidth = dimObj.width / 2;
-  m_transform.g_halfdepth = dimObj.depth / 2;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function WorldDimensions() {
-  return {
-    width: m_transform.g_width,
-    depth: m_transform.g_depth,
-    hwidth: m_transform.g_halfwidth,
-    hdepth: m_transform.g_halfwidth
-  };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Copies location properties from sobj to dobj. Checks for existence of src
- *  but writes dst property regardless (important for init)
- */
-function m_MagicCopyLocationProps(sobj, dobj) {
-  let props = [
-    'sx',
-    'sy',
-    'sz',
-    'rx',
-    'ry',
-    'rz',
-    'tx',
-    'ty',
-    'tz',
-    'width',
-    'depth'
-  ];
-  for (let i = 0; i < props.length; i++) {
-    let prop = props[i];
-    // the m_transform
-    let src = sobj[prop] !== undefined ? sobj[prop] : sobj[`k${prop}`];
-    console.assert(
-      src !== undefined,
-      'src does not have location property for',
-      prop,
-      sobj
-    );
-    let dst = dobj[prop] !== undefined ? dobj[prop] : dobj[`k${prop}`];
-    // handle four cases of knockout/value
-    if (typeof src === 'function') {
-      // src is KO
-      if (typeof dst === 'function') {
-        // dst is KO
-        dst(src());
-      } else {
-        // dst is value
-        dobj[prop] = src();
-      }
-    } else {
-      // src is a value
-      if (typeof dst === 'function') {
-        // dst is KO
-        dst(src);
-      } else {
-        // dst is value
-        dobj[prop] = src;
-      }
-    }
-  } // end for
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Read the LocationTransform from UI fields
- */
-function m_ReadTransformFromUI(viewmodel) {
-  let VM = viewmodel || m_saved_vm;
-
-  // read initial values
-  console.log('m_ReadTransformFromUI');
-  m_MagicCopyLocationProps(VM, m_transform);
-
-  if (m_transform.width === undefined) m_transform.width = +1;
-  if (m_transform.depth === undefined) m_transform.depth = +1;
-
-  // precalculations
-  m_transform.t_width = m_transform.width;
-  m_transform.t_halfwidth = m_transform.t_width / 2;
-  m_transform.t_depth = m_transform.depth;
-  m_transform.t_halfdepth = m_transform.t_depth / 2;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Write the LocationTransform to the UI fields
- */
-function m_WriteTransformToUI(viewmodel) {
-  let RCOMP = viewmodel || m_saved_vm;
-
-  // set UI values
-  // note this will trigger the subscribed
-  // KO change handlers!
-  _enable_ui_handlers = false;
-  // console.log("m_WriteTransformToUI");
-  //		m_MagicCopyLocationProps( m_transform, VM );
-  _enable_ui_handlers = true;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/* debug xform console command */
-window.show_xform = function () {
-  console.log('SCALE :', m_transform.sx, m_transform.sy, m_transform.sz);
-  console.log('ROTATE:', m_transform.rx, m_transform.ry, m_transform.rz);
-  console.log('TRANS :', m_transform.tx, m_transform.ty, m_transform.tz);
-  console.log('PLAY WIDTH:', m_transform.width);
-  console.log('PLAY DEPTH:', m_transform.depth);
-  return m_transform;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Create Transform from saved transform values. These values are either
- *  set via SetLocationTransform() (on location change/startup)
- *  Called whenever a value changes in the
- *  user interface by KO.
- */
-function m_UpdateLocationTransform() {
-  // calculate transforms
-  let convertRadians = Math.PI / 180;
-
-  let scale = new THREE.Matrix4().makeScale(
-    m_transform.sx,
-    m_transform.sy,
-    m_transform.sz
-  );
-  let rotatex = new THREE.Matrix4().makeRotationX(
-    m_transform.rx * convertRadians
-  );
-  let rotatey = new THREE.Matrix4().makeRotationY(
-    m_transform.ry * convertRadians
-  );
-  let rotatez = new THREE.Matrix4().makeRotationZ(
-    m_transform.rz * convertRadians
-  );
-  let translate = new THREE.Matrix4().makeTranslation(
-    m_transform.tx,
-    m_transform.ty,
-    m_transform.tz
-  );
-
-  let m = new THREE.Matrix4();
-  m.multiplyMatrices(scale, rotatex);
-  m.multiply(rotatey);
-  m.multiply(rotatez);
-  m.multiply(translate);
-
-  /* finally! */
-  m_transform.matrix_align = m;
 }
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
@@ -855,17 +383,6 @@ function m_Enumerate(searchObj) {
 
 /// RAW ENTITY SERVICES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** MapEntities() accepts a pieceDict and the current timestep interval.
- *  The pieces in pieceDict are assigned a TrackerObject, which the pieces
- *  will track automatically and LERP toward. Pieces are assigned a new
- *  TrackerObject when invalid. MapEntities returns an array of unassigned
- *  trackerids if any are leftover; use this to create more pieces as needed.
- */
-function MapEntities(pieceDict, intervalMS, addedFunc, lostFunc) {
-  console.assert(intervalMS, 'MapEntities requires interval in');
-  return m_MapEntities(pieceDict, intervalMS, addedFunc, lostFunc);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** EntityDict() returns the PTrack Entity Dictionary
  */
 function PTrackEntityDict() {
@@ -886,7 +403,7 @@ function PTrackEntityDict() {
  *    .. assign them to "orphaned/lost" pieces
  *    .. assign remainder to "new pieces" (didn't have a TrackerObject)
  */
-function m_MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
+function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // dict: entityid -> { id,x,y,h,nop }
   let entityDict = PTRACK.GetEntityDict();
 
@@ -1051,7 +568,7 @@ function m_MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
     };
   // return unassigned ids (array)
   return idsActive;
-} // end of m_MapEntities()
+} // end of MapEntities()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_places = 2;
 /** Utility function to format a string to a padding length.
@@ -1158,4 +675,3 @@ function m_IsOldestInRadius(entity, idsActive, entityDict) {
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default API;
