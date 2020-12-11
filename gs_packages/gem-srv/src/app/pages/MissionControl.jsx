@@ -134,7 +134,7 @@ class MissionControl extends React.Component {
           <PanelInstances id="instances" />
           <PanelInspector isActive />
         </div>
-        <div id="root-renderer" className={classes.main}>
+        <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
