@@ -83,13 +83,13 @@ when Bee sometest Bee [[
 
 // Working demoscript
 const demoscript = `# BLUEPRINT BunBun
-# DEFINE
+# PROGRAM DEFINE
 addProp frame Number 3
 useFeature Movement
-# UPDATE
+# PROGRAM UPDATE
 setProp skin 'bunny.json'
 featureCall Movement jitterPos -5 5
-# EVENT
+# PROGRAM EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
   ifExpr {{ agent.prop('name').value==='bun5' }} [[
@@ -99,7 +99,7 @@ onEvent Tick [[
   setProp 'x'  0
   setProp 'y'  0
 ]]
-# CONDITION
+# PROGRAM CONDITION
 when Bee sometest [[
   // dbgOut SingleTest
 ]]
