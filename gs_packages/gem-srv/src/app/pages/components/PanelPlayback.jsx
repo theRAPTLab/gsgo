@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../page-xui-styles';
 
@@ -33,9 +34,15 @@ class PanelPlayback extends React.Component {
         >
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
             <div className={classes.button}>START</div>
-            <div className={classes.button}>PAUSE</div>
-            <div className={classes.button}>STOP</div>
-            <div className={classes.button}>REPLAY</div>
+            <div className={clsx(classes.button, classes.buttonDisabled)}>
+              PAUSE
+            </div>
+            <div className={clsx(classes.button, classes.buttonDisabled)}>
+              STOP
+            </div>
+            <div className={clsx(classes.button, classes.buttonDisabled)}>
+              REPLAY
+            </div>
           </div>
         </div>
       </PanelChrome>
