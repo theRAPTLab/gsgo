@@ -80,6 +80,7 @@
     "clsx": "^1.1.0",
     "debounce": "^1.2.0",
     "deepmerge": "^4.2.2",
+    "gl-matrix": "^3.3.0",
     "hashids": "^2.2.1",
     "http-proxy-middleware": "^1.0.3",
     "ip": "^1.1.5",
