@@ -2,37 +2,43 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-	mod-faketrack is the code that creates the faketrack tool inside of an
-	existing HTML structure. It produces fake PTrack-style UDP via  the nodejs
-	server's step-tracker.js module.
+  mod-faketrack is the code that creates the faketrack tool inside of an
+  existing HTML structure. It produces fake PTrack-style UDP via  the nodejs
+  server's step-tracker.js module.
 
-	The root UI is instantiated in 1401-games/faketrack/game-run.js:
-	.. game-run.jsx instantiates <FakeTrack controller={mod_faketrack}
-	.. FakeTrack.componentDidMount calls this.controller.Initialize( this );
+  The root UI is instantiated in 1401-games/faketrack/game-run.js:
+  .. game-run.jsx instantiates <FakeTrack controller={mod_faketrack}
+  .. FakeTrack.componentDidMount calls this.controller.Initialize( this );
 
-	This module is the "controller", and FakeTrack.jsx implements the "view"
-	that talks to us through the exm_fakeported controller interface.
+  This module is the "controller", and FakeTrack.jsx implements the "view"
+  that talks to us through the exm_fakeported controller interface.
 
-	WARNING: This module was created a long time ago and uses fishy Javascript
-	practices! We're starting to fix this in iSTEP because we need to add
-	gesture and prop supm_fakeport.
+  WARNING: This module was created a long time ago and uses fishy Javascript
+  practices! We're starting to fix this in iSTEP because we need to add
+  gesture and prop supm_fakeport.
 
-	- Dave 5/29/2017
+  - Dave 5/29/2017
 
-	Touch Support note:
-	http://stackoverflow.com/questions/5186441/javascript-drag-and-drop-for-touch-devices
-	it's magic!
+  Touch Support note:
+  http://stackoverflow.com/questions/5186441/javascript-drag-and-drop-for-touch-devices
+  it's magic!
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+/// LIBRARIES /////////////////////////////////////////////////////////////////
+/// info about gl-matrix usage
+/// http://math.hws.edu/graphicsbook/c7/s1.html
+import { vec3 } from 'gl-matrix';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // React user interface (the "view")
 let m_FAKEVIEW = null;
-
 // dimensions
 let m_canvaswidth;
 let m_canvasheight;
-// let m_spacewidth = 5; // logical units of world
-// let m_spacedepth = 5;
+let m_spacewidth = 5; // logical units of world
+let m_spacedepth = 5;
 
 // HTML element dereferencing
 let m_container; // parent div
@@ -44,11 +50,8 @@ let m_frame = {
   header: {},
   tracks: []
 };
-// sequence number
-let m_seq = 0;
-
-// HTML status string
-let m_status = '';
+let m_seq = 0; // sequence number
+let m_status = ''; // HTML status string
 
 // constants for packet update rate
 const FRAMERATE = 15;
@@ -56,8 +59,10 @@ const INTERVAL = (1 / FRAMERATE) * 1000;
 let m_current_time = 0;
 
 // constants for "burst noise" resilience test
-const BURST_SIZE = 10;
+const BURST_NUM = 10;
 const BURST_INT = 150;
+const BURST_RAD = 100;
+
 let m_burst_end = 0;
 
 // socket connection for FAKETRACK packet submission
@@ -72,18 +77,156 @@ let m_websrvaddress = `http://${document.domain}:${m_websrvport}`;
 // flags
 let m_data_object_name_changed = false;
 
-//////////////////////////////////////////////////////////////////////////////
-/** API METHODS *************************************************************/
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_SetupContainer(id = 'container') {
+  // grab pre-defined dom elements:
+  // a m_container with a number of m_entities in it
+  let container = document.getElementById(id);
+  while (container.firstChild) {
+    //The list is LIVE so it will re-index each call
+    container.removeChild(container.firstChild);
+  }
+  return container;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** ADD TOUCHSUPPORT
+ *  http://stackoverflow.com/questions/5186441/javascript-drag-and-drop-for-touch-devices
+ */
+function m_TouchHandler(event) {
+  let touch = event.changedTouches[0];
 
-/*/	This is called from the React FakeTrack component's handleChangeState()
-	which decomposes the event object received when a form element changes
-	state. The name is the property name of the form element, and the value
-	is the new value.
+  let simulatedEvent = document.createEvent('MouseEvent');
+  simulatedEvent.initMouseEvent(
+    {
+      touchstart: 'mousedown',
+      touchmove: 'mousemove',
+      touchend: 'mouseup'
+    }[event.type],
+    true,
+    true,
+    window,
+    1,
+    touch.screenX,
+    touch.screenY,
+    touch.clientX,
+    touch.clientY,
+    false,
+    false,
+    false,
+    false,
+    0,
+    null
+  );
 
-	NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
-	the UISTATE module to manage state propagation
-/*/
+  touch.target.dispatchEvent(simulatedEvent);
+  event.preventDefault();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_AddTouchEvents(touchContainer) {
+  touchContainer.addEventListener('touchstart', m_TouchHandler, true);
+  touchContainer.addEventListener('touchmove', m_TouchHandler, true);
+  touchContainer.addEventListener('touchend', m_TouchHandler, true);
+  touchContainer.addEventListener('touchcancel', m_TouchHandler, true);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_CreateEntities(container, num = m_FAKEVIEW.state.num_entities) {
+  for (let i = 0; i < num; i++) {
+    const child = document.createElement('div');
+    child.classList.add('entity');
+    child.setAttribute('entity-id', i);
+    container.appendChild(child);
+    const columns = Math.floor(container.offsetWidth / child.offsetWidth) - 1;
+    const spacer = container.offsetWidth / columns;
+    const row = Math.floor(i / columns) * spacer;
+    const col = Math.floor(i % columns) * spacer;
+    child.style.transform = `translate3d(${col}px, ${row}px, 0)`;
+  }
+  return document.getElementsByClassName('entity');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_Translate(block, x, y) {
+  block.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_AddMouseEvents(container) {
+  // store the beginning of a click-drag
+  // used to calculate deltas to apply to object group
+  const o_clickHandler = e => {
+    const id = e.target.getAttribute('entity-id');
+    if (id) console.log(`clicked entity-id ${id}`);
+  };
 
+  let ox1 = container.offsetLeft;
+  let oy1 = container.offsetTop;
+  let ox2 = ox1 + container.offsetWidth;
+  let oy2 = oy1 + container.offsetHeight;
+  let cx;
+  let cy;
+  let dragActive = false;
+  let dragElement;
+
+  const o_dragStart = e => {
+    const { target } = e;
+    // target is clicked element, currentTarget is owner of listener: container
+    // if the target isn't container, meaning an element was clicked...
+    if (target !== container) {
+      dragElement = target;
+      dragActive = true;
+      cx = dragElement.offsetWidth / 2;
+      cy = dragElement.offsetHeight / 2;
+      ox1 = container.offsetLeft;
+      oy1 = container.offsetTop;
+      ox2 = ox1 + container.offsetWidth;
+      oy2 = oy1 + container.offsetHeight;
+    }
+  };
+
+  const o_drag = e => {
+    if (!dragActive) return;
+    const mx = e.clientX;
+    const my = e.clientY;
+    if (mx < ox1 || mx > ox2 || my < oy1 || my > oy2) return;
+    // console.log(`oob ${x},${y} outside rect ${ox1},${oy1} - ${ox2},${oy2}`);
+    e.preventDefault();
+    let x = mx - ox1 - cx; // relative to container
+    let y = my - oy1 - cy;
+    dragElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  };
+
+  const o_dragend = () => {
+    dragElement = null;
+    dragActive = false;
+  };
+
+  container.addEventListener('mousedown', o_dragStart);
+  container.addEventListener('mousemove', o_drag);
+  container.addEventListener('mouseup', o_dragend);
+  container.addEventListener('click', o_clickHandler);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// replacement candidate for is(':visible');
+// https://stackoverflow.com/questions/123999
+function m_inPageView(el) {
+  let box = el.getBoundingClientRect();
+  return box.top < window.innerHeight && box.bottom >= 0;
+}
+// alt: https://stackoverflow.com/questions/57474103
+function m_isHidden(el) {
+  let style = window.getComputedStyle(el);
+  return style.display === 'none';
+}
+
+/// API METHODS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is called from the React FakeTrack component's handleChangeState()
+ *  which decomposes the event object received when a form element changes
+ *  state. The name is the property name of the form element, and the value
+ *  is the new value.
+ *
+ *  NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
+ *  the UISTATE module to manage state propagation
+ */
 function HandleStateChange(name, value) {
   if (name !== 'status') console.log('NAME', name, 'VALUE', value);
   // handle the m_FAKEVIEW state
@@ -108,140 +251,41 @@ function HandleStateChange(name, value) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	This is called by the FakeTrack component once it's completely rendered,
-	at which time this module can start adding its own objects. This code
-	relies on m_FAKEVIEW (the FakeTrack view)
-
-	NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
-	the UISTATE module to manage state propagation
+/** This is called by the FakeTrack component once it's completely rendered,
+ *  at which time this module can start adding its own objects. This code
+ *  relies on m_FAKEVIEW (the FakeTrack view)
+ *
+ *  NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
+ *  the UISTATE module to manage state propagation
 /*/
 function Initialize(componentInstance) {
   // save React component to grab state from and setstate
   m_FAKEVIEW = componentInstance;
 
-  // grab pre-defined dom elements:
-  // a m_container with a number of m_entities in it
-  m_container = document.getElementById('container');
-  while (m_container.firstChild) {
-    //The list is LIVE so it will re-index each call
-    m_container.removeChild(m_container.firstChild);
-  }
-
-  // add m_container touch events
-  let touchContainer = document.getElementById('container');
-  touchContainer.addEventListener('touchstart', m_TouchHandler, true);
-  touchContainer.addEventListener('touchmove', m_TouchHandler, true);
-  touchContainer.addEventListener('touchend', m_TouchHandler, true);
-  touchContainer.addEventListener('touchcancel', m_TouchHandler, true);
-
-  // add m_entities to system
-  // let pre = m_FAKEVIEW.state.prefix;
-  let num = m_FAKEVIEW.state.num_entities;
-
-  for (let i = 0; i < num; i++) {
-    const child = document.createElement('div');
-    child.classList.add('entity');
-    child.classList.add('draggable');
-    child.setAttribute('entity-id', i);
-    m_container.appendChild(child);
-    const columns = Math.floor(m_container.offsetWidth / child.offsetWidth) - 1;
-    const spacer = m_container.offsetWidth / columns;
-    const row = Math.floor(i / columns) * spacer;
-    const col = Math.floor(i % columns) * spacer;
-    child.style.transform = `translate3d(${col}px, ${row}px, 0)`;
-  }
-
-  // add m_entities
-  m_entities = document.getElementsByClassName('entity');
+  // setup container, entity listsm
+  m_container = m_SetupContainer('container');
+  m_AddTouchEvents(m_container);
+  m_AddMouseEvents(m_container);
+  m_entities = m_CreateEntities(m_container);
 
   // test m_entities for bursting
-  for (let j = 0; j < BURST_SIZE; j++) {
+  for (let j = 0; j < BURST_NUM; j++) {
     const child = document.createElement('div');
     child.classList.add('entity');
     child.classList.add('testentity');
-    child.classList.add('draggable');
     child.setAttribute('entity-id', `burst${j}`);
     m_container.appendChild(child);
   }
   m_testentities = document.getElementsByClassName('testentity');
-
-  // store the beginning of a click-drag
-  // used to calculate deltas to apply to object group
-  const o_clickHandler = e => {
-    const id = e.target.getAttribute('entity-id');
-    if (id) console.log(`clicked entity-id ${id}`);
-  };
-
-  let ox1 = m_container.offsetLeft;
-  let oy1 = m_container.offsetTop;
-  let ox2 = ox1 + m_container.offsetWidth;
-  let oy2 = oy1 + m_container.offsetHeight;
-  let cx;
-  let cy;
-  let dragActive = false;
-  let dragElement;
-
-  const o_dragStart = e => {
-    const { target } = e;
-    // target is clicked element, currentTarget is owner of listener: m_container
-    // if the target isn't m_container, meaning an element was clicked...
-    if (target !== m_container) {
-      dragElement = target;
-      dragActive = true;
-      cx = dragElement.offsetWidth / 2;
-      cy = dragElement.offsetHeight / 2;
-      ox1 = m_container.offsetLeft;
-      oy1 = m_container.offsetTop;
-      ox2 = ox1 + m_container.offsetWidth;
-      oy2 = oy1 + m_container.offsetHeight;
-    }
-  };
-
-  const o_drag = e => {
-    if (!dragActive) return;
-    const mx = e.clientX;
-    const my = e.clientY;
-    if (mx < ox1 || mx > ox2 || my < oy1 || my > oy2) return;
-    // console.log(`oob ${x},${y} outside rect ${ox1},${oy1} - ${ox2},${oy2}`);
-    e.preventDefault();
-    let x = mx - ox1 - cx; // relative to m_container
-    let y = my - oy1 - cy;
-    dragElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-  };
-
-  const o_dragend = () => {
-    dragElement = null;
-    dragActive = false;
-  };
-
-  m_container.addEventListener('mousedown', o_dragStart);
-  m_container.addEventListener('mousemove', o_drag);
-  m_container.addEventListener('mouseup', o_dragend);
-  m_container.addEventListener('click', o_clickHandler);
-
-  // space out the m_entities in the m_container, since they start out
-  // all bunched on top of each other due to position:absolute
-  let top = 0;
-  let left = 0;
-  // $.each(m_entities, function (index, div) {
-  for (let i = 0; i < m_entities.length; i++) {
-    const div = m_entities[i];
-    div.style.left = left;
-    div.style.top = top;
-    left += 40;
-    if (left > m_canvaswidth - 40) {
-      top += 40;
-      left = 0;
-    }
-  }
 
   // hide test m_entities
   // $.each(m_testentities, function (index, div) {
   for (let i = 0; i < m_testentities.length; i++) {
     const div = m_testentities[i];
     div.style.display = 'none';
-    div.style.left = Math.random() * 2;
-    div.style.top = Math.random() * 2;
+    const x = BURST_RAD - Math.random() * BURST_RAD;
+    const y = BURST_RAD - Math.random() * BURST_RAD;
+    m_Translate(div, x, y);
   }
 
   // setup faketrack socket connection to server
@@ -258,29 +302,16 @@ function Initialize(componentInstance) {
       console.log('FAKETRACK SOCKET CLOSED: CODE', msg.code);
       m_fakesock = null;
     };
-    // get IP autoid from our /faketrack/autoid webservice
-    let xmlHttp = new XMLHttpRequest();
-    xmlHttp.onreadystatechange = () => {
-      if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-        HandleStateChange('prefix', xmlHttp.responseText);
-      }
-    };
-    // initate ip request
-    xmlHttp.open('GET', `${m_websrvaddress}/faketrack/autoid`, true);
-    xmlHttp.send(null);
   }
-
   // save dimensions of m_container. this isn't actually a canvas element.
   // it's used to calculate normalized coordinates of entities
-  m_canvaswidth = m_container.width;
-  m_canvasheight = m_container.height;
+  m_canvaswidth = m_container.offsetWidth;
+  m_canvasheight = m_container.offsetHeight;
 } // Initialize()a
 
-//////////////////////////////////////////////////////////////////////////////
-/** SEND PTRACK-COMPATIBLE DATA *********************************************/
-
-/*/	SendFrame is called every 1/FRAMERATE seconds
-/*/ function SendFrame() {
+/// SEND PTRACK-COMPATIBLE DATA ///////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SendFrame() {
   // update current time
   m_current_time += INTERVAL;
   // calculate compatible timer format
@@ -384,25 +415,17 @@ function Initialize(componentInstance) {
   }
 }
 
-//////////////////////////////////////////////////////////////////////////////
-/** SUPPORTING FEATURES *****************************************************/
-
-/*/	The Burst Test creates a bunch of entities on the screen as temporary
-	noise that might be caused by bad PTRACK calibration or environment
-	lighting. The tracker should ignore entities that exist for less than
-	the value of BURST_INT. This test is initated if the 'burst' checkbox
-	is set; and it is reset automatically by SendFrame()
-/*/ function DoBurstTest(
-  value
-) {
-  switch (value) {
-    case true:
-      BurstStart();
-      break;
-    case false:
-      BurstStop();
-      break;
-  }
+/// SUPPORTING FEATURES //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** The Burst Test creates a bunch of entities on the screen as temporary
+ *  noise that might be caused by bad PTRACK calibration or environment
+ *  lighting. The tracker should ignore entities that exist for less than
+ *  the value of BURST_INT. This test is initated if the 'burst' checkbox
+ *  is set; and it is reset automatically by SendFrame()
+ */
+function DoBurstTest(value) {
+  if (value) BurstStart();
+  else BurstStop();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function BurstStart() {
@@ -410,91 +433,29 @@ function BurstStart() {
   m_burst_end = m_current_time + test_interval;
   console.log('TEST BURST', `${test_interval}ms @`, m_current_time);
   // $.each(m_testentities, function (index, div) {
-
-  for (let i = 0; i < m_testentities.length; i++) {
-    const div = m_testentities[i];
-    // OLD PLAE CODE
-    // let element = $(div);
-    // element.css('left', m_canvaswidth / 2 + Math.random() * 120);
-    // element.css('top', m_canvasheight / 2 + Math.random() * 120);
-    // element.css('display', 'block');
-    // NEW GEMSTEP CODE
-    div.style.left = m_canvaswidth / 2 + Math.random() * 120;
-    div.style.top = m_canvasheight / 2 + Math.random() * 120;
+  m_testentities.forEach(div => {
+    const x = BURST_RAD - Math.random() * BURST_RAD;
+    const y = BURST_RAD - Math.random() * BURST_RAD;
+    m_Translate(div, x, y);
     div.style.display = 'block';
-  }
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function BurstStop() {
   console.log('TEST BURST COMPLETE @', `${m_current_time}ms`);
   // $.each(m_testentities, function (index, div) {
-  for (let i = 0; i < m_testentities.length; i++) {
-    const div = m_testentities[i];
-    // OLD PLAE CODE
-    // let element = $(div);
-    // element.css('display', 'none');
-    // NEW GEMSTEP CODE
+  m_testentities.forEach(div => {
     div.style.display = 'none';
-  }
+  });
   m_burst_end = 0;
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	ADD TOUCHSUPPORT
-	http://stackoverflow.com/questions/5186441/javascript-drag-and-drop-for-touch-devices
-/*/
-function m_TouchHandler(event) {
-  let touch = event.changedTouches[0];
-
-  let simulatedEvent = document.createEvent('MouseEvent');
-  simulatedEvent.initMouseEvent(
-    {
-      touchstart: 'mousedown',
-      touchmove: 'mousemove',
-      touchend: 'mouseup'
-    }[event.type],
-    true,
-    true,
-    window,
-    1,
-    touch.screenX,
-    touch.screenY,
-    touch.clientX,
-    touch.clientY,
-    false,
-    false,
-    false,
-    false,
-    0,
-    null
-  );
-
-  touch.target.dispatchEvent(simulatedEvent);
-  event.preventDefault();
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/*/	Utility function to add the passed div to m_frame and update m_status
-	string. Used by SendFrame()
-/*/
+/** Used by SendFrame()
+ *  Utility function to add the passed div to m_frame and update m_status
+ *  string.
+ */
 function u_AddEntityToFrame(div) {
-  // OLD PLAE CODE
-  // let element = $(div);
-  // if (!element.is(':visible')) return;
-
-  // NEW GEMSTEP CODE
-  // replacement candidate for is(':visible');
-  // https://stackoverflow.com/questions/123999
-  function isInView(el) {
-    let box = el.getBoundingClientRect();
-    return box.top < window.innerHeight && box.bottom >= 0;
-  }
-  // alt: https://stackoverflow.com/questions/57474103
-  // function isVisible(el) {
-  //   let style = window.getComputedStyle(el);
-  //   return style.display === 'none';
-  // }
-  if (isInView(div)) return;
+  if (m_isHidden(div)) return;
 
   // if data_object_name has changed, we update the entity id so that
   // fake track sends a new object, otherwise the old object is retained
@@ -507,9 +468,13 @@ function u_AddEntityToFrame(div) {
   // let pos = element.position();
   // let offX = element.outerWidth() / 2;
   // let offY = element.outerHeight() / 2;
+  // NEW GEMSTEP CODE
+  // DOMRect x, y, width, height, top, right, bottom, left
+  const rect = div.getBoundingClientRect();
+  const origin = m_container.getBoundingRect();
   let pos = {
-    left: div.offsetLeft,
-    top: div.offsetHeight
+    left: rect.left - origin.left,
+    top: rect.top - origin.top
   };
   let offX = div.offsetWidth / 2;
   let offY = div.offsetHeight / 2;
