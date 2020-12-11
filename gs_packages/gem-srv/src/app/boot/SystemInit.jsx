@@ -14,12 +14,10 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-
-/// URSYS MODULES /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// URSYS LIBRARIES ///////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
 import SETTINGS from 'config/app.settings';
-// Material UI Theming
+/// MATERIAL UI LIBRARIES /////////////////////////////////////////////////////
 import theme from 'modules/style/theme';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { create } from 'jss';
@@ -29,10 +27,10 @@ import {
   jssPreset,
   ThemeProvider
 } from '@material-ui/core/styles';
-// main app shell
+/// MAIN APP SHELL ////////////////////////////////////////////////////////////
 import SystemShell from './SystemShell';
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');

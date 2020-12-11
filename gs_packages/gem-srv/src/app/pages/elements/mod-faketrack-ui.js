@@ -13,15 +13,12 @@
   This module is the "controller", and FakeTrack.jsx implements the "view"
   that talks to us through the exm_fakeported controller interface.
 
-  WARNING: This module was created a long time ago and uses fishy Javascript
-  practices! We're starting to fix this in iSTEP because we need to add
-  gesture and prop supm_fakeport.
-
+  *** WARNING ***
+  This module was created in 2014 and still uses fishy Javascript practices!
   - Dave 5/29/2017
 
-  Touch Support note:
-  http://stackoverflow.com/questions/5186441/javascript-drag-and-drop-for-touch-devices
-  it's magic!
+  *** NOTES ***
+  Touch support from: stackoverflow.com/questions/5186441
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -42,8 +39,8 @@ let m_spacedepth = 5;
 
 // HTML element dereferencing
 let m_container; // parent div
-let m_entities; // collection of moveable markers
-let m_testentities; // collection of moveable markers
+let m_entities; // HTMLCollection of moveable markers
+let m_testentities; // HTMLCollection of moveable markers
 
 // current FAKETRACK frame
 let m_frame = {
@@ -95,7 +92,6 @@ function m_SetupContainer(id = 'container') {
  */
 function m_TouchHandler(event) {
   let touch = event.changedTouches[0];
-
   let simulatedEvent = document.createEvent('MouseEvent');
   simulatedEvent.initMouseEvent(
     {
@@ -118,7 +114,6 @@ function m_TouchHandler(event) {
     0,
     null
   );
-
   touch.target.dispatchEvent(simulatedEvent);
   event.preventDefault();
 }
@@ -211,6 +206,7 @@ function m_inPageView(el) {
   let box = el.getBoundingClientRect();
   return box.top < window.innerHeight && box.bottom >= 0;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // alt: https://stackoverflow.com/questions/57474103
 function m_isHidden(el) {
   let style = window.getComputedStyle(el);
@@ -370,7 +366,7 @@ function SendFrame() {
     } else HandleStateChange('burst', false);
   }
 
-  // update status UI
+  // update status UI (lower left)
   HandleStateChange('status', m_status);
 
   // if m_fakesock is defined, send to server
@@ -464,74 +460,61 @@ function u_AddEntityToFrame(div) {
     div.setAttribute('entity-id', parseInt(Math.random() * 1000, 10));
   }
   let id = m_FAKEVIEW.state.prefix + div.getAttribute('entity-id').toString();
-  // OLD PLAE CODE
-  // let pos = element.position();
-  // let offX = element.outerWidth() / 2;
-  // let offY = element.outerHeight() / 2;
-  // NEW GEMSTEP CODE
-  // DOMRect x, y, width, height, top, right, bottom, left
+  // getBoundingClientRect return DOMRect
+  // { x, y, width, height, top, right, bottom, left }
   const rect = div.getBoundingClientRect();
-  const origin = m_container.getBoundingRect();
+  const origin = m_container.getBoundingClientRect();
   let pos = {
     left: rect.left - origin.left,
     top: rect.top - origin.top
   };
-  let offX = div.offsetWidth / 2;
-  let offY = div.offsetHeight / 2;
+  let offX = rect.width / 2;
+  let offY = rect.height / 2;
   let speedX = m_FAKEVIEW.state.jitter * Math.random();
   let speedY = m_FAKEVIEW.state.jitter * Math.random();
   // xx & yy are normalized -1 to 1
   let xx = (pos.left + offX + speedX) / m_canvaswidth - 0.5;
   let yy = (pos.top + offY + speedY) / m_canvasheight - 0.5;
+  // expanded position
   let x = xx * (m_FAKEVIEW.state.width / 2) + parseFloat(m_FAKEVIEW.state.offx);
   let y = yy * (m_FAKEVIEW.state.depth / 2) + parseFloat(m_FAKEVIEW.state.offy);
 
-  // This is used to reverse the basic transforms from input.js
-  // from m_UpdateLocationTransform
+  // Align faketrack to match the PTrack coordinate system, which may be
+  // rotated and offset from the origin
+  /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
+    1. CALCULATE MATRIX PARAMETERS
+      scaleX = state.xscale
+      rotateX = state.xrot
+      transX = normalize(x)+state.width + state.offx
+      transY = normalize(y)+state.depth + state.offy
+      * create matrix for each operation *
 
-  // expand to aspect ratio of canvas
-  // let scaleX = m_FAKEVIEW.state.xscale;
-  // let scaleY = -m_FAKEVIEW.state.yscale; // html coordinates are 0 at top
-  // let scale = new THREE.Matrix4().makeScale(scaleX, scaleY, 1);
+    2. PROPER ORDER OF MATRIX CALCULATIONS
+      let m = new THREE.Matrix4();
+      m.multiplyMatrices(scale, rotatex);
+      m.multiply(rotatey);
+      m.multiply(rotatez);
+      m.multiply(translate);
 
-  // // apply rotation transforms
-  // let convertRadians = Math.PI / 180;
-  // let rotatex = new THREE.Matrix4().makeRotationX(
-  //   m_FAKEVIEW.state.xrot * convertRadians
-  // );
-  // let rotatey = new THREE.Matrix4().makeRotationY(
-  //   m_FAKEVIEW.state.yrot * convertRadians
-  // );
-  // let rotatez = new THREE.Matrix4().makeRotationZ(
-  //   m_FAKEVIEW.state.zrot * convertRadians
-  // );
+    TRANSLATED POSITION
+      pos = new THREE.Vector3(x, y, pos.z);
+      pos = pos.applyMatrix4(m);
+  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 
-  // // translation
-  // let x = xx * (m_FAKEVIEW.state.width / 2) + parseFloat(m_FAKEVIEW.state.offx);
-  // let y = yy * (m_FAKEVIEW.state.depth / 2) + parseFloat(m_FAKEVIEW.state.offy);
-  // let translate = new THREE.Matrix4().makeTranslation(x, y, 0);
-
-  // let m = new THREE.Matrix4();
-  // m.multiplyMatrices(scale, rotatex);
-  // m.multiply(rotatey);
-  // m.multiply(rotatez);
-  // m.multiply(translate);
-
-  // // create working vector to convert to game space
-  // pos = new THREE.Vector3(x, y, pos.z);
-  // pos = pos.applyMatrix4(m);
+  /*** insert gl-matrix calculations here to transform position ****************/
 
   // add entity to frame.tracks to be JSONified
   let framedata = {
     id,
-    x: pos.x,
-    y: pos.y,
-    z: pos.z,
+    x,
+    y,
+    z: 0,
     height: 1.4,
     isFaketrack: true // mark the entity as faketrack
     // data so we can ignore it
     // during transforms
   };
+
   switch (m_FAKEVIEW.state.data_track) {
     case 'people_tracks':
       m_frame.people_tracks.push(framedata);
@@ -554,7 +537,6 @@ function u_AddEntityToFrame(div) {
           'confidence': 1
         }
       };
-
       m_frame.pose_tracks.push(framedata);
       break;
     case 'fake_tracks':

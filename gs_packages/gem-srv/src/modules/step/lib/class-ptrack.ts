@@ -145,7 +145,7 @@ export default class PTrack {
     /// this is used in the for loop to reject bad data
     function hasBadData(raw) {
       let isGood = true;
-      if (raw.orientation) {
+      if (raw.orientation !== undefined) {
         isGood = isGood && typeof raw.orientation === 'number';
       }
       if (raw.x !== undefined) {
@@ -257,10 +257,8 @@ export default class PTrack {
     // .. see if raw.id exists in entityDict
     // .. if not, create new object with nop 0
     // .. if exist, update object
-    tracks.forEach(i => {
-      let raw = tracks[i];
+    tracks.forEach(raw => {
       if (hasBadData(raw)) return;
-
       // HACK ***
       // If the track is pose data
       // and joints or chests are malformed, we can end up with NaN x and y
