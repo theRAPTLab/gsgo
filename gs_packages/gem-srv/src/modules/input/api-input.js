@@ -9,11 +9,26 @@ import * as PTRACK from 'modules/step/input-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('INPUT', 'TagRed');
+const PR = UR.PrefixUtil('SIM-INPUT', 'TagRed');
+
+/// CHEESE TESTING ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let FRAME_COUNT = 0;
+setInterval(() => {
+  const pieces = PTRACK.UpdateTrackerPieces(FRAME_COUNT++, {
+    lostFunc: () => {},
+    addedFunc: () => {}
+  });
+  const dict = PTRACK.PTrackEntityDict();
+  console.log('entity dict size', dict.size);
+}, 2000);
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function Init(element) {}
+export function Init() {
+  PTRACK.InitializeConnection(document.domain);
+  PTRACK.InitializeTrackerPiecePool({ count: 5 });
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ConnectTracker() {
   console.log(...PR('should connect to PTRACK'));
@@ -26,7 +41,11 @@ export function DisconnectTracker() {
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('UR/LOAD_CONFIG', () => {
-  console.log(...PR('Initializing Connection to', document.domain));
-  PTRACK.InitializeConnection(document.domain);
-  PTRACK.InitializeTrackerPiecePool({ count: 10 });
+  const addr = document.domain;
+  console.log(...PR('Initializing Connection to', addr));
+  Init(addr);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('SIM/INPUTS', () => {
+  console.log('sim/input');
 });

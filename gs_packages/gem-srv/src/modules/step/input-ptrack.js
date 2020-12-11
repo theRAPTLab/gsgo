@@ -131,7 +131,7 @@ export function UpdateTrackerPieces(ms, parm) {
   if (m_inputs.length && m_inputs.length > 0) {
     // assign TrackerObjects to input pieces
     // save the list of unassigned TrackerObject ids for later
-    unassigned = this.MapEntities(m_inputs, ms, addedFunc, lostFunc);
+    unassigned = MapEntities(m_inputs, ms, addedFunc, lostFunc);
 
     // process all input pieces, grab their TrackerObject,
     // and tell them to LERP to its position

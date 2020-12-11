@@ -210,16 +210,26 @@ assets/modules/step		src/modules/stepdead
 input
 ```
 
+## DEC 11 FRI - Fixing the Tracker Data
+
 Next up...let's lay-in api-input
 
-* [ ] clean up tracker logic, instantiation
-* [ ] clean up broken websocket server
+* [x] clean up tracker logic, instantiation
+* [x] clean up broken websocket server
+* [x] fix broken dataframes
+  * [x] fix position calculation obsolete math
+  * [x] confirm input received
+* [x] use `PTRACK.InitializeConnection()` in api-input
+* [x] use `PTRACK.InitializeTrackerPiecePool() ` in api-input
+* [x] use `PTRACK.UpdateTrackerPieces()` in api-input
+  * [ ] missing TrackerObject, TrackerPiece
+  * [ ] piece access missing `PTRACK.MapEntities()` 
 
-Now we can verify that we are getting data.
+### Fixing MapEntities
 
-* looking in class-ptrack, we're not getting data.
+PLAE used a different architecture for "Pieces", which held a "TrackerObject" that represented a point. The trackerobject was maintained by input-ptrack, and the instance was added to the piece that was tracking it. 
 
-
+GEMSTEP uses a different pierce architecture, using "Agents" that are similar to Pieces. We probably need to have a new 
 
 
 
