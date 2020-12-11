@@ -63,6 +63,157 @@ When saving state, we need to save the blueprint, the name, and the initial valu
 * [x] Rewrite Transpiler.MakeAgent to use new TInstance class
 * [x] Rewrite sim-agents.AgentProgram to define instances then make them
 
+## DEC 09 WED - Adding FakeTrack
+
+The idea is to **port the old one as-is** and see what it does. I forget.
+
+FakeTrack PLAE breakdown
+
+* **game-run.jsx** - loads game-run.css, also LoadAssets does `<FakeTrack controller={MOD_FAKETRACK}/>`
+* **FakeTrack.jsx** - this component has state with transformation matrix. Port FakeTrack component, also MOD-faketrack as input-faketrack.js`. 
+
+GOT AS FAR AS REWRITING FAKETRACK DRAG INTERFACE without JQUERY. What a pain in the ass.
+
+Tomorrow we'll try hooking-up the GetInput on the client side to confirm we're getting FakeTrack data
+
+## DEC 10 THU - 2nd Stage FakeTrack...input into client
+
+Where I left off yesterday was just getting FakeTrack to send data. It seems to work. Now I have to remember how to get it into the system.
+
+**Q. Who is handling the PTrack input?**
+
+In `modules/step/ptrack` and `modules/step/lib/*` are the tracker related classes. 
+
+* server-side: `step-ptrack.js`
+* client-side: in PLAE, it was `step/input` which is now `lib/input-faketrack` 
+
+client **sender**: FakeTrack calls `{ Initialize } from input-faketrack` which 
+
+**server**: `step-ptrack` has out_DPORT 3030, ptrack socker server, IN_DPORT 2525 is where FakeTrack data is inserted. Data on 2525 is handled by `m_ForwardTrackerData`, which forwards the packet to PTrack sockets. 
+
+client **receiver**: This would be a connection to port 3030, which is handled by `step/lib/class-ptrack` . It looks like `plae-input` is the ported  code 
+
+```
+PLAE: game-run.jsx loads mod-tracker which loads step/input, which implements:
+
+// initialize once
+INPUT.InitializeTrackerPiecePool({
+  count  	 	: COUNT,
+  initFunc 	: m_SetTrackerPieceVisual
+});
+
+// process the pool
+INPUT.UpdateTrackerPieces ( ms, {
+  addedFunc      : f_SetVisual,
+  lostFunc       : f_ResetVisual
+});
+
+// get the valid tracker pieces
+m_pieces = INPUT.GetValidTrackerPieces();
+
+// extra stuff
+INPUT.ChangeLocation();
+INPUT.UI_EnableProcessing();
+
+```
+
+To enable the receiver on Tracker:
+
+* [x] `lib/input-faketrack` is used by `FakeTrack.jsx`
+* [x] rename `lib/input-faketrack` to `lib/mod-faketrack-ui`
+* [ ] convert `plae-input` into something useful by gemsrv
+  * [ ] 
+* [ ] in `lib/input-faketrack` 
+
+
+
+```
+// STEP/INPUT
+
+function m_Initialize ( token, serverAddress ) {
+		console.assert(serverAddress,"Must pass ServerAddress?");
+	//	Initialize PTRACK
+		PTRACK.Initialize(token);
+		PTRACK.SetServerDomain(serverAddress);
+		PTRACK.Connect();
+		m_RegisterInputModule(PTRACK);
+	}
+
+// MOD-TRACKER
+API.SetHandler('GetInput', function( ms ) {
+  function f_SetVisual (p) {
+    p.Visual().Show();
+    p.Visual().HideLine();
+    if (debug) m_SetColorByTrackSource(p);
+  }
+  function f_ResetVisual (p) {
+    p.Visual().HideLine();
+    p.Visual().Hide();
+  }
+  INPUT.UpdateTrackerPieces ( ms, {
+    addedFunc      : f_SetVisual,
+    lostFunc       : f_ResetVisual
+  });
+  // update m_pieces array
+  m_pieces = INPUT.GetValidTrackerPieces();
+});
+
+```
+
+**What should it look like?**
+
+1. Create a WebSocket to 2525 PTRACK SERVER, which also passes FAKETRACK. This should be renamed to just INPUT, because we'll ride all our inputs on this socket. PLAE version is in `mod-tracker`which uses the INPUT module in `step/input`
+2. Connect websocket message to `_ProcessFrame()`, which will generate the list of entities. This is located in `step/ptrack`. The PTRACK module is responsible just for keeping up-to-date with the flowing inputs, creating a bunch of entities
+3. The `GetInput` lifecycle grabs the list of whatever from the INPUT module. entities. Probably **InputObjects**, the companion to DisplayObjects.
+
+THIS IS HOW PLAE BREAKS DOWN
+
+```
+CLIENT SEND
+mod-faketrack  	generate faketrack data for injection via 2525
+
+SERVER INPUT HANDLER
+
+step.js 
+  step-tracker .... UDP listener, FakeTrack listener, Pozyx listener
+										Track Forwarder to subscribers at port 3030
+
+CLIENT RECEIVE
+mod-tracker .......	GetInput lifecycle, manages the piece list from INPUT
+	step/input ...... TrackerPiecePool for m_inputs (raw entities)
+	PIECES	          UpdateTrackerPieces( ms, addf, lossf )
+										MapEntities( inputs, ms, addf, lossf )
+		step/ptrack	... Connect() to hook messages to ProcessFrame()
+		ENTITIES		  	initialize connection to 3030 via PTRACK
+										maintain EntityDict m_entities
+										ProcessFrame updates entities
+
+```
+
+GEMSTEP REMAPPED PLAE FILES
+
+```
+PLAE									GEMSTEP
+
+- sender -
+1401-game/faketrack		pages/FakeTrack.jsx
+mod-faketrack					app/pages/elements/mod-faketrack-ui
+
+- server -
+server/step						urdu, which calls...
+step-tracker					server/step-tracker (Start, Stop forwarding)
+
+- subscriber -
+1401-games/tracker		pages/Tracker.jsx
+mod-tracker						./elements/mod-tracker
+assets/modules/step		src/modules/step
+input
+```
+
+Next up...let's lay-in api-input
+
+
+
 
 
 

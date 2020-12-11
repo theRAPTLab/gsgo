@@ -122,9 +122,6 @@ function Initialize(componentInstance) {
   // grab pre-defined dom elements:
   // a m_container with a number of m_entities in it
   m_container = document.getElementById('container');
-  // OLD PLAE CODE
-  // m_container.empty();
-  // NEW GEMSTEP CODE
   while (m_container.firstChild) {
     //The list is LIVE so it will re-index each call
     m_container.removeChild(m_container.firstChild);
@@ -155,9 +152,6 @@ function Initialize(componentInstance) {
   }
 
   // add m_entities
-  // OLD PLAE CODE
-  // m_entities = $('.entity');
-  // NEW GEMSTEP CODE
   m_entities = document.getElementsByClassName('entity');
 
   // test m_entities for bursting
@@ -169,16 +163,10 @@ function Initialize(componentInstance) {
     child.setAttribute('entity-id', `burst${j}`);
     m_container.appendChild(child);
   }
-  // OLD PLAE CODE
-  // m_testentities = $('.testentity');
-  // NEW GEMSTEP CODE
   m_testentities = document.getElementsByClassName('testentity');
 
   // store the beginning of a click-drag
   // used to calculate deltas to apply to object group
-  // OLD PLAE CODE
-  // m_entities.draggable(o_DragHandler).click(o_ClickHandler);
-  // NEW GEMSTEP CODE
   const o_clickHandler = e => {
     const id = e.target.getAttribute('entity-id');
     if (id) console.log(`clicked entity-id ${id}`);
@@ -238,11 +226,6 @@ function Initialize(componentInstance) {
   // $.each(m_entities, function (index, div) {
   for (let i = 0; i < m_entities.length; i++) {
     const div = m_entities[i];
-    // OLD PLAE CODE
-    // let element = $(div);
-    // element.css('left', left);
-    // element.css('top', top);
-    // NEW GEMSTEP CODE
     div.style.left = left;
     div.style.top = top;
     left += 40;
@@ -256,13 +239,6 @@ function Initialize(componentInstance) {
   // $.each(m_testentities, function (index, div) {
   for (let i = 0; i < m_testentities.length; i++) {
     const div = m_testentities[i];
-
-    // OLD PLAE CODE
-    // let element = $(div);
-    // element.css('display', 'none');
-    // element.css('left', Math.random() * 2);
-    // element.css('top', Math.random() * 2);
-    // NEW GEMSTEP CODE
     div.style.display = 'none';
     div.style.left = Math.random() * 2;
     div.style.top = Math.random() * 2;
@@ -345,15 +321,22 @@ function Initialize(componentInstance) {
 
   // x,y ranges within m_spacewidth x m_spacedepth meters,
   // centered on 0 in the space
-  m_entities.forEach(u_AddEntityToFrame);
+  for (let i = 0; i < m_entities.length; i++) {
+    const div = m_entities[i];
+    u_AddEntityToFrame(div);
+  }
 
   // clear flag for next frame
   m_data_object_name_changed = false;
 
   // handle test entities that might be bursting
   if (m_burst_end) {
-    if (m_current_time < m_burst_end) m_testentities.each(u_AddEntityToFrame);
-    else HandleStateChange('burst', false);
+    if (m_current_time < m_burst_end) {
+      for (let i = 0; i < m_testentities.length; i++) {
+        const div = m_testentities[i];
+        u_AddEntityToFrame(div);
+      }
+    } else HandleStateChange('burst', false);
   }
 
   // update status UI
@@ -427,29 +410,32 @@ function BurstStart() {
   m_burst_end = m_current_time + test_interval;
   console.log('TEST BURST', `${test_interval}ms @`, m_current_time);
   // $.each(m_testentities, function (index, div) {
-  m_testentities.forEach(div => {
+
+  for (let i = 0; i < m_testentities.length; i++) {
+    const div = m_testentities[i];
     // OLD PLAE CODE
     // let element = $(div);
     // element.css('left', m_canvaswidth / 2 + Math.random() * 120);
     // element.css('top', m_canvasheight / 2 + Math.random() * 120);
     // element.css('display', 'block');
     // NEW GEMSTEP CODE
-    div.css('left', m_canvaswidth / 2 + Math.random() * 120);
-    div.css('top', m_canvasheight / 2 + Math.random() * 120);
-    div.css('display', 'block');
-  });
+    div.style.left = m_canvaswidth / 2 + Math.random() * 120;
+    div.style.top = m_canvasheight / 2 + Math.random() * 120;
+    div.style.display = 'block';
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function BurstStop() {
   console.log('TEST BURST COMPLETE @', `${m_current_time}ms`);
   // $.each(m_testentities, function (index, div) {
-  m_testentities.forEach(div => {
+  for (let i = 0; i < m_testentities.length; i++) {
+    const div = m_testentities[i];
     // OLD PLAE CODE
     // let element = $(div);
     // element.css('display', 'none');
     // NEW GEMSTEP CODE
-    div.css('display', 'none');
-  });
+    div.style.display = 'none';
+  }
   m_burst_end = 0;
 }
 
@@ -491,7 +477,7 @@ function m_TouchHandler(event) {
 /*/	Utility function to add the passed div to m_frame and update m_status
 	string. Used by SendFrame()
 /*/
-function u_AddEntityToFrame(index, div) {
+function u_AddEntityToFrame(div) {
   // OLD PLAE CODE
   // let element = $(div);
   // if (!element.is(':visible')) return;

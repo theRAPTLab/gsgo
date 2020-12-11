@@ -17,7 +17,8 @@ const PATH = require('path');
 const shell = require('shelljs');
 const minimist = require('minimist');
 const URSERVER = require('@gemstep/ursys/server');
-const URPACK = require('./src/server-webpack');
+const DEVSERVER = require('./server/urdu-dev');
+const TRACKER = require('./server/step-tracker');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,8 +96,8 @@ function RunDevServer(opt) {
 
   // run ursys
   (async () => {
-    await URPACK.Start(opt);
-    await URSERVER.Initialize(opt);
+    await DEVSERVER.Start(opt);
+    await URSERVER.Initialize(TRACKER.StartTrackerSystem);
     await URSERVER.StartServer({
       port: PORT,
       serverName: 'APP_SRV',

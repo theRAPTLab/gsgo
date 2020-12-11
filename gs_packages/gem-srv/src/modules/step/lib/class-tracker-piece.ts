@@ -4,8 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Vec3 } from 'step/lib/t-tracking';
-import { TrackerMode, TrackType } from 'step/lib/t-ptrack';
+import { Vec3 } from './t-tracking';
+import { TrackerMode, TrackType } from './t-ptrack';
 import TrackerObject from './class-tracker-object';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////

@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TrackerMode, TrackType } from 'step/lib/t-ptrack';
+import { TrackerMode, TrackType } from './t-ptrack';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

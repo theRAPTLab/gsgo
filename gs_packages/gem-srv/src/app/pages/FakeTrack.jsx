@@ -11,8 +11,8 @@ import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from 'modules/render/api-render';
-import { Initialize, HandleStateChange } from 'lib/input-faketrack';
-import { useStylesHOC } from './page-styles';
+import { Initialize, HandleStateChange } from './elements/mod-faketrack-ui';
+import { useStylesHOC } from './elements/page-styles';
 import 'lib/css/faketrack.css';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
@@ -62,13 +62,7 @@ class FakeTrack extends React.Component {
   componentDidMount() {
     // start URSYS
     UR.SystemConfig({ autoRun: true }); // initialize renderer
-    // const renderRoot = document.getElementById('root-renderer');
-    // Init(renderRoot);
-    // OLD PLAE CODE
-    // this.controller.Initialize(this);
-    // NEW GEMSTEP CODE
     Initialize(this);
-    // hook window
     HookResize(window);
   }
 
@@ -82,11 +76,6 @@ class FakeTrack extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    // OLD PLAE CODE
-    // the controller module has a handle to this object,
-    // and calls setState() as needed
-    // this.controller.HandleStateChange(name, value);
-    // NEW GEMSTEP CODE
     HandleStateChange(name, value);
   }
 

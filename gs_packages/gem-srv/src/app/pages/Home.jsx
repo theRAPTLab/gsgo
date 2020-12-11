@@ -10,7 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
-import { useStylesHOC } from './page-styles';
+import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

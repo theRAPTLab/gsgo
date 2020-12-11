@@ -41,14 +41,20 @@ const MEDIA = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize dependent libraries
  */
-function Initialize() {
+function Initialize(inits) {
   // hooks registration goes here
+  if (typeof inits === 'function') inits = [inits];
+  if (!Array.isArray(inits)) return;
+  inits.forEach(f => f());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** deallocate any system resources assigned during Initialize
  */
-function Shutdown() {
+function Shutdown(closers) {
   // ot
+  if (typeof closers === 'function') closers = [closers];
+  if (!Array.isArray(closers)) return;
+  closers.forEach(f => f());
 }
 
 /// MAIN API //////////////////////////////////////////////////////////////////

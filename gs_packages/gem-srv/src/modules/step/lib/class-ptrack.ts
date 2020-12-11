@@ -9,7 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { EntityObject, Frame, FrameStatus } from 'step/lib/t-ptrack';
+import { EntityObject, Frame, FrameStatus } from './t-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
