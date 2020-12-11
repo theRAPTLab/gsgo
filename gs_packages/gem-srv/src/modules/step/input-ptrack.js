@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   INPUT is the home of all inputs into the system. Its primary purpose is to
@@ -25,22 +26,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/// ESLINT OVERRIDES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/* eslint-disable no-constant-condition */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-restricted-properties */
-/* eslint-disable no-self-assign */
-/* eslint-disable no-continue */
-/* eslint-disable no-lonely-if */
-/* eslint-disable new-cap */
-/* eslint-disable default-case */
-/* eslint-disable @typescript-eslint/no-use-before-define */
-/* eslint-disable func-names */
-/* eslint-disable import/no-mutable-exports */
-// TrackerObject
-// PTRACK
-// TrackerPiece
+import TrackerPiece from './lib/class-tracker-piece';
+import TrackerObject from './lib/class-tracker-object';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,13 +35,13 @@ let DBGOUT = false;
 let DBGEDGE = false;
 
 /// MOCKED OBJECTS TO REPLACE
-const XSETTINGS = {};
-const UISTATE = {};
-const $ = {};
+const XSETTINGS = {
+  ptrackSRadius: 0.1,
+  ptrackTimeout: 66,
+  ptrackMinAge: 16
+};
 const PTRACK = {};
 const THREE = {};
-const TrackerPiece = () => {};
-const TrackerObject = () => {};
 
 // maintain list of all connected input submodules
 // contents of m_input_modules are descriptor objects
@@ -64,27 +51,16 @@ let m_inputs = []; // activity-wide tracker piece pool
 let m_pieces = []; // valid tracker pieces
 // master object for location transform properties
 let m_transform = {};
-// master object for webrtc address
-let m_webrtc = {};
-// module flags
-let _enable_ui_handlers = null; // control event handler processing
-let m_location_subscribers = [];
 
 // HTML element used for updating debug info
 // defined in input-transform.html subview
-let ui_udp_status;
 let ui_ptrack_entities;
-let ui_xformed_entities;
 
 // input filtering parameters
 let MAX_NOP = 500;
 let MIN_AGE = 350;
 let MIN_NOP = MIN_AGE / 2;
 let SRADIUS = 0.0001;
-
-// active timer instance, if any
-let m_AutoSave = null;
-let m_saved_vm = null;
 
 // pool creation parameters
 let m_pool_parm = null;
@@ -94,7 +70,7 @@ let m_pool_parm = null;
 /** Resize the input pool for tracker objects, if needed. Pass createFunc
  *  to receive a piece to further initialize as needed.
  */
-function InitializeTrackerPiecePool(parm) {
+export function InitializeTrackerPiecePool(parm) {
   if (typeof parm !== 'object')
     throw Error('InitializeTrackerPiecePool: must pass parameter object');
   parm.count = parm.count || 5;
@@ -104,7 +80,7 @@ function InitializeTrackerPiecePool(parm) {
       `InitializeTrackerPiecePool: parm.cstrFunc not constructor:${parm.cstrFunc}`
     );
 
-  let cstrFunc = parm.cstrFunc;
+  let CstrFunc = parm.cstrFunc;
   let initFunc = parm.initFunc;
   let count = parm.count;
   // save parameters for use by UpdateTrackerPieces()
@@ -114,7 +90,7 @@ function InitializeTrackerPiecePool(parm) {
   if (num > 0) {
     console.group('INPUT creating', num, 'TrackerPieces');
     for (let i = 0; i < num; i++) {
-      let p = new cstrFunc(`input${m_inputs.length}`);
+      let p = new CstrFunc(`input${m_inputs.length}`);
       if (initFunc && typeof initFunc === 'function') {
         initFunc.call(this, p);
       }
@@ -136,7 +112,7 @@ function InitializeTrackerPiecePool(parm) {
  *        pieces in m_inputs. When writing player logic, you should
  *        be using m_pieces, not m_inputs
  */
-function UpdateTrackerPieces(ms, parm) {
+export function UpdateTrackerPieces(ms, parm) {
   let lostFunc = parm.lostFunc; // used by MapEntities to clear
   let addedFunc = parm.addedFunc; // used by MapEntities to set
 
@@ -144,7 +120,6 @@ function UpdateTrackerPieces(ms, parm) {
   let i;
   let p;
   let tobj;
-  let vis; // local vars
   let unassigned = []; // trackerobjs needing pieces
   let reclaimed = []; // pieces lost trackerobjs
 
@@ -213,13 +188,13 @@ function UpdateTrackerPieces(ms, parm) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return the TrackerObject pool
  */
-function GetValidTrackerPieces() {
+export function GetValidTrackerPieces() {
   return m_pieces;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Override the default mode and create seeker-style trackerpieces
  */
-function SetTrackerPiecesToSeekMode() {
+export function SetTrackerPiecesToSeekMode() {
   TrackerObject.ConstructorTrackMode(TrackerObject.MODE_SEEK);
   for (let i = 0; i < m_inputs.length; i++) {
     m_inputs[i].tracker_object.mode = TrackerObject.MODE_SEEK;
@@ -228,16 +203,16 @@ function SetTrackerPiecesToSeekMode() {
 
 /// TRACKER ENTITY FILTERING PARAMETERS ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UpdateFilterSettings() {
+export function UpdateFilterSettings() {
   // 	needs update to use Settings
-  //	MAX_NOP = XSETTINGS.CurrentLocationKeyValue('ptrackTimeout');
-  //	MIN_AGE = XSETTINGS.CurrentLocationKeyValue('ptrackMinAge');
-  //	SRADIUS = XSETTINGS.CurrentLocationKeyValue('ptrackSRadius');
-  //	MIN_NOP = MIN_AGE / 2;
+  MAX_NOP = XSETTINGS.ptrackTimeout;
+  MIN_AGE = XSETTINGS.ptrackMinAge;
+  SRADIUS = XSETTINGS.ptrackSRadius;
+  MIN_NOP = MIN_AGE / 2;
   console.log('SET PTRACK FILTER VALUES', MAX_NOP, MIN_AGE, SRADIUS);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SetFilterTimeout(nop) {
+export function SetFilterTimeout(nop) {
   if (nop === undefined) return;
   if (nop < MIN_AGE) {
     console.warn('Timeout', nop, "can't be less than Age Threshold", MIN_AGE);
@@ -246,7 +221,7 @@ function SetFilterTimeout(nop) {
   MAX_NOP = nop;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SetFilterAgeThreshold(age) {
+export function SetFilterAgeThreshold(age) {
   if (age === undefined) return;
   if (age > MAX_NOP) {
     console.warn('Age', age, "can't be greater than timeout", MAX_NOP);
@@ -255,7 +230,7 @@ function SetFilterAgeThreshold(age) {
   MIN_AGE = age;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SetFilterFreshnessThreshold(threshold) {
+export function SetFilterFreshnessThreshold(threshold) {
   if (threshold === undefined) return;
   if (threshold > MIN_AGE / 2) {
     console.log(
@@ -267,7 +242,7 @@ function SetFilterFreshnessThreshold(threshold) {
   MIN_NOP = threshold;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SetFilterRadius(rad) {
+export function SetFilterRadius(rad) {
   if (rad === undefined) return;
   if (Number.isNaN(rad)) {
     console.warn('SetFilterRadius expects a number, not', rad);
@@ -276,27 +251,7 @@ function SetFilterRadius(rad) {
   SRADIUS = rad;
 }
 
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Initialize the Input System to connect to server
- */
-function InitializeConnection(token, serverAddress) {
-  m_Initialize(token, serverAddress);
-  this.UpdateFilterSettings();
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called by Initialize().
- *  token is reserved for future use
- *  serverAddress is the broadcast UDP address that PTRACK is on
- */
-function m_Initialize(token, serverAddress) {
-  console.assert(serverAddress, 'Must pass ServerAddress?');
-  //	Initialize PTRACK
-  PTRACK.Initialize(token);
-  PTRACK.SetServerDomain(serverAddress);
-  PTRACK.Connect();
-  m_RegisterInputModule(PTRACK);
-}
+/// INITIALIZATION HELPERS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** called during INPUT initialization (and possibly asynchronously later)
  *  to register an input module with the system. This creates an EntityMap
@@ -322,70 +277,142 @@ function m_RegisterInputModule(input_module) {
   // assign a unique ID and save descriptor w/ pointer to module
   desc.id = m_input_modules.length.zeroPad(3) + desc.name;
   desc.instance = input_module;
-  desc.IsAssigned = function () {
+  desc.IsAssigned = () => {
     return this.id !== null;
   };
-
   // save module if all works out
   m_input_modules.push(input_module);
 }
 
-/// Tracker Services //////////////////////////////////////////////////////////
+/// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** EnumerateTrackers returns a list of inputs of type "tracker", which are
- *  input modules that are PTRACK-style
+/** token is reserved for future use
+ *  serverAddress is the broadcast UDP address that PTRACK is on
  */
-function EnumerateTrackers() {
-  return m_Enumerate({ type: 'tracker' });
-}
-//	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** EnumerateInputTypes returns a list of all input modules, filtered by
- *  optional search object.
+export function Initialize(serverAddress) {
+  console.assert(serverAddress, 'Must pass ServerAddress?');
+  //	Initialize PTRACK
+  PTRACK.Initialize();
+  PTRACK.SetServerDomain(serverAddress);
+  PTRACK.Connect();
+  m_RegisterInputModule(PTRACK);
+} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Initialize the Input System to connect to server
  */
-function Enumerate(searchObj) {
-  return m_Enumerate(searchObj);
+export function InitializeConnection(serverAddress) {
+  Initialize(serverAddress);
+  UpdateFilterSettings();
 }
+
+/// ENTITY HELPERS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** returns a list of inputs in descriptor format
+/** Convert entity coordinates to gameworld gameworld coordinates.
+ *  entity: { id, x, y, h, nop } - tracker coords
+ *  trackerObject: { id, pos, valid } - game coords
  */
-function m_Enumerate(searchObj) {
-  console.assert(m_input_modules.length, 'ERROR: no registered input modules');
+function m_TransformAndUpdate(entity, trackerObj) {
+  // tracker space position
+  let x = entity.x;
+  let y = entity.y;
+  let z = entity.h;
 
-  let filtered = [];
-  let fobj = searchObj;
+  // invert tracker axis?
+  if (m_transform.invertX) x = -x;
+  if (m_transform.invertY) y = -y;
 
-  if (fobj) {
-    // create an array based on filter test function
-    filtered = m_input_modules.filter(function (input) {
-      let el = input.GetDescriptor();
-      console.assert(el, 'invalid descriptor');
+  // create working vector to convert to game space
+  let pos = new THREE.Vector3(x, y, z);
 
-      let matchName = true;
-      let matchType = true;
-      let matches = false;
+  // DEBUG - REMOVE LATER
+  // if (!m_transform.matrix_align) return;
 
-      if (fobj.name) {
-        matches = true;
-        matchName = fobj.name === el.name;
-      }
-      if (fobj.type) {
-        matches = true;
-        matchType = fobj.type === el.type;
-      }
-      return matches && matchName && matchType;
-    });
-
-    return filtered;
+  if (entity.isFaketrack) {
+    // skip transform if the tracker object is from faketrack
+    // faketrack data should already be normalized
+    // console.log('skipping transform');
+  } else {
+    // align coordinate axis and origin
+    pos = pos.applyMatrix4(m_transform.matrix_align);
+    // normalize
+    pos.x /= m_transform.t_halfwidth;
+    pos.y /= m_transform.t_halfdepth;
   }
-  // otherwise just return all the descriptors
-  return m_input_modules;
+
+  // check inside or not
+  let outsideX = pos.x < -1 || pos.x > 1;
+  let outsideY = pos.y < -1 || pos.y > 1;
+  trackerObj.isOutside = outsideX || outsideY;
+
+  // add age
+  trackerObj.age = entity.age;
+
+  // convert normalized to gameworld coordinates
+  pos.x *= m_transform.g_halfwidth;
+  pos.y *= m_transform.g_halfdepth;
+  // pos.z = pos.z;
+
+  // copy transform values
+  trackerObj.pos.set(pos.x, pos.y, pos.z);
+
+  // copy object and pose track info
+  trackerObj.type = entity.type;
+  trackerObj.name = entity.name;
+  trackerObj.pose = entity.pose;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** entity is checked against other entities in idsActive
+ *  it's assumed that idsActive does NOT contain entity
+ */
+function m_IsOldestInRadius(entity, idsActive, entityDict) {
+  let rad2 = SRADIUS * SRADIUS;
+  let result = true;
+  idsActive.forEach(i => {
+    let c = entityDict[idsActive[i]];
+    let x2 = (c.x - entity.x) ** 2;
+    let y2 = (c.y - entity.y) ** 2;
+    // is point outside of circle? continue
+    if (x2 + y2 >= rad2) return;
+    // otherwise we're inside, so check who's older
+    if (entity.age < c.age) {
+      result = false;
+      // merge position with baddies
+      c.x = (c.x + entity.x) / 2;
+      c.y = (c.y + entity.y) / 2;
+    }
+  });
+  return result;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let m_places = 2;
+/** Utility function to format a string to a padding length.
+ *  Used by Tracker Utility
+ */
+function u_format(num, fixed = 2) {
+  // HACK *****  to deal with string input
+  // marco is always sending a string now to deal with a nan
+  // data for some orientation and pose predictions
+  num = parseFloat(num);
+
+  let str = num.toFixed(fixed).toString();
+  if (str.length > m_places) m_places = str.length;
+  while (str.length < m_places) str = ` ${str}`;
+  return str;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility function to clip a string to given length
+ *  http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng
+ */
+function u_pad(str, padLeft) {
+  let pad = '            '; // 15 spaces
+  if (padLeft) return (pad + str).slice(-pad.length);
+  return (str + pad).substring(0, pad.length);
 }
 
 /// RAW ENTITY SERVICES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** EntityDict() returns the PTrack Entity Dictionary
  */
-function PTrackEntityDict() {
+export function PTrackEntityDict() {
   // dict: entityid -> { id,x,y,h,nop }
   let entityDict = PTRACK.GetEntityDict();
   return entityDict;
@@ -403,7 +430,7 @@ function PTrackEntityDict() {
  *    .. assign them to "orphaned/lost" pieces
  *    .. assign remainder to "new pieces" (didn't have a TrackerObject)
  */
-function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
+export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // dict: entityid -> { id,x,y,h,nop }
   let entityDict = PTRACK.GetEntityDict();
 
@@ -462,8 +489,9 @@ function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
         continue;
       }
 
+      const age_override = true;
       // check for suppression due to overlap for young pieces
-      if (entity.age < maxNOP || true) {
+      if (entity.age < maxNOP || age_override) {
         if (!m_IsOldestInRadius(entity, idsActive, entityDict)) {
           if (DBGOUT) console.log(`suppress\t${id}`, 'overlap');
           delete entityDict[id];
@@ -551,13 +579,13 @@ function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
 
   /* DEBUG */
   if (!window.show_entities)
-    window.show_entities = function (mode) {
+    window.show_entities = mode => {
       console.log('active tracker entities');
       if (mode !== undefined) {
         return entityDict;
       }
       let out = '\n';
-      Object.keys(entityDict).forEach(function (key) {
+      Object.keys(entityDict).forEach(key => {
         let obj = entityDict[key];
         out += `${obj.id}\t${obj.x.toFixed(2)}, ${obj.y.toFixed(2)}`;
         out += `\t${obj.nop}ms`;
@@ -569,109 +597,7 @@ function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // return unassigned ids (array)
   return idsActive;
 } // end of MapEntities()
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_places = 2;
-/** Utility function to format a string to a padding length.
- *  Used by Tracker Utility
- */
-function u_format(num, fixed = 2) {
-  // HACK *****  to deal with string input
-  // marco is always sending a string now to deal with a nan
-  // data for some orientation and pose predictions
-  num = parseFloat(num);
-
-  let str = num.toFixed(fixed).toString();
-  if (str.length > m_places) m_places = str.length;
-  while (str.length < m_places) str = ` ${str}`;
-  return str;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility function to clip a string to given length
- *  http://stackoverflow.com/questions/2686855/is-there-a-javascript-function-that-can-pad-a-string-to-get-to-a-determined-leng
- */
-function u_pad(str, padLeft) {
-  let pad = '            '; // 15 spaces
-  if (padLeft) return (pad + str).slice(-pad.length);
-  return (str + pad).substring(0, pad.length);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Convert entity coordinates to gameworld gameworld coordinates.
- *  entity: { id, x, y, h, nop } - tracker coords
- *  trackerObject: { id, pos, valid } - game coords
- */
-function m_TransformAndUpdate(entity, trackerObj) {
-  // tracker space position
-  let x = entity.x;
-  let y = entity.y;
-  let z = entity.h;
-
-  // invert tracker axis?
-  if (m_transform.invertX) x = -x;
-  if (m_transform.invertY) y = -y;
-
-  // create working vector to convert to game space
-  let pos = new THREE.Vector3(x, y, z);
-
-  // DEBUG - REMOVE LATER
-  // if (!m_transform.matrix_align) return;
-
-  if (entity.isFaketrack) {
-    // skip transform if the tracker object is from faketrack
-    // faketrack data should already be normalized
-    // console.log('skipping transform');
-  } else {
-    // align coordinate axis and origin
-    pos = pos.applyMatrix4(m_transform.matrix_align);
-    // normalize
-    pos.x /= m_transform.t_halfwidth;
-    pos.y /= m_transform.t_halfdepth;
-  }
-
-  // check inside or not
-  let outsideX = pos.x < -1 || pos.x > 1;
-  let outsideY = pos.y < -1 || pos.y > 1;
-  trackerObj.isOutside = outsideX || outsideY;
-
-  // add age
-  trackerObj.age = entity.age;
-
-  // convert normalized to gameworld coordinates
-  pos.x *= m_transform.g_halfwidth;
-  pos.y *= m_transform.g_halfdepth;
-  pos.z = pos.z;
-
-  // copy transform values
-  trackerObj.pos.set(pos.x, pos.y, pos.z);
-
-  // copy object and pose track info
-  trackerObj.type = entity.type;
-  trackerObj.name = entity.name;
-  trackerObj.pose = entity.pose;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** entity is checked against other entities in idsActive
- *  it's assumed that idsActive does NOT contain entity
- */
-function m_IsOldestInRadius(entity, idsActive, entityDict) {
-  let rad2 = SRADIUS * SRADIUS;
-  let result = true;
-  for (let i = 0; i < idsActive.length; i++) {
-    let c = entityDict[idsActive[i]];
-    let x2 = Math.pow(c.x - entity.x, 2);
-    let y2 = Math.pow(c.y - entity.y, 2);
-    // is point outside of circle? continue
-    if (x2 + y2 >= rad2) continue;
-    // otherwise we're inside, so check who's older
-    if (entity.age < c.age) {
-      result = false;
-      // merge position with baddies
-      c.x = (c.x + entity.x) / 2;
-      c.y = (c.y + entity.y) / 2;
-      break;
-    }
-  }
-  return result;
-}
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see exports above
