@@ -34,7 +34,7 @@ import PTrack from './lib/class-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('INPT', 'TagRed');
+const PR = UR.PrefixUtil('INPUT-PTRACK', 'TagRed');
 let DBGOUT = false;
 let DBGEDGE = false;
 
@@ -44,7 +44,7 @@ const XSETTINGS = {
   ptrackTimeout: 66,
   ptrackMinAge: 16
 };
-const PTRACK = new PTrack();
+const PTM = new PTrack();
 const THREE = {};
 
 // maintain list of all connected input submodules
@@ -291,16 +291,16 @@ function m_RegisterInputModule(input_module) {
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** token is reserved for future use
- *  serverAddress is the broadcast UDP address that PTRACK is on
+ *  serverAddress is the broadcast UDP address that PTM is on
  */
 export function InitializeConnection(serverAddress) {
   console.assert(serverAddress, 'Must pass ServerAddress?');
-  //	Initialize PTRACK
+  //	Initialize PTM
   console.group(...PR('Initialize'));
-  PTRACK.Initialize();
-  PTRACK.SetServerDomain(serverAddress);
-  PTRACK.Connect();
-  m_RegisterInputModule(PTRACK);
+  PTM.Initialize();
+  PTM.SetServerDomain(serverAddress);
+  PTM.Connect();
+  m_RegisterInputModule(PTM);
   UpdateFilterSettings();
   console.groupEnd();
 }
@@ -415,7 +415,7 @@ function u_pad(str, padLeft) {
  */
 export function PTrackEntityDict() {
   // dict: entityid -> { id,x,y,h,nop }
-  let entityDict = PTRACK.GetEntityDict();
+  let entityDict = PTM.GetEntityDict();
   return entityDict;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -433,7 +433,7 @@ export function PTrackEntityDict() {
  */
 export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // dict: entityid -> { id,x,y,h,nop }
-  let entityDict = PTRACK.GetEntityDict();
+  let entityDict = PTM.GetEntityDict();
 
   // init entity processing list with all entities
   let idsActive = Object.keys(entityDict);

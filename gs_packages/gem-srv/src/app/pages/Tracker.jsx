@@ -19,7 +19,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('Tracker', 'TagBlue');
+const PR = UR.PrefixUtil('TRACKER', 'TagGreen');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 

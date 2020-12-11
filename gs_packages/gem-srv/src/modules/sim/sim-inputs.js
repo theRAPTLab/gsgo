@@ -1,6 +1,9 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+// import * as INPUT from 'modules/input/api-input';
+// instead of this, the entities should be in DATACORE
+
 import UR from '@gemstep/ursys/client';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
@@ -15,7 +18,9 @@ const PR = UR.PrefixUtil('SIM_INPUTS');
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/INPUTS');
+UR.SystemHook('SIM/INPUTS', () => {
+  console.log('input');
+});
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

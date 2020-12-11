@@ -32,6 +32,7 @@ export default class PTrack {
     this.socketAddress = 'ws://localhost:3030';
     this.N_ENTITIES = 15;
     this.entityDict = new Map();
+
     // 2.0 infer the connection status of PTRACK with our system
     this.connectStatusDict = new Map();
     // descriptor, used for input module enumeration
@@ -63,6 +64,10 @@ export default class PTrack {
     return this.descriptor;
   }
 
+  GetEntityDict() {
+    return this.entityDict;
+  }
+
   /// PROCESS FRAME /////////////////////////////////////////////////////////////
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     This is an enormous block of code ported as-is from PLAE, with minor
@@ -73,7 +78,6 @@ export default class PTrack {
   ProcessFrame(frameData: string) {
     // frame.header: { seq: stamp:{sec: nsec:} frame_id: }
     // frame.people_tracks: [ { id: x: y: height: } ... ]
-
     let frame;
     let subtype;
     let frame_seq;
@@ -161,7 +165,6 @@ export default class PTrack {
     } catch (e) {
       console.log('*** PROCESS FRAME Bad JSON', e);
     }
-
     // check for valid header
     if (!frame.header === undefined) throw new Error('missing ptrack header');
     if (!frame.header.seq === undefined)
