@@ -9,22 +9,24 @@ import * as PTRACK from 'modules/step/input-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('INPUT');
+const PR = UR.PrefixUtil('INPUT', 'TagRed');
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Init(element) {}
+export function Init(element) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ConnectTracker(serverAddress = document.domain) {
-  PTRACK.InitializeConnection(serverAddress);
+export function ConnectTracker() {
+  console.log(...PR('should connect to PTRACK'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DisconnectTracker() {
-  console.log('should disconnect from tracker');
+export function DisconnectTracker() {
+  console.log(...PR('should disconnect from PTRACK'));
 }
 
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/NET_READY', () => {
-  ConnectTracker();
+UR.SystemHook('UR/LOAD_CONFIG', () => {
+  console.log(...PR('Initializing Connection to', document.domain));
+  PTRACK.InitializeConnection(document.domain);
+  PTRACK.InitializeTrackerPiecePool({ count: 10 });
 });

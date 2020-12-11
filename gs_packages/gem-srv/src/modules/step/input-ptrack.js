@@ -26,11 +26,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
+
 import TrackerPiece from './lib/class-tracker-piece';
 import TrackerObject from './lib/class-tracker-object';
+import PTrack from './lib/class-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('INPT', 'TagRed');
 let DBGOUT = false;
 let DBGEDGE = false;
 
@@ -40,7 +44,7 @@ const XSETTINGS = {
   ptrackTimeout: 66,
   ptrackMinAge: 16
 };
-const PTRACK = {};
+const PTRACK = new PTrack();
 const THREE = {};
 
 // maintain list of all connected input submodules
@@ -275,7 +279,7 @@ function m_RegisterInputModule(input_module) {
   );
 
   // assign a unique ID and save descriptor w/ pointer to module
-  desc.id = m_input_modules.length.zeroPad(3) + desc.name;
+  desc.id = m_input_modules.length.toString().padStart(3, 0) + desc.name;
   desc.instance = input_module;
   desc.IsAssigned = () => {
     return this.id !== null;
@@ -289,19 +293,16 @@ function m_RegisterInputModule(input_module) {
 /** token is reserved for future use
  *  serverAddress is the broadcast UDP address that PTRACK is on
  */
-export function Initialize(serverAddress) {
+export function InitializeConnection(serverAddress) {
   console.assert(serverAddress, 'Must pass ServerAddress?');
   //	Initialize PTRACK
+  console.group(...PR('Initialize'));
   PTRACK.Initialize();
   PTRACK.SetServerDomain(serverAddress);
   PTRACK.Connect();
   m_RegisterInputModule(PTRACK);
-} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Initialize the Input System to connect to server
- */
-export function InitializeConnection(serverAddress) {
-  Initialize(serverAddress);
   UpdateFilterSettings();
+  console.groupEnd();
 }
 
 /// ENTITY HELPERS //////////////////////////////////////////////////////////

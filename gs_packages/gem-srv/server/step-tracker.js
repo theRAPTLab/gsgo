@@ -17,7 +17,7 @@ const dgram = require('dgram');
 const WebSocketServer = require('ws').Server;
 const { PrefixUtil } = require('@gemstep/ursys/server');
 //
-const PR = PrefixUtil('PTRK');
+const PR = PrefixUtil(' PTRK');
 const PT_GROUP = '224.0.0.1'; // ptrack UDP multicast address
 const PT_UPORT = 21234; // ptrack UDP port
 const OUT_DPORT = 3030; // ptrack TCP data port socket server
@@ -61,8 +61,9 @@ function m_AddBrowserConnection(wsocket) {
     id: ptrack_id_counter++
   };
   ptrack_sockets.push(sobj);
-  if (DBGTRK)
-    console.log(...PR(`${OUT_DPORT} Browser Client`, sobj.id, 'Connect'));
+  if (DBGTRK) {
+    console.log(...PR(`${OUT_DPORT} TrackData Client`, sobj.id, 'Connect'));
+  }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,19 +77,12 @@ function m_RemoveBrowserConnection(wsocket) {
     let sobj = ptrack_sockets[i];
     if (sobj.socket !== wsocket) new_sockets.push(sobj);
     else if (DBGTRK)
-      console.log(...PR(`${OUT_DPORT} Browser Client`, sobj.id, 'Disconnect'));
+      console.log(
+        ...PR(`${OUT_DPORT} TrackData Client`, sobj.id, 'Disconnected')
+      );
   }
   // save new list
   ptrack_sockets = new_sockets;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** error handler for m_ForwardTrackerData()
- */
-function m_Error(error) {
-  if (error) {
-    console.log(...PR('ptrack send error', error));
-  }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,10 +94,14 @@ function m_ForwardTrackerData(json) {
     // if reader is valid, we are playing back data and shouldn't
     // forward ANY ptrack data
     if (!reader) {
-      for (let i = 0; i < ptrack_sockets.length; i++) {
-        let sobj = ptrack_sockets[i];
-        sobj.socket.send(json, m_Error);
-      }
+      const dead = [];
+      ptrack_sockets.forEach(sobj => {
+        sobj.socket.send(json, () => dead.push(sobj));
+      });
+      if (dead.length > 0)
+        dead.forEach(sobj => {
+          m_RemoveBrowserConnection(sobj.socket);
+        });
     }
     // if writer is valid, we are logging data
     if (writer) writer.write(`${json}\n`);
@@ -181,7 +179,7 @@ function m_BindPTrackForwarder() {
     m_AddBrowserConnection(wsocket);
     // set close handler
     wsocket.once('close', () => {
-      m_RemoveBrowserConnection(this);
+      m_RemoveBrowserConnection(wsocket);
     });
   });
 
@@ -197,12 +195,12 @@ function m_BindFakeTrackListener() {
 
   // set connection handler
   ftrack_ss.on('connection', wsocket => {
-    console.log(...PR('2525 FakeTrack Connect'));
+    console.log(...PR(`${IN_DPORT} TrackDataInjector Connected`));
     ftrack_socket = wsocket;
 
     // set close handler
     ftrack_socket.once('close', () => {
-      console.log(...PR(`remote socket FAKETRACK ${IN_DPORT} closed`));
+      console.log(...PR(`${IN_DPORT} TrackDataInjector Closed`));
       ftrack_socket = null;
     });
 
@@ -214,7 +212,7 @@ function m_BindFakeTrackListener() {
 
   // set error handler
   ftrack_ss.on('error', err => {
-    console.log(...PR(`fakeTracker socket server error:${err}`));
+    console.log(...PR(`TrackDataInjector socket server error:${err}`));
     ftrack_socket = null;
   });
 }
@@ -269,10 +267,19 @@ function StopTrackerSystem() {
   if (ftrack_socket) ftrack_socket.close();
   if (ftrack_ss) ftrack_ss.close();
 }
+/// API REMOVE BROWER CONNECTION //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Sometimes the ptrack socket 3030 does not disconnect when the socket
+ *  drops. This will be called from URNET to manage
+ */
+function BrowserDisconnected(wsocket) {
+  m_RemoveBrowserConnection(wsocket);
+}
 
 /// EXPORT MODULE API//////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   StartTrackerSystem,
-  StopTrackerSystem
+  StopTrackerSystem,
+  BrowserDisconnected
 };

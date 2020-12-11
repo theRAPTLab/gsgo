@@ -12,6 +12,7 @@ import clsx from 'clsx';
 // SELECT RUNTIME MODULES FOR APP
 import * as RENDERER from 'modules/render/api-render';
 import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as INPUT from 'modules/input/api-input';
 //
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './elements/page-styles';

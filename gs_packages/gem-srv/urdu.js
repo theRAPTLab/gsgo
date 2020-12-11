@@ -17,8 +17,8 @@ const PATH = require('path');
 const shell = require('shelljs');
 const minimist = require('minimist');
 const URSERVER = require('@gemstep/ursys/server');
-const DEVSERVER = require('./server/urdu-dev');
 const TRACKER = require('./server/step-tracker');
+const DEVSERVER = require('./server/urdu-dev');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

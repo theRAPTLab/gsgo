@@ -206,11 +206,16 @@ step-tracker					server/step-tracker (Start, Stop forwarding)
 - subscriber -
 1401-games/tracker		pages/Tracker.jsx
 mod-tracker						./elements/mod-tracker
-assets/modules/step		src/modules/step
+assets/modules/step		src/modules/stepdead
 input
 ```
 
 Next up...let's lay-in api-input
+
+* [ ] clean up tracker logic, instantiation
+* [ ] clean up broken websocket server
+
+Now we can verify that we are getting data.
 
 
 
