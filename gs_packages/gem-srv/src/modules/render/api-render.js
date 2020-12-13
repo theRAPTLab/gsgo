@@ -68,9 +68,10 @@ function Init(element) {
   CONTAINERS.Root = root;
 
   // map model display objects to sprites
-  RP_DOBJ_TO_VOBJ = new SyncMap('1-D2V', {
+  RP_DOBJ_TO_VOBJ = new SyncMap({
     Constructor: Visual,
-    autoGrow: true
+    autoGrow: true,
+    name: 'RP DisplayToSprite'
   });
 
   // object handlers for 1-D2V
@@ -105,16 +106,18 @@ function Init(element) {
   // RP_DOBJ_TO_VOBJ.setMapFunctions()
 
   // map ptrack markers
-  RP_PTRAK_TO_VOBJ = new SyncMap('2-PTK', {
+  RP_PTRAK_TO_VOBJ = new SyncMap({
     Constructor: Visual,
-    autoGrow: true
+    autoGrow: true,
+    name: 'RP TrackertoSprite'
   });
   // RP_PTRAK_TO_VOBJ.setMapFunctions()
 
   // map student input controls
-  RP_ANNOT_TO_VOBJ = new SyncMap('3-ANO', {
+  RP_ANNOT_TO_VOBJ = new SyncMap({
     Constructor: Visual,
-    autoGrow: true
+    autoGrow: true,
+    name: 'RP AnnoteToSprite'
   });
   // RP_ANNOT_TO_VOBJ.setMapFunctions()
 }

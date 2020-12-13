@@ -3,8 +3,6 @@
   A visual representation of an id-ish object, linking a data object
   to a visual object. These are used in Display Lists for the Renderer.
 
-  Extends SMObject, which is our common stackmachine- compatible object.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { IPoolable } from './t-pool.d';

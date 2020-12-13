@@ -21,6 +21,7 @@ export interface IPoolable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IPoolOptions {
   Constructor: IPoolableConstructor; // constructor to use (class instance)
+  name?: string; // name of pool (help with debug)
   size?: number; // size of initial array
   batchSize?: number; // number of elements to add when growing
   autoGrow?: boolean; // whether to automatically increase size or error out

@@ -18,9 +18,10 @@ const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
 const DO_TESTS = !UR.IsRoute('/app/compiler');
 
-const DOBJ_SYNC_AGENT = new SyncMap('AgentToDOBJ', {
+const DOBJ_SYNC_AGENT = new SyncMap({
   Constructor: DisplayObject,
-  autoGrow: true
+  autoGrow: true,
+  name: 'AgentToDOBJ'
 });
 
 DOBJ_SYNC_AGENT.setMapFunctions({

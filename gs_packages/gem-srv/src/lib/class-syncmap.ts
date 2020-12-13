@@ -9,7 +9,7 @@
 
   USAGE:
 
-  const PTracker = new SyncMap('note',{ Constructor: DisplayObject });
+  const PTracker = new SyncMap({ Constructor: DisplayObject, ...opts });
   PTracker.setMapFunctions({ onAdd, onUpdate, shouldRemove, onRemove });
 
   const entities = INPUT.GetEntities(); // returns array
@@ -56,11 +56,12 @@ class SyncMap {
   map: MappedPool;
   deltas: ISyncResults;
 
-  constructor(poolName: string, poolOptions: IPoolOptions) {
-    if (typeof poolName !== 'string') throw Error('arg1 must be string name');
+  constructor(poolOptions: IPoolOptions) {
     if (typeof poolOptions !== 'object') throw Error('arg2 must be config obj');
     // pool options have a Constructor at minimum
-    this.pool = new Pool(poolName, poolOptions);
+    const { name } = poolOptions;
+    if (typeof name !== 'string') throw Error('arg1 must be string name');
+    this.pool = new Pool(name, poolOptions);
     // the default mapped pool uses null functions
     // the MappedPool handles id copying, so just copy special props
     this.map = new MappedPool(this.pool, {

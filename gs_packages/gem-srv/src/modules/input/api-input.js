@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as PTRACK from 'modules/step/input-ptrack';
+import * as PTRACK from 'modules/step/in-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,7 +20,8 @@ setInterval(() => {
     addedFunc: () => {}
   });
   const dict = PTRACK.PTrackEntityDict();
-  console.log('entity dict size', dict.size);
+
+  /** HERE **/
 }, 2000);
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////

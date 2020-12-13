@@ -1,36 +1,19 @@
-/* eslint-disable no-continue */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  INPUT is the home of all inputs into the system. Its primary purpose is to
-  handle the OpenPTrack "tracks" of position data from kids tracked in the
-  "physical world".
+  This PTRACK INPUT MODULE handles a few things:
 
-  API: INITIALIZE ONCE
-  * InitializeConnection (token, serverAddress )
-  * InitializeTrackerPiecePool ({ count: cstrFunc: initFunc })
-
-  API: CALL PERIODICALLY
-  * UpdateTrackerPieces ( ms, createFunc,lostFunc )
-  * GetValidTrackerPieces ()
-
-  OVERRIDE DEFAULT NOISE FILTERING PARAMETERS
-  * UpdateFilterSettings ()
-  * SetFilterTimeout ( nop )
-  * SetFilterAgeThreshold ( age )
-  * SetFilterFreshnessThreshold ( threshold )
-  * SetFilterRadius ( rad )
-
-  RAW DATA ACCESS
-  MapEntities ( pieceDict, intervalMS )
-  PTrackEntityDict ()
+  1. Use a PTrack Endpoint to manage the stream of raw PTRACK entities
+  2. Denoise raw PTRACK entities
+  3. Maintain 'active' entities from frame-to-frame
+  4. Align raw PTRACK entity coordinates into simulation coordinates
+  5. Provide the current 'active' entities list to requesters
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-
-import TrackerPiece from './lib/class-tracker-piece';
+import SyncMap from 'lib/class-syncmap';
 import TrackerObject from './lib/class-tracker-object';
-import PTrack from './lib/class-ptrack';
+import PTrack from './lib/class-ptrack-endpoint';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,15 +27,15 @@ const XSETTINGS = {
   ptrackTimeout: 66,
   ptrackMinAge: 16
 };
-const PTM = new PTrack();
-const THREE = {};
+let MAX_NOP = 500;
+let MIN_AGE = 350;
+let MIN_NOP = MIN_AGE / 2;
+let SRADIUS = 0.0001;
 
-// maintain list of all connected input submodules
-// contents of m_input_modules are descriptor objects
-let m_input_modules = []; // stack of registered input modules
 // piece management utilities
 let m_inputs = []; // activity-wide tracker piece pool
 let m_pieces = []; // valid tracker pieces
+
 // master object for location transform properties
 let m_transform = {};
 
@@ -61,13 +44,13 @@ let m_transform = {};
 let ui_ptrack_entities;
 
 // input filtering parameters
-let MAX_NOP = 500;
-let MIN_AGE = 350;
-let MIN_NOP = MIN_AGE / 2;
-let SRADIUS = 0.0001;
 
 // pool creation parameters
 let m_pool_parm = null;
+
+/// PTRACK CONNECTION OBJECT ////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const RAWTRK = new PTrack();
 
 /// SIMPLIFIED TRACKER INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,7 +61,7 @@ export function InitializeTrackerPiecePool(parm) {
   if (typeof parm !== 'object')
     throw Error('InitializeTrackerPiecePool: must pass parameter object');
   parm.count = parm.count || 5;
-  parm.cstrFunc = parm.cstrFunc || TrackerPiece;
+  parm.cstrFunc = parm.cstrFunc || TrackerObject;
   if (typeof parm.cstrFunc !== 'function')
     throw Error(
       `InitializeTrackerPiecePool: parm.cstrFunc not constructor:${parm.cstrFunc}`
@@ -107,14 +90,14 @@ export function InitializeTrackerPiecePool(parm) {
   return m_inputs;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** MAIN ROUTINE for handling entity mapping to pieces.
- *  m_inputs    List of pieces that are assigned TrackerObjects
- *        by INPUT.MapEntities(). This is a pool of pieces used
- *        for TrackerObject mapping.
- *  m_pieces    List of pieces that the player considers "active",
- *        constructed every frame by scanning the list of valid
- *        pieces in m_inputs. When writing player logic, you should
- *        be using m_pieces, not m_inputs
+/** MAIN ROUTINE for handling entity mapping to pieces
+ *  m_inputs -  List of pieces that are assigned TrackerObjects
+ *              by INPUT.MapEntities(). This is a pool of pieces used
+ *              for TrackerObject mapping.
+ *  m_pieces -  List of pieces that the player considers "active",
+ *              constructed every frame by scanning the list of valid
+ *              pieces in m_inputs. When writing player logic, you should
+ *              be using m_pieces, not m_inputs
  */
 export function UpdateTrackerPieces(ms, parm) {
   let lostFunc = parm.lostFunc; // used by MapEntities to clear
@@ -140,6 +123,7 @@ export function UpdateTrackerPieces(ms, parm) {
     // piece and mark it as available for reuse
     for (i = 0; i < m_inputs.length; i++) {
       p = m_inputs[i];
+      /* OLD PLAE CODE
       if (p) {
         tobj = p.TrackerObject();
         if (tobj && tobj.IsValid()) {
@@ -155,6 +139,7 @@ export function UpdateTrackerPieces(ms, parm) {
           reclaimed.push(p);
         }
       }
+      */
     }
 
     // create new pieces for m_inputs pool as necessary
@@ -177,6 +162,7 @@ export function UpdateTrackerPieces(ms, parm) {
   // ...then create filtered list of valid m_pieces
   for (i = 0; i < m_inputs.length; i++) {
     p = m_inputs[i];
+    /** OLD PLAE CODE
     tobj = p.TrackerObject();
     if (tobj && tobj.IsInside()) {
       m_pieces.push(p);
@@ -184,6 +170,7 @@ export function UpdateTrackerPieces(ms, parm) {
     } else {
       p.Visual().Hide();
     }
+    */
   }
 
   // return the valid piece list
@@ -255,52 +242,16 @@ export function SetFilterRadius(rad) {
   SRADIUS = rad;
 }
 
-/// INITIALIZATION HELPERS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** called during INPUT initialization (and possibly asynchronously later)
- *  to register an input module with the system. This creates an EntityMap
- *  object that is stored here in INPUT, and is shared with the input_module
- *  to be the "data bridge"
- */
-function m_RegisterInputModule(input_module) {
-  console.assert(input_module, 'Must call with valid input module');
-  // desc.name = descriptive name of input module
-  // desc.id = unique name assigned by INPUT to input module
-  // desc.maxTrack = maximum number of tracks in entity
-  // desc.instance = instance of the actual module
-  let desc = input_module.GetDescriptor();
-
-  // ensure this is a good Descriptor
-  console.assert(desc.maxTrack, 'Not a descriptor object?');
-  console.assert(desc.name, 'Descriptor does not have valid name');
-  console.assert(
-    desc.id === null,
-    `Descriptor has unexpected non-empty id field${desc.id}`
-  );
-
-  // assign a unique ID and save descriptor w/ pointer to module
-  desc.id = m_input_modules.length.toString().padStart(3, 0) + desc.name;
-  desc.instance = input_module;
-  desc.IsAssigned = () => {
-    return this.id !== null;
-  };
-  // save module if all works out
-  m_input_modules.push(input_module);
-}
-
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** token is reserved for future use
- *  serverAddress is the broadcast UDP address that PTM is on
+ *  serverAddress is the broadcast UDP address that RAWTRK is on
  */
 export function InitializeConnection(serverAddress) {
   console.assert(serverAddress, 'Must pass ServerAddress?');
-  //	Initialize PTM
-  console.group(...PR('Initialize'));
-  PTM.Initialize();
-  PTM.SetServerDomain(serverAddress);
-  PTM.Connect();
-  m_RegisterInputModule(PTM);
+  //	Initialize RAWTRK
+  console.group(...PR('creating PTRACK endpoint'));
+  RAWTRK.Connect(serverAddress);
   UpdateFilterSettings();
   console.groupEnd();
 }
@@ -317,11 +268,15 @@ function m_TransformAndUpdate(entity, trackerObj) {
   let y = entity.y;
   let z = entity.h;
 
+  console.log('entity', ...entity);
+  /* OLD PLAE CODE
+
   // invert tracker axis?
   if (m_transform.invertX) x = -x;
   if (m_transform.invertY) y = -y;
 
   // create working vector to convert to game space
+
   let pos = new THREE.Vector3(x, y, z);
 
   // DEBUG - REMOVE LATER
@@ -359,6 +314,7 @@ function m_TransformAndUpdate(entity, trackerObj) {
   trackerObj.type = entity.type;
   trackerObj.name = entity.name;
   trackerObj.pose = entity.pose;
+  */
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** entity is checked against other entities in idsActive
@@ -415,7 +371,7 @@ function u_pad(str, padLeft) {
  */
 export function PTrackEntityDict() {
   // dict: entityid -> { id,x,y,h,nop }
-  let entityDict = PTM.GetEntityDict();
+  let entityDict = RAWTRK.GetEntityDict();
   return entityDict;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -433,7 +389,7 @@ export function PTrackEntityDict() {
  */
 export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // dict: entityid -> { id,x,y,h,nop }
-  let entityDict = PTM.GetEntityDict();
+  let entityDict = RAWTRK.GetEntityDict();
 
   // init entity processing list with all entities
   let idsActive = Object.keys(entityDict);
@@ -535,8 +491,9 @@ export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   let piecesNew = [];
   // update pieces
   for (i = 0; i < pieceList.length; i++) {
+    /* DISABLE
     p = pieceList[i];
-    tobj = p.TrackerObject();
+    tobj = { ...p }; // was p.TrackerObject();
     if (tobj) {
       entity = entityDict[tobj.id];
       if (entity) {
@@ -557,6 +514,7 @@ export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
     } else {
       piecesNew.push(p);
     }
+    */
   }
   // pieces that need new entities assigned in piecesLost
   // idsActive has been shrunk to unassigned ids
@@ -566,6 +524,7 @@ export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
 
   // ASSIGN ORPHANED/UNASSIGNED PIECES
   for (i = 0; i < piecesToAssign.length; i++) {
+    /*
     p = piecesToAssign[i];
     id = idsActive.shift();
     if (id) {
@@ -576,6 +535,7 @@ export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
       tobj.Validate();
       if (addedFunc) addedFunc.call(this, p);
     } else if (DBGEDGE) console.log('ran out of entities for', p.id);
+    */
   }
 
   /* DEBUG */

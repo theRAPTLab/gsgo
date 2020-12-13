@@ -9,20 +9,23 @@
 
 import UR from '@gemstep/ursys/client';
 import { EntityObject, FrameStatus } from './t-ptrack';
-import DEF from './plae-def';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PTRAK');
+const TYPES = {
+  Undefined: '?',
+  Object: 'ob',
+  People: 'pp',
+  Pose: 'po',
+  Faketrack: 'ft'
+};
 
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default class PTrack {
-  input_socket: {
-    onmessage?: Function;
-  };
+export default class PTrackEndpoint {
+  input_socket: { onmessage?: Function };
   socketAddress: string;
-  N_ENTITIES: number;
   entityDict: Map<string, EntityObject>;
   connectStatusDict: Map<string, FrameStatus>;
   descriptor: {}; // vestigial...should remove
@@ -30,11 +33,11 @@ export default class PTrack {
   constructor() {
     this.input_socket = {};
     this.socketAddress = 'ws://localhost:3030';
-    this.N_ENTITIES = 15;
     this.entityDict = new Map();
 
     // 2.0 infer the connection status of PTRACK with our system
     this.connectStatusDict = new Map();
+
     // descriptor, used for input module enumeration
     this.descriptor = {
       name: 'PTrack',
@@ -45,15 +48,12 @@ export default class PTrack {
     };
   }
 
-  Initialize() {
-    console.log(...PR('deprecated Initialize()'));
-  }
-
-  SetServerDomain(serverAddress: string) {
+  Connect(serverAddress: string = document.domain) {
     this.socketAddress = `ws://${serverAddress}:3030`;
-  }
-
-  Connect() {
+    if (this.input_socket instanceof WebSocket) {
+      console.log(...PR('dropping old socket connection'));
+      this.input_socket.close();
+    }
     this.input_socket = new WebSocket(this.socketAddress);
     this.input_socket.onmessage = event => {
       this.ProcessFrame(event.data); // new routine
@@ -76,69 +76,79 @@ export default class PTrack {
     local variables declared therein
   :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   ProcessFrame(frameData: string) {
-    // frame.header: { seq: stamp:{sec: nsec:} frame_id: }
-    // frame.people_tracks: [ { id: x: y: height: } ... ]
+    // these variables are predeclared to minimize creating new
     let frame;
-    let subtype;
-    let frame_seq;
-    let frame_sec;
-    let frame_nsec;
-    let frame_id;
-    let frame_entities;
-    let short_id;
+    // frame.header: { seq: stamp:{sec: nsec:} pf_id: }
+    // frame.people_tracks: [ { id: x: y: height: } ... ]
+    let pf_type;
+    let pf_seq;
+    let pf_seconds;
+    let pf_nseconds;
+    let pf_short_id;
+    let pf_id;
+    let pf_entity_count;
+    let ok = false;
 
     /// HELPER FUNCTIONS //////////////////////////////////////////////////////
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// this is used in the switch statement below!
     function parseTracks() {
-      let ok = false;
+      ok = false;
 
-      // this construction will catch the anomalous case
-      // where BOTH People and Objects exist (this shouldn't happen)
+      // detected people //
       if (frame.people_tracks) {
-        subtype += DEF.ENUM.PTRACK_TYPES.People;
-        frame_entities = frame.people_tracks.length;
+        pf_type += TYPES.People;
+        pf_entity_count = frame.people_tracks.length;
         ok = true;
       }
+
+      // detected objects (can not co-exist with people_tracks) //
       if (frame.object_tracks) {
-        if (subtype)
-          throw new Error(
-            `both people and objects defined in same ptrack world frame seq# ${frame_seq}`
+        if (pf_type)
+          throw Error(
+            `both people and objects defined in same ptrack world frame seq# ${pf_seq}`
           );
-        subtype += DEF.ENUM.PTRACK_TYPES.Object;
-        frame_entities = frame.object_tracks.length;
+        pf_type += TYPES.Object;
+        pf_entity_count = frame.object_tracks.length;
         ok = true;
       }
+
+      // detected pose data //
       if (frame.pose_tracks) {
-        if (subtype)
-          throw new Error(
-            `both pose and people or objects defined in same ptrack world frame seq# ${frame_seq}`
+        if (pf_type)
+          throw Error(
+            `both pose and people or objects defined in same ptrack world frame seq# ${pf_seq}`
           );
-        subtype += DEF.ENUM.PTRACK_TYPES.Pose;
-        frame_entities = frame.pose_tracks.length;
+        pf_type += TYPES.Pose;
+        pf_entity_count = frame.pose_tracks.length;
         ok = true;
       }
+
+      // detected ptrack simulated data //
       if (frame.fake_tracks) {
-        if (subtype)
-          throw new Error(
-            `both pose and people or objects and fake_tracks defined in same ptrack world frame seq# ${frame_seq}`
+        if (pf_type)
+          throw Error(
+            `both pose and people or objects and fake_tracks defined in same ptrack world frame seq# ${pf_seq}`
           );
-        subtype += DEF.ENUM.PTRACK_TYPES.Faketrack;
-        frame_entities = frame.fake_tracks.length;
+        pf_type += TYPES.Faketrack;
+        pf_entity_count = frame.fake_tracks.length;
         ok = true;
       }
+
+      // detected old PTRACK format //
       if (frame.tracks) {
-        if (subtype)
-          throw new Error(
-            `both original 14.04 ptrack people and new 16.04+ people defined in same ptrack world frame seq# ${frame_seq}`
+        if (pf_type)
+          throw Error(
+            `both original 14.04 ptrack people and new 16.04+ people defined in same ptrack world frame seq# ${pf_seq}`
           );
-        subtype += DEF.ENUM.PTRACK_TYPES.People;
-        frame_entities = frame.tracks.length;
+        pf_type += TYPES.People;
+        pf_entity_count = frame.tracks.length;
         ok = true;
       }
+
       if (!ok)
-        throw new Error(
-          `frame ${frame_id}/${frame_seq} has no people or object tracks defined.`
+        throw Error(
+          `frame ${pf_id}/${pf_seq} has no people or object tracks defined.`
         );
     }
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,59 +177,56 @@ export default class PTrack {
     }
     // check for valid header
     if (!frame.header === undefined) throw new Error('missing ptrack header');
-    if (!frame.header.seq === undefined)
-      throw new Error('missing ptrack header.seq');
-    if (!frame.header.stamp === undefined)
-      throw new Error('missing header.stamp');
-    if (!frame.header.frame_id) throw new Error('missing header.frame_id');
-    frame_seq = frame.header.seq;
-    frame_sec = frame.header.stamp.sec;
-    frame_nsec = frame.header.stamp.nsec;
-    frame_id = frame.header.frame_id;
+    if (!frame.header.seq === undefined) throw Error('missing ptrack header.seq');
+    if (!frame.header.stamp === undefined) throw Error('missing header.stamp');
+    if (!frame.header.frame_id) throw Error('missing header.frame_id');
+    pf_seq = frame.header.seq;
+    pf_seconds = frame.header.stamp.sec;
+    pf_nseconds = frame.header.stamp.nsec;
+    pf_id = frame.header.frame_id;
 
     // world frames can contain EITHER people or objects, so have to detect
     // this difference to determine how to save in this.connectStatusDict dictionary
-    subtype = '';
+    pf_type = '';
 
-    // check for valid frame_id types
-    switch (frame_id) {
+    // check for valid id types
+    switch (pf_id) {
       case 'world':
         parseTracks();
-        short_id = 'PTrak';
+        pf_short_id = 'PTrak';
         break;
       case 'faketrack':
         parseTracks();
-        short_id = 'FTrak';
+        pf_short_id = 'FTrak';
         break;
       case 'heartbeat':
-        if (!frame.alive_IDs)
-          throw new Error('missing alive_IDs in heartbeat frame');
-        frame_entities = frame.alive_IDs.length;
-        short_id = 'Hbeat';
+        if (!frame.alive_IDs) throw Error('missing alive_IDs in heartbeat frame');
+        pf_entity_count = frame.alive_IDs.length;
+        pf_short_id = 'Hbeat';
         break;
       default:
-        throw new Error(`unknown frame_id type ${frame_id.bracket()}`);
+        throw Error(`unknown id type [${pf_id}]`);
     }
 
-    // check for faketrack 'fake_id' to modify subtype
-    subtype += frame.fake_id ? `-${frame.fake_id}` : '';
+    // check for faketrack 'fake_id' to modify pf_type
+    pf_type += frame.fake_id ? `-${frame.fake_id}` : '';
 
     // save "last seen" data in connectStatus dictionary
-    // key by subtype, value = { lastseq, lastsec, lastnsec, lastcount }
-    let dictkey = `${short_id}-${subtype}`;
+    // key by pf_type, value = { lastseq, lastsec, lastnsec, lastcount }
+    let dictkey = `${pf_short_id}-${pf_type}`;
     let statobj = this.connectStatusDict[dictkey] || {};
     // HACK Don't check for out of sequence frames because ptrack frame ids are not unique.
     //		// check for out-of-sequence OpenPTRACK frames, but ignore faketrack since we allow multiples
-    //		if (frame_id!=='faketrack' && statobj.lastseq) {
-    //			let d = frame_seq - statobj.lastseq;
-    //			if (d<1) throw new Error('unexpected jump of '+d+' in sequence number for frame '+frame_id.bracket()+':'+frame_seq+' (source:'+short_id);
+    //		if (pf_id!=='faketrack' && statobj.lastseq) {
+    //			let d = pf_seq - statobj.lastseq;
+    //			if (d<1) throw new Error('unexpected jump of '+d+' in sequence number for frame '+pf_id.bracket()+':'+pf_seq+' (source:'+pf_short_id);
     //		}
 
     // save data for this dictkey
-    statobj.lastseq = frame_seq;
-    statobj.lastsec = frame_sec;
-    statobj.lastnsec = frame_nsec;
-    statobj.lastcount = frame_entities;
+    statobj.lastseq = pf_seq;
+    statobj.lastsec = pf_seconds;
+    statobj.lastnsec = pf_nseconds;
+    statobj.lastcount = pf_entity_count;
 
     // resave "last seen" data in connectStatus
     this.connectStatusDict[dictkey] = statobj;
@@ -233,20 +240,20 @@ export default class PTrack {
     // are there object or people tracks?
     if (frame.object_tracks && frame.object_tracks.length > 0) {
       tracks = frame.object_tracks;
-      trackType = DEF.ENUM.PTRACK_TYPES.Object;
+      trackType = TYPES.Object;
     } else if (frame.people_tracks && frame.people_tracks.length > 0) {
       tracks = frame.people_tracks;
-      trackType = DEF.ENUM.PTRACK_TYPES.People;
+      trackType = TYPES.People;
     } else if (frame.pose_tracks && frame.pose_tracks.length > 0) {
       tracks = frame.pose_tracks;
-      trackType = DEF.ENUM.PTRACK_TYPES.Pose;
+      trackType = TYPES.Pose;
     } else if (frame.fake_tracks && frame.fake_tracks.length > 0) {
       tracks = frame.fake_tracks;
-      trackType = DEF.ENUM.PTRACK_TYPES.Faketrack;
+      trackType = TYPES.Faketrack;
     } else if (frame.tracks && frame.tracks.length > 0) {
       // support for original 14.04 ptrack data format, ca PLAE spring 2017 study (pre-pose, pre-props)
       tracks = frame.tracks;
-      trackType = DEF.ENUM.PTRACK_TYPES.People;
+      trackType = TYPES.People;
     } else {
       // no tracks
       return;
@@ -265,7 +272,7 @@ export default class PTrack {
       // So we avoid updating the entityDict if the data appears malformed.
       // This should probably be put in the hasBadData function.
       if (
-        trackType === DEF.ENUM.PTRACK_TYPES.Pose &&
+        trackType === TYPES.Pose &&
         (raw.joints === undefined ||
           raw.joints.CHEST === undefined ||
           raw.joints.CHEST.x === undefined ||
@@ -303,13 +310,13 @@ export default class PTrack {
           isFaketrack: raw.isFaketrack // faketrack tracks only, otherwise undefined
         };
       }
-      if (trackType === DEF.ENUM.PTRACK_TYPES.Object) {
+      if (trackType === TYPES.Object) {
         //console.log('object confidence',raw.object_name, raw.confidence);
       }
       // Check poses
       // We already checked for existense and validity of joints and chest above
       // so no need to recheck  here.
-      if (trackType === DEF.ENUM.PTRACK_TYPES.Pose) {
+      if (trackType === TYPES.Pose) {
         // copy name over for display purposes in tracker utility
         this.entityDict[raw.id].name = raw.predicted_pose_name;
         // x,y from poses is set from the CHEST joint
@@ -322,7 +329,7 @@ export default class PTrack {
       }
 
       // 2018-02-11 Commented out old code in favor of heavy error checking above
-      // 			if (trackType===DEF.ENUM.PTRACK_TYPES.Pose) {
+      // 			if (trackType===TYPES.Pose) {
       // 				// copy name over for display purposes in tracker utility
       // 				this.entityDict[raw.id].name = raw.predicted_pose_name;
       // 				// x,y from poses is set from the CHEST joint
