@@ -89,9 +89,11 @@ export default class PTrackEndpoint {
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// this is used in the switch statement below!
     function parseTracks() {
+      let tracks;
       ok = false;
       // detected people //
       if (frame.people_tracks) {
+        tracks = frame.people_tracks;
         pf_type += TYPES.People;
         pf_entity_count = frame.people_tracks.length;
         ok = true;
@@ -102,6 +104,7 @@ export default class PTrackEndpoint {
           throw Error(
             `both people and objects defined in same ptrack world frame seq# ${pf_seq}`
           );
+        tracks = frame.object_tracks;
         pf_type += TYPES.Object;
         pf_entity_count = frame.object_tracks.length;
         ok = true;
@@ -112,6 +115,7 @@ export default class PTrackEndpoint {
           throw Error(
             `both pose and people or objects defined in same ptrack world frame seq# ${pf_seq}`
           );
+        tracks = frame.pose_tracks;
         pf_type += TYPES.Pose;
         pf_entity_count = frame.pose_tracks.length;
         ok = true;
@@ -122,6 +126,7 @@ export default class PTrackEndpoint {
           throw Error(
             `both pose and people or objects and fake_tracks defined in same ptrack world frame seq# ${pf_seq}`
           );
+        tracks = frame.fake_tracks;
         pf_type += TYPES.Faketrack;
         pf_entity_count = frame.fake_tracks.length;
         ok = true;
@@ -132,12 +137,14 @@ export default class PTrackEndpoint {
           throw Error(
             `both original 14.04 ptrack people and new 16.04+ people defined in same ptrack world frame seq# ${pf_seq}`
           );
+        tracks = frame.tracks;
         pf_type += TYPES.People;
         pf_entity_count = frame.tracks.length;
         ok = true;
       }
       // if no tracks were found, then error
-      if (!ok) throw Error(`frame ${pf_id}/${pf_seq}: no track data`);
+      if (ok) return tracks;
+      throw Error(`frame ${pf_id}/${pf_seq}: no track data`);
     }
 
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -177,15 +184,15 @@ export default class PTrackEndpoint {
     // world frames can contain EITHER people or objects, so have to detect
     // this difference to determine how to save in this.UDPStatus dictionary
     pf_type = '';
-
+    let tracks;
     // check for valid id types
     switch (pf_id) {
       case 'world':
-        parseTracks();
+        tracks = parseTracks();
         pf_short_id = 'PTrak';
         break;
       case 'faketrack':
-        parseTracks();
+        tracks = parseTracks();
         pf_short_id = 'FTrak';
         break;
       case 'heartbeat':
@@ -218,34 +225,6 @@ export default class PTrackEndpoint {
     // resave "last seen" data in connectStatus
     this.UDPStatus.set(dictkey, statobj);
 
-    // (2) process track data
-    // REMAP says that it's UNLIKELY that there will be a packet
-    // with BOTH object_tracks and people_tracks
-    let tracks;
-    let trackType;
-
-    // are there object or people tracks?
-    if (frame.object_tracks && frame.object_tracks.length > 0) {
-      tracks = frame.object_tracks;
-      trackType = TYPES.Object;
-    } else if (frame.people_tracks && frame.people_tracks.length > 0) {
-      tracks = frame.people_tracks;
-      trackType = TYPES.People;
-    } else if (frame.pose_tracks && frame.pose_tracks.length > 0) {
-      tracks = frame.pose_tracks;
-      trackType = TYPES.Pose;
-    } else if (frame.fake_tracks && frame.fake_tracks.length > 0) {
-      tracks = frame.fake_tracks;
-      trackType = TYPES.Faketrack;
-    } else if (frame.tracks && frame.tracks.length > 0) {
-      // support for original 14.04 ptrack data format, ca PLAE spring 2017 study (pre-pose, pre-props)
-      tracks = frame.tracks;
-      trackType = TYPES.People;
-    } else {
-      // no tracks
-      return;
-    }
-
     // process entities in track into to the 'entity dictionary'
     // that's used by INPUT managers
     // .. see if raw.id exists in entityDict
@@ -262,7 +241,7 @@ export default class PTrackEndpoint {
       // So we avoid updating the entityDict if the data appears malformed. This
       // should probably be put in the hasBadData function.
       if (
-        trackType === TYPES.Pose &&
+        pf_type === TYPES.Pose &&
         (raw.joints === undefined ||
           raw.joints.CHEST === undefined ||
           raw.joints.CHEST.x === undefined ||
@@ -274,7 +253,7 @@ export default class PTrackEndpoint {
       }
 
       // CALCULATE KEY INTO ENTITY DICT
-      raw.id = trackType + raw.id; // attach type to guarantee unique id
+      raw.id = pf_type + raw.id; // attach type to guarantee unique id
 
       // UPDATE/ADD RAW ENTITY TO DICT
       let ent = this.entityDict.get(raw.id);
@@ -299,7 +278,7 @@ export default class PTrackEndpoint {
           h: raw.height.toFixed(PRECISION),
           age: 0,
           nop: 0,
-          type: trackType,
+          type: pf_type,
           name: raw.object_name, // object tracks only, otherwise undefined
           pose: raw.predicted_pose_name, // pose tracks only, otherwise undefined
           isFaketrack: raw.isFaketrack // faketrack tracks only, otherwise undefined
@@ -308,12 +287,12 @@ export default class PTrackEndpoint {
       }
 
       // SPECIAL OBJECT HANDLING
-      if (trackType === TYPES.Object) {
+      if (pf_type === TYPES.Object) {
         // raw.object_name, raw.confidence available
       }
 
       // SPECIAL POSE HANDLING
-      if (trackType === TYPES.Pose) {
+      if (pf_type === TYPES.Pose) {
         // copy name over for display purposes in tracker utility
         ent.name = raw.predicted_pose_name;
         // x,y from poses is set from the CHEST joint
