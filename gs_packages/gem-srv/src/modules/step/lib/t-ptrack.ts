@@ -5,6 +5,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { IPoolable } from 'lib/t-pool.d';
+
 export interface Frame {
   header: {
     frame_id: number;
@@ -25,9 +27,12 @@ export interface IPoseJoint {
   // to be documented
 }
 
-export interface EntityObject {
-  type: TrackType; // default is people
+/** a storage class */
+export class EntityObject implements IPoolable {
   id: any; // ptrack entity id
+  _pool_id: any;
+  valid: boolean;
+  type: string;
   x: number; // ptrack raw x
   y: number; // ptrack raw y
   h: number; // ptrack raw height
@@ -39,6 +44,40 @@ export interface EntityObject {
   // added by MapEntities
   nop?: number; // how many frames this id NOT updated
   age?: number; // how many frames this id has existed
+
+  constructor(id?: number) {
+    this.init(id);
+  }
+
+  init(id?: number) {
+    this.id = id;
+    this.valid = false;
+  }
+
+  copy(obj: EntityObject) {
+    this.id = obj.id;
+    this.type = obj.type;
+    this.x = obj.x;
+    this.y = obj.y;
+    this.h = obj.h;
+    this.name = obj.name;
+    this.pose = obj.pose;
+    this.joints = obj.joints;
+    this.orientation = obj.orientation;
+    this.isFaketrack = obj.isFaketrack;
+    this.nop = obj.nop;
+    this.age = obj.age;
+  }
+
+  validate(flag: boolean) {
+    this.valid = flag;
+  }
+
+  isValid(): boolean {
+    return this.valid;
+  }
+
+  dispose() {}
 }
 
 export interface FrameStatus {

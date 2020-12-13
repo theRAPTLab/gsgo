@@ -12,12 +12,12 @@
 
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
-import TrackerObject from './lib/class-tracker-object';
 import PTrack from './lib/class-ptrack-endpoint';
+import { EntityObject } from './lib/t-ptrack';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('INPUT-PTRACK', 'TagRed');
+const PR = UR.PrefixUtil('IN-PTRACK', 'TagRed');
 let DBGOUT = false;
 let DBGEDGE = false;
 
@@ -51,43 +51,33 @@ let m_pool_parm = null;
 /// PTRACK CONNECTION OBJECT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PTM = new PTrack();
+let VALID_ENTITIES;
 
 /// SIMPLIFIED TRACKER INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Resize the input pool for tracker objects, if needed. Pass createFunc
- *  to receive a piece to further initialize as needed.
- */
-export function InitializeTrackerPiecePool(parm) {
-  if (typeof parm !== 'object')
-    throw Error('InitializeTrackerPiecePool: must pass parameter object');
-  parm.count = parm.count || 5;
-  parm.cstrFunc = parm.cstrFunc || TrackerObject;
-  if (typeof parm.cstrFunc !== 'function')
-    throw Error(
-      `InitializeTrackerPiecePool: parm.cstrFunc not constructor:${parm.cstrFunc}`
-    );
-
-  let CstrFunc = parm.cstrFunc;
-  let initFunc = parm.initFunc;
-  let count = parm.count;
-  // save parameters for use by UpdateTrackerPieces()
-  m_pool_parm = parm;
-
-  let num = count - m_inputs.length;
-  if (num > 0) {
-    console.group('INPUT creating', num, 'TrackerPieces');
-    for (let i = 0; i < num; i++) {
-      let p = new CstrFunc(`input${m_inputs.length}`);
-      if (initFunc && typeof initFunc === 'function') {
-        initFunc.call(this, p);
-      }
-      m_inputs.push(p);
-    }
-    console.groupEnd();
-  } else {
-    console.log('TrackerPoolSize is already >', count);
-  }
-  return m_inputs;
+VALID_ENTITIES = new SyncMap({
+  Constructor: EntityObject,
+  autoGrow: true,
+  name: 'RawEntityValidator'
+});
+VALID_ENTITIES.setMapFunctions({
+  onAdd: (raw, eo) => {
+    eo.copy(raw);
+  },
+  onUpdate: (raw, eo) => {
+    eo.x = raw.x;
+    eo.y = raw.y;
+  },
+  shouldRemove: eo => {},
+  onRemove: () => {}
+});
+export function UpdateInputs(ms) {
+  const raw = PTM.GetRawEntities();
+  const { added, updated, removed } = VALID_ENTITIES.syncFromArray(raw);
+  VALID_ENTITIES.mapObjects();
+  if (added.length > 0) console.log('added', added.length);
+  if (updated.length > 0) console.log('updated', updated.length);
+  if (removed.length > 0) console.log('removed', removed.length);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** MAIN ROUTINE for handling entity mapping to pieces

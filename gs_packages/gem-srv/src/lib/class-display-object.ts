@@ -30,20 +30,20 @@ export function TestValidDOBJs(dobjs: any[]): boolean {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class DisplayObject implements IPoolable {
   // poolable
-  id: number;
-  refId?: number;
-  _pool_id: number;
+  id: any;
+  refId?: any;
+  _pool_id: any;
   // displayobj
   valid: boolean;
   skin: string;
   x: number;
   y: number;
 
-  constructor(id?: number) {
+  constructor(id?: any) {
     this.init(id);
   }
 
-  init(id?: number) {
+  init(id?: any) {
     this.id = id; // store reference
     this.valid = false;
   }

@@ -10,9 +10,9 @@ export interface IPoolableConstructor {
   new (id?: number): IPoolable;
 }
 export interface IPoolable {
-  id: number; // id referencing original (agentInstance)
-  refId?: number; // optional local class instance counter
-  _pool_id: number; // used for fast pool lookup
+  id: any; // id referencing original (agentInstance)
+  refId?: any; // optional local class instance counter
+  _pool_id: any; // used for fast pool lookup
   dispose: () => void; // deallocate resources on destruction
   init: (id?: number) => void; // reset the object to default state
   validate: (state: boolean) => void; // set validation state

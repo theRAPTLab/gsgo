@@ -15,7 +15,7 @@ import { TrackerMode, TrackType } from './t-ptrack';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of an object provided by PTRACK */
 export default class TrackerObject implements IPoolable {
-  _pool_id: number;
+  _pool_id: any;
   id: any; // copied from EntityObject
   pos: number[]; // vector3
   mode: TrackerMode; // LERP, JUMP, or SEEK
@@ -32,7 +32,7 @@ export default class TrackerObject implements IPoolable {
     this.is_valid = false;
     this.is_new = true;
 
-    this.isOutside = false;
+    this.is_outside = false;
     this.mode = TrackerMode.MODE_LERP;
     this.type = TrackType.Undefined;
   }

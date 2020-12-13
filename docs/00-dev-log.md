@@ -237,10 +237,12 @@ Gotta make **TrackerObject** and **TrackerPiece** replacements? **No...start fro
 
 The `in-ptrack` modules is built around `class-ptrack-endpoint` and some filtering.
 
-* cache raw entities
-* denoise raw entities
-* transform raw entities into coordinates
-* maintain 'active entities' list
+* cache raw entities - `class-ptrack-endpoint`
+* denoise raw entities - `in-ptrack`
+* transform raw entities into coordinates - `in-ptrack`
+* maintain 'active inputs' list - `in-ptrack`
+
+### Fixing PTrackEndpoint
 
 ```
 INITIALIZE
@@ -257,6 +259,20 @@ PARSE RAW DATA FRAMES
 x cleanup class-ptrack-endpoint
 x confirm entities received
 x confirm entities can be requested by IN-PTRACK
+```
+
+Now that we have **raw entities** available, we need to filter them and then stuff them into persistent **input objects**. These are similar to *display objects* in that they are the bare minimum representation of an input. 
+
+### Fixing PTRACK module
+
+Taking the raw entity and converting it to an object would be nice. We need a formal definition of EntityObject, which is now in t-ptrack. It has a clone() method that takes an object.
+
+Now PTrack has to first find the active entities by diffing the current entities with its own entity map!
+
+```
+x rewrite in-ptrack to use SyncMap
+x change id types in IPoolable to id:any, since FakeTrack uses non-numeric ids
+x confirm tracker still works with id change
 ```
 
 
