@@ -131,6 +131,12 @@ class SyncMap {
     return this.map.mapObjects();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return delta arrays that are computed by syncFrom* methods
+   */
+  getDeltaArrays() {
+    return this.deltas;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return all the objects that are in use, which are stored in pool
    *  that was passed to the mapped pool.
    */

@@ -3,7 +3,8 @@
   Client-side subscriber to the PTRACK frame server
 
   (1) pt.Connect() to establish socket connection
-  (2) entity data is processed behind-the-scenes automatically
+  (2) JSON is received from PTrack TCP Forwarder
+  (3) JSON data is processed behind-the-scenes automatically
   (3) pt.GetEntities() returns an array of entities
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -21,6 +22,7 @@ const TYPES = {
   Pose: 'po',
   Faketrack: 'ft'
 };
+const PRECISION = 4;
 
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,14 +30,14 @@ export default class PTrackEndpoint {
   pt_sock: { onmessage?: Function };
   pt_url: string;
   entityDict: Map<string, EntityObject>;
-  connectStatusDict: Map<string, FrameStatus>;
-  //
+  UDPStatus: Map<string, FrameStatus>;
+
   constructor() {
     this.pt_sock = {};
     this.pt_url = 'ws://localhost:3030';
     this.entityDict = new Map();
     // 2.0 infer the connection status of PTRACK with our system
-    this.connectStatusDict = new Map();
+    this.UDPStatus = new Map();
   }
 
   Connect(ptrackHost: string = document.domain) {
@@ -51,8 +53,15 @@ export default class PTrackEndpoint {
   }
 
   /** return an array of raw entity objects */
-  GetRawEntities() {
+  GetCachedEntities() {
     return [...this.entityDict.values()];
+  }
+
+  /** issue this after each GetCachedEntities() call to flush
+   *  the dictionary
+   */
+  ClearCachedEntities() {
+    this.entityDict.clear();
   }
 
   /// PROCESS FRAME /////////////////////////////////////////////////////////////
@@ -166,7 +175,7 @@ export default class PTrackEndpoint {
     pf_id = frame.header.frame_id;
 
     // world frames can contain EITHER people or objects, so have to detect
-    // this difference to determine how to save in this.connectStatusDict dictionary
+    // this difference to determine how to save in this.UDPStatus dictionary
     pf_type = '';
 
     // check for valid id types
@@ -192,15 +201,13 @@ export default class PTrackEndpoint {
     pf_type += frame.fake_id ? `-${frame.fake_id}` : '';
 
     // save "last seen" data in connectStatus dictionary
+    // this is used to display data about different tracks being received
     // key by pf_type, value = { lastseq, lastsec, lastnsec, lastcount }
     let dictkey = `${pf_short_id}-${pf_type}`;
-    let statobj = this.connectStatusDict[dictkey] || {};
-    // HACK Don't check for out of sequence frames because ptrack frame ids are not unique.
-    //		// check for out-of-sequence OpenPTRACK frames, but ignore faketrack since we allow multiples
-    //		if (pf_id!=='faketrack' && statobj.lastseq) {
-    //			let d = pf_seq - statobj.lastseq;
-    //			if (d<1) throw new Error('unexpected jump of '+d+' in sequence number for frame '+pf_id.bracket()+':'+pf_seq+' (source:'+pf_short_id);
-    //		}
+    let statobj: FrameStatus = this.UDPStatus.get(dictkey) || new FrameStatus();
+
+    // HACK Don't check for out of sequence frames because
+    // ptrack frame ids are not unique.
 
     // save data for this dictkey
     statobj.lastseq = pf_seq;
@@ -209,7 +216,7 @@ export default class PTrackEndpoint {
     statobj.lastcount = pf_entity_count;
 
     // resave "last seen" data in connectStatus
-    this.connectStatusDict[dictkey] = statobj;
+    this.UDPStatus.set(dictkey, statobj);
 
     // (2) process track data
     // REMAP says that it's UNLIKELY that there will be a packet
@@ -273,9 +280,9 @@ export default class PTrackEndpoint {
       let ent = this.entityDict.get(raw.id);
       if (ent) {
         ent.id = raw.id;
-        ent.x = raw.x;
-        ent.y = raw.y;
-        ent.h = raw.height;
+        ent.x = raw.x.toFixed(PRECISION);
+        ent.y = raw.y.toFixed(PRECISION);
+        ent.h = raw.height.toFixed(PRECISION);
         // ent.age; // don't reset this to zero!
         ent.nop = 0; // new frame, so reset no-op timer
         // version 1.0 extensions
@@ -284,18 +291,19 @@ export default class PTrackEndpoint {
         ent.name = raw.object_name; // object tracks only, otherwise undefined
         ent.pose = raw.predicted_pose_name; // pose tracks only, otherwise undefined
       } else {
-        ent = {
+        ent = new EntityObject();
+        ent.copy({
           id: raw.id,
-          x: raw.x,
-          y: raw.y,
-          h: raw.height,
+          x: raw.x.toFixed(PRECISION),
+          y: raw.y.toFixed(PRECISION),
+          h: raw.height.toFixed(PRECISION),
           age: 0,
           nop: 0,
           type: trackType,
           name: raw.object_name, // object tracks only, otherwise undefined
           pose: raw.predicted_pose_name, // pose tracks only, otherwise undefined
           isFaketrack: raw.isFaketrack // faketrack tracks only, otherwise undefined
-        };
+        });
         this.entityDict.set(raw.id, ent);
       }
 

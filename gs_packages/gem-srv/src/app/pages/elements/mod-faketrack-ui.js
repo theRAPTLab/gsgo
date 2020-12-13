@@ -350,7 +350,7 @@ function SendFrame() {
   // centered on 0 in the space
   for (let i = 0; i < m_entities.length; i++) {
     const div = m_entities[i];
-    u_AddEntityToFrame(div);
+    u_AddEntityToFrame(div); // m_frame is global, urk
   }
 
   // clear flag for next frame

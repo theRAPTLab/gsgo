@@ -273,13 +273,78 @@ Now PTrack has to first find the active entities by diffing the current entities
 x rewrite in-ptrack to use SyncMap
 x change id types in IPoolable to id:any, since FakeTrack uses non-numeric ids
 x confirm tracker still works with id change
+TEST: add and update work, but not remove
 ```
 
+The old code to filter was in `MapEntities()`, so let's examine that to see what to remove.
 
+```
+FOR EACH ACTIVE ENTITY
 
+	// anyone who is too inactive
+  if e.nop > MAX_NOP
+  	delete it
+  
+  // anyone of age that is too inactive
+  if e.age > MIN_AGE
+  	if e.nop > MAX_NOP
+  		delete it
+			return
+  		
+  // appeared for few frames then disappeared
+  if e.age - e.nop < MIN_NOP
+  	delete it 
+		return
+ 	
+  OVERRIDE = true
+  
+  if (e.age < MAX_NOP || OVERRIDE)
+  	if (!oldestInRadius(e, idsactive, entityDict))
+  		delete it
+  		return
+  
+  idsactive saved
+  e.nop += interval
+  e.age += interval
+ 
+	calculate pieces lost, pieces new 
+	
+	--- for shouldRemove, run all the age tests
 
+```
 
+Hm, the aging algorithm requires a different handling. We might have to build this into the pool class itself. 
 
+Detecting when to remove the object from the pool is proving tricky. There's a bug in the logic where the check of the pool will have the current one.
+
+```
+sobjs.forEach(sobj => {
+  if (this.pool.has(sobj.id)) updated.push(sobj);
+  else added.push(sobj);
+  this.seen_sobjs.set(sobj.id, sobj);
+});
+
+// pool has memory of the last time. This will detect them being updated
+// if it's not in there, it's new to us entirely
+
+// now check whether the allocated pool pieces are in the 
+// current set of sobjs (the incoming array) which has been mapped
+// into seen_sobjs above
+
+const pobjs = this.pool.getAllocated();
+pobjs.forEach(pobj => {
+  const sobjGone = !this.seen_sobjs.has(pobj.id);
+  out += `${pobj.id} ${sobjGone ? 'gone' : 'here'}  `;
+  const yesRemove = this.ifRemove(pobj, this.seen_sobjs);
+  if (sobjGone && yesRemove) removed.push(pobj);
+});
+```
+
+Actually it might be in the ptrack endpoint. It is returning a cached map that is not a pure entity map. The big problem was **class-ptrack-endpoint** wasn't clearing the cache automtically. The old aging code actually deleted the code out of the dictionary directly, which is why it was always up-to-date. The NEW code uses SyncMap, and has to explicitly clear the entire map.
+
+### Plotting Sprites
+
+Now that we're getting actual numbers into in-ptrack. 
 
 ---
 

@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Frames raw PTrack JSON converted into Javascript
@@ -54,7 +55,7 @@ export class EntityObject implements IPoolable {
     this.valid = false;
   }
 
-  copy(obj: EntityObject) {
+  copy(obj) {
     this.id = obj.id;
     this.type = obj.type;
     this.x = obj.x;
@@ -80,11 +81,17 @@ export class EntityObject implements IPoolable {
   dispose() {}
 }
 
-export interface FrameStatus {
+export class FrameStatus {
   lastseq: number;
   lastsec: number;
   lastnsec: number;
   lastcount: number;
+  init() {
+    this.lastseq = 0;
+    this.lastsec = 0;
+    this.lastnsec = 0;
+    this.lastcount = 0;
+  }
 }
 
 export enum TrackType {

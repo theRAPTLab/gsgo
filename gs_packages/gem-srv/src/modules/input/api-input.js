@@ -16,8 +16,9 @@ const PR = UR.PrefixUtil('SIM-INPUT', 'TagRed');
 let FRAME_COUNT = 0;
 setInterval(() => {
   /** TESTING HERE **/
-  PTRACK.UpdateInputs(FRAME_COUNT++);
-}, 2000);
+  const m_entities = PTRACK.GetInputs(500);
+  console.log(m_entities[0].x);
+}, 500);
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

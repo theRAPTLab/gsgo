@@ -128,15 +128,19 @@ function HookResize(element) {
     'resize',
     debounce(() => {
       const renderRoot = document.getElementById('root-renderer');
-      console.log(
-        ...PR('window resize', renderRoot.offsetWidth, renderRoot.offsetHeight)
-      );
-      PIXI_APP.renderer.resize(renderRoot.offsetWidth, renderRoot.offsetHeight);
-      const { Root } = CONTAINERS;
-      Root.x = PIXI_APP.screen.width / 2;
-      Root.y = PIXI_APP.screen.height / 2;
-      Root.pivot.x = 0; //root.width / 2;
-      Root.pivot.y = 0; // root.height / 2;
+      if (renderRoot) {
+        console.log(
+          ...PR('window resize', renderRoot.offsetWidth, renderRoot.offsetHeight)
+        );
+        PIXI_APP.renderer.resize(renderRoot.offsetWidth, renderRoot.offsetHeight);
+        const { Root } = CONTAINERS;
+        Root.x = PIXI_APP.screen.width / 2;
+        Root.y = PIXI_APP.screen.height / 2;
+        Root.pivot.x = 0; //root.width / 2;
+        Root.pivot.y = 0; // root.height / 2;
+      } else {
+        console.log('note: no #root-renderer to resize');
+      }
     }, 500)
   );
 }
