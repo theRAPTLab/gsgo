@@ -15,19 +15,16 @@ const PR = UR.PrefixUtil('SIM-INPUT', 'TagRed');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let FRAME_COUNT = 0;
 setInterval(() => {
-  const pieces = PTRACK.UpdateTrackerPieces(FRAME_COUNT++, {
-    lostFunc: () => {},
-    addedFunc: () => {}
-  });
-  const dict = PTRACK.PTrackEntityDict();
-
+  const raw_entities = PTRACK.GetRawEntities();
+  console.log(raw_entities);
+  // console.log(raw_entities.length);
   /** HERE **/
 }, 2000);
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function Init() {
-  PTRACK.InitializeConnection(document.domain);
+  PTRACK.Connect(document.domain);
   PTRACK.InitializeTrackerPiecePool({ count: 5 });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

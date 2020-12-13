@@ -1,9 +1,10 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  client-side subscriber class to the PTRACK frame server
+  Client-side subscriber to the PTRACK frame server
+
   (1) pt.Connect() to establish socket connection
   (2) entity data is processed behind-the-scenes automatically
-  (3) pt.GetEntityDict() returns the dictionary of current objects
+  (3) pt.GetEntities() returns an array of entities
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -24,48 +25,34 @@ const TYPES = {
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default class PTrackEndpoint {
-  input_socket: { onmessage?: Function };
-  socketAddress: string;
+  pt_sock: { onmessage?: Function };
+  pt_url: string;
   entityDict: Map<string, EntityObject>;
   connectStatusDict: Map<string, FrameStatus>;
-  descriptor: {}; // vestigial...should remove
   //
   constructor() {
-    this.input_socket = {};
-    this.socketAddress = 'ws://localhost:3030';
+    this.pt_sock = {};
+    this.pt_url = 'ws://localhost:3030';
     this.entityDict = new Map();
-
     // 2.0 infer the connection status of PTRACK with our system
     this.connectStatusDict = new Map();
-
-    // descriptor, used for input module enumeration
-    this.descriptor = {
-      name: 'PTrack',
-      type: 'tracker',
-      maxTrack: 15,
-      id: null,
-      instance: this
-    };
   }
 
-  Connect(serverAddress: string = document.domain) {
-    this.socketAddress = `ws://${serverAddress}:3030`;
-    if (this.input_socket instanceof WebSocket) {
+  Connect(ptrackHost: string = document.domain) {
+    this.pt_url = `ws://${ptrackHost}:3030`;
+    if (this.pt_sock instanceof WebSocket) {
       console.log(...PR('dropping old socket connection'));
-      this.input_socket.close();
+      this.pt_sock.close();
     }
-    this.input_socket = new WebSocket(this.socketAddress);
-    this.input_socket.onmessage = event => {
+    this.pt_sock = new WebSocket(this.pt_url);
+    this.pt_sock.onmessage = event => {
       this.ProcessFrame(event.data); // new routine
     };
   }
 
-  GetDescriptor() {
-    return this.descriptor;
-  }
-
-  GetEntityDict() {
-    return this.entityDict;
+  /** return an array of raw entity objects */
+  GetRawEntities() {
+    return [...this.entityDict.values()];
   }
 
   /// PROCESS FRAME /////////////////////////////////////////////////////////////
@@ -94,14 +81,12 @@ export default class PTrackEndpoint {
     /// this is used in the switch statement below!
     function parseTracks() {
       ok = false;
-
       // detected people //
       if (frame.people_tracks) {
         pf_type += TYPES.People;
         pf_entity_count = frame.people_tracks.length;
         ok = true;
       }
-
       // detected objects (can not co-exist with people_tracks) //
       if (frame.object_tracks) {
         if (pf_type)
@@ -112,7 +97,6 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.object_tracks.length;
         ok = true;
       }
-
       // detected pose data //
       if (frame.pose_tracks) {
         if (pf_type)
@@ -123,7 +107,6 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.pose_tracks.length;
         ok = true;
       }
-
       // detected ptrack simulated data //
       if (frame.fake_tracks) {
         if (pf_type)
@@ -134,7 +117,6 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.fake_tracks.length;
         ok = true;
       }
-
       // detected old PTRACK format //
       if (frame.tracks) {
         if (pf_type)
@@ -145,12 +127,10 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.tracks.length;
         ok = true;
       }
-
-      if (!ok)
-        throw Error(
-          `frame ${pf_id}/${pf_seq} has no people or object tracks defined.`
-        );
+      // if no tracks were found, then error
+      if (!ok) throw Error(`frame ${pf_id}/${pf_seq}: no track data`);
     }
+
     /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     /// this is used in the for loop to reject bad data
     function hasBadData(raw) {
@@ -265,12 +245,15 @@ export default class PTrackEndpoint {
     // .. if not, create new object with nop 0
     // .. if exist, update object
     tracks.forEach(raw => {
+      // ABORT ON BAD DATA (but don't crash)
       if (hasBadData(raw)) return;
-      // HACK ***
-      // If the track is pose data
-      // and joints or chests are malformed, we can end up with NaN x and y
-      // So we avoid updating the entityDict if the data appears malformed.
-      // This should probably be put in the hasBadData function.
+
+      // VALIDATE POSE CHECKING
+      // If the track is pose data and joints or chests are malformed, we can
+      // end up with NaN x and y.
+      //
+      // So we avoid updating the entityDict if the data appears malformed. This
+      // should probably be put in the hasBadData function.
       if (
         trackType === TYPES.Pose &&
         (raw.joints === undefined ||
@@ -283,21 +266,25 @@ export default class PTrackEndpoint {
         return;
       }
 
+      // CALCULATE KEY INTO ENTITY DICT
       raw.id = trackType + raw.id; // attach type to guarantee unique id
 
-      let ent = this.entityDict[raw.id];
+      // UPDATE/ADD RAW ENTITY TO DICT
+      let ent = this.entityDict.get(raw.id);
       if (ent) {
         ent.id = raw.id;
         ent.x = raw.x;
         ent.y = raw.y;
         ent.h = raw.height;
-        // ent.age;                           // don't reset this to zero!
+        // ent.age; // don't reset this to zero!
         ent.nop = 0; // new frame, so reset no-op timer
+        // version 1.0 extensions
+        ent.isFaketrack = raw.isFaketrack; // faketrack tracks only, otherwise undefined
+        // version 2.0 extensions
         ent.name = raw.object_name; // object tracks only, otherwise undefined
         ent.pose = raw.predicted_pose_name; // pose tracks only, otherwise undefined
-        ent.isFaketrack = raw.isFaketrack; // faketrack tracks only, otherwise undefined
       } else {
-        this.entityDict[raw.id] = {
+        ent = {
           id: raw.id,
           x: raw.x,
           y: raw.y,
@@ -309,79 +296,54 @@ export default class PTrackEndpoint {
           pose: raw.predicted_pose_name, // pose tracks only, otherwise undefined
           isFaketrack: raw.isFaketrack // faketrack tracks only, otherwise undefined
         };
+        this.entityDict.set(raw.id, ent);
       }
+
+      // SPECIAL OBJECT HANDLING
       if (trackType === TYPES.Object) {
-        //console.log('object confidence',raw.object_name, raw.confidence);
+        // raw.object_name, raw.confidence available
       }
-      // Check poses
-      // We already checked for existense and validity of joints and chest above
-      // so no need to recheck  here.
+
+      // SPECIAL POSE HANDLING
       if (trackType === TYPES.Pose) {
         // copy name over for display purposes in tracker utility
-        this.entityDict[raw.id].name = raw.predicted_pose_name;
+        ent.name = raw.predicted_pose_name;
         // x,y from poses is set from the CHEST joint
         // .. make sure the joints exist
-        this.entityDict[raw.id].joints = raw.joints;
-        this.entityDict[raw.id].x = raw.joints.CHEST.x;
-        this.entityDict[raw.id].y = raw.joints.CHEST.y;
+        ent.joints = raw.joints;
+        ent.x = raw.joints.CHEST.x;
+        ent.y = raw.joints.CHEST.y;
         // orientation
-        this.entityDict[raw.id].orientation = raw.orientation; // in radians
+        ent.orientation = raw.orientation; // in radians
       }
 
-      // 2018-02-11 Commented out old code in favor of heavy error checking above
-      // 			if (trackType===TYPES.Pose) {
-      // 				// copy name over for display purposes in tracker utility
-      // 				this.entityDict[raw.id].name = raw.predicted_pose_name;
-      // 				// x,y from poses is set from the CHEST joint
-      // 				// .. make sure the joints exist
-      // 				if (raw.joints) {
-      // 					this.entityDict[raw.id].joints = raw.joints;
-      // 					if (raw.joints.CHEST) {
+      /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
+        According to Marco, any data that has a NaN CHEST coordinate should be
+        rejected. but sometimes PTrack does
 
-      // REVIEW CODE!
+        For some reason though, only "orientation" is being set to NaN, and the
+        CHEST data is being passed as 0.  So we check "orientation" instead.
 
-      // INTERIM HACK
+        Also, orientation is sending a string "nan" instead of NaN, so we
+        explicitly check for the string.
 
-      // According to Marco, any data that has a NaN CHEST coordinate should be rejected.
+        VESTIGIAL CODE BELOW
 
-      // Ideally, PTrack wouldn't even send that data, but since they are sending it currently,
-      // we check for it here.
-
-      // For some reason though, only "orientation" is being set to NaN, and the CHEST data
-      // is being passed as 0.  So we check "orientation" instead.
-
-      // Also, orientation is sending a string "nan" instead of NaN, so we explicitly check
-      // for the string.
-
-      // 						// if (raw.orientation == "nan") {
-      // 						// 	// Reject the particle if orientation has a NaN value
-      // 						// 	// console.error('rejecting "nan" orientation');
-      // 						// 	delete this.entityDict[raw.id];
-      // 						// 	continue;
-      // 						// }
-      // // 						if (isNaN(raw.joints.CHEST.x) || isNaN(raw.joints.CHEST.y)) {
-      // // 							// Reject the particle if CHEST has a NaN value
-      // // 							delete this.entityDict[raw.id];
-      // // 							continue;
-      // // 						}
-      // 						if (raw.joints.CHEST.x && typeof raw.joints.CHEST.x==='number') {
-      // 							this.entityDict[raw.id].x = raw.joints.CHEST.x;
-      // 						}
-      // 							this.entityDict[raw.id].y = raw.joints.CHEST.y;
-      // 						}
-      // 					}
-      // 				}
-      // 				// orientation
-      // 				this.entityDict[raw.id].orientation = raw.orientation; // in radians
-      // 			}
+        if (raw.orientation === 'nan') {
+          // delete entity from dict
+        }
+        if (Number.isNaN(raw.joints.CHEST.x) || Number.isNaN(raw.joints.CHEST.y)) {
+          // delete entity from dict
+        }
+        if (raw.joints.CHEST.x && typeof raw.joints.CHEST.x === 'number') {
+          ent.x = raw.joints.CHEST.x;
+          ent.y = raw.joints.CHEST.y;
+        }
+      :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
     }); // tracks.forEach
-    // console.log(this.entityDict);
   }
 }
 
-/// INITIALIZATION ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-console.log(...PR('UR.RegisterHooks(sysloop => {})'));
-
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see export of default class above

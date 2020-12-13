@@ -231,6 +231,36 @@ PLAE used a different architecture for "Pieces", which held a "TrackerObject" th
 
 GEMSTEP uses a different pierce architecture, using "Agents" that are similar to Pieces. We probably need to have a new 
 
+## DEC 12 SAT - Fixing Map Entities
+
+Gotta make **TrackerObject** and **TrackerPiece** replacements? **No...start from scratch and simplify**.
+
+The `in-ptrack` modules is built around `class-ptrack-endpoint` and some filtering.
+
+* cache raw entities
+* denoise raw entities
+* transform raw entities into coordinates
+* maintain 'active entities' list
+
+```
+INITIALIZE
+x api-input call TRKBUF.InitializeConnection()
+x Connect() calls RAWTRK to connect
+
+CACHE RAW ENTITIES
+to test in api-input 'CHEESE TESTING' 2 second timer
+X	call PTRACK.GetRawEntities()
+x	add PTrackEndpoint.GetRawEntities()
+x	ptrack-endpoint: set entityDict properly
+
+PARSE RAW DATA FRAMES
+x cleanup class-ptrack-endpoint
+x confirm entities received
+x confirm entities can be requested by IN-PTRACK
+```
+
+
+
 
 
 

@@ -20,6 +20,11 @@ export interface Frame {
     tracks: EntityObject[];
   };
 }
+
+export interface IPoseJoint {
+  // to be documented
+}
+
 export interface EntityObject {
   type: TrackType; // default is people
   id: any; // ptrack entity id
@@ -28,6 +33,8 @@ export interface EntityObject {
   h: number; // ptrack raw height
   name?: string; // set by object tracks only
   pose?: string; // set by pose tracks only
+  joints?: object;
+  orientation?: number;
   isFaketrack?: boolean; // set by faketrack only
   // added by MapEntities
   nop?: number; // how many frames this id NOT updated

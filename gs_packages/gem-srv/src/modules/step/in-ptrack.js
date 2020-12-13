@@ -50,7 +50,7 @@ let m_pool_parm = null;
 
 /// PTRACK CONNECTION OBJECT ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const RAWTRK = new PTrack();
+const PTM = new PTrack();
 
 /// SIMPLIFIED TRACKER INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -244,16 +244,20 @@ export function SetFilterRadius(rad) {
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** token is reserved for future use
- *  serverAddress is the broadcast UDP address that RAWTRK is on
+/** ptrackServer is where the forwarded UDP data from PTRACK is being
+ *  served, usually on port 3030 (e.g. ws://localhost:3030)
  */
-export function InitializeConnection(serverAddress) {
-  console.assert(serverAddress, 'Must pass ServerAddress?');
-  //	Initialize RAWTRK
+export function Connect(ptrackServer) {
+  console.assert(ptrackServer, 'Must pass ServerAddress?');
+  // Initialize PTRACK connection
   console.group(...PR('creating PTRACK endpoint'));
-  RAWTRK.Connect(serverAddress);
+  PTM.Connect(ptrackServer);
   UpdateFilterSettings();
   console.groupEnd();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetRawEntities() {
+  return PTM.GetRawEntities();
 }
 
 /// ENTITY HELPERS //////////////////////////////////////////////////////////
@@ -371,7 +375,7 @@ function u_pad(str, padLeft) {
  */
 export function PTrackEntityDict() {
   // dict: entityid -> { id,x,y,h,nop }
-  let entityDict = RAWTRK.GetEntityDict();
+  let entityDict = PTM.GetEntityDict();
   return entityDict;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -389,7 +393,7 @@ export function PTrackEntityDict() {
  */
 export function MapEntities(pieceList, intervalMS, addedFunc, lostFunc) {
   // dict: entityid -> { id,x,y,h,nop }
-  let entityDict = RAWTRK.GetEntityDict();
+  let entityDict = PTM.GetEntityDict();
 
   // init entity processing list with all entities
   let idsActive = Object.keys(entityDict);
