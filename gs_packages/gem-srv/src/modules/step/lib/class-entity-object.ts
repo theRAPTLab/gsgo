@@ -1,39 +1,21 @@
-/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Frames raw PTrack JSON converted into Javascript
-  EntityObjects are the processed Frames
+  PTrack EntityObjects are a type of legacy input
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IPoolable } from 'lib/t-pool.d';
+import { IPoolable } from 'lib/t-pool';
+import { ITrackerData } from './t-input';
 
-export interface Frame {
-  header: {
-    frame_id: number;
-    seq: number;
-    stamp: {
-      sec: number;
-      nsec: number;
-    };
-    people_tracks?: EntityObject[];
-    pose_tracks?: EntityObject[];
-    fake_tracks?: EntityObject[];
-    object_tracks?: EntityObject[];
-    tracks: EntityObject[];
-  };
-}
-
-export interface IPoseJoint {
-  // to be documented
-}
-
-/** a storage class */
-export class EntityObject implements IPoolable {
+/** A storage class for PTrack Entities. This is a legacy
+ *  input type that has its own semantics versus
+ *  IInputObject.
+ */
+export default class EntityObject implements IPoolable, ITrackerData {
   id: any; // ptrack entity id
   _pool_id: any;
   valid: boolean;
-  type: string;
+  type: any;
   x: number; // ptrack raw x
   y: number; // ptrack raw y
   h: number; // ptrack raw height
@@ -42,7 +24,8 @@ export class EntityObject implements IPoolable {
   joints?: object;
   orientation?: number;
   isFaketrack?: boolean; // set by faketrack only
-  // added by MapEntities
+
+  // added by entity aging algorithm
   nop?: number; // how many frames this id NOT updated
   age?: number; // how many frames this id has existed
 
@@ -79,31 +62,4 @@ export class EntityObject implements IPoolable {
   }
 
   dispose() {}
-}
-
-export class FrameStatus {
-  lastseq: number;
-  lastsec: number;
-  lastnsec: number;
-  lastcount: number;
-  init() {
-    this.lastseq = 0;
-    this.lastsec = 0;
-    this.lastnsec = 0;
-    this.lastcount = 0;
-  }
-}
-
-export enum TrackType {
-  Undefined = '?',
-  object = 'ob',
-  people_tracks = 'pp',
-  Pose = 'po',
-  Faketrack = 'ft'
-}
-
-export enum TrackerMode {
-  MODE_JUMP = 1,
-  MODE_LERP,
-  MODE_SEEK
 }

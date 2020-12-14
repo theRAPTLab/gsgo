@@ -14,7 +14,7 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import PTrackEndPoint from './lib/class-ptrack-endpoint';
-import { EntityObject } from './lib/t-ptrack';
+import EntityObject from './lib/class-entity-object';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,7 +44,7 @@ const VALID_ENTITIES = new SyncMap({
 });
 /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     VALID_ENTITIES is a SyncMap that maps the raw entity data from
-    the PTrack Endpoint into
+    the PTrack Endpoint into stable pieces
 :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
 VALID_ENTITIES.setMapFunctions({
   onAdd: (raw, eo) => {
@@ -68,8 +68,8 @@ VALID_ENTITIES.setMapFunctions({
     if (eo.age < MAX_NOP || CULL_YOUNGLINGS)
       return !m_IsOldestInRadius(eo, seen_eos);
     // otherwise, we need to age
-    eo.nop += 100; /* HACK NEED GLOBAL FRAMETIME */
-    eo.age += 100;
+    eo.nop += 66; /* HACK NEED GLOBAL FRAMETIME */
+    eo.age += 66;
     // dont remove yet
     return false;
   },

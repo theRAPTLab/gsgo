@@ -17,7 +17,9 @@ let FRAME_COUNT = 0;
 setInterval(() => {
   /** TESTING HERE **/
   const m_entities = PTRACK.GetInputs(500);
-  console.log(m_entities[0].x);
+  if (m_entities.length > 0) console.log('entity.x', m_entities[0].x);
+  else console.log('no entity');
+  /* WHAT NOW? */
 }, 500);
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////

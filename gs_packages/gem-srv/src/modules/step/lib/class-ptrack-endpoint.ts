@@ -10,7 +10,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { EntityObject, FrameStatus } from './t-ptrack';
+import { IFrameStatus } from './t-input.d';
+import EntityObject from './class-entity-object';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,7 +31,7 @@ export default class PTrackEndpoint {
   pt_sock: { onmessage?: Function };
   pt_url: string;
   entityDict: Map<string, EntityObject>;
-  UDPStatus: Map<string, FrameStatus>;
+  UDPStatus: Map<string, IFrameStatus>;
 
   constructor() {
     this.pt_sock = {};
@@ -211,7 +212,9 @@ export default class PTrackEndpoint {
     // this is used to display data about different tracks being received
     // key by pf_type, value = { lastseq, lastsec, lastnsec, lastcount }
     let dictkey = `${pf_short_id}-${pf_type}`;
-    let statobj: FrameStatus = this.UDPStatus.get(dictkey) || new FrameStatus();
+    let statobj: IFrameStatus = this.UDPStatus.get(dictkey);
+    if (statobj === undefined)
+      statobj = { lastseq: 0, lastsec: 0, lastnsec: 0, lastcount: 0 };
 
     // HACK Don't check for out of sequence frames because
     // ptrack frame ids are not unique.

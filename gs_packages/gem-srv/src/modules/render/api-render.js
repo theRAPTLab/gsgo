@@ -74,7 +74,7 @@ function Init(element) {
     name: 'RP DisplayToSprite'
   });
 
-  // object handlers for 1-D2V
+  // map data objects to sprites
   RP_DOBJ_TO_VOBJ.setMapFunctions({
     onAdd: (dobj, vobj) => {
       // copy parameters

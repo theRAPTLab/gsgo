@@ -87,7 +87,15 @@ class Tracker extends React.Component {
           <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          console-left
+          USE SHIFT-CLICK TO OPEN LINKS IN NEW WINDOW in CHROME
+          <br />
+          <a href="/app/compiler" target="_blank">
+            spawn compiler
+          </a>
+          <br />
+          <a href="/app/faketrack" target="_blank">
+            spawn faketrack
+          </a>
         </div>
         <div id="root-renderer" className={classes.main} />
         <div id="console-right" className={clsx(classes.cell, classes.right)}>

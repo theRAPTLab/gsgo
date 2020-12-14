@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { Vec3 } from './t-tracking';
-import { TrackerMode, TrackType } from './t-ptrack';
+import { TrackerMode, TrackType } from './t-input';
 import TrackerObject from './class-tracker-object';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////

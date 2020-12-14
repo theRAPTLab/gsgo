@@ -342,9 +342,21 @@ pobjs.forEach(pobj => {
 
 Actually it might be in the ptrack endpoint. It is returning a cached map that is not a pure entity map. The big problem was **class-ptrack-endpoint** wasn't clearing the cache automtically. The old aging code actually deleted the code out of the dictionary directly, which is why it was always up-to-date. The NEW code uses SyncMap, and has to explicitly clear the entire map.
 
-### Plotting Sprites
+## DEC 13 SUN - Adding Visualization to Entities
 
-Now that we're getting actual numbers into in-ptrack. 
+Now that we're getting actual numbers into in-ptrack, how to show them?
+
+* entities are their own thing, a kind of input
+* inputs are a kind of data, represented by entityobjects.
+* We can directly syncmap entityobjects to visualobjects if we want.
+* We can also syncmap entityobjects (which are inputs) to anything else.
+
+So we should have an **input object** that represents not only ptrack entities, but other inputs. Let's rename EntityObject to InputObject
+
+* [x] rename `t-ptrack` to `t-input`
+* [ ] make input show sprites
+
+
 
 ---
 
