@@ -149,13 +149,14 @@ function m_AddMouseEvents(container) {
   // used to calculate deltas to apply to object group
   const o_clickHandler = e => {
     const id = e.target.getAttribute('entity-id');
+    const cx = e;
     if (id) console.log(`clicked entity-id ${id}`);
   };
 
-  let ox1 = container.offsetLeft;
-  let oy1 = container.offsetTop;
-  let ox2 = ox1 + container.offsetWidth;
-  let oy2 = oy1 + container.offsetHeight;
+  let ox1;
+  let oy1;
+  let ox2;
+  let oy2;
   let cx;
   let cy;
   let dragActive = false;
@@ -168,12 +169,18 @@ function m_AddMouseEvents(container) {
     if (target !== container) {
       dragElement = target;
       dragActive = true;
+      // offset to center of draggable element
       cx = dragElement.offsetWidth / 2;
       cy = dragElement.offsetHeight / 2;
-      ox1 = container.offsetLeft;
-      oy1 = container.offsetTop;
+      // bounding box for container
+      ox1 = container.offsetLeft - window.scrollX;
+      oy1 = container.offsetTop - window.scrollY;
       ox2 = ox1 + container.offsetWidth;
       oy2 = oy1 + container.offsetHeight;
+      // offset drag point inside dragElement
+      const dragRect = dragElement.getBoundingClientRect();
+      cx += e.clientX - dragRect.left - cx;
+      cy += e.clientY - dragRect.top - cy;
     }
   };
 
@@ -182,7 +189,6 @@ function m_AddMouseEvents(container) {
     const mx = e.clientX;
     const my = e.clientY;
     if (mx < ox1 || mx > ox2 || my < oy1 || my > oy2) return;
-    // console.log(`oob ${x},${y} outside rect ${ox1},${oy1} - ${ox2},${oy2}`);
     e.preventDefault();
     let x = mx - ox1 - cx; // relative to container
     let y = my - oy1 - cy;
@@ -196,7 +202,7 @@ function m_AddMouseEvents(container) {
 
   container.addEventListener('mousedown', o_dragStart);
   container.addEventListener('mousemove', o_drag);
-  container.addEventListener('mouseup', o_dragend);
+  document.addEventListener('mouseup', o_dragend); // catch mouseup anywhere
   container.addEventListener('click', o_clickHandler);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
