@@ -51,7 +51,7 @@ let m_seq = 0; // sequence number
 let m_status = ''; // HTML status string
 
 // constants for packet update rate
-const FRAMERATE = 15;
+const FRAMERATE = 30;
 const INTERVAL = (1 / FRAMERATE) * 1000;
 let m_current_time = 0;
 

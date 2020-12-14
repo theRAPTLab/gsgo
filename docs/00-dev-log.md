@@ -353,8 +353,17 @@ Now that we're getting actual numbers into in-ptrack, how to show them?
 
 So we should have an **input object** that represents not only ptrack entities, but other inputs. Let's rename EntityObject to InputObject
 
-* [x] rename `t-ptrack` to `t-input`
-* [ ] make input show sprites
+Now that we can get entity data, let's plot it onto the screen somehow.
+
+* [ ] `api-input` has our cheese test
+
+* [ ] we have the entities, so we just need to map them to VOBJs
+
+  * [x] move RP structures into DATACORE
+
+  * [ ] replace ClearCachedEntities with improved PTRACK entity management to avoid flickering
+
+    
 
 
 

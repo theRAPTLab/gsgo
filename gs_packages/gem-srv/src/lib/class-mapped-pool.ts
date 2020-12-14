@@ -4,26 +4,18 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { ISyncResults } from './t-pool.d';
-import Pool, { IPoolable } from './class-pool';
-
-/// TYPE DECLARATIONS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export type PoolableMap = Map<any, IPoolable>;
-export type PoolableSet = Set<IPoolable>;
-export type PoolableArray = IPoolable[];
-
-export type TestFunction = (obj: any, active: Map<any, IPoolable>) => boolean;
-export type AddFunction = (srcObj: IPoolable, newObj: IPoolable) => void;
-export type UpdateFunction = (srcObj: IPoolable, updateObj: IPoolable) => void;
-export type RemoveFunction = (removeObj: IPoolable) => void;
-
-export interface MapFunctions {
-  onAdd?: AddFunction;
-  onUpdate?: UpdateFunction;
-  shouldRemove?: TestFunction;
-  onRemove?: RemoveFunction;
-}
+import {
+  ISyncResults,
+  IPoolable,
+  MapFunctions,
+  AddFunction,
+  UpdateFunction,
+  RemoveFunction,
+  TestFunction,
+  PoolableMap,
+  PoolableArray
+} from './t-pool.d';
+import Pool from './class-pool';
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

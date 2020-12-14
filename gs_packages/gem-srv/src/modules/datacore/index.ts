@@ -24,6 +24,7 @@ export * from './dc-programs';
 export * from './dc-filters';
 export * from './dc-tests';
 export * from './dc-sim';
+export * from './dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -49,8 +49,8 @@ UR.SystemHook(
         console.log(...PR('Waiting for user input'));
         // SIM.Start();
         // if (DBG) console.log(...PR('SIMULATION STARTED'));
+        resolve();
       })();
-      resolve();
     })
 );
 

@@ -8,6 +8,7 @@ import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
 import Visual, { MakeDraggable } from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
+import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,7 +18,7 @@ let PIXI_APP; // PixiJS instance
 let PIXI_DIV; // PixiJS root div element
 const CONTAINERS = {}; // PixiJS container reference
 /// RENDERPASS SYNCMAPS
-let RP_DOBJ_TO_VOBJ; // renderpass for model sprites
+let RP_DOBJ_TO_VOBJ; // renderpass for normal visuals
 let RP_PTRAK_TO_VOBJ; // renderpass for ptrack marker sprites
 let RP_ANNOT_TO_VOBJ; // renderpass for annotation marker sprites
 /// SETTINGS
@@ -67,14 +68,13 @@ function Init(element) {
   // save
   CONTAINERS.Root = root;
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // map model display objects to sprites
   RP_DOBJ_TO_VOBJ = new SyncMap({
     Constructor: Visual,
     autoGrow: true,
     name: 'RP DisplayToSprite'
   });
-
-  // map data objects to sprites
   RP_DOBJ_TO_VOBJ.setMapFunctions({
     onAdd: (dobj, vobj) => {
       // copy parameters
@@ -102,24 +102,43 @@ function Init(element) {
     shouldRemove: () => true,
     onRemove: () => {}
   });
+  // make sure datacore has access to it for pure data manipulation
+  SetModelRP(RP_DOBJ_TO_VOBJ);
 
-  // RP_DOBJ_TO_VOBJ.setMapFunctions()
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // map ptrack markers
   RP_PTRAK_TO_VOBJ = new SyncMap({
     Constructor: Visual,
     autoGrow: true,
     name: 'RP TrackertoSprite'
   });
-  // RP_PTRAK_TO_VOBJ.setMapFunctions()
+  const SCALE = 200;
+  RP_PTRAK_TO_VOBJ.setMapFunctions({
+    onAdd: (ent, vobj) => {
+      // copy parameters
+      vobj.setPosition(ent.x * SCALE, ent.y * SCALE);
+      vobj.setTexture('bunny.json', 0);
+      vobj.add(CONTAINERS.Root);
+    },
+    onUpdate: (ent, vobj) => {
+      vobj.setPosition(ent.x * SCALE, ent.y * SCALE);
+    },
+    shouldRemove: () => true,
+    onRemove: () => {}
+  });
+  // make sure datacore has access to it for pure data manipulation
+  SetTrackerRP(RP_PTRAK_TO_VOBJ);
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // map student input controls
   RP_ANNOT_TO_VOBJ = new SyncMap({
     Constructor: Visual,
     autoGrow: true,
     name: 'RP AnnoteToSprite'
   });
-  // RP_ANNOT_TO_VOBJ.setMapFunctions()
+  RP_ANNOT_TO_VOBJ.setMapFunctions({});
+  // make sure datacore has access to it for pure data manipulation
+  SetAnnotRP(RP_PTRAK_TO_VOBJ);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function HookResize(element) {
@@ -177,7 +196,7 @@ let renderFrames = 0;
 function Render() {
   if (!RP_DOBJ_TO_VOBJ) return;
   RP_DOBJ_TO_VOBJ.mapObjects();
-  // RP_PTRAK_TO_VOBJ.mapObjects();
+  // RP_PTRAK_TO_VOBJ.mapObjects(); // in api-input right now
   // RP_PTRAK_TO_VOBJ.mapObjects();
   const synced = RP_DOBJ_TO_VOBJ.getMappedObjects();
   // HCON.plot(`renderer synced ${synced.length} DOBJS to Sprites`, 2);

@@ -22,9 +22,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Pool, { IPoolable, IPoolOptions } from './class-pool';
-import { ISyncResults } from './t-pool.d';
-import MappedPool, {
+import Pool from './class-pool';
+import {
+  IPoolable,
+  IPoolOptions,
+  ISyncResults,
+  ISyncEssentials,
   MapFunctions,
   TestFunction,
   AddFunction,
@@ -32,7 +35,8 @@ import MappedPool, {
   RemoveFunction,
   PoolableMap,
   PoolableArray
-} from './class-mapped-pool';
+} from './t-pool.d';
+import MappedPool from './class-mapped-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,7 +55,7 @@ const f_NullRemove = (remObj: IPoolable) => {};
  *  A SyncMap manages objects that are created by "syncing" to another
  *  Map or Asset of Poolable objects.
  */
-class SyncMap {
+class SyncMap implements ISyncEssentials {
   pool: Pool;
   map: MappedPool;
   deltas: ISyncResults;

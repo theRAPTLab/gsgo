@@ -6,6 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as PTRACK from 'modules/step/in-ptrack';
+import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -13,27 +14,37 @@ const PR = UR.PrefixUtil('SIM-INPUT', 'TagRed');
 
 /// CHEESE TESTING ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let FRAME_COUNT = 0;
-setInterval(() => {
-  /** TESTING HERE **/
-  const m_entities = PTRACK.GetInputs(500);
-  if (m_entities.length > 0) console.log('entity.x', m_entities[0].x);
-  else console.log('no entity');
-  /* WHAT NOW? */
-}, 500);
+/// this should stuff the changes into datacore
+/// and api-render needs to move its data to datacore as well
+let CHEESE_COUNT = 0;
+const FRAMERATE = 30;
+const INTERVAL = (1 / FRAMERATE) * 1000;
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function Init() {
-  PTRACK.Connect(document.domain);
+  console.log(...PR('should initialize'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function ConnectTracker() {
-  console.log(...PR('should connect to PTRACK'));
+  // turn-on PTRACK module
+  PTRACK.Connect(document.domain);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DisconnectTracker() {
-  console.log(...PR('should disconnect from PTRACK'));
+export function StartTrackerVisuals() {
+  const RP = GetTrackerRP();
+  // start test timer
+  setInterval(() => {
+    const m_entities = PTRACK.GetInputs(500);
+    let out = [];
+    /** CHEESE TESTING HERE **/
+    if (m_entities.length > 0) out.push('entity.x', m_entities[0].x);
+    else out.push('no entity');
+    out.push('length', m_entities.length);
+    out.push(...OutSyncResults(RP.syncFromArray(m_entities)));
+    RP.mapObjects(); // note that this has to be disabled in api-render
+    // console.log(...out);
+  }, INTERVAL);
 }
 
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
@@ -41,7 +52,14 @@ export function DisconnectTracker() {
 UR.SystemHook('UR/LOAD_CONFIG', () => {
   const addr = document.domain;
   console.log(...PR('Initializing Connection to', addr));
-  Init(addr);
+  ConnectTracker(addr);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.SystemHook('UR/APP_CONFIGURE', () => {
+  // this fires after UR/LOAD_ASSETS, so sprites are loaded
+  const addr = document.domain;
+  console.log(...PR('Starting Tracker Visuals', addr));
+  StartTrackerVisuals();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM/INPUTS', () => {

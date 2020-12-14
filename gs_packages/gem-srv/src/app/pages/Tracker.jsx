@@ -34,8 +34,8 @@ UR.SystemHook(
         await GLOBAL.LoadAssets('static/assets.json');
         ASSETS_LOADED = true;
         console.log(...PR('ASSETS LOADED'));
+        resolve();
       })();
-      resolve();
     })
 );
 

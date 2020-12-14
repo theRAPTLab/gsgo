@@ -10,8 +10,11 @@ import { IActable } from 'lib/t-interaction';
 
 /// VISUALS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 export interface IVisual {
   sprite: PIXI.Sprite;
+  add: (root: PIXI.Container) => void;
+  dispose: () => void;
+  // use the Visual type instead for complete coverage
 }
+
 export type Visual = IVisual & IPoolable & IActable;

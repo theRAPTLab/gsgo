@@ -26,9 +26,41 @@ export interface IPoolOptions {
   batchSize?: number; // number of elements to add when growing
   autoGrow?: boolean; // whether to automatically increase size or error out
 }
+
+/// MAPPED POOLS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export type PoolableMap = Map<any, IPoolable>;
+export type PoolableSet = Set<IPoolable>;
+export type PoolableArray = IPoolable[];
+
+export type TestFunction = (obj: any, active: Map<any, IPoolable>) => boolean;
+export type AddFunction = (srcObj: IPoolable, newObj: IPoolable) => void;
+export type UpdateFunction = (srcObj: IPoolable, updateObj: IPoolable) => void;
+export type RemoveFunction = (removeObj: IPoolable) => void;
+
+export interface MapFunctions {
+  onAdd?: AddFunction;
+  onUpdate?: UpdateFunction;
+  shouldRemove?: TestFunction;
+  onRemove?: RemoveFunction;
+}
+
+/// SYNCMAPS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface ISyncResults {
   added: IPoolable[];
   updated: IPoolable[];
   removed: IPoolable[];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface ISyncMap {
+  setMapFunctions: (config: MapFunctions) => void;
+  onAdd: (f: AddFunction) => void;
+  onUpdate: (f: UpdateFunction) => void;
+  onRemove: (f: RemoveFunction) => void;
+  shouldRemove: (f: TestFunction) => void;
+  syncFromMap: (srcMap: PoolableMap) => ISyncResults;
+  syncFromArray: (sobjs: PoolableArray) => ISyncResults;
+  mapObjects: () => void;
+  getDeltaArrays: () => ISyncResults;
 }
