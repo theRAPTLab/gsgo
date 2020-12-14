@@ -137,7 +137,9 @@ export default class MappedPool {
     pobjs.forEach(pobj => {
       const sobjGone = !this.seen_sobjs.has(pobj.id);
       const yesRemove = this.ifRemove(pobj, this.seen_sobjs);
-      if (sobjGone && yesRemove) removed.push(pobj);
+      if (sobjGone && yesRemove) {
+        removed.push(pobj); // will be deleted in mapObjects()
+      }
     });
     // added and updated will contain source objs
     // removed will contain "deleted" pool objects

@@ -10,6 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import SyncMap from 'lib/class-syncmap';
 import { IFrameStatus } from './t-input.d';
 import EntityObject from './class-entity-object';
 
@@ -25,18 +26,64 @@ const TYPES = {
 };
 const PRECISION = 4;
 
+/// GLOBAL FILTER SETTINGS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DEFAULT = {
+  ptRadius: 0.1,
+  ptMaxAge: 66,
+  ptMinAge: 16
+};
+let MAX_NOP = 500;
+let MIN_AGE = 350;
+let MIN_NOP = MIN_AGE / 2;
+let SRADIUS = 0.0001;
+let CULL_YOUNGLINGS = true;
+
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default class PTrackEndpoint {
   pt_sock: { onmessage?: Function };
   pt_url: string;
   entityDict: Map<string, EntityObject>;
+  goodEntities: SyncMap;
   UDPStatus: Map<string, IFrameStatus>;
 
   constructor() {
     this.pt_sock = {};
     this.pt_url = 'ws://localhost:3030';
-    this.entityDict = new Map();
+    this.goodEntities = new SyncMap({
+      Constructor: EntityObject,
+      name: 'RawEntityList'
+    });
+    this.goodEntities.setMapFunctions({
+      onAdd: (raw, eo: EntityObject) => {
+        eo.copy(raw);
+        eo.nop = 0;
+        eo.age = 0;
+      },
+      onUpdate: (raw: EntityObject, eo: EntityObject) => {
+        eo.x = raw.x;
+        eo.y = raw.y;
+      },
+      // this is called if an id disappears
+      shouldRemove: (eo, seen_eos) => {
+        // delete anyone who has not updated in a while
+        if (eo.nop > MAX_NOP) return true;
+        // delete "of-age" entities with too many nops
+        if (eo.age > MIN_AGE && eo.nop > MAX_NOP) return true;
+        // delete intermittent pop-in entities
+        if (eo.age - eo.nop < MIN_NOP) return true;
+        // if clustered close together, cull all but the senior
+        if (eo.age < MAX_NOP || CULL_YOUNGLINGS)
+          return !m_IsOldestInRadius(eo, seen_eos);
+        // otherwise, we need to age
+        eo.nop += 66; /* HACK NEED GLOBAL FRAMETIME */
+        eo.age += 66;
+        // dont remove yet
+        return false;
+      },
+      onRemove: eo => {}
+    });
     // 2.0 infer the connection status of PTRACK with our system
     this.UDPStatus = new Map();
   }
@@ -51,6 +98,11 @@ export default class PTrackEndpoint {
     this.pt_sock.onmessage = event => {
       this.ProcessFrame(event.data); // new routine
     };
+  }
+
+  /** return the mapped object */
+  GetEntities() {
+    return [...this.goodEntities.getMappedObjects()]
   }
 
   /** return an array of raw entity objects */
@@ -233,6 +285,7 @@ export default class PTrackEndpoint {
     // .. see if raw.id exists in entityDict
     // .. if not, create new object with nop 0
     // .. if exist, update object
+    const entities = [];
     tracks.forEach(raw => {
       // ABORT ON BAD DATA (but don't crash)
       if (hasBadData(raw)) return;
@@ -258,36 +311,22 @@ export default class PTrackEndpoint {
       // CALCULATE KEY INTO ENTITY DICT
       raw.id = pf_type + raw.id; // attach type to guarantee unique id
 
-      // UPDATE/ADD RAW ENTITY TO DICT
-      let ent = this.entityDict.get(raw.id);
-      if (ent) {
-        ent.id = raw.id;
-        ent.x = raw.x.toFixed(PRECISION);
-        ent.y = raw.y.toFixed(PRECISION);
-        ent.h = raw.height.toFixed(PRECISION);
-        // ent.age; // don't reset this to zero!
-        ent.nop = 0; // new frame, so reset no-op timer
-        // version 1.0 extensions
-        ent.isFaketrack = raw.isFaketrack; // faketrack tracks only, otherwise undefined
-        // version 2.0 extensions
-        ent.name = raw.object_name; // object tracks only, otherwise undefined
-        ent.pose = raw.predicted_pose_name; // pose tracks only, otherwise undefined
-      } else {
-        ent = new EntityObject();
-        ent.copy({
-          id: raw.id,
-          x: raw.x.toFixed(PRECISION),
-          y: raw.y.toFixed(PRECISION),
-          h: raw.height.toFixed(PRECISION),
-          age: 0,
-          nop: 0,
-          type: pf_type,
-          name: raw.object_name, // object tracks only, otherwise undefined
-          pose: raw.predicted_pose_name, // pose tracks only, otherwise undefined
-          isFaketrack: raw.isFaketrack // faketrack tracks only, otherwise undefined
-        });
-        this.entityDict.set(raw.id, ent);
-      }
+      // MUTATE x to fixed precision
+      // MUTATE is OK because the raw track is thrown away every frame
+      raw.x = raw.x.toFixed(PRECISION);
+      raw.y = raw.y.toFixed(PRECISION);
+      // raw.isFaketrack = raw.isFaketrack;`
+      // add additional properties that are in an EntityObject
+      // based on other parameters
+      raw.type = pf_type;
+      raw.name = raw.object_name;
+      raw.pose = raw.predicted_pose_name;
+      // add aging elements
+      raw.age = 0;
+      raw.nop = 0;
+
+      // SAVE RAW ENTITY TO LIST
+      entities.push(raw);
 
       // SPECIAL OBJECT HANDLING
       if (pf_type === TYPES.Object) {
@@ -297,41 +336,126 @@ export default class PTrackEndpoint {
       // SPECIAL POSE HANDLING
       if (pf_type === TYPES.Pose) {
         // copy name over for display purposes in tracker utility
-        ent.name = raw.predicted_pose_name;
+        raw.name = raw.predicted_pose_name;
         // x,y from poses is set from the CHEST joint
         // .. make sure the joints exist
-        ent.joints = raw.joints;
-        ent.x = raw.joints.CHEST.x;
-        ent.y = raw.joints.CHEST.y;
+        // raw.joints = raw.joints;
+        raw.x = raw.joints.CHEST.x;
+        raw.y = raw.joints.CHEST.y;
         // orientation
-        ent.orientation = raw.orientation; // in radians
+        // raw.orientation = raw.orientation; // in radians
       }
 
       /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
+        HISTORICAL NOTE FROM PLAE
+
         According to Marco, any data that has a NaN CHEST coordinate should be
-        rejected. but sometimes PTrack does
+        rejected. but sometimes PTrack does include it.
 
-        For some reason though, only "orientation" is being set to NaN, and the
-        CHEST data is being passed as 0.  So we check "orientation" instead.
-
-        Also, orientation is sending a string "nan" instead of NaN, so we
-        explicitly check for the string.
-
-        VESTIGIAL CODE BELOW
-
-        if (raw.orientation === 'nan') {
-          // delete entity from dict
-        }
-        if (Number.isNaN(raw.joints.CHEST.x) || Number.isNaN(raw.joints.CHEST.y)) {
-          // delete entity from dict
-        }
-        if (raw.joints.CHEST.x && typeof raw.joints.CHEST.x === 'number') {
-          ent.x = raw.joints.CHEST.x;
-          ent.y = raw.joints.CHEST.y;
-        }
+        See the PLAE source code for the original commented-out code.
       :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
     }); // tracks.forEach
+
+    // we have cleaned-up data in the entityDict map
+    // console.log(this.entityDict.get('ft-ff0').x);
+    this.goodEntities.syncFromArray(entities);
+    this.goodEntities.mapObjects();
+    console.log(this.goodEntities.getMappedIds());
   }
+
+  /// TRACKER ENTITY FILTERING PARAMETERS ///////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// WARNING this is a GLOBAL SETTING for ALL PTRACK INSTANCES
+  UpdateFilterSettings() {
+    // 	needs update to use Settings
+    MAX_NOP = DEFAULT.ptMaxAge;
+    MIN_AGE = DEFAULT.ptMinAge;
+    SRADIUS = DEFAULT.ptRadius;
+    MIN_NOP = MIN_AGE / 2;
+    console.log('SET PTRACK DEFAULT VALUES', MAX_NOP, MIN_AGE, SRADIUS);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  SetFilterTimeout(nop) {
+    if (nop === undefined) return;
+    if (nop < MIN_AGE) {
+      console.warn('Timeout', nop, "can't be less than Age Threshold", MIN_AGE);
+      return;
+    }
+    MAX_NOP = nop;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  SetFilterAgeThreshold(age) {
+    if (age === undefined) return;
+    if (age > MAX_NOP) {
+      console.warn('Age', age, "can't be greater than tout1", MAX_NOP);
+      return;
+    }
+    MIN_AGE = age;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  SetFilterFreshnessThreshold(threshold) {
+    if (threshold === undefined) return;
+    if (threshold > MIN_AGE / 2) {
+      console.log(
+        'Threshold',
+        threshold,
+        'should be lower compared to AgeThreshold'
+      );
+    }
+    MIN_NOP = threshold;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  SetFilterRadius(rad) {
+    if (rad === undefined) return;
+    if (Number.isNaN(rad)) {
+      console.warn('SetFilterRadius expects a number, not', rad);
+      return;
+    }
+    SRADIUS = rad;
+  }
+} // end class
+
+/// HELPER FUNCTIONS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** entity is checked against other entities in idsActive
+ *  it's assumed that idsActive does NOT contain entity
+ */
+function m_IsOldestInRadius(entity, seenMap) {
+  let rad2 = SRADIUS * SRADIUS;
+  let result = true;
+  let x2;
+  let y2;
+  seenMap.forEach((k, c) => {
+    if (c === entity) return;
+    x2 = (c.x - entity.x) ** 2;
+    y2 = (c.y - entity.y) ** 2;
+    // is point outside of circle? continue
+    const out = x2 + y2 >= rad2;
+    if (out) return;
+    // otherwise we're inside, so check if older
+    if (entity.age < c.age) {
+      result = false;
+      // merge position with baddies
+      c.x = (c.x + entity.x) / 2;
+      c.y = (c.y + entity.y) / 2;
+    }
+  });
+  return result;
+}
+
+/// ENTITY HELPERS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Convert entity coordinates to gameworld gameworld coordinates.
+ *  entity: { id, x, y, h, nop } - tracker coords
+ *  trackerObject: { id, pos, valid } - game coords
+ */
+function m_TransformAndUpdate(entity) {
+  // tracker space position
+  let x = entity.x;
+  let y = entity.y;
+  let z = entity.h;
+
+  console.log('entity', ...entity);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

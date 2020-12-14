@@ -27,7 +27,7 @@ import {
   IPoolable,
   IPoolOptions,
   ISyncResults,
-  ISyncEssentials,
+  ISyncMap,
   MapFunctions,
   TestFunction,
   AddFunction,
@@ -55,7 +55,7 @@ const f_NullRemove = (remObj: IPoolable) => {};
  *  A SyncMap manages objects that are created by "syncing" to another
  *  Map or Asset of Poolable objects.
  */
-class SyncMap implements ISyncEssentials {
+class SyncMap implements ISyncMap {
   pool: Pool;
   map: MappedPool;
   deltas: ISyncResults;

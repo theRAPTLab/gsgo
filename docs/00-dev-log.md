@@ -360,10 +360,60 @@ Now that we can get entity data, let's plot it onto the screen somehow.
 * [ ] we have the entities, so we just need to map them to VOBJs
 
   * [x] move RP structures into DATACORE
+* [ ] replace ClearCachedEntities with improved PTRACK entity management to avoid flickering
 
-  * [ ] replace ClearCachedEntities with improved PTRACK entity management to avoid flickering
+## DEC 14 MON - Squashing EntityCache Bug
 
-    
+Got inputs working, but the entity caching issue that I fixed with a new `ClearEntityCache()` method has the effect of also ruining the input cache relative to being read. It would be ideal if we didn't need to call this explicitly, which means adjusting the algorithm in the ptrack endpoint manager to delete entities on-da-fly.
+
+* [x] check: `class-ptrack-endpoint::ProcessFrame(frameData)` is responsible for processing the frame only, not handling the entity deletion
+* [x] check: `in-ptrack` ... it uses `class-mapped-pool`
+* [x] check: `class-mapped-pool` has the deletion code that I need to update somehow
+
+The critical piece of code lives in `syncFromArray(PoolableArray)` and `syncFromMap(PoolableMap)`
+
+```js
+const removed = [];
+const pobjs = this.pool.getAllocated();
+// get all the objects that are already allocated
+pobjs.forEach(pobj => {
+  const sobjGone = !this.seen_sobjs.has(pobj.id);
+  const yesRemove = this.ifRemove(pobj, this.seen_sobjs);
+  if (sobjGone && yesRemove) removed.push(pobj);
+});
+```
+
+Should this code also REMOVE the pobj? Probably, because this is a MAPPED-POOL. 
+
+```js
+if (sobjGone && yesRemove) {
+  console.log(`deallocating ${pobj.id}`);
+  this.pool.deallocate(pobj);
+  removed.push(pobj); // returned for post-processing
+}
+```
+
+Trying the above, the entities are removed by are readded. That is weird because the entities should be stable.
+
+Ooops, the removal of clearing the cached entities is in `in-ptrack::GetInputs()`, so let's remove that and hope that the clearing algorithm works. And it turns out that it has to happen in `in-ptrack::GetInputs()` which means that it's the PTM that needs to handle deletions cleanly, not the map structure. 
+
+That means that **ProcessFrame** needs to clean-up its entitydict to remove cached things. But this has to make use of the aging algorithm that's passed on to the SyncMap. Does this mean the add/remove logic has to be here, not in `in-ptrack`???
+
+* SyncMap.updateFromArray receives entity list from PTrack
+  * It checks for things that have disappeared and updates
+  * It shouldn't have to worry about aging; it expects to get SOLID entities
+  * I need to double-buffer the entities
+
+So I need to add an addition SyncMap to the PTrack instance manager. This is where the aging algorithms go.
+
+* [x] clone the VALID_ENTITIES `SyncMap` into `class-ptrack-endpoint`
+* [x] also move the filter-related stuff into endpoint
+* [x] update the endpoint syncmap to process raw entities alongside entityDict
+* [x] does it work? **YES**
+
+
+
+
 
 
 
