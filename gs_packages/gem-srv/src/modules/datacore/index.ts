@@ -35,7 +35,7 @@ export * from './dc-render';
 const DEFAULT_TEXT = `
 # BLUEPRINT Bee
 # PROGRAM DEFINE
-addProp frame Number 3
+useFeature Costume
 useFeature Movement
 # PROGRAM UPDATE
 setProp skin 'bunny.json'

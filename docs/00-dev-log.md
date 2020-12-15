@@ -423,7 +423,9 @@ Now it's being called for two separate RPs, not three.
 
 Also the add/remove logic is working again.
 
+## DEC 15 TUE - Implementing Costume Feature
 
+This is our first real "finished" feature. 
 
 ---
 

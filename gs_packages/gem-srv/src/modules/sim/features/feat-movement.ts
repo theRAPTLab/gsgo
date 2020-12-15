@@ -12,6 +12,7 @@
 import UR from '@gemstep/ursys/client';
 import { StringProp } from 'modules/sim/props/var';
 import Feature from 'lib/class-feature';
+import { Register } from 'modules/datacore/dc-features';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,7 +70,7 @@ function m_Random(min, max, round) {
   return n;
 }
 
-/// EXPORT SINGLETON //////////////////////////////////////////////////////////
+/// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new MovementPack('Movement');
-export default INSTANCE;
+Register(INSTANCE);
