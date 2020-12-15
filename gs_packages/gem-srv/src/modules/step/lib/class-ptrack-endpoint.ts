@@ -29,8 +29,8 @@ const DBG = false;
 
 /// GLOBAL FILTER SETTINGS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MAX_AGE = 20;
-let MIN_AGE = 10;
+let MAX_AGE = 100; // set high so effect is visible. 100 frames to 'die'
+let MIN_AGE = 30; // set high so effect is visible. 30 frames before 'alive'
 let SRADIUS = 0.1;
 let CULL_YOUNGLINGS = true;
 
