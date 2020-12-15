@@ -84,7 +84,8 @@ class Tracker extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>
+          <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>{' '}
+          {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           USE SHIFT-CLICK TO OPEN LINKS IN NEW WINDOW in CHROME

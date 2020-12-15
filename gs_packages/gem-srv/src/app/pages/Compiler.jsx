@@ -249,8 +249,8 @@ class Compiler extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span> UGLY DEVELOPER
-          MODE
+          <span style={{ fontSize: '32px' }}>COMPILER/DEV</span>{' '}
+          {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <button

@@ -104,6 +104,10 @@ const UR = {
   SystemStop,
   // ROUTE INFO
   IsRoute: route => URSYS_ROUTE === route,
+  ServerIP: URNet.ServerIP,
+  URNetPort: URNet.ServerPort,
+  WebServerPort: URNet.WebServerPort,
+  ConnectionString: URNet.ConnectionString,
   // FORWARDED SYSTEM CONTROL VIA UREXEC
   SystemBoot: ClientExec.SystemBoot,
   SystemConfig: ClientExec.SystemConfig,

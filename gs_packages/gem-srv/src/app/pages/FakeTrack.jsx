@@ -97,7 +97,8 @@ class FakeTrack extends React.Component {
         }}
       >
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>FAKETRACK PORT</span>
+          <span style={{ fontSize: '32px' }}>FAKETRACK PORT</span>{' '}
+          {UR.ConnectionString()}
         </div>
         <div
           id="console-left"
