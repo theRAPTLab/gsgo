@@ -9,7 +9,7 @@
 
   USAGE:
 
-  const PTracker = new SyncMap('note',{ Constructor: DisplayObject });
+  const PTracker = new SyncMap({ Constructor: DisplayObject, ...opts });
   PTracker.setMapFunctions({ onAdd, onUpdate, shouldRemove, onRemove });
 
   const entities = INPUT.GetEntities(); // returns array
@@ -22,9 +22,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Pool, { IPoolable, IPoolOptions } from './class-pool';
-import { ISyncResults } from './t-pool.d';
-import MappedPool, {
+import Pool from './class-pool';
+import {
+  IPoolable,
+  IPoolOptions,
+  ISyncResults,
+  ISyncMap,
   MapFunctions,
   TestFunction,
   AddFunction,
@@ -32,7 +35,8 @@ import MappedPool, {
   RemoveFunction,
   PoolableMap,
   PoolableArray
-} from './class-mapped-pool';
+} from './t-pool.d';
+import MappedPool from './class-mapped-pool';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,20 +55,22 @@ const f_NullRemove = (remObj: IPoolable) => {};
  *  A SyncMap manages objects that are created by "syncing" to another
  *  Map or Asset of Poolable objects.
  */
-class SyncMap {
+class SyncMap implements ISyncMap {
   pool: Pool;
   map: MappedPool;
   deltas: ISyncResults;
 
-  constructor(poolName: string, poolOptions: IPoolOptions) {
-    if (typeof poolName !== 'string') throw Error('arg1 must be string name');
+  constructor(poolOptions: IPoolOptions) {
     if (typeof poolOptions !== 'object') throw Error('arg2 must be config obj');
     // pool options have a Constructor at minimum
-    this.pool = new Pool(poolName, poolOptions);
+    const { name } = poolOptions;
+    if (typeof name !== 'string') throw Error('arg1 must be string name');
+    this.pool = new Pool(name, poolOptions);
     // the default mapped pool uses null functions
     // the MappedPool handles id copying, so just copy special props
     this.map = new MappedPool(this.pool, {
       onAdd: f_NullAdd,
+      shouldAdd: f_AlwaysTrue,
       onUpdate: f_NullUpdate,
       shouldRemove: f_AlwaysTrue,
       onRemove: f_NullRemove
@@ -128,6 +134,12 @@ class SyncMap {
    */
   mapObjects() {
     return this.map.mapObjects();
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return delta arrays that are computed by syncFrom* methods
+   */
+  getDeltaArrays() {
+    return this.deltas;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return all the objects that are in use, which are stored in pool

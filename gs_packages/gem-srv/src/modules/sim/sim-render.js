@@ -17,9 +17,10 @@ import { Render } from 'modules/render/api-render';
 const PR = UR.PrefixUtil('SIM_RENDER');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DOBJ_LIST;
-const MAPPED_VISUALS = new SyncMap('DOBJ-TO-VOBJ', {
+const MAPPED_VISUALS = new SyncMap({
   Constructor: Visual, // sprites track display objs
-  autoGrow: true
+  autoGrow: true,
+  name: 'DisplayObjectToSprite'
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Manager for handling changes in the display objects, and handling their

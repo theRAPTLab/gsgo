@@ -27,9 +27,10 @@ PIXI_APP.stage.addChild(root);
 
 /** initialize display list **/
 let num = 1;
-const DISPLAY_LIST = new SyncMap('DOB-SPR', {
+const DISPLAY_LIST = new SyncMap({
   Constructor: Sprite,
-  autoGrow: true
+  autoGrow: true,
+  name: 'Test DisplayObjectToSprite'
 });
 //
 DISPLAY_LIST.setMapFunctions({

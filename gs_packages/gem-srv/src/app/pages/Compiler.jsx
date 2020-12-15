@@ -16,16 +16,16 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
-import * as Prism from '../../util/prism';
-import { CodeJar } from '../../util/codejar';
-import '../../util/prism.css';
+import * as Prism from 'lib/vendor/prism';
+import { CodeJar } from 'lib/vendor/codejar';
+import 'lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 // import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './page-styles';
+import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,8 +49,8 @@ UR.SystemHook(
         console.log(...PR('Waiting for user input'));
         // SIM.Start();
         // if (DBG) console.log(...PR('SIMULATION STARTED'));
+        resolve();
       })();
-      resolve();
     })
 );
 
@@ -249,8 +249,8 @@ class Compiler extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span> UGLY DEVELOPER
-          MODE
+          <span style={{ fontSize: '32px' }}>COMPILER/DEV</span>{' '}
+          {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <button

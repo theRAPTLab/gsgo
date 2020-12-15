@@ -4,7 +4,7 @@
 
   usage:
     // import
-    import { useStylesHOC } from './common-styles'
+    import { useStylesHOC } from 'pages/elements/page-styles'
 
     // at bottom of component
     export default withStyles(useStylesHOC)(MyComponentName);

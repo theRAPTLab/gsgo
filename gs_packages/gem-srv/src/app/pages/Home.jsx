@@ -10,7 +10,7 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
-import { useStylesHOC } from './page-styles';
+import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,7 +70,7 @@ class Home extends React.Component {
             <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
             <NavItem route="xgui">standalone xgui port</NavItem>
-            <NavItem route="-faketrack">testbed for annotation input</NavItem>
+            <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
         </div>
         <div id="root-renderer" className={classes.main} />

@@ -1,38 +1,51 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  TrackerObjects are expressed in SimWorld coordinates. They are updated
-  by the client-side INPUT module, which takes PTRACK entities and
-  transforms their positions into SimWorld coordinates.
+  TrackerObjects store transformed PTRACK entities. They are updated by the
+  client-side INPUT module, which takes PTRACK entities and transforms their
+  positions into SimWorld coordinates.
 
-  TrackerObjects have a number of flags and settings for interacting in
-  the SimWorld.
+
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { TrackerMode, TrackType } from 'step/lib/t-ptrack';
+import { IPoolable } from 'lib/t-pool';
+import { TrackerMode, TrackType } from './t-input';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** representation of an object provided by PTRACK */
-export default class TrackerObject {
+export default class TrackerObject implements IPoolable {
+  _pool_id: any;
   id: any; // copied from EntityObject
-  pos: [number, number, number];
-  valid: boolean; // set
-  isNew: boolean; // set when this is a new trackerobject
-  isOutside: boolean; // set if not inside width/depth of room
+  pos: number[]; // vector3
   mode: TrackerMode; // LERP, JUMP, or SEEK
   type: TrackType; // obj, people, pose, fake
   name: string; // set by object tracks
-  constructor(entityID) {
+  is_valid: boolean;
+  is_new: boolean; // set when this is a new trackerobject
+  is_outside: boolean; // set if not inside width/depth of room
+
+  constructor(entityID: any) {
+    this.name = '';
     this.id = entityID;
     this.pos = [0, 0, 0];
-    this.valid = false;
-    this.isNew = true;
-    this.isOutside = false;
+    this.is_valid = false;
+    this.is_new = true;
+
+    this.is_outside = false;
     this.mode = TrackerMode.MODE_LERP;
     this.type = TrackType.Undefined;
-    this.name = '';
   }
+
+  /// POOLABLE ////////////////////////////////////////////////////////////////
+  init() {}
+  validate() {}
+  dispose() {}
+  isValid() {
+    return true;
+  }
+
+  /// TRACKER /////////////////////////////////////////////////////////////////
   Position() {}
   IsValid() {}
   IsOutside() {}
