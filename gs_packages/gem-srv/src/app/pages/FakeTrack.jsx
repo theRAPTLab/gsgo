@@ -167,7 +167,11 @@ class FakeTrack extends React.Component {
         <div
           id="console-right"
           className={clsx(classes.cell, classes.right)}
-          style={{ boxSizing: 'border-box' }}
+          style={{
+            boxSizing: 'border-box',
+            overflowX: 'scroll',
+            whiteSpace: 'nowrap'
+          }}
         >
           <div id="data_track_controls">
             <select
