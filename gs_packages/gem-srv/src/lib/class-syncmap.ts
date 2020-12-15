@@ -70,6 +70,7 @@ class SyncMap implements ISyncMap {
     // the MappedPool handles id copying, so just copy special props
     this.map = new MappedPool(this.pool, {
       onAdd: f_NullAdd,
+      shouldAdd: f_AlwaysTrue,
       onUpdate: f_NullUpdate,
       shouldRemove: f_AlwaysTrue,
       onRemove: f_NullRemove

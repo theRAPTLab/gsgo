@@ -21,13 +21,16 @@ import Pool from './class-pool';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_CheckConf(config: MapFunctions) {
   if (typeof config !== 'object') throw Error('arg1 is not config object');
-  if (typeof config.onAdd !== 'function') throw Error('config missing onAdd');
+  if (typeof config.onAdd !== 'function')
+    throw Error('bad declaration for onAdd');
+  if (typeof config.shouldAdd !== 'function')
+    throw Error('bad declaration for shouldAdd');
   if (typeof config.onUpdate !== 'function')
-    throw Error('config missing onUpdate');
+    throw Error('bad declaration for onUpdate');
   if (typeof config.onRemove !== 'function')
-    throw Error('config missing onRemove');
+    throw Error('bad declaration for onRemove');
   if (typeof config.shouldRemove !== 'function')
-    throw Error('config missing shouldRemove');
+    throw Error('bad declaration for shouldRemove');
   return config;
 }
 /// TESTING UTILITIES /////////////////////////////////////////////////////////
@@ -57,6 +60,7 @@ export default class MappedPool {
   cbUpdater: UpdateFunction;
   cbRemover: RemoveFunction;
   ifRemove: TestFunction;
+  ifAdd: TestFunction;
   pool: Pool;
   seen_sobjs: Map<any, IPoolable>;
   deltas: ISyncResults;
@@ -75,8 +79,9 @@ export default class MappedPool {
 
   setMapFunctions(conf: MapFunctions) {
     // we allow partial updates to MapFunctions
-    const { onAdd, onUpdate, onRemove, shouldRemove } = conf;
+    const { onAdd, shouldAdd, onUpdate, onRemove, shouldRemove } = conf;
     if (typeof onAdd === 'function') this.cbAdder = onAdd;
+    if (typeof shouldAdd === 'function') this.ifAdd = shouldAdd;
     if (typeof onUpdate === 'function') this.cbUpdater = onUpdate;
     if (typeof shouldRemove === 'function') this.ifRemove = shouldRemove;
     if (typeof onRemove === 'function') this.cbRemover = onRemove;
@@ -95,7 +100,7 @@ export default class MappedPool {
     const added = [];
     sobjs.forEach(sobj => {
       if (this.pool.has(sobj.id)) updated.push(sobj);
-      else added.push(sobj);
+      else if (this.ifAdd(sobj, srcMap)) added.push(sobj);
       this.seen_sobjs.set(sobj.id, sobj);
     });
     // build remove array by iterating over allocated objects
@@ -121,9 +126,13 @@ export default class MappedPool {
     const updated = [];
     const added = [];
     sobjs.forEach(sobj => {
-      if (this.pool.has(sobj.id)) updated.push(sobj);
-      else added.push(sobj);
-      this.seen_sobjs.set(sobj.id, sobj);
+      if (this.pool.has(sobj.id)) {
+        updated.push(sobj);
+        this.seen_sobjs.set(sobj.id, sobj);
+      } else if (this.ifAdd(sobj)) {
+        added.push(sobj);
+        this.seen_sobjs.set(sobj.id, sobj);
+      }
     });
     // build remove array by iterating over allocated objects
     /*/ REMOVE ARRAYS
@@ -134,11 +143,12 @@ export default class MappedPool {
     const removed = [];
     const pobjs = this.pool.getAllocated();
     // get all the objects that are already allocated
-    pobjs.forEach(pobj => {
+    pobjs.forEach((pobj, i) => {
       const sobjGone = !this.seen_sobjs.has(pobj.id);
       const yesRemove = this.ifRemove(pobj, this.seen_sobjs);
       if (sobjGone && yesRemove) {
-        removed.push(pobj); // will be deleted in mapObjects()
+        console.warn(pobj.id, 'removed', i);
+        removed.push(pobj); // will be deleted in
       }
     });
     // added and updated will contain source objs

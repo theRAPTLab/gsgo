@@ -33,13 +33,14 @@ export type PoolableMap = Map<any, IPoolable>;
 export type PoolableSet = Set<IPoolable>;
 export type PoolableArray = IPoolable[];
 
-export type TestFunction = (obj: any, active: Map<any, IPoolable>) => boolean;
+export type TestFunction = (obj: any, allObjs?: Map<any, IPoolable>) => boolean;
 export type AddFunction = (srcObj: IPoolable, newObj: IPoolable) => void;
 export type UpdateFunction = (srcObj: IPoolable, updateObj: IPoolable) => void;
 export type RemoveFunction = (removeObj: IPoolable) => void;
 
 export interface MapFunctions {
   onAdd?: AddFunction;
+  shouldAdd?: TestFunction;
   onUpdate?: UpdateFunction;
   shouldRemove?: TestFunction;
   onRemove?: RemoveFunction;

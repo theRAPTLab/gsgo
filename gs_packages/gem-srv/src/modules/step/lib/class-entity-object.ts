@@ -49,8 +49,8 @@ export default class EntityObject implements IPoolable, ITrackerData {
     this.joints = obj.joints;
     this.orientation = obj.orientation;
     this.isFaketrack = obj.isFaketrack;
-    this.nop = obj.nop;
-    this.age = obj.age;
+    // don't touch these
+    // this.age = obj.age;
   }
 
   validate(flag: boolean) {

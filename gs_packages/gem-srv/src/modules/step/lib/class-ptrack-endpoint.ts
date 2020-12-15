@@ -25,18 +25,13 @@ const TYPES = {
   Faketrack: 'ft'
 };
 const PRECISION = 4;
+const DBG = true;
 
 /// GLOBAL FILTER SETTINGS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEFAULT = {
-  ptRadius: 0.1,
-  ptMaxAge: 66,
-  ptMinAge: 16
-};
-let MAX_NOP = 500;
-let MIN_AGE = 350;
-let MIN_NOP = MIN_AGE / 2;
-let SRADIUS = 0.0001;
+let MAX_AGE = 20;
+let MIN_AGE = 10;
+let SRADIUS = 0.1;
 let CULL_YOUNGLINGS = true;
 
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
@@ -47,7 +42,7 @@ export default class PTrackEndpoint {
   entityDict: Map<string, EntityObject>;
   goodEntities: SyncMap;
   UDPStatus: Map<string, IFrameStatus>;
-
+  candidates: Map<any, { age: number; nop?: number }>;
   constructor() {
     this.pt_sock = {};
     this.pt_url = 'ws://localhost:3030';
@@ -55,31 +50,49 @@ export default class PTrackEndpoint {
       Constructor: EntityObject,
       name: 'RawEntityList'
     });
+    this.candidates = new Map();
     this.goodEntities.setMapFunctions({
+      shouldAdd: (eo: EntityObject) => {
+        if (!this.candidates.has(eo.id)) this.candidates.set(eo.id, { age: 0 });
+        // delete intermittent pop-in entities
+        const stat = this.candidates.get(eo.id);
+        if (stat.age < MIN_AGE) {
+          stat.age += 1; /* HACK should get global timeframe */
+          if (DBG) console.log(eo.id, stat.age, 'not old enough', MIN_AGE);
+          return false;
+        }
+        if (DBG) console.log(eo.id, stat.age, 'should add', MIN_AGE);
+        this.candidates.delete(eo.id);
+        return true;
+      },
       onAdd: (raw, eo: EntityObject) => {
         eo.copy(raw);
-        eo.nop = 0;
         eo.age = 0;
       },
       onUpdate: (raw: EntityObject, eo: EntityObject) => {
         eo.x = raw.x;
         eo.y = raw.y;
+        eo.age = 0;
       },
       // this is called if an id disappears
       shouldRemove: (eo, seen_eos) => {
+        if (eo.id === 'ft-ff0') console.log('f0', eo.age);
+
         // delete anyone who has not updated in a while
-        if (eo.nop > MAX_NOP) return true;
-        // delete "of-age" entities with too many nops
-        if (eo.age > MIN_AGE && eo.nop > MAX_NOP) return true;
-        // delete intermittent pop-in entities
-        if (eo.age - eo.nop < MIN_NOP) return true;
+        if (eo.age > MAX_AGE) {
+          if (DBG) console.log(eo.id, 'age range exceeded');
+          return true;
+        }
         // if clustered close together, cull all but the senior
-        if (eo.age < MAX_NOP || CULL_YOUNGLINGS)
-          return !m_IsOldestInRadius(eo, seen_eos);
+        if (eo.age < MAX_AGE || CULL_YOUNGLINGS) {
+          if (!m_IsOldestInRadius(eo, seen_eos)) {
+            if (DBG) console.log(eo.id, 'culled');
+            return true;
+          }
+        }
         // otherwise, we need to age
-        eo.nop += 66; /* HACK NEED GLOBAL FRAMETIME */
-        eo.age += 66;
-        // dont remove yet
+        eo.age += 1; /* HACK NEED GLOBAL FRAMETIME or TIMESTAMP */
+        // not time to remove yet
         return false;
       },
       onRemove: eo => {}
@@ -100,21 +113,9 @@ export default class PTrackEndpoint {
     };
   }
 
-  /** return the mapped object */
+  /** return the processed "good" entities */
   GetEntities() {
-    return [...this.goodEntities.getMappedObjects()]
-  }
-
-  /** return an array of raw entity objects */
-  GetCachedEntities() {
-    return [...this.entityDict.values()];
-  }
-
-  /** issue this after each GetCachedEntities() call to flush
-   *  the dictionary
-   */
-  ClearCachedEntities() {
-    this.entityDict.clear();
+    return [...this.goodEntities.getMappedObjects()];
   }
 
   /// PROCESS FRAME /////////////////////////////////////////////////////////////
@@ -321,9 +322,6 @@ export default class PTrackEndpoint {
       raw.type = pf_type;
       raw.name = raw.object_name;
       raw.pose = raw.predicted_pose_name;
-      // add aging elements
-      raw.age = 0;
-      raw.nop = 0;
 
       // SAVE RAW ENTITY TO LIST
       entities.push(raw);
@@ -345,34 +343,32 @@ export default class PTrackEndpoint {
         // orientation
         // raw.orientation = raw.orientation; // in radians
       }
-
       /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
-        HISTORICAL NOTE FROM PLAE
-
         According to Marco, any data that has a NaN CHEST coordinate should be
         rejected. but sometimes PTrack does include it.
 
-        See the PLAE source code for the original commented-out code.
+        See the PLAE source code for the original commented-out code that was
+        here.
       :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
     }); // tracks.forEach
 
     // we have cleaned-up data in the entityDict map
-    // console.log(this.entityDict.get('ft-ff0').x);
-    this.goodEntities.syncFromArray(entities);
+    const { added, updated, removed } = this.goodEntities.syncFromArray(entities);
+
     this.goodEntities.mapObjects();
-    console.log(this.goodEntities.getMappedIds());
   }
 
   /// TRACKER ENTITY FILTERING PARAMETERS ///////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// WARNING this is a GLOBAL SETTING for ALL PTRACK INSTANCES
-  UpdateFilterSettings() {
-    // 	needs update to use Settings
-    MAX_NOP = DEFAULT.ptMaxAge;
-    MIN_AGE = DEFAULT.ptMinAge;
-    SRADIUS = DEFAULT.ptRadius;
-    MIN_NOP = MIN_AGE / 2;
-    console.log('SET PTRACK DEFAULT VALUES', MAX_NOP, MIN_AGE, SRADIUS);
+  UpdateFilterSettings(config) {
+    if (config === undefined) return;
+    if (config.maxAge) MAX_AGE = config.maxAge;
+    if (config.minAge) {
+      MIN_AGE = config.maxAge;
+    }
+    if (config.sRadius) SRADIUS = config.maxAge;
+    console.log('SET PTRACK DEFAULT VALUES', MAX_AGE, MIN_AGE, SRADIUS);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SetFilterTimeout(nop) {
@@ -381,28 +377,16 @@ export default class PTrackEndpoint {
       console.warn('Timeout', nop, "can't be less than Age Threshold", MIN_AGE);
       return;
     }
-    MAX_NOP = nop;
+    MAX_AGE = nop;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SetFilterAgeThreshold(age) {
     if (age === undefined) return;
-    if (age > MAX_NOP) {
-      console.warn('Age', age, "can't be greater than tout1", MAX_NOP);
+    if (age > MAX_AGE) {
+      console.warn('Age', age, "can't be greater than tout1", MAX_AGE);
       return;
     }
     MIN_AGE = age;
-  }
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  SetFilterFreshnessThreshold(threshold) {
-    if (threshold === undefined) return;
-    if (threshold > MIN_AGE / 2) {
-      console.log(
-        'Threshold',
-        threshold,
-        'should be lower compared to AgeThreshold'
-      );
-    }
-    MIN_NOP = threshold;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SetFilterRadius(rad) {

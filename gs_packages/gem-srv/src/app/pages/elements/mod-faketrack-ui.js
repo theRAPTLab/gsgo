@@ -67,10 +67,6 @@ let m_fakesock = null;
 let m_fakeport = 2525;
 let m_fakeaddress = `ws://${document.domain}:${m_fakeport}`;
 
-// webservice (autoid) are located here
-let m_websrvport = 3000;
-let m_websrvaddress = `http://${document.domain}:${m_websrvport}`;
-
 // flags
 let m_data_object_name_changed = false;
 
@@ -149,7 +145,6 @@ function m_AddMouseEvents(container) {
   // used to calculate deltas to apply to object group
   const o_clickHandler = e => {
     const id = e.target.getAttribute('entity-id');
-    const cx = e;
     if (id) console.log(`clicked entity-id ${id}`);
   };
 

@@ -411,6 +411,14 @@ So I need to add an addition SyncMap to the PTrack instance manager. This is whe
 * [x] update the endpoint syncmap to process raw entities alongside entityDict
 * [x] does it work? **YES**
 
+Now need to check the PTRACK algorithm for aging...it's a little finicky and requires **expansion** to the syncmap class via mapped pool
+
+Why is syncFromArray called 3 times?
+
+* once from ProcessFrame 140
+* once from GetInputs in-ptrack 67
+* once from StartTrackerVisuals in api-input 37
+
 
 
 
