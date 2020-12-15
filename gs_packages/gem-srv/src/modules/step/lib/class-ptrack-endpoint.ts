@@ -25,7 +25,7 @@ const TYPES = {
   Faketrack: 'ft'
 };
 const PRECISION = 4;
-const DBG = true;
+const DBG = false;
 
 /// GLOBAL FILTER SETTINGS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,7 +48,7 @@ export default class PTrackEndpoint {
     this.pt_url = 'ws://localhost:3030';
     this.goodEntities = new SyncMap({
       Constructor: EntityObject,
-      name: 'RawEntityList'
+      name: 'TrackEntities'
     });
     this.candidates = new Map();
     this.goodEntities.setMapFunctions({
@@ -76,8 +76,6 @@ export default class PTrackEndpoint {
       },
       // this is called if an id disappears
       shouldRemove: (eo, seen_eos) => {
-        if (eo.id === 'ft-ff0') console.log('f0', eo.age);
-
         // delete anyone who has not updated in a while
         if (eo.age > MAX_AGE) {
           if (DBG) console.log(eo.id, 'age range exceeded');

@@ -14,34 +14,14 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import PTrackEndPoint from './lib/class-ptrack-endpoint';
-import EntityObject from './lib/class-entity-object';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('IN-PTRACK', 'TagRed');
-const DBG = false;
 
 /// INITIALIZE ENTITY POOL //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PTM = new PTrackEndPoint();
-const VALID_ENTITIES = new SyncMap({
-  Constructor: EntityObject,
-  autoGrow: true,
-  name: 'GoodEntityList'
-});
-/*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
-    VALID_ENTITIES is a SyncMap that maps the raw entity data from
-    the PTrack Endpoint into stable pieces
-:*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
-VALID_ENTITIES.setMapFunctions({
-  onAdd: (raw, eo) => {
-    eo.copy(raw);
-  },
-  onUpdate: (raw, eo) => {
-    eo.x = raw.x;
-    eo.y = raw.y;
-  }
-});
 
 /// SIMPLIFIED TRACKER INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,21 +40,7 @@ export function Connect(ptrackServer) {
  *  the system
  */
 export function GetInputs(ms) {
-  const raw = PTM.GetEntities();
-  // PTM.ClearCachedEntities(); // expressly clear diction
-  // if syncFromArray and mapObjects is working correctly, don't need to
-  // clear cached entries
-  VALID_ENTITIES.syncFromArray(raw); // update deltas
-  VALID_ENTITIES.mapObjects(); // process the deltas
-  if (DBG) {
-    const { added, updated, removed } = VALID_ENTITIES.getDeltaArrays();
-    let out = '';
-    if (added.length > 0) out += `added ${added.length}  `;
-    if (updated.length > 0) out += `updated ${updated.length}  `;
-    if (removed.length > 0) out += `removed ${removed.length}  `;
-    console.log(out);
-  }
-  return VALID_ENTITIES.getMappedObjects();
+  return PTM.GetEntities(ms);
 }
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////

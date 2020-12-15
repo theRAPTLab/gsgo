@@ -17,6 +17,10 @@ import {
 } from './t-pool.d';
 import Pool from './class-pool';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
+
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_CheckConf(config: MapFunctions) {
@@ -127,12 +131,14 @@ export default class MappedPool {
     const added = [];
     sobjs.forEach(sobj => {
       if (this.pool.has(sobj.id)) {
+        // if (DBG) console.log(this.pool.name(), sobj.id, 'updated');
         updated.push(sobj);
         this.seen_sobjs.set(sobj.id, sobj);
       } else if (this.ifAdd(sobj)) {
         added.push(sobj);
+        if (DBG) console.log(this.pool.name(), sobj.id, 'added');
         this.seen_sobjs.set(sobj.id, sobj);
-      }
+      } else if (DBG) console.log(this.pool.name(), sobj.id, 'not added');
     });
     // build remove array by iterating over allocated objects
     /*/ REMOVE ARRAYS
@@ -147,7 +153,7 @@ export default class MappedPool {
       const sobjGone = !this.seen_sobjs.has(pobj.id);
       const yesRemove = this.ifRemove(pobj, this.seen_sobjs);
       if (sobjGone && yesRemove) {
-        console.warn(pobj.id, 'removed', i);
+        if (DBG) console.warn(this.pool.name(), pobj.id, 'removed');
         removed.push(pobj); // will be deleted in
       }
     });

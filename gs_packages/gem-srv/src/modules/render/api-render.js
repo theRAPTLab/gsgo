@@ -73,7 +73,7 @@ function Init(element) {
   RP_DOBJ_TO_VOBJ = new SyncMap({
     Constructor: Visual,
     autoGrow: true,
-    name: 'RP DisplayToSprite'
+    name: 'DisplayObjectToVisual'
   });
   RP_DOBJ_TO_VOBJ.setMapFunctions({
     onAdd: (dobj, vobj) => {
@@ -110,7 +110,7 @@ function Init(element) {
   RP_PTRAK_TO_VOBJ = new SyncMap({
     Constructor: Visual,
     autoGrow: true,
-    name: 'RP TrackertoSprite'
+    name: 'TrackEntityToVisual'
   });
   const SCALE = 200;
   RP_PTRAK_TO_VOBJ.setMapFunctions({
@@ -134,7 +134,7 @@ function Init(element) {
   RP_ANNOT_TO_VOBJ = new SyncMap({
     Constructor: Visual,
     autoGrow: true,
-    name: 'RP AnnoteToSprite'
+    name: 'InputEventToVisual'
   });
   RP_ANNOT_TO_VOBJ.setMapFunctions({});
   // make sure datacore has access to it for pure data manipulation

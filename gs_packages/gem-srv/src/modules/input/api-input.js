@@ -11,6 +11,7 @@ import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM-INPUT', 'TagRed');
+const DBG = false;
 
 /// CHEESE TESTING ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,12 +39,9 @@ export function StartTrackerVisuals() {
     const m_entities = PTRACK.GetInputs(500);
     let out = [];
     /** CHEESE TESTING HERE **/
-    if (m_entities.length > 0) out.push('entity.x', m_entities[0].x);
-    else out.push('no entity');
-    out.push('length', m_entities.length);
     out.push(...OutSyncResults(RP.syncFromArray(m_entities)));
     RP.mapObjects(); // note that this has to be disabled in api-render
-    // console.log(...out);
+    if (DBG) console.log(...out);
   }, INTERVAL);
 }
 

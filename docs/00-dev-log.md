@@ -415,13 +415,13 @@ Now need to check the PTRACK algorithm for aging...it's a little finicky and req
 
 Why is syncFromArray called 3 times?
 
-* once from ProcessFrame 140
-* once from GetInputs in-ptrack 67
-* once from StartTrackerVisuals in api-input 37
+* once from ProcessFrame ptrack-endpoint 140: **good** raw to entities
+* once from GetInputs in-ptrack 67: VALID_ENTITIES.syncFromArray **removed** (redundant)
+* once from StartTrackerVisuals in api-input 37: RP = GetTrackerRP() **good** entities to visuals
 
+Now it's being called for two separate RPs, not three. 
 
-
-
+Also the add/remove logic is working again.
 
 
 
