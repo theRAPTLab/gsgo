@@ -188,6 +188,23 @@ function m_AddMouseEvents(container) {
     let x = mx - ox1 - cx; // relative to container
     let y = my - oy1 - cy;
     dragElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+
+    // handle group dragging
+    if (m_FAKEVIEW.state.grouped) {
+      for (let i = 0; i < m_entities.length; i++) {
+        const fdiv = m_entities[i];
+        if (fdiv !== dragElement) {
+          const divRect = fdiv.getBoundingClientRect();
+          // e is the element being dragged
+          // x is the starting point in coord relative to container
+          // divRect.left is the coordinate of the fdiv
+          let dx = divRect.left - e.clientX; // distance between drag and fdiv
+          // console.log('fdiv', divRect.x, 'dx', dx);
+          // not sure why this isn't working
+          //  fdiv.style.transform = `translate3d(${cx}px, ${0}px, 0)`;
+        }
+      }
+    }
   };
 
   const o_dragend = () => {
@@ -268,7 +285,6 @@ function Initialize(componentInstance) {
   // test m_entities for bursting
   for (let j = 0; j < BURST_NUM; j++) {
     const child = document.createElement('div');
-    child.classList.add('entity');
     child.classList.add('testentity');
     child.setAttribute('entity-id', `burst${j}`);
     m_container.appendChild(child);
@@ -429,21 +445,24 @@ function BurstStart() {
   let test_interval = BURST_INT;
   m_burst_end = m_current_time + test_interval;
   console.log('TEST BURST', `${test_interval}ms @`, m_current_time);
-  // $.each(m_testentities, function (index, div) {
-  m_testentities.forEach(div => {
+
+  // iterate over HTMLCollection (does not support forEach)
+  for (let i = 0; i < m_testentities.length; i++) {
+    const div = m_testentities[i];
     const x = BURST_RAD - Math.random() * BURST_RAD;
     const y = BURST_RAD - Math.random() * BURST_RAD;
     m_Translate(div, x, y);
     div.style.display = 'block';
-  });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function BurstStop() {
   console.log('TEST BURST COMPLETE @', `${m_current_time}ms`);
-  // $.each(m_testentities, function (index, div) {
-  m_testentities.forEach(div => {
+  // iterate over HTMLCollection (does not support forEach)
+  for (let i = 0; i < m_testentities.length; i++) {
+    const div = m_testentities[i];
     div.style.display = 'none';
-  });
+  }
   m_burst_end = 0;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

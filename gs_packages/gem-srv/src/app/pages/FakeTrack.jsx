@@ -36,9 +36,8 @@ class FakeTrack extends React.Component {
     // establish state here
     // which is changed through setState() call of React.Component
     this.state = {
-      num_entities: 1,
+      num_entities: 2,
       prefix: 'f',
-      grouped: false,
       jitter: 1,
       burst: false,
       status: 'entity status',
@@ -126,15 +125,6 @@ class FakeTrack extends React.Component {
                 onChange={this.handleInputChange}
               />{' '}
               Prefix
-            </label>
-            <label>
-              <input
-                name="grouped"
-                type="checkbox"
-                checked={this.state.grouped}
-                onChange={this.handleInputChange}
-              />{' '}
-              Group
             </label>
             <label>
               <input
