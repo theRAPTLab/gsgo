@@ -1,0 +1,44 @@
+{
+  "frames": {
+    "bee_fly0.png": {
+      "frame": { "x": 89, "y": 1, "w": 77, "h": 112 },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 16, "y": 6, "w": 77, "h": 112 },
+      "sourceSize": { "w": 128, "h": 128 }
+    },
+    "bee_fly1.png": {
+      "frame": { "x": 1, "y": 1, "w": 86, "h": 95 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 16, "y": 16, "w": 86, "h": 95 },
+      "sourceSize": { "w": 128, "h": 128 }
+    },
+    "bee_fly2.png": {
+      "frame": { "x": 1, "y": 98, "w": 77, "h": 114 },
+      "rotated": true,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 16, "y": 5, "w": 77, "h": 114 },
+      "sourceSize": { "w": 128, "h": 128 }
+    },
+    "bee_fly3.png": {
+      "frame": { "x": 117, "y": 80, "w": 77, "h": 92 },
+      "rotated": false,
+      "trimmed": true,
+      "spriteSourceSize": { "x": 16, "y": 17, "w": 77, "h": 92 },
+      "sourceSize": { "w": 128, "h": 128 }
+    }
+  },
+  "animations": {
+    "bee_fly": ["bee_fly0.png", "bee_fly1.png", "bee_fly2.png", "bee_fly3.png"]
+  },
+  "meta": {
+    "app": "https://www.codeandweb.com/texturepacker",
+    "version": "1.0",
+    "image": "bee_fly.png",
+    "format": "RGBA8888",
+    "size": { "w": 202, "h": 176 },
+    "scale": "1",
+    "smartupdate": "$TexturePacker:SmartUpdate:d25dc282b4aa45c89e46eb255b8783af:59c67237993a0f146e558a4cb3a8d79d:fe2863b8a853cdc79adaea0380cac622$"
+  }
+}

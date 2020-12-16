@@ -9,6 +9,16 @@
       "assetId": 2,
       "assetName": "bunny.json",
       "assetUrl": "static/sprites/bunny.json"
+    },
+    {
+      "assetId": 3,
+      "assetName": "bee_walk.json",
+      "assetUrl": "static/sprites/bee_walk.json"
+    },
+    {
+      "assetId": 4,
+      "assetName": "bee_fly.json",
+      "assetUrl": "static/sprites/bee_fly.json"
     }
   ]
 }
