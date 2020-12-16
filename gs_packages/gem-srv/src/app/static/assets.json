@@ -19,6 +19,26 @@
       "assetId": 4,
       "assetName": "bee_fly.json",
       "assetUrl": "static/sprites/bee_fly.json"
+    },
+    {
+      "assetId": 5,
+      "assetName": "hive.json",
+      "assetUrl": "static/sprites/hive.json"
+    },
+    {
+      "assetId": 6,
+      "assetName": "flower.json",
+      "assetUrl": "static/sprites/flower.json"
+    },
+    {
+      "assetId": 7,
+      "assetName": "fish.json",
+      "assetUrl": "static/sprites/fish.json"
+    },
+    {
+      "assetId": 8,
+      "assetName": "algae.json",
+      "assetUrl": "static/sprites/algae.json"
     }
   ]
 }

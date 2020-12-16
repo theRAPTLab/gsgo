@@ -1,0 +1,20 @@
+{"frames": {
+
+"algae.png":
+{
+	"frame": {"x":1,"y":1,"w":16,"h":16},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":16,"h":16},
+	"sourceSize": {"w":16,"h":16}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "algae.png",
+	"format": "RGBA8888",
+	"size": {"w":18,"h":18},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:e0627ac8fc11720aff57538076f3440c:282f473f94b8a09e67e39a802256026b:f412481ae2296be08e570b6e80c987cc$"
+}
+}
