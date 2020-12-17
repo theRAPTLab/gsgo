@@ -11,6 +11,7 @@ const Login = React.lazy(() => import('../pages/Login'));
 const Model = React.lazy(() => import('../pages/Model'));
 const MissionControl = React.lazy(() => import('../pages/MissionControl'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
+const Viewer = React.lazy(() => import('../pages/Viewer'));
 
 /// LAZY COMPONENTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -57,6 +58,11 @@ export const LazyMissionControl = () => (
 export const LazyScriptEditor = () => (
   <Suspense fallback={<div>loading</div>}>
     <ScriptEditor />
+  </Suspense>
+);
+export const LazyViewer = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <Viewer />
   </Suspense>
 );
 

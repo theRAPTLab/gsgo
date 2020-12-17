@@ -73,6 +73,7 @@ class Home extends React.Component {
             <NavItem route="model">model</NavItem>
             <NavItem route="missioncontrol">mission control</NavItem>
             <NavItem route="scripteditor">script editor</NavItem>
+            <NavItem route="viewer">viewer</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
         </div>

@@ -19,6 +19,7 @@ import {
   LazyModel,
   LazyMissionControl,
   LazyScriptEditor,
+  LazyViewer,
   LazyHome,
   LazyXGUI
 } from './SystemRoutes';
@@ -68,6 +69,9 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/scripteditor">
           <LazyScriptEditor />
+        </Route>
+        <Route path="/app/viewer">
+          <LazyViewer />
         </Route>
         <Route exact path="/app">
           <LazyHome />
