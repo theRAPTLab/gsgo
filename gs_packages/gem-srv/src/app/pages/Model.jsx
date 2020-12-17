@@ -11,9 +11,7 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelLogin from './components/PanelLogin';
-import PanelSelectSimulation from './components/PanelSelectSimulation';
-import PanelSimViewer from './components/PanelSimViewer';
+import PanelSelect from './components/PanelSelect';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -28,26 +26,23 @@ const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const panelConfig = new Map();
-panelConfig.set('login', '100% 0 0'); // columns
-panelConfig.set('selectSimulation', '100% 0 0'); // columns
-panelConfig.set('sim', '15% auto 100px'); // columns
+panelConfig.set('select', '20% auto 100px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
-class Login extends React.Component {
+class Model extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'login'
+      panelConfiguration: 'select'
     };
 
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    this.OnModelSelectClick = this.OnModelSelectClick.bind(this);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP LOGIN';
+    document.title = 'GEMSTEP MODEL';
     // start URSYS
     UR.SystemConfig({ autoRun: true });
   }
@@ -65,12 +60,6 @@ class Login extends React.Component {
     this.setState({
       panelConfiguration: id
     });
-  }
-
-  OnModelSelectClick() {
-    // This should request a model load through URSYS
-    // HACK for now to go to main select screen
-    window.location = '/app/model';
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -100,19 +89,11 @@ class Login extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          {panelConfiguration === 'login' && (
-            <PanelLogin id="login" onClick={this.OnPanelClick} />
-          )}
-          {panelConfiguration === 'selectSimulation' && (
-            <PanelSelectSimulation
-              id="selectSimulation"
-              onClick={this.OnModelSelectClick}
-            />
+          {panelConfiguration === 'select' && (
+            <PanelSelect id="select" onClick={this.OnPanelClick} />
           )}
         </div>
-        <div id="root-renderer" className={classes.main}>
-          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
-        </div>
+        <div id="root-renderer" className={classes.main} />
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
@@ -128,4 +109,4 @@ class Login extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(Login);
+export default withStyles(useStylesHOC)(Model);

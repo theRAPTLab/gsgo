@@ -8,6 +8,7 @@ const FakeTrack = React.lazy(() => import('../pages/FakeTrack'));
 const XGUI = React.lazy(() => import('../src-xgui/App'));
 const Compiler = React.lazy(() => import('../pages/Compiler'));
 const Login = React.lazy(() => import('../pages/Login'));
+const Model = React.lazy(() => import('../pages/Model'));
 const MissionControl = React.lazy(() => import('../pages/MissionControl'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 
@@ -41,6 +42,11 @@ export const LazyCompiler = () => (
 export const LazyLogin = () => (
   <Suspense fallback={<div>loading</div>}>
     <Login />
+  </Suspense>
+);
+export const LazyModel = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <Model />
   </Suspense>
 );
 export const LazyMissionControl = () => (

@@ -16,6 +16,7 @@ import {
   LazyFakeTrack,
   LazyCompiler,
   LazyLogin,
+  LazyModel,
   LazyMissionControl,
   LazyScriptEditor,
   LazyHome,
@@ -58,6 +59,9 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/login">
           <LazyLogin />
+        </Route>
+        <Route path="/app/model">
+          <LazyModel />
         </Route>
         <Route path="/app/missioncontrol">
           <LazyMissionControl />

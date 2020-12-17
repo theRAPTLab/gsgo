@@ -74,7 +74,7 @@ class MissionControl extends React.Component {
     this.state = {
       panelConfiguration: 'map'
     };
-    this.OnHomeClick = this.OnHomeClick.bind(this);
+    this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
   }
 
@@ -92,8 +92,8 @@ class MissionControl extends React.Component {
     console.log('componentWillUnmount');
   }
 
-  OnHomeClick() {
-    window.location = '/app/login';
+  OnModelClick() {
+    window.location = '/app/model';
   }
 
   OnPanelClick(id) {
@@ -126,8 +126,8 @@ class MissionControl extends React.Component {
             <span style={{ fontSize: '32px' }}>MISSION CONTROL</span> UGLY
             DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnHomeClick}>
-            HOME
+          <button type="button" onClick={this.OnModelClick}>
+            MODEL
           </button>
         </div>
         <div

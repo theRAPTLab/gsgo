@@ -70,6 +70,7 @@ class Home extends React.Component {
             <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
             <NavItem route="login">login</NavItem>
+            <NavItem route="model">model</NavItem>
             <NavItem route="missioncontrol">mission control</NavItem>
             <NavItem route="scripteditor">script editor</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>

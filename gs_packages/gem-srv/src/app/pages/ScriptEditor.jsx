@@ -139,7 +139,7 @@ class ScriptEditor extends React.Component {
       panelConfiguration: 'select'
     };
     // bind
-    this.OnHomeClick = this.OnHomeClick.bind(this);
+    this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectAgent = this.OnSelectAgent.bind(this);
     // hooks
@@ -161,8 +161,8 @@ class ScriptEditor extends React.Component {
     UR.UnRegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
   }
 
-  OnHomeClick() {
-    window.location = '/app/login';
+  OnModelClick() {
+    window.location = '/app/model';
   }
 
   OnPanelClick(id) {
@@ -204,8 +204,8 @@ class ScriptEditor extends React.Component {
             <span style={{ fontSize: '32px' }}>SCRIPT EDITOR</span> UGLY DEVELOPER
             MODE
           </div>
-          <button type="button" onClick={this.OnHomeClick}>
-            HOME
+          <button type="button" onClick={this.OnModelClick}>
+            MODEL
           </button>
         </div>
         <div id="console-left" className={classes.left}>

@@ -161,6 +161,7 @@ class PanelInstances extends React.Component {
                   flexDirection: 'row',
                   flexWrap: 'wrap'
                 }}
+                key={a.agent}
               >
                 {a.instances.map(i => (
                   <div
