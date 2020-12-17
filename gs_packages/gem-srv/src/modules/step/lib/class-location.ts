@@ -12,7 +12,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { Matrix4 } from 'step/lib/t-tracking';
+import { Matrix4 } from './t-tracking';
 
 export class LocationTransform {
   sx: number;

@@ -14,17 +14,33 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
-
-/// URSYS MODULES /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// URSYS LIBRARIES ///////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
 import SETTINGS from 'config/app.settings';
+/// MATERIAL UI LIBRARIES /////////////////////////////////////////////////////
+import theme from 'modules/style/theme';
+import CssBaseline from '@material-ui/core/CssBaseline';
+import { create } from 'jss';
+import extend from 'jss-plugin-extend';
+import {
+  StylesProvider,
+  jssPreset,
+  ThemeProvider
+} from '@material-ui/core/styles';
+/// MAIN APP SHELL ////////////////////////////////////////////////////////////
 import SystemShell from './SystemShell';
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
+
+/// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// from https://material-ui.com/styles/advanced/#jss-plugins
+const jss = create({
+  plugins: [...jssPreset().plugins, extend()]
+});
 
 /// URSYS STARTUP /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,9 +63,14 @@ function Init() {
       await UR.SystemBoot({ netProps });
       // start React
       ReactDOM.render(
-        <BrowserRouter forceRefresh>
-          <SystemShell />
-        </BrowserRouter>,
+        <StylesProvider jss={jss}>
+          <BrowserRouter forceRefresh>
+            <ThemeProvider theme={theme}>
+              <CssBaseline />
+              <SystemShell />
+            </ThemeProvider>
+          </BrowserRouter>
+        </StylesProvider>,
         document.getElementById('app-container'),
         () => {
           UR.addConsoleTools();

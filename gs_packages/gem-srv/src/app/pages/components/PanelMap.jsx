@@ -1,6 +1,6 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../page-xui-styles';
+import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
@@ -8,7 +8,7 @@ class PanelMap extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'NETWORK / DEVICES',
+      title: 'NETWORK / DEVICES (FAKE DATA)',
       simulationName: 'Aquatic Ecosystems'
     };
   }

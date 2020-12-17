@@ -16,9 +16,9 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../util/prism_extended';
-import { CodeJar } from '../../util/codejar';
-import '../../util/prism_extended.css';
+import * as Prism from '../../lib/vendor/prism_extended';
+import { CodeJar } from '../../lib/vendor/codejar';
+import '../../lib/vendor/prism_extended.css';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelMap from './components/PanelMap';
@@ -31,7 +31,7 @@ import PanelInstances from './components/PanelInstances';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './page-xui-styles';
+import { useStylesHOC } from './elements/page-xui-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,7 +74,7 @@ class MissionControl extends React.Component {
     this.state = {
       panelConfiguration: 'map'
     };
-
+    this.OnHomeClick = this.OnHomeClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
   }
 
@@ -90,6 +90,10 @@ class MissionControl extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
+  }
+
+  OnHomeClick() {
+    window.location = '/app/login';
   }
 
   OnPanelClick(id) {
@@ -116,10 +120,15 @@ class MissionControl extends React.Component {
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 3' }}
+          style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
-          <span style={{ fontSize: '32px' }}>MISSION CONTROL</span> UGLY DEVELOPER
-          MODE
+          <div style={{ flexGrow: '1' }}>
+            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span> UGLY
+            DEVELOPER MODE
+          </div>
+          <button type="button" onClick={this.OnHomeClick}>
+            HOME
+          </button>
         </div>
         <div
           id="console-left"
@@ -132,13 +141,13 @@ class MissionControl extends React.Component {
             onClick={this.OnPanelClick}
           />
           <PanelInstances id="instances" />
-          <PanelInspector isActive />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
           <PanelPlayback id="playback" />
+          <PanelInspector isActive />
         </div>
         <div
           id="console-bottom"

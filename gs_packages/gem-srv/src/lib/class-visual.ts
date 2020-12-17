@@ -67,7 +67,7 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Visual implements IVisual, IPoolable, IActable {
   // class
-  refId?: number;
+  refId?: any;
   // visual
   sprite: PIXI.Sprite;
   isSelected: boolean;
@@ -75,8 +75,8 @@ class Visual implements IVisual, IPoolable, IActable {
   isGrouped: boolean;
   isCaptive: boolean;
   // poolable
-  id: number;
-  _pool_id: number;
+  id: any;
+  _pool_id: any;
   // sprite
   root: PIXI.Container;
 

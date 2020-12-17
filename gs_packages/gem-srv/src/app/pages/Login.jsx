@@ -20,7 +20,7 @@ import PanelSimViewer from './components/PanelSimViewer';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './page-xui-styles';
+import { useStylesHOC } from './elements/page-xui-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -80,11 +80,10 @@ function m_HandleRegistrationMessage(msgEvent) {
   // (4) network is initialized
   if (typeof m_options.success === 'function') m_options.success();
   // (5) also update window.URSESSION with UADDR
-  if (window.URSESSION) {
-    if (DBG.reg) console.log('updating URSESSION with registration data');
-    window.URSESSION.CLIENT_UADDR = UADDR;
-    window.URSESSION.USRV_UADDR = SERVER_UADDR;
-  }
+  if (!window.URSESSION) window.URSESSION = {};
+  if (DBG.reg) console.log('updating URSESSION with registration data');
+  window.URSESSION.CLIENT_UADDR = UADDR;
+  window.URSESSION.USRV_UADDR = SERVER_UADDR;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dispatch incoming event object from the network.
@@ -237,6 +236,26 @@ NETWORK.IsStandaloneMode = () => {
  *  This can be used as quick way to enable admin-only features.
  */
 NETWORK.IsLocalhost = () => NetPacket.IsLocalhost();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NETWORK.ServerIP = () => {
+  const { host } = URSession.GetNetBroker();
+  return host;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NETWORK.URNetPort = () => {
+  const { port } = URSession.GetNetBroker();
+  return port;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NETWORK.WebServerPort = () => window.location.port || 80;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NETWORK.ConnectionString = () => {
+  const { host } = URSession.GetNetBroker();
+  const port = window.location.port;
+  let str = `appserver at ${host}`;
+  if (port) str += `:${port}`;
+  return str;
+};
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

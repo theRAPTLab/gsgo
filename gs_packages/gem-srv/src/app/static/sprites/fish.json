@@ -1,0 +1,20 @@
+{"frames": {
+
+"fish.png":
+{
+	"frame": {"x":1,"y":1,"w":64,"h":48},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":0,"y":7,"w":64,"h":48},
+	"sourceSize": {"w":64,"h":64}
+}},
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "fish.png",
+	"format": "RGBA8888",
+	"size": {"w":66,"h":50},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:7a6cd27f8e5b711d19051985fd28eaef:423bfea2a7c2c2193b49095b48d4c9ed:8d6d90e8f48b9264619fb7c7934eace4$"
+}
+}

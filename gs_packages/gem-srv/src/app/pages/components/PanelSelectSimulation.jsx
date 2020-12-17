@@ -1,6 +1,6 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../page-xui-styles';
+import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
@@ -45,7 +45,10 @@ class PanelSelectSimulation extends React.Component {
             }}
           >
             <div className={classes.instructions}>
-              <p>Select a simulation to work on:</p>
+              <p>
+                Select a simulation to work on: (FAKE DATA -- Click any button to
+                select the one generic model we current support)
+              </p>
             </div>
             {models.map(m => (
               <button

@@ -1,7 +1,7 @@
 import React from 'react';
 import * as DATACORE from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../page-xui-styles';
+import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 

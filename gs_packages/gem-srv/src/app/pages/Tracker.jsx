@@ -12,13 +12,14 @@ import clsx from 'clsx';
 // SELECT RUNTIME MODULES FOR APP
 import * as RENDERER from 'modules/render/api-render';
 import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as INPUT from 'modules/input/api-input';
 //
 import UR from '@gemstep/ursys/client';
-import { useStylesHOC } from './page-styles';
+import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('Tracker', 'TagBlue');
+const PR = UR.PrefixUtil('TRACKER', 'TagGreen');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 
@@ -33,8 +34,8 @@ UR.SystemHook(
         await GLOBAL.LoadAssets('static/assets.json');
         ASSETS_LOADED = true;
         console.log(...PR('ASSETS LOADED'));
+        resolve();
       })();
-      resolve();
     })
 );
 
@@ -83,10 +84,19 @@ class Tracker extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>
+          <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>{' '}
+          {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          console-left
+          USE SHIFT-CLICK TO OPEN LINKS IN NEW WINDOW in CHROME
+          <br />
+          <a href="/app/compiler" target="_blank">
+            spawn compiler
+          </a>
+          <br />
+          <a href="/app/faketrack" target="_blank">
+            spawn faketrack
+          </a>
         </div>
         <div id="root-renderer" className={classes.main} />
         <div id="console-right" className={clsx(classes.cell, classes.right)}>

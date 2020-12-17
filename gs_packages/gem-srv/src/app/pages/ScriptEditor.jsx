@@ -16,9 +16,9 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../util/prism_extended';
-import { CodeJar } from '../../util/codejar';
-import '../../util/prism_extended.css';
+import * as Prism from '../../lib/vendor/prism_extended';
+import { CodeJar } from '../../lib/vendor/codejar';
+import '../../lib/vendor/prism_extended.css';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
@@ -30,7 +30,7 @@ import PanelInspector from './components/PanelInspector';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './page-xui-styles';
+import { useStylesHOC } from './elements/page-xui-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +43,92 @@ panelConfig.set('select', '50% auto 0px'); // columns
 panelConfig.set('script', '50% auto 0px'); // columns
 panelConfig.set('sim', '25% auto 0px'); // columns
 
+/// DUMMY DATA ////////////////////////////////////////////////////////////////
+///
+/// This should be loaded from the db
+/// Hacked in for now
+const agents = [
+  { id: 'fish', label: 'Fish' },
+  { id: 'algae', label: 'Algae' },
+  { id: 'lightbeam', label: 'Lightbeam' },
+  { id: 'poop', label: 'Poop', editor: 'UADDR01: Ben' }
+];
+const scripts = [
+  {
+    id: 'fish',
+    script: `# BLUEPRINT Fish
+# PROGRAM DEFINE
+addProp frame Number 3
+useFeature Movement
+# PROGRAM UPDATE
+setProp skin 'bunny.json'
+featureCall Movement jitterPos -5 5
+# PROGRAM EVENT
+onEvent Tick [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
+  ]]
+  setProp 'x'  0
+  setProp 'y'  0
+]]
+# PROGRAM CONDITION
+when Bee sometest [[
+  // dbgOut SingleTest
+]]
+when Bee sometest Bee [[
+  // dbgOut PairTest
+]]
+`
+  },
+  {
+    id: 'algae',
+    script: `# BLUEPRINT Algae
+# PROGRAM DEFINE
+addProp frame Number 3
+useFeature Movement
+# PROGRAM UPDATE
+setProp skin 'bunny.json'
+featureCall Movement jitterPos -5 5
+# PROGRAM EVENT
+onEvent Tick [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
+  ]]
+  setProp 'x'  0
+  setProp 'y'  0
+]]
+# PROGRAM CONDITION
+`
+  },
+  {
+    id: 'lightbeam',
+    script: `# BLUEPRINT Lightbeam
+# PROGRAM DEFINE
+addProp frame Number 3
+useFeature Movement
+# PROGRAM UPDATE
+setProp skin 'bunny.json'
+featureCall Movement jitterPos -5 5
+# PROGRAM EVENT
+onEvent Tick [[
+  // happens every second, and we check everyone
+  ifExpr {{ agent.prop('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    dbgOut 'my tock'
+  ]]
+  setProp 'x'  0
+  setProp 'y'  0
+]]
+# PROGRAM CONDITION
+`
+  },
+  { id: 'poop', script: '// nada' }
+];
+
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
@@ -52,8 +138,12 @@ class ScriptEditor extends React.Component {
     this.state = {
       panelConfiguration: 'select'
     };
-
+    // bind
+    this.OnHomeClick = this.OnHomeClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.OnSelectAgent = this.OnSelectAgent.bind(this);
+    // hooks
+    UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
   }
 
   componentDidMount() {
@@ -68,6 +158,11 @@ class ScriptEditor extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
+    UR.UnRegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+  }
+
+  OnHomeClick() {
+    window.location = '/app/login';
   }
 
   OnPanelClick(id) {
@@ -77,12 +172,21 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  OnSelectAgent(id) {
+    console.log('OnSelectAgent', id);
+    this.setState({
+      panelConfiguration: 'script',
+      // HACK: This should be retrieving the script from the server
+      script: scripts.find(s => s.id === id).script
+    });
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
-    const { panelConfiguration } = this.state;
+    const { panelConfiguration, script } = this.state;
     const { classes } = this.props;
     return (
       <div
@@ -94,30 +198,31 @@ class ScriptEditor extends React.Component {
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 3' }}
+          style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
-          <span style={{ fontSize: '32px' }}>SCRIPT EDITOR</span> UGLY DEVELOPER
-          MODE
-          <span
-            style={{ textAlign: 'right', display: 'inline-block', width: '100%' }}
-          >
-            <a href="/app">HOME</a>
-          </span>
+          <div style={{ flexGrow: '1' }}>
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR</span> UGLY DEVELOPER
+            MODE
+          </div>
+          <button type="button" onClick={this.OnHomeClick}>
+            HOME
+          </button>
         </div>
         <div id="console-left" className={classes.left}>
           {panelConfiguration === 'select' && (
-            <PanelSelectAgent id="select" onClick={this.OnPanelClick} />
+            <PanelSelectAgent
+              id="select"
+              agents={agents}
+              onClick={this.OnPanelClick}
+            />
           )}
           {panelConfiguration === 'script' && (
-            <PanelScript id="script" onClick={this.OnPanelClick} />
+            <PanelScript
+              id="script"
+              script={script}
+              onClick={this.OnPanelClick}
+            />
           )}
-          <div className={classes.instructions}>
-            <p>Script text changes are automatically compiled and run?</p>
-            <p>
-              Instance is automatically created and controllable via faketrack in
-              the Sim view. Also auto-selected as the first inspector.
-            </p>
-          </div>
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />

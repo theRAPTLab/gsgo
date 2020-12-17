@@ -12,8 +12,8 @@
  *  The Agent, Prop, and Feature classes implement this interface.
  */
 export interface IScopeable {
-  id: number;
-  refId?: number;
+  id: any;
+  refId?: any;
   meta: { type: symbol; name?: string };
   method: (name: string, ...args: any) => any;
   addProp: (name: string, gv: IScopeable) => IScopeable;

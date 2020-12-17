@@ -8,11 +8,11 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../../util/prism_extended';
-import { CodeJar } from '../../../util/codejar';
-import '../../../util/prism_extended.css';
+import * as Prism from '../../../lib/vendor/prism_extended';
+import { CodeJar } from '../../../lib/vendor/codejar';
+import '../../../lib/vendor/prism_extended.css';
 
-import { useStylesHOC } from '../page-xui-styles';
+import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
@@ -22,6 +22,9 @@ const PR = UR.PrefixUtil('PANELSCRIPT');
 const DBG = true;
 
 /// DEMO SCRIPT ///////////////////////////////////////////////////////////////
+/// These demo scripts are for testing only.
+/// They're not currently being used.  Scripts are directly loaded via
+/// props from ScriptEditor.
 
 // Script text for testing Prism highlighting and scrolling
 const highlighting_test_script = `# BLUEPRINT Bee
@@ -128,8 +131,8 @@ class PanelScript extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Script',
-      script: demoscript
+      title: 'Script'
+      // script: demoscript // Replace the prop `script` with this to test
     };
     // codejar
     this.jarRef = React.createRef();
@@ -158,6 +161,12 @@ class PanelScript extends React.Component {
     });
   }
 
+  componentWillUnmount() {
+    console.error(
+      'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
+    );
+  }
+
   hackSendText() {
     const text = this.jar.toString();
     UR.RaiseMessage('NET:HACK_RECEIVE_TEXT', { text });
@@ -173,8 +182,8 @@ class PanelScript extends React.Component {
   }
 
   render() {
-    const { title, script } = this.state;
-    const { id, onClick, classes } = this.props;
+    const { title } = this.state;
+    const { id, script, onClick, classes } = this.props;
 
     const BackBtn = (
       <button

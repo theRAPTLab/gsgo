@@ -16,16 +16,16 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
-import * as Prism from '../../util/prism';
-import { CodeJar } from '../../util/codejar';
-import '../../util/prism.css';
+import * as Prism from '../../lib/vendor/prism';
+import { CodeJar } from '../../lib/vendor/codejar';
+import '../../lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 // import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
-import { useStylesHOC } from './page-styles';
+import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

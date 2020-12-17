@@ -1,6 +1,7 @@
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
-import { useStylesHOC } from '../page-xui-styles';
+import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
@@ -8,15 +9,10 @@ class PanelSelectAgent extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Agent',
-      options: [
-        // Dummy Data
-        { id: 'fish', label: 'Fish', editor: 'UADDR01: Joshua' },
-        { id: 'algae', label: 'Algae' },
-        { id: 'lightbeam', label: 'Lightbeam', editor: 'UADDR01: Noel' }
-      ]
+      title: 'Select Agent'
     };
     this.onClick = this.onClick.bind(this);
+    this.OnScriptClick = this.OnScriptClick.bind(this);
   }
 
   onClick(id) {
@@ -26,9 +22,13 @@ class PanelSelectAgent extends React.Component {
     onClick('script');
   }
 
+  OnScriptClick(id) {
+    UR.RaiseMessage('HACK_SELECT_AGENT', id);
+  }
+
   render() {
-    const { title, options } = this.state;
-    const { id, isActive, onClick, classes } = this.props;
+    const { title } = this.state;
+    const { id, isActive, agents, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -38,27 +38,27 @@ class PanelSelectAgent extends React.Component {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-around',
-              alignContent: 'center',
-              width: '200px',
+              width: '300px',
               padding: '30px'
             }}
           >
-            {options.map(m => (
+            {agents.map(m => (
               <div key={m.id}>
                 <button
                   type="button"
                   disabled={m.editor !== undefined}
+                  style={{ width: '300px' }}
                   className={
                     m.editor
                       ? `${classes.button} ${classes.buttonDisabled}`
                       : classes.button
                   }
-                  onClick={() => this.onClick(m.id)}
+                  onClick={() => this.OnScriptClick(m.id)}
                 >
                   {m.label}
                 </button>
                 <div className={classes.instructions}>
-                  {m.editor ? `EDITING: ${m.editor}` : ''}
+                  {m.editor ? `Checked out by ${m.editor}` : ''}
                   <br />
                   <br />
                 </div>
