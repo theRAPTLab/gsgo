@@ -1,10 +1,19 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  PanelScript - Script Editing and Highlighting
+
+  This uses `prism` to highlight gemscript.
+  * We extend the javascript highlighting to add highlighting
+    for gemscript keywords and data types.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
@@ -21,8 +30,8 @@ import PanelChrome from './PanelChrome';
 const PR = UR.PrefixUtil('PANELSCRIPT');
 const DBG = true;
 
-/// DEMO SCRIPT ///////////////////////////////////////////////////////////////
-/// These demo scripts are for testing only.
+/// TEST SCRIPT ///////////////////////////////////////////////////////////////
+/// These demo scripts are for testing the highlighting scheme only.
 /// They're not currently being used.  Scripts are directly loaded via
 /// props from ScriptEditor.
 

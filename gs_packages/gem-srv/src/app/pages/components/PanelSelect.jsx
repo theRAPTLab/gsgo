@@ -14,7 +14,7 @@ class PanelSelect extends React.Component {
         { id: 'missioncontrol', label: 'Mission Control' },
         { id: 'scripteditor', label: 'Edit Script' },
         { id: 'faketrack', label: 'Fake Track' },
-        { id: 'tracker', label: 'View-only' }
+        { id: 'viewer', label: 'View-only' }
       ]
     };
     this.onClick = this.onClick.bind(this);

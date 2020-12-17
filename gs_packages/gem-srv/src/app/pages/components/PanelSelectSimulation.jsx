@@ -25,7 +25,7 @@ class PanelSelectSimulation extends React.Component {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     const { onClick } = this.props;
-    onClick('select');
+    onClick('select'); // Tell Login panel to show Panelselect
   }
 
   render() {
@@ -46,8 +46,9 @@ class PanelSelectSimulation extends React.Component {
           >
             <div className={classes.instructions}>
               <p>
-                Select a simulation to work on: (FAKE DATA -- Click any button to
-                select the one generic model we current support)
+                Select a simulation to work on:
+                <br />
+                (FAKE DATA -- Click any button to view the model)
               </p>
             </div>
             {models.map(m => (

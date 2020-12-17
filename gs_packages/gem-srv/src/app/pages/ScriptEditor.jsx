@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Compiler - Script Parsing and Compiling
+  ScriptEditor - Script Editing
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -9,16 +9,6 @@ import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
-
-/// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../lib/vendor/prism_extended';
-import { CodeJar } from '../../lib/vendor/codejar';
-import '../../lib/vendor/prism_extended.css';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
@@ -44,6 +34,8 @@ panelConfig.set('script', '50% auto 0px'); // columns
 panelConfig.set('sim', '25% auto 0px'); // columns
 
 /// DUMMY DATA ////////////////////////////////////////////////////////////////
+///
+/// This dummy code is passed to PanelScript when an agent is selected.
 ///
 /// This should be loaded from the db
 /// Hacked in for now
@@ -139,10 +131,11 @@ class ScriptEditor extends React.Component {
       panelConfiguration: 'select'
     };
     // bind
-    this.OnHomeClick = this.OnModelClick.bind(this);
+    this.OnModelClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectAgent = this.OnSelectAgent.bind(this);
     // hooks
+    // Sent by PanelSelectAgent
     UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
   }
 

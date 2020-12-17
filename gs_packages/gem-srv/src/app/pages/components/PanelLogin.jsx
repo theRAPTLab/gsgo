@@ -32,13 +32,21 @@ class PanelLogin extends React.Component {
     const { title, username } = this.state;
     const { id, isActive, classes } = this.props;
 
-    const onClick = () => {
+    const onPanelChromeClick = () => {
       // To be implemented
+      // Usually this sends a message to this.props.onClick
+      // to reconfigure layout panels, but probably not
+      // needed for Login
       console.log('login');
     };
 
     return (
-      <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
+      <PanelChrome
+        id={id}
+        title={title}
+        isActive={isActive}
+        onClick={onPanelChromeClick}
+      >
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <div
             style={{

@@ -1,7 +1,10 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Compiler - Script Parsing and Compiling
+  Mission Control - Teacher/Admin/Projector interface
+
+  * Manage network devices
+  * Control simulation playback
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,11 +17,6 @@ import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
-
-/// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
-import * as Prism from '../../lib/vendor/prism_extended';
-import { CodeJar } from '../../lib/vendor/codejar';
-import '../../lib/vendor/prism_extended.css';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelMap from './components/PanelMap';
@@ -37,28 +35,6 @@ import { useStylesHOC } from './elements/page-xui-styles';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('MISSIONCONTROL');
 const DBG = true;
-
-/// HARCODED SOURCE ///////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Is this necessary?  Causing async "Uncaught (in promise) undefined" error
-// UR.SystemHook(
-//   'UR/LOAD_ASSETS',
-//   () =>
-//     new Promise((resolve, reject) => {
-//       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-//       (async () => {
-//         let map = await GLOBAL.LoadAssets('static/assets.json');
-//         if (DBG) console.log(...PR('ASSETS LOADED'));
-//         // Compiler.jsx starts sim, but we shouldn't need to?
-//         // SIM.StartSimulation();
-//         // if (DBG) console.log(...PR('SIMULATION STARTED'));
-//       })();
-//       resolve();
-//     })
-// );
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const panelConfig = new Map();
