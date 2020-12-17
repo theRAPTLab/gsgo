@@ -12,31 +12,26 @@
     },
     {
       "assetId": 3,
-      "assetName": "bee_walk.json",
-      "assetUrl": "static/sprites/bee_walk.json"
+      "assetName": "bee.json",
+      "assetUrl": "static/sprites/bee.json"
     },
     {
       "assetId": 4,
-      "assetName": "bee_fly.json",
-      "assetUrl": "static/sprites/bee_fly.json"
-    },
-    {
-      "assetId": 5,
       "assetName": "hive.json",
       "assetUrl": "static/sprites/hive.json"
     },
     {
-      "assetId": 6,
+      "assetId": 5,
       "assetName": "flower.json",
       "assetUrl": "static/sprites/flower.json"
     },
     {
-      "assetId": 7,
+      "assetId": 6,
       "assetName": "fish.json",
       "assetUrl": "static/sprites/fish.json"
     },
     {
-      "assetId": 8,
+      "assetId": 7,
       "assetName": "algae.json",
       "assetUrl": "static/sprites/algae.json"
     }
