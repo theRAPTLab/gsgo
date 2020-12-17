@@ -431,13 +431,34 @@ This is our first real "finished" feature. There are not that many things to add
 
 I am going to change the way that `prop('propname')` works so it's just `prop.propname` or `prop['propname']`, because the indirection is annoying.
 
-* [ ] `class-sm-object` is the base class for props and methods
+* [x] `class-sm-object` is the base class for props and methods
 
-* [ ] `class-agent` is the base class for features
+* [x] `class-agent` is the base class for features
 
-  * [ ] two ways to access: `.prop` or `getProp()`
+  * [x] two ways to access: `.prop` or `getProp()`
 
   
+
+### Costume Feature Continued
+
+With the features, props, and methods refactored and made consistent, we can resume work on **Costumes**. There are two commands:
+
+* Costume.set 'name of costume'
+* Costume.pose 'poseName' or number (frame)
+* Costume.play 'poseName' if it's an animation
+
+So how does this actually work?
+
+* script is `featureCall Costume methodName value`
+* this effectively calls `Costume.featExec(agent, methodName, ...agent.evaluateArgs)`
+* The actual code is implemented in `feat-costume` as `methodName(...args)`
+
+So let's give this a try!
+
+* [x] create stub for `set`, `pose`, and `play`
+* [x] move featExec and featProp utilities to class-agent from class-feature
+* [x] fix featureCall, featureProp
+* [x] confirm accessors are working, simplify call chain
 
 ---
 

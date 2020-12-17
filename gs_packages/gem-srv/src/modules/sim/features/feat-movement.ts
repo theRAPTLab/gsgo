@@ -29,8 +29,8 @@ class MovementPack extends Feature {
     // super.prop(agent, key)
     // super.method(agent, key, ...args)
     this.handleInput = this.handleInput.bind(this);
-    this.addMethod('jitterPos', this.jitterPos);
-    this.addMethod('setController', this.setController);
+    this.featAddMethod('jitterPos', this.jitterPos);
+    this.featAddMethod('setController', this.setController);
   }
 
   /** This runs once to initialize the feature for all agents */

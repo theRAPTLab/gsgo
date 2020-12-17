@@ -22,6 +22,8 @@ import {
   TMethod,
   TExpressionAST,
   TSMCProgram,
+  TSMCFunction,
+  IScopeable,
   ISMCBundle
 } from './t-script';
 import { ControlMode, IActable } from './t-interaction.d';
@@ -144,9 +146,30 @@ class Agent extends SM_Object implements IAgent, IActable {
   /** Returns the featurepack associated with this agent instance. This is an
    *  object reference to a shared instance of IFeature */
   getFeature(fName: string): any {
-    const f = this.featureMap.get(fName);
-    if (f === undefined) throw Error(`no feature named '${fName}'`);
-    return f;
+    const feat = this.featureMap.get(fName);
+    if (feat === undefined) throw Error(`no feature named '${fName}'`);
+    return feat;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Called from compiled code, execute a feature function with feature context
+   *  as 'this' with signature (agent,...args)
+   *  This is a variation of exec_program() with 'this' swapped for the feature
+   *  instance
+   */
+  featExec(fName: string, mName: string, ...args): any {
+    const feat = this.getFeature(fName);
+    const featMethod = feat.method[mName];
+    if (!featMethod)
+      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+    return featMethod.call(feat, this, ...args);
+  }
+  /** Return prop given the passed agent and key. This prop is stored
+   *  in the agent's props map as a DictionaryProp, so this version
+   *  of prop returns the contents of the DictionaryProp!
+   */
+  featProp(fName: string, pName: string): IScopeable {
+    const featProps = this.prop[fName];
+    return featProps[pName];
   }
 
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
@@ -265,7 +288,7 @@ class Agent extends SM_Object implements IAgent, IActable {
    */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   exec_func(program: Function, ctx, ...args: any[]): any {
-    return program.call(this, this, ...args);
+    return program.call(this, ctx, ...args);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a named program stored in global program store */

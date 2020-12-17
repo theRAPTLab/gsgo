@@ -9,14 +9,42 @@
   a collection of code routines that operate ON agents, not decorate
   agents with code routines
 
-  TODO: add methods for initialization management
+  BOILERPLATE
+
+  import Feature from 'lib/class-feature';
+  import { IAgent } from 'lib/t-script'
+  import { Register } from 'modules/datacore/dc-features';
+
+  class FeaturePack extends Feature {
+    constructor(name:string) {
+      super(name);
+      // add feature methods here
+      // e.g. this.featAddMethod('methodName',this.classMethod);
+    }
+    initialize(SIM:PhaseMachine) {
+      // hook into sim lifecycle here if feature needs it
+      // e.g. SIM.hook('INPUT',()=>{});
+      // or import UR and use UR.SystemHook('SIM/INPUT',()=>{});
+    }
+    decorate(agent:IAgent) {
+      super.decorate(agent);
+      // add feature props here
+      // e.g. this.featAddProp(agent,'propName',new StringProp('default'));
+    }
+
+    // ... add feature methods from constructor definitions ...
+
+    // end of class
+  }
+  /// REGISTER FEATURE INSTANCE ///
+  Register(new FeaturePack('FeatureName');
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import {
   IKeyObject,
   IFeature,
-  TMethod,
+  FeatureMethod,
   IAgent,
   IScopeable,
   TStackable
@@ -42,9 +70,8 @@ class Feature implements IFeature {
       feature: name
     };
     this.method = {};
-    // features only store methods!!!
-    // because features are not instance per agent, but instead
-    // are code libraries. agents provide memory context and props
+    // features only store methods!!! props are stored in the agent
+    // props object as a property named after the feature.
   }
   /** hook into lifecycle methods
    *  a phasemachine instance is passed to initialize if the feature
@@ -80,22 +107,14 @@ class Feature implements IFeature {
    *  This is a mirror implementation of SM_Object.prop, modified
    *  to store props in agent.prop.FeatureName
    */
-  featAddProp(agent: IAgent, pKey: string, prop: IScopeable) {
+  featAddProp(agent: IAgent, pName: string, prop: IScopeable) {
     // agent.props = Map<string, IScopeable>;
     let dict = agent.prop[this.name];
     if (!dict) {
       dict = {};
       agent.prop[this.name] = {};
     }
-    dict[pKey] = prop;
-  }
-  /** Return prop given the passed agent and key. This prop is stored
-   *  in the agent's props map as a DictionaryProp, so this version
-   *  of prop returns the contents of the DictionaryProp!
-   */
-  featGetProp(agent: IAgent, pKey: string): IScopeable {
-    const dict = agent.prop[this.name] as DictionaryProp;
-    return dict.getItem(pKey);
+    dict[pName] = prop;
   }
   /** Define a method to this feature instance. Note that there is only one
    *  instance of a Feature at a time, so the code for instance methods
@@ -103,21 +122,13 @@ class Feature implements IFeature {
    *  passed to it. This is a mirror of SM_Object.addMethod, modified
    *  to use the local method map
    */
-  addMethod(mKey: string, smc_or_f: TMethod) {
+  featAddMethod(mName: string, smc_or_f: FeatureMethod) {
     const { method } = this;
-    if (method[mKey])
-      throw Error(`method '${mKey}' already in Feature.${this.name}`);
-    method[mKey] = smc_or_f;
-  }
-  /** invoke method or function stored in feature's method map.
-   *  remember: there is a single instance of all methods for the feature
-   *  note: this is a mirror implementation of SM_Object.method
-   */
-  featExec(agent: IAgent, mKey: string, ...args: any): any {
-    const smc_or_f = this.method[mKey];
-    if (!smc_or_f)
-      throw Error(`method '${mKey}' doesn't exist in Feature.${this.name}`);
-    return agent.exec(smc_or_f, ...args);
+    if (method[mName]) {
+      console.warn('method', method, mName);
+      throw Error(`method '${mName}' already in Feature.${this.name}`);
+    }
+    method[mName] = smc_or_f;
   }
 } // end of class
 

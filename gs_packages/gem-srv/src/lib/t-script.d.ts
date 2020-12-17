@@ -44,6 +44,13 @@ export interface IAgent extends IScopeable {
   queueExecAction: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
+  featExec: (fName: string, mName: string, ...args) => any;
+  featProp: (fName: string, pName: string) => IScopeable;
+  // shortcut properties
+  skin: string;
+  x: number;
+  y: number;
+  // name, value are defined in IScopeable
 }
 
 /// FEATURE DECLARATIONS //////////////////////////////////////////////////////
@@ -56,10 +63,9 @@ export interface IFeature {
   initialize(pm: any): void;
   decorate(agent: IAgent): void;
   featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
-  featGetProp(agent: IAgent, key: string): IScopeable;
-  featAddMethod(key: string, smc_or_f: TMethod): void;
-  featExec: (agent: IAgent, key: string, ...args: any) => any;
+  featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
 }
+export type FeatureMethod = (agent: IAgent, ...any) => any;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Weird Typescript syntax for declaring a Constructor of a IScopeable,
@@ -264,10 +270,11 @@ export type TRegcode = (
  */
 export type TSMCProgram = TOpcode[];
 export type TSMCGlobalProgram = TRegcode[];
+export type TSMCFunction = TOpcode;
 /** Also could be an AST, which is an object with a type property */
 export type TExpressionAST = { type: string };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is
  */
-export type TMethod = TSMCProgram | Function | TExpressionAST;
+export type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;

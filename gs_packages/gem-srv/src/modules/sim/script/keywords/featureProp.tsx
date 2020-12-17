@@ -24,9 +24,9 @@ export class featureProp extends Keyword {
     const [kw, featureName, propName, value] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const feat = agent.feature[featureName];
-      const prop = feat.prop(propName);
-      prop[propName].value = value;
+      const featProp = agent.featProp(featureName, propName);
+      console.log(featProp);
+      featProp.value = value;
     });
     return progout;
   }

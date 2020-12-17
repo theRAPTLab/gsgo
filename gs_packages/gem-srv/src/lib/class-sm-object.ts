@@ -65,6 +65,7 @@ class SM_Object implements IScopeable {
     this.meta = {
       type: Symbol.for('SM_Object')
     };
+    if (typeof initValue === 'string') this.meta.name = initValue;
     this.prop = {};
     this.method = {};
   }

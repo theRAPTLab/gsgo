@@ -29,21 +29,17 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.x = agent.x;
     dobj.y = agent.y;
     dobj.skin = agent.skin;
-    dobj.frame = agent.prop.Costume.frameNum.value;
+    dobj.frame = agent.prop.Costume.currentFrame.value;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
   },
   onUpdate: (agent, dobj) => {
-    try {
-      dobj.x = agent.x;
-      dobj.y = agent.y;
-      dobj.skin = agent.skin;
-      dobj.frame = agent.prop.Costume.frameNum.value;
-      dobj.mode = agent.mode();
-      dobj.dragging = agent.isCaptive;
-    } catch (e) {
-      console.error('agent', agent);
-    }
+    dobj.x = agent.x;
+    dobj.y = agent.y;
+    dobj.skin = agent.skin;
+    dobj.frame = agent.prop.Costume.currentFrame.value;
+    dobj.mode = agent.mode();
+    dobj.dragging = agent.isCaptive;
   }
 });
 

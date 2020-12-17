@@ -39,6 +39,7 @@ useFeature Costume
 useFeature Movement
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
+featureProp Costume costumeName 'bee.json'
 featureCall Movement jitterPos -5 5
 # PROGRAM EVENT
 onEvent Tick [[
