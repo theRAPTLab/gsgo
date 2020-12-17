@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { FEATURES, GetProgram, GetTest } from 'modules/datacore';
+import { GetFeature, GetProgram, GetTest } from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import { Evaluate } from 'lib/expr-evaluator';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
@@ -17,8 +17,8 @@ import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
 import {
+  IFeature,
   IAgent,
-  IScopeable,
   TMethod,
   TExpressionAST,
   TSMCProgram,
@@ -34,7 +34,7 @@ let REF_ID_COUNT = 0;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Agent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
-  features: Map<string, any>;
+  featureMap: Map<string, IFeature>;
   controlMode: ControlMode;
   controlModeHistory: ControlMode[];
   isCaptive: boolean;
@@ -44,47 +44,58 @@ class Agent extends SM_Object implements IAgent, IActable {
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
-  _name: StringProp;
-  _x: NumberProp;
-  _y: NumberProp;
-  _skin: StringProp;
   //
   constructor(agentName = '<anon>') {
     super(agentName); // sets value to agentName, which is only for debugging
+    this.refId = REF_ID_COUNT++;
     this.meta.type = Symbol.for('Agent');
-    // this.props map defined in SM_Object
-    // this.methods map defined in SM_Object
     this.blueprint = undefined;
-    this.features = new Map();
+    this.featureMap = new Map();
+    // note: this.props defined in SM_Object of type IKeyObject
+    // note: this.methods defined in SM_Object of type IKeyObject
     this.updateQueue = [];
     this.thinkQueue = [];
     this.execQueue = [];
-    this.refId = REF_ID_COUNT++;
+    // built-in movement control states
     this.controlMode = ControlMode.puppet;
     this.controlModeHistory = [];
-    // declare agent basic properties
-    this._name = new StringProp(agentName);
-    this._x = new NumberProp();
-    this._y = new NumberProp();
-    this._skin = new StringProp('default');
-    // mirror basic props in props for conceptual symmetry
-    this.props.set('name', this._name);
-    this.props.set('x', this._x);
-    this.props.set('y', this._y);
-    this.props.set('skin', this._skin);
+    // shared basic props in props for conceptual symmetry
+    this.prop.x = new NumberProp();
+    this.prop.y = new NumberProp();
+    this.prop.skin = new StringProp('default');
+    this.prop.name = () => {
+      throw Error('use agent.name, not agent.prop.name');
+    };
   }
 
-  // blueprint initialize
-  setBlueprint(bdl: ISMCBundle) {
-    if (!bdl) throw Error('setBlueprint expects an ISMCBundle');
-    if (!bdl.name) throw Error('setBlueprint got bp without name');
-    this.blueprint = bdl;
-    // call initialization
-    this.exec(bdl.define);
-    this.exec(bdl.init);
+  /// BUILT-IN PROPERTY ACCESSORS /////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// All agents have these built-in properties. While they are also accessible
+  /// via the prop object and getProp() method, these is a shortcut accessors
+  /// for keyword authors to use. Note that the 'name' accessor is defined in
+  /// Agent's superclass SM_Object
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  get x() {
+    return this.prop.x.value;
+  }
+  set x(num: number) {
+    this.prop.x.value = num;
+  }
+  get y() {
+    return this.prop.y.value;
+  }
+  set y(num) {
+    this.prop.y.value = num;
+  }
+  get skin() {
+    return this.prop.skin.value;
+  }
+  set skin(num) {
+    this.prop.skin.value = num;
   }
 
-  // internal control mode properties
+  /// MOVEMENT MODES //////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   private pushMode = (mode: ControlMode) => this.controlModeHistory.push(mode);
   mode = () => this.controlMode;
   setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
@@ -95,72 +106,78 @@ class Agent extends SM_Object implements IAgent, IActable {
   isModeAuto = () => this.controlMode === ControlMode.auto;
   isModeStatic = () => this.controlMode === ControlMode.static;
 
-  // interactable states
+  /// AGENT INTERACTION STATES ////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
   setHovered = (mode = this.isHovered) => (this.isHovered = mode);
   setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
 
-  // accessor methods for built-in props
-  name = (match?: string) => {
-    if (typeof match === 'string' && match !== this._name.value) return undefined;
-    return this._name.value;
-  };
-  x = () => this._x.value;
-  y = () => this._y.value;
-  skin = () => this._skin.value;
-
-  // definition methods
-  // addProp defined in SM_Object
-  // addMethod defined in SM_Object
-
+  /// PROPERTIES, METHODS, FEATURES ///////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// addProp, getProp is defined in SM_Object
+  /// addMethod, getMethod is defined in SM_Object
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: add a featurepack to an agent's feature map by feature name
-   *  featurepacks store its own properties directly in agent.props
-   *  featurepacks store method pointers in agent.methods, and all methods
-   *  have the signature method(agentInstance, ...args)
-   *  @param {string} featureName - name of FeatureLib to look up and add
-   *  @returns {FeatureLib} - for chaining agent calls
+  /** Invoke method by name.
    */
-  addFeature(fName: string): void {
-    const { features } = this;
-    // does key already exist in this agent? double define in blueprint!
-    if (features.has(fName))
-      throw Error(`feature '${fName}' already in blueprint`);
-    // save the FeaturePack object reference in agent.feature map
-    const fpack = FEATURES.get(fName);
-    if (!fpack) throw Error(`'${fName}' is not an available feature`);
-    // this should return agent
-    this.features.set(fName, fpack);
-    fpack.decorate(this);
-  }
-
-  /** Retrieve a prop object
-   *  This overrides sm-object prop()
-   */
-  prop(name: string): IScopeable {
-    const p = this.props.get(name);
-    if (p === undefined)
-      console.warn(`agent ${this.name()} does not have prop '${name}'`);
-    return p;
-  }
-
-  /** Invoke method by name. functions return values, smc programs return stack
-   *  This overrides sm-object method()
-   */
-  method(name: string, ...args: any): any {
-    const m = this.methods.get(name);
+  execMethod(mName: string, ...args: any): any {
+    const m = this.getMethod(mName);
     return this.exec(m, ...args);
   }
-
-  /** retrieve the feature reference */
-  feature(name: string): any {
-    const f = this.features.get(name);
-    if (f === undefined) throw Error(`no feature named '${name}'`);
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Add a featurepack to an agent's feature map by feature name featurepacks
+   *  store its own properties directly in agent.props featurepacks store method
+   *  pointers in agent.methods, and all methods have the signature
+   *  method(agentInstance, ...args)
+   */
+  addFeature(fName: string): void {
+    // does key already exist in this agent? double define in blueprint!
+    if (this.featureMap.has(fName))
+      throw Error(`feature '${fName}' already in blueprint`);
+    // save the FeaturePack object reference in agent.feature map
+    const fpack = GetFeature(fName);
+    if (!fpack) throw Error(`'${fName}' is not an available feature`);
+    this.featureMap.set(fName, fpack);
+    fpack.decorate(this);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Returns the featurepack associated with this agent instance. This is an
+   *  object reference to a shared instance of IFeature */
+  getFeature(fName: string): any {
+    const f = this.featureMap.get(fName);
+    if (f === undefined) throw Error(`no feature named '${fName}'`);
     return f;
   }
 
-  /** PhaseMachine Lifecycle Execution QUEUES */
+  /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// To change the behavior of an instance, inject a program into either
+  /// the UPDATE, THINK, or EXEC queues. The queues are executed during
+  /// the corresponding AGENT_UPDATE, AGENT_THINK, and AGENT_EXEC lifecycle
+  /// hooks.
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Queue a message to be handled during AGENT_UPDATE. Currently, it extracts
+   *  the 'actions' property which is TMethod that can be executed
+   */
+  queueUpdateMessage(message: SM_Message) {
+    const { actions } = message;
+    this.updateQueue.push(...actions);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  queueThinkMessage(message: SM_Message) {
+    const { actions } = message;
+    this.thinkQueue.push(...actions);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  queueExecAction(message: SM_Message) {
+    const { actions } = message;
+    this.execQueue.push(...actions);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** After running the blueprint update program, also run any programs that
+   *  are stored in the queue, then clear it. The algorithm is the same for
+   *  each queue type.
+   */
   agentUPDATE(frameTime: number) {
     if (this.blueprint && this.blueprint.update) {
       this.exec(this.blueprint.update);
@@ -171,6 +188,7 @@ class Agent extends SM_Object implements IAgent, IActable {
     });
     this.updateQueue = [];
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   agentTHINK(frameTime: number) {
     if (this.blueprint && this.blueprint.think) {
       this.exec(this.blueprint.think);
@@ -181,6 +199,7 @@ class Agent extends SM_Object implements IAgent, IActable {
     });
     this.thinkQueue = [];
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   agentEXEC(frameTime: number) {
     if (this.blueprint && this.blueprint.exec) {
       this.exec(this.blueprint.exec);
@@ -192,12 +211,81 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.execQueue = [];
   }
 
-  /** utility that checks whether an argument is an expression.
-   *  if it is, then Evaluate() is called on it to return an actual
-   *  value.
-   *  NOTE: args are MUTATED IN-PLACE.
-   *  The mutated array is also returned if you want to assign
-   *  it directly.
+  /// AGENT BLUEPRINT INSTANTIATION ///////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** After a blank agent is created via new Agent(), this method accepts a
+   *  blueprint program bundle and executes the initialization programs that
+   *  were compiled. All agent initialization, including assigning features,
+   *  are done through the scripting language interface.
+   */
+  setBlueprint(bdl: ISMCBundle) {
+    if (!bdl) throw Error('setBlueprint expects an ISMCBundle');
+    if (!bdl.name) throw Error('setBlueprint got bp without name');
+    this.blueprint = bdl;
+    // call initialization
+    this.exec(bdl.define);
+    this.exec(bdl.init);
+  }
+
+  /// AGENT PROGRAM EXECUTION /////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Agent instances provide the execution context for each program it wants
+  /// to run on itself. The main API method is exec(program,...args), which
+  /// can handle SMC code, regular Javascript functions, named programs in
+  /// the global program store, and abstract syntax trees
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Run a TMethod with a variable list of arguments.
+   */
+  exec(m: TMethod, ...args: any[]): any {
+    if (m === undefined) return undefined;
+    const ctx = { args, agent: this, global: GLOBAL };
+    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
+    if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
+    if (typeof m === 'string') return this.exec_program(m, [...args], ctx);
+    if (typeof m === 'object') return this.exec_ast(m, ctx);
+    throw Error('method object is neither function or smc');
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Execute agent stack machine program. Note that commander also
+   *  implements ExecSMC to run arbitrary programs as well when
+   *  processing AgentSets. Optionally pass a stack to reuse.
+   */
+  exec_smc(program: TSMCProgram, stack, ctx) {
+    const state = new SM_State(stack, ctx);
+    program.forEach((op, index) => {
+      if (typeof op !== 'function') console.warn(op, index);
+      op(this, state);
+    });
+    // return the stack as a result, though
+    return state.stack;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Execute a method that is a Javascript function with
+   *  agent as the execution context
+   */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  exec_func(program: Function, ctx, ...args: any[]): any {
+    return program.call(this, this, ...args);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Execute a named program stored in global program store */
+  exec_program(progName: string, [...args], context) {
+    const prog = GetProgram(progName) || GetTest(progName);
+    if (prog !== undefined) return this.exec(prog, args, context);
+    throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Parse an abstract syntax tree through Evaluate */
+  exec_ast(ast: TExpressionAST, ctx) {
+    return Evaluate(ast, ctx);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Utility to evalute an AST or array of ASTs, replacing them with
+   *  the evaluated VALUES at runtime. The arguments are mutated and
+   *  returned to the caller. This is typically used by keyword implementors
+   *  during COMPILE, which must convert the ScriptUnit[] arguments of the
+   *  PROGRAM and EXPRESSION types into a runtime AST that is captured by
+   *  the produced function array.
    */
   evaluateArgs(args: any, context: object = this): any {
     if (typeof args === 'object' && args.type !== undefined)
@@ -216,61 +304,12 @@ class Agent extends SM_Object implements IAgent, IActable {
     return args;
   }
 
-  /** handle queue (placeholder) */
-  queueUpdateMessage(message: SM_Message) {
-    const { actions } = message;
-    this.updateQueue.push(...actions);
-  }
-  queueThinkMessage(message: SM_Message) {
-    const { actions } = message;
-    this.thinkQueue.push(...actions);
-  }
-  queueExecAction(message: SM_Message) {
-    const { actions } = message;
-    this.execQueue.push(...actions);
-  }
-
-  /** Execute either a smc_program or function depending on the
-   *  method passed-in with arguments
+  /// OBJECT SERIALIZATION ////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return a pure data object that represents the runtime state of this
+   *  agent instance, suitable for being deserialized back into an agent
+   *  instance when we need to.
    */
-  exec(m: TMethod, ...args: any[]): any {
-    if (m === undefined) return undefined;
-    const ctx = { args, agent: this, global: GLOBAL };
-    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
-    if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
-    if (typeof m === 'string') return this.exec_program(m, [...args], ctx);
-    if (typeof m === 'object') return this.exec_ast(m, ctx);
-    throw Error('method object is neither function or smc');
-  }
-  /** Execute agent stack machine program. Note that commander also
-   *  implements ExecSMC to run arbitrary programs as well when
-   *  processing AgentSets. Optionally pass a stack to reuse.
-   */
-  exec_smc(program: TSMCProgram, stack, ctx) {
-    const state = new SM_State(stack, ctx);
-    program.forEach((op, index) => {
-      if (typeof op !== 'function') console.warn(op, index);
-      op(this, state);
-    });
-    // return the stack as a result, though
-    return state.stack;
-  }
-  /** Execute a method that is a Javascript function with
-   *  agent as the execution context
-   */
-  exec_func(program: Function, ctx, ...args: any[]): any {
-    return program.call(this, this, ...args);
-  }
-  /** Execute a named program stored in global program store */
-  exec_program(progName: string, [...args], context) {
-    const prog = GetProgram(progName) || GetTest(progName);
-    if (prog !== undefined) return this.exec(prog, args, context);
-    throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
-  }
-  exec_ast(ast: TExpressionAST, ctx) {
-    return Evaluate(ast, ctx);
-  }
-  // serialization
   serialize() {
     // call serialize on all features
     // call serialize on all props
@@ -278,22 +317,28 @@ class Agent extends SM_Object implements IAgent, IActable {
       .serialize()
       .concat([
         'name',
-        this.name(),
+        this.name,
         'x',
-        this.x(),
+        this.prop.x.value,
         'y',
-        this.y(),
+        this.prop.y.value,
         'skin',
-        this.skin(),
-        'features',
-        this.features.keys()
+        this.prop.skin.value,
+        'feature',
+        this.featureMap.keys()
       ]);
   }
-} // end of Agent class
+
+  // end of Agent class
+}
 
 /// GLOBAL INSTANCES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// The global agent is our "World Agent" that contains shared properties for
+/// a running simulation
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const GLOBAL_AGENT = new Agent();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetGlobalAgent() {
   return GLOBAL_AGENT;
 }

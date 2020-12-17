@@ -26,20 +26,24 @@ const DOBJ_SYNC_AGENT = new SyncMap({
 
 DOBJ_SYNC_AGENT.setMapFunctions({
   onAdd: (agent, dobj) => {
-    dobj.x = agent.x();
-    dobj.y = agent.y();
-    dobj.skin = agent.skin();
-    dobj.frame = agent.prop('frame').value;
+    dobj.x = agent.x;
+    dobj.y = agent.y;
+    dobj.skin = agent.skin;
+    dobj.frame = agent.prop.Costume.frameNum.value;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
   },
   onUpdate: (agent, dobj) => {
-    dobj.x = agent.x();
-    dobj.y = agent.y();
-    dobj.skin = agent.skin();
-    dobj.frame = agent.prop('frame').value;
-    dobj.mode = agent.mode();
-    dobj.dragging = agent.isCaptive;
+    try {
+      dobj.x = agent.x;
+      dobj.y = agent.y;
+      dobj.skin = agent.skin;
+      dobj.frame = agent.prop.Costume.frameNum.value;
+      dobj.mode = agent.mode();
+      dobj.dragging = agent.isCaptive;
+    } catch (e) {
+      console.error('agent', agent);
+    }
   }
 });
 

@@ -36,7 +36,7 @@ class CostumePack extends Feature {
 
   decorate(agent) {
     super.decorate(agent);
-    this.addProp(agent, 'frameNum', new NumberProp());
+    this.featAddProp(agent, 'frameNum', new NumberProp());
   }
 }
 

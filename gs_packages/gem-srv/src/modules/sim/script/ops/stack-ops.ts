@@ -129,7 +129,7 @@ const agentToScope = (): TOpcode => {
 const agentFeatureToScope = (featName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     STATE.scope.push(agent);
-    STATE.scope.push(agent.feature(featName));
+    STATE.scope.push(agent.feature[featName]);
   };
 };
 /** Retrieve prop() from scoped object, and push it on stack. */

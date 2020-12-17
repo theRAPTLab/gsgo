@@ -425,7 +425,19 @@ Also the add/remove logic is working again.
 
 ## DEC 15 TUE - Implementing Costume Feature
 
-This is our first real "finished" feature. 
+This is our first real "finished" feature. There are not that many things to add to it.
+
+## DEC 16 WED - Features Refactor
+
+I am going to change the way that `prop('propname')` works so it's just `prop.propname` or `prop['propname']`, because the indirection is annoying.
+
+* [ ] `class-sm-object` is the base class for props and methods
+
+* [ ] `class-agent` is the base class for features
+
+  * [ ] two ways to access: `.prop` or `getProp()`
+
+  
 
 ---
 

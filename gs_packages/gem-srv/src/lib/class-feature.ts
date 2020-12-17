@@ -13,7 +13,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IFeature, TMethod, IAgent, IScopeable, TStackable } from 'lib/t-script';
+import {
+  IKeyObject,
+  IFeature,
+  TMethod,
+  IAgent,
+  IScopeable,
+  TStackable
+} from 'lib/t-script';
 import { DictionaryProp } from 'modules/sim/props/var';
 
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
@@ -28,13 +35,13 @@ const DBG = false;
  */
 class Feature implements IFeature {
   meta: { feature: string };
-  methods: Map<string, TMethod>;
+  method: IKeyObject;
   //
   constructor(name: string) {
     this.meta = {
       feature: name
     };
-    this.methods = new Map();
+    this.method = {};
     // features only store methods!!!
     // because features are not instance per agent, but instead
     // are code libraries. agents provide memory context and props
@@ -47,47 +54,48 @@ class Feature implements IFeature {
   initialize(phaseMachine: object) {
     // do something
   }
+  get name() {
+    return this.meta.feature;
+  }
   /** called during blueprint instantiation of an agent.
    *  used to add properties specific to the feature.
    *  note: subclassers call super.decorate(agent) to ensure that
    *  the properties are initialized in the agent's prop map
    */
   decorate(agent: IAgent) {
-    if (DBG)
-      console.log(`class feature '${this.name()}' decorate '${agent.name()}'`);
-    if (agent.features.has(this.name())) {
-      if (DBG) console.log(`agent decorate '${agent.name()}'`);
-    } else throw Error(`decorate: agent already bound to feature ${this.name()}`);
+    if (DBG) console.log(`class feature '${this.name}' decorate '${agent.name}'`);
+    if (agent.featureMap.has(this.name)) {
+      if (DBG) console.log(`decorate(): '${agent.name}' w/  ${this.name}`);
+    } else {
+      console.warn(`decorate(): ${agent.name} no featureMap key:${this.name}`);
+      return;
+    }
 
-    if (!agent.props.has(this.name()))
-      agent.props.set(this.name(), new DictionaryProp(this.name()));
-    else throw Error(`decorate: agent already has props.${this.name}`);
-  }
-
-  /** return name of this feature feature, used for adding a GSDictionary
-   *  property by name to Agent.props
-   */
-  name(): string {
-    return this.meta.feature;
+    if (!agent.prop[this.name]) agent.prop[this.name] = {};
+    // prop.FeatureName props go here
+    else throw Error(`decorate: agent already has props.${this.name} object`);
   }
 
   /** Add property stored in an agent instance, used by decorate().
    *  This is a mirror implementation of SM_Object.prop, modified
-   *  to store props in a DictionaryProp stored in the agent prop
+   *  to store props in agent.prop.FeatureName
    */
-  addProp(agent: IAgent, key: string, prop: IScopeable) {
+  featAddProp(agent: IAgent, pKey: string, prop: IScopeable) {
     // agent.props = Map<string, IScopeable>;
-    const dict = agent.props.get(this.name()) as DictionaryProp;
-    dict.addItem(key, prop);
+    let dict = agent.prop[this.name];
+    if (!dict) {
+      dict = {};
+      agent.prop[this.name] = {};
+    }
+    dict[pKey] = prop;
   }
   /** Return prop given the passed agent and key. This prop is stored
    *  in the agent's props map as a DictionaryProp, so this version
    *  of prop returns the contents of the DictionaryProp!
    */
-  prop(agent: IAgent, key: string): IScopeable {
-    console.log('feature', agent);
-    const dict = agent.props.get(this.name()) as DictionaryProp;
-    return dict.getItem(key);
+  featGetProp(agent: IAgent, pKey: string): IScopeable {
+    const dict = agent.prop[this.name] as DictionaryProp;
+    return dict.getItem(pKey);
   }
   /** Define a method to this feature instance. Note that there is only one
    *  instance of a Feature at a time, so the code for instance methods
@@ -95,17 +103,20 @@ class Feature implements IFeature {
    *  passed to it. This is a mirror of SM_Object.addMethod, modified
    *  to use the local method map
    */
-  defineMethod(name: string, smc_or_f: TMethod) {
-    const { methods } = this;
-    if (methods.has(name)) throw Error(`method '${name}' already added`);
-    methods.set(name, smc_or_f);
+  addMethod(mKey: string, smc_or_f: TMethod) {
+    const { method } = this;
+    if (method[mKey])
+      throw Error(`method '${mKey}' already in Feature.${this.name}`);
+    method[mKey] = smc_or_f;
   }
   /** invoke method or function stored in feature's method map.
    *  remember: there is a single instance of all methods for the feature
    *  note: this is a mirror implementation of SM_Object.method
    */
-  method(agent: IAgent, key: string, ...args: any): any {
-    const smc_or_f = this.methods.get(key);
+  featExec(agent: IAgent, mKey: string, ...args: any): any {
+    const smc_or_f = this.method[mKey];
+    if (!smc_or_f)
+      throw Error(`method '${mKey}' doesn't exist in Feature.${this.name}`);
     return agent.exec(smc_or_f, ...args);
   }
 } // end of class

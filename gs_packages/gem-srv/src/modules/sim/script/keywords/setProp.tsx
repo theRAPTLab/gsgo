@@ -27,7 +27,7 @@ export class setProp extends Keyword {
     const [kw, propName, value] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const p = agent.prop(propName);
+      const p = agent.prop[propName];
       p.value = value;
     });
     return progout;

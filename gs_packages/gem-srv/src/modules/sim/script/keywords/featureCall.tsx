@@ -28,12 +28,12 @@ export class featureCall extends Keyword {
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       // invoke the feature on the agent
-      const feat = agent.feature(featName);
+      const feat = agent.featureMap.get(featName);
       // spread [...args] handles case when args is a single item, not an array
       // then the argument passed to evaluate() is always an array
       // agent.evaluateArgs() mutates the returned array so we spread it
       const vals = [...args];
-      feat.method(agent, methodName, ...agent.evaluateArgs(vals));
+      feat.featExec(agent, methodName, ...agent.evaluateArgs(vals));
     });
     return progout;
   }

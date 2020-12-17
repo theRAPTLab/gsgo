@@ -15,12 +15,12 @@ const FEATURES: Map<string, IFeature> = new Map();
 /** Retrieve a feature module by name (as defined in the feature class)
  *  and return its instance
  */
-export function GetByName(name) {
+export function GetFeature(name) {
   return FEATURES.get(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Register a feature module by name (as defined in the feature class)
  */
 export function Register(fpack) {
-  FEATURES.set(fpack.name(), fpack);
+  FEATURES.set(fpack.name, fpack);
 }
