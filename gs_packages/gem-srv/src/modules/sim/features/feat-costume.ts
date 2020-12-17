@@ -2,9 +2,6 @@
 
   The Costume Class!
 
-
-
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -17,6 +14,7 @@ import { Register } from 'modules/datacore/dc-features';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
+let COUNTER = 0;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,6 +26,11 @@ class CostumePack extends Feature {
     this.featAddMethod('setCostume', this.setCostume);
     this.featAddMethod('pose', this.setPose);
     this.featAddMethod('test', this.test);
+    this.featAddMethod('thinkHook', agent => {
+      const prop = agent.prop.Costume.counter;
+      prop.add(1);
+      if (prop.value === 0) console.log(`${agent.name} is CostumeThinking`);
+    });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
@@ -43,6 +46,14 @@ class CostumePack extends Feature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
+    let prop = new NumberProp(0);
+    // initialize a counter in the agent
+    // it will be checked during 'thinkHook' when it's invoked via a
+    // featureHook keyword
+    prop.setMax(120);
+    prop.setMin(0);
+    prop.setWrap();
+    this.featAddProp(agent, 'counter', prop);
     this.featAddProp(agent, 'currentPose', new StringProp('default'));
     this.featAddProp(agent, 'currentFrame', new NumberProp(0));
     this.featAddProp(agent, 'costumeName', new StringProp('default'));

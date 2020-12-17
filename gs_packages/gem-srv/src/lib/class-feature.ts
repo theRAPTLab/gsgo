@@ -130,6 +130,11 @@ class Feature implements IFeature {
     }
     method[mName] = smc_or_f;
   }
+  /** retrieve a defined method for shenanigans outside the agent context */
+  featGetMethod(mName: string): FeatureMethod {
+    const { method } = this;
+    return method[mName];
+  }
 } // end of class
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

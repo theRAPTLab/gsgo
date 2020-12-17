@@ -460,6 +460,14 @@ So let's give this a try!
 * [x] fix featureCall, featureProp
 * [x] confirm accessors are working, simplify call chain
 
+Tomorrow we'll actually implement the costume feature so we can change costumes on-the-fly. This is probably already done to some extent because all features are doing are setting properties and values that will be read by the Renderer System. Since the renderer only cares about x, y, and skin, the Costume feature just needs to make sure the skin is updated accordingly. 
+
+* `vobj.setTexture(dobj.skin, dobj.frame);` in `api-render` is the critical routine.
+* we want to define the `skin` property so an appropriate `frame` is available.
+* also, we want to ship an `assetId`, not a string, in the display object renderer
+* for features that need cycle time, we can hook into the `update`, `think`, or `exec` update cycles in agent to get a little execution time. This can be done through a keyword we call `featHookUpdate(featureName, methodName)` 
+* We can also hook into SIM to update our own counters in the feature. 
+
 ---
 
 **ADDITIONAL THINGS TO IMPLEMENT**

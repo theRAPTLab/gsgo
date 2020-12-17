@@ -15,6 +15,7 @@ export * from './propValue';
 export * from './useFeature';
 export * from './featureProp';
 export * from './featureCall';
+export * from './featureHook';
 export * from './addTest'; // add a named test
 
 // utility keywords

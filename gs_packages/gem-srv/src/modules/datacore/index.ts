@@ -41,6 +41,8 @@ useFeature Movement
 setProp skin 'bunny.json'
 featureProp Costume costumeName 'bee.json'
 featureCall Movement jitterPos -5 5
+# PROGRAM THINK
+featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // happens every second, and we check everyone

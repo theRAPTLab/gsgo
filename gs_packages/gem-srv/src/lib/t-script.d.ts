@@ -64,6 +64,7 @@ export interface IFeature {
   decorate(agent: IAgent): void;
   featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
   featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
+  featGetMethod(mName: string): FeatureMethod;
 }
 export type FeatureMethod = (agent: IAgent, ...any) => any;
 

@@ -15,8 +15,14 @@ const FEATURES: Map<string, IFeature> = new Map();
 /** Retrieve a feature module by name (as defined in the feature class)
  *  and return its instance
  */
-export function GetFeature(name) {
-  return FEATURES.get(name);
+export function GetFeature(fName) {
+  return FEATURES.get(fName);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** retrieve a method from a feature instance
+ */
+export function GetFeatureMethod(fName: string, mName: string) {
+  return GetFeature(fName)[mName];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Register a feature module by name (as defined in the feature class)
