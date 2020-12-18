@@ -12,19 +12,21 @@
 import { GetFeature, GetProgram, GetTest } from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import { Evaluate } from 'lib/expr-evaluator';
-import { NumberProp, StringProp } from 'modules/sim/props/var';
-import SM_Message from './class-sm-message';
-import SM_Object from './class-sm-object';
-import SM_State from './class-sm-state';
 import {
   IFeature,
   IAgent,
   TMethod,
   TExpressionAST,
   TSMCProgram,
-  TSMCFunction,
-  IScopeable
-} from './t-script';
+  IScopeable,
+  IActable,
+  ISMCBundle,
+  ControlMode
+} from 'lib/t-script.d';
+import { NumberProp, StringProp } from 'modules/sim/props/var';
+import SM_Message from './class-sm-message';
+import SM_Object from './class-sm-object';
+import SM_State from './class-sm-state';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
