@@ -47,8 +47,8 @@ UR.SystemHook('UR/LOAD_ASSETS', () => {
       console.log(...PR('Waiting for user input'));
       // SIM.Start();
       // if (DBG) console.log(...PR('SIMULATION STARTED'));
+      resolve();
     })();
-    resolve();
   });
 });
 
