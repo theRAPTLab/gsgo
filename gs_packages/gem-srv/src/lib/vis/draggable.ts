@@ -1,6 +1,6 @@
 /** given a VOBJ, decorate it to add new features */
 import { Visual } from 'lib/t-visual';
-import { GetAgentById } from 'modules/datacore';
+import { GetAgentById } from 'modules/datacore/dc-agents';
 
 export function MakeDraggable(vobj: Visual) {
   function onDragStart(event) {
@@ -28,14 +28,14 @@ export function MakeDraggable(vobj: Visual) {
     if (agent) {
       agent.setPreviousMode();
       agent.setCaptive(false);
-      console.log(`agent id ${agent.id} '${agent.name()}' dropped`, agent);
+      console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
       //
       if (this.data) {
         // the originating object is sprite
         const newPosition = this.data.getLocalPosition(this.parent);
         const { x, y } = newPosition;
-        agent.prop('x').value = x;
-        agent.prop('y').setTo(y);
+        agent.prop.x.value = x;
+        agent.prop.y.setTo(y);
       }
     }
     // set the interaction data to null
@@ -48,8 +48,8 @@ export function MakeDraggable(vobj: Visual) {
       this.y = y;
       const agent = GetAgentById(vobj.id);
       if (agent) {
-        agent.prop('x').value = x;
-        agent.prop('y').setTo(y); // alt way of setting
+        agent.prop.x.value = x;
+        agent.prop.y.setTo(y); // alt way of setting
       }
     }
   }

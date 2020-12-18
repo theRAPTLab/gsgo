@@ -12,7 +12,14 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IAgent, IScopeable, TStackable, TMethod, TValue } from './t-script';
+import {
+  IKeyObject,
+  IAgent,
+  IScopeable,
+  TStackable,
+  TMethod,
+  TValue
+} from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,20 +33,18 @@ function new_obj_id() {
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Add a property to an agent's prop map by property name */
-function AddProp(agent: IAgent, prop: string, gvar: IScopeable) {
-  const { props } = agent;
-  if (props.has(prop)) throw Error(`prop '${prop}' already added`);
-  props.set(prop, gvar);
+function AddProp(agent: IAgent, pName: string, gvar: IScopeable) {
+  if (!agent.prop[pName]) throw Error(`prop '${pName}' already added`);
+  agent.prop[pName] = gvar;
   return gvar;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Add a method to an agent's method map by method name */
-function AddMethod(agent: IAgent, name: string, smc_or_f: TMethod): IAgent {
-  const { methods } = agent;
-  if (methods.has(name)) throw Error(`method '${name}' already added`);
-  methods.set(name, smc_or_f);
-  agent[name] = smc_or_f;
+function AddMethod(agent: IAgent, mName: string, smc_or_f: TMethod): IAgent {
+  if (!agent.method[mName]) throw Error(`method '${mName}' already added`);
+  agent.method[mName] = smc_or_f;
+  agent[mName] = smc_or_f;
   return agent;
 }
 
@@ -50,8 +55,8 @@ class SM_Object implements IScopeable {
   refId?: any; // optional class specific id
   _value: any;
   meta: { type: symbol; name?: string };
-  props: Map<string, IScopeable>;
-  methods: Map<string, TMethod>;
+  prop: IKeyObject;
+  method: IKeyObject;
 
   constructor(initValue?: any) {
     // init is a literal value
@@ -60,54 +65,52 @@ class SM_Object implements IScopeable {
     this.meta = {
       type: Symbol.for('SM_Object')
     };
-    this.props = new Map();
-    this.methods = new Map();
+    if (typeof initValue === 'string') this.meta.name = initValue;
+    this.prop = {};
+    this.method = {};
   }
 
-  /// getter/setter and get() set() equivalents
+  /// GETTER/SETTER
   get value() {
     return this._value;
   }
   set value(value) {
     this._value = value;
   }
-  get(): TValue {
-    return this._value;
+  get name() {
+    return this.meta.name;
   }
-  set(value: TValue) {
-    this._value = value;
-    return this;
+  set name(value) {
+    this.meta.name = value;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named property to SMC_Object prop map */
   addProp(pName: string, gvar: IScopeable): IScopeable {
-    const { props } = this;
-    if (props.has(pName)) throw Error(`prop '${pName}' already added`);
-    props.set(pName, gvar);
+    const prop = this.prop[pName];
+    if (!prop) throw Error(`prop '${pName}' already added`);
+    this.prop[pName] = gvar;
     return gvar;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a named method to SMC_Object method map */
-  addMethod(name: string, smc_or_f: TMethod): void {
-    const { methods } = this;
-    if (methods.has(name)) throw Error(`method '${name}' already added`);
-    methods.set(name, smc_or_f);
+  addMethod(mName: string, smc_or_f: TMethod): void {
+    const method = this.method[mName];
+    if (!method) throw Error(`method '${mName}' already added`);
+    method[mName] = smc_or_f;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: return the gvar assocated with propName
    *  @param {string} propName - name of property
    *  @returns {GVar} - value object
    */
-  prop(key: string): IScopeable {
-    return this.props.get(key);
+  getProp(key: string): IScopeable {
+    return this.prop[key];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Call a named method function using javascript semantics */
-  method(key: string, ...args: any): TStackable[] {
-    const method: TMethod = this.methods.get(key);
-    if (typeof method === 'function') return method.call(this, ...args);
-    throw Error(METHOD_ERR);
+  getMethod(key: string): TMethod {
+    return this.method[key];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return a serializer array */

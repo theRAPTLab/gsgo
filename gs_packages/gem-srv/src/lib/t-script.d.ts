@@ -15,44 +15,42 @@ export interface IScopeable {
   id: any;
   refId?: any;
   meta: { type: symbol; name?: string };
-  method: (name: string, ...args: any) => any;
+  prop: IKeyObject;
+  method: IKeyObject;
   addProp: (name: string, gv: IScopeable) => IScopeable;
+  getProp: (name: string) => IScopeable;
   addMethod: (name: String, callable: TMethod) => void;
-  props: Map<string, IScopeable>;
-  prop: (name: string) => IScopeable;
-  methods: Map<string, TMethod>;
+  getMethod: (name: string) => TMethod;
   serialize: () => any[];
   //  get value(): any; // works with typescript 3.6+
   //  set value(val:any); // works with typescript 3.6+
   value: any;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Weird Typescript syntax for declaring a Constructor of a IScopeable,
- *  when these are passed to a class that manages instances of other classes
- */
-export interface IScopeableCtor {
-  new (value?: any, ...args: any[]): IScopeable;
+  name: string;
 }
 
 /// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of IScopeable */
-export interface IAgent extends IScopeable {
-  features: Map<string, any>;
+export interface IAgent extends IScopeable, IActable, IMovementMode {
+  featureMap: Map<string, IFeature>;
+  execMethod: (name: string, ...args: any) => any;
+  addFeature: (name: string) => void;
+  getFeature: (name: string) => any;
   updateQueue: TMethod[];
-  thinkQueue: TMethod[];
-  execQueue: TMethod[];
   queueUpdateMessage: (msg: IMessage) => void;
+  thinkQueue: TMethod[];
   queueThinkMessage: (msg: IMessage) => void;
+  execQueue: TMethod[];
   queueExecAction: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ...args) => any;
-  feature: (name: string) => any;
-  addFeature: (name: string) => void;
-  name: (match?: string) => string;
-  x: () => number;
-  y: () => number;
-  skin: () => string;
+  featExec: (fName: string, mName: string, ...args) => any;
+  featProp: (fName: string, pName: string) => IScopeable;
+  // shortcut properties
+  skin: string;
+  x: number;
+  y: number;
+  // name, value are defined in IScopeable
 }
 
 /// FEATURE DECLARATIONS //////////////////////////////////////////////////////
@@ -61,13 +59,27 @@ export interface IAgent extends IScopeable {
  */
 export interface IFeature {
   meta: { feature: string };
-  methods: Map<string, TMethod>;
+  method: IKeyObject;
   initialize(pm: any): void;
-  name(): string;
   decorate(agent: IAgent): void;
-  addProp(agent: IAgent, key: string, prop: IScopeable): void;
-  prop(agent: IAgent, key: string): IScopeable;
-  method: (agent: IAgent, key: string, ...args: any) => any;
+  featAddProp(agent: IAgent, key: string, prop: IScopeable): void;
+  featAddMethod(mName: string, smc_or_f: FeatureMethod): void;
+  featGetMethod(mName: string): FeatureMethod;
+}
+export type FeatureMethod = (agent: IAgent, ...any) => any;
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Weird Typescript syntax for declaring a Constructor of a IScopeable,
+ *  when these are passed to a class that manages instances of other classes
+ */
+export interface IScopeableCtor {
+  new (value?: any, ...args: any[]): IScopeable;
+}
+/** Declare an object with keys. If you use just object, typescript will complain
+ *  every time you add an undeclared property name
+ */
+export interface IKeyObject {
+  [key: string]: any;
 }
 
 /// SIMULATION RUNTIME ////////////////////////////////////////////////////////
@@ -259,10 +271,43 @@ export type TRegcode = (
  */
 export type TSMCProgram = TOpcode[];
 export type TSMCGlobalProgram = TRegcode[];
+export type TSMCFunction = TOpcode;
 /** Also could be an AST, which is an object with a type property */
 export type TExpressionAST = { type: string };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is
  */
-export type TMethod = TSMCProgram | Function | TExpressionAST;
+export type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
+
+/// INTERACTION TYPE DECLARATIONS /////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export enum ControlMode {
+  static = 0,
+  puppet,
+  auto
+}
+
+export interface IActable {
+  isSelected: boolean;
+  isHovered: boolean;
+  isGrouped: boolean;
+  isCaptive: boolean;
+  setSelected: (mode: boolean) => boolean;
+  setHovered: (mode: boolean) => boolean;
+  setGrouped: (mode: boolean) => boolean;
+  setCaptive: (mode: boolean) => boolean;
+}
+
+/// AGENT MOVEMENT MODES //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface IMovementMode {
+  mode: () => ControlMode;
+  setPreviousMode: () => ControlMode;
+  setModePuppet: () => ControlMode;
+  setModeAuto: () => ControlMode;
+  setModeStatic: () => ControlMode;
+  isModePuppet: () => boolean;
+  isModeAuto: () => boolean;
+  isModeStatic: () => boolean;
+}

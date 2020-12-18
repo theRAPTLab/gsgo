@@ -62,14 +62,15 @@ class PixiAssetManager {
     this._loader.onProgress.add(this._loadProgress);
     this._loadComplete = this._loadComplete.bind(this);
     this._loader.onComplete.add(this._loadComplete);
-
     // to ensure async compatibility, bind callback functions
     this.queue = this.queue.bind(this);
     this.queueArray = this.queueArray.bind(this);
-    this.loadManifest = this.loadManifest.bind(this);
+    this.loadManifestSync = this.loadManifestSync.bind(this);
     this.promiseLoadQueue = this.promiseLoadQueue.bind(this);
     this.getAsset = this.getAsset.bind(this);
     this.getAssetById = this.getAssetById.bind(this);
+    this.lookupAssetId = this.lookupAssetId.bind(this);
+    this.getTextureInfo = this.getTextureInfo.bind(this);
   }
 
   load(id: AssetId, name: AssetName, url: AssetURL) {
@@ -151,7 +152,8 @@ class PixiAssetManager {
     };
     return new Promise(loadAssets);
   }
-  async loadManifest(assetFile: string) {
+
+  async loadManifestSync(assetFile: string) {
     const res = await fetch(assetFile);
     const list = await res.json();
     this.queueArray(list.sprites);
@@ -170,6 +172,20 @@ class PixiAssetManager {
     console.warn(`assetId ${id} is not in library`, this._textures);
     if (this._loader.loading) console.log('note: asynch load still in progress');
     return undefined;
+  }
+
+  getTextureInfo(idOrName: number | string) {
+    let assetId = idOrName;
+    if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
+    const rsrc: any = this.getAssetById(assetId as number);
+    if (rsrc.texture) return { frameCount: 1 };
+    if (rsrc.spritesheet)
+      return { frameCount: rsrc.spritesheet._frameKeys.length };
+    return { err: 'not a texture or spritesheet' };
+  }
+
+  lookupAssetId(name: AssetName): AssetId {
+    return this._tex_dict.get(name);
   }
 
   getAsset(name: AssetName) {

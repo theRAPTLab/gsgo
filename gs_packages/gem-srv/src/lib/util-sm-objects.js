@@ -45,7 +45,7 @@ function AddMethod(agent, method, func) {
  *  @returns {FeatureLib} - for chaining agent calls
  */
 function AddFeature(agent, feature) {
-  if (agent.features.has(feature))
+  if (agent.feature[feature))
     throw Error(`feature '${feature}' already to blueprint`);
   const fpack = FEATURES.get(feature);
   if (!fpack) throw Error(`'${feature}' is not an available feature`);

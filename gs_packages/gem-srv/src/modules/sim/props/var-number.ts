@@ -27,12 +27,12 @@ function u_CheckMinMax(vobj) {
     vobj.max = min;
   }
   if (vobj.value > vobj.max) {
-    if (DBG) console.log('clamp max', vobj.max);
-    vobj.value = vobj.max;
+    if (vobj.wrap) vobj.value = vobj.min;
+    else vobj.value = vobj.max;
   }
   if (vobj.value < vobj.min) {
-    if (DBG) console.log('clamp min', vobj.min);
-    vobj.value = vobj.min;
+    if (vobj.wrap) vobj.value = vobj.max;
+    else vobj.value = vobj.mind;
   }
   vobj.nvalue = (vobj.value - vobj.min) / (vobj.max - vobj.min);
 }
@@ -43,6 +43,7 @@ export class NumberProp extends SM_Object implements IScopeable {
   nvalue: number;
   min: number;
   max: number;
+  wrap: boolean;
   constructor(initial = 0) {
     super(initial);
     this.meta.type = Symbol.for('NumberProp');
@@ -50,6 +51,10 @@ export class NumberProp extends SM_Object implements IScopeable {
     this.nvalue = undefined;
     this.min = 0;
     this.max = 0;
+    this.wrap = false;
+  }
+  setWrap(flag: boolean = true) {
+    this.wrap = flag;
   }
   setMin(num: number) {
     this.min = num;

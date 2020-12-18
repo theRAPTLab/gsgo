@@ -20,7 +20,7 @@ import './sim-features';
 import './sim-render';
 
 // import submodules
-import { GAME_LOOP, MODES } from './api-sim-gameloop';
+import { GAME_LOOP } from './api-sim-gameloop';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
