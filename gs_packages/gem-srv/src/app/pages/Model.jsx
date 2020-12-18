@@ -25,8 +25,8 @@ const PR = UR.PrefixUtil('LOGIN');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
-const panelConfig = new Map();
-panelConfig.set('select', '20% auto 100px'); // columns
+const PANEL_CONFIG = new Map();
+PANEL_CONFIG.set('select', '20% auto 100px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,7 +73,7 @@ class Model extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: panelConfig.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
         }}
       >
         <div

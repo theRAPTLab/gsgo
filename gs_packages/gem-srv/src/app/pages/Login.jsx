@@ -27,10 +27,10 @@ const PR = UR.PrefixUtil('LOGIN');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
-const panelConfig = new Map();
-panelConfig.set('login', '100% 0 0'); // columns
-panelConfig.set('selectSimulation', '100% 0 0'); // columns
-panelConfig.set('sim', '15% auto 100px'); // columns
+const PANEL_CONFIG = new Map();
+PANEL_CONFIG.set('login', '100% 0 0'); // columns
+PANEL_CONFIG.set('selectSimulation', '100% 0 0'); // columns
+PANEL_CONFIG.set('sim', '15% auto 100px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,7 +84,7 @@ class Login extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: panelConfig.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
         }}
       >
         <div

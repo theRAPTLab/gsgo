@@ -37,9 +37,10 @@ const PR = UR.PrefixUtil('MISSIONCONTROL');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
-const panelConfig = new Map();
-panelConfig.set('map', '50% auto 100px'); // columns
-panelConfig.set('sim', '15% auto 100px'); // columns
+const PANEL_CONFIG = new Map();
+PANEL_CONFIG.set('map', '50% auto 100px'); // columns
+PANEL_CONFIG.set('blueprints', '50% auto 100px'); // columns
+PANEL_CONFIG.set('sim', '15% auto 100px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,7 +91,7 @@ class MissionControl extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: panelConfig.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
         }}
       >
         <div

@@ -32,9 +32,9 @@ const PR = UR.PrefixUtil('MISSIONCONTROL');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
-const panelConfig = new Map();
-panelConfig.set('instances', '15% auto'); // columns
-panelConfig.set('sim', '5% auto'); // columns
+const PANEL_CONFIG = new Map();
+PANEL_CONFIG.set('instances', '15% auto'); // columns
+PANEL_CONFIG.set('sim', '5% auto'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,7 +85,7 @@ class Viewer extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: panelConfig.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
         }}
       >
         <div

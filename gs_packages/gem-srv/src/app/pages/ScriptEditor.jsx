@@ -28,10 +28,10 @@ const PR = UR.PrefixUtil('SCRIPTEDITOR');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
-const panelConfig = new Map();
-panelConfig.set('select', '50% auto 0px'); // columns
-panelConfig.set('script', '50% auto 0px'); // columns
-panelConfig.set('sim', '25% auto 0px'); // columns
+const PANEL_CONFIG = new Map();
+PANEL_CONFIG.set('select', '50% auto 0px'); // columns
+PANEL_CONFIG.set('script', '50% auto 0px'); // columns
+PANEL_CONFIG.set('sim', '50% auto 0px'); // columns
 
 /// DUMMY DATA ////////////////////////////////////////////////////////////////
 ///
@@ -185,7 +185,7 @@ class ScriptEditor extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: panelConfig.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
         }}
       >
         <div
