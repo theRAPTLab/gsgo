@@ -53,7 +53,6 @@ onEvent Tick [[
   setProp 'x'  0
   setProp 'y'  0
   exec {{ agent.prop.Costume.currentFrame.add(1) }}
-  ifTest [[ test ]] [[ ]] [[ ]]
 ]]
 # PROGRAM CONDITION
 when Bee sometest [[
