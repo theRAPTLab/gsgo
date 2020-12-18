@@ -160,6 +160,7 @@ class ScriptEditor extends React.Component {
 
   OnPanelClick(id) {
     console.log('click', id); // e, e.target, e.target.value);
+    if (id === 'sim') return; // don't do anything if user clicks on sim panel
     this.setState({
       panelConfiguration: id
     });
