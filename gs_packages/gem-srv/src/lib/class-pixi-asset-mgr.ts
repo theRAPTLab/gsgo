@@ -66,7 +66,7 @@ class PixiAssetManager {
     // to ensure async compatibility, bind callback functions
     this.queue = this.queue.bind(this);
     this.queueArray = this.queueArray.bind(this);
-    this.loadManifest = this.loadManifest.bind(this);
+    this.loadManifestSync = this.loadManifestSync.bind(this);
     this.promiseLoadQueue = this.promiseLoadQueue.bind(this);
     this.getAsset = this.getAsset.bind(this);
     this.getAssetById = this.getAssetById.bind(this);
@@ -151,7 +151,8 @@ class PixiAssetManager {
     };
     return new Promise(loadAssets);
   }
-  async loadManifest(assetFile: string) {
+
+  async loadManifestSync(assetFile: string) {
     const res = await fetch(assetFile);
     const list = await res.json();
     this.queueArray(list.sprites);

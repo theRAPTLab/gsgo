@@ -26,7 +26,8 @@ const ASSET_MGR = new PixiTextureMgr();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const GetAsset = ASSET_MGR.getAsset;
 export const GetAssetById = ASSET_MGR.getAssetById;
-export const LoadAssets = ASSET_MGR.loadManifest;
+export const LookupAssetId = ASSET_MGR.lookupAssetId;
+export const LoadAssetsSync = ASSET_MGR.loadManifestSync;
 
 /// FORWARD INTRINSIC OBJECTS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,4 +46,3 @@ UR.SystemHook('SIM/INPUTS', frameTime => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exported functions
 /// expose maps and managers
-export { ASSET_MGR };

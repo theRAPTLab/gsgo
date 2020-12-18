@@ -108,13 +108,29 @@ class Feature implements IFeature {
    *  to store props in agent.prop.FeatureName
    */
   featAddProp(agent: IAgent, pName: string, prop: IScopeable) {
-    // agent.props = Map<string, IScopeable>;
+    // note: agent.props = Map<string, IScopeable>;
     let dict = agent.prop[this.name];
     if (!dict) {
       dict = {};
       agent.prop[this.name] = {};
     }
     dict[pName] = prop;
+  }
+  /** Features do not have to store properties if they are for private use by
+   *  the feature. Only use props if you expect students to script with them,
+   *  as props can be inspected to see what their allowed values are. For speed,
+   *  you can use this instead. Make sure it's named with _ though to tell them
+   *  apart from student-scriptable vars
+   */
+  featAddVar(agent: IAgent, vName: string, literal: any) {
+    // note: agent.props = Map<string, IScopeable>;
+    if (!vName.startsWith('_')) throw Error('feature var name must start with _');
+    let dict = agent.prop[this.name];
+    if (!dict) {
+      dict = {};
+      agent.prop[this.name] = {};
+    }
+    dict[vName] = literal;
   }
   /** Define a method to this feature instance. Note that there is only one
    *  instance of a Feature at a time, so the code for instance methods

@@ -31,7 +31,7 @@ UR.SystemHook(
     new Promise((resolve, reject) => {
       console.log(...PR('LOADING ASSET MANIFEST...'));
       (async () => {
-        await GLOBAL.LoadAssets('static/assets.json');
+        await GLOBAL.LoadAssetsSync('static/assets.json');
         ASSETS_LOADED = true;
         console.log(...PR('ASSETS LOADED'));
         resolve();

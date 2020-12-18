@@ -468,6 +468,62 @@ Tomorrow we'll actually implement the costume feature so we can change costumes 
 * for features that need cycle time, we can hook into the `update`, `think`, or `exec` update cycles in agent to get a little execution time. This can be done through a keyword we call `featHookUpdate(featureName, methodName)` 
 * We can also hook into SIM to update our own counters in the feature. 
 
+## DEC 18 FRI - Costume Resumed
+
+Reviewing TexturePacker formats and PIXI-JS conventions:
+
+``` js
+// load a spritesheet
+PIXI.loader
+    .add("images/spritesheet.json")
+    .load(setup);
+
+// load a single sprite from the sheet and add to stage
+background = new PIXI.Sprite(sheet.textures["background.png"]);
+app.stage.addChild(background);
+
+// load an animation
+animatedCapguy = new PIXI.AnimatedSprite(sheet.animations["capguy"]);
+
+// set speed, start playback and add it to the stage
+animatedCapguy.animationSpeed = 0.167; 
+animatedCapguy.play();
+app.stage.addChild(animatedCapguy);
+
+// get texture for frame name from spritesheet
+if (rsrc.spritesheet) {
+  frameTexture = rsrc.textures['name'];
+  // get texture by frame number from spritesheet
+  frameTexture = rsrc.spritesheet._frameKeys[0];
+}
+
+// get texture from regular texture (non-spritesheet)
+if (rsrc.texture) return rsrc.texture
+
+```
+
+#### AssetManager Review of Operations
+
+Our asset manager uses a manifest file (`static/assets.json`)  that loads all the sprites. Then, we can access them via `getAssetById(id)` and `getAssetByName(name)` . The asset manager extracts the name from the `sprites` collection with `assetId, assetName, and assetURL`
+
+The key data structure is `_textures` which holds a `PIXI.LoaderResource` indexed by assetId as defined in our manifest file. The assetId is used to refer to the same asset across distributed GEMSTEP apps.
+
+Modifying the example above to use our asset manager:
+
+```js
+AssetManager.loadManifest('static/assets.json');
+const sprite = new Visual(id); // id should be the display object id to mirror
+sprite.setTexture(name,frameKey); // framekey can be a number or string
+
+
+
+
+```
+
+
+
+
+
 ---
 
 **ADDITIONAL THINGS TO IMPLEMENT**
