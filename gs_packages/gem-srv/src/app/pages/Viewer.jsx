@@ -97,7 +97,7 @@ class Viewer extends React.Component {
             <span style={{ fontSize: '32px' }}>VIEWER</span> UGLY DEVELOPER MODE
           </div>
           <button type="button" onClick={this.OnModelClick}>
-            MODEL
+            Back to MODEL
           </button>
         </div>
         <div

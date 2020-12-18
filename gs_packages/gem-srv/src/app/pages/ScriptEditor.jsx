@@ -198,7 +198,7 @@ class ScriptEditor extends React.Component {
             MODE
           </div>
           <button type="button" onClick={this.OnModelClick}>
-            MODEL
+            Back to MODEL
           </button>
         </div>
         <div id="console-left" className={classes.left}>

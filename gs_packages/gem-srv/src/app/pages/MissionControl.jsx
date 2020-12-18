@@ -104,7 +104,7 @@ class MissionControl extends React.Component {
             DEVELOPER MODE
           </div>
           <button type="button" onClick={this.OnModelClick}>
-            MODEL
+            Back to MODEL
           </button>
         </div>
         <div
