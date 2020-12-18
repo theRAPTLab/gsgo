@@ -188,7 +188,8 @@ const useStylesHOC = theme => ({
     margin: '5px',
     borderRadius: '5px',
     color: CLR_DATA,
-    backgroundColor: CLR_OBJECT_CLICKABLE
+    backgroundColor: CLR_OBJECT_CLICKABLE,
+    cursor: 'default'
   },
   instanceListItemInactive: {
     color: CLR_LABEL,
