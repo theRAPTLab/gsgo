@@ -171,6 +171,14 @@ class Agent extends SM_Object implements IAgent, IActable {
     const featProps = this.prop[fName];
     return featProps[pName];
   }
+  /** Return private feature variable. The variable name must begin with
+   *  an _, and it holds a regular Javascript value
+   */
+  featVar(fName: string, vName: string): any {
+    if (!vName.startsWith('_')) throw Error('feature var name must begin with _');
+    const featProps = this.prop[fName];
+    return featProps[vName];
+  }
 
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

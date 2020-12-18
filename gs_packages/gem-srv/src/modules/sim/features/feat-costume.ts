@@ -54,9 +54,9 @@ class CostumePack extends Feature {
     prop.setMin(0);
     prop.setWrap();
     this.featAddProp(agent, 'counter', prop);
-    this.featAddProp(agent, 'currentPose', new StringProp('default'));
-    this.featAddProp(agent, 'currentFrame', new NumberProp(0));
     this.featAddProp(agent, 'costumeName', new StringProp('default'));
+    // private feature instance vars, must begin with _
+    this.featAddVar(agent, '_frame', 0);
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
