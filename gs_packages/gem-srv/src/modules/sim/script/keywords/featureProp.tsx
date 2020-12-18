@@ -41,7 +41,9 @@ export class featureProp extends Keyword {
     const featName = unit[1];
     const propName = unit[2];
     const value = unit[3];
-    return (
+    return super.jsx(
+      index,
+      unit,
       <>
         Feature {featName}.{propName} set to {value}
       </>
