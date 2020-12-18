@@ -23,6 +23,7 @@ import PanelMap from './components/PanelMap';
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelPlayback from './components/PanelPlayback';
 import PanelInspector from './components/PanelInspector';
+import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
@@ -49,7 +50,7 @@ class MissionControl extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'map'
+      panelConfiguration: 'sim'
     };
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
@@ -87,6 +88,16 @@ class MissionControl extends React.Component {
   render() {
     const { panelConfiguration } = this.state;
     const { classes } = this.props;
+
+    /// This should be loaded from the db
+    /// Hacked in for now
+    const agents = [
+      { id: 'fish', label: 'Fish' },
+      { id: 'algae', label: 'Algae' },
+      { id: 'lightbeam', label: 'Lightbeam' },
+      { id: 'poop', label: 'Poop', editor: 'UADDR01: Ben' }
+    ];
+
     return (
       <div
         className={classes.root}
@@ -112,11 +123,13 @@ class MissionControl extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelMap
+          {/* Map disabled for now
+            <PanelMap
             id="map"
             isMinimized={panelConfiguration !== 'map'}
             onClick={this.OnPanelClick}
-          />
+          /> */}
+          <PanelBlueprints id="blueprints" agents={agents} />
           <PanelInstances id="instances" />
         </div>
         <div id="console-main" className={classes.main}>
