@@ -17,24 +17,13 @@ class PanelInspector extends React.Component {
 
   render() {
     const { title, color, colorActive, bgcolor } = this.state;
-    const { id, isActive } = this.props;
+    const { id, isActive, classes } = this.props;
 
     const onClick = () => {
       // To be implemented
       console.log('Show agent');
     };
 
-    const styleLabel = {
-      display: 'inline-block',
-      color: '#006600',
-      width: '80px',
-      textAlign: 'right'
-    };
-    const styleData = {
-      display: 'inline-block',
-      color: isActive ? colorActive : color,
-      width: '100px'
-    };
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
         <div
@@ -47,24 +36,24 @@ class PanelInspector extends React.Component {
           }}
         >
           <div>
-            <div style={styleLabel}>AGENT:</div>
-            <div style={styleData}>FISH</div>
+            <div className={classes.inspectorLabel}>AGENT:</div>
+            <div className={classes.inspectorData}>FISH</div>
           </div>
           <div>
-            <div style={styleLabel}>X:</div>
-            <div style={styleData}>50</div>
+            <div className={classes.inspectorLabel}>X:</div>
+            <div className={classes.inspectorData}>50</div>
           </div>
           <div>
-            <div style={styleLabel}>Y:</div>
-            <div style={styleData}>100</div>
+            <div className={classes.inspectorLabel}>Y:</div>
+            <div className={classes.inspectorData}>100</div>
           </div>
           <div>
-            <div style={styleLabel}>EnergyLevel:</div>
-            <div style={styleData}>25</div>
+            <div className={classes.inspectorLabel}>EnergyLevel:</div>
+            <div className={classes.inspectorData}>25</div>
           </div>
           <div>
-            <div style={styleLabel}>Status:</div>
-            <div style={styleData}>Active</div>
+            <div className={classes.inspectorLabel}>Status:</div>
+            <div className={classes.inspectorData}>Active</div>
           </div>
         </div>
       </PanelChrome>

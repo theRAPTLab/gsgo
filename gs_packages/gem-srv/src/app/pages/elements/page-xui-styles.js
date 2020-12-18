@@ -20,7 +20,7 @@ const BG_TITLE = '#404040';
 
 const CLR_R = 30;
 const CLR_G = 256;
-const CLR_B = 100;
+const CLR_B = 256;
 
 const CLR_HI_R = 256;
 const CLR_HI_G = 0;
@@ -160,6 +160,17 @@ const useStylesHOC = theme => ({
   },
   infoActive: {
     color: CLR_ACTIVE
+  },
+  inspectorLabel: {
+    display: 'inline-block',
+    color: CLR_LABEL,
+    width: '80px',
+    textAlign: 'right'
+  },
+  inspectorData: {
+    display: 'inline-block',
+    color: CLR_DATA,
+    width: '100px'
   },
   outline: {
     border: `1px solid ${CLR_BORDER}`
