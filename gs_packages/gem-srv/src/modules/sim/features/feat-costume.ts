@@ -25,7 +25,7 @@ class CostumePack extends Feature {
     super(name);
     // add feature methods here
     this.featAddMethod('setCostume', this.setCostume);
-    this.featAddMethod('pose', this.setPose);
+    this.featAddMethod('setPose', this.setPose);
     this.featAddMethod('test', this.test);
     this.featAddMethod('thinkHook', agent => {
       const prop = agent.prop.Costume.counter;
@@ -54,7 +54,7 @@ class CostumePack extends Feature {
     prop.setMax(120);
     prop.setMin(0);
     prop.setWrap();
-    this.featAddProp(agent, 'counter', prop);
+    this.featAddProp(agent, 'counter', prop); // used by thinkhook example above
     this.featAddProp(agent, 'costumeName', new StringProp('default'));
     prop = new NumberProp(0);
     prop.setWrap();
@@ -68,14 +68,17 @@ class CostumePack extends Feature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featureCall Costume setCostume value
    */
-  setCostume(agent: IAgent, costumeName: string, poseName?: string) {
+  setCostume(agent: IAgent, costumeName: string, poseName: string | Number) {
     agent.featProp(this.name, 'costumeName').value = costumeName;
     const { frameCount } = GetTextureInfo(costumeName);
-    const cf = agent.featProp(this.name, 'currentFrame') as NumberProp;
-    cf.setMax(frameCount - 1);
+    if (poseName !== undefined) {
+      const cf = agent.featProp(this.name, 'currentFrame') as NumberProp;
+      cf.value = poseName;
+      cf.setMax(frameCount - 1);
+    }
   }
-  setPose(agent: IAgent, poseName: string) {
-    agent.featProp(this.name, 'poseName').value = poseName;
+  setPose(agent: IAgent, poseName: string | number) {
+    agent.featProp(this.name, 'currentFrame').value = poseName;
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);

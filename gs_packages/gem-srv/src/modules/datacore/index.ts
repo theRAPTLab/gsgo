@@ -37,9 +37,9 @@ const DEFAULT_TEXT = `
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
+featureCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
-featureCall Costume setCostume 'bunny.json'
 featureCall Movement jitterPos -5 5
 # PROGRAM THINK
 // featureHook Costume thinkHook
@@ -50,9 +50,16 @@ onEvent Tick [[
     dbgOut 'my tick' 'agent instance' {{ agent.name }}
     dbgOut 'my tock'
   ]]
-  setProp 'x'  0
-  setProp 'y'  0
-  exec {{ agent.prop.Costume.currentFrame.add(1) }}
+  // exec {{ agent.prop.Costume.currentFrame.add(1) }}
+  ifExpr {{ agent.prop.x.value > 50 }} [[
+    featureCall Costume setPose 2
+  ]]
+  ifExpr {{ agent.prop.x.value < -50 }} [[
+    featureCall Costume setPose 3
+  ]]
+  ifExpr {{ agent.prop.y.value > 50 }} [[
+    featureCall Costume setPose 4
+  ]]
 ]]
 # PROGRAM CONDITION
 when Bee sometest [[
