@@ -23,12 +23,11 @@ UR.SystemHook('UR/LOAD_ASSETS', () => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {
       let map = await GLOBAL.LoadAssets('static/assets.json');
-      ASSETS_LOADED = true;
       if (DBG) console.log(...PR('ASSETS LOADED'));
       console.log(...PR('Waiting for user input'));
+      ASSETS_LOADED = true;
+      resolve();
     })();
-    ASSETS_LOADED = true;
-    resolve();
   });
 });
 
