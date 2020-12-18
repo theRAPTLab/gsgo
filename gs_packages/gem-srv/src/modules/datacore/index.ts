@@ -39,10 +39,10 @@ useFeature Costume
 useFeature Movement
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
-featureProp Costume costumeName 'bee.json'
+featureCall Costume setCostume 'bunny.json'
 featureCall Movement jitterPos -5 5
 # PROGRAM THINK
-featureHook Costume thinkHook
+// featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
@@ -52,6 +52,8 @@ onEvent Tick [[
   ]]
   setProp 'x'  0
   setProp 'y'  0
+  exec {{ agent.prop.Costume.currentFrame.add(1) }}
+  ifTest [[ test ]] [[ ]] [[ ]]
 ]]
 # PROGRAM CONDITION
 when Bee sometest [[

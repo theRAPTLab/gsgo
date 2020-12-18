@@ -28,6 +28,7 @@ export const GetAsset = ASSET_MGR.getAsset;
 export const GetAssetById = ASSET_MGR.getAssetById;
 export const LookupAssetId = ASSET_MGR.lookupAssetId;
 export const LoadAssetsSync = ASSET_MGR.loadManifestSync;
+export const GetTextureInfo = ASSET_MGR.getTextureInfo;
 
 /// FORWARD INTRINSIC OBJECTS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

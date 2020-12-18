@@ -29,7 +29,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.x = agent.x;
     dobj.y = agent.y;
     dobj.skin = agent.skin;
-    dobj.frame = agent.prop.Costume._frame;
+    dobj.frame = agent.prop.Costume.currentFrame.value;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
   },
@@ -37,7 +37,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.x = agent.x;
     dobj.y = agent.y;
     dobj.skin = agent.skin;
-    dobj.frame = agent.prop.Costume._frame;
+    dobj.frame = agent.prop.Costume.currentFrame.value;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
   }

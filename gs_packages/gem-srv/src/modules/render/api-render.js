@@ -95,6 +95,8 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+      // inefficient texture update
+      vobj.setTexture(dobj.skin, dobj.frame);
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);

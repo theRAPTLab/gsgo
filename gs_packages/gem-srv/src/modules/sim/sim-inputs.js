@@ -19,7 +19,7 @@ const PR = UR.PrefixUtil('SIM_INPUTS');
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.SystemHook('SIM/INPUTS', () => {
-  console.log('input');
+  // console.log('input');
 });
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

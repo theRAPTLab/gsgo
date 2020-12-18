@@ -9,6 +9,7 @@ import { NumberProp, StringProp } from 'modules/sim/props/var';
 import Feature from 'lib/class-feature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
+import { GetTextureInfo } from 'modules/datacore/dc-globals';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,8 +56,11 @@ class CostumePack extends Feature {
     prop.setWrap();
     this.featAddProp(agent, 'counter', prop);
     this.featAddProp(agent, 'costumeName', new StringProp('default'));
-    // private feature instance vars, must begin with _
-    this.featAddVar(agent, '_frame', 0);
+    prop = new NumberProp(0);
+    prop.setWrap();
+    prop.setMin(0);
+    prop.setMax(0);
+    this.featAddProp(agent, 'currentFrame', prop);
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
@@ -66,6 +70,9 @@ class CostumePack extends Feature {
    */
   setCostume(agent: IAgent, costumeName: string, poseName?: string) {
     agent.featProp(this.name, 'costumeName').value = costumeName;
+    const { frameCount } = GetTextureInfo(costumeName);
+    const cf = agent.featProp(this.name, 'currentFrame') as NumberProp;
+    cf.setMax(frameCount - 1);
   }
   setPose(agent: IAgent, poseName: string) {
     agent.featProp(this.name, 'poseName').value = poseName;

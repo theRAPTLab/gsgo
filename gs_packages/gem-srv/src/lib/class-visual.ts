@@ -70,6 +70,7 @@ class Visual implements IVisual, IPoolable, IActable {
   refId?: any;
   // visual
   sprite: PIXI.Sprite;
+  assetId: number;
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
@@ -86,6 +87,7 @@ class Visual implements IVisual, IPoolable, IActable {
     spr.pivot.x = spr.width / 2;
     spr.pivot.y = spr.height / 2;
     this.sprite = spr;
+    this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
     this.isSelected = false; // use primary selection effect
     this.isHovered = false; // use secondary highlight effect
@@ -104,6 +106,7 @@ class Visual implements IVisual, IPoolable, IActable {
     const rsrc = GLOBAL.GetAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
+    this.assetId = assetId;
   }
 
   setTexture(name: string, frameKey: string | number) {
@@ -118,10 +121,17 @@ class Visual implements IVisual, IPoolable, IActable {
     // is this a spritesheet?
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
+    this.assetId = GLOBAL.LookupAssetId(name);
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
     // we're done
+  }
+
+  setFrame(frameKey: string | number) {
+    if (this.assetId === undefined)
+      console.warn(`asset for sprite ${this.id} not set`);
+    this.setTextureById(this.assetId, frameKey);
   }
 
   add(root: PIXI.Container) {
