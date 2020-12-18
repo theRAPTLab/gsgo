@@ -11,6 +11,13 @@
   and [[ ... lines ]]. It returns the tokenized values in raw string or array
   format. It also detected comments // and directives #
 
+  KNOWN BUGS
+  * Inline blocks inside of a multiblock cause the tokenizer to lockup.
+    The problem is in gobbleMultiBlock not handling inline blocks.
+    onEvent Tick [[
+      [[ ]]  <---- scanner breaks on this
+    ]]
+
   This code is a refactored version of jsep, modified to produce
   our script unit format of [keyword, ...args] instead of an AST.
   -
@@ -224,6 +231,7 @@ class ScriptTokenizer {
         if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
           level--;
           if (level > 0) str += ']]';
+          if (level === 0) this.index++;
           this.index++;
           break;
         }

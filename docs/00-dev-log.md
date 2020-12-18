@@ -423,6 +423,105 @@ Now it's being called for two separate RPs, not three.
 
 Also the add/remove logic is working again.
 
+## DEC 15 TUE - Implementing Costume Feature
+
+This is our first real "finished" feature. There are not that many things to add to it.
+
+## DEC 16 WED - Features Refactor
+
+I am going to change the way that `prop('propname')` works so it's just `prop.propname` or `prop['propname']`, because the indirection is annoying.
+
+* [x] `class-sm-object` is the base class for props and methods
+
+* [x] `class-agent` is the base class for features
+
+  * [x] two ways to access: `.prop` or `getProp()`
+
+  
+
+### Costume Feature Continued
+
+With the features, props, and methods refactored and made consistent, we can resume work on **Costumes**. There are two commands:
+
+* Costume.set 'name of costume'
+* Costume.pose 'poseName' or number (frame)
+* Costume.play 'poseName' if it's an animation
+
+So how does this actually work?
+
+* script is `featureCall Costume methodName value`
+* this effectively calls `Costume.featExec(agent, methodName, ...agent.evaluateArgs)`
+* The actual code is implemented in `feat-costume` as `methodName(...args)`
+
+So let's give this a try!
+
+* [x] create stub for `set`, `pose`, and `play`
+* [x] move featExec and featProp utilities to class-agent from class-feature
+* [x] fix featureCall, featureProp
+* [x] confirm accessors are working, simplify call chain
+
+Tomorrow we'll actually implement the costume feature so we can change costumes on-the-fly. This is probably already done to some extent because all features are doing are setting properties and values that will be read by the Renderer System. Since the renderer only cares about x, y, and skin, the Costume feature just needs to make sure the skin is updated accordingly. 
+
+* `vobj.setTexture(dobj.skin, dobj.frame);` in `api-render` is the critical routine.
+* we want to define the `skin` property so an appropriate `frame` is available.
+* also, we want to ship an `assetId`, not a string, in the display object renderer
+* for features that need cycle time, we can hook into the `update`, `think`, or `exec` update cycles in agent to get a little execution time. This can be done through a keyword we call `featHookUpdate(featureName, methodName)` 
+* We can also hook into SIM to update our own counters in the feature. 
+
+## DEC 18 FRI - Costume Resumed
+
+Reviewing TexturePacker formats and PIXI-JS conventions:
+
+``` js
+// load a spritesheet
+PIXI.loader
+    .add("images/spritesheet.json")
+    .load(setup);
+
+// load a single sprite from the sheet and add to stage
+background = new PIXI.Sprite(sheet.textures["background.png"]);
+app.stage.addChild(background);
+
+// load an animation
+animatedCapguy = new PIXI.AnimatedSprite(sheet.animations["capguy"]);
+
+// set speed, start playback and add it to the stage
+animatedCapguy.animationSpeed = 0.167; 
+animatedCapguy.play();
+app.stage.addChild(animatedCapguy);
+
+// get texture for frame name from spritesheet
+if (rsrc.spritesheet) {
+  frameTexture = rsrc.textures['name'];
+  // get texture by frame number from spritesheet
+  frameTexture = rsrc.spritesheet._frameKeys[0];
+}
+
+// get texture from regular texture (non-spritesheet)
+if (rsrc.texture) return rsrc.texture
+
+```
+
+#### AssetManager Review of Operations
+
+Our asset manager uses a manifest file (`static/assets.json`)  that loads all the sprites. Then, we can access them via `getAssetById(id)` and `getAssetByName(name)` . The asset manager extracts the name from the `sprites` collection with `assetId, assetName, and assetURL`
+
+The key data structure is `_textures` which holds a `PIXI.LoaderResource` indexed by assetId as defined in our manifest file. The assetId is used to refer to the same asset across distributed GEMSTEP apps.
+
+Modifying the example above to use our asset manager:
+
+```js
+AssetManager.loadManifest('static/assets.json');
+const sprite = new Visual(id); // id should be the display object id to mirror
+sprite.setTexture(name,frameKey); // framekey can be a number or string
+
+
+
+
+```
+
+
+
 
 
 ---

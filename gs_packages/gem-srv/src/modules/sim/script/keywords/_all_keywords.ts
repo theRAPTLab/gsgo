@@ -15,7 +15,9 @@ export * from './propValue';
 export * from './useFeature';
 export * from './featureProp';
 export * from './featureCall';
+export * from './featureHook';
 export * from './addTest'; // add a named test
+export * from './exec';
 
 // utility keywords
 export * from './randomPos'; // randomizes position
@@ -29,7 +31,7 @@ export * from './_comment'; // embed comment data
 export * from './_pragma'; // compiler control
 export * from './_blueprint'; // set the name of a blueprint bundle
 
-// keywords under development
+// conditional keywords
 export * from './ifExpr'; // run an expression test
 export * from './ifTest'; // run a named test during agent runtime
 export * from './ifProg'; // experimental placeholder

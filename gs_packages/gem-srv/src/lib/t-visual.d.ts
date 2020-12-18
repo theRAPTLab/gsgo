@@ -6,7 +6,7 @@
 
 import * as PIXI from 'pixi.js';
 import { IPoolable } from 'lib/t-pool.d';
-import { IActable } from 'lib/t-interaction';
+import { IActable } from 'lib/t-script';
 
 /// VISUALS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

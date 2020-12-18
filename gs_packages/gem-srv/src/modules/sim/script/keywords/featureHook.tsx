@@ -1,57 +1,56 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "featureProp" keyword object
+  implementation of keyword "featureHook" command object
+  make sure to use PROGRAM pragma to direct into appropriate blueprint!
+  see dc-script-bundle for a list of valid bundle
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { GetFeature, GetFeatureMethod } from 'modules/datacore/dc-features';
 import { RegisterKeyword } from 'modules/datacore';
+
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class featureProp extends Keyword {
+export class featureHook extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('featureProp');
-    this.args = ['featureName:string', 'propName:string', 'value:any'];
+    super('featureHook');
+    this.args = ['featureName:string', 'methodName:string'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, featureName, propName, value] = unit;
+    const [kw, featName, methodName] = unit;
+    const feature = GetFeature(featName);
+    const method = feature.featGetMethod(methodName);
     const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
-      const featProp = agent.featProp(featureName, propName);
-      featProp.value = value;
+    progout.push((agent: IAgent) => {
+      method.call(feature, agent);
     });
     return progout;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { featureName, propName, value } = state;
-    return [this.keyword, featureName, propName, value];
+    const { feature, method, ...args } = state;
+    return [this.keyword, feature, method, args];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const featName = unit[1];
-    const propName = unit[2];
-    const value = unit[3];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        Feature {featName}.{propName} set to {value}
-      </>
-    );
+    const [kw, featName, method] = unit;
+    return super.jsx(index, unit, <>{unit.join(' ')}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(featureProp);
+RegisterKeyword(featureHook);

@@ -12,6 +12,7 @@
 import UR from '@gemstep/ursys/client';
 import { StringProp } from 'modules/sim/props/var';
 import Feature from 'lib/class-feature';
+import { Register } from 'modules/datacore/dc-features';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,8 +29,8 @@ class MovementPack extends Feature {
     // super.prop(agent, key)
     // super.method(agent, key, ...args)
     this.handleInput = this.handleInput.bind(this);
-    this.defineMethod('jitterPos', this.jitterPos);
-    this.defineMethod('setController', this.setController);
+    this.featAddMethod('jitterPos', this.jitterPos);
+    this.featAddMethod('setController', this.setController);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -40,7 +41,7 @@ class MovementPack extends Feature {
 
   decorate(agent) {
     super.decorate(agent);
-    this.addProp(agent, 'controller', new StringProp());
+    this.featAddProp(agent, 'controller', new StringProp());
   }
 
   handleInput() {
@@ -56,8 +57,8 @@ class MovementPack extends Feature {
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
     const x = m_Random(min, max, round);
     const y = m_Random(min, max, round);
-    agent.prop('x').value += x;
-    agent.prop('y').value += y;
+    agent.prop.x.value += x;
+    agent.prop.y.value += y;
   }
 } // end of feature class
 
@@ -69,7 +70,7 @@ function m_Random(min, max, round) {
   return n;
 }
 
-/// EXPORT SINGLETON //////////////////////////////////////////////////////////
+/// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const INSTANCE = new MovementPack('Movement');
-export default INSTANCE;
+Register(INSTANCE);

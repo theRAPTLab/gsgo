@@ -25,27 +25,29 @@ const TimerPack = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
 import Feature from 'lib/class-feature';
+import { Register } from 'modules/datacore/dc-features';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TimerFeature');
+const PR = UR.PrefixUtil('TimerPack');
 const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
-class TimerFeature extends Feature {
+class TimerPack extends Feature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));
   }
-
   // super.agentInit(agent)
   // super.prop(agent,propName) => gVar
   // super.setProp(agent,propName,gVar) => gVar
 }
-/// EXPORT SINGLETON //////////////////////////////////////////////////////////
+
+/// import { Register } from 'modules/datacore/dc-features';
+/// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const INSTANCE = new TimerFeature('Timer');
-export default INSTANCE;
+const INSTANCE = new TimerPack('Timer');
+Register(INSTANCE);

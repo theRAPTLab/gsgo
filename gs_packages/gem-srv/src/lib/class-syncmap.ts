@@ -55,7 +55,7 @@ const f_NullRemove = (remObj: IPoolable) => {};
  *  A SyncMap manages objects that are created by "syncing" to another
  *  Map or Asset of Poolable objects.
  */
-class SyncMap implements ISyncMap {
+export default class SyncMap implements ISyncMap {
   pool: Pool;
   map: MappedPool;
   deltas: ISyncResults;
@@ -168,4 +168,4 @@ class SyncMap implements ISyncMap {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default SyncMap;
+/// see exports above

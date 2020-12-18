@@ -16,9 +16,9 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
-import * as Prism from '../../lib/vendor/prism';
-import { CodeJar } from '../../lib/vendor/codejar';
-import '../../lib/vendor/prism.css';
+import * as Prism from 'lib/vendor/prism';
+import { CodeJar } from 'lib/vendor/codejar';
+import 'lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -29,7 +29,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('APP', 'TagRed');
+const PR = UR.PrefixUtil('APP');
 const DBG = false;
 
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
@@ -38,19 +38,21 @@ const defaultText = DATACORE.GetDefaultText();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/LOAD_ASSETS', () => {
-  return new Promise((resolve, reject) => {
-    if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
-    (async () => {
-      let map = await GLOBAL.LoadAssets('static/assets.json');
-      if (DBG) console.log(...PR('ASSETS LOADED'));
-      console.log(...PR('Waiting for user input'));
-      // SIM.Start();
-      // if (DBG) console.log(...PR('SIMULATION STARTED'));
-      resolve();
-    })();
-  });
-});
+UR.SystemHook(
+  'UR/LOAD_ASSETS',
+  () =>
+    new Promise((resolve, reject) => {
+      if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
+      (async () => {
+        let map = await GLOBAL.LoadAssetsSync('static/assets.json');
+        if (DBG) console.log(...PR('ASSETS LOADED'));
+        console.log(...PR('Waiting for user input'));
+        // SIM.Start();
+        // if (DBG) console.log(...PR('SIMULATION STARTED'));
+        resolve();
+      })();
+    })
+);
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,7 +74,6 @@ class Compiler extends React.Component {
     this.userUpdateText = this.userUpdateText.bind(this);
     this.userSaveBlueprint = this.userSaveBlueprint.bind(this);
     this.userCompileText = this.userCompileText.bind(this);
-    this.remoteCompileText = this.remoteCompileText.bind(this);
     this.updateJSX = this.updateJSX.bind(this);
     this.updateScript = this.updateScript.bind(this);
     this.updateText = this.updateText.bind(this);
@@ -86,7 +87,6 @@ class Compiler extends React.Component {
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
-    UR.RegisterMessage('NET:HACK_RECEIVE_TEXT', this.remoteCompileText);
   }
 
   componentDidMount() {
@@ -150,15 +150,6 @@ class Compiler extends React.Component {
     const jsx = TRANSPILER.RenderScript(this.source);
     this.setState({ jsx });
     if (DBG) console.groupEnd();
-  }
-
-  // hack: remote compiler
-  remoteCompileText(data) {
-    const { text } = data;
-    this.setState({ text });
-    this.jar.updateCode(text);
-    this.text = text;
-    this.userSaveBlueprint();
   }
 
   // compile jsx back to source
@@ -258,8 +249,8 @@ class Compiler extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>COMPILER/TEST</span> UGLY DEVELOPER
-          MODE
+          <span style={{ fontSize: '32px' }}>COMPILER/DEV</span>{' '}
+          {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <button
