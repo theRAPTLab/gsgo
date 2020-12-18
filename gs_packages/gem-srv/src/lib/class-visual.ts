@@ -13,7 +13,7 @@ import * as DATACORE from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
-import { IActable } from './t-interaction';
+import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

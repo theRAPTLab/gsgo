@@ -79,7 +79,7 @@ export function GetAgentsByType(bpName) {
   return [...agentSet.values()];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAgentById(id) {
+export function GetAgentById(id): IAgent {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
   console.warn(...PR(`agent ${id} not in AGENT_DICT`));

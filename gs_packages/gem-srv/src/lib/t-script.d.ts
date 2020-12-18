@@ -31,7 +31,7 @@ export interface IScopeable {
 /// AGENT TYPE DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of IScopeable */
-export interface IAgent extends IScopeable {
+export interface IAgent extends IScopeable, IActable, IMovementMode {
   featureMap: Map<string, IFeature>;
   execMethod: (name: string, ...args: any) => any;
   addFeature: (name: string) => void;
@@ -279,3 +279,35 @@ export type TExpressionAST = { type: string };
  *  function. The invocation method will check what it is
  */
 export type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
+
+/// INTERACTION TYPE DECLARATIONS /////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export enum ControlMode {
+  static = 0,
+  puppet,
+  auto
+}
+
+export interface IActable {
+  isSelected: boolean;
+  isHovered: boolean;
+  isGrouped: boolean;
+  isCaptive: boolean;
+  setSelected: (mode: boolean) => boolean;
+  setHovered: (mode: boolean) => boolean;
+  setGrouped: (mode: boolean) => boolean;
+  setCaptive: (mode: boolean) => boolean;
+}
+
+/// AGENT MOVEMENT MODES //////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export interface IMovementMode {
+  mode: () => ControlMode;
+  setPreviousMode: () => ControlMode;
+  setModePuppet: () => ControlMode;
+  setModeAuto: () => ControlMode;
+  setModeStatic: () => ControlMode;
+  isModePuppet: () => boolean;
+  isModeAuto: () => boolean;
+  isModeStatic: () => boolean;
+}

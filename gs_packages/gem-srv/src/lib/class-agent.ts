@@ -23,10 +23,8 @@ import {
   TExpressionAST,
   TSMCProgram,
   TSMCFunction,
-  IScopeable,
-  ISMCBundle
+  IScopeable
 } from './t-script';
-import { ControlMode, IActable } from './t-interaction.d';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
