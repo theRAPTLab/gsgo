@@ -40,6 +40,7 @@ PANEL_CONFIG.set('sim', '50% auto 0px'); // columns
 /// This should be loaded from the db
 /// Hacked in for now
 const agents = [
+  { id: 'bunny', label: 'Bunny' },
   { id: 'fish', label: 'Fish' },
   { id: 'algae', label: 'Algae' },
   { id: 'lightbeam', label: 'Lightbeam' },
@@ -47,30 +48,86 @@ const agents = [
 ];
 const scripts = [
   {
-    id: 'fish',
-    script: `# BLUEPRINT Fish
+    id: 'bunny',
+    script: `# BLUEPRINT Bunny
 # PROGRAM DEFINE
-addProp frame Number 3
+useFeature Costume
 useFeature Movement
+featureCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
 featureCall Movement jitterPos -5 5
+# PROGRAM THINK
+// featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
-  ifExpr {{ agent.prop('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+  ifExpr {{ agent.name==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.name }}
     dbgOut 'my tock'
   ]]
-  setProp 'x'  0
-  setProp 'y'  0
+  // exec {{ agent.prop.Costume.currentFrame.add(1) }}
+  ifExpr {{ agent.prop.x.value > 50 }} [[
+    featureCall Costume setPose 2
+  ]]
+  ifExpr {{ agent.prop.x.value < -50 }} [[
+    featureCall Costume setPose 3
+  ]]
+  ifExpr {{ agent.prop.y.value > 50 }} [[
+    featureCall Costume setPose 4
+  ]]
 ]]
 # PROGRAM CONDITION
-when Bee sometest [[
+when Bunny sometest [[
   // dbgOut SingleTest
 ]]
-when Bee sometest Bee [[
+when Bunny sometest Bunny [[
   // dbgOut PairTest
+]]`
+  },
+  {
+    id: 'fish',
+    script: `# BLUEPRINT Fish
+# PROGRAM DEFINE
+useFeature Costume
+useFeature Movement
+featureCall Costume setCostume 'fish.json' 0
+// addProp foodLevel Number 50
+# PROGRAM UPDATE
+setProp skin 'fish.json'
+featureCall Movement jitterPos -5 5
+# PROGRAM THINK
+// featureHook Costume thinkHook
+# PROGRAM EVENT
+onEvent Tick [[
+  // foodLevel goes down every second
+  // setProp foodLevel {{ foodLevel - 1 }}
+  // // hungry
+  // ifExpr {{ agent.prop('foodLevel').value < 25 }} [[
+  //   featureCall Costume setPose 1
+  // ]]
+  // // dead
+  // ifExpr {{ agent.prop('foodLevel').value < 0 }} [[
+  //   featureCall Costume setPose 2
+  // ]]
+  // test costume
+  ifExpr {{ agent.prop.x.value > 50 }} [[
+    featureCall Costume setPose 1
+  ]]
+  ifExpr {{ agent.prop.x.value < -50 }} [[
+    featureCall Costume setPose 2
+  ]]
+
+]]
+# PROGRAM CONDITION
+when Fish sometest [[
+  // dbgOut SingleTest
+]]
+when Fish sometest Algae [[
+  // dbgOut PairTest
+  // When fish touches algae, food level goes up
+  setProp foodLevel {{ foodLevel + 1 }}
+  // kill Algae
 ]]
 `
   },
@@ -78,43 +135,48 @@ when Bee sometest Bee [[
     id: 'algae',
     script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
-addProp frame Number 3
+useFeature Costume
 useFeature Movement
+featureCall Costume setCostume 'algae.json' 0
+// addProp energyLevel Number 50
 # PROGRAM UPDATE
-setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
+setProp skin 'algae.json'
+featureCall Movement jitterPos -1 1
+# PROGRAM THINK
+// featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.prop('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
-    dbgOut 'my tock'
-  ]]
-  setProp 'x'  0
-  setProp 'y'  0
+  // energyLevel goes down every second
+  // setProp energyLevel {{ energyLevel - 1 }}
 ]]
 # PROGRAM CONDITION
+when Algae sometest [[
+  // dbgOut SingleTest
+  // energyLevel > 5
+  // spawn new Algae
+  // setProp energyLevel 1
+]]
+when Algae sometest Lightbeam [[
+  // dbgOut PairTest
+  // When algae touches lightbeam, energyLevel goes up
+  setProp energyLevel {{ energyLevel + 1 }}
+]]
 `
   },
   {
     id: 'lightbeam',
     script: `# BLUEPRINT Lightbeam
 # PROGRAM DEFINE
-addProp frame Number 3
+useFeature Costume
 useFeature Movement
+featureCall Costume setCostume 'lightbeam.json' 0
 # PROGRAM UPDATE
-setProp skin 'bunny.json'
+setProp skin 'lightbeam.json'
 featureCall Movement jitterPos -5 5
+// featureCall Movement setController user
+# PROGRAM THINK
+// featureHook Costume thinkHook
 # PROGRAM EVENT
-onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.prop('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
-    dbgOut 'my tock'
-  ]]
-  setProp 'x'  0
-  setProp 'y'  0
-]]
 # PROGRAM CONDITION
 `
   },

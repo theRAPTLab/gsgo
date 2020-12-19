@@ -34,6 +34,11 @@
       "assetId": 7,
       "assetName": "algae.json",
       "assetUrl": "static/sprites/algae.json"
+    },
+    {
+      "assetId": 8,
+      "assetName": "lightbeam.json",
+      "assetUrl": "static/sprites/lightbeam.json"
     }
   ]
 }
