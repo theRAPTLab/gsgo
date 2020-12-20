@@ -69,7 +69,11 @@ class Home extends React.Component {
           <ul className={classes.list}>
             <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
-            <NavItem route="xgui">standalone xgui port</NavItem>
+            <NavItem route="login">login</NavItem>
+            <NavItem route="model">model</NavItem>
+            <NavItem route="missioncontrol">mission control</NavItem>
+            <NavItem route="scripteditor">script editor</NavItem>
+            <NavItem route="viewer">viewer</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
         </div>
