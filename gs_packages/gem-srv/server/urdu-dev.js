@@ -10,6 +10,7 @@
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
 const Express = require('express'); //your original BE server
+const Compression = require('compression');
 const Path = require('path');
 const IP = require('ip');
 const CookieP = require('cookie-parser');
@@ -31,6 +32,7 @@ const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
 const app = Express();
+app.use(Compression());
 let m_server; // server object returned by app.listen()
 function m_StartServer(opt = {}) {
   if (!m_server) {
