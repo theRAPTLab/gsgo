@@ -13,6 +13,7 @@ const Path = require('path');
 const Webpack = require('webpack');
 const WebpackMerge = require('webpack-merge');
 const { PrefixUtil } = require('@gemstep/ursys/server');
+const TerserPlugin = require('terser-webpack-plugin');
 
 /// LOAD WEBPACK PLUGINS //////////////////////////////////////////////////////
 const CopyPlugin = require('copy-webpack-plugin');
@@ -88,12 +89,19 @@ const WebpackPacker = env => {
       __filename: true,
       __dirname: true
     },
-    // examples of differences github.com/webpack/webpack/tree/master/examples/source-map
-    // devtool: 'cheap-module-eval-source-map', // dev original source (our default, large)
-    devtool: 'cheap-module-source-map', // production original source (pretty good)
-    // devtool: 'inline-source-map', // full source production  (slowest)
+    // Examples of differences github.com/webpack/webpack/tree/master/examples/source-map
+    // Also see here: https://survivejs.com/webpack/building/source-maps/
+    devtool: 'source-map', // terser compatible: online paths and numbers, with source, slowest
+    // devtool: 'nosources-source-map', // terser compatible: paths and numbers only, no source.
+    // devtool: 'inline-source-map', // terser compatible: good for local dev, big bundles
+    // devtool: 'cheap-module-source-map', // production original source (pretty good)
+    // devtool: 'cheap-module-eval-source-map', // dev original source (our original default)
     // devtool: 'cheap-source-map', // transformed lines only production (fast)
     // devtool: false, // bundled code (production)
+    optimization: {
+      minimize: true,
+      minimizer: [new TerserPlugin()]
+    },
     // apply these additional plugins
     plugins: [
       new Webpack.DefinePlugin({
