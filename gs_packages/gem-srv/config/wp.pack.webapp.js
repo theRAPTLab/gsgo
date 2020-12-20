@@ -88,7 +88,12 @@ const WebpackPacker = env => {
       __filename: true,
       __dirname: true
     },
-    devtool: 'cheap-module-eval-source-map',
+    // examples of differences github.com/webpack/webpack/tree/master/examples/source-map
+    // devtool: 'cheap-module-eval-source-map', // dev original source (our default, large)
+    devtool: 'cheap-module-source-map', // production original source (pretty good)
+    // devtool: 'inline-source-map', // full source production  (slowest)
+    // devtool: 'cheap-source-map', // transformed lines only production (fast)
+    // devtool: false, // bundled code (production)
     // apply these additional plugins
     plugins: [
       new Webpack.DefinePlugin({
