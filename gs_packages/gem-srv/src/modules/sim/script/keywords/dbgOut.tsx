@@ -35,8 +35,9 @@ export class dbgOut extends Keyword {
     const progout = [];
 
     progout.push(agent => {
-      if (COUNTER-- > 0)
+      if (COUNTER-- > 0) {
         console.log(`?${EvalUnitArgs(unit, { agent }).join(' ')}`);
+      }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });
     return progout;

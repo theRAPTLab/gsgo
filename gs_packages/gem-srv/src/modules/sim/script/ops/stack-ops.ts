@@ -53,13 +53,13 @@ const pushAgent = (): TOpcode => {
 /** push agent.prop on stack */
 const pushAgentProp = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    STATE.stack.push(agent.prop(propName));
+    STATE.stack.push(agent.getProp(propName));
   };
 };
 /** push agent.prop.value on stack */
 const pushAgentPropValue = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    STATE.stack.push(agent.prop(propName).value);
+    STATE.stack.push(agent.getProp(propName).value);
   };
 };
 /** Pop object from stack, read its value, then assign to agent.prop
@@ -68,9 +68,9 @@ const popAgentPropValue = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     const element = STATE.pop();
     if (element instanceof SM_Object) {
-      agent.prop(propName).value = element.value;
+      agent.getProp(propName).value = element.value;
     } else {
-      agent.prop(propName).value = element;
+      agent.getProp(propName).value = element;
     }
   };
 };
@@ -80,7 +80,7 @@ const popAgentPropValue = (propName: string): TOpcode => {
 /** Directly set agent prop with immediate value */
 const setAgentPropValue = (propName: string, value: any): TOpcode => {
   return (agent: IAgent): TOpWait => {
-    const prop = agent.prop(propName);
+    const prop = agent.getProp(propName);
     prop.value = value;
   };
 };
@@ -114,8 +114,8 @@ const scopePop = (): TOpcode => {
 /** push the named agent prop on the scope stack */
 const agentPropToScope = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const prop = agent.prop(propName);
-    // console.log('prop', agent.name(), '.', agent.prop(propName));
+    const prop = agent.getProp(propName);
+    // console.log('prop', agent.name(), '.', agent.getProp(propName));
     STATE.scope.push(prop);
   };
 };
@@ -129,15 +129,15 @@ const agentToScope = (): TOpcode => {
 const agentFeatureToScope = (featName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     STATE.scope.push(agent);
-    STATE.scope.push(agent.feature[featName]);
+    STATE.scope.push(agent.getFeature(featName));
   };
 };
-/** Retrieve prop() from scoped object, and push it on stack. */
+/** Retrieve prop from scoped object, and push it on stack. */
 const scopedProp = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     const { scope, stack } = STATE;
     const SOBJ: TStackable = scope[scope.length - 1];
-    stack.push(SOBJ.prop(propName));
+    stack.push(SOBJ.getProp(propName));
   };
 };
 /** Retrieve prop.value from scoped object, and push it on stack. */
@@ -145,7 +145,7 @@ const scopedPropValue = (propName: string): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     const { scope, stack } = STATE;
     const SOBJ: TStackable = scope[scope.length - 1];
-    stack.push(SOBJ.prop(propName).value);
+    stack.push(SOBJ.getProp(propName).value);
   };
 };
 /** Invoke method() from scoped object, return onto stack

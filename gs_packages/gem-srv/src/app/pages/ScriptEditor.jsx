@@ -63,8 +63,8 @@ featureCall Movement jitterPos -5 5
 # PROGRAM EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
-  ifExpr {{ agent.name==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.name }}
+  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     dbgOut 'my tock'
   ]]
   // exec {{ agent.prop.Costume.currentFrame.add(1) }}
@@ -93,7 +93,7 @@ when Bunny sometest Bunny [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
-// addProp foodLevel Number 50
+addProp foodLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'fish.json'
 featureCall Movement jitterPos -5 5
@@ -102,34 +102,27 @@ featureCall Movement jitterPos -5 5
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
-  // setProp foodLevel {{ foodLevel - 1 }}
-  // // hungry
-  // ifExpr {{ agent.prop('foodLevel').value < 25 }} [[
-  //   featureCall Costume setPose 1
-  // ]]
-  // // dead
-  // ifExpr {{ agent.prop('foodLevel').value < 0 }} [[
-  //   featureCall Costume setPose 2
-  // ]]
-  // test costume
-  ifExpr {{ agent.prop.x.value > 50 }} [[
+  propCall foodLevel sub 1
+  dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
+  // hungry
+  ifExpr {{ agent.getProp('foodLevel').value < 40 }} [[
     featureCall Costume setPose 1
   ]]
-  ifExpr {{ agent.prop.x.value < -50 }} [[
+  // dead
+  ifExpr {{ agent.getProp('foodLevel').value < 0 }} [[
     featureCall Costume setPose 2
   ]]
-
 ]]
 # PROGRAM CONDITION
-when Fish sometest [[
-  // dbgOut SingleTest
-]]
-when Fish sometest Algae [[
-  // dbgOut PairTest
-  // When fish touches algae, food level goes up
-  setProp foodLevel {{ foodLevel + 1 }}
-  // kill Algae
-]]
+// when Fish sometest [[
+//   // dbgOut SingleTest
+// ]]
+// when Fish sometest Algae [[
+//   // dbgOut PairTest
+//   // When fish touches algae, food level goes up
+//   setProp foodLevel {{ foodLevel + 1 }}
+//   // kill Algae
+// ]]
 `
   },
   {
@@ -139,7 +132,7 @@ when Fish sometest Algae [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'algae.json' 0
-// addProp energyLevel Number 50
+addProp energyLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'algae.json'
 featureCall Movement jitterPos -1 1
@@ -148,20 +141,20 @@ featureCall Movement jitterPos -1 1
 # PROGRAM EVENT
 onEvent Tick [[
   // energyLevel goes down every second
-  // setProp energyLevel {{ energyLevel - 1 }}
+  propCall energyLevel sub 1
 ]]
 # PROGRAM CONDITION
-when Algae sometest [[
-  // dbgOut SingleTest
-  // energyLevel > 5
-  // spawn new Algae
-  // setProp energyLevel 1
-]]
-when Algae sometest Lightbeam [[
-  // dbgOut PairTest
-  // When algae touches lightbeam, energyLevel goes up
-  setProp energyLevel {{ energyLevel + 1 }}
-]]
+// when Algae sometest [[
+//   // dbgOut SingleTest
+//   // energyLevel > 5
+//   // spawn new Algae
+//   // setProp energyLevel 1
+// ]]
+// when Algae sometest Lightbeam [[
+//   // dbgOut PairTest
+//   // When algae touches lightbeam, energyLevel goes up
+//   setProp energyLevel {{ energyLevel + 1 }}
+// ]]
 `
   },
   {

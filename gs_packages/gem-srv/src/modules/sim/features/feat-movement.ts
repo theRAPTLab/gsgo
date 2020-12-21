@@ -25,9 +25,6 @@ class MovementPack extends Feature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));
-    // super.decorate(agent)
-    // super.prop(agent, key)
-    // super.method(agent, key, ...args)
     this.handleInput = this.handleInput.bind(this);
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('setController', this.setController);
@@ -51,7 +48,7 @@ class MovementPack extends Feature {
 
   setController(agent, x) {
     if (DBG) console.log(...PR(`setting control to ${x}`));
-    agent.prop('controller').value = x;
+    agent.getProp('controller').value = x;
   }
 
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {

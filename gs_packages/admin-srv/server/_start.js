@@ -40,7 +40,8 @@ process.on('uncaughtException', err => {
 // run ursys
 (async () => {
   TOUT(`STARTING: ${SCRIPT_PATH}`);
-  await PTRACK.StartTrackerSystem();
+  // Turn off PTRACK so it doesn't interfere with FakeTrack in GEM_SRV
+  // await PTRACK.StartTrackerSystem();
   await URSERVER.Initialize();
   await URSERVER.StartServer({
     serverName: 'GEM_SRV',

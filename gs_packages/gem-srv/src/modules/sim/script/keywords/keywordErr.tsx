@@ -23,6 +23,8 @@ export class keywordErr extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
+    const err = UR.ColorTagUtil(unit[0], 'TagYellow');
+    console.log(...err, 'is not a valid keyword');
     return [];
   }
 

@@ -41,9 +41,6 @@ class TimerPack extends Feature {
     super(name);
     if (DBG) console.log(...PR('construct'));
   }
-  // super.agentInit(agent)
-  // super.prop(agent,propName) => gVar
-  // super.setProp(agent,propName,gVar) => gVar
 }
 
 /// import { Register } from 'modules/datacore/dc-features';

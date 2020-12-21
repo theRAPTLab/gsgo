@@ -8,7 +8,7 @@
 /// BASE SIMULATION OBJECTS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A "scopeable" object is one that can represent the current execution
- *  context for ops using method(), prop() or value-related assignments.
+ *  context for ops using getMethod(), getProp() or value-related assignments.
  *  The Agent, Prop, and Feature classes implement this interface.
  */
 export interface IScopeable {
