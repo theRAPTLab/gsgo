@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "propMethod" keyword object
+  implementation of keyword "propCall" keyword object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -14,11 +14,11 @@ import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class propMethod extends Keyword {
+export class propCall extends Keyword {
   // base properties defined in KeywordDef
 
   constructor() {
-    super('propMethod');
+    super('propCall');
     this.args = ['propName:string', 'methodName:string', '...args'];
   }
 
@@ -27,7 +27,7 @@ export class propMethod extends Keyword {
     const [kw, propName, methodName, ...args] = unit;
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
-      const prop = agent.prop(propName);
+      const prop = agent.getProp(propName);
       const res = prop[methodName](...args).value;
       if (res !== undefined) state.pushArgs(res);
     });
@@ -56,4 +56,4 @@ export class propMethod extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(propMethod);
+RegisterKeyword(propCall);

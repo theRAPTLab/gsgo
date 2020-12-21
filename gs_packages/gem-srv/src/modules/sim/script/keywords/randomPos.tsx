@@ -34,8 +34,8 @@ export class randomPos extends Keyword {
     progout.push((agent: IScopeable) => {
       const x = m_Random(min, max, floor || false);
       const y = m_Random(min, max, floor || false);
-      agent.prop('x').value = x;
-      agent.prop('y').value = y;
+      agent.prop.x.value = x;
+      agent.prop.y.value = y;
     });
     return progout;
   }

@@ -46,8 +46,8 @@ function TestCompiler(index?: number) {
 //   # BLUEPRINT Dog2
 //   # PROGRAM EVENT
 //   onEvent Tick [[
-//     ifExpr {{ agent.prop('name').value==='bun0' }} [[
-//       dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+//     ifExpr {{ agent.getProp('name').value==='bun0' }} [[
+//       dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
 //     ]]
 //     setProp 'x'  0
 //     setProp 'y'  0
@@ -66,8 +66,8 @@ TT.push([
   featureCall Movement jitterPos -5 5
   # PROGRAM EVENT
   onEvent Tick [[
-    ifExpr {{ agent.prop('name').value==='bun0' }} [[
-      dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+    ifExpr {{ agent.getProp('name').value==='bun0' }} [[
+      dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     ]]
     setProp 'x'  0
     setProp 'y'  0
@@ -250,7 +250,7 @@ TT.push([
       setProp altitude 10000
       setProp skin 'bonk.png'
     ]] [[
-      setProp altitude {{ agent.prop('y') * 1000 }}
+      setProp altitude {{ agent.getProp('y') * 1000 }}
       setProp skin 'flap.png'
     ]]
 `.trim()
@@ -268,7 +268,7 @@ TT.push([
       setProp altitude 10000
       setProp skin 'bonk.png'
     ]] [[
-      setProp altitude {{ agent.prop('y') * 1000 }}
+      setProp altitude {{ agent.getProp('y') * 1000 }}
       setProp skin 'flap.png'
     ]]
 `.trim()

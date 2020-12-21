@@ -117,6 +117,7 @@ const UR = {
   SystemUnload: ClientExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
+  ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
   HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   PrintTagColors: PROMPTS.printTagColors,

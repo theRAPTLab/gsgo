@@ -145,18 +145,10 @@ function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
   let unit = r_ExpandArgs(rawUnit); // recursive!
   // first array element is keyword aka 'kw'
   let kw = unit[0];
-  // if (tag) console.log(`...${tag}`, unit);
-  // else console.log('COMPILING', unit);
   // let's compile!
   if (typeof kw !== 'string') return [];
   kwProcessor = GetKeyword(kw);
-  // resume processing
-  if (!kwProcessor) {
-    kwProcessor = GetKeyword('keywordErr');
-    kwProcessor.keyword = kw[0];
-  }
-  // console.groupEnd();
-  // continue!
+  if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
   const compiledStatement = kwProcessor.compile(unit, idx); // qbits is the subsequent parameters
   return compiledStatement;
 }

@@ -37,6 +37,7 @@ const DEFAULT_TEXT = `
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
+addProp foodLevel Number 50
 featureCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
@@ -45,21 +46,9 @@ featureCall Movement jitterPos -5 5
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.name==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.name }}
-    dbgOut 'my tock'
-  ]]
-  // exec {{ agent.prop.Costume.currentFrame.add(1) }}
-  ifExpr {{ agent.prop.x.value > 50 }} [[
-    featureCall Costume setPose 2
-  ]]
-  ifExpr {{ agent.prop.x.value < -50 }} [[
-    featureCall Costume setPose 3
-  ]]
-  ifExpr {{ agent.prop.y.value > 50 }} [[
-    featureCall Costume setPose 4
-  ]]
+  exec {{ agent.prop.foodLevel.sub(1) }}
+  propCall foodLevel sub 1
+  dbgOut 'foodLevel' {{ agent.prop.foodLevel.value }}
 ]]
 # PROGRAM CONDITION
 when Bee sometest [[

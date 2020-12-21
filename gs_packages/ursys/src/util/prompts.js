@@ -276,7 +276,10 @@ function makeStyleFormatter(prompt, tagColor) {
   if (outArray.length === 0) return () => [];
   return (str, ...args) => [...outArray, str, ...args];
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function colorTagString(str, tagColor) {
+  return m_MakeColorArray(str, tagColor);
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return function to directly print to console instead of returning an array.
  *  This works better for NodeJS since the empty [] still results in output
@@ -358,5 +361,6 @@ module.exports = {
   makeStyleFormatter,
   makeTerminalOut,
   makeHTMLConsole,
-  printTagColors
+  printTagColors,
+  colorTagString
 };

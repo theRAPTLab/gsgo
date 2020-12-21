@@ -10,8 +10,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './addProp';
 export * from './setProp';
-export * from './prop';
-export * from './propValue';
+export * from './propCall';
 export * from './useFeature';
 export * from './featureProp';
 export * from './featureCall';

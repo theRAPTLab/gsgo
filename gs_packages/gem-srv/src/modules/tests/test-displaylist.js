@@ -197,8 +197,8 @@ function TestUpdateDisplayList(frameTime) {
     const ry = Math.round(5 - Math.random() * 10);
     const x = agent.x() + rx;
     const y = agent.y() + ry;
-    agent.prop('x').value = x;
-    agent.prop('y').value = y;
+    agent.prop.x.value = x;
+    agent.prop.y.value = y;
   });
   AGENT_TO_DOBJ_UPDATE.syncFromArray(agents);
   AGENT_TO_DOBJ_UPDATE.mapObjects();

@@ -46,8 +46,8 @@ featureCall Movement jitterPos -5 5
 # EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
-  ifExpr {{ agent.prop('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     dbgOut 'my tock'
   ]]
   setProp 'x'  0
@@ -77,8 +77,8 @@ featureCall Movement jitterPos -5 5
 # EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
-  ifExpr {{ agent.prop('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     dbgOut 'my tock'
   ]]
   setProp 'x'  0
@@ -104,8 +104,8 @@ featureCall Movement jitterPos -5 5
 # PROGRAM EVENT
 onEvent Tick [[
   // happens every second, and we check everyone
-  ifExpr {{ agent.prop('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.prop('name').value }}
+  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
+    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     dbgOut 'my tock'
   ]]
   setProp 'x'  0
