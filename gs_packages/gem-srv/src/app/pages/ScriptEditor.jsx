@@ -93,7 +93,7 @@ when Bunny sometest Bunny [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
-addProp foodLevel Number 50
+addProp foodLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'fish.json'
 featureCall Movement jitterPos -5 5
@@ -105,7 +105,7 @@ onEvent Tick [[
   propCall foodLevel sub 1
   dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
   // hungry
-  ifExpr {{ agent.getProp('foodLevel').value < 40 }} [[
+  ifExpr {{ agent.getProp('foodLevel').value < 5 }} [[
     featureCall Costume setPose 1
   ]]
   // dead
@@ -114,9 +114,9 @@ onEvent Tick [[
   ]]
 ]]
 # PROGRAM CONDITION
-// when Fish sometest [[
-//   // dbgOut SingleTest
-// ]]
+when Fish dies [[
+  dbgOut 'when fish dies'
+]]
 // when Fish sometest Algae [[
 //   // dbgOut PairTest
 //   // When fish touches algae, food level goes up

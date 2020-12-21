@@ -12,6 +12,7 @@ import {
   GetAgentsByType
 } from 'modules/datacore';
 import { Evaluate } from 'lib/expr-evaluator';
+import { RegisterFunction } from 'modules/datacore/dc-programs';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,6 +24,22 @@ let GLOBAL_COND = [];
 /// TEST PROGRAMS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the old test program style (deprecated) is in tests/test-conditions.ts
+RegisterFunction('dies', a => {
+  if (a.prop.foodLevel.value < 1) {
+    console.log('dead!');
+    return true;
+  }
+  return false;
+});
+RegisterFunction('touches', (a, b) => {
+  // not really a touch
+  // distance is less than 10
+  const distance = 10;
+  let xs = a.prop.x.value - b.prop.x.value;
+  let ys = a.prop.y.value - b.prop.y.value;
+  if (Math.hypot(xs, ys) < distance) return true;
+  return false;
+});
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
