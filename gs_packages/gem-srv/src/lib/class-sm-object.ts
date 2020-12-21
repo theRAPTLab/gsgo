@@ -88,7 +88,7 @@ class SM_Object implements IScopeable {
   /** Add a named property to SMC_Object prop map */
   addProp(pName: string, gvar: IScopeable): IScopeable {
     const prop = this.prop[pName];
-    if (!prop) throw Error(`prop '${pName}' already added`);
+    if (prop) throw Error(`prop '${pName}' already added`);
     this.prop[pName] = gvar;
     return gvar;
   }
@@ -96,7 +96,7 @@ class SM_Object implements IScopeable {
   /** Add a named method to SMC_Object method map */
   addMethod(mName: string, smc_or_f: TMethod): void {
     const method = this.method[mName];
-    if (!method) throw Error(`method '${mName}' already added`);
+    if (method) throw Error(`method '${mName}' already added`);
     method[mName] = smc_or_f;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
