@@ -18,13 +18,13 @@
 const BG_COLOR = 'transparent';
 const BG_TITLE = '#404040';
 
-const CLR_R = 30;
+const CLR_R = 60;
 const CLR_G = 256;
 const CLR_B = 256;
 
 const CLR_HI_R = 256;
-const CLR_HI_G = 0;
-const CLR_HI_B = 0;
+const CLR_HI_G = 30;
+const CLR_HI_B = 30;
 
 function RGBA(r, g, b, a) {
   return `rgba(${r},${g},${b},${a})`;
@@ -54,6 +54,8 @@ const CLR_OBJECT_CLICKABLE = BaseColorShift(0, 0.1); // 'rgba(0,256,0,0.1)'; // 
 const CLR_BORDER_BACK = BaseColorShift(128, 0.15); // 'rgba(128,256,128,0.15)'; // backmost panel border
 const CLR_BORDER = BaseColorShift(128, 0.3); // 'rgba(128,256,128,0.3)';
 const CLR_BORDER_ACTIVE = BaseColorShift(0, 0.6); // 'rgba(0,256,0,0.6)';
+
+const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1);
 
 const FONT_FAMILY = 'Andale Mono, monospace';
 
@@ -128,6 +130,12 @@ const useStylesHOC = theme => ({
   panelTitle: {
     color: CLR_ACTIVE,
     backgroundColor: CLR_PANEL_BG
+  },
+  panelMessage: {
+    color: CLR_ACTIVE
+  },
+  panelMessageError: {
+    color: CLR_HI
   },
   infoLabel: {
     display: 'inline-block',
