@@ -136,12 +136,11 @@ class MissionControl extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          {/* Map disabled for now
-            <PanelMap
+          <PanelMap
             id="map"
             isMinimized={panelConfiguration !== 'map'}
             onClick={this.OnPanelClick}
-          /> */}
+          />
           <PanelBlueprints id="blueprints" agents={agents} />
           <PanelInstances id="instances" />
         </div>
