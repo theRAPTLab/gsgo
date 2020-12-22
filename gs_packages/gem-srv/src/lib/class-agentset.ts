@@ -69,7 +69,7 @@ class AgentSet {
     // agents contains a map
     // push matching agents onto results
     this.testResults = agents.filter(agent => {
-      const result = agent.exec_smc(test, []);
+      const result = agent.exec_smc(test);
       // the result stack should contain 1 element
       if (result.length < 1) throw Error('filter test underflow');
       return result.pop();
@@ -99,7 +99,7 @@ class AgentSet {
         if (i === j) continue;
         const agentA: IAgent = agents[i];
         const agentB: IAgent = agents[j];
-        console.log(i, agentA.name(), agentB.name());
+        console.log(i, agentA.name, agentB.name);
         const result = WORLD.exec_smc(test, [agentA, agentB]);
         // the result stack should contain 1 element
         if (result.length < 1) throw Error('pair1 test underflow');

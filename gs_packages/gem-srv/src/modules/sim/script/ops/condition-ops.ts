@@ -48,7 +48,7 @@ const ifLT = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.LT()) {
       // pass current stack as vars to program
-      const results: TStackable[] = agent.exec_smc(program, STATE.stack);
+      const results: TStackable[] = agent.exec(program, STATE.ctx);
       if (DBG) console.log('lt stack return', results);
     }
   };
@@ -58,7 +58,7 @@ const ifGT = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.GT()) {
       // alternate way to use a substack instead of passing existing
-      const results: TStackable[] = agent.exec_smc(program, STATE.stack);
+      const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('gt stack return', results);
     }
   };
@@ -67,7 +67,7 @@ const ifGT = (program: TSMCProgram): TOpcode => {
 const ifLTE = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.LTE()) {
-      const results: TStackable[] = agent.exec_smc(program, STATE.stack);
+      const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('lte stack return', results);
     }
   };
@@ -76,7 +76,7 @@ const ifLTE = (program: TSMCProgram): TOpcode => {
 const ifGTE = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.GTE()) {
-      const results: TStackable[] = agent.exec_smc(program, STATE.stack);
+      const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('gte stack return', results);
     }
   };
@@ -85,7 +85,7 @@ const ifGTE = (program: TSMCProgram): TOpcode => {
 const ifEQ = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.EQ()) {
-      const results: TStackable[] = agent.exec_smc(program, STATE.stack);
+      const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('eq stack return', results);
     }
   };
@@ -94,7 +94,7 @@ const ifEQ = (program: TSMCProgram): TOpcode => {
 const ifNEQ = (program: TSMCProgram): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
     if (STATE.flags.NEQ()) {
-      const results: TStackable[] = agent.exec_smc(program, STATE.stack);
+      const results: TStackable[] = agent.exec(program, STATE.stack);
       if (DBG) console.log('neq stack return', results);
     }
   };

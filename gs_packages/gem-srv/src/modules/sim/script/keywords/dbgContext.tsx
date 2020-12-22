@@ -1,44 +1,30 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "dbgOut" command object
+  implementation of keyword "dbgContext" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import UR from '@gemstep/ursys/client';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { EvalUnitArgs } from 'lib/expr-evaluator';
-
-/// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MAX_OUT = 100;
-let COUNTER = MAX_OUT;
-UR.RegisterMessage('AGENT_PROGRAM', () => {
-  console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
-  COUNTER = MAX_OUT;
-});
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgOut extends Keyword {
+export class dbgContext extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('dbgOut');
-    this.args = ['...args'];
+    super('dbgContext');
+    this.args = ['numpop:number'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, numpop] = unit;
     const progout = [];
-
     progout.push((agent, state) => {
-      if (COUNTER-- > 0) {
-        console.log('?dbgOut', ...EvalUnitArgs(unit.slice(1), state.ctx));
-      }
-      if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
+      console.log(`agent '${agent.name}' context`, state.ctx);
     });
     return progout;
   }
@@ -59,4 +45,4 @@ export class dbgOut extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(dbgOut);
+RegisterKeyword(dbgContext);

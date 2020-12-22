@@ -49,7 +49,7 @@ export default class SM_Message implements IMessage {
     this.message = message;
     if (init.actions) this.actions = init.actions;
     if (init.inputs) this.inputs = init.inputs;
-    if (init.data) this.data = init.data;
+    if (init.context) this.data = init.context;
     this.data = init;
   }
 }

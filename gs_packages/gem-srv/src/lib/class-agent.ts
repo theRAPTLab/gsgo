@@ -124,7 +124,7 @@ class Agent extends SM_Object implements IAgent, IActable {
    */
   execMethod(mName: string, ...args: any): any {
     const m = this.getMethod(mName);
-    return this.exec(m, ...args);
+    return this.exec(m, {}, ...args);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add a featurepack to an agent's feature map by feature name featurepacks
@@ -211,11 +211,11 @@ class Agent extends SM_Object implements IAgent, IActable {
    */
   agentUPDATE(frameTime: number) {
     if (this.blueprint && this.blueprint.update) {
-      this.exec(this.blueprint.update);
+      this.exec(this.blueprint.update, {});
     }
     this.updateQueue.forEach(action => {
       // console.log(this.name(), 'updateAction', this.exec(action));
-      this.exec(action);
+      this.exec(action, {});
     });
     this.updateQueue = [];
   }
@@ -267,12 +267,13 @@ class Agent extends SM_Object implements IAgent, IActable {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Run a TMethod with a variable list of arguments.
    */
-  exec(m: TMethod, ...args: any[]): any {
+  exec(m: TMethod, context?, ...args): any {
     if (m === undefined) return undefined;
-    const ctx = { args, agent: this, global: GLOBAL };
+    const ctx = { agent: this, global: GLOBAL };
+    Object.assign(ctx, context);
     if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
-    if (Array.isArray(m)) return this.exec_smc(m, [...args], ctx);
-    if (typeof m === 'string') return this.exec_program(m, [...args], ctx);
+    if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
+    if (typeof m === 'string') return this.exec_program(m, ctx, ...args);
     if (typeof m === 'object') return this.exec_ast(m, ctx);
     throw Error('method object is neither function or smc');
   }
@@ -281,8 +282,8 @@ class Agent extends SM_Object implements IAgent, IActable {
    *  implements ExecSMC to run arbitrary programs as well when
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
-  exec_smc(program: TSMCProgram, stack, ctx) {
-    const state = new SM_State(stack, ctx);
+  exec_smc(program: TSMCProgram, ctx, ...args) {
+    const state = new SM_State([], ctx);
     program.forEach((op, index) => {
       if (typeof op !== 'function') console.warn(op, index);
       op(this, state);
@@ -300,7 +301,7 @@ class Agent extends SM_Object implements IAgent, IActable {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute a named program stored in global program store */
-  exec_program(progName: string, [...args], context) {
+  exec_program(progName: string, context, ...args) {
     const prog = GetProgram(progName) || GetTest(progName);
     if (prog !== undefined) return this.exec(prog, args, context);
     throw Error(`program ${progName} not found in PROGRAMS or TESTS`);

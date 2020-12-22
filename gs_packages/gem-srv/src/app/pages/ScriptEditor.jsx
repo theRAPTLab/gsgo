@@ -119,7 +119,7 @@ onEvent Tick [[
 //   dbgOut 'when fish dies'
 // ]]
 when Fish touches Algae [[
-  dbgOut 'Touch!'
+  // dbgOut 'Touch!'
 
   // expr-evaluator.ts:72 Uncaught (in promise) TypeError: Cannot read property 'value' of undefined
   // dbgOut {{ agent.getProp('energyLevel').value > 0 }}
@@ -132,8 +132,8 @@ when Fish touches Algae [[
   // dbgOut agent.getProp('foodLevel').value
 
   // cant read 'value' of undefined: dbgOut {{ agent.getProp('foodLevel').value }}
-  dbgStack 1
-
+  dbgOut "Algae x" {{ Algae.prop.x.value }}
+  // dbgContext
 
   // When fish touches algae, food level goes up
   // propCall foodLevel inc 1

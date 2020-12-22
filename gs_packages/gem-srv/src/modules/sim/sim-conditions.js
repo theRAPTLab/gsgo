@@ -37,7 +37,11 @@ RegisterFunction('touches', (a, b) => {
   const distance = 10;
   let xs = a.prop.x.value - b.prop.x.value;
   let ys = a.prop.y.value - b.prop.y.value;
-  if (Math.hypot(xs, ys) < distance) return true;
+  if (Math.hypot(xs, ys) < distance) {
+    console.error('touches:', xs, ys);
+    return true;
+  }
+  // console.log('no touch:', xs, ys);
   return false;
 });
 
