@@ -107,7 +107,7 @@ class PanelSimulation extends React.Component {
             fontSize: '12px'
           }}
         >
-          <div id="root-renderer" style={{ height: '500px' }}>
+          <div id="root-renderer" style={{ height: '1000px' }}>
             Waiting for start...
           </div>
         </div>

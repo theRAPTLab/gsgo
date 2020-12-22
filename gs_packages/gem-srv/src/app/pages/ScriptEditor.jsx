@@ -94,7 +94,7 @@ when Bunny sometest Bunny [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
-addProp foodLevel Number 10
+addProp foodLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'fish.json'
 featureCall Movement wander 0.4
@@ -106,7 +106,7 @@ onEvent Tick [[
   propCall foodLevel sub 1
   dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
   // hungry
-  ifExpr {{ agent.getProp('foodLevel').value < 5 }} [[
+  ifExpr {{ agent.getProp('foodLevel').value < 40 }} [[
     featureCall Costume setPose 1
   ]]
   // dead
@@ -115,15 +115,30 @@ onEvent Tick [[
   ]]
 ]]
 # PROGRAM CONDITION
-when Fish dies [[
-  dbgOut 'when fish dies'
-]]
-// when Fish sometest Algae [[
-//   // dbgOut PairTest
-//   // When fish touches algae, food level goes up
-//   setProp foodLevel {{ foodLevel + 1 }}
-//   // kill Algae
+// when Fish dies [[
+//   dbgOut 'when fish dies'
 // ]]
+when Fish touches Algae [[
+  dbgOut 'Touch!'
+
+  // expr-evaluator.ts:72 Uncaught (in promise) TypeError: Cannot read property 'value' of undefined
+  // dbgOut {{ agent.getProp('energyLevel').value > 0 }}
+
+  // expr-evaluator.ts:72 Uncaught (in promise) TypeError: Cannot read property 'value' of undefined
+  // dbgOut {{ agent.getProp('foodLevel').value }}
+
+  // Uncaught Error: Variable names cannot start with a number (.g) at 13
+  //  at ScriptTokenizer.throwError (class-gscript-tokenizer.js:154)
+  // dbgOut agent.getProp('foodLevel').value
+
+  // cant read 'value' of undefined: dbgOut {{ agent.getProp('foodLevel').value }}
+  dbgStack 1
+
+
+  // When fish touches algae, food level goes up
+  // propCall foodLevel inc 1
+  // kill Algae
+]]
 `
   },
   {
@@ -136,7 +151,7 @@ featureCall Costume setCostume 'algae.json' 0
 addProp energyLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'algae.json'
-featureCall Movement jitterPos -1 1
+featureCall Movement wander 0.3
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
@@ -145,16 +160,14 @@ onEvent Tick [[
   propCall energyLevel sub 1
 ]]
 # PROGRAM CONDITION
-// when Algae sometest [[
-//   // dbgOut SingleTest
-//   // energyLevel > 5
-//   // spawn new Algae
-//   // setProp energyLevel 1
-// ]]
-// when Algae sometest Lightbeam [[
+// when Algae touches Lightbeam [[
 //   // dbgOut PairTest
 //   // When algae touches lightbeam, energyLevel goes up
-//   setProp energyLevel {{ energyLevel + 1 }}
+//   propCall energyLevel inc 1
+//   ifExpr {{ agent.getProp('energyLevel').value > 5 }} [[
+//     dbgOut 'spawn new algae'
+//     propCall energyLevel setTo 1
+//   ]]
 // ]]
 `
   },
@@ -165,6 +178,8 @@ onEvent Tick [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'lightbeam.json' 0
+setProp x 5
+setProp y 100
 # PROGRAM UPDATE
 setProp skin 'lightbeam.json'
 featureCall Movement jitterPos -5 5
