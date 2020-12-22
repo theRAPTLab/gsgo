@@ -15,6 +15,7 @@ import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectAgent from './components/PanelSelectAgent';
 import PanelScript from './components/PanelScript';
 import PanelInspector from './components/PanelInspector';
+import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -128,15 +129,19 @@ class ScriptEditor extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'select'
+      panelConfiguration: 'select',
+      message: '',
+      messageIsError: false
     };
     // bind
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectAgent = this.OnSelectAgent.bind(this);
+    this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
     UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
   }
 
   componentDidMount() {
@@ -151,7 +156,8 @@ class ScriptEditor extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnRegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
   }
 
   OnModelClick() {
@@ -175,12 +181,19 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  OnDebugMessage(data) {
+    this.setState({
+      message: data.message,
+      messageIsError: true
+    });
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, script } = this.state;
+    const { panelConfiguration, script, message, messageIsError } = this.state;
     const { classes } = this.props;
     return (
       <div
@@ -231,7 +244,7 @@ class ScriptEditor extends React.Component {
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          <PanelMessage message={message} isError={messageIsError} />
         </div>
       </div>
     );
