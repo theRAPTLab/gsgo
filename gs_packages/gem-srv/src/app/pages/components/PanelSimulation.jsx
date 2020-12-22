@@ -104,10 +104,11 @@ class PanelSimulation extends React.Component {
             display: 'flex',
             flexDirection: 'column',
             flexWrap: 'wrap',
-            fontSize: '12px'
+            fontSize: '12px',
+            height: '100%'
           }}
         >
-          <div id="root-renderer" style={{ height: '1000px' }}>
+          <div id="root-renderer" style={{ height: '100%' }}>
             Waiting for start...
           </div>
         </div>

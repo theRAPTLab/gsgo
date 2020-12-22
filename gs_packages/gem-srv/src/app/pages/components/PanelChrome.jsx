@@ -22,6 +22,7 @@ class PanelChrome extends React.PureComponent {
         style={{
           display: 'flex',
           flexDirection: 'column',
+          height: '100%',
           overflow: 'hidden'
         }}
       >
@@ -38,7 +39,15 @@ class PanelChrome extends React.PureComponent {
           {title}
         </div>
         {topbar}
-        <div style={{ overflow: 'auto' }}>{children}</div>
+        <div
+          style={{
+            overflow: 'auto',
+            flexGrow: 1,
+            height: '100%'
+          }}
+        >
+          {children}
+        </div>
         {bottombar}
       </div>
     );
