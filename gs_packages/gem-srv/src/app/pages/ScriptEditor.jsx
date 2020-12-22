@@ -132,8 +132,9 @@ when Fish touches Algae [[
   // dbgOut agent.getProp('foodLevel').value
 
   // cant read 'value' of undefined: dbgOut {{ agent.getProp('foodLevel').value }}
-  dbgOut "Algae x" {{ Algae.prop.x.value }}
+  // dbgOut "Algae x" {{ Algae.prop.x.value }}
   // dbgContext
+  // setProp x {{ Algae.prop.x.value + 100 }}
 
   // When fish touches algae, food level goes up
   // propCall foodLevel inc 1
