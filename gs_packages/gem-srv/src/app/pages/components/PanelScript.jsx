@@ -20,6 +20,7 @@ import * as DATACORE from 'modules/datacore';
 import * as Prism from '../../../lib/vendor/prism_extended';
 import { CodeJar } from '../../../lib/vendor/codejar';
 import '../../../lib/vendor/prism_extended.css';
+import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
 
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -140,15 +141,16 @@ class PanelScript extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Script'
-      // script: demoscript // Replace the prop `script` with this to test
+      title: 'Script',
+      lineHighlight: undefined
+      // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
     };
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
     this.hackSendText = this.hackSendText.bind(this);
 
-    // The keys map to token definitions in the prism css file.
+    // The keys (keyword, namespace, inserted)  map to token definitions in the prism css file.
     Prism.languages.gemscript = Prism.languages.extend('javascript', {
       'keyword': keywords_regex,
       'namespace': /^# \W*/gm, // multiline
@@ -156,6 +158,9 @@ class PanelScript extends React.Component {
     });
 
     this.OnButtonClick = this.OnButtonClick.bind(this);
+    this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
+
+    UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
   componentDidMount() {
@@ -174,11 +179,12 @@ class PanelScript extends React.Component {
     console.error(
       'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
     );
+    UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
   hackSendText() {
     const text = this.jar.toString();
-    UR.RaiseMessage('NET:HACK_RECEIVE_TEXT', { text });
+    UR.RaiseMessage('NET:HACK_SCRIPT_UPDATE', { script: text });
   }
 
   OnButtonClick(action) {
@@ -190,8 +196,21 @@ class PanelScript extends React.Component {
     onClick(action);
   }
 
+  HighlightDebugLine(data) {
+    console.log('highlighting', data);
+    this.setState(
+      {
+        lineHighlight: data.line
+      },
+      () => {
+        // Force Prism update otherwise line number highlight is not updated
+        Prism.highlightElement(this.jarRef.current);
+      }
+    );
+  }
+
   render() {
-    const { title } = this.state;
+    const { title, lineHighlight } = this.state;
     const { id, script, onClick, classes } = this.props;
 
     const BackBtn = (
@@ -239,6 +258,7 @@ class PanelScript extends React.Component {
         <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
           <pre
             className="language-gemscript line-numbers match-braces"
+            data-line={lineHighlight}
             style={{
               fontSize: '10px',
               lineHeight: 1,
@@ -258,5 +278,12 @@ class PanelScript extends React.Component {
     );
   }
 }
+
+window.URDebugTest = () => {
+  UR.RaiseMessage('HACK_DEBUG_MESSAGE', {
+    message: 'ERROR: Your code sucks: lines 5-10',
+    line: '5-10'
+  });
+};
 
 export default withStyles(useStylesHOC)(PanelScript);

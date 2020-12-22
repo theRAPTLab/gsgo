@@ -1,0 +1,10 @@
+/* Prism Line Highlight Override */
+/* We're overriding the style to use as a debugger output */
+
+.line-highlight {
+  background: linear-gradient(
+    to right,
+    hsla(0, 100%, 50%, 0.2) 70%,
+    hsla(24, 20%, 50%, 0)
+  );
+}
