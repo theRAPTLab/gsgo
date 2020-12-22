@@ -25,6 +25,7 @@ import PanelInstances from './components/PanelInstances';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
+import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
