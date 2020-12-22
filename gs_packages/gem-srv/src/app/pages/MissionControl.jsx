@@ -20,7 +20,7 @@ import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelMap from './components/PanelMap';
-import PanelSimViewer from './components/PanelSimViewer';
+import PanelSimulation from './components/PanelSimulation';
 import PanelPlayback from './components/PanelPlayback';
 import PanelInspector from './components/PanelInspector';
 import PanelBlueprints from './components/PanelBlueprints';
@@ -134,7 +134,7 @@ class MissionControl extends React.Component {
           <PanelInstances id="instances" />
         </div>
         <div id="console-main" className={classes.main}>
-          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
+          <PanelSimulation id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
           <PanelPlayback id="playback" />

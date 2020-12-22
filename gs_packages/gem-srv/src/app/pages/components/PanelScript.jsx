@@ -184,7 +184,7 @@ class PanelScript extends React.Component {
 
   hackSendText() {
     const text = this.jar.toString();
-    UR.RaiseMessage('NET:HACK_RECEIVE_TEXT', { text });
+    UR.RaiseMessage('NET:HACK_SCRIPT_UPDATE', { script: text });
   }
 
   OnButtonClick(action) {

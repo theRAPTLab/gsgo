@@ -8,7 +8,7 @@ class PanelInspector extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'INSPECTOR',
+      title: 'INSPECTOR (FAKE DATA)',
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
