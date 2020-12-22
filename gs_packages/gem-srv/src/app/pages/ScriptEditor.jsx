@@ -97,7 +97,7 @@ featureCall Costume setCostume 'fish.json' 0
 addProp foodLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'fish.json'
-featureCall Movement jitterPos -5 5
+featureCall Movement wander 0.4
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
