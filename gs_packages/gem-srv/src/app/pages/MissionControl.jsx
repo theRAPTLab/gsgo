@@ -25,6 +25,7 @@ import PanelPlayback from './components/PanelPlayback';
 import PanelInspector from './components/PanelInspector';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
+import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -51,10 +52,13 @@ class MissionControl extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'sim'
+      panelConfiguration: 'sim',
+      message: ''
     };
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
+    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
   }
 
   componentDidMount() {
@@ -82,12 +86,20 @@ class MissionControl extends React.Component {
     });
   }
 
+  DoScriptUpdate(data) {
+    console.log('update data', data);
+    const firstline = data.script.match(/.*/)[0];
+    this.setState(state => ({
+      message: `${state.message}Received script ${firstline}\n`
+    }));
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
-    const { panelConfiguration } = this.state;
+    const { panelConfiguration, message } = this.state;
     const { classes } = this.props;
 
     /// This should be loaded from the db
@@ -145,7 +157,7 @@ class MissionControl extends React.Component {
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          <PanelMessage message={message} />
         </div>
       </div>
     );
