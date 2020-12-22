@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "dbgStack" command object
+  implementation of keyword "dbgContext" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -12,10 +12,10 @@ import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgStack extends Keyword {
+export class dbgContext extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('dbgStack');
+    super('dbgContext');
     this.args = ['numpop:number'];
   }
 
@@ -23,15 +23,8 @@ export class dbgStack extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, numpop] = unit;
     const progout = [];
-
     progout.push((agent, state) => {
-      if (agent.aaa === undefined) agent.aaa = 1;
-      if (agent.aaa !== 0) {
-        --agent.aaa;
-        console.groupCollapsed(`agent '${agent.name}' stack`);
-        state.stack.forEach((item, idx) => console.log(idx, item));
-        console.groupEnd();
-      }
+      console.log(`agent '${agent.name}' context`, state.ctx);
     });
     return progout;
   }
@@ -52,4 +45,4 @@ export class dbgStack extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(dbgStack);
+RegisterKeyword(dbgContext);

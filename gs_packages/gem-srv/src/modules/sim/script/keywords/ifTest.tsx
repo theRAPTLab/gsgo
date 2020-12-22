@@ -28,7 +28,7 @@ export class ifTest extends Keyword {
     code.push((agent, state) => {
       const ast = GetTest(testName);
       if (!ast) throw Error(`ifTest: '${testName}' doesn't exist`);
-      const result = UtilFirstValue(agent.exec(ast, [], state.ctx));
+      const result = UtilFirstValue(agent.exec(ast, state.ctx));
       if (result && consq) agent.exec(consq);
       if (!result && alter) agent.exec(alter);
     });
