@@ -55,28 +55,27 @@ const scripts = [
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-featureCall Costume setCostume 'bunny.json' 1
+featureCall Costume setCostume 'bunny.json' 0
+featureCall Movement setMovementType 'wander'
+addProp foodLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut 'my tock'
+  // foodLevel goes down every second
+  propCall foodLevel sub 1
+  dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
+  // hungry -- get jittery
+  ifExpr {{ agent.getProp('foodLevel').value < 5 }} [[
+    featureCall Costume setPose 1
+    featureCall Movement setMovementType 'jitter'
   ]]
-  // exec {{ agent.prop.Costume.currentFrame.add(1) }}
-  ifExpr {{ agent.prop.x.value > 50 }} [[
+  // dead -- stop moving
+  ifExpr {{ agent.getProp('foodLevel').value < 1 }} [[
     featureCall Costume setPose 2
-  ]]
-  ifExpr {{ agent.prop.x.value < -50 }} [[
-    featureCall Costume setPose 3
-  ]]
-  ifExpr {{ agent.prop.y.value > 50 }} [[
-    featureCall Costume setPose 4
+    featureCall Movement setMovementType 'float'
   ]]
 ]]
 # PROGRAM CONDITION
@@ -94,10 +93,10 @@ when Bunny sometest Bunny [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
-addProp foodLevel Number 50
+featureCall Movement setMovementType 'wander'
+addProp foodLevel Number 20
 # PROGRAM UPDATE
 setProp skin 'fish.json'
-featureCall Movement wander 0.4
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
@@ -106,34 +105,20 @@ onEvent Tick [[
   propCall foodLevel sub 1
   dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
   // hungry
-  ifExpr {{ agent.getProp('foodLevel').value < 40 }} [[
+  ifExpr {{ agent.getProp('foodLevel').value < 15 }} [[
     featureCall Costume setPose 1
   ]]
   // dead
   ifExpr {{ agent.getProp('foodLevel').value < 0 }} [[
     featureCall Costume setPose 2
+    featureCall Movement setMovementType 'float'
   ]]
 ]]
 # PROGRAM CONDITION
-// when Fish dies [[
-//   dbgOut 'when fish dies'
-// ]]
 when Fish touches Algae [[
-  // dbgOut 'Touch!'
-
-  // expr-evaluator.ts:72 Uncaught (in promise) TypeError: Cannot read property 'value' of undefined
-  // dbgOut {{ agent.getProp('energyLevel').value > 0 }}
-
-  // expr-evaluator.ts:72 Uncaught (in promise) TypeError: Cannot read property 'value' of undefined
-  // dbgOut {{ agent.getProp('foodLevel').value }}
-
-  // Uncaught Error: Variable names cannot start with a number (.g) at 13
-  //  at ScriptTokenizer.throwError (class-gscript-tokenizer.js:154)
-  // dbgOut agent.getProp('foodLevel').value
-
-  // cant read 'value' of undefined: dbgOut {{ agent.getProp('foodLevel').value }}
-  dbgOut "Algae x" {{ Algae.prop.x.value }}
+  dbgOut 'Touch!'
   // dbgContext
+  dbgOut "Algae x" {{ Algae.prop.x.value }}
 
   // When fish touches algae, food level goes up
   // propCall foodLevel inc 1
@@ -148,10 +133,10 @@ when Fish touches Algae [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'algae.json' 0
+featureCall Movement setMovementType 'wander'
 addProp energyLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'algae.json'
-featureCall Movement wander 0.3
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
@@ -161,7 +146,6 @@ onEvent Tick [[
 ]]
 # PROGRAM CONDITION
 // when Algae touches Lightbeam [[
-//   // dbgOut PairTest
 //   // When algae touches lightbeam, energyLevel goes up
 //   propCall energyLevel inc 1
 //   ifExpr {{ agent.getProp('energyLevel').value > 5 }} [[
@@ -178,8 +162,8 @@ onEvent Tick [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'lightbeam.json' 0
-setProp x 5
-setProp y 100
+setProp x -300
+setProp y -300
 # PROGRAM UPDATE
 setProp skin 'lightbeam.json'
 featureCall Movement jitterPos -5 5
@@ -304,18 +288,16 @@ class ScriptEditor extends React.Component {
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-            <PanelInspector isActive />
-            <PanelInspector />
-            <PanelInspector />
-          </div>
         </div>
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <PanelMessage message={message} isError={messageIsError} />
+          <div style={{ display: 'flex' }}>
+            <PanelMessage message={message} isError={messageIsError} />
+            <PanelInspector isActive />
+          </div>
         </div>
       </div>
     );

@@ -24,6 +24,8 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// Movement helper functions
+
+/// JITTER
 function moveJitter(
   agent,
   min: number = -5,
@@ -35,21 +37,29 @@ function moveJitter(
   agent.prop.x.value += x;
   agent.prop.y.value += y;
 }
+
+/// WANDER
 function moveWander(agent, distance: number = 1) {
   // Mostly go in the same direction
   // but really change direction once in a while
-  let direction = agent.featProp(this.name, 'direction').value;
+  let direction = agent.prop.Movement.direction.value;
   if (Math.random() > 0.98) {
     direction += Math.random() * 180;
-    agent.featProp(this.name, 'direction').value = direction;
+    agent.prop.Movement.direction.value = direction;
   }
   const angle = m_DegreesToRadians(direction);
   agent.prop.x.value += Math.cos(angle) * distance;
   agent.prop.y.value -= Math.sin(angle) * distance;
 
   // keep it in bounds
-  agent.prop.x.value = Math.max(0, Math.min(500, agent.prop.x.value));
-  agent.prop.y.value = Math.max(0, Math.min(500, agent.prop.y.value));
+  agent.prop.x.value = Math.max(-500, Math.min(500, agent.prop.x.value));
+  agent.prop.y.value = Math.max(-500, Math.min(500, agent.prop.y.value));
+}
+
+/// FLOAT
+function moveFloat(agent, y: number = -300) {
+  // Move to some designated vertical position
+  agent.prop.y.value = Math.max(y, agent.prop.y.value - 2);
 }
 
 /// Movement Agent Manager
@@ -65,6 +75,9 @@ UR.SystemHook('SIM/FEATURES_UPDATE', () => {
         break;
       case 'jitter':
         moveJitter(agent);
+        break;
+      case 'float':
+        moveFloat(agent);
         break;
       case 'static':
       default:
@@ -83,6 +96,7 @@ class MovementPack extends Feature {
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('setController', this.setController);
     this.featAddMethod('setMovementType', this.setMovementType);
+    this.featAddMethod('gotoRandomPosition', this.gotoRandomPosition);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -114,14 +128,6 @@ class MovementPack extends Feature {
   }
 
   setMovementType(agent: IAgent, type: string) {
-    console.log(
-      'setting movmenet type to',
-      type,
-      'agent is',
-      agent,
-      'this is',
-      this
-    );
     agent.featProp(this.name, 'movementType').value = type;
   }
 
