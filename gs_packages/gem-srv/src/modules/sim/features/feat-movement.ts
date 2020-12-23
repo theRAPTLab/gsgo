@@ -39,9 +39,10 @@ function moveJitter(
 }
 
 /// WANDER
-function moveWander(agent, distance: number = 0.5) {
+function moveWander(agent) {
   // Mostly go in the same direction
   // but really change direction once in a while
+  const distance = agent.prop.Movement.distance.value;
   let direction = agent.prop.Movement.direction.value;
   if (Math.random() > 0.98) {
     direction += Math.random() * 180;
@@ -117,6 +118,7 @@ class MovementPack extends Feature {
     prop.setMin(0);
     prop.setWrap();
     this.featAddProp(agent, 'direction', prop); // degrees
+    this.featAddProp(agent, 'distance', new NumberProp(0.5));
   }
 
   handleInput() {
@@ -129,8 +131,22 @@ class MovementPack extends Feature {
     agent.getProp('controller').value = x;
   }
 
-  setMovementType(agent: IAgent, type: string) {
+  // TYPES
+  //   'wander' -- params: distance
+  setMovementType(agent: IAgent, type: string, ...params) {
     agent.featProp(this.name, 'movementType').value = type;
+    if (params.length > 0) {
+      switch (type) {
+        case 'wander':
+          // first param is distance
+          agent.featProp(this.name, 'distance').value = params[0];
+          break;
+        case 'jitter':
+          // min max
+          break;
+        default:
+      }
+    }
   }
 
   setDirection(agent: IAgent, direction: number) {

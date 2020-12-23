@@ -93,7 +93,7 @@ when Bunny sometest Bunny [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
-featureCall Movement setMovementType 'wander'
+featureCall Movement setMovementType 'wander' 1
 // featureCall Movement setDirection 90
 addProp energyLevel Number 20
 # PROGRAM UPDATE
@@ -143,7 +143,7 @@ useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'algae.json' 0
 // featureCall Movement setRandomStart
-featureCall Movement setMovementType 'wander'
+featureCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'algae.json'
