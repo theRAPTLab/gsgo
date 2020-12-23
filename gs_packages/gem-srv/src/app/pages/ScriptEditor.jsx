@@ -94,7 +94,8 @@ useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
 featureCall Movement setMovementType 'wander'
-addProp foodLevel Number 20
+// featureCall Movement setDirection 90
+addProp energyLevel Number 20
 # PROGRAM UPDATE
 setProp skin 'fish.json'
 # PROGRAM THINK
@@ -102,26 +103,32 @@ setProp skin 'fish.json'
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
-  propCall foodLevel sub 1
-  dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
+  propCall energyLevel sub 1
+  dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
+  // sated
+  ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
+    featureCall Costume setPose 0
+    featureCall Movement setMovementType 'wander'
+  ]]
   // hungry
-  ifExpr {{ agent.getProp('foodLevel').value < 15 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 15 }} [[
     featureCall Costume setPose 1
+    featureCall Movement setMovementType 'wander'
   ]]
   // dead
-  ifExpr {{ agent.getProp('foodLevel').value < 0 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
     featureCall Costume setPose 2
     featureCall Movement setMovementType 'float'
   ]]
 ]]
 # PROGRAM CONDITION
 when Fish touches Algae [[
-  dbgOut 'Touch!'
+  // dbgOut 'Touch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
   // dbgContext
-  setProp x {{ Algae.prop.x.value + 1 }}
-  //setProp foodLevel {{ Fish.prop.foodLevel.value + 1 }}
-  // setProp foodLevel {{ Algae.prop.x.value + 1 }}
 
+  setProp energyLevel {{ Fish.prop.energyLevel.value + 1 }}
+
+  // IDEAL CALL
   // When fish touches algae, food level goes up
   // propCall foodLevel inc 1
   // kill Algae
@@ -135,6 +142,7 @@ when Fish touches Algae [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'algae.json' 0
+// featureCall Movement setRandomStart
 featureCall Movement setMovementType 'wander'
 addProp energyLevel Number 50
 # PROGRAM UPDATE
@@ -145,6 +153,7 @@ setProp skin 'algae.json'
 onEvent Tick [[
   // energyLevel goes down every second
   propCall energyLevel sub 1
+  dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
 ]]
 # PROGRAM CONDITION
 // when Algae touches Lightbeam [[
