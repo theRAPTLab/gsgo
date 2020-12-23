@@ -148,8 +148,10 @@ class MissionControl extends React.Component {
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
-          <PanelPlayback id="playback" />
-          <PanelInspector isActive />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <PanelPlayback id="playback" />
+            <PanelInspector isActive />
+          </div>
         </div>
         <div
           id="console-bottom"
