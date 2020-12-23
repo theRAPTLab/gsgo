@@ -57,23 +57,23 @@ useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'bunny.json' 0
 featureCall Movement setMovementType 'wander'
-addProp foodLevel Number 10
+addProp energyLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
-  // foodLevel goes down every second
-  propCall foodLevel sub 1
-  dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
+  // energyLevel goes down every second
+  propCall energyLevel sub 1
+  dbgOut 'energyLevel' {{ agent.getProp('energyLevel').value }}
   // hungry -- get jittery
-  ifExpr {{ agent.getProp('foodLevel').value < 5 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 5 }} [[
     featureCall Costume setPose 1
     featureCall Movement setMovementType 'jitter'
   ]]
   // dead -- stop moving
-  ifExpr {{ agent.getProp('foodLevel').value < 1 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
     featureCall Costume setPose 2
     featureCall Movement setMovementType 'static'
   ]]
@@ -82,7 +82,7 @@ onEvent Tick [[
 when Bunny sometest [[
   // dbgOut SingleTest
 ]]
-when Bunny sometest Bunny [[
+when Bunny touches Bunny [[
   // dbgOut PairTest
 ]]`
   },
