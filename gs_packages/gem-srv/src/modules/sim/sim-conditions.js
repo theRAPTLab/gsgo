@@ -32,17 +32,15 @@ RegisterFunction('dies', a => {
   return false;
 });
 RegisterFunction('touches', (a, b) => {
-  // not really a touch
-  // distance is less than 10
+  // not actually a "touch"
+  // checks if distance between agents is less than 10
   const distance = 10;
   let xs = a.prop.x.value - b.prop.x.value;
   let ys = a.prop.y.value - b.prop.y.value;
   if (Math.hypot(xs, ys) < distance) {
-    console.error('touches:', xs, ys);
-    return true;
+    return true; // touches!
   }
-  // console.log('no touch:', xs, ys);
-  return false;
+  return false; // doesn't touch
 });
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
