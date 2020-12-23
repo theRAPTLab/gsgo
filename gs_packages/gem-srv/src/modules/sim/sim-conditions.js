@@ -37,6 +37,14 @@ RegisterFunction('touches', (a, b) => {
   const distance = 10;
   let xs = a.prop.x.value - b.prop.x.value;
   let ys = a.prop.y.value - b.prop.y.value;
+  // INSPECTOR HACK
+  let data = {
+    name: a.name,
+    x: a.prop.x.value,
+    y: b.prop.y.value,
+    energyLevel: a.prop.energyLevel ? a.prop.energyLevel.value : ''
+  };
+  UR.RaiseMessage('NET:HACK_INSPECTOR_UPDATE', data);
   if (Math.hypot(xs, ys) < distance) {
     return true; // touches!
   }

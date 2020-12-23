@@ -104,7 +104,7 @@ setProp skin 'fish.json'
 onEvent Tick [[
   // foodLevel goes down every second
   propCall energyLevel sub 1
-  dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
+  // dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
     featureCall Costume setPose 0
