@@ -50,7 +50,6 @@ function moveWander(agent, distance: number = 1) {
   const angle = m_DegreesToRadians(direction);
   agent.prop.x.value += Math.cos(angle) * distance;
   agent.prop.y.value -= Math.sin(angle) * distance;
-
   // keep it in bounds
   agent.prop.x.value = Math.max(-500, Math.min(500, agent.prop.x.value));
   agent.prop.y.value = Math.max(-500, Math.min(500, agent.prop.y.value));
@@ -96,7 +95,10 @@ class MovementPack extends Feature {
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('setController', this.setController);
     this.featAddMethod('setMovementType', this.setMovementType);
-    this.featAddMethod('gotoRandomPosition', this.gotoRandomPosition);
+    this.featAddMethod('setDirection', this.setDirection);
+    this.featAddMethod('setRandomDirection', this.setRandomDirection);
+    this.featAddMethod('setRandomPosition', this.setRandomPosition);
+    this.featAddMethod('setRandomStart', this.setRandomStart);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -129,6 +131,25 @@ class MovementPack extends Feature {
 
   setMovementType(agent: IAgent, type: string) {
     agent.featProp(this.name, 'movementType').value = type;
+  }
+
+  setDirection(agent: IAgent, direction: number) {
+    console.log('setting direction to', direction);
+    agent.featProp(this.name, 'direction').value = direction;
+  }
+
+  setRandomDirection(agent: IAgent) {
+    agent.featProp(this.name, 'direction').value = Math.random() * 360;
+  }
+
+  setRandomPosition(agent: IAgent) {
+    agent.prop.x.value = m_Random(-300, 300); // HACK!  Bounds are hard coded!
+    agent.prop.y.value = m_Random(-300, 300); // HACK!  Bounds are hard coded!
+  }
+
+  setRandomStart(agent: IAgent) {
+    this.setRandomDirection(agent);
+    this.setRandomPosition(agent);
   }
 
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
