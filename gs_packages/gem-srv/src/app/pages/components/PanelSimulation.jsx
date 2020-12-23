@@ -90,12 +90,7 @@ class PanelSimulation extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { id, isActive, classes } = this.props;
-
-    const onClick = () => {
-      // To be implemented
-      console.log('Show instance');
-    };
+    const { id, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
