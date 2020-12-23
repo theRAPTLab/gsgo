@@ -39,7 +39,7 @@ function moveJitter(
 }
 
 /// WANDER
-function moveWander(agent, distance: number = 1) {
+function moveWander(agent, distance: number = 0.5) {
   // Mostly go in the same direction
   // but really change direction once in a while
   let direction = agent.prop.Movement.direction.value;
