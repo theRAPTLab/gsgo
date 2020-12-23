@@ -75,7 +75,7 @@ onEvent Tick [[
   // dead -- stop moving
   ifExpr {{ agent.getProp('foodLevel').value < 1 }} [[
     featureCall Costume setPose 2
-    featureCall Movement setMovementType 'float'
+    featureCall Movement setMovementType 'static'
   ]]
 ]]
 # PROGRAM CONDITION
@@ -118,7 +118,9 @@ onEvent Tick [[
 when Fish touches Algae [[
   dbgOut 'Touch!'
   // dbgContext
-  dbgOut "Algae x" {{ Algae.prop.x.value }}
+  setProp x {{ Algae.prop.x.value + 1 }}
+  //setProp foodLevel {{ Fish.prop.foodLevel.value + 1 }}
+  // setProp foodLevel {{ Algae.prop.x.value + 1 }}
 
   // When fish touches algae, food level goes up
   // propCall foodLevel inc 1

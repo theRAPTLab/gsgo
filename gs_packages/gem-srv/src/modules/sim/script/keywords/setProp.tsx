@@ -8,6 +8,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
+import { EvalArg } from 'lib/expr-evaluator';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,7 +29,7 @@ export class setProp extends Keyword {
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       const p = agent.prop[propName];
-      p.value = value;
+      p.value = EvalArg(value, state.ctx);
     });
     return progout;
   }
