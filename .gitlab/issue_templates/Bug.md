@@ -14,6 +14,13 @@
 
 (What you should see instead)
 
+## What is your setup?
+
+* Branch:
+* Commit:
+* Browser:
+* Operating System + Version:
+
 ## Relevant logs and/or screenshots
 
 (Paste any relevant logs - please use code blocks (```) to format console output, logs, and code, as
