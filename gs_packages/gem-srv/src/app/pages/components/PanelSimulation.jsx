@@ -42,8 +42,13 @@ class PanelSimulation extends React.Component {
     this.state = {
       title: 'Simulation'
     };
-    this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
-    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.OnScriptUpdate);
+    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
+    this.DoSimReset = this.DoSimReset.bind(this);
+    this.DoSimStart = this.DoSimStart.bind(this);
+
+    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
   }
 
   componentDidMount() {
@@ -52,35 +57,40 @@ class PanelSimulation extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    this.DoSimReset();
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.OnScriptUpdate);
+    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.UnregisterMessage('NET:HACK_SIM_START', this.DoSimStart);
   }
 
-  OnScriptUpdate(data) {
-    // save the blueprint to default and reprogram sim
+  DoSimReset() {
+    console.log('sim reset');
     DATACORE.DeleteAllTests();
     DATACORE.DeleteAllGlobalConditions();
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
+  }
 
+  DoScriptUpdate(data) {
+    console.log('script update');
+    DATACORE.DeleteAllInstances(); // Delete all instances otherwise previously created instances will stick around
     const source = TRANSPILER.ScriptifyText(data.script);
     const bp = TRANSPILER.RegisterBlueprint(source);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
+  }
 
+  DoSimStart() {
+    console.log('sim start');
     SIM.Start();
   }
 
   render() {
     const { title } = this.state;
-    const { id, isActive, classes } = this.props;
-
-    const onClick = () => {
-      // To be implemented
-      console.log('Show instance');
-    };
+    const { id, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -89,10 +99,11 @@ class PanelSimulation extends React.Component {
             display: 'flex',
             flexDirection: 'column',
             flexWrap: 'wrap',
-            fontSize: '12px'
+            fontSize: '12px',
+            height: '100%'
           }}
         >
-          <div id="root-renderer" style={{ height: '500px' }}>
+          <div id="root-renderer" style={{ height: '100%' }}>
             Waiting for start...
           </div>
         </div>

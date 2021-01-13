@@ -172,13 +172,13 @@ const useStylesHOC = theme => ({
   inspectorLabel: {
     display: 'inline-block',
     color: CLR_LABEL,
-    width: '80px',
+    // width: '80px',
     textAlign: 'right'
   },
   inspectorData: {
     display: 'inline-block',
-    color: CLR_DATA,
-    width: '100px'
+    color: CLR_DATA
+    // width: '100px'
   },
   outline: {
     border: `1px solid ${CLR_BORDER}`

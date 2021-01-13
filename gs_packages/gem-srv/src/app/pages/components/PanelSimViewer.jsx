@@ -77,7 +77,7 @@ class PanelSimViewer extends React.Component {
 
   render() {
     const { title, bgcolor, color } = this.state;
-    const { id, onClick } = this.props;
+    const { id, onClick, classes } = this.props;
     return (
       <PanelChrome
         id={id} // used by click handler to identify panel
@@ -86,7 +86,7 @@ class PanelSimViewer extends React.Component {
         bgcolor={bgcolor}
         onClick={onClick}
       >
-        <div id="root-renderer" style={{ color: bgcolor, height: '500px' }}>
+        <div id="root-renderer" style={{ color: bgcolor, height: '100%' }}>
           Ho this is the sim!
         </div>
       </PanelChrome>

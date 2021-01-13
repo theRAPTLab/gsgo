@@ -33,7 +33,7 @@ class PanelMessage extends React.Component {
             fontSize: '12px'
           }}
         >
-          {message}
+          <pre>{message}</pre>
         </div>
       </PanelChrome>
     );

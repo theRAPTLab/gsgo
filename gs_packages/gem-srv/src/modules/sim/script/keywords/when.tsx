@@ -42,9 +42,13 @@ export class when extends Keyword {
       // return a function that will do all the things
       prog.push((agent, state) => {
         const [passed] = SingleAgentFilter(A, testName);
-        passed.forEach(sub =>
-          sub.queueUpdateMessage(new SM_Message('QUEUE', { actions: consq }))
-        );
+        passed.forEach(sub => {
+          // HACK: workaround queues not remembering context in messages
+          // problem is that this executes during global condition,
+          // not during AGENT_UPDATE
+          // sub.queueUpdateMessage(new SM_Message('QUEUE', { actions: consq }))
+          sub.exec(consq, [], { [A]: sub });
+        });
         // console.log(`single test '${testName}' passed '${A}'`);
       });
     } else if (unit.length === 5) {
@@ -54,12 +58,14 @@ export class when extends Keyword {
         const [passed] = PairAgentFilter(A, B, testName);
         passed.forEach(pairs => {
           const [aa, bb] = pairs;
-          aa.queueUpdateMessage(
-            new SM_Message('QUEUE', { actions: consq, context: bb })
-          );
-          bb.queueUpdateMessage(
-            new SM_Message('QUEUE', { actions: consq, context: aa })
-          );
+          // HACK: workaround queues not remembering context in messages
+          // problem is that this executes during global condition,
+          // not during AGENT_UPDATE
+          // aa.queueUpdateMessage(
+          //   new SM_Message('QUEUE', { actions: consq, context: bb })
+          // );
+          aa.exec(consq, { [A]: aa, [B]: bb });
+          bb.exec(consq, { [A]: aa, [B]: bb });
         }); // foreach
         // console.log(`pair test ${testName} passed '${A}', '${B}'`);
       });

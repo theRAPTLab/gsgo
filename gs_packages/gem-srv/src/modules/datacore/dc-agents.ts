@@ -73,7 +73,7 @@ export function SaveAgent(agent) {
 export function GetAgentsByType(bpName) {
   const agentSet = AGENTS.get(bpName);
   if (!agentSet) {
-    console.warn(...PR(`agents of '${bpName}' don't exist...yet?`));
+    // console.warn(...PR(`agents of '${bpName}' don't exist...yet?`));
     return [];
   }
   return [...agentSet.values()];

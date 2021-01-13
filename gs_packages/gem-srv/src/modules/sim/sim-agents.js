@@ -82,7 +82,11 @@ export function AgentProgram(blueprint) {
   // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
   // new initializer
   for (let i = 0; i < 1; i++) {
-    DefineInstance({ blueprint, name: `bun${i}`, init: [] });
+    DefineInstance({
+      blueprint,
+      name: `bun${Math.trunc(Math.random() * 1000)}`,
+      init: []
+    });
   }
   let instances = GetAllInstances();
   console.log(...PR('creating', instances.length, 'instances'));

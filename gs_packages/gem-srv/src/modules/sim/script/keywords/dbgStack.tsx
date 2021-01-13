@@ -29,7 +29,8 @@ export class dbgStack extends Keyword {
       if (agent.aaa !== 0) {
         --agent.aaa;
         console.groupCollapsed(`agent '${agent.name()}' stack`);
-        state.stack.forEach((item, idx) => console.log(idx, item));
+        console.log('dbStack agent is', agent);
+        // state.stack.forEach((item, idx) => console.log(idx, item));
         console.groupEnd();
       }
     });
