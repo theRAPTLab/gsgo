@@ -124,8 +124,8 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span>{' '}
+            {UR.ConnectionString()}
           </div>
           <button type="button" onClick={this.OnModelClick}>
             Back to MODEL
