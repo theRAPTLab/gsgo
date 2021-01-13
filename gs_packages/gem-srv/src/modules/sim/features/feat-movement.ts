@@ -178,7 +178,7 @@ class MovementPack extends Feature {
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_Random(min, max, round) {
+function m_Random(min, max, round = true) {
   const n = Math.random() * (max - min) + min;
   if (round) return Math.round(n);
   return n;
