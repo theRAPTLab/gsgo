@@ -12,3 +12,4 @@
 import './features/feat-movement';
 import './features/feat-timer';
 import './features/feat-costume';
+import './features/feat-sandbox';

@@ -52,11 +52,14 @@ const scripts = [
   {
     id: 'bunny',
     script: `# BLUEPRINT Bunny
+// Start full of energy, red and wandering
+// Energy level decreases over time, grow hungry and jittery
+// When Energy level is at 0, die and stop moving
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Movement
+useFeature Sandbox
 featureCall Costume setCostume 'bunny.json' 0
-featureCall Movement setMovementType 'wander'
+featureCall Sandbox setMovementType 'wander'
 addProp energyLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
@@ -70,12 +73,12 @@ onEvent Tick [[
   // hungry -- get jittery
   ifExpr {{ agent.getProp('energyLevel').value < 5 }} [[
     featureCall Costume setPose 1
-    featureCall Movement setMovementType 'jitter'
+    featureCall Sandbox setMovementType 'jitter'
   ]]
   // dead -- stop moving
   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
     featureCall Costume setPose 2
-    featureCall Movement setMovementType 'static'
+    featureCall Sandbox setMovementType 'static'
   ]]
 ]]
 # PROGRAM CONDITION
