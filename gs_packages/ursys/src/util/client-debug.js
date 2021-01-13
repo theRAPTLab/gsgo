@@ -10,14 +10,14 @@ let TOOLS;
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AddConsoleTools(UR) {
-  const PR = UR.PrefixUtil('URSYS DEBUG', 'TagRed');
-  console.log(...PR('adding window debug tools'));
+function addConsoleTools(UR) {
+  const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
+  console.groupCollapsed(...PR('adding window debug tools'));
 
   TOOLS = {
     call: (mesg = 'NET:HELLO', data = { type: 'call' }) => {
-      UR.NetCall(mesg, data).then(data => {
-        console.log('NET:HELLO returned', data);
+      UR.NetCall(mesg, data).then(rdata => {
+        console.log('NET:HELLO returned', rdata);
       });
       return 'call() is calling NET:HELLO...';
     },
@@ -26,7 +26,7 @@ function AddConsoleTools(UR) {
       return 'signal() is signalling to all implementors to NET:HELLO';
     },
     publish: (mesg = 'NET:HELLO', data = { type: 'publish' }) => {
-      UR.NetPublish(mesg, data);
+      UR.SendMessage(mesg, data);
       return 'publish() is sending to other implementors of NET:HELLO';
     },
     reflect: (data = { type: 'reflect' }) => {
@@ -34,8 +34,8 @@ function AddConsoleTools(UR) {
         console.log(`packaging string '${data}' as { data:'${data}' }`);
         data = { data };
       }
-      UR.NetCall('NET:SRV_REFLECT', data).then(data => {
-        console.log('NET:SRV_REFLECT returned', data);
+      UR.NetCall('NET:SRV_REFLECT', data).then(rdata => {
+        console.log('NET:SRV_REFLECT returned', rdata);
       });
       return 'reflect() is calling NET:SRV_REFLECT...';
     },
@@ -52,8 +52,9 @@ function AddConsoleTools(UR) {
     console.log(...PR(`.. window.${key}()`));
     window[key] = f;
   });
+  console.groupEnd();
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { AddConsoleTools };
+module.exports = { addConsoleTools };

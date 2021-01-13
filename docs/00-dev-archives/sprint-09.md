@@ -349,10 +349,10 @@ For now, we rely on the fact that React hooks execute only when they're being re
 * If *effectFunc* returns an *unmountFunc*, this is run when the component unmounts for automatic cleanup. Again, the closure issue works...it will capture the value of any referred value at the time the function is created.
 * When *watched* is specified, the useEffect only runs when it's changed. To run useEffect only once, specify an empty array.
 
-Our solution to implementing **URSYS Subscribe** was to implement a custom effect called `useURSubscribe`, which looks like this:
+Our solution to implementing **URSYS Subscribe** was to implement a custom effect called `useRegisterMessage`, which looks like this:
 
 ```js
-function useURSubscribe(message, callback) {
+function useRegisterMessage(message, callback) {
   useEffect(() => {
     UR.Subscribe(message, callback);
     return () => UR.Unsubscribe(message, callback);
@@ -365,7 +365,7 @@ It's inserted into a Component like this. In this example, the effect function c
 ```js
 function Component() {
   const [ datum, setDatum ] = useState(0);
-  useURSubscribe('HELLO_URSYS', data=>{
+  useRegisterMessage('HELLO_URSYS', data=>{
   	console.log('got data',data);
     setDatum(data);
 	});
@@ -377,7 +377,7 @@ Understanding how this works relies on knowledge of the React lifecycle and Java
 
 ### THE NEW HOTNESS
 
-* To SUB from within a functional component, use the new `useURSubscribe` hook from `hooks/use-ursys`. 
+* To SUB from within a functional component, use the new `useRegisterMessage` hook from `hooks/use-ursys`. 
 * to PUB from within a functional component, use `UR.Publish()` directly.
 * To SUB or PUB from any module, use `UR.Publish()` and `UR.Subscribe()` as normal.
 

@@ -1,3 +1,4 @@
+/* tslint:disable */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   URSYS CLIENT MAIN ENTRY
@@ -6,13 +7,14 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URChannel = require('./client-channel');
-const URNet = require('./client-network');
-const URExec = require('./client-exec');
+const EndPoint = require('./client-endpoint');
+const URNet = require('./client-urnet');
+const ClientExec = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
 const PR = PROMPTS.makeStyleFormatter('UR');
+const DBG = false;
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,44 +32,45 @@ const META = {
   _VERSION: '0.0.1'
 };
 
-/// CLIENT-SIDE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// to be implemented
-const Events = {};
-const Extensions = {};
-const PubSub = {};
-
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const CHAN_LOCAL = new URChannel('ur-client');
-const CHAN_NET = new URChannel('ur-sender');
+const EP_LOCAL = new EndPoint('ur-client');
+const EP_NET = new EndPoint('ur-sender');
 let URSYS_RUNNING = false;
+let URSYS_ROUTE = '';
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
  *  SystemBoot, which starts the URSYS lifecycle.
  */
-async function SystemStart() {
+async function SystemStart(route) {
   if (URSYS_RUNNING) {
-    console.log(...PR('SystemStart: URSYS already running!!!'));
-    return Promise.reject();
+    const out = 'SystemStart: URSYS already running!!!';
+    console.log(...PR(out));
+    return Promise.reject(out);
+  }
+  if (route === undefined) {
+    const out = 'SystemStart: arg1 must be a route/path';
+    console.log(...PR(out));
+    return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
   PhaseMachine.QueueHookFor(
-    'UR',
-    'NET_CONNECT',
+    'UR/NET_CONNECT',
     () =>
       new Promise((resolve, reject) =>
-        URNet.Connect(CHAN_NET, { success: resolve, failure: reject })
+        URNet.Connect(EP_NET, { success: resolve, failure: reject })
       )
   );
   // autoregister messages
-  PhaseMachine.QueueHookFor('UR', 'APP_CONFIGURE', async () => {
-    let result = await CHAN_LOCAL.RegisterSubscribers();
-    console.log(...PR('message handlers registered with URNET:', result));
+  PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
+    let result = await EP_LOCAL.ursysRegisterMessages();
+    if (DBG)
+      console.log(...PR('message handlers registered with URNET:', result));
   });
   URSYS_RUNNING = true;
+  URSYS_ROUTE = route;
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -89,37 +92,40 @@ async function SystemStop() {
 const UR = {
   ...META,
   // FORWARDED PUB/SUB
-  Subscribe: CHAN_LOCAL.Subscribe,
-  NetSubscribe: CHAN_LOCAL.NetSubscribe,
-  Unsubscribe: CHAN_LOCAL.Unsubscribe,
-  Publish: CHAN_LOCAL.LocalPublish,
-  NetPublish: CHAN_LOCAL.NetPublish,
-  Signal: CHAN_LOCAL.LocalSignal,
-  NetSignal: CHAN_LOCAL.NetSignal,
-  Call: CHAN_LOCAL.LocalCall,
-  NetCall: CHAN_LOCAL.NetCall,
+  RegisterMessage: EP_LOCAL.registerMessage,
+  UnregisterMessage: EP_LOCAL.unregisterMessage,
+  SendMessage: EP_LOCAL.sendMessage,
+  RaiseMessage: EP_LOCAL.raiseMessage,
+  CallMessage: EP_LOCAL.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
+  // ROUTE INFO
+  IsRoute: route => URSYS_ROUTE === route,
+  ServerIP: URNet.ServerIP,
+  URNetPort: URNet.ServerPort,
+  WebServerPort: URNet.WebServerPort,
+  ConnectionString: URNet.ConnectionString,
   // FORWARDED SYSTEM CONTROL VIA UREXEC
-  SystemBoot: URExec.SystemBoot,
-  SystemConfig: URExec.SystemConfig,
-  SystemRun: URExec.SystemRun,
-  SystemRestage: URExec.SystemRestage,
-  SystemReboot: URExec.SystemReboot,
-  SystemUnload: URExec.SystemUnload,
+  SystemBoot: ClientExec.SystemBoot,
+  SystemConfig: ClientExec.SystemConfig,
+  SystemRun: ClientExec.SystemRun,
+  SystemRestage: ClientExec.SystemRestage,
+  SystemReboot: ClientExec.SystemReboot,
+  SystemUnload: ClientExec.SystemUnload,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
+  ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
   HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED CLASSES
   class: { PhaseMachine },
   // FORWARDED DEBUG UTILITY
-  AddConsoleTools: (ur = UR) => {
-    DBGTEST.AddConsoleTools(ur);
+  addConsoleTools: (ur = UR) => {
+    DBGTEST.addConsoleTools(ur);
   }
 };
 module.exports = UR;

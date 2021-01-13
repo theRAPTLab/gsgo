@@ -37,7 +37,7 @@ Unlike our SPA architecture where we spawn `React.render()` after setting up the
 * server: we are using the custom NextJS server feature to intercept routine information from the http module but we do not have access to Express middleware. This is where we launch URSYS socket-based server. 
 * client: we have access to `_app.jsx` and can initialize modules in the `useEffect` master hook. This is where we start the URSYS lifecycle on the client.
 
-Since we can't programmatically control React components from the outside, we can use the URSYS message system to sneak messages in. UR can be loaded as a module in any React component, and it provides a **custom hook** `useURSubscribe`. You can combine the use of `useState` hook with the subscription handler so React knows when to respond. The component can also use the regular `UR.Publish()` , `UR.Signal()`, and `UR.Call()` methods normally to send messages out if it's wrapped either in an event handler function (e.g. `onClick`) or a `useEffect` hook.
+Since we can't programmatically control React components from the outside, we can use the URSYS message system to sneak messages in. UR can be loaded as a module in any React component, and it provides a **custom hook** `useRegisterMessage`. You can combine the use of `useState` hook with the subscription handler so React knows when to respond. The component can also use the regular `UR.Publish()` , `UR.Signal()`, and `UR.Call()` methods normally to send messages out if it's wrapped either in an event handler function (e.g. `onClick`) or a `useEffect` hook.
 
 Efficient rerendering of React components is a separate topic! In general we want to avoid double-renders and rerendering too much of the page, and that means structuring your state props. 
 

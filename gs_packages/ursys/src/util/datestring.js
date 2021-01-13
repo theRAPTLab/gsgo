@@ -1,9 +1,17 @@
 /////////////////////////////////////////////////////////////////////////////
 /**	UTILITY FUNCTIONS ******************************************************/
 // enums for outputing dates
-const e_weekday = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const e_weekday = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday'
+];
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function str_TimeStamp() {
+function getTimeStamp() {
   let date = new Date();
   let hh = `0${date.getHours()}`.slice(-2);
   let mm = `0${date.getMinutes()}`.slice(-2);
@@ -42,7 +50,7 @@ function str_TimeDatedFilename(...args) {
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  TimeStamp: str_TimeStamp,
+  TimeStamp: getTimeStamp,
   DateStamp: str_DateStamp,
   DatedFilename: str_TimeDatedFilename
 };

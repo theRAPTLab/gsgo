@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "moduleResolution": "node",
+    "baseUrl": "src",
+    "paths": {
+      "config/*": ["../config/*"],
+      "script/*": ["./modules/sim/script/*"],
+      "app/*": ["./app/*"],
+      "lib/*": ["./lib/*"],
+      "modules/*": ["./modules/*"],
+      "static/*": ["./app/static/*"]
+    },
+    "jsx": "preserve",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true
+  },
+  "include": ["src/**/*.ts", "./urdu.js"],
+  "exclude": ["node_modules"]
+}

@@ -55,7 +55,7 @@ const SESSION = {};
     containing as many decoded values as possible. Check isValid for
     complete decode succes. groupId is also set if successful
 /*/
-SESSION.DecodeToken = hashedToken => {
+function DecodeToken(hashedToken) {
   let studentName;
   let hashedData; // token
   let groupId;
@@ -90,18 +90,18 @@ SESSION.DecodeToken = hashedToken => {
   [groupId, classroomId] = dataIds;
   isValid = true;
   return { isValid, studentName, token, groupId, classroomId };
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /*/ Return TRUE if the token decodes into an expected range of values
 /*/
-SESSION.IsValidToken = token => {
+function IsValidToken(token) {
   let decoded = SESSION.DecodeToken(token);
   return (
     decoded &&
     Number.isInteger(decoded.groupId) &&
     typeof decoded.studentName === 'string'
   );
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Returns a token string of form NAME-HASHED_DATA
@@ -110,7 +110,7 @@ SESSION.IsValidToken = token => {
  * @param {Number} dataIds.groupId
  * @param {Number} dataIds.classroomId
  */
-SESSION.MakeToken = (studentName, dataIds = {}) => {
+function MakeToken(studentName, dataIds = {}) {
   // type checking
   if (typeof studentName !== 'string')
     throw Error(`classId arg1 '${studentName}' must be string`);
@@ -127,7 +127,7 @@ SESSION.MakeToken = (studentName, dataIds = {}) => {
   let hashids = new HashIds(HASH_SALT + studentName, HASH_MINLEN, HASH_ABET);
   let hashedId = hashids.encode(groupId, classroomId);
   return `${studentName}-${hashedId}`;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Returns a token string of form NAME-HASHED_DATA
@@ -136,7 +136,7 @@ SESSION.MakeToken = (studentName, dataIds = {}) => {
  * @param {Number} dataIds.groupId
  * @param {Number} dataIds.teacherId
  */
-SESSION.MakeTeacherToken = (teacherName, dataIds = {}) => {
+function MakeTeacherToken(teacherName, dataIds = {}) {
   // type checking
   if (typeof teacherName !== 'string')
     throw Error(`classId arg1 '${teacherName}' must be string`);
@@ -154,7 +154,7 @@ SESSION.MakeTeacherToken = (teacherName, dataIds = {}) => {
   let hashids = new HashIds(HASH_SALT + teacherName, HASH_MINLEN, HASH_ABET);
   let hashedId = hashids.encode(groupId, teacherId);
   return `${teacherName}-${hashedId}`;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// support function
 function f_checkIdValue(idsObj) {
@@ -182,18 +182,18 @@ function f_checkIdValue(idsObj) {
  * as an authentication key based on a login token
  * @param {...*} var_args - string arguments
  */
-SESSION.MakeAccessKey = (...args) => {
+function MakeAccessKey(...args) {
   const name = [...args].join(':');
   const key = UUIDv5(name, UUID_NAMESPACE);
   return key;
-};
+}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Set the global GROUPID, which is included in all NetPacket objects that are
  * sent to server. Do not use from server-based code.
  */
-SESSION.DecodeAndSet = token => {
+function DecodeAndSet(token) {
   const decoded = SESSION.DecodeToken(token);
   const { isValid, studentName, groupId, classroomId } = decoded;
   if (isValid) {
@@ -216,91 +216,116 @@ SESSION.DecodeAndSet = token => {
       console.log('DecodeAndSet() success', studentName, groupId, classroomId);
   } else if (DBG) console.log('DecodeAndSet() failed', token);
   return isValid;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Clear all global session parameters. Do not use from server-based code.
  */
-SESSION.Clear = () => {
+function Clear() {
   if (DBG) console.log('Clearing session');
   m_current_name = undefined;
   m_current_idsobj = undefined;
   m_access_key = undefined;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Set the global SESSION ACCESS KEY, which is necessary as a parameter for
  * some operations (e.g. database writes). Do not use from server-based code.
  */
-SESSION.SetAccessKey = key => {
+function SetAccessKey(key) {
   if (typeof key === 'string') {
     m_access_key = key;
     if (DBG) console.log('setting access key', key);
   }
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Return the global SESSION ACCESS KEY that was set using SetAccessKey(). Don't
  * use this from server-based code.
  */
-SESSION.AccessKey = () => {
+function AccessKey() {
   if (DBG) console.log('AccessKey() returning', m_access_key);
   return m_access_key;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SESSION.SetAdminKey = key => {
+function SetAdminKey(key) {
   ADMIN_KEY = key || ADMIN_KEY;
   return ADMIN_KEY;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * This is TOTALLY INSECURE and not even trying for the prototype
  */
-SESSION.AdminKey = () => {
+function AdminKey() {
   const is = ADMIN_KEY || false;
   if (DBG) console.warn('INFO: requested AdminKey()');
   return is;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Return teacherId if this is a logged-in teacher
  */
-SESSION.LoggedInProps = () => {
+function LoggedInProps() {
   const { groupId, classroomId, teacherId } = m_current_idsobj;
   if (groupId === 0) {
     return { teacherName: m_current_name, teacherId };
   }
   return { studentName: m_current_name, groupId, classroomId };
-};
-SESSION.IsStudent = () => {
+}
+function IsStudent() {
   return SESSION.LoggedInProps().studentName !== undefined;
-};
-SESSION.IsTeacher = () => {
+}
+function IsTeacher() {
   return SESSION.LoggedInProps().teacherName !== undefined;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Return the global LoggedInName that was set using DecodeAndSet(). Don't use
  * this from server-based code.
  */
-SESSION.LoggedInName = () => {
+function LoggedInName() {
   return m_current_name;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Return the global idsObject containing groupId, classroomId that was set
  * using DecodeAndSet(). Don't use this from server-based code.
  */
-SESSION.Ids = () => {
+function Ids() {
   return m_current_idsobj;
-};
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SESSION.AdminPlaintextPassphrase = () => ADMIN_QSTRING;
+function AdminPlaintextPassphrase() {
+  return ADMIN_QSTRING;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-SESSION.ScreenshotURL = () => SSHOT_URL;
-SESSION.ScreenshotPostURL = () => UPLOAD_URL;
+function ScreenshotURL() {
+  return SSHOT_URL;
+}
+function ScreenshotPostURL() {
+  return UPLOAD_URL;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = SESSION;
+module.exports = {
+  DecodeToken,
+  IsValidToken,
+  MakeToken,
+  MakeTeacherToken,
+  MakeAccessKey,
+  DecodeAndSet,
+  Clear,
+  SetAccessKey,
+  AccessKey,
+  SetAdminKey,
+  AdminKey,
+  LoggedInProps,
+  IsStudent,
+  LoggedInName,
+  Ids,
+  AdminPlaintextPassphrase,
+  ScreenshotURL,
+  ScreenshotPostURL
+};

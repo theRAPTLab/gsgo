@@ -1,0 +1,16 @@
+{
+  "name": "@gemstep/test",
+  "version": "0.0.1-alpha.10",
+  "description": "test-related utilities and data",
+  "keywords": [],
+  "author": "Dave 'Sri' Seah <david@davidseah.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "restricted"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
+  },
+  "scripts": {}
+}

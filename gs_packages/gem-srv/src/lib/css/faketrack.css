@@ -1,0 +1,49 @@
+/* faketrack css */
+
+#container {
+  background-color: #e0e0e0;
+  position: relative;
+  float: left;
+}
+#data_track_controls,
+#faketrack_entities {
+  float: left;
+  padding-left: 10px;
+}
+#faketrack_entities {
+  font-family: monospace;
+}
+.entity {
+  width: 40px;
+  height: 40px;
+  border-radius: 25px;
+  background-color: white;
+  border: 2px solid black;
+  float: left;
+  position: absolute;
+}
+label {
+  display: inline-block;
+}
+label + label {
+  margin-left: 2em;
+}
+h2 {
+  margin: 0;
+}
+#data_track {
+  display: inline-block;
+  width: 160px;
+}
+#faketrack_xform input {
+  width: 50px;
+}
+#faketrack_xform label {
+  width: 120px;
+}
+/* hide stuff for Indiana U */
+#faketrack_tests,
+#faketrack_xform,
+#faketrack_entities {
+  /*display:none;		/* display:none to hide stuff */
+}

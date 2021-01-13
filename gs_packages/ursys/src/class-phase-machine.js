@@ -5,19 +5,6 @@
 
   EXAMPLE:
 
-    const PM = new PhaseMachine({
-      PHASE_RUN: [ 'INIT', 'LOAD', 'RUN', 'STOP ]
-    });
-    // hook function to phase
-    PM.Hook('INIT',(...args)=>{});
-    PM.Hook('LOAD',(...args)=>new Promise((resolve,reject)=>{});
-    // invocation
-    (async () => {
-      await PM.Execute('INIT');
-      await PM.ExecutePhase('PHASE_RUN');
-      await PM.ExecutePhaseParallel('PHASE_RUN');
-    })();
-
   NOTES:
   * It is up to you to implement the logic for when to execute phase
     operations. See client-exec.js for examples.
@@ -34,7 +21,6 @@ const PROMPTS = require('./util/prompts');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { subs: true, ops: false, phases: false, init: false };
 const IS_NODE = typeof window === 'undefined';
-
 const PR = PROMPTS.makeStyleFormatter('UR.PHM');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -43,6 +29,19 @@ const m_machines = new Map(); // store phasemachines <machinename,instance>
 const m_queue = new Map(); // store by <machinename,['op',f]>
 
 /// PRIVATE HELPERS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: extract the phase machine, phase from phaseSelector of form
+ *  SIM/UPDATE_ALL, where SIM is the phase machine and UPDATE_ALL is the phase
+ */
+function m_DecodePhase(psel) {
+  if (typeof psel !== 'string')
+    throw Error(...PR('arg must be non-empty string'));
+  const bits = psel.split('/');
+  if (bits.length !== 2)
+    throw Error(`${PR} malformed phase selector ('MACHINE/PHASE')`);
+  const [machine, phase] = bits;
+  return { machine, phase };
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: call the hook object's function. This used to do additional
  *  checks to see if the function should be called based on the route.
@@ -70,7 +69,7 @@ function m_ProcessQueueFor(pmkey) {
   try {
     qhooks.forEach(element => {
       const [op, f] = element;
-      pm.Hook(op, f);
+      pm.hook(op, f);
     });
     m_queue.delete(pmkey);
   } catch (e) {
@@ -101,12 +100,12 @@ class PhaseMachine {
     });
     // bind functions to instance so it can be called inside promises
     // and asynchronous handler context
-    this.Hook = this.Hook.bind(this);
-    this.Execute = this.Execute.bind(this);
-    this.ExecutePhase = this.ExecutePhase.bind(this);
-    this.ExecutePhaseParallel = this.ExecutePhaseParallel.bind(this);
-    this.GetHookFunctions = this.GetHookFunctions.bind(this);
-    this.GetPhaseFunctionsAsMap = this.GetPhaseFunctionsAsMap.bind(this);
+    this.hook = this.hook.bind(this);
+    this.execute = this.execute.bind(this);
+    this.executePhase = this.executePhase.bind(this);
+    this.executePhaseParallel = this.executePhaseParallel.bind(this);
+    this.getHookFunctions = this.getHookFunctions.bind(this);
+    this.getPhaseFunctionsAsMap = this.getPhaseFunctionsAsMap.bind(this);
     // save instance by name
     m_machines.set(shortName, this);
     if (DBG.init) console.log(...PR(`phasemachine '${shortName}' saved`));
@@ -119,7 +118,7 @@ class PhaseMachine {
    *  define in PHASES and converted into the MAP. <f> is a function that
    *  will be invoked during the operation, and it can return a promise or value.
    */
-  Hook(op, f, scope = '') {
+  hook(op, f, scope = '') {
     // don't run on server
     if (IS_NODE) return;
     // vestigial scope parameter check if we need it someday
@@ -141,12 +140,12 @@ class PhaseMachine {
     if (DBG.init) console.log(...PR(`${status} '${this.NAME}.${op}' Hook`));
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Execute all Promises associated with a op, completing when
+  /** API: execute all Promises associated with a op, completing when
    *  all the callback functions complete. If the callback function returns
    *  a Promise, this is added to a list of Promises to wait for before the
    *  function returns control to the calling code.
    */
-  Execute(op, ...args) {
+  execute(op, ...args) {
     // note: contents of PHASE_HOOKs are promise-generating functions
     if (!this.OP_HOOKS.has(op)) throw Error(`${op} is not a recognized EXEC op`);
     if (op.startsWith('PHASE_') && DBG.phases)
@@ -192,33 +191,33 @@ class PhaseMachine {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Execute all Promises associated with a Phase Group in serial
+  /** API: execute all Promises associated with a Phase Group in serial
    *  css-tricks.com/why-using-reduce-to-sequentially-resolve-promises-works/
    */
-  ExecutePhase(phaseName, ...args) {
-    if (DBG.phases) console.log(...PR(`ExecutePhase('${phaseName}')`));
+  executePhase(phaseName, ...args) {
+    if (DBG.phases) console.log(...PR(`executePhase('${phaseName}')`));
     const ops = this.PHASES[phaseName];
     if (ops === undefined)
       throw Error(`Phase "${phaseName}" doesn't exist in ${this.NAME}`);
-    const phaseHookFuncs = this.GetHookFunctions(phaseName);
+    const phaseHookFuncs = this.getHookFunctions(phaseName);
     let index = 0;
     return ops.reduce(
       async (previousPromise, nextOp) => {
         phaseHookFuncs.forEach(f => f(ops, index++));
         await previousPromise; // wait for previous promise to finish
-        return this.Execute(nextOp, ...args); // queue next promise
+        return this.execute(nextOp, ...args); // queue next promise
       },
       phaseHookFuncs.forEach(f => f(ops, index++))
     ); // initial value of previousPromise
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Execute all Promises associated with a Phase Group in parallel
+  /** API: execute all Promises associated with a Phase Group in parallel
    */
-  ExecutePhaseParallel(phaseName, ...args) {
+  executePhaseParallel(phaseName, ...args) {
     const ops = this.PHASES[phaseName];
     if (ops === undefined) throw Error(`Phase "${phaseName}" doesn't exist`);
-    return Promise.all(ops.map(op => this.Execute(op, ...args)));
+    return Promise.all(ops.map(op => this.execute(op, ...args)));
     // fix this and return promise
   }
 
@@ -227,7 +226,7 @@ class PhaseMachine {
    *  using closures to create an optimal execution function as in
    *  client-exec SystemRun()
    */
-  GetHookFunctions(op) {
+  getHookFunctions(op) {
     if (DBG.ops) console.log(...PR(`getting hook for '${op}'`));
     return this.OP_HOOKS.get(op).map(hook => hook.f);
   }
@@ -235,7 +234,7 @@ class PhaseMachine {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** UTILITY: Return a Map organized by phase:functions[]
    */
-  GetPhaseFunctionsAsMap(phaseName) {
+  getPhaseFunctionsAsMap(phaseName) {
     if (!phaseName.startsWith('PHASE_'))
       throw Error(`${phaseName} is not a Phase Group name`);
     if (DBG.ops) console.log(...PR(`getting hook map for phase '${phaseName}'`));
@@ -256,22 +255,23 @@ class PhaseMachine {
 /** Queue hook requests even if machine isn't already defined.
  *  This routine can be used as the standard hook method for UR clients.
  */
-PhaseMachine.QueueHookFor = (pmName, op, f) => {
-  if (typeof pmName !== 'string') throw Error('arg1 must be phasemachine name');
-  if (typeof op !== 'string') throw Error('arg2 must be phaseop name');
+PhaseMachine.QueueHookFor = (phaseSel, f) => {
+  if (typeof phaseSel !== 'string')
+    throw Error('arg1 must be phase selector like MACHINE/PHASE');
   if (typeof f !== 'function' && f !== undefined)
-    throw Error('arg3 must be function or undefined');
+    throw Error('arg2 must be function or undefined');
   //
-  const pm = m_machines.get(pmName);
+  const { machine, phase } = m_DecodePhase(phaseSel);
+  const pm = m_machines.get(machine);
   // if phasemachine is already valid, then just hook it directly
   if (pm) {
-    pm.Hook(op, f);
+    pm.hook(phase, f);
     return;
   }
   // otherwise, queue the request
-  if (!m_queue.has(pmName)) m_queue.set(pmName, []);
-  const q = m_queue.get(pmName);
-  q.push([op, f]); // array of 2-element arrays
+  if (!m_queue.has(machine)) m_queue.set(machine, []);
+  const q = m_queue.get(machine);
+  q.push([phase, f]); // array of 2-element arrays
 };
 
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
