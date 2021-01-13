@@ -55,35 +55,34 @@ const scripts = [
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-featureCall Costume setCostume 'bunny.json' 1
+featureCall Costume setCostume 'bunny.json' 0
+featureCall Movement setMovementType 'wander'
+addProp energyLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
-  // happens every second, and we check everyone
-  ifExpr {{ agent.getProp('name').value==='bun5' }} [[
-    dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
-    dbgOut 'my tock'
+  // energyLevel goes down every second
+  propCall energyLevel sub 1
+  dbgOut 'energyLevel' {{ agent.getProp('energyLevel').value }}
+  // hungry -- get jittery
+  ifExpr {{ agent.getProp('energyLevel').value < 5 }} [[
+    featureCall Costume setPose 1
+    featureCall Movement setMovementType 'jitter'
   ]]
-  // exec {{ agent.prop.Costume.currentFrame.add(1) }}
-  ifExpr {{ agent.prop.x.value > 50 }} [[
+  // dead -- stop moving
+  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
     featureCall Costume setPose 2
-  ]]
-  ifExpr {{ agent.prop.x.value < -50 }} [[
-    featureCall Costume setPose 3
-  ]]
-  ifExpr {{ agent.prop.y.value > 50 }} [[
-    featureCall Costume setPose 4
+    featureCall Movement setMovementType 'static'
   ]]
 ]]
 # PROGRAM CONDITION
 when Bunny sometest [[
   // dbgOut SingleTest
 ]]
-when Bunny sometest Bunny [[
+when Bunny touches Bunny [[
   // dbgOut PairTest
 ]]`
   },
@@ -94,36 +93,46 @@ when Bunny sometest Bunny [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'fish.json' 0
-addProp foodLevel Number 10
+featureCall Movement setMovementType 'wander' 1
+// featureCall Movement setDirection 90
+addProp energyLevel Number 20
 # PROGRAM UPDATE
 setProp skin 'fish.json'
-featureCall Movement jitterPos -5 5
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
-  propCall foodLevel sub 1
-  dbgOut 'foodLevel' {{ agent.getProp('foodLevel').value }}
+  propCall energyLevel sub 1
+  // dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
+  // sated
+  ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
+    featureCall Costume setPose 0
+    featureCall Movement setMovementType 'wander'
+  ]]
   // hungry
-  ifExpr {{ agent.getProp('foodLevel').value < 5 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 15 }} [[
     featureCall Costume setPose 1
+    featureCall Movement setMovementType 'wander'
   ]]
   // dead
-  ifExpr {{ agent.getProp('foodLevel').value < 0 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
     featureCall Costume setPose 2
+    featureCall Movement setMovementType 'float'
   ]]
 ]]
 # PROGRAM CONDITION
-when Fish dies [[
-  dbgOut 'when fish dies'
+when Fish touches Algae [[
+  // dbgOut 'Touch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+  // dbgContext
+
+  setProp energyLevel {{ Fish.prop.energyLevel.value + 1 }}
+
+  // IDEAL CALL
+  // When fish touches algae, food level goes up
+  // propCall foodLevel inc 1
+  // kill Algae
 ]]
-// when Fish sometest Algae [[
-//   // dbgOut PairTest
-//   // When fish touches algae, food level goes up
-//   setProp foodLevel {{ foodLevel + 1 }}
-//   // kill Algae
-// ]]
 `
   },
   {
@@ -133,28 +142,27 @@ when Fish dies [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'algae.json' 0
+// featureCall Movement setRandomStart
+featureCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
 # PROGRAM UPDATE
 setProp skin 'algae.json'
-featureCall Movement jitterPos -1 1
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // energyLevel goes down every second
   propCall energyLevel sub 1
+  dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
 ]]
 # PROGRAM CONDITION
-// when Algae sometest [[
-//   // dbgOut SingleTest
-//   // energyLevel > 5
-//   // spawn new Algae
-//   // setProp energyLevel 1
-// ]]
-// when Algae sometest Lightbeam [[
-//   // dbgOut PairTest
+// when Algae touches Lightbeam [[
 //   // When algae touches lightbeam, energyLevel goes up
-//   setProp energyLevel {{ energyLevel + 1 }}
+//   propCall energyLevel inc 1
+//   ifExpr {{ agent.getProp('energyLevel').value > 5 }} [[
+//     dbgOut 'spawn new algae'
+//     propCall energyLevel setTo 1
+//   ]]
 // ]]
 `
   },
@@ -165,6 +173,8 @@ onEvent Tick [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'lightbeam.json' 0
+setProp x -300
+setProp y -300
 # PROGRAM UPDATE
 setProp skin 'lightbeam.json'
 featureCall Movement jitterPos -5 5
@@ -289,18 +299,16 @@ class ScriptEditor extends React.Component {
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr' }}>
-            <PanelInspector isActive />
-            <PanelInspector />
-            <PanelInspector />
-          </div>
         </div>
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <PanelMessage message={message} isError={messageIsError} />
+          <div style={{ display: 'flex' }}>
+            <PanelMessage message={message} isError={messageIsError} />
+            <PanelInspector isActive />
+          </div>
         </div>
       </div>
     );

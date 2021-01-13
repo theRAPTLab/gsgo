@@ -137,19 +137,19 @@ function m_HandleMessage(msgEvent) {
       throw Error('unknown packet type', type);
   }
   // DEBUG OUT UTILITY
-  function cout_ReceivedStatus(pkt) {
+  function cout_ReceivedStatus(p) {
     console.warn(
       ...PR(
-        `ME_${NetPacket.SocketUADDR()} received '${pkt.getType()}' '${pkt.getMessage()}' from ${pkt.getSourceAddress()}`
+        `ME_${NetPacket.SocketUADDR()} received '${p.getType()}' '${p.getMessage()}' from ${pkt.getSourceAddress()}`
       ),
       pkt.getData()
     );
   }
   // DEBUG OUT UTILITY
-  function cout_ForwardedStatus(pkt, result) {
+  function cout_ForwardedStatus(p, result) {
     console.log(
       ...PR(
-        `ME_${NetPacket.SocketUADDR()} forwarded '${pkt.getMessage()}', returning ${JSON.stringify(
+        `ME_${NetPacket.SocketUADDR()} forwarded '${p.getMessage()}', returning ${JSON.stringify(
           result
         )}`
       )

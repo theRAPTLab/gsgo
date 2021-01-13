@@ -32,13 +32,23 @@ RegisterFunction('dies', a => {
   return false;
 });
 RegisterFunction('touches', (a, b) => {
-  // not really a touch
-  // distance is less than 10
+  // not actually a "touch"
+  // checks if distance between agents is less than 10
   const distance = 10;
   let xs = a.prop.x.value - b.prop.x.value;
   let ys = a.prop.y.value - b.prop.y.value;
-  if (Math.hypot(xs, ys) < distance) return true;
-  return false;
+  // INSPECTOR HACK
+  let data = {
+    name: a.name,
+    x: a.prop.x.value,
+    y: b.prop.y.value,
+    energyLevel: a.prop.energyLevel ? a.prop.energyLevel.value : ''
+  };
+  UR.RaiseMessage('NET:HACK_INSPECTOR_UPDATE', data);
+  if (Math.hypot(xs, ys) < distance) {
+    return true; // touches!
+  }
+  return false; // doesn't touch
 });
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////

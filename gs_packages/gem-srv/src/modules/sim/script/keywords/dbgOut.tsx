@@ -34,9 +34,9 @@ export class dbgOut extends Keyword {
   compile(unit: TScriptUnit): TOpcode[] {
     const progout = [];
 
-    progout.push(agent => {
+    progout.push((agent, state) => {
       if (COUNTER-- > 0) {
-        console.log(`?${EvalUnitArgs(unit, { agent }).join(' ')}`);
+        console.log('?dbgOut', ...EvalUnitArgs(unit.slice(1), state.ctx));
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });

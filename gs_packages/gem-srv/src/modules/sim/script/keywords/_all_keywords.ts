@@ -40,6 +40,7 @@ export * from './onEvent'; // script event processing
 // debug keywords (very slow performance)
 export * from './dbgOut';
 export * from './dbgStack';
+export * from './dbgContext';
 export * from './dbgError';
 export * from './keywordErr';
 // export * from './unknownKeyword';

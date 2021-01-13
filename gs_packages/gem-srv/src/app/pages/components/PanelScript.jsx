@@ -176,7 +176,7 @@ class PanelScript extends React.Component {
   }
 
   componentWillUnmount() {
-    console.error(
+    console.warn(
       'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
     );
     UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);

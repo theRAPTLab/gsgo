@@ -77,7 +77,49 @@ class Home extends React.Component {
             <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
         </div>
-        <div id="root-renderer" className={classes.main} />
+        <div id="instructions" className={classes.main}>
+          <h2>Workshop Demo Dec 23, 2020</h2>
+          <p>
+            This demo showed how scripting works, and is the first look at the
+            research team had. The user interfaces are to provide minimal support
+            for showing the multi-app operation, and are not intended to represent
+            the final design.{' '}
+            <b>
+              For performance, open each app in its own browser window, NOT a tab.
+            </b>
+          </p>
+          <ol>
+            <li>
+              <a href="/app/missioncontrol">MISSION CONTROL</a> - Prototype of the
+              presentation laptop app. It runs the simulator module and receives
+              scripts from other devices. <b>Run this first</b> and click{' '}
+              <b>START</b> button on right after some scripts have been sent to
+              it. The title shows the address of the server that everyone else
+              should connect to.
+            </li>
+            <li>
+              <a href="/app/scripteditor">SCRIPT EDITOR</a> - Prototype providing
+              a pre-defined selection of agents that can have their scripts
+              edited. This can be on different machines. Use <b>SAVE TO SERVER</b>{' '}
+              to send to MISSION CONTROL.
+            </li>
+            <li>
+              <a href="/app/viewer">VIEWER</a> - Prototype app showing the
+              simulation view from MISSION CONTROL, which would be the basis of an
+              annotation app.
+            </li>
+            <li>
+              <a href="/app/faketrack">FAKETRACK</a> - Ported from earlier
+              versions of STEP. This currently does not affect the simulation.
+            </li>
+          </ol>
+          <p>
+            This prototype is very rough so many edge cases do not work. The
+            script language is also still in a primitive state and has some
+            showstopper bugs with WHEN conditions, but you can make simple changes
+            in the scripts.
+          </p>
+        </div>
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
           console-right
         </div>

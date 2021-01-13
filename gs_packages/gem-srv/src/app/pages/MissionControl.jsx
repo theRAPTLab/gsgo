@@ -25,6 +25,7 @@ import PanelPlayback from './components/PanelPlayback';
 import PanelInspector from './components/PanelInspector';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
+import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -51,10 +52,13 @@ class MissionControl extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'sim'
+      panelConfiguration: 'sim',
+      message: ''
     };
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
+    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
   }
 
   componentDidMount() {
@@ -82,12 +86,20 @@ class MissionControl extends React.Component {
     });
   }
 
+  DoScriptUpdate(data) {
+    console.log('update data', data);
+    const firstline = data.script.match(/.*/)[0];
+    this.setState(state => ({
+      message: `${state.message}Received script ${firstline}\n`
+    }));
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
-    const { panelConfiguration } = this.state;
+    const { panelConfiguration, message } = this.state;
     const { classes } = this.props;
 
     /// This should be loaded from the db
@@ -112,8 +124,8 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span>{' '}
+            {UR.ConnectionString()}
           </div>
           <button type="button" onClick={this.OnModelClick}>
             Back to MODEL
@@ -124,12 +136,11 @@ class MissionControl extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          {/* Map disabled for now
-            <PanelMap
+          <PanelMap
             id="map"
             isMinimized={panelConfiguration !== 'map'}
             onClick={this.OnPanelClick}
-          /> */}
+          />
           <PanelBlueprints id="blueprints" agents={agents} />
           <PanelInstances id="instances" />
         </div>
@@ -137,15 +148,17 @@ class MissionControl extends React.Component {
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
-          <PanelPlayback id="playback" />
-          <PanelInspector isActive />
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <PanelPlayback id="playback" />
+            <PanelInspector isActive />
+          </div>
         </div>
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          <PanelMessage message={message} />
         </div>
       </div>
     );

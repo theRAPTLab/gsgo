@@ -1,60 +1,48 @@
+/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "setProp" keyword object
+  implementation of keyword "dbgContext" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { EvalArg } from 'lib/expr-evaluator';
 
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class setProp extends Keyword {
+export class dbgContext extends Keyword {
   // base properties defined in KeywordDef
-
   constructor() {
-    super('setProp');
-    this.args = ['propName:string', 'value:any'];
+    super('dbgContext');
+    this.args = ['numpop:number'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, propName, value] = unit;
+    const [kw, numpop] = unit;
     const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
-      const p = agent.prop[propName];
-      p.value = EvalArg(value, state.ctx);
+    progout.push((agent, state) => {
+      console.log(`agent '${agent.name}' context`, state.ctx);
     });
     return progout;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { propName, value } = state;
-    return [this.keyword, propName, value];
+    const { error } = state;
+    return [this.keyword, error];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const propName = unit[1];
-    const value = unit[2];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        setProp {propName} = {value}
-      </>
-    );
+    const [kw] = unit;
+    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(setProp);
+RegisterKeyword(dbgContext);
