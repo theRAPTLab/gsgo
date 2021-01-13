@@ -1,9 +1,14 @@
 {
-  "packages": ["gs_packages/*"],
-  "version": "0.0.1-alpha.8",
+  "packages": [
+    "gs_packages/*"
+  ],
+  "version": "0.0.1-alpha.9",
   "command": {
     "version": {
-      "allowBranch": ["master", "dev"]
+      "allowBranch": [
+        "master",
+        "dev"
+      ]
     }
   }
 }
