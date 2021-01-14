@@ -71,6 +71,8 @@ class MyFeature extends Feature {
   /*/
   initialize(phaseMachine) {
     super.initialize(phaseMachine);
+    /// TODO: Hook this into api-sim or sim-feature so all features get a chance to
+    /// initialize their class-wide hooks into the simulation phase machine
   }
 
   /*/
