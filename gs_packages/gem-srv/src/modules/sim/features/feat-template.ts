@@ -15,7 +15,7 @@
 
 /*/ required libraries /*/
 import UR from '@gemstep/ursys/client';
-import Feature from 'lib/class-feature';
+import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 /*/ add your other libraries here /*/
 import { NumberProp, StringProp } from 'modules/sim/props/var';
@@ -33,7 +33,7 @@ const DBG = false;
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MyFeature extends Feature {
+class MyFeature extends GFeature {
   /*/
     if your feature provides methods to the scripting engine, define them in the
     constructor. Method code is shared between all agents so it is defined only
