@@ -11,7 +11,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { NumberProp, StringProp } from 'modules/sim/props/var';
-import Feature from 'lib/class-feature';
+import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
 
@@ -88,7 +88,7 @@ UR.SystemHook('SIM/FEATURES_UPDATE', () => {
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class MovementPack extends Feature {
+class MovementPack extends GFeature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));

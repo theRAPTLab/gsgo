@@ -11,11 +11,11 @@
 
   BOILERPLATE
 
-  import Feature from 'lib/class-feature';
+  import GFeature from 'lib/class-gfeature';
   import { IAgent } from 'lib/t-script'
   import { Register } from 'modules/datacore/dc-features';
 
-  class FeaturePack extends Feature {
+  class FeaturePack extends GFeature {
     constructor(name:string) {
       super(name);
       // add feature methods here
