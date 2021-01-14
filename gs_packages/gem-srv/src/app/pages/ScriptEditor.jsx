@@ -57,9 +57,9 @@ const scripts = [
 // When Energy level is at 0, die and stop moving
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Sandbox
+useFeature Movement
 featureCall Costume setCostume 'bunny.json' 0
-featureCall Sandbox setMovementType 'wander'
+featureCall Movement setMovementType 'wander'
 addProp energyLevel Number 10
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
@@ -73,12 +73,12 @@ onEvent Tick [[
   // hungry -- get jittery
   ifExpr {{ agent.getProp('energyLevel').value < 5 }} [[
     featureCall Costume setPose 1
-    featureCall Sandbox setMovementType 'jitter'
+    featureCall Movement setMovementType 'jitter'
   ]]
   // dead -- stop moving
   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
     featureCall Costume setPose 2
-    featureCall Sandbox setMovementType 'static'
+    featureCall Movement setMovementType 'static'
   ]]
 ]]
 # PROGRAM CONDITION
