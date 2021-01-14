@@ -24,7 +24,7 @@ const TimerPack = {
 /// URSYS PROMPT //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import UR from '@gemstep/ursys/client';
-import Feature from 'lib/class-feature';
+import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -36,7 +36,7 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  */
-class TimerPack extends Feature {
+class TimerPack extends GFeature {
   constructor(name) {
     super(name);
     if (DBG) console.log(...PR('construct'));

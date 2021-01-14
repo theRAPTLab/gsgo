@@ -52,6 +52,9 @@ const scripts = [
   {
     id: 'bunny',
     script: `# BLUEPRINT Bunny
+// Start full of energy, red and wandering
+// Energy level decreases over time, grow hungry and jittery
+// When Energy level is at 0, die and stop moving
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
