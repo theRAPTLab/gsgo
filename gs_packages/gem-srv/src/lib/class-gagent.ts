@@ -34,7 +34,7 @@ let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Agent extends SM_Object implements IAgent, IActable {
+class GAgent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
   featureMap: Map<string, IFeature>;
   controlMode: ControlMode;
@@ -369,7 +369,7 @@ class Agent extends SM_Object implements IAgent, IActable {
 /// The global agent is our "World Agent" that contains shared properties for
 /// a running simulation
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const GLOBAL_AGENT = new Agent();
+const GLOBAL_AGENT = new GAgent();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetGlobalAgent() {
   return GLOBAL_AGENT;
@@ -378,5 +378,5 @@ function GetGlobalAgent() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
-export default Agent;
+export default GAgent;
 export { GetGlobalAgent };
