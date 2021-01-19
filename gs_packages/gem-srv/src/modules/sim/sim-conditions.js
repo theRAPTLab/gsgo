@@ -5,14 +5,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { GetGlobalAgent } from 'lib/class-agent';
 import {
   GetAllGlobalConditions,
   GetScriptEventHandlers,
   GetAgentsByType
 } from 'modules/datacore';
-import { Evaluate } from 'lib/expr-evaluator';
 import { RegisterFunction } from 'modules/datacore/dc-programs';
+import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

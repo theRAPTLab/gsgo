@@ -41,7 +41,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   thinkQueue: TMethod[];
   queueThinkMessage: (msg: IMessage) => void;
   execQueue: TMethod[];
-  queueExecAction: (msg: IMessage) => void;
+  queueExecMessage: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ctx?: object, ...args) => any;
   featExec: (fName: string, mName: string, ...args) => any;

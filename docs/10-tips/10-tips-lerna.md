@@ -181,7 +181,7 @@ Currently, we're using `lerna version prerelease` to automatically bump our prer
 
 Yes, but you have to duplicate some configuration files from the root:
 
-* `tsconfig.json` that `extends` the `tsconfig.build.json` file in the monorepo root. Edit it so the path can be found. This file is required by `@typescript-eslint` to know how to compile source files, and you need to constomize it to your project folder structure.
+* `tsconfig.json` that `extends` the `tsconfig.build.json` file in the monorepo root. Edit it so the path can be found. This file is required by `@typescript-eslint` to know how to compile source files, and you need to constomize it to your project folder structure. This plugin adds editor linting only; compile-time linting is handled by webpack. See [Typescript Monorepo Config](https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/MONOREPO.md) for more info on how to set up the `tsconfig.json` files, keeping in mind that the `modules.exports` reference is for `.eslintrc` not `tsconfig.json`.
 
 The other configuration files should not require copying. ESLint, for example, will search backwards up the directory chain until it finds a config file. In VSCode, Typescript will stop searching at the root of the project.
 
@@ -192,14 +192,16 @@ Convention: `npm run local` is an alias for just running the current build.
 TL;DR: currently using the `lerna bootstrap --hoist` option, it actually doesn't hoist *just* the shared node_modules, it hoists *ALL OF THEM*. More recent versions of the lerna documentation omit the "shared" description, but tutorials predating May 2019 do not. 
 
 **resolution:** don't use hoisting despite the increase in footprint. The following issues are related to the hoisting problem.
+UPDATE JAN 2021: The **workaround** I've been using is to (1) make sure that all the packages are the same version number (2) bootstrap after adding every package
 
 ### When I add a new package to the monorepo, the Version is out of synch
 
 This occurs when using `lerna bootstrap --hoist` (or our `npm bootstrap` script which uses the hoisting option). 
 
 The only solution I know of is to ensure that the versions in the packages also match the root level package.json. I'm not sure this is always desirable; there might be a package that we don't want. In that case, we may not want to hoist certain. 
+UPDATE JAN 2021: This still seems to happen when running `lerna version prerelease`, where one package may be out of synch due to the hoisting incrementing (?) the version in package.json.
 
 ### When I npm run bootstrap, webpack throws "module not found" errors during build
 
-Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` 
+Researching. It is happening in `gs_packages/ursys` after running `npm run bootstrap` in the root. I worked around it by installing the packages again at the local level using `npm i -S` then running bootstrap again. 
 
