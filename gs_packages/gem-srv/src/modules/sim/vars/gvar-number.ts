@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The NumberProp class can do simple arithmetic and logical comparisons
+  The GVarNumber class can do simple arithmetic and logical comparisons
   with literal numbers.
 
   In our first prototype, we do not support arbitrary expressions.
@@ -10,7 +10,7 @@
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-script';
 import { RegisterVarCTor } from 'modules/datacore';
-import { BooleanProp } from './var-boolean';
+import { GVarBoolean } from './gvar-boolean';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,14 +39,14 @@ function u_CheckMinMax(vobj) {
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class NumberProp extends SM_Object implements IScopeable {
+export class GVarNumber extends SM_Object implements IScopeable {
   nvalue: number;
   min: number;
   max: number;
   wrap: boolean;
   constructor(initial = 0) {
     super(initial);
-    this.meta.type = Symbol.for('NumberProp');
+    this.meta.type = Symbol.for('GVarNumber');
     this.value = initial;
     this.nvalue = undefined;
     this.min = 0;
@@ -92,19 +92,19 @@ export class NumberProp extends SM_Object implements IScopeable {
     return this;
   }
   eq(num: number) {
-    return new BooleanProp(this.value === num);
+    return new GVarBoolean(this.value === num);
   }
   gt(num: number) {
-    return new BooleanProp(this.value > num);
+    return new GVarBoolean(this.value > num);
   }
   lt(num: number) {
-    return new BooleanProp(this.value < num);
+    return new GVarBoolean(this.value < num);
   }
   gte(num: number) {
-    return new BooleanProp(this.value >= num);
+    return new GVarBoolean(this.value >= num);
   }
   lte(num: number) {
-    return new BooleanProp(this.value <= num);
+    return new GVarBoolean(this.value <= num);
   }
   serialize() {
     const values = super.serialize();
@@ -118,4 +118,4 @@ export class NumberProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Number', NumberProp);
+RegisterVarCTor('Number', GVarNumber);

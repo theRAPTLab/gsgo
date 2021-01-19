@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Agent from 'lib/class-agent';
+import GAgent from 'lib/class-gagent';
 import { TScriptUnit, TOpcode, TInstance, EBundleType } from 'lib/t-script.d';
 import {
   GetKeyword,
@@ -30,7 +30,7 @@ import 'script/keywords/_all_keywords';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR', 'TagRed');
 const scriptConverter = new GScriptTokenizer();
-const COMPILER_AGENT = new Agent();
+const COMPILER_AGENT = new GAgent();
 const COMPILER_STATE = new SM_State();
 //
 const DBG = false;
@@ -291,7 +291,7 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
  */
 function MakeAgent(instanceDef: TInstance) {
   const { blueprint, name } = instanceDef;
-  const agent = new Agent(name);
+  const agent = new GAgent(name);
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof blueprint === 'string') {

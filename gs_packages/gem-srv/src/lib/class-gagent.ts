@@ -23,7 +23,7 @@ import {
   ISMCBundle,
   ControlMode
 } from 'lib/t-script.d';
-import { NumberProp, StringProp } from 'modules/sim/props/var';
+import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -34,7 +34,7 @@ let REF_ID_COUNT = 0;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Agent extends SM_Object implements IAgent, IActable {
+class GAgent extends SM_Object implements IAgent, IActable {
   blueprint: ISMCBundle;
   featureMap: Map<string, IFeature>;
   controlMode: ControlMode;
@@ -62,9 +62,9 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.controlMode = ControlMode.puppet;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
-    this.prop.x = new NumberProp();
-    this.prop.y = new NumberProp();
-    this.prop.skin = new StringProp('default');
+    this.prop.x = new GVarNumber();
+    this.prop.y = new GVarNumber();
+    this.prop.skin = new GVarString('default');
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -164,8 +164,8 @@ class Agent extends SM_Object implements IAgent, IActable {
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
-   *  in the agent's props map as a DictionaryProp, so this version
-   *  of prop returns the contents of the DictionaryProp!
+   *  in the agent's props map as a GVarDictionary, so this version
+   *  of prop returns the contents of the GVarDictionary!
    */
   featProp(fName: string, pName: string): IScopeable {
     const featProps = this.prop[fName];
@@ -200,7 +200,7 @@ class Agent extends SM_Object implements IAgent, IActable {
     this.thinkQueue.push(...actions);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  queueExecAction(message: SM_Message) {
+  queueExecMessage(message: SM_Message) {
     const { actions } = message;
     this.execQueue.push(...actions);
   }
@@ -369,7 +369,7 @@ class Agent extends SM_Object implements IAgent, IActable {
 /// The global agent is our "World Agent" that contains shared properties for
 /// a running simulation
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const GLOBAL_AGENT = new Agent();
+const GLOBAL_AGENT = new GAgent();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetGlobalAgent() {
   return GLOBAL_AGENT;
@@ -378,5 +378,5 @@ function GetGlobalAgent() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
-export default Agent;
+export default GAgent;
 export { GetGlobalAgent };

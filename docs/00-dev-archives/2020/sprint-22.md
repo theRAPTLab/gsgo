@@ -271,9 +271,9 @@ AgentFactory.AddTemplate('Bunny', agent => {
   agent.prop('y').setTo(100 - 200 * Math.random());
   agent.prop('skin').setTo('bunny.json');
   // additional used for costumes (hack)
-  agent.addProp('spriteFrame', new NumberProp(temp_num));
-  agent.addProp('currentHelath', new NumberProp(100));
-  agent.addProp('isAlive', new BooleanProp(true));
+  agent.addProp('spriteFrame', new GVarNumber(temp_num));
+  agent.addProp('currentHelath', new GVarNumber(100));
+  agent.addProp('isAlive', new GVarBoolean(true));
   agent.addFeature('Movement');
 ```
 

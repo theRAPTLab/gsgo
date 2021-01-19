@@ -55,7 +55,7 @@ Here's a list of **possible oversights** that I noticed:
 
 * What I am calling "SM_Conditional" in SM_State is not quite accurate. It might be better named "SM_Comparator"
 * the props and methods map are used to store only *scriptable* methods.
-* Features are called with `decorate()` when an Agent is executing its `addFeature()` code. This code adds Props to a `props[featureName]` property containing a `DictionaryProp`, and the `prop()` method is overriden to dig the property out of the passed agent. 
+* Features are called with `decorate()` when an Agent is executing its `addFeature()` code. This code adds Props to a `props[featureName]` property containing a `GVarDictionary`, and the `prop()` method is overriden to dig the property out of the passed agent. 
 * Feature also implements `prop()` and `method()` differently; since features are not part of an object, they must receive the object. 
   *  `prop()` returns the key of the stored Dictionary object
   *  `method()`  returns the local method of the feature, not the agent's method.
