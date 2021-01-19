@@ -200,7 +200,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.thinkQueue.push(...actions);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  queueExecAction(message: SM_Message) {
+  queueExecMessage(message: SM_Message) {
     const { actions } = message;
     this.execQueue.push(...actions);
   }
