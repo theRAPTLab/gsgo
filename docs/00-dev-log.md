@@ -41,6 +41,10 @@
 
 # SPRINT 21-01
 
+## JAN 19 TUE - Ramping up on scripting
+
+Starting scripting improvement in `feat/script-x`
+
 
 
 ---
