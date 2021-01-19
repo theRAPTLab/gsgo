@@ -1,6 +1,6 @@
 [PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
-**1	SUMMARY S20 SEP 28-OCT 11**
+**SUMMARY S20 SEP 28-OCT 11**
 
 * W1: DisplayObjects w/ actables (drag). Generator and Tracker. URSYS diagram+enable network calls.
 * W2: Sim-driven rendering. X-GEMSTEP-GUI review+integration. URSYS + gsgo refactor. 
@@ -31,12 +31,17 @@
 * W2: Simplify agent prop, method, features for use by non-Sri peeps
 * W2.1: Prep for Dec 23 demo, review features with Ben
 
+**SUMMARY S21-01 JAN 11 - JAN 24**
+
+* W1: Ramp up 2020. Draft of System Overview docs.
+* W2: ?
+
 
 ---
 
 # SPRINT 21-01
 
-J
+
 
 ---
 
@@ -73,6 +78,8 @@ J
 Renderer + Display Lists
 [ ] implement/test entity broadcasts
 [ ] how to integrate multiple display lists together?
+[ ] finalizing coordinate system
+[ ] bring back location
 
 Network:
 [ ] design device persistant naming and reconnection between reloads
@@ -83,15 +90,22 @@ Input:
 [ ] Update Display Object from events that change things
 [ ] Convert local interactions to Agent or Display Object changes
 [ ] Write Event List
-
-Runtime:
-[ ] Create Agent Template
-[ ] Instance Agent Template
-[ ] Control
+[ ] Important formal input mechanisms
+[ ] Asset capture 
 
 Observations:
 [ ] NOTE: The difference between PhaseMachine and messages synchronicity
 [ ] extension: text script format `[define]` to output a define bundle, etc
+
+Conditional When Engine:
+[ ] slow...speed it up
+
+Persistant Data
+[ ] server?
+[ ] assets?
+[ ] bundle-based asset management outside of git?
+[ ] handle app packaging, asset packing, identitifying groups, students, orgs that it belongs to. 
+
 ```
 
 ---
