@@ -32,7 +32,7 @@ function u_CheckMinMax(vobj) {
   }
   if (vobj.value < vobj.min) {
     if (vobj.wrap) vobj.value = vobj.max;
-    else vobj.value = vobj.mind;
+    else vobj.value = vobj.min;
   }
   vobj.nvalue = (vobj.value - vobj.min) / (vobj.max - vobj.min);
 }
