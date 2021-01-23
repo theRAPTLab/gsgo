@@ -10,6 +10,10 @@ export class GVarBoolean extends SM_Object implements IScopeable {
     this.value = initial;
     this.fuzzy = fuzzy;
   }
+  setTo(value: boolean) {
+    this.value = value;
+    return this;
+  }
   true(): boolean {
     return this.value;
   }
