@@ -25,25 +25,76 @@
 * W1: handle multiline blocks, agentset and event conditions
 * W2: finalize event conditions, delivery, break
 
-**SUMMARY S25 DEC 07 - DEC 20**
+**SUMMARY S2025 DEC 07 - DEC 20**
 
 * W1: Port FakeTrack/PTrack into GEMSRV
 * W2: Simplify agent prop, method, features for use by non-Sri peeps
 * W2.1: Prep for Dec 23 demo, review features with Ben
 
-**SUMMARY S21-01 JAN 11 - JAN 24**
+**SUMMARY S2101 JAN 11 - JAN 24**
 
 * W1: Ramp up 2020. Draft of System Overview docs.
-* W2: ?
+* W2: Script Engine review of patterns, issues, needed fixes
+
+**SUMMARY S2102 JAN 25 - JAN 31**
+
+
 
 
 ---
 
-# SPRINT 21-01
+# SPRINT 2102
 
-## JAN 19 TUE - Ramping up on scripting
+There are four things to look at:
 
-Starting scripting improvement in `feat/script-x`
+* [ ] how to do the object dot references
+* [ ] adding new `prop`, `do`, and `call` keywords
+* [ ] how to set context per program phase
+* [ ] how the execution module might look
+
+### Object Dot References
+
+There are two parsers. We want the script tokenizer one, not the expression one. That is `class-gscript-tokenizer`.  This is based on **jsep** that's been changed to scan our script format **line-by-line** returning an array of character-based tokens. There are some problems with the multiblock scanner (see comments for `gscript-tokenizer`)
+
+So what does it handle?
+
+* gemscript extension: directives (#) returns 
+* gemscript extension: [[ ]] and {{ }}
+* numeric literal `isDigit`
+* string literal `isQuote`
+* identifiers: `isIdentifier` and not a unary op
+
+## JAN 25 MON - Script Parser Review
+
+I'm looking at `gscript-tokenizer` to see what it's doing. How do I see what it's parsing? Probably need to use the test module.
+
+* go to **Compiler Route** and uncomment **import test-parser**
+* test-parser tests both expression and our script-unit compiler. we should split them up
+  * test-expr-parser, test-script-parser
+  * **ERROR** can't parse dotted identifiers so need to fix that.
+
+The error seems to be coming from gobbleToken() misclassifying the period as the beginning of a numericliteral, called by line 311, which is:
+
+```
+    if (isDecimalDigit(ch) || ch === PERIOD_CODE) {
+      // Char code 46 is a dot `.` which can start off a numeric literal
+      return this.gobbleNumericLiteral();
+    }
+```
+
+On comparison, our script tokenizer actually implements different logic, since it just wants to recognize certain patterns in the text. It doesn't implement `gobbleExpression()` or `gobbleBinaryExpression()`, instead just using a modified `getToken()`!!!
+
+> **BUGFIX** Our version of `gobbleIdentifier()` returns the string. However, `gobbleVariable()` is probably what should be getting called. It turns out that our `gobbleToken()` called `gobbleIdentifier()` instead of `gobbleVariable()` so that fixed it after adjusting the node output to retain the period and afterpart
+
+### ScriptUnits expanded parsing
+
+Now that we have identifiers/variables that can have dots in it, we need to handle this case and somehow tell the compiler what to do with them.
+
+* first, 
+
+
+
+
 
 
 
@@ -113,3 +164,4 @@ Persistant Data
 ```
 
 ---
+
