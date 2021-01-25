@@ -287,12 +287,11 @@ class ScriptTokenizer {
 
   // Return the next token (eq to gobbleExpression)
   gobbleToken() {
+    this.gobbleSpaces();
     let ch = this.exprICode(this.index);
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
-
-    if (this.do.show) this.showProgress();
 
     /* HACK GEMSCRIPT ADDITION FOR [[ ]] */
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
@@ -315,6 +314,7 @@ class ScriptTokenizer {
       // Single or double quotes
       return this.gobbleStringLiteral();
     }
+
     to_check = this.line.substr(this.index, max_unop_len);
     tc_len = to_check.length;
     while (tc_len > 0) {
@@ -339,7 +339,7 @@ class ScriptTokenizer {
       to_check = to_check.substr(0, --tc_len);
     }
 
-    return this.gobbleIdentifier();
+    return this.gobbleVariable();
   }
 
   // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
@@ -473,6 +473,8 @@ class ScriptTokenizer {
     if (Object.prototype.hasOwnProperty.call(literals, identifier)) {
       return literals[identifier];
     }
+
+    //
     return identifier;
   }
   // Gobbles a list of arguments within the context of a function call
@@ -551,17 +553,19 @@ class ScriptTokenizer {
     // note: check for subsequent identifier variations
     // note: identifier check for dot property, array
     this.gobbleSpaces();
+
     ch_i = this.exprICode(this.index);
     // this all gets skipped if it's not dot, array, call, or group
     while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
       this.index++;
       if (ch_i === PERIOD_CODE) {
         // dot property
-        this.gobbleSpaces();
-        node = this.gobbleIdentifier();
+        node += '.';
+        node += this.gobbleIdentifier();
       } else if (ch_i === OBRACK_CODE) {
+        console.warn('[] property access not supported by ScriptUnit...fix this');
         // array gobble
-        node = this.gobbleToken();
+        node += `[${this.gobbleToken()}]`;
         this.gobbleSpaces();
         ch_i = this.exprICode(this.index);
         if (ch_i !== CBRACK_CODE) {
@@ -569,8 +573,11 @@ class ScriptTokenizer {
         }
         this.index++;
       } else if (ch_i === OPAREN_CODE) {
+        console.warn(
+          '() function invocation not supported by ScriptUnit...fix this'
+        );
         // A function call is being made; gobble all the arguments
-        node = this.gobbleArguments(CPAREN_CODE);
+        node += `(${this.gobbleArguments(CPAREN_CODE)})`;
       }
       this.gobbleSpaces();
       ch_i = this.exprICode(this.index);
