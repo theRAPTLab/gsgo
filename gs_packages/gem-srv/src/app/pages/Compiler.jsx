@@ -21,7 +21,8 @@ import { CodeJar } from 'lib/vendor/codejar';
 import 'lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'modules/tests/test-expr-parser'; // test parser evaluation
+import 'modules/tests/test-script-parser'; // test script parser
 // import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
