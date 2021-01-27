@@ -10,6 +10,10 @@ export class GVarBoolean extends SM_Object implements IScopeable {
     this.value = initial;
     this.fuzzy = fuzzy;
   }
+  setTo(value: boolean) {
+    this.value = value;
+    return this;
+  }
   true(): boolean {
     return this.value;
   }
@@ -30,7 +34,7 @@ export class GVarBoolean extends SM_Object implements IScopeable {
     this.value |= comparison;
     return this;
   }
-  equal(comparison: any): GVarBoolean {
+  eq(comparison: any): GVarBoolean {
     if (!this.fuzzy) throw Error("'equal' incompatible with fuzzy logic");
     this.value = this.value === comparison;
     return this;
