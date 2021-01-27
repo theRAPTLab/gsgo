@@ -21,7 +21,7 @@ export class GVarString extends SM_Object implements IScopeable {
     this.value = str;
     return this;
   }
-  isEq(str: string) {
+  eq(str: string) {
     return new GVarBoolean(this.value === str);
   }
 }
