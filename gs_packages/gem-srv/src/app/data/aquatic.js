@@ -165,25 +165,5 @@ useFeature Costume
 featureCall Costume setCostume 'poop.json' 0
 `
     }
-  ],
-  instances: [
-    {
-      id: 'hash1',
-      blueprint: 'world',
-      x: 0,
-      y: 0
-    },
-    {
-      id: 'hash2',
-      blueprint: 'tree',
-      x: 300,
-      y: 100
-    },
-    {
-      id: 'hash2',
-      blueprint: 'tree',
-      x: 300,
-      y: 100
-    }
   ]
 };
