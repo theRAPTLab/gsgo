@@ -199,6 +199,8 @@ class ScriptEditor extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'select',
+      modelId: '',
+      model: {},
       message: '',
       messageIsError: false
     };
@@ -214,7 +216,9 @@ class ScriptEditor extends React.Component {
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP SCRIPT EDITOR';
+    let modelId = window.location.search.substring(1);
+    this.setState({ modelId });
+    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
   }
@@ -230,7 +234,8 @@ class ScriptEditor extends React.Component {
   }
 
   OnModelClick() {
-    window.location = '/app/model';
+    const { modelId } = this.state;
+    window.location = `/app/model?${modelId}`;
   }
 
   OnPanelClick(id) {
@@ -277,8 +282,8 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR</span> UGLY DEVELOPER
-            MODE
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
+            DEVELOPER MODE
           </div>
           <button type="button" onClick={this.OnModelClick}>
             Back to MODEL
