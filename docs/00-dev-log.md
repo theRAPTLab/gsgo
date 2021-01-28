@@ -90,7 +90,58 @@ On comparison, our script tokenizer actually implements different logic, since i
 
 Now that we have identifiers/variables that can have dots in it, we need to handle this case and somehow tell the compiler what to do with them.
 
-* first, 
+* Transpiler has `ScriptifyText` which converts things to ScriptUnits. This just calls the gscript-tokenizer
+* `CompilerScript()` takes ScriptUnits and convert them into a program bundle.
+  * compile units by line, adding result to the bundle being built. 
+  * The heavy lifting is done by `r_CompileUnit()` which uses `r_ExpandArgs()` to recursively convert our data types into javascript data types.
+  * `r_ExpandArgs()` accepts the unit and handles:
+    * ARRAYS are assumed to be nested scripttext that must be tokenized, returning as objcode (array of functions)
+    * STRINGS are tested for inline `{{ }}`, returning an AST object
+    * STRINGS are tested for inline  `[[ ]]` , returning an identifier that is a program name
+    * everything else is returned 'as is'
+
+It's important that these values are already converted to native javascript types for speed, as they are bound through closures into the compiled functions. It's up to the specific keyword to be able to handle the argument based on its order in the ScriptUnit.
+
+#### Extending r_ExpandArgs()
+
+We'll use `object` to handle program names and ASTs by adding a special identifier. 
+
+There is some trickiness though...the string type has to detect "unquoted" idenitfiers versus "quoted". I think this means that the script tokenizer needs to return objects somehow? Or we detect it somehow
+
+```gobbleToken
+MultiBlock:247 return { block }
+Token:337 return { value: arg }
+NumericLiteral:398 return { value: number }
+StringLiteral:446 return { value: str }
+Identifier:474 return { identifier: literals[identifier] }
+Identifier:478 return { identifier: }
+Variable:511 return { variable: [identifier, dotIdentifier, ... ] }
+ExpressionString:544 return { expr: str } // no {{ }}
+Block:584 return { '[[ string ]]' } - inline program name
+
+?Comment: return { _comment, cstring }
+?Group:525 this might not be used, but it returns a token which is probabaly broken
+```
+
+I've converted this to node types as described above, so now it is a matter of adding special processing for these types in the transpiler in `r_ExpandArgs()` for the special cases. 
+
+## JAN 28 THU - Conversion of Transpiler
+
+gscript-tokenizer is now producing an an array of objects that define their type. This makes it a bit harder to read though in the console.
+
+```
+token: token string 
+objref: parts of an object reference foo.bar
+directive: #, array of directive parameters
+value: number
+comment: string
+block: array of strings
+
+
+
+```
+
+
 
 
 

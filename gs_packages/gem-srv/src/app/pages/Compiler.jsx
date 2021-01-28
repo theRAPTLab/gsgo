@@ -22,7 +22,7 @@ import 'lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-expr-parser'; // test parser evaluation
-import 'modules/tests/test-script-parser'; // test script parser
+// import 'modules/tests/test-script-parser'; // test script parser
 // import 'modules/tests/test-compiler'; // test compiler
 
 // this is where classes.* for css are defined
@@ -84,7 +84,8 @@ class Compiler extends React.Component {
     UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    TRANSPILER.RegisterBlueprint(this.source);
+    const bdl = TRANSPILER.CompileScript(this.source);
+    TRANSPILER.RegisterBlueprint(bdl);
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
@@ -167,6 +168,9 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllTests();
     const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
+    console.group('source');
+    TRANSPILER.PrintSourceToConsole(source);
+    console.groupEnd();
     this.setState({ source: JSON.stringify(source) });
   }
 
@@ -179,7 +183,8 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
-    const bp = TRANSPILER.RegisterBlueprint(this.source);
+    const bdl = TRANSPILER.CompileScript(this.source);
+    const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
     const jsx = TRANSPILER.RenderScript(this.source);

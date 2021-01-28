@@ -29,7 +29,7 @@ import 'script/keywords/_all_keywords';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR', 'TagRed');
-const scriptConverter = new GScriptTokenizer();
+const scriptifier = new GScriptTokenizer();
 const COMPILER_AGENT = new GAgent();
 const COMPILER_STATE = new SM_State();
 //
@@ -94,9 +94,10 @@ const r_expander = {
   // it will be expanded in the keyword compiler to lookup name
   '[[': (arg: string) => {
     if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
-    return `[[${arg.substring(2, arg.length - 2).trim()}]]`;
+    const progName = arg.substring(2, arg.length - 2).trim();
+    return { progName };
   }
-  // note: [[ lines of code ]] are captured in scriptConverter.tokenizer()
+  // note: [[ lines of code ]] are captured in scriptifier.tokenizer()
   // before r_CompileBlock is called on them
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -115,6 +116,13 @@ function r_CompileBlock(units: TScriptUnit[]): TOpcode[] {
   return objcode;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Convert a string with a period in it */
+function r_dotify(arg: string) {
+  console.log('dotify', arg);
+  return { arg };
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Scan argument list and convert expression to an AST. This is called for
  *  each ScriptUnit line after the keyword.
  */
@@ -124,7 +132,7 @@ function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
     // skip first arg, which is the keyword
     if (idx === 0) return arg;
     if (Array.isArray(arg)) {
-      const script = scriptConverter.tokenize(arg);
+      const script = scriptifier.tokenize(arg);
       if (DBG) console.group('recursive compile', idx, unit);
       const objcode = r_CompileBlock(script);
       if (DBG) console.groupEnd();
@@ -133,6 +141,7 @@ function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
     if (typeof arg !== 'string') return arg;
     const strTest = r_expander[arg.substring(0, 2)];
     if (strTest) return strTest(arg);
+    if (arg.substring(1, arg.length - 2).includes('.')) return r_dotify(arg);
     return arg;
   });
   return modUnit;
@@ -179,16 +188,22 @@ function CompileScript(units: TScriptUnit[]) {
       throw Error('# BLUEPRINT directive must be first line in text');
     }
 
-    // Special Case 2: is pragma? replace # with _pragma and exec
+    // Special Case 2: check very first keyword of subsequent lines
+    // if it is a #, replace with _pragma and exec
     if (unit[0] === '#') {
       objcode = r_CompileUnit(['_pragma', ...unit.slice(1)]);
-      // the _pragma keyword returns code to be run immediately,
-      // not part of the template, so run it now and inespect
-      // the results
+      // the _pragma keyword returns code to be run immediately during
+      // compilation and is not part of the template blueprint, but it
+      // uses the SMC function signature.
+      // Run it now using COMPILER_STATE and pull the results from the
+      // stack
       COMPILER_STATE.reset();
       objcode.forEach(op => op(COMPILER_AGENT, COMPILER_STATE));
       const results = COMPILER_STATE.stack;
-      // check for duplicate blueprint declaration (error condition)
+      // check 1: duplicate blueprint declaration (error condition)
+      // which shouldn't happen because this block runs only after the
+      // first line was processed, and only the first line can declar
+      // a blueprint name
       if (results[0] === '_blueprint') {
         throw Error(`# BLUEPRINT used more than once (got '${unit[1]})'`);
       } // if results[0]...
@@ -197,7 +212,7 @@ function CompileScript(units: TScriptUnit[]) {
 
     // Normal case: otherwise compile a normal keyword
     if (DBG) console.group('upper level compile', idx, unit);
-    objcode = r_CompileUnit(unit, idx); // qbits is the subsequent parameters
+    objcode = r_CompileUnit(unit, idx); // generate functions from keywords!
     if (DBG) console.groupEnd();
     objcode = m_CheckForError(objcode, unit);
     // FINALLY push this unit's code into the passed bundle and repeat
@@ -249,8 +264,41 @@ function RenderScript(units: TScriptUnit[]): any[] {
  */
 function ScriptifyText(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
-  const script = scriptConverter.tokenize(sourceStrings);
+  const script = scriptifier.tokenize(sourceStrings);
   return script;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to dump node format of script */
+function PrintSourceToConsole(units: TScriptUnit[]) {
+  let str = [];
+  units.forEach(arr => {
+    str = [];
+    arr.forEach(item => {
+      const {
+        token,
+        objref,
+        directive,
+        value,
+        string,
+        comment,
+        block,
+        expr
+      } = item;
+      if (token) str.push(token);
+      if (objref) {
+        str.push(objref.join('.'));
+      }
+      if (directive) str.push(directive);
+      if (value) str.push(value);
+      if (string) str.push(`"${string}"`);
+      if (comment) str.push(`// ${comment}`);
+      if (block) block.forEach(line => str.push(line));
+      if (expr) str.push(expr);
+    });
+    console.log(str.join(' '));
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
@@ -271,19 +319,22 @@ function TextifyScript(units: TScriptUnit[]): string {
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
-  const bdl: SM_Bundle = CompileScript(units);
-  if (!(units.length > 0)) return bdl;
-  if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
-  SaveBlueprint(bdl);
-  // run conditional programming in template
-  // this is a stack of functions that run in global context
-  console.log('registering blueprint', bdl);
-  // initialize global programs in the bundle
-  const { condition, event } = bdl.getPrograms();
-  AddGlobalCondition(bdl.name, condition);
-  if (DBG) console.groupEnd();
-  return bdl;
+function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
+  // ensure that bundle has at least a define and name
+  if (bdl.define && bdl.type === 'program') {
+    if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+    SaveBlueprint(bdl);
+    // run conditional programming in template
+    // this is a stack of functions that run in global context
+    console.log('registering blueprint', bdl);
+    // initialize global programs in the bundle
+    const { condition, event } = bdl.getPrograms();
+    AddGlobalCondition(bdl.name, condition);
+    if (DBG) console.groupEnd();
+    return bdl;
+  }
+  console.log(bdl);
+  throw Error('not blueprint');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to make an Agent. This has to be done in a module outside of
@@ -316,6 +367,7 @@ const txt = DATACORE.GetDefaultText();
 export {
   // compile to script units
   ScriptifyText, // text w/ newlines => TScriptUnit[]
+  PrintSourceToConsole, // debug routine
   CompileScript, // combine scriptunits through m_CompileBundle
   // convert script units to other form
   TextifyScript, // TScriptUnit[] => produce source text from units

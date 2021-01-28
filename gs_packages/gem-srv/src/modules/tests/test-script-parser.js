@@ -6,10 +6,11 @@
 
 import UR from '@gemstep/ursys/client';
 import ScriptTokenizer from 'lib/class-gscript-tokenizer';
+import * as TRANSPILER from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SCRIPT TOKENIZER TEST', 'TagDkRed');
+const PR = UR.PrefixUtil('TOKENIZE TEST', 'TagDkRed');
 const tokenizer = new ScriptTokenizer({ show: true });
 
 /// TOKENIZER TRIALS //////////////////////////////////////////////////////////
@@ -20,16 +21,14 @@ const tokenizer = new ScriptTokenizer({ show: true });
  */
 function TokenizeTest(text) {
   const lines = text.split('\n');
-  console.group(...PR('TokenizeTest Lines\n'));
-  lines.forEach(line => console.log(line));
+  console.group(...PR('Text Lines (trimmed)'));
+  lines.forEach(line => console.log(line.trim()));
   console.groupEnd();
-  console.group(...PR('Scanning Lines'));
+  console.group(...PR('Tokenizing Lines into Nodes'));
   const script = tokenizer.tokenize(lines);
   console.groupEnd();
-  console.group(...PR('ScriptUnits Found'));
-  script.forEach(unit => {
-    console.log(unit.join(', '));
-  });
+  console.group(...PR('ScriptUnits Decompiled from Nodes'));
+  TRANSPILER.PrintSourceToConsole(script);
   console.groupEnd();
 }
 
@@ -37,9 +36,29 @@ function TokenizeTest(text) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TokenizeTest(
   `
-  prop x
-  prop Costume.pose setTo 'looser'
-  propCall y setTo 1
-  {{12+3/agent.pi}}
-`.trim()
+  # BLUEPRINT Bee
+  # PROGRAM DEFINE
+  useFeature Costume
+  useFeature Movement
+  addProp foodLevel Number 50
+  setProp Costume.pose 10
+  featureCall Costume setCostume 'bunny.json' 1
+  # PROGRAM UPDATE
+  setProp skin 'bunny.json'
+  featureCall Movement jitterPos -5 5
+  # PROGRAM THINK
+  // featureHook Costume thinkHook
+  # PROGRAM EVENT
+  onEvent Tick [[
+    exec {{ agent.prop.foodLevel.sub(1) }}
+    propCall foodLevel sub 1
+    dbgOut 'foodLevel' {{ agent.prop.foodLevel.value }}
+  ]]
+  # PROGRAM CONDITION
+  when Bee sometest [[
+    // dbgOut SingleTest
+  ]]
+  when Bee sometest Bee [[
+    // dbgOut PairTest
+  ]]`.trim()
 );
