@@ -101,7 +101,7 @@ export interface IMessage {
  *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
  *  renderable JSX for a UI.
  */
-export type TScriptUnit = [string?, ...any[]];
+export type TScriptUnit = [...any[]];
 export type TScript = TScriptUnit[]; // not generally used\
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////

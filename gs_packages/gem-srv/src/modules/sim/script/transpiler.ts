@@ -16,7 +16,8 @@ import {
   GetBlueprint,
   AddToBundle,
   AddGlobalCondition,
-  SetBundleName
+  SetBundleName,
+  GetProgram
 } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
@@ -78,36 +79,14 @@ function m_CheckForError(code: TOpcode[], unit: TScriptUnit, ...args) {
   return out;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** argument expansion table for {{ expr }} and [[ progName ]] strings
- *  returning expanded AST and compacted [[progName]] which will be
- *  dereferenced later during keyword.compile() cycle
- */
-const r_expander = {
-  // {{ expression }}
-  '{{': (arg: string) => {
-    if (arg.substring(arg.length - 2, arg.length) !== '}}') return arg;
-    const ex = arg.substring(2, arg.length - 2).trim();
-    const ast = ParseExpression(ex);
-    return ast;
-  },
-  // [[ programName ]] return compacted version of [[programname]]
-  // it will be expanded in the keyword compiler to lookup name
-  '[[': (arg: string) => {
-    if (arg.substring(arg.length - 2, arg.length) !== ']]') return arg;
-    const progName = arg.substring(2, arg.length - 2).trim();
-    return { progName };
-  }
-  // note: [[ lines of code ]] are captured in scriptifier.tokenizer()
-  // before r_CompileBlock is called on them
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile a script block, returning objcode */
 function r_CompileBlock(units: TScriptUnit[]): TOpcode[] {
   const objcode = []; // holder for compiled code
   let code; // holder for compiled unit
   units.forEach((unit, idx) => {
     // skip all pragmas
-    if (unit[0] === '#') return;
+    if (unit[0].directive) return; // skip directives, which are never in blocks
+    if (unit[0].comment) return; // skip comments
     // recursive compile through r_ExpandArgs()
     code = r_CompileUnit(unit, idx); // recursive!
     code = m_CheckForError(code, unit);
@@ -121,41 +100,106 @@ function r_dotify(arg: string) {
   console.log('dotify', arg);
   return { arg };
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Scan argument list and convert expression to an AST. This is called for
- *  each ScriptUnit line after the keyword.
+function r_DecodeArg(arg) {
+  const {
+    token,
+    objref,
+    directive,
+    value,
+    string,
+    comment,
+    program,
+    block,
+    expr
+  } = arg;
+  if (token) {
+    if (token === '#') return '_pragma';
+    return token;
+  }
+  if (directive) return directive;
+  if (value) return value;
+  if (string) return string;
+  if (comment) return comment;
+  // special cases
+  if (program) return arg; // { program = string name of stored program }
+  if (objref) return arg; // { objref = array of string parts }
+  if (block) return arg; // { block = array of lines }
+  if (expr) return arg; // { expr = string }
+  throw Error('unknown argument type');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Scan argument list and process different types of arguments
+ *  before they are passed to a keyword compiler.
  */
 function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
-  const modUnit: TScriptUnit = unit.map((arg, idx) => {
-    // arg is an array of elements in the ScriptUnit
-    // skip first arg, which is the keyword
-    if (idx === 0) return arg;
-    if (Array.isArray(arg)) {
-      const script = scriptifier.tokenize(arg);
+  const modUnit: TScriptUnit = unit.map((item, idx) => {
+    // internal checks
+    if (Array.isArray(item))
+      throw Error('unexpected array argument; should be obj');
+    if (typeof item !== 'object')
+      throw Error('all units should be an argument node');
+    // arg is an array of elements in the ScriptUnit.
+    // r_DecodeArg converts the node into plain types and
+    // special types that require their own processing
+    if (item.comment !== undefined) return '//'; // signal compiler to skip
+    const arg = r_DecodeArg(item);
+    // special case first keyword
+    if (idx === 0) {
+      if (arg === '#') return '_pragma';
+      return arg;
+    }
+    // check special types
+    // 1. an expression
+    if (typeof arg.expr === 'string') {
+      const ast = ParseExpression(arg.expr);
+      // replace expression string with AST
+      arg.expr = ast;
+      return arg;
+    }
+    // 2. a dotted object reference
+    if (Array.isArray(arg.objref)) {
+      // assume it is a valid context reference
+      // context needs to be generated at runtime and swizzled to match
+      // the syntax! e.g. agent.prop['x'] swizzled into agent.x somehow
+      // so just return the arg as-is and assume runtime expander will
+      // handle it
+      return arg;
+    }
+    // 3. program name
+    if (typeof arg.program === 'string') {
+      // named programs are resolved, replace with actual program
+      arg.program = GetProgram(arg.program);
+      return arg;
+    }
+    // 4. program block
+    if (Array.isArray(arg.block)) {
+      // compile program block recursively, returning object code
+      const script = scriptifier.tokenize(arg.block);
       if (DBG) console.group('recursive compile', idx, unit);
       const objcode = r_CompileBlock(script);
       if (DBG) console.groupEnd();
       return objcode; // this is the compiled script
     }
-    if (typeof arg !== 'string') return arg;
-    const strTest = r_expander[arg.substring(0, 2)];
-    if (strTest) return strTest(arg);
-    if (arg.substring(1, arg.length - 2).includes('.')) return r_dotify(arg);
+    // 5. otherwise this is a plain argment
     return arg;
   });
   return modUnit;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a single unit of nodes of different types, run everything through
+ *  the keyword compiler cycle
+ */
 function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
   // extract keyword first unit, assume that . means Feature
-  // console.group('Expanding', rawUnit);
   let kwProcessor;
   let unit = r_ExpandArgs(rawUnit); // recursive!
-  // first array element is keyword aka 'kw'
+  // after this, units contains normal js strings, numbers, or bools as well
+  // as our special object types for expressions, blocks, objref...
   let kw = unit[0];
   // let's compile!
   if (typeof kw !== 'string') return [];
+  if (kw === '//') return [];
   kwProcessor = GetKeyword(kw);
   if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
   const compiledStatement = kwProcessor.compile(unit, idx); // qbits is the subsequent parameters
@@ -163,6 +207,41 @@ function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
 }
 
 /// MAIN API //////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Utility to dump node format of script */
+function PrintSourceToConsole(units: TScriptUnit[]) {
+  let str = [];
+  units.forEach(arr => {
+    str = [];
+    arr.forEach(item => {
+      const {
+        token,
+        objref,
+        directive,
+        value,
+        string,
+        comment,
+        block,
+        expr
+      } = item;
+      if (token) str.push(token);
+      if (objref) {
+        str.push(objref.join('.'));
+      }
+      if (directive) str.push(directive);
+      if (value) str.push(value);
+      if (string) str.push(`"${string}"`);
+      if (comment) str.push(`// ${comment}`);
+      if (block) {
+        str.push('[[');
+        block.forEach(line => str.push(line));
+        str.push(']]');
+      }
+      if (expr) str.push(expr);
+    });
+    console.log(str.join(' '));
+  });
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Main ScriptUnit Compiler */
 function CompileScript(units: TScriptUnit[]) {
@@ -173,23 +252,21 @@ function CompileScript(units: TScriptUnit[]) {
   const bdl: SM_Bundle = new SM_Bundle();
   // no units? just return empty bundle
   if (units.length === 0) return bdl;
-
   units.forEach((unit, idx) => {
-    // Special Case 1: make sure the very first scriptunit is a
-    // # BLUEPRINT directive
+    // Special Case 1: special properties for first keyword
     if (idx === 0) {
       const [lead, kw, bpName, bpParent] = unit;
-      if (lead === '#' && kw.toUpperCase() === 'BLUEPRINT') {
+      // a. is # (pragma)
+      if (lead.directive === '#' && kw.token.toUpperCase() === 'BLUEPRINT') {
         // set global bundle state so it's accessible from keyword
         // compilers via CompilerState()
-        SetBundleName(bdl, bpName, bpParent);
+        SetBundleName(bdl, bpName.token, bpParent);
         return; // done, so exit this loop
       }
       throw Error('# BLUEPRINT directive must be first line in text');
     }
-
     // Special Case 2: check very first keyword of subsequent lines
-    // if it is a #, replace with _pragma and exec
+    // if it is a #, replace with _pragma and then exec code
     if (unit[0] === '#') {
       objcode = r_CompileUnit(['_pragma', ...unit.slice(1)]);
       // the _pragma keyword returns code to be run immediately during
@@ -208,7 +285,7 @@ function CompileScript(units: TScriptUnit[]) {
         throw Error(`# BLUEPRINT used more than once (got '${unit[1]})'`);
       } // if results[0]...
       return; // done, so exit this loop
-    }
+    } // end special cases
 
     // Normal case: otherwise compile a normal keyword
     if (DBG) console.group('upper level compile', idx, unit);
@@ -266,39 +343,6 @@ function ScriptifyText(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
   const script = scriptifier.tokenize(sourceStrings);
   return script;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Utility to dump node format of script */
-function PrintSourceToConsole(units: TScriptUnit[]) {
-  let str = [];
-  units.forEach(arr => {
-    str = [];
-    arr.forEach(item => {
-      const {
-        token,
-        objref,
-        directive,
-        value,
-        string,
-        comment,
-        block,
-        expr
-      } = item;
-      if (token) str.push(token);
-      if (objref) {
-        str.push(objref.join('.'));
-      }
-      if (directive) str.push(directive);
-      if (value) str.push(value);
-      if (string) str.push(`"${string}"`);
-      if (comment) str.push(`// ${comment}`);
-      if (block) block.forEach(line => str.push(line));
-      if (expr) str.push(expr);
-    });
-    console.log(str.join(' '));
-  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
