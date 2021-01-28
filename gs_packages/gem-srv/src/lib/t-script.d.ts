@@ -136,6 +136,7 @@ export interface ISMCBundle extends ISMCPrograms {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles */
 export enum EBundleType {
+  INIT = 'init', // freshly created or empty bundle (set to another type)
   PROG = 'program', // a program type
   COND = 'condition', // test, conseq, alter program,
   BLUEPRINT = 'blueprint', // blueprint for initializing agents

@@ -46,7 +46,7 @@ export default class SM_Bundle implements ISMCBundle {
   constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);
     if (type !== undefined) this.setType(type);
-    else this.setType(EBundleType.PROG);
+    else this.setType(EBundleType.INIT);
     //
     this.define = []; // allocate data structures (agents, features, modules)
     this.init = []; // initialize data structures (a,f,m)

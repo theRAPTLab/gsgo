@@ -365,7 +365,13 @@ function TextifyScript(units: TScriptUnit[]): string {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
-  if (bdl.define && bdl.type === 'program') {
+  if (bdl.type === EBundleType.INIT) {
+    console.warn(
+      ...PR('RegisterBlueprint got non-initialized bundle...skipping')
+    );
+    return undefined;
+  }
+  if (bdl.define && bdl.type === EBundleType.BLUEPRINT) {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
     SaveBlueprint(bdl);
     // run conditional programming in template
