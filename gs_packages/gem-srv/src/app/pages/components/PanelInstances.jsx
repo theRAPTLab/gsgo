@@ -4,6 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
+import Inspector from './Inspector';
 
 class PanelInstances extends React.Component {
   constructor() {
@@ -13,6 +14,7 @@ class PanelInstances extends React.Component {
       instances: []
     };
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
+    this.OnInstanceClick = this.OnInstanceClick.bind(this);
     UR.RegisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
   }
 
@@ -22,6 +24,10 @@ class PanelInstances extends React.Component {
 
   OnInstanceUpdate(data) {
     this.setState({ instances: data });
+  }
+
+  OnInstanceClick(instanceName) {
+    console.log('clicked on', instanceName);
   }
 
   render() {
@@ -45,14 +51,19 @@ class PanelInstances extends React.Component {
 
     console.log('instanceyarray)', instanceArray);
 
-    const onClick = () => {
+    const onPanelChromeClick = () => {
       // To be implemented
       console.log('Show instance');
     };
 
     return (
       // Placeholder for now
-      <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
+      <PanelChrome
+        id={id}
+        title={title}
+        isActive={isActive}
+        onClick={onPanelChromeClick}
+      >
         <div // Panel Layout
           style={{
             display: 'flex',
@@ -72,19 +83,23 @@ class PanelInstances extends React.Component {
                 key={a.agent}
               >
                 {a.instances.map(i => (
-                  <div
-                    style={{
-                      flex: '0 1 auto',
-                      height: '20px'
-                    }}
-                    className={
-                      i.hidden
-                        ? `${classes.instanceListItem} ${classes.instanceListItemInactive}`
-                        : classes.instanceListItem
-                    }
-                    key={`${a.agent}_${i.name}`}
-                  >
-                    {i.name}
+                  <div key={`${a.agent}_${i.name}`}>
+                    <button
+                      style={{
+                        flex: '0 1 auto',
+                        height: '20px'
+                      }}
+                      className={
+                        i.hidden
+                          ? `${classes.instanceListItem} ${classes.instanceListItemInactive}`
+                          : classes.instanceListItem
+                      }
+                      onClick={() => this.OnInstanceClick(i.name)}
+                      type="button"
+                    >
+                      {i.name}
+                    </button>
+                    <Inspector agentName={i.name} />
                   </div>
                 ))}
               </div>
