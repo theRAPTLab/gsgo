@@ -19,7 +19,6 @@ import { MODEL as BeesModel } from './bees';
 
 class SimData {
   constructor() {
-    console.error('constructor ran');
     // Register Listeners
     UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODELS', this.RequestSimDataModels);
     UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODEL', this.RequestSimDataModel);
