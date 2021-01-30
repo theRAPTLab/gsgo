@@ -50,7 +50,6 @@ class PanelSimulation extends React.Component {
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
   }
-
   componentDidMount() {
     // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
@@ -77,9 +76,8 @@ class PanelSimulation extends React.Component {
 
   DoScriptUpdate(data) {
     console.log('script update');
-    DATACORE.DeleteAllInstances(); // Delete all instances otherwise previously created instances will stick around
     const source = TRANSPILER.ScriptifyText(data.script);
-    const bp = TRANSPILER.RegisterBlueprint(source);
+    const bp = TRANSPILER.RegisterBlueprint(source); // map set overwrites any existing blueprint
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
   }
 
