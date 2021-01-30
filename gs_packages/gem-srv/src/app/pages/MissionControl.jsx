@@ -22,7 +22,6 @@ import * as DATACORE from 'modules/datacore';
 import PanelMap from './components/PanelMap';
 import PanelSimulation from './components/PanelSimulation';
 import PanelPlayback from './components/PanelPlayback';
-import PanelInspector from './components/PanelInspector';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
@@ -147,7 +146,6 @@ class MissionControl extends React.Component {
             onClick={this.OnPanelClick}
           />
           <PanelBlueprints id="blueprints" agents={agents} />
-          <PanelInstances id="instances" />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
@@ -155,7 +153,7 @@ class MissionControl extends React.Component {
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <PanelPlayback id="playback" />
-            <PanelInspector isActive />
+            <PanelInstances id="instances" />
           </div>
         </div>
         <div
