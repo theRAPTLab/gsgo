@@ -117,6 +117,10 @@ export function AgentProgram(blueprint) {
       TRANSPILER.MakeAgent(instance);
     }
   });
+
+  // Announce instances so UI can update
+  // Mostly used by PanelInstances and Inspectors
+  UR.RaiseMessage('HACK_INSTANCES_UPDATED', instances);
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
