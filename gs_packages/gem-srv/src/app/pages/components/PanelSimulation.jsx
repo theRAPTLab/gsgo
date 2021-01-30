@@ -74,6 +74,7 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllInstances();
   }
 
+  // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
     console.log('script update');
     const source = TRANSPILER.ScriptifyText(data.script);
