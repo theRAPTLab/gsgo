@@ -17,8 +17,8 @@ export const INSTANCES: TInstanceMap = new Map();
 let INSTANCE_COUNTER = 100;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given the creation parameters, make a new instance. The init program sets
- *  the default values (and any other startup code if needed)
+/** Given the creation parameters, make a new instance. The init program sets
+ *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
   const { blueprint, init, name = '<none>' } = instanceDef;
@@ -46,6 +46,10 @@ export function GetInstancesType(blueprint: string) {
 export function DeleteAllInstances() {
   INSTANCES.clear();
   INSTANCE_COUNTER = 100;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteBlueprintInstances(blueprint) {
+  INSTANCES.set(blueprint, []);
 }
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////

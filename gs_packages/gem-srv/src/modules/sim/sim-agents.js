@@ -7,7 +7,12 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { GetAllAgents, DefineInstance, GetAllInstances } from 'modules/datacore';
+import {
+  GetAllAgents,
+  DefineInstance,
+  DeleteBlueprintInstances,
+  GetAllInstances
+} from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TRANSPILER from 'script/transpiler';
@@ -74,23 +79,44 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** placeholder function
- *  this creates a bunch of agents just for testing
+ *  This creates a single agent just for testing while the user is editing
+ *  a script.
+ *  If the agent instance already exists, it replaces the existing instance.
  */
 export function AgentProgram(blueprint) {
   if (!blueprint) return console.warn(...PR('no blueprint'));
-  // old initializer
+  // original initializer
   // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
-  // new initializer
-  for (let i = 0; i < 1; i++) {
-    DefineInstance({
-      blueprint,
-      name: `bun${Math.trunc(Math.random() * 1000)}`,
-      init: []
-    });
-  }
+
+  // Remove any existing agent instances
   let instances = GetAllInstances();
+  instances.forEach(instance => {
+    if (instance.blueprint === blueprint) {
+      TRANSPILER.RemoveAgent(instance);
+    }
+  });
+  // And clear the INSTANCES map for the blueprint
+  DeleteBlueprintInstances(blueprint);
+
+  // Initiate a new instance for the submitted blueprint
+  // using a unique name.
+  DefineInstance({
+    blueprint,
+    name: `${blueprint}${Math.trunc(Math.random() * 1000)}`,
+    init: []
+  });
+
+  // Make an agent for each instance
+  instances = GetAllInstances();
   console.log(...PR('creating', instances.length, 'instances'));
-  instances.forEach(i => TRANSPILER.MakeAgent(i));
+  instances.forEach(instance => {
+    console.warn('...working on instance', instance);
+    // Make an instance only for this blueprint, ignore others
+    // otherwise other blueprints will get duplicate instances
+    if (instance.blueprint === blueprint) {
+      TRANSPILER.MakeAgent(instance);
+    }
+  });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
