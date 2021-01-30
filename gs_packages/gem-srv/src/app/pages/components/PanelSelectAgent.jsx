@@ -30,6 +30,8 @@ class PanelSelectAgent extends React.Component {
     const { title } = this.state;
     const { id, isActive, agents, onClick, classes } = this.props;
 
+    // agents are [ {id, label}, ... ]
+
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
         <div style={{ display: 'flex', justifyContent: 'center' }}>
