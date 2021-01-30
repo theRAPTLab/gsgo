@@ -28,10 +28,13 @@ onEvent Tick [[
   ifExpr {{ agent.getProp('health').value > 1}} [[
     featureCall Costume setPose 0
   ]]
+
+  // After N time, spawn a new moth
+  // the same color as me.
 ]]
 
 # PROGRAM CONDITION
-when Rabbit touches Grass [[
+when Moth touches Grass [[
   // Eat grass if it's healthy grass
   ifExpr {{ Grass.getProp('health') > 0 }} [[
     callAgentProp Rabbit health add 1
@@ -40,6 +43,19 @@ when Rabbit touches Grass [[
       spawn agent Poop
     ]]
   ]]
+]]
+
+// INSTANCES DEFINITION
+// * Add n number of light moths, m number of dark moths initially
+`
+    },
+    {
+      id: 'predator',
+      label: 'Predator',
+      script: `
+# PROGRAM CONDITION
+when Predator touchesFor2Seconds Moth [[
+  // eat moth
 ]]
 `
     }

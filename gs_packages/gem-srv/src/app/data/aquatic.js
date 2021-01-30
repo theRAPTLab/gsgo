@@ -8,14 +8,18 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-useFeature Label
+// useFeature Label
 featureCall Costume setCostume 'fish.json' 0
+// Have to set prop skin -- bug
+// otherwise, the costume isn't set
+setProp skin 'fish.json'
+featureCall Movement setRandomStart
 featureCall Movement setMovementType 'wander' 1
-featureCall Label setImage 'energyLevel-1.png'
-featureCall Label setText 'energy level'
-featureCall Label setPosition 'top'
+// featureCall Label setImage 'energyLevel-1.png'
+// featureCall Label setText 'energy level'
+// featureCall Label setPosition 'top'
 // featureCall Movement setDirection 90
-addProp energyLevel Number 20
+addProp energyLevel Number 100
 # PROGRAM UPDATE
 # PROGRAM THINK
 // featureHook Costume thinkHook
@@ -40,29 +44,29 @@ onEvent Tick [[
     featureCall Movement setMovementType 'float'
   ]]
 
-  // Variation using code blocks instead of expressions
-  // Expressions {{ }} have a different context than code blocks [[ ]]
-  if [[
-    propCall energyLevel lt {{ agent.getProp('energLevel')) * 15 }}
-
-    // This won't work:
-    //   agent.getProp('energyLevel').value
-    // because code block context does not include 'agent'
-
-  ]] [[
-    featureCall Costume setPose 1
-    featureCall Movement setMovementType 'float'
-
-    // Using Expressions
-    // Expressions and Block Script use different execution engines
-    // To set a prop...
-    // ...This own't work:
-    //   agent.xxx dot notation because this only works in Expressions
-    // ...nor this:
-    //   'setAgentProp xxx' because this works inside of global CONDITIONS context
-    // ...Use this instead...
-    //   setProp energyLevel
-  ]]
+  // // Variation using code blocks instead of expressions
+  // // Expressions {{ }} have a different context than code blocks [[ ]]
+  // if [[
+  //   propCall energyLevel lt {{ agent.getProp('energLevel')) * 15 }}
+  //
+  //   // This won't work:
+  //   //   agent.getProp('energyLevel').value
+  //   // because code block context does not include 'agent'
+  //
+  // ]] [[
+  //   featureCall Costume setPose 1
+  //   featureCall Movement setMovementType 'float'
+  //
+  //   // Using Expressions
+  //   // Expressions and Block Script use different execution engines
+  //   // To set a prop...
+  //   // ...This own't work:
+  //   //   agent.xxx dot notation because this only works in Expressions
+  //   // ...nor this:
+  //   //   'setAgentProp xxx' because this works inside of global CONDITIONS context
+  //   // ...Use this instead...
+  //   //   setProp energyLevel
+  // ]]
 
 ]]
 
@@ -102,6 +106,7 @@ when Fish touches Algae [[
 useFeature Costume
 useFeature Movement
 featureCall Costume setCostume 'algae.json' 0
+setProp skin 'algae.json'
 // featureCall Movement setRandomStart
 featureCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
@@ -113,7 +118,7 @@ onEvent Tick [[
   // energyLevel goes down every second
   propCall energyLevel sub 1
   // setProp energyLevel {{ agent.getProp('energyLevel').value * 0.5 }}
-  dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
+  // dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
 ]]
 # PROGRAM CONDITION
 // when Algae touches Lightbeam [[
