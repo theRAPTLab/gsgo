@@ -12,10 +12,12 @@ import { TScriptUnit, TOpcode, TInstance, EBundleType } from 'lib/t-script.d';
 import {
   GetKeyword,
   SaveAgent,
+  DeleteAgent,
   SaveBlueprint,
   GetBlueprint,
   AddToBundle,
   AddGlobalCondition,
+  RemoveGlobalCondition,
   SetBundleName
 } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
@@ -275,6 +277,8 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   const bdl: SM_Bundle = CompileScript(units);
   if (!(units.length > 0)) return bdl;
   if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+  // First deregister the blueprint if it exists
+  RemoveGlobalCondition(bdl.name);
   SaveBlueprint(bdl);
   // run conditional programming in template
   // this is a stack of functions that run in global context
@@ -303,6 +307,10 @@ function MakeAgent(instanceDef: TInstance) {
   }
   throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RemoveAgent(instanceDef: TInstance) {
+  DeleteAgent(instanceDef);
+}
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -324,5 +332,6 @@ export {
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
+  RemoveAgent,
   RegisterBlueprint // TScriptUnit[] => ISM_Bundle
 };

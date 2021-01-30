@@ -28,6 +28,10 @@ export function AddGlobalCondition(sig: string, condprog: TSMCProgram) {
   master.push(...condprog);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function RemoveGlobalCondition(sig: string) {
+  CONDITIONS.set(sig, []);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetGlobalCondition(sig: string) {
   const master = CONDITIONS.get(sig);
   console.log(...PR(`getting condition '${sig}' (has ${master.length} opcodes)`));
