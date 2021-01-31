@@ -53,8 +53,10 @@ class MissionControl extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'sim',
-      message: ''
+      message: '',
+      modelId: ''
     };
+    this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
@@ -62,7 +64,9 @@ class MissionControl extends React.Component {
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP MISSION CONTROL';
+    let modelId = window.location.search.substring(1);
+    this.setState({ modelId });
+    document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
   }
@@ -76,7 +80,8 @@ class MissionControl extends React.Component {
   }
 
   OnModelClick() {
-    window.location = '/app/model';
+    const { modelId } = this.state;
+    window.location = `/app/model?${modelId}`;
   }
 
   OnPanelClick(id) {
@@ -99,7 +104,7 @@ class MissionControl extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message } = this.state;
+    const { panelConfiguration, message, modelId } = this.state;
     const { classes } = this.props;
 
     /// This should be loaded from the db
@@ -124,7 +129,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span>{' '}
+            <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
           <button type="button" onClick={this.OnModelClick}>
