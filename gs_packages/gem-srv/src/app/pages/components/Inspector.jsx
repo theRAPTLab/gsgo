@@ -1,8 +1,14 @@
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+
+const SIZE_MIN = 'min'; // name only
+const SIZE_MED = 'med'; // x and y (first line)
+const SIZE_MAX = 'max'; // all
 
 class Inspector extends React.Component {
   constructor() {
@@ -11,11 +17,13 @@ class Inspector extends React.Component {
       title: 'INSPECTOR',
       agent: {},
       data: undefined,
+      size: SIZE_MED,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
     };
     this.OnDataUpdate = this.OnDataUpdate.bind(this);
+    this.OnInstanceClick = this.OnInstanceClick.bind(this);
     UR.SystemHook('SIM/AGENTS_EXEC', this.OnDataUpdate);
   }
 
@@ -53,6 +61,35 @@ class Inspector extends React.Component {
       data.push({ label: p, value: val });
     });
     this.setState({ data });
+  }
+
+  /**
+   * Clicking the instance name will toggle the Inspector object between
+   * showing:
+   * 1. SIZE_MIN = Name only
+   * 2. SIZE_MED = Name + Position
+   * 3. SIZE_MAX = All properties
+   */
+  OnInstanceClick() {
+    // Toggle between different sizes to show/hide data
+    const { size } = this.state;
+    let newsize;
+    switch (size) {
+      case SIZE_MIN:
+        newsize = SIZE_MED;
+        break;
+      case SIZE_MED:
+        newsize = SIZE_MAX;
+        break;
+      default:
+      case SIZE_MAX:
+        newsize = SIZE_MIN;
+        break;
+    }
+    this.setState({
+      data: [], // clear data
+      size: newsize
+    });
   }
 
   render() {
