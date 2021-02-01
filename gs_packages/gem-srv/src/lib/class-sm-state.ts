@@ -6,7 +6,8 @@ export default class SM_State implements IState {
   scope: IScopeable[]; // scope stack (current execution context)
   ctx: { agent?: IScopeable };
   flags: IComparator; // comparison flags set by ALU operations
-  constructor(argStack: TStackable[] = [], ctx?: {}) {
+  //
+  constructor(argStack: TStackable[] = [], ctx?: any) {
     this.stack = argStack;
     this.scope = [];
     this.ctx = ctx;

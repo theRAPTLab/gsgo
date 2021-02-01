@@ -69,16 +69,16 @@ class CostumePack extends GFeature {
    *  featureCall Costume setCostume value
    */
   setCostume(agent: IAgent, costumeName: string, poseName: string | Number) {
-    agent.featProp(this.name, 'costumeName').value = costumeName;
+    agent.getFeatProp(this.name, 'costumeName').value = costumeName;
     const { frameCount } = GetTextureInfo(costumeName);
     if (poseName !== undefined) {
-      const cf = agent.featProp(this.name, 'currentFrame') as GVarNumber;
+      const cf = agent.getFeatProp(this.name, 'currentFrame') as GVarNumber;
       cf.value = poseName;
       cf.setMax(frameCount - 1);
     }
   }
   setPose(agent: IAgent, poseName: string | number) {
-    agent.featProp(this.name, 'currentFrame').value = poseName;
+    agent.getFeatProp(this.name, 'currentFrame').value = poseName;
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);

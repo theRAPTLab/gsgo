@@ -151,30 +151,36 @@ class GAgent extends SM_Object implements IAgent, IActable {
     return feat;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return a feature with feature method for execution */
+  getFeatMethod(fName: string, mName: string): Function {
+    const feat = this.getFeature(fName);
+    const featMethod = feat.method[mName];
+    if (!featMethod)
+      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+    return [feat, featMethod];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Called from compiled code, execute a feature function with feature context
    *  as 'this' with signature (agent,...args)
    *  This is a variation of exec_program() with 'this' swapped for the feature
    *  instance
    */
-  featExec(fName: string, mName: string, ...args): any {
-    const feat = this.getFeature(fName);
-    const featMethod = feat.method[mName];
-    if (!featMethod)
-      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+  callFeatMethod(fName: string, mName: string, ...args): any {
+    const [feat, featMethod] = this.getFeatMethod(fName, mName);
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
    *  in the agent's props map as a GVarDictionary, so this version
    *  of prop returns the contents of the GVarDictionary!
    */
-  featProp(fName: string, pName: string): IScopeable {
+  getFeatProp(fName: string, pName: string): IScopeable {
     const featProps = this.prop[fName];
     return featProps[pName];
   }
   /** Return private feature variable. The variable name must begin with
    *  an _, and it holds a regular Javascript value
    */
-  featVar(fName: string, vName: string): any {
+  getFeatVar(fName: string, vName: string): any {
     if (!vName.startsWith('_')) throw Error('feature var name must begin with _');
     const featProps = this.prop[fName];
     return featProps[vName];

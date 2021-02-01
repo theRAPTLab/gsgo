@@ -44,8 +44,9 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   queueExecMessage: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ctx?: object, ...args) => any;
-  featExec: (fName: string, mName: string, ...args) => any;
-  featProp: (fName: string, pName: string) => IScopeable;
+  getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
+  callFeatMethod: (fName: string, mName: string, ...args) => any;
+  getFeatProp: (fName: string, pName: string) => IScopeable;
   // shortcut properties
   skin: string;
   x: number;

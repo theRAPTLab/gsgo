@@ -134,12 +134,12 @@ class MovementPack extends GFeature {
   // TYPES
   //   'wander' -- params: distance
   setMovementType(agent: IAgent, type: string, ...params) {
-    agent.featProp(this.name, 'movementType').value = type;
+    agent.getFeatProp(this.name, 'movementType').value = type;
     if (params.length > 0) {
       switch (type) {
         case 'wander':
           // first param is distance
-          agent.featProp(this.name, 'distance').value = params[0];
+          agent.getFeatProp(this.name, 'distance').value = params[0];
           break;
         case 'jitter':
           // min max
@@ -151,11 +151,11 @@ class MovementPack extends GFeature {
 
   setDirection(agent: IAgent, direction: number) {
     console.log('setting direction to', direction);
-    agent.featProp(this.name, 'direction').value = direction;
+    agent.getFeatProp(this.name, 'direction').value = direction;
   }
 
   setRandomDirection(agent: IAgent) {
-    agent.featProp(this.name, 'direction').value = Math.random() * 360;
+    agent.getFeatProp(this.name, 'direction').value = Math.random() * 360;
   }
 
   setRandomPosition(agent: IAgent) {
