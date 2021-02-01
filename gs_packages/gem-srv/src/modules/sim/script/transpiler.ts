@@ -118,14 +118,15 @@ function r_DecodeArg(arg) {
     return token;
   }
   if (directive) return directive;
-  if (value) return value;
-  if (string) return string;
+  if (value !== undefined) return value;
+  if (string !== undefined) return string;
   if (comment) return comment;
   // special cases
   if (program) return arg; // { program = string name of stored program }
   if (objref) return arg; // { objref = array of string parts }
   if (block) return arg; // { block = array of lines }
   if (expr) return arg; // { expr = string }
+  console.warn('unknown argument type:', arg);
   throw Error('unknown argument type');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -136,7 +136,12 @@ function evaluate(node, context) {
  */
 function EvalArg(arg: any, context: {}): any {
   if (typeof arg !== 'object') return arg;
-  return evaluate(arg, context);
+  if (arg.program) return arg.program;
+  if (arg.expr) return evaluate(arg, context);
+  if (arg.objref) {
+    return evaluate(arg, context);
+  }
+  console.error('unknown arg type', arg);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** called by keywords that need to do runtime evaluation of an expression from

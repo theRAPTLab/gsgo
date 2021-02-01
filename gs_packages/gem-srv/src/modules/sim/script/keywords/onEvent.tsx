@@ -27,7 +27,7 @@ export class onEvent extends Keyword {
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, event, consq] = unit;
-    consq = UtilDerefArg(consq);
+    consq = UtilDerefArg(consq); // a program name possibly?
     const { bundleName } = CompilerState();
     SubscribeToScriptEvent(event, bundleName, consq);
     // this runs in global context
