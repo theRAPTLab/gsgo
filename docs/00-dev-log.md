@@ -36,14 +36,14 @@
 * W1: Ramp up 2020. Draft of System Overview docs.
 * W2: Script Engine review of patterns, issues, needed fixes
 
-**SUMMARY S2102 JAN 25 - JAN 31**
+**SUMMARY S2102 JAN 25 - FEB 07**
 
 
 
 
 ---
 
-# SPRINT 2102
+# SPRINT 2102 - JAN 25 - FEB 07
 
 There are four things to look at:
 
@@ -136,14 +136,181 @@ directive: #, array of directive parameters
 value: number
 comment: string
 block: array of strings
+```
 
+## JAN 29 FRI - Compiler-to-Runtime Arguments
 
+Yesterday I got the **objref** argument type handled in the following locations
+
+* script-parser: returns object types { token }, { block }, etc for all parsed elements
+* transpiler: `r_ExpandArgs()` now handles these object types
+* expr-evaluator: `EvalArg()` called by `setProp()` currently
+* dc-script: `UtilDerefArg()` seems to be a variation
+
+There are now several execution contexts for programs to keep in mind:
+
+* agent context (acts on agent instance) - `define`, `init`, `update`
+* global context for tests (single/pairs) run through Global agent instance - 
+* global context for events (registers agent type for instances to all receive) - runs during `CONDITION_UPDATE`
+
+Each of these contexts must be provided to the **program** running via the `GAgent.exec()` function which accepts:
+
+* `program ` - a TMethod
+* `context` - a context object
+* `...args` - a variable number of arguments in runtime format (if there is only one arg, it's assumed to be a context object)
+
+So the $199 question is 
+
+* **how** does each context construct the `context` object when it calls exec?
+* **how** do the arguments at compile time get put into the `context` object? 
+
+### Let's look at the `when` example
+
+```js
+/*/	when A test B [[ programblock ]]
+		...is expanded into...
+		'aName' 'testName' 'bName' Array<TMethod>
+		...which is converted into a program...
+/*/
+/// A, B, testName, consq are pulled from arguments and bound bia closure
+/// into the following function
+(agent,state)=>{
+  PairAgentFilter(A,B,testName).forEach(pairs=>{
+    [aa,bb] = pairs;
+    aa.exec(consq,{ [A], [B] })
+    bb.exec(consq,{ [A], [B] })
+  });
+}
+/** which is executed eventually by this code in sim-conditions **/
+GLOBAL_COND = [...GetAllGlobalConditions()];
+GLOBAL_COND.forEach(entry => {
+  const [key, value] = entry;
+  GLOBAL.exec(value);
+});
+/*/	Note that in this case, the function has everything it needs because it is
+		global program (redirected via # PROGRAM CONDITION) and it runs on every
+		update. This is not idea though because we want to push the test outside
+		of the when keyword
+/*/
 
 ```
 
+### Let's look at the agent block example
 
+This is just normal code that is executed during agent updates, on Tick type stuff
 
+``` 
+// setting a prop for an agent during define or init
+prop agent.x setTo 1
+prop agent.Costume.pose setTo 2
+prop agent.x setTo {{ agent.y + 1 }} // complicated math
+// setting a prop for agent pairs inside a when
+when Bee touches Flower [[
+prop Bee.x setTo 1
+if {{ Bee.energy < 10 }} [[
+  prop Bee.energy sub 1
+  prop Flower.energy add 1
+  do Flower.Costume makeParticles 100 
+]]
 
+// setting a prop conditionally inline test
+if [[ 
+  push Bee.energy lt 10
+]] [[
+  prop Bee.energy sub 1
+  prop Flower.energy add 1
+  do Flower.Costume makeParticles 100 
+]
+```
+
+**HOW???**
+
+an `objref` gets expanded into an actual object in `r_ExpandArg` from [prop, prop]
+
+* `x m args` should be expanded to `agent.prop('x').m(args)` 
+* `agent.x m args` should be expanded to `agent.prop('x').m(args)`
+* `agent.Costume.pose m args` should be expanded to `agent.featProp('Costume','pose').m(...args)`
+
+We might not even need `prop`, except for features calls. Then `prop` is for conceptual symmetry to `call`
+
+* `call agent.Costume.m args`  expands into `agent.featExec('Costume','m',args)`
+
+>  **CONDITIONS IMPLEMENTATION NOTE**
+>
+> The output of `when` is directed into `# PROGRAM CONDITION` program, so it's stuffed into global condition that is run inside of `sim-conditions.Update()`. This handles both global conditions and events curently.
+
+So the only thing left to do is **TRY THE DAMN THING**
+
+*inside agent prop, objref, method, [args]*
+
+* x - objref 1 = agent.prop(or[1]) - method
+* agent.x - objref 2 = agent.prop(or[2]) - method 
+* agent.Costume.pose - objref 3 = agent.featProp(or[2],or[3]) - method
+
+*inside when*
+
+* objref 1 = agent.prop(or[1]) - method
+* objref 2 = A.prop(or[2]) - method
+* objref 3 = A.featProp(or[2],or[3]) - method
+
+*inside on is same as inside agent because it runs in agent context*
+
+So how is this objref converted into that at **compile time**?
+
+* inside agent: agent is always available, objref has to be looked-up at runtome and can't be hooked during compile
+* inside when: agent is global agent, [A] and [B] are provided by calling test. should probably be defined outside of blueprints
+
+## JAN 31 SUN - Wiring Up
+
+let's try to implement the new `prop` command to detect cases correctly:
+
+```
+prop agent.x setTo 10
+```
+
+* [x] make `prop` command
+* [x] console.log `prop` processing 
+* [x] update DEFAULT_TEXT to use new prop syntax
+
+BUG: unknown argument type in `r_Decode` transpiler line 129 - needed to return on `value!==undefined` when value is 0
+
+* [x] inspect output of prop during compile: it `objref: []` 
+* [x] figure out how to convert into runtime reference - at compile time, we can create a custom function that the runtime can all to do the conversion. Signature should be `(agent, context)=>object`
+
+Now I think I know how to construct the runtime functions that `prop.compile()` needs to generate. It's a function that accepts the passed contezt and agent at runtime and spits out the reference.
+
+* [x] case 1: implicit agent (`x`)
+* [x] case 2: explicit agent (`agent.x`, `Bee.x`)
+* [x] case 3: explicit agent feature prop
+
+* [ ] BUG: `state.ctx` not being set from `agent.exec`
+* [ ] FIX: convert gagent.featureMap to a regular IKeyObject, as sm-object does
+
+#### TEST CASES
+
+```
+prop x method ...parms
+prop Bee.x method ...parms
+
+featProp Costume.pose method ...parms
+featProp Bee.Costume.pose method ...parms
+
+featCall Costume method ...parms
+featCall Bee.Costume method ...parms
+```
+
+Now I have to:
+
+* **fix the lost context** for each of the **three exec contexts**
+* write a **test module** that can exercise each of the cases.
+
+If I want to write a test module for context calls, it would have to have a text that creates a bundle. We'll use `test-keywords` as our test module, which is similar to `test-compiler` in its design.
+
+1. compile test blueprint
+2. execute it inside agent context
+3. execute it inside when context
+4. execute it inside event context
+5. repeat
 
 
 
