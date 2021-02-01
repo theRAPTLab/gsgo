@@ -182,6 +182,33 @@ class PanelScript extends React.Component {
     UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
+  /**
+   * 1. This raises NET:HACK_SCRIPT_UPDATE
+   * 2. PanelSimulation handles NET:HACK_SCRIPT_UPDATE
+   *    a. PanelSimulation calls DoScriptUpdate
+   *    b. DoScriptUpdate scriptifys the text
+   *    c. DoScriptUpdate registers the new blueprint
+   *       replacing any existing blueprint
+   *    d. DoScriptUpdate raises AGENT_PROGRAM, which handles the instancing
+   * 4. sim-agents handles AGENT_PROGRAM
+   *    a. AgentProgram first removes the old instance by calling
+   *       dc-agents.RemoveAgent
+   *       -- dc-agents.DeleteAgent
+   *          -- Removes the agent from the AGENTS map
+   *          -- Removes the agent from the AGENT_DICT map
+   *    b. AgenProgram also removes the old blueprint instances
+   *       from the INSTANCES map kept in dc-agents.
+   *    c. AgentProgram creates a new instance definition and
+   *       then creates a new agent instance by calling
+   *       Transpiler.MakeAgent
+   * 5. Transpiler.MakeAgent
+   *    a. MakeAgent creates a new agent out of the instancedef
+   *       retrieving the existing blueprint from datacore.
+   *    b. MakeAgent saves the agent via dc-agents.SaveAgent
+   * 6. dc-agents.SaveAgent
+   *    a. SaveAgent saves it to the AGENTS map.
+   *    b. SaveAgent saves agents by id, which comes from a counter
+   */
   hackSendText() {
     const text = this.jar.toString();
     UR.RaiseMessage('NET:HACK_SCRIPT_UPDATE', { script: text });

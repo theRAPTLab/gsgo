@@ -1,5 +1,5 @@
 import React from 'react';
-import * as DATACORE from 'modules/datacore';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -9,117 +9,25 @@ class PanelInstances extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Sim Instances (Fake Data)'
+      title: 'Sim Instances',
+      instances: []
     };
+    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
+    UR.RegisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+  }
+
+  componentWillUnmount() {
+    UR.UnregisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+  }
+
+  OnInstanceUpdate(data) {
+    this.setState({ instances: data });
   }
 
   render() {
-    const { title } = this.state;
+    const { title, instances } = this.state;
     const { id, isActive, classes } = this.props;
 
-    // const allInstances = [
-    //   {
-    //     agent: 'Fish',
-    //     instances: [
-    //       { label: 'Fish01' },
-    //       { label: 'Fish02', hidden: true },
-    //       { label: 'Fish03' }
-    //     ]
-    //   },
-    //   {
-    //     agent: 'Algae',
-    //     instances: [
-    //       { label: 'Algae01' },
-    //       { label: 'Algae02' },
-    //       { label: 'Algae03' },
-    //       { label: 'Algae04' },
-    //       { label: 'Algae05' },
-    //       { label: 'Algae06', hidden: true },
-    //       { label: 'Algae07', hidden: true },
-    //       { label: 'Algae08' },
-    //       { label: 'Algae09', hidden: true },
-    //       { label: 'Algae10' }
-    //     ]
-    //   },
-    //   {
-    //     agent: 'LightBeam',
-    //     instances: [{ label: 'LightBeam01' }]
-    //   }
-    // ];
-
-    // TEST GetAllInstances Call
-    // This only works if SIM has been initialized.
-    // Skip this for now and just hard code.
-    // const instances = DATACORE.GetAllInstances();
-    // console.error('GetAllInstances gets', instances);
-
-    // FAKE DATA
-    const instances = [
-      {
-        blueprint: 'Fish',
-        name: 'Fish01'
-      },
-      {
-        blueprint: 'Fish',
-        name: 'Fish02'
-      },
-      {
-        blueprint: 'Fish',
-        name: 'Fish03',
-        hidden: true
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae01'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae02'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae03',
-        hidden: true
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae04'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae05',
-        hidden: true
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae06',
-        hidden: true
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae07'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae08'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae09'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae10'
-      },
-      {
-        blueprint: 'Algae',
-        name: 'Algae11'
-      },
-      {
-        blueprint: 'LightBeam',
-        name: 'LightBeam01'
-      }
-    ];
     const typedInstances = {};
     instances.forEach(i => {
       if (typedInstances[i.blueprint] === undefined) {
