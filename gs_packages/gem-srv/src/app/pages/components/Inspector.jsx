@@ -10,11 +10,7 @@ class Inspector extends React.Component {
     this.state = {
       title: 'INSPECTOR',
       agent: {},
-      data: {
-        x: 0,
-        y: 0,
-        energyLevel: 0
-      },
+      data: undefined,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
@@ -34,54 +30,66 @@ class Inspector extends React.Component {
     UR.UnregisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
   }
 
-  /*
-      HACK
-      Grab the first agent sending an update.  Keep updating that same
-      agent, ignore any additional updates.
-      Updates are coming from sim-conditions.js's `touches` function.
-  */
-  OnDataUpdate(update) {
-    const { agentName } = this.props;
-    // console.log('update', update);
-    // if (update.name !== agentName) return;
-    // const { data } = this.state;
-    // let newData = {};
-    // newData.x = update.x.toFixed(2);
-    // newData.y = update.y.toFixed(2);
-    // newData.energyLevel = update.energyLevel;
-
-    const { agent } = this.state;
-    const data = {};
-    console.log('updating agent', agent);
-    data.x = agent.prop.x.value.toFixed(2);
-    data.y = agent.prop.y.value.toFixed(2);
+  OnDataUpdate() {
+    const { agent, size } = this.state;
+    const data = [];
+    // console.log('updating agent', agent);
+    if (!agent || !agent.prop) return;
+    if (size === SIZE_MIN) return;
+    Object.keys(agent.prop).map(p => {
+      // console.log('property', p, '=', agent.prop[p].value);
+      if (size === SIZE_MED && !['x', 'y'].includes(p)) return;
+      let val = agent.prop[p].value;
+      switch (typeof val) {
+        case 'number':
+          val = agent.prop[p].value.toFixed(2);
+          break;
+        case 'string':
+          val = agent.prop[p].value;
+          break;
+        default:
+          return;
+      }
+      data.push({ label: p, value: val });
+    });
     this.setState({ data });
   }
 
   render() {
-    const { title, data, color, colorActive, bgcolor } = this.state;
-    const { id, isActive, classes } = this.props;
+    const { title, agent, data, size, color, colorActive, bgcolor } = this.state;
+    const { id, agentName, isActive, classes } = this.props;
     return (
       <div
         style={{
-          color,
-          backgroundColor: bgcolor,
-          fontFamily: 'Andale Mono, monospace',
-          fontSize: '10px',
-          padding: '3px'
+          backgroundColor: '#000',
+          margin: '0.5em 1em 1em 0',
+          cursor: 'pointer'
         }}
+        onClick={this.OnInstanceClick}
       >
         <div>
-          <div className={classes.inspectorLabel}>X:</div>
-          <div className={classes.inspectorData}>{data.x}</div>
+          <div className={classes.inspectorData}>{agentName}</div>
         </div>
-        <div>
-          <div className={classes.inspectorLabel}>Y:</div>
-          <div className={classes.inspectorData}>{data.y}</div>
-        </div>
-        <div>
-          <div className={classes.inspectorLabel}>EnergyLevel:</div>
-          <div className={classes.inspectorData}>{data.energyLevel}</div>
+        <div
+          style={{
+            fontFamily: 'Andale Mono, monospace',
+            fontSize: '10px',
+            paddingLeft: '0.5em'
+          }}
+        >
+          {data &&
+            data.map(property => (
+              <div
+                style={{
+                  display: 'inline-block',
+                  paddingRight: '1em'
+                }}
+                key={property.label}
+              >
+                <div className={classes.inspectorLabel}>{property.label}:</div>
+                <div className={classes.inspectorData}>{property.value}</div>
+              </div>
+            ))}
         </div>
       </div>
     );
