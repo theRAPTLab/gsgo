@@ -40,9 +40,9 @@ const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('map', '50% auto 100px'); // columns
-PANEL_CONFIG.set('blueprints', '50% auto 100px'); // columns
-PANEL_CONFIG.set('sim', '15% auto 100px'); // columns
+PANEL_CONFIG.set('map', '50% auto 150px'); // columns
+PANEL_CONFIG.set('blueprints', '50% auto 150px'); // columns
+PANEL_CONFIG.set('sim', '15% auto 150px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
