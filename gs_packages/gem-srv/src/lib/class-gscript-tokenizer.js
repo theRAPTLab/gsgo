@@ -33,7 +33,7 @@ const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-const DBG = true;
+const DBG = false;
 const DBG_SHOW = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
@@ -288,7 +288,7 @@ class ScriptTokenizer {
   // Return the next token (eq to gobbleExpression)
   gobbleToken() {
     this.gobbleSpaces();
-    this.showCursor();
+    if (DBG_SHOW) this.showCursor();
     let ch = this.exprICode(this.index);
     let chn = this.exprICode(this.index + 1);
     let to_check;

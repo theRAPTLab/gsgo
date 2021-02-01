@@ -79,7 +79,8 @@ class PanelSimulation extends React.Component {
     console.log('script update');
     DATACORE.DeleteAllInstances(); // Delete all instances otherwise previously created instances will stick around
     const source = TRANSPILER.ScriptifyText(data.script);
-    const bp = TRANSPILER.RegisterBlueprint(source);
+    const bundle = TRANSPILER.CompileScript(source);
+    const bp = TRANSPILER.RegisterBlueprint(bundle);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
   }
 

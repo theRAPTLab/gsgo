@@ -168,7 +168,7 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllTests();
     const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
-    console.group('source');
+    console.groupCollapsed('parsed text');
     TRANSPILER.PrintSourceToConsole(source);
     console.groupEnd();
     this.setState({ source: JSON.stringify(source) });
