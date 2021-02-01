@@ -282,7 +282,6 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   SaveBlueprint(bdl);
   // run conditional programming in template
   // this is a stack of functions that run in global context
-  console.log('registering blueprint', bdl);
   // initialize global programs in the bundle
   const { condition, event } = bdl.getPrograms();
   AddGlobalCondition(bdl.name, condition);

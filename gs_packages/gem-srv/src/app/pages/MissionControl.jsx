@@ -74,9 +74,7 @@ class MissionControl extends React.Component {
     console.log(e);
   }
 
-  componentWillUnmount() {
-    console.log('componentWillUnmount');
-  }
+  componentWillUnmount() {}
 
   OnModelClick() {
     const { modelId } = this.state;
@@ -84,14 +82,12 @@ class MissionControl extends React.Component {
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
     this.setState({
       panelConfiguration: id
     });
   }
 
   DoScriptUpdate(data) {
-    console.log('update data', data);
     const firstline = data.script.match(/.*/)[0];
     this.setState(state => ({
       message: `${state.message}Received script ${firstline}\n`

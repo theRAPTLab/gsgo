@@ -108,9 +108,7 @@ export function AgentProgram(blueprint) {
 
   // Make an agent for each instance
   instances = GetAllInstances();
-  console.log(...PR('creating', instances.length, 'instances'));
   instances.forEach(instance => {
-    console.warn('...working on instance', instance);
     // Make an instance only for this blueprint, ignore others
     // otherwise other blueprints will get duplicate instances
     if (instance.blueprint === blueprint) {

@@ -28,9 +28,6 @@ UR.SystemHook(
       (async () => {
         let map = await GLOBAL.LoadAssetsSync('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
-        console.log(...PR('Waiting for user input'));
-        // SIM.Start();
-        // if (DBG) console.log(...PR('SIMULATION STARTED'));
         resolve();
       })();
     })
@@ -66,7 +63,6 @@ class PanelSimulation extends React.Component {
   }
 
   DoSimReset() {
-    console.log('sim reset');
     DATACORE.DeleteAllTests();
     DATACORE.DeleteAllGlobalConditions();
     DATACORE.DeleteAllScriptEvents();
@@ -76,14 +72,12 @@ class PanelSimulation extends React.Component {
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
-    console.log('script update');
     const source = TRANSPILER.ScriptifyText(data.script);
     const bp = TRANSPILER.RegisterBlueprint(source); // map set overwrites any existing blueprint
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
   }
 
   DoSimStart() {
-    console.log('sim start');
     SIM.Start();
   }
 
