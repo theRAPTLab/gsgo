@@ -24,7 +24,7 @@ class Inspector extends React.Component {
     };
     this.OnDataUpdate = this.OnDataUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    UR.SystemHook('SIM/AGENTS_EXEC', this.OnDataUpdate);
+    UR.SystemHook('SIM/UI_UPDATE', this.OnDataUpdate);
   }
 
   componentDidMount() {
