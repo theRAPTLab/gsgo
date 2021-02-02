@@ -38,6 +38,9 @@
 
 **SUMMARY S2102 JAN 25 - FEB 07**
 
+* W1: Parse dotted object ref, expand args. Add keywords `prop`, `featProp`, `featCall` touse dotted object refs. Need to insert context into runtime in three or four places.
+* W2: inject correct context for runtime.
+
 
 
 
