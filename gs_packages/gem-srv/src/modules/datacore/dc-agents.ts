@@ -123,6 +123,14 @@ export function GetAgentById(id): IAgent {
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAgentByName(name): IAgent {
+  const agents = GetAllAgents();
+  const agent = agents.find(a => a.meta.name === name);
+  if (agent) return agent;
+  console.warn(...PR(`agent ${name} not found`));
+  return undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetAllAgents() {
   const arr = [];
   const maps = [...AGENTS.values()];
