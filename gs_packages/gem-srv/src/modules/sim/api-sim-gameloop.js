@@ -46,6 +46,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'SIM_EVAL',
     'REFEREE_EVAL',
     // display output
+    'UI_UPDATE',
     'VIS_UPDATE',
     'VIS_RENDER'
   ]

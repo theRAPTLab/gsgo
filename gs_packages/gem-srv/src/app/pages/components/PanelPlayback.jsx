@@ -58,7 +58,7 @@ class PanelPlayback extends React.Component {
             >
               START
             </button>
-            <div className={clsx(classes.button, classes.buttonDisabled)}>
+            {/* <div className={clsx(classes.button, classes.buttonDisabled)}>
               PAUSE
             </div>
             <div className={clsx(classes.button, classes.buttonDisabled)}>
@@ -66,7 +66,7 @@ class PanelPlayback extends React.Component {
             </div>
             <div className={clsx(classes.button, classes.buttonDisabled)}>
               REPLAY
-            </div>
+            </div> */}
           </div>
         </div>
       </PanelChrome>
