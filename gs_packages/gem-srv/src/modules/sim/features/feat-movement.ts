@@ -10,7 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { NumberProp, StringProp } from 'modules/sim/props/var';
+import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
@@ -111,14 +111,14 @@ class MovementPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     MOVING_AGENTS.set(agent.name, agent);
-    this.featAddProp(agent, 'movementType', new StringProp('static'));
-    this.featAddProp(agent, 'controller', new StringProp());
-    let prop = new NumberProp(0);
+    this.featAddProp(agent, 'movementType', new GVarString('static'));
+    this.featAddProp(agent, 'controller', new GVarString());
+    let prop = new GVarNumber(0);
     prop.setMax(Math.PI * 2);
     prop.setMin(0);
     prop.setWrap();
     this.featAddProp(agent, 'direction', prop); // degrees
-    this.featAddProp(agent, 'distance', new NumberProp(0.5));
+    this.featAddProp(agent, 'distance', new GVarNumber(0.5));
   }
 
   handleInput() {

@@ -29,7 +29,7 @@
     decorate(agent:IAgent) {
       super.decorate(agent);
       // add feature props here
-      // e.g. this.featAddProp(agent,'propName',new StringProp('default'));
+      // e.g. this.featAddProp(agent,'propName',new GVarString('default'));
     }
 
     // ... add feature methods from constructor definitions ...
@@ -49,7 +49,7 @@ import {
   IScopeable,
   TStackable
 } from 'lib/t-script';
-import { DictionaryProp } from 'modules/sim/props/var';
+import { GVarDictionary } from 'modules/sim/vars/_all_vars';
 
 /// CONSTANTS & DECLARATIONS  /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

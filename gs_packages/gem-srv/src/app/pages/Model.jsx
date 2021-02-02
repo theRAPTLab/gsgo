@@ -36,14 +36,18 @@ class Model extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'select'
+      panelConfiguration: 'select',
+      modelId: ''
     };
 
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.OnHomeClick = this.OnHomeClick.bind(this);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP MODEL';
+    let modelId = window.location.search.substring(1);
+    this.setState({ modelId });
+    document.title = `GEMSTEP MODEL ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
   }
@@ -63,12 +67,16 @@ class Model extends React.Component {
     });
   }
 
+  OnHomeClick() {
+    window.location = '/app/login';
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
-    const { panelConfiguration } = this.state;
+    const { panelConfiguration, modelId } = this.state;
     const { classes } = this.props;
     return (
       <div
@@ -80,10 +88,15 @@ class Model extends React.Component {
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 3' }}
+          style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
-          <span style={{ fontSize: '32px' }}>GEMSTEP LOGIN</span> UGLY DEVELOPER
-          MODE
+          <div style={{ flexGrow: '1' }}>
+            <span style={{ fontSize: '32px' }}>GEMSTEP MODEL {modelId}</span> UGLY
+            DEVELOPER MODE
+          </div>
+          <button type="button" onClick={this.OnHomeClick}>
+            Back to HOME
+          </button>
         </div>
         <div
           id="console-left"
@@ -91,7 +104,11 @@ class Model extends React.Component {
           style={{ backgroundColor: 'transparent' }}
         >
           {panelConfiguration === 'select' && (
-            <PanelSelect id="select" onClick={this.OnPanelClick} />
+            <PanelSelect
+              id="select"
+              modelId={modelId}
+              onClick={this.OnPanelClick}
+            />
           )}
         </div>
         <div id="root-renderer" className={classes.main} />

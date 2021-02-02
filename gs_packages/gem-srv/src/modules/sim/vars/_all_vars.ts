@@ -6,7 +6,7 @@
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export * from './var-boolean';
-export * from './var-number';
-export * from './var-string';
-export * from './var-dictionary';
+export * from './gvar-boolean';
+export * from './gvar-number';
+export * from './gvar-string';
+export * from './gvar-dict';
