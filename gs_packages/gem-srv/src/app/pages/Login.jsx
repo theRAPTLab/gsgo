@@ -68,10 +68,10 @@ class Login extends React.Component {
     });
   }
 
-  OnModelSelectClick() {
+  OnModelSelectClick(id) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    window.location = '/app/model';
+    window.location = `/app/model?${id}`;
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.

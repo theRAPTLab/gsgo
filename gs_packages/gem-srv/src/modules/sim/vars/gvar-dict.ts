@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The DictionaryProp class is a key/value store for other GVar properties
+  The GVarDictionary class is a key/value store for other GVar properties
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -10,11 +10,11 @@ import { RegisterVarCTor } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class DictionaryProp extends SM_Object implements IScopeable {
+export class GVarDictionary extends SM_Object implements IScopeable {
   dict: Map<string, IScopeable>;
   constructor(name: string) {
     super(name);
-    this.meta.type = Symbol.for('DictionaryProp');
+    this.meta.type = Symbol.for('GVarDictionary');
     this.meta.name = name;
     this.dict = new Map();
   }
@@ -34,4 +34,4 @@ export class DictionaryProp extends SM_Object implements IScopeable {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see class export above
-RegisterVarCTor('Dictionary', DictionaryProp);
+RegisterVarCTor('Dictionary', GVarDictionary);

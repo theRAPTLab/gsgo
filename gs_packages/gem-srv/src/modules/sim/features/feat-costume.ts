@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { NumberProp, StringProp } from 'modules/sim/props/var';
+import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
@@ -47,7 +47,7 @@ class CostumePack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
-    let prop = new NumberProp(0);
+    let prop = new GVarNumber(0);
     // initialize a counter in the agent
     // it will be checked during 'thinkHook' when it's invoked via a
     // featureHook keyword
@@ -55,8 +55,8 @@ class CostumePack extends GFeature {
     prop.setMin(0);
     prop.setWrap();
     this.featAddProp(agent, 'counter', prop); // used by thinkhook example above
-    this.featAddProp(agent, 'costumeName', new StringProp('default'));
-    prop = new NumberProp(0);
+    this.featAddProp(agent, 'costumeName', new GVarString('default'));
+    prop = new GVarNumber(0);
     prop.setWrap();
     prop.setMin(0);
     prop.setMax(0);
@@ -72,7 +72,7 @@ class CostumePack extends GFeature {
     agent.featProp(this.name, 'costumeName').value = costumeName;
     const { frameCount } = GetTextureInfo(costumeName);
     if (poseName !== undefined) {
-      const cf = agent.featProp(this.name, 'currentFrame') as NumberProp;
+      const cf = agent.featProp(this.name, 'currentFrame') as GVarNumber;
       cf.value = poseName;
       cf.setMax(frameCount - 1);
     }

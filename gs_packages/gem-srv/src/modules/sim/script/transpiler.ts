@@ -7,15 +7,17 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Agent from 'lib/class-agent';
+import GAgent from 'lib/class-gagent';
 import { TScriptUnit, TOpcode, TInstance, EBundleType } from 'lib/t-script.d';
 import {
   GetKeyword,
   SaveAgent,
+  DeleteAgent,
   SaveBlueprint,
   GetBlueprint,
   AddToBundle,
   AddGlobalCondition,
+  RemoveGlobalCondition,
   SetBundleName
 } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
@@ -30,7 +32,7 @@ import 'script/keywords/_all_keywords';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR', 'TagRed');
 const scriptConverter = new GScriptTokenizer();
-const COMPILER_AGENT = new Agent();
+const COMPILER_AGENT = new GAgent();
 const COMPILER_STATE = new SM_State();
 //
 const DBG = false;
@@ -275,10 +277,11 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
   const bdl: SM_Bundle = CompileScript(units);
   if (!(units.length > 0)) return bdl;
   if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+  // First deregister the blueprint if it exists
+  RemoveGlobalCondition(bdl.name);
   SaveBlueprint(bdl);
   // run conditional programming in template
   // this is a stack of functions that run in global context
-  console.log('registering blueprint', bdl);
   // initialize global programs in the bundle
   const { condition, event } = bdl.getPrograms();
   AddGlobalCondition(bdl.name, condition);
@@ -291,7 +294,7 @@ function RegisterBlueprint(units: TScriptUnit[]): SM_Bundle {
  */
 function MakeAgent(instanceDef: TInstance) {
   const { blueprint, name } = instanceDef;
-  const agent = new Agent(name);
+  const agent = new GAgent(name);
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof blueprint === 'string') {
@@ -302,6 +305,10 @@ function MakeAgent(instanceDef: TInstance) {
     return SaveAgent(agent);
   }
   throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RemoveAgent(instanceDef: TInstance) {
+  DeleteAgent(instanceDef);
 }
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
@@ -324,5 +331,6 @@ export {
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
+  RemoveAgent,
   RegisterBlueprint // TScriptUnit[] => ISM_Bundle
 };
