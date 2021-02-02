@@ -99,7 +99,7 @@ class Inspector extends React.Component {
       <div
         style={{
           backgroundColor: '#000',
-          margin: '0.5em 1em 1em 0',
+          margin: '0.5em 0 0.5em 0',
           cursor: 'pointer'
         }}
         onClick={this.OnInstanceClick}
