@@ -48,13 +48,14 @@ class ScriptEditor extends React.Component {
       panelConfiguration: 'select',
       modelId: '',
       model: {},
+      scriptId: '',
       message: '',
       messageIsError: false
     };
     // bind
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
-    this.OnModelClick = this.OnModelClick.bind(this);
+    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectAgent = this.OnSelectAgent.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
@@ -66,13 +67,16 @@ class ScriptEditor extends React.Component {
   }
 
   componentDidMount() {
-    let modelId = window.location.search.substring(1);
-    this.setState({ modelId });
-    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
-    // Load Model Data
-    this.LoadModel(modelId);
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
+    const scriptId = params.get('script');
+    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
+    this.setState({ modelId, scriptId }, () => {
+      // Load Model Data
+      this.LoadModel(modelId);
+    });
   }
 
   componentDidCatch(e) {
@@ -80,34 +84,40 @@ class ScriptEditor extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
     UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
     UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
   }
 
   LoadModel(modelId) {
     // HACK
+    // This requests model data from sim-data.
+    // sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
+    // which is handled by OnSimDataUpdate, below
     UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
   }
 
   OnSimDataUpdate(data) {
-    this.setState({ model: data.model });
+    const { scriptId } = this.state;
+    this.setState({ model: data.model }, () => {
+      if (scriptId) {
+        this.OnSelectAgent(scriptId);
+      }
+    });
   }
 
-  OnModelClick() {
+  OnBackToModelClick() {
     const { modelId } = this.state;
-    window.location = `/app/model?${modelId}`;
+    window.location = `/app/model?model=${modelId}`;
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
     if (id === 'sim') return; // don't do anything if user clicks on sim panel
     this.setState({
       panelConfiguration: id
     });
   }
 
-  OnSelectAgent(id) {
+  OnSelectAgent(scriptId) {
     const { model } = this.state;
     if (model === undefined || model.scripts === undefined) {
       console.error(
@@ -117,7 +127,7 @@ class ScriptEditor extends React.Component {
       );
       return; // no scripts defined
     }
-    const agent = model.scripts.find(s => s.id === id);
+    const agent = model.scripts.find(s => s.id === scriptId);
     const script = agent && agent.script ? agent.script : {};
     this.setState({
       panelConfiguration: 'script',
@@ -141,6 +151,7 @@ class ScriptEditor extends React.Component {
       panelConfiguration,
       modelId,
       model,
+      scriptId,
       script,
       message,
       messageIsError
@@ -166,7 +177,7 @@ class ScriptEditor extends React.Component {
             <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnModelClick}>
+          <button type="button" onClick={this.OnBackToModelClick}>
             Back to MODEL
           </button>
         </div>
