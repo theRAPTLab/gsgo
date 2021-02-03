@@ -29,6 +29,9 @@ import PanelMessage from './components/PanelMessage';
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
+// HACK DATA LOADING
+import SimData from '../data/sim-data';
+
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
@@ -53,13 +56,16 @@ class MissionControl extends React.Component {
     this.state = {
       panelConfiguration: 'sim',
       message: '',
-      modelId: ''
+      modelId: '',
+      model: {}
     };
-    this.OnModelClick = this.OnModelClick.bind(this);
-    this.OnHomeClick = this.OnModelClick.bind(this);
+    this.LoadModel = this.LoadModel.bind(this);
+    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
   }
 
   componentDidMount() {
@@ -69,6 +75,9 @@ class MissionControl extends React.Component {
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
+
+    // Load Model Data
+    this.LoadModel(modelId);
   }
 
   componentDidCatch(e) {
@@ -77,7 +86,20 @@ class MissionControl extends React.Component {
 
   componentWillUnmount() {}
 
-  OnModelClick() {
+  LoadModel(modelId) {
+    // HACK
+    // This requests model data from sim-data.
+    // sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
+    // REVIEW: Should the response come only to MissionControl and not be
+    //         widely broadcast?
+    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
+  }
+
+  OnSimDataUpdate(data) {
+    this.setState({ model: data.model });
+  }
+
+  OnBackToModelClick() {
     const { modelId } = this.state;
     window.location = `/app/model?model=${modelId}`;
   }
@@ -100,17 +122,13 @@ class MissionControl extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message, modelId } = this.state;
+    const { panelConfiguration, message, modelId, model } = this.state;
     const { classes } = this.props;
 
-    /// This should be loaded from the db
-    /// Hacked in for now
-    const agents = [
-      { id: 'fish', label: 'Fish' },
-      { id: 'algae', label: 'Algae' },
-      { id: 'lightbeam', label: 'Lightbeam' },
-      { id: 'poop', label: 'Poop', editor: 'UADDR01: Ben' }
-    ];
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
 
     return (
       <div
@@ -128,7 +146,7 @@ class MissionControl extends React.Component {
             <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
-          <button type="button" onClick={this.OnModelClick}>
+          <button type="button" onClick={this.OnBackToModelClick}>
             Back to MODEL
           </button>
         </div>
