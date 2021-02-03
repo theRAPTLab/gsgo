@@ -23,6 +23,7 @@ class PanelSelectAgent extends React.Component {
   }
 
   OnScriptClick(id) {
+    // ScriptEditor handles `HACK_SELECT_AGENT` by opening the script
     UR.RaiseMessage('HACK_SELECT_AGENT', id);
   }
 
