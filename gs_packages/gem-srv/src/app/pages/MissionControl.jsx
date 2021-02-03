@@ -63,7 +63,8 @@ class MissionControl extends React.Component {
   }
 
   componentDidMount() {
-    let modelId = window.location.search.substring(1);
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
     this.setState({ modelId });
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
@@ -78,7 +79,7 @@ class MissionControl extends React.Component {
 
   OnModelClick() {
     const { modelId } = this.state;
-    window.location = `/app/model?${modelId}`;
+    window.location = `/app/model?model=${modelId}`;
   }
 
   OnPanelClick(id) {

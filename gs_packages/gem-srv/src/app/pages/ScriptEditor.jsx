@@ -66,13 +66,13 @@ class ScriptEditor extends React.Component {
   }
 
   componentDidMount() {
-    let modelId = window.location.search.substring(1);
-    this.setState({ modelId });
     document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
     // Load Model Data
     this.LoadModel(modelId);
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
   }
 
   componentDidCatch(e) {
@@ -96,7 +96,7 @@ class ScriptEditor extends React.Component {
 
   OnModelClick() {
     const { modelId } = this.state;
-    window.location = `/app/model?${modelId}`;
+    window.location = `/app/model?model=${modelId}`;
   }
 
   OnPanelClick(id) {
