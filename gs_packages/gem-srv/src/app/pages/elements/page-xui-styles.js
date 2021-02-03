@@ -194,10 +194,11 @@ const useStylesHOC = theme => ({
   instanceListItem: {
     padding: '5px',
     margin: '5px',
+    lineHeight: '0.8em',
     borderRadius: '5px',
     color: CLR_DATA,
     backgroundColor: CLR_OBJECT_CLICKABLE,
-    cursor: 'default'
+    cursor: 'pointer'
   },
   instanceListItemInactive: {
     color: CLR_LABEL,
