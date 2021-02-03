@@ -10,7 +10,7 @@ class PanelInstances extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Sim Instances',
+      title: 'Instances',
       instances: []
     };
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
