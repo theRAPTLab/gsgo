@@ -19,10 +19,9 @@ export * from './dc-varprops';
 export * from './dc-agents';
 export * from './dc-features';
 export * from './dc-script-bundle';
-export * from './dc-script';
-export * from './dc-programs';
-export * from './dc-filters';
-export * from './dc-tests';
+export * from './dc-script-engine';
+export * from './dc-named-methods';
+export * from './dc-interactions';
 export * from './dc-sim';
 export * from './dc-render';
 

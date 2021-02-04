@@ -365,7 +365,92 @@ when A testName B args
 when A testName args
 ```
 
-signature is all the args. The test signature is then the array because Javascript converts properties to keys
+ConditionKey is all the args used to define the `when` turned into a string. 
+
+To use the CONDITION_CACHE structure in dc-tests:
+
+* [ ] The `when` compiler calls `RegisterWhenCondition(args, conseq)`  which creates the condition entry
+* [ ] During `CONDITIONS_UPDATE`
+  * [ ] iterate over all the keys in `CONDITION_CACHE`
+  * [ ] extract the testName and feed it with args to get passing agents
+  * [ ] iterate over the passing agents and execute `conseq` for each agent
+
+Ok, there is an additional wrinkle:
+
+* at compile time, the `when` keyword has to know to run its conseq only for that particular blueprint. 
+* that means that the test should run during the defining agent's UPDATE phase
+* The defining agent, the tested agents are potentially all different blueprints!!!
+
+I think all the agents need to have to receives the passing conditions for each instance.
+
+**e.g. all instances of Bee receives [conseq, A, B] and execute during AgentUpdate.**
+
+* [x] add `GAgent.queuePassingCondition()` 
+* [ ] add `GAgent.agentCONDITION()` that runs the conseqs that have queued up
+
+* [ ] in condition update, we will want to queuePassingCondition to each instance. That would mean there is a triplet of agent instances in each conseq. 
+
+Another possible approach is to have the `when` keyword itself add the conseq to its own array, and it is able to **query** the test results and run that conseq over and over. The compiled code can do that. 
+
+I think that is a bit cleaner if the conseq can load pairs.
+
+```
+# BLUEPRINT Dolphin
+when Banana touches Beach [[ 
+  prop Banana.x
+  prop Beach.x
+  call Dolphin.Costume scream
+]]
+```
+
+The code that could execute that:
+
+``` js
+[kw, A, testName, B, ...args] = unit;
+const conseq = args.pop(); // remove the last argument
+const { bundleName } = CompilerState();
+RegisterWhenCondition(args,bundleName);
+return [
+  (agent, state) => {
+    const pairs = GetResults(A,testName,B,...args);
+    // assume last argument is the conseq TMethod
+    pairs.forEach( pair => {
+      const [A, B] = pair;
+      const ctx = { [A]:A, [B]:B, agent };
+      agent.exec(conseq,ctx);
+    }
+  }
+]
+```
+
+## FEB 04 THU - Implementing new When handling
+
+* [x] `RegisterWhenCondition()` sets up tests to create filtered pairs, stored by test signature
+* [x] Run all conditions during `CONDITION_UPDATE` in `sim-conditions`
+  * [x] split RegisterInteraction to RegisterSingleInteraction, RegisterPairInteraction
+* [x] `when.jsx` has code access filtered pairs by test signature, and runs consequent
+  * [x] update 'when' to use Single, Pair registration
+
+### To add another type of interaction, here is what you need to do
+
+* register a test function using `dc-named-methods` `RegisterFunction()` that handles either single or paired agent instances as input, and returns true/false if they pass the test
+* use the `when` keyword in your script, providing a consequent to run on passing agents
+  * use `when A testName [[ consq ]]` for SingleAgentTest
+  * use `when A testName B [[ consq  ]]` for PairAgentTest
+  * the consequent can refer to { A } and { A, B } in expressions and also use the new dotted object references`prop`, `featProp`, and `featCall` keywords 
+
+### To Test New Interactions
+
+```
+when A touches B 10 [[
+  prop A.Costume setPose 1
+  prop B.Costume setPose 2
+]]
+```
+
+
+
+
 
 
 

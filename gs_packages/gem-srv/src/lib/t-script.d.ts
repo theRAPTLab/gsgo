@@ -92,7 +92,8 @@ export interface IMessage {
   channel?: string;
   message?: string;
   context?: {}; // context object for expressions, programs
-  actions?: TSMCProgram[];
+  actions?: TMethod[];
+  conseq?: TMethod;
   inputs?: any;
 }
 

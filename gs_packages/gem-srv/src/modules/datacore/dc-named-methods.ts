@@ -11,39 +11,29 @@ import { TSMCProgram } from 'lib/t-script.d';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('DCPROGS', 'TagRed');
 
-export const CONDITIONS: Map<string, TSMCProgram> = new Map();
+/// REGISTER TEST PROGRAMS BY NAME ////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const TEST_DICT = new Map<string, TSMCProgram>();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** returns true if test was saved for the first time, false otherwise */
+export function RegisterTest(name: string, program: TSMCProgram): boolean {
+  // if (TESTS.has(name)) throw Error(`RegisterTest: ${name} exists`);
+  const newRegistration = !TEST_DICT.has(name);
+  TEST_DICT.set(name, program);
+  return newRegistration;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetTest(name: string): TSMCProgram {
+  return TEST_DICT.get(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllTests() {
+  TEST_DICT.clear();
+}
+
+/// FUNCTION UTILITIE /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const FUNCTIONS: Map<string, Function> = new Map();
-export const PROGRAMS: Map<string, TSMCProgram> = new Map();
-
-/// CONDITION UTILITIES ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function AddGlobalCondition(sig: string, condprog: TSMCProgram) {
-  if (!Array.isArray(condprog)) {
-    console.warn(...PR(condprog, 'is not a program...skipping'));
-    return;
-  }
-  if (!CONDITIONS.has(sig)) CONDITIONS.set(sig, []);
-  const master = CONDITIONS.get(sig);
-  // add all the instructions from conditional program to the master
-  master.push(...condprog);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetGlobalCondition(sig: string) {
-  const master = CONDITIONS.get(sig);
-  console.log(...PR(`getting condition '${sig}' (has ${master.length} opcodes)`));
-  return master;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAllGlobalConditions() {
-  const conditions = CONDITIONS.entries();
-  return conditions;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteAllGlobalConditions() {
-  CONDITIONS.clear();
-}
-
-/// TEST UTILITIES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RegisterFunction(name: string, func: Function): boolean {
   const newRegistration = !FUNCTIONS.has(name);
@@ -59,6 +49,8 @@ export function GetFunction(name: string): Function {
 }
 
 /// PROGRAM UTILITIES /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const PROGRAMS: Map<string, TSMCProgram> = new Map();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RegisterProgram(name: string, program: TSMCProgram) {
   if (PROGRAMS.has(name)) throw Error(`RegisterProgram: ${name} exists`);

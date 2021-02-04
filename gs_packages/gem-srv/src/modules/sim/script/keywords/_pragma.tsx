@@ -12,7 +12,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { SetBundleOut } from 'modules/datacore/dc-script-bundle';
-import { RegisterKeyword } from 'modules/datacore/dc-script';
+import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

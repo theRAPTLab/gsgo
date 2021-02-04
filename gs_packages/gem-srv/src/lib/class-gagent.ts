@@ -194,8 +194,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// hooks.
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Queue a message to be handled during AGENT_UPDATE. Currently, it extracts
-   *  the 'actions' property which is TMethod that can be executed
+   *  the 'actions' property which is TMethod that can be executed. This is
+   *  called from sim-conditions during update
    */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   queueUpdateMessage(message: SM_Message) {
     const { actions } = message;
     this.updateQueue.push(...actions);
@@ -210,6 +212,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const { actions } = message;
     this.execQueue.push(...actions);
   }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** After running the blueprint update program, also run any programs that
    *  are stored in the queue, then clear it. The algorithm is the same for

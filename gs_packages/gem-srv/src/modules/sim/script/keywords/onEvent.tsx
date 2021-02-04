@@ -13,7 +13,7 @@ import {
   RegisterKeyword,
   UtilDerefArg,
   SubscribeToScriptEvent
-} from 'modules/datacore/dc-script';
+} from 'modules/datacore/dc-script-engine';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
