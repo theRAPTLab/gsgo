@@ -2,6 +2,13 @@
 
   implementation of keyword "featProp" keyword object
 
+  The featProp keyword is used for referencing an agent instance property
+  that is controlled by a GFeature. There are two forms:
+
+  FORM 1: featProp Costume.pose methodName args
+  FORM 2: featProp agent.Costume.pose methodName args
+          featProp Bee.Costume.pose methodName args
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -34,7 +41,10 @@ export class featProp extends Keyword {
     // create a function that will be used to dereferences the objref
     // into an actual call
     let deref;
+
     if (len === 2) {
+      /** IMPLICIT FEATURE PROP REF ******************************************/
+      /// e.g. 'Costume.pose' running in agent context
       deref = (agent: IAgent, context: any) => {
         const p = agent.getFeatProp(ref[0], ref[1]);
         if (p === undefined)
@@ -42,6 +52,8 @@ export class featProp extends Keyword {
         return p;
       };
     } else if (len === 3) {
+      /** EXPLICIT FEATURE PROP REF ******************************************/
+      /// e.g. 'agent.Costume.pose' or 'Bee.Costume.pose'
       deref = (agent: IAgent, context: any) => {
         const c = context[ref[0]];
         if (c === undefined) throw Error(`context missing key '${ref[0]}'`);

@@ -315,7 +315,57 @@ If I want to write a test module for context calls, it would have to have a text
 4. execute it inside event context
 5. repeat
 
+## FEB 03 WED - Inserting Execution Context
 
+First execution context is for `x`, `agent.x` prop references in the agent context. This is in the `prop.tsx`, `featProp.tsx`, and `featCall.tsx`  commands..
+
+* [x] Programs using `prop` are handled in by the `GAgent.exec()` function. This is called by `sim-agents` on update, think, and exec via `GAgent.agentUPDATE()`, etc
+* [x] Modify agentUpdate/Think/Exec to include `{ agent: this }` to provide context by default
+* [x] Also modify to include its own blueprint name
+* [x] Comment `prop.tsx` to make the two cases clear
+* [x] Comment.`featProp.tsx` to make the two cases clear
+* [x] Comment.`featCall.tsx` to make the two cases clear
+
+Second execution context happens inside of **`onEvent`** keyword.
+
+* [x] The `onEvent` keyword subscribes an eventName to a particular agentBlueprint name along with the `smc_code` to run when compile is run via `SubscribeToScriptEvent()` in `dc-script`
+* [x] To queue, the system currently registers an UR mesage called `SCRIPT_EVENT` which is hooked by `dc-script` to push an event object onto its `EVENT_QUEUE` array, which is read during `sim-conditions` and sent to all instances of the registered types
+* [x] The execution context is in `sim-conditions` where the `EVENT_QUEUE` is iterated over. The agent context is always the agent itself running the consequent, so `{ agent, [agentType]: agent }`
+
+Third execution context happens inside of **`when`** clauses. THIS IS THE HARD ONE
+
+* [x] These programs execute in the global context, which is handled by `sim-conditions` for execution and `when.tsx` for determining which agents are passing the test.
+* [x] The `when` keyword is inserting the context already, so it should be accessible by the `prop` `featProp` `featCall` keywords
+* [x] The `GlobalCOnditions()` are in `dc-programs` and are a Map of test signature to array of consequent functions. So `Bee touches Flower` is the signature, and it contains the list of all the consequents that should be run.
+* [x] We have to make sure that `ctx = {[AgentA] and [AgentB]}` is  available to the consequents being run. However, the problem is that we don't know what the pairs are. 
+
+To make the pairs available, we need to shift the hacked-in nature of `when` clauses so the tests are properly run during `CONDITION_UPDATE` instead of hacked into `AGENT_UPDATE`
+
+* [ ] **TODO** the `when` keyword is not using cached test results, which is an important optimization
+  * [ ] needs: test signatures based on `AgentA Test AgentB` caching results
+  * [ ] needs: add test execution at the appropriate GAMELOOP phase
+* [ ] **TODO** the `when` keyword is executing consequents immediately instead of queuing them
+  * [ ] need to review the queueing features of `GAgent`. May need to define message format.
+  * [ ] how is the complete context passed in the queue? As part of message?
+
+PLAN OF ACTION
+
+* the tests in the `when` `compile()` function need to be moved to `sim-conditions`.
+* when registers key signature with consequent to populate data structure
+* during condition update, iterate over key signatures
+* execute key signature and collect passing elements
+* for every passing element, execute the consequent with appropriate ctx
+
+### Writing Signature
+
+Tests have a particular signature comprised of the test followed by arguments. The syntax is:
+
+```
+when A testName B args
+when A testName args
+```
+
+signature is all the args. The test signature is then the array because Javascript converts properties to keys
 
 
 

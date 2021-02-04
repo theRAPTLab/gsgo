@@ -2,6 +2,14 @@
 
   implementation of keyword "prop" keyword object
 
+  The prop keyword is used for referencing an agent instance's property
+  in either short format or context format. Both forms invoke a named
+  method followed by variable arguments.
+
+  FORM 1: prop x methodName args
+  FORM 2: prop agent.x methodName args
+          prop Bee.x methodName args
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -34,7 +42,10 @@ export class prop extends Keyword {
     // create a function that will be used to dereferences the objref
     // into an actual call
     let deref;
+
     if (len === 1) {
+      /** IMPLICIT REF *******************************************************/
+      /// e.g. 'x' is assumed to be 'agent.x'
       deref = (agent: IAgent, context: any) => {
         const p = agent.getProp(ref[0]);
         if (p === undefined) {
@@ -44,7 +55,8 @@ export class prop extends Keyword {
         return p;
       };
     } else if (len === 2) {
-      // agent.x or Bee.x from context
+      /** EXPLICIT REF *******************************************************/
+      /// e.g. 'agent.x' or 'Bee.x'
       deref = (agent: IAgent, context: any) => {
         const c = context[ref[0]];
         if (c === undefined) throw Error(`context missing '${ref[0]}' key`);

@@ -2,6 +2,13 @@
 
   implementation of keyword "featCall" keyword object
 
+  The featCall keyword is used for invoking a method that is defined as
+  one of an agent's GFeatures (e.g. Costume).
+
+  FORM 1: prop x methodName args
+  FORM 2: prop agent.x methodName args
+          prop Bee.x methodName args
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -34,13 +41,18 @@ export class featCall extends Keyword {
     // create a function that will be used to callReferences the objref
     // into an actual call
     let callRef;
+
     if (len === 1) {
+      /** IMPLICIT REF *******************************************************/
+      /// e.g. 'Costume' is interpreted as 'agent.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
         const [f, m] = agent.getFeatMethod(ref[0], mName);
         if (m === undefined) throw Error(`agent missing feature '${ref[0]}'`);
         return (m as Function).call(this, agent, ...prms);
       };
     } else if (len === 2) {
+      /** EXPLICIT REF *******************************************************/
+      /// e.g. 'agent.Costume' or 'Bee.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
         const c = context[ref[0]];
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);

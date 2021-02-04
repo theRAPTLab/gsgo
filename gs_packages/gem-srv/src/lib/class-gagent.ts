@@ -152,7 +152,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return a feature with feature method for execution */
-  getFeatMethod(fName: string, mName: string): Function {
+  getFeatMethod(fName: string, mName: string): any {
     const feat = this.getFeature(fName);
     const featMethod = feat.method[mName];
     if (!featMethod)
@@ -216,34 +216,37 @@ class GAgent extends SM_Object implements IAgent, IActable {
    *  each queue type.
    */
   agentUPDATE(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.update) {
-      this.exec(this.blueprint.update, {});
+      this.exec(this.blueprint.update, ctx);
     }
     this.updateQueue.forEach(action => {
       // console.log(this.name(), 'updateAction', this.exec(action));
-      this.exec(action, {});
+      this.exec(this.blueprint.update, ctx);
     });
     this.updateQueue = [];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   agentTHINK(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.think) {
-      this.exec(this.blueprint.think);
+      this.exec(this.blueprint.think, ctx);
     }
     this.thinkQueue.forEach(action => {
       // console.log(this.name(), 'thinkAction', this.exec(action));
-      this.exec(action);
+      this.exec(action, ctx);
     });
     this.thinkQueue = [];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   agentEXEC(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.exec) {
-      this.exec(this.blueprint.exec);
+      this.exec(this.blueprint.exec, ctx);
     }
     this.thinkQueue.forEach(action => {
       // console.log(this.name(), 'execAction', this.exec(action));
-      this.exec(action);
+      this.exec(action, ctx);
     });
     this.execQueue = [];
   }
@@ -277,10 +280,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     if (m === undefined) return undefined;
     const ctx = { agent: this, global: GLOBAL };
     Object.assign(ctx, context);
-    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
-    if (typeof m === 'string') return this.exec_program(m, ctx, ...args);
     if (typeof m === 'object') return this.exec_ast(m, ctx);
+    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
+    if (typeof m === 'string') return this.exec_program(m, ctx, ...args);
     throw Error('method object is neither function or smc');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
