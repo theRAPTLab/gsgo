@@ -22,6 +22,7 @@ import { TScriptUnit } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PR = UR.PrefixUtil('EVAL', 'TagRed');
 const binops = {
   '||': (a, b) => a || b,
@@ -134,12 +135,35 @@ function evaluate(node, context) {
 /** checks a given argument, and if it's an object we'll assume it's an
  *  AST and evaluate it. Otherwise, just return the value as-is
  */
-function EvalArg(arg: any, context: {}): any {
+function EvalArg(arg: any, context): any {
   if (typeof arg !== 'object') return arg;
   if (arg.program) return arg.program;
-  if (arg.expr) return evaluate(arg, context);
+  if (arg.expr) {
+    let result = evaluate(arg.expr, context);
+    if (DBG) console.log('expr', arg.expr, context);
+    return result;
+  }
   if (arg.objref) {
-    return evaluate(arg, context);
+    // always assume this is a prop value
+    let result;
+    const { objref } = arg;
+    if (objref.length === 1) {
+      // implicit agent objref 'x' // shouldn't use this
+      const prop = objref[0];
+      result = context.agent.getProp(prop).value;
+      if (DBG) console.log('objref 1', prop, result);
+    } else if (objref.length === 2) {
+      // explicit objref 'agent.x' or 'Fish.x'
+      const [agent, prop] = objref;
+      result = context[agent].getProp(prop).value;
+      if (DBG) console.log('objref 2', agent, prop, result);
+    } else if (objref.length === 3) {
+      // explicit feature prop objref 'agent.Costume.foo'
+      const [agent, feature, prop] = objref;
+      result = context[agent].getFeatProp(feature, prop).value;
+      if (DBG) console.log('objref 3', agent, feature, prop, result);
+    }
+    return result;
   }
   console.error('unknown arg type', arg);
 }
