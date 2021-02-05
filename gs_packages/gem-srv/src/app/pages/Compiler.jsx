@@ -84,7 +84,7 @@ class Compiler extends React.Component {
     UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    const bdl = TRANSPILER.CompileScript(this.source);
+    const bdl = TRANSPILER.CompileBlueprint(this.source);
     TRANSPILER.RegisterBlueprint(bdl);
     // codejar
     this.jarRef = React.createRef();
@@ -179,11 +179,11 @@ class Compiler extends React.Component {
     this.userCompileText();
     // save the blueprint to default and reprogram sim
     DATACORE.DeleteAllTests();
-    DATACORE.DeleteAllGlobalConditions();
+    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
-    const bdl = TRANSPILER.CompileScript(this.source);
+    const bdl = TRANSPILER.CompileBlueprint(this.source);
     const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render

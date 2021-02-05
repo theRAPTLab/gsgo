@@ -15,7 +15,6 @@ import {
   SaveBlueprint,
   GetBlueprint,
   AddToBundle,
-  AddGlobalCondition,
   SetBundleName,
   GetProgram
 } from 'modules/datacore';
@@ -245,11 +244,11 @@ function PrintSourceToConsole(units: TScriptUnit[]) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Main ScriptUnit Compiler */
-function CompileScript(units: TScriptUnit[]) {
+function CompileBlueprint(units: TScriptUnit[]) {
   let objcode; // holder for compiled code
 
   if (!Array.isArray(units))
-    throw Error(`CompileScript can't compile '${typeof units}'`);
+    throw Error(`CompileBlueprint can't compile '${typeof units}'`);
   const bdl: SM_Bundle = new SM_Bundle();
   // no units? just return empty bundle
   if (units.length === 0) return bdl;
@@ -297,7 +296,8 @@ function CompileScript(units: TScriptUnit[]) {
     AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
   if (bdl.name === undefined)
-    throw Error('CompileScript: Missing #BLUEPRINT directive');
+    throw Error('CompileBlueprint: Missing #BLUEPRINT directive');
+  console.log(...PR('hey', bdl));
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
@@ -367,9 +367,7 @@ function TextifyScript(units: TScriptUnit[]): string {
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
-    console.warn(
-      ...PR('RegisterBlueprint got non-initialized bundle...skipping')
-    );
+    console.warn(...PR('RegisterBlueprint skipping empty bundle:', bdl));
     return undefined;
   }
   if (bdl.define && bdl.type === EBundleType.BLUEPRINT) {
@@ -380,7 +378,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     console.log('registering blueprint', bdl);
     // initialize global programs in the bundle
     const { condition, event } = bdl.getPrograms();
-    AddGlobalCondition(bdl.name, condition);
+    //  AddGlobalCondition(bdl.name, condition); // deprecated in script-xp branch
     if (DBG) console.groupEnd();
     return bdl;
   }
@@ -419,7 +417,7 @@ export {
   // compile to script units
   ScriptifyText, // text w/ newlines => TScriptUnit[]
   PrintSourceToConsole, // debug routine
-  CompileScript, // combine scriptunits through m_CompileBundle
+  CompileBlueprint, // combine scriptunits through m_CompileBundle
   // convert script units to other form
   TextifyScript, // TScriptUnit[] => produce source text from units
   RenderScript // TScriptUnit[] => JSX for wizards

@@ -69,7 +69,7 @@ class PanelSimulation extends React.Component {
   DoSimReset() {
     console.log('sim reset');
     DATACORE.DeleteAllTests();
-    DATACORE.DeleteAllGlobalConditions();
+    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
@@ -79,7 +79,7 @@ class PanelSimulation extends React.Component {
     console.log('script update');
     DATACORE.DeleteAllInstances(); // Delete all instances otherwise previously created instances will stick around
     const source = TRANSPILER.ScriptifyText(data.script);
-    const bundle = TRANSPILER.CompileScript(source);
+    const bundle = TRANSPILER.CompileBlueprint(source);
     const bp = TRANSPILER.RegisterBlueprint(bundle);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
   }

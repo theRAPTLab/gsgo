@@ -203,7 +203,7 @@ class ScriptTokenizer {
 
     /*
       algorithm: this returns whole lines in a block array
-      The way tokenize is called by Transpiler.CompileScript() is
+      The way tokenize is called by Transpiler.CompileBlueprint() is
       to use one main pass to capture all the outer level blocks into
       an array, so the ScriptUnit is [ term, term, [ line, line ] ]
       Each term of the script unit is "Expanded", and if the unit is
