@@ -1,6 +1,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import clsx from 'clsx';
+import PlayButton from './PlayButton';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -10,7 +11,8 @@ class PanelPlayback extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Sim Control'
+      title: 'Sim Control',
+      isRunning: false
     };
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
@@ -21,11 +23,17 @@ class PanelPlayback extends React.Component {
   }
 
   OnStartClick() {
-    UR.RaiseMessage('NET:HACK_SIM_START');
+    const { isRunning } = this.state;
+    if (isRunning) {
+      UR.RaiseMessage('NET:HACK_SIM_STOP');
+    } else {
+      UR.RaiseMessage('NET:HACK_SIM_START');
+    }
+    this.setState({ isRunning: !isRunning });
   }
 
   render() {
-    const { title } = this.state;
+    const { title, isRunning } = this.state;
     const { id, isActive, classes } = this.props;
 
     const onClick = () => {
@@ -44,20 +52,16 @@ class PanelPlayback extends React.Component {
           }}
         >
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className={classes.button}
-              onClick={this.OnResetClick}
-            >
-              RESET
-            </button>
-            <button
-              type="button"
-              className={classes.button}
-              onClick={this.OnStartClick}
-            >
-              START
-            </button>
+            {!isRunning && (
+              <button
+                type="button"
+                className={classes.button}
+                onClick={this.OnResetClick}
+              >
+                RESET
+              </button>
+            )}
+            <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
             {/* <div className={clsx(classes.button, classes.buttonDisabled)}>
               PAUSE
             </div>

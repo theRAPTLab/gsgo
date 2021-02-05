@@ -42,10 +42,12 @@ class PanelSimulation extends React.Component {
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
+    this.DoSimStop = this.DoSimStop.bind(this);
 
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.RegisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
   componentDidMount() {
     // initialize renderer
@@ -68,6 +70,7 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
+    SIM.Reset();
   }
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
@@ -79,6 +82,10 @@ class PanelSimulation extends React.Component {
 
   DoSimStart() {
     SIM.Start();
+  }
+
+  DoSimStop() {
+    SIM.End();
   }
 
   render() {
