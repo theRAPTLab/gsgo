@@ -61,20 +61,21 @@ function Update(frame) {
   /** HANDLE GLOBAL FILTER TESTS ***************************************************/
   /// run all the filtering tests and store results for use by Agents during
   /// their subsequent SIM/AGENTS_UPDATE phase
-  GLOBAL_INTERACTIONS = [...GetAllInteractions()];
-  GLOBAL_INTERACTIONS.forEach((entry, testKey) => {
+  GLOBAL_INTERACTIONS = [...GetAllInteractions()]; // [ [k,v], [k,v] ]
+  GLOBAL_INTERACTIONS.forEach(entry => {
     const { singleTestArgs, pairTestArgs } = entry;
-    // SINGLE AGENT TEST FILTER
     if (singleTestArgs !== undefined) {
+      // SINGLE AGENT TEST FILTER
       const [A, testName, ...args] = singleTestArgs;
       const [passed] = SingleAgentFilter(A, testName, ...args);
       entry.passed = passed;
-    }
-    // PAIRED AGENT TEST FILTER
-    if (pairTestArgs !== undefined) {
-      const [A, testName, B, ...args] = entry;
+    } else if (pairTestArgs !== undefined) {
+      // PAIR AGENT TEST FILTER
+      const [A, testName, B, ...args] = pairTestArgs;
       const [passed] = PairAgentFilter(A, testName, B, ...args);
       entry.passed = passed;
+    } else {
+      throw Error('malformed global_interaction entry');
     }
   });
   /** HANDLE SUBSCRIPTION EVENTS ***************************************************/

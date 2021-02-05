@@ -55,8 +55,8 @@ export function GetInteractionResults(key: string): Array<any> {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetAllInteractions() {
-  const conditions = INTERACTION_CACHE.entries();
-  return conditions;
+  const conditions = INTERACTION_CACHE.values();
+  return conditions; // iterator of entries
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllInteractions() {

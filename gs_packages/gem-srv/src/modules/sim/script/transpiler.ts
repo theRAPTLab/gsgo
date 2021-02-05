@@ -232,6 +232,54 @@ function ScriptToConsole(units: TScriptUnit[]) {
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given a text with multiline blocks, emit an array of strings corresponding
+ *  to regular strings and [[ ]] demarked lines. The output nodes are processed
+ *  back into a single line with m_StitchifyBlocks(). Returns an array of
+ *  string arrays.
+ */
+function ScriptifyText(text: string): TScriptUnit[] {
+  const sourceStrings = text.split('\n');
+  const script = scriptifier.tokenize(sourceStrings);
+  return script;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given an array of ScriptUnits, produce a source text */
+function TextifyScript(units: TScriptUnit[]): string {
+  const lines = [];
+  units.forEach((unit, index) => {
+    if (DBG) console.log(index, unit);
+    if (unit[0] === '_comment') unit[0] = '//';
+    const toks = [];
+    unit.forEach((tok, uidx) => {
+      if (uidx === 0) toks.push(tok);
+      else toks.push(m_Tokenify(tok));
+    });
+    lines.push(`${toks.join(' ')}`);
+  });
+  return lines.join('\n');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Compile a source text and return compiled TMethod. Similar to
+ *  CompileBlueprint but does not handle directives or build a bundle. Used
+ *  for generating code snippets on-the-fly.
+ */
+function CompileText(text: string = '') {
+  const units = ScriptifyText(text);
+  const program = [];
+
+  if (!Array.isArray(units))
+    throw Error(`CompileText can't compile '${typeof units}'`);
+  if (units.length === 0) return [];
+  let objcode;
+  units.forEach((unit, idx) => {
+    if (unit[0] === '#') return;
+    objcode = r_CompileUnit(unit, idx);
+    objcode = m_CheckForError(objcode, unit);
+    program.push(...objcode);
+  });
+  return program;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Main ScriptUnit Compiler */
 function CompileBlueprint(units: TScriptUnit[]) {
   let objcode; // holder for compiled code
@@ -322,40 +370,12 @@ function RenderScript(units: TScriptUnit[]): any[] {
   if (DBG) console.groupEnd();
   return sourceJSX;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given a text with multiline blocks, emit an array of strings corresponding
- *  to regular strings and [[ ]] demarked lines. The output nodes are processed
- *  back into a single line with m_StitchifyBlocks(). Returns an array of
- *  string arrays.
- */
-function ScriptifyText(text: string): TScriptUnit[] {
-  const sourceStrings = text.split('\n');
-  const script = scriptifier.tokenize(sourceStrings);
-  return script;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given an array of ScriptUnits, produce a source text */
-function TextifyScript(units: TScriptUnit[]): string {
-  const lines = [];
-  units.forEach((unit, index) => {
-    if (DBG) console.log(index, unit);
-    if (unit[0] === '_comment') unit[0] = '//';
-    const toks = [];
-    unit.forEach((tok, uidx) => {
-      if (uidx === 0) toks.push(tok);
-      else toks.push(m_Tokenify(tok));
-    });
-    lines.push(`${toks.join(' ')}`);
-  });
-  return lines.join('\n');
-}
 
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   // ensure that bundle has at least a define and name
   if (bdl.type === EBundleType.INIT) {
-    console.warn(...PR('RegisterBlueprint skipping empty bundle:', bdl));
     return undefined;
   }
   if (bdl.define && bdl.type === EBundleType.BLUEPRINT) {
@@ -404,6 +424,7 @@ const txt = DATACORE.GetDefaultText();
 export {
   ScriptToConsole, // print-out text rep of units
   ScriptifyText, // text w/ newlines => TScriptUnit[]
+  CompileText, // text w/ newlines => TSMCProgram
   CompileBlueprint, // combine scriptunits through m_CompileBundle
   TextifyScript, // TScriptUnit[] => produce source text from units
   RenderScript // TScriptUnit[] => JSX for wizards

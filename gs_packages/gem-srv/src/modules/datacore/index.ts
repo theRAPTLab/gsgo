@@ -40,7 +40,7 @@ addProp foodLevel Number 50
 featureCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 setProp skin 'bunny.json'
-featureCall Movement jitterPos -5 5
+featCall Movement jitterPos -5 5
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT

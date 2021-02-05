@@ -154,7 +154,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /** Return a feature with feature method for execution */
   getFeatMethod(fName: string, mName: string): any {
     const feat = this.getFeature(fName);
-    const featMethod = feat.method[mName];
+    const featMethod = feat[mName];
     if (!featMethod)
       throw Error(`method '${mName}' not in Feature '${feat.name}'`);
     return [feat, featMethod];
@@ -295,9 +295,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
   exec_smc(program: TSMCProgram, ctx, ...args) {
-    const state = new SM_State([], ctx);
+    const state = new SM_State([...args], ctx);
     program.forEach((op, index) => {
-      if (typeof op !== 'function') console.warn(op, index);
+      if (typeof op !== 'function')
+        console.warn(`op is not a function, got ${typeof op}`, op);
       op(this, state);
     });
     // return the stack as a result, though
@@ -315,12 +316,13 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /** Execute a named program stored in global program store */
   exec_program(progName: string, context, ...args) {
     const prog = GetProgram(progName) || GetTest(progName);
-    if (prog !== undefined) return this.exec(prog, args, context);
+    if (prog !== undefined) return this.exec(prog, context, ...args);
     throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Parse an abstract syntax tree through Evaluate */
-  exec_ast(ast: TExpressionAST, ctx) {
+  exec_ast(ast: TExpressionAST, ctx, ...args) {
+    ctx.args = args;
     return Evaluate(ast, ctx);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

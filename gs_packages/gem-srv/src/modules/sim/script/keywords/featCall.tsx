@@ -46,9 +46,7 @@ export class featCall extends Keyword {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
-        const [f, m] = agent.getFeatMethod(ref[0], mName);
-        if (m === undefined) throw Error(`agent missing feature '${ref[0]}'`);
-        return (m as Function).call(this, agent, ...prms);
+        return agent.callFeatMethod(ref[0], mName, ...prms);
       };
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
@@ -56,10 +54,7 @@ export class featCall extends Keyword {
       callRef = (agent: IAgent, context: any, mName: string, ...prms) => {
         const c = context[ref[0]];
         if (c === undefined) throw Error(`context missing '${ref[0]}'`);
-        const [f, m] = c.getFeatMethod(ref[1], mName);
-        if (m === undefined)
-          throw Error(`feat '${ref[1]}' missing method '${mName}'`);
-        return (m as Function).call(this, c, ...prms);
+        return agent.callFeatMethod(ref[0], mName, ...prms);
       };
     } else {
       console.warn('error parse ref', ref);
