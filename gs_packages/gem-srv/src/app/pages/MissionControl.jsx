@@ -57,15 +57,19 @@ class MissionControl extends React.Component {
       panelConfiguration: 'sim',
       message: '',
       modelId: '',
-      model: {}
+      model: {},
+      instances: []
     };
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
+    this.OnInstanceClick = this.OnInstanceClick.bind(this);
     this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.RegisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
   }
 
   componentDidMount() {
@@ -84,7 +88,11 @@ class MissionControl extends React.Component {
     console.log(e);
   }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnregisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+  }
 
   LoadModel(modelId) {
     // HACK
@@ -97,6 +105,15 @@ class MissionControl extends React.Component {
 
   OnSimDataUpdate(data) {
     this.setState({ model: data.model });
+  }
+
+  OnInstanceUpdate(data) {
+    console.error('got instances', data);
+    this.setState({ instances: data });
+  }
+
+  OnInstanceClick(instanceName) {
+    console.log('clicked on', instanceName);
   }
 
   OnBackToModelClick() {
@@ -122,7 +139,7 @@ class MissionControl extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message, modelId, model } = this.state;
+    const { panelConfiguration, message, modelId, model, instances } = this.state;
     const { classes } = this.props;
 
     const agents =
@@ -168,7 +185,7 @@ class MissionControl extends React.Component {
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <PanelPlayback id="playback" />
-            <PanelInstances id="instances" />
+            <PanelInstances id="instances" instances={instances} />
           </div>
         </div>
         <div

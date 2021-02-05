@@ -10,29 +10,13 @@ class PanelInstances extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Instances',
-      instances: []
+      title: 'Instances'
     };
-    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
-    this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    UR.RegisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
-  }
-
-  componentWillUnmount() {
-    UR.UnregisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
-  }
-
-  OnInstanceUpdate(data) {
-    this.setState({ instances: data });
-  }
-
-  OnInstanceClick(instanceName) {
-    console.log('clicked on', instanceName);
   }
 
   render() {
-    const { title, instances } = this.state;
-    const { id, isActive, classes } = this.props;
+    const { title } = this.state;
+    const { id, isActive, instances, classes } = this.props;
 
     const typedInstances = {};
     instances.forEach(i => {
