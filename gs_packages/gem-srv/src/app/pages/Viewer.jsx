@@ -44,14 +44,18 @@ class Viewer extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'sim'
+      panelConfiguration: 'sim',
+      modelId: ''
     };
+    this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP VIEWER';
+    let modelId = window.location.search.substring(1);
+    this.setState({ modelId });
+    document.title = `GEMSTEP VIEWER ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
   }
@@ -65,7 +69,8 @@ class Viewer extends React.Component {
   }
 
   OnModelClick() {
-    window.location = '/app/model';
+    const { modelId } = this.state;
+    window.location = `/app/model?${modelId}`;
   }
 
   OnPanelClick(id) {
@@ -80,7 +85,7 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration } = this.state;
+    const { panelConfiguration, modelId } = this.state;
     const { classes } = this.props;
     return (
       <div
@@ -95,7 +100,8 @@ class Viewer extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>VIEWER</span> UGLY DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>VIEWER {modelId}</span> UGLY
+            DEVELOPER MODE
           </div>
           <button type="button" onClick={this.OnModelClick}>
             Back to MODEL

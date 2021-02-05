@@ -28,9 +28,6 @@ UR.SystemHook(
       (async () => {
         let map = await GLOBAL.LoadAssetsSync('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
-        console.log(...PR('Waiting for user input'));
-        // SIM.Start();
-        // if (DBG) console.log(...PR('SIMULATION STARTED'));
         resolve();
       })();
     })
@@ -50,7 +47,6 @@ class PanelSimulation extends React.Component {
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
   }
-
   componentDidMount() {
     // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
@@ -67,7 +63,6 @@ class PanelSimulation extends React.Component {
   }
 
   DoSimReset() {
-    console.log('sim reset');
     DATACORE.DeleteAllTests();
     // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
     DATACORE.DeleteAllScriptEvents();
@@ -75,9 +70,8 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllInstances();
   }
 
+  // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
-    console.log('script update');
-    DATACORE.DeleteAllInstances(); // Delete all instances otherwise previously created instances will stick around
     const source = TRANSPILER.ScriptifyText(data.script);
     const bundle = TRANSPILER.CompileBlueprint(source);
     const bp = TRANSPILER.RegisterBlueprint(bundle);
@@ -85,7 +79,6 @@ class PanelSimulation extends React.Component {
   }
 
   DoSimStart() {
-    console.log('sim start');
     SIM.Start();
   }
 

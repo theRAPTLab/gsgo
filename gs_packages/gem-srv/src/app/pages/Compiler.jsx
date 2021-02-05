@@ -24,7 +24,7 @@ import 'lib/vendor/prism.css';
 // import 'modules/tests/test-expr-parser'; // test parser evaluation
 // import 'modules/tests/test-script-parser'; // test script parser
 // import 'modules/tests/test-compiler'; // test compiler
-// import 'modules/tests/test-script-runtime'; // test runtime keyword functions
+import 'modules/tests/test-script-runtime'; // test runtime keyword functions
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-styles';
@@ -180,7 +180,7 @@ class Compiler extends React.Component {
     this.userCompileText();
     // save the blueprint to default and reprogram sim
     DATACORE.DeleteAllTests();
-    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
+    // DATACORE.DeleteAllGlobalConditions(); // deprecated in script-xp
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();

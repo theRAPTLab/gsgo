@@ -58,7 +58,7 @@ export class prop extends Keyword {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.x' or 'Bee.x'
       deref = (agent: IAgent, context: any) => {
-        const c = context[ref[0]];
+        const c = ref[0] === 'agent' ? agent : context[ref[0]];
         if (c === undefined) throw Error(`context missing '${ref[0]}' key`);
         const p = c.getProp(ref[1]);
         if (p === undefined) throw Error(`missing prop '${ref[1]}'`);

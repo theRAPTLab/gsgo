@@ -17,8 +17,8 @@ export const INSTANCES: TInstanceMap = new Map();
 let INSTANCE_COUNTER = 100;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given the creation parameters, make a new instance. The init program sets
- *  the default values (and any other startup code if needed)
+/** Given the creation parameters, make a new instance. The init program sets
+ *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
   const { blueprint, init, name = '<none>' } = instanceDef;
@@ -48,6 +48,10 @@ export function DeleteAllInstances() {
   INSTANCES.clear();
   INSTANCE_COUNTER = 100;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteBlueprintInstances(blueprint) {
+  INSTANCES.set(blueprint, []);
+}
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,6 +74,39 @@ export function SaveAgent(agent) {
   return agent;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ *  REVIEW: We are referencing `agent.meta.name` in order to look up
+ *  the GAgent.id.  Is there a better way to look up the agent id
+ *  using the information in `instancedef`?
+ *
+ *  To delete the agent, we need to remove it from: AGENT and AGENT_DICT.
+ *
+ *  1. AGENT map values are a second map of `agents`.
+ *     `agents` key is a GAgent.id, which is based on an sm-object counter.
+ *     The problem is that `instancedef` does not include the GAgent.id,
+ *     `instancedef` does have the unique instance name, e.g. `Fish4519`
+ *     as do the GAgent objects in the `agents` map saved as
+ *     `agent.meta.name`.
+ *  2. AGENT_DICT values are also a second map of `agents`
+ *     with the same GAgent.id as the key.
+ */
+export function DeleteAgent(instancedef) {
+  const { blueprint, name } = instancedef;
+  if (!AGENTS.has(blueprint)) {
+    console.error(...PR(`blueprint ${blueprint} not found`));
+    return;
+  }
+  const agents = AGENTS.get(blueprint);
+  const agentsArray = Array.from(agents.values()); // convert for finding
+  let agent = agentsArray.find(a => a.meta.name === name);
+  if (agent === undefined) {
+    console.error(...PR(`agent ${name} not found`));
+    return;
+  }
+  agents.delete(agent.id);
+  AGENT_DICT.delete(agent.id);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return agent set by type */
 export function GetAgentsByType(bpName) {
   const agentSet = AGENTS.get(bpName);
@@ -84,6 +121,14 @@ export function GetAgentById(id): IAgent {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
   console.warn(...PR(`agent ${id} not in AGENT_DICT`));
+  return undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAgentByName(name): IAgent {
+  const agents = GetAllAgents();
+  const agent = agents.find(a => a.meta.name === name);
+  if (agent) return agent;
+  console.warn(...PR(`agent ${name} not found`));
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

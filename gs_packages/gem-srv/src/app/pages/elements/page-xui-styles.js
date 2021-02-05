@@ -171,13 +171,13 @@ const useStylesHOC = theme => ({
   },
   inspectorLabel: {
     display: 'inline-block',
-    color: CLR_LABEL,
+    color: CLR_DATA,
     // width: '80px',
     textAlign: 'right'
   },
   inspectorData: {
     display: 'inline-block',
-    color: CLR_DATA
+    color: CLR_ACTIVE // more visible
     // width: '100px'
   },
   outline: {
@@ -194,10 +194,11 @@ const useStylesHOC = theme => ({
   instanceListItem: {
     padding: '5px',
     margin: '5px',
+    lineHeight: '0.8em',
     borderRadius: '5px',
     color: CLR_DATA,
     backgroundColor: CLR_OBJECT_CLICKABLE,
-    cursor: 'default'
+    cursor: 'pointer'
   },
   instanceListItemInactive: {
     color: CLR_LABEL,

@@ -23,12 +23,13 @@ class PanelSelect extends React.Component {
   onClick(url) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    window.location = `/app/${url}`;
+    let { modelId } = this.props;
+    window.location = `/app/${url}?${modelId}`;
   }
 
   render() {
     const { title, options } = this.state;
-    const { id, isActive, onClick, classes } = this.props;
+    const { id, modelId, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

@@ -37,17 +37,16 @@ const DEFAULT_TEXT = `
 useFeature Costume
 useFeature Movement
 addProp foodLevel Number 50
-featureCall Costume setCostume 'bunny.json' 1
+featCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
-setProp skin 'bunny.json'
+prop agent.skin setTo 'bunny.json'
 featCall Movement jitterPos -5 5
 # PROGRAM THINK
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
-  exec {{ agent.prop.foodLevel.sub(1) }}
-  propCall foodLevel sub 1
-  dbgOut 'foodLevel' {{ agent.prop.foodLevel.value }}
+  prop agent.foodLevel sub 2
+  dbgOut 'foodLevel' agent.foodLevel
 ]]
 # PROGRAM CONDITION
 when Bee sometest [[

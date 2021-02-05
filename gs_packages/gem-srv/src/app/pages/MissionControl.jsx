@@ -22,13 +22,15 @@ import * as DATACORE from 'modules/datacore';
 import PanelMap from './components/PanelMap';
 import PanelSimulation from './components/PanelSimulation';
 import PanelPlayback from './components/PanelPlayback';
-import PanelInspector from './components/PanelInspector';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
+
+// HACK DATA LOADING
+import SimData from '../data/sim-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -41,9 +43,9 @@ const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('map', '50% auto 100px'); // columns
-PANEL_CONFIG.set('blueprints', '50% auto 100px'); // columns
-PANEL_CONFIG.set('sim', '15% auto 100px'); // columns
+PANEL_CONFIG.set('map', '50% auto 150px'); // columns
+PANEL_CONFIG.set('blueprints', '50% auto 150px'); // columns
+PANEL_CONFIG.set('sim', '15% auto 150px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,41 +55,62 @@ class MissionControl extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'sim',
-      message: ''
+      message: '',
+      modelId: '',
+      model: {}
     };
-    this.OnHomeClick = this.OnModelClick.bind(this);
+    this.LoadModel = this.LoadModel.bind(this);
+    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP MISSION CONTROL';
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
+    this.setState({ modelId });
+    document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemConfig({ autoRun: true });
+
+    // Load Model Data
+    this.LoadModel(modelId);
   }
 
   componentDidCatch(e) {
     console.log(e);
   }
 
-  componentWillUnmount() {
-    console.log('componentWillUnmount');
+  componentWillUnmount() {}
+
+  LoadModel(modelId) {
+    // HACK
+    // This requests model data from sim-data.
+    // sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
+    // REVIEW: Should the response come only to MissionControl and not be
+    //         widely broadcast?
+    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
   }
 
-  OnModelClick() {
-    window.location = '/app/model';
+  OnSimDataUpdate(data) {
+    this.setState({ model: data.model });
+  }
+
+  OnBackToModelClick() {
+    const { modelId } = this.state;
+    window.location = `/app/model?model=${modelId}`;
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
     this.setState({
       panelConfiguration: id
     });
   }
 
   DoScriptUpdate(data) {
-    console.log('update data', data);
     const firstline = data.script.match(/.*/)[0];
     this.setState(state => ({
       message: `${state.message}Received script ${firstline}\n`
@@ -99,17 +122,13 @@ class MissionControl extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message } = this.state;
+    const { panelConfiguration, message, modelId, model } = this.state;
     const { classes } = this.props;
 
-    /// This should be loaded from the db
-    /// Hacked in for now
-    const agents = [
-      { id: 'fish', label: 'Fish' },
-      { id: 'algae', label: 'Algae' },
-      { id: 'lightbeam', label: 'Lightbeam' },
-      { id: 'poop', label: 'Poop', editor: 'UADDR01: Ben' }
-    ];
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
 
     return (
       <div
@@ -124,10 +143,10 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL</span>{' '}
+            <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
-          <button type="button" onClick={this.OnModelClick}>
+          <button type="button" onClick={this.OnBackToModelClick}>
             Back to MODEL
           </button>
         </div>
@@ -142,7 +161,6 @@ class MissionControl extends React.Component {
             onClick={this.OnPanelClick}
           />
           <PanelBlueprints id="blueprints" agents={agents} />
-          <PanelInstances id="instances" />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
@@ -150,7 +168,7 @@ class MissionControl extends React.Component {
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <PanelPlayback id="playback" />
-            <PanelInspector isActive />
+            <PanelInstances id="instances" />
           </div>
         </div>
         <div

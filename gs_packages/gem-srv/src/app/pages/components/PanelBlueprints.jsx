@@ -1,4 +1,7 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import * as DATACORE from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -9,22 +12,40 @@ class PanelBlueprints extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Sim Blueprints (Fake Data)'
+      title: 'Blueprints',
+      modelId: ''
     };
+    this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
+  }
+
+  componentDidMount() {
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
+    this.setState({ modelId });
+  }
+
+  OnBlueprintClick(scriptId) {
+    const { modelId } = this.state;
+    window.location = `/app/scripteditor?model=${modelId}&script=${scriptId}`;
   }
 
   render() {
     const { title } = this.state;
     const { id, isActive, agents, classes } = this.props;
 
-    const onClick = () => {
+    const onPanelClick = () => {
       // To be implemented
       console.log('Show instance');
     };
 
     return (
       // Placeholder for now
-      <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
+      <PanelChrome
+        id={id}
+        title={title}
+        isActive={isActive}
+        onClick={onPanelClick}
+      >
         <div // Panel Layout
           style={{
             display: 'flex',
@@ -32,7 +53,6 @@ class PanelBlueprints extends React.Component {
             fontSize: '12px'
           }}
         >
-          <span className={classes.instructions}>Click to Show/Hide</span>
           <div>
             <div
               style={{
@@ -48,6 +68,7 @@ class PanelBlueprints extends React.Component {
                     height: '20px'
                   }}
                   className={classes.instanceListItem}
+                  onClick={() => this.OnBlueprintClick(a.id)}
                   key={a.label}
                 >
                   {a.label}

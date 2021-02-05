@@ -12,6 +12,7 @@ import { TScriptUnit, TOpcode, TInstance, EBundleType } from 'lib/t-script.d';
 import {
   GetKeyword,
   SaveAgent,
+  DeleteAgent,
   SaveBlueprint,
   GetBlueprint,
   AddToBundle,
@@ -81,12 +82,6 @@ function r_CompileBlock(units: TScriptUnit[]): TOpcode[] {
     objcode.push(...code);
   });
   return objcode;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Convert a string with a period in it */
-function r_dotify(arg: string) {
-  console.log('dotify', arg);
-  return { arg };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function r_DecodeArg(arg) {
@@ -380,6 +375,8 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
   }
   if (bdl.define && bdl.type === EBundleType.BLUEPRINT) {
     if (DBG) console.group(...PR(`SAVING BLUEPRINT for ${bdl.name}`));
+    // First deregister the blueprint if it exists
+    // RemoveGlobalCondition(bdl.name); // deprecatd in script-xp
     SaveBlueprint(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
@@ -411,6 +408,10 @@ function MakeAgent(instanceDef: TInstance) {
   }
   throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RemoveAgent(instanceDef: TInstance) {
+  DeleteAgent(instanceDef);
+}
 
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -432,5 +433,6 @@ export {
 /// for blueprint operations
 export {
   MakeAgent, // BlueprintName => Agent
+  RemoveAgent,
   RegisterBlueprint // TScriptUnit[] => ISM_Bundle
 };

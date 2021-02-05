@@ -20,6 +20,9 @@ import PanelMessage from './components/PanelMessage';
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
+// HACK DATA LOADING
+import SimData from '../data/sim-data';
+
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
@@ -35,162 +38,6 @@ PANEL_CONFIG.set('select', '50% auto 0px'); // columns
 PANEL_CONFIG.set('script', '50% auto 0px'); // columns
 PANEL_CONFIG.set('sim', '50% auto 0px'); // columns
 
-/// DUMMY DATA ////////////////////////////////////////////////////////////////
-///
-/// This dummy code is passed to PanelScript when an agent is selected.
-///
-/// This should be loaded from the db
-/// Hacked in for now
-const agents = [
-  { id: 'bunny', label: 'Bunny' },
-  { id: 'fish', label: 'Fish' },
-  { id: 'algae', label: 'Algae' },
-  { id: 'lightbeam', label: 'Lightbeam' },
-  { id: 'poop', label: 'Poop', editor: 'UADDR01: Ben' }
-];
-const scripts = [
-  {
-    id: 'bunny',
-    script: `# BLUEPRINT Bunny
-// Start full of energy, red and wandering
-// Energy level decreases over time, grow hungry and jittery
-// When Energy level is at 0, die and stop moving
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'bunny.json' 0
-featureCall Movement setMovementType 'wander'
-addProp energyLevel Number 10
-# PROGRAM UPDATE
-setProp skin 'bunny.json'
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  // energyLevel goes down every second
-  propCall energyLevel sub 1
-  dbgOut 'energyLevel' {{ agent.getProp('energyLevel').value }}
-  // hungry -- get jittery
-  ifExpr {{ agent.getProp('energyLevel').value < 5 }} [[
-    featureCall Costume setPose 1
-    featureCall Movement setMovementType 'jitter'
-  ]]
-  // dead -- stop moving
-  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
-    featureCall Costume setPose 2
-    featureCall Movement setMovementType 'static'
-  ]]
-]]
-# PROGRAM CONDITION
-when Bunny sometest [[
-  // dbgOut SingleTest
-]]
-when Bunny touches Bunny [[
-  // dbgOut PairTest
-]]`
-  },
-  {
-    id: 'fish',
-    script: `# BLUEPRINT Fish
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'fish.json' 0
-featureCall Movement setMovementType 'wander' 1
-// featureCall Movement setDirection 90
-addProp energyLevel Number 20
-# PROGRAM UPDATE
-setProp skin 'fish.json'
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  // foodLevel goes down every second
-  propCall energyLevel sub 1
-  // dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
-  // sated
-  ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
-    featureCall Costume setPose 0
-    featureCall Movement setMovementType 'wander'
-  ]]
-  // hungry
-  ifExpr {{ agent.getProp('energyLevel').value < 15 }} [[
-    featureCall Costume setPose 1
-    featureCall Movement setMovementType 'wander'
-  ]]
-  // dead
-  ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
-    featureCall Costume setPose 2
-    featureCall Movement setMovementType 'float'
-  ]]
-]]
-# PROGRAM CONDITION
-when Fish touches Algae [[
-  // dbgOut 'Touch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-  // dbgContext
-
-  setProp energyLevel {{ Fish.prop.energyLevel.value + 1 }}
-
-  // IDEAL CALL
-  // When fish touches algae, food level goes up
-  // propCall foodLevel inc 1
-  // kill Algae
-]]
-`
-  },
-  {
-    id: 'algae',
-    script: `# BLUEPRINT Algae
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'algae.json' 0
-// featureCall Movement setRandomStart
-featureCall Movement setMovementType 'wander' 0.2
-addProp energyLevel Number 50
-# PROGRAM UPDATE
-setProp skin 'algae.json'
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  // energyLevel goes down every second
-  propCall energyLevel sub 1
-  dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
-]]
-# PROGRAM CONDITION
-// when Algae touches Lightbeam [[
-//   // When algae touches lightbeam, energyLevel goes up
-//   propCall energyLevel inc 1
-//   ifExpr {{ agent.getProp('energyLevel').value > 5 }} [[
-//     dbgOut 'spawn new algae'
-//     propCall energyLevel setTo 1
-//   ]]
-// ]]
-`
-  },
-  {
-    id: 'lightbeam',
-    script: `# BLUEPRINT Lightbeam
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'lightbeam.json' 0
-setProp x -300
-setProp y -300
-# PROGRAM UPDATE
-setProp skin 'lightbeam.json'
-featureCall Movement jitterPos -5 5
-// featureCall Movement setController user
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-# PROGRAM CONDITION
-`
-  },
-  { id: 'poop', script: '// nada' }
-];
-
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
@@ -199,11 +46,16 @@ class ScriptEditor extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'select',
+      modelId: '',
+      model: {},
+      scriptId: '',
       message: '',
       messageIsError: false
     };
     // bind
-    this.OnModelClick = this.OnModelClick.bind(this);
+    this.LoadModel = this.LoadModel.bind(this);
+    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectAgent = this.OnSelectAgent.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
@@ -211,12 +63,20 @@ class ScriptEditor extends React.Component {
     // Sent by PanelSelectAgent
     UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
     UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP SCRIPT EDITOR';
     // start URSYS
     UR.SystemConfig({ autoRun: true });
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
+    const scriptId = params.get('script');
+    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
+    this.setState({ modelId, scriptId }, () => {
+      // Load Model Data
+      this.LoadModel(modelId);
+    });
   }
 
   componentDidCatch(e) {
@@ -224,29 +84,54 @@ class ScriptEditor extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
     UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
     UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
   }
 
-  OnModelClick() {
-    window.location = '/app/model';
+  LoadModel(modelId) {
+    // HACK
+    // This requests model data from sim-data.
+    // sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
+    // which is handled by OnSimDataUpdate, below
+    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
+  }
+
+  OnSimDataUpdate(data) {
+    const { scriptId } = this.state;
+    this.setState({ model: data.model }, () => {
+      if (scriptId) {
+        this.OnSelectAgent(scriptId);
+      }
+    });
+  }
+
+  OnBackToModelClick() {
+    const { modelId } = this.state;
+    window.location = `/app/model?model=${modelId}`;
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
     if (id === 'sim') return; // don't do anything if user clicks on sim panel
     this.setState({
       panelConfiguration: id
     });
   }
 
-  OnSelectAgent(id) {
-    console.log('OnSelectAgent', id);
+  OnSelectAgent(scriptId) {
+    const { model } = this.state;
+    if (model === undefined || model.scripts === undefined) {
+      console.error(
+        'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
+        model,
+        model.scripts
+      );
+      return; // no scripts defined
+    }
+    const agent = model.scripts.find(s => s.id === scriptId);
+    const script = agent && agent.script ? agent.script : {};
     this.setState({
       panelConfiguration: 'script',
-      // HACK: This should be retrieving the script from the server
-      script: scripts.find(s => s.id === id).script
+      script
     });
   }
 
@@ -262,8 +147,20 @@ class ScriptEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, script, message, messageIsError } = this.state;
+    const {
+      panelConfiguration,
+      modelId,
+      model,
+      scriptId,
+      script,
+      message,
+      messageIsError
+    } = this.state;
     const { classes } = this.props;
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
     return (
       <div
         className={classes.root}
@@ -277,10 +174,10 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR</span> UGLY DEVELOPER
-            MODE
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
+            DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnModelClick}>
+          <button type="button" onClick={this.OnBackToModelClick}>
             Back to MODEL
           </button>
         </div>

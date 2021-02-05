@@ -55,7 +55,7 @@ export class featProp extends Keyword {
       /** EXPLICIT FEATURE PROP REF ******************************************/
       /// e.g. 'agent.Costume.pose' or 'Bee.Costume.pose'
       deref = (agent: IAgent, context: any) => {
-        const c = context[ref[0]];
+        const c = ref[0] === 'agent' ? agent : context[ref[0]];
         if (c === undefined) throw Error(`context missing key '${ref[0]}'`);
         const p = c.getFeatProp(ref[1], ref[2]);
         if (p === undefined) throw Error(`context missing '${ref[1]}.${ref[2]}'`);

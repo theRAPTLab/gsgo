@@ -1,6 +1,10 @@
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+
+// HACK DATA LOADING
+import SimData from '../../data/sim-data';
 
 import PanelChrome from './PanelChrome';
 
@@ -9,15 +13,27 @@ class PanelSelectSimulation extends React.Component {
     super();
     this.state = {
       title: 'Select Simulation',
-      models: [
-        // Dummy Data
-        { id: 'HASH1', label: 'Aquatic Ecosystems' },
-        { id: 'HASH2', label: 'Decomposition' },
-        { id: 'HASH3', label: 'Particles' },
-        { id: 'HASH4', label: 'Blue Group Aquatic' }
-      ]
+      models: []
+      // models: [
+      //   // Dummy Data
+      //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
+      //   { id: 'decomposition', label: 'Decomposition' },
+      //   { id: 'particles', label: 'Particles' },
+      //   { id: 'aquatic-blue', label: 'Blue Group Aquatic' }
+      // ]
     };
     this.onClick = this.onClick.bind(this);
+    this.OnModelsUpdate = this.OnModelsUpdate.bind(this);
+
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODELS', this.OnModelsUpdate);
+  }
+
+  componentDidMount() {
+    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODELS');
+  }
+
+  componentWillUnmount() {
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   onClick(modelId) {
@@ -25,7 +41,11 @@ class PanelSelectSimulation extends React.Component {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     const { onClick } = this.props;
-    onClick('select'); // Tell Login panel to show Panelselect
+    onClick(modelId); // Tell Login panel to show Panelselect
+  }
+
+  OnModelsUpdate(data) {
+    this.setState({ models: data.models });
   }
 
   render() {
@@ -45,11 +65,7 @@ class PanelSelectSimulation extends React.Component {
             }}
           >
             <div className={classes.instructions}>
-              <p>
-                Select a simulation to work on:
-                <br />
-                (FAKE DATA -- Click any button to view the model)
-              </p>
+              <p>Select a simulation to work on:</p>
             </div>
             {models.map(m => (
               <button
