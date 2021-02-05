@@ -1,21 +1,34 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import clsx from 'clsx';
-import PlayButton from './PlayButton';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
+import PlayButton from './PlayButton';
 
 class PanelPlayback extends React.Component {
   constructor() {
     super();
     this.state = {
       title: 'Sim Control',
+      isDisabled: true,
       isRunning: false
     };
+    this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
+
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
+  }
+
+  componentWillUnmount() {
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
+  }
+
+  DoModelUpdate(data) {
+    // If no model has been set, then disable (hide) all the run/playback buttons
+    this.setState({ isDisabled: data.model === undefined });
   }
 
   OnResetClick() {
@@ -33,7 +46,7 @@ class PanelPlayback extends React.Component {
   }
 
   render() {
-    const { title, isRunning } = this.state;
+    const { title, isDisabled, isRunning } = this.state;
     const { id, isActive, classes } = this.props;
 
     const onClick = () => {
@@ -52,16 +65,21 @@ class PanelPlayback extends React.Component {
           }}
         >
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            {!isRunning && (
-              <button
-                type="button"
-                className={classes.button}
-                onClick={this.OnResetClick}
-              >
-                RESET
-              </button>
+            {isDisabled ? (
+              <p>No model loaded</p>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={classes.button}
+                  onClick={this.OnResetClick}
+                >
+                  RESET
+                </button>
+                <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
+              </>
             )}
-            <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
+
             {/* <div className={clsx(classes.button, classes.buttonDisabled)}>
               PAUSE
             </div>

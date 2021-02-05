@@ -43,7 +43,7 @@ function TestScriptToProgram(source = SCRIPT) {
       ...PR('KEYGEN.CompileTemplate() - create blueprint smc program arrays')
     );
   // get the output
-  const output = TRANSPILER.CompileScript(source);
+  const output = TRANSPILER.CompileBlueprint(source);
   //  print the output
   output.define.forEach(
     statement => DBG && console.log('definition:', statement)
