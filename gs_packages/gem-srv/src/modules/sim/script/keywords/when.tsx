@@ -36,6 +36,7 @@ export class when extends Keyword {
     const prog = [];
     if (unit.length < 4 || unit.length > 5) {
       prog.push(this.errLine('when: invalid number of args', idx));
+      console.warn('error parsing when units <4 >5', unit);
     } else if (unit.length === 4) {
       /** SINGLE AGENT WHEN TEST *********************************************/
       const [kw, A, testName, ...args] = unit;

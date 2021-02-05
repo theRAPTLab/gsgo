@@ -457,10 +457,11 @@ I was originally going to write a runtime test module, but there are complicatio
 
 CURRENT PROGRESS:
 
-* [ ] confirmed that when clauses are running 
-* [ ] try to get dbgOut to print expressions (added to todo)
-* [ ] can I swizzle the expression context?
-* [ ] write a simple keyword tester
+* [x] confirmed that when clauses are running 
+* [x] try to get dbgOut to print expressions (added to todo)
+* [x] can I swizzle the expression context (no)
+* [x] write a simple keyword tester
+* [x] finish EvalArg to handle objrefs
 
 ### Making a simple keyword tester
 
@@ -474,11 +475,9 @@ Execute program with context
 Check results
 ```
 
-To broadly support objrefs, we also need to swizzle agents in `expr-evaluator`, and we no longer allow implicit agent references
+To broadly support objrefs, we also need to swizzle agents in `expr-evaluator`, and we no longer allow implicit agent references.
 
-
-
-
+* **TODO** fix `when` to be able to pass parameters to tests
 
 ---
 
