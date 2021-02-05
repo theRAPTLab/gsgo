@@ -7,7 +7,11 @@
 import UR from '@gemstep/ursys/client';
 import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
-import { GetAllAgents, DefineInstance, GetAllInstances } from 'modules/datacore';
+import {
+  GetAllAgents,
+  DefineInstance,
+  GetAllInstances
+} from 'modules/datacore/dc-agents';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TRANSPILER from 'script/transpiler';

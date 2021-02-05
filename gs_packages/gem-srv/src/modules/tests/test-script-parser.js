@@ -28,7 +28,7 @@ function TokenizeTest(text) {
   const script = tokenizer.tokenize(lines);
   console.groupEnd();
   console.group(...PR('ScriptUnits Decompiled from Nodes'));
-  TRANSPILER.PrintSourceToConsole(script);
+  TRANSPILER.ScriptToConsole(script);
   console.groupEnd();
 }
 

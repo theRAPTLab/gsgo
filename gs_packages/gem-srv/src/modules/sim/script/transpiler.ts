@@ -37,17 +37,6 @@ const DBG = false;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PrintScriptToText(units: TScriptUnit[]): string {
-  let out = '\n';
-  units.forEach(unit => {
-    unit.forEach(item => {
-      out += `${item} `;
-    });
-    out = `${out.trim()}\n`;
-  });
-  return out;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by TextifyScript(), which turns ScriptUnits back into text source */
 function m_Tokenify(item: any): any {
   const type = typeof item;
@@ -209,7 +198,7 @@ function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to dump node format of script */
-function PrintSourceToConsole(units: TScriptUnit[]) {
+function ScriptToConsole(units: TScriptUnit[]) {
   let str = [];
   units.forEach(arr => {
     str = [];
@@ -297,7 +286,6 @@ function CompileBlueprint(units: TScriptUnit[]) {
   }); // units.forEach
   if (bdl.name === undefined)
     throw Error('CompileBlueprint: Missing #BLUEPRINT directive');
-  console.log(...PR('hey', bdl));
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
@@ -375,7 +363,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     SaveBlueprint(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
-    console.log('registering blueprint', bdl);
+    console.log(`registering blueprint '${bdl.name}'`);
     // initialize global programs in the bundle
     const { condition, event } = bdl.getPrograms();
     //  AddGlobalCondition(bdl.name, condition); // deprecated in script-xp branch
@@ -414,11 +402,9 @@ const txt = DATACORE.GetDefaultText();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Script is TScriptUnit[], the base representation of gemscript
 export {
-  // compile to script units
+  ScriptToConsole, // print-out text rep of units
   ScriptifyText, // text w/ newlines => TScriptUnit[]
-  PrintSourceToConsole, // debug routine
   CompileBlueprint, // combine scriptunits through m_CompileBundle
-  // convert script units to other form
   TextifyScript, // TScriptUnit[] => produce source text from units
   RenderScript // TScriptUnit[] => JSX for wizards
 };

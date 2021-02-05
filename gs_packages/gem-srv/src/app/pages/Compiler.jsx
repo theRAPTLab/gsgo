@@ -24,6 +24,7 @@ import 'lib/vendor/prism.css';
 // import 'modules/tests/test-expr-parser'; // test parser evaluation
 // import 'modules/tests/test-script-parser'; // test script parser
 // import 'modules/tests/test-compiler'; // test compiler
+// import 'modules/tests/test-script-runtime'; // test runtime keyword functions
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-styles';
@@ -169,7 +170,7 @@ class Compiler extends React.Component {
     const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
     console.groupCollapsed('parsed text');
-    TRANSPILER.PrintSourceToConsole(source);
+    TRANSPILER.ScriptToConsole(source);
     console.groupEnd();
     this.setState({ source: JSON.stringify(source) });
   }

@@ -439,7 +439,7 @@ return [
   * use `when A testName B [[ consq  ]]` for PairAgentTest
   * the consequent can refer to { A } and { A, B } in expressions and also use the new dotted object references`prop`, `featProp`, and `featCall` keywords 
 
-### To Test New Interactions
+## FEB 05 FRI - To Test New Interactions
 
 ```
 when A touches B 10 [[
@@ -448,7 +448,33 @@ when A touches B 10 [[
 ]]
 ```
 
+I was originally going to write a runtime test module, but there are complications on how to actually test the WHEN conditions which require two agents. 
 
+* **TODO** - need to do dotted reference expansion for values of properties?
+* **TODO** - PROGRAM UPDATE for when clauses? WHat happens to PROGRAM CONDITION?
+* **TODO** - make sure can pass parameters to tests
+* **TODO** - see if I can simplify prop, method access for Features, Props, FeatureProps
+
+CURRENT PROGRESS:
+
+* [ ] confirmed that when clauses are running 
+* [ ] try to get dbgOut to print expressions (added to todo)
+* [ ] can I swizzle the expression context?
+* [ ] write a simple keyword tester
+
+### Making a simple keyword tester
+
+In `test-script-runtime` ...
+
+```
+Create testing blueprints
+Instantiate agents
+Compile a line of text
+Execute program with context
+Check results
+```
+
+To broadly support objrefs, we also need to swizzle agents in `expr-evaluator`, and we no longer allow implicit agent references
 
 
 
