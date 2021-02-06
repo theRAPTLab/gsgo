@@ -12,7 +12,7 @@ import {
   IKeyword,
   IKeywordCtor
 } from 'lib/t-script.d';
-import { GetFunction } from './dc-programs';
+import { GetFunction } from './dc-named-methods';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

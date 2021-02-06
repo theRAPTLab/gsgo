@@ -64,7 +64,7 @@ class PanelSimulation extends React.Component {
 
   DoSimReset() {
     DATACORE.DeleteAllTests();
-    DATACORE.DeleteAllGlobalConditions();
+    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
@@ -73,7 +73,8 @@ class PanelSimulation extends React.Component {
   // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
     const source = TRANSPILER.ScriptifyText(data.script);
-    const bp = TRANSPILER.RegisterBlueprint(source); // map set overwrites any existing blueprint
+    const bundle = TRANSPILER.CompileBlueprint(source);
+    const bp = TRANSPILER.RegisterBlueprint(bundle);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
   }
 

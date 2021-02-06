@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { ScriptifyText, CompileScript } from 'script/transpiler';
+import { ScriptifyText, CompileBlueprint } from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,7 +23,7 @@ function TestCompiler(index?: number) {
     if (!singleTest || index === idx) {
       const [desc, text] = test;
       const script = ScriptifyText(text);
-      const bundle = CompileScript(script);
+      const bundle = CompileBlueprint(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
       else console.groupCollapsed('test', lead, '-', desc);
