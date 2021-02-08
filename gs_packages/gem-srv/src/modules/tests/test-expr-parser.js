@@ -7,16 +7,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import ScriptTokenizer from 'lib/class-gscript-tokenizer';
 import ExpressionParser from 'lib/class-expr-parser';
 import parse from 'jsep';
 import { Evaluate } from 'lib/expr-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('PARSER TEST', 'TagDkRed');
-const tokenizer = new ScriptTokenizer({ show: true });
-const gobbler = new ExpressionParser();
+const PR = UR.PrefixUtil('EXPRESSION PARSE TEST', 'TagDkRed');
+const exprGobbler = new ExpressionParser();
 
 /// COMPARE EXPRESSION PARSERS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,7 +51,7 @@ function GobblerTest() {
     let out = `${String(idx).padStart(2, '0')}`;
     out += `: ${expr} == ${answer}`;
     const ast1 = parse(expr);
-    const ast2 = gobbler.parse(expr);
+    const ast2 = exprGobbler.parse(expr);
     const res1 = Evaluate(ast1, ctx);
     const res2 = Evaluate(ast2, ctx);
     const pass1 = res1 === answer;
@@ -69,22 +67,6 @@ function GobblerTest() {
   });
 }
 
-/// TOKENIZER TRIALS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TokenizeTest(text) {
-  const lines = text.split('\n');
-  const nodes = tokenizer.tokenize(lines);
-  console.log(...PR('TokenizeTest Lines\n', lines));
-  console.log(...PR('TokenizeTest Nodes\n', nodes));
-}
-
 /// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TokenizeTest(
-  `
-  prop x
-  propCall y setTo 1
-  {{12+3/agent.pi}}
-`.trim()
-);
 GobblerTest();

@@ -9,11 +9,14 @@
 /// STABLE KEYWORDS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export * from './addProp';
-export * from './setProp';
-export * from './propCall';
+export * from './prop';
+export * from './featProp';
+export * from './featCall';
+export * from './setProp'; // obsolete
+export * from './propCall'; // obsolete
 export * from './useFeature';
-export * from './featureProp';
-export * from './featureCall';
+export * from './featureProp'; // obsolete
+export * from './featureCall'; // obsolete
 export * from './featureHook';
 export * from './addTest'; // add a named test
 export * from './exec';

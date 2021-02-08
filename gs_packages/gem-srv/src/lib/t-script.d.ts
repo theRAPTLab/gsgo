@@ -44,8 +44,9 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   queueExecMessage: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ctx?: object, ...args) => any;
-  featExec: (fName: string, mName: string, ...args) => any;
-  featProp: (fName: string, pName: string) => IScopeable;
+  getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
+  callFeatMethod: (fName: string, mName: string, ...args) => any;
+  getFeatProp: (fName: string, pName: string) => IScopeable;
   // shortcut properties
   skin: string;
   x: number;
@@ -91,7 +92,8 @@ export interface IMessage {
   channel?: string;
   message?: string;
   context?: {}; // context object for expressions, programs
-  actions?: TSMCProgram[];
+  actions?: TMethod[];
+  conseq?: TMethod;
   inputs?: any;
 }
 
@@ -101,7 +103,7 @@ export interface IMessage {
  *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
  *  renderable JSX for a UI.
  */
-export type TScriptUnit = [string?, ...any[]];
+export type TScriptUnit = [...any[]];
 export type TScript = TScriptUnit[]; // not generally used\
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////
@@ -136,6 +138,7 @@ export interface ISMCBundle extends ISMCPrograms {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles */
 export enum EBundleType {
+  INIT = 'init', // freshly created or empty bundle (set to another type)
   PROG = 'program', // a program type
   COND = 'condition', // test, conseq, alter program,
   BLUEPRINT = 'blueprint', // blueprint for initializing agents
