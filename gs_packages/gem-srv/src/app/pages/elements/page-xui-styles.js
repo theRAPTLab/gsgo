@@ -51,6 +51,7 @@ const CLR_PANEL_BG = BaseColorShift(0, 0.1); // 'rgba(0,256,0,0.1)'; // gradient
 const CLR_PANEL_BG_END = BaseColorShift(0, 0.05); // 'rgba(0,256,0,0.05)'; // gradient end
 const CLR_OBJECT = BaseColorShift(0, 0.04); // 'rgba(0,256,0,0.04)'; // a filled object that sits on top of a panel
 const CLR_OBJECT_CLICKABLE = BaseColorShift(0, 0.1); // 'rgba(0,256,0,0.1)'; // a more prominent filled object that sits on top of a panel
+const CLR_OBJECT_HIGHLIGHT = BaseColorShift(0, 0.25); // an eye catchign button
 const CLR_BORDER_BACK = BaseColorShift(128, 0.15); // 'rgba(128,256,128,0.15)'; // backmost panel border
 const CLR_BORDER = BaseColorShift(128, 0.3); // 'rgba(128,256,128,0.3)';
 const CLR_BORDER_ACTIVE = BaseColorShift(0, 0.6); // 'rgba(0,256,0,0.6)';
@@ -213,6 +214,21 @@ const useStylesHOC = theme => ({
     borderRadius: '5px',
     color: CLR_DATA,
     backgroundColor: CLR_OBJECT_CLICKABLE,
+    borderTopColor: BaseColorShift(0, 0.2),
+    borderLeftColor: BaseColorShift(0, 0.2),
+    borderRightColor: BaseColorShift(-240, 0.2),
+    borderBottomColor: BaseColorShift(-240, 0.2),
+    cursor: 'pointer'
+  },
+  buttonOn: {
+    fontSize: '18px',
+    padding: '5px',
+    margin: '5px',
+    minHeight: '50px',
+    minWidth: '50px',
+    borderRadius: '5px',
+    color: CLR_HI,
+    backgroundColor: CLR_OBJECT_HIGHLIGHT,
     borderTopColor: BaseColorShift(0, 0.2),
     borderLeftColor: BaseColorShift(0, 0.2),
     borderRightColor: BaseColorShift(-240, 0.2),
