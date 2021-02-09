@@ -170,5 +170,31 @@ useFeature Costume
 featureCall Costume setCostume 'poop.json' 0
 `
     }
+  ],
+  instances: [
+    {
+      name: 'fish01',
+      blueprint: 'Fish',
+      init: `prop agent.x setTo -220
+prop agent.y setTo -220`
+    },
+    {
+      name: 'algae01',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo -220
+prop agent.y setTo -220`
+    },
+    {
+      name: 'algae02',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo -150
+prop agent.y setTo -120`
+    },
+    {
+      name: 'algae03',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo -120
+prop agent.y setTo -90`
+    }
   ]
 };

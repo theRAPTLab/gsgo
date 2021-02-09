@@ -37,18 +37,22 @@ class PanelSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Simulation'
+      title: 'Simulation',
+      model: {}
     };
+    this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
 
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.RegisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
+
   componentDidMount() {
     // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
@@ -59,9 +63,15 @@ class PanelSimulation extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnregisterMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.UnregisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+  }
+
+  DoModelUpdate(data) {
+    this.setState({ model: data.model });
   }
 
   DoSimReset() {
@@ -75,10 +85,26 @@ class PanelSimulation extends React.Component {
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
+    const { model } = this.state;
+    if (!model) {
+      console.error(...PR('No model selected.'));
+      return;
+    }
     const source = TRANSPILER.ScriptifyText(data.script);
     const bundle = TRANSPILER.CompileBlueprint(source);
     const bp = TRANSPILER.RegisterBlueprint(bundle);
-    UR.RaiseMessage('AGENT_PROGRAM', bp.name);
+
+    // Read Instances Def
+    const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
+    if (instancesSpec.length < 1) {
+      // If the map has not been defined yet, then generate a single instance
+      instancesSpec.push({ name: `${bp.name}01`, init: '' });
+    }
+
+    UR.RaiseMessage('AGENTS_PROGRAM', {
+      blueprint: bp.name,
+      instancesSpec
+    });
   }
 
   DoSimStart() {
@@ -90,7 +116,7 @@ class PanelSimulation extends React.Component {
   }
 
   render() {
-    const { title } = this.state;
+    const { title, model } = this.state;
     const { id, isActive, onClick, classes } = this.props;
 
     return (
