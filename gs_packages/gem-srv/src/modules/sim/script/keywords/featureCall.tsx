@@ -28,7 +28,7 @@ export class featureCall extends Keyword {
     const progout = [];
     progout.push((agent: IAgent, state: IState) => {
       // invoke the feature on the agent
-      agent.featExec(featName, methodName, ...args);
+      agent.callFeatMethod(featName, methodName, ...args);
     });
     return progout;
   }

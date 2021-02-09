@@ -36,6 +36,7 @@ export function GetAllInstances() {
   return instances;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the instance definitions that are blueprint */
 export function GetInstancesType(blueprint: string) {
   if (typeof blueprint !== 'string')
     throw Error(`bad blueprint typeof ${typeof blueprint}`);
