@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
-import Inspector from './Inspector';
+import InstanceInspector from './InstanceInspector';
 
 class PanelInstances extends React.Component {
   constructor() {
@@ -65,7 +65,7 @@ class PanelInstances extends React.Component {
                 key={a.agent}
               >
                 {a.instances.map(i => (
-                  <Inspector agentName={i.name} key={i.name} />
+                  <InstanceInspector agentName={i.name} key={i.name} />
                 ))}
               </div>
             ))}

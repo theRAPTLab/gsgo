@@ -10,14 +10,14 @@ const SIZE_MIN = 'min'; // name only
 const SIZE_MED = 'med'; // x and y (first line)
 const SIZE_MAX = 'max'; // all
 
-class Inspector extends React.Component {
+class InstanceInspector extends React.Component {
   constructor() {
     super();
     this.state = {
       title: 'INSPECTOR',
       agent: {},
       data: undefined,
-      size: SIZE_MED,
+      size: SIZE_MAX,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
@@ -133,4 +133,4 @@ class Inspector extends React.Component {
   }
 }
 
-export default withStyles(useStylesHOC)(Inspector);
+export default withStyles(useStylesHOC)(InstanceInspector);
