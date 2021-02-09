@@ -18,18 +18,20 @@ class PanelInstances extends React.Component {
     const { title } = this.state;
     const { id, isActive, instances, classes } = this.props;
 
-    const typedInstances = {};
+    const instancesByType = {};
+    if (!instances) return <></>;
+
     instances.forEach(i => {
-      if (typedInstances[i.blueprint] === undefined) {
-        typedInstances[i.blueprint] = [i];
+      if (instancesByType[i.blueprint] === undefined) {
+        instancesByType[i.blueprint] = [i];
       } else {
-        typedInstances[i.blueprint].push(i);
+        instancesByType[i.blueprint].push(i);
       }
     });
-    const instanceArray = Object.keys(typedInstances).map(key => {
+    const instanceArray = Object.keys(instancesByType).map(key => {
       return {
         agent: key,
-        instances: [...typedInstances[key]]
+        instances: [...instancesByType[key]]
       };
     });
 
