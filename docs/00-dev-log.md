@@ -98,32 +98,28 @@ There's a **bug** with featPropPush() where ref[0] for `featPropPush agent.Costu
 There were several parse and logic bugs after running all the compiler tests. Seems to work now
 
 * [x] featPropPush works?
-
 * [x] featProp works?
-
 * [x] prop works/
-
 * [x] dbgStack works?
-
 * [x] propPush works
-
 * [x] propPop works?
-
 * [x] featPropPop works?
-
 * [x] dbgOut works?
-
   * [x] crash on objref
   * [x] no works on expression
   * [x] added agent context to passed contet
-
 * [x] setCostume is wrapping things in multiple [ ] 
-
   * [x] state.pop was returning an array for a single item pop
 
-  
+### Stack Operations
 
-  
+* [x] propPush, featPropPush - uses objrefs only, not expressions
+* [x] propPop, featPropPop - uses objrefs only, not expressions
+* [x] state.pop() fixed to return default top value, not an array of one value
+* [ ] dbgOut - can it still handle expressions?
+* [ ] prop - can it handle expression assignments?
+* [ ] prop - can it handle objref assignments?
+* [ ] dbgOut, dbgStack - better way to implement output limits?
 
 ---
 

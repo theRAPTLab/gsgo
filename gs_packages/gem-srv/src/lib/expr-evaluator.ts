@@ -247,7 +247,6 @@ function DerefFeatureProp(refArg) {
       if (c === undefined) throw Error(`context missing key '${ref[0]}'`);
       const p = c.getFeatProp(ref[1], ref[2]);
       if (p === undefined) throw Error(`context missing '${ref[1]}.${ref[2]}'`);
-      console.log('***', agent.name, p.value);
       return p;
     };
   } else {
