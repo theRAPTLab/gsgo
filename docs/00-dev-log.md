@@ -52,6 +52,41 @@
 
 This sprint is for **adding FakeTrack** input as well as related systems for **device directory and input management**, possibly also **distributed state updates**. 
 
+## FEB 09 TUE - Designing Input Manager
+
+There are two parts to this:
+
+(1) Device Addressibility
+
+* Main Server (on WAN) is for LAPTOPS to connect to a SIMULATION SERVER
+  * simulation server is a beefy laptop
+  * is an URSYS endpoint
+* Connecting devices select the role they want to use (this chooses the app)
+  * First  come, first served for roles
+  * Chromebooks for Script Editor, iPads for annotation/viewing
+* The global simulation state is owned by Simulation Server
+  * global simulation state is distributed to all devices
+
+(2) Input Routing
+
+* Inputs are Devices with Roles and InputType
+
+I started `step/wip-role-mgr` to start blocking out functions. Putting it aside and looking now at adding some script keywords.
+
+### Script Improvements
+
+Switching to this...let's first look at **stack operations**: I think what we want to do is add `push()` and `pop()` to the gvars through `SMObject`
+
+* [ ] The gvar methods don't have access to `state` because they are invoked with parameters, so we need to do a bit of massaging in the keywords themselves
+* [ ] in `p[methodName](...args);` this is invoking the method name with args. Maybe we need a variation called `pushProp`?
+* [ ] Alternatively, maybe we need to make all the gvar methods accessible as methods?
+* [ ] Maybe we can always return the value by shoving the last returned value into an accumulator?
+* [ ] how to write `prop agent.x setTo agent.y` ?
+  * [ ] `pushProp agent.x`, `popProp agent.y`
+  * [x] `push agent.x`, `pop agent.y`
+
+I like `push agent.x` / `prop agent.y` syntax. This means updating stack-ops
+
 ---
 
 **ADDITIONAL THINGS TO IMPLEMENT**

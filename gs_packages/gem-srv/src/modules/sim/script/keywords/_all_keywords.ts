@@ -8,37 +8,44 @@
 
 /// STABLE KEYWORDS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export * from './addProp';
-export * from './prop';
-export * from './featProp';
-export * from './featCall';
-export * from './setProp'; // obsolete
-export * from './propCall'; // obsolete
+/// PROGRAM DEFINE
+export * from './addProp'; // use during DEFINE
 export * from './useFeature';
-export * from './featureProp'; // obsolete
-export * from './featureCall'; // obsolete
-export * from './featureHook';
-export * from './addTest'; // add a named test
-export * from './exec';
+// export * from './addTest'; // add a named test
+/// PROGRAM UPDATE
+export * from './prop'; // objref method args
+export * from './featProp'; // objref method args
+export * from './featCall'; // objref method argss
 
 // utility keywords
-export * from './randomPos'; // randomizes position
+export * from './propPush'; // push prop value onto data stack
+export * from './propPop'; // pop prop value onto data stack
+export * from './featPropPush'; // objref method args
+export * from './featPropPop'; // objref method args
 
-/// UNDER DEVELOPMENT /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// KEYWORDS BELOW THIS LINE ARE SUBJECT TO CHANGE !!!
+// conditional keywords
+export * from './when'; // filtering global condition
+export * from './onEvent'; // script event processing
 
 // system keywords being with _
 export * from './_comment'; // embed comment data
 export * from './_pragma'; // compiler control
 export * from './_blueprint'; // set the name of a blueprint bundle
 
+/// DEVELOPMENT LIMBO /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// KEYWORDS BELOW THIS LINE ARE SUBJECT TO CHANGE !!!
+
+// utility keywords
+export * from './randomPos'; // randomizes position (bad use of Math.random()
+
 // conditional keywords
 export * from './ifExpr'; // run an expression test
-export * from './ifTest'; // run a named test during agent runtime
-export * from './ifProg'; // experimental placeholder
-export * from './when'; // filtering global condition
-export * from './onEvent'; // script event processing
+// export * from './ifTest'; // run a named test during agent runtime
+// export * from './ifProg'; // experimental placeholder
+
+// subprogram keywords
+export * from './exec'; // execute an smc program (?)
 
 // debug keywords (very slow performance)
 export * from './dbgOut';
