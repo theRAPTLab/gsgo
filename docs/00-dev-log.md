@@ -82,10 +82,20 @@ Switching to this...let's first look at **stack operations**: I think what we wa
 * [ ] Alternatively, maybe we need to make all the gvar methods accessible as methods?
 * [ ] Maybe we can always return the value by shoving the last returned value into an accumulator?
 * [ ] how to write `prop agent.x setTo agent.y` ?
-  * [ ] `pushProp agent.x`, `popProp agent.y`
-  * [x] `push agent.x`, `pop agent.y`
+  * [ ] as `propPush` and `propPop`
 
-I like `push agent.x` / `prop agent.y` syntax. This means updating stack-ops
+## FEB 10 WED - bug fixing featPropPush
+
+#### BUG
+
+There's a **bug** with featPropPush() where ref[0] for `featPropPush agent.Costume.costumeName` is undefined instead of 'agent'
+
+* [ ] the `refArg` coming into the compile() is already incorrect. This is produced by TRANSPILER
+* [ ] compile() is called by r_CompileUnit() which calls r_ExpandArgs()
+* [ ] `r_DecodeArg()` is already getting a bogus objref, so it's probably happening in `ScriptifyText()`
+* [ ] so let's check `class-gscript-tokenizer` to **ensure there are no bugs in it**
+
+There were several parse and logic bugs after running all the compiler tests. Seems to work now
 
 ---
 

@@ -96,7 +96,7 @@ function r_DecodeArg(arg) {
     block,
     expr
   } = arg;
-  if (token) {
+  if (token !== undefined) {
     if (token === '#') return '_pragma';
     return token;
   }
@@ -193,10 +193,13 @@ function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TOpcode[] {
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Utility to dump node format of script */
-function ScriptToConsole(units: TScriptUnit[]) {
+function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
   let str = [];
-  units.forEach(arr => {
+  let blkn = 0;
+  let offset = 0;
+  units.forEach((arr, idx) => {
     str = [];
+    blkn = 0;
     arr.forEach(item => {
       const {
         token,
@@ -220,10 +223,24 @@ function ScriptToConsole(units: TScriptUnit[]) {
         str.push('[[');
         block.forEach(line => str.push(line));
         str.push(']]');
+        blkn = 1 + block.length;
       }
       if (expr) str.push(expr);
     });
-    console.log(str.join(' '));
+    const out = str.join(' ');
+    let line = lines[idx + offset];
+    if (line !== undefined) line = line.trim();
+    if (line === undefined) console.log('OK:', out);
+    else if (blkn > 0) {
+      console.log(`%cSKIPPING BLOCK MATCHING:\n${out}`, 'color:#aaa');
+      offset += blkn;
+    } else if (line !== out)
+      console.log(
+        `%cMISMATCH %c SOURCE vs DECOMPILED UNITS\n  source: ${line}\n  decomp: %c${out}`,
+        'color:red',
+        'color:auto',
+        'background-color:yellow'
+      );
   });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -287,12 +304,14 @@ function CompileBlueprint(units: TScriptUnit[]) {
   units.forEach((unit, idx) => {
     // Special Case 1: special properties for first keyword
     if (idx === 0) {
-      const [lead, kw, bpName, bpParent] = unit;
+      // expand arguments from tokens to primitive types
+      const [lead, kw, bpName, bpParent] = r_ExpandArgs(unit);
+      console.log(lead, kw, bpName, bpParent);
       // a. is # (pragma)
-      if (lead.directive === '#' && kw.token.toUpperCase() === 'BLUEPRINT') {
+      if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
         // set global bundle state so it's accessible from keyword
         // compilers via CompilerState()
-        SetBundleName(bdl, bpName.token, bpParent);
+        SetBundleName(bdl, bpName, bpParent);
         return; // done, so exit this loop
       }
       throw Error('# BLUEPRINT directive must be first line in text');
@@ -327,8 +346,9 @@ function CompileBlueprint(units: TScriptUnit[]) {
     // FINALLY push this unit's code into the passed bundle and repeat
     AddToBundle(bdl, objcode); // objcode is pushed into the bundle by this
   }); // units.forEach
-  if (bdl.name === undefined)
+  if (bdl.name === undefined) {
     throw Error('CompileBlueprint: Missing #BLUEPRINT directive');
+  }
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }

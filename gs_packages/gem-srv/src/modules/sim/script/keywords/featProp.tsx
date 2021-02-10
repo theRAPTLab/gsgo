@@ -15,6 +15,7 @@ import React from 'react';
 import { Keyword } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
+import { DerefFeatureProp } from 'lib/expr-evaluator';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,38 +34,7 @@ export class featProp extends Keyword {
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, refArg, methodName, ...args] = unit;
-    // ref is an array of strings that are fields in dot addressing
-    // like agent.x
-    const ref = refArg.objref || [refArg];
-    const len = ref.length;
-
-    // create a function that will be used to dereferences the objref
-    // into an actual call
-    let deref;
-
-    if (len === 2) {
-      /** IMPLICIT FEATURE PROP REF ******************************************/
-      /// e.g. 'Costume.pose' running in agent context
-      deref = (agent: IAgent, context: any) => {
-        const p = agent.getFeatProp(ref[0], ref[1]);
-        if (p === undefined)
-          throw Error(`agent missing featProp '${ref[0]}.${ref[1]}`);
-        return p;
-      };
-    } else if (len === 3) {
-      /** EXPLICIT FEATURE PROP REF ******************************************/
-      /// e.g. 'agent.Costume.pose' or 'Bee.Costume.pose'
-      deref = (agent: IAgent, context: any) => {
-        const c = ref[0] === 'agent' ? agent : context[ref[0]];
-        if (c === undefined) throw Error(`context missing key '${ref[0]}'`);
-        const p = c.getFeatProp(ref[1], ref[2]);
-        if (p === undefined) throw Error(`context missing '${ref[1]}.${ref[2]}'`);
-        return p;
-      };
-    } else {
-      console.warn('error parse ref', ref);
-      deref = () => {};
-    }
+    const deref = DerefFeatureProp(refArg);
     return [
       (agent: IAgent, state: IState) => {
         const p = deref(agent, state.ctx);

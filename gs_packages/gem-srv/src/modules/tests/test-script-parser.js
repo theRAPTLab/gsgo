@@ -25,10 +25,10 @@ function TokenizeTest(text) {
   lines.forEach(line => console.log(line.trim()));
   console.groupEnd();
   console.group(...PR('Tokenizing Lines into Nodes'));
-  const script = tokenizer.tokenize(lines);
+  const script = tokenizer.tokenize(lines, 'show');
   console.groupEnd();
   console.group(...PR('ScriptUnits Decompiled from Nodes'));
-  TRANSPILER.ScriptToConsole(script);
+  TRANSPILER.ScriptToConsole(script, lines);
   console.groupEnd();
 }
 
@@ -41,17 +41,17 @@ TokenizeTest(
   useFeature Costume
   useFeature Movement
   addProp foodLevel Number 50
-  setProp Costume.pose 10
-  featureCall Costume setCostume 'bunny.json' 1
+  featProp Costume.pose setTo 10
+  featCall agent.Costume.setCostume "bunny.json" 1
   # PROGRAM UPDATE
-  setProp skin 'bunny.json'
-  featureCall Movement jitterPos -5 5
+  prop skin setTo "bunny.json"
+  featCall agent.Movement jitterPos -5 5
   # PROGRAM THINK
   // featureHook Costume thinkHook
   # PROGRAM EVENT
   onEvent Tick [[
     exec {{ agent.prop.foodLevel.sub(1) }}
-    propCall foodLevel sub 1
+    prop foodLevel sub 1
     dbgOut 'foodLevel' {{ agent.prop.foodLevel.value }}
   ]]
   # PROGRAM CONDITION
