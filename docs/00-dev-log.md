@@ -97,6 +97,34 @@ There's a **bug** with featPropPush() where ref[0] for `featPropPush agent.Costu
 
 There were several parse and logic bugs after running all the compiler tests. Seems to work now
 
+* [x] featPropPush works?
+
+* [x] featProp works?
+
+* [x] prop works/
+
+* [x] dbgStack works?
+
+* [x] propPush works
+
+* [x] propPop works?
+
+* [x] featPropPop works?
+
+* [x] dbgOut works?
+
+  * [x] crash on objref
+  * [x] no works on expression
+  * [x] added agent context to passed contet
+
+* [x] setCostume is wrapping things in multiple [ ] 
+
+  * [x] state.pop was returning an array for a single item pop
+
+  
+
+  
+
 ---
 
 **ADDITIONAL THINGS TO IMPLEMENT**

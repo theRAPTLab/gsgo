@@ -197,9 +197,8 @@ export interface IState {
   scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
-  pop(): TStackable;
-  popArgs(num: number): TStackable[];
-  pushArgs(...args: number[]): void;
+  pop(num: number): TStackable[]; // return n things as array
+  push(...args: any): void;
   reset(): void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

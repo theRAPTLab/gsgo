@@ -306,7 +306,6 @@ function CompileBlueprint(units: TScriptUnit[]) {
     if (idx === 0) {
       // expand arguments from tokens to primitive types
       const [lead, kw, bpName, bpParent] = r_ExpandArgs(unit);
-      console.log(lead, kw, bpName, bpParent);
       // a. is # (pragma)
       if (lead === '_pragma' && kw.toUpperCase() === 'BLUEPRINT') {
         // set global bundle state so it's accessible from keyword

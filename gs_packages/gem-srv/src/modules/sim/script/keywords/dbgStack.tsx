@@ -25,10 +25,10 @@ export class dbgStack extends Keyword {
     const progout = [];
 
     progout.push((agent, state) => {
-      if (agent.aaa === undefined) agent.aaa = 1;
-      if (agent.aaa !== 0) {
-        --agent.aaa;
-        console.log(`agent '${agent.name}' stack`, state.stack);
+      if (agent.bbb === undefined) agent.bbb = 100;
+      if (agent.bbb !== 0) {
+        --agent.bbb;
+        console.log(`STACK(${agent.name}):`, state.stack);
       }
     });
     return progout;

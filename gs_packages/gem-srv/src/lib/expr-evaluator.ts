@@ -22,7 +22,7 @@ import { TScriptUnit, IAgent, IState } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 const PR = UR.PrefixUtil('EVAL', 'TagRed');
 const binops = {
   '||': (a, b) => a || b,
@@ -162,6 +162,8 @@ function EvalArg(arg: any, context): any {
       const [agent, feature, prop] = objref;
       result = context[agent].getFeatProp(feature, prop).value;
       if (DBG) console.log('objref 3', agent, feature, prop, result);
+    } else {
+      console.log('unhandled objref length', objref);
     }
     return result;
   }
@@ -217,6 +219,7 @@ function DerefProp(refArg) {
   return deref;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** this doesn't work with expressions */
 function DerefFeatureProp(refArg) {
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
@@ -244,6 +247,7 @@ function DerefFeatureProp(refArg) {
       if (c === undefined) throw Error(`context missing key '${ref[0]}'`);
       const p = c.getFeatProp(ref[1], ref[2]);
       if (p === undefined) throw Error(`context missing '${ref[1]}.${ref[2]}'`);
+      console.log('***', agent.name, p.value);
       return p;
     };
   } else {

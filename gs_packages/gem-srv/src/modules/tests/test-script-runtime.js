@@ -44,7 +44,7 @@ function TestKeywords() {
 
   // test keywords
   text = `
-  dbgOut Fish.x Fish.y
+  dbgOut Fish.x Fish.y "simple keyword test"
   `;
 
   // compile text
@@ -64,17 +64,17 @@ function MakeInstances() {
   TRANSPILER.RegisterBlueprint(bundle);
   bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(WorldAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  for (let i = 0; i < 10; i++) {
-    DefineInstance({
-      blueprint: 'Fish',
-      name: `fish${i}`,
-      init: []
-    });
-    DefineInstance({
-      blueprint: 'Pad',
-      name: `pad${i}`,
-      init: []
-    });
+  for (let i = 0; i < 1; i++) {
+    // DefineInstance({
+    //   blueprint: 'Fish',
+    //   name: `fish${i}`,
+    //   init: []
+    // });
+    // DefineInstance({
+    //   blueprint: 'Pad',
+    //   name: `pad${i}`,
+    //   init: []
+    // });
     DefineInstance({
       blueprint: 'Bee',
       name: `bee${i}`,
@@ -136,6 +136,10 @@ featCall Movement jitterPos -5 5
 propPush agent.x
 propPop agent.y
 featPropPush agent.Costume.costumeName
+featProp agent.Costume.costumeName setTo "aa"
+dbgOut agent.Costume.costumeName
+featPropPop agent.Costume.costumeName
+dbgOut agent.Costume.costumeName
 dbgStack
 `;
 
@@ -169,7 +173,7 @@ function TestExec(frameTime) {
 UR.SystemHook('SIM/READY', () => {
   log(...PR('ready'));
   SIM.Start();
-  TestKeywords();
+  // TestKeywords();
 });
 UR.SystemHook('SIM/PROGRAM', () => {
   log(...PR('program'));
