@@ -9,6 +9,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -64,7 +65,6 @@ class MissionControl extends React.Component {
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
-    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
@@ -127,11 +127,6 @@ class MissionControl extends React.Component {
     this.setState({ instances });
   }
 
-  OnBackToModelClick() {
-    const { modelId } = this.state;
-    window.location = `/app/model?model=${modelId}`;
-  }
-
   OnPanelClick(id) {
     this.setState({
       panelConfiguration: id
@@ -174,9 +169,12 @@ class MissionControl extends React.Component {
             <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
-          <button type="button" onClick={this.OnBackToModelClick}>
+          <Link
+            to={{ pathname: `/app/model?model=${modelId}` }}
+            className={classes.navButton}
+          >
             Back to MODEL
-          </button>
+          </Link>
         </div>
         <div
           id="console-left"

@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -59,7 +60,6 @@ class ScriptEditor extends React.Component {
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
-    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectScript = this.OnSelectScript.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
@@ -166,11 +166,6 @@ class ScriptEditor extends React.Component {
     this.setState({ instances });
   }
 
-  OnBackToModelClick() {
-    const { modelId } = this.state;
-    window.location = `/app/model?model=${modelId}`;
-  }
-
   OnPanelClick(id) {
     if (id === 'sim') return; // don't do anything if user clicks on sim panel
     this.setState({
@@ -248,9 +243,12 @@ class ScriptEditor extends React.Component {
             <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnBackToModelClick}>
+          <Link
+            to={{ pathname: `/app/model?model=${modelId}` }}
+            className={classes.navButton}
+          >
             Back to MODEL
-          </button>
+          </Link>
         </div>
         <div id="console-left" className={classes.left}>
           {panelConfiguration === 'select' && (

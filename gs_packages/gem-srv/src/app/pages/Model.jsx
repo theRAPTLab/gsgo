@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -41,7 +42,6 @@ class Model extends React.Component {
     };
 
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    this.OnHomeClick = this.OnHomeClick.bind(this);
   }
 
   componentDidMount() {
@@ -67,10 +67,6 @@ class Model extends React.Component {
     });
   }
 
-  OnHomeClick() {
-    window.location = '/app/login';
-  }
-
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
@@ -94,9 +90,9 @@ class Model extends React.Component {
             <span style={{ fontSize: '32px' }}>GEMSTEP MODEL {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnHomeClick}>
+          <Link to={{ pathname: `/app/login` }} className={classes.navButton}>
             Back to HOME
-          </button>
+          </Link>
         </div>
         <div
           id="console-left"

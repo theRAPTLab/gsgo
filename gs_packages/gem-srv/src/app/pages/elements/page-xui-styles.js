@@ -205,6 +205,22 @@ const useStylesHOC = theme => ({
     color: CLR_LABEL,
     backgroundColor: CLR_OBJECT
   },
+  navButton: {
+    fontSize: '14px',
+    textDecoration: 'none',
+    lineHeight: '30px',
+    padding: '5px 1em',
+    minHeight: '40px',
+    minWidth: '40px',
+    borderRadius: '5px',
+    color: CLR_ACTIVE,
+    backgroundColor: CLR_OBJECT_CLICKABLE,
+    borderTopColor: BaseColorShift(0, 0.2),
+    borderLeftColor: BaseColorShift(0, 0.2),
+    borderRightColor: BaseColorShift(-240, 0.2),
+    borderBottomColor: BaseColorShift(-240, 0.2),
+    cursor: 'pointer'
+  },
   button: {
     fontSize: '18px',
     padding: '5px',
