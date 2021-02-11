@@ -62,14 +62,14 @@ class MissionControl extends React.Component {
     };
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
-    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.RegisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.RegisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
@@ -91,7 +91,7 @@ class MissionControl extends React.Component {
   componentWillUnmount() {
     UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.UnregisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.UnregisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   LoadModel(modelId) {
@@ -107,13 +107,24 @@ class MissionControl extends React.Component {
     this.setState({ model: data.model });
   }
 
-  OnInstanceUpdate(data) {
-    console.error('got instances', data);
-    this.setState({ instances: data });
-  }
-
   OnInstanceClick(instanceName) {
     console.log('clicked on', instanceName);
+  }
+
+  /**
+   * Handler for `NET:INSPECTOR_UPDATE`
+   * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
+   * with agent information for every registered instance
+   * @param {Object} data { agents: [...agents]}
+   *                 wHere `agents` are gagents
+   */
+  OnInspectorUpdate(data) {
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    const instances = data.agents;
+    this.setState({ instances });
   }
 
   OnBackToModelClick() {
