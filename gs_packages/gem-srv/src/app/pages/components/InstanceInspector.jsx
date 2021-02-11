@@ -2,7 +2,6 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { GetAgentByName } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -10,58 +9,34 @@ const SIZE_MIN = 'min'; // name only
 const SIZE_MED = 'med'; // x and y (first line)
 const SIZE_MAX = 'max'; // all
 
+/**
+ * InstanceInspector can display two types of data.
+ *  * GAgent -- e.g. blueprint name is instance.meta.name
+ *  * Instance Spec -- e.g. blueprint name is instance.name
+ *
+ * We support both because
+ * a) before the simulation is run, we only have the instance spec
+ * b) GAgents are only available after the simulation is running
+ * This way the list of instances always shows at least the name.
+ *
+ */
 class InstanceInspector extends React.Component {
   constructor() {
     super();
     this.state = {
       title: 'INSPECTOR',
-      agent: {},
-      data: undefined,
       size: SIZE_MAX,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
     };
-    this.OnDataUpdate = this.OnDataUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    UR.SystemHook('SIM/UI_UPDATE', this.OnDataUpdate);
+    this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
   }
 
-  componentDidMount() {
-    const { agentName } = this.props;
-    const agent = GetAgentByName(agentName);
-    this.setState({ agent });
-    // UR.RegisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
-  }
+  componentDidMount() {}
 
-  componentWillUnmount() {
-    UR.UnregisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
-  }
-
-  OnDataUpdate() {
-    const { agent, size } = this.state;
-    const data = [];
-    // console.log('updating agent', agent);
-    if (!agent || !agent.prop) return;
-    if (size === SIZE_MIN) return;
-    Object.keys(agent.prop).map(p => {
-      // console.log('property', p, '=', agent.prop[p].value);
-      if (size === SIZE_MED && !['x', 'y'].includes(p)) return;
-      let val = agent.prop[p].value;
-      switch (typeof val) {
-        case 'number':
-          val = agent.prop[p].value.toFixed(2);
-          break;
-        case 'string':
-          val = agent.prop[p].value;
-          break;
-        default:
-          return;
-      }
-      data.push({ label: p, value: val });
-    });
-    this.setState({ data });
-  }
+  componentWillUnmount() {}
 
   /**
    * Clicking the instance name will toggle the Inspector object between
@@ -86,20 +61,54 @@ class InstanceInspector extends React.Component {
         newsize = SIZE_MIN;
         break;
     }
-    this.setState({
-      data: [], // clear data
-      size: newsize
-    });
+    this.setState({ size: newsize });
+  }
+
+  /**
+   * Walks down the instance properties array instance.prop
+   * and generates a spec data for rendering the 'label': 'value'
+   * Called by render()
+   */
+  GetInstanceProperties() {
+    const { size } = this.state;
+    const { instance } = this.props;
+    const data = [];
+    if (size === SIZE_MIN) return data; // Don't show any properties if minimized
+    if (instance && instance.prop) {
+      Object.keys(instance.prop).map(p => {
+        // REVIEW: Why does `._value` work, but not `.value`?
+        if (size === SIZE_MED && !['x', 'y'].includes(p)) return;
+        let val = instance.prop[p]._value;
+        switch (typeof val) {
+          case 'number':
+            val = instance.prop[p]._value.toFixed(2);
+            break;
+          case 'string':
+            val = instance.prop[p]._value;
+            break;
+          default:
+            return;
+        }
+        data.push({ label: p, value: val });
+      });
+    }
+    return data;
   }
 
   render() {
-    const { title, agent, data, size, color, colorActive, bgcolor } = this.state;
-    const { id, agentName, isActive, classes } = this.props;
+    const { title, size, color, colorActive, bgcolor } = this.state;
+    const { id, instance, isActive, classes } = this.props;
+    // Is `instance` a `GAgent` or an `instanceSpec`
+    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
+    // -- else instance is an instanceDef so get name via instance.name
+    const agentName =
+      instance && instance.meta ? instance.meta.name : instance.name;
+    const data = this.GetInstanceProperties();
     return (
       <div
         style={{
           backgroundColor: '#000',
-          margin: '0.5em 0 0.5em 0',
+          margin: '0.5em 0 0.5em 0.5em',
           cursor: 'pointer'
         }}
         onClick={this.OnInstanceClick}
