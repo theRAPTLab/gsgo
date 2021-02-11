@@ -19,7 +19,7 @@ import PanelChrome from './PanelChrome';
 const PR = UR.PrefixUtil('PanelSimulation');
 const DBG = false;
 
-const MONITORED_AGENTS = [];
+const MONITORED_INSTANCES = [];
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +43,8 @@ class PanelSimulation extends React.Component {
       title: 'Simulation',
       model: {}
     };
+    this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
+    this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
     this.DoInstanceInspectorUpdate = this.DoInstanceInspectorUpdate.bind(this);
     this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
@@ -52,6 +54,7 @@ class PanelSimulation extends React.Component {
 
     UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
     UR.RegisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.RegisterMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
     UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
@@ -70,6 +73,7 @@ class PanelSimulation extends React.Component {
 
   componentWillUnmount() {
     UR.UnregisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.UnregisterMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
     UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
@@ -80,12 +84,18 @@ class PanelSimulation extends React.Component {
   /**
    * PanelSimulation keeps track of any instances that have been requested
    * for inspector monitoring.
+   * We allow duplicate registrations so that when one device unregisters,
+   * the instance is still considered monitored.
    * @param {Object} data { name: <string> } where name is the agent name.
    */
   DoRegisterInspector(data) {
-    const agentName = data.name;
-    if (MONITORED_AGENTS.indexOf(agentName) === -1)
-      MONITORED_AGENTS.push(agentName);
+    const name = data.name;
+    MONITORED_INSTANCES.push(name);
+  }
+  DoUnRegisterInspector(data) {
+    const name = data.name;
+    const i = MONITORED_INSTANCES.indexOf(name);
+    if (i > -1) MONITORED_INSTANCES.splice(i, 1);
   }
 
   /**
@@ -96,10 +106,9 @@ class PanelSimulation extends React.Component {
   DoInstanceInspectorUpdate() {
     // walk down agents and broadcast results
     const agents = GetAllAgents();
-    const monitoredAgents = agents.filter(a =>
-      MONITORED_AGENTS.includes(a.meta.name)
-    );
-
+    const monitoredAgents = agents.filter(a => {
+      return MONITORED_INSTANCES.includes(a.meta.name);
+    });
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: monitoredAgents });
   }

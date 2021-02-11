@@ -128,22 +128,43 @@ class ScriptEditor extends React.Component {
     });
   }
 
+  UnRegisterInstances() {
+    const { instances, monitoredInstances } = this.state;
+    if (!instances) return;
+    instances.forEach(i => {
+      const name = i.name || i.meta.name; // instance spec || GAgent
+      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
+      monitoredInstances.splice(monitoredInstances.indexOf(name), 1);
+    });
+    this.setState({ monitoredInstances });
+  }
+
   /**
    * Handler for `NET:INSTANCES_UPDATED`
    * NET:INSTANCES_UPDATED is sent by sim-agents.AgentsProgram after instances are created.
    * We use the list of instances created for this blueprint to register
    * the instances for inspector monitoring.
+   * This is also called when other ScriptEditors on the network submit
+   * scripts and trigger NET:INSTANCES_UPDATED.  In that situation,
+   * we only update if the instance isn't already being monitored.
    * @param {Object} data { instances: [...instances]}
    *                       where 'instances' are instanceSpecs: {name, blueprint, init}
    */
   OnInstanceUpdate(data) {
+    const { scriptId, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
-    const { scriptId } = this.state;
     const instances = data.instances.filter(i => {
-      UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name: i.name });
       return i.blueprint === scriptId;
     });
-    this.setState({ instances });
+    // Register the instances for monitoring
+    instances.forEach(i => {
+      if (monitoredInstances.includes(i.name)) return; // skip if already monitored
+      UR.RaiseMessage('NET:INSPECTOR_REGISTER', {
+        name: i.name
+      });
+      monitoredInstances.push(i.name);
+    });
+    this.setState({ instances, monitoredInstances });
   }
 
   /**
@@ -174,6 +195,7 @@ class ScriptEditor extends React.Component {
   }
 
   OnSelectScript(scriptId) {
+    this.UnRegisterInstances();
     const { model, modelId } = this.state;
     if (model === undefined || model.scripts === undefined) {
       console.error(
