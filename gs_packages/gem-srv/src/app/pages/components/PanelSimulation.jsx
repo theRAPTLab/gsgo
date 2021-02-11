@@ -106,11 +106,17 @@ class PanelSimulation extends React.Component {
   DoInstanceInspectorUpdate() {
     // walk down agents and broadcast results
     const agents = GetAllAgents();
-    const monitoredAgents = agents.filter(a => {
-      return MONITORED_INSTANCES.includes(a.meta.name);
+    const inspectorAgents = agents.map(a => {
+      if (MONITORED_INSTANCES.includes(a.meta.name)) return a;
+      // Return an instance spec so InstancePanel will show just tha name
+      return {
+        name: a.meta.name,
+        id: a.id,
+        blueprint: a.blueprint.name
+      };
     });
     // Broadcast data
-    UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: monitoredAgents });
+    UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }
 
   DoModelUpdate(data) {
