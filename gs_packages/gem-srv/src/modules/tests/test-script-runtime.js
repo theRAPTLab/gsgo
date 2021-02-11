@@ -23,6 +23,7 @@ import * as RENDERER from 'modules/render/api-render';
 const PR = UR.PrefixUtil('KWTEST', 'TagDkOrange');
 const TT = [];
 const TESTNUM = undefined; // undefined for all tests
+const log = console.log;
 
 /// FUNCTIONS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,12 +44,12 @@ function TestKeywords() {
 
   // test keywords
   text = `
-  dbgOut Fish.x Fish.y
+  dbgOut Fish.x Fish.y "simple keyword test"
   `;
 
   // compile text
   program = TRANSPILER.CompileText(text);
-  console.log(`program is ${program.length} functions long`);
+  log(`program is ${program.length} functions long`);
   // execute program under our own agent instance
   const ctx = { Fish: fishes[0], Pad: pads[0] };
   World.exec(program, ctx, 'arg', 999); // this executes with agent=World
@@ -63,17 +64,17 @@ function MakeInstances() {
   TRANSPILER.RegisterBlueprint(bundle);
   bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(WorldAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  for (let i = 0; i < 10; i++) {
-    DefineInstance({
-      blueprint: 'Fish',
-      name: `fish${i}`,
-      init: []
-    });
-    DefineInstance({
-      blueprint: 'Pad',
-      name: `pad${i}`,
-      init: []
-    });
+  for (let i = 0; i < 1; i++) {
+    // DefineInstance({
+    //   blueprint: 'Fish',
+    //   name: `fish${i}`,
+    //   init: []
+    // });
+    // DefineInstance({
+    //   blueprint: 'Pad',
+    //   name: `pad${i}`,
+    //   init: []
+    // });
     DefineInstance({
       blueprint: 'Bee',
       name: `bee${i}`,
@@ -81,7 +82,7 @@ function MakeInstances() {
     });
   }
   let instances = GetAllInstances();
-  console.log(...PR('creating', instances.length, 'instances'));
+  log(...PR('creating', instances.length, 'instances'));
   instances.forEach(i => TRANSPILER.MakeAgent(i));
 }
 
@@ -96,7 +97,7 @@ prop x setTo -10
 prop y setTo -10
 featCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
-setProp skin 'bunny.json'
+prop agent.skin setTo 'bunny.json'
 featCall Movement jitterPos -5 5
 when Fish touches Algae [[
   prop Algae.foodEnergy setTo 0
@@ -114,7 +115,7 @@ prop x setTo 10
 prop y setTo 10
 featCall Costume setCostume 'bunny.json' 2
 # PROGRAM UPDATE
-setProp skin 'bunny.json'
+prop agent.skin setTo 'bunny.json'
 featCall Movement jitterPos -5 5
 when Fish touches Algae [[
   prop agent.foodEnergy sub 10
@@ -128,10 +129,18 @@ const BeeAgent = `
 useFeature Costume
 useFeature Movement
 addProp foodLevel Number 50
-featureCall Costume setCostume 'bunny.json' 3
+featCall Costume setCostume 'bunny.json' 3
 # PROGRAM UPDATE
-setProp skin 'bunny.json'
+prop agent.skin setTo 'bunny.json'
 featCall Movement jitterPos -5 5
+propPush agent.x
+propPop agent.y
+featPropPush agent.Costume.costumeName
+featProp agent.Costume.costumeName setTo "aa"
+dbgOut agent.Costume.costumeName
+featPropPop agent.Costume.costumeName
+dbgOut agent.Costume.costumeName
+dbgStack
 `;
 
 const WorldAgent = `
@@ -146,28 +155,28 @@ prop ticker add 1
 /// TEST CODE /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestCondition(frameTime) {
-  // console.log('condition');
+  // log('condition');
 }
 function TestUpdate(frameTime) {
-  // console.log('update');
+  // log('update');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestThink(frameTime) {
-  // console.log('think');
+  // log('think');
 }
 function TestExec(frameTime) {
-  // console.log('exec');
+  // log('exec');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// if this test is imported into Compiler.jsx, SIM doesn't start until
 /// SAVE BLUEPRINT is clicked. Force SIM START here
 UR.SystemHook('SIM/READY', () => {
-  console.log(...PR('ready'));
+  log(...PR('ready'));
   SIM.Start();
-  TestKeywords();
+  // TestKeywords();
 });
 UR.SystemHook('SIM/PROGRAM', () => {
-  console.log(...PR('program'));
+  log(...PR('program'));
   MakeInstances();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

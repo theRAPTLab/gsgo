@@ -33,8 +33,8 @@ const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-const DBG = false;
-const DBG_SHOW = false;
+let DBG = false;
+let DBG_SHOW = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -139,14 +139,13 @@ class ScriptTokenizer {
     const s2 = this.line[this.index] || 'EOL';
     const s3 = this.line.substring(this.index + 1) || '';
     const pr = prompt === undefined ? '' : `${prompt}`;
-    if (DBG)
-      console.log(
-        `%c${s1}%c${s2}%c${s3} %c${pr}`,
-        'color:black;',
-        'background-color:#FFB000',
-        'color:#C0C0C0',
-        'color:white;background-color:#FF0000;padding:2px 0 2px 0'
-      );
+    console.log(
+      `%c${s1}%c${s2}%c${s3} %c${pr}`,
+      'color:black;',
+      'background-color:#FFB000',
+      'color:#C0C0C0',
+      'color:white;background-color:#FF0000;padding:2px 0 2px 0'
+    );
   }
 
   throwError(err) {
@@ -172,13 +171,14 @@ class ScriptTokenizer {
 
   /////////////////////////////////////////////////////////////////////////////
   /** TOKENIZER **************************************************************/
-  tokenize(lines) {
+  tokenize(lines, flag) {
     this.lines = lines; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;
     this.line = '';
     this.index = 0;
     this.length = this.line.length;
+    DBG_SHOW = flag === 'show';
 
     let units = [];
 
@@ -499,8 +499,9 @@ class ScriptTokenizer {
     // allow dotted variables. removed checks for OPAREN_CODE and OBRACK_CODE
     while (ch_i === PERIOD_CODE) {
       this.index++;
+      if (DBG_SHOW) this.showCursor();
       // handle conversion of initial identifier object into string
-      node[0] = node[0].identifier;
+      node[0] = node[0].identifier ? node[0].identifier : node[0];
       if (ch_i === PERIOD_CODE) {
         // dot propertties
         // node += '.';
