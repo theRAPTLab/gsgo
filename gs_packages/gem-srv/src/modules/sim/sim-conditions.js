@@ -45,7 +45,6 @@ RegisterFunction('touches', (a, b, distance = 10) => {
     y: b.prop.y.value,
     energyLevel: a.prop.energyLevel ? a.prop.energyLevel.value : ''
   };
-  UR.RaiseMessage('NET:HACK_INSPECTOR_UPDATE', data);
   if (Math.hypot(xs, ys) < distance) {
     return true; // touches!
   }
