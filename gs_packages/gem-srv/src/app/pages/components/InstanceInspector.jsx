@@ -76,8 +76,8 @@ class InstanceInspector extends React.Component {
         data.push({ label: p, value: val });
       });
     }
-    // add id
-    data.push({ label: 'id', value: instance.id });
+    // show id too -- useful for debugging
+    // data.push({ label: 'id', value: instance.id });
     return data;
   }
 
