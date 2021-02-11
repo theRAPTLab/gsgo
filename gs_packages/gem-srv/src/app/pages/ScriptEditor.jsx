@@ -57,26 +57,32 @@ class ScriptEditor extends React.Component {
     // bind
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
+    this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectScript = this.OnSelectScript.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
-    UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.RegisterMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.RegisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
-    // start URSYS
-    UR.SystemConfig({ autoRun: true });
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
     const scriptId = params.get('script');
     document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
+
+    // start URSYS
+    UR.SystemConfig({ autoRun: true });
+
+    // Load Model Data
     this.setState({ modelId, scriptId }, () => {
-      // Load Model Data
       this.LoadModel(modelId);
     });
   }
@@ -86,18 +92,33 @@ class ScriptEditor extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnregisterMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.UnregisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
+  /**
+   * HACK
+   * This requests model data from sim-data.
+   * sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
+   * which is handled by OnSimDataUpdate, below.
+   *
+   * REVIEW: Should this be done with a callback instead?
+   *
+   * @param {String} modelId
+   */
   LoadModel(modelId) {
-    // HACK
-    // This requests model data from sim-data.
-    // sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
-    // which is handled by OnSimDataUpdate, below
     UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
   }
 
+  /**
+   * Second part of LoadModel
+   * This saves the model data to the local state
+   * and loads the current script if it's been specified
+   * @param {Object} data
+   */
   OnSimDataUpdate(data) {
     const { scriptId } = this.state;
     this.setState({ model: data.model }, () => {
@@ -105,6 +126,44 @@ class ScriptEditor extends React.Component {
         this.OnSelectScript(scriptId);
       }
     });
+  }
+
+  /**
+   * Handler for `NET:INSTANCES_UPDATED`
+   * NET:INSTANCES_UPDATED is sent by sim-agents.AgentsProgram after instances are created.
+   * We use the list of instances created for this blueprint to register
+   * the instances for inspector monitoring.
+   * @param {Object} data { instances: [...instances]}
+   *                       where 'instances' are instanceSpecs: {name, blueprint, init}
+   */
+  OnInstanceUpdate(data) {
+    // Only show instances for the current blueprint
+    const { scriptId } = this.state;
+    const instances = data.instances.filter(i => {
+      UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name: i.name });
+      return i.blueprint === scriptId;
+    });
+    this.setState({ instances });
+  }
+
+  /**
+   * Handler for `NET:INSPECTOR_UPDATE`
+   * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
+   * with agent information for every registered instance
+   * @param {Object} data { agents: [...agents]}
+   *                 wHere `agents` are gagents
+   */
+  OnInspectorUpdate(data) {
+    // Only show instances for the current blueprint
+    const { scriptId } = this.state;
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    const instances = data.agents.filter(i => {
+      return i.blueprint.name === scriptId;
+    });
+    this.setState({ instances });
   }
 
   OnBackToModelClick() {
@@ -164,6 +223,7 @@ class ScriptEditor extends React.Component {
       model,
       scriptId,
       script,
+      instances,
       message,
       messageIsError
     } = this.state;
@@ -218,7 +278,7 @@ class ScriptEditor extends React.Component {
         >
           <div style={{ display: 'flex' }}>
             <PanelMessage message={message} isError={messageIsError} />
-            <PanelInspector isActive />
+            <PanelInstances id="instances" instances={instances} />
           </div>
         </div>
       </div>
