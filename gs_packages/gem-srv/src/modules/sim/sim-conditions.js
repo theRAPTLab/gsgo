@@ -33,7 +33,7 @@ RegisterFunction('dies', a => {
   return false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('touches', (a, b, distance = 10) => {
+RegisterFunction('touches', (a, b, distance = 30) => {
   // not actually a "touch"
   // checks if distance between agents is less than 10
   let xs = a.prop.x.value - b.prop.x.value;
