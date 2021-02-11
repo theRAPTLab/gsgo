@@ -7,6 +7,7 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
+import { GetAllAgents } from 'modules/datacore';
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -17,6 +18,8 @@ import PanelChrome from './PanelChrome';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PanelSimulation');
 const DBG = false;
+
+const MONITORED_AGENTS = [];
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,12 +43,15 @@ class PanelSimulation extends React.Component {
       title: 'Simulation',
       model: {}
     };
+    this.DoInstanceInspectorUpdate = this.DoInstanceInspectorUpdate.bind(this);
     this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
 
+    UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
+    UR.RegisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
@@ -63,11 +69,39 @@ class PanelSimulation extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnregisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnregisterMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.UnregisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+  }
+
+  /**
+   * PanelSimulation keeps track of any instances that have been requested
+   * for inspector monitoring.
+   * @param {Object} data { name: <string> } where name is the agent name.
+   */
+  DoRegisterInspector(data) {
+    const agentName = data.name;
+    if (MONITORED_AGENTS.indexOf(agentName) === -1)
+      MONITORED_AGENTS.push(agentName);
+  }
+
+  /**
+   * On every system loop, we broadcast instance updates
+   * for any instances that have registered for modeling.
+   * We keep this list small to keep from flooding the net with data.
+   */
+  DoInstanceInspectorUpdate() {
+    // walk down agents and broadcast results
+    const agents = GetAllAgents();
+    const monitoredAgents = agents.filter(a =>
+      MONITORED_AGENTS.includes(a.meta.name)
+    );
+
+    // Broadcast data
+    UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: monitoredAgents });
   }
 
   DoModelUpdate(data) {
