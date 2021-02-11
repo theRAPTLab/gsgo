@@ -52,12 +52,15 @@ class ScriptEditor extends React.Component {
       scriptId: '',
       script: '',
       instances: [],
+      monitoredInstances: [],
       message: '',
       messageIsError: false
     };
     // bind
+    this.CleanupComponents = this.CleanupComponents.bind(this);
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
@@ -81,6 +84,8 @@ class ScriptEditor extends React.Component {
     // start URSYS
     UR.SystemConfig({ autoRun: true });
 
+    window.addEventListener('beforeunload', this.CleanupComponents);
+
     // Load Model Data
     this.setState({ modelId, scriptId }, () => {
       this.LoadModel(modelId);
@@ -92,6 +97,12 @@ class ScriptEditor extends React.Component {
   }
 
   componentWillUnmount() {
+    this.CleanupComponents();
+    window.removeEventListener('beforeunload', this.CleanupComponents);
+  }
+
+  CleanupComponents() {
+    this.UnRegisterInstances();
     UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
