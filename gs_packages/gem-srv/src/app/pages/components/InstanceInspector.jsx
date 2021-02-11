@@ -30,38 +30,22 @@ class InstanceInspector extends React.Component {
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
     };
-    this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
+    this.OnInstanceClick = this.OnInstanceClick.bind(this);
   }
 
   componentDidMount() {}
 
   componentWillUnmount() {}
 
-  /**
-   * Clicking the instance name will toggle the Inspector object between
-   * showing:
-   * 1. SIZE_MIN = Name only
-   * 2. SIZE_MED = Name + Position
-   * 3. SIZE_MAX = All properties
-   */
-  OnInstanceClick() {
-    // Toggle between different sizes to show/hide data
-    const { size } = this.state;
-    let newsize;
-    switch (size) {
-      case SIZE_MIN:
-        newsize = SIZE_MED;
-        break;
-      case SIZE_MED:
-        newsize = SIZE_MAX;
-        break;
-      default:
-      case SIZE_MAX:
-        newsize = SIZE_MIN;
-        break;
-    }
-    this.setState({ size: newsize });
+  GetInstanceName() {
+    // Is `instance` a `GAgent` or an `instanceSpec`
+    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
+    // -- else instance is an instanceDef so get name via instance.name
+    const { instance } = this.props;
+    if (!instance) return '';
+    return instance.meta ? instance.meta.name : instance.name;
   }
 
   /**
@@ -92,17 +76,41 @@ class InstanceInspector extends React.Component {
         data.push({ label: p, value: val });
       });
     }
+    // add id
+    data.push({ label: 'id', value: instance.id });
     return data;
+  }
+
+  /**
+   * Clicking the instance name will toggle the Inspector object between
+   * showing:
+   * 1. SIZE_MIN = Name only
+   * 2. SIZE_MED = Name + Position
+   * 3. SIZE_MAX = All properties
+   */
+  OnInstanceClick() {
+    // Toggle between different sizes to show/hide data
+    const { size } = this.state;
+    let newsize;
+    switch (size) {
+      case SIZE_MIN:
+        newsize = SIZE_MED;
+        break;
+      case SIZE_MED:
+        newsize = SIZE_MAX;
+        break;
+      default:
+      case SIZE_MAX:
+        newsize = SIZE_MIN;
+        break;
+    }
+    this.setState({ size: newsize });
   }
 
   render() {
     const { title, size, color, colorActive, bgcolor } = this.state;
     const { id, instance, isActive, classes } = this.props;
-    // Is `instance` a `GAgent` or an `instanceSpec`
-    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
-    // -- else instance is an instanceDef so get name via instance.name
-    const agentName =
-      instance && instance.meta ? instance.meta.name : instance.name;
+    const agentName = this.GetInstanceName();
     const data = this.GetInstanceProperties();
     return (
       <div
