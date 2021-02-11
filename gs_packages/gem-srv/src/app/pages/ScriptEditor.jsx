@@ -14,7 +14,7 @@ import UR from '@gemstep/ursys/client';
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectAgent from './components/PanelSelectAgent';
 import PanelScript from './components/PanelScript';
-import PanelInspector from './components/PanelInspector';
+import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
@@ -49,6 +49,8 @@ class ScriptEditor extends React.Component {
       modelId: '',
       model: {},
       scriptId: '',
+      script: '',
+      instances: [],
       message: '',
       messageIsError: false
     };
@@ -57,7 +59,7 @@ class ScriptEditor extends React.Component {
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    this.OnSelectAgent = this.OnSelectAgent.bind(this);
+    this.OnSelectScript = this.OnSelectScript.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
@@ -100,7 +102,7 @@ class ScriptEditor extends React.Component {
     const { scriptId } = this.state;
     this.setState({ model: data.model }, () => {
       if (scriptId) {
-        this.OnSelectAgent(scriptId);
+        this.OnSelectScript(scriptId);
       }
     });
   }
@@ -117,8 +119,8 @@ class ScriptEditor extends React.Component {
     });
   }
 
-  OnSelectAgent(scriptId) {
-    const { model } = this.state;
+  OnSelectScript(scriptId) {
+    const { model, modelId } = this.state;
     if (model === undefined || model.scripts === undefined) {
       console.error(
         'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
@@ -129,9 +131,18 @@ class ScriptEditor extends React.Component {
     }
     const agent = model.scripts.find(s => s.id === scriptId);
     const script = agent && agent.script ? agent.script : {};
+
+    // add script to URL
+    history.pushState(
+      {},
+      '',
+      `/app/scripteditor?model=${modelId}&script=${scriptId}`
+    );
+
     this.setState({
       panelConfiguration: 'script',
-      script
+      script,
+      scriptId
     });
   }
 
