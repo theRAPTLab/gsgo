@@ -87,7 +87,6 @@ function AgentSelect() {}
  */
 export function AgentsProgram(data) {
   const { blueprint, instancesSpec } = data;
-  console.log('AgentsProgram!', data, blueprint, instancesSpec);
   if (!blueprint) return console.warn(...PR('no blueprint'));
   // original initializer
   // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
@@ -125,9 +124,9 @@ export function AgentsProgram(data) {
     agent.exec(init, { agent });
   });
 
-  // Announce instances so UI can update
+  // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('HACK_INSTANCES_UPDATED', instances);
+  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -169,9 +168,9 @@ export function AgentProgram(blueprint) {
     }
   });
 
-  // Announce instances so UI can update
+  // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('HACK_INSTANCES_UPDATED', instances);
+  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
