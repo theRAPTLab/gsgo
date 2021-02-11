@@ -18,19 +18,18 @@ class PanelInstances extends React.Component {
     const { title } = this.state;
     const { id, isActive, instances, classes } = this.props;
 
-    const instancesByType = {};
     if (!instances) return <></>;
 
+    // Group instances by blueprint
+    const instancesByType = {};
     instances.forEach(i => {
-      if (instancesByType[i.blueprint] === undefined) {
-        instancesByType[i.blueprint] = [i];
-      } else {
-        instancesByType[i.blueprint].push(i);
-      }
+      if (instancesByType[i.blueprint.name] === undefined)
+        instancesByType[i.blueprint.name] = [];
+      instancesByType[i.blueprint.name].push(i);
     });
-    const instanceArray = Object.keys(instancesByType).map(key => {
+    const instancesByBlueprint = Object.keys(instancesByType).map(key => {
       return {
-        agent: key,
+        name: key,
         instances: [...instancesByType[key]]
       };
     });
@@ -57,17 +56,17 @@ class PanelInstances extends React.Component {
         >
           <span className={classes.instructions}>click to show/hide data</span>
           <div>
-            {instanceArray.map(a => (
+            {instancesByBlueprint.map(blueprint => (
               <div
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   flexWrap: 'wrap'
                 }}
-                key={a.agent}
+                key={blueprint.name}
               >
-                {a.instances.map(i => (
-                  <InstanceInspector agentName={i.name} key={i.name} />
+                {blueprint.instances.map(i => (
+                  <InstanceInspector instance={i} key={i.id} />
                 ))}
               </div>
             ))}
