@@ -149,7 +149,7 @@ setProp y -300
       script: `# BLUEPRINT POOP
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'poop.json' 0
+// featCall Costume setCostume 'poop.json' 0
 `
     }
   ],
