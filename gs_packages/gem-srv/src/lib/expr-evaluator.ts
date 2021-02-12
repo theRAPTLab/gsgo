@@ -18,7 +18,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TScriptUnit } from 'lib/t-script.d';
+import { TScriptUnit, IAgent, IState } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,6 +162,8 @@ function EvalArg(arg: any, context): any {
       const [agent, feature, prop] = objref;
       result = context[agent].getFeatProp(feature, prop).value;
       if (DBG) console.log('objref 3', agent, feature, prop, result);
+    } else {
+      console.log('unhandled objref length', objref);
     }
     return result;
   }
@@ -178,6 +180,88 @@ function EvalUnitArgs(unit: TScriptUnit, context: {}): any {
   return unit.map(arg => EvalArg(arg, context));
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** used by keyword compile-time to retreve a prop object dereferencing function
+ *  that will be executed at runtime */
+function DerefProp(refArg) {
+  // ref is an array of strings that are fields in dot addressing
+  // like agent.x
+  const ref = refArg.objref || [refArg];
+  const len = ref.length;
+  // create a function that will be used to dereferences the objref
+  // into an actual call
+  let deref;
+  if (len === 1) {
+    /** IMPLICIT REF *******************************************************/
+    /// e.g. 'x' is assumed to be 'agent.x'
+    deref = (agent: IAgent, context: any) => {
+      const p = agent.getProp(ref[0]);
+      if (p === undefined) {
+        console.log('agent', agent);
+        throw Error(`agent missing prop '${ref[0]}'`);
+      }
+      return p;
+    };
+  } else if (len === 2) {
+    /** EXPLICIT REF *******************************************************/
+    /// e.g. 'agent.x' or 'Bee.x'
+    deref = (agent: IAgent, context: any) => {
+      const c = ref[0] === 'agent' ? agent : context[ref[0]];
+      if (c === undefined) throw Error(`context missing '${ref[0]}' key`);
+      const p = c.getProp(ref[1]);
+      if (p === undefined) throw Error(`missing prop '${ref[1]}'`);
+      return p;
+    };
+  } else {
+    console.warn('error parse ref', ref);
+    deref = () => {};
+  }
+  return deref;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** this doesn't work with expressions */
+function DerefFeatureProp(refArg) {
+  // ref is an array of strings that are fields in dot addressing
+  // like agent.x
+  const ref = refArg.objref || [refArg];
+  const len = ref.length;
+
+  // create a function that will be used to dereferences the objref
+  // into an actual call
+  let deref;
+
+  if (len === 2) {
+    /** IMPLICIT FEATURE PROP REF ******************************************/
+    /// e.g. 'Costume.pose' running in agent context
+    deref = (agent: IAgent, context: any) => {
+      const p = agent.getFeatProp(ref[0], ref[1]);
+      if (p === undefined)
+        throw Error(`agent missing featProp '${ref[0]}.${ref[1]}`);
+      return p;
+    };
+  } else if (len === 3) {
+    /** EXPLICIT FEATURE PROP REF ******************************************/
+    /// e.g. 'agent.Costume.pose' or 'Bee.Costume.pose'
+    deref = (agent: IAgent, context: any) => {
+      const c = ref[0] === 'agent' ? agent : context[ref[0]];
+      if (c === undefined) throw Error(`context missing key '${ref[0]}'`);
+      const p = c.getFeatProp(ref[1], ref[2]);
+      if (p === undefined) throw Error(`context missing '${ref[1]}.${ref[2]}'`);
+      return p;
+    };
+  } else {
+    console.warn('error parse ref', ref);
+    deref = () => {};
+  }
+  return deref;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { evaluate as Evaluate, EvalArg, EvalUnitArgs };
+export {
+  evaluate as Evaluate,
+  EvalArg,
+  EvalUnitArgs,
+  DerefProp,
+  DerefFeatureProp
+};

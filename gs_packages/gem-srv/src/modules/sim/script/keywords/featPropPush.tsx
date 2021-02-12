@@ -1,57 +1,52 @@
+/* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "featureProp" keyword object
+  implementation of keyword "featPropPush" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import { Keyword } from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
+import { DerefFeatureProp } from 'lib/expr-evaluator';
 
-/// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class featureProp extends Keyword {
+export class featPropPush extends Keyword {
   // base properties defined in KeywordDef
-
   constructor() {
-    super('featureProp');
-    this.args = ['featureName:string', 'propName:string', 'value:any'];
+    super('featPropPush');
+    this.args = ['objref', 'optionalMethod', 'optionalArgs'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, featureName, propName, value] = unit;
+    const [kw, refArg, optMethod, ...optArgs] = unit;
+    const deref = DerefFeatureProp(refArg);
     const progout = [];
-    progout.push((agent: IAgent, state: IState) => {
-      const getFeatProp = agent.getFeatProp(featureName, propName);
-      getFeatProp.value = value;
+    progout.push((agent, state) => {
+      const p = deref(agent, state.ctx);
+      if (optMethod === undefined) state.push(p.value);
+      else state.push(p[optMethod](...optArgs));
     });
     return progout;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { featureName, propName, value } = state;
-    return [this.keyword, featureName, propName, value];
+    const { error } = state;
+    return [this.keyword, error];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const featName = unit[1];
-    const propName = unit[2];
-    const value = unit[3];
-    return super.jsx(
-      index,
-      unit,
-      <>
-        Feature {featName}.{propName} set to {value}
-      </>
-    );
+    const [kw, objref, optMethod, ...optArgs] = unit;
+    return super.jsx(index, unit, <>featPropPush: {`'${objref}'`}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(featureProp);
+RegisterKeyword(featPropPush);

@@ -2,6 +2,9 @@
 
 implementation of keyword "randomPos" keyword object
 
+HACK: This is should not use Math.random() for generating random numbers in
+the simulation.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
