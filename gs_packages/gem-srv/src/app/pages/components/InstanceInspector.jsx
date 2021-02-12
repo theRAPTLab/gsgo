@@ -25,7 +25,7 @@ class InstanceInspector extends React.Component {
     super();
     this.state = {
       title: 'INSPECTOR',
-      size: SIZE_MAX,
+      size: SIZE_MIN,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
@@ -35,7 +35,14 @@ class InstanceInspector extends React.Component {
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    const { instance } = this.props;
+    // If the instance has prop data, then it has been registered
+    // and should automatically be set to SIZE_MAX
+    if (instance && instance.prop) {
+      this.setState({ size: SIZE_MAX });
+    }
+  }
 
   componentWillUnmount() {}
 
@@ -61,6 +68,7 @@ class InstanceInspector extends React.Component {
     if (instance && instance.prop) {
       Object.keys(instance.prop).map(p => {
         // REVIEW: Why does `._value` work, but not `.value`?
+        // Skip any prop but x and y when SIZE_MED.
         if (size === SIZE_MED && !['x', 'y'].includes(p)) return;
         let val = instance.prop[p]._value;
         switch (typeof val) {
@@ -91,17 +99,24 @@ class InstanceInspector extends React.Component {
   OnInstanceClick() {
     // Toggle between different sizes to show/hide data
     const { size } = this.state;
+    const name = this.GetInstanceName();
     let newsize;
     switch (size) {
       case SIZE_MIN:
         newsize = SIZE_MED;
+        UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name });
         break;
       case SIZE_MED:
         newsize = SIZE_MAX;
+        // Don't register here since SIZE_MED will have already
+        // registered.  And you can't get to MAX without going
+        // through SIZE_MED.  Otherwise we end up with 2 registrations
+        // UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name });
         break;
       default:
       case SIZE_MAX:
         newsize = SIZE_MIN;
+        UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
         break;
     }
     this.setState({ size: newsize });
