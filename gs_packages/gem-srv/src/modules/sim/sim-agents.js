@@ -108,11 +108,11 @@ export function AgentProgram(blueprint) {
 
   // Make an agent for each instance
   instances = GetAllInstances();
-  instances.forEach(instance => {
+  instances.forEach(spec => {
     // Make an instance only for this blueprint, ignore others
     // otherwise other blueprints will get duplicate instances
-    if (instance.blueprint === blueprint) {
-      TRANSPILER.MakeAgent(instance);
+    if (spec.blueprint === blueprint) {
+      TRANSPILER.MakeAgent(spec);
     }
   });
 
