@@ -91,9 +91,11 @@ async function SystemStop() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
-  // FORWARDED PUB/SUB
-  RegisterMessage: EP_LOCAL.registerMessage,
-  UnregisterMessage: EP_LOCAL.unregisterMessage,
+  // URNET MESSAGES
+  DeclareMessage: EP_LOCAL.declareMessage,
+  HasMessage: EP_LOCAL.hasMessage,
+  HandleMessage: EP_LOCAL.handleMessage,
+  UnhandleMessage: EP_LOCAL.unhandleMessage,
   SendMessage: EP_LOCAL.sendMessage,
   RaiseMessage: EP_LOCAL.raiseMessage,
   CallMessage: EP_LOCAL.callMessage,

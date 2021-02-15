@@ -61,9 +61,9 @@ class ScriptEditor extends React.Component {
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
-    UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
-    UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
   }
 
   componentDidMount() {
@@ -84,8 +84,8 @@ class ScriptEditor extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
-    UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.UnhandleMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
+    UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
   }
 
   LoadModel(modelId) {

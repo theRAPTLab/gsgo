@@ -111,7 +111,7 @@ UR.SystemHook('UR/APP_CONFIGURE', ModuleInit);
 /** This is the API for firing a system event that the onEvent keyword can
  *  listen to
  */
-UR.RegisterMessage('SCRIPT_EVENT', event => {
+UR.HandleMessage('SCRIPT_EVENT', event => {
   EVENT_QUEUE.push(event);
 });
 

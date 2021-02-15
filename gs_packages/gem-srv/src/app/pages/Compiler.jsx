@@ -81,8 +81,8 @@ class Compiler extends React.Component {
     this.updateText = this.updateText.bind(this);
     this.updateTabSelect = this.updateTabSelect.bind(this);
     // hooks
-    UR.RegisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
-    UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
+    UR.HandleMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
+    UR.HandleMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
     const bdl = TRANSPILER.CompileBlueprint(this.source);
@@ -118,8 +118,8 @@ class Compiler extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnregisterMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
-    UR.UnregisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
+    UR.UnhandleMessage('SCRIPT_JSX_CHANGED', this.updateJSX);
+    UR.UnhandleMessage('SCRIPT_SRC_CHANGED', this.updateScript);
   }
 
   // called by ScriptWizard component change

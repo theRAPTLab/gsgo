@@ -20,8 +20,8 @@ import { MODEL as BeesModel } from './bees';
 class SimData {
   constructor() {
     // Register Listeners
-    UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODELS', this.RequestSimDataModels);
-    UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODEL', this.RequestSimDataModel);
+    UR.HandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.RequestSimDataModels);
+    UR.HandleMessage('HACK_SIMDATA_REQUEST_MODEL', this.RequestSimDataModel);
   }
 
   /**

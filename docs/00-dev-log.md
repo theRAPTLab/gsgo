@@ -121,6 +121,24 @@ There were several parse and logic bugs after running all the compiler tests. Se
 * [ ] prop - can it handle objref assignments?
 * [ ] dbgOut, dbgStack - better way to implement output limits?
 
+## FEB 11-12 THU/FRI - Documenting Compiler
+
+Spent a couple of days figuring out how to document it using Typora+Mermaid, billed for half the time because was experimenting with Mermaid diagram generation. **New file is `tech-compiler-internals.md`**
+
+Next up: INPUT STREAM RESUME...try to get to it over the weekend, then we can start writing more interesting Features.
+
+
+
+## FEB 15 MON - Message System and I/O work through
+
+I'm creating a new "MessageStream" class to figure out how this might work. I want:
+
+* [ ] all the registered messages with parameters in one place in new `MessageStream` class
+* [ ] use `MessageStream` to send all possible messages to server instead of `Messager` class
+* [ ] handles URSYS **messages** and URSYS **device addressing**/netlist stuff and 
+
+I'm not clear on what this will look like. But i
+
 ---
 
 **ADDITIONAL THINGS TO IMPLEMENT**

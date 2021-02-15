@@ -14,6 +14,9 @@
     semantics of raiseSignal() and sendMessage(); the latter checks to make
     sure that the message isn't received by the same endpoint that sent it.
 
+    handling a message is for client definition, but internally this is
+    called registration
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
@@ -23,6 +26,7 @@
 const Messager = require('./class-messager');
 const URNet = require('./client-urnet');
 const PROMPTS = require('./util/prompts');
+const MessageStream = require('./class-message-stream');
 
 /** implements endpoints for talking to the URSYS network
  *  @module MessagerEndpoint
@@ -51,6 +55,7 @@ function m_GetUniqueId() {
 /// GLOBAL MESSAGES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MESSAGER = new Messager(); // note: endpoints share the same message dict
+let MSTREAM = new MessageStream(); //
 
 /// URSYS NODE CLASS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,8 +80,8 @@ class MessagerEndpoint {
     this.getUID = this.getUID.bind(this);
     this.getName = this.getName.bind(this);
     this.getUADDR = this.getUADDR.bind(this);
-    this.registerMessage = this.registerMessage.bind(this);
-    this.unregisterMessage = this.unregisterMessage.bind(this);
+    this.handleMessage = this.handleMessage.bind(this);
+    this.unhandleMessage = this.unhandleMessage.bind(this);
     //
     this.callMessage = this.callMessage.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
@@ -112,7 +117,7 @@ class MessagerEndpoint {
   /** mesgName is a string, and is an official event that's defined by the
    * subclasser of UnisysNode
    */
-  registerMessage(mesgName, listener) {
+  handleMessage(mesgName, listener) {
     // uid is "source uid" of subscribing object, to avoid reflection
     // if the subscribing object is also the originating state changer
     if (DBG.register)
@@ -125,7 +130,7 @@ class MessagerEndpoint {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** remove a listener from message
    */
-  unregisterMessage(mesgName, listener) {
+  unhandleMessage(mesgName, listener) {
     if (DBG.register)
       console.log(
         `${this.uid} _${PR} `,
@@ -193,6 +198,19 @@ class MessagerEndpoint {
         resolve(data);
       });
     });
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** new 2021: WIP adding a new 'ursys-wide message declaration' system on top
+   *  of Messager. This is used to register all messages in one place
+   *  to check
+   */
+  declareMessage(mesgName, dataProps) {
+    return MSTREAM.declare(mesgName, dataProps);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** new 2021: WIP check if a message was declared */
+  hasMessage(mesgName) {
+    return MSTREAM.has(mesgName);
   }
 } // class MessagerEndpoint
 

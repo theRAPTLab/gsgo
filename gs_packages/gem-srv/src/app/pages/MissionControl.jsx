@@ -64,8 +64,8 @@ class MissionControl extends React.Component {
     this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
   }
 
   componentDidMount() {

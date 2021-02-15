@@ -15,11 +15,11 @@ class PanelInstances extends React.Component {
     };
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    UR.RegisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.HandleMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.UnhandleMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
   }
 
   OnInstanceUpdate(data) {
