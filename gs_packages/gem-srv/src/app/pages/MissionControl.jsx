@@ -12,6 +12,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
+import { GetAllInstances } from 'modules/datacore/dc-agents';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
@@ -123,7 +124,16 @@ class MissionControl extends React.Component {
       console.error('OnInspectorUpdate got bad data', data);
       return;
     }
-    const instances = data.agents;
+    // merge the two lists, replacing instance specs with agents
+    const map = new Map();
+    const allInstances = GetAllInstances();
+    allInstances.forEach(i => {
+      map.set(i.name, i);
+    });
+    data.agents.forEach(a => {
+      map.set(a.meta.name, a);
+    });
+    const instances = Array.from(map.values());
     this.setState({ instances });
   }
 
