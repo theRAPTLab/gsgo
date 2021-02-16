@@ -6,7 +6,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 const SIZE_MIN = 'min'; // name only
-const SIZE_MED = 'med'; // x and y (first line)
 const SIZE_MAX = 'max'; // all
 
 /**
@@ -68,8 +67,6 @@ class InstanceInspector extends React.Component {
     if (instance && instance.prop) {
       Object.keys(instance.prop).map(p => {
         // REVIEW: Why does `._value` work, but not `.value`?
-        // Skip any prop but x and y when SIZE_MED.
-        if (size === SIZE_MED && !['x', 'y'].includes(p)) return;
         let val = instance.prop[p]._value;
         switch (typeof val) {
           case 'number':
@@ -93,7 +90,6 @@ class InstanceInspector extends React.Component {
    * Clicking the instance name will toggle the Inspector object between
    * showing:
    * 1. SIZE_MIN = Name only
-   * 2. SIZE_MED = Name + Position
    * 3. SIZE_MAX = All properties
    */
   OnInstanceClick() {
@@ -103,15 +99,7 @@ class InstanceInspector extends React.Component {
     let newsize;
     switch (size) {
       case SIZE_MIN:
-        newsize = SIZE_MED;
-        UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name });
-        break;
-      case SIZE_MED:
         newsize = SIZE_MAX;
-        // Don't register here since SIZE_MED will have already
-        // registered.  And you can't get to MAX without going
-        // through SIZE_MED.  Otherwise we end up with 2 registrations
-        // UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name });
         break;
       default:
       case SIZE_MAX:
