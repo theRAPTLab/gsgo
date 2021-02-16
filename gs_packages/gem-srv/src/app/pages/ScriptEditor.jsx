@@ -309,7 +309,11 @@ class ScriptEditor extends React.Component {
         >
           <div style={{ display: 'flex' }}>
             <PanelMessage message={message} isError={messageIsError} />
-            <PanelInstances id="instances" instances={instances} />
+            <PanelInstances
+              id="instances"
+              instances={instances}
+              disallowDeRegister
+            />
           </div>
         </div>
       </div>

@@ -25,6 +25,7 @@ class InstanceInspector extends React.Component {
     this.state = {
       title: 'INSPECTOR',
       size: SIZE_MIN,
+      alreadyRegistered: false,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
@@ -39,11 +40,17 @@ class InstanceInspector extends React.Component {
     // If the instance has prop data, then it has been registered
     // and should automatically be set to SIZE_MAX
     if (instance && instance.prop) {
-      this.setState({ size: SIZE_MAX });
+      this.setState({
+        size: SIZE_MAX,
+        alreadyRegistered: true
+      });
     }
   }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    // Don't unregister here because changing size can cause unmount?
+    // so the agent ends up unregistered when really it should stay registered
+  }
 
   GetInstanceName() {
     // Is `instance` a `GAgent` or an `instanceSpec`
@@ -94,25 +101,33 @@ class InstanceInspector extends React.Component {
    */
   OnInstanceClick() {
     // Toggle between different sizes to show/hide data
-    const { size } = this.state;
+    const { size, alreadyRegistered } = this.state;
+    const { disallowDeRegister } = this.props;
     const name = this.GetInstanceName();
+    let registrationStatus = alreadyRegistered;
     let newsize;
     switch (size) {
       case SIZE_MIN:
         newsize = SIZE_MAX;
+        if (!alreadyRegistered) {
+          UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name });
+          registrationStatus = true;
+        }
         break;
       default:
       case SIZE_MAX:
         newsize = SIZE_MIN;
-        UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
+        if (alreadyRegistered && !disallowDeRegister) {
+          UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
+        }
         break;
     }
-    this.setState({ size: newsize });
+    this.setState({ size: newsize, alreadyRegistered: registrationStatus });
   }
 
   render() {
     const { title, size, color, colorActive, bgcolor } = this.state;
-    const { id, instance, isActive, classes } = this.props;
+    const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
     const data = this.GetInstanceProperties();
     return (

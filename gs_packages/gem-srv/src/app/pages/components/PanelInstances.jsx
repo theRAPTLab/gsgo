@@ -16,7 +16,7 @@ class PanelInstances extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { id, isActive, instances, classes } = this.props;
+    const { id, isActive, instances, disallowDeRegister, classes } = this.props;
 
     if (!instances) return <></>;
 
@@ -66,7 +66,7 @@ class PanelInstances extends React.Component {
                 key={blueprint.name}
               >
                 {blueprint.instances.map(i => (
-                  <InstanceInspector instance={i} key={i.id} />
+                  <InstanceInspector instance={i} key={i.id} disallowDeRegister />
                 ))}
               </div>
             ))}
