@@ -244,8 +244,13 @@ There's also `in-ptrack` which creates a` PTrackEndPoint` instance and connects,
 
 * **producer** of button input registers for the role as a Button Input. Possible other kinds of input. THe registration include logicalName and authetication on URSYS node, and in return service list is received. 
 * **producer** then registers itself as the producer of a certain named input type along with its logicalname/uaddr. If access is granted, establish the new socket connection that is returned. The producer can then write any data it wants to a particular logical named input
-
 * **subscriber** of ANNOTATION socket receives all the button inputs as-is, recording the logical name of the input and its value, maintaining state. The state of a particular input or all inputs can be read during the GET_INPUT phase.
+
+### What does MQTT Input look like with this model?
+
+MQTT input from POSZYX is vector + trigger data, and I think we'd have a MQTT-to-URSYS bridge on the message broker. 
+
+* producer of MQTT data will need to identify the device type, and maybe it has to be hardcoded somehow as a particular kind of input stream like PTRACK, though it is massaged into PTRACK data.
 
 ### INPUTS SUMMARY
 

@@ -275,7 +275,8 @@ export type TSMCProgram = TOpcode[];
 export type TSMCGlobalProgram = TRegcode[];
 export type TSMCFunction = TOpcode;
 /** Also could be an AST, which is an object with a type property */
-export type TExpressionAST = { type: string };
+export type TExpressionAST = { expr: object }; // expr is binary tre
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is
