@@ -41,6 +41,11 @@
 * W1: Parse dotted object ref, expand args. Add keywords `prop`, `featProp`, `featCall` touse dotted object refs. Need to insert context into runtime in three or four places.
 * W2: inject correct context for runtime.
 
+**SUMMARY S2103 FEB 08 - FEB 14**
+
+* W1: new keywords, compiler tech documentation
+* W2: 
+
 
 ---
 
@@ -137,7 +142,162 @@ I'm creating a new "MessageStream" class to figure out how this might work. I wa
 * [ ] use `MessageStream` to send all possible messages to server instead of `Messager` class
 * [ ] handles URSYS **messages** and URSYS **device addressing**/netlist stuff and 
 
-I'm not clear on what this will look like. But i
+I'm not clear on what this will look like.
+
+The new `class-message-stream` definition keeps a map of message names to parameter objects, where the keys are the names of the properties and the values are string descriptions
+
+### IOSTREAM DEFINITION
+
+We have a shared mechanism for URSYS messaging that are sent on the main URSYS server
+
+* ursys apps span multiple app/devices, communicate via messages
+* ursys apps can have synced state and data resources
+* ursys apps use a "request change/received update/distribute" model
+
+Input/Output streams are a bit different in that they use different websockets than the main URSYS server. Currently we have the following io streams:
+
+* DisplayObject - currently implemented as an URSYS message
+* PTrack/FakeTrack - currently implemented as a socket-based module
+
+We want to add some more IO streams:
+
+* Annotation Devices: model of discrete and continuous interactions
+* Positional Devices: model of dimensional data updated continuously
+
+Probably we want to make it so we have arbitrary tracks with names, and requested a shared track name will be like stablishing a new channel over a **dedicated websocket** address by the message broker machine.
+
+in the IOSTREAM manager:
+
+`JoinChannel('PTrack',{ authenticate }).then(data=>{ /* setup */ });`
+
+then IOSTREAM caches all the changes to the PTRACK channel received over a particular port.
+
+The other input channels use a protocol that is better tuned for interactive events:
+
+* `triggerName`: triggerType, value --> update local input state by name, state
+* `triggerTypes`: a logical name for operations handled by RxJS that mean something to us
+* `filterTypes`: a list of [RxJS operators](https://rxjs-dev.firebaseapp.com/guide/operators) to apply with params
+
+```
+input entry:          controlType, logicalName, filterArray
+controlTypes:         button, v1, v2, v3
+filterArray (rxjs):   transform, toggle, debounce, momentary, autoOff
+```
+
+**What is the order of operation for registering for input from various apps?**
+
+Let's start with how PTRACK works and expand:
+
+```
+server establish UDP listener on port for PTRACK
+server establish TCP listener on port for FAKETRACK
+... some time later ...
+client connect to server on URSYS port
+.. receive identity and service list sockets from server
+.. register logical name, authentication credentials via URSYS port
+.. automatically start receiving background netlist, servicelist directory
+
+pick services based on websockets to participate in
+.. client optionally connect to servicelist with authentication credentials
+.. automatically start receiving background service-specific data and jwt token
+.. service websockets requre jwttoken on every request? or just on changes?
+.. register for particular messages on the service
+
+what mode is a particular app in? it depends on the service it's engaged
+what roles are available to select for a service? register input and type
+```
+
+Now we're hooked up to a particular service that is maintaining its cached status and possibly also **forwarding events** to our own client code to do something with it. Can also pull **current state** from the service name as needed, which is updated every sim frame
+
+### What does DISPLAY OBJECT look like with this model?
+
+**CURRENTLY**: 
+
+* The display objects that are sent to `NET:DISPLAY_LIST` are calculated by `sim-agents` on every frame update. This is an *agent-to-dobj* map.
+* The display object capture happens in `RENDERER.UpdateDisplayList(dobjlist)`. The actual drawing is done by `RENDERER.Render()`.  This is a *dobj-to-vobj* mapping
+
+**UPDATED VERSION MIGHT BE**:
+
+* a single **producer** can register for the role of **SIM_DISPLAY** with the URSYS thing, so mission control would have to request ownership of the service. This would be a separate service request.
+* **subscriber** registers for DISPLAYLIST service, which is running on a different socket server
+* the display list service is similar to `RENDERER.UpdateDisplayList()`, receiving `NET:DISPLAY_LIST` automatically. 
+* All subscribers would request to become a client of `SIM_DISPLAY`. The `RENDERER` module would initialize itself when this service is requested, and then `Render()` would be available to call by the consumer.
+
+### What does PTRACK look like with this model?
+
+There's `PTrackEndpoint` which is a class that tracks PTRACK-style frames through `ProcessFrame()`. This is the **continuous update** manager.
+
+There's also `in-ptrack` which creates a` PTrackEndPoint` instance and connects, then updates filter settings. It also has the `GetInputs(ms)` **current state** retrieval function.
+
+### What does FAKETRACK look like with this model?
+
+* FakeTrack is a webapp. It would request to become a source of PTRACK data with a particular logical name, role, and address through URSYS
+* It receives-back the port to write to. This is all handled in the `in-ptrack` class or something similar.
+
+* FakeTrack is separate from PTrack but uses the same data format, so it can reuse the ptrack module for frame processing and transformation
+
+* The kind of FakeTrack entities might have a different input mode: **follow** or **embody**. 
+
+  
+
+### What does Button Input look like with this model?
+
+* **producer** of button input registers for the role as a Button Input. Possible other kinds of input. THe registration include logicalName and authetication on URSYS node, and in return service list is received. 
+* **producer** then registers itself as the producer of a certain named input type along with its logicalname/uaddr. If access is granted, establish the new socket connection that is returned. The producer can then write any data it wants to a particular logical named input
+
+* **subscriber** of ANNOTATION socket receives all the button inputs as-is, recording the logical name of the input and its value, maintaining state. The state of a particular input or all inputs can be read during the GET_INPUT phase.
+
+### INPUTS SUMMARY
+
+* on URSYS connect, receive a **list of services** which have socket addresses
+* To request a service, **activate** the service (essentially a channel) and register as either a **producer** or **subscriber** using a special message sent on the dedicated service socket.
+  * **producers**: declare logicalName, l ogicalRole. Receive service token. Can send formatted data at any point.
+  * **subscribers**: declare logicalName, logicalRole. Subscriber will now automatically receive data on that socket, which is buffered by the managing module and maintains the current state. Using `GetInput()` on the managing module returns the input
+
+* [ ] how are **subnets** handled on a network with several mission control servers?
+* [ ] what does a general purpose service manager look like on the server and client sides?
+
+
+
+```js
+// This creates the table of messages that this app expects to send or receive.
+
+import { NetM, AppM, UpdateMessageList } from '@gemstep/ursys/client';
+
+// two arguments: SENDER signature
+// three arguments: CALL signature
+NetM('NET:MESG_NAME', { a:"string", b:"number" });
+AppM('MESG_NAME', { a:"str", b:"num", c:"bool" },{ result:{a:"str"} });
+UpdateMessageList();
+/*/
+RECAP OF URSYS CONCEPTS
+
+ursys applications can span multiple apps, sharing a conceptually unified space
+ursys applications share access to common data resources backed by a database
+ursys application share a common state object that is automatically updated
+
+messages are our version of events that work network wide. they can be used to raise signals or send data, optionally receiving data in return.
+system events are defined by the browser or operating system
+
+EXTENDING URSYS TO IO STREAMS
+
+iostreams have a TYPE, a UADDR, and a LOGICAL NAME
+iostreams are requested through regular URSYS network protocol
+iostream connections provide AUTH CREDENTIALS consisting of:
+  logical name, token
+and receive
+	uaddr, list of available roles, list of active roles
+to register a role, iostream clients
+	send request role
+	receive role assignment and updated token
+	
+iostream maintains connection with
+	list of available roles
+	list of current role assignments and modes
+/*/
+```
+
+
 
 ---
 
