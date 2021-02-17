@@ -79,7 +79,59 @@ const ZIP_BLNK = ''.padEnd(ZIP.length, ' ');
 function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** placeholder function
- *  This creates a single agent just for testing while the user is editing
+ *  This creates a MULTIPLE agents from a spec, replacing all instances of the
+ *  same blueprint.
+ *
+ * @param {Object} blueprint
+ * @param {Array} instanceSpec Array of spec objects {name, ...args}
+ */
+export function AgentsProgram(data) {
+  const { blueprint, instancesSpec } = data;
+  if (!blueprint) return console.warn(...PR('no blueprint'));
+  // original initializer
+  // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
+
+  // Remove any existing agent instances
+  let instances = GetAllInstances();
+  instances.forEach(instance => {
+    if (instance.blueprint === blueprint) {
+      TRANSPILER.RemoveAgent(instance);
+    }
+  });
+  // And clear the INSTANCES map for the blueprint
+  DeleteBlueprintInstances(blueprint);
+
+  for (let i = 0; i < instancesSpec.length; i++) {
+    // Initiate a new instance for the submitted blueprint
+    // using a unique name.
+    const spec = instancesSpec[i];
+    const name = spec.name || `${blueprint}${i}`;
+    DefineInstance({
+      blueprint,
+      name,
+      init: spec.init
+    });
+  }
+
+  // Make an agent for each instance
+  instances = GetAllInstances();
+  instances.forEach(instance => {
+    // Make an instance only for this blueprint, ignore others
+    // otherwise other blueprints will get duplicate instances
+    if (instance.blueprint !== blueprint) return;
+    const init = TRANSPILER.CompileText(instance.init);
+    const agent = TRANSPILER.MakeAgent(instance);
+    agent.exec(init, { agent });
+  });
+
+  // Announce instance defs so UI can register instance names for inspector monitoring
+  // Mostly used by PanelInstances and Inspectors
+  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** placeholder function
+ *  This creates a SINGLE agent just for testing while the user is editing
  *  a script.
  *  If the agent instance already exists, it replaces the existing instance.
  */
@@ -116,9 +168,9 @@ export function AgentProgram(blueprint) {
     }
   });
 
-  // Announce instances so UI can update
+  // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('HACK_INSTANCES_UPDATED', instances);
+  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -162,6 +214,7 @@ UR.RegisterMessage('SIM_RESET', AgentReset);
 UR.RegisterMessage('SIM_MODE', AgentSelect);
 // UR.RegisterMessage('SIM_PROGRAM', AgentProgram);
 UR.RegisterMessage('AGENT_PROGRAM', AgentProgram);
+UR.RegisterMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

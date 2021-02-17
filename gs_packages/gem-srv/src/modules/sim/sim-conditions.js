@@ -33,7 +33,7 @@ RegisterFunction('dies', a => {
   return false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('touches', (a, b, distance = 10) => {
+RegisterFunction('touches', (a, b, distance = 30) => {
   // not actually a "touch"
   // checks if distance between agents is less than 10
   let xs = a.prop.x.value - b.prop.x.value;
@@ -45,7 +45,6 @@ RegisterFunction('touches', (a, b, distance = 10) => {
     y: b.prop.y.value,
     energyLevel: a.prop.energyLevel ? a.prop.energyLevel.value : ''
   };
-  UR.RaiseMessage('NET:HACK_INSPECTOR_UPDATE', data);
   if (Math.hypot(xs, ys) < distance) {
     return true; // touches!
   }

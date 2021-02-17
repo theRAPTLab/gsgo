@@ -19,9 +19,37 @@ import { MODEL as BeesModel } from './bees';
 
 class SimData {
   constructor() {
+    this.GetSimDataModel = this.GetSimDataModel.bind(this);
+    this.RequestSimDataModels = this.RequestSimDataModels.bind(this);
+    this.RequestSimDataModel = this.RequestSimDataModel.bind(this);
+    this.HackGetSimDataModel = this.HackGetSimDataModel.bind(this);
     // Register Listeners
     UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODELS', this.RequestSimDataModels);
     UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODEL', this.RequestSimDataModel);
+  }
+
+  GetSimDataModel(modelId) {
+    let model;
+    switch (modelId) {
+      case 'aquatic':
+        model = AquaticModel;
+        break;
+      case 'decomposition':
+        model = DecompositionModel;
+        break;
+      case 'moths':
+        model = MothsModel;
+        break;
+      case 'salt':
+        model = SaltModel;
+        break;
+      case 'bees':
+        model = BeesModel;
+        break;
+      default:
+        break;
+    }
+    return model;
   }
 
   /**
@@ -44,27 +72,12 @@ class SimData {
    * @param {Object} data -- { modelId: <string> }
    */
   RequestSimDataModel(data) {
-    let model;
-    switch (data.modelId) {
-      case 'aquatic':
-        model = AquaticModel;
-        break;
-      case 'decomposition':
-        model = DecompositionModel;
-        break;
-      case 'moths':
-        model = MothsModel;
-        break;
-      case 'salt':
-        model = SaltModel;
-        break;
-      case 'bees':
-        model = BeesModel;
-        break;
-      default:
-        break;
-    }
+    let model = this.GetSimDataModel(data.modelId);
     UR.RaiseMessage('HACK_SIMDATA_UPDATE_MODEL', { model });
+  }
+
+  HackGetSimDataModel(modelId) {
+    return this.GetSimDataModel(modelId);
   }
 }
 
