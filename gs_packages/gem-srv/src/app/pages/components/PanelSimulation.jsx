@@ -7,6 +7,7 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
+import { GetAllAgents } from 'modules/datacore';
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -17,6 +18,8 @@ import PanelChrome from './PanelChrome';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PanelSimulation');
 const DBG = false;
+
+const MONITORED_INSTANCES = [];
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,16 +40,28 @@ class PanelSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Simulation'
+      title: 'Simulation',
+      model: {}
     };
+    this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
+    this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
+    this.DoInstanceInspectorUpdate = this.DoInstanceInspectorUpdate.bind(this);
+    this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
+    this.DoSimStop = this.DoSimStop.bind(this);
 
+    UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
+    UR.RegisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.RegisterMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
+    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.RegisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
+
   componentDidMount() {
     // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
@@ -57,9 +72,49 @@ class PanelSimulation extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnregisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.UnregisterMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnregisterMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.UnregisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+  }
+
+  /**
+   * PanelSimulation keeps track of any instances that have been requested
+   * for inspector monitoring.
+   * We allow duplicate registrations so that when one device unregisters,
+   * the instance is still considered monitored.
+   * @param {Object} data { name: <string> } where name is the agent name.
+   */
+  DoRegisterInspector(data) {
+    const name = data.name;
+    MONITORED_INSTANCES.push(name);
+  }
+  DoUnRegisterInspector(data) {
+    const name = data.name;
+    const i = MONITORED_INSTANCES.indexOf(name);
+    if (i > -1) MONITORED_INSTANCES.splice(i, 1);
+  }
+
+  /**
+   * On every system loop, we broadcast instance updates
+   * for any instances that have registered for modeling.
+   * We keep this list small to keep from flooding the net with data.
+   */
+  DoInstanceInspectorUpdate() {
+    // walk down agents and broadcast results for monitored agents
+    const agents = GetAllAgents();
+    const inspectorAgents = agents.filter(a =>
+      MONITORED_INSTANCES.includes(a.meta.name)
+    );
+    // Broadcast data
+    UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
+  }
+
+  DoModelUpdate(data) {
+    this.setState({ model: data.model });
   }
 
   DoSimReset() {
@@ -68,22 +123,43 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
+    SIM.Reset();
   }
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
+    const { model } = this.state;
+    if (!model) {
+      console.error(...PR('No model selected.'));
+      return;
+    }
     const source = TRANSPILER.ScriptifyText(data.script);
     const bundle = TRANSPILER.CompileBlueprint(source);
     const bp = TRANSPILER.RegisterBlueprint(bundle);
-    UR.RaiseMessage('AGENT_PROGRAM', bp.name);
+
+    // Read Instances Def
+    const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
+    if (instancesSpec.length < 1) {
+      // If the map has not been defined yet, then generate a single instance
+      instancesSpec.push({ name: `${bp.name}01`, init: '' });
+    }
+
+    UR.RaiseMessage('AGENTS_PROGRAM', {
+      blueprint: bp.name,
+      instancesSpec
+    });
   }
 
   DoSimStart() {
     SIM.Start();
   }
 
+  DoSimStop() {
+    SIM.End();
+  }
+
   render() {
-    const { title } = this.state;
+    const { title, model } = this.state;
     const { id, isActive, onClick, classes } = this.props;
 
     return (
