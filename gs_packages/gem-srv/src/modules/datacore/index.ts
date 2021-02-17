@@ -45,6 +45,9 @@ featCall Movement jitterPos -5 5
 // featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
+  ifExpr {{ 1===1 }} [[
+    dbgOut 'expr true'
+  ]]
   prop agent.foodLevel sub 2
   dbgOut 'foodLevel' agent.foodLevel
 ]]
