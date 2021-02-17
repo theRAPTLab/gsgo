@@ -5,22 +5,24 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { RegisterFunction, GetFunction } from 'modules/datacore/dc-named-methods';
 import {
-  GetAllGlobalConditions,
-  GetScriptEventHandlers,
-  GetAgentsByType
-} from 'modules/datacore';
-import { RegisterFunction } from 'modules/datacore/dc-programs';
+  GetAllInteractions,
+  SingleAgentFilter,
+  PairAgentFilter
+} from 'modules/datacore/dc-interactions';
+import { GetScriptEventHandlers } from 'modules/datacore/dc-script-engine';
+import { GetAgentsByType } from 'modules/datacore/dc-agents';
 import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_CONDITIONS');
-const GLOBAL = GetGlobalAgent();
+const GLOBAL_AGENT = GetGlobalAgent();
 let EVENT_QUEUE = [];
-let GLOBAL_COND = [];
+let GLOBAL_INTERACTIONS = [];
 
-/// TEST PROGRAMS /////////////////////////////////////////////////////////////
+/// REGISTER NAMED METHODS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the old test program style (deprecated) is in tests/test-conditions.ts
 RegisterFunction('dies', a => {
@@ -30,10 +32,10 @@ RegisterFunction('dies', a => {
   }
   return false;
 });
-RegisterFunction('touches', (a, b) => {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('touches', (a, b, distance = 30) => {
   // not actually a "touch"
   // checks if distance between agents is less than 10
-  const distance = 10;
   let xs = a.prop.x.value - b.prop.x.value;
   let ys = a.prop.y.value - b.prop.y.value;
   // INSPECTOR HACK
@@ -43,7 +45,6 @@ RegisterFunction('touches', (a, b) => {
     y: b.prop.y.value,
     energyLevel: a.prop.energyLevel ? a.prop.energyLevel.value : ''
   };
-  UR.RaiseMessage('NET:HACK_INSPECTOR_UPDATE', data);
   if (Math.hypot(xs, ys) < distance) {
     return true; // touches!
   }
@@ -55,25 +56,45 @@ RegisterFunction('touches', (a, b) => {
 /** invoked via UR/APP_CONFIGURE */
 function ModuleInit(/* gloop */) {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** invoked via SIM/CONDITIONS_UPDATE */
 function Update(frame) {
-  // execute any conditions that need to run this frame in the context
-  // of the global agent context
-  GLOBAL_COND = [...GetAllGlobalConditions()];
-  GLOBAL_COND.forEach(entry => {
-    const [key, value] = entry;
-    GLOBAL.exec(value);
+  /** HANDLE GLOBAL FILTER TESTS ***************************************************/
+  /// run all the filtering tests and store results for use by Agents during
+  /// their subsequent SIM/AGENTS_UPDATE phase
+  GLOBAL_INTERACTIONS = [...GetAllInteractions()]; // [ [k,v], [k,v] ]
+  GLOBAL_INTERACTIONS.forEach(entry => {
+    const { singleTestArgs, pairTestArgs } = entry;
+    if (singleTestArgs !== undefined) {
+      // SINGLE AGENT TEST FILTER
+      const [A, testName, ...args] = singleTestArgs;
+      const [passed] = SingleAgentFilter(A, testName, ...args);
+      entry.passed = passed;
+    } else if (pairTestArgs !== undefined) {
+      // PAIR AGENT TEST FILTER
+      const [A, testName, B, ...args] = pairTestArgs;
+      const [passed] = PairAgentFilter(A, testName, B, ...args);
+      entry.passed = passed;
+    } else {
+      throw Error('malformed global_interaction entry');
+    }
   });
-  // route any queued messages
+  /** HANDLE SUBSCRIPTION EVENTS ***************************************************/
+  /// handle the registered events for 'onEvent' keywords that have registered a
+  /// consequent for an Agent Blueprint (the set of all Agents based on that
+  /// blueprint)
   EVENT_QUEUE.forEach((event, idx) => {
-    /* these are all the handlers for all the registered blueprint types
+    /*/
+    these are all the handlers for all the registered blueprint types
     that are TOPcode[]. However, we need to get the context of each
-    blueprint and run them per-agent */
+    blueprint and run them per-agent
+    /*/
     const handlers = GetScriptEventHandlers(event.type);
     handlers.forEach(h => {
       const { agentType, handler } = h;
       const agents = GetAgentsByType(agentType);
-      agents.forEach(agent => agent.exec(handler));
+      agents.forEach(agent => {
+        const ctx = { agent, [agentType]: agent };
+        agent.exec(handler, ctx);
+      });
     });
   });
   EVENT_QUEUE = [];
@@ -84,8 +105,11 @@ function Update(frame) {
 UR.SystemHook('SIM/CONDITIONS_UPDATE', Update);
 UR.SystemHook('UR/APP_CONFIGURE', ModuleInit);
 
-/// ASYNCH MESSAGE /////////////////////////////////////////////////////
+/// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is the API for firing a system event that the onEvent keyword can
+ *  listen to
+ */
 UR.RegisterMessage('SCRIPT_EVENT', event => {
   EVENT_QUEUE.push(event);
 });

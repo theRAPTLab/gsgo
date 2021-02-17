@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { ScriptifyText, CompileScript } from 'script/transpiler';
+import { ScriptifyText, CompileBlueprint } from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,7 +23,7 @@ function TestCompiler(index?: number) {
     if (!singleTest || index === idx) {
       const [desc, text] = test;
       const script = ScriptifyText(text);
-      const bundle = CompileScript(script);
+      const bundle = CompileBlueprint(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
       else console.groupCollapsed('test', lead, '-', desc);
@@ -57,20 +57,20 @@ function TestCompiler(index?: number) {
 TT.push([
   'onEvent Tick then block w/ nested if',
   `
-  # BLUEPRINT Bee
+  # BLUEPRINT Bee AgentAAA
   # PROGRAM DEFINE
   addProp frame Number 3
   useFeature Movement
   # PROGRAM UPDATE
-  setProp skin 'bunny.json'
-  featureCall Movement jitterPos -5 5
+  prop skin setTo "bunny.json"
+  featCall agent.Movement jitterPos -5 5
   # PROGRAM EVENT
   onEvent Tick [[
     ifExpr {{ agent.getProp('name').value==='bun0' }} [[
       dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     ]]
-    setProp 'x'  0
-    setProp 'y'  0
+    prop agent.x setTo  0
+    prop agent.y setTo 0
   ]]
   # PROGRAM CONDITION
   when Bee sometest [[
@@ -81,8 +81,6 @@ TT.push([
   ]]
   `.trim()
 ]);
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'define Blueprint',
@@ -98,7 +96,7 @@ TT.push([
   # BLUEPRINT Bee
   # PROGRAM DEFINE
     addProp time Number 10
-    prop skin setTo 'happy.png'
+    prop skin setTo "happy.png"
 `.trim()
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
