@@ -197,9 +197,8 @@ export interface IState {
   scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
-  pop(): TStackable;
-  popArgs(num: number): TStackable[];
-  pushArgs(...args: number[]): void;
+  pop(num: number): TStackable[]; // return n things as array
+  push(...args: any): void;
   reset(): void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -275,8 +274,10 @@ export type TRegcode = (
 export type TSMCProgram = TOpcode[];
 export type TSMCGlobalProgram = TRegcode[];
 export type TSMCFunction = TOpcode;
-/** Also could be an AST, which is an object with a type property */
-export type TExpressionAST = { type: string };
+// Also could be an AST, which is an object with a type property
+export type TExpressionAST = { expr: string };
+// argnodes are emitted by class-gscript-tokenizer; we only need to process
+// the `expr` and `objref` types in GAgent.exec() if they happen to be passed
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is
