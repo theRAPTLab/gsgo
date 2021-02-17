@@ -25,23 +25,101 @@
 * W1: handle multiline blocks, agentset and event conditions
 * W2: finalize event conditions, delivery, break
 
-**SUMMARY S25 DEC 07 - DEC 20**
+**SUMMARY S2025 DEC 07 - DEC 20**
 
 * W1: Port FakeTrack/PTrack into GEMSRV
 * W2: Simplify agent prop, method, features for use by non-Sri peeps
 * W2.1: Prep for Dec 23 demo, review features with Ben
 
-**SUMMARY S21-01 JAN 11 - JAN 24**
+**SUMMARY S2101 JAN 11 - JAN 24**
 
 * W1: Ramp up 2020. Draft of System Overview docs.
-* W2: ?
+* W2: Script Engine review of patterns, issues, needed fixes
+
+**SUMMARY S2102 JAN 25 - FEB 07**
+
+* W1: Parse dotted object ref, expand args. Add keywords `prop`, `featProp`, `featCall` touse dotted object refs. Need to insert context into runtime in three or four places.
+* W2: inject correct context for runtime.
 
 
 ---
 
-# SPRINT 21-01
+# SPRINT 2103 - FEB 08 - FEB 21
 
+* **TODO** - make sure can pass parameters to tests
+* **TODO** fix `when` to be able to pass parameters to tests
+* **TODO** - add stack operations for gvars and keywords
 
+This sprint is for **adding FakeTrack** input as well as related systems for **device directory and input management**, possibly also **distributed state updates**. 
+
+## FEB 09 TUE - Designing Input Manager
+
+There are two parts to this:
+
+(1) Device Addressibility
+
+* Main Server (on WAN) is for LAPTOPS to connect to a SIMULATION SERVER
+  * simulation server is a beefy laptop
+  * is an URSYS endpoint
+* Connecting devices select the role they want to use (this chooses the app)
+  * First  come, first served for roles
+  * Chromebooks for Script Editor, iPads for annotation/viewing
+* The global simulation state is owned by Simulation Server
+  * global simulation state is distributed to all devices
+
+(2) Input Routing
+
+* Inputs are Devices with Roles and InputType
+
+I started `step/wip-role-mgr` to start blocking out functions. Putting it aside and looking now at adding some script keywords.
+
+### Script Improvements
+
+Switching to this...let's first look at **stack operations**: I think what we want to do is add `push()` and `pop()` to the gvars through `SMObject`
+
+* [ ] The gvar methods don't have access to `state` because they are invoked with parameters, so we need to do a bit of massaging in the keywords themselves
+* [ ] in `p[methodName](...args);` this is invoking the method name with args. Maybe we need a variation called `pushProp`?
+* [ ] Alternatively, maybe we need to make all the gvar methods accessible as methods?
+* [ ] Maybe we can always return the value by shoving the last returned value into an accumulator?
+* [ ] how to write `prop agent.x setTo agent.y` ?
+  * [ ] as `propPush` and `propPop`
+
+## FEB 10 WED - bug fixing featPropPush
+
+#### BUG
+
+There's a **bug** with featPropPush() where ref[0] for `featPropPush agent.Costume.costumeName` is undefined instead of 'agent'
+
+* [ ] the `refArg` coming into the compile() is already incorrect. This is produced by TRANSPILER
+* [ ] compile() is called by r_CompileUnit() which calls r_ExpandArgs()
+* [ ] `r_DecodeArg()` is already getting a bogus objref, so it's probably happening in `ScriptifyText()`
+* [ ] so let's check `class-gscript-tokenizer` to **ensure there are no bugs in it**
+
+There were several parse and logic bugs after running all the compiler tests. Seems to work now
+
+* [x] featPropPush works?
+* [x] featProp works?
+* [x] prop works/
+* [x] dbgStack works?
+* [x] propPush works
+* [x] propPop works?
+* [x] featPropPop works?
+* [x] dbgOut works?
+  * [x] crash on objref
+  * [x] no works on expression
+  * [x] added agent context to passed contet
+* [x] setCostume is wrapping things in multiple [ ] 
+  * [x] state.pop was returning an array for a single item pop
+
+### Stack Operations
+
+* [x] propPush, featPropPush - uses objrefs only, not expressions
+* [x] propPop, featPropPop - uses objrefs only, not expressions
+* [x] state.pop() fixed to return default top value, not an array of one value
+* [ ] dbgOut - can it still handle expressions?
+* [ ] prop - can it handle expression assignments?
+* [ ] prop - can it handle objref assignments?
+* [ ] dbgOut, dbgStack - better way to implement output limits?
 
 ---
 
@@ -109,3 +187,4 @@ Persistant Data
 ```
 
 ---
+

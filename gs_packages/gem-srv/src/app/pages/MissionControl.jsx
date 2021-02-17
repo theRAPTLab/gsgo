@@ -9,8 +9,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
+import { GetAllInstances } from 'modules/datacore/dc-agents';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
@@ -57,15 +59,18 @@ class MissionControl extends React.Component {
       panelConfiguration: 'sim',
       message: '',
       modelId: '',
-      model: {}
+      model: {},
+      instances: []
     };
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
-    this.OnBackToModelClick = this.OnBackToModelClick.bind(this);
+    this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.RegisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
@@ -84,7 +89,11 @@ class MissionControl extends React.Component {
     console.log(e);
   }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnregisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+  }
 
   LoadModel(modelId) {
     // HACK
@@ -99,9 +108,33 @@ class MissionControl extends React.Component {
     this.setState({ model: data.model });
   }
 
-  OnBackToModelClick() {
-    const { modelId } = this.state;
-    window.location = `/app/model?model=${modelId}`;
+  OnInstanceClick(instanceName) {
+    console.log('clicked on', instanceName);
+  }
+
+  /**
+   * Handler for `NET:INSPECTOR_UPDATE`
+   * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
+   * with agent information for every registered instance
+   * @param {Object} data { agents: [...agents]}
+   *                 wHere `agents` are gagents
+   */
+  OnInspectorUpdate(data) {
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    // merge the two lists, replacing instance specs with agents
+    const map = new Map();
+    const allInstances = GetAllInstances();
+    allInstances.forEach(i => {
+      map.set(i.name, i);
+    });
+    data.agents.forEach(a => {
+      map.set(a.meta.name, a);
+    });
+    const instances = Array.from(map.values());
+    this.setState({ instances });
   }
 
   OnPanelClick(id) {
@@ -122,7 +155,7 @@ class MissionControl extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message, modelId, model } = this.state;
+    const { panelConfiguration, message, modelId, model, instances } = this.state;
     const { classes } = this.props;
 
     const agents =
@@ -146,9 +179,12 @@ class MissionControl extends React.Component {
             <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
-          <button type="button" onClick={this.OnBackToModelClick}>
+          <Link
+            to={{ pathname: `/app/model?model=${modelId}` }}
+            className={classes.navButton}
+          >
             Back to MODEL
-          </button>
+          </Link>
         </div>
         <div
           id="console-left"
@@ -168,7 +204,7 @@ class MissionControl extends React.Component {
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <PanelPlayback id="playback" />
-            <PanelInstances id="instances" />
+            <PanelInstances id="instances" instances={instances} />
           </div>
         </div>
         <div

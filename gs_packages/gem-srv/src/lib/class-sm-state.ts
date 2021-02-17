@@ -6,7 +6,8 @@ export default class SM_State implements IState {
   scope: IScopeable[]; // scope stack (current execution context)
   ctx: { agent?: IScopeable };
   flags: IComparator; // comparison flags set by ALU operations
-  constructor(argStack: TStackable[] = [], ctx?: {}) {
+  //
+  constructor(argStack: TStackable[] = [], ctx?: any) {
     this.stack = argStack;
     this.scope = [];
     this.ctx = ctx;
@@ -15,19 +16,17 @@ export default class SM_State implements IState {
   peek(n: number = 0): TStackable {
     return this.stack[this.stack.length - 1 - n];
   }
-  pop(): TStackable {
-    return this.stack.pop();
+  push(...args: any): void {
+    if (Array.isArray(args)) this.stack.push(...args);
+    else this.stack.push(args);
   }
-  popArgs(num: number = 1): TStackable[] {
+  pop(num: number = 1): TStackable[] {
     if (num > this.stack.length) throw Error('stack underflow');
     if (num === 0) throw Error('null stack operation with 0 num');
     const arr = [];
     for (let i = num; i--; i > 0) arr.unshift(this.stack.pop());
+    if (num === 1) return arr[0];
     return arr;
-  }
-  pushArgs(...args: number[]): void {
-    if (Array.isArray(args)) this.stack.push(...args);
-    else this.stack.push(args);
   }
   reset(): void {
     this.stack = [];

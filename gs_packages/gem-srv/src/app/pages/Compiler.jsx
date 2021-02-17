@@ -21,8 +21,10 @@ import { CodeJar } from 'lib/vendor/codejar';
 import 'lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
-// import 'modules/tests/test-parser'; // test parser evaluation
+// import 'modules/tests/test-expr-parser'; // test parser evaluation
+// import 'modules/tests/test-script-parser'; // test script parser
 // import 'modules/tests/test-compiler'; // test compiler
+// import 'modules/tests/test-script-runtime'; // test runtime keyword functions
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-styles';
@@ -83,7 +85,8 @@ class Compiler extends React.Component {
     UR.RegisterMessage('SCRIPT_SRC_CHANGED', this.updateScript);
     // temp: make sure the blueprint
     // eventually this needs to be part of application startup
-    TRANSPILER.RegisterBlueprint(this.source);
+    const bdl = TRANSPILER.CompileBlueprint(this.source);
+    TRANSPILER.RegisterBlueprint(bdl);
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
@@ -166,6 +169,9 @@ class Compiler extends React.Component {
     DATACORE.DeleteAllTests();
     const source = TRANSPILER.ScriptifyText(this.text);
     this.source = source;
+    console.groupCollapsed('parsed text');
+    TRANSPILER.ScriptToConsole(source);
+    console.groupEnd();
     this.setState({ source: JSON.stringify(source) });
   }
 
@@ -174,11 +180,12 @@ class Compiler extends React.Component {
     this.userCompileText();
     // save the blueprint to default and reprogram sim
     DATACORE.DeleteAllTests();
-    DATACORE.DeleteAllGlobalConditions();
+    // DATACORE.DeleteAllGlobalConditions(); // deprecated in script-xp
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
-    const bp = TRANSPILER.RegisterBlueprint(this.source);
+    const bdl = TRANSPILER.CompileBlueprint(this.source);
+    const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
     const jsx = TRANSPILER.RenderScript(this.source);

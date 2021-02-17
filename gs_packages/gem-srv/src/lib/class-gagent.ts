@@ -16,7 +16,6 @@ import {
   IFeature,
   IAgent,
   TMethod,
-  TExpressionAST,
   TSMCProgram,
   IScopeable,
   IActable,
@@ -151,30 +150,36 @@ class GAgent extends SM_Object implements IAgent, IActable {
     return feat;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Return a feature with feature method for execution */
+  getFeatMethod(fName: string, mName: string): any {
+    const feat = this.getFeature(fName);
+    const featMethod = feat[mName];
+    if (!featMethod)
+      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+    return [feat, featMethod];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Called from compiled code, execute a feature function with feature context
    *  as 'this' with signature (agent,...args)
    *  This is a variation of exec_program() with 'this' swapped for the feature
    *  instance
    */
-  featExec(fName: string, mName: string, ...args): any {
-    const feat = this.getFeature(fName);
-    const featMethod = feat.method[mName];
-    if (!featMethod)
-      throw Error(`method '${mName}' not in Feature '${feat.name}'`);
+  callFeatMethod(fName: string, mName: string, ...args): any {
+    const [feat, featMethod] = this.getFeatMethod(fName, mName);
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
    *  in the agent's props map as a GVarDictionary, so this version
    *  of prop returns the contents of the GVarDictionary!
    */
-  featProp(fName: string, pName: string): IScopeable {
+  getFeatProp(fName: string, pName: string): IScopeable {
     const featProps = this.prop[fName];
     return featProps[pName];
   }
   /** Return private feature variable. The variable name must begin with
    *  an _, and it holds a regular Javascript value
    */
-  featVar(fName: string, vName: string): any {
+  getFeatVar(fName: string, vName: string): any {
     if (!vName.startsWith('_')) throw Error('feature var name must begin with _');
     const featProps = this.prop[fName];
     return featProps[vName];
@@ -188,8 +193,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /// hooks.
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Queue a message to be handled during AGENT_UPDATE. Currently, it extracts
-   *  the 'actions' property which is TMethod that can be executed
+   *  the 'actions' property which is TMethod that can be executed. This is
+   *  called from sim-conditions during update
    */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   queueUpdateMessage(message: SM_Message) {
     const { actions } = message;
     this.updateQueue.push(...actions);
@@ -204,40 +211,44 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const { actions } = message;
     this.execQueue.push(...actions);
   }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** After running the blueprint update program, also run any programs that
    *  are stored in the queue, then clear it. The algorithm is the same for
    *  each queue type.
    */
   agentUPDATE(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.update) {
-      this.exec(this.blueprint.update, {});
+      this.exec(this.blueprint.update, ctx);
     }
     this.updateQueue.forEach(action => {
       // console.log(this.name(), 'updateAction', this.exec(action));
-      this.exec(action, {});
+      this.exec(this.blueprint.update, ctx);
     });
     this.updateQueue = [];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   agentTHINK(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.think) {
-      this.exec(this.blueprint.think);
+      this.exec(this.blueprint.think, ctx);
     }
     this.thinkQueue.forEach(action => {
       // console.log(this.name(), 'thinkAction', this.exec(action));
-      this.exec(action);
+      this.exec(action, ctx);
     });
     this.thinkQueue = [];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   agentEXEC(frameTime: number) {
+    const ctx = { agent: this, [this.blueprint.name]: this };
     if (this.blueprint && this.blueprint.exec) {
-      this.exec(this.blueprint.exec);
+      this.exec(this.blueprint.exec, ctx);
     }
     this.thinkQueue.forEach(action => {
       // console.log(this.name(), 'execAction', this.exec(action));
-      this.exec(action);
+      this.exec(action, ctx);
     });
     this.execQueue = [];
   }
@@ -271,10 +282,13 @@ class GAgent extends SM_Object implements IAgent, IActable {
     if (m === undefined) return undefined;
     const ctx = { agent: this, global: GLOBAL };
     Object.assign(ctx, context);
-    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
+    if (typeof m === 'object') {
+      if (m.expr) return this.exec_ast(m.expr, ctx);
+      console.warn('exec got unexpected object node', m);
+    }
+    if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
     if (typeof m === 'string') return this.exec_program(m, ctx, ...args);
-    if (typeof m === 'object') return this.exec_ast(m, ctx);
     throw Error('method object is neither function or smc');
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -283,9 +297,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
    *  processing AgentSets. Optionally pass a stack to reuse.
    */
   exec_smc(program: TSMCProgram, ctx, ...args) {
-    const state = new SM_State([], ctx);
+    const state = new SM_State([...args], ctx);
     program.forEach((op, index) => {
-      if (typeof op !== 'function') console.warn(op, index);
+      if (typeof op !== 'function')
+        console.warn(`op is not a function, got ${typeof op}`, op);
       op(this, state);
     });
     // return the stack as a result, though
@@ -303,13 +318,14 @@ class GAgent extends SM_Object implements IAgent, IActable {
   /** Execute a named program stored in global program store */
   exec_program(progName: string, context, ...args) {
     const prog = GetProgram(progName) || GetTest(progName);
-    if (prog !== undefined) return this.exec(prog, args, context);
+    if (prog !== undefined) return this.exec(prog, context, ...args);
     throw Error(`program ${progName} not found in PROGRAMS or TESTS`);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Parse an abstract syntax tree through Evaluate */
-  exec_ast(ast: TExpressionAST, ctx) {
-    return Evaluate(ast, ctx);
+  exec_ast(exprAST: object, ctx, ...args) {
+    ctx.args = args;
+    return Evaluate(exprAST, ctx);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Utility to evalute an AST or array of ASTs, replacing them with

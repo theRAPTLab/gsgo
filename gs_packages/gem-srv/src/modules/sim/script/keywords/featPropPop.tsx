@@ -1,47 +1,34 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "dbgOut" command object
+  implementation of keyword "featPropPop" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import UR from '@gemstep/ursys/client';
 import { Keyword } from 'lib/class-keyword';
 import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { EvalUnitArgs } from 'lib/expr-evaluator';
-
-/// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MAX_OUT = 100;
-let COUNTER = MAX_OUT;
-UR.RegisterMessage('AGENT_PROGRAM', () => {
-  console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
-  COUNTER = MAX_OUT;
-});
+import { DerefFeatureProp } from 'lib/expr-evaluator';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class dbgOut extends Keyword {
+export class featPropPop extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('dbgOut');
-    this.args = ['...args'];
+    super('featPropPop');
+    this.args = ['objref', 'optionalMethod', 'optionalArgs'];
   }
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
+    const [kw, refArg, optMethod, ...optArgs] = unit;
+    const deref = DerefFeatureProp(refArg);
     const progout = [];
-
     progout.push((agent, state) => {
-      if (COUNTER-- > 0) {
-        console.log(
-          'DBGOUT:',
-          ...EvalUnitArgs(unit.slice(1), { agent, ...state.ctx })
-        );
-      }
-      if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
+      const p = deref(agent, state.ctx);
+      if (optMethod === undefined) p.value = state.pop();
+      else p[optMethod](...state.stack);
     });
     return progout;
   }
@@ -54,12 +41,12 @@ export class dbgOut extends Keyword {
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
+    const [kw, objref, optMethod, ...optArgs] = unit;
+    return super.jsx(index, unit, <>featPropPop: {`'${objref}'`}</>);
   }
 } // end of UseFeature
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(dbgOut);
+RegisterKeyword(featPropPop);

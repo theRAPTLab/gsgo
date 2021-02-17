@@ -2,80 +2,58 @@ export const MODEL = {
   label: 'Aquatic Ecosystem',
   scripts: [
     {
-      id: 'fish',
+      id: 'Fish',
       label: 'Fish',
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
 // useFeature Label
-featureCall Costume setCostume 'fish.json' 0
+featCall Costume setCostume 'fish.json' 0
 // Have to set prop skin -- bug
 // otherwise, the costume isn't set
-setProp skin 'fish.json'
-featureCall Movement setRandomStart
-featureCall Movement setMovementType 'wander' 1
-// featureCall Label setImage 'energyLevel-1.png'
-// featureCall Label setText 'energy level'
-// featureCall Label setPosition 'top'
-// featureCall Movement setDirection 90
-addProp energyLevel Number 100
-# PROGRAM UPDATE
-# PROGRAM THINK
-// featureHook Costume thinkHook
+prop agent.skin setTo 'fish.json'
+// featCall Movement setRandomStart
+featCall Movement setMovementType 'wander' 0.2
+// featCall Label setImage 'energyLevel-1.png'
+// featCall Label setText 'energy level'
+// featCall Label setPosition 'top'
+// featCall Movement setDirection 90
+addProp energyLevel Number 20
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
-  propCall energyLevel sub 1
-  // dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
+  prop agent.energyLevel sub 1
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
-    featureCall Costume setPose 0
-    featureCall Movement setMovementType 'wander'
+    featCall Costume setPose 0
   ]]
   // hungry
   ifExpr {{ agent.getProp('energyLevel').value < 15 }} [[
-    featureCall Costume setPose 1
-    featureCall Movement setMovementType 'wander'
+    featCall Costume setPose 1
   ]]
   // dead
   ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
-    featureCall Costume setPose 2
-    featureCall Movement setMovementType 'float'
+    featCall Costume setPose 2
+    featCall Movement setMovementType 'float'
   ]]
 
   // // Variation using code blocks instead of expressions
   // // Expressions {{ }} have a different context than code blocks [[ ]]
   // if [[
-  //   propCall energyLevel lt {{ agent.getProp('energLevel')) * 15 }}
-  //
-  //   // This won't work:
-  //   //   agent.getProp('energyLevel').value
-  //   // because code block context does not include 'agent'
-  //
+  //   prop agent.energyLevel lt {{ agent.getProp('energLevel')) * 15 }}
   // ]] [[
-  //   featureCall Costume setPose 1
-  //   featureCall Movement setMovementType 'float'
-  //
-  //   // Using Expressions
-  //   // Expressions and Block Script use different execution engines
-  //   // To set a prop...
-  //   // ...This own't work:
-  //   //   agent.xxx dot notation because this only works in Expressions
-  //   // ...nor this:
-  //   //   'setAgentProp xxx' because this works inside of global CONDITIONS context
-  //   // ...Use this instead...
-  //   //   setProp energyLevel
+  //   featCall Costume setPose 1
+  //   featCall Movement setMovementType 'float'
   // ]]
 
 ]]
 
-# PROGRAM CONDITION
+# PROGRAM UPDATE
 when Fish touches Algae [[
   // dbgOut 'Touch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-  // dbgContext
 
-  setProp energyLevel {{ Fish.prop.energyLevel.value + 1 }}
+  prop Fish.energyLevel add 1
 
   // setAgentProp Fish foodLevel {{ Fish.prop.foodLevel.value + 1 }}
   // Code example for setting algae in this context, not needed actually
@@ -88,87 +66,102 @@ when Fish touches Algae [[
 
   // Counter Example
   // We want to set the skin of Fish when Fish touches Algae
-  // You'd think you could do this:
-  //    setProp skin 'fish.json'
-  // ...but that does not work because 'setProp' does not have the Fish context.
-  // So you need to specify the agent context
-  //    setAgentProp Fish skin 'full.json'
-  // or
-  //    callAgentProp Fish skin setTo 'full.json'
+  //    prop Fish.skin setTo 'full.json'
 ]]
 `
     },
     {
-      id: 'algae',
+      id: 'Algae',
       label: 'Algae',
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-featureCall Costume setCostume 'algae.json' 0
-setProp skin 'algae.json'
-// featureCall Movement setRandomStart
-featureCall Movement setMovementType 'wander' 0.2
+featCall Costume setCostume 'algae.json' 0
+prop agent.skin setTo 'algae.json'
+// featCall Movement setRandomStart
+featCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
-# PROGRAM UPDATE
-# PROGRAM THINK
-// featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // energyLevel goes down every second
-  propCall energyLevel sub 1
-  // setProp energyLevel {{ agent.getProp('energyLevel').value * 0.5 }}
-  // dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
+  prop agent.energyLevel sub 1
 ]]
-# PROGRAM CONDITION
+# PROGRAM UPDATE
 // when Algae touches Lightbeam [[
 //   // When algae touches lightbeam, energyLevel goes up
-//   callAgentProp Algae energyLevel inc 1
+//   prop Algae.energyLevel inc 1
 //   ifExpr {{ Algae.getProp('energyLevel').value > 5 }} [[
 //     dbgOut 'spawn new algae'
-//     propCall energyLevel setTo 1
+//     prop Algae.energyLevel setTo 1
 //   ]]
 //
 //   // Counter Example
      // To increment Algae energyLevel, we would.
-     //    exec {{ Algae.getProp('energyLevel').inc(1) }}
-     // setAgentProp Algae energyLevel {{ Algae.getProp('energyLevel') + 1 }}
-     // callAgentProp Algae energyLevel add 1
+     // prop Algae.energyLevel add 1
 // ]]
 `
     },
     {
-      id: 'lightbeam',
+      id: 'Lightbeam',
       label: 'LightBeam',
       script: `# BLUEPRINT Lightbeam
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-# PROGRAM INIT
-featureCall Costume setCostume 'lightbeam.json' 0
-// featureCall Movement setController 'user'
-setProp x -300
-setProp y -300
-# PROGRAM UPDATE
-// example to move featureCall Movement jitterPos -5 5
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-// For built-in system functions, e.g. "On Timer", "On Tick", etc.
-# PROGRAM CONDITION
-// For student defined, e.g. "When"
-// e.g. set filtering
-// e.g.
+featCall Costume setCostume 'lightbeam.json' 0
+prop agent.skin setTo 'lightbeam.json'
+// featCall Movement setController 'user'
+prop agent.x setTo -300
+prop agent.y setTo -300
 `
     },
     {
-      id: 'poop',
+      id: 'Poop',
       label: 'Poop',
       script: `# BLUEPRINT POOP
 # PROGRAM DEFINE
 useFeature Costume
-featureCall Costume setCostume 'poop.json' 0
+// featCall Costume setCostume 'poop.json' 0
 `
+    }
+  ],
+  instances: [
+    {
+      name: 'fish01',
+      blueprint: 'Fish',
+      init: `prop agent.x setTo -220
+prop agent.y setTo -220`
+    },
+    {
+      name: 'fatFish',
+      blueprint: 'Fish',
+      init: `prop agent.x setTo 0
+prop agent.y setTo 0`
+    },
+    {
+      name: 'starvedFish',
+      blueprint: 'Fish',
+      init: `prop agent.x setTo 200
+prop agent.y setTo 200`
+    },
+    {
+      name: 'algae01',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo -220
+prop agent.y setTo -220`
+    },
+    {
+      name: 'algae02',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo -150
+prop agent.y setTo -120`
+    },
+    {
+      name: 'algae03',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo -120
+prop agent.y setTo -90`
     }
   ]
 };

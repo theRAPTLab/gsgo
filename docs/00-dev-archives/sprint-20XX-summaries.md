@@ -114,8 +114,13 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 * W1: handle multiline blocks, agentset and event conditions
 * W2: finalize event conditions, delivery, break
 
-**SUMMARY S25 DEC 07 - DEC 20** + 2DAYS
+**SUMMARY S2025 DEC 07 - DEC 20** + 2DAYS
 
 * W1: Port FakeTrack/PTrack into GEMSRV
 * W2: Simplify agent prop, method, features for use by non-Sri peeps
 * W2.1: Prep for Dec 23 demo, review features with Ben
+
+**SUMMARY S2101 JAN 11 - JAN 24**
+
+* W1: Ramp up 2020. Draft of System Overview docs.
+* W2: Script Engine review of patterns, issues, needed fixes
