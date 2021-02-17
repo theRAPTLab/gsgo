@@ -19,21 +19,18 @@ featCall Movement setMovementType 'wander' 0.2
 // featCall Label setText 'energy level'
 // featCall Label setPosition 'top'
 // featCall Movement setDirection 90
-addProp energyLevel Number 100
+addProp energyLevel Number 20
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
   prop agent.energyLevel sub 1
-  // dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
     featCall Costume setPose 0
-    // featCall Movement setMovementType 'wander'
   ]]
   // hungry
   ifExpr {{ agent.getProp('energyLevel').value < 15 }} [[
     featCall Costume setPose 1
-    // featCall Movement setMovementType 'wander'
   ]]
   // dead
   ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
@@ -69,13 +66,7 @@ when Fish touches Algae [[
 
   // Counter Example
   // We want to set the skin of Fish when Fish touches Algae
-  // You'd think you could do this:
-  //    setProp skin 'fish.json'
-  // ...but that does not work because 'setProp' does not have the Fish context.
-  // So you need to specify the agent context
-  //    setAgentProp Fish skin 'full.json'
-  // or
-  //    callAgentProp Fish skin setTo 'full.json'
+  //    prop Fish.skin setTo 'full.json'
 ]]
 `
     },
@@ -87,34 +78,27 @@ when Fish touches Algae [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-setProp skin 'algae.json'
+prop agent.skin setTo 'algae.json'
 // featCall Movement setRandomStart
 featCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
-# PROGRAM UPDATE
-# PROGRAM THINK
-// featureHook Costume thinkHook
 # PROGRAM EVENT
 onEvent Tick [[
   // energyLevel goes down every second
-  propCall energyLevel sub 1
-  // setProp energyLevel {{ agent.getProp('energyLevel').value * 0.5 }}
-  // dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
+  prop agent.energyLevel sub 1
 ]]
-# PROGRAM CONDITION
+# PROGRAM UPDATE
 // when Algae touches Lightbeam [[
 //   // When algae touches lightbeam, energyLevel goes up
-//   callAgentProp Algae energyLevel inc 1
+//   prop Algae.energyLevel inc 1
 //   ifExpr {{ Algae.getProp('energyLevel').value > 5 }} [[
 //     dbgOut 'spawn new algae'
-//     propCall energyLevel setTo 1
+//     prop Algae.energyLevel setTo 1
 //   ]]
 //
 //   // Counter Example
      // To increment Algae energyLevel, we would.
-     //    exec {{ Algae.getProp('energyLevel').inc(1) }}
-     // setAgentProp Algae energyLevel {{ Algae.getProp('energyLevel') + 1 }}
-     // callAgentProp Algae energyLevel add 1
+     // prop Algae.energyLevel add 1
 // ]]
 `
     },
@@ -125,22 +109,11 @@ onEvent Tick [[
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-# PROGRAM INIT
 featCall Costume setCostume 'lightbeam.json' 0
-setProp skin 'lightbeam.json'
+prop agent.skin setTo 'lightbeam.json'
 // featCall Movement setController 'user'
-setProp x -300
-setProp y -300
-# PROGRAM UPDATE
-// example to move featCall Movement jitterPos -5 5
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-// For built-in system functions, e.g. "On Timer", "On Tick", etc.
-# PROGRAM CONDITION
-// For student defined, e.g. "When"
-// e.g. set filtering
-// e.g.
+prop agent.x setTo -300
+prop agent.y setTo -300
 `
     },
     {
@@ -161,6 +134,18 @@ useFeature Costume
 prop agent.y setTo -220`
     },
     {
+      name: 'fatFish',
+      blueprint: 'Fish',
+      init: `prop agent.x setTo 0
+prop agent.y setTo 0`
+    },
+    {
+      name: 'starvedFish',
+      blueprint: 'Fish',
+      init: `prop agent.x setTo 200
+prop agent.y setTo 200`
+    },
+    {
       name: 'algae01',
       blueprint: 'Algae',
       init: `prop agent.x setTo -220
@@ -177,6 +162,12 @@ prop agent.y setTo -120`
       blueprint: 'Algae',
       init: `prop agent.x setTo -120
 prop agent.y setTo -90`
+    },
+    {
+      name: 'algaeStatic',
+      blueprint: 'Algae',
+      init: `prop agent.x setTo 0
+prop agent.y setTo 0`
     }
   ]
 };
