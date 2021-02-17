@@ -162,12 +162,6 @@ prop agent.y setTo -120`
       blueprint: 'Algae',
       init: `prop agent.x setTo -120
 prop agent.y setTo -90`
-    },
-    {
-      name: 'algaeStatic',
-      blueprint: 'Algae',
-      init: `prop agent.x setTo 0
-prop agent.y setTo 0`
     }
   ]
 };
