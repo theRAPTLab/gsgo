@@ -16,7 +16,6 @@ import {
   IFeature,
   IAgent,
   TMethod,
-  TExpressionAST,
   TSMCProgram,
   IScopeable,
   IActable,
@@ -284,7 +283,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const ctx = { agent: this, global: GLOBAL };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
-    if (typeof m === 'object') return this.exec_ast(m, ctx);
+    if (typeof m === 'object') {
+      if (m.expr) return this.exec_ast(m.expr, ctx);
+      console.warn('exec got unexpected object node', m);
+    }
     if (typeof m === 'function') return this.exec_func(m, ctx, ...args);
     if (typeof m === 'string') return this.exec_program(m, ctx, ...args);
     throw Error('method object is neither function or smc');
@@ -321,9 +323,9 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Parse an abstract syntax tree through Evaluate */
-  exec_ast(ast: TExpressionAST, ctx, ...args) {
+  exec_ast(exprAST: object, ctx, ...args) {
     ctx.args = args;
-    return Evaluate(ast, ctx);
+    return Evaluate(exprAST, ctx);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Utility to evalute an AST or array of ASTs, replacing them with
