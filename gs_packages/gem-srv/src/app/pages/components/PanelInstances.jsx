@@ -4,48 +4,33 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
-import Inspector from './Inspector';
+import InstanceInspector from './InstanceInspector';
 
 class PanelInstances extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Instances',
-      instances: []
+      title: 'Instances'
     };
-    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
-    this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    UR.HandleMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
-  }
-
-  componentWillUnmount() {
-    UR.UnhandleMessage('HACK_INSTANCES_UPDATED', this.OnInstanceUpdate);
-  }
-
-  OnInstanceUpdate(data) {
-    this.setState({ instances: data });
-  }
-
-  OnInstanceClick(instanceName) {
-    console.log('clicked on', instanceName);
   }
 
   render() {
-    const { title, instances } = this.state;
-    const { id, isActive, classes } = this.props;
+    const { title } = this.state;
+    const { id, isActive, instances, disallowDeRegister, classes } = this.props;
 
-    const typedInstances = {};
+    if (!instances) return <></>;
+
+    // Group instances by blueprint
+    const instancesByType = {};
     instances.forEach(i => {
-      if (typedInstances[i.blueprint] === undefined) {
-        typedInstances[i.blueprint] = [i];
-      } else {
-        typedInstances[i.blueprint].push(i);
-      }
+      if (instancesByType[i.blueprint.name] === undefined)
+        instancesByType[i.blueprint.name] = [];
+      instancesByType[i.blueprint.name].push(i);
     });
-    const instanceArray = Object.keys(typedInstances).map(key => {
+    const instancesByBlueprint = Object.keys(instancesByType).map(key => {
       return {
-        agent: key,
-        instances: [...typedInstances[key]]
+        name: key,
+        instances: [...instancesByType[key]]
       };
     });
 
@@ -71,17 +56,17 @@ class PanelInstances extends React.Component {
         >
           <span className={classes.instructions}>click to show/hide data</span>
           <div>
-            {instanceArray.map(a => (
+            {instancesByBlueprint.map(blueprint => (
               <div
                 style={{
                   display: 'flex',
                   flexDirection: 'row',
                   flexWrap: 'wrap'
                 }}
-                key={a.agent}
+                key={blueprint.name}
               >
-                {a.instances.map(i => (
-                  <Inspector agentName={i.name} key={i.name} />
+                {blueprint.instances.map(i => (
+                  <InstanceInspector instance={i} key={i.id} disallowDeRegister />
                 ))}
               </div>
             ))}

@@ -183,7 +183,7 @@ class PanelScript extends React.Component {
   }
 
   /**
-   * 1. This raises NET:HACK_SCRIPT_UPDATE
+   * 1. PanelScript raises NET:HACK_SCRIPT_UPDATE
    * 2. PanelSimulation handles NET:HACK_SCRIPT_UPDATE
    *    a. PanelSimulation calls DoScriptUpdate
    *    b. DoScriptUpdate scriptifys the text

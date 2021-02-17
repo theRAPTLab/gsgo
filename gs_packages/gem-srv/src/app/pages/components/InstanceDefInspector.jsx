@@ -10,14 +10,14 @@ const SIZE_MIN = 'min'; // name only
 const SIZE_MED = 'med'; // x and y (first line)
 const SIZE_MAX = 'max'; // all
 
-class Inspector extends React.Component {
+class InstanceSpecInspector extends React.Component {
   constructor() {
     super();
     this.state = {
       title: 'INSPECTOR',
       agent: {},
       data: undefined,
-      size: SIZE_MED,
+      size: SIZE_MAX,
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)'
@@ -94,18 +94,21 @@ class Inspector extends React.Component {
 
   render() {
     const { title, agent, data, size, color, colorActive, bgcolor } = this.state;
-    const { id, agentName, isActive, classes } = this.props;
+    const { id, instanceDef, isActive, classes } = this.props;
+    const name = instanceDef ? instanceDef.name : '';
+    const init = instanceDef ? instanceDef.init : '';
+    console.log('instancedef is ', instanceDef);
     return (
       <div
+        className={classes.instanceListItem}
         style={{
-          backgroundColor: '#000',
-          margin: '0.5em 0 0.5em 0',
+          margin: '1em',
           cursor: 'pointer'
         }}
         onClick={this.OnInstanceClick}
       >
         <div>
-          <div className={classes.inspectorData}>{agentName}</div>
+          <div className={classes.inspectorData}>{name}</div>
         </div>
         <div
           style={{
@@ -114,15 +117,16 @@ class Inspector extends React.Component {
             paddingLeft: '0.5em'
           }}
         >
+          <code
+            id="codejar"
+            ref={this.jarRef}
+            style={{ width: '100%', height: 'auto' }}
+          >
+            {init}
+          </code>
           {data &&
             data.map(property => (
-              <div
-                style={{
-                  display: 'inline-block',
-                  paddingRight: '1em'
-                }}
-                key={property.label}
-              >
+              <div className={classes.button} key={property.label}>
                 <div className={classes.inspectorLabel}>{property.label}:</div>
                 <div className={classes.inspectorData}>{property.value}</div>
               </div>
@@ -133,4 +137,4 @@ class Inspector extends React.Component {
   }
 }
 
-export default withStyles(useStylesHOC)(Inspector);
+export default withStyles(useStylesHOC)(InstanceSpecInspector);
