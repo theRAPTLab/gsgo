@@ -23,7 +23,7 @@ import {
 } from '@material-ui/core/styles';
 ///
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { useRegisterMessage } from '../hooks/use-ursys';
+import { useHandleMessage } from '../hooks/use-ursys';
 ///
 import theme from '../modules/style/theme';
 import { SITE } from './_navmenu.json';
@@ -81,7 +81,7 @@ export default function MyApp(props) {
     data._app = 'hello from _app';
     return data;
   }
-  useRegisterMessage('HELLO_URSYS', handleHello);
+  useHandleMessage('HELLO_URSYS', handleHello);
 
   // render app wrapped with our providers
   return (

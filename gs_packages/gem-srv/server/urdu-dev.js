@@ -17,12 +17,14 @@ const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const DevServer = require('webpack-dev-middleware');
 const HotReload = require('webpack-hot-middleware');
-const { ExpressHandler, PrefixUtil } = require('@gemstep/ursys/server');
+const { Express_NetInfoResponder, PrefixUtil } = require('@gemstep/ursys/server');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const wpconf_packager = require('../config/wp.pack.webapp');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PrefixUtil('APPSRV');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -31,9 +33,11 @@ const DIR_ROOT = Path.resolve(__dirname, '../');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const app = Express();
 app.use(Compression());
 let m_server; // server object returned by app.listen()
+
 function m_StartServer(opt = {}) {
   if (!m_server) {
     const ip = `\x1b[33m${IP.address()}\x1b[0m`;
@@ -79,7 +83,7 @@ function Start(opt = {}) {
     // we'll start the server after webpack bundling is complete
     // but we still have some configuration to do
     // note that many hooks do not run in developer HMR mode
-    compiler.hooks.afterCompile.tap('StartServer', m_StartServer);
+    compiler.hooks.afterCompile.tap('URNET_Start', m_StartServer);
 
     // return promiseStart when server starts
     promiseStart = new Promise((resolve, reject) => {
@@ -150,7 +154,7 @@ function Start(opt = {}) {
   });
 
   // handle urnet
-  app.use(ExpressHandler);
+  app.use(Express_NetInfoResponder);
 
   // for everything else...
   app.use('/', Express.static(DIR_OUT));

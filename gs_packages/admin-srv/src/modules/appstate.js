@@ -62,7 +62,7 @@ UR.SystemHook('UR/APP_CONFIGURE', () => {
       });
     }, 5000);
     //
-    UR.RegisterMessage('HELLO_URSYS', data => {
+    UR.HandleMessage('HELLO_URSYS', data => {
       console.log(...PR('RESPONSE "HELLO_URSYS"'));
       let out = '. got';
       Object.keys(data).forEach(key => {

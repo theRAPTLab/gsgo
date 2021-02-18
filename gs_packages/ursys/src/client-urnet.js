@@ -32,7 +32,7 @@ const M_STANDALONE = 5;
 let m_socket; // contain socket information on registration message
 let m_urlink; // assigned during NETWORK.Connect()
 let m_options;
-let m_status = M0_INIT;
+let m_status = M0_INIT; // current status
 
 /// NETWORK LISTENERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -51,6 +51,10 @@ function m_RemoveListener(event, handlerFunction) {
     throw Error(ERR_NO_SOCKET);
   }
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_SetStatus(nextStatus) {
+  m_status = nextStatus;
+}
 
 /// API HELPERS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,7 +67,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   // (1) after receiving the initial message, switch over to regular
   // message handler
   m_RemoveListener('message', m_HandleRegistrationMessage);
-  m_status = M3_REGISTERED;
+  m_SetStatus(M3_REGISTERED);
   // (2) initialize global settings for netmessage
   if (DBG.connect || DBG.hello) console.log(...PR(`URNET SAYS '${HELLO}'`));
   m_socket.UADDR = NetPacket.DefaultServerUADDR();
@@ -76,7 +80,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   });
   // (3) connect regular message handler
   m_AddListener('message', m_HandleMessage);
-  m_status = M4_READY;
+  m_SetStatus(M4_READY);
   // (4) network is initialized
   if (typeof m_options.success === 'function') m_options.success();
   // (5) also update window.URSESSION with UADDR
@@ -169,13 +173,13 @@ const NETWORK = {};
  */
 NETWORK.Connect = (datalink, opt) => {
   return new Promise(resolve => {
-    if (m_status > 0) {
+    if (NETWORK.WasInitialized()) {
       let err =
         'called twice...other views may be calling URSYS outside of lifecycle';
       console.error(...PR(err));
       return;
     }
-    m_status = M1_CONNECTING;
+    m_SetStatus(M1_CONNECTING);
 
     // check and save parms
     if (datalink.constructor.name !== 'MessagerEndpoint') {
@@ -194,7 +198,7 @@ NETWORK.Connect = (datalink, opt) => {
     // create listeners
     m_AddListener('open', event => {
       if (DBG.connect) console.log(...PR(`...OPEN ${event.target.url}`));
-      m_status = M2_CONNECTED;
+      m_SetStatus(M2_CONNECTED);
       // message handling continues in 'message' handler
       // the first message is assumed to be registration data
       if (DBG.connect) console.log(...PR('CONNECTED'));
@@ -203,7 +207,7 @@ NETWORK.Connect = (datalink, opt) => {
     m_AddListener('close', event => {
       if (DBG.connect) console.log(...PR(`..CLOSE ${event.target.url}`));
       NetPacket.GlobalOfflineMode();
-      m_status = M_STANDALONE;
+      m_SetStatus(M_STANDALONE);
     });
     // handle incoming messages
     m_AddListener('message', m_HandleRegistrationMessage);
@@ -230,6 +234,10 @@ NETWORK.SocketUADDR = () => {
  */
 NETWORK.IsStandaloneMode = () => {
   return m_status === M_STANDALONE;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NETWORK.WasInitialized = () => {
+  return m_status > 0;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return TRUE if client is running with the localhost as server.

@@ -16,14 +16,14 @@ const PROCESS = require('process');
 const PATH = require('path');
 const shell = require('shelljs');
 const minimist = require('minimist');
-const URSERVER = require('@gemstep/ursys/server');
+const UR = require('@gemstep/ursys/server');
 const TRACKER = require('./server/step-tracker');
-const DEVSERVER = require('./server/urdu-dev');
+const WEBSRV = require('./server/urdu-dev');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = 'GEMSRV-RUN';
-const TOUT = URSERVER.TermOut(PR);
+const TOUT = UR.TermOut(PR);
 const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
@@ -96,11 +96,11 @@ function RunDevServer(opt) {
 
   // run ursys
   (async () => {
-    await DEVSERVER.Start(opt);
-    await URSERVER.Initialize(TRACKER.StartTrackerSystem);
-    await URSERVER.StartServer({
+    await WEBSRV.Start(opt);
+    await UR.Initialize(TRACKER.StartTrackerSystem);
+    await UR.URNET_Start({
       port: PORT,
-      serverName: 'APP_SRV',
+      serverName: 'GEM_SRV',
       runtimePath: RUNTIME_PATH
     });
   })();

@@ -37,9 +37,35 @@ const LOGGER = {};
 // const NETWORK = {};
 const MEDIA = {};
 
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given req and response, return URNET connection information
+ */
+function m_RespondWithURNetInfo(req, res) {
+  res.setHeader('Content-Type', 'application/json');
+  res.writeHead(200);
+  let { host, port, urnet_version, uaddr } = URNET_NetInfo();
+  let client_ip = requestIp.getClientIp(req);
+  // prevent socket connection refusal due to mismatch of localhost
+  // with use of numeric IP when connecting to server
+  if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
+  const netProps = {
+    broker: {
+      host,
+      port,
+      urnet_version,
+      uaddr
+    },
+    client: {
+      ip: client_ip
+    }
+  };
+  res.end(JSON.stringify(netProps));
+}
+
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** initialize dependent libraries
+/** initialize dependent libraries (vestige from PLAE)
  */
 function Initialize(inits) {
   // hooks registration goes here
@@ -61,7 +87,7 @@ function Shutdown(closers) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start the URNET socket server
  */
-function StartServer(options) {
+function URNET_Start(options) {
   m_network_options = NETWORK.StartNetwork(options);
   return m_network_options;
 }
@@ -70,41 +96,18 @@ function StartServer(options) {
  *  may contain non-broker information, so we return specific properties
  *  instead of the whole object.
  */
-function GetNetBroker() {
+function URNET_NetInfo() {
   const { host, port, urnet_version, uaddr } = m_network_options;
   return { host, port, urnet_version, uaddr };
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given req and response, return URNET connection information
- */
-function ReplyWithUrnetInfo(req, res) {
-  res.setHeader('Content-Type', 'application/json');
-  res.writeHead(200);
-  let { host, port, urnet_version, uaddr } = GetNetBroker();
-  let client_ip = requestIp.getClientIp(req);
-  // prevent socket connection refusal due to mismatch of localhost
-  // with use of numeric IP when connecting to server
-  if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
-  const netProps = {
-    broker: {
-      host,
-      port,
-      urnet_version,
-      uaddr
-    },
-    client: {
-      ip: client_ip
-    }
-  };
-  res.end(JSON.stringify(netProps));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Called from a custom NextJS server using http.createServer(requestListener).
- *  This listener is hardcoded with the urnet API, so it is independent of
+/** Called from a custom NextJS server (created with the
+ *  http.createServer(requestListener) call to add our own listener)
+ *  The listener listens for a request for URNetBroker information.
  *  the NextJS and other frameworks.
  */
-function HttpRequestListener(req, res) {
+function NextJS_NetInfoResponder(req, res) {
   // Be sure to pass `true` as the second argument to `url.parse`.
   // This tells it to parse the query portion of the URL.
   const parsedUrl = parse(req.url, true);
@@ -112,18 +115,21 @@ function HttpRequestListener(req, res) {
   const { pathname, query } = parsedUrl;
   // Do our route interception here
   if (pathname === URNET_PROP_ROUTE) {
-    ReplyWithUrnetInfo(req, res);
+    m_RespondWithURNetInfo(req, res);
     return true;
   }
   return false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ExpressHandler(req, res, next) {
+/** Called from custom Express server, this sets up the URNetBroker link
+ *  that returns host, port, urnet_version, uaddr
+ */
+function Express_NetInfoResponder(req, res, next) {
   const parsedUrl = parse(req.url, true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   if (pathname === URNET_PROP_ROUTE) {
-    ReplyWithUrnetInfo(req, res);
+    m_RespondWithURNetInfo(req, res);
   } else next();
 }
 
@@ -135,10 +141,10 @@ module.exports = {
   // MAIN API
   Initialize,
   Shutdown,
-  StartServer,
-  GetNetBroker,
-  HttpRequestListener,
-  ExpressHandler,
+  URNET_Start,
+  URNET_NetInfo,
+  NextJS_NetInfoResponder,
+  Express_NetInfoResponder,
   // SERVICES API
   STORE,
   EXPRESS,

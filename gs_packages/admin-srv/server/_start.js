@@ -43,11 +43,11 @@ process.on('uncaughtException', err => {
   // Turn off PTRACK so it doesn't interfere with FakeTrack in GEM_SRV
   // await PTRACK.StartTrackerSystem();
   await URSERVER.Initialize();
-  await URSERVER.StartServer({
+  await URSERVER.URNET_Start({
     serverName: 'GEM_SRV',
     runtimePath: RUNTIME_PATH
   });
-  const { port, uaddr } = URSERVER.GetNetBroker();
+  const { port, uaddr } = URSERVER.URNET_NetInfo();
   TOUT(`SERVER STARTED on port:${port} w/uaddr:${uaddr}`);
 })();
 
@@ -63,7 +63,7 @@ app.prepare().then(() => {
     // Be sure to pass `true` as the second argument to `url.parse`.
     // This tells it to parse the query portion of the URL.
     const parsedUrl = parse(req.url, true);
-    if (!URSERVER.HttpRequestListener(req, res)) {
+    if (!URSERVER.NextJS_NetInfoResponder(req, res)) {
       handle(req, res, parsedUrl);
     }
   }).listen(3000, err => {
