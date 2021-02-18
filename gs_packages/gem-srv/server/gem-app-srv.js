@@ -54,7 +54,7 @@ function m_AppListen(opt = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start the express webserver on designated PORT
  */
-function Start(opt = {}) {
+function StartAppServer(opt = {}) {
   const { skipWebCompile = false } = opt;
   console.log(
     ...PR('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...')
@@ -165,4 +165,4 @@ function Start(opt = {}) {
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { Start, PORT };
+module.exports = { StartAppServer, PORT };

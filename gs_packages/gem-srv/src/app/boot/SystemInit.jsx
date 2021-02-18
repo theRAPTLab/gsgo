@@ -56,7 +56,7 @@ function Init() {
     console.log(...PR('FYI: setting document.body.style.margin to 0'));
     // initialize URSYS synchronously
     (async () => {
-      const response = await fetch('/urnet/getinfo');
+      const response = await fetch(UR.NetInfoRoute());
       const netInfo = await response.json();
       await UR.SystemStart(document.location.pathname);
       // system boot runs BOOT,INIT,CONNECT phases

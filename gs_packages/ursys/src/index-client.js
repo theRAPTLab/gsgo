@@ -82,7 +82,7 @@ async function SystemStop() {
     return Promise.resolve();
   }
   // close the network
-  await NETWORK.NETWORK_Close();
+  await NETWORK.URNET_Close();
   URSYS_RUNNING = false;
   return Promise.resolve();
 }
@@ -107,9 +107,10 @@ const UR = {
   // ROUTE INFO
   IsRoute: route => URSYS_ROUTE === route,
   ServerIP: NETWORK.ServerIP,
-  NETWORKPort: NETWORK.ServerPort,
+  ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,
   ConnectionString: NETWORK.ConnectionString,
+  NetInfoRoute: NETWORK.NetInfoRoute,
   // FORWARDED SYSTEM CONTROL VIA EXEC
   SystemBoot: EXEC.SystemBoot,
   SystemConfig: EXEC.SystemConfig,

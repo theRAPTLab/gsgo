@@ -18,11 +18,11 @@ const shell = require('shelljs');
 const minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
 const TRACKER = require('./server/step-tracker');
-const GEMAPP = require('./server/gem-dev');
+const GEMAPP = require('./server/gem-app-srv');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = 'GEMSRV-RUN';
+const PR = 'GEM-RUN';
 const TOUT = UR.TermOut(PR);
 const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 
@@ -33,7 +33,7 @@ function m_WrapErrorText(str) {
   return `\x1b[30;41m\x1b[37m ${str} \x1b[0m\n`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Start up GEMSTEP SERVER */
+/** Start up GEMSTEP SERVER (at end of this file) */
 function GEMSRV_Start(opt) {
   // git branch information
   const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
@@ -43,25 +43,22 @@ function GEMSRV_Start(opt) {
   if (error) TOUT('using repo <detached head>\n');
   if (stdout) TOUT(`using repo '${stdout.trim()}' branch\n`);
 
-  // old ursys
-  // URSERV.Initialize({ apphost: 'devserver' });
-  // URSERV.StartNetwork();
-  // URSERV.StartWebServer();
-  const PORT = 2930;
+  const URNET_PORT = 2930; // hack to avoid confict with 2929 for admsrv fornow
+
   // trap connection errors when there is port conflict
   process.on('uncaughtException', err => {
     if (err.errno === 'EADDRINUSE')
-      TOUT(m_WrapErrorText(`port ${PORT} is already in use. Aborting`));
+      TOUT(m_WrapErrorText(`port ${URNET_PORT} is already in use. Aborting`));
     else TOUT(err);
     PROCESS.exit(0);
   });
 
   // run ursys
   (async () => {
-    await GEMAPP.Start(opt);
+    await GEMAPP.StartAppServer(opt);
     await UR.Initialize([TRACKER.StartTrackerSystem]);
     await UR.URNET_Start({
-      port: PORT,
+      port: URNET_PORT,
       serverName: 'GEM_SRV',
       runtimePath: RUNTIME_PATH
     });

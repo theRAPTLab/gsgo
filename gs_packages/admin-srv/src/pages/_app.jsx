@@ -111,9 +111,9 @@ export default function MyApp(props) {
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const netInfo = await fetch('http://localhost:3000/urnet/getinfo').then(res =>
-    res.json()
-  );
+  const netInfo = await fetch(
+    `http://localhost:3000${UR.NetInfoRoute()}`
+  ).then(res => res.json());
   return { ...appProps, netInfo };
 };
 
