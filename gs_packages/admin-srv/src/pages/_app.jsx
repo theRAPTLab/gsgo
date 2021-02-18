@@ -45,7 +45,7 @@ const jss = create({
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default function MyApp(props) {
-  const { Component, pageProps, netProps } = props;
+  const { Component, pageProps, netInfo } = props;
   // NOTE: effects execute only on client after MyApp has completely rendered,
   // but window is not accessible in
 
@@ -58,7 +58,7 @@ export default function MyApp(props) {
     }
     // URSYS startup
     (async () => {
-      await UR.SystemBoot({ netProps });
+      await UR.SystemBoot({ netInfo });
       await UR.SystemConfig({ autoRun: true });
     })();
 
@@ -111,10 +111,10 @@ export default function MyApp(props) {
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const netProps = await fetch('http://localhost:3000/urnet/getinfo').then(res =>
+  const netInfo = await fetch('http://localhost:3000/urnet/getinfo').then(res =>
     res.json()
   );
-  return { ...appProps, netProps };
+  return { ...appProps, netInfo };
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

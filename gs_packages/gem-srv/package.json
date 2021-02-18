@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "local": "npm run dev:gem",
-    "dev:srv": "nodemon urdu.js dev-skip",
-    "dev:gem": "node urdu dev",
+    "dev:srv": "nodemon gem_run.js dev-skip",
+    "dev:gem": "node gem_run dev",
     "..ursys": "cd ../ursys && npm run local",
     "..bootstrap": "cd ../../ && npm run bootstrap",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",

@@ -49,7 +49,7 @@ function m_RespondWithURNetInfo(req, res) {
   // prevent socket connection refusal due to mismatch of localhost
   // with use of numeric IP when connecting to server
   if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
-  const netProps = {
+  const netInfo = {
     broker: {
       host,
       port,
@@ -60,7 +60,7 @@ function m_RespondWithURNetInfo(req, res) {
       ip: client_ip
     }
   };
-  res.end(JSON.stringify(netProps));
+  res.end(JSON.stringify(netInfo));
 }
 
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////

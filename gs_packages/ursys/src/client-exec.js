@@ -12,8 +12,8 @@
  */
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URSession = require('./client-session');
-const URPhaseMachine = require('./class-phase-machine');
+const SESSION = require('./client-session');
+const PhaseMachine = require('./class-phase-machine');
 const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -73,14 +73,14 @@ const PHASES = {
 
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PHASE_MACHINE = new URPhaseMachine('UR', PHASES, '');
+let PHASE_MACHINE = new PhaseMachine('UR', PHASES, '');
 const { executePhase, execute } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemBoot, etc
  */
 function m_CheckOptions(options) {
-  const { autoRun, netProps, ...other } = options;
+  const { autoRun, netInfo, ...other } = options;
   const unknown = Object.keys(other);
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
@@ -100,7 +100,7 @@ async function SystemBoot(options = {}) {
   else console.log(...PR('EXEC PHASE_BOOT, PHASE_INIT, PHASE_CONNECT'));
   //
   m_CheckOptions(options);
-  URSession.InitializeNetProps(options.netProps);
+  SESSION.SaveNetInfo(options.netInfo);
   //
   await executePhase('PHASE_BOOT');
   await executePhase('PHASE_INIT');

@@ -15,8 +15,8 @@ const Path = require('path');
 const IP = require('ip');
 const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
-const DevServer = require('webpack-dev-middleware');
-const HotReload = require('webpack-hot-middleware');
+const WebpackDev = require('webpack-dev-middleware');
+const WebpackHot = require('webpack-hot-middleware');
 const { Express_NetInfoResponder, PrefixUtil } = require('@gemstep/ursys/server');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
@@ -35,10 +35,10 @@ const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const app = Express();
-app.use(Compression());
 let m_server; // server object returned by app.listen()
-
-function m_StartServer(opt = {}) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// After webapp is compiled, start the Express web server
+function m_AppListen(opt = {}) {
   if (!m_server) {
     const ip = `\x1b[33m${IP.address()}\x1b[0m`;
     const port = `\x1b[33m${PORT}\x1b[0m`;
@@ -64,26 +64,26 @@ function Start(opt = {}) {
   if (!skipWebCompile) {
     // RUN WEBPACK THROUGH API
     // first create a webpack instance with our chosen config file
-    const webConfig = wpconf_packager();
-
-    const compiler = Webpack(webConfig);
+    const wp_config = wpconf_packager();
+    const wp_compiler = Webpack(wp_config);
     // add webpack middleware to Express
     // also add the hot module reloading middleware
-    const instance = DevServer(compiler, {
+    const wp_devserver = WebpackDev(wp_compiler, {
       logLevel: 'silent', // turns off [wdm] messages
-      publicPath: webConfig.output.publicPath,
+      publicPath: wp_config.output.publicPath,
       stats: 'errors-only' // see https://webpack.js.org/configuration/stats/
     });
     console.log(...PR('... starting hot devserver (this may take a while)'));
 
-    app.use(instance);
-    app.use(HotReload(compiler));
+    app.use(Compression());
+    app.use(wp_devserver);
+    app.use(WebpackHot(wp_compiler));
 
     // compilation start message
     // we'll start the server after webpack bundling is complete
     // but we still have some configuration to do
     // note that many hooks do not run in developer HMR mode
-    compiler.hooks.afterCompile.tap('URNET_Start', m_StartServer);
+    wp_compiler.hooks.afterCompile.tap('StartWebServer', m_AppListen);
 
     // return promiseStart when server starts
     promiseStart = new Promise((resolve, reject) => {
@@ -106,7 +106,7 @@ function Start(opt = {}) {
       }, INTERVAL_PERIOD);
 
       // set resolver
-      compiler.hooks.afterCompile.tap('ResolvePromise', () => {
+      wp_compiler.hooks.afterCompile.tap('ResolvePromise', () => {
         if (!COMPILE_RESOLVED) {
           console.log(...PR('... transpiling complete!'));
           clearInterval(INTERVAL);
@@ -122,7 +122,7 @@ function Start(opt = {}) {
     const TE = '\x1b[0m';
     console.log(...PR(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`));
     console.log(...PR(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`));
-    m_StartServer(opt);
+    m_AppListen(opt);
   }
   // configure cookies middleware (appears in req.cookies)
   app.use(CookieP());

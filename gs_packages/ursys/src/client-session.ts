@@ -32,16 +32,17 @@ let NET_BROKER: MessageBroker;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InitializeNetProps(props: NetProps) {
+function SaveNetInfo(props: NetProps) {
   if (DBG) console.log(...PR('info - setting netprops'), props);
   const { broker } = props;
   NET_BROKER = broker;
   if (DBG) console.log(...PR('session broker'), broker);
 }
-function GetNetBroker() {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetURNetInfo() {
   return NET_BROKER;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { InitializeNetProps, GetNetBroker };
+module.exports = { SaveNetInfo, GetURNetInfo };

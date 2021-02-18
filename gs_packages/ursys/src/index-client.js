@@ -7,9 +7,9 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EndPoint = require('./client-endpoint');
-const URNet = require('./client-urnet');
-const ClientExec = require('./client-exec');
+const UR_EndPoint = require('./client-endpoint');
+const NETWORK = require('./client-urnet');
+const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
@@ -34,8 +34,8 @@ const META = {
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EP_LOCAL = new EndPoint('ur-client');
-const EP_NET = new EndPoint('ur-sender');
+const LocalNode = new UR_EndPoint('ur-client'); // local mesaging
+const NetNode = new UR_EndPoint('ur-sender'); // server messaging
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
 
@@ -60,14 +60,14 @@ async function SystemStart(route) {
     'UR/NET_CONNECT',
     () =>
       new Promise((resolve, reject) =>
-        URNet.Connect(EP_NET, { success: resolve, failure: reject })
+        NETWORK.URNET_Connect(NetNode, { success: resolve, failure: reject })
       )
   );
   // autoregister messages
   PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
-    let result = await EP_LOCAL.ursysRegisterMessages();
+    let result = await LocalNode.ursysRegisterMessages();
     if (DBG)
-      console.log(...PR('message handlers registered with URNET:', result));
+      console.log(...PR('message handlers registered with NETWORK:', result));
   });
   URSYS_RUNNING = true;
   URSYS_ROUTE = route;
@@ -82,7 +82,7 @@ async function SystemStop() {
     return Promise.resolve();
   }
   // close the network
-  await URNet.Close();
+  await NETWORK.NETWORK_Close();
   URSYS_RUNNING = false;
   return Promise.resolve();
 }
@@ -91,14 +91,14 @@ async function SystemStop() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
-  // URNET MESSAGES
-  DeclareMessage: EP_LOCAL.declareMessage,
-  HasMessage: EP_LOCAL.hasMessage,
-  HandleMessage: EP_LOCAL.handleMessage,
-  UnhandleMessage: EP_LOCAL.unhandleMessage,
-  SendMessage: EP_LOCAL.sendMessage,
-  RaiseMessage: EP_LOCAL.raiseMessage,
-  CallMessage: EP_LOCAL.callMessage,
+  // NETWORK MESSAGES
+  DeclareMessage: LocalNode.declareMessage,
+  HasMessage: LocalNode.hasMessage,
+  HandleMessage: LocalNode.handleMessage,
+  UnhandleMessage: LocalNode.unhandleMessage,
+  SendMessage: LocalNode.sendMessage,
+  RaiseMessage: LocalNode.raiseMessage,
+  CallMessage: LocalNode.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
   SystemHook: PhaseMachine.QueueHookFor,
   // SYSTEM STARTUP
@@ -106,17 +106,17 @@ const UR = {
   SystemStop,
   // ROUTE INFO
   IsRoute: route => URSYS_ROUTE === route,
-  ServerIP: URNet.ServerIP,
-  URNetPort: URNet.ServerPort,
-  WebServerPort: URNet.WebServerPort,
-  ConnectionString: URNet.ConnectionString,
-  // FORWARDED SYSTEM CONTROL VIA UREXEC
-  SystemBoot: ClientExec.SystemBoot,
-  SystemConfig: ClientExec.SystemConfig,
-  SystemRun: ClientExec.SystemRun,
-  SystemRestage: ClientExec.SystemRestage,
-  SystemReboot: ClientExec.SystemReboot,
-  SystemUnload: ClientExec.SystemUnload,
+  ServerIP: NETWORK.ServerIP,
+  NETWORKPort: NETWORK.ServerPort,
+  WebServerPort: NETWORK.WebServerPort,
+  ConnectionString: NETWORK.ConnectionString,
+  // FORWARDED SYSTEM CONTROL VIA EXEC
+  SystemBoot: EXEC.SystemBoot,
+  SystemConfig: EXEC.SystemConfig,
+  SystemRun: EXEC.SystemRun,
+  SystemRestage: EXEC.SystemRestage,
+  SystemReboot: EXEC.SystemReboot,
+  SystemUnload: EXEC.SystemUnload,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

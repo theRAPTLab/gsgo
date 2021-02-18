@@ -4,7 +4,7 @@
   This is the URSYS Development Utility, which is built to be called from
   package.json scripts or the command line.
 
-  To run from the command line: ./urdu <cmd> or node urdu <cmd>
+  To run from the command line: ./gem_srcv<cmd> or node gem_run <cmd>
 
   DEV TIP: To pass a parameter via npm run script, you have to use -- as in
   npm run myscript -- --myoptions=something
@@ -18,7 +18,7 @@ const shell = require('shelljs');
 const minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
 const TRACKER = require('./server/step-tracker');
-const WEBSRV = require('./server/urdu-dev');
+const GEMAPP = require('./server/gem-dev');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,51 +28,13 @@ const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// return an ANSI COLOR CODED string for logging to terminal
 function m_WrapErrorText(str) {
   return `\x1b[30;41m\x1b[37m ${str} \x1b[0m\n`;
 }
-
-/// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// CHECK NPM CI WAS RUN //////////////////////////////////////////////////////
-if (!FS.existsSync('./node_modules')) {
-  console.log(m_WrapErrorText(`${PR} STARTUP ERROR`));
-  let out = '';
-  out += 'MISSING CRITICAL MODULE\n';
-  out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
-  out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
-  out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
-  console.log(out);
-  PROCESS.exit(0);
-}
-/// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
-if (!shell.which('git')) {
-  shell.echo(
-    `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
-  );
-  shell.exit(0);
-}
-/// COMMAND DISPATCHER ////////////////////////////////////////////////////////
-const argv = minimist(process.argv.slice(1));
-const cmd = argv._[1];
-
-switch (cmd) {
-  case 'dev':
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    RunDevServer();
-    break;
-  case 'dev-skip':
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
-    RunDevServer({ skipWebCompile: true });
-
-    break;
-  default:
-    console.log('unknown command', cmd);
-}
-
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RunDevServer(opt) {
+/** Start up GEMSTEP SERVER */
+function GEMSRV_Start(opt) {
   // git branch information
   const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
@@ -96,12 +58,51 @@ function RunDevServer(opt) {
 
   // run ursys
   (async () => {
-    await WEBSRV.Start(opt);
-    await UR.Initialize(TRACKER.StartTrackerSystem);
+    await GEMAPP.Start(opt);
+    await UR.Initialize([TRACKER.StartTrackerSystem]);
     await UR.URNET_Start({
       port: PORT,
       serverName: 'GEM_SRV',
       runtimePath: RUNTIME_PATH
     });
   })();
+}
+
+/// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// the following code is executed on module load
+
+/// CHECK NPM CI WAS RUN //////////////////////////////////////////////////////
+if (!FS.existsSync('./node_modules')) {
+  console.log(m_WrapErrorText(`${PR} STARTUP ERROR`));
+  let out = '';
+  out += 'MISSING CRITICAL MODULE\n';
+  out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;
+  out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
+  out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
+  console.log(out);
+  PROCESS.exit(0);
+}
+/// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
+if (!shell.which('git')) {
+  shell.echo(
+    `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
+  );
+  shell.exit(0);
+}
+/// PROCESS COMMAND LINE //////////////////////////////////////////////////////
+const argv = minimist(process.argv.slice(1));
+const cmd = argv._[1];
+
+switch (cmd) {
+  case 'dev':
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    GEMSRV_Start();
+    break;
+  case 'dev-skip':
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    GEMSRV_Start({ skipWebCompile: true });
+    break;
+  default:
+    console.log('unknown command', cmd);
 }
