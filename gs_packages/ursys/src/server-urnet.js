@@ -13,34 +13,44 @@ const IP = require('ip');
 const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
-const SESSION = require('./util/session');
+const SESSION = require('./util/session-keys');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
+const {
+  CFG_URNET_PORT,
+  CFG_SERVER_UADDR,
+  CFG_URNET_VERSION,
+  PRE_NET_SYSTEM
+} = require('./ur-constants');
+const {
+  SOCKETS,
+  MESSAGE_DICT,
+  SVR_HANDLERS,
+  NET_HANDLERS
+} = require('./server-datacore');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { init: true, calls: false, client: true };
 
 const ERR_SS_EXISTS = 'socket server already created';
-const DBG_SOCK_BADCLOSE = 'closing socket is not in mu_sockets';
+const DBG_SOCK_BADCLOSE = 'closing socket is not in SOCKETS';
 const ERR_INVALID_DEST = "couldn't find socket with provided address";
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEFAULT_NET_PORT = 2929;
-const SERVER_UADDR = NetPacket.DefaultServerUADDR(); // is 'SVR_01'
-const PROTOCOL_VERSION = 3;
+const SERVER_UADDR = CFG_SERVER_UADDR; // defined in ur-config 'SVR_01'
+const URNET_PORT = CFG_URNET_PORT; // defined in ur-config
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// sockets
 let mu_wss; // websocket server
 let mu_options; // websocket options
-let mu_sockets = new Map(); // sockets mapped by socket id
 let mu_sid_counter = 0; // for generating  unique socket ids
-// storage
-let m_server_handlers = new Map(); // message map storing sets of functions
-let m_remote_handlers = new Map(); // message map storing other handlers
-let m_socket_msgs_list = new Map(); // message map by uaddr
+// let SOCKETS = SOCKETS; // sockets mapped by socket id
+// let SVR_HANDLERS = new Map(); // message map storing sets of functions
+// let NET_HANDLERS = new Map(); // message map storing other handlers
+// let MESSAGE_DICT = new Map(); // message map by uaddr
 // module object
 let URNET = {};
 
@@ -48,8 +58,8 @@ let URNET = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Initializes the web socket server using the options passed-in
  *  @param {Object} [options] - configuration settings
- *  @param {number} [options.port] - default to DEFAULT_NET_PORT 2929
- *  @param {string} [options.uaddr] - default to DefaultServerUADDR() 'SVR_01'
+ *  @param {number} [options.port] - default in ur-config
+ *  @param {string} [options.uaddr] - default in ur-config
  *  @returns {Object} complete configuration object
  */
 URNET.StartNetwork = (options = {}) => {
@@ -58,10 +68,10 @@ URNET.StartNetwork = (options = {}) => {
   }
   // WSS options
   options.host = IP.address();
-  options.port = options.port || DEFAULT_NET_PORT;
+  options.port = options.port || URNET_PORT;
   // URNET options
   options.uaddr = options.uaddr || SERVER_UADDR;
-  options.urnet_version = PROTOCOL_VERSION;
+  options.urnet_version = CFG_URNET_VERSION;
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
   mu_options = options;
 
@@ -82,11 +92,11 @@ URNET.StartNetwork = (options = {}) => {
  */
 URNET.NetUnsubscribe = (mesgName, handlerFunc) => {
   if (mesgName === undefined) {
-    m_server_handlers.clear();
+    SVR_HANDLERS.clear();
   } else if (handlerFunc === undefined) {
-    m_server_handlers.delete(mesgName);
+    SVR_HANDLERS.delete(mesgName);
   } else {
-    const handlers = m_server_handlers.get(mesgName);
+    const handlers = SVR_HANDLERS.get(mesgName);
     if (handlers) {
       handlers.delete(handlerFunc);
     }
@@ -106,10 +116,10 @@ URNET.RegisterService = (mesgName, handlerFunc) => {
     TERM(`${mesgName} subscription failure`);
     throw Error('arg2 must be a function');
   }
-  let handlers = m_server_handlers.get(mesgName);
+  let handlers = SVR_HANDLERS.get(mesgName);
   if (!handlers) {
     handlers = new Set();
-    m_server_handlers.set(mesgName, handlers);
+    SVR_HANDLERS.set(mesgName, handlers);
   }
   handlers.add(handlerFunc);
 }; // end RegisterService()/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -117,7 +127,7 @@ URNET.RegisterService = (mesgName, handlerFunc) => {
  *  remote version. Doesn't return values.
  */
 URNET.NotifyService = (mesgName, data) => {
-  const handlers = m_server_handlers.get(mesgName);
+  const handlers = SVR_HANDLERS.get(mesgName);
   if (!handlers) return;
   const results = [];
   handlers.forEach(hFunc => {
@@ -177,14 +187,14 @@ URNET.NetSignal = (mesgName, data) => {
 /** Return list of registered server handlers
  */
 URNET.ServiceList = () => {
-  const serviceList = [...m_server_handlers.keys()];
+  const serviceList = [...SVR_HANDLERS.keys()];
   return serviceList;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return list of clients and registered handlers
  */
 URNET.ClientList = () => {
-  const handlerList = [...m_remote_handlers.entries()];
+  const handlerList = [...NET_HANDLERS.entries()];
   const clientsByMessage = {};
   handlerList.forEach(entry => {
     const [msg, set] = entry;
@@ -219,8 +229,8 @@ function m_InitializeServiceHandlers() {
   });
   URNET.RegisterService('NET:SRV_SERVICE_LIST', pkt => {
     TERM.warn('SRV_SERVICE_LIST got', pkt);
-    const server = [...m_server_handlers.keys()];
-    const handlers = [...m_remote_handlers.entries()];
+    const server = [...SVR_HANDLERS.keys()];
+    const handlers = [...NET_HANDLERS.entries()];
     const clients = {};
     handlers.forEach(entry => {
       const [msg, set] = entry;
@@ -233,7 +243,7 @@ function m_InitializeServiceHandlers() {
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Assigns a unique URSYS address (UADDR) to new sockets, storing it as the
- * UADDR property of the socket and adding to mu_sockets map. The connection is
+//  * UADDR property of the socket and adding to SOCKETS map. The connection is
  * logged to the logfile.
  * @param {Object} socket connecting socket
  * @param {Object} req raw request
@@ -247,7 +257,7 @@ function m_SocketAdd(socket, req) {
   const remoteIp = req && req.connection ? req.connection.remoteAddress : '';
   socket.ULOCAL = remoteIp === '127.0.0.1' || remoteIp === '::1';
   // save socket
-  mu_sockets.set(sid, socket);
+  SOCKETS.set(sid, socket);
   if (DBG.init) TERM(`socket ADD ${socket.UADDR} to network`);
   LOGGER.Write(socket.UADDR, 'joined network');
   if (DBG.init) log_ListSockets(`add ${sid}`);
@@ -293,7 +303,7 @@ function m_StartSocketServer() {
  * @param {Object} socket connecting socket
  */
 function m_SocketClientAck(socket) {
-  let PEERS = { count: mu_sockets.size };
+  let PEERS = { count: SOCKETS.size };
   let data = {
     HELLO: `Welcome to URSYS, ${socket.UADDR}`,
     UADDR: socket.UADDR,
@@ -335,16 +345,16 @@ function m_SocketOnMessage(socket, json) {
  */
 function m_SocketDelete(socket) {
   let uaddr = socket.UADDR;
-  if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
+  if (!SOCKETS.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
   if (DBG) TERM(`socket DEL ${uaddr} from network`);
   const user = socket.USESS ? socket.USESS.token : '';
   LOGGER.Write(socket.UADDR, 'left network', user.toUpperCase());
-  mu_sockets.delete(uaddr);
+  SOCKETS.delete(uaddr);
   // delete socket reference from previously registered handlers
-  let rmesgs = m_socket_msgs_list.get(uaddr);
+  let rmesgs = MESSAGE_DICT.get(uaddr);
   if (Array.isArray(rmesgs)) {
     rmesgs.forEach(msg => {
-      let handlers = m_remote_handlers.get(msg);
+      let handlers = NET_HANDLERS.get(msg);
       if (DBG) TERM(`${uaddr} removed handler '${msg}'`);
       if (handlers) handlers.delete(uaddr);
     });
@@ -359,7 +369,7 @@ function m_SocketDelete(socket) {
  * can be accessed from a NetPacket packet's SourceAddress().
  */
 function m_SocketLookup(uaddr) {
-  return mu_sockets.get(uaddr);
+  return SOCKETS.get(uaddr);
 }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -478,7 +488,7 @@ async function m_HandleMessage(socket, pkt) {
  */
 function m_PromiseServerHandlers(pkt) {
   let mesgName = pkt.getMessage();
-  const handlers = m_server_handlers.get(mesgName);
+  const handlers = SVR_HANDLERS.get(mesgName);
   /// create promises for all registered handlers in the set
   let promises = [];
   if (!handlers) return promises;
@@ -518,9 +528,10 @@ function m_PromiseRemoteHandlers(pkt) {
   // generate the list of promises
   let promises = [];
   // disallow NET:SYSTEM published messages from remote clients
-  if (!pkt.isServerOrigin() && mesgName.startsWith('NET:SYSTEM')) return promises;
+  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_NET_SYSTEM))
+    return promises;
   // check for handlers
-  let handlers = m_remote_handlers.get(mesgName);
+  let handlers = NET_HANDLERS.get(mesgName);
   if (!handlers) return promises;
 
   // if there are handlers to handle, create a NetPacket
@@ -531,7 +542,7 @@ function m_PromiseRemoteHandlers(pkt) {
     if (publishOnly && isOrigin) {
       if (DBG.calls) TERM(`skipping msend|mcall from ${s_uaddr} to ${d_uaddr}`);
     } else {
-      let d_sock = mu_sockets.get(d_uaddr);
+      let d_sock = SOCKETS.get(d_uaddr);
       if (d_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${d_uaddr}`);
       let newpkt = new NetPacket(pkt); // clone packet data to new packet
       newpkt.makeNewId(); // make new packet unique
@@ -563,14 +574,14 @@ function PKT_RegisterRemoteHandlers(pkt) {
   }
   let regd = [];
   // save message list, for later when having to delete
-  m_socket_msgs_list.set(uaddr, messages);
+  MESSAGE_DICT.set(uaddr, messages);
   // add uaddr for each message in the list
-  // m_remote_handlers[mesg] contains a Set
+  // NET_HANDLERS[mesg] contains a Set
   messages.forEach(msg => {
-    let entry = m_remote_handlers.get(msg);
+    let entry = NET_HANDLERS.get(msg);
     if (!entry) {
       entry = new Set();
-      m_remote_handlers.set(msg, entry);
+      NET_HANDLERS.set(msg, entry);
     }
     if (DBG.client) TERM(`${uaddr} regr '${msg}'`);
     entry.add(uaddr);
@@ -697,7 +708,7 @@ function PKT_Session(pkt) {
 function log_ListSockets(change) {
   TERM(`socketlist changed: '${change}'`);
   // let's use iterators! for..of
-  let values = mu_sockets.values();
+  let values = SOCKETS.values();
   let count = 1;
   for (let socket of values) {
     TERM(`  ${count} = ${socket.UADDR}`);

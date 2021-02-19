@@ -41,10 +41,10 @@
 * W1: Parse dotted object ref, expand args. Add keywords `prop`, `featProp`, `featCall` touse dotted object refs. Need to insert context into runtime in three or four places.
 * W2: inject correct context for runtime.
 
-**SUMMARY S2103 FEB 08 - FEB 14**
+**SUMMARY S2103 FEB 08 - FEB 21**
 
 * W1: new keywords, compiler tech documentation
-* W2: 
+* W2: network/input blueprint+design
 
 
 ---
@@ -302,7 +302,39 @@ iostream maintains connection with
 /*/
 ```
 
+## FEB 18 THU - Where are we on the Input stuff?
 
+The past couple of days were largely merges and bug fixes, so today I want to get back to the hard stuff: IO SYSTEM DESIGN
+
+**getting a bead on my line of thinking** - first thing is to just make a registration system design, then block it all out. 
+
+* [x] update `client-urnet` to set `m_status` through a call, rather than direct assignment
+* [x] what is the `client-urnet` handshake? outline in `draft-tech-ursys.md`
+* [x] what are all the modules involved and their names?
+
+Largely I've just looked at the network startup, which is what I need to look at to be able to insert the device negotiation. 
+
+Currently, the startup looks like this:
+
+1. `gem_run` starts `gem-app-srv`, which launches the hot appserver. This also initializes the `NETINFO` module so frameworks can access the `/urnet/netinfo` web service that tells all served webapps where the URNET message broker lives.
+2. early in client startup, netinfo is fetched and passed to`EXEC.SystemBoot()` which is shared by both nextjs and express custom servers. In NextJS, `_app.jsx` does the boot. In Express, `SystemInit.jsx` in the bootstrap calls `SystemBoot()`
+3. Booting URSYS runs through `PHASE_BOOT`, `PHASE_INIT`, then `PHASE_CONNECT`, which runs before all other application phases. The two hooks are `UR/NET_CONNECT` and `UR/NET_REGISTER`
+4. `NET_CONNECT` is hooked by UR-CLIENT library when `SystemStart()` is called in `SystemInit.jsx` before `SystemBoot()` even happens, and it **calls URNET_Connect**
+5. `NET_REGISTER` is not currently hooked, but was formerly used to register messages right away 
+
+QUESTION TO ANSWERS
+
+* [ ] how do messages get registered during URNET_Connect?
+* [ ] how are messages updated after URNET_Connect?
+* [ ] what does this diagram look like of the calls?
+* [ ] where can we insert the **input handshaking** and other **device registration** during URNET_Connect?
+
+## FEB 19 FRI - URSYS DATACORE
+
+There are a lot of data structures scattered around URSYS, so I'd like to make a reliable datacore class for it.
+
+* [x] look through server-urnet for data to move
+* [ ] look through class-netpacket for data to move
 
 ---
 
