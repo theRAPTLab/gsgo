@@ -15,17 +15,13 @@ const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const SESSION = require('./util/session-keys');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
-const {
-  CFG_URNET_PORT,
-  CFG_SERVER_UADDR,
-  CFG_URNET_VERSION,
-  PRE_NET_SYSTEM
-} = require('./ur-constants');
+const { CFG_SVR_UADDR, PRE_SYS_MESG } = require('./ur-common');
 const {
   SOCKETS,
   MESSAGE_DICT,
   SVR_HANDLERS,
-  NET_HANDLERS
+  NET_HANDLERS,
+  InitializeNetworkOptions
 } = require('./server-datacore');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
@@ -36,21 +32,11 @@ const ERR_SS_EXISTS = 'socket server already created';
 const DBG_SOCK_BADCLOSE = 'closing socket is not in SOCKETS';
 const ERR_INVALID_DEST = "couldn't find socket with provided address";
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const SERVER_UADDR = CFG_SERVER_UADDR; // defined in ur-config 'SVR_01'
-const URNET_PORT = CFG_URNET_PORT; // defined in ur-config
-
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// sockets
 let mu_wss; // websocket server
-let mu_options; // websocket options
 let mu_sid_counter = 0; // for generating  unique socket ids
-// let SOCKETS = SOCKETS; // sockets mapped by socket id
-// let SVR_HANDLERS = new Map(); // message map storing sets of functions
-// let NET_HANDLERS = new Map(); // message map storing other handlers
-// let MESSAGE_DICT = new Map(); // message map by uaddr
 // module object
 let URNET = {};
 
@@ -66,22 +52,17 @@ URNET.StartNetwork = (options = {}) => {
   if (!options.runtimePath) {
     return Error('runtimePath required to start URSYS SERVER');
   }
-  // WSS options
-  options.host = IP.address();
-  options.port = options.port || URNET_PORT;
-  // URNET options
-  options.uaddr = options.uaddr || SERVER_UADDR;
-  options.urnet_version = CFG_URNET_VERSION;
+  // host port uaddr urnet_version
+  InitializeNetworkOptions(options);
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
-  mu_options = options;
 
-  LOGGER.StartLogging(mu_options);
-  NetPacket.GlobalSetup({ uaddr: mu_options.uaddr });
+  LOGGER.StartLogging(options);
+  NetPacket.GlobalSetup({ uaddr: options.uaddr });
   //
   m_InitializeServiceHandlers();
-  m_StartSocketServer();
+  m_StartSocketServer(options);
   //
-  return mu_options;
+  return options;
 }; // end StartNetwork()
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -223,7 +204,7 @@ function m_InitializeServiceHandlers() {
     const data = pkt.Data();
     data.serverSays = 'REFLECTING';
     data.stack = data.stack || [];
-    data.stack.push(SERVER_UADDR); // usually hardcoded to SVR_01
+    data.stack.push(CFG_SVR_UADDR); // usually hardcoded to SVR_01
     TERM.warn('SRV_REFLECT setting data', data);
     return data;
   });
@@ -274,12 +255,12 @@ function m_GetNewUADDR(prefix = 'UADDR') {
 }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_StartSocketServer() {
+function m_StartSocketServer(options) {
   // create listener.
   try {
-    mu_wss = new WSS(mu_options);
+    mu_wss = new WSS(options);
     mu_wss.on('listening', () => {
-      if (DBG.init) TERM(`socket server listening on port ${mu_options.port}`);
+      if (DBG.init) TERM(`socket server listening on port ${options.port}`);
       mu_wss.on('connection', (socket, req) => {
         // if (DBG) TERM('socket connected');
         // house keeping
@@ -307,7 +288,7 @@ function m_SocketClientAck(socket) {
   let data = {
     HELLO: `Welcome to URSYS, ${socket.UADDR}`,
     UADDR: socket.UADDR,
-    SERVER_UADDR,
+    CFG_SVR_UADDR,
     PEERS,
     ULOCAL: socket.ULOCAL
   };
@@ -528,8 +509,7 @@ function m_PromiseRemoteHandlers(pkt) {
   // generate the list of promises
   let promises = [];
   // disallow NET:SYSTEM published messages from remote clients
-  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_NET_SYSTEM))
-    return promises;
+  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_SYS_MESG)) return promises;
   // check for handlers
   let handlers = NET_HANDLERS.get(mesgName);
   if (!handlers) return promises;

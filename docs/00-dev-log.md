@@ -334,7 +334,20 @@ QUESTION TO ANSWERS
 There are a lot of data structures scattered around URSYS, so I'd like to make a reliable datacore class for it.
 
 * [x] look through server-urnet for data to move
-* [ ] look through class-netpacket for data to move
+* [x] look through class-netpacket for data to move
+* [x] make `server-datacore` , `ur-common` and `client-standalone` modules, and replace references to constants as possible. This centralizes several structures and establishes a rough template for expanding the network protocol
+
+Next step: OUTLINE THIS ON SATURDAY
+
+* where to insert **input handshaking** and **device registration** during connect?
+
+* client connects to its domain + `/urnet/netinfo` to get URNET connnection ip, port
+
+* cient connects to ip, port and ? sends a hello?
+
+* server responds with ?
+
+  
 
 ---
 

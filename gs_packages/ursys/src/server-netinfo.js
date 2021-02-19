@@ -8,15 +8,11 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { parse } = require('url');
 const requestIp = require('request-ip');
-const NetPacket = require('./class-netpacket');
+const { CFG_URNET_SERVICE } = require('./ur-common');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NETINFO_ROUTE = '/urnet/netinfo';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +23,7 @@ let m_network_options;
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Route() {
-  return NETINFO_ROUTE;
+  return CFG_URNET_SERVICE;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given req and response, return URNET connection information
@@ -67,7 +63,7 @@ function NextJS_Responder(req, res) {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   // Do our route interception here
-  if (pathname === NETINFO_ROUTE) {
+  if (pathname === CFG_URNET_SERVICE) {
     m_NetInfoRespond(req, res);
     return true;
   }
@@ -81,7 +77,7 @@ function Express_Responder(req, res, next) {
   const parsedUrl = parse(req.url, true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
-  if (pathname === NETINFO_ROUTE) {
+  if (pathname === CFG_URNET_SERVICE) {
     m_NetInfoRespond(req, res);
   } else next();
 }

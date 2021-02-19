@@ -9,6 +9,8 @@
 const NetPacket = require('./class-netpacket');
 const SESSION = require('./client-session');
 const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
+const { CFG_SVR_UADDR } = require('./ur-common');
+
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { connect: false, hello: true, handle: false, reg: false };
@@ -70,7 +72,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_SetStatus(M3_REGISTERED);
   // (2) initialize global settings for netmessage
   if (DBG.connect || DBG.hello) console.log(...PR(`URNET SAYS '${HELLO}'`));
-  m_socket.UADDR = NetPacket.DefaultServerUADDR();
+  m_socket.UADDR = CFG_SVR_UADDR;
   NetPacket.GlobalSetup({
     uaddr: UADDR,
     netsocket: m_socket,
