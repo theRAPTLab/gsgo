@@ -349,6 +349,19 @@ Next step: OUTLINE THIS ON SATURDAY
 
   
 
+## FEB 21 SUN - URSYS CLIENT DATACORE
+
+There aren't as many movable data stores, other than the STANDALONE stuff we currently aren't using from MEME. So the cleanup was large to make the client's terminology match the server.
+
+* [x] Move the URNET connection out of app-specific startup (_app.js, _start.js) and into UR's `SystemBoot()` to fetch it directly, now that the NetInfo is always fetchable using the hardcoded path in the webservice provided by the appserver. This reduces the boilerplate in our apps by one line.
+* [x] Rename `client-session` to `client-netinfo` and rename all the related code to "netinfo" instead of "options" or "session" consistently. Sessions still exist, but they are in the utility `session-keys` module for encoding/decoding.
+* [x] Also did the option renaming from `m_network_options` to `m_netinfo` consistently across both server and client
+* [x] Rename PHASE EXEC API from `SystemBoot` to `SystemNetBoot` and app-related phases to `SystemAppConfig` from `SystemConfig`, etc, to distinguish an app-scoped phase version a network specific action.
+
+This makes it a bit easier to follow
+
+
+
 ---
 
 **ADDITIONAL THINGS TO IMPLEMENT**

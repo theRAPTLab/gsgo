@@ -7,9 +7,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
-const SESSION = require('./client-session');
+const NETINFO = require('./client-netinfo');
 const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
-const { CFG_SVR_UADDR } = require('./ur-common');
+const { CFG_SVR_UADDR, CFG_URNET_SERVICE } = require('./ur-common');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,7 +18,6 @@ const DBG = { connect: false, hello: true, handle: false, reg: false };
 const ENDPOINT_NAME = 'MessagerEndpoint';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
 const ERR_BAD_URCHAN = `An instance of '${ENDPOINT_NAME}' is required`;
-const NETINFO_ROUTE = '/urnet/netinfo';
 
 /// URNET ID VALUES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,8 +190,8 @@ URNET.URNET_Connect = (datalink, opt) => {
     m_options = opt || {};
 
     // create websocket
-    // uses values that are set by UR-EXEC SystemBoot()
-    const { host: USRV_Host, port: USRV_MsgPort } = SESSION.GetURNetInfo();
+    // uses values that are set by UR-EXEC SystemNetBoot()
+    const { host: USRV_Host, port: USRV_MsgPort } = NETINFO.GetNetInfo();
     let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
     m_socket = new WebSocket(wsURI);
     if (DBG.connect) console.log(...PR(`OPEN SOCKET TO ${wsURI}`));
@@ -248,26 +247,26 @@ URNET.WasInitialized = () => {
 URNET.IsLocalhost = () => NetPacket.IsLocalhost();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.ServerIP = () => {
-  const { host } = SESSION.GetURNetInfo();
+  const { host } = NETINFO.GetNetInfo();
   return host;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.URNetPort = () => {
-  const { port } = SESSION.GetURNetInfo();
+  const { port } = NETINFO.GetNetInfo();
   return port;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.WebServerPort = () => window.location.port || 80;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.ConnectionString = () => {
-  const { host } = SESSION.GetURNetInfo();
+  const { host } = NETINFO.GetNetInfo();
   const port = window.location.port;
   let str = `appserver at ${host}`;
   if (port) str += `:${port}`;
   return str;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.NetInfoRoute = () => NETINFO_ROUTE;
+URNET.NetInfoRoute = () => CFG_URNET_SERVICE;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

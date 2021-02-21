@@ -1,10 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  standalone code ported from NetPacket
+  WORK IN PROGRESS
+  THIS CODE MIRRORS THE STANDALONE CODE FROM NET PACKET
+  BUT IS NOT BEING USED
+  THESE ARE FOR FUTURE TWEAKS TO URSYS
+
   this is sort of a state machine which works with NetPacket for URSYS
   clients that need to support an offline mode
-
-  WIP
 
   There is a mirrored state in client-urnet  where a standalone mode is
   defined, so that probably needs to be centralized in one module.

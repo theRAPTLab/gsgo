@@ -27,6 +27,7 @@ const Messager = require('./class-messager');
 const URNet = require('./client-urnet');
 const PROMPTS = require('./util/prompts');
 const MessageStream = require('./class-message-stream');
+const { UNODE_MAP } = require('./client-datacore');
 
 /** implements endpoints for talking to the URSYS network
  *  @module MessagerEndpoint
@@ -41,7 +42,7 @@ const BAD_UID = 'unexpected non-unique UID';
 
 /// NODE MANAGEMENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNODE_MAP = new Map(); // URSYS connector node map (local)
+// const UNODE_MAP = new Map(); // URSYS connector node map (local)
 const MAX_UNODES = 100;
 let UNODE_COUNTER = 0; // URSYS connector node id counter
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

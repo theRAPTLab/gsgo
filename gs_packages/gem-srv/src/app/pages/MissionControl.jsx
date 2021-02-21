@@ -79,7 +79,7 @@ class MissionControl extends React.Component {
     this.setState({ modelId });
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
 
     // Load Model Data
     this.LoadModel(modelId);

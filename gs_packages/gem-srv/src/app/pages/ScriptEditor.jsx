@@ -82,7 +82,7 @@ class ScriptEditor extends React.Component {
     document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
 
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
 
     window.addEventListener('beforeunload', this.CleanupComponents);
 

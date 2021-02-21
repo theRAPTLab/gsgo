@@ -13,7 +13,7 @@ const NETINFO = require('./server-netinfo');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let m_network_options;
+let m_netinfo;
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,9 +60,9 @@ function Shutdown(closers) {
 /** Start the URNET socket server
  */
 function URNET_Start(options) {
-  m_network_options = NETWORK.StartNetwork(options);
-  NETINFO.SaveNetworkOptions(m_network_options);
-  return m_network_options;
+  m_netinfo = NETWORK.StartNetwork(options);
+  NETINFO.SaveNetInfo(m_netinfo);
+  return m_netinfo;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -70,7 +70,7 @@ function URNET_Start(options) {
 module.exports = {
   // META
   ...META,
-  NetInfoRoute: NETINFO.Route,
+  NetInfoRoute: NETINFO.NetInfoRoute,
   // MAIN API
   Initialize,
   Shutdown,

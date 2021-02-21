@@ -9,7 +9,6 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const IP = require('ip');
 const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
@@ -21,7 +20,7 @@ const {
   MESSAGE_DICT,
   SVR_HANDLERS,
   NET_HANDLERS,
-  InitializeNetworkOptions
+  InitializeNetInfo
 } = require('./server-datacore');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
@@ -53,7 +52,7 @@ URNET.StartNetwork = (options = {}) => {
     return Error('runtimePath required to start URSYS SERVER');
   }
   // host port uaddr urnet_version
-  InitializeNetworkOptions(options);
+  InitializeNetInfo(options);
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
 
   LOGGER.StartLogging(options);

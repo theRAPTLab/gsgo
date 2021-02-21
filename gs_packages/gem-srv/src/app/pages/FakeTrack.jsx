@@ -60,7 +60,7 @@ class FakeTrack extends React.Component {
 
   componentDidMount() {
     // start URSYS
-    UR.SystemConfig({ autoRun: true }); // initialize renderer
+    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     Initialize(this);
     HookResize(window);
   }

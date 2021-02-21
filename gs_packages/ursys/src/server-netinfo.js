@@ -22,7 +22,7 @@ let m_network_options;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Route() {
+function NetInfoRoute() {
   return CFG_URNET_SERVICE;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,16 +88,16 @@ function GetNetInfo() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** called from index-server during URNET_Start to save network options */
-function SaveNetworkOptions(opt) {
+function SaveNetInfo(opt) {
   m_network_options = opt;
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  SaveNetworkOptions,
+  SaveNetInfo,
   NextJS_Responder,
   Express_Responder,
   GetNetInfo,
-  Route
+  NetInfoRoute
 };

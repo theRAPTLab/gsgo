@@ -67,7 +67,7 @@ UR.HandleMessage('NET:HELLO', data => {
 class Tracker extends React.Component {
   componentDidMount() {
     // start URSYS
-    UR.SystemConfig({ autoRun: true }); // initialize renderer
+    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
     RENDERER.SetGlobalConfig({ actable: false });
     RENDERER.Init(renderRoot);

@@ -45,7 +45,7 @@ class App extends React.Component {
 
   componentDidMount() {
     // required URSYS lifecycle startup
-    UR.SystemConfig({ autoRun: true }); // initialize renderer
+    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     document.title = 'XGUI2 WIP';
   }
 

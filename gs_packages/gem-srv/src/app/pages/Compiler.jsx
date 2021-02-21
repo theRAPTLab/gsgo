@@ -95,7 +95,7 @@ class Compiler extends React.Component {
   componentDidMount() {
     document.title = 'COMPILER';
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
     // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
     RENDERER.SetGlobalConfig({ actable: true });

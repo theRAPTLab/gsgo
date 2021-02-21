@@ -42,7 +42,7 @@ let URSYS_ROUTE = '';
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
- *  SystemBoot, which starts the URSYS lifecycle.
+ *  SystemNetBoot, which starts the URSYS lifecycle.
  */
 async function SystemStart(route) {
   if (URSYS_RUNNING) {
@@ -112,12 +112,12 @@ const UR = {
   ConnectionString: NETWORK.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
   // FORWARDED SYSTEM CONTROL VIA EXEC
-  SystemBoot: EXEC.SystemBoot,
-  SystemConfig: EXEC.SystemConfig,
-  SystemRun: EXEC.SystemRun,
-  SystemRestage: EXEC.SystemRestage,
-  SystemReboot: EXEC.SystemReboot,
-  SystemUnload: EXEC.SystemUnload,
+  SystemNetBoot: EXEC.SystemNetBoot,
+  SystemAppConfig: EXEC.SystemAppConfig,
+  SystemAppRun: EXEC.SystemAppRun,
+  SystemAppRestage: EXEC.SystemAppRestage,
+  SystemNetReboot: EXEC.SystemNetReboot,
+  SystemAppUnload: EXEC.SystemAppUnload,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

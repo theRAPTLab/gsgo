@@ -17,8 +17,12 @@ const NET_HANDLERS = new Map(); // message map storing other handlers
 /// URNET OPTIONS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let NETWORK_OPT;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InitializeNetworkOptions(o = {}) {
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** InitializeNetInfo is called from server-urnet as part of
+ *  StartNetwork(), which receives the initial serverName, runtimePath
+ *  and potentially overrides for host and port
+ */
+function InitializeNetInfo(o = {}) {
   o.host = IP.address();
   o.port = o.port || $$.CFG_URNET_PORT;
   o.uaddr = o.uaddr || $$.CFG_SVR_UADDR;
@@ -35,5 +39,5 @@ module.exports = {
   SVR_HANDLERS,
   NET_HANDLERS,
   // URNET OPTIONS
-  InitializeNetworkOptions
+  InitializeNetInfo
 };

@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  CLIENT-SESSION centralizes shared data structures about the session.
+  CLIENT-NETINFO centralizes shared data structures about URNET connection
   This is a pure data module that can be referenced by any URSYS client.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -18,6 +18,7 @@ const PR = require('./util/prompts').makeStyleFormatter('UR.SES');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 interface NetProps {
   broker: MessageBroker;
+  client?: { ip: string }
 }
 interface MessageBroker {
   host: string;
@@ -25,24 +26,34 @@ interface MessageBroker {
   uaddr: string;
   urnet_version: number;
 }
+interface ConnectionInfo {
+  ip: string;
+}
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let NET_BROKER: MessageBroker;
+let CLIENT_INFO: ConnectionInfo;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SaveNetInfo(props: NetProps) {
-  if (DBG) console.log(...PR('info - setting netprops'), props);
-  const { broker } = props;
+/** props is coming from */
+function SaveNetInfo(netInfo: NetProps) {
+  if (DBG) console.log(...PR('saving netInfo for broker'), netInfo);
+  const { broker, client } = netInfo;
   NET_BROKER = broker;
-  if (DBG) console.log(...PR('session broker'), broker);
+  CLIENT_INFO = client;
+  if (DBG) console.log(...PR('session broker', NET_BROKER,'client info',CLIENT_INFO));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetURNetInfo() {
+function GetNetInfo() {
   return NET_BROKER;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetClientInfo() {
+  return CLIENT_INFO
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { SaveNetInfo, GetURNetInfo };
+module.exports = { SaveNetInfo, GetNetInfo, GetClientInfo };

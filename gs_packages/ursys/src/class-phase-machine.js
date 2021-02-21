@@ -224,7 +224,7 @@ class PhaseMachine {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** UTILITY: Return hooks array for a given operation. Useful when
    *  using closures to create an optimal execution function as in
-   *  client-exec SystemRun()
+   *  client-exec SystemAppRun()
    */
   getHookFunctions(op) {
     if (DBG.ops) console.log(...PR(`getting hook for '${op}'`));

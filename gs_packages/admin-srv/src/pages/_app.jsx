@@ -58,14 +58,14 @@ export default function MyApp(props) {
     }
     // URSYS startup
     (async () => {
-      await UR.SystemBoot({ netInfo });
-      await UR.SystemConfig({ autoRun: true });
+      await UR.SystemNetBoot({ netInfo });
+      await UR.SystemAppConfig({ autoRun: true });
     })();
 
     // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
       console.log(...PR('unmounting _app'));
-      UR.SystemUnload();
+      UR.SystemAppUnload();
       // force page reload after unmount
       // window.location.reload();
     };
@@ -111,10 +111,11 @@ export default function MyApp(props) {
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const netInfo = await fetch(
-    `http://localhost:3000${UR.NetInfoRoute()}`
-  ).then(res => res.json());
-  return { ...appProps, netInfo };
+  // the netInfo load is now part of URSYS SystemNetBoot
+  // const netInfo = await fetch(
+  //   `http://localhost:3000${UR.NetInfoRoute()}`
+  // ).then(res => res.json());
+  return { ...appProps };
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
