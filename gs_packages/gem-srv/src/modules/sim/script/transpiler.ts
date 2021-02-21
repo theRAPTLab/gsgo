@@ -9,16 +9,14 @@
 import UR from '@gemstep/ursys/client';
 import GAgent from 'lib/class-gagent';
 import { TScriptUnit, TOpcode, TInstance, EBundleType } from 'lib/t-script.d';
+import { SaveAgent, DeleteAgent } from 'modules/datacore/dc-agents';
+import { AddToBundle, SetBundleName } from 'modules/datacore/dc-script-bundle';
 import {
   GetKeyword,
-  SaveAgent,
-  DeleteAgent,
-  SaveBlueprint,
   GetBlueprint,
-  AddToBundle,
-  SetBundleName,
-  GetProgram
-} from 'modules/datacore';
+  SaveBlueprint
+} from 'modules/datacore/dc-script-engine';
+import { GetProgram } from 'modules/datacore/dc-named-methods';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
@@ -275,9 +273,9 @@ function TextifyScript(units: TScriptUnit[]): string {
  *  CompileBlueprint but does not handle directives or build a bundle. Used
  *  for generating code snippets on-the-fly.
  */
-function CompileText(text: string = '') {
+function CompileText(text: string = ''): TScriptUnit[] {
   const units = ScriptifyText(text);
-  const program = [];
+  const program: TScriptUnit[] = [];
 
   if (!Array.isArray(units))
     throw Error(`CompileText can't compile '${typeof units}'`);
@@ -293,7 +291,7 @@ function CompileText(text: string = '') {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Main ScriptUnit Compiler */
-function CompileBlueprint(units: TScriptUnit[]) {
+function CompileBlueprint(units: TScriptUnit[]): SM_Bundle {
   let objcode; // holder for compiled code
 
   if (!Array.isArray(units))

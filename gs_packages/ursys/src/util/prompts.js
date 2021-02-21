@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-shadow */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   ANSI TERMINAL color codes and utilities

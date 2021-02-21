@@ -24,8 +24,8 @@ class SimData {
     this.RequestSimDataModel = this.RequestSimDataModel.bind(this);
     this.HackGetSimDataModel = this.HackGetSimDataModel.bind(this);
     // Register Listeners
-    UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODELS', this.RequestSimDataModels);
-    UR.RegisterMessage('HACK_SIMDATA_REQUEST_MODEL', this.RequestSimDataModel);
+    UR.HandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.RequestSimDataModels);
+    UR.HandleMessage('HACK_SIMDATA_REQUEST_MODEL', this.RequestSimDataModel);
   }
 
   GetSimDataModel(modelId) {

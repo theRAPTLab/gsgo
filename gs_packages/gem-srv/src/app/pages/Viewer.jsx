@@ -57,7 +57,7 @@ class Viewer extends React.Component {
     this.setState({ modelId });
     document.title = `GEMSTEP VIEWER ${modelId}`;
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
   }
 
   componentDidCatch(e) {

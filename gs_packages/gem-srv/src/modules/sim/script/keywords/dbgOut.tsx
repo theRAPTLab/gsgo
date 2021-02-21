@@ -16,7 +16,7 @@ import { EvalUnitArgs } from 'lib/expr-evaluator';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MAX_OUT = 100;
 let COUNTER = MAX_OUT;
-UR.RegisterMessage('AGENT_PROGRAM', () => {
+UR.HandleMessage('AGENT_PROGRAM', () => {
   console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
   COUNTER = MAX_OUT;
 });

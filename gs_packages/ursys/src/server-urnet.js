@@ -9,143 +9,61 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const IP = require('ip');
 const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
-const SESSION = require('./util/session');
+const SESSION = require('./util/session-keys');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
+const { CFG_SVR_UADDR, PRE_SYS_MESG } = require('./ur-common');
+const {
+  SOCKETS,
+  MESSAGE_DICT,
+  SVR_HANDLERS,
+  NET_HANDLERS,
+  InitializeNetInfo
+} = require('./server-datacore');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { init: true, calls: false, client: true };
 
 const ERR_SS_EXISTS = 'socket server already created';
-const DBG_SOCK_BADCLOSE = 'closing socket is not in mu_sockets';
+const DBG_SOCK_BADCLOSE = 'closing socket is not in SOCKETS';
 const ERR_INVALID_DEST = "couldn't find socket with provided address";
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEFAULT_NET_PORT = 2929;
-const SERVER_UADDR = NetPacket.DefaultServerUADDR(); // is 'SVR_01'
-const PROTOCOL_VERSION = 3;
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// sockets
 let mu_wss; // websocket server
-let mu_options; // websocket options
-let mu_sockets = new Map(); // sockets mapped by socket id
 let mu_sid_counter = 0; // for generating  unique socket ids
-// storage
-let m_server_handlers = new Map(); // message map storing sets of functions
-let m_remote_handlers = new Map(); // message map storing other handlers
-let m_socket_msgs_list = new Map(); // message map by uaddr
 // module object
 let URNET = {};
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Initializes the web socket server using the options set by
- *  InitializeNetwork(), and directs connections to utility function
- *  m_NewSocketConnected()
+/** Initializes the web socket server using the options passed-in
  *  @param {Object} [options] - configuration settings
- *  @param {number} [options.port] - default to DEFAULT_NET_PORT 2929
- *  @param {string} [options.uaddr] - default to DefaultServerUADDR() 'SVR_01'
+ *  @param {number} [options.port] - default in ur-config
+ *  @param {string} [options.uaddr] - default in ur-config
  *  @returns {Object} complete configuration object
  */
 URNET.StartNetwork = (options = {}) => {
   if (!options.runtimePath) {
     return Error('runtimePath required to start URSYS SERVER');
   }
-  LOGGER.StartLogging(options);
-  // WSS options
-  options.host = IP.address();
-  options.port = options.port || DEFAULT_NET_PORT;
-  // URNET options
-  options.uaddr = options.uaddr || SERVER_UADDR;
-  options.urnet_version = PROTOCOL_VERSION;
+  // host port uaddr urnet_version
+  InitializeNetInfo(options);
   if (mu_wss !== undefined) throw Error(ERR_SS_EXISTS);
+
+  LOGGER.StartLogging(options);
   NetPacket.GlobalSetup({ uaddr: options.uaddr });
-  mu_options = options;
   //
-  URNET.RegisterHandlers();
-  // create listener.
-  try {
-    mu_wss = new WSS(mu_options);
-    mu_wss.on('listening', () => {
-      if (DBG.init) TERM(`socket server listening on port ${mu_options.port}`);
-      mu_wss.on('connection', (socket, req) => {
-        // if (DBG) TERM('socket connected');
-        // house keeping
-        m_SocketAdd(socket, req); // assign UADDR to socket
-        m_SocketClientAck(socket); // tell client HELLO with new UADDR
-        // subscribe socket to handlers
-        socket.on('message', json => m_SocketOnMessage(socket, json));
-        socket.on('close', () => m_SocketDelete(socket));
-      }); // end on 'connection'
-    });
-  } catch (e) {
-    TERM(`FATAL ERROR: ${e.toString}`);
-    TERM('Another URSYS server already running on this machine, so exiting');
-    process.exit(1);
-  }
+  m_InitializeServiceHandlers();
+  m_StartSocketServer(options);
+  //
   return options;
 }; // end StartNetwork()
-URNET.RegisterHandlers = () => {
-  LOGGER.Write('registering network services');
 
-  // start logging message
-  URNET.registerMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
-
-  // register remote messages
-  URNET.registerMessage('NET:SRV_REG_HANDLERS', URNET.PKT_RegisterRemoteHandlers);
-
-  // register sessions
-  URNET.registerMessage('NET:SRV_SESSION_LOGIN', URNET.PKT_SessionLogin);
-  URNET.registerMessage('NET:SRV_SESSION_LOGOUT', URNET.PKT_SessionLogout);
-  URNET.registerMessage('NET:SRV_SESSION', URNET.PKT_Session);
-
-  // ursys debug server utilities
-  URNET.registerMessage('NET:SRV_REFLECT', pkt => {
-    const data = pkt.Data();
-    data.serverSays = 'REFLECTING';
-    data.stack = data.stack || [];
-    data.stack.push(SERVER_UADDR); // usually hardcoded to SVR_01
-    TERM.warn('SRV_REFLECT setting data', data);
-    return data;
-  });
-  URNET.registerMessage('NET:SRV_SERVICE_LIST', pkt => {
-    TERM.warn('SRV_SERVICE_LIST got', pkt);
-    const server = [...m_server_handlers.keys()];
-    const handlers = [...m_remote_handlers.entries()];
-    const clients = {};
-    handlers.forEach(entry => {
-      const [msg, set] = entry;
-      const remotes = [...set.keys()];
-      clients[msg] = remotes;
-    });
-    return { server, clients };
-  });
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Registers SERVER-side message handlers that are reachable from remote
- * clients. Server-side handlers use their own map.
- * @param {string} mesgName message to register a handler for
- * @param {function} handlerFunc function receiving 'data' object
- */
-URNET.registerMessage = (mesgName, handlerFunc) => {
-  if (typeof handlerFunc !== 'function') {
-    TERM(`${mesgName} subscription failure`);
-    throw Error('arg2 must be a function');
-  }
-  let handlers = m_server_handlers.get(mesgName);
-  if (!handlers) {
-    handlers = new Set();
-    m_server_handlers.set(mesgName, handlers);
-  }
-  handlers.add(handlerFunc);
-}; // end registerMessage()
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Revokes a handler function from a registered message. The handler function
  * object must be the same one used to register it.
@@ -154,11 +72,11 @@ URNET.registerMessage = (mesgName, handlerFunc) => {
  */
 URNET.NetUnsubscribe = (mesgName, handlerFunc) => {
   if (mesgName === undefined) {
-    m_server_handlers.clear();
+    SVR_HANDLERS.clear();
   } else if (handlerFunc === undefined) {
-    m_server_handlers.delete(mesgName);
+    SVR_HANDLERS.delete(mesgName);
   } else {
-    const handlers = m_server_handlers.get(mesgName);
+    const handlers = SVR_HANDLERS.get(mesgName);
     if (handlers) {
       handlers.delete(handlerFunc);
     }
@@ -166,6 +84,36 @@ URNET.NetUnsubscribe = (mesgName, handlerFunc) => {
   return this;
 }; // end NetUnsubscribe()
 
+/// SERVER-SIDE URNET MESSAGING API ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Registers SERVER-side message handlers that are reachable from remote
+ * clients. Server-side handlers use their own map.
+ * @param {string} mesgName message to register a handler for
+ * @param {function} handlerFunc function receiving 'data' object
+ */
+URNET.RegisterService = (mesgName, handlerFunc) => {
+  if (typeof handlerFunc !== 'function') {
+    TERM(`${mesgName} subscription failure`);
+    throw Error('arg2 must be a function');
+  }
+  let handlers = SVR_HANDLERS.get(mesgName);
+  if (!handlers) {
+    handlers = new Set();
+    SVR_HANDLERS.set(mesgName, handlers);
+  }
+  handlers.add(handlerFunc);
+}; // end RegisterService()/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Server-side local server publishing. It executes synchronously, unlike the
+ *  remote version. Doesn't return values.
+ */
+URNET.NotifyService = (mesgName, data) => {
+  const handlers = SVR_HANDLERS.get(mesgName);
+  if (!handlers) return;
+  const results = [];
+  handlers.forEach(hFunc => {
+    results.push(hFunc(data));
+  });
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side method for invoking a remote message. It executes asynchronously
  * but uses async/await so it can be used in a synchronous style to retrieve
@@ -186,22 +134,6 @@ URNET.NetCall = async (mesgName, data) => {
   /// END MAGICAL ASYNC/AWAIT BLOCK ///
   // const result = Object.assign({}, ...resArray);
   return results; // array of data objects
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Server-side local server subscription. It's the same as registerMessage
- */
-URNET.LocalSubscribe = URNET.registerMessage;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Server-side local server publishing. It executes synchronously, unlike the
- *  remote version. Doesn't return vsalues.
- */
-URNET.LocalPublish = (mesgName, data) => {
-  const handlers = m_server_handlers.get(mesgName);
-  if (!handlers) return;
-  const results = [];
-  handlers.forEach(hFunc => {
-    results.push(hFunc(data));
-  });
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side method for sending a remote message. It fires the messages but
@@ -229,18 +161,20 @@ URNET.NetPublish = (mesgName, data) => {
 URNET.NetSignal = (mesgName, data) => {
   URNET.NetPublish(mesgName, data);
 };
+
+/// NETWORK STATE HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return list of registered server handlers
  */
 URNET.ServiceList = () => {
-  const serviceList = [...m_server_handlers.keys()];
+  const serviceList = [...SVR_HANDLERS.keys()];
   return serviceList;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return list of clients and registered handlers
  */
 URNET.ClientList = () => {
-  const handlerList = [...m_remote_handlers.entries()];
+  const handlerList = [...NET_HANDLERS.entries()];
   const clientsByMessage = {};
   handlerList.forEach(entry => {
     const [msg, set] = entry;
@@ -249,162 +183,47 @@ URNET.ClientList = () => {
   });
   return clientsByMessage;
 };
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Handles URSYS REGISTRATION PACKETS from connecting clients. It is the first
- * packet sent on successful socket connection.
- * @param {NetPacket} pkt - NetPacket packet instance
- * @return {Object} object with registered property containing array of message
- */
-URNET.PKT_RegisterRemoteHandlers = pkt => {
-  if (pkt.getMessage() !== 'NET:SRV_REG_HANDLERS')
-    throw Error('not a registration packet');
-  let uaddr = pkt.getSourceAddress();
-  let { messages = [] } = pkt.getData();
-  // make sure there's no sneaky attempt to subvert the system messages
-  const filtered = messages.filter(msg => !msg.startsWith('NET:SRV'));
-  if (filtered.length !== messages.length) {
-    const error = `${uaddr} blocked from registering SRV message`;
-    TERM(error);
-    return { error, code: NetPacket.CODE_REG_DENIED };
-  }
-  let regd = [];
-  // save message list, for later when having to delete
-  m_socket_msgs_list.set(uaddr, messages);
-  // add uaddr for each message in the list
-  // m_remote_handlers[mesg] contains a Set
-  messages.forEach(msg => {
-    let entry = m_remote_handlers.get(msg);
-    if (!entry) {
-      entry = new Set();
-      m_remote_handlers.set(msg, entry);
-    }
-    if (DBG.client) TERM(`${uaddr} regr '${msg}'`);
-    entry.add(uaddr);
-    regd.push(msg);
-  });
-  return { registered: regd };
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Handle SESSION LOGIN packets. A key is generated based on the provided
- * user token and socket address, and stored in the client socket. This should
- * ensure that keys can not be reused by other socket connections or multiple
- * logins using the same token.
- *
- * @param {NetPacket} pkt - NetPacket packet instance
- * @param {Object} pkt.data - data payload
- * @param {String} pkt.data.token - hashed session info
- * @return {Object} returned data payload
- */
-URNET.PKT_SessionLogin = pkt => {
-  if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGIN')
-    throw Error('not a session login packet');
-  const uaddr = pkt.getSourceAddress();
-  const sock = m_SocketLookup(uaddr);
-  if (!sock) throw Error(`uaddr '${uaddr}' not associated with a socket`);
-  if (sock.USESS) {
-    const error = `socket '${uaddr}' already has a session '${JSON.stringify(
-      sock.USESS
-    )}'`;
-    return { error, code: NetPacket.CODE_SES_RE_REGISTER };
-  }
-  const { token } = pkt.getData();
-  if (!token || typeof token !== 'string')
-    return { error: 'must provide token string' };
-  const decoded = SESSION.DecodeToken(token);
-  if (!decoded.isValid) {
-    const error = `token '${token}' is not valid`;
-    return { error, code: NetPacket.CODE_SES_INVALID_TOKEN };
-  }
-  const key = SESSION.MakeAccessKey(token, uaddr);
-  sock.USESS = decoded;
-  sock.UKEY = key;
-  if (DBG.client) TERM(`${uaddr} user log-in '${decoded.token}'`);
-  LOGGER.Write(sock.UADDR, 'log-in', decoded.token);
-  return { status: 'logged in', success: true, token, uaddr, key };
-};
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Handle SESSION LOGOUT packets
- *
- * @param {NetPacket} pkt - NetPacket packet instance
- * @param {Object} pkt.data - data payload
- * @param {String} pkt.data.token - hashed session info
- * @return {Object} returned data payload
- */
-URNET.PKT_SessionLogout = pkt => {
-  if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGOUT')
-    throw Error('not a session logout packet');
-  const uaddr = pkt.getSourceAddress();
-  const sock = m_SocketLookup(uaddr);
-  const { key } = pkt.getData();
-  if (sock.UKEY !== key)
-    return { error: `uaddr '${uaddr}' key '${key}'!=='${sock.UKEY}'` };
-  if (DBG.client) TERM(`${uaddr} user logout '${sock.USESS.token}'`);
-  if (sock.USESS) LOGGER.Write(sock.UADDR, 'logout', sock.USESS.token);
-  sock.UKEY = undefined;
-  sock.USESS = undefined;
-  return { status: 'logged out', success: true };
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return a session object based on the passed packet's stored credentials
- */
-URNET.PKT_Session = pkt => {
-  const uaddr = pkt.getSourceAddress();
-  const sock = m_SocketLookup(uaddr);
-  if (!sock) {
-    const error = `${uaddr} impossible socket lookup failure`;
-    TERM(error);
-    return { error, code: NetPacket.CODE_SOC_NOSOCK };
-  }
-  const { key } = pkt.Data();
-  if (sock.ULOCAL) {
-    if (DBG.client) TERM(`${uaddr} is localhost so bypass key check`);
-    return { localhost: true };
-  }
-  if (!key) {
-    const error = `${uaddr} access key is not set`;
-    if (DBG.client) TERM(error);
-    return { error, code: NetPacket.CODE_SES_REQUIRE_KEY };
-  }
-  const evil_backdoor = SESSION.AdminPlaintextPassphrase();
-  if (key === evil_backdoor) {
-    // do some hacky bypassing...yeep
-    if (!sock.USESS) {
-      const warning = `non-localhost admin '${evil_backdoor}' logged-in`;
-      LOGGER.Write(uaddr, warning);
-      TERM(`${uaddr} WARN ${warning}`);
-      const adminToken = SESSION.MakeToken('Admin', {
-        groupId: 0,
-        classroomId: 0
-      });
-      sock.USESS = SESSION.DecodeToken(adminToken);
-      sock.UKEY = key;
-    }
-  }
-  if (!sock.USESS) {
-    const error = `sock.${uaddr} is not logged-in`;
-    if (DBG.client) TERM(`${uaddr} is not logged-in`);
-    return { error, code: NetPacket.CODE_SES_REQUIRE_LOGIN };
-  }
-  if (key !== sock.UKEY) {
-    if (DBG.client) {
-      TERM(
-        `Session: sock.${uaddr} keys do not match packet '${sock.UKEY}' '${key}'`
-      );
-    }
-    const error = `sock.${uaddr} access keys do not match '${sock.UKEY}' '${key}'`;
-    return { error, code: NetPacket.CODE_SES_INVALID_KEY };
-  }
-  // passes all tests, so its good!
-  return sock.USESS;
-};
 
 /// END OF URNET PUBLIC API ////////////////////////////////////////////////////
 
 /// MODULE HELPER FUNCTIONS ///////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_InitializeServiceHandlers() {
+  LOGGER.Write('registering network services');
+  // start logging message
+  URNET.RegisterService('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  // register remote messages
+  URNET.RegisterService('NET:SRV_REG_HANDLERS', PKT_RegisterRemoteHandlers);
+  // register sessions
+  URNET.RegisterService('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
+  URNET.RegisterService('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
+  URNET.RegisterService('NET:SRV_SESSION', PKT_Session);
+  // ursys debug server utilities
+  URNET.RegisterService('NET:SRV_REFLECT', pkt => {
+    const data = pkt.Data();
+    data.serverSays = 'REFLECTING';
+    data.stack = data.stack || [];
+    data.stack.push(CFG_SVR_UADDR); // usually hardcoded to SVR_01
+    TERM.warn('SRV_REFLECT setting data', data);
+    return data;
+  });
+  URNET.RegisterService('NET:SRV_SERVICE_LIST', pkt => {
+    TERM.warn('SRV_SERVICE_LIST got', pkt);
+    const server = [...SVR_HANDLERS.keys()];
+    const handlers = [...NET_HANDLERS.entries()];
+    const clients = {};
+    handlers.forEach(entry => {
+      const [msg, set] = entry;
+      const remotes = [...set.keys()];
+      clients[msg] = remotes;
+    });
+    return { server, clients };
+  });
+}
+
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Assigns a unique URSYS address (UADDR) to new sockets, storing it as the
- * UADDR property of the socket and adding to mu_sockets map. The connection is
+//  * UADDR property of the socket and adding to SOCKETS map. The connection is
  * logged to the logfile.
  * @param {Object} socket connecting socket
  * @param {Object} req raw request
@@ -418,7 +237,7 @@ function m_SocketAdd(socket, req) {
   const remoteIp = req && req.connection ? req.connection.remoteAddress : '';
   socket.ULOCAL = remoteIp === '127.0.0.1' || remoteIp === '::1';
   // save socket
-  mu_sockets.set(sid, socket);
+  SOCKETS.set(sid, socket);
   if (DBG.init) TERM(`socket ADD ${socket.UADDR} to network`);
   LOGGER.Write(socket.UADDR, 'joined network');
   if (DBG.init) log_ListSockets(`add ${sid}`);
@@ -435,16 +254,40 @@ function m_GetNewUADDR(prefix = 'UADDR') {
 }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_StartSocketServer(options) {
+  // create listener.
+  try {
+    mu_wss = new WSS(options);
+    mu_wss.on('listening', () => {
+      if (DBG.init) TERM(`socket server listening on port ${options.port}`);
+      mu_wss.on('connection', (socket, req) => {
+        // if (DBG) TERM('socket connected');
+        // house keeping
+        m_SocketAdd(socket, req); // assign UADDR to socket
+        m_SocketClientAck(socket); // tell client HELLO with new UADDR
+        // subscribe socket to handlers
+        socket.on('message', json => m_SocketOnMessage(socket, json));
+        socket.on('close', () => m_SocketDelete(socket));
+      }); // end on 'connection'
+    });
+  } catch (e) {
+    TERM(`FATAL ERROR: ${e.toString}`);
+    TERM('Another URSYS server already running on this machine, so exiting');
+    process.exit(1);
+  }
+}
+
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a JSON packet to the just-connected client with its assigned URSYS
  * address (UADDR) and the server's UADDR.
  * @param {Object} socket connecting socket
  */
 function m_SocketClientAck(socket) {
-  let PEERS = { count: mu_sockets.size };
+  let PEERS = { count: SOCKETS.size };
   let data = {
     HELLO: `Welcome to URSYS, ${socket.UADDR}`,
     UADDR: socket.UADDR,
-    SERVER_UADDR,
+    CFG_SVR_UADDR,
     PEERS,
     ULOCAL: socket.ULOCAL
   };
@@ -482,23 +325,23 @@ function m_SocketOnMessage(socket, json) {
  */
 function m_SocketDelete(socket) {
   let uaddr = socket.UADDR;
-  if (!mu_sockets.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
+  if (!SOCKETS.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
   if (DBG) TERM(`socket DEL ${uaddr} from network`);
   const user = socket.USESS ? socket.USESS.token : '';
   LOGGER.Write(socket.UADDR, 'left network', user.toUpperCase());
-  mu_sockets.delete(uaddr);
+  SOCKETS.delete(uaddr);
   // delete socket reference from previously registered handlers
-  let rmesgs = m_socket_msgs_list.get(uaddr);
+  let rmesgs = MESSAGE_DICT.get(uaddr);
   if (Array.isArray(rmesgs)) {
     rmesgs.forEach(msg => {
-      let handlers = m_remote_handlers.get(msg);
+      let handlers = NET_HANDLERS.get(msg);
       if (DBG) TERM(`${uaddr} removed handler '${msg}'`);
       if (handlers) handlers.delete(uaddr);
     });
   }
   if (DBG.init) log_ListSockets(`del ${socket.UADDR}`);
   // tell subscribers socket is gone
-  URNET.LocalPublish('SRV_SOCKET_DELETED', { uaddr });
+  URNET.NotifyService('SRV_SOCKET_DELETED', { uaddr });
 } // end m_SocketDelete()
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -506,7 +349,7 @@ function m_SocketDelete(socket) {
  * can be accessed from a NetPacket packet's SourceAddress().
  */
 function m_SocketLookup(uaddr) {
-  return mu_sockets.get(uaddr);
+  return SOCKETS.get(uaddr);
 }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -625,7 +468,7 @@ async function m_HandleMessage(socket, pkt) {
  */
 function m_PromiseServerHandlers(pkt) {
   let mesgName = pkt.getMessage();
-  const handlers = m_server_handlers.get(mesgName);
+  const handlers = SVR_HANDLERS.get(mesgName);
   /// create promises for all registered handlers in the set
   let promises = [];
   if (!handlers) return promises;
@@ -665,9 +508,9 @@ function m_PromiseRemoteHandlers(pkt) {
   // generate the list of promises
   let promises = [];
   // disallow NET:SYSTEM published messages from remote clients
-  if (!pkt.isServerOrigin() && mesgName.startsWith('NET:SYSTEM')) return promises;
+  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_SYS_MESG)) return promises;
   // check for handlers
-  let handlers = m_remote_handlers.get(mesgName);
+  let handlers = NET_HANDLERS.get(mesgName);
   if (!handlers) return promises;
 
   // if there are handlers to handle, create a NetPacket
@@ -678,7 +521,7 @@ function m_PromiseRemoteHandlers(pkt) {
     if (publishOnly && isOrigin) {
       if (DBG.calls) TERM(`skipping msend|mcall from ${s_uaddr} to ${d_uaddr}`);
     } else {
-      let d_sock = mu_sockets.get(d_uaddr);
+      let d_sock = SOCKETS.get(d_uaddr);
       if (d_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${d_uaddr}`);
       let newpkt = new NetPacket(pkt); // clone packet data to new packet
       newpkt.makeNewId(); // make new packet unique
@@ -689,12 +532,162 @@ function m_PromiseRemoteHandlers(pkt) {
   return promises;
 }
 
+/// SERVER MESSAGE HANDLERS ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handles URSYS REGISTRATION PACKETS from connecting clients. It is the first
+ * packet sent on successful socket connection.
+ * @param {NetPacket} pkt - NetPacket packet instance
+ * @return {Object} object with registered property containing array of message
+ */
+function PKT_RegisterRemoteHandlers(pkt) {
+  if (pkt.getMessage() !== 'NET:SRV_REG_HANDLERS')
+    throw Error('not a registration packet');
+  let uaddr = pkt.getSourceAddress();
+  let { messages = [] } = pkt.getData();
+  // make sure there's no sneaky attempt to subvert the system messages
+  const filtered = messages.filter(msg => !msg.startsWith('NET:SRV'));
+  if (filtered.length !== messages.length) {
+    const error = `${uaddr} blocked from registering SRV message`;
+    TERM(error);
+    return { error, code: NetPacket.CODE_REG_DENIED };
+  }
+  let regd = [];
+  // save message list, for later when having to delete
+  MESSAGE_DICT.set(uaddr, messages);
+  // add uaddr for each message in the list
+  // NET_HANDLERS[mesg] contains a Set
+  messages.forEach(msg => {
+    let entry = NET_HANDLERS.get(msg);
+    if (!entry) {
+      entry = new Set();
+      NET_HANDLERS.set(msg, entry);
+    }
+    if (DBG.client) TERM(`${uaddr} regr '${msg}'`);
+    entry.add(uaddr);
+    regd.push(msg);
+  });
+  return { registered: regd };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle SESSION LOGIN packets. A key is generated based on the provided
+ * user token and socket address, and stored in the client socket. This should
+ * ensure that keys can not be reused by other socket connections or multiple
+ * logins using the same token.
+ *
+ * @param {NetPacket} pkt - NetPacket packet instance
+ * @param {Object} pkt.data - data payload
+ * @param {String} pkt.data.token - hashed session info
+ * @return {Object} returned data payload
+ */
+function PKT_SessionLogin(pkt) {
+  if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGIN')
+    throw Error('not a session login packet');
+  const uaddr = pkt.getSourceAddress();
+  const sock = m_SocketLookup(uaddr);
+  if (!sock) throw Error(`uaddr '${uaddr}' not associated with a socket`);
+  if (sock.USESS) {
+    const error = `socket '${uaddr}' already has a session '${JSON.stringify(
+      sock.USESS
+    )}'`;
+    return { error, code: NetPacket.CODE_SES_RE_REGISTER };
+  }
+  const { token } = pkt.getData();
+  if (!token || typeof token !== 'string')
+    return { error: 'must provide token string' };
+  const decoded = SESSION.DecodeToken(token);
+  if (!decoded.isValid) {
+    const error = `token '${token}' is not valid`;
+    return { error, code: NetPacket.CODE_SES_INVALID_TOKEN };
+  }
+  const key = SESSION.MakeAccessKey(token, uaddr);
+  sock.USESS = decoded;
+  sock.UKEY = key;
+  if (DBG.client) TERM(`${uaddr} user log-in '${decoded.token}'`);
+  LOGGER.Write(sock.UADDR, 'log-in', decoded.token);
+  return { status: 'logged in', success: true, token, uaddr, key };
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle SESSION LOGOUT packets
+ *
+ * @param {NetPacket} pkt - NetPacket packet instance
+ * @param {Object} pkt.data - data payload
+ * @param {String} pkt.data.token - hashed session info
+ * @return {Object} returned data payload
+ */
+function PKT_SessionLogout(pkt) {
+  if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGOUT')
+    throw Error('not a session logout packet');
+  const uaddr = pkt.getSourceAddress();
+  const sock = m_SocketLookup(uaddr);
+  const { key } = pkt.getData();
+  if (sock.UKEY !== key)
+    return { error: `uaddr '${uaddr}' key '${key}'!=='${sock.UKEY}'` };
+  if (DBG.client) TERM(`${uaddr} user logout '${sock.USESS.token}'`);
+  if (sock.USESS) LOGGER.Write(sock.UADDR, 'logout', sock.USESS.token);
+  sock.UKEY = undefined;
+  sock.USESS = undefined;
+  return { status: 'logged out', success: true };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return a session object based on the passed packet's stored credentials
+ */
+function PKT_Session(pkt) {
+  const uaddr = pkt.getSourceAddress();
+  const sock = m_SocketLookup(uaddr);
+  if (!sock) {
+    const error = `${uaddr} impossible socket lookup failure`;
+    TERM(error);
+    return { error, code: NetPacket.CODE_SOC_NOSOCK };
+  }
+  const { key } = pkt.Data();
+  if (sock.ULOCAL) {
+    if (DBG.client) TERM(`${uaddr} is localhost so bypass key check`);
+    return { localhost: true };
+  }
+  if (!key) {
+    const error = `${uaddr} access key is not set`;
+    if (DBG.client) TERM(error);
+    return { error, code: NetPacket.CODE_SES_REQUIRE_KEY };
+  }
+  const evil_backdoor = SESSION.AdminPlaintextPassphrase();
+  if (key === evil_backdoor) {
+    // do some hacky bypassing...yeep
+    if (!sock.USESS) {
+      const warning = `non-localhost admin '${evil_backdoor}' logged-in`;
+      LOGGER.Write(uaddr, warning);
+      TERM(`${uaddr} WARN ${warning}`);
+      const adminToken = SESSION.MakeToken('Admin', {
+        groupId: 0,
+        classroomId: 0
+      });
+      sock.USESS = SESSION.DecodeToken(adminToken);
+      sock.UKEY = key;
+    }
+  }
+  if (!sock.USESS) {
+    const error = `sock.${uaddr} is not logged-in`;
+    if (DBG.client) TERM(`${uaddr} is not logged-in`);
+    return { error, code: NetPacket.CODE_SES_REQUIRE_LOGIN };
+  }
+  if (key !== sock.UKEY) {
+    if (DBG.client) {
+      TERM(
+        `Session: sock.${uaddr} keys do not match packet '${sock.UKEY}' '${key}'`
+      );
+    }
+    const error = `sock.${uaddr} access keys do not match '${sock.UKEY}' '${key}'`;
+    return { error, code: NetPacket.CODE_SES_INVALID_KEY };
+  }
+  // passes all tests, so its good!
+  return sock.USESS;
+}
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** helper debug output used by m_SocketAdd(), m_SocketDelete() */
 function log_ListSockets(change) {
   TERM(`socketlist changed: '${change}'`);
   // let's use iterators! for..of
-  let values = mu_sockets.values();
+  let values = SOCKETS.values();
   let count = 1;
   for (let socket of values) {
     TERM(`  ${count} = ${socket.UADDR}`);

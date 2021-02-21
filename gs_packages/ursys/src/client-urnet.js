@@ -2,13 +2,14 @@
 /* eslint-disable no-param-reassign */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-    URSYS NETWORK implements network controls and synchronization.
+    URSYS URNET implements network controls and synchronization.
     It initializes a network connection on the CONNECT lifecycle.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
-const URSession = require('./client-session');
+const NETINFO = require('./client-netinfo');
 const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
+const { CFG_SVR_UADDR, CFG_URNET_SERVICE } = require('./ur-common');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,7 +19,7 @@ const ENDPOINT_NAME = 'MessagerEndpoint';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
 const ERR_BAD_URCHAN = `An instance of '${ENDPOINT_NAME}' is required`;
 
-/// NETWORK ID VALUES /////////////////////////////////////////////////////////
+/// URNET ID VALUES /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const M0_INIT = 0;
 const M1_CONNECTING = 1;
@@ -30,11 +31,11 @@ const M_STANDALONE = 5;
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_socket; // contain socket information on registration message
-let m_urlink; // assigned during NETWORK.Connect()
+let m_urlink; // assigned during URNET.Connect()
 let m_options;
-let m_status = M0_INIT;
+let m_status = M0_INIT; // current status
 
-/// NETWORK LISTENERS /////////////////////////////////////////////////////////
+/// URNET LISTENERS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_AddListener(event, handlerFunction) {
   if (m_socket instanceof WebSocket) {
@@ -51,6 +52,10 @@ function m_RemoveListener(event, handlerFunction) {
     throw Error(ERR_NO_SOCKET);
   }
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_SetStatus(nextStatus) {
+  m_status = nextStatus;
+}
 
 /// API HELPERS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,10 +68,10 @@ function m_HandleRegistrationMessage(msgEvent) {
   // (1) after receiving the initial message, switch over to regular
   // message handler
   m_RemoveListener('message', m_HandleRegistrationMessage);
-  m_status = M3_REGISTERED;
+  m_SetStatus(M3_REGISTERED);
   // (2) initialize global settings for netmessage
   if (DBG.connect || DBG.hello) console.log(...PR(`URNET SAYS '${HELLO}'`));
-  m_socket.UADDR = NetPacket.DefaultServerUADDR();
+  m_socket.UADDR = CFG_SVR_UADDR;
   NetPacket.GlobalSetup({
     uaddr: UADDR,
     netsocket: m_socket,
@@ -76,7 +81,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   });
   // (3) connect regular message handler
   m_AddListener('message', m_HandleMessage);
-  m_status = M4_READY;
+  m_SetStatus(M4_READY);
   // (4) network is initialized
   if (typeof m_options.success === 'function') m_options.success();
   // (5) also update window.URSESSION with UADDR
@@ -159,7 +164,7 @@ function m_HandleMessage(msgEvent) {
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const NETWORK = {};
+const URNET = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Establish connection to URSYS server. This is called by client.js during
  *  NetworkInitialize(), which itself fires after the application has rendered
@@ -167,15 +172,15 @@ const NETWORK = {};
  *  @param datalink - an urchannel endpoint
  *  @param opt - { success, failure } functions
  */
-NETWORK.Connect = (datalink, opt) => {
+URNET.URNET_Connect = (datalink, opt) => {
   return new Promise(resolve => {
-    if (m_status > 0) {
+    if (URNET.WasInitialized()) {
       let err =
         'called twice...other views may be calling URSYS outside of lifecycle';
       console.error(...PR(err));
       return;
     }
-    m_status = M1_CONNECTING;
+    m_SetStatus(M1_CONNECTING);
 
     // check and save parms
     if (datalink.constructor.name !== 'MessagerEndpoint') {
@@ -185,8 +190,8 @@ NETWORK.Connect = (datalink, opt) => {
     m_options = opt || {};
 
     // create websocket
-    // uses values that are set by UR-EXEC SystemBoot()
-    const { host: USRV_Host, port: USRV_MsgPort } = URSession.GetNetBroker();
+    // uses values that are set by UR-EXEC SystemNetBoot()
+    const { host: USRV_Host, port: USRV_MsgPort } = NETINFO.GetNetInfo();
     let wsURI = `ws://${USRV_Host}:${USRV_MsgPort}`;
     m_socket = new WebSocket(wsURI);
     if (DBG.connect) console.log(...PR(`OPEN SOCKET TO ${wsURI}`));
@@ -194,7 +199,7 @@ NETWORK.Connect = (datalink, opt) => {
     // create listeners
     m_AddListener('open', event => {
       if (DBG.connect) console.log(...PR(`...OPEN ${event.target.url}`));
-      m_status = M2_CONNECTED;
+      m_SetStatus(M2_CONNECTED);
       // message handling continues in 'message' handler
       // the first message is assumed to be registration data
       if (DBG.connect) console.log(...PR('CONNECTED'));
@@ -203,7 +208,7 @@ NETWORK.Connect = (datalink, opt) => {
     m_AddListener('close', event => {
       if (DBG.connect) console.log(...PR(`..CLOSE ${event.target.url}`));
       NetPacket.GlobalOfflineMode();
-      m_status = M_STANDALONE;
+      m_SetStatus(M_STANDALONE);
     });
     // handle incoming messages
     m_AddListener('message', m_HandleRegistrationMessage);
@@ -212,7 +217,7 @@ NETWORK.Connect = (datalink, opt) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Force close of connection, for example if URSYS.AppReady() fails
  */
-NETWORK.Close = (code, reason) => {
+URNET.URNET_Close = (code, reason) => {
   code = code || 1000;
   reason = reason || 'URSYS forced close';
   m_socket.close(code, reason);
@@ -221,42 +226,48 @@ NETWORK.Close = (code, reason) => {
 /** Return the current uaddr of this client, which is stored in NetPacket
  *  when the client initializes.
  */
-NETWORK.SocketUADDR = () => {
+URNET.SocketUADDR = () => {
   return NetPacket.SocketUADDR();
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return TRUE if client is in "standalone" mode. This was a NetCreate
  *  that was used to disable network communication for HTML-only snapshots.
  */
-NETWORK.IsStandaloneMode = () => {
+URNET.IsStandaloneMode = () => {
   return m_status === M_STANDALONE;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+URNET.WasInitialized = () => {
+  return m_status > 0;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return TRUE if client is running with the localhost as server.
  *  This can be used as quick way to enable admin-only features.
  */
-NETWORK.IsLocalhost = () => NetPacket.IsLocalhost();
+URNET.IsLocalhost = () => NetPacket.IsLocalhost();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.ServerIP = () => {
-  const { host } = URSession.GetNetBroker();
+URNET.ServerIP = () => {
+  const { host } = NETINFO.GetNetInfo();
   return host;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.URNetPort = () => {
-  const { port } = URSession.GetNetBroker();
+URNET.URNetPort = () => {
+  const { port } = NETINFO.GetNetInfo();
   return port;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.WebServerPort = () => window.location.port || 80;
+URNET.WebServerPort = () => window.location.port || 80;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NETWORK.ConnectionString = () => {
-  const { host } = URSession.GetNetBroker();
+URNET.ConnectionString = () => {
+  const { host } = NETINFO.GetNetInfo();
   const port = window.location.port;
   let str = `appserver at ${host}`;
   if (port) str += `:${port}`;
   return str;
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+URNET.NetInfoRoute = () => CFG_URNET_SERVICE;
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = NETWORK;
+module.exports = URNET;

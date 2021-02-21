@@ -53,13 +53,13 @@ class PanelSimulation extends React.Component {
     this.DoSimStop = this.DoSimStop.bind(this);
 
     UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
-    UR.RegisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
-    UR.RegisterMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
-    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
-    UR.RegisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
+    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
+    UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
 
   componentDidMount() {
@@ -72,13 +72,13 @@ class PanelSimulation extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
-    UR.UnregisterMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
-    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.UnregisterMessage('NET:HACK_SIM_START', this.DoSimStart);
-    UR.UnregisterMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.UnhandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.UnhandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
+    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
+    UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
 
   /**

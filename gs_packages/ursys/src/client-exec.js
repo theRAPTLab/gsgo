@@ -12,9 +12,10 @@
  */
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URSession = require('./client-session');
-const URPhaseMachine = require('./class-phase-machine');
+const NETINFO = require('./client-netinfo');
+const PhaseMachine = require('./class-phase-machine');
 const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
+const { CFG_URNET_SERVICE } = require('./ur-common');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -73,14 +74,25 @@ const PHASES = {
 
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PHASE_MACHINE = new URPhaseMachine('UR', PHASES, '');
+let PHASE_MACHINE = new PhaseMachine('UR', PHASES, '');
 const { executePhase, execute } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: check options passed to SystemBoot, etc
- */
-function m_CheckOptions(options) {
-  const { autoRun, netProps, ...other } = options;
+/** UTILITY: check options passed to SystemNetBoot */
+function m_CheckNetOptions(netOpt) {
+  const { broker, client, ...other } = netOpt;
+  const unknown = Object.keys(other);
+  if (unknown.length) {
+    console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
+    throw Error('URSYS: bad option object');
+  }
+  // return true if there were no unknown option properties
+  return unknown.length === 0;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: check options passed to SystemAppConfig */
+function m_CheckConfigOptions(cfgOpt) {
+  const { autoRun, ...other } = cfgOpt;
   const unknown = Object.keys(other);
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
@@ -94,27 +106,31 @@ function m_CheckOptions(options) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle state engine, connecting to the network
  */
-async function SystemBoot(options = {}) {
+async function SystemNetBoot() {
   //
   if (DBG) console.groupCollapsed('** URSYS: Boot');
   else console.log(...PR('EXEC PHASE_BOOT, PHASE_INIT, PHASE_CONNECT'));
-  //
-  m_CheckOptions(options);
-  URSession.InitializeNetProps(options.netProps);
-  //
+  // APP INITIALIZATION
   await executePhase('PHASE_BOOT');
   await executePhase('PHASE_INIT');
+  // CONNECT TO URNET
+  const response = await fetch(CFG_URNET_SERVICE);
+  const netInfo = await response.json();
+  m_CheckNetOptions(netInfo);
+  console.log('netinfo', netInfo);
+  NETINFO.SaveNetInfo(netInfo);
   await executePhase('PHASE_CONNECT');
   //
   if (DBG) console.groupEnd();
 }
 //// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: initialize, configure, and load data after SystemBoot
+/** API: initialize, configure, and load data after SystemNetBoot
  */
-async function SystemConfig(options = {}) {
+async function SystemAppConfig(options = {}) {
   //
   if (DBG) console.groupCollapsed('** URSYS: Config');
   else console.log(...PR('EXEC PHASE_LOAD, PHASE_CONFIG, PHASE_READY'));
+  m_CheckConfigOptions(options);
   //
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
@@ -124,7 +140,7 @@ async function SystemConfig(options = {}) {
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
     if (DBG) console.groupEnd();
-    SystemRun(options);
+    SystemAppRun(options);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -133,9 +149,9 @@ async function SystemConfig(options = {}) {
  *  to grow for each timer.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function SystemRun(options = {}) {
+async function SystemAppRun(options = {}) {
   // PART 1 - SYSTEM RUN (part of PHASE_RUN group)
-  m_CheckOptions(options);
+  m_CheckConfigOptions(options);
   //
   if (DBG) console.log(...PR('URSYS: STAGE START RUN'));
   else console.log(...PR('EXEC APP_STAGE APP_START APP_RUN'));
@@ -150,29 +166,29 @@ async function SystemRun(options = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: something important application-wide has updated
  */
-async function SystemUpdate() {
+async function SystemAppUpdate() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
   await execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
-  SystemRun();
+  SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
  */
-async function SystemRestage() {
+async function SystemAppRestage() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
   await execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
-  SystemRun();
+  SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine
  */
-async function SystemUnload() {
+async function SystemAppUnload() {
   if (DBG) console.groupCollapsed('** URSYS: Unload');
   //
   await executePhase('PHASE_UNLOAD');
@@ -182,7 +198,7 @@ async function SystemUnload() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: restart the lifecycle from boot
  */
-async function SystemReboot() {
+async function SystemNetReboot() {
   if (DBG) console.groupCollapsed('** URSYS: Reboot');
   //
   await executePhase('PHASE_REBOOT');
@@ -193,11 +209,11 @@ async function SystemReboot() {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  SystemBoot,
-  SystemConfig,
-  SystemRun,
-  SystemUpdate,
-  SystemRestage,
-  SystemUnload,
-  SystemReboot
+  SystemNetBoot,
+  SystemAppConfig,
+  SystemAppRun,
+  SystemAppUpdate,
+  SystemAppRestage,
+  SystemAppUnload,
+  SystemNetReboot
 };
