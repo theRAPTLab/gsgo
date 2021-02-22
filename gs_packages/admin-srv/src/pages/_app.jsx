@@ -23,7 +23,7 @@ import {
 } from '@material-ui/core/styles';
 ///
 import CssBaseline from '@material-ui/core/CssBaseline';
-import { useRegisterMessage } from '../hooks/use-ursys';
+import { useHandleMessage } from '../hooks/use-ursys';
 ///
 import theme from '../modules/style/theme';
 import { SITE } from './_navmenu.json';
@@ -45,7 +45,7 @@ const jss = create({
 /// COMPONENT EXPORT //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default function MyApp(props) {
-  const { Component, pageProps, netProps } = props;
+  const { Component, pageProps, netInfo } = props;
   // NOTE: effects execute only on client after MyApp has completely rendered,
   // but window is not accessible in
 
@@ -58,14 +58,14 @@ export default function MyApp(props) {
     }
     // URSYS startup
     (async () => {
-      await UR.SystemBoot({ netProps });
-      await UR.SystemConfig({ autoRun: true });
+      await UR.SystemNetBoot({ netInfo });
+      await UR.SystemAppConfig({ autoRun: true });
     })();
 
     // useEffect unmounting action: URSYS shutdown
     return function cleanup() {
       console.log(...PR('unmounting _app'));
-      UR.SystemUnload();
+      UR.SystemAppUnload();
       // force page reload after unmount
       // window.location.reload();
     };
@@ -81,7 +81,7 @@ export default function MyApp(props) {
     data._app = 'hello from _app';
     return data;
   }
-  useRegisterMessage('HELLO_URSYS', handleHello);
+  useHandleMessage('HELLO_URSYS', handleHello);
 
   // render app wrapped with our providers
   return (
@@ -111,10 +111,11 @@ export default function MyApp(props) {
 MyApp.getInitialProps = async ctx => {
   // ctx contains Component, router, pageProps
   const appProps = await App.getInitialProps(ctx);
-  const netProps = await fetch('http://localhost:3000/urnet/getinfo').then(res =>
-    res.json()
-  );
-  return { ...appProps, netProps };
+  // the netInfo load is now part of URSYS SystemNetBoot
+  // const netInfo = await fetch(
+  //   `http://localhost:3000${UR.NetInfoRoute()}`
+  // ).then(res => res.json());
+  return { ...appProps };
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

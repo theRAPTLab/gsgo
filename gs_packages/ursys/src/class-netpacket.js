@@ -20,6 +20,15 @@
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('./util/prompts');
+const {
+  PRE_PACKET_ID,
+  PRE_SVR_MESG,
+  PACKET_TYPES,
+  TRANSACTION_MODE,
+  VALID_CHANNELS,
+  CFG_SVR_UADDR
+} = require('./ur-common');
+const { GetNetworkOptions } = require('./ur-common');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,36 +47,22 @@ const ERR_UNKNOWN_TYPE = `${PERR}packet type is unknown:`;
 const ERR_NOT_PACKET = `${PERR}passed object is not a NetPacket`;
 const ERR_UNKNOWN_RMODE = `${PERR}packet routine mode is unknown:`;
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// ONLINE/OFFLINE OPERATIONS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const M_INIT = 'init';
 const M_ONLINE = 'online';
 const M_STANDALONE = 'offline';
 const M_CLOSED = 'closed';
 const M_ERROR = 'error';
-const VALID_CHANNELS = ['LOCAL', 'NET', 'STATE']; // * is all channels in list
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_id_counter = 0;
-let m_id_prefix = 'PKT';
-let m_transactions = new Map();
+let m_id_prefix = PRE_PACKET_ID;
 let m_netsocket = null;
 let m_group_id = null;
 let m_mode = M_INIT;
-
-/// ENUMS /////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PACKET_TYPES = [
-  'msend', // a 'send' message returns no data
-  'msig', // a 'signal' message is a send that calls all handlers everywhere
-  'mcall', // a 'call' message returns data
-  'state' // (unimplemented) a 'state' message is used by a state manager
-];
-const TRANSACTION_MODE = [
-  'req', // packet in initial 'request' mode
-  'res' // packet in returned 'response' mode
-];
+let m_transactions = new Map(); // keep track of returning packets
 
 /// URSYS NETMESSAGE CLASS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,7 +186,7 @@ class NetPacket {
   /** NetPacket.IsServerMessage() is a convenience function return true if
    * server message */
   isServerMessage() {
-    return this.msg.startsWith('NET:SRV_');
+    return this.msg.startsWith(PRE_SVR_MESG); // ur-common default NET:SRV_
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -276,10 +271,7 @@ class NetPacket {
         log .seqlog
     /*/
     // is this packet originating from server to a remote?
-    if (
-      this.s_uaddr === NetPacket.DefaultServerUADDR() &&
-      !this.msg.startsWith('NET:SVR_')
-    ) {
+    if (this.s_uaddr === CFG_SVR_UADDR && !this.msg.startsWith(PRE_SVR_MESG)) {
       return this.s_uaddr;
     }
     // this is a regular message forward to remote handlers, returning
@@ -290,7 +282,7 @@ class NetPacket {
   /** Return true if this pkt is from the server targeting remote handlers
    */
   isServerOrigin() {
-    return this.getSourceAddress() === NetPacket.DefaultServerUADDR();
+    return this.getSourceAddress() === CFG_SVR_UADDR;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -563,17 +555,6 @@ NetPacket.Peers = () => {
 };
 NetPacket.IsLocalhost = () => {
   return NetPacket.ULOCAL;
-};
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NetPacket.DefaultServerUADDR() is a static method returning a hardcoded
- * URSYS address referring to the URSYS server. It is used by the server-side
- * code to set the server address, and the browser can rely on it as well.
- * @function
- * @returns {string} URSYS address of the server
- */
-NetPacket.DefaultServerUADDR = () => {
-  return 'SVR_01';
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

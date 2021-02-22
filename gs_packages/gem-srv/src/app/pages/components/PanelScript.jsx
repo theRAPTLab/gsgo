@@ -160,7 +160,7 @@ class PanelScript extends React.Component {
     this.OnButtonClick = this.OnButtonClick.bind(this);
     this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
 
-    UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
+    UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
   componentDidMount() {
@@ -179,7 +179,7 @@ class PanelScript extends React.Component {
     console.warn(
       'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
     );
-    UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
+    UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
   /**

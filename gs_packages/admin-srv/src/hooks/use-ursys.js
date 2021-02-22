@@ -36,13 +36,13 @@ function useInterval(callback, delay) {
  *    callLocalHandler();
  *  });
  */
-function useRegisterMessage(message, callback) {
+function useHandleMessage(message, callback) {
   useEffect(() => {
-    UR.RegisterMessage(message, callback);
-    return () => UR.UnregisterMessage(message, callback);
+    UR.HandleMessage(message, callback);
+    return () => UR.UnhandleMessage(message, callback);
   }, [message, callback]);
 }
 
 /// EXPORT ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { useInterval, useRegisterMessage };
+export { useInterval, useHandleMessage };

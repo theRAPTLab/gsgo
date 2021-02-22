@@ -19,11 +19,11 @@ class PanelPlayback extends React.Component {
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
 
-    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
+    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
+    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
   }
 
   DoModelUpdate(data) {

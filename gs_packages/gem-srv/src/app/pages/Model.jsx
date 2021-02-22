@@ -49,7 +49,7 @@ class Model extends React.Component {
     this.setState({ modelId });
     document.title = `GEMSTEP MODEL ${modelId}`;
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
   }
 
   componentDidCatch(e) {

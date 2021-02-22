@@ -274,10 +274,9 @@ export type TRegcode = (
 export type TSMCProgram = TOpcode[];
 export type TSMCGlobalProgram = TRegcode[];
 export type TSMCFunction = TOpcode;
-// Also could be an AST, which is an object with a type property
-export type TExpressionAST = { expr: string };
-// argnodes are emitted by class-gscript-tokenizer; we only need to process
-// the `expr` and `objref` types in GAgent.exec() if they happen to be passed
+/** Also could be an AST, which is an object with a type property */
+export type TExpressionAST = { expr: object }; // expr is binary tre
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is

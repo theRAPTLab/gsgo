@@ -68,11 +68,11 @@ class ScriptEditor extends React.Component {
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
-    UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectScript);
-    UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.RegisterMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
-    UR.RegisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
+    UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
@@ -82,7 +82,7 @@ class ScriptEditor extends React.Component {
     document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
 
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
 
     window.addEventListener('beforeunload', this.CleanupComponents);
 
@@ -103,11 +103,11 @@ class ScriptEditor extends React.Component {
 
   CleanupComponents() {
     this.UnRegisterInstances();
-    UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectScript);
-    UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.UnregisterMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
-    UR.UnregisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.UnhandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
+    UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   /**

@@ -68,9 +68,9 @@ class MissionControl extends React.Component {
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.RegisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.RegisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
@@ -79,7 +79,7 @@ class MissionControl extends React.Component {
     this.setState({ modelId });
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
 
     // Load Model Data
     this.LoadModel(modelId);
@@ -90,9 +90,9 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnregisterMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.UnregisterMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   LoadModel(modelId) {

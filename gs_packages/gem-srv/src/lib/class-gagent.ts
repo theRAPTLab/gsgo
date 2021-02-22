@@ -224,7 +224,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     }
     this.updateQueue.forEach(action => {
       // console.log(this.name(), 'updateAction', this.exec(action));
-      this.exec(this.blueprint.update, ctx);
+      this.exec(action, ctx);
     });
     this.updateQueue = [];
   }
