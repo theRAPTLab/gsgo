@@ -73,6 +73,7 @@ class Home extends React.Component {
             <NavItem route="model">model</NavItem>
             <NavItem route="missioncontrol">mission control</NavItem>
             <NavItem route="scripteditor">script editor</NavItem>
+            <NavItem route="mapeditor">map editor</NavItem>
             <NavItem route="viewer">viewer</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
@@ -102,6 +103,12 @@ class Home extends React.Component {
               a pre-defined selection of agents that can have their scripts
               edited. This can be on different machines. Use <b>SAVE TO SERVER</b>{' '}
               to send to MISSION CONTROL.
+            </li>
+            <li>
+              <a href="/app/mapeditor">MAP EDITOR</a> - Prototype providing a
+              pre-defined selection of agent instances that will be created when
+              scripts are submitted to the server. This can be on different
+              machines.
             </li>
             <li>
               <a href="/app/viewer">VIEWER</a> - Prototype app showing the
