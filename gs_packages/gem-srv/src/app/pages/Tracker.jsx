@@ -42,7 +42,7 @@ UR.SystemHook(
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateCount = 0;
-UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
+UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
   if (ASSETS_LOADED) {
     FCON.plot(
       `${updateCount++} NET:DISPLAY_LIST received ${
@@ -57,7 +57,7 @@ UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
 
 /// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('NET:HELLO', data => {
+UR.HandleMessage('NET:HELLO', data => {
   console.log('NET:HELLO processing', data);
   return { str: 'tracker got you' };
 });
@@ -67,7 +67,7 @@ UR.RegisterMessage('NET:HELLO', data => {
 class Tracker extends React.Component {
   componentDidMount() {
     // start URSYS
-    UR.SystemConfig({ autoRun: true }); // initialize renderer
+    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     const renderRoot = document.getElementById('root-renderer');
     RENDERER.SetGlobalConfig({ actable: false });
     RENDERER.Init(renderRoot);

@@ -23,7 +23,10 @@ const HCON = UR.HTMLConsoleUtil('console-left');
 const NavItem = props => {
   const { route, children } = props;
   const disabled = route.charAt(0) === '-';
-  const linkName = `${route.toUpperCase()}`;
+  const qq = route.indexOf('?');
+  let linkName;
+  if (qq > 0) linkName = `${route.toUpperCase().substring(0, qq)}`;
+  else linkName = `${route.toUpperCase()}`;
   const style = {
     fontSize: '150%',
     fontWeight: 'bold',
@@ -65,16 +68,21 @@ class Home extends React.Component {
           <span style={{ fontSize: '32px' }}>INDEX</span>
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <b className={classes.title}>Available Routes</b>
+          <b className={classes.title}>Demo Routes</b>
+          <ul className={classes.list}>
+            <NavItem route="login?model=aquatic">login</NavItem>
+            <NavItem route="model?model=aquatic">model</NavItem>
+            <NavItem route="missioncontrol?model=aquatic">
+              mission control
+            </NavItem>
+            <NavItem route="scripteditor?model=aquatic">script editor</NavItem>
+            <NavItem route="mapeditor?model=aquatic">map editor</NavItem>
+            <NavItem route="viewer?model=aquatic">viewer</NavItem>
+          </ul>
+          <b className={classes.title}>Dev Testing Routes</b>
           <ul className={classes.list}>
             <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
-            <NavItem route="login">login</NavItem>
-            <NavItem route="model">model</NavItem>
-            <NavItem route="missioncontrol">mission control</NavItem>
-            <NavItem route="scripteditor">script editor</NavItem>
-            <NavItem route="mapeditor">map editor</NavItem>
-            <NavItem route="viewer">viewer</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
         </div>

@@ -21,11 +21,11 @@ class PanelInspector extends React.Component {
       bgcolor: 'rgba(0,256,0,0.05)'
     };
     this.OnDataUpdate = this.OnDataUpdate.bind(this);
-    UR.RegisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
+    UR.HandleMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
+    UR.UnhandleMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
   }
 
   /*

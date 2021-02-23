@@ -16,9 +16,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 /// URSYS LIBRARIES ///////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
-import SETTINGS from 'config/app.settings';
 /// MATERIAL UI LIBRARIES /////////////////////////////////////////////////////
-import theme from 'modules/style/theme';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { create } from 'jss';
 import extend from 'jss-plugin-extend';
@@ -28,6 +26,8 @@ import {
   ThemeProvider
 } from '@material-ui/core/styles';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
+import SETTINGS from '../../../config/app.settings';
+import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -56,11 +56,8 @@ function Init() {
     console.log(...PR('FYI: setting document.body.style.margin to 0'));
     // initialize URSYS synchronously
     (async () => {
-      const response = await fetch('/urnet/getinfo');
-      const netProps = await response.json();
       await UR.SystemStart(document.location.pathname);
-      // system boot runs BOOT,INIT,CONNECT phases
-      await UR.SystemBoot({ netProps });
+      await UR.SystemNetBoot();
       // start React
       ReactDOM.render(
         <StylesProvider jss={jss}>

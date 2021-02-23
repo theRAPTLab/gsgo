@@ -31,11 +31,11 @@ class InstanceSpecInspector extends React.Component {
     const { agentName } = this.props;
     const agent = GetAgentByName(agentName);
     this.setState({ agent });
-    // UR.RegisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
+    // UR.HandleMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
   }
 
   componentWillUnmount() {
-    UR.UnregisterMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
+    UR.UnhandleMessage('NET:HACK_INSPECTOR_UPDATE', this.OnDataUpdate);
   }
 
   OnDataUpdate() {

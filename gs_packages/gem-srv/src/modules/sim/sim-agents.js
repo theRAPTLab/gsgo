@@ -210,11 +210,11 @@ function AgentReset(frameTime) {
 
 /// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('SIM_RESET', AgentReset);
-UR.RegisterMessage('SIM_MODE', AgentSelect);
-// UR.RegisterMessage('SIM_PROGRAM', AgentProgram);
-UR.RegisterMessage('AGENT_PROGRAM', AgentProgram);
-UR.RegisterMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
+UR.HandleMessage('SIM_RESET', AgentReset);
+UR.HandleMessage('SIM_MODE', AgentSelect);
+// UR.HandleMessage('SIM_PROGRAM', AgentProgram);
+UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
+UR.HandleMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -20,7 +20,7 @@ const TOUT = require('./util/prompts').makeTerminalOut(' URLOG');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const DATESTR = require('./util/datestring');
+const DATESTR = require('./util/date-strings');
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =

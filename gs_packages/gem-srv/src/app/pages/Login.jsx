@@ -50,7 +50,7 @@ class Login extends React.Component {
   componentDidMount() {
     document.title = 'GEMSTEP LOGIN';
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
   }
 
   componentDidCatch(e) {
