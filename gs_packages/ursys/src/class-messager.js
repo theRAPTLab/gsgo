@@ -7,10 +7,12 @@
     This is a low-level class used by other URSYS modules both by client
     browsers and nodejs.
 
+    NOTE: This module uses the COMMONJS module format for compatibility
+    between node and browser-side Javascript, though it is only used
+    on the client side
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-// NOTE: This module uses the COMMONJS module format for compatibility
-// between node and browser-side Javascript.
 const NetPacket = require('./class-netpacket');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////

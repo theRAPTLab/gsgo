@@ -13,6 +13,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = require('./util/prompts').makeStyleFormatter('UR.SES');
+const { CFG_URNET_SERVICE } = require('./ur-common');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,6 +36,19 @@ interface ConnectionInfo {
 let NET_BROKER: MessageBroker;
 let CLIENT_INFO: ConnectionInfo;
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: check options passed to SystemNetBoot */
+function m_CheckNetOptions(netOpt) {
+  const { broker, client, ...other } = netOpt;
+  const unknown = Object.keys(other);
+  if (unknown.length) {
+    console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
+    throw Error('URSYS: bad option object');
+  }
+  // return true if there were no unknown option properties
+  return unknown.length === 0;
+}
+
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** props is coming from */
@@ -44,6 +58,14 @@ function SaveNetInfo(netInfo: NetProps) {
   NET_BROKER = broker;
   CLIENT_INFO = client;
   if (DBG) console.log(...PR('session broker', NET_BROKER,'client info',CLIENT_INFO));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** connect to the appserver's netinfo webservice */
+async function FetchNetInfo() {
+  const response = await fetch(CFG_URNET_SERVICE);
+  const netInfo = await response.json();
+  if (m_CheckNetOptions(netInfo))   SaveNetInfo(netInfo);
+  return netInfo
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetNetInfo() {
@@ -56,4 +78,4 @@ function GetClientInfo() {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { SaveNetInfo, GetNetInfo, GetClientInfo };
+module.exports = { FetchNetInfo, SaveNetInfo, GetNetInfo, GetClientInfo };

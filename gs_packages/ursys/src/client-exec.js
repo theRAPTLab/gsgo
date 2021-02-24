@@ -15,7 +15,6 @@
 const NETINFO = require('./client-netinfo');
 const PhaseMachine = require('./class-phase-machine');
 const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
-const { CFG_URNET_SERVICE } = require('./ur-common');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,18 +77,6 @@ let PHASE_MACHINE = new PhaseMachine('UR', PHASES, '');
 const { executePhase, execute } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: check options passed to SystemNetBoot */
-function m_CheckNetOptions(netOpt) {
-  const { broker, client, ...other } = netOpt;
-  const unknown = Object.keys(other);
-  if (unknown.length) {
-    console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
-    throw Error('URSYS: bad option object');
-  }
-  // return true if there were no unknown option properties
-  return unknown.length === 0;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemAppConfig */
 function m_CheckConfigOptions(cfgOpt) {
   const { autoRun, ...other } = cfgOpt;
@@ -114,12 +101,9 @@ async function SystemNetBoot() {
   await executePhase('PHASE_BOOT');
   await executePhase('PHASE_INIT');
   // CONNECT TO URNET
-  const response = await fetch(CFG_URNET_SERVICE);
-  const netInfo = await response.json();
-  m_CheckNetOptions(netInfo);
-  console.log('netinfo', netInfo);
-  NETINFO.SaveNetInfo(netInfo);
-  await executePhase('PHASE_CONNECT');
+  const netInfo = await NETINFO.FetchNetInfo();
+  console.info(...PR('received netinfo', netInfo));
+  await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
   //
   if (DBG) console.groupEnd();
 }

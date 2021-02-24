@@ -360,6 +360,64 @@ There aren't as many movable data stores, other than the STANDALONE stuff we cur
 
 This makes it a bit easier to follow
 
+## FEB 23 TUE - Multinet and Input Design
+
+Moved discussion of network discovery to `draft-ext-ursys-multinet` in the IU Design google drive folder. The gist is:
+
+* There's a main broker on the Internet that helps URSYS instances find their peers. 
+
+## FEB 24 WED - Input Skeleton
+
+I want to make progress on this infernal input system. It's time to **insert into the startup chain**. From memory, the way it works is:
+
+1. server launches appserver module, which handles compiling and http server
+2. server adds a NETINFO webservice on the same domain as the app server
+3. client begins URSYS bootstrap
+   1. client-exec: adds handler for NET_CONNECT to use the client-netinfo module to grab netinfo from the webservice
+   2. client-urnet: triggered in ursys client `NET_CONNECT` hook, calling `URNET_Connect()`
+4. client-urnet: The URNET_Connect() call works in **TWO PHASES**
+   1. PHASE A: using netinfo to connect to URNET websocket - **opportunity**, and sets the initial message handler to `m_HandleRegistrationMessage()`, since the first message received from the server will be this packet. 
+   2. PHASE B: after the registration message is processed by client, the message handler is set to the general message handler `m_HandleMessage()`
+
+#### The Registration Message
+
+The primarily use of the registration message is to deliver the **client uaddr** so the NetPacket class knows where it's sending from. The uaddr is set in `NetPacket.GlobalSetup()`, which is called in `m_HandleRegistrationMessage()` when it is received. **(this doesn't seem very clean)**
+
+```
+HELLO - a status string greeting
+UADDR - assigned client uaddress 
+SERVER_UADDR - uaddress of the server
+PEERS - unused
+ULOCAL - set if the server is running on localhost
+```
+
+UADDR is stored as CLIENT_UADDR under the global `window.URSESSION.CLIENT` object. **(this probably needs reworking)**
+
+#### Built-In URSYS Message Handlers
+
+Currently the URSYS client does not implement any special message handlers, but I can anticipate adding them for things like netlist and state updates
+
+```
+- incoming -
+NET:UR_NETLIST - netlist update
+NET:UR_NETSTATE - shared state update
+
+- outgoing - 
+NET:UR_HANDLER_CHANGE - send the current message dict to update
+NET:UR_DEVICE_CHANGE - send status about current device props
+```
+
+### Cleaning Up Server-Urnet
+
+As I looked for where to insert the new registration handshakes, I became dissatisfied with how URNET has three separate functions:
+
+* URNET socket server setup
+* socket connection management
+* service handlers
+* message routing
+
+The `server-urnet` module now just handles the socket server setup and message routing. Socket list data structure API is moved into datacore, and service handlers are in their own `server-services` modue
+
 
 
 ---
