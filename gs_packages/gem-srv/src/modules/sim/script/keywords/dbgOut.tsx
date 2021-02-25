@@ -7,10 +7,9 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { Keyword } from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import Keyword, { EvalRuntimeUnitArgs } from 'lib/class-keyword';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { EvalUnitArgs } from 'lib/expr-evaluator';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,7 +37,7 @@ export class dbgOut extends Keyword {
       if (COUNTER-- > 0) {
         console.log(
           'DBGOUT:',
-          ...EvalUnitArgs(unit.slice(1), { agent, ...state.ctx })
+          ...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx })
         );
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');

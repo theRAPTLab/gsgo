@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
+import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { addProp } from 'script/ops/_all';
 import { RegisterKeyword, GetVarCtor } from 'modules/datacore';

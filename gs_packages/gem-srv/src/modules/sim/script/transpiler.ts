@@ -358,7 +358,8 @@ function RenderScript(units: TScriptUnit[]): any[] {
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
   if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
-  units.forEach((unit, index) => {
+  units.forEach((rawUnit, index) => {
+    let unit = r_ExpandArgs(rawUnit);
     if (unit.length === 0) return;
     let keyword = unit[0];
     // comment processing

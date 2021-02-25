@@ -360,6 +360,17 @@ There aren't as many movable data stores, other than the STANDALONE stuff we cur
 
 This makes it a bit easier to follow
 
+## HOTFIX - Fixing Keyword JSX Rendering
+
+(curious if this will merge into my working branch)
+
+With the change to the unit token format, the JSX rendering in `Compiler.jsx` no longer works. I think that the units just need to be expended before they are rendered, as they are for the compiler.
+
+* [x] `RenderScript()` is the call that does it
+* [x] React is crashing with an "object not allowed in component" error, maybe due to unit token objects
+* [x] In `RenderScript()`, make sure to call `r_ExpandArgs()` as we do for the compiler to convert tokens literals to literals. It will not touch tokens for objref, expr, program
+* [x] Move runtime evaluation helpers from `expr-evaluator` to more appropriate `class-keyword` 
+
 
 
 ---
