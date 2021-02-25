@@ -13,10 +13,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
+import Keyword, { DerefProp } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { DerefProp } from 'lib/expr-evaluator';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

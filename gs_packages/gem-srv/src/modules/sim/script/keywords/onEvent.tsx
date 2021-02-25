@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
+import Keyword from 'lib/class-keyword';
 import SM_Message from 'lib/class-sm-message';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { CompilerState } from 'modules/datacore/dc-script-bundle';
