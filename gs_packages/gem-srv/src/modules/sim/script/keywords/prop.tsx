@@ -13,7 +13,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword, { DerefProp } from 'lib/class-keyword';
+import Keyword, { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -53,7 +53,8 @@ export class prop extends Keyword {
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ref, methodName, ...arg] = unit;
+    const expUnit = JSXFieldsFromUnit(unit);
+    const [kw, ref, methodName, ...arg] = expUnit;
     return super.jsx(
       index,
       unit,

@@ -78,12 +78,10 @@ class Keyword implements IKeyword {
     // note that styleIndex below has to have weird typescript
     // stuff for originally hyphenated CSS properties so it doesn't
     // get marked by the linter as invalid CSS
-    let poop = <>Foo</>;
-    console.log(poop, children);
     return (
       <div key={m_GenerateKey()} style={styleLine}>
         <div style={styleIndex}>{index}</div>
-        <div style={styleContent}>{poop}</div>
+        <div style={styleContent}>{children}</div>
       </div>
     );
   }
@@ -104,11 +102,19 @@ class Keyword implements IKeyword {
   }
 } // end of Keyword Class
 
-/// RUNTIME KEYWORD UTILITIES /////////////////////////////////////////////////
+/*/////////////////////////////////// * \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  STATIC UTILITY METHODS - for handling runtime arguments that need to be
+  evaluated in the context of the runtime agent, which can't be determined
+  at compile time.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** checks a given argument, and if it's an object we'll assume it's an
  *  UnitToken and evaluate it. Otherwise, just return the value as-is
- */ function EvalRuntimeArg(arg: any, context): any {
+ */
+function EvalRuntimeArg(arg: any, context): any {
   // return literals and arrays without changing
   // this is most objects
   if (typeof arg !== 'object') return arg;
@@ -143,7 +149,26 @@ class Keyword implements IKeyword {
     }
     return result;
   }
-  console.error('unknown arg type', arg);
+  console.error('EvalRuntimeArg: unknown arg type', arg);
+  return undefined;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** checks a given argument, and if it's an object we'll assume it's an
+ *  UnitToken return a JSX element to stuff into the GUI
+ */
+function JSXifyArg(arg: any) {
+  // Return JSX GUI element for specific types
+  if (typeof arg !== 'object') return arg; // placeholder
+  // if Array.isArray(arg)
+  // if typeof arg==='number'
+  // if typeof arg==='string'
+  // if typeof arg==='boolean'
+  // handle special object cases
+  if (arg.program) return ['program block'];
+  if (arg.objref) return arg.objref.join('.');
+  if (arg.expr) return `{{ ${arg.expr} }}`;
+  console.error('JSXifyArg: unknown arg type', arg);
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -232,14 +257,21 @@ function EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
   // the TOpcode. We need to return a copy through map()
   return unit.map(arg => EvalRuntimeArg(arg, context));
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** called by keyword jsx generator to return data that can be used by JSX
+ *
+ */
+function JSXFieldsFromUnit(unit: TScriptUnit): any {
+  const jsxArray = unit.map(arg => JSXifyArg(arg));
+  return jsxArray;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see exports above
-export default Keyword;
+export default Keyword; // default export: import Keyword
 export {
-  EvalRuntimeArg, // convert tokenized value to value
-  EvalRuntimeUnitArgs, // convert all args in unit
+  EvalRuntimeUnitArgs, // convert all args in unit to runtime values
+  JSXFieldsFromUnit, // convert arg to JSX-renderable item
   DerefProp, // return function to access agent prop at runtime
   DerefFeatureProp // return function to access agent prop at runtime
 };
