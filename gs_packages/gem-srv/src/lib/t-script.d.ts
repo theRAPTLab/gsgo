@@ -156,7 +156,6 @@ export interface IKeyword {
   compile(unit: TScriptUnit): TOpcode[];
   serialize(state: object): TScriptUnit;
   jsx(index: number, state: object, children?: any[]): any;
-  generateKey(): any;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
