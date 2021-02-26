@@ -124,3 +124,13 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 
 * W1: Ramp up 2020. Draft of System Overview docs.
 * W2: Script Engine review of patterns, issues, needed fixes
+
+**SUMMARY S22-02 JAN 25 - FEB 07**
+
+* W1: Script parser can now understands objrefs in block code at compiletime
+* W2: Runtime engine injects objref context for block code at runtime
+
+**SUMMARY S2103 FEB 08 - FEB 21**
+
+* W1: new keywords, compiler tech documentation
+* W2: network/input blueprint+design

@@ -1,54 +1,19 @@
 [PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
-**SUMMARY S20 SEP 28-OCT 11**
-
-* W1: DisplayObjects w/ actables (drag). Generator and Tracker. URSYS diagram+enable network calls.
-* W2: Sim-driven rendering. X-GEMSTEP-GUI review+integration. URSYS + gsgo refactor. 
-
-**SUMMARY S21 OCT 12 - OCT 25**
-
-* W1: fast compile. source-to-script/ui compilers.
-* W2: researched and integrated arithmetic expressions
-
-**SUMMARY S22 OCT 26 - NOV 08**
-
-* W1: Parse/Evaluation, Source-to GUI and SMC, GUI compiler API
-* W2: Tokenize, GUI for ModelLoop, script-to-blueprint-to-instance
-
-**SUMMARY S23 NOV 09 - NOV 22**
-
-* W1: Save/instance agent blueprint, runtime expression evaluation
-* W2: Start conditions, start a second gemscript tokenizer for blocks
-
-**SUMMARY S24 NOV 23 - DEC 06**
-
-* W1: handle multiline blocks, agentset and event conditions
-* W2: finalize event conditions, delivery, break
-
-**SUMMARY S2025 DEC 07 - DEC 20**
-
-* W1: Port FakeTrack/PTrack into GEMSRV
-* W2: Simplify agent prop, method, features for use by non-Sri peeps
-* W2.1: Prep for Dec 23 demo, review features with Ben
-
-**SUMMARY S2101 JAN 11 - JAN 24**
+**SUMMARY S21-01 JAN 11 - JAN 24**
 
 * W1: Ramp up 2020. Draft of System Overview docs.
 * W2: Script Engine review of patterns, issues, needed fixes
 
-**SUMMARY S2102 JAN 25 - FEB 07**
+**SUMMARY S22-02 JAN 25 - FEB 07**
 
-* W1: Parse dotted object ref, expand args. Add keywords `prop`, `featProp`, `featCall` touse dotted object refs. Need to insert context into runtime in three or four places.
-* W2: inject correct context for runtime.
+* W1: Script parser can now understands objrefs in block code at compiletime
+* W2: Runtime engine injects objref context for block code at runtime
 
 **SUMMARY S2103 FEB 08 - FEB 21**
 
 * W1: new keywords, compiler tech documentation
 * W2: network/input blueprint+design
-
-**SUMMARY S2104 FEB 22 - FEB 28**
-
-* W1: ?
 
 
 ---
@@ -236,6 +201,7 @@ There's also `in-ptrack` which creates a` PTrackEndPoint` instance and connects,
 ### What does FAKETRACK look like with this model?
 
 * FakeTrack is a webapp. It would request to become a source of PTRACK data with a particular logical name, role, and address through URSYS
+
 * It receives-back the port to write to. This is all handled in the `in-ptrack` class or something similar.
 
 * FakeTrack is separate from PTrack but uses the same data format, so it can reuse the ptrack module for frame processing and transformation
@@ -363,144 +329,3 @@ There aren't as many movable data stores, other than the STANDALONE stuff we cur
 * [x] Rename PHASE EXEC API from `SystemBoot` to `SystemNetBoot` and app-related phases to `SystemAppConfig` from `SystemConfig`, etc, to distinguish an app-scoped phase version a network specific action.
 
 This makes it a bit easier to follow
-
-## FEB 23 TUE - Multinet and Input Design
-
-Moved discussion of network discovery to `draft-ext-ursys-multinet` in the IU Design google drive folder. The gist is:
-
-* There's a main broker on the Internet that helps URSYS instances find their peers. 
-
-## FEB 24 WED - Input Skeleton
-
-I want to make progress on this infernal input system. It's time to **insert into the startup chain**. From memory, the way it works is:
-
-1. server launches appserver module, which handles compiling and http server
-2. server adds a NETINFO webservice on the same domain as the app server
-3. client begins URSYS bootstrap
-   1. client-exec: adds handler for NET_CONNECT to use the client-netinfo module to grab netinfo from the webservice
-   2. client-urnet: triggered in ursys client `NET_CONNECT` hook, calling `URNET_Connect()`
-4. client-urnet: The URNET_Connect() call works in **TWO PHASES**
-   1. PHASE A: using netinfo to connect to URNET websocket - **opportunity**, and sets the initial message handler to `m_HandleRegistrationMessage()`, since the first message received from the server will be this packet. 
-   2. PHASE B: after the registration message is processed by client, the message handler is set to the general message handler `m_HandleMessage()`
-
-#### The Registration Message
-
-The primarily use of the registration message is to deliver the **client uaddr** so the NetPacket class knows where it's sending from. The uaddr is set in `NetPacket.GlobalSetup()`, which is called in `m_HandleRegistrationMessage()` when it is received. **(this doesn't seem very clean)**
-
-```
-HELLO - a status string greeting
-UADDR - assigned client uaddress 
-SERVER_UADDR - uaddress of the server
-PEERS - unused
-ULOCAL - set if the server is running on localhost
-```
-
-UADDR is stored as CLIENT_UADDR under the global `window.URSESSION.CLIENT` object. **(this probably needs reworking)**
-
-#### Built-In URSYS Message Handlers
-
-Currently the URSYS client does not implement any special message handlers, but I can anticipate adding them for things like netlist and state updates
-
-```
-- incoming -
-NET:UR_NETLIST - netlist update
-NET:UR_NETSTATE - shared state update
-
-- outgoing - 
-NET:UR_HANDLER_CHANGE - send the current message dict to update
-NET:UR_DEVICE_CHANGE - send status about current device props
-```
-
-### Cleaning Up Server-Urnet
-
-As I looked for where to insert the new registration handshakes, I became dissatisfied with how URNET has three separate functions:
-
-* URNET socket server setup
-* socket connection management
-* service handlers
-* message routing
-
-The `server-urnet` module now just handles the socket server setup and message routing. Socket list data structure API is moved into datacore, and service handlers are in their own `server-services` modue
-
-## FEB 25 THU - HOTFIX Keyword JSX Rendering
-
-With the change to the unit token format, the JSX rendering in `Compiler.jsx` no longer works. I think that the units just need to be expended before they are rendered, as they are for the compiler.
-
-* [x] `RenderScript()` is the call that does it
-* [x] React is crashing with an "object not allowed in component" error, maybe due to unit token objects
-* [x] In `RenderScript()`, make sure to call `r_ExpandArgs()` as we do for the compiler to convert tokens literals to literals. It will not touch tokens for objref, expr, program
-* [x] Move runtime evaluation helpers from `expr-evaluator` to more appropriate `class-keyword` 
-
-## FEB 25 THU - Back to Input/Device Management
-
-
-
-
-
----
-
-**ADDITIONAL THINGS TO IMPLEMENT**
-
-+ set the skin from a list of assets? - good
-+ some way to load/save? - make cheese API to save a file (port)
-  + include both templates and instance list
-+ simple prop set like nectar count - we have
-+ get faketrack integrated into Movement feature
-+ spawn list for instancing
-+ how to show the selection dropdown for each type
-+ Target Content Areas
-  + Use Fish/Algae content area to model: x-gemscript (aquatic_blueprints001.gs)
-  + If we get done, move to blueprints002.gs (advanced)
-
-* After I get OnTick working as the basic scriptevent in the user event system, will outline what's in the current engine as of today for the team, with an eye toward using this a foundation for introducing how to write simulations with it (a kind of informational and concise primer?) Then afterwards document the most recent things.
-
-**TODO** AFTER ALPHA DEC 1
-
-* **parameter passing** between scripts is kind of ambiguous, because of the number of execution contexts. Need to document all the execution contexts and try to make sense of it.
-* no **filter result caching** in place yet
-* no real tests implemented yet
-* combine test functions into functions table, require that name begins with TEST_AB, TEST_A, or TEST
-* the state object needs to have its **context** loaded so this values are available at runtime. How do we insert it before it runs? Maybe 
-* provide a better debug output experience
-* make sure that Agent blueprint inheritance is implemented
-* `queueSequence [[ ]] [[ ]] [[ ]] ...`
-* `on TimeElapsed 1000 [[ ... ]]`
-
-**BACKLOG**
-
-```
-Renderer + Display Lists
-[ ] implement/test entity broadcasts
-[ ] how to integrate multiple display lists together?
-[ ] finalizing coordinate system
-[ ] bring back location
-
-Network:
-[ ] design device persistant naming and reconnection between reloads
-[ ] maybe use JWT to establish identities? 
-
-Input:
-[ ] Read Event List
-[ ] Update Display Object from events that change things
-[ ] Convert local interactions to Agent or Display Object changes
-[ ] Write Event List
-[ ] Important formal input mechanisms
-[ ] Asset capture 
-
-Observations:
-[ ] NOTE: The difference between PhaseMachine and messages synchronicity
-[ ] extension: text script format `[define]` to output a define bundle, etc
-
-Conditional When Engine:
-[ ] slow...speed it up
-
-Persistant Data
-[ ] server?
-[ ] assets?
-[ ] bundle-based asset management outside of git?
-[ ] handle app packaging, asset packing, identitifying groups, students, orgs that it belongs to. 
-
-```
-
----
-
