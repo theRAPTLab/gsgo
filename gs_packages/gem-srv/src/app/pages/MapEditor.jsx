@@ -60,8 +60,10 @@ class MapEditor extends React.Component {
       message: '',
       modelId: '',
       model: {},
-      instances: []
+      instances: [],
+      mapInstanceSpec: []
     };
+    this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
@@ -95,6 +97,10 @@ class MapEditor extends React.Component {
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
+  CallSimPlaces() {
+    UR.RaiseMessage('NET:SIM_PLACES');
+  }
+
   LoadModel(modelId) {
     // HACK
     // This requests model data from sim-data.
@@ -105,7 +111,16 @@ class MapEditor extends React.Component {
   }
 
   OnSimDataUpdate(data) {
-    this.setState({ model: data.model });
+    this.setState(
+      {
+        model: data.model,
+        mapInstanceSpec: data.model.instances
+      },
+      () => {
+        // REVIEW: Is this getting called too soon?
+        this.CallSimPlaces();
+      }
+    );
   }
 
   OnInstanceClick(instanceName) {
@@ -155,7 +170,14 @@ class MapEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message, modelId, model, instances } = this.state;
+    const {
+      panelConfiguration,
+      message,
+      modelId,
+      model,
+      instances,
+      mapInstanceSpec
+    } = this.state;
     const { classes } = this.props;
 
     const agents =
@@ -196,7 +218,14 @@ class MapEditor extends React.Component {
             isMinimized={panelConfiguration !== 'map'}
             onClick={this.OnPanelClick}
           />
-          <PanelBlueprints id="blueprints" agents={agents} />
+          <button
+            className={classes.button}
+            type="button"
+            onClick={this.CallSimPlaces}
+          >
+            Load and Init
+          </button>
+          <PanelBlueprints id="blueprints" agents={agents} enableAdd />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
