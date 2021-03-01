@@ -13,7 +13,7 @@
 **SUMMARY S2103 FEB 08 - FEB 21**
 
 * W1: new keywords, compiler tech documentation
-* W2: network/input blueprint+design
+* W2: network/input design, keyword jsx assist
 
 
 ---
