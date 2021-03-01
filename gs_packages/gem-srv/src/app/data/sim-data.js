@@ -28,9 +28,11 @@ class SimData {
     this.SendSimDataModel = this.SendSimDataModel.bind(this);
     this.HackGetSimDataModel = this.HackGetSimDataModel.bind(this);
     this.InstanceAdd = this.InstanceAdd.bind(this);
+    this.InstanceUpdateInit = this.InstanceUpdateInit.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
     // Register Listeners
     UR.HandleMessage('NET:INSTANCE_ADD', this.InstanceAdd);
+    UR.HandleMessage('NET:INSTANCE_UPDATE_INIT', this.InstanceUpdateInit);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
     UR.HandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.SendSimDataModels);
     UR.HandleMessage(
@@ -41,7 +43,11 @@ class SimData {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:INSTANCE_ADD', this.InstanceAdd);
-    UR.UnhandleMessage('NET:INSTANCE_UPDATE', this.InstanceUpdatePosition);
+    UR.UnhandleMessage('NET:INSTANCE_UPDATE_INIT', this.InstanceUpdateInit);
+    UR.UnhandleMessage(
+      'NET:INSTANCE_UPDATE_POSITION',
+      this.InstanceUpdatePosition
+    );
     UR.UnhandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.SendSimDataModels);
     UR.UnhandleMessage(
       'HACK_SIMDATA_REQUEST_MODEL',
@@ -117,6 +123,22 @@ class SimData {
 prop agent.y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     };
     model.instances.push(instance);
+    this.SendSimDataModel(data.modelId);
+  }
+
+  /**
+   *
+   * @param {Object} data -- { modelId, instanceName, updatedData }
+   * where `updatedData` = { init } -- init is scriptText.
+   */
+  InstanceUpdateInit(data) {
+    const model = this.GetSimDataModel(data.modelId);
+    const instanceIndex = model.instances.findIndex(
+      i => i.name === data.instanceName
+    );
+    const instance = model.instances[instanceIndex];
+    instance.init = data.updatedData.init;
+    model.instances[instanceIndex] = instance;
     this.SendSimDataModel(data.modelId);
   }
 
