@@ -21,11 +21,10 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelMap from './components/PanelMap';
 import PanelSimulation from './components/PanelSimulation';
-import PanelPlayback from './components/PanelPlayback';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
+import PanelMapInstances from './components/PanelMapInstances';
 import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
@@ -70,9 +69,11 @@ class MapEditor extends React.Component {
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
+    this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
   }
 
   componentDidMount() {
@@ -165,6 +166,10 @@ class MapEditor extends React.Component {
     }));
   }
 
+  OnScriptUpdate(data) {
+    // console.error('SCRIPT_UI_CHANGED', data);
+  }
+
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
@@ -213,11 +218,6 @@ class MapEditor extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelMap
-            id="map"
-            isMinimized={panelConfiguration !== 'map'}
-            onClick={this.OnPanelClick}
-          />
           <button
             className={classes.button}
             type="button"
@@ -226,13 +226,13 @@ class MapEditor extends React.Component {
             Load and Init
           </button>
           <PanelBlueprints id="blueprints" agents={agents} enableAdd />
+          <PanelMapInstances id="instances" mapInstanceSpec={mapInstanceSpec} />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <PanelPlayback id="playback" />
             <PanelInstances id="instances" instances={instances} />
           </div>
         </div>
