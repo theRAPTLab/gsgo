@@ -89,14 +89,12 @@ class InstanceEditor extends React.Component {
   OnInstanceClick(e) {
     const { isEditable } = this.state;
     const instanceName = this.GetInstanceName();
-    // toggle isEditable
     if (!isEditable) {
-      e.preventDefault();
-      e.stopPropagation();
+      // User trying to select us for editing.
       // Tell other instances in edit mode to exit edit mode
       UR.RaiseMessage('INSTANCE_EDITOR_EDIT_ENABLED', { instanceName });
-      this.setState({ isEditable: !isEditable });
     }
+    this.setState({ isEditable: !isEditable });
   }
 
   OnEnableEdit(data) {

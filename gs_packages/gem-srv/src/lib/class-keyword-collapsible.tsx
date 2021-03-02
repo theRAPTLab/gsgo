@@ -68,7 +68,7 @@ class KeywordCollapsible extends Keyword {
         </div>
       );
     } else {
-      jsx = children;
+      jsx = <span key={key}>{children}</span>;
     }
     return jsx;
   }

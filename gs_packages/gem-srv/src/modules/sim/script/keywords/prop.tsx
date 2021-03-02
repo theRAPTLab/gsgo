@@ -60,6 +60,7 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.onKeyDown = this.onKeyDown.bind(this);
     this.onBlur = this.onBlur.bind(this);
     this.saveData = this.saveData.bind(this);
+    this.onClick = this.onClick.bind(this);
   }
   componentWillUnmount() {
     const { isEditable } = this.props;
@@ -76,6 +77,12 @@ class PropElement extends React.Component<MyProps, MyState> {
   }
   onBlur() {
     this.saveData();
+  }
+  onClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Stop click here when user clicks inside form to edit.
+    // Other clicks will propagage to InstanceEditor where it will exit edit mode
   }
   saveData() {
     const { isDirty } = this.state;
@@ -100,6 +107,7 @@ class PropElement extends React.Component<MyProps, MyState> {
             onChange={this.onChange}
             onKeyDown={this.onKeyDown}
             onBlur={this.onBlur}
+            onClick={this.onClick}
             type="text"
             value={args[0]}
             style={{ width: '5em' }}
