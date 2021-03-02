@@ -5,10 +5,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-/**
- *  @module ClientSession
- */
-
 /// DEBUG  ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
@@ -19,7 +15,7 @@ const { CFG_URNET_SERVICE } = require('./ur-common');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 interface NetProps {
   broker: MessageBroker;
-  client?: { ip: string }
+  client?: { ip: string };
 }
 interface MessageBroker {
   host: string;
@@ -35,7 +31,6 @@ interface ConnectionInfo {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let NET_BROKER: MessageBroker;
 let CLIENT_INFO: ConnectionInfo;
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemNetBoot */
 function m_CheckNetOptions(netOpt) {
@@ -57,15 +52,16 @@ function SaveNetInfo(netInfo: NetProps) {
   const { broker, client } = netInfo;
   NET_BROKER = broker;
   CLIENT_INFO = client;
-  if (DBG) console.log(...PR('session broker', NET_BROKER,'client info',CLIENT_INFO));
+  if (DBG)
+    console.log(...PR('session broker', NET_BROKER, 'client info', CLIENT_INFO));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** connect to the appserver's netinfo webservice */
 async function FetchNetInfo() {
   const response = await fetch(CFG_URNET_SERVICE);
   const netInfo = await response.json();
-  if (m_CheckNetOptions(netInfo))   SaveNetInfo(netInfo);
-  return netInfo
+  if (m_CheckNetOptions(netInfo)) SaveNetInfo(netInfo);
+  return netInfo;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetNetInfo() {
@@ -73,9 +69,9 @@ function GetNetInfo() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetClientInfo() {
-  return CLIENT_INFO
+  return CLIENT_INFO;
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { FetchNetInfo, SaveNetInfo, GetNetInfo, GetClientInfo };
+export { FetchNetInfo, SaveNetInfo, GetNetInfo, GetClientInfo };

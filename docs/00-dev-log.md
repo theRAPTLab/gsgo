@@ -199,7 +199,12 @@ I'm not sure exactly how this will get implemented, but as a first throwaway ste
 * [x] has to execute after `UR/NET_CONNECT`, which is part of `PHASE_CONNECT`
 * [x] The current phases are `NET_CONNECT`, `NET_REGISTER`, and `NET_READY`, but I think we're going to redesign these.
 * [x] Is anyone using NET_REGISTER or NET_READY...**Nope**! We can rewrite it
-* [ ] 
+* [x] Replace `NET_REGISTER` with `NET_PROTOCOLS`and `NET_DEVICES` for hooking into place to pull initial service list.
+* [x] Make new UR client module `client-netprotocols` and `client-netdevices`
+  * [x] hook into `UR/NET_PROTOCOLS` and print message
+  * [x] hook into `UR/NET_DEVICES` and print message
+
+
 
 
 ---

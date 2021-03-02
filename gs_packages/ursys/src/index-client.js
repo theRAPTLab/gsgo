@@ -9,6 +9,8 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR_EndPoint = require('./client-endpoint');
 const NETWORK = require('./client-urnet');
+const PROTOCOL = require('./client-netprotocols');
+const DEVICES = require('./client-netdevices');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');

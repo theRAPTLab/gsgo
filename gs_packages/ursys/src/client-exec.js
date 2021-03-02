@@ -10,11 +10,15 @@
 /**
  * @module URExec
  */
+
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NETINFO = require('./client-netinfo');
 const PhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
+const PROMPTS = require('./util/prompts');
+
+const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagBlue');
+const NPR = PROMPTS.makeStyleFormatter('NINFO', 'TagGreen');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +38,8 @@ const PHASES = {
   ],
   PHASE_CONNECT: [
     'NET_CONNECT', // initiate connection to URNET message broker
-    'NET_SERVICE', // retrieve initial list of services
+    'NET_PROTOCOLS', // retrieve initial list of service protocols
+    'NET_DEVICES', // retrieve initial list of accessible devices
     'NET_READY', // the network is stable with initial services
     'TEST_NET' // run tests that require network readiness
   ],
@@ -102,7 +107,7 @@ async function SystemNetBoot() {
   await executePhase('PHASE_INIT');
   // CONNECT TO URNET
   const netInfo = await NETINFO.FetchNetInfo();
-  console.info(...PR('received netinfo', netInfo));
+  console.info(...NPR('received netinfo', netInfo));
   await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
   //
   if (DBG) console.groupEnd();
