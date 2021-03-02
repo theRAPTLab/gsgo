@@ -352,8 +352,9 @@ function CompileBlueprint(units: TScriptUnit[]): SM_Bundle {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
+ *  @param {array} options -- { isEditable }
  */
-function RenderScript(units: TScriptUnit[]): any[] {
+function RenderScript(units: TScriptUnit[], options: any[]): any[] {
   const sourceJSX = [];
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
@@ -374,7 +375,7 @@ function RenderScript(units: TScriptUnit[]): any[] {
       kwProcessor = GetKeyword('dbgError');
       kwProcessor.keyword = keyword;
     }
-    const jsx = kwProcessor.jsx(index, unit);
+    const jsx = kwProcessor.jsx(index, unit, options);
     sourceJSX.push(jsx);
     out.push(`<${kwProcessor.getName()} ... />\n`);
   });
