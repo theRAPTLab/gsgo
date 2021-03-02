@@ -70,10 +70,12 @@ class MapEditor extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
+    this.HandleDragEnd = this.HandleDragEnd.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
+    UR.HandleMessage('DRAG_END', this.HandleDragEnd);
   }
 
   componentDidMount() {
@@ -168,6 +170,22 @@ class MapEditor extends React.Component {
 
   OnScriptUpdate(data) {
     // console.error('SCRIPT_UI_CHANGED', data);
+  }
+
+  HandleDragEnd(data) {
+    const agent = data.agent;
+    console.log('dropped', agent, 'x', agent.prop.x);
+
+    const { modelId } = this.state;
+
+    UR.RaiseMessage('NET:INSTANCE_UPDATE_POSITION', {
+      modelId,
+      instanceName: agent.meta.name,
+      updatedData: {
+        x: agent.prop.x.value,
+        y: agent.prop.y.value
+      }
+    });
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
