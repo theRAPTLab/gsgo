@@ -82,7 +82,7 @@ class MapEditor extends React.Component {
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
     this.setState({ modelId });
-    document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
+    document.title = `GEMSTEP MAP EDITOR ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
 
@@ -114,6 +114,7 @@ class MapEditor extends React.Component {
   }
 
   OnSimDataUpdate(data) {
+    if (DBG) console.log(...PR('HACK_SIMDATA_UPDATE_MODEL', data));
     this.setState(
       {
         model: data.model,

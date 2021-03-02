@@ -143,7 +143,7 @@ prop agent.y setTo ${Math.trunc(Math.random() * 50 - 25)}`
   }
 
   /**
-   *
+   * HACK: Manually change the init script when updating position.
    * @param {Object} data -- { modelId, instanceName, updatedData }
    */
   InstanceUpdatePosition(data) {
@@ -152,8 +152,8 @@ prop agent.y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       i => i.name === data.instanceName
     );
     const instance = model.instances[instanceIndex];
-    instance.init = `prop agent.x setTo ${data.updatedData.x}
-prop agent.y setTo ${data.updatedData.y}`;
+    instance.init = `prop x setTo ${data.updatedData.x}
+prop y setTo ${data.updatedData.y}`;
     model.instances[instanceIndex] = instance;
     this.SendSimDataModel(data.modelId);
   }

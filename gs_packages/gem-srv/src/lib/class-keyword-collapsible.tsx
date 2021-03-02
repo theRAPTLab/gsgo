@@ -57,7 +57,6 @@ class KeywordCollapsible extends Keyword {
     // const key = index;
 
     const key = m_GenerateKey();
-    console.log('KEY is', key);
 
     let jsx;
     if (children && children.props && children.props.isEditable) {

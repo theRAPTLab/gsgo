@@ -19,7 +19,6 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 class InstanceEditor extends React.Component {
   constructor() {
     super();
-    console.group('InstanceEditor CONSTRUCT!');
     this.state = {
       title: 'EDITOR',
       isEditable: false
@@ -114,7 +113,6 @@ class InstanceEditor extends React.Component {
       const source = TRANSPILER.ScriptifyText(instance.init);
       jsx = TRANSPILER.RenderScript(source, { isEditable });
     }
-    console.log('...InstanceEditor render', jsx);
     return (
       <div
         style={{
