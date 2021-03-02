@@ -49,7 +49,7 @@
 **SUMMARY S2104 FEB 22 - MAR 07**
 
 * W1: refactor ursys for new code, ben key/jsx help
-* W2: 
+* W2: multinet design
 
 
 ---
@@ -129,24 +129,40 @@ Made a **diagram** of [URSYS NETWORK STARTUP](https://whimsical.com/urnet-system
 
 ## MAR 01 MON - Input/Device Management
 
-Starting BIPHASIC SLEEP schedule. The goal is to **outline plan** in the daytime, and in the evening **write a bunch of code**
+I've written up notes in [ext-ursys-multinet](https://drive.google.com/file/d/1ylyxEJNX1hwEY00DP0LJCkh6i7Yg8pa9/view?usp=sharing) in the `IU Design / GEM-SCRIPT Inquiruim / docs4team drafts` folder.
 
-### Designing the `devinfo` service
+HIGHLIGHTS from the document:
 
-Like `netinfo`, I think I'll provide a "deviceinfo" service to see what services are available on a given server. However, this probably has to be part of the URNET system because a server might not provide a browseable routes. For now we'll call them `ursys devices` or `udevice` 
+* There is something new called a **Protocol List** that is provided by the **Protocol Server Manager** to any connecting client providing its `uident`
+* A `uident` is the logical identity of the device (username, group, authkey). This is the persistent identity that survives reboots.
+* The Protocol List is maintained by the client's ursys module, and **only** lists services that this `uident` can access.
+* After URNET connect, the Protocol Server Manager can be called sometime later with the `uident` and a list of services that are required. The call returns a Promise that can be used to initialize once all the services are available.
+* If a protocol is available, it's assumed that they are all part of the same URNET and work together seamlessly as one big app! The `uident` has to provide enough information to **cleanly segment** multiple logical networks running on the same physical net. 
+* If a protocol server goes **offline**, the PSM will change its state and fire an event. This event can be inspected directly as part of the app state, and be used to fire UI code to disable/hide stuff. When the protocol comes online again, the PSM will automatically reconnect using the current `uident`. 
+* When the `uident` changes, it must re-request PSM protocols.
 
-Thoughty thoughts
+Some special considerations:
 
-* add some kind of **device request** call to URSYS
-* add some kind of **device handler** that automatically manages the current device list, and can fire events.
-* this automatic management could eventually become the basis for **state sharing**
+* Some protocols may have **limited connections** available (for example, the projector machine)
+* Perhaps there is a way to to **blind fire** events to a specific protocol manager when it's not critical that it is available. The projector machine, for example.
 
-What is the difference between a UADDR and a UDEVICE?
+The Protocol List contains **`udevice`** entries:
+```
+udevice = {
+  protocol: message, track, trigger, or number
+  uaddr:    the associated uaddr of the device
+  uident:   the logical identity of the device (username, group, authkey)
+  upass:    identity token with encoded access to roles (returned by server auth)
+  ustats:   device characteristics (load, connect count, priority, arch)
+}
+protocols = {
+	protocol1: { host, port },
+	protocol2: { host, port },
+	...
+}
+```
 
-* UADDR is an address on the URNET message system. The message broker itself is a kind of UDEVICE providing the URNET service on a particular host/port
-* Other UDEVICE instances are either sources or consumers of a service, and exist on different server hosts on certain ports.
-
-**QUESTION: what does a `udevice` look like?**
+A **starting list of protocols** looks like this:
 
 ```
 CURRENT SERVICES provided by a socket server
@@ -163,35 +179,27 @@ db          Persistent database operations
 log         Research-related logging
 netstate    Network-wide shared state (state server)
 simview     Distributing simulation display list
-simrun      For submitting/requesting scripts
+simdata     For submitting/requesting scripts
 siminput    Button-like and value-like inputs, using JS name conventions
 simcontrol  For controlling the simulation
+video       accept media streams, output media streams
+chat        accept chat room functionality, including screen sharing
+asset       request a named asset
+simrecord   aggregate siminput, simview, and video in one stream for playback
 
 NOTE: each server provides its own authentication
 ```
 
-A **udevice** record would consist of:
+See  [ext-ursys-multinet](https://drive.google.com/file/d/1ylyxEJNX1hwEY00DP0LJCkh6i7Yg8pa9/view?usp=sharing) for the **up to date** version
 
-```
-udevice = {
-  protocol: message, track, trigger, or number
-  uaddr:    the associated uaddr of the device
-  uident:   the logical identity of the device (username, group, authkey)
-  upass:    identity token with encoded access to roles (returned by server auth)
-}
-```
+## MAR 02 TUE - Baby steps to Multinet
 
+I'm not sure exactly how this will get implemented, but as a first throwaway step let me just print something out on the client-side at the right time in the URSYS startup.
 
-So when a client joins URNET, it would request a list of available protocols by initializing a **client-protocol** module by passing a `uident`, or without a `uident` receiving a list of global services open to anyone.
-
-* the `uident` of the connecting client, which it can change at any time. it is an implicit filter.
-* when `uident` changes, the **protocol server list** updates. It's assumed to be all part of the app
-* the client can then subscribe to a particular service after it provide a `uident` Only the accessible servers will be in the protocol server list
-* each **client-side protocol manager** implements the API for the protocol, buffering data until it is requested, providing notification services, and supporting asynchronous API calls for data that can not be buffered or distributed
-
-**QUESTION: What does the Protocol Server List look like???**
-
-
+* [x] has to execute after `UR/NET_CONNECT`, which is part of `PHASE_CONNECT`
+* [x] The current phases are `NET_CONNECT`, `NET_REGISTER`, and `NET_READY`, but I think we're going to redesign these.
+* [x] Is anyone using NET_REGISTER or NET_READY...**Nope**! We can rewrite it
+* [ ] 
 
 
 ---

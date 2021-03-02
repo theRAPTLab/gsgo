@@ -33,9 +33,9 @@ const PHASES = {
     'TEST_LOCAL' // run local tests that don't require network calls
   ],
   PHASE_CONNECT: [
-    'NET_CONNECT', // initiate connection
-    'NET_REGISTER', // initiate registration
-    'NET_READY', // the network is stable
+    'NET_CONNECT', // initiate connection to URNET message broker
+    'NET_SERVICE', // retrieve initial list of services
+    'NET_READY', // the network is stable with initial services
     'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
