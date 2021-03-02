@@ -98,6 +98,9 @@ class PropElement extends React.Component<MyProps, MyState> {
     const { index, isEditable } = this.props;
     const { propName, methodName, args } = this.state;
     let jsx;
+    // HACK force number for now
+    // In the future check for argument type
+    const type = 'number';
     if (isEditable) {
       // Show Form
       jsx = (
@@ -108,7 +111,7 @@ class PropElement extends React.Component<MyProps, MyState> {
             onKeyDown={this.onKeyDown}
             onBlur={this.onBlur}
             onClick={this.onClick}
-            type="text"
+            type={type}
             value={args[0]}
             style={{ width: '5em' }}
           />
