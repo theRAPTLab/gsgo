@@ -118,6 +118,8 @@ class InstanceEditor extends React.Component {
         style={{
           backgroundColor: '#000',
           margin: '0.5em 0 0.5em 0.5em',
+          padding: '3px',
+          borderRadius: '5px',
           cursor: 'pointer'
         }}
         onClick={this.OnInstanceClick}

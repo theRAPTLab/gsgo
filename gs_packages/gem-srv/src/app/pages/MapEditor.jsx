@@ -1,10 +1,11 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Mission Control - Teacher/Admin/Projector interface
+  Map Editor
 
-  * Manage network devices
-  * Control simulation playback
+  * Define instances to be generated
+  * Set init properties for the instances
+  * Update init script
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -16,9 +17,6 @@ import { GetAllInstances } from 'modules/datacore/dc-agents';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimulation from './components/PanelSimulation';
@@ -31,6 +29,8 @@ import PanelMessage from './components/PanelMessage';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
+// Need to import to load data even though it is not explicitly called
+// This should be moved to the server
 import SimData from '../data/sim-data';
 
 // this is where classes.* for css are defined
@@ -44,9 +44,9 @@ const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('blueprints', '50% auto 150px'); // columns
-PANEL_CONFIG.set('sim', '15% auto 150px'); // columns
+PANEL_CONFIG.set('map', '50% auto 0px'); // columns
+PANEL_CONFIG.set('blueprints', '50% auto 0px'); // columns
+PANEL_CONFIG.set('sim', '15% auto 0px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,6 +76,13 @@ class MapEditor extends React.Component {
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
     UR.HandleMessage('DRAG_END', this.HandleDragEnd);
+
+    // Call Places after sim has been loaded
+    UR.SystemHook('UR/APP_START', () => {
+      console.error('APP_START');
+      console.error('PLACES!');
+      this.CallSimPlaces();
+    });
   }
 
   componentDidMount() {
@@ -98,6 +105,8 @@ class MapEditor extends React.Component {
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
+    UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
   }
 
   CallSimPlaces() {
@@ -115,16 +124,10 @@ class MapEditor extends React.Component {
 
   OnSimDataUpdate(data) {
     if (DBG) console.log(...PR('HACK_SIMDATA_UPDATE_MODEL', data));
-    this.setState(
-      {
-        model: data.model,
-        mapInstanceSpec: data.model.instances
-      },
-      () => {
-        // REVIEW: Is this getting called too soon?
-        this.CallSimPlaces();
-      }
-    );
+    this.setState({
+      model: data.model,
+      mapInstanceSpec: data.model.instances
+    });
   }
 
   OnInstanceClick(instanceName) {
@@ -235,26 +238,20 @@ class MapEditor extends React.Component {
         <div
           id="console-left"
           className={classes.left} // commented out b/c adding a padding
-          style={{ backgroundColor: 'transparent' }}
+          style={{ backgroundColor: 'transparent', gridTemplateRows: '20% auto' }}
         >
-          <button
-            className={classes.button}
-            type="button"
-            onClick={this.CallSimPlaces}
-          >
-            Load and Init
-          </button>
           <PanelBlueprints id="blueprints" agents={agents} enableAdd />
           <PanelMapInstances id="instances" mapInstanceSpec={mapInstanceSpec} />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" onClick={this.OnPanelClick} />
         </div>
+        {/* Instances not necessary for MapEditor
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <PanelInstances id="instances" instances={instances} />
           </div>
-        </div>
+        </div> */}
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
