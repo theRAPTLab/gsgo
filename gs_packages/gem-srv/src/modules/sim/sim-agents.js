@@ -9,7 +9,9 @@ import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
 import {
   GetAllAgents,
+  DeleteAllAgents,
   DefineInstance,
+  DeleteAllInstances,
   DeleteBlueprintInstances,
   GetAllInstances
 } from 'modules/datacore/dc-agents';
@@ -80,34 +82,75 @@ function AgentSelect() {}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** placeholder function
  *  This creates a MULTIPLE agents from a spec, replacing all instances of the
+ *  same blueprint.  This is generally used to initialize a whole model.
+ *
+ * @param {Object} blueprintNames Array of blueprint names
+ * @param {Array} instancesSpec Array of spec objects {name, ...args}
+ */
+export function AllAgentsProgram(data) {
+  const { blueprintNames, instancesSpec } = data;
+  if (!blueprintNames) return console.warn(...PR('no blueprint'));
+
+  // Remove all existing agent instances
+  DeleteAllAgents();
+  DeleteAllInstances();
+
+  // Make an instance for each instance spec
+  for (let i = 0; i < instancesSpec.length; i++) {
+    // Initiate a new instance for the submitted blueprint
+    // using a unique name.
+    const spec = instancesSpec[i];
+    const blueprint = spec.blueprint;
+    const name = spec.name || `${blueprint}${i}`;
+    DefineInstance({
+      blueprint,
+      name,
+      init: spec.init
+    });
+  }
+
+  // Make an agent for each instance
+  const instances = GetAllInstances();
+  instances.forEach(instance => {
+    const init = TRANSPILER.CompileText(instance.init);
+    const agent = TRANSPILER.MakeAgent(instance);
+    agent.exec(init, { agent });
+  });
+
+  // Announce instance defs so UI can register instance names for inspector monitoring
+  // Mostly used by PanelInstances and Inspectors
+  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** placeholder function
+ *  This creates a MULTIPLE agents from a spec, replacing all instances of the
  *  same blueprint.
  *
- * @param {Object} blueprint
+ * @param {Object} blueprintName Blueprint name.
  * @param {Array} instanceSpec Array of spec objects {name, ...args}
  */
 export function AgentsProgram(data) {
-  const { blueprint, instancesSpec } = data;
-  if (!blueprint) return console.warn(...PR('no blueprint'));
-  // original initializer
-  // for (let i = 0; i < 20; i++) TRANSPILER.MakeAgent(`bun${i}`, { blueprint });
+  const { blueprint: blueprintName, instancesSpec } = data;
+  if (!blueprintName) return console.warn(...PR('no blueprint'));
 
   // Remove any existing agent instances
   let instances = GetAllInstances();
   instances.forEach(instance => {
-    if (instance.blueprint === blueprint) {
+    if (instance.blueprint === blueprintName) {
       TRANSPILER.RemoveAgent(instance);
     }
   });
   // And clear the INSTANCES map for the blueprint
-  DeleteBlueprintInstances(blueprint);
+  DeleteBlueprintInstances(blueprintName);
 
   for (let i = 0; i < instancesSpec.length; i++) {
     // Initiate a new instance for the submitted blueprint
     // using a unique name.
     const spec = instancesSpec[i];
-    const name = spec.name || `${blueprint}${i}`;
+    const name = spec.name || `${blueprintName}${i}`;
     DefineInstance({
-      blueprint,
+      blueprint: blueprintName,
       name,
       init: spec.init
     });
@@ -118,7 +161,7 @@ export function AgentsProgram(data) {
   instances.forEach(instance => {
     // Make an instance only for this blueprint, ignore others
     // otherwise other blueprints will get duplicate instances
-    if (instance.blueprint !== blueprint) return;
+    if (instance.blueprint !== blueprintName) return;
     const init = TRANSPILER.CompileText(instance.init);
     const agent = TRANSPILER.MakeAgent(instance);
     agent.exec(init, { agent });
@@ -215,6 +258,7 @@ UR.HandleMessage('SIM_MODE', AgentSelect);
 // UR.HandleMessage('SIM_PROGRAM', AgentProgram);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
+UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model init
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

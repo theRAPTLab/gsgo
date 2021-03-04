@@ -49,6 +49,7 @@ class PanelSimulation extends React.Component {
     this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
+    this.DoSimPlaces = this.DoSimPlaces.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
 
@@ -58,6 +59,7 @@ class PanelSimulation extends React.Component {
     UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.HandleMessage('NET:SIM_PLACES', this.DoSimPlaces);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
@@ -77,6 +79,7 @@ class PanelSimulation extends React.Component {
     UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.UnhandleMessage('NET:SIM_PLACES', this.DoSimPlaces);
     UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
@@ -148,6 +151,36 @@ class PanelSimulation extends React.Component {
       blueprint: bp.name,
       instancesSpec
     });
+  }
+
+  DoSimPlaces() {
+    // 1. Load Model
+    //    model data is loaded by the parent container: MissionControl or MapEditor
+    const { model } = this.state;
+
+    // 2. Compile All Agents
+    const scripts = model.scripts;
+    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
+    const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
+    const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
+    const blueprintNames = blueprints.map(b => b.name);
+
+    // 3. Create All Instances
+    const instancesSpec = model.instances;
+    UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
+      blueprintNames,
+      instancesSpec
+    });
+
+    // 4. Places!
+    //
+    // HACK
+    // Quickly start and stop the sim so agents will draw on screen
+    // This should be replaced by a proper sim phase call: SIM.Places()?
+    SIM.Start();
+    setTimeout(() => {
+      SIM.End();
+    }, 250);
   }
 
   DoSimStart() {

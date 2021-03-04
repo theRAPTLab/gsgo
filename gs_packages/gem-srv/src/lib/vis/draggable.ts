@@ -1,4 +1,5 @@
 /** given a VOBJ, decorate it to add new features */
+import UR from '@gemstep/ursys/client';
 import { Visual } from 'lib/t-visual';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 
@@ -36,6 +37,8 @@ export function MakeDraggable(vobj: Visual) {
         const { x, y } = newPosition;
         agent.prop.x.value = x;
         agent.prop.y.setTo(y);
+
+        UR.RaiseMessage('DRAG_END', { agent });
       }
     }
     // set the interaction data to null
