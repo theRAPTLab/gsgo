@@ -121,7 +121,7 @@ class PropElement extends React.Component<MyProps, MyState> {
       // Show Static Value
       jsx = (
         <>
-          {propName}: {args[0]} &nbsp;
+          {propName}:&nbsp;{args[0]}&nbsp;{' '}
         </>
       );
     }
