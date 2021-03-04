@@ -79,8 +79,6 @@ class MapEditor extends React.Component {
 
     // Call Places after sim has been loaded
     UR.SystemHook('UR/APP_START', () => {
-      console.error('APP_START');
-      console.error('PLACES!');
       this.CallSimPlaces();
     });
   }
