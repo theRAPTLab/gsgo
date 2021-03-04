@@ -130,38 +130,39 @@ useFeature Costume
     {
       name: 'fish01',
       blueprint: 'Fish',
-      init: `prop agent.x setTo -220
-prop agent.y setTo -220`
+      // object test      init: `prop x setTo {{ x + -220 }}
+      init: `prop x setTo -220
+prop y setTo -220   `
     },
     {
       name: 'fatFish',
       blueprint: 'Fish',
-      init: `prop agent.x setTo 0
-prop agent.y setTo 0`
+      init: `prop x setTo 100
+prop y setTo 100
+prop energyLevel setTo 1000` // extra property test
     },
     {
       name: 'starvedFish',
       blueprint: 'Fish',
-      init: `prop agent.x setTo 200
-prop agent.y setTo 200`
+      init: `prop x setTo 200` // missing y test
     },
     {
       name: 'algae01',
       blueprint: 'Algae',
-      init: `prop agent.x setTo -220
-prop agent.y setTo -220`
+      init: `prop x setTo -220
+prop y setTo -220`
     },
     {
       name: 'algae02',
       blueprint: 'Algae',
-      init: `prop agent.x setTo -150
-prop agent.y setTo -120`
+      init: `prop x setTo -150
+prop y setTo -120`
     },
     {
       name: 'algae03',
       blueprint: 'Algae',
-      init: `prop agent.x setTo -120
-prop agent.y setTo -90`
+      init: `prop x setTo -120
+prop y setTo -90`
     }
   ]
 };
