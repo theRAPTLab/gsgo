@@ -131,37 +131,37 @@ useFeature Costume
       name: 'fish01',
       blueprint: 'Fish',
       init: `prop x setTo {{ x + -220 }}
-    prop y setTo -220`
+prop y setTo -220   `
     },
     {
       name: 'fatFish',
       blueprint: 'Fish',
       init: `prop x setTo 100
-    prop y setTo 100`
+prop y setTo 100
+prop energyLevel setTo 1000`
     },
     {
       name: 'starvedFish',
       blueprint: 'Fish',
-      init: `prop x setTo 200
-    prop y setTo 200`
+      init: `prop agent.x setTo 200`
     },
     {
       name: 'algae01',
       blueprint: 'Algae',
       init: `prop x setTo -220
-    prop y setTo -220`
+prop y setTo -220`
     },
     {
       name: 'algae02',
       blueprint: 'Algae',
       init: `prop x setTo -150
-    prop y setTo -120`
+prop y setTo -120`
     },
     {
       name: 'algae03',
       blueprint: 'Algae',
       init: `prop x setTo -120
-    prop y setTo -90`
+prop y setTo -90`
     }
   ]
 };
