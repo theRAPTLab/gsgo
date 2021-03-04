@@ -119,8 +119,8 @@ class SimData {
     const instance = {
       name: `${data.blueprintName}${model.instances.length}`,
       blueprint: data.blueprintName,
-      init: `prop agent.x setTo ${Math.trunc(Math.random() * 50 - 25)}
-prop agent.y setTo ${Math.trunc(Math.random() * 50 - 25)}`
+      init: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
+prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     };
     model.instances.push(instance);
     this.SendSimDataModel(data.modelId);

@@ -144,7 +144,7 @@ prop energyLevel setTo 1000` // extra property test
     {
       name: 'starvedFish',
       blueprint: 'Fish',
-      init: `prop agent.x setTo 200` // missing y test
+      init: `prop x setTo 200` // missing y test
     },
     {
       name: 'algae01',
