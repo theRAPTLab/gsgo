@@ -64,15 +64,14 @@ class InstanceEditor extends React.Component {
 
       // Simple Method
       // REVIEW: This is probably wrong
-      // 1. Convert init script to array
-      const scriptTextArray = instance.init.split('\n');
-      console.log('...scriptTextArray', scriptTextArray);
+      // 1. Convert init script text to array
+      const scriptTextLines = instance.init.split('\n');
       // 2. Convert the updated line to text
       const updatedLineText = data.scriptUnit.join(' ');
-      scriptTextArray[data.index] = updatedLineText;
-      console.log('...scriptTextArray after update', scriptTextArray);
-      // 3. Insert the updated line into script
-      const updatedScript = scriptTextArray.join('\n');
+      // 3. Replace the updated line in the script array
+      scriptTextLines[data.index] = updatedLineText;
+      // 4. Convert the script array back to script text
+      const updatedScript = scriptTextLines.join('\n');
       console.log('...updated init', updatedScript);
 
       UR.RaiseMessage('NET:INSTANCE_UPDATE_INIT', {

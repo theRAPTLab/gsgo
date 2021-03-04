@@ -144,7 +144,8 @@ prop agent.y setTo ${Math.trunc(Math.random() * 50 - 25)}`
 
   /**
    * HACK: Manually change the init script when updating position.
-   * @param {Object} data -- { modelId, instanceName, updatedData }
+   * This is mostly used to support drag and drop
+   * @param {Object} data -- { modelId, instanceName, updatedData: {x, y} }
    */
   InstanceUpdatePosition(data) {
     const model = this.GetSimDataModel(data.modelId);
@@ -152,10 +153,37 @@ prop agent.y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       i => i.name === data.instanceName
     );
     const instance = model.instances[instanceIndex];
-    instance.init = `prop x setTo ${data.updatedData.x}
-prop y setTo ${data.updatedData.y}`;
+    let scriptTextLines = instance.init.split('\n');
+    this.ReplacePropLine('x', 'setTo', data.updatedData.x, scriptTextLines);
+    this.ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
+    const scriptText = scriptTextLines.join('\n');
+    instance.init = scriptText;
     model.instances[instanceIndex] = instance;
     this.SendSimDataModel(data.modelId);
+  }
+  /**
+   * Used by InstanceUpdatePosition to find and replace existing
+   * prop setting lines.
+   * @param {string} propName -- Name of the prop to change, e.g. x/y
+   * @param {string} propMethd -- Prop method to change, e.g. setTo
+   * @param {string} params -- Parameter for the prop method, e.g. 200
+   * @param {string[]} scriptTextLines -- Full ScriptText as an array of strings
+   */
+  ReplacePropLine(propName, propMethod, params, scriptTextLines) {
+    const lineNumber = scriptTextLines.findIndex(line => {
+      let found = line.includes(`prop ${propName} ${propMethod}`);
+      if (!found) found = line.includes(`prop agent.${propName} ${propMethod}`);
+      return found;
+    });
+    const newLine = `prop ${propName} ${propMethod} ${params}`;
+    if (lineNumber === -1) {
+      console.warn(
+        `sim-data.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
+      );
+      scriptTextLines.push(newLine);
+    } else {
+      scriptTextLines[lineNumber] = newLine;
+    }
   }
 }
 
