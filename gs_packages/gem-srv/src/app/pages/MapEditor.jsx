@@ -124,10 +124,13 @@ class MapEditor extends React.Component {
 
   OnSimDataUpdate(data) {
     if (DBG) console.log(...PR('HACK_SIMDATA_UPDATE_MODEL', data));
-    this.setState({
-      model: data.model,
-      mapInstanceSpec: data.model.instances
-    });
+    this.setState(
+      {
+        model: data.model,
+        mapInstanceSpec: data.model.instances
+      },
+      () => this.CallSimPlaces() // necessary to update screen after overall model updates
+    );
   }
 
   OnInstanceClick(instanceName) {
@@ -182,13 +185,13 @@ class MapEditor extends React.Component {
 
     const { modelId } = this.state;
 
+    const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
+    const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
+
     UR.RaiseMessage('NET:INSTANCE_UPDATE_POSITION', {
       modelId,
       instanceName: agent.meta.name,
-      updatedData: {
-        x: agent.prop.x.value,
-        y: agent.prop.y.value
-      }
+      updatedData: { x, y }
     });
   }
 
