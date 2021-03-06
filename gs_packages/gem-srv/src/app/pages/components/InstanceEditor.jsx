@@ -27,31 +27,38 @@ class InstanceEditor extends React.Component {
     super();
     this.state = {
       title: 'EDITOR',
+      agentId: undefined,
       isEditable: false,
       isHovered: false,
       isSelected: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetAgentId = this.GetAgentId.bind(this);
-    this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
+    this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    this.OnEditEnable = this.OnEditEnable.bind(this);
+    this.HandleEditEnable = this.HandleEditEnable.bind(this);
+    this.HandleHoverOver = this.HandleHoverOver.bind(this);
+    this.HandleHoverOut = this.HandleHoverOut.bind(this);
+    this.HandleDeselect = this.HandleDeselect.bind(this);
     this.OnHoverOver = this.OnHoverOver.bind(this);
     this.OnHoverOut = this.OnHoverOut.bind(this);
-    this.OnDeselect = this.OnDeselect.bind(this);
-    UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
-    UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.OnEditEnable);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.OnHoverOver);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.OnHoverOut);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.OnHoverOver);
-    UR.HandleMessage('NET:INSTANCE_DESELECT', this.OnDeselect);
+    UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+    UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
   componentDidMount() {}
 
   componentWillUnmount() {
-    UR.UnandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
-    UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.OnEditEnable);
+    UR.UnandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+    UR.UnhandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
   GetInstanceName() {
@@ -60,12 +67,20 @@ class InstanceEditor extends React.Component {
   }
 
   GetAgentId() {
-    const { instance } = this.props;
-    const agent = GetAgentByName(instance.name);
-    return agent.id;
+    // agentId is cached
+    // We don't load it at componentDidMount because the agent
+    // might not be defined yet.
+    let { agentId } = this.state;
+    if (!agentId) {
+      const { instance } = this.props;
+      const agent = GetAgentByName(instance.name);
+      agentId = agent.id;
+      this.setState({ agentId });
+    }
+    return agentId;
   }
 
-  OnScriptUpdate(data) {
+  HandleScriptUpdate(data) {
     // Update the script
     const { instance } = this.props;
     const { isEditable } = this.state;
@@ -81,6 +96,7 @@ class InstanceEditor extends React.Component {
       const updatedScript = scriptTextLines.join('\n');
 
       UR.RaiseMessage('NET:INSTANCE_UPDATE_INIT', {
+        // HACK!!! `aquatic` is hacked in!
         modelId: 'aquatic',
         instanceName,
         updatedData: {
@@ -105,7 +121,7 @@ class InstanceEditor extends React.Component {
    * Enables or disables editing based on 'data' passed
    * @param {object} data { agentId }
    */
-  OnEditEnable(data) {
+  HandleEditEnable(data) {
     const agentId = this.GetAgentId();
     const { modelId } = this.state;
     let { isEditable, isSelected } = this.state;
@@ -124,25 +140,34 @@ class InstanceEditor extends React.Component {
     this.setState({ isEditable, isSelected });
   }
 
-  OnHoverOver(data) {
+  HandleHoverOver(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
       this.setState({ isHovered: true });
     }
   }
 
-  OnHoverOut(data) {
+  HandleHoverOut(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
       this.setState({ isHovered: false });
     }
   }
 
-  OnDeselect(data) {
+  HandleDeselect(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
       this.setState({ isSelected: false });
     }
+  }
+
+  OnHoverOver() {
+    const agentId = this.GetAgentId();
+    UR.RaiseMessage('SIM_INSTANCE_HOVEROVER', { agentId });
+  }
+  OnHoverOut() {
+    const agentId = this.GetAgentId();
+    UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
   }
 
   render() {
@@ -162,6 +187,8 @@ class InstanceEditor extends React.Component {
           [classes.instanceSpecSelected]: isSelected
         })}
         onClick={this.OnInstanceClick}
+        onPointerEnter={this.OnHoverOver}
+        onPointerLeave={this.OnHoverOut}
       >
         <div>
           <div className={classes.inspectorData}>{instanceName}</div>
