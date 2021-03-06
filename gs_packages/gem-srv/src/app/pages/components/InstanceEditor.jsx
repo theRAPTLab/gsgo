@@ -8,10 +8,15 @@ Shows instance init scripts.
 * Used to define instances in a map.
 * Allows properties to be edited.
 
+props.instance = instance specification: {name, blueprint, init}
+  e.g. {name: "fish01", blueprint: "Fish", init: "prop x setTo -220↵prop y setTo -220"}
+
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -24,23 +29,30 @@ class InstanceEditor extends React.Component {
       isEditable: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
+    this.GetAgentId = this.GetAgentId.bind(this);
     this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    this.OnEnableEdit = this.OnEnableEdit.bind(this);
+    this.OnEditEnable = this.OnEditEnable.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
-    UR.HandleMessage('INSTANCE_EDITOR_EDIT_ENABLED', this.OnEnableEdit);
+    UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.OnEditEnable);
   }
 
   componentDidMount() {}
 
   componentWillUnmount() {
     UR.UnandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
-    UR.UnandleMessage('INSTANCE_EDITOR_EDIT_ENABLED', this.OnEnableEdit);
+    UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.OnEditEnable);
   }
 
   GetInstanceName() {
     const { instance } = this.props;
     return instance ? instance.name : '';
+  }
+
+  GetAgentId() {
+    const { instance } = this.props;
+    const agent = GetAgentByName(instance.name);
+    return agent.id;
   }
 
   OnScriptUpdate(data) {
@@ -49,21 +61,6 @@ class InstanceEditor extends React.Component {
     const { isEditable } = this.state;
     const instanceName = this.GetInstanceName();
     if (isEditable) {
-      console.log('...InstanceEditor', instanceName, 'SCRIPT_UI_CHANGED', data);
-
-      // Proper method, but unnecessary?
-      // This transforms text back and forth to scriptUnits
-      // but we might be able to just insert directly?
-      // const source = TRANSPILER.ScriptifyText(instance.init);
-      // console.error('source is', source);
-      // // update the line
-      // // HACK REVIEW: Should this be a transpiler.TextifyScript call?
-      // const updatedLineText = data.scriptUnit.join(' ');
-      // const updatedLineScriptUnit = TRANSPILER.ScriptifyText(updatedLineText);
-      // console.error('compiled is', updatedLineScriptUnit);
-
-      // Simple Method
-      // REVIEW: This is probably wrong
       // 1. Convert init script text to array
       const scriptTextLines = instance.init.split('\n');
       // 2. Convert the updated line to text
@@ -72,7 +69,6 @@ class InstanceEditor extends React.Component {
       scriptTextLines[data.index] = updatedLineText;
       // 4. Convert the script array back to script text
       const updatedScript = scriptTextLines.join('\n');
-      console.log('...updated init', updatedScript);
 
       UR.RaiseMessage('NET:INSTANCE_UPDATE_INIT', {
         modelId: 'aquatic',
@@ -84,23 +80,36 @@ class InstanceEditor extends React.Component {
     }
   }
 
+  /**
+   * User clicked on instance in "Map Instances" panel, wants to edit
+   * @param {*} e
+   */
   OnInstanceClick(e) {
-    const { isEditable } = this.state;
-    const instanceName = this.GetInstanceName();
-    if (!isEditable) {
-      // User trying to select us for editing.
-      // Tell other instances in edit mode to exit edit mode
-      UR.RaiseMessage('INSTANCE_EDITOR_EDIT_ENABLED', { instanceName });
-    }
-    this.setState({ isEditable: !isEditable });
+    const { modelId, isEditable } = this.state;
+    // just pass it up to Map Editor so it's centralized?
+    const agentId = this.GetAgentId();
+    UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
   }
 
-  OnEnableEdit(data) {
-    // Disable editing if we're not the one that was enabled
-    const instanceName = this.GetInstanceName();
-    if (data.instanceName !== instanceName) {
-      this.setState({ isEditable: false });
+  /**
+   * Enables or disables editing based on 'data' passed
+   * @param {object} data { agentId }
+   */
+  OnEditEnable(data) {
+    const agentId = this.GetAgentId();
+    const { modelId } = this.state;
+    let { isEditable } = this.state;
+    // Is this message for us?
+    if (data.agentId === agentId) {
+      // YES!  Enable!
+      isEditable = true;
+    } else if (isEditable) {
+      // NOT for us, so disable
+      isEditable = false;
+      // And also deselect
+      UR.RaiseMessage('NET:INSTANCE_DESELECT', { modelId, agentId });
     }
+    this.setState({ isEditable });
   }
 
   render() {

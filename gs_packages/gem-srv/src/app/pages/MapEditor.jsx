@@ -62,20 +62,23 @@ class MapEditor extends React.Component {
       instances: [],
       mapInstanceSpec: []
     };
-    this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.LoadModel = this.LoadModel.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
-    this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
     this.HandleDragEnd = this.HandleDragEnd.bind(this);
+    this.HandleSimInstanceClick = this.HandleSimInstanceClick.bind(this);
+    this.HandleSimInstanceHoverOver = this.HandleSimInstanceHoverOver.bind(this);
+    this.HandleSimInstanceHoverOut = this.HandleSimInstanceHoverOut.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
-    UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
     UR.HandleMessage('DRAG_END', this.HandleDragEnd);
+    UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
 
     // Call Places after sim has been loaded
     UR.SystemHook('SIM/LOAD_ASSETS', () => {
@@ -104,12 +107,10 @@ class MapEditor extends React.Component {
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
-    UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
-  }
-
-  CallSimPlaces() {
-    UR.RaiseMessage('NET:SIM_PLACES');
+    UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
   }
 
   LoadModel(modelId) {
@@ -132,8 +133,8 @@ class MapEditor extends React.Component {
     );
   }
 
-  OnInstanceClick(instanceName) {
-    console.log('clicked on', instanceName);
+  CallSimPlaces() {
+    UR.RaiseMessage('NET:SIM_PLACES');
   }
 
   /**
@@ -167,15 +168,15 @@ class MapEditor extends React.Component {
     });
   }
 
+  /**
+   * User has submitted a new script
+   * @param {object} data { script }
+   */
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
     this.setState(state => ({
       message: `${state.message}Received script ${firstline}\n`
     }));
-  }
-
-  OnScriptUpdate(data) {
-    // console.error('SCRIPT_UI_CHANGED', data);
   }
 
   HandleDragEnd(data) {
@@ -191,6 +192,35 @@ class MapEditor extends React.Component {
       modelId,
       instanceName: agent.meta.name,
       updatedData: { x, y }
+    });
+  }
+
+  /**
+   * User clicked on agent instance in simulation view
+   * If Map Editor is open, then when the user clicks
+   * on an instance in the simulation view, we want to
+   * select it for editing.
+   * @param {object} data { agentId }
+   */
+  HandleSimInstanceClick(data) {
+    const { modelId } = this.state;
+    UR.RaiseMessage('NET:INSTANCE_REQUEST_EDIT', {
+      modelId,
+      agentId: data.agentId
+    });
+  }
+  HandleSimInstanceHoverOver(data) {
+    const { modelId } = this.state;
+    UR.RaiseMessage('NET:INSTANCE_HOVEROVER', {
+      modelId,
+      agentId: data.agentId
+    });
+  }
+  HandleSimInstanceHoverOut(data) {
+    const { modelId } = this.state;
+    UR.RaiseMessage('NET:INSTANCE_HOVEROUT', {
+      modelId,
+      agentId: data.agentId
     });
   }
 

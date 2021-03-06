@@ -12,6 +12,7 @@
 // instances for the current session.  No data is saved.
 
 import UR from '@gemstep/ursys/client';
+import { GetAgentById } from 'modules/datacore/dc-agents';
 
 // HACK DATA LOADING
 import { MODEL as AquaticModel } from './aquatic';
@@ -30,10 +31,20 @@ class SimData {
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdateInit = this.InstanceUpdateInit.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
+    this.InstanceRequestEdit = this.InstanceRequestEdit.bind(this);
+    this.InstanceSelect = this.InstanceSelect.bind(this);
+    this.InstanceDeselect = this.InstanceDeselect.bind(this);
+    this.InstanceHoverOver = this.InstanceHoverOver.bind(this);
+    this.InstanceOverOut = this.InstanceHoverOut.bind(this);
     // Register Listeners
     UR.HandleMessage('NET:INSTANCE_ADD', this.InstanceAdd);
     UR.HandleMessage('NET:INSTANCE_UPDATE_INIT', this.InstanceUpdateInit);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
+    UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
+    UR.HandleMessage('NET:INSTANCE_SELECT', this.InstanceSelect);
+    UR.HandleMessage('NET:INSTANCE_DESELECT', this.InstanceDeselect);
+    UR.HandleMessage('NET:INSTANCE_HOVEROVER', this.InstanceHoverOver);
+    UR.HandleMessage('NET:INSTANCE_HOVEROUT', this.InstanceHoverOut);
     UR.HandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.SendSimDataModels);
     UR.HandleMessage(
       'HACK_SIMDATA_REQUEST_MODEL',
@@ -41,20 +52,8 @@ class SimData {
     );
   }
 
-  componentWillUnmount() {
-    UR.UnhandleMessage('NET:INSTANCE_ADD', this.InstanceAdd);
-    UR.UnhandleMessage('NET:INSTANCE_UPDATE_INIT', this.InstanceUpdateInit);
-    UR.UnhandleMessage(
-      'NET:INSTANCE_UPDATE_POSITION',
-      this.InstanceUpdatePosition
-    );
-    UR.UnhandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.SendSimDataModels);
-    UR.UnhandleMessage(
-      'HACK_SIMDATA_REQUEST_MODEL',
-      this.HandleSimDataModelRequest
-    );
-  }
-
+  /// LOAD MODEL DATA ///////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   GetSimDataModel(modelId) {
     let model;
     switch (modelId) {
@@ -79,6 +78,8 @@ class SimData {
     return model;
   }
 
+  /// REQUEST MODEL DATA ////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    *
    * @param {Object} data -- { modelId: <string> }
@@ -93,7 +94,6 @@ class SimData {
     ];
     UR.RaiseMessage('HACK_SIMDATA_UPDATE_MODELS', { models });
   }
-
   /**
    *
    * @param {Object} data -- { modelId: <string> }
@@ -105,11 +105,16 @@ class SimData {
     let model = this.GetSimDataModel(modelId);
     UR.RaiseMessage('HACK_SIMDATA_UPDATE_MODEL', { model });
   }
-
+  /**
+   * Experimental direct SimData call, not through URSYS
+   * @param {string} modelId
+   */
   HackGetSimDataModel(modelId) {
     return this.GetSimDataModel(modelId);
   }
 
+  /// INSTANCE UTILS ////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    *
    * @param {Object} data -- { modelId, blueprintName }
@@ -125,7 +130,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     model.instances.push(instance);
     this.SendSimDataModel(data.modelId);
   }
-
   /**
    *
    * @param {Object} data -- { modelId, instanceName, updatedData }
@@ -141,7 +145,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     model.instances[instanceIndex] = instance;
     this.SendSimDataModel(data.modelId);
   }
-
   /**
    * HACK: Manually change the init script when updating position.
    * This is mostly used to support drag and drop
@@ -184,6 +187,67 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     } else {
       scriptTextLines[lineNumber] = newLine;
     }
+  }
+  /**
+   * User is requesting to edit an instance
+   * Can be triggered by:
+   *   * Simulation View: Clicking on an instance in simulation
+   *   * Map Instances View: Clicking on an instance in list
+   * @param {object} data -- {modelId, agentId}
+   */
+  InstanceRequestEdit(data) {
+    // 0. Check for Locking
+    //    TODO: Prevent others from editing?
+    //          May not be necessary if we only allow one map editor
+    // 1. Set Agent Data
+    const agent = GetAgentById(data.agentId);
+    agent.setSelected(true);
+    // 2. Update UI
+    UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
+    // 3. Update Sim View
+    UR.RaiseMessage('AGENTS_RENDER');
+  }
+
+  /// INSTANCE SELECTION HANDLERS ///////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Toggles the selection state of the agent
+   * @param {object} data -- {modelId, agentId}
+   */
+  InstanceSelect(data) {
+    // REVIEW: Does model matter?
+    // Or just retrieve the agent from the currently running model?
+    const model = this.GetSimDataModel(data.modelId);
+    const agent = GetAgentById(data.agentId);
+    agent.setSelected(true);
+    UR.RaiseMessage('AGENTS_RENDER');
+  }
+  /**
+   * Deselects the selection state of the agent
+   * @param {object} data -- {modelId, agentId}
+   */
+  InstanceDeselect(data) {
+    const agent = GetAgentById(data.agentId);
+    agent.setSelected(false);
+    UR.RaiseMessage('AGENTS_RENDER');
+  }
+  /**
+   * Turns hover on
+   * @param {object} data -- {modelId, agentId}
+   */
+  InstanceHoverOver(data) {
+    const agent = GetAgentById(data.agentId);
+    agent.setHovered(true);
+    UR.RaiseMessage('AGENTS_RENDER');
+  }
+  /**
+   * Turns hover off
+   * @param {object} data -- {modelId, agentId}
+   */
+  InstanceHoverOut(data) {
+    const agent = GetAgentById(data.agentId);
+    agent.setHovered(false);
+    UR.RaiseMessage('AGENTS_RENDER');
   }
 }
 
