@@ -58,7 +58,7 @@ async function SystemStart(route) {
     return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
-  PhaseMachine.QueueHookFor(
+  PhaseMachine.Hook(
     'UR/NET_CONNECT',
     () =>
       new Promise((resolve, reject) =>
@@ -66,7 +66,7 @@ async function SystemStart(route) {
       )
   );
   // autoregister messages
-  PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
+  PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
     let result = await LocalNode.ursysRegisterMessages();
     if (DBG)
       console.log(...PR('message handlers registered with NETWORK:', result));
@@ -102,7 +102,7 @@ const UR = {
   RaiseMessage: LocalNode.raiseMessage,
   CallMessage: LocalNode.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
-  SystemHook: PhaseMachine.QueueHookFor,
+  SystemHook: PhaseMachine.Hook,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,

@@ -26,7 +26,7 @@ const PR = PROMPTS.makeStyleFormatter('DEVCM','TagGreen');
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-PhaseMachine.QueueHookFor('UR/NET_DEVICES', () => new Promise<void>( (resolve, reject)=> {
+PhaseMachine.Hook('UR/NET_DEVICES', () => new Promise<void>( (resolve, reject)=> {
   console.log(...PR('promise NET_DEVICES'));
   resolve();
 }));

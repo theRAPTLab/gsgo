@@ -255,7 +255,7 @@ class PhaseMachine {
 /** Queue hook requests even if machine isn't already defined.
  *  This routine can be used as the standard hook method for UR clients.
  */
-PhaseMachine.QueueHookFor = (phaseSel, f) => {
+PhaseMachine.Hook = (phaseSel, f) => {
   if (typeof phaseSel !== 'string')
     throw Error('arg1 must be phase selector like MACHINE/PHASE');
   if (typeof f !== 'function' && f !== undefined)

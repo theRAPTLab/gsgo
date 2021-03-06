@@ -26,7 +26,7 @@ const PR = PROMPTS.makeStyleFormatter('PCOLM','TagGreen');
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-PhaseMachine.QueueHookFor('UR/NET_PROTOCOLS', ()=> new Promise<void>( (resolve, reject)=> {
+PhaseMachine.Hook('UR/NET_PROTOCOLS', ()=> new Promise<void>( (resolve, reject)=> {
   console.log(...PR('promise NET_PROTOCOLS'));
   resolve();
 }));
