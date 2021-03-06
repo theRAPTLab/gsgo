@@ -13,6 +13,7 @@ import Visual, {
 } from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
 import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
+import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,6 +106,15 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+
       // inefficient texture update
       vobj.setTexture(dobj.skin, dobj.frame);
       // force vobj rotation, scale, alpha for PIXI testing

@@ -38,6 +38,7 @@ class DisplayObject implements IPoolable {
   skin: string;
   x: number;
   y: number;
+  flag: number;
 
   constructor(id?: any) {
     this.init(id);
