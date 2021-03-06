@@ -252,6 +252,14 @@ function AgentExec(frameTime) {
 function AgentReset(frameTime) {
   /* reset agent */
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Force AgentUpdate, then force Render
+/// This is used to update data objects and refresh the screen during
+/// the initial PLACES call and when an instance is selected in MapEditor
+function AgentsRender(frameTime) {
+  AgentUpdate(frameTime);
+  RENDERER.Render();
+}
 
 /// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -261,6 +269,7 @@ UR.HandleMessage('SIM_MODE', AgentSelect);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
 UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model init
+UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentUpdate + Render
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
