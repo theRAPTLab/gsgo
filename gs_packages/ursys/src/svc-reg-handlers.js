@@ -6,9 +6,9 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { RegisterMessageList, NET_HANDLERS } = require('../server-datacore');
-const NetPacket = require('../class-netpacket');
-const TERM = require('../util/prompts').makeTerminalOut(' URNET');
+const { RegisterMessageList, NET_HANDLERS } = require('./server-datacore');
+const NetPacket = require('./class-netpacket');
+const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +21,7 @@ const DBG = false;
  * @param {NetPacket} pkt - NetPacket packet instance
  * @return {Object} object with registered property containing array of message
  */
-function RegisterRemoteHandlers(pkt) {
+function PKT_RegisterHandler(pkt) {
   if (pkt.getMessage() !== 'NET:SRV_REG_HANDLERS')
     throw Error('not a registration packet');
   let uaddr = pkt.getSourceAddress();
@@ -54,5 +54,5 @@ function RegisterRemoteHandlers(pkt) {
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  RegisterRemoteHandlers
+  PKT_RegisterHandler
 };

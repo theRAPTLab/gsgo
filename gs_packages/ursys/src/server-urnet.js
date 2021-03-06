@@ -23,9 +23,13 @@ const {
   SocketDelete,
   GetSocketCount
 } = require('./server-datacore');
-const { RegisterRemoteHandlers } = require('./service/reg-remote-handlers');
-const { SessionLogin, SessionLogout, Session } = require('./service/session-v1');
-const { ServiceList, Reflect } = require('./service/urnet-directory');
+const { PKT_RegisterHandler } = require('./svc-reg-handlers');
+const {
+  PKT_SessionLogin,
+  PKT_SessionLogout,
+  PKT_Session
+} = require('./svc-session-v1');
+const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,28 +62,23 @@ URNET.StartNetwork = (options = {}) => {
 
   LOGGER.StartLogging(options);
   NetPacket.GlobalSetup({ uaddr: options.uaddr });
-  //
-  m_InitializeServiceHandlers();
+
+  // REGISTER SERVER-BASED MESSAGE HANDLERS
+  LOGGER.Write('registering network services');
+  URNET.NetSubscribe('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
+  URNET.NetSubscribe('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
+  URNET.NetSubscribe('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
+  URNET.NetSubscribe('NET:SRV_SESSION', PKT_Session);
+  URNET.NetSubscribe('NET:SRV_REFLECT', PKT_Reflect);
+  URNET.NetSubscribe('NET:SRV_SERVICE_LIST', PKT_ServiceList);
+  URNET.NetSubscribe('NET:SRV_PROTOCOLS', PKT_ServiceDebugger);
+  // START SOCKET SERVER
   m_StartSocketServer(options);
   //
   return options;
 };
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** register messages handled by this server */
-function m_InitializeServiceHandlers() {
-  LOGGER.Write('registering network services');
-  // start logging message
-  URNET.NetSubscribe('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
-  // register remote messages
-  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', RegisterRemoteHandlers);
-  // register sessions
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGIN', SessionLogin);
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGOUT', SessionLogout);
-  URNET.NetSubscribe('NET:SRV_SESSION', Session);
-  // ursys debug server utilities
-  URNET.NetSubscribe('NET:SRV_REFLECT', Reflect);
-  URNET.NetSubscribe('NET:SRV_SERVICE_LIST', ServiceList);
-}
+
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** start socket server message broker */
 function m_StartSocketServer(options) {
@@ -106,6 +105,12 @@ function m_StartSocketServer(options) {
     TERM('Another URSYS server already running on this machine, so exiting');
     process.exit(1);
   }
+}
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** local message packet handler debug utility */
+function PKT_ServiceDebugger(pkt) {
+  TERM(`got ${pkt.getInfo()}`);
+  return { status: 'received' };
 }
 
 /// SERVER-SIDE MESSAGING API /////////////////////////////////////////////////

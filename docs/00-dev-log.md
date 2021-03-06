@@ -243,7 +243,9 @@ A bit of reorganization to separate service modules further
 
 * [x] replace `server-services.js` with individual service modules in `ursys/services/` 
 
-* [ ] rename `PhaseMachine.QueueHookFor` to `Hook`
+* [x] rename `PhaseMachine.QueueHookFor` to `Hook`
+
+* [x] reorganize services again to add `svc-` prefix
 
 * [ ] add server-side `NET:SRV_PROTOCOLS` 
 

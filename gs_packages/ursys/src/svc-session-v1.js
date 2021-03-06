@@ -8,11 +8,11 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LOGGER = require('../server-logger');
-const { SocketLookup } = require('../server-datacore');
-const NetPacket = require('../class-netpacket');
-const TERM = require('../util/prompts').makeTerminalOut(' URNET');
-const SESSION = require('../util/session-keys');
+const LOGGER = require('./server-logger');
+const { SocketLookup } = require('./server-datacore');
+const NetPacket = require('./class-netpacket');
+const TERM = require('./util/prompts').makeTerminalOut(' URNET');
+const SESSION = require('./util/session-keys');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +34,7 @@ const DBG = false;
  * @param {String} pkt.data.token - hashed session info
  * @return {Object} returned data payload
  */
-function SessionLogin(pkt) {
+function PKT_SessionLogin(pkt) {
   if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGIN')
     throw Error('not a session login packet');
   const uaddr = pkt.getSourceAddress();
@@ -70,7 +70,7 @@ function SessionLogin(pkt) {
  * @param {String} pkt.data.token - hashed session info
  * @return {Object} returned data payload
  */
-function SessionLogout(pkt) {
+function PKT_SessionLogout(pkt) {
   if (pkt.getMessage() !== 'NET:SRV_SESSION_LOGOUT')
     throw Error('not a session logout packet');
   const uaddr = pkt.getSourceAddress();
@@ -87,7 +87,7 @@ function SessionLogout(pkt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a session object based on the passed packet's stored credentials
  */
-function Session(pkt) {
+function PKT_Session(pkt) {
   const uaddr = pkt.getSourceAddress();
   const sock = SocketLookup(uaddr);
   if (!sock) {
@@ -141,7 +141,7 @@ function Session(pkt) {
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  SessionLogin,
-  SessionLogout,
-  Session
+  PKT_SessionLogin,
+  PKT_SessionLogout,
+  PKT_Session
 };

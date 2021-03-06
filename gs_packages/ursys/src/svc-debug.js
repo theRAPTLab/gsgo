@@ -1,14 +1,14 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS Server Message Handler - Directory Services
+  URSYS Server Message Handler - URNET Debug Utilities
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { CFG_SVR_UADDR } = require('../ur-common');
-const { SVR_HANDLERS, NET_HANDLERS } = require('../server-datacore');
-const TERM = require('../util/prompts').makeTerminalOut(' URNET');
+const { CFG_SVR_UADDR } = require('./ur-common');
+const { SVR_HANDLERS, NET_HANDLERS } = require('./server-datacore');
+const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -16,7 +16,7 @@ const TERM = require('../util/prompts').makeTerminalOut(' URNET');
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ServiceList(pkt) {
+function PKT_ServiceList(pkt) {
   TERM.warn('SRV_SERVICE_LIST got', pkt);
   const server = [...SVR_HANDLERS.keys()];
   const handlers = [...NET_HANDLERS.entries()];
@@ -29,7 +29,7 @@ function ServiceList(pkt) {
   return { server, clients };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function Reflect(pkt) {
+function PKT_Reflect(pkt) {
   const data = pkt.Data();
   data.serverSays = 'REFLECTING';
   data.stack = data.stack || [];
@@ -38,31 +38,9 @@ function Reflect(pkt) {
   return data;
 }
 
-/// NETWORK STATE HELPERS /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return list of registered server handlers
- */
-function m_ServiceList() {
-  const serviceList = [...SVR_HANDLERS.keys()];
-  return serviceList;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return list of clients and registered handlers
- */
-function m_ClientList() {
-  const handlerList = [...NET_HANDLERS.entries()];
-  const clientsByMessage = {};
-  handlerList.forEach(entry => {
-    const [msg, set] = entry;
-    const remotes = [...set.keys()];
-    clientsByMessage[msg] = remotes;
-  });
-  return clientsByMessage;
-}
-
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  ServiceList,
-  Reflect
+  PKT_ServiceList,
+  PKT_Reflect
 };
