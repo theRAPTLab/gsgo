@@ -81,8 +81,7 @@ class MapEditor extends React.Component {
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
 
     // Call Places after sim has been loaded
-    UR.SystemHook('SIM/LOAD_ASSETS', () => {
-      console.error('sim/LOAD_ASSETS!');
+    UR.SystemHook('SIM/READY', () => {
       this.CallSimPlaces();
     });
   }
