@@ -15,6 +15,7 @@ props.instance = instance specification: {name, blueprint, init}
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
@@ -26,15 +27,24 @@ class InstanceEditor extends React.Component {
     super();
     this.state = {
       title: 'EDITOR',
-      isEditable: false
+      isEditable: false,
+      isHovered: false,
+      isSelected: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetAgentId = this.GetAgentId.bind(this);
     this.OnScriptUpdate = this.OnScriptUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
     this.OnEditEnable = this.OnEditEnable.bind(this);
+    this.OnHoverOver = this.OnHoverOver.bind(this);
+    this.OnHoverOut = this.OnHoverOut.bind(this);
+    this.OnDeselect = this.OnDeselect.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.OnScriptUpdate);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.OnEditEnable);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.OnHoverOver);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.OnHoverOut);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.OnHoverOver);
+    UR.HandleMessage('NET:INSTANCE_DESELECT', this.OnDeselect);
   }
 
   componentDidMount() {}
@@ -98,22 +108,45 @@ class InstanceEditor extends React.Component {
   OnEditEnable(data) {
     const agentId = this.GetAgentId();
     const { modelId } = this.state;
-    let { isEditable } = this.state;
+    let { isEditable, isSelected } = this.state;
     // Is this message for us?
     if (data.agentId === agentId) {
       // YES!  Enable!
       isEditable = true;
+      isSelected = true;
     } else if (isEditable) {
       // NOT for us, so disable
       isEditable = false;
+      isSelected = false;
       // And also deselect
       UR.RaiseMessage('NET:INSTANCE_DESELECT', { modelId, agentId });
     }
-    this.setState({ isEditable });
+    this.setState({ isEditable, isSelected });
+  }
+
+  OnHoverOver(data) {
+    const agentId = this.GetAgentId();
+    if (data.agentId === agentId) {
+      this.setState({ isHovered: true });
+    }
+  }
+
+  OnHoverOut(data) {
+    const agentId = this.GetAgentId();
+    if (data.agentId === agentId) {
+      this.setState({ isHovered: false });
+    }
+  }
+
+  OnDeselect(data) {
+    const agentId = this.GetAgentId();
+    if (data.agentId === agentId) {
+      this.setState({ isSelected: false });
+    }
   }
 
   render() {
-    const { title, isEditable } = this.state;
+    const { title, isEditable, isHovered, isSelected } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
     let jsx = '';
@@ -121,15 +154,13 @@ class InstanceEditor extends React.Component {
       const source = TRANSPILER.ScriptifyText(instance.init);
       jsx = TRANSPILER.RenderScript(source, { isEditable });
     }
+
     return (
       <div
-        style={{
-          backgroundColor: '#000',
-          margin: '0.5em 0 0.5em 0.5em',
-          padding: '3px',
-          borderRadius: '5px',
-          cursor: 'pointer'
-        }}
+        className={clsx(classes.instanceSpec, {
+          [classes.instanceSpecHovered]: isHovered,
+          [classes.instanceSpecSelected]: isSelected
+        })}
         onClick={this.OnInstanceClick}
       >
         <div>
