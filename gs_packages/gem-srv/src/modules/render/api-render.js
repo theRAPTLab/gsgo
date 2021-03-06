@@ -6,7 +6,11 @@
 import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
-import Visual, { MakeDraggable } from 'lib/class-visual';
+import Visual, {
+  MakeDraggable,
+  MakeHoverable,
+  MakeSelectable
+} from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
 import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
 
@@ -81,8 +85,14 @@ function Init(element) {
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
       vobj.setTexture(dobj.skin, dobj.frame);
-      // add drag-and-drop handlers
-      if (dobj.mode === 1 && SETTINGS.actable) MakeDraggable(vobj);
+      if (dobj.mode === 1 && SETTINGS.actable) {
+        // add drag-and-drop handlers
+        MakeDraggable(vobj);
+        // add hover handler
+        MakeHoverable(vobj);
+        // add selectable handler
+        MakeSelectable(vobj);
+      }
       // add to scene
       vobj.add(CONTAINERS.Root);
     },
