@@ -177,10 +177,13 @@ class PanelSimulation extends React.Component {
     // HACK
     // Quickly start and stop the sim so agents will draw on screen
     // This should be replaced by a proper sim phase call: SIM.Places()?
-    SIM.Start();
-    setTimeout(() => {
-      SIM.End();
-    }, 250);
+    // SIM.Start();
+    // setTimeout(() => {
+    //   SIM.End();
+    // }, 250);
+
+    // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
+    UR.RaiseMessage('AGENTS_RENDER');
   }
 
   DoSimStart() {
