@@ -12,7 +12,6 @@
 const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
-const SERVICES = require('./server-services');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 const { CFG_SVR_UADDR, PRE_SYS_MESG } = require('./ur-common');
 const {
@@ -24,6 +23,9 @@ const {
   SocketDelete,
   GetSocketCount
 } = require('./server-datacore');
+const { RegisterRemoteHandlers } = require('./service/reg-remote-handlers');
+const { SessionLogin, SessionLogout, Session } = require('./service/session-v1');
+const { ServiceList, Reflect } = require('./service/urnet-directory');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,14 +71,14 @@ function m_InitializeServiceHandlers() {
   // start logging message
   URNET.NetSubscribe('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
   // register remote messages
-  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', SERVICES.RegisterRemoteHandlers);
+  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', RegisterRemoteHandlers);
   // register sessions
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGIN', SERVICES.SessionLogin);
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGOUT', SERVICES.SessionLogout);
-  URNET.NetSubscribe('NET:SRV_SESSION', SERVICES.Session);
+  URNET.NetSubscribe('NET:SRV_SESSION_LOGIN', SessionLogin);
+  URNET.NetSubscribe('NET:SRV_SESSION_LOGOUT', SessionLogout);
+  URNET.NetSubscribe('NET:SRV_SESSION', Session);
   // ursys debug server utilities
-  URNET.NetSubscribe('NET:SRV_REFLECT', SERVICES.Reflect);
-  URNET.NetSubscribe('NET:SRV_SERVICE_LIST', SERVICES.ServiceList);
+  URNET.NetSubscribe('NET:SRV_REFLECT', Reflect);
+  URNET.NetSubscribe('NET:SRV_SERVICE_LIST', ServiceList);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** start socket server message broker */

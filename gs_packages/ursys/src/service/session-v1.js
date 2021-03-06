@@ -1,54 +1,28 @@
-/* eslint-disable no-restricted-syntax */
-const LOGGER = require('./server-logger');
-const { CFG_SVR_UADDR } = require('./ur-common');
-const {
-  RegisterMessageList,
-  SVR_HANDLERS,
-  NET_HANDLERS,
-  SocketLookup
-} = require('./server-datacore');
-const NetPacket = require('./class-netpacket');
-const SESSION = require('./util/session-keys');
-const TERM = require('./util/prompts').makeTerminalOut(' URNET');
+/*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  URSYS Server Message Handler - Session
+  This is the old session manager which will be replaced with a different
+  form of manager
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
+
+///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const LOGGER = require('../server-logger');
+const { SocketLookup } = require('../server-datacore');
+const NetPacket = require('../class-netpacket');
+const TERM = require('../util/prompts').makeTerminalOut(' URNET');
+const SESSION = require('../util/session-keys');
+
+/// DEBUG MESSAGES ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 
-/// SERVER MESSAGE HANDLERS ///////////////////////////////////////////////////
+/// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Handles URSYS REGISTRATION PACKETS from connecting clients. It is the first
- * packet sent on successful socket connection.
- * @param {NetPacket} pkt - NetPacket packet instance
- * @return {Object} object with registered property containing array of message
- */
-function RegisterRemoteHandlers(pkt) {
-  if (pkt.getMessage() !== 'NET:SRV_REG_HANDLERS')
-    throw Error('not a registration packet');
-  let uaddr = pkt.getSourceAddress();
-  let { messages = [] } = pkt.getData();
-  // make sure there's no sneaky attempt to subvert the system messages
-  const filtered = messages.filter(msg => !msg.startsWith('NET:SRV'));
-  if (filtered.length !== messages.length) {
-    const error = `${uaddr} blocked from registering SRV message`;
-    TERM(error);
-    return { error, code: NetPacket.CODE_REG_DENIED };
-  }
-  let regd = [];
-  // save message list, for later when having to delete
-  RegisterMessageList(uaddr, messages);
-  // add uaddr for each message in the list
-  // NET_HANDLERS[mesg] contains a Set
-  messages.forEach(msg => {
-    let entry = NET_HANDLERS.get(msg);
-    if (!entry) {
-      entry = new Set();
-      NET_HANDLERS.set(msg, entry);
-    }
-    if (DBG.client) TERM(`${uaddr} regr '${msg}'`);
-    entry.add(uaddr);
-    regd.push(msg);
-  });
-  return { registered: regd };
-}
+
+/// API METHODS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handle SESSION LOGIN packets. A key is generated based on the provided
  * user token and socket address, and stored in the client socket. This should
@@ -164,54 +138,10 @@ function Session(pkt) {
   return sock.USESS;
 }
 
-function Reflect(pkt) {
-  const data = pkt.Data();
-  data.serverSays = 'REFLECTING';
-  data.stack = data.stack || [];
-  data.stack.push(CFG_SVR_UADDR); // usually hardcoded to SVR_01
-  TERM.warn('SRV_REFLECT setting data', data);
-  return data;
-}
-function ServiceList(pkt) {
-  TERM.warn('SRV_SERVICE_LIST got', pkt);
-  const server = [...SVR_HANDLERS.keys()];
-  const handlers = [...NET_HANDLERS.entries()];
-  const clients = {};
-  handlers.forEach(entry => {
-    const [msg, set] = entry;
-    const remotes = [...set.keys()];
-    clients[msg] = remotes;
-  });
-  return { server, clients };
-}
-
-/// NETWORK STATE HELPERS /////////////////////////////////////////////////////
+/// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return list of registered server handlers
- */
-function m_ServiceList() {
-  const serviceList = [...SVR_HANDLERS.keys()];
-  return serviceList;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return list of clients and registered handlers
- */
-function m_ClientList() {
-  const handlerList = [...NET_HANDLERS.entries()];
-  const clientsByMessage = {};
-  handlerList.forEach(entry => {
-    const [msg, set] = entry;
-    const remotes = [...set.keys()];
-    clientsByMessage[msg] = remotes;
-  });
-  return clientsByMessage;
-}
-
 module.exports = {
-  RegisterRemoteHandlers,
   SessionLogin,
   SessionLogout,
-  Session,
-  Reflect,
-  ServiceList
+  Session
 };

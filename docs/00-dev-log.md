@@ -194,6 +194,10 @@ See  [ext-ursys-multinet](https://drive.google.com/file/d/1ylyxEJNX1hwEY00DP0LJC
 
 ## MAR 02 TUE - Baby steps to Multinet
 
+Ok, here we go with implementation on biphasic sleep day number 1!
+
+### 1. stub-in new phases
+
 I'm not sure exactly how this will get implemented, but as a first throwaway step let me just print something out on the client-side at the right time in the URSYS startup.
 
 * [x] has to execute after `UR/NET_CONNECT`, which is part of `PHASE_CONNECT`
@@ -203,6 +207,53 @@ I'm not sure exactly how this will get implemented, but as a first throwaway ste
 * [x] Make new UR client module `client-netprotocols` and `client-netdevices`
   * [x] hook into `UR/NET_PROTOCOLS` and print message
   * [x] hook into `UR/NET_DEVICES` and print message
+
+### 2. new URNET messages design
+
+Phases are used to synchronize operations in an app, but we need to define some new NET:SRV_ messages to handle the protocol list.
+
+* currently we're using the `NET:SRV_*` prefix as a special message prefix that is only implemented by an URSYS message broker server itself.
+* With a multi-server architecture, we probably need to expand the prefix system, but we won't worry about it now becausae the `NET:SRV_` prefix is already consistently defined in `ur-common` so it's accepted in both server and client modules
+
+So I think the steps would be something like:
+
+*  implement server-handler for `NET:SRV_PROTOCOLS` that
+  * expects a `uident`  that is a hashids-encoded `{ name, class, group, id }` (for students) or `{ name, class, role }` with additional optional `authkey` that is `{ type, keydata }` for a minimal login database. Use the Apache-style authentications types. If no `uident` is provided, then return the public protocol list (e.g. simview)
+  * stores the `uident` on the socket so it can be looked-up by the server
+  * returns the protocol list as a list of protocol names and server host/port with connection data
+  * fires the `NET:SRV_PROTOCOLS` whenever the protocol list changes
+
+When a protocol server comes online, it has to also somehow register its protocol in a central place. Since protocol servers don't use the `netinfo` service that an appserver provides, they need to have some way of discovering the master directory server
+
+*  hardcode to a local address in a `configuration` file in `gsgo` that is accessable by the ursys package. This will be assumed to be named `gem_site_config` and will be in TOML format. We will need a TOML reader
+*  The master server is part of all URNET at a reserved uaddr of `SRV_PRIME` 
+*  If `SRV_PRIME` as configured is not available, then local discovery could happen with UDP checkin. There are a couple packages to look at:
+
+  * [udp-discovery](https://www.npmjs.com/package/udp-discovery)
+  * [microserv](https://www.npmjs.com/package/microserv) is sort of URSYS like?
+*  The "Protocol Manager" requests the protocol list via `NET:SRV_PROTOCOLS`, providing a `uident` (if null, then any public services)
+
+## MAR 05 FRI -
+
+RECAP: In (1) I had last **added new net phases** to client-exec, and added `client-netprotocols` and `client-netdevices` to be directory services. There are also **stubs** that handle the new `UR/NET_PROTOCOLS` and `UR/NET_DEVICES` phases defined in new modules `client-netprotocols` and `client-netdevices`
+
+### 3. Stub-in server messages
+
+A bit of reorganization to separate service modules further
+
+* [x] replace `server-services.js` with individual service modules in `ursys/services/` 
+
+* [ ] rename `PhaseMachine.QueueHookFor` to `Hook`
+
+* [ ] add server-side `NET:SRV_PROTOCOLS` 
+
+* [ ] add server-side `NET:SRV_DEVICES`
+
+* [ ] add client-side `NET:SRV_PROTOCOLS` receptor
+
+* [ ] add client-side `NET:SRV_DEVICES` receptor
+
+  
 
 
 
