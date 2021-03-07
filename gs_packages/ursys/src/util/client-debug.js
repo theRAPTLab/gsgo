@@ -12,35 +12,39 @@ let TOOLS;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function addConsoleTools(UR) {
   const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
-  console.groupCollapsed(...PR('adding window debug tools'));
+  const { CallMessage, RaiseMessage, SendMessage } = UR;
+  console.group(...PR('adding console debug tools'));
 
   TOOLS = {
-    call: (mesg = 'NET:HELLO', data = { type: 'call' }) => {
-      UR.NetCall(mesg, data).then(rdata => {
-        console.log('NET:HELLO returned', rdata);
+    ur_call: (mesg = 'NET:HELLO', data = { type: 'call' }) => {
+      console.log('ur_call(mesg, data) transaction');
+      UR.CallMessage(mesg, data).then(rdata => {
+        console.log('ur_call received data', rdata);
       });
-      return 'call() is calling NET:HELLO...';
+      return `call() is calling ${mesg}...`;
     },
-    signal: (mesg = 'NET:HELLO', data = { type: 'signal' }) => {
-      UR.NetSignal(mesg, data);
-      return 'signal() is signalling to all implementors to NET:HELLO';
+    ur_raise: (mesg = 'NET:HELLO', data = { type: 'signal' }) => {
+      console.log('ur_raise(mesg, data) reflecting signal');
+      RaiseMessage(mesg, data);
+      return 'raise() is signalling to all implementors to NET:HELLO';
     },
-    publish: (mesg = 'NET:HELLO', data = { type: 'publish' }) => {
-      UR.SendMessage(mesg, data);
-      return 'publish() is sending to other implementors of NET:HELLO';
+    ur_send: (mesg = 'NET:HELLO', data = { type: 'publish' }) => {
+      console.log('ur_send(mesg, data) non-reflecting send');
+      SendMessage(mesg, data);
+      return 'send() is sending to other implementors of NET:HELLO';
     },
-    reflect: (data = { type: 'reflect' }) => {
+    ur_reflect: (data = { type: 'reflect' }) => {
       if (typeof data === 'string') {
         console.log(`packaging string '${data}' as { data:'${data}' }`);
         data = { data };
       }
-      UR.NetCall('NET:SRV_REFLECT', data).then(rdata => {
+      CallMessage('NET:SRV_REFLECT', data).then(rdata => {
         console.log('NET:SRV_REFLECT returned', rdata);
       });
       return 'reflect() is calling NET:SRV_REFLECT...';
     },
-    services: () => {
-      UR.NetCall('NET:SRV_SERVICE_LIST').then(data => {
+    ur_services: () => {
+      CallMessage('NET:SRV_SERVICE_LIST').then(data => {
         console.log('NET:SRV_SERVICE_LIST returned', data);
       });
       return 'services() is calling NET:SRV_SERVICE_LIST...';
@@ -49,7 +53,7 @@ function addConsoleTools(UR) {
   Object.entries(TOOLS).forEach(kv => {
     const [key, f] = kv;
     if (typeof window[key] !== 'undefined') return;
-    console.log(...PR(`.. window.${key}()`));
+    console.log(`.. ${key}()`);
     window[key] = f;
   });
   console.groupEnd();

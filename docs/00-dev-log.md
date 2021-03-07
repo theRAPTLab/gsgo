@@ -242,14 +242,17 @@ RECAP: In (1) I had last **added new net phases** to client-exec, and added `cli
 A bit of reorganization to separate service modules further
 
 * [x] replace `server-services.js` with individual service modules in `ursys/services/` 
-
 * [x] rename `PhaseMachine.QueueHookFor` to `Hook`
-
 * [x] reorganize services again to add `svc-` prefix
 
-* [ ] add server-side `NET:SRV_PROTOCOLS` 
+Now let's write the server-side code:
 
-* [ ] add server-side `NET:SRV_DEVICES`
+* [x] add server-side `NET:SRV_PROTOCOLS` 
+* [x] add server-side `NET:SRV_DEVICES`
+
+Now the client-side exercisers:
+
+* [x] restore operation of ur console tools
 
 * [ ] add client-side `NET:SRV_PROTOCOLS` receptor
 

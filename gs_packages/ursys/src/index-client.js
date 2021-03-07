@@ -71,8 +71,10 @@ async function SystemStart(route) {
     if (DBG)
       console.log(...PR('message handlers registered with NETWORK:', result));
   });
+  // complete startup
   URSYS_RUNNING = true;
   URSYS_ROUTE = route;
+
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
