@@ -199,7 +199,7 @@ class MissionControl extends React.Component {
           <PanelBlueprints id="blueprints" agents={agents} />
         </div>
         <div id="console-main" className={classes.main}>
-          <PanelSimulation id="sim" onClick={this.OnPanelClick} />
+          <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>

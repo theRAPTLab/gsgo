@@ -275,7 +275,7 @@ class MapEditor extends React.Component {
           <PanelMapInstances id="instances" mapInstanceSpec={mapInstanceSpec} />
         </div>
         <div id="console-main" className={classes.main}>
-          <PanelSimulation id="sim" onClick={this.OnPanelClick} />
+          <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
         </div>
         {/* Instances not necessary for MapEditor
         <div id="console-right" className={classes.right}>
