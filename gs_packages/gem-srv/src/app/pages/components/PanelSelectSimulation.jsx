@@ -25,15 +25,15 @@ class PanelSelectSimulation extends React.Component {
     this.onClick = this.onClick.bind(this);
     this.OnModelsUpdate = this.OnModelsUpdate.bind(this);
 
-    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODELS', this.OnModelsUpdate);
+    UR.HandleMessage('*:UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   componentDidMount() {
-    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODELS');
+    UR.RaiseMessage('*:REQUEST_MODELS');
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODELS', this.OnModelsUpdate);
+    UR.UnhandleMessage('*:UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   onClick(modelId) {

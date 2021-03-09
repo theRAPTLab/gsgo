@@ -69,7 +69,6 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
@@ -91,7 +90,6 @@ class MissionControl extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 

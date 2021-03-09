@@ -73,8 +73,8 @@ class MapEditor extends React.Component {
     this.HandleSimInstanceHoverOver = this.HandleSimInstanceHoverOver.bind(this);
     this.HandleSimInstanceHoverOut = this.HandleSimInstanceHoverOut.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('*:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('DRAG_END', this.HandleDragEnd);
     UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
@@ -104,8 +104,8 @@ class MapEditor extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.UnhandleMessage('*:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);

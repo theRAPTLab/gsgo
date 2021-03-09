@@ -48,9 +48,9 @@ const MSGLIST = [
 'SCRIPT_EVENT', { type: 'Tick' }
 'SCRIPT_SRC_CHANGED', updata
 
-'HACK_SIMDATA_UPDATE_MODELS', { models }
-'HACK_SIMDATA_UPDATE_MODEL', { model }
-'HACK_SIMDATA_REQUEST_MODEL', { modelId }
+'*:UPDATE_MODELS', { models }
+'*:UPDATE_MODEL', { model }
+'*:REQUEST_MODEL', { modelId }
 'HACK_DEBUG_MESSAGE', { nessage, line }
 'HACK_SELECT_AGENT', id
 'HACK_INSTANCES_UPDATED', instances
