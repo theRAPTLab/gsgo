@@ -107,7 +107,7 @@ const UR = {
   RaiseMessage: LocalNode.raiseMessage,
   CallMessage: LocalNode.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
-  SystemHook: PhaseMachine.Hook,
+  OnPhase: PhaseMachine.Hook,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,

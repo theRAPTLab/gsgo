@@ -170,19 +170,19 @@ function TestExec(frameTime) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// if this test is imported into Compiler.jsx, SIM doesn't start until
 /// SAVE BLUEPRINT is clicked. Force SIM START here
-UR.SystemHook('SIM/READY', () => {
+UR.OnPhase('SIM/READY', () => {
   log(...PR('ready'));
   SIM.Start();
   // TestKeywords();
 });
-UR.SystemHook('SIM/PROGRAM', () => {
+UR.OnPhase('SIM/PROGRAM', () => {
   log(...PR('program'));
   MakeInstances();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// if this test is imported into Compiler.jdx, sim-* modules are running
 /// after SIM.Start has been fired
-UR.SystemHook('SIM/CONDITIONS_UPDATE', TestCondition);
-UR.SystemHook('SIM/AGENTS_UPDATE', TestUpdate);
-UR.SystemHook('SIM/AGENTS_THINK', TestThink);
-UR.SystemHook('SIM/AGENTS_EXEC', TestExec);
+UR.OnPhase('SIM/CONDITIONS_UPDATE', TestCondition);
+UR.OnPhase('SIM/AGENTS_UPDATE', TestUpdate);
+UR.OnPhase('SIM/AGENTS_THINK', TestThink);
+UR.OnPhase('SIM/AGENTS_EXEC', TestExec);

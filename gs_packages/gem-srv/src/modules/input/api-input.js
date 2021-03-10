@@ -47,19 +47,19 @@ export function StartTrackerVisuals() {
 
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/LOAD_CONFIG', () => {
+UR.OnPhase('UR/LOAD_CONFIG', () => {
   const addr = document.domain;
   console.log(...PR('Initializing Connection to', addr));
   ConnectTracker(addr);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/APP_CONFIGURE', () => {
+UR.OnPhase('UR/APP_CONFIGURE', () => {
   // this fires after UR/LOAD_ASSETS, so sprites are loaded
   const addr = document.domain;
   console.log(...PR('Starting Tracker Visuals', addr));
   StartTrackerVisuals();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/INPUTS', () => {
+UR.OnPhase('SIM/INPUTS', () => {
   console.log('sim/input');
 });

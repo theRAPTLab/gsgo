@@ -167,7 +167,7 @@
       "",
       "/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////",
       "/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -",
-      "UR.SystemHook('MACHINE','PHASE',(...args)=>{",
+      "UR.OnPhase('MACHINE/PHASE',(...args)=>{",
       "  /* optionally return Promise to hold phase (e.g. asset loading) */",
       "})",
       "",

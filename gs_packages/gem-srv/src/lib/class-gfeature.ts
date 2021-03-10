@@ -24,7 +24,7 @@
     initialize(SIM:PhaseMachine) {
       // hook into sim lifecycle here if feature needs it
       // e.g. SIM.hook('INPUT',()=>{});
-      // or import UR and use UR.SystemHook('SIM/INPUT',()=>{});
+      // or import UR and use UR.OnPhase('SIM/INPUT',()=>{});
     }
     decorate(agent:IAgent) {
       super.decorate(agent);

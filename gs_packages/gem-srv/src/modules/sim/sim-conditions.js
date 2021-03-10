@@ -102,8 +102,8 @@ function Update(frame) {
 
 /// SYNCHRONOUS LIFECYCLE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/CONDITIONS_UPDATE', Update);
-UR.SystemHook('UR/APP_CONFIGURE', ModuleInit);
+UR.OnPhase('SIM/CONDITIONS_UPDATE', Update);
+UR.OnPhase('UR/APP_CONFIGURE', ModuleInit);
 
 /// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

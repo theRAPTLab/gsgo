@@ -105,10 +105,10 @@ function Reset() {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/APP_STAGE', Stage);
-UR.SystemHook('UR/APP_RUN', Run);
-UR.SystemHook('UR/APP_RESET', Reset);
-UR.SystemHook('UR/APP_RESTAGE', Restage);
+UR.OnPhase('UR/APP_STAGE', Stage);
+UR.OnPhase('UR/APP_RUN', Run);
+UR.OnPhase('UR/APP_RESET', Reset);
+UR.OnPhase('UR/APP_RESTAGE', Restage);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -219,9 +219,9 @@ function TestRender(frameTime) {
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (TEST) {
-  UR.SystemHook('SIM/INIT', TestInit);
-  UR.SystemHook('SIM/VIS_UPDATE', TestUpdateDisplayList);
-  UR.SystemHook('SIM/VIS_RENDER', TestRender);
+  UR.OnPhase('SIM/INIT', TestInit);
+  UR.OnPhase('SIM/VIS_UPDATE', TestUpdateDisplayList);
+  UR.OnPhase('SIM/VIS_RENDER', TestRender);
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////

@@ -24,7 +24,7 @@ class InstanceSpecInspector extends React.Component {
     };
     this.OnDataUpdate = this.OnDataUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    UR.SystemHook('SIM/UI_UPDATE', this.OnDataUpdate);
+    UR.OnPhase('SIM/UI_UPDATE', this.OnDataUpdate);
   }
 
   componentDidMount() {

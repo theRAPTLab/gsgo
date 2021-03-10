@@ -63,20 +63,20 @@ function RenderDisplayList() {
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// PHASE_LOAD
-UR.SystemHook('SIM/RESET', () => {
+UR.OnPhase('SIM/RESET', () => {
   m_Initialize();
 });
-UR.SystemHook('SIM/SETMODE', () => {});
-UR.SystemHook('SIM/WAIT', () => {});
-UR.SystemHook('SIM/INIT', () => {});
-UR.SystemHook('SIM/READY', () => {});
+UR.OnPhase('SIM/SETMODE', () => {});
+UR.OnPhase('SIM/WAIT', () => {});
+UR.OnPhase('SIM/INIT', () => {});
+UR.OnPhase('SIM/READY', () => {});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// PHASE_LOOP
-UR.SystemHook('SIM/VIS_UPDATE', () => {
+UR.OnPhase('SIM/VIS_UPDATE', () => {
   // use this for updating anything other than mapped display objects,
   // since MAPPED_SPRITES updates sprites implicitly after
 });
-UR.SystemHook('SIM/VIS_RENDER', m_RenderDisplayList);
+UR.OnPhase('SIM/VIS_RENDER', m_RenderDisplayList);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

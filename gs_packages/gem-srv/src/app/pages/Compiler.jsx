@@ -40,7 +40,7 @@ const defaultText = DATACORE.GetDefaultText();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
+UR.OnPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
