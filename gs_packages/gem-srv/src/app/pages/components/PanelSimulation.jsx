@@ -40,8 +40,7 @@ class PanelSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Simulation',
-      model: {}
+      title: 'Simulation'
     };
     this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
     this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
@@ -52,7 +51,6 @@ class PanelSimulation extends React.Component {
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
 
-    UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
     UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
@@ -60,6 +58,8 @@ class PanelSimulation extends React.Component {
     UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+
+    UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
   }
 
   componentDidMount() {
@@ -111,7 +111,6 @@ class PanelSimulation extends React.Component {
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }
-
 
   /**
    * WARNING: Do not call this before the simulation has loaded.
@@ -167,16 +166,6 @@ class PanelSimulation extends React.Component {
       blueprintNames,
       instancesSpec
     });
-
-    // 4. Places!
-    //
-    // HACK
-    // Quickly start and stop the sim so agents will draw on screen
-    // This should be replaced by a proper sim phase call: SIM.Places()?
-    // SIM.Start();
-    // setTimeout(() => {
-    //   SIM.End();
-    // }, 250);
 
     // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
     UR.RaiseMessage('AGENTS_RENDER');
