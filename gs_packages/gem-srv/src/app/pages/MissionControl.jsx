@@ -9,6 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
@@ -49,6 +51,24 @@ PANEL_CONFIG.set('map', '50% auto 150px'); // columns
 PANEL_CONFIG.set('blueprints', '50% auto 150px'); // columns
 PANEL_CONFIG.set('sim', '15% auto 150px'); // columns
 
+const StyledToggleButton = withStyles(theme => ({
+  root: {
+    color: 'rgba(0,156,156,1)',
+    backgroundColor: 'rgba(60,256,256,0.1)',
+    '&:hover': {
+      color: 'black',
+      backgroundColor: '#6effff'
+    },
+    '&.Mui-selected': {
+      color: '#6effff',
+      backgroundColor: 'rgba(60,256,256,0.3)',
+      '&:hover': {
+        color: 'black',
+        backgroundColor: '#6effff'
+      }
+    }
+  }
+}))(ToggleButton);
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
@@ -70,6 +90,7 @@ class MissionControl extends React.Component {
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    this.OnToggleRunEdit = this.OnToggleRunEdit.bind(this);
   }
 
   componentDidMount() {
@@ -143,6 +164,12 @@ class MissionControl extends React.Component {
 
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// PANEL UI CONFIGURATION
+  ///
+  OnToggleRunEdit(e, val) {
+    this.setState({ panelConfiguration: val });
+  }
     this.setState(state => ({
       message: `${state.message}Received script ${firstline}\n`
     }));
@@ -160,6 +187,26 @@ class MissionControl extends React.Component {
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
         : [];
+
+    const jsxRunOrEdit = (
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          height: '50px',
+          width: '100%'
+        }}
+      >
+        <ToggleButtonGroup
+          value={panelConfiguration}
+          exclusive
+          onChange={this.OnToggleRunEdit}
+        >
+          <StyledToggleButton value="run">Run Model</StyledToggleButton>
+          <StyledToggleButton value="edit">Edit Map</StyledToggleButton>
+        </ToggleButtonGroup>
+      </div>
+    );
 
     return (
       <div
@@ -195,6 +242,7 @@ class MissionControl extends React.Component {
             onClick={this.OnPanelClick}
           />
           <PanelBlueprints id="blueprints" agents={agents} />
+            {jsxRunOrEdit}
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
