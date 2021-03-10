@@ -25,7 +25,7 @@ class PanelSelectSimulation extends React.Component {
     this.onClick = this.onClick.bind(this);
     this.OnModelsUpdate = this.OnModelsUpdate.bind(this);
 
-    UR.HandleMessage('*:UPDATE_MODELS', this.OnModelsUpdate);
+    UR.HandleMessage('NET:UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   componentDidMount() {
@@ -33,7 +33,7 @@ class PanelSelectSimulation extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('*:UPDATE_MODELS', this.OnModelsUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   onClick(modelId) {

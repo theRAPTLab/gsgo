@@ -27,7 +27,7 @@ class SimData {
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
     this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
     this.SendSimDataModel = this.SendSimDataModel.bind(this);
-    this.HackGetSimDataModel = this.HackGetSimDataModel.bind(this);
+    this.GetModel = this.GetModel.bind(this);
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdateInit = this.InstanceUpdateInit.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
@@ -43,13 +43,10 @@ class SimData {
     UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
     UR.HandleMessage('NET:INSTANCE_SELECT', this.InstanceSelect);
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.InstanceDeselect);
-    UR.HandleMessage('NET:INSTANCE_HOVEROVER', this.InstanceHoverOver);
-    UR.HandleMessage('NET:INSTANCE_HOVEROUT', this.InstanceHoverOut);
-    UR.HandleMessage('HACK_SIMDATA_REQUEST_MODELS', this.SendSimDataModels);
-    UR.HandleMessage(
-      'HACK_SIMDATA_REQUEST_MODEL',
-      this.HandleSimDataModelRequest
-    );
+    UR.HandleMessage('INSTANCE_HOVEROVER', this.InstanceHoverOver);
+    UR.HandleMessage('INSTANCE_HOVEROUT', this.InstanceHoverOut);
+    UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
+    UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
   }
 
   /// LOAD MODEL DATA ///////////////////////////////////////////////////////////
@@ -78,7 +75,17 @@ class SimData {
     return model;
   }
 
-  /// REQUEST MODEL DATA ////////////////////////////////////////////////////////
+  /// API CALLS: REQUEST MODEL DATA //////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * API Call
+   * @param {string} modelId
+   */
+  GetModel(modelId) {
+    return this.GetSimDataModel(modelId);
+  }
+
+  /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    *
@@ -92,8 +99,9 @@ class SimData {
       { id: 'salt', label: 'Salt' },
       { id: 'bees', label: 'Bees' }
     ];
-    UR.RaiseMessage('HACK_SIMDATA_UPDATE_MODELS', { models });
+    UR.RaiseMessage('NET:UPDATE_MODELS', { models });
   }
+
   /**
    *
    * @param {Object} data -- { modelId: <string> }
@@ -103,14 +111,7 @@ class SimData {
   }
   SendSimDataModel(modelId) {
     let model = this.GetSimDataModel(modelId);
-    UR.RaiseMessage('HACK_SIMDATA_UPDATE_MODEL', { model });
-  }
-  /**
-   * Experimental direct SimData call, not through URSYS
-   * @param {string} modelId
-   */
-  HackGetSimDataModel(modelId) {
-    return this.GetSimDataModel(modelId);
+    UR.RaiseMessage('NET:UPDATE_MODEL', { model });
   }
 
   /// INSTANCE UTILS ////////////////////////////////////////////////////////////
