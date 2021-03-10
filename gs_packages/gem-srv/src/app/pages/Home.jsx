@@ -14,7 +14,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('HOME', 'TagBlue');
+const PR = UR.PrefixUtil('HOME');
 const HCON = UR.HTMLConsoleUtil('console-left');
 
 /// UI HELPERS ////////////////////////////////////////////////////////////////
@@ -54,6 +54,8 @@ const NavItem = props => {
 class Home extends React.Component {
   componentDidMount() {
     document.title = 'GEMSTEP';
+    // start URSYS
+    UR.SystemAppConfig({ autoRun: true });
   }
 
   componentWillUnmount() {

@@ -20,7 +20,7 @@ import * as RENDERER from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('KWTEST', 'TagDkOrange');
+const PR = UR.PrefixUtil('KWTEST', 'TagTest');
 const TT = [];
 const TESTNUM = undefined; // undefined for all tests
 const log = console.log;

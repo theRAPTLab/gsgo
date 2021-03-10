@@ -17,8 +17,8 @@ const NETINFO = require('./client-netinfo');
 const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 
-const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagBlue');
-const NPR = PROMPTS.makeStyleFormatter('NINFO', 'TagGreen');
+const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
+const NPR = PROMPTS.makeStyleFormatter('URSYS', 'TagURSYS');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

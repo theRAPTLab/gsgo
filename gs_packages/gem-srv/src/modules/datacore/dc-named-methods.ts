@@ -9,7 +9,7 @@ import { TSMCProgram } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('DCPROGS', 'TagRed');
+const PR = UR.PrefixUtil('DCPROGS');
 
 /// REGISTER TEST PROGRAMS BY NAME ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

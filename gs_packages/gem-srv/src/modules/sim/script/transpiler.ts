@@ -27,7 +27,7 @@ import 'script/keywords/_all_keywords';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRNPLR', 'TagRed');
+const PR = UR.PrefixUtil('TRNPLR', 'TagDebug');
 const scriptifier = new GScriptTokenizer();
 const COMPILER_AGENT = new GAgent();
 const COMPILER_STATE = new SM_State();

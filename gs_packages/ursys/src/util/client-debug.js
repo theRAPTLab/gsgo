@@ -15,7 +15,7 @@ function addConsoleTools(UR) {
   const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
   const { CallMessage, RaiseMessage, SendMessage } = UR;
 
-  console.group(...PR('adding console debug tools'));
+  console.group(...PR('adding UR console debug functions'));
 
   TOOLS = {
     // subscribe
@@ -98,7 +98,7 @@ function addConsoleTools(UR) {
   Object.entries(TOOLS).forEach(kv => {
     const [key, f] = kv;
     if (typeof window[key] !== 'undefined') return;
-    console.log(`.. ${key}()`);
+    console.log(`• ${key}()`);
     window[key] = f;
   });
   console.groupEnd();

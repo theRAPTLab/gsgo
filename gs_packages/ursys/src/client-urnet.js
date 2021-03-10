@@ -8,7 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const NETINFO = require('./client-netinfo');
-const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
+const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagSystem');
 const { CFG_SVR_UADDR, CFG_URNET_SERVICE } = require('./ur-common');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////

@@ -18,7 +18,7 @@ import { interval } from 'rxjs';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RT-MAIN', 'TagCyan');
+const PR = UR.PrefixUtil('RT-MAIN');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////

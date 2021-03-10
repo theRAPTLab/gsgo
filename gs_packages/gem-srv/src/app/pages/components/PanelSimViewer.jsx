@@ -13,12 +13,12 @@ import PanelChrome from './PanelChrome';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('PanelSimViewer', 'TagBlue');
+const PR = UR.PrefixUtil('PanelSimViewer');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 const DBG = true;
 let ASSETS_LOADED = false;
 
-UR.SystemHook('UR/LOAD_ASSETS', () => {
+UR.OnPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {

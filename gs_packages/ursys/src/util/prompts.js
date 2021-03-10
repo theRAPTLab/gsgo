@@ -72,7 +72,7 @@ const CSS_COLORS = {
   TagBlue: `color:#000;background-color:#2bf;${CSS_PAD}`,
   TagPurple: `color:#000;background-color:#b6f;${CSS_PAD}`,
   TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
-  TagGray: `color:#fff;background-color:#999${CSS_PAD}`,
+  TagGray: `color:#fff;background-color:#999;${CSS_PAD}`,
   TagNull: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
   // COLOR BACKGROUND DARK (BROWSER ONLY)
   TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
@@ -80,6 +80,24 @@ const CSS_COLORS = {
   TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`,
   TagDkOrange: `color:white;background-color:orange;${CSS_PAD}`
 };
+
+TERM_COLORS.TagSystem = TERM_COLORS.TagGray;
+TERM_COLORS.TagURSYS = TERM_COLORS.TagBlue;
+TERM_COLORS.TagNetwork = TERM_COLORS.TagCyan;
+TERM_COLORS.TagApp = TERM_COLORS.TagPink;
+TERM_COLORS.TagTest = TERM_COLORS.TagRed;
+TERM_COLORS.TagDebug = TERM_COLORS.TagRed;
+TERM_COLORS.TagData = TERM_COLORS.TagGreen;
+TERM_COLORS.TagInput = TERM_COLORS.TagBlue;
+
+CSS_COLORS.TagSystem = CSS_COLORS.TagGray;
+CSS_COLORS.TagURSYS = CSS_COLORS.TagBlue;
+CSS_COLORS.TagNetwork = CSS_COLORS.TagCyan;
+CSS_COLORS.TagApp = CSS_COLORS.TagPink;
+CSS_COLORS.TagTest = CSS_COLORS.TagRed;
+CSS_COLORS.TagDebug = CSS_COLORS.TagDkRed;
+CSS_COLORS.TagData = CSS_COLORS.TagDkOrange;
+CSS_COLORS.TagInput = CSS_COLORS.TagDkOrange;
 
 // div console
 const HTCONSOLES = {};
