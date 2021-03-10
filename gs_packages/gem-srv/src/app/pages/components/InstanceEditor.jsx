@@ -111,12 +111,22 @@ class InstanceEditor extends React.Component {
    * @param {*} e
    */
   OnInstanceClick(e) {
-    const { modelId, isEditable } = this.state;
+    const { isEditable } = this.state;
+    if (isEditable) return; // Ignore click if editing
     // just pass it up to Map Editor so it's centralized?
     const agentId = this.GetAgentId();
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
   }
 
+  DoDeselect() {
+    let { modelId, isSelected, isEditable } = this.state;
+    const agentId = this.GetAgentId();
+    isEditable = false;
+    isSelected = false;
+    this.setState({ isEditable, isSelected });
+    // And also deselect
+    UR.RaiseMessage('NET:INSTANCE_DESELECT', { modelId, agentId });
+  }
   /**
    * Enables or disables editing based on 'data' passed
    * @param {object} data { agentId }
@@ -132,10 +142,7 @@ class InstanceEditor extends React.Component {
       isSelected = true;
     } else if (isEditable) {
       // NOT for us, so disable
-      isEditable = false;
-      isSelected = false;
-      // And also deselect
-      UR.RaiseMessage('NET:INSTANCE_DESELECT', { modelId, agentId });
+      this.DoDeselect();
     }
     this.setState({ isEditable, isSelected });
   }
