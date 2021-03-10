@@ -49,6 +49,9 @@ function Stage() {
     console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
     console.log(...PR('Simulation Loaded'));
+    console.log(...PR('Staging Simulation'));
+    await GAME_LOOP.executePhase('GLOOP_STAGED');
+    console.log(...PR('Simulation Staged'));
   })();
 }
 
