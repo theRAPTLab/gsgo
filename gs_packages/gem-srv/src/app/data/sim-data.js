@@ -99,7 +99,7 @@ class SimData {
       { id: 'salt', label: 'Salt' },
       { id: 'bees', label: 'Bees' }
     ];
-    UR.RaiseMessage('NET:UPDATE_MODELS', { models });
+    UR.RaiseMessage('*:UPDATE_MODELS', { models });
   }
 
   /**
@@ -111,7 +111,7 @@ class SimData {
   }
   SendSimDataModel(modelId) {
     let model = this.GetSimDataModel(modelId);
-    UR.RaiseMessage('NET:UPDATE_MODEL', { model });
+    UR.RaiseMessage('*:UPDATE_MODEL', { model });
   }
 
   /// INSTANCE UTILS ////////////////////////////////////////////////////////////

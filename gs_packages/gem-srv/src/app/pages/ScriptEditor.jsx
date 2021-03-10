@@ -67,7 +67,7 @@ class ScriptEditor extends React.Component {
     // Sent by PanelSelectAgent
     UR.HandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('*:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     // REVIEW
@@ -118,7 +118,7 @@ class ScriptEditor extends React.Component {
     this.UnRegisterInstances();
     UR.UnhandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('*:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
@@ -126,7 +126,7 @@ class ScriptEditor extends React.Component {
   /**
    * This requests model data from Map Editor or Mission Control's
    * SimData module.
-   * sim-data will respond with `NET:UPDATE_MODEL
+   * sim-data will respond with `*:UPDATE_MODEL
    * which is handled by OnSimDataUpdate, below.
    *
    * REVIEW: Should this be done with a callback instead?

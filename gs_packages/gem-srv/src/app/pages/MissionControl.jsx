@@ -93,7 +93,7 @@ class MissionControl extends React.Component {
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('*:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
 
     // Instance Interaction Handlers
@@ -144,7 +144,7 @@ class MissionControl extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('*:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);

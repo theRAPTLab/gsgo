@@ -48,8 +48,8 @@ const MSGLIST = [
 'SCRIPT_EVENT', { type: 'Tick' }
 'SCRIPT_SRC_CHANGED', updata
 
-'NET:UPDATE_MODELS', { models }
-'NET:UPDATE_MODEL', { model }
+'*:UPDATE_MODELS', { models }
+'*:UPDATE_MODEL', { model }
 '*:REQUEST_MODEL', { modelId }
 'HACK_DEBUG_MESSAGE', { nessage, line }
 'HACK_SELECT_AGENT', id
