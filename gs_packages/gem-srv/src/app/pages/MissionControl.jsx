@@ -48,10 +48,6 @@ const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('blueprints', '50% auto 150px'); // columns
-PANEL_CONFIG.set('sim', '15% auto 150px'); // columns
-
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
 PANEL_CONFIG.set('edit', '15% auto 0px'); // columns
@@ -132,6 +128,10 @@ class MissionControl extends React.Component {
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
+
+    // No model selected, go back to login to select model
+    if (!modelId) window.location = '/app/login';
+
     this.setState({ modelId });
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS

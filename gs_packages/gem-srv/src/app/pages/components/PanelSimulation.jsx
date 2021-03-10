@@ -153,6 +153,9 @@ class PanelSimulation extends React.Component {
     //    model data is loaded by the parent container: MissionControl or MapEditor
     const { model } = this.props;
 
+    // Skip if no model is loaded
+    if (!model) return;
+
     // 2. Compile All Agents
     const scripts = model.scripts;
     const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
