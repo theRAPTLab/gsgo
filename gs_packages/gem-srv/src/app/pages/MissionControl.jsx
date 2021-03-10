@@ -23,10 +23,11 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelMap from './components/PanelMap';
 import PanelSimulation from './components/PanelSimulation';
+import MissionMapEditor from './MissionMapEditor';
+import MissionRun from './MissionRun';
+
 import PanelPlayback from './components/PanelPlayback';
-import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 
@@ -51,6 +52,10 @@ PANEL_CONFIG.set('map', '50% auto 150px'); // columns
 PANEL_CONFIG.set('blueprints', '50% auto 150px'); // columns
 PANEL_CONFIG.set('sim', '15% auto 150px'); // columns
 
+PANEL_CONFIG.set('run', '15% auto 150px'); // columns
+PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
+PANEL_CONFIG.set('edit', '15% auto 0px'); // columns
+
 const StyledToggleButton = withStyles(theme => ({
   root: {
     color: 'rgba(0,156,156,1)',
@@ -69,6 +74,7 @@ const StyledToggleButton = withStyles(theme => ({
     }
   }
 }))(ToggleButton);
+
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
@@ -76,21 +82,51 @@ class MissionControl extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'sim',
+      panelConfiguration: 'run',
       message: '',
       modelId: '',
       model: {},
-      instances: []
+      instances: [],
+      runIsMinimized: true
     };
+
+    // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
-    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
-    this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
-    this.OnPanelClick = this.OnPanelClick.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
+    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.CallSimPlaces = this.CallSimPlaces.bind(this);
+    this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+
+    // Instance Interaction Handlers
+    this.HandleDragEnd = this.HandleDragEnd.bind(this);
+    this.HandleSimInstanceClick = this.HandleSimInstanceClick.bind(this);
+    this.HandleSimInstanceHoverOver = this.HandleSimInstanceHoverOver.bind(this);
+    this.HandleSimInstanceHoverOut = this.HandleSimInstanceHoverOut.bind(this);
+    UR.HandleMessage('DRAG_END', this.HandleDragEnd);
+    UR.HandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
+
+    // Panel UI Configuration
     this.OnToggleRunEdit = this.OnToggleRunEdit.bind(this);
+    this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
+    this.OnPanelClick = this.OnPanelClick.bind(this);
+
+    // System Hooks
+    UR.SystemHook('SIM/READY', () => {
+      console.error('sim/READY!');
+      const { modelId } = this.state;
+      this.LoadModel(modelId);
+    });
+    // TEST: Probably not necessary so long as SIM/READY is only called once
+    UR.SystemHook('SIM/STAGED', () => {
+      console.warn('SIM/STAGED!');
+      // const { modelId } = this.state;
+      // this.LoadModel(modelId);
+    });
   }
 
   componentDidMount() {
@@ -100,9 +136,6 @@ class MissionControl extends React.Component {
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
-
-    // Load Model Data
-    this.LoadModel(modelId);
   }
 
   componentDidCatch(e) {
@@ -111,26 +144,46 @@ class MissionControl extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
+    UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// DATA UPDATE HANDLERS
+  ///
   LoadModel(modelId) {
-    // HACK
-    // This requests model data from sim-data.
-    // sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
-    // REVIEW: Should the response come only to MissionControl and not be
-    //         widely broadcast?
-    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
+    // Direct SimData API Call
+    // This bypasses OnSimDataUpdate
+    const model = SimData.GetModel(modelId);
+    this.setState(
+      { model },
+      () => this.CallSimPlaces() // necessary to update screen after overall model updates
+    );
   }
-
   OnSimDataUpdate(data) {
-    this.setState({ model: data.model });
+    this.setState(
+      { model: data.model },
+      // Need to call SimPlaces here after prop updates or agents won't reposition
+      () => this.CallSimPlaces()
+    );
   }
-
-  OnInstanceClick(instanceName) {
-    console.log('clicked on', instanceName);
+  /**
+   * User has submitted a new script
+   * @param {object} data { script }
+   */
+  DoScriptUpdate(data) {
+    const firstline = data.script.match(/.*/)[0];
+    this.setState(state => ({
+      message: `${state.message}Received script ${firstline}\n`
+    }));
   }
-
+  CallSimPlaces() {
+    UR.RaiseMessage('*:SIM_PLACES');
+  }
   /**
    * Handler for `NET:INSPECTOR_UPDATE`
    * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
@@ -156,31 +209,75 @@ class MissionControl extends React.Component {
     this.setState({ instances });
   }
 
-  OnPanelClick(id) {
-    this.setState({
-      panelConfiguration: id
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// INSTANCE INTERACTION HANDLERS
+  ///
+  HandleDragEnd(data) {
+    const agent = data.agent;
+    console.log('dropped', agent.prop.x.value, agent.prop.y.value);
+    const { modelId } = this.state;
+    const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
+    const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
+    SimData.InstanceUpdatePosition({
+      modelId,
+      instanceName: agent.meta.name,
+      updatedData: { x, y }
     });
   }
+  /**
+   * User clicked on agent instance in simulation view
+   * If Map Editor is open, then when the user clicks
+   * on an instance in the simulation view, we want to
+   * select it for editing.
+   * @param {object} data { agentId }
+   */
+  HandleSimInstanceClick(data) {
+    const { modelId } = this.state;
+    SimData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+  }
+  HandleSimInstanceHoverOver(data) {
+    const { modelId } = this.state;
+    SimData.InstanceHoverOver({ modelId, agentId: data.agentId });
+  }
+  HandleSimInstanceHoverOut(data) {
+    const { modelId } = this.state;
+    SimData.InstanceHoverOut({ modelId, agentId: data.agentId });
+  }
 
-  DoScriptUpdate(data) {
-    const firstline = data.script.match(/.*/)[0];
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// PANEL UI CONFIGURATION
   ///
   OnToggleRunEdit(e, val) {
     this.setState({ panelConfiguration: val });
   }
+  OnToggleNetworkMapSize() {
     this.setState(state => ({
-      message: `${state.message}Received script ${firstline}\n`
+      panelConfiguration: state.panelConfiguration === 'run' ? 'run-map' : 'run',
+      runIsMinimized: !state.runIsMinimized
     }));
   }
+  OnPanelClick(id) {
+    this.setState({
+      panelConfiguration: id
+    });
+  }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// RENDER
+  ///
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
    *  The base styles from page-styles are overidden with inline styles to
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, message, modelId, model, instances } = this.state;
+    const {
+      panelConfiguration,
+      message,
+      modelId,
+      model,
+      instances,
+      runIsMinimized
+    } = this.state;
     const { classes } = this.props;
 
     const agents =
@@ -207,6 +304,17 @@ class MissionControl extends React.Component {
         </ToggleButtonGroup>
       </div>
     );
+
+    const jsxLeft =
+      panelConfiguration === 'edit' ? (
+        <MissionMapEditor model={model} />
+      ) : (
+        <MissionRun
+          model={model}
+          toggleMinimized={this.OnToggleNetworkMapSize}
+          minimized={runIsMinimized}
+        />
+      );
 
     return (
       <div
@@ -236,20 +344,24 @@ class MissionControl extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelMap
-            id="map"
-            isMinimized={panelConfiguration !== 'map'}
-            onClick={this.OnPanelClick}
-          />
-          <PanelBlueprints id="blueprints" agents={agents} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows:
+                panelConfiguration === 'edit' ? '60px auto' : '60px auto 100px',
+              overflow: 'hidden'
+            }}
+          >
             {jsxRunOrEdit}
+            {jsxLeft}
+          </div>
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <PanelPlayback id="playback" />
+            <PanelPlayback id="playback" model={model} />
             <PanelInstances id="instances" instances={instances} />
           </div>
         </div>
