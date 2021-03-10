@@ -53,7 +53,7 @@ class InstanceEditor extends React.Component {
   componentDidMount() {}
 
   componentWillUnmount() {
-    UR.UnandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
@@ -127,6 +127,10 @@ class InstanceEditor extends React.Component {
     // And also deselect
     UR.RaiseMessage('NET:INSTANCE_DESELECT', { modelId, agentId });
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// URSYS Events
+  ///
   /**
    * Enables or disables editing based on 'data' passed
    * @param {object} data { agentId }
@@ -146,28 +150,28 @@ class InstanceEditor extends React.Component {
     }
     this.setState({ isEditable, isSelected });
   }
-
   HandleHoverOver(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
       this.setState({ isHovered: true });
     }
   }
-
   HandleHoverOut(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
       this.setState({ isHovered: false });
     }
   }
-
   HandleDeselect(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
-      this.setState({ isSelected: false });
+      this.setState({ isEditable: false, isSelected: false });
     }
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Local Events (on InstanceEditor container)
+  ///
   OnHoverOver() {
     const agentId = this.GetAgentId();
     UR.RaiseMessage('SIM_INSTANCE_HOVEROVER', { agentId });
