@@ -269,7 +269,15 @@ It's much clearer now how this works. The critical bits that pertain to network 
   * **after Promise.all() in the same call invocation** the returned values are in an array of objects that are the returned values from remotes. These are all merged into a single return object currently.
   * **at the end of the call invocation** the original packet has its data payload updated and`returnTransaction()` sends the packet back to its originator.
 
+## MAR 09 TUE - Short Day of Debugging
 
+To clean up the logic in the server, I split out the server-side URNET client API into its own module `server-message-api` . Also added ur_handle and ur_unhandle to the dbg interface for ursys.
+
+**Bugs** known with **Call**
+
+* [ ] if an implementor of a NET:MESSAGE also tries to call it on remotes (like a common service channel) the server never returns the transaction to the client and instead goes into a loop
+* [ ] local call does not seem to return data
+* [ ] defining a net:message after urconnect has happened doesn't update the list. Should add this provision in the updated protocol
 
 
 ---

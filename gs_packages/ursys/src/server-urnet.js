@@ -13,36 +13,37 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
-const { CFG_SVR_UADDR, PRE_SYS_MESG } = require('./ur-common');
+const { CFG_SVR_UADDR } = require('./ur-common');
 const {
-  SVR_HANDLERS,
-  NET_HANDLERS,
   InitializeNetInfo,
-  SocketLookup,
   SocketAdd,
   SocketDelete,
-  GetSocketCount
+  GetSocketCount,
+  ServerHandlerPromises,
+  RemoteHandlerPromises
 } = require('./server-datacore');
+const { NetHandle, LocalSignal } = require('./server-message-api');
 const { PKT_RegisterHandler } = require('./svc-reg-handlers');
 const {
   PKT_SessionLogin,
   PKT_SessionLogout,
   PKT_Session
 } = require('./svc-session-v1');
+const {
+  PKT_ProtocolDirectory,
+  PKT_DeviceDirectory
+} = require('./svc-net-directory');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = { init: true, calls: false, client: true };
 const ERR_SS_EXISTS = 'socket server already created';
-const ERR_INVALID_DEST = "couldn't find socket with provided address";
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// sockets
 let mu_wss; // websocket server
-// module object
-const URNET = {};
 
 /// MESSAGE BROKER STARTUP API ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,7 +53,7 @@ const URNET = {};
  *  @param {string} [options.uaddr] - default in ur-config
  *  @returns {Object} complete configuration object
  */
-URNET.StartNetwork = (options = {}) => {
+function StartNetwork(options = {}) {
   if (!options.runtimePath) {
     return Error('runtimePath required to start URSYS SERVER');
   }
@@ -65,19 +66,21 @@ URNET.StartNetwork = (options = {}) => {
 
   // REGISTER SERVER-BASED MESSAGE HANDLERS
   LOGGER.Write('registering network services');
-  URNET.NetSubscribe('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
-  URNET.NetSubscribe('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
-  URNET.NetSubscribe('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
-  URNET.NetSubscribe('NET:SRV_SESSION', PKT_Session);
-  URNET.NetSubscribe('NET:SRV_REFLECT', PKT_Reflect);
-  URNET.NetSubscribe('NET:SRV_SERVICE_LIST', PKT_ServiceList);
-  URNET.NetSubscribe('NET:SRV_PROTOCOLS', PKT_ServiceDebugger);
+  NetHandle('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  NetHandle('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
+  NetHandle('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
+  NetHandle('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
+  NetHandle('NET:SRV_SESSION', PKT_Session);
+  NetHandle('NET:SRV_REFLECT', PKT_Reflect);
+  NetHandle('NET:SRV_SERVICE_LIST', PKT_ServiceList);
+  // NEW DIRECTORY STUFF
+  NetHandle('NET:SRV_PROTOCOLS', PKT_ProtocolDirectory);
+  NetHandle('NET:SRV_DEVICES', PKT_DeviceDirectory);
   // START SOCKET SERVER
   m_StartSocketServer(options);
   //
   return options;
-};
+}
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** start socket server message broker */
@@ -96,7 +99,7 @@ function m_StartSocketServer(options) {
         socket.on('message', json => ProcessMessage(socket, json));
         socket.on('close', () => {
           const uaddr = SocketDelete(socket); // tell subscribers socket is gone
-          URNET.LocalSignal('SRV_SOCKET_DELETED', { uaddr });
+          LocalSignal('SRV_SOCKET_DELETED', { uaddr });
         }); // end on 'connection'
       });
     });
@@ -106,111 +109,6 @@ function m_StartSocketServer(options) {
     process.exit(1);
   }
 }
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** local message packet handler debug utility */
-function PKT_ServiceDebugger(pkt) {
-  TERM(`got ${pkt.getInfo()}`);
-  return { status: 'received' };
-}
-
-/// SERVER-SIDE MESSAGING API /////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Registers SERVER-side message handlers that are reachable from remote
- * clients. Server-side handlers use their own map.
- * @param {string} mesgName message to register a handler for
- * @param {function} handlerFunc function receiving 'data' object
- */
-URNET.NetSubscribe = (mesgName, handlerFunc) => {
-  if (typeof handlerFunc !== 'function') {
-    TERM(`${mesgName} subscription failure`);
-    throw Error('arg2 must be a function');
-  }
-  let handlers = SVR_HANDLERS.get(mesgName);
-  if (!handlers) {
-    handlers = new Set();
-    SVR_HANDLERS.set(mesgName, handlers);
-  }
-  handlers.add(handlerFunc);
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Revokes a handler function from a registered message. The handler function
- * object must be the same one used to register it.
- * @param {string} mesgName message to unregister a handler for
- * @param {function} handlerFunc function originally registered
- */
-URNET.NetUnsubscribe = (mesgName, handlerFunc) => {
-  if (mesgName === undefined) {
-    SVR_HANDLERS.clear();
-  } else if (handlerFunc === undefined) {
-    SVR_HANDLERS.delete(mesgName);
-  } else {
-    const handlers = SVR_HANDLERS.get(mesgName);
-    if (handlers) {
-      handlers.delete(handlerFunc);
-    }
-  }
-  return this;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Server-side method for invoking a remote message. It executes asynchronously
- * but uses async/await so it can be used in a synchronous style to retrieve
- * values.
- * @param {string} mesgName message to unregister a handler for
- * @param {function} handlerFunc function originally registered
- * @return {Array<Object>} array of returned data items
- */
-URNET.NetCall = async (mesgName, data) => {
-  let pkt = new NetPacket(mesgName, data);
-  let promises = m_PromiseRemoteHandlers(pkt);
-  if (DBG.call)
-    TERM(
-      `${pkt.getInfo()} NETCALL ${pkt.getMessage()} to ${promises.length} remotes`
-    );
-  /// MAGICAL ASYNC/AWAIT BLOCK ///////
-  const results = await Promise.all(promises);
-  /// END MAGICAL ASYNC/AWAIT BLOCK ///
-  // const result = Object.assign({}, ...resArray);
-  return results; // array of data objects
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Server-side method for sending a remote message. It fires the messages but
- * doesn't do anything with the returned promises. Use for notifying remote
- * message handlers.
- * @param {string} mesgName message to unregister a handler for
- * @param {function} handlerFunc function originally registered
- */
-URNET.NetPublish = (mesgName, data) => {
-  let pkt = new NetPacket(mesgName, data);
-  let promises = m_PromiseRemoteHandlers(pkt);
-  // we don't care about waiting for the promise to complete
-  if (DBG.call)
-    TERM(
-      `${pkt.getInfo()} NETSEND ${pkt.getMessage()} to ${promises.length} remotes`
-    );
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Alias for NetPublish(), kept for conceptual symmetry to the client-side URSYS
- * interface. It is not needed because the server never mirrors NetPublish to
- * itself for signaling purposes.
- * @param {string} mesgName message to unregister a handler for
- * @param {function} handlerFunc function originally registered
- */
-URNET.NetSignal = (mesgName, data) => {
-  URNET.NetPublish(mesgName, data);
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Server-side local server publishing. It executes synchronously, unlike the
- *  remote version. Doesn't return values.
- */
-URNET.LocalSignal = (mesgName, data) => {
-  const handlers = SVR_HANDLERS.get(mesgName);
-  if (!handlers) return;
-  const results = [];
-  handlers.forEach(hFunc => {
-    results.push(hFunc(data));
-  });
-};
-
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a JSON packet to the just-connected client with its assigned URSYS
  * address (UADDR) and the server's UADDR.
@@ -280,18 +178,18 @@ async function m_RouteMessage(socket, pkt) {
   // (2) If we got this far, it's a new message.
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.
-  let promises = m_PromiseServerHandlers(pkt);
+  let promises = ServerHandlerPromises(pkt);
 
   // (3) If the server doesn't implement any promises, check if there are
   // any remotes that have registered one.
-  if (promises.length === 0) promises = m_PromiseRemoteHandlers(pkt);
+  if (promises.length === 0) promises = RemoteHandlerPromises(pkt);
 
   // (3a) If there were NO HANDLERS defined for the incoming message, then
   // this is an error. If the message is a CALL, then report an error back to
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
     const out = `${pkt.getSourceAddress()} can't find '${pkt.getMessage()}'`;
-    const info = 'Using Publish/Call? They can not target themselves.';
+    const info = 'check (1) remote is offline or (2) using send instead of raise';
     if (DBG.calls) TERM.warn(out, info);
     // return transaction to resolve callee
     pkt.setData({
@@ -343,11 +241,11 @@ async function m_RouteMessage(socket, pkt) {
 
   // (3g) ...then return the combined data using NetPacket.ReturnTransaction()
   // on the caller's socket, which we have retained through the magic of closures!
-  const dbgData = JSON.stringify(data);
   pkt.setData(data);
+  pkt.transactionReturn(socket);
+  const dbgData = JSON.stringify(data);
   if (DBG_NOSRV)
     TERM(`'${pkt.getMessage()}' returning transaction data ${dbgData}`);
-  pkt.transactionReturn(socket);
 }
 
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -356,85 +254,16 @@ async function m_RouteMessage(socket, pkt) {
  * @param {Object} socket messaging socket
  * @param {NetPacket} pkt a NetPacket object received from socket
  */
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** KEY HELPER that returns an array of Promises that call the functions
- * associated with a SERVER-based message handler. Handler functions must return
- * a data object. Unlike the remote version of this function, this executes
- * synchronously because there is no network communication required.
- * @param {NetPacket} pkt a NetPacket object to use as message key
- * @returns {Array<Promise>} promises objects to use with await
- */
-function m_PromiseServerHandlers(pkt) {
-  let mesgName = pkt.getMessage();
-  const handlers = SVR_HANDLERS.get(mesgName);
-  /// create promises for all registered handlers in the set
-  let promises = [];
-  if (!handlers) return promises;
-  handlers.forEach(hFunc => {
-    let p = new Promise((resolve, reject) => {
-      let retval = hFunc(pkt);
-      if (retval === undefined)
-        throw Error(
-          `'${mesgName}' message handler MUST return object or error string`
-        );
-      if (typeof retval !== 'object') reject(retval);
-      else resolve(retval);
-    });
-    promises.push(p);
-  }); // handlers forEach
-  return promises;
-}
-///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** KEY HELPER for handling "forwarded calls" to remote URSYS devices on behalf
- * of an incoming call that isn't implemented on the server. It works by cloning
- * the original NetPacket packet and sending it to removes via
- * NetPacket.PromiseTransaction(), returning an array of promises that resolve
- * when NetPacket.CompleteTransaction() is invoked on the returned data. Use
- * await Promise.all(promises) to wait.
- * @param {NetPacket} pkt a NetPacket object to use as message key
- * @returns {Array<Promise>} promises objects to use with Promise.all()
- */
-function m_PromiseRemoteHandlers(pkt) {
-  // debugging values
-  let s_uaddr = pkt.getSourceAddress();
-  // logic values
-  let mesgName = pkt.getMessage();
-  let type = pkt.getType();
-  const publishOnly = type === 'msend' || type === 'mcall';
 
-  // generate the list of promises
-  let promises = [];
-  // disallow NET:SYSTEM published messages from remote clients
-  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_SYS_MESG)) return promises;
-  // check for handlers
-  let handlers = NET_HANDLERS.get(mesgName);
-  if (!handlers) return promises;
-
-  // if there are handlers to handle, create a NetPacket
-  // clone of this packet and forward it and save the promise
-  handlers.forEach(d_uaddr => {
-    const isOrigin = s_uaddr === d_uaddr;
-    // we want to do this only when
-    if (publishOnly && isOrigin) {
-      if (DBG.calls) TERM(`skipping msend|mcall from ${s_uaddr} to ${d_uaddr}`);
-    } else {
-      let d_sock = SocketLookup(d_uaddr);
-      if (d_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${d_uaddr}`);
-      let newpkt = new NetPacket(pkt); // clone packet data to new packet
-      newpkt.makeNewId(); // make new packet unique
-      newpkt.copySourceAddress(pkt); // clone original source address
-      promises.push(newpkt.transactionStart(d_sock));
-    }
-  }); // handlers.forEach
-  return promises;
-}
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** helper debug output used by m_RouteMessage() */
 function log_PktDirection(pkt, direction, promises) {
   if (promises.length < 1) return;
   const ents = promises.length > 1 ? 'handlers' : 'handler';
   TERM(
-    `${pkt.Info()} ${direction} '${pkt.Message()}' (${promises.length} ${ents})`
+    `${pkt.getInfo()} ${direction} '${pkt.getMessage()}' (${
+      promises.length
+    } ${ents})`
   );
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -442,12 +271,12 @@ function log_PktDirection(pkt, direction, promises) {
 function log_PktTransaction(pkt, status, promises) {
   const src = pkt.getSourceAddress();
   if (promises && promises.length) {
-    TERM(`${src} >> '${pkt.Message()}' ${status} ${promises.length} Promises`);
+    TERM(`${src} >> '${pkt.getMessage()}' ${status} ${promises.length} Promises`);
   } else {
-    TERM(`${src} << '${pkt.Message()}' ${status}`);
+    TERM(`${src} << '${pkt.getMessage()}' ${status}`);
   }
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = URNET;
+module.exports = { StartNetwork };

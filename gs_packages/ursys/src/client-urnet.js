@@ -13,7 +13,7 @@ const { CFG_SVR_UADDR, CFG_URNET_SERVICE } = require('./ur-common');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { connect: false, hello: true, handle: false, reg: false };
+const DBG = { connect: true, hello: true, handle: false, reg: false };
 ///
 const ENDPOINT_NAME = 'MessagerEndpoint';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
@@ -109,7 +109,7 @@ function m_HandleMessage(msgEvent) {
   // us to handle.
   let data = pkt.getData();
   let type = pkt.getType();
-  let dbgout = DBG.handle && !msg.startsWith('NET:SRV_');
+  let dbgout = DBG.handle && !msg.startsWith('NET:SRV_'); // don't log server messages
   // (3) handle each packet type as necessary
   switch (type) {
     case 'state':

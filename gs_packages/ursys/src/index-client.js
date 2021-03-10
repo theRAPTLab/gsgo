@@ -133,6 +133,9 @@ const UR = {
   // FORWARDED DEBUG UTILITY
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);
+  },
+  addConsoleToolHandlers: (ur = UR) => {
+    DBGTEST.addConsoleToolHandlers(ur);
   }
 };
 module.exports = UR;

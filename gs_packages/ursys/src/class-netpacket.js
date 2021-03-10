@@ -67,30 +67,30 @@ let m_transactions = new Map(); // keep track of returning packets
 /// URSYS NETMESSAGE CLASS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Class NetPacket
- * Container for messages that can be sent across the network to the URSYS
- * server.
- * @typedef {Object} NetPacket
- * @property {string} msg - message
- * @property {Object} data - message data
- * @property {string} id - internal id
- * @property {string} type - packet operation type (1way,2way,sync)
- * @property {string} rmode - transaction direction
- * @property {string} memo - human-readable debug note space
- * @property {string} seqnum - sequence number for transaction
- * @property {Array} seqlog - array of seqnums, starting with originating address
- * @property {string} s_uid - originating browser internal endpoint
- * @property {string} s_uaddr - originating browser address
- * @property {string} s_group - group session key
+ *  Container for messages that can be sent across the network to the URSYS
+ *  server.
+ *  @typedef {Object} NetPacket
+ *  @property {string} msg - message
+ *  @property {Object} data - message data
+ *  @property {string} id - internal id
+ *  @property {string} type - packet operation type (1way,2way,sync)
+ *  @property {string} rmode - transaction direction
+ *  @property {string} memo - human-readable debug note space
+ *  @property {string} seqnum - sequence number for transaction (number of hops)
+ *  @property {Array} seqlog - array of uaddr, starting with originator address
+ *  @property {string} s_uid - originating browser internal endpoint
+ *  @property {string} s_uaddr - originating browser address
+ *  @property {string} s_group - group session key
  */
 class NetPacket {
   /** constructor
-   * @param {string|object} msg message name, or an existing plain object to coerce into a NetPacket
-   * @param {Object} data data packet to send
-   * @param {string} type the message (defined in PACKET_TYPES)
+   *  @param {string|object} msg message name, or an existing plain object to coerce into a NetPacket
+   *  @param {Object} data data packet to send
+   *  @param {string} type the message (defined in PACKET_TYPES)
    */
   constructor(msg, data, type) {
     // OPTION 1
-    // create NetPacket from (generic object)
+    // reconstruct NetPacket from (generic object)
     if (typeof msg === 'object' && data === undefined) {
       // make sure it has a msg and data obj
       if (typeof msg.msg !== 'string' || typeof msg.data !== 'object') {
@@ -103,7 +103,7 @@ class NetPacket {
       return this;
     }
     // OPTION 2
-    // create NetPacket from JSON-encoded string
+    // reconstruct NetPacket from JSON-encoded string
     if (typeof msg === 'string' && data === undefined) {
       let obj = JSON.parse(msg);
       Object.assign(this, obj);
@@ -137,16 +137,16 @@ class NetPacket {
 
   /// ACCESSSOR METHODS ///////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.Type() returns the TRANSACTION_TYPE of this packet
+  /** Returns the TRANSACTION_TYPE of this packet
    */
   getType() {
     return this.type;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.Type() returns true if type matches
-   * @param {string} type the type to compare with the packet's type
-   * @returns {boolean}
+  /** Returns true if type matches
+   *  @param {string} type the type to compare with the packet's type
+   *  @returns {boolean}
    */
   isType(type) {
     return this.type === type;
@@ -161,15 +161,15 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** returns the message string of form CHANNEL:MESSAGE, where CHANNEL:
-   * is optional
+  /** Returns the message string of form CHANNEL:MESSAGE, where CHANNEL:
+   *  is optional
    */
   getMessage() {
     return this.msg;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** returns MESSAGE without the CHANNEL: prefix. The channel (e.g.
-   * NET, LOCAL, STATE) is also set true
+  /** Returns MESSAGE without the CHANNEL: prefix. The channel (e.g. NET, LOCAL,
+   *  STATE) is also set true
    */
   getMessageParts() {
     return NetPacket.ExtractChannel(this.msg);
@@ -183,22 +183,21 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.IsServerMessage() is a convenience function return true if
-   * server message */
+  /** Convenience function return true if server message */
   isServerMessage() {
     return this.msg.startsWith(PRE_SVR_MESG); // ur-common default NET:SRV_
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.SetMessage() sets the message field
+  /** Sets the message field
    */
   setMessage(msgstr) {
     this.msg = msgstr;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.Data() returns the entire data payload or the property within
-   * the data payload (can return undefined if property doesn't exist)
+  /** Returns the entire data payload or the property within the data payload
+   *  (can return undefined if property doesn't exist)
    */
   getData(prop) {
     if (!prop) return this.data;
@@ -207,8 +206,7 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /**
-   * Convenience method to set data object entirely
+  /** Convenience method to set data object entirely
    */
   setData(propOrVal, val) {
     if (typeof propOrVal === 'object') {
@@ -223,7 +221,7 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.Memo() returns the 'memo' field of the packet */
+  /** Returns the 'memo' field of the packet */
   getMemo() {
     return this.memo;
   }
@@ -233,14 +231,13 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.JSON() returns a stringified JSON version of the packet. */
+  /** Returns a stringified JSON version of the packet. */
   json() {
     return JSON.stringify(this);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.SourceGroupId() return the session group id associated with
-   * this packet.
+  /** Return the session group id associated with this packet.
    */
   getSourceGroupId() {
     return this.s_group;
@@ -248,18 +245,17 @@ class NetPacket {
 
   /// TRANSACTION SUPPORT /////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.SeqNum() returns a non-positive integer that is the number of
-   * times this packet was reused during a transaction (e.g. 'mcall' types).
+  /** Returns a non-positive integer that is the number of times this packet was
+   *  reused during a transaction (e.g. 'mcall' types).
    */
   getSeqNum() {
     return this.seqnum;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.SourceAddress() returns the originating browser of the packet,
-   * which is the socketname maintained by the URSYS server. It is valid only
-   * after the URSYS server has received it, so it is invalid when a NetPacket
-   * packet is first created.
+  /** Returns the originating browser of the packet, which is the socketname
+   *  maintained by the URSYS server. It is valid only after the URSYS server has
+   *  received it, so it is invalid when a NetPacket packet is first created.
    */
   getSourceAddress() {
     /*/ NOTE
@@ -286,10 +282,10 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.CopySourceAddress() copies the source address of sets the
-   * current address to the originating URSYS browser address. Used by server
-   * forwarding and returning packets between remotes.
-   * @param {NetPacket} pkt - the packet to copy source from
+  /** Copies the source address of sets the current address to the originating
+   *  URSYS browser address. Used by server forwarding and returning packets
+   *  between remotes.
+   *  @param {NetPacket} pkt - the packet to copy source from
    */
   copySourceAddress(pkt) {
     if (pkt.constructor.name !== 'NetPacket') throw Error(ERR_NOT_PACKET);
@@ -297,9 +293,9 @@ class NetPacket {
   }
 
   /// - - - - - - - - server- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.Info() returns debug information about the packet
-   * @param {string} key - type of debug info (always 'src' currently)
-   * @returns {string} source browser + group (if set)
+  /** Returns debug information about the packet
+   *  @param {string} key - type of debug info (always 'src' currently)
+   *  @returns {string} source browser + group (if set)
    */
   getInfo(key) {
     switch (key) {
@@ -312,9 +308,9 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.MakeNewID() is a utility method that generates a unique id for
-   * each NetPacket packet. When combined with s_uaddr and s_srcuid, this gives
-   * a packet a unique ID across the entire URSYS network.
+  /** A utility method that generates a unique id for each NetPacket packet.
+   * When combined with s_uaddr and s_srcuid, this gives a packet a unique ID
+   * across the entire URSYS network.
    * @returns {string} unique id
    */
   makeNewId() {
@@ -324,10 +320,10 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.SocketSend() is a convenience method to let packets 'send
-   * themselves' to the network via the URSYS server.
-   * @param {Object=m_socket} socket - web socket object. m_socket
-   * is defined only on browsers; see NetPacket.GlobalSetup()
+  /** Convenience method to let packets 'send themselves' to the network via the
+   *  URSYS server.
+   *  @param {Object=m_socket} socket - web socket object. m_socket is defined
+   *  only on browsers; see NetPacket.GlobalSetup()
    */
   socketSend(socket = m_netsocket) {
     if (m_mode === M_ONLINE || m_mode === M_INIT) {
@@ -352,12 +348,11 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.PromiseTransaction() maps a packet to a return handler using a
-   * unique key. This key allows an incoming packet to be mapped back to the
-   * caller even if it is technically a different object received over the
-   * network.
-   * @param {Object=m_socket} socket - web socket object. m_socket is defined
-   * only on browsers; see NetPacket.GlobalSetup()
+  /** Map a packet to a return handler using a unique key. This key allows an
+   *  incoming packet to be mapped back to the caller even if it is technically a
+   *  different object received over the network.
+   *  @param {Object=m_socket} socket - web socket object. m_socket is defined
+   *  only on browsers; see NetPacket.GlobalSetup()
    */
   transactionStart(socket = m_netsocket) {
     if (m_mode === M_STANDALONE) {
@@ -390,24 +385,22 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.RoutingMode() returns the direction of the packet to a
-   * destination handler (req) or back to the origin (res).  */
+  /** Returns the direction of the packet to a destination handler (req) or back
+   *  to the origin (res).  */
   getRoutingMode() {
     return this.rmode;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.IsRequest() returns true if this packet is one being sent
-   * to a remote handler
+  /** Returns true if this packet is one being sent to a remote handler
    */
   isRequest() {
     return this.rmode === 'req';
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.IsResponse() returns true if this is a packet
-   * being returned from a remote handler
-   * @returns {boolean} true if this is a transaction response
+  /** Returns true if this is a packet being returned from a remote handler
+   *  @returns {boolean} true if this is a transaction response
    */
   isResponse() {
     return this.rmode === 'res';
@@ -416,8 +409,8 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.IsTransaction() tests whether the packet is a response to a
-   * call that was sent out previously.
+  /** Tests whether the packet is a response to a call that was sent out
+   *  previously.
    */
   isTransaction() {
     return (
@@ -433,11 +426,11 @@ class NetPacket {
   }
 
   ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.ReturnTransaction() is used to send a packet back to its
-   * origin. It saves the current browser address (stored in NetPacket.UADDR),
-   * sets the direction of the packet, and puts it on the socket.
-   * @param {Object=m_socket} socket - web socket object. m_socket is defined
-   * only on browsers; see NetPacket.GlobalSetup()
+  /** Used to send a packet back to its origin. It saves the current browser
+   *  address (stored in NetPacket.UADDR), sets the direction of the packet, and
+   *  puts it on the socket.
+   *  @param {Object=m_socket} socket - web socket object. m_socket is defined
+   *  only on browsers; see NetPacket.GlobalSetup()
    */
   transactionReturn(socket = m_netsocket) {
     // global m_netsocket is not defined on server, since packets arrive on multiple sockets
@@ -451,10 +444,9 @@ class NetPacket {
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** NetPacket.CompleteTransaction() is called when a packet is received back
-   * from the remote handler. At this point, the original caller needs to be
-   * informed via the saved function handler created in
-   * NetPacket.PromiseTransaction().
+  /** Called when a packet is received back from the remote handler. At this
+   *  point, the original caller needs to be informed via the saved function
+   *  handler created in NetPacket.PromiseTransaction().
    */
   transactionComplete() {
     let dbg = DBG.transact && !this.isServerMessage();
@@ -477,9 +469,9 @@ class NetPacket {
 
 /// STATIC CLASS METHODS //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NetPacket.GlobalSetup() is a static method that initializes shared
- * parameters for use by all instances of the NetPacket class. It is used only
- * on browsers, which have a single socket connection.
+/** A static method that initializes shared parameters for use by all instances
+ * of the NetPacket class. It is used only on browsers, which have a single
+ * socket connection.
  *
  * If no netsocket property is defined, then NetPacket instances will surpress
  * sending of network messages while allowing local messages to work normally.
@@ -508,10 +500,9 @@ NetPacket.ULOCAL = false; // set if connection is a local connection
 NetPacket.PEERS = undefined;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NetPacket.GlobalCleanup() is a static method called only by the client,
- * which drops the current socket and puts the app in 'closed' state. In
- * practice this call doesn't accomplish much, but is here for symmetry to
- * GlobalSetup().
+/** A static method called only by the client, which drops the current socket
+ * and puts the app in 'closed' state. In practice this call doesn't accomplish
+ * much, but is here for symmetry to GlobalSetup().
  * @function
  */
 NetPacket.GlobalCleanup = () => {
@@ -525,10 +516,9 @@ NetPacket.GlobalCleanup = () => {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Static method NetPacket.GlobalOfflineMode() explicitly sets the mode to STANDALONE, which
- * actively suppresses remote network communication without throwing errors.
- * It's used for static code snapshots of the webapp that don't need the
- * network.
+/** Explicitly sets the mode to STANDALONE, which actively suppresses remote
+ * network communication without throwing errors. It's used for static code
+ * snapshots of the webapp that don't need the network.
  * @function
  */
 NetPacket.GlobalOfflineMode = () => {
@@ -542,8 +532,8 @@ NetPacket.GlobalOfflineMode = () => {
   }
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NetPacket.SocketUADDR() is a static method returning the class-wide setting
- * of the browser UADDR. This is only used on browser code.
+/** A static method returning the class-wide setting of the browser UADDR. This
+ * is only used on browser code.
  * @function
  * @returns {string} URSYS address of the current browser, a URSYS address
  */
@@ -558,8 +548,8 @@ NetPacket.IsLocalhost = () => {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NetPacket.GlobalGroupID() is a static method returning the session key
- * (aka group-id) set for this browser instance
+/** A static method returning the session key (aka group-id) set for this
+ * browser instance
  * @function
  * @returns {string} session key
  */
@@ -568,8 +558,7 @@ NetPacket.GlobalGroupID = () => {
 };
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** NetPacket.GlobalSetGroupID() is a static method that stores the passed
- * token as the GroupID
+/** A static method that stores the passed token as the GroupID
  * @function
  * @param {string} token - special session key data
  */
