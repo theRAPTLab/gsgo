@@ -151,14 +151,24 @@ class InstanceEditor extends React.Component {
     this.setState({ isEditable, isSelected });
   }
   HandleHoverOver(data) {
+    const { isEditable } = this.state;
     const agentId = this.GetAgentId();
-    if (data.agentId === agentId) {
+    // Changing the hover state here while the Instance is being
+    // edited results in the whole instance being redrawn
+    // leading to a loss of focus.
+    // So we only set hover if we're not editing?
+    if (data.agentId === agentId && !isEditable) {
       this.setState({ isHovered: true });
     }
   }
   HandleHoverOut(data) {
+    const { isEditable } = this.state;
     const agentId = this.GetAgentId();
-    if (data.agentId === agentId) {
+    // Changing the hover state here while the Instance is being
+    // edited results in the whole instance being redrawn
+    // leading to a loss of focus.
+    // So we only set hoverout if we're not editing?
+    if (data.agentId === agentId && !isEditable) {
       this.setState({ isHovered: false });
     }
   }
