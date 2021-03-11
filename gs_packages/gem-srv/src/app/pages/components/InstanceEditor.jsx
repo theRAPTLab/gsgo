@@ -137,15 +137,14 @@ class InstanceEditor extends React.Component {
    */
   HandleEditEnable(data) {
     const agentId = this.GetAgentId();
-    const { modelId } = this.state;
     let { isEditable, isSelected } = this.state;
     // Is this message for us?
     if (data.agentId === agentId) {
       // YES!  Enable!
       isEditable = true;
       isSelected = true;
-    } else if (isEditable) {
-      // NOT for us, so disable
+    } else {
+      // always disable if message is not for us!
       this.DoDeselect();
     }
     this.setState({ isEditable, isSelected });
