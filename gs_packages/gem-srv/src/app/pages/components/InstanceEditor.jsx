@@ -95,6 +95,10 @@ class InstanceEditor extends React.Component {
       // 4. Convert the script array back to script text
       const updatedScript = scriptTextLines.join('\n');
 
+      if (data.exitEdit) {
+        this.DoDeselect();
+      }
+
       UR.RaiseMessage('NET:INSTANCE_UPDATE_INIT', {
         // HACK!!! `aquatic` is hacked in!
         modelId: 'aquatic',

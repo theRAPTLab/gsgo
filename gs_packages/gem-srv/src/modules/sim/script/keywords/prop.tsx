@@ -73,23 +73,29 @@ class PropElement extends React.Component<MyProps, MyState> {
     });
   }
   onKeyDown(e) {
-    if (e.key === 'Enter') this.saveData();
+    if (e.key === 'Enter') this.saveData(true);
   }
   onBlur() {
     this.saveData();
   }
   onClick(e) {
+    const { propName, methodName, args } = this.state;
     e.preventDefault();
     e.stopPropagation();
     // Stop click here when user clicks inside form to edit.
     // Other clicks will propagage to InstanceEditor where it will exit edit mode
   }
-  saveData() {
+  /**
+   *
+   * @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
+   */
+  saveData(exitEdit) {
     const { isDirty } = this.state;
     if (!isDirty) return;
     const updata = {
       index: this.index,
-      scriptUnit: this.serialize(this.state)
+      scriptUnit: this.serialize(this.state),
+      exitEdit
     };
     console.error('saving data', updata);
     UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
