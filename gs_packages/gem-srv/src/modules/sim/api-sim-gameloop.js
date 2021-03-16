@@ -21,6 +21,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'INIT',
     'READY'
   ],
+  GLOOP_STAGED: ['STAGED'], // GLOOP_LOAD completed, ready to load model
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state

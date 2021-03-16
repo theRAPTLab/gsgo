@@ -23,6 +23,7 @@ import {
   ControlMode
 } from 'lib/t-script.d';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import FLAGS from 'modules/flags';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
@@ -113,6 +114,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
   setHovered = (mode = this.isHovered) => (this.isHovered = mode);
   setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
+  toggleSelected = () => {
+    this.isSelected = !this.isSelected;
+    console.log('toggling', this.isSelected);
+  };
 
   /// PROPERTIES, METHODS, FEATURES ///////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -184,7 +189,15 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const featProps = this.prop[fName];
     return featProps[vName];
   }
-
+  /** Returns a bitflags for various selection states */
+  getFlags(): number {
+    // return Math.random() > 0.5 ? true : false;
+    const selected = this.isSelected ? FLAGS.SELECTION.SELECTED : 0;
+    const hovered = this.isHovered ? FLAGS.SELECTION.HOVERED : 0;
+    const grouped = this.isGrouped ? FLAGS.SELECTION.GROUPED : 0;
+    const captive = this.isCaptive ? FLAGS.SELECTION.CAPTIVE : 0;
+    return selected | hovered | grouped | captive;
+  }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// To change the behavior of an instance, inject a program into either

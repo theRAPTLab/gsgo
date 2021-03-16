@@ -399,7 +399,6 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     SaveBlueprint(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
-    console.log(`registering blueprint '${bdl.name}'`);
     // initialize global programs in the bundle
     const { condition, event } = bdl.getPrograms();
     //  AddGlobalCondition(bdl.name, condition); // deprecated in script-xp branch
@@ -423,6 +422,7 @@ function MakeAgent(instanceDef: TInstance) {
     if (!bdl) throw Error(`agent blueprint for '${blueprint}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
+
     return SaveAgent(agent);
   }
   throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);

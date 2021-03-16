@@ -42,8 +42,11 @@ class PanelBlueprints extends React.Component {
       // Add Instance
       UR.RaiseMessage('NET:INSTANCE_ADD', { modelId, blueprintName: scriptId });
     } else {
-      // Open script
-      window.location = `/app/scripteditor?model=${modelId}&script=${scriptId}`;
+      // Open script in a new window
+      window.open(
+        `/app/scripteditor?model=${modelId}&script=${scriptId}`,
+        '_blank'
+      );
     }
   }
 

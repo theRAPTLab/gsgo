@@ -9,6 +9,7 @@ import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
 import {
   GetAllAgents,
+  GetAgentByName,
   DeleteAllAgents,
   DefineInstance,
   DeleteAllInstances,
@@ -39,6 +40,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.frame = agent.prop.Costume.currentFrame.value;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
+    dobj.flags = agent.getFlags();
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
@@ -47,6 +49,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.frame = agent.prop.Costume.currentFrame.value;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
+    dobj.flags = agent.getFlags();
   }
 });
 
@@ -87,7 +90,7 @@ function AgentSelect() {}
  * @param {Object} blueprintNames Array of blueprint names
  * @param {Array} instancesSpec Array of spec objects {name, ...args}
  */
-export function AllAgentsProgram(data) {
+export function AllAgentsProgramAdd(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
@@ -120,6 +123,61 @@ export function AllAgentsProgram(data) {
   // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
   UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
+}
+
+/** placeholder function
+ *  Same as AllAgentsProgram, but does not delete existing agents and instances
+ *  so that instances retain their selection/hover state across updates.
+ *  This creates a MULTIPLE agents from a spec, replacing all instances of the
+ *  same blueprint.  This is generally used to initialize a whole model.
+ *
+ * @param {Object} blueprintNames Array of blueprint names
+ * @param {Array} instancesSpec Array of to-be-defined spec objects {id, name, blueprint, init, ...args}
+ * @param {Array} instances Array of existing instanceDef (TInstance) objects {id, name, blueprint, init, ...args }
+ */
+export function AllAgentsProgramUpdate(data) {
+  const { blueprintNames, instancesSpec } = data;
+  if (!blueprintNames) return console.warn(...PR('no blueprint'));
+  let instanceDefs = GetAllInstances();
+  // Update or Make an instance for each instance spec
+  instancesSpec.forEach(spec => {
+    // Check for poorly defined spec?
+    if (!spec.id)
+      console.error(
+        ...PR(
+          'AllAgentsProgramUpdate trying to update spec with no id!  All specs should have an id!  Check model.instances!'
+        )
+      );
+    // Is the instance already defined?
+    const instanceDef = instanceDefs.find(i => i.id === spec.id);
+    if (!instanceDef) {
+      // Not defined yet
+      DefineInstance({
+        id: spec.id,
+        name: spec.name,
+        blueprint: spec.blueprint,
+        init: spec.init
+      });
+    } else {
+      // Already defined, update the init script
+      // Blueprint shouldn't change, it'd just be a new instance?
+      instanceDef.name = spec.name;
+      instanceDef.init = spec.init;
+    }
+  });
+
+  // Update or Make an agent for each instance
+  instanceDefs = GetAllInstances(); // update insteances since we may have added some
+  instanceDefs.forEach(instanceDef => {
+    const init = TRANSPILER.CompileText(instanceDef.init);
+    let agent = GetAgentByName(instanceDef.name);
+    if (!agent) agent = TRANSPILER.MakeAgent(instanceDef);
+    agent.exec(init, { agent });
+  });
+
+  // Announce instance defs so UI can register instance names for inspector monitoring
+  // Mostly used by PanelInstances and Inspectors
+  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances: instanceDefs });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -250,6 +308,14 @@ function AgentExec(frameTime) {
 function AgentReset(frameTime) {
   /* reset agent */
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Force AgentUpdate, then force Render
+/// This is used to update data objects and refresh the screen during
+/// the initial PLACES call and when an instance is selected in MapEditor
+function AgentsRender(frameTime) {
+  AgentUpdate(frameTime);
+  RENDERER.Render();
+}
 
 /// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -258,7 +324,9 @@ UR.HandleMessage('SIM_MODE', AgentSelect);
 // UR.HandleMessage('SIM_PROGRAM', AgentProgram);
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
-UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model init
+UR.HandleMessage('ALL_AGENTS_PROGRAM_ADD', AllAgentsProgramAdd); // whole model init
+UR.HandleMessage('ALL_AGENTS_PROGRAM_UPDATE', AllAgentsProgramUpdate); // whole model update
+UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentUpdate + Render
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

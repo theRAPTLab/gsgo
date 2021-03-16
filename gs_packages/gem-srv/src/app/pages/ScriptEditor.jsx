@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ScriptEditor - Script Editing
+  ScriptEditor - Edit Script Blueprints
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -20,9 +20,6 @@ import PanelMessage from './components/PanelMessage';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
-
-// HACK DATA LOADING
-import SimData from '../data/sim-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -70,9 +67,27 @@ class ScriptEditor extends React.Component {
     // Sent by PanelSelectAgent
     UR.HandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    // REVIEW
+    // Sometimes SIM/READY is too early.  The request for model
+    // data is not answered.  Use SIM/STAGED instead?
+    // This is mostly a problem when saving this file triggers a
+    // rebuild and reload.  But it's not consistent.
+    UR.SystemHook('SIM/READY', () => {
+      console.warn('sim/READY!');
+      const { modelId } = this.state;
+      this.LoadModel(modelId);
+    });
+
+    // REVIEW
+    // Is this necessary?  Does SIM/READY work?
+    UR.SystemHook('SIM/STAGED', () => {
+      console.warn('SIM/STAGED!');
+      // const { modelId } = this.state;
+      // this.LoadModel(modelId);
+    });
   }
 
   componentDidMount() {
@@ -86,10 +101,8 @@ class ScriptEditor extends React.Component {
 
     window.addEventListener('beforeunload', this.CleanupComponents);
 
-    // Load Model Data
-    this.setState({ modelId, scriptId }, () => {
-      this.LoadModel(modelId);
-    });
+    // Set model section
+    this.setState({ modelId, scriptId });
   }
 
   componentDidCatch(e) {
@@ -105,15 +118,15 @@ class ScriptEditor extends React.Component {
     this.UnRegisterInstances();
     UR.UnhandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   /**
-   * HACK
-   * This requests model data from sim-data.
-   * sim-data will respond with `HACK_SIMDATA_UPDATE_MODEL
+   * This requests model data from Map Editor or Mission Control's
+   * SimData module.
+   * sim-data will respond with `NET:UPDATE_MODEL
    * which is handled by OnSimDataUpdate, below.
    *
    * REVIEW: Should this be done with a callback instead?
@@ -121,9 +134,8 @@ class ScriptEditor extends React.Component {
    * @param {String} modelId
    */
   LoadModel(modelId) {
-    UR.RaiseMessage('HACK_SIMDATA_REQUEST_MODEL', { modelId });
+    UR.RaiseMessage('NET:REQUEST_MODEL', { modelId });
   }
-
   /**
    * Second part of LoadModel
    * This saves the model data to the local state
