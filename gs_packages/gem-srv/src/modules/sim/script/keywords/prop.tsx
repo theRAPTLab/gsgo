@@ -88,8 +88,9 @@ class PropElement extends React.Component<MyProps, MyState> {
   /**
    *
    * @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
+   *                           Used to handle exiting edit on "Enter"
    */
-  saveData(exitEdit) {
+  saveData(exitEdit = false) {
     const { isDirty } = this.state;
     if (!isDirty) return;
     const updata = {

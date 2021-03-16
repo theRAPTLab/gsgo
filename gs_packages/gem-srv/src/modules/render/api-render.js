@@ -85,6 +85,16 @@ function Init(element) {
       // copy parameters
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
+
+      // copy sedlection states?
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+
       vobj.setTexture(dobj.skin, dobj.frame);
       if (dobj.mode === 1 && SETTINGS.actable) {
         // add drag-and-drop handlers
@@ -94,6 +104,7 @@ function Init(element) {
         // add selectable handler
         MakeSelectable(vobj);
       }
+
       // add to scene
       vobj.add(CONTAINERS.Root);
     },

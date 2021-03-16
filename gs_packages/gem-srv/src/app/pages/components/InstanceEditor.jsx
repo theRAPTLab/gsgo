@@ -147,11 +147,11 @@ class InstanceEditor extends React.Component {
       // YES!  Enable!
       isEditable = true;
       isSelected = true;
+      this.setState({ isEditable, isSelected });
     } else {
       // always disable if message is not for us!
       this.DoDeselect();
     }
-    this.setState({ isEditable, isSelected });
   }
   HandleHoverOver(data) {
     const { isEditable } = this.state;
@@ -178,7 +178,7 @@ class InstanceEditor extends React.Component {
   HandleDeselect(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
-      this.setState({ isEditable: false, isSelected: false });
+      this.setState({ isEditable: false, isSelected: false, isHovered: false });
     }
   }
 
