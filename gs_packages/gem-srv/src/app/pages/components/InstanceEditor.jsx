@@ -21,6 +21,7 @@ import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import InputField from './InputField';
 
 class InstanceEditor extends React.Component {
   constructor() {
@@ -42,6 +43,7 @@ class InstanceEditor extends React.Component {
     this.HandleDeselect = this.HandleDeselect.bind(this);
     this.OnHoverOver = this.OnHoverOver.bind(this);
     this.OnHoverOut = this.OnHoverOut.bind(this);
+    this.OnNameSave = this.OnNameSave.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
@@ -180,6 +182,24 @@ class InstanceEditor extends React.Component {
       this.setState({ isEditable: false, isSelected: false, isHovered: false });
     }
   }
+  OnNameSave(data) {
+    // Update the script
+    const { instance } = this.props;
+    const { isEditable } = this.state;
+    const instanceName = data.instanceName;
+    if (isEditable) {
+      if (data.exitEdit) {
+        console.warn('EXITING DESELECTING');
+        this.DoDeselect();
+      }
+      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+        // HACK!!! `aquatic` is hacked in!
+        modelId: 'aquatic',
+        instanceId: instance.id,
+        instanceName
+      });
+    }
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Local Events (on InstanceEditor container)
@@ -214,8 +234,16 @@ class InstanceEditor extends React.Component {
         onPointerLeave={this.OnHoverOut}
       >
         <div>
-          <div className={classes.inspectorData}>{instanceName}</div>
+          <InputField
+            propName="Name"
+            value={instanceName}
+            type="string"
+            isEditable={isEditable}
+            onSave={this.OnNameSave}
+          />
           <div>{jsx}</div>
+          {/* ID display for debugging */}
+          <div className={classes.inspectorLabel}>{instance.id}&nbsp;</div>{' '}
         </div>
       </div>
     );
