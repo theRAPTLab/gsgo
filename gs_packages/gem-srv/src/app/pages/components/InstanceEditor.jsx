@@ -99,13 +99,12 @@ class InstanceEditor extends React.Component {
         this.DoDeselect();
       }
 
-      UR.RaiseMessage('NET:INSTANCE_UPDATE_INIT', {
+      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
         // HACK!!! `aquatic` is hacked in!
         modelId: 'aquatic',
+        instanceId: instance.id,
         instanceName,
-        updatedData: {
-          init: updatedScript
-        }
+        instanceInit: updatedScript
       });
     }
   }

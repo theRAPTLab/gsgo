@@ -21,6 +21,16 @@ import { MODEL as MothsModel } from './moths';
 import { MODEL as SaltModel } from './salt';
 import { MODEL as BeesModel } from './bees';
 
+/// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+let SEED = 100;
+function GetUID() {
+  return SEED++;
+}
+
+/// CLASS DEFINTION ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class SimData {
   constructor() {
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
@@ -29,7 +39,7 @@ class SimData {
     this.SendSimDataModel = this.SendSimDataModel.bind(this);
     this.GetModel = this.GetModel.bind(this);
     this.InstanceAdd = this.InstanceAdd.bind(this);
-    this.InstanceUpdateInit = this.InstanceUpdateInit.bind(this);
+    this.InstanceUpdate = this.InstanceUpdate.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
     this.InstanceRequestEdit = this.InstanceRequestEdit.bind(this);
     this.InstanceSelect = this.InstanceSelect.bind(this);
@@ -37,8 +47,8 @@ class SimData {
     this.InstanceHoverOver = this.InstanceHoverOver.bind(this);
     this.InstanceOverOut = this.InstanceHoverOut.bind(this);
     // Register Listeners
-    UR.HandleMessage('NET:INSTANCE_ADD', this.InstanceAdd);
-    UR.HandleMessage('NET:INSTANCE_UPDATE_INIT', this.InstanceUpdateInit);
+    UR.HandleMessage('LOCAL:INSTANCE_ADD', this.InstanceAdd);
+    UR.HandleMessage('NET:INSTANCE_UPDATE', this.InstanceUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
     UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
     UR.HandleMessage('NET:INSTANCE_SELECT', this.InstanceSelect);
@@ -123,41 +133,49 @@ class SimData {
   InstanceAdd(data) {
     const model = this.GetSimDataModel(data.modelId);
     const instance = {
+      id: GetUID(),
       name: `${data.blueprintName}${model.instances.length}`,
       blueprint: data.blueprintName,
       init: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
 prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     };
     model.instances.push(instance);
+    //
+    // REVIEW
+    // This needs to send data to db
+    //
     this.SendSimDataModel(data.modelId);
   }
   /**
    *
    * @param {Object} data -- { modelId, instanceName, updatedData }
    * where `updatedData` = { init } -- init is scriptText.
+   *                 Leave instanceName or instanceInit undefined
+   *                 if they're not being set.
    */
-  InstanceUpdateInit(data) {
+  InstanceUpdate(data) {
     const model = this.GetSimDataModel(data.modelId);
     const instanceIndex = model.instances.findIndex(
-      i => i.name === data.instanceName
+      i => i.id === data.instanceId
     );
     const instance = model.instances[instanceIndex];
-    instance.init = data.updatedData.init;
+    instance.name = data.instanceName || instance.name;
+    instance.init = data.instanceInit || instance.init;
     model.instances[instanceIndex] = instance;
     this.SendSimDataModel(data.modelId);
   }
   /**
    * HACK: Manually change the init script when updating position.
    * This is mostly used to support drag and drop
-   * @param {Object} data -- { modelId, instanceName, updatedData: {x, y} }
+   * @param {Object} data -- { modelId, instanceId, updatedData: {x, y} }
    */
   InstanceUpdatePosition(data) {
     const model = this.GetSimDataModel(data.modelId);
     const instanceIndex = model.instances.findIndex(
-      i => i.name === data.instanceName
+      i => i.id === data.instanceId
     );
     const instance = model.instances[instanceIndex];
-    let scriptTextLines = instance.init.split('\n');
+    let scriptTextLines = instance.init ? instance.init.split('\n') : [];
     this.ReplacePropLine('x', 'setTo', data.updatedData.x, scriptTextLines);
     this.ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
     const scriptText = scriptTextLines.join('\n');

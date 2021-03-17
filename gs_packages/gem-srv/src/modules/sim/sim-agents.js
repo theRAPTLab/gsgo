@@ -9,9 +9,11 @@ import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
 import {
   GetAllAgents,
+  GetAgentById,
   GetAgentByName,
   DeleteAllAgents,
   DefineInstance,
+  UpdateInstance,
   DeleteAllInstances,
   DeleteBlueprintInstances,
   GetAllInstances
@@ -170,7 +172,7 @@ export function AllAgentsProgramUpdate(data) {
   instanceDefs = GetAllInstances(); // update insteances since we may have added some
   instanceDefs.forEach(instanceDef => {
     const init = TRANSPILER.CompileText(instanceDef.init);
-    let agent = GetAgentByName(instanceDef.name);
+    let agent = GetAgentById(instanceDef.id);
     if (!agent) agent = TRANSPILER.MakeAgent(instanceDef);
     agent.exec(init, { agent });
   });
@@ -276,7 +278,7 @@ export function AgentProgram(blueprint) {
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AgentUpdate(frameTime) {
+function AgentsUpdate(frameTime) {
   const allAgents = GetAllAgents();
   allAgents.forEach(agent => {
     agent.agentUPDATE(frameTime);
@@ -309,11 +311,11 @@ function AgentReset(frameTime) {
   /* reset agent */
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Force AgentUpdate, then force Render
+/// Force AgentsUpdate, then force Render
 /// This is used to update data objects and refresh the screen during
 /// the initial PLACES call and when an instance is selected in MapEditor
 function AgentsRender(frameTime) {
-  AgentUpdate(frameTime);
+  AgentsUpdate(frameTime);
   RENDERER.Render();
 }
 
@@ -326,11 +328,11 @@ UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('AGENTS_PROGRAM', AgentsProgram); // multiple agents
 UR.HandleMessage('ALL_AGENTS_PROGRAM_ADD', AllAgentsProgramAdd); // whole model init
 UR.HandleMessage('ALL_AGENTS_PROGRAM_UPDATE', AllAgentsProgramUpdate); // whole model update
-UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentUpdate + Render
+UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentsUpdate + Render
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/AGENTS_UPDATE', AgentUpdate);
+UR.SystemHook('SIM/AGENTS_UPDATE', AgentsUpdate);
 UR.SystemHook('SIM/AGENTS_THINK', AgentThink);
 UR.SystemHook('SIM/AGENTS_EXEC', AgentExec);
 

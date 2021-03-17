@@ -172,7 +172,8 @@ class MissionControl extends React.Component {
     );
   }
   /**
-   * User has submitted a new script
+   * User has submitted a new script, just update message
+   * PanelSimulation handles instance creation
    * @param {object} data { script }
    */
   DoScriptUpdate(data) {
@@ -220,7 +221,7 @@ class MissionControl extends React.Component {
     const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
     SimData.InstanceUpdatePosition({
       modelId,
-      instanceName: agent.meta.name,
+      instanceId: agent.id,
       updatedData: { x, y }
     });
   }

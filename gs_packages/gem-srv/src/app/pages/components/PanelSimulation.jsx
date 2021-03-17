@@ -139,13 +139,19 @@ class PanelSimulation extends React.Component {
     const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
     if (instancesSpec.length < 1) {
       // If the map has not been defined yet, then generate a single instance
-      instancesSpec.push({ name: `${bp.name}01`, init: '' });
+      // instancesSpec.push({ name: `${bp.name}01`, init: '' });
+
+      // REVIEW HACK
+      // modelId is not available here?!?!
+      const params = new URLSearchParams(window.location.search.substring(1));
+      const modelId = params.get('model');
+
+      UR.RaiseMessage('LOCAL:INSTANCE_ADD', {
+        modelId,
+        blueprintName: bp.name
+      });
     }
 
-    UR.RaiseMessage('AGENTS_PROGRAM', {
-      blueprint: bp.name,
-      instancesSpec
-    });
   }
 
   DoSimPlaces() {

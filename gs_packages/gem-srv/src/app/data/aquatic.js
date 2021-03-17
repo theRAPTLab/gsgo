@@ -139,7 +139,7 @@ useFeature Costume
   //   }
   instances: [
     {
-      id: '1',
+      id: 501,
       name: 'fish01',
       blueprint: 'Fish',
       // object test      init: `prop x setTo {{ x + -220 }}
@@ -147,7 +147,7 @@ useFeature Costume
 prop y setTo 0`
     },
     {
-      id: '2',
+      id: 502,
       name: 'fatFish',
       blueprint: 'Fish',
       init: `prop x setTo 100
@@ -155,31 +155,31 @@ prop y setTo 100
 prop energyLevel setTo 1000` // extra property test
     },
     {
-      id: '3',
+      id: 503,
       name: 'starvedFish',
       blueprint: 'Fish',
       init: `prop x setTo 200` // missing y test
     },
     {
-      id: '4',
+      id: 504,
       name: 'algae01',
       blueprint: 'Algae',
       init: `prop x setTo -220
-    prop y setTo -220`
+prop y setTo -220`
     },
     {
-      id: '5',
+      id: 505,
       name: 'algae02',
       blueprint: 'Algae',
       init: `prop x setTo -150
-    prop y setTo -120`
+prop y setTo -120`
     },
     {
-      id: '6',
+      id: 506,
       name: 'algae03',
       blueprint: 'Algae',
       init: `prop x setTo -120
-    prop y setTo -90`
+prop y setTo -90`
     }
   ]
 };
