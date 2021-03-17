@@ -6,9 +6,14 @@
 import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
-import Visual, { MakeDraggable } from 'lib/class-visual';
+import Visual, {
+  MakeDraggable,
+  MakeHoverable,
+  MakeSelectable
+} from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
 import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
+import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,9 +85,26 @@ function Init(element) {
       // copy parameters
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
+
+      // copy sedlection states?
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+
       vobj.setTexture(dobj.skin, dobj.frame);
-      // add drag-and-drop handlers
-      if (dobj.mode === 1 && SETTINGS.actable) MakeDraggable(vobj);
+      if (dobj.mode === 1 && SETTINGS.actable) {
+        // add drag-and-drop handlers
+        MakeDraggable(vobj);
+        // add hover handler
+        MakeHoverable(vobj);
+        // add selectable handler
+        MakeSelectable(vobj);
+      }
+
       // add to scene
       vobj.add(CONTAINERS.Root);
     },
@@ -95,6 +117,15 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+
       // inefficient texture update
       vobj.setTexture(dobj.skin, dobj.frame);
       // force vobj rotation, scale, alpha for PIXI testing

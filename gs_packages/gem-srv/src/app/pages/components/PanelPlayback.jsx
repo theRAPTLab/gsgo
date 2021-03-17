@@ -12,24 +12,16 @@ class PanelPlayback extends React.Component {
     super();
     this.state = {
       title: 'Sim Control',
-      isDisabled: true,
       isRunning: false
     };
-    this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
 
-    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
   }
 
-  DoModelUpdate(data) {
-    // If no model has been set, then disable (hide) all the run/playback buttons
-    this.setState({ isDisabled: data.model === undefined });
-  }
 
   OnResetClick() {
     UR.RaiseMessage('NET:HACK_SIM_RESET');
@@ -46,13 +38,15 @@ class PanelPlayback extends React.Component {
   }
 
   render() {
-    const { title, isDisabled, isRunning } = this.state;
-    const { id, isActive, classes } = this.props;
+    const { title, isRunning } = this.state;
+    const { id, model, isActive, classes } = this.props;
 
     const onClick = () => {
       // To be implemented
       console.log('Show instance');
     };
+
+    const isDisabled = model === undefined;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
