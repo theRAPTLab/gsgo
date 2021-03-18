@@ -21,6 +21,7 @@ import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import SimData from '../../data/sim-data';
 import InputField from './InputField';
 
 class InstanceEditor extends React.Component {
@@ -28,6 +29,7 @@ class InstanceEditor extends React.Component {
     super();
     this.state = {
       title: 'EDITOR',
+      modelId: undefined,
       agentId: undefined,
       isEditable: false,
       isHovered: false,
@@ -52,7 +54,9 @@ class InstanceEditor extends React.Component {
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    this.setState({ modelId: SimData.GetCurrentModelId() });
+  }
 
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
@@ -82,12 +86,16 @@ class InstanceEditor extends React.Component {
     return agentId;
   }
 
+  /**
+   * Script update sent from prop.tsx
+   * @param {*} data
+   */
   HandleScriptUpdate(data) {
     // Update the script
-    const { instance } = this.props;
-    const { isEditable } = this.state;
-    const instanceName = this.GetInstanceName();
+    const { modelId, isEditable } = this.state;
     if (isEditable) {
+      const { instance } = this.props;
+      const instanceName = this.GetInstanceName();
       // 1. Convert init script text to array
       const scriptTextLines = instance.init.split('\n');
       // 2. Convert the updated line to text
@@ -102,8 +110,7 @@ class InstanceEditor extends React.Component {
       }
 
       UR.RaiseMessage('NET:INSTANCE_UPDATE', {
-        // HACK!!! `aquatic` is hacked in!
-        modelId: 'aquatic',
+        modelId,
         instanceId: instance.id,
         instanceName,
         instanceInit: updatedScript
@@ -185,7 +192,7 @@ class InstanceEditor extends React.Component {
   OnNameSave(data) {
     // Update the script
     const { instance } = this.props;
-    const { isEditable } = this.state;
+    const { modelId, isEditable } = this.state;
     const instanceName = data.instanceName;
     if (isEditable) {
       if (data.exitEdit) {
@@ -193,8 +200,7 @@ class InstanceEditor extends React.Component {
         this.DoDeselect();
       }
       UR.RaiseMessage('NET:INSTANCE_UPDATE', {
-        // HACK!!! `aquatic` is hacked in!
-        modelId: 'aquatic',
+        modelId,
         instanceId: instance.id,
         instanceName
       });
@@ -214,7 +220,14 @@ class InstanceEditor extends React.Component {
   }
 
   render() {
-    const { title, isEditable, isHovered, isSelected } = this.state;
+    const {
+      title,
+      modelId,
+      isEditable,
+      isHovered,
+      isSelected,
+      properties,
+    } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
     let jsx = '';
