@@ -122,6 +122,7 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
     SIM.Reset();
+    // SimPlaces is called by Mission Control.
   }
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
@@ -155,7 +156,7 @@ class PanelSimulation extends React.Component {
 
   DoSimPlaces() {
     // 1. Load Model
-    //    model data is loaded by the parent container: MissionControl or MapEditor
+    //    model data is loaded by the parent container MissionControl
     const { model } = this.props;
 
     // Skip if no model is loaded

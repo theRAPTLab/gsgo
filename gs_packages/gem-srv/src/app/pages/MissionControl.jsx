@@ -91,9 +91,11 @@ class MissionControl extends React.Component {
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
+    this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
 
     // Instance Interaction Handlers
@@ -150,6 +152,7 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
+    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -184,6 +187,15 @@ class MissionControl extends React.Component {
   }
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');
+  }
+  DoSimReset() {
+    this.setState(
+      {
+        model: {},
+        instances: []
+      },
+      () => this.LoadModel()
+    );
   }
   /**
    * Handler for `NET:INSPECTOR_UPDATE`

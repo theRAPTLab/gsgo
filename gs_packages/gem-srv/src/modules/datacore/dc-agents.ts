@@ -147,4 +147,5 @@ export function GetAllAgents() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllAgents() {
   AGENTS.clear();
+  AGENT_DICT.clear();
 }
