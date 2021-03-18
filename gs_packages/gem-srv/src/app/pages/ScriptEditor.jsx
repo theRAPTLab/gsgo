@@ -82,7 +82,7 @@ class ScriptEditor extends React.Component {
     });
 
     // REVIEW
-    // Is this necessary?  Does SIM/READY work?
+    // Is this necessary?  SIM/READY seems to work most of the time?
     UR.SystemHook('SIM/STAGED', () => {
       console.warn('SIM/STAGED!');
       // const { modelId } = this.state;

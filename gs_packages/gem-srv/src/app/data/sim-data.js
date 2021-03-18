@@ -169,7 +169,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
   }
   /**
    *
-   * @param {Object} data -- { modelId, instanceName, updatedData }
+   * @param {Object} data -- { modelId, instanceId, instanceName, updatedData }
    * where `updatedData` = { init } -- init is scriptText.
    *                 Leave instanceName or instanceInit undefined
    *                 if they're not being set.
