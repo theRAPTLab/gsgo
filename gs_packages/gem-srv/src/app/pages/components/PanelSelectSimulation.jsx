@@ -23,17 +23,10 @@ class PanelSelectSimulation extends React.Component {
       // ]
     };
     this.onClick = this.onClick.bind(this);
-    this.OnModelsUpdate = this.OnModelsUpdate.bind(this);
-
-    UR.HandleMessage('NET:UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   componentDidMount() {
-    UR.RaiseMessage('*:REQUEST_MODELS');
-  }
-
-  componentWillUnmount() {
-    UR.UnhandleMessage('NET:UPDATE_MODELS', this.OnModelsUpdate);
+    this.setState({ models: SimData.GetModels() });
   }
 
   onClick(modelId) {
@@ -42,10 +35,6 @@ class PanelSelectSimulation extends React.Component {
     // HACK for now to go to main select screen
     const { onClick } = this.props;
     onClick(modelId); // Tell Login panel to show Panelselect
-  }
-
-  OnModelsUpdate(data) {
-    this.setState({ models: data.models });
   }
 
   render() {
