@@ -33,6 +33,9 @@ function GetUID() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class SimData {
   constructor() {
+    // Properties
+    this.currentModelId = '';
+    // Bind This
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
     this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
@@ -92,7 +95,11 @@ class SimData {
    * @param {string} modelId
    */
   GetModel(modelId) {
+    this.currentModelId = modelId;
     return this.GetSimDataModel(modelId);
+  }
+  GetCurrentModelId() {
+    return this.currentModelId;
   }
 
   /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
