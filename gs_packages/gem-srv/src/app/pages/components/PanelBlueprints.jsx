@@ -1,5 +1,14 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  Lists all the blueprints available in a model
+  * Used in MissionControl to see which blueprints have been defined
+    (click to open the script)
+  * Used with MapEditor to create new instances
+    (click to create new instance)
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as DATACORE from 'modules/datacore';
@@ -12,32 +21,43 @@ class PanelBlueprints extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Blueprints',
+      title: '',
       modelId: ''
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
   }
 
   componentDidMount() {
+    const { enableAdd } = this.props;
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
-    this.setState({ modelId });
+    const title = enableAdd ? 'Add Blueprints' : 'Blueprints';
+    this.setState({ modelId, title });
   }
 
   OnBlueprintClick(scriptId) {
     const { modelId } = this.state;
-    window.location = `/app/scripteditor?model=${modelId}&script=${scriptId}`;
+    const { enableAdd } = this.props;
+    if (enableAdd) {
+      // Add Instance
+      UR.RaiseMessage('NET:INSTANCE_ADD', { modelId, blueprintName: scriptId });
+    } else {
+      // Open script in a new window
+      window.open(
+        `/app/scripteditor?model=${modelId}&script=${scriptId}`,
+        '_blank'
+      );
+    }
   }
 
   render() {
     const { title } = this.state;
-    const { id, isActive, agents, classes } = this.props;
-
+    const { id, isActive, agents, enableAdd, classes } = this.props;
+    const instructions = enableAdd ? 'Click to add an instance' : '';
     const onPanelClick = () => {
       // To be implemented
       console.log('Show instance');
     };
-
     return (
       // Placeholder for now
       <PanelChrome
@@ -53,6 +73,7 @@ class PanelBlueprints extends React.Component {
             fontSize: '12px'
           }}
         >
+          <span className={classes.instructions}>{instructions}</span>
           <div>
             <div
               style={{

@@ -9,12 +9,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
+import { OutlineFilter } from '@pixi/filter-outline';
 import * as DATACORE from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
+import { MakeHoverable } from './vis/hoverable';
+import { MakeSelectable } from './vis/selectable';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,6 +26,9 @@ interface ISpriteStore {
   sheet?: PIXI.Spritesheet;
 }
 let REF_ID_COUNTER = 0;
+/// outline filters
+const outlineHover = new OutlineFilter(2, 0xffff0088);
+const outlineSelected = new OutlineFilter(3, 0xffff00);
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -84,6 +90,7 @@ class Visual implements IVisual, IPoolable, IActable {
   constructor(id: number) {
     this.id = id; // store reference
     const spr = new PIXI.Sprite();
+    spr.filters = []; // init for hover and select outlines
     spr.pivot.x = spr.width / 2;
     spr.pivot.y = spr.height / 2;
     this.sprite = spr;
@@ -125,6 +132,13 @@ class Visual implements IVisual, IPoolable, IActable {
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
+
+    // selected?
+    const filters = [];
+    if (this.isSelected) filters.push(outlineSelected);
+    if (this.isHovered) filters.push(outlineHover);
+    this.sprite.filters = filters;
+
     // we're done
   }
 
@@ -236,3 +250,5 @@ class Visual implements IVisual, IPoolable, IActable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Visual;
 export { MakeDraggable };
+export { MakeHoverable };
+export { MakeSelectable };

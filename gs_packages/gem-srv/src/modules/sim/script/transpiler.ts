@@ -352,8 +352,9 @@ function CompileBlueprint(units: TScriptUnit[]): SM_Bundle {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
+ *  @param {array} options -- { isEditable }
  */
-function RenderScript(units: TScriptUnit[]): any[] {
+function RenderScript(units: TScriptUnit[], options: any[]): any[] {
   const sourceJSX = [];
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
@@ -374,7 +375,7 @@ function RenderScript(units: TScriptUnit[]): any[] {
       kwProcessor = GetKeyword('dbgError');
       kwProcessor.keyword = keyword;
     }
-    const jsx = kwProcessor.jsx(index, unit);
+    const jsx = kwProcessor.jsx(index, unit, options);
     sourceJSX.push(jsx);
     out.push(`<${kwProcessor.getName()} ... />\n`);
   });
@@ -398,7 +399,6 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
     SaveBlueprint(bdl);
     // run conditional programming in template
     // this is a stack of functions that run in global context
-    console.log(`registering blueprint '${bdl.name}'`);
     // initialize global programs in the bundle
     const { condition, event } = bdl.getPrograms();
     //  AddGlobalCondition(bdl.name, condition); // deprecated in script-xp branch
@@ -422,6 +422,7 @@ function MakeAgent(instanceDef: TInstance) {
     if (!bdl) throw Error(`agent blueprint for '${blueprint}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
+
     return SaveAgent(agent);
   }
   throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);

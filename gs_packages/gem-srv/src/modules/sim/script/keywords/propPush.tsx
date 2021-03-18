@@ -7,7 +7,7 @@
 
 import React from 'react';
 import Keyword, { DerefProp } from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////

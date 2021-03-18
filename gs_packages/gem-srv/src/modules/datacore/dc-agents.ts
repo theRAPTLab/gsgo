@@ -14,18 +14,21 @@ export const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => 
 export const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
 export const INSTANCES: TInstanceMap = new Map();
 //
-let INSTANCE_COUNTER = 100;
+let INSTANCE_COUNTER = 1000;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given the creation parameters, make a new instance. The init program sets
  *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
-  const { blueprint, init, name = '<none>' } = instanceDef;
+  const { blueprint, id, init, name = '<none>' } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
   if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
   const bpi = INSTANCES.get(blueprint);
-  instanceDef.id = INSTANCE_COUNTER++;
+  // Use the spec'd id, otherwise auto-generate an id
+  if (!instanceDef.id) {
+    instanceDef.id = INSTANCE_COUNTER++;
+  }
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

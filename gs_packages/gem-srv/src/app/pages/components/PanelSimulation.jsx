@@ -23,7 +23,7 @@ const MONITORED_INSTANCES = [];
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.OnPhase(
+UR.SystemHook(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
@@ -40,26 +40,26 @@ class PanelSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Simulation',
-      model: {}
+      title: 'Simulation'
     };
     this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
     this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
     this.DoInstanceInspectorUpdate = this.DoInstanceInspectorUpdate.bind(this);
-    this.DoModelUpdate = this.DoModelUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
+    this.DoSimPlaces = this.DoSimPlaces.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
 
-    UR.OnPhase('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
     UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.HandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+
+    UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
   }
 
   componentDidMount() {
@@ -68,15 +68,14 @@ class PanelSimulation extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
-    this.DoSimReset();
   }
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.UnhandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.UnhandleMessage('HACK_SIMDATA_UPDATE_MODEL', this.DoModelUpdate);
     UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.UnhandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
@@ -113,10 +112,9 @@ class PanelSimulation extends React.Component {
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }
 
-  DoModelUpdate(data) {
-    this.setState({ model: data.model });
-  }
-
+  /**
+   * WARNING: Do not call this before the simulation has loaded.
+   */
   DoSimReset() {
     DATACORE.DeleteAllTests();
     // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
@@ -128,7 +126,7 @@ class PanelSimulation extends React.Component {
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
   DoScriptUpdate(data) {
-    const { model } = this.state;
+    const { model } = this.props;
     if (!model) {
       console.error(...PR('No model selected.'));
       return;
@@ -150,6 +148,33 @@ class PanelSimulation extends React.Component {
     });
   }
 
+  DoSimPlaces() {
+    // 1. Load Model
+    //    model data is loaded by the parent container: MissionControl or MapEditor
+    const { model } = this.props;
+
+    // Skip if no model is loaded
+    if (!model) return;
+
+    // 2. Compile All Agents
+    const scripts = model.scripts;
+    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
+    const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
+    const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
+    const blueprintNames = blueprints.map(b => b.name);
+
+    // 3. Create All Instances
+    const instancesSpec = model.instances;
+    // Use 'UPDATE' so we don't clobber old instance values.
+    UR.RaiseMessage('ALL_AGENTS_PROGRAM_UPDATE', {
+      blueprintNames,
+      instancesSpec
+    });
+
+    // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
+    UR.RaiseMessage('AGENTS_RENDER');
+  }
+
   DoSimStart() {
     SIM.Start();
   }
@@ -159,8 +184,8 @@ class PanelSimulation extends React.Component {
   }
 
   render() {
-    const { title, model } = this.state;
-    const { id, isActive, onClick, classes } = this.props;
+    const { title } = this.state;
+    const { id, model, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

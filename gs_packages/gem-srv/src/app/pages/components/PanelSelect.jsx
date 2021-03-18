@@ -12,7 +12,7 @@ class PanelSelect extends React.Component {
       options: [
         // Dummy Data
         { id: 'missioncontrol', label: 'Mission Control' },
-        { id: 'scripteditor', label: 'Edit Script' },
+        { id: 'scripteditor', label: 'Script Editor' },
         { id: 'faketrack', label: 'Fake Track' },
         { id: 'viewer', label: 'View-only' }
       ]

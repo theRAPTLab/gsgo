@@ -205,6 +205,19 @@ const useStylesHOC = theme => ({
     color: CLR_LABEL,
     backgroundColor: CLR_OBJECT
   },
+  instanceSpec: {
+    backgroundColor: '#000',
+    margin: '0.5em 0 0.5em 0.5em',
+    padding: '3px',
+    borderRadius: '5px',
+    cursor: 'pointer'
+  },
+  instanceSpecHovered: {
+    border: '1px solid #ff880088'
+  },
+  instanceSpecSelected: {
+    border: '1px solid #ffff00'
+  },
   navButton: {
     fontSize: '14px',
     textDecoration: 'none',
