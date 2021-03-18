@@ -58,7 +58,7 @@ class PanelSimViewer extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'SIM (Viewer)',
+      title: 'Virtual Stage (view-only)',
       color: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.1)'
     };
