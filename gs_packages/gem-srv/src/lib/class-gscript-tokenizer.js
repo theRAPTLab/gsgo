@@ -355,7 +355,7 @@ class ScriptTokenizer {
       number += this.exprI(this.index++);
 
       while (isDecimalDigit(this.exprICode(this.index))) {
-        this.showCursor();
+        if (DBG_SHOW) this.showCursor();
         number += this.exprI(this.index++);
       }
     }

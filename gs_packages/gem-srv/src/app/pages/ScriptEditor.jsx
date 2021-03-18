@@ -82,7 +82,7 @@ class ScriptEditor extends React.Component {
     });
 
     // REVIEW
-    // Is this necessary?  Does SIM/READY work?
+    // Is this necessary?  SIM/READY seems to work most of the time?
     UR.SystemHook('SIM/STAGED', () => {
       console.warn('SIM/STAGED!');
       // const { modelId } = this.state;
@@ -181,11 +181,11 @@ class ScriptEditor extends React.Component {
     });
     // Register the instances for monitoring
     instances.forEach(i => {
-      if (monitoredInstances.includes(i.name)) return; // skip if already monitored
+      if (monitoredInstances.includes(i.id)) return; // skip if already monitored
       UR.RaiseMessage('NET:INSPECTOR_REGISTER', {
-        name: i.name
+        id: i.id
       });
-      monitoredInstances.push(i.name);
+      monitoredInstances.push(i.id);
     });
     this.setState({ instances, monitoredInstances });
   }

@@ -102,15 +102,15 @@ class InstanceInspector extends React.Component {
   OnInstanceClick() {
     // Toggle between different sizes to show/hide data
     const { size, alreadyRegistered } = this.state;
-    const { disallowDeRegister } = this.props;
-    const name = this.GetInstanceName();
+    const { instance, disallowDeRegister } = this.props;
+    const id = instance.id;
     let registrationStatus = alreadyRegistered;
     let newsize;
     switch (size) {
       case SIZE_MIN:
         newsize = SIZE_MAX;
         if (!alreadyRegistered) {
-          UR.RaiseMessage('NET:INSPECTOR_REGISTER', { name });
+          UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
           registrationStatus = true;
         }
         break;
@@ -118,7 +118,7 @@ class InstanceInspector extends React.Component {
       case SIZE_MAX:
         newsize = SIZE_MIN;
         if (alreadyRegistered && !disallowDeRegister) {
-          UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
+          UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
         }
         break;
     }

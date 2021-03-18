@@ -40,7 +40,7 @@ class PanelBlueprints extends React.Component {
     const { enableAdd } = this.props;
     if (enableAdd) {
       // Add Instance
-      UR.RaiseMessage('NET:INSTANCE_ADD', { modelId, blueprintName: scriptId });
+      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { modelId, blueprintName: scriptId });
     } else {
       // Open script in a new window
       window.open(

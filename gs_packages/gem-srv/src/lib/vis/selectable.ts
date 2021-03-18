@@ -32,9 +32,12 @@ import UR from '@gemstep/ursys/client';
 import { Visual } from 'lib/t-visual';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 
+const DBG = false;
+
 export function MakeSelectable(vobj: Visual) {
   function onTap(event) {
     const agent = GetAgentById(vobj.id);
+    if (DBG) console.log(`selectable.ts: Tapped on vobj.id ${agent.id}`);
     if (!agent) {
       console.error(
         'selectable: Clicked agent not found!!! This should not happen!'

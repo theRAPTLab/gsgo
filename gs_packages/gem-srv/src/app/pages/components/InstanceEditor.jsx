@@ -21,28 +21,41 @@ import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import SimData from '../../data/sim-data';
+import InputField from './InputField';
 
 class InstanceEditor extends React.Component {
   constructor() {
     super();
     this.state = {
       title: 'EDITOR',
+      modelId: undefined,
       agentId: undefined,
       isEditable: false,
       isHovered: false,
-      isSelected: false
+      isSelected: false,
+      properties: [],
+      isAddingProperty: false,
+      isDeletingProperty: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
+    this.GetBlueprintName = this.GetBlueprintName.bind(this);
     this.GetAgentId = this.GetAgentId.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
+    this.HandleScriptLineDelete = this.HandleScriptLineDelete.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.OnAddProperty = this.OnAddProperty.bind(this);
+    this.OnEnableDeleteProperty = this.OnEnableDeleteProperty.bind(this);
+    this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
     this.HandleDeselect = this.HandleDeselect.bind(this);
     this.OnHoverOver = this.OnHoverOver.bind(this);
     this.OnHoverOut = this.OnHoverOut.bind(this);
+    this.OnNameSave = this.OnNameSave.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.HandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
@@ -50,7 +63,9 @@ class InstanceEditor extends React.Component {
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    this.setState({ modelId: SimData.GetCurrentModelId() });
+  }
 
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
@@ -64,6 +79,11 @@ class InstanceEditor extends React.Component {
   GetInstanceName() {
     const { instance } = this.props;
     return instance ? instance.name : '';
+  }
+
+  GetBlueprintName() {
+    const { instance } = this.props;
+    return instance ? instance.blueprint : '';
   }
 
   GetAgentId() {
@@ -80,12 +100,16 @@ class InstanceEditor extends React.Component {
     return agentId;
   }
 
+  /**
+   * Script update sent from prop.tsx
+   * @param {*} data
+   */
   HandleScriptUpdate(data) {
     // Update the script
-    const { instance } = this.props;
-    const { isEditable } = this.state;
-    const instanceName = this.GetInstanceName();
+    const { modelId, isEditable } = this.state;
     if (isEditable) {
+      const { instance } = this.props;
+      const instanceName = this.GetInstanceName();
       // 1. Convert init script text to array
       const scriptTextLines = instance.init.split('\n');
       // 2. Convert the updated line to text
@@ -99,13 +123,33 @@ class InstanceEditor extends React.Component {
         this.DoDeselect();
       }
 
-      UR.RaiseMessage('NET:INSTANCE_UPDATE_INIT', {
-        // HACK!!! `aquatic` is hacked in!
-        modelId: 'aquatic',
+      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+        modelId,
+        instanceId: instance.id,
         instanceName,
-        updatedData: {
-          init: updatedScript
-        }
+        instanceInit: updatedScript
+      });
+    }
+  }
+
+  HandleScriptLineDelete(data) {
+    // Update the script
+    const { modelId, isEditable } = this.state;
+    if (isEditable) {
+      const { instance } = this.props;
+      const instanceName = this.GetInstanceName();
+      // 1. Convert init script text to array
+      const scriptTextLines = instance.init.split('\n');
+      // 2. Remove the line
+      scriptTextLines.splice(data.index, 1);
+      // 3. Convert the script array back to script text
+      const updatedScript = scriptTextLines.join('\n');
+
+      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+        modelId,
+        instanceId: instance.id,
+        instanceName,
+        instanceInit: updatedScript
       });
     }
   }
@@ -120,6 +164,70 @@ class InstanceEditor extends React.Component {
     // just pass it up to Map Editor so it's centralized?
     const agentId = this.GetAgentId();
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
+  }
+
+  OnAddProperty() {
+    const { modelId } = this.state;
+    const { instance } = this.props;
+    const blueprintName = this.GetBlueprintName();
+
+    // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
+    // Assume we can get a list of properties from SimData
+    // properties = [...{name, type, defaultvalue, isFeatProp }]
+    let properties = SimData.GetBlueprintProperties(modelId, blueprintName);
+
+    // Remove properties that have already been set
+    // 1. Get the list or properties
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const initProperties = scriptUnits.map(unit => {
+      if (unit[0].token === 'prop' || unit[0].token === 'featProp') {
+        return unit[1].token;
+      }
+    });
+    // 2. Remove already set properties
+    properties = properties.filter(p => !initProperties.includes(p.name));
+
+    this.setState({
+      properties,
+      isAddingProperty: true
+    });
+  }
+
+  OnEnableDeleteProperty() {
+    // enable deletion
+    this.setState(state => ({
+      isDeletingProperty: !state.isDeletingProperty
+    }));
+  }
+
+  OnPropMenuSelect(e) {
+    const selectedProp = e.target.value;
+    if (selectedProp === '') return; // selected the help instructions
+
+    const { modelId, properties } = this.state;
+    const { instance } = this.props;
+    const property = properties.find(p => p.name === selectedProp);
+    const keyword = property.isFeatProp ? 'featProp' : 'prop';
+    const newScriptLine = `${keyword} ${property.name} setTo ${property.defaultValue}`;
+
+    const instanceName = this.GetInstanceName();
+    // 1. Convert init script text to array
+    const scriptTextLines = instance.init.split('\n');
+    // 2. Add the updated line in the script array
+    scriptTextLines.push(newScriptLine);
+    // 4. Convert the script array back to script text
+    const updatedScript = scriptTextLines.join('\n');
+
+    console.error('current model id is', SimData.GetCurrentModelId());
+
+    UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+      modelId,
+      instanceId: instance.id,
+      instanceName,
+      instanceInit: updatedScript
+    });
+
+    this.setState({ isAddingProperty: false });
   }
 
   DoDeselect() {
@@ -181,6 +289,23 @@ class InstanceEditor extends React.Component {
       this.setState({ isEditable: false, isSelected: false, isHovered: false });
     }
   }
+  OnNameSave(data) {
+    // Update the script
+    const { instance } = this.props;
+    const { modelId, isEditable } = this.state;
+    const instanceName = data.instanceName;
+    if (isEditable) {
+      if (data.exitEdit) {
+        console.warn('EXITING DESELECTING');
+        this.DoDeselect();
+      }
+      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+        modelId,
+        instanceId: instance.id,
+        instanceName
+      });
+    }
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Local Events (on InstanceEditor container)
@@ -195,13 +320,40 @@ class InstanceEditor extends React.Component {
   }
 
   render() {
-    const { title, isEditable, isHovered, isSelected } = this.state;
+    const {
+      title,
+      modelId,
+      isEditable,
+      isHovered,
+      isSelected,
+      properties,
+      isAddingProperty,
+      isDeletingProperty
+    } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
+
     let jsx = '';
     if (instance) {
       const source = TRANSPILER.ScriptifyText(instance.init);
-      jsx = TRANSPILER.RenderScript(source, { isEditable });
+      jsx = TRANSPILER.RenderScript(source, {
+        isEditable,
+        isDeletable: isDeletingProperty
+      });
+    }
+
+    let propMenuJsx = '';
+    if (isAddingProperty) {
+      propMenuJsx = (
+        <select onChange={this.OnPropMenuSelect}>
+          <option value="">-- Select a property... --</option>
+          {properties.map(p => (
+            <option value={p.name} key={p.name}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      );
     }
 
     return (
@@ -215,8 +367,37 @@ class InstanceEditor extends React.Component {
         onPointerLeave={this.OnHoverOut}
       >
         <div>
-          <div className={classes.inspectorData}>{instanceName}</div>
+          <InputField
+            propName="Name"
+            value={instanceName}
+            type="string"
+            isEditable={isEditable}
+            onSave={this.OnNameSave}
+          />
           <div>{jsx}</div>
+          {isEditable && !isAddingProperty && (
+            <div style={{ textAlign: 'right' }}>
+              <button
+                onClick={this.OnEnableDeleteProperty}
+                type="button"
+                className={classes.buttonSmall}
+                title="Delete Property"
+              >
+                -
+              </button>
+              <button
+                onClick={this.OnAddProperty}
+                type="button"
+                className={classes.buttonSmall}
+                title="Add Property"
+              >
+                +
+              </button>
+            </div>
+          )}
+          {isAddingProperty && propMenuJsx}
+          {/* ID display for debugging */}
+          <div className={classes.inspectorLabel}>{instance.id}&nbsp;</div>{' '}
         </div>
       </div>
     );
