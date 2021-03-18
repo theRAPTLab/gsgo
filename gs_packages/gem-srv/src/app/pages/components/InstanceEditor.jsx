@@ -33,12 +33,17 @@ class InstanceEditor extends React.Component {
       agentId: undefined,
       isEditable: false,
       isHovered: false,
-      isSelected: false
+      isSelected: false,
+      properties: [],
+      isAddingProperty: false,
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
+    this.GetBlueprintName = this.GetBlueprintName.bind(this);
     this.GetAgentId = this.GetAgentId.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.OnAddProperty = this.OnAddProperty.bind(this);
+    this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
@@ -70,6 +75,11 @@ class InstanceEditor extends React.Component {
   GetInstanceName() {
     const { instance } = this.props;
     return instance ? instance.name : '';
+  }
+
+  GetBlueprintName() {
+    const { instance } = this.props;
+    return instance ? instance.blueprint : '';
   }
 
   GetAgentId() {
@@ -128,6 +138,63 @@ class InstanceEditor extends React.Component {
     // just pass it up to Map Editor so it's centralized?
     const agentId = this.GetAgentId();
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
+  }
+
+  OnAddProperty() {
+    const { modelId } = this.state;
+    const { instance } = this.props;
+    const blueprintName = this.GetBlueprintName();
+
+    // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
+    // Assume we can get a list of properties from SimData
+    // properties = [...{name, type, defaultvalue, isFeatProp }]
+    let properties = SimData.GetBlueprintProperties(modelId, blueprintName);
+
+    // Remove properties that have already been set
+    // 1. Get the list or properties
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const initProperties = scriptUnits.map(unit => {
+      if (unit[0].token === 'prop' || unit[0].token === 'featProp') {
+        return unit[1].token;
+      }
+    });
+    // 2. Remove already set properties
+    properties = properties.filter(p => !initProperties.includes(p.name));
+
+    this.setState({
+      properties,
+      isAddingProperty: true
+    });
+  }
+
+  OnPropMenuSelect(e) {
+    const selectedProp = e.target.value;
+    if (selectedProp === '') return; // selected the help instructions
+
+    const { modelId, properties } = this.state;
+    const { instance } = this.props;
+    const property = properties.find(p => p.name === selectedProp);
+    const keyword = property.isFeatProp ? 'featProp' : 'prop';
+    const newScriptLine = `${keyword} ${property.name} setTo ${property.defaultValue}`;
+
+    const instanceName = this.GetInstanceName();
+    // 1. Convert init script text to array
+    const scriptTextLines = instance.init.split('\n');
+    // 2. Add the updated line in the script array
+    scriptTextLines.push(newScriptLine);
+    // 4. Convert the script array back to script text
+    const updatedScript = scriptTextLines.join('\n');
+
+    console.error('current model id is', SimData.GetCurrentModelId());
+
+    UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+      modelId,
+      instanceId: instance.id,
+      instanceName,
+      instanceInit: updatedScript
+    });
+
+    this.setState({ isAddingProperty: false });
   }
 
   DoDeselect() {
@@ -227,13 +294,28 @@ class InstanceEditor extends React.Component {
       isHovered,
       isSelected,
       properties,
+      isAddingProperty,
     } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
+
     let jsx = '';
     if (instance) {
       const source = TRANSPILER.ScriptifyText(instance.init);
       jsx = TRANSPILER.RenderScript(source, { isEditable });
+
+    let propMenuJsx = '';
+    if (isAddingProperty) {
+      propMenuJsx = (
+        <select onChange={this.OnPropMenuSelect}>
+          <option value="">-- Select a property... --</option>
+          {properties.map(p => (
+            <option value={p.name} key={p.name}>
+              {p.name}
+            </option>
+          ))}
+        </select>
+      );
     }
 
     return (
@@ -255,6 +337,19 @@ class InstanceEditor extends React.Component {
             onSave={this.OnNameSave}
           />
           <div>{jsx}</div>
+          {isEditable && !isAddingProperty && (
+            <div style={{ textAlign: 'right' }}>
+              <button
+                onClick={this.OnAddProperty}
+                type="button"
+                className={classes.buttonSmall}
+                title="Add Property"
+              >
+                +
+              </button>
+            </div>
+          )}
+          {isAddingProperty && propMenuJsx}
           {/* ID display for debugging */}
           <div className={classes.inspectorLabel}>{instance.id}&nbsp;</div>{' '}
         </div>

@@ -218,6 +218,9 @@ const useStylesHOC = theme => ({
   instanceSpecSelected: {
     border: '1px solid #ffff00'
   },
+  instanceEditorLine: {
+    display: 'inline-block'
+  },
   navButton: {
     fontSize: '14px',
     textDecoration: 'none',
