@@ -36,13 +36,16 @@ class InstanceEditor extends React.Component {
       isSelected: false,
       properties: [],
       isAddingProperty: false,
+      isDeletingProperty: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetBlueprintName = this.GetBlueprintName.bind(this);
     this.GetAgentId = this.GetAgentId.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
+    this.HandleScriptLineDelete = this.HandleScriptLineDelete.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
     this.OnAddProperty = this.OnAddProperty.bind(this);
+    this.OnEnableDeleteProperty = this.OnEnableDeleteProperty.bind(this);
     this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
@@ -52,6 +55,7 @@ class InstanceEditor extends React.Component {
     this.OnHoverOut = this.OnHoverOut.bind(this);
     this.OnNameSave = this.OnNameSave.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.HandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
@@ -128,6 +132,28 @@ class InstanceEditor extends React.Component {
     }
   }
 
+  HandleScriptLineDelete(data) {
+    // Update the script
+    const { modelId, isEditable } = this.state;
+    if (isEditable) {
+      const { instance } = this.props;
+      const instanceName = this.GetInstanceName();
+      // 1. Convert init script text to array
+      const scriptTextLines = instance.init.split('\n');
+      // 2. Remove the line
+      scriptTextLines.splice(data.index, 1);
+      // 3. Convert the script array back to script text
+      const updatedScript = scriptTextLines.join('\n');
+
+      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
+        modelId,
+        instanceId: instance.id,
+        instanceName,
+        instanceInit: updatedScript
+      });
+    }
+  }
+
   /**
    * User clicked on instance in "Map Instances" panel, wants to edit
    * @param {*} e
@@ -165,6 +191,13 @@ class InstanceEditor extends React.Component {
       properties,
       isAddingProperty: true
     });
+  }
+
+  OnEnableDeleteProperty() {
+    // enable deletion
+    this.setState(state => ({
+      isDeletingProperty: !state.isDeletingProperty
+    }));
   }
 
   OnPropMenuSelect(e) {
@@ -295,6 +328,7 @@ class InstanceEditor extends React.Component {
       isSelected,
       properties,
       isAddingProperty,
+      isDeletingProperty
     } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
@@ -302,7 +336,11 @@ class InstanceEditor extends React.Component {
     let jsx = '';
     if (instance) {
       const source = TRANSPILER.ScriptifyText(instance.init);
-      jsx = TRANSPILER.RenderScript(source, { isEditable });
+      jsx = TRANSPILER.RenderScript(source, {
+        isEditable,
+        isDeletable: isDeletingProperty
+      });
+    }
 
     let propMenuJsx = '';
     if (isAddingProperty) {
@@ -339,6 +377,14 @@ class InstanceEditor extends React.Component {
           <div>{jsx}</div>
           {isEditable && !isAddingProperty && (
             <div style={{ textAlign: 'right' }}>
+              <button
+                onClick={this.OnEnableDeleteProperty}
+                type="button"
+                className={classes.buttonSmall}
+                title="Delete Property"
+              >
+                -
+              </button>
               <button
                 onClick={this.OnAddProperty}
                 type="button"
