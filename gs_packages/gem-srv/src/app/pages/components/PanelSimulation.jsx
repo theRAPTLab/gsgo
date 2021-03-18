@@ -40,7 +40,7 @@ class PanelSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Simulation'
+      title: 'Virtual Stage'
     };
     this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
     this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
