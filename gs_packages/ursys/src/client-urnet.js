@@ -12,7 +12,7 @@ const PROMPTS = require('./util/prompts');
 const { CFG_SVR_UADDR, CFG_URNET_SERVICE, PacketHash } = require('./ur-common');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagURSYS');
+const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

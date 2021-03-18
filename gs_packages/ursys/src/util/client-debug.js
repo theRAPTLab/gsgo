@@ -12,7 +12,7 @@ const HFUNCS = []; // stack of hfuncs in ur_handle, which
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function addConsoleTools(UR) {
-  const PR = UR.PrefixUtil('URDEBUG', 'TagDebug');
+  const PR = UR.PrefixUtil('URDEBUG', 'TagSystem');
   const { CallMessage, RaiseMessage, SendMessage } = UR;
 
   TOOLS = {

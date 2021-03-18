@@ -92,7 +92,7 @@ const CSS_COLORS = {
 };
 
 TERM_COLORS.TagSystem = TERM_COLORS.TagGray;
-TERM_COLORS.TagURSYS = TERM_COLORS.TagBlue;
+TERM_COLORS.TagUR = TERM_COLORS.TagBlue;
 TERM_COLORS.TagNetwork = TERM_COLORS.TagCyan;
 TERM_COLORS.TagApp = TERM_COLORS.TagPink;
 TERM_COLORS.TagTest = TERM_COLORS.TagRed;
@@ -101,7 +101,8 @@ TERM_COLORS.TagData = TERM_COLORS.TagGreen;
 TERM_COLORS.TagInput = TERM_COLORS.TagBlue;
 
 CSS_COLORS.TagSystem = CSS_COLORS.TagGray;
-CSS_COLORS.TagURSYS = `color:#fff;background-color:CornflowerBlue;${CSS_PAD}`;
+CSS_COLORS.TagUR = `color:#fff;background-color:CornflowerBlue;${CSS_PAD}`;
+CSS_COLORS.TagUR2 = `color:#fff;background-color:Navy;${CSS_PAD}`;
 CSS_COLORS.TagNetwork = CSS_COLORS.TagCyan;
 CSS_COLORS.TagApp = CSS_COLORS.TagPink;
 CSS_COLORS.TagTest = CSS_COLORS.TagRed;
@@ -227,7 +228,10 @@ function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDivText(id) {
   const el = document.getElementById(id);
-  if (!el) throw Error(`GetDivText: element ${id} does not exist`);
+  if (!el) {
+    console.log(`GetDivText: element ${id} does not exist`);
+    return undefined;
+  }
   const text = el.textContent;
   if (text === undefined) {
     console.log(`HTMLTextOut: element ${id} does not have textContent`);
@@ -345,7 +349,7 @@ function makeHTMLConsole(divId, row = 0, col = 0) {
   let buffer = [];
   if (typeof divId !== 'string') throw Error('bad id');
   if (!document.getElementById(divId)) {
-    console.warn(...ERP(`id '${divId}' doesn't exist`));
+    console.log(...ERP(`id '${divId}' doesn't exist`));
     return {
       print: () => {},
       plot: () => {},

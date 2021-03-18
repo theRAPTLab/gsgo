@@ -189,7 +189,7 @@ function RemoteHandlerPromises(pkt, ident) {
   }
   // if the message doesn't have a handler, return empty list of promises
   if (!NET_HANDLERS.has(mesgName)) {
-    TERM(`err  '${mesgName}' is not registered`);
+    // TERM(`err  '${mesgName}' is not registered`);
     return promises;
   }
 
@@ -200,12 +200,12 @@ function RemoteHandlerPromises(pkt, ident) {
     if (ident === undefined) ident = '';
     const remoteIsSender = origin === remote;
     if (remoteIsSender && dontReflect) {
-      const hash = PacketHash(pkt);
-      const msg = pkt.msg;
-      const seq = pkt.seqlog.join('>');
-      TERM(`${ident} skip packet ${hash} ${msg} to ${remote}`);
-      TERM(`${ident} skip packet ${hash} ${seq}`);
-      TERM(`${ident} ${JSON.stringify(pkt.data)}`);
+      // const hash = PacketHash(pkt);
+      // const msg = pkt.msg;
+      // const seq = pkt.seqlog.join('>');
+      // TERM(`${ident} skip packet ${hash} ${msg} to ${remote}`);
+      // TERM(`${ident} skip packet ${hash} ${seq}`);
+      // TERM(`${ident} ${JSON.stringify(pkt.data)}`);
     } else {
       let r_sock = SocketLookup(remote);
       if (r_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${remote}`);
@@ -216,9 +216,9 @@ function RemoteHandlerPromises(pkt, ident) {
       const fwdHash = PacketHash(newpkt);
       const fwdMsg = newpkt.msg;
       const fwdSeq = newpkt.seqlog.join('>');
-      TERM(`${ident} fwd  packet ${fwdHash} '${fwdMsg}' to ${remote}`);
-      TERM(`${ident} fwd  packet ${fwdHash} ${fwdSeq}`);
-      TERM(`${ident} ${JSON.stringify(pkt.data)}`);
+      // TERM(`${ident} fwd  packet ${fwdHash} '${fwdMsg}' to ${remote}`);
+      // TERM(`${ident} fwd  packet ${fwdHash} ${fwdSeq}`);
+      // TERM(`${ident} ${JSON.stringify(pkt.data)}`);
     }
   });
   return promises;

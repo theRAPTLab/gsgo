@@ -166,8 +166,8 @@ async function m_RouteMessage(socket, pkt) {
   const thread = `T${count}`;
   const hash = PacketHash(pkt);
   const msg = `'${pkt.getMessage()}'`;
-  TERM('');
-  TERM(`${thread} received ${hash} '${pkt.msg}' on socket ${socket.UADDR}`);
+  // TERM('');
+  // TERM(`${thread} received ${hash} '${pkt.msg}' on socket ${socket.UADDR}`);
   // (1) Is the incoming message a response to a message that the server sent?
   // It might have been a duplicate packet ('forwarded') or one the server itself sent.
   // In either case, the packet will invoke whatever function handler is associated with
@@ -176,7 +176,7 @@ async function m_RouteMessage(socket, pkt) {
   // recombines and returns to the original packet sender
   if (pkt.isResponse()) {
     const slog = pkt.seqlog.join('>');
-    TERM(`${thread} ${msg} completing transaction ${hash} ${slog}`);
+    // TERM(`${thread} ${msg} completing transaction ${hash} ${slog}`);
     pkt.transactionComplete();
     return;
   }
@@ -223,11 +223,11 @@ async function m_RouteMessage(socket, pkt) {
      which sends a packet and stores a hashkey that has the
      resolve() in it.
   */
-  TERM(`${thread} sleeping ${msg} ${hash}`);
+  // TERM(`${thread} sleeping ${msg} ${hash}`);
   let pktArray = await Promise.all(promises).catch(err => {
     TERM(`${thread} ERROR IN PROMISE`, err);
   });
-  TERM(`${thread} waking up ${msg} ${hash}`);
+  // TERM(`${thread} waking up ${msg} ${hash}`);
   /* END MAGICAL ASYNC/AWAIT BLOCK *****************************/
   // (3d) Print some more debugging messages after async
   /* SERVER MESSAGES: runs immediately in this thread
@@ -244,7 +244,7 @@ async function m_RouteMessage(socket, pkt) {
 
   // (3e) If the call type doesn't expect return data, we are done!
   if (!pkt.isType('mcall')) return;
-  TERM(`${thread} post-promise mcall ${hash}`);
+  // TERM(`${thread} post-promise mcall ${hash}`);
 
   // (3f) If the call type is 'mcall', and we need to return the original
   /* message packet to the original caller with updated data When there are
@@ -263,8 +263,8 @@ async function m_RouteMessage(socket, pkt) {
   */
   pkt.setData(data);
   const json = JSON.stringify(data);
-  TERM(`${thread} transaction ${hash} return payload:`);
-  TERM(json);
+  // TERM(`${thread} transaction ${hash} return payload:`);
+  // TERM(json);
   pkt.transactionReturn(socket); // original requesting packet
 }
 

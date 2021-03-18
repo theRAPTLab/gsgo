@@ -15,7 +15,7 @@ const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
-const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagURSYS');
+const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
 const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////

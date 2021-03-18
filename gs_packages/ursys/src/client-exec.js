@@ -18,7 +18,7 @@ const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagURSYS');
+const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

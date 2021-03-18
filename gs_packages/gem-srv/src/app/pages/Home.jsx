@@ -15,7 +15,6 @@ import { useStylesHOC } from './elements/page-styles';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('HOME');
-const HCON = UR.HTMLConsoleUtil('console-left');
 
 /// UI HELPERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

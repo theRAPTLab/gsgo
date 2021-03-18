@@ -43,7 +43,7 @@ import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MISSIONCONTROL');
+const PR = UR.PrefixUtil('MISSIONCONTROL', 'TagRed');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
@@ -112,14 +112,14 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
 
     // System Hooks
-    UR.SystemHook('SIM/READY', () => {
-      console.error('sim/READY!');
+    UR.OnPhase('SIM/READY', () => {
+      console.log(...PR('SIM/READY!'));
       const { modelId } = this.state;
       this.LoadModel(modelId);
     });
     // TEST: Probably not necessary so long as SIM/READY is only called once
-    UR.SystemHook('SIM/STAGED', () => {
-      console.warn('SIM/STAGED!');
+    UR.OnPhase('SIM/STAGED', () => {
+      console.log(...PR('SIM/STAGED!'));
       // const { modelId } = this.state;
       // this.LoadModel(modelId);
     });
