@@ -101,6 +101,20 @@ class SimData {
   GetCurrentModelId() {
     return this.currentModelId;
   }
+  GetBlueprintProperties(modelId, blueprintName) {
+    // HACK Data for now
+    return [
+      { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
+      { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
+      {
+        name: 'energyLevel',
+        type: 'number',
+        defaultValue: 100,
+        isFeatProp: false
+      },
+      { name: 'skin', type: 'string', defaultValue: '', isFeatProp: true }
+    ];
+  }
 
   /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
