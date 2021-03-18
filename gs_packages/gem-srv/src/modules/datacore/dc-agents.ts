@@ -64,11 +64,12 @@ export function DeleteBlueprintInstances(blueprint) {
  */
 export function SaveAgent(agent) {
   const { id, blueprint } = agent;
-  const name = blueprint.name;
+  const blueprintName = blueprint.name;
   //
-  if (!AGENTS.has(name)) AGENTS.set(name, new Map());
-  const agents = AGENTS.get(name);
-  if (agents.has(id)) throw Error(`agent id ${id} already in ${name} list`);
+  if (!AGENTS.has(blueprintName)) AGENTS.set(blueprintName, new Map());
+  const agents = AGENTS.get(blueprintName);
+  if (agents.has(id))
+    throw Error(`agent id ${id} already in ${blueprintName} list`);
   // save the agent
   agents.set(id, agent);
   // also save the id global lookup table
@@ -146,4 +147,5 @@ export function GetAllAgents() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllAgents() {
   AGENTS.clear();
+  AGENT_DICT.clear();
 }

@@ -218,6 +218,9 @@ const useStylesHOC = theme => ({
   instanceSpecSelected: {
     border: '1px solid #ffff00'
   },
+  instanceEditorLine: {
+    display: 'inline-block'
+  },
   navButton: {
     fontSize: '14px',
     textDecoration: 'none',
@@ -241,6 +244,36 @@ const useStylesHOC = theme => ({
     minHeight: '50px',
     minWidth: '50px',
     borderRadius: '5px',
+    color: CLR_DATA,
+    backgroundColor: CLR_OBJECT_CLICKABLE,
+    borderTopColor: BaseColorShift(0, 0.2),
+    borderLeftColor: BaseColorShift(0, 0.2),
+    borderRightColor: BaseColorShift(-240, 0.2),
+    borderBottomColor: BaseColorShift(-240, 0.2),
+    cursor: 'pointer'
+  },
+  buttonSmall: {
+    fontSize: '18px',
+    padding: '5px',
+    margin: '5px',
+    minHeight: '25px',
+    minWidth: '25px',
+    borderRadius: '5px',
+    color: CLR_DATA,
+    backgroundColor: CLR_OBJECT_CLICKABLE,
+    borderTopColor: BaseColorShift(0, 0.2),
+    borderLeftColor: BaseColorShift(0, 0.2),
+    borderRightColor: BaseColorShift(-240, 0.2),
+    borderBottomColor: BaseColorShift(-240, 0.2),
+    cursor: 'pointer'
+  },
+  buttonMini: {
+    fontSize: '10px',
+    padding: '2px',
+    margin: '2px',
+    minHeight: '15px',
+    minWidth: '15px',
+    borderRadius: '3px',
     color: CLR_DATA,
     backgroundColor: CLR_OBJECT_CLICKABLE,
     borderTopColor: BaseColorShift(0, 0.2),

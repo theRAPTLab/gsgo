@@ -73,7 +73,7 @@ class PanelMapInstances extends React.Component {
                 key={blueprint.name}
               >
                 {blueprint.instances.map(i => (
-                  <InstanceEditor instance={i} key={i.name} />
+                  <InstanceEditor instance={i} key={i.id} />
                 ))}
               </div>
             ))}
