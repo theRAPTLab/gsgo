@@ -88,12 +88,12 @@ class PanelSimulation extends React.Component {
    * @param {Object} data { name: <string> } where name is the agent name.
    */
   DoRegisterInspector(data) {
-    const name = data.name;
-    MONITORED_INSTANCES.push(name);
+    const id = data.id;
+    MONITORED_INSTANCES.push(id);
   }
   DoUnRegisterInspector(data) {
-    const name = data.name;
-    const i = MONITORED_INSTANCES.indexOf(name);
+    const id = data.id;
+    const i = MONITORED_INSTANCES.indexOf(id);
     if (i > -1) MONITORED_INSTANCES.splice(i, 1);
   }
 
@@ -106,7 +106,7 @@ class PanelSimulation extends React.Component {
     // walk down agents and broadcast results for monitored agents
     const agents = GetAllAgents();
     const inspectorAgents = agents.filter(a =>
-      MONITORED_INSTANCES.includes(a.meta.name)
+      MONITORED_INSTANCES.includes(a.id)
     );
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
@@ -122,6 +122,7 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
     SIM.Reset();
+    // SimPlaces is called by Mission Control.
   }
 
   // See PanelScript.hackSendText for documentation of the whole call cycle
@@ -139,18 +140,23 @@ class PanelSimulation extends React.Component {
     const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
     if (instancesSpec.length < 1) {
       // If the map has not been defined yet, then generate a single instance
-      instancesSpec.push({ name: `${bp.name}01`, init: '' });
-    }
+      // instancesSpec.push({ name: `${bp.name}01`, init: '' });
 
-    UR.RaiseMessage('AGENTS_PROGRAM', {
-      blueprint: bp.name,
-      instancesSpec
-    });
+      // REVIEW HACK
+      // modelId is not available here?!?!
+      const params = new URLSearchParams(window.location.search.substring(1));
+      const modelId = params.get('model');
+
+      UR.RaiseMessage('LOCAL:INSTANCE_ADD', {
+        modelId,
+        blueprintName: bp.name
+      });
+    }
   }
 
   DoSimPlaces() {
     // 1. Load Model
-    //    model data is loaded by the parent container: MissionControl or MapEditor
+    //    model data is loaded by the parent container MissionControl
     const { model } = this.props;
 
     // Skip if no model is loaded

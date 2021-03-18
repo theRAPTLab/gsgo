@@ -43,5 +43,21 @@ when Rabbit touches Grass [[
 ]]
 `
     }
+  ],
+  instances: [
+    {
+      id: 501,
+      name: 'bee01',
+      blueprint: 'Bee',
+      init: `prop x setTo 0
+prop y setTo 0`
+    },
+    {
+      id: 502,
+      name: 'bee02',
+      blueprint: 'Bee',
+      init: `prop x setTo 100
+prop y setTo 100`
+    }
   ]
 };

@@ -20,6 +20,8 @@ import { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
 // import Keyword, { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
+import { withStyles } from '@material-ui/core/styles';
+import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +45,7 @@ type MyProps = {
   index: number;
   state: MyState;
   isEditable: boolean;
+  isDeletable: boolean;
   serialize: (state: MyState) => TScriptUnit;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -61,6 +64,7 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.onBlur = this.onBlur.bind(this);
     this.saveData = this.saveData.bind(this);
     this.onClick = this.onClick.bind(this);
+    this.onDeleteLine = this.onDeleteLine.bind(this);
   }
   componentWillUnmount() {
     const { isEditable } = this.props;
@@ -85,6 +89,10 @@ class PropElement extends React.Component<MyProps, MyState> {
     // Stop click here when user clicks inside form to edit.
     // Other clicks will propagage to InstanceEditor where it will exit edit mode
   }
+  onDeleteLine() {
+    const updata = { index: this.index };
+    UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
+  }
   /**
    *
    * @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
@@ -98,11 +106,10 @@ class PropElement extends React.Component<MyProps, MyState> {
       scriptUnit: this.serialize(this.state),
       exitEdit
     };
-    console.error('saving data', updata);
     UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
   }
   render() {
-    const { index, isEditable } = this.props;
+    const { index, isEditable, isDeletable, classes } = this.props;
     const { propName, methodName, args } = this.state;
     let jsx;
     // HACK force number for now
@@ -111,18 +118,31 @@ class PropElement extends React.Component<MyProps, MyState> {
     if (isEditable) {
       // Show Form
       jsx = (
-        <>
-          {propName}:
-          <input
-            onChange={this.onChange}
-            onKeyDown={this.onKeyDown}
-            onBlur={this.onBlur}
-            onClick={this.onClick}
-            type={type}
-            value={args[0]}
-            style={{ width: '5em' }}
-          />
-        </>
+        <div>
+          {isDeletable && (
+            <div className={classes.instanceEditorLine}>
+              <button
+                type="button"
+                className={classes.buttonMini}
+                onClick={this.onDeleteLine}
+              >
+                x
+              </button>
+            </div>
+          )}
+          <div className={classes.instanceEditorLine}>{propName}:</div>
+          <div className={classes.instanceEditorLine}>
+            <input
+              onChange={this.onChange}
+              onKeyDown={this.onKeyDown}
+              onBlur={this.onBlur}
+              onClick={this.onClick}
+              type={type}
+              value={args[0]}
+              style={{ width: '5em' }}
+            />
+          </div>
+        </div>
       );
     } else {
       // Show Static Value
@@ -182,16 +202,30 @@ export class prop extends Keyword {
       isDirty: false
     };
     const isEditable = children ? children.isEditable : false;
-    return super.jsx(
-      index,
-      unit,
-      <PropElement
+    const isDeletable = children ? children.isDeletable : false;
+    const StyledPropElement = withStyles(useStylesHOC)(PropElement);
+    return (
+      <StyledPropElement
         index={index}
+        key={index}
         state={state}
         isEditable={isEditable}
+        isDeletable={isDeletable}
         serialize={this.serialize}
       />
     );
+
+    // Orig Method wraps a line number around the property
+    // return super.jsx(
+    //   index,
+    //   unit,
+    //   <PropElement
+    //     index={index}
+    //     state={state}
+    //     isEditable={isEditable}
+    //     serialize={this.serialize}
+    //   />
+    // );
   }
 } // end of UseFeature
 

@@ -91,9 +91,11 @@ class MissionControl extends React.Component {
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
+    this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
 
     // Instance Interaction Handlers
@@ -150,6 +152,7 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
+    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -172,7 +175,8 @@ class MissionControl extends React.Component {
     );
   }
   /**
-   * User has submitted a new script
+   * User has submitted a new script, just update message
+   * PanelSimulation handles instance creation
    * @param {object} data { script }
    */
   DoScriptUpdate(data) {
@@ -184,6 +188,15 @@ class MissionControl extends React.Component {
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');
   }
+  DoSimReset() {
+    this.setState(
+      {
+        model: {},
+        instances: []
+      },
+      () => this.LoadModel()
+    );
+  }
   /**
    * Handler for `NET:INSPECTOR_UPDATE`
    * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
@@ -192,6 +205,13 @@ class MissionControl extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
+    const { panelConfiguration } = this.state;
+
+    // Don't do updates if we're editing the map
+    // This triggers state changes, which causes InstanceEditor
+    // and prop.tsx to re-render AMD text input fields to lose focus
+    if (panelConfiguration === 'edit') return;
+
     if (!data || data.agents === undefined) {
       console.error('OnInspectorUpdate got bad data', data);
       return;
@@ -200,10 +220,10 @@ class MissionControl extends React.Component {
     const map = new Map();
     const allInstances = GetAllInstances();
     allInstances.forEach(i => {
-      map.set(i.name, i);
+      map.set(i.id, i);
     });
     data.agents.forEach(a => {
-      map.set(a.meta.name, a);
+      map.set(a.id, a);
     });
     const instances = Array.from(map.values());
     this.setState({ instances });
@@ -220,7 +240,7 @@ class MissionControl extends React.Component {
     const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
     SimData.InstanceUpdatePosition({
       modelId,
-      instanceName: agent.meta.name,
+      instanceId: agent.id,
       updatedData: { x, y }
     });
   }
