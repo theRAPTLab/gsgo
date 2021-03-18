@@ -11,7 +11,7 @@ class PanelSelect extends React.Component {
       title: 'Select Work',
       options: [
         // Dummy Data
-        { id: 'missioncontrol', label: 'Mission Control' },
+        { id: 'missioncontrol', label: 'Main' },
         { id: 'scripteditor', label: 'Script Editor' },
         { id: 'faketrack', label: 'Fake Track' },
         { id: 'viewer', label: 'View-only' }

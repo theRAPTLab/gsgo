@@ -349,7 +349,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
+            <span style={{ fontSize: '32px' }}>MAIN {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
           <Link
