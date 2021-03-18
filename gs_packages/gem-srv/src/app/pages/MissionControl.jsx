@@ -193,6 +193,13 @@ class MissionControl extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
+    const { panelConfiguration } = this.state;
+
+    // Don't do updates if we're editing the map
+    // This triggers state changes, which causes InstanceEditor
+    // and prop.tsx to re-render AMD text input fields to lose focus
+    if (panelConfiguration === 'edit') return;
+
     if (!data || data.agents === undefined) {
       console.error('OnInspectorUpdate got bad data', data);
       return;
