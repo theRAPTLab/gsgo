@@ -1,4 +1,4 @@
-[PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
+PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY S20 SEP 28-OCT 11**
 
@@ -397,9 +397,47 @@ IOBS can also be mapped independently, but maybe it is easier to just pull the "
 
 Step by step:
 
-* [ ] can client-module reuest something from server-module?
+* [x] can client-module reuest something from server-module?
   * `NET:SRV_PROTOCOLS` should return a data structure
   * `NET:SRV_DEVICES` should return a data structure
+
+* [x] hook app ready to test calls through NetNode?
+
+What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what needs to happen for registration
+
+* [ ] `FakeTrack.jsx` loads UR. What does it really need to do with it?
+
+  * [ ] The device directory should automatically be populated by the module, which receives data from the server.
+  * [ ] Has to register as a device with a list of named input types (trigger, vector, xyz)
+  * [ ] When registered, it starts emitting its output periodically when told to.
+  * [ ] Has to respond to an input control language
+
+* [ ] The input server has to talk to FakeTrack
+
+  * [ ] receives input frames, and redistributes them
+  * [ ] receives input control modifiers (start, stop, reset, disable, rename, group, transforms) and tells devices
+  * [ ] don't worry about encoding efficiency yet
+
+* [ ] where do TRANSFORMS live? Adjustments are made on sending device, and these transforms can be overridden by another contorller that resets it, whatever
+
+* [ ] `sim-input`  has to subscribe to all these input frames and do something with them
+
+  * [ ] all input is mapped to a device which produces "frames" that are an array of InputObjects
+  * [ ] The device logical id is managed by URSYS, and is not synched to the agent id
+  * [ ] sim-input reads all the device state
+    * [ ] Saves each InputObject into a buffer
+    * [ ] Groups by shared groupname
+    * [ ] Returns pertinent inputs by request (logical name, group name, type) as InputObjects, which are returned as object references
+
+* [ ] `sim-agent` has to request inputs and map them to a set of agents that are input-controlled. 
+
+  * [ ] The number of a group input type needs to produce a corresponding agent with an agentID.
+  * [ ] These agents are assigned Ids from the input, since they are the defining instancer in this case. These ids will be distinct from other agents; the `MappedPool` class doesn't care if the ids are numeric or alphanumeric because it just uses `Map` to check fo uniqueness. However, the `Pool` class maps numbers; we'll have to **update** this and make sure it still works.
+  * [ ] As inputs appear/disappear, the agents also have to be added/removed or maybe deadened
+  * [ ] inputs objects are assigned to an agent, and it's up to the agent to figure out how to use it.
+  * [ ] input objects may make use of a particle effect to show where they are
+
+  
 
 
 

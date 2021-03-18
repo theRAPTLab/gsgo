@@ -109,6 +109,8 @@ CSS_COLORS.TagTest = CSS_COLORS.TagRed;
 CSS_COLORS.TagDebug = `color:#fff;background-color:IndianRed;${CSS_PAD}`;
 CSS_COLORS.TagData = CSS_COLORS.TagDkOrange;
 CSS_COLORS.TagInput = CSS_COLORS.TagDkOrange;
+CSS_COLORS.TagHook = `color:#fff;background-color:MediumSlateBlue;${CSS_PAD}`;
+CSS_COLORS.TagOnPhase = `color:#fff;background-color:MediumVioletRed;${CSS_PAD}`;
 CSS_COLORS.TagRainbow = `color:#fff;background:linear-gradient(
   45deg,
   rgba(255, 0, 0, 1) 0%,
