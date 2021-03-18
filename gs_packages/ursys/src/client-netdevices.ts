@@ -7,14 +7,16 @@
 /// note: these are CJS modules so use require syntax
 const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
+const { LocalNode, NetNode } = require('./client-datacore');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('NETDEVIS','TagUR2');
+const PR = PROMPTS.makeStyleFormatter('DEVICE','TagUR2');
+const HPR = PROMPTS.makeStyleFormatter('DEVICE','TagHook');
+const PPR = PROMPTS.makeStyleFormatter('DEVICE','TagOnPhase');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -24,17 +26,32 @@ const PR = PROMPTS.makeStyleFormatter('NETDEVIS','TagUR2');
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// INITIALIZATION ////////////////////////////////////////////////////////////
+PhaseMachine.Hook('UR/NET_PROTOCOLS', () => new Promise<void>( (resolve, reject)=> {
+  console.log(...PPR('testing hook for NET_PROTOCOLS when they are stable'));
+  resolve();
+}));
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 PhaseMachine.Hook('UR/NET_DEVICES', () => new Promise<void>( (resolve, reject)=> {
-  console.log(...PR('testing hook for NET_DEVICES when they are stable'));
+  console.log(...PPR('testing hook for NET_DEVICES when they are stable'));
   resolve();
 }));
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+PhaseMachine.Hook('UR/APP_READY', () => {
+  console.log(...PPR('testing hook for APP_READY; Try to make some NETCALLS'));
+  NetNode.callMessage('NET:SRV_PROTOCOLS').then( data=> {
+    console.log(...PPR('received PROTOCOL data from call',data));
+  });
+  NetNode.callMessage('NET:SRV_DEVICES').then(data=>{
+    console.log(...PPR('received DEVICES data from call',data));
+  });
+});
 
-PhaseMachine.Hook('UR/APP_READY', () => new Promise<void>( (resolve, reject)=> {
-  console.log(...PR('testing hook for NET_DEVICES app ready to do some requests'));
-  resolve();
-}));
+/// INITIALIZATION ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+NetNode.handleMessage('NET:NET_PROTOCOLS',data=>{
+  console.log(...HPR('NET:NET_PROTOCOLS got',data));
+});
+
 
 
 

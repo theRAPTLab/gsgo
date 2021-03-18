@@ -7,23 +7,21 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UR_EndPoint = require('./client-endpoint');
 const NETWORK = require('./client-urnet');
-const PROTOCOL = require('./client-netprotocols');
 const DEVICES = require('./client-netdevices');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
-const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
-const DBG = false;
-
-/// CONSTANTS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PhaseMachine = require('./class-phase-machine');
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
+const DBG = false;
+const { LocalNode, NetNode } = require('./client-datacore');
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,8 +37,6 @@ const META = {
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LocalNode = new UR_EndPoint('ur-client'); // local mesaging
-const NetNode = new UR_EndPoint('ur-sender'); // server messaging
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
 

@@ -5,14 +5,17 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const $$ = require('./ur-common');
+const EndPoint = require('./class-endpoint');
 
 /// ENDPOINT DATA STRUCTURES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UNODE_MAP = new Map(); // map of class-endpoint
+const LocalNode = new EndPoint('ur-client-local');
+const NetNode = new EndPoint('ur-client-net');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   // URNET
-  UNODE_MAP
+  LocalNode,
+  NetNode
 };
