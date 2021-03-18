@@ -13,6 +13,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { GetAgentById } from 'modules/datacore/dc-agents';
+import * as TRANSPILER from 'script/transpiler';
 
 // HACK DATA LOADING
 import { MODEL as AquaticModel } from './aquatic';
@@ -102,18 +103,29 @@ class SimData {
     return this.currentModelId;
   }
   GetBlueprintProperties(modelId, blueprintName) {
-    // HACK Data for now
-    return [
+    // HACK
+    // 1. Start with built in properties
+    let properties = [
       { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-      { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
-      {
-        name: 'energyLevel',
-        type: 'number',
-        defaultValue: 100,
-        isFeatProp: false
-      },
-      { name: 'skin', type: 'string', defaultValue: '', isFeatProp: true }
+      { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
     ];
+    // 2. Brute force deconstruct added properties
+    //    by walking down script and looking for `addProp`
+    const model = this.GetSimDataModel(modelId);
+    const blueprint = model.scripts.find(s => s.id === blueprintName);
+    const script = blueprint.script;
+    const scriptUnits = TRANSPILER.ScriptifyText(script);
+    scriptUnits.forEach(unit => {
+      if (unit[0] && unit[0].token === 'addProp') {
+        properties.push({
+          name: unit[1].token,
+          type: unit[2].token.toLowerCase(),
+          defaultValue: unit[3].value,
+          isFeatProp: false
+        });
+      }
+    });
+    return properties;
   }
 
   /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
