@@ -88,12 +88,12 @@ class PanelSimulation extends React.Component {
    * @param {Object} data { name: <string> } where name is the agent name.
    */
   DoRegisterInspector(data) {
-    const name = data.name;
-    MONITORED_INSTANCES.push(name);
+    const id = data.id;
+    MONITORED_INSTANCES.push(id);
   }
   DoUnRegisterInspector(data) {
-    const name = data.name;
-    const i = MONITORED_INSTANCES.indexOf(name);
+    const id = data.id;
+    const i = MONITORED_INSTANCES.indexOf(id);
     if (i > -1) MONITORED_INSTANCES.splice(i, 1);
   }
 
@@ -106,7 +106,7 @@ class PanelSimulation extends React.Component {
     // walk down agents and broadcast results for monitored agents
     const agents = GetAllAgents();
     const inspectorAgents = agents.filter(a =>
-      MONITORED_INSTANCES.includes(a.meta.name)
+      MONITORED_INSTANCES.includes(a.id)
     );
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
@@ -151,7 +151,6 @@ class PanelSimulation extends React.Component {
         blueprintName: bp.name
       });
     }
-
   }
 
   DoSimPlaces() {

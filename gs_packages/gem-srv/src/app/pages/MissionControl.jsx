@@ -208,10 +208,10 @@ class MissionControl extends React.Component {
     const map = new Map();
     const allInstances = GetAllInstances();
     allInstances.forEach(i => {
-      map.set(i.name, i);
+      map.set(i.id, i);
     });
     data.agents.forEach(a => {
-      map.set(a.meta.name, a);
+      map.set(a.id, a);
     });
     const instances = Array.from(map.values());
     this.setState({ instances });
