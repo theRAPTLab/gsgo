@@ -12,7 +12,7 @@ class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Simulation',
+      title: 'Select Project',
       models: []
       // models: [
       //   // Dummy Data
@@ -54,7 +54,7 @@ class PanelSelectSimulation extends React.Component {
             }}
           >
             <div className={classes.instructions}>
-              <p>Select a simulation to work on:</p>
+              <p>Select a project to work on:</p>
             </div>
             {models.map(m => (
               <button
