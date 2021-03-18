@@ -319,8 +319,8 @@ class MissionControl extends React.Component {
           exclusive
           onChange={this.OnToggleRunEdit}
         >
-          <StyledToggleButton value="run">Run Model</StyledToggleButton>
-          <StyledToggleButton value="edit">Edit Map</StyledToggleButton>
+          <StyledToggleButton value="run">Go to Run</StyledToggleButton>
+          <StyledToggleButton value="edit">Stage Setup</StyledToggleButton>
         </ToggleButtonGroup>
       </div>
     );
