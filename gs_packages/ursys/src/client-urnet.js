@@ -8,12 +8,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
 const NETINFO = require('./client-netinfo');
-const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagSystem');
-const { CFG_SVR_UADDR, CFG_URNET_SERVICE } = require('./ur-common');
+const PROMPTS = require('./util/prompts');
+const { CFG_SVR_UADDR, CFG_URNET_SERVICE, PacketHash } = require('./ur-common');
+
+const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
+const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagURSYS');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { connect: true, hello: true, handle: false, reg: false };
+const DBG = { connect: false, hello: false, handle: false, reg: false };
 ///
 const ENDPOINT_NAME = 'MessagerEndpoint';
 const ERR_NO_SOCKET = 'Network socket has not been established yet';
@@ -70,7 +73,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   m_RemoveListener('message', m_HandleRegistrationMessage);
   m_SetStatus(M3_REGISTERED);
   // (2) initialize global settings for netmessage
-  if (DBG.connect || DBG.hello) console.log(...PR(`URNET SAYS '${HELLO}'`));
+  console.log(...NPR(`URNET connected: '${HELLO}'`));
   m_socket.UADDR = CFG_SVR_UADDR;
   NetPacket.GlobalSetup({
     uaddr: UADDR,
@@ -97,11 +100,12 @@ function m_HandleRegistrationMessage(msgEvent) {
 function m_HandleMessage(msgEvent) {
   let pkt = new NetPacket(msgEvent.data);
   let msg = pkt.getMessage();
+  let hash = PacketHash(pkt);
   // (1) If this packet is a response packet, then it must be one of
   // our OWN previously-sent messages that we expected a return value.
   // Call CompleteTransaction() to invoke the function handler
   if (pkt.isResponse()) {
-    if (DBG.handle) console.log(...PR(`completing transaction ${msg}`));
+    if (DBG.handle) console.log(...PR(`${hash} completing transaction ${msg}`));
     pkt.transactionComplete();
     return;
   }
@@ -114,7 +118,7 @@ function m_HandleMessage(msgEvent) {
   switch (type) {
     case 'state':
       // unimplemented netstate
-      if (dbgout) console.log(...PR(`received state change ${msg}`));
+      if (dbgout) console.log(...PR(`${hash} received state change ${msg}`));
       break;
     case 'msend':
       // network message received
@@ -132,6 +136,8 @@ function m_HandleMessage(msgEvent) {
       // network call received
       if (dbgout) cout_ReceivedStatus(pkt);
       m_urlink.callMessage(msg, data, { fromNet: true }).then(result => {
+        console.log(...PR(`transaction ${msg} ${hash} returned`, result));
+        console.log(...PR('original sent data', data));
         if (dbgout) cout_ForwardedStatus(pkt, result);
         // now return the packet
         pkt.setData(result);
@@ -145,7 +151,7 @@ function m_HandleMessage(msgEvent) {
   function cout_ReceivedStatus(p) {
     console.warn(
       ...PR(
-        `ME_${NetPacket.SocketUADDR()} received '${p.getType()}' '${p.getMessage()}' from ${pkt.getSourceAddress()}`
+        `received '${p.getType()}' ${hash} '${p.getMessage()}' from ${pkt.getSourceAddress()}`
       ),
       pkt.getData()
     );
@@ -154,7 +160,7 @@ function m_HandleMessage(msgEvent) {
   function cout_ForwardedStatus(p, result) {
     console.log(
       ...PR(
-        `ME_${NetPacket.SocketUADDR()} forwarded '${p.getMessage()}', returning ${JSON.stringify(
+        `forwarded ${hash} '${p.getMessage()}', returning ${JSON.stringify(
           result
         )}`
       )
@@ -261,7 +267,7 @@ URNET.WebServerPort = () => window.location.port || 80;
 URNET.ConnectionString = () => {
   const { host } = NETINFO.GetNetInfo();
   const port = window.location.port;
-  let str = `appserver at ${host}`;
+  let str = `${URNET.SocketUADDR()} ⇆ ${host}`;
   if (port) str += `:${port}`;
   return str;
 };

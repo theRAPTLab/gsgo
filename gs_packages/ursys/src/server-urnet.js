@@ -13,7 +13,7 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
-const { CFG_SVR_UADDR } = require('./ur-common');
+const { CFG_SVR_UADDR, PacketHash } = require('./ur-common');
 const {
   InitializeNetInfo,
   SocketAdd,
@@ -32,12 +32,12 @@ const {
 const {
   PKT_ProtocolDirectory,
   PKT_DeviceDirectory
-} = require('./svc-net-directory');
+} = require('./svc-netdevices');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
+const DBG = require('./ur-dbg-settings');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { init: true, calls: false, client: true };
 const ERR_SS_EXISTS = 'socket server already created';
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
@@ -160,7 +160,14 @@ function ProcessMessage(socket, json) {
  * @param {Object} socket messaging socket
  * @param {NetPacket} pkt - NetPacket packet instance
  */
+let ROUTE_THREAD_COUNTER = 1;
 async function m_RouteMessage(socket, pkt) {
+  const count = `${ROUTE_THREAD_COUNTER++}`.padStart(4, '0');
+  const thread = `T${count}`;
+  const hash = PacketHash(pkt);
+  const msg = `'${pkt.getMessage()}'`;
+  TERM('');
+  TERM(`${thread} received ${hash} '${pkt.msg}' on socket ${socket.UADDR}`);
   // (1) Is the incoming message a response to a message that the server sent?
   // It might have been a duplicate packet ('forwarded') or one the server itself sent.
   // In either case, the packet will invoke whatever function handler is associated with
@@ -168,29 +175,27 @@ async function m_RouteMessage(socket, pkt) {
   // of the original packet and the forwarded duplicate packet(s) that the server
   // recombines and returns to the original packet sender
   if (pkt.isResponse()) {
-    if (DBG.calls)
-      TERM(
-        `-- ${pkt.getMessage()} completing transaction ${pkt.seqlog.join(':')}`
-      );
+    const slog = pkt.seqlog.join('>');
+    TERM(`${thread} ${msg} completing transaction ${hash} ${slog}`);
     pkt.transactionComplete();
     return;
   }
   // (2) If we got this far, it's a new message.
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.
-  let promises = ServerHandlerPromises(pkt);
+  let promises = ServerHandlerPromises(pkt, thread);
 
   // (3) If the server doesn't implement any promises, check if there are
   // any remotes that have registered one.
-  if (promises.length === 0) promises = RemoteHandlerPromises(pkt);
+  if (promises.length === 0) promises = RemoteHandlerPromises(pkt, thread);
 
   // (3a) If there were NO HANDLERS defined for the incoming message, then
   // this is an error. If the message is a CALL, then report an error back to
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
-    const out = `${pkt.getSourceAddress()} can't find '${pkt.getMessage()}'`;
+    const out = `${hash} can't find ${msg}`;
     const info = 'check (1) remote is offline or (2) using send instead of raise';
-    if (DBG.calls) TERM.warn(out, info);
+    if (DBG.calls) TERM.warn(`${thread} ${out}`);
     // return transaction to resolve callee
     pkt.setData({
       code: NetPacket.CODE_NO_MESSAGE,
@@ -200,7 +205,6 @@ async function m_RouteMessage(socket, pkt) {
     if (pkt.isType('mcall')) pkt.transactionReturn(socket);
     return;
   }
-
   // (3b) We have at least one promise for remote handlers.
   // It will either be server calls or remote calls. The server
   // always takes precedence over remote calls so clients can't
@@ -208,46 +212,63 @@ async function m_RouteMessage(socket, pkt) {
   // the server!
 
   // Print some debugging messages
-  const DBG_NOSRV = !pkt.isServerMessage();
-  if (DBG.calls) log_PktDirection(pkt, 'call', promises);
-  if (DBG.calls && DBG_NOSRV) log_PktTransaction(pkt, 'queuing', promises);
+  const notServer = !pkt.isServerMessage();
+  // if (DBG.calls) log_PktDirection(pkt, 'call', promises);
+  // if (DBG.calls && notServer) log_PktTransaction(pkt, 'queuing', promises);
 
   /* (3c) MAGICAL ASYNC/AWAIT BLOCK ****************************/
-  /* pktArray will contain data objects from each resolved */
-  /* promise */
+  /* SERVER MESSAGES: promises immediate invocation of the
+     handlerFunction which must return a NetPacket data object
+     REMOTE MESSAGES: promises are from pkt.transactionStart()
+     which sends a packet and stores a hashkey that has the
+     resolve() in it.
+  */
+  TERM(`${thread} sleeping ${msg} ${hash}`);
   let pktArray = await Promise.all(promises).catch(err => {
-    TERM('ERROR IN PROMISE', err);
+    TERM(`${thread} ERROR IN PROMISE`, err);
   });
+  TERM(`${thread} waking up ${msg} ${hash}`);
   /* END MAGICAL ASYNC/AWAIT BLOCK *****************************/
-
   // (3d) Print some more debugging messages after async
-  if (DBG.calls) {
-    if (DBG_NOSRV) log_PktTransaction(pkt, 'resolved');
-    log_PktDirection(pkt, 'rtrn', promises);
+  /* SERVER MESSAGES: runs immediately in this thread
+     REMOTE MESSAGES: this thread is "slept" until a subsequent
+     message comes in to 'unlock' it by calling the matching
+     handlerFunction that contains the original thread Promise
+     resolve() function.
+  */
+
+  if (DBG.xact || DBG.calls) {
+    // if (notServer) log_PktTransaction(pkt, 'resolved');
+    // log_PktDirection(pkt, 'rtrn', promises);
   }
 
   // (3e) If the call type doesn't expect return data, we are done!
   if (!pkt.isType('mcall')) return;
+  TERM(`${thread} post-promise mcall ${hash}`);
 
   // (3f) If the call type is 'mcall', and we need to return the original
-  // message packet to the original caller. First merge the data into
-  // one data object...
-  let data = pktArray.reduce((d, p) => {
-    let pdata = p instanceof NetPacket ? p.getData() : p;
-    let retval = Object.assign(d, pdata);
-    if (DBG_NOSRV) TERM(`'${pkt.getMessage()}' reduce`, JSON.stringify(retval));
-    return retval;
-  }, {});
+  /* message packet to the original caller with updated data When there are
+     multiple results, an array of results are returned. Otherwise, a plain
+     object is returned.
+  */
+  let data;
+  if (pktArray.length === 0) data = {};
+  if (pktArray.length === 1) data = pktArray[0];
+  if (pktArray.length > 1) data = pktArray;
 
   // (3g) ...then return the combined data using NetPacket.ReturnTransaction()
   // on the caller's socket, which we have retained through the magic of closures!
+  /* NOTE that the 'pkt' variable is the ORIGINAL packet received by the
+     originator; this thread was slept before and now resumes.
+  */
   pkt.setData(data);
-  pkt.transactionReturn(socket);
-  const dbgData = JSON.stringify(data);
-  if (DBG_NOSRV)
-    TERM(`'${pkt.getMessage()}' returning transaction data ${dbgData}`);
+  const json = JSON.stringify(data);
+  TERM(`${thread} transaction ${hash} return payload:`);
+  TERM(json);
+  pkt.transactionReturn(socket); // original requesting packet
 }
 
+/// DEBUGGING OUTPUT //////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** MAIN HANDLER (currently stub) for network-synched state messages, which
  * are not yet implemented in URSYS

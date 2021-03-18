@@ -51,6 +51,12 @@
 * W1: refactor ursys for new code, ben key/jsx help
 * W2: multinet design, start implement of directory. URSYS call bug found.
 
+**SUMMARY S2105 MAR 08 - MAR 21**
+
+* W1: URSYS debug remote-to-remote call, declare nofix because not needed with current data flow
+
+  
+
 
 ---
 
@@ -279,10 +285,134 @@ To clean up the logic in the server, I split out the server-side URNET client AP
 * [ ] local call does not seem to return data
 * [ ] defining a net:message after urconnect has happened doesn't update the list. Should add this provision in the updated protocol
 
+## MAR 10 WED - Known Call Bugs
+
+### Immediate Testing Goals
+
+```
+01 [ ] R1 and R2 have NET:MESSAGE, R1 call NET:MESSAGE
+02 [ ] Just R2 has NET:MESSAGE, R1 call NET:MESSAGE
+03 [ ] Check that * works as expected
+04 [ ] Check why raising NET:UPDATE will also trigger the handler, when both are on the same app instance (it shouldn't happen). 
+```
+
+Checking `02`:
+
+* implement `NET:GEM_COMPILER_PING` and `NET:GEM_INDEX_PING` 
+* is it possible to **`UR.RegisterMessages()`** at any time? **yes**
+  * `class-endpoint ursysRegisterMessages()` sends the message
+  * `svc-reg-handlers NET:SRV_REG_HANDLERS` receives the message
+* When are first messages registered? `UR/APP_CONFIGURE` just before `APP_READY` and after `LOAD_ASSETS`
+* When does a lazy-loaded application get loaded? It should catch `APP_CONFIGURE` because that's when all the messages are registered, and `APP_CONFIGURE` runs *AFTER* the SystemInit wrapper has completely rendered.
+* So there is **a bug in registering messages** on the server side???
+
+There is something weird going on in the message router on the server!
+
+> **RemoteHandlerPromise() seems unable to propertly look-up net:messages**
+>
+> not only that, but the call handler on the server side seems to be calling the originator as well, which is wrong, or the returning packet is somehow malformed. But it can't even find the remote. 
+>
+> **Need to check the entire call chain!!!**
+
+* [x] `NET_HANDLERS` has Map `mesg => Set<uaddr>`
+* [x] check for remotes length is incorrect (should be `size` for a Set)
+* [ ] it seems that `server-urnet` line 191 is triggering for some reason, I suspect on the RESPONSE side of things instead of completing the transaction
+* [ ] note: changing `Netpacket.isResponse()` to use more bulletproof check creates the infinite loop here too
+
+**Q. So what seems to be happening?**
+A. since SEND works but CALL does not, that implies that the Call Transaction Chain is broken. The message gets to the remote just fine, but gets misprocessed on return. So **how is a return packet understood by the server?** And why is it breaking?
+
+
+
+## MAR 11 THU - Debugging Continued
+
+Return packets are not being returned from the server for calls, but sends/raises work. This implies that the transaction return detection on the server is broken. 
+
+* [x] **find** the transaction processing code
+* [x] redo debug messages to uncover issue
+  * [x] fix bug introduced in server-datacore RemoteHandlerPromises()
+* [x] confirm: non-shared messages **send** works between apps
+* [ ] confirm: non-shared messages **call** works between apps
+  * [ ] checking NetCreate/MEME, I am not seeing a difference in the server code
+  * [ ] Check each part of the chain
+    * [ ] does the packet reach the server? YES
+    * [ ] does the packet find the matching handler on server? YES
+    * [ ] does server receive a transaction back 
+
+Here's the [debug investigation](https://docs.google.com/document/d/1g4GqpDHR4hfOVBs_Xdyl6BOUTSGnqIoF_3cn8JMT_tY/edit?usp=sharing) (I'm spending way too much time trying to figure this out). The two main issues are:
+
+* A mystery clone of the outgoing message packet that returns from the remote...what is initiating it?
+* The original packet that gets returned has bad data in it, but where does it come from? 
+  * `m_urlink.callMessage()` is returning the bad data
+  * is `m_urlink` the same endpoint as what registered the message?
+  * `m_urlink.callMessage()` is called with the `fromNet` option set.
+  * `class-endpoint` passes the `callMessage()` on to the MESSAGER singleton defined in the endpoint. There's only one and it's shared by all EndPoint instances.
+  * WEIRD: The "can't find 'NET:GEM_HOMEAPP'" message comes from the SERVER, which means that the call is returning not found?
+
+A little lost. It may be that remote-to-remote calls have been broken for a while, since neither NetCreate or MEME use them (they seem to be all server calls or broadcasts)
+
+* The originating call to NET:GEM_HOMEAPP has `ch:Net toNet:true toLocal:false isNet:true fromNet: false`
+* The reciever recieves `ch:Net toNet:true toNet:true isNet:true fromNet:true`
+
+we don't seem to be processing `fromNet` correctly on the receiver.
+
+**it looks like this has always been broken**
+
+* remote-to-remote call has been broken for a while...it might have worked in PLAE
+* same message signal calls also broken, creating infinite loop
+
+The last time this worked, maybe, was in netcreate. 
+
+* PLAE/ISTEP had an early version of UNISYS, but looking at the calls it seems only the server ones were used to get information. The ones that did return data used a SIGNAL/SIGNAL_ACK pattern!
+* NetCreate doesn't have peer-to-peer calling
+
+
+
+## MAR 15 MON - Back to Input Routing
+
+Ok, it's time to implement something from FakeTrack into the input system. In essence, we have a **list of input devices** available in the `sim-inputs` module, and these input devices are **updated as they come online and offline**. The input **device definition** is a bundle with the **input type** (vector, discrete, number), and the **student id, group, and device logical name**. It is up to sim-inputs and the GUI to give these things **application roles** depending on who's using it. 
+
+Where we last left off:
+
+* [x] defining the client-server messages for handshake
+* [x] sketching-in server and client modules
+
+What comes next
+
+* [ ] Adding the client module to FakeTrack
+* [ ] Filling-out the client module so FakeTrack instances register with the server
+* [ ] When the client module recieves an input update, tells sim-inputs that it happened
+* [ ] sim-inputs defines a mapping algorithm for mapping inputs to agents
+
+**Question: what module "owns" the input-driven agents?**
+The input manager `sim-inputs` will "own" its input objects (IOBs) and make them available for mapping. It's up to `sim-agent` to determine what is done with those input objects. An IOB->AGENT SyncMap could be created by `sim-agent` , and the blueprints decide how to use the input object as either CURSOR or EMBODIMENT. 
+
+**Question: how do we associate an IOB with a visual in the case of a tracked element?**
+IOBS can also be mapped independently, but maybe it is easier to just pull the "active" IOBs out of the agents themselves during the AGENT->DOBJ syncmapping.
+
+## MAR 17 WED - Continuing Input Routing
+
+* Where is **client-module** initiating the input stuff? **in `client-netdevices`**
+* Where is **server-module** handling requests? **in `svc-netdevices`**
+
+Step by step:
+
+* [ ] can client-module reuest something from server-module?
+  * `NET:SRV_PROTOCOLS` should return a data structure
+  * `NET:SRV_DEVICES` should return a data structure
+
+
+
+
+
+
+
+
+
 
 ---
 
-**ADDITIONAL THINGS TO IMPLEMENT**
+# FUTURE QUEUE
 
 + set the skin from a list of assets? - good
 + some way to load/save? - make cheese API to save a file (port)

@@ -6,14 +6,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const IP = require('ip');
-const TERM = require('./util/prompts').makeTerminalOut(' DATAC');
+const TERM = require('./util/prompts').makeTerminalOut(' ...dc');
 const LOGGER = require('./server-logger');
 const NetPacket = require('./class-netpacket');
 const {
   PRE_SYS_MESG,
   CFG_URNET_PORT,
   CFG_SVR_UADDR,
-  CFG_URNET_VERSION
+  CFG_URNET_VERSION,
+  PacketHash
 } = require('./ur-common');
 
 /// URNET DATA STRUCTURES /////////////////////////////////////////////////////
@@ -25,7 +26,7 @@ const NET_HANDLERS = new Map(); // message map storing other handlers
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let mu_uaddr_counter = 0; // for generating  unique socket ids
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = { mesg: true, sock: false, calls: true };
 
 /// URNET OPTIONS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,6 +47,8 @@ function InitializeNetInfo(o = {}) {
 /// MESSAGE DICTIONARY FOR ALL UADDR /////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterMessageList(uaddr, messages) {
+  if (MESSAGE_DICT.has(uaddr)) TERM(`${uaddr} message list UPDATING`);
+  else TERM(`${uaddr} message list INITIALIZING`);
   MESSAGE_DICT.set(uaddr, messages);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,7 +98,7 @@ function GetNewUADDR(prefix = 'UADDR') {
 function SocketDelete(socket) {
   let uaddr = socket.UADDR;
   if (!SOCKETS.has(uaddr)) throw Error(DBG_SOCK_BADCLOSE);
-  if (DBG) TERM(`socket DEL ${uaddr} from network`);
+  if (DBG.sock) TERM(`socket DEL ${uaddr} from network`);
   const user = socket.USESS ? socket.USESS.token : '';
   LOGGER.Write(socket.UADDR, 'left network', user.toUpperCase());
   SOCKETS.delete(uaddr);
@@ -104,7 +107,7 @@ function SocketDelete(socket) {
   if (Array.isArray(rmesgs)) {
     rmesgs.forEach(msg => {
       let handlers = NET_HANDLERS.get(msg);
-      if (DBG) TERM(`${uaddr} removed handler '${msg}'`);
+      if (DBG.sock) TERM(`${uaddr} removed handler '${msg}'`);
       if (handlers) handlers.delete(uaddr);
     });
   }
@@ -173,43 +176,54 @@ function ServerHandlerPromises(pkt) {
  * @param {NetPacket} pkt a NetPacket object to use as message key
  * @returns {Array<Promise>} promises objects to use with Promise.all()
  */
-function RemoteHandlerPromises(pkt) {
-  // debugging values
+function RemoteHandlerPromises(pkt, ident) {
   let origin = pkt.getSourceAddress();
-  // logic values
   let mesgName = pkt.getMessage();
   let type = pkt.getType();
-  const dontReflect = type === 'msend' || type === 'mcall';
-
-  // generate the list of promises
   let promises = [];
-  // disallow reserved system message handlers from remotes
-  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_SYS_MESG)) return promises;
-  // check for remote handlers
-  let remotes = NET_HANDLERS.get(mesgName);
-  if (!remotes) return promises;
 
-  // if there are handlers to handle, create a NetPacket
-  // clone of this packet and forward it and save the promise
-  let count = 0;
+  // reserved service messages are only allowed to be implemented by the server
+  if (!pkt.isServerOrigin() && mesgName.startsWith(PRE_SYS_MESG)) {
+    TERM(`err  BAD REQUEST of SERVER SERVICE on REMOTE ${mesgName}`);
+    return promises;
+  }
+  // if the message doesn't have a handler, return empty list of promises
+  if (!NET_HANDLERS.has(mesgName)) {
+    TERM(`err  '${mesgName}' is not registered`);
+    return promises;
+  }
+
+  let remotes = NET_HANDLERS.get(mesgName);
+
+  const dontReflect = type !== 'msig';
   remotes.forEach(remote => {
-    count++;
-    const isOrigin = origin === remote;
-    // we want to do this only when
-    if (isOrigin && dontReflect) {
-      if (DBG.calls) TERM(`  ${count}: ${origin} to ${remote} X`);
+    if (ident === undefined) ident = '';
+    const remoteIsSender = origin === remote;
+    if (remoteIsSender && dontReflect) {
+      const hash = PacketHash(pkt);
+      const msg = pkt.msg;
+      const seq = pkt.seqlog.join('>');
+      TERM(`${ident} skip packet ${hash} ${msg} to ${remote}`);
+      TERM(`${ident} skip packet ${hash} ${seq}`);
+      TERM(`${ident} ${JSON.stringify(pkt.data)}`);
     } else {
-      if (DBG.calls) TERM(`  ${count}: ${origin} to ${remote} SEND/CALL BEGIN`);
       let r_sock = SocketLookup(remote);
       if (r_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${remote}`);
       let newpkt = new NetPacket(pkt); // clone packet data to new packet
       newpkt.makeNewId(); // make new packet unique
-      newpkt.copySourceAddress(pkt); // clone original source address
+      // newpkt.copySourceAddress(pkt); // clone original source address
       promises.push(newpkt.transactionStart(r_sock));
+      const fwdHash = PacketHash(newpkt);
+      const fwdMsg = newpkt.msg;
+      const fwdSeq = newpkt.seqlog.join('>');
+      TERM(`${ident} fwd  packet ${fwdHash} '${fwdMsg}' to ${remote}`);
+      TERM(`${ident} fwd  packet ${fwdHash} ${fwdSeq}`);
+      TERM(`${ident} ${JSON.stringify(pkt.data)}`);
     }
-  }); // handlers.forEach
+  });
   return promises;
 }
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {

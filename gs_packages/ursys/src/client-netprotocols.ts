@@ -10,7 +10,7 @@ const PROMPTS = require('./util/prompts');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('PCOLM','TagNetwork');
+const PR = PROMPTS.makeStyleFormatter('NETPROTS','TagRainbow');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

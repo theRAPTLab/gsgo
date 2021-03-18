@@ -18,7 +18,7 @@ const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS', 'TagURSYS');
+const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagURSYS');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,14 +100,13 @@ function m_CheckConfigOptions(cfgOpt) {
  */
 async function SystemNetBoot() {
   //
-  if (DBG) console.groupCollapsed('** URSYS: Boot');
-  else console.log(...PR('EXEC PHASE_BOOT, PHASE_INIT, PHASE_CONNECT'));
+  if (DBG) console.groupCollapsed('EXEC: BOOT INIT CONNECT');
   // APP INITIALIZATION
   await executePhase('PHASE_BOOT');
   await executePhase('PHASE_INIT');
   // CONNECT TO URNET
   const netInfo = await NETINFO.FetchNetInfo();
-  console.info(...NPR('received netinfo', netInfo));
+  console.info(...NPR('URNET got connect info:', netInfo));
   await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
   //
   if (DBG) console.groupEnd();
@@ -117,20 +116,21 @@ async function SystemNetBoot() {
  */
 async function SystemAppConfig(options = {}) {
   //
-  if (DBG) console.groupCollapsed('** URSYS: Config');
-  else console.log(...PR('EXEC PHASE_LOAD, PHASE_CONFIG, PHASE_READY'));
+  if (DBG) console.groupCollapsed('EXEC: LOAD CONFIG READY');
   m_CheckConfigOptions(options);
   //
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
   //
   await executePhase('PHASE_READY');
+  console.log(...NPR('APP: LOADED+CONFIGURED'));
+
   //
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
-    if (DBG) console.groupEnd();
     SystemAppRun(options);
   }
+  if (DBG) console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle run engine. This code is a bit convoluted because
@@ -142,12 +142,11 @@ async function SystemAppRun(options = {}) {
   // PART 1 - SYSTEM RUN (part of PHASE_RUN group)
   m_CheckConfigOptions(options);
   //
-  if (DBG) console.log(...PR('URSYS: STAGE START RUN'));
-  else console.log(...PR('EXEC APP_STAGE APP_START APP_RUN'));
+  if (DBG) console.groupCollapsed(...PR('EXEC: STAGE START RUN'));
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  if (DBG) console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
+  console.log(...NPR('APP: STAGED+STARTED+RUNNING'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();

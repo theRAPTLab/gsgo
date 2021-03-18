@@ -12,14 +12,15 @@ const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const DBG = { client: true };
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handles URSYS REGISTRATION PACKETS from connecting clients. It is the first
- * packet sent on successful socket connection.
- * @param {NetPacket} pkt - NetPacket packet instance
- * @return {Object} object with registered property containing array of message
+ *  packet sent on successful socket connection. This can also be called
+ *  at any time to COMPLETELY REPLACE the current entries.
+ *  @param {NetPacket} pkt - NetPacket packet instance
+ *  @return {Object} object with registered property containing array of message
  */
 function PKT_RegisterHandler(pkt) {
   if (pkt.getMessage() !== 'NET:SRV_REG_HANDLERS')

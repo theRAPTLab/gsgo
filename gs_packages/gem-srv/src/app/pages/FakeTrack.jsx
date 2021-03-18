@@ -302,6 +302,10 @@ class FakeTrack extends React.Component {
   }
 } // endclass
 
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HandleMessage('NET:GEM_FAKETRACKAPP', data => data);
+
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles

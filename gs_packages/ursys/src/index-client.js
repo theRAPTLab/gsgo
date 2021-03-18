@@ -16,7 +16,7 @@ const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
 const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagURSYS');
-const DBG = true;
+const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,6 +44,14 @@ const NetNode = new UR_EndPoint('ur-sender'); // server messaging
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
 
+/// SUPPORT API PART 1 ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** register messages */
+async function RegisterMessages() {
+  if (DBG) console.log(...PR('registering messages'));
+  return LocalNode.ursysRegisterMessages();
+}
+
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
@@ -70,7 +78,7 @@ async function SystemStart(route) {
   );
   // autoregister messages
   PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
-    let result = await LocalNode.ursysRegisterMessages();
+    let result = await RegisterMessages();
     if (DBG)
       console.log(...PR('message handlers registered with NETWORK:', result));
   });
@@ -133,7 +141,7 @@ const UR = {
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED CLASSES
   class: { PhaseMachine },
-  // FORWARDED DEBUG UTILITY
+  // FORWARDED CONSOLE DEBUG UTILITIES
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);
   },

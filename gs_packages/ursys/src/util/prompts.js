@@ -6,6 +6,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const IS_NODE = typeof window === 'undefined';
+const IS_MOBILE =
+  !IS_NODE &&
+  /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    navigator.userAgent
+  );
+if (IS_MOBILE) {
+  console.log('PROMPTS: DETECTED MOBILE BROWSER');
+} else if (!IS_NODE) console.log('PROMPTS: DETECTED DESKTOP BROWSER');
+else console.log('PROMPTS       DETECTED NODE');
+
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
   : 0; // not nodejs
@@ -91,13 +101,27 @@ TERM_COLORS.TagData = TERM_COLORS.TagGreen;
 TERM_COLORS.TagInput = TERM_COLORS.TagBlue;
 
 CSS_COLORS.TagSystem = CSS_COLORS.TagGray;
-CSS_COLORS.TagURSYS = CSS_COLORS.TagBlue;
+CSS_COLORS.TagURSYS = `color:#fff;background-color:CornflowerBlue;${CSS_PAD}`;
 CSS_COLORS.TagNetwork = CSS_COLORS.TagCyan;
 CSS_COLORS.TagApp = CSS_COLORS.TagPink;
 CSS_COLORS.TagTest = CSS_COLORS.TagRed;
-CSS_COLORS.TagDebug = CSS_COLORS.TagDkRed;
+CSS_COLORS.TagDebug = `color:#fff;background-color:IndianRed;${CSS_PAD}`;
 CSS_COLORS.TagData = CSS_COLORS.TagDkOrange;
 CSS_COLORS.TagInput = CSS_COLORS.TagDkOrange;
+CSS_COLORS.TagRainbow = `color:#fff;background:linear-gradient(
+  45deg,
+  rgba(255, 0, 0, 1) 0%,
+  rgba(255, 154, 0, 1) 10%,
+  rgba(208, 222, 33, 1) 20%,
+  rgba(79, 220, 74, 1) 30%,
+  rgba(63, 218, 216, 1) 40%,
+  rgba(47, 201, 226, 1) 50%,
+  rgba(28, 127, 238, 1) 60%,
+  rgba(95, 21, 242, 1) 70%,
+  rgba(186, 12, 248, 1) 80%,
+  rgba(251, 7, 217, 1) 90%,
+  rgba(255, 0, 0, 1) 100%
+);${CSS_PAD}`;
 
 // div console
 const HTCONSOLES = {};
@@ -182,6 +206,7 @@ function m_MakeColorArray(prompt, colorName) {
 function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
   return IS_NODE
     ? (str, ...args) => {
+        if (args === undefined) args = '';
         console.log(
           `${TERM_COLORS[colorName]}${padString(prompt)}${TERM_COLORS.Reset}${
             TERM_COLORS[resetName]
@@ -190,6 +215,7 @@ function m_MakeColorPromptFunction(prompt, colorName, resetName = 'Reset') {
         );
       }
     : (str, ...args) => {
+        if (args === undefined) args = '';
         console.log(
           `%c${padString(prompt)}%c%c ${str}`,
           CSS_COLORS.Reset,
@@ -291,8 +317,9 @@ function m_HTMLTextPlot(str = '', lineBuffer, id, row = 0, col = 0) {
 /** allow modification of the PROMPT_DICT
  */
 function makeStyleFormatter(prompt, tagColor) {
-  const outArray = m_MakeColorArray(prompt, tagColor);
+  let outArray = m_MakeColorArray(prompt, tagColor);
   if (outArray.length === 0) return () => [];
+  if (IS_MOBILE) outArray = [`${prompt}:`];
   return (str, ...args) => [...outArray, str, ...args];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

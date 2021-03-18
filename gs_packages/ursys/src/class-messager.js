@@ -18,7 +18,7 @@ const NetPacket = require('./class-netpacket');
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MSGR_IDCOUNT = 0;
-let DBG = true;
+let DBG = false;
 const PR = require('./util/prompts').makeStyleFormatter('MESSAGER', 'TagRed');
 
 /// URSYS HELPER METHODS //////////////////////////////////////////////////////
@@ -53,7 +53,6 @@ function m_DecodeMessage(msg) {
     case '*': // both local and net
       obj.toNet = true;
       obj.toLocal = true;
-      obj.isLocal = true;
       obj.isNet = true;
       break;
     default:
@@ -231,38 +230,34 @@ class Messager {
     mesgName = mesgName.toUpperCase();
     let { srcUID, type } = options;
     let { fromNet = false } = options;
-    const { channel, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
+    const { channel, message, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
     // console.log(mesgName, `channel:${channel} local:${toLocal} toNet:${toNet}`);
     const handlers = this.handlerMap.get(mesgName);
     let promises = [];
     /// handle a call from the network
-    if (toLocal) {
+    if (toLocal || fromNet) {
+      console.log(
+        ...PR(
+          `incoming NetCall: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
+        )
+      );
+      // initiated from app
       // NOTE: THIS SEEMS SUSPICIOUS AND UNNECESSARY
       // if (!channel.LOCAL && !fromNet)
       //   throw Error(`'${mesgName}' for local calls remove channel prefix`);
       if (handlers) {
+        let count = 1;
         handlers.forEach(handlerFunc => {
+          console.log(...PR(count++, 'calling func'));
           /*/
           handlerFunc signature: (data,dataReturn) => {}
           handlerFunc has ulink_id property to note originating URCHAN object
           handlerFunc has fromNet property if it expects to receive network sourced calls
           /*/
           // skip calls that don't have their fromNet stat set if it's a net call
-          if (fromNet && !handlerFunc.isNetFunc) {
-            if (DBG)
-              console.warn(
-                `MessagerCall: [${mesgName}] skip netcall for handler uninterested in net`
-              );
-            return;
-          }
+          if (fromNet && !handlerFunc.isNetFunc) return;
           // skip "same origin" calls
-          if (srcUID && handlerFunc.ulink_id === srcUID) {
-            if (DBG)
-              console.warn(
-                `MessagerCall: [${mesgName}] skip call since origin = destination; only raiseMessage() will reflect`
-              );
-            return;
-          }
+          if (srcUID && handlerFunc.ulink_id === srcUID) return;
           // Create a promise. if handlerFunc returns a promise, it follows
           let p = m_MakeResolverFunction(handlerFunc, inData);
           promises.push(p);
@@ -273,7 +268,7 @@ class Messager {
       }
     } // to local
 
-    /// toNetwork
+    /// toNetwork (initiated from app)
     if (toNet) {
       if (!isNet) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';

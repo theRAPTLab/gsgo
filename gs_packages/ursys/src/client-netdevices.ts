@@ -10,7 +10,7 @@ const PROMPTS = require('./util/prompts');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('DEVCM','TagNetwork');
+const PR = PROMPTS.makeStyleFormatter('NETDEVIS','TagRainbow');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,9 +27,16 @@ const PR = PROMPTS.makeStyleFormatter('DEVCM','TagNetwork');
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 PhaseMachine.Hook('UR/NET_DEVICES', () => new Promise<void>( (resolve, reject)=> {
-  console.log(...PR('promise NET_DEVICES'));
+  console.log(...PR('testing hook for NET_DEVICES when they are stable'));
   resolve();
 }));
+
+PhaseMachine.Hook('UR/APP_READY', () => new Promise<void>( (resolve, reject)=> {
+  console.log(...PR('testing hook for NET_DEVICES app ready to do some requests'));
+  resolve();
+}));
+
+
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

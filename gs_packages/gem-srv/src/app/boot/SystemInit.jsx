@@ -34,6 +34,7 @@ import SystemShell from './SystemShell';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM', 'TagSystem');
+const NPR = UR.PrefixUtil('URSYS ', 'TagURSYS');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,7 +71,9 @@ function Init() {
         </StylesProvider>,
         document.getElementById('app-container'),
         () => {
+          // at this time, the shell should be completely renderered
           UR.addConsoleTools();
+          console.log(...NPR('APP: <SystemShell> Rendered'));
         }
       );
     })();

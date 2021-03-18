@@ -364,7 +364,8 @@ class NetPacket {
     // save our current UADDR
     this.seqlog.push(NetPacket.UADDR);
     let dbg = DBG.transact && !this.isServerMessage();
-    let p = new Promise((resolve, reject) => {
+    // define and return promise
+    return new Promise((resolve, reject) => {
       let hash = m_GetHashKey(this);
       if (m_transactions.has(hash)) {
         reject(Error(`${ERR_DUPE_TRANS}:${hash}`));
@@ -381,7 +382,6 @@ class NetPacket {
         this.socketSend(socket);
       }
     });
-    return p;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -405,7 +405,7 @@ class NetPacket {
   isResponse() {
     return this.rmode === 'res';
     // more bulletproof check, but unnecessary
-    // return this.rmove ==='res' && this.SourceAddress() === NetPacket.UADDR;
+    // return this.rmode === 'res' && this.getSourceAddress() === NetPacket.UADDR;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -12,10 +12,8 @@ const HFUNCS = []; // stack of hfuncs in ur_handle, which
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function addConsoleTools(UR) {
-  const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
+  const PR = UR.PrefixUtil('URDEBUG', 'TagDebug');
   const { CallMessage, RaiseMessage, SendMessage } = UR;
-
-  console.group(...PR('adding UR console debug functions'));
 
   TOOLS = {
     // subscribe
@@ -95,6 +93,7 @@ function addConsoleTools(UR) {
   };
 
   // add ur_* utilities to console
+  console.groupCollapsed(...PR('adding UR console debug functions'));
   Object.entries(TOOLS).forEach(kv => {
     const [key, f] = kv;
     if (typeof window[key] !== 'undefined') return;
