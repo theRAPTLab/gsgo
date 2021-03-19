@@ -255,8 +255,11 @@ class MissionControl extends React.Component {
    * @param {object} data { agentId }
    */
   HandleSimInstanceClick(data) {
-    const { modelId } = this.state;
-    SimData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+    const { panelConfiguration, modelId } = this.state;
+    // Only request instance edit in edit mode
+    if (panelConfiguration === 'edit') {
+      SimData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+    }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
