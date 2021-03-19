@@ -233,16 +233,19 @@ class MissionControl extends React.Component {
   /// INSTANCE INTERACTION HANDLERS
   ///
   HandleDragEnd(data) {
-    const agent = data.agent;
-    console.log('dropped', agent.prop.x.value, agent.prop.y.value);
-    const { modelId } = this.state;
-    const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
-    const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-    SimData.InstanceUpdatePosition({
-      modelId,
-      instanceId: agent.id,
-      updatedData: { x, y }
-    });
+    const { panelConfiguration } = this.state;
+    // Only update init if we're in edit mode
+    if (panelConfiguration === 'edit') {
+      const agent = data.agent;
+      const { modelId } = this.state;
+      const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
+      const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
+      SimData.InstanceUpdatePosition({
+        modelId,
+        instanceId: agent.id,
+        updatedData: { x, y }
+      });
+    }
   }
   /**
    * User clicked on agent instance in simulation view
