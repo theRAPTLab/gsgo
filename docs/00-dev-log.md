@@ -437,19 +437,10 @@ What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what
   * [ ] inputs objects are assigned to an agent, and it's up to the agent to figure out how to use it.
   * [ ] input objects may make use of a particle effect to show where they are
 
-  
 
 
 
-WHATS THE DEAL WITH PHASEMACHINE versus UR
 
-
-
-UR.HookPhase('SIM/LALA')
-
-and 
-
-UR.HandleMessage(
 
 
 

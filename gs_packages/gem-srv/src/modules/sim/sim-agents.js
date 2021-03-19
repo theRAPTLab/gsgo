@@ -13,7 +13,6 @@ import {
   GetAgentByName,
   DeleteAllAgents,
   DefineInstance,
-  UpdateInstance,
   DeleteAllInstances,
   DeleteBlueprintInstances,
   GetAllInstances
@@ -332,7 +331,7 @@ UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentsUpdate + Render
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('SIM/AGENTS_UPDATE', AgentUpdate);
+UR.HookPhase('SIM/AGENTS_UPDATE', AgentsUpdate);
 UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
 UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
 
