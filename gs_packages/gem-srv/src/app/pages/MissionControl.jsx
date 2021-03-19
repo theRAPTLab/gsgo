@@ -91,10 +91,12 @@ class MissionControl extends React.Component {
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
+    this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
 
@@ -187,6 +189,10 @@ class MissionControl extends React.Component {
   }
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');
+  }
+  DoSimStop() {
+    // Give it extra time after the "HACK_SIM_STOP" message is raised as the sim does not stop  immediately
+    setTimeout(() => this.forceUpdate(), 250);
   }
   DoSimReset() {
     this.setState(
@@ -326,7 +332,9 @@ class MissionControl extends React.Component {
           onChange={this.OnToggleRunEdit}
         >
           <StyledToggleButton value="run">Go to Run</StyledToggleButton>
-          <StyledToggleButton value="edit">Stage Setup</StyledToggleButton>
+          <StyledToggleButton value="edit" disabled={SIM.IsRunning()}>
+            Stage Setup
+          </StyledToggleButton>
         </ToggleButtonGroup>
       </div>
     );
