@@ -148,7 +148,7 @@ class PanelScript extends React.Component {
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
-    this.hackSendText = this.hackSendText.bind(this);
+    this.SendText = this.SendText.bind(this);
 
     // The keys (keyword, namespace, inserted)  map to token definitions in the prism css file.
     Prism.languages.gemscript = Prism.languages.extend('javascript', {
@@ -183,24 +183,24 @@ class PanelScript extends React.Component {
   }
 
   /**
-   * 1. PanelScript raises NET:HACK_SCRIPT_UPDATE
-   * 2. PanelSimulation handles NET:HACK_SCRIPT_UPDATE
-   *    a. PanelSimulation calls DoScriptUpdate
-   *    b. DoScriptUpdate scriptifys the text
-   *    c. DoScriptUpdate registers the new blueprint
+   * 1. PanelScript raises NET:SCRIPT_UPDATE
+   * 2. sim-data handles NET:SCRIPT_UPDATE
+   *    a. ScriptUpdate updates main data
+   *    b. ScirptUpdate raises NET:UPDATE_MODEL
+   * 3. MissionControl handles NET_UPDATE_MODEL
+   *    a. OnSimDataUpdate calls CallSimPlaces
+   *    b. CallSimPlaces raises *:SIM_PLACES
+   * 2. PanelSimulation handles *:SIM_PLACES
+   *    b. DoSimPlaces scriptifys the text
+   *    c. DoSimPlaces registers the new blueprint
    *       replacing any existing blueprint
-   *    d. DoScriptUpdate raises AGENT_PROGRAM, which handles the instancing
-   * 4. sim-agents handles AGENT_PROGRAM
-   *    a. AgentProgram first removes the old instance by calling
-   *       dc-agents.RemoveAgent
-   *       -- dc-agents.DeleteAgent
-   *          -- Removes the agent from the AGENTS map
-   *          -- Removes the agent from the AGENT_DICT map
-   *    b. AgenProgram also removes the old blueprint instances
-   *       from the INSTANCES map kept in dc-agents.
-   *    c. AgentProgram creates a new instance definition and
-   *       then creates a new agent instance by calling
-   *       Transpiler.MakeAgent
+   *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM_UPDATE
+   *    b. DoSimPlaces raises AGENTS_RENDER
+   * 4. sim-agents handles ALL_AGENTS_PROGRAM_UPDATE
+   *    a. AllAgentsProgramUpdate either
+   *       -- updates any existing instances
+   *       -- or creates a new instance if it doesn't exist by calling
+   *          Transpiler.MakeAgent
    * 5. Transpiler.MakeAgent
    *    a. MakeAgent creates a new agent out of the instancedef
    *       retrieving the existing blueprint from datacore.
@@ -209,9 +209,9 @@ class PanelScript extends React.Component {
    *    a. SaveAgent saves it to the AGENTS map.
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
-  hackSendText() {
+  SendText() {
     const text = this.jar.toString();
-    UR.RaiseMessage('NET:HACK_SCRIPT_UPDATE', { script: text });
+    UR.RaiseMessage('NET:SCRIPT_UPDATE', { script: text });
   }
 
   OnButtonClick(action) {
@@ -256,7 +256,7 @@ class PanelScript extends React.Component {
         type="button"
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
-        onClick={() => this.hackSendText()}
+        onClick={() => this.SendText()}
       >
         SAVE TO SERVER
       </button>

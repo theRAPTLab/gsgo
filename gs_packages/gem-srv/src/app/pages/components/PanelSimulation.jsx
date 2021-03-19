@@ -45,7 +45,6 @@ class PanelSimulation extends React.Component {
     this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
     this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
     this.DoInstanceInspectorUpdate = this.DoInstanceInspectorUpdate.bind(this);
-    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.DoSimPlaces = this.DoSimPlaces.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
@@ -53,7 +52,6 @@ class PanelSimulation extends React.Component {
 
     UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
@@ -73,7 +71,6 @@ class PanelSimulation extends React.Component {
   componentWillUnmount() {
     UR.UnhandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.UnhandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnhandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
@@ -123,35 +120,6 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllInstances();
     SIM.Reset();
     // SimPlaces is called by Mission Control.
-  }
-
-  // See PanelScript.hackSendText for documentation of the whole call cycle
-  DoScriptUpdate(data) {
-    const { model } = this.props;
-    if (!model) {
-      console.error(...PR('No model selected.'));
-      return;
-    }
-    const source = TRANSPILER.ScriptifyText(data.script);
-    const bundle = TRANSPILER.CompileBlueprint(source);
-    const bp = TRANSPILER.RegisterBlueprint(bundle);
-
-    // Read Instances Def
-    const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
-    if (instancesSpec.length < 1) {
-      // If the map has not been defined yet, then generate a single instance
-      // instancesSpec.push({ name: `${bp.name}01`, init: '' });
-
-      // REVIEW HACK
-      // modelId is not available here?!?!
-      const params = new URLSearchParams(window.location.search.substring(1));
-      const modelId = params.get('model');
-
-      UR.RaiseMessage('LOCAL:INSTANCE_ADD', {
-        modelId,
-        blueprintName: bp.name
-      });
-    }
   }
 
   DoSimPlaces() {

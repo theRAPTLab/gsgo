@@ -94,7 +94,7 @@ class MissionControl extends React.Component {
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
-    UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
@@ -147,7 +147,7 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
