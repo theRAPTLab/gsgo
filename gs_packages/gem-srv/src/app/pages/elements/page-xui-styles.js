@@ -138,6 +138,9 @@ const useStylesHOC = theme => ({
   panelMessageError: {
     color: CLR_HI
   },
+  infoHighlightColor: {
+    color: CLR_HI
+  },
   infoLabel: {
     display: 'inline-block',
     color: CLR_LABEL,

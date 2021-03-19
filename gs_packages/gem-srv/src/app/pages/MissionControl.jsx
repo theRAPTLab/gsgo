@@ -83,7 +83,8 @@ class MissionControl extends React.Component {
       modelId: '',
       model: {},
       instances: [],
-      runIsMinimized: true
+      runIsMinimized: true,
+      scriptsNeedUpdate: false
     };
 
     // Data Update Handlers
@@ -94,6 +95,7 @@ class MissionControl extends React.Component {
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
+    this.PostMessage = this.PostMessage.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
@@ -170,6 +172,10 @@ class MissionControl extends React.Component {
     );
   }
   OnSimDataUpdate(data) {
+    if (SIM.IsRunning()) {
+      this.setState({ scriptsNeedUpdate: true });
+      return; // skip update if it's already running
+    }
     this.setState(
       { model: data.model },
       // Need to call SimPlaces here after prop updates or agents won't reposition
@@ -183,9 +189,7 @@ class MissionControl extends React.Component {
    */
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
-    this.setState(state => ({
-      message: `${state.message}Received script ${firstline}\n`
-    }));
+    this.PostMessage(firstline);
   }
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');
@@ -198,7 +202,8 @@ class MissionControl extends React.Component {
     this.setState(
       {
         model: {},
-        instances: []
+        instances: [],
+        scriptsNeedUpdate: false
       },
       () => this.LoadModel()
     );
@@ -233,6 +238,14 @@ class MissionControl extends React.Component {
     });
     const instances = Array.from(map.values());
     this.setState({ instances });
+  }
+
+  PostMessage(text) {
+    this.setState(state => ({
+      message: `${
+        state.message
+      }${new Date().toLocaleTimeString()} :: Received script ${text}\n`
+    }));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -308,7 +321,8 @@ class MissionControl extends React.Component {
       modelId,
       model,
       instances,
-      runIsMinimized
+      runIsMinimized,
+      scriptsNeedUpdate
     } = this.state;
     const { classes } = this.props;
 
@@ -395,7 +409,11 @@ class MissionControl extends React.Component {
         </div>
         <div id="console-right" className={classes.right}>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <PanelPlayback id="playback" model={model} />
+            <PanelPlayback
+              id="playback"
+              model={model}
+              needsUpdate={scriptsNeedUpdate}
+            />
             <PanelInstances id="instances" instances={instances} />
           </div>
         </div>

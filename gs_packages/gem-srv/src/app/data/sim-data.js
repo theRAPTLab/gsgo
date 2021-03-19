@@ -13,6 +13,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { GetAgentById } from 'modules/datacore/dc-agents';
+import * as SIM from 'modules/sim/api-sim';
 import * as TRANSPILER from 'script/transpiler';
 
 // HACK DATA LOADING
@@ -38,13 +39,19 @@ class SimData {
     this.currentModelId = '';
     // Bind This
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
+    this.GetModels = this.GetModels.bind(this);
+    this.GetModel = this.GetModel.bind(this);
+    this.GetCurrentModel = this.GetCurrentModel.bind(this);
+    this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
+    this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
+    this.ScriptUpdate = this.ScriptUpdate.bind(this);
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
     this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
     this.SendSimDataModel = this.SendSimDataModel.bind(this);
-    this.GetModel = this.GetModel.bind(this);
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdate = this.InstanceUpdate.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
+    this.ReplacePropLine = this.ReplacePropLine.bind(this);
     this.InstanceRequestEdit = this.InstanceRequestEdit.bind(this);
     this.InstanceSelect = this.InstanceSelect.bind(this);
     this.InstanceDeselect = this.InstanceDeselect.bind(this);
@@ -52,6 +59,7 @@ class SimData {
     this.InstanceOverOut = this.InstanceHoverOut.bind(this);
     // Register Listeners
     UR.HandleMessage('LOCAL:INSTANCE_ADD', this.InstanceAdd);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE', this.InstanceUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
     UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
@@ -108,6 +116,9 @@ class SimData {
     this.currentModelId = modelId;
     return this.GetSimDataModel(modelId);
   }
+  GetCurrentModel() {
+    return this.GetSimDataModel(this.currentModelId);
+  }
   GetCurrentModelId() {
     return this.currentModelId;
   }
@@ -137,6 +148,44 @@ class SimData {
     return properties;
   }
 
+  /**
+   *
+   * @param {Object} data -- { script }
+   */
+  ScriptUpdate(data) {
+    const model = this.GetCurrentModel();
+    const source = TRANSPILER.ScriptifyText(data.script);
+    const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
+    const blueprintName = bundle.name;
+    const blueprint = {
+      id: blueprintName,
+      label: blueprintName,
+      script: data.script
+    };
+    const index = model.scripts.findIndex(s => s.id === blueprintName);
+    if (index > -1) {
+      // Replace existing blueprint
+      model.scripts[index] = blueprint;
+    } else {
+      // New Blueprint
+      model.scripts.push(blueprint);
+    }
+
+    this.SendSimDataModel();
+
+    // Add an instance if the sim is not running
+    const bp = TRANSPILER.RegisterBlueprint(bundle);
+    const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
+    if (instancesSpec.length < 1) {
+      // If the map has not been defined yet, then generate a single instance
+      // instancesSpec.push({ name: `${bp.name}01`, init: '' });
+      this.InstanceAdd({
+        modelId: this.GetCurrentModelId(),
+        blueprintName: bp.name
+      });
+    }
+  }
+
   /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
@@ -155,7 +204,7 @@ class SimData {
   HandleSimDataModelRequest(data) {
     this.SendSimDataModel(data.modelId);
   }
-  SendSimDataModel(modelId) {
+  SendSimDataModel(modelId = this.currentModelId) {
     let model = this.GetSimDataModel(modelId);
     UR.RaiseMessage('NET:UPDATE_MODEL', { model });
   }
@@ -166,7 +215,7 @@ class SimData {
    *
    * @param {Object} data -- { modelId, blueprintName }
    */
-  InstanceAdd(data) {
+  InstanceAdd(data, sendUpdate = true) {
     const model = this.GetSimDataModel(data.modelId);
     const instance = {
       id: GetUID(),
@@ -180,7 +229,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     // REVIEW
     // This needs to send data to db
     //
-    this.SendSimDataModel(data.modelId);
+    if (sendUpdate) this.SendSimDataModel(data.modelId);
   }
   /**
    *
