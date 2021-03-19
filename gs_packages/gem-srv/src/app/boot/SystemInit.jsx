@@ -26,14 +26,15 @@ import {
   ThemeProvider
 } from '@material-ui/core/styles';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
-import SETTINGS from '../../../config/app.settings';
-import theme from '../../modules/style/theme';
+import SETTINGS from 'config/app.settings';
+import theme from 'modules/style/theme';
 import SystemShell from './SystemShell';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
-const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
+const PR = UR.PrefixUtil('SYSTEM', 'TagSystem');
+const NPR = UR.PrefixUtil('URSYS ', 'TagUR');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,7 +71,9 @@ function Init() {
         </StylesProvider>,
         document.getElementById('app-container'),
         () => {
+          // at this time, the shell should be completely renderered
           UR.addConsoleTools();
+          console.log(...NPR('APP: <SystemShell> Rendered'));
         }
       );
     })();
@@ -82,6 +85,10 @@ function Init() {
     document.location.reload();
   });
 }
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// console debugger message listeners
+UR.addConsoleToolHandlers();
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

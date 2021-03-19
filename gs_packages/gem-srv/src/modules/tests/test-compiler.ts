@@ -9,7 +9,7 @@ import { ScriptifyText, CompileBlueprint } from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('T-COMPILER', 'TagDkOrange');
+const PR = UR.PrefixUtil('T-COMPILER', 'TagTest');
 const TT = [];
 const TESTNUM = undefined; // undefined for all tests
 

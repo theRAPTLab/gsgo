@@ -16,7 +16,6 @@ import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const PR = UR.PrefixUtil('GLOBAL', 'TagRed');
 let FRAME_TIME = 0;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,8 +37,8 @@ export const _frame = () => FRAME_TIME;
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// for erasing data structures
-UR.SystemHook('SIM/RESET', () => {});
-UR.SystemHook('SIM/INPUTS', frameTime => {
+UR.HookPhase('SIM/RESET', () => {});
+UR.HookPhase('SIM/INPUTS', frameTime => {
   FRAME_TIME = frameTime;
 });
 

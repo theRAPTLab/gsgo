@@ -7,18 +7,21 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const UR_EndPoint = require('./client-endpoint');
 const NETWORK = require('./client-urnet');
+const DEVICES = require('./client-netdevices');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 
-const PR = PROMPTS.makeStyleFormatter('UR');
-const DBG = false;
-
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PhaseMachine = require('./class-phase-machine');
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
+const DBG = false;
+const { LocalNode, NetNode } = require('./client-datacore');
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,10 +37,16 @@ const META = {
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const LocalNode = new UR_EndPoint('ur-client'); // local mesaging
-const NetNode = new UR_EndPoint('ur-sender'); // server messaging
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
+
+/// SUPPORT API PART 1 ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** register messages */
+async function RegisterMessages() {
+  if (DBG) console.log(...PR('registering messages'));
+  return LocalNode.ursysRegisterMessages();
+}
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,7 +65,7 @@ async function SystemStart(route) {
     return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
-  PhaseMachine.QueueHookFor(
+  PhaseMachine.Hook(
     'UR/NET_CONNECT',
     () =>
       new Promise((resolve, reject) =>
@@ -64,13 +73,15 @@ async function SystemStart(route) {
       )
   );
   // autoregister messages
-  PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
-    let result = await LocalNode.ursysRegisterMessages();
+  PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
+    let result = await RegisterMessages();
     if (DBG)
       console.log(...PR('message handlers registered with NETWORK:', result));
   });
+  // complete startup
   URSYS_RUNNING = true;
   URSYS_ROUTE = route;
+
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,7 +111,7 @@ const UR = {
   RaiseMessage: LocalNode.raiseMessage,
   CallMessage: LocalNode.callMessage,
   // FORWARDED GENERIC PHASE MACHINE
-  SystemHook: PhaseMachine.QueueHookFor,
+  HookPhase: PhaseMachine.Hook,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
@@ -126,9 +137,12 @@ const UR = {
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED CLASSES
   class: { PhaseMachine },
-  // FORWARDED DEBUG UTILITY
+  // FORWARDED CONSOLE DEBUG UTILITIES
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);
+  },
+  addConsoleToolHandlers: (ur = UR) => {
+    DBGTEST.addConsoleToolHandlers(ur);
   }
 };
 module.exports = UR;

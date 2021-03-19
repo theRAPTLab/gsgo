@@ -79,8 +79,8 @@ let LOG = {};
  */
 LOG.PKT_LogEvent = pkt => {
   let { event, items } = pkt.Data();
-  if (DBG) console.log(TOUT, pkt.Info(), event, ...items);
-  LogLine(pkt.Info(), event || '-', ...items);
+  if (DBG) console.log(TOUT, pkt.getInfo(), event, ...items);
+  LogLine(pkt.getInfo(), event || '-', ...items);
   return { OK: true };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -13,7 +13,7 @@ import { Evaluate } from 'lib/expr-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('EXPRESSION PARSE TEST', 'TagDkRed');
+const PR = UR.PrefixUtil('EXPRESSION PARSE TEST', 'TagTest');
 const exprGobbler = new ExpressionParser();
 
 /// COMPARE EXPRESSION PARSERS ////////////////////////////////////////////////

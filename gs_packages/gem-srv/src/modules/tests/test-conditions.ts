@@ -114,8 +114,8 @@ function Update(/* frame */) {
 
 /// MODULE INITIALIZATION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/CONDITIONS_UPDATE', Update);
-UR.SystemHook('UR/APP_CONFIGURE', ModuleInit);
+UR.HookPhase('SIM/CONDITIONS_UPDATE', Update);
+UR.HookPhase('UR/APP_CONFIGURE', ModuleInit);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

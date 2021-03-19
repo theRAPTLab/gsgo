@@ -23,7 +23,7 @@ const MONITORED_INSTANCES = [];
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
+UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
@@ -59,7 +59,7 @@ class PanelSimulation extends React.Component {
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
 
-    UR.SystemHook('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
+    UR.HookPhase('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
   }
 
   componentDidMount() {

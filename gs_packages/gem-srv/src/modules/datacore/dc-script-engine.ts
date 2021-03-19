@@ -16,7 +16,7 @@ import { GetFunction } from './dc-named-methods';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('DCSCRP', 'TagRed');
+const PR = UR.PrefixUtil('DCSCRP');
 
 export const BLUEPRINTS: Map<string, ISMCBundle> = new Map();
 export const KEYWORDS: Map<string, IKeyword> = new Map();
