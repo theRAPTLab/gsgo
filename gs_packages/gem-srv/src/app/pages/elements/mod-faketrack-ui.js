@@ -26,9 +26,12 @@
 /// info about gl-matrix usage
 /// http://math.hws.edu/graphicsbook/c7/s1.html
 import { vec3 } from 'gl-matrix';
+import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('FAKETK', 'TagInput');
+
 // React user interface (the "view")
 let m_FAKEVIEW = null;
 // dimensions
@@ -305,14 +308,14 @@ function Initialize(componentInstance) {
   if (m_fakesock === null) {
     // establish faketrack m_fakesock connection to node server
     // also startup the data push interval as 1/FRAMERATE
-    console.log('Connected-FakeTrackAddress', m_fakeaddress, '...');
+    console.log(...PR('Connected-FakeTrackAddress', m_fakeaddress, '...'));
     m_fakesock = new WebSocket(m_fakeaddress);
     m_fakesock.onopen = () => {
-      console.log('FAKETRACK CHANNEL CONNECTED!');
+      console.log(...PR('FAKETRACK CHANNEL CONNECTED!'));
       setInterval(SendFrame, INTERVAL);
     };
     m_fakesock.onclose = msg => {
-      console.log('FAKETRACK SOCKET CLOSED: CODE', msg.code);
+      console.log(...PR('FAKETRACK SOCKET CLOSED: CODE', msg.code));
       m_fakesock = null;
     };
   }

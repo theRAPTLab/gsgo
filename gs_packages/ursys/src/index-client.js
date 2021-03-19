@@ -129,6 +129,8 @@ const UR = {
   SystemAppRestage: EXEC.SystemAppRestage,
   SystemNetReboot: EXEC.SystemNetReboot,
   SystemAppUnload: EXEC.SystemAppUnload,
+  // FORWARDED DEVICE
+  RegisterInputs: DEVICES.RegisterInputs,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

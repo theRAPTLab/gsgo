@@ -141,7 +141,8 @@ class MessagerEndpoint {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** URCHAN wraps Messager.callMessage(), which returns an agregate data
-   * bundle after executing a bunch of promises async/await-style!
+   *  bundle after executing a bunch of promises async/await-style!
+   *  In other words, use this as a synchronous method that returns data
    */
   callMessage(mesgName, inData = {}, options = {}) {
     options = Object.assign(options, { type: 'mcall' });

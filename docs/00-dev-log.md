@@ -406,12 +406,11 @@ Step by step:
 What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what needs to happen for registration
 
 * [ ] `FakeTrack.jsx` loads UR. What does it really need to do with it?
-
-  * [ ] The device directory should automatically be populated by the module, which receives data from the server.
+* [ ] The device directory should automatically be populated by the module, which receives data from the server.
   * [ ] Has to register as a device with a list of named input types (trigger, vector, xyz)
   * [ ] When registered, it starts emitting its output periodically when told to.
   * [ ] Has to respond to an input control language
-
+  
 * [ ] The input server has to talk to FakeTrack
 
   * [ ] receives input frames, and redistributes them
@@ -438,9 +437,50 @@ What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what
   * [ ] input objects may make use of a particle effect to show where they are
 
 
+## MAR 18 THU - Continuing from yesterday's list
 
+First things first:
 
+### FakeTrack and NetDevices
 
+The design of `client-netdevices` is that
+
+* it receives `NET:UR_PROTOCOLS`  and `NET:UR_DEVICES` messages for updates
+* it lets an app register itself via `NET:UR_REG_INPUT` and receives back data that's the same as what would be received by `NET:UR_PROTOCOLS` etc
+
+* [ ] The device directory should automatically be populated by the module, which receives data from the server.
+  * this is handled in `client-netdevices` hooking into
+* [ ] Has to register as a device with a list of named input types (trigger, vector, xyz)
+* [ ] When registered, it starts emitting its output periodically when told to.
+* [ ] Has to respond to an input control language
+
+```markdown
+## SERVER INPUTS
+
+NET:SRV_PROTOCOLS    - returns a protocols table
+NET:SRV_DEVICES      - returns a device table
+NET:SRV_REG_INPUTS   - accepts a protocols definition. This is called to register an input,
+NET:UR_PROTOCOLS     - broadcast device list
+NET:UR_DEVICES       - boradcast device list
+```
+
+Currently here's what I'm doing:
+
+* **FakeTrack** calls the new `UR.RegisterInputs()` and passes a device definition to it.
+* **RegisterInputs()** calls `NET:SRV_REG_INPUTS` with the device definition (a `udevice` structure), and receives `status` back whether it was successful along with useful data TBD. 
+* On the server, **PKT_RegisterInputs()** handles the registration call, and processes the `udevice`, storing it in a table. This table is then broadcast to the entire URNET as a `NET:UR_DEVICES` message
+* Back on the client, **client-netdevices** is listening  for `NET:UR_DEVICES` and maintains its internal list.
+
+That takes care of the rudimentary registration messaging. Let's consider how we **use** those device definitions to find our inputs.
+
+In the case of the Simulation, we might be in certain modes:
+
+* look at list of available input devices by **type** and by **uapp** to screen for particular kinds of devices
+* tag available inputs list to assign inputs with **groups** and **roles**. As this happens, the devices should updated group roles so it can display them on the device as a helpful prompt.
+* When inputs are told to activate, they start sending their data as a collection of **InputObjects**
+* The specific **input modules** are handled by `modules/step/` for STEP specific inputs or `modules/input` (this is a major module like sim and render) for the generic types. These modules are what handle the InputObjects and maintain their synched collection. The **api-input** is where queries can be made for current input state. 
+* The **sim-inputs** module requests input state by group and role. It's responsible for providing a way to **bridge InputObjects with Agents** in the simulation. These InputObjects come from the input modules (PTrack and udevices)
+* **sim-inputs** is in charge of managing the list of agents that should be created from a group/role pool with a certain blueprint. It also needs to de-assign these inputs in a way similar to PTrack.
 
 
 

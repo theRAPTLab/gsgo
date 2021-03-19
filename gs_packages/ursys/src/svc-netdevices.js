@@ -16,18 +16,24 @@
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
+const { UR_RaiseMessage, UR_SendMessage } = require('./server-message-api');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // const DBG = false;
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DEVICE_MAP = new Map();
+
 /// DUMMY DATA DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// DEVICE DEFINITION
 const uaddr = 'address'; // assigned URNET address (sent by server)
-const uuid = 'uniqueid'; // device identifier unique id (sent by client)
+const uudid = 'uniqueid'; // device identifier unique id (sent by client)
 const uname = 'device name'; // device identifier non-unique name (sent by client)
 const uauth = 'jwtoken'; // auth request based on student info (sent by client)
+const uapp = 'app identifier'; // the application name that may define a certain app
 
 /// PROTOCOL HOST DEFINITION
 const uhost = {
@@ -42,8 +48,9 @@ const uhost = {
 /// CLIENT DEVICE DEFINITIONS
 const udevice = {
   uaddr,
-  uuid,
+  uudid,
   uname,
+  uapp,
   student: {
     sid: 'information about the student',
     sname: 'student name',
@@ -107,7 +114,7 @@ function PKT_DeviceDirectory(pkt) {
       uaddrB: udevice
     },
     protocolDevices: {
-      'message': [uaddr, uaddr, uaddr],
+      'message2': [uaddr, uaddr, uaddr],
       'track': [uaddr],
       'file': [uaddr, uaddr, uaddr],
       'db': [uaddr],
@@ -129,9 +136,34 @@ function PKT_DeviceDirectory(pkt) {
   return devices;
 }
 
+/** Handle an Input Registration Packet
+ *  The client provides a udevice definition as the datapacket, and receives
+ *  back confirmation that registration succeeded
+ */
+function PKT_RegisterInputs(pkt) {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const { uname, uath, uuid, student, inputs } = pkt.getData();
+  const dev_addr = pkt.getSourceAddress();
+  const groups = Object.keys(student.groups).join(',');
+  const status = `${dev_addr} registering input: '${groups}' with ${inputs.length} inputs`;
+  TERM(status);
+  // save the device to the list
+  DEVICE_MAP.set(dev_addr, { groups, inputs });
+  // broadcast the changed device list
+  const devices = {};
+  [...DEVICE_MAP.keys()].forEach(key => {
+    devices[key] = DEVICE_MAP.get(key);
+  });
+  UR_RaiseMessage('NET:UR_DEVICES', { devices });
+  // return data object to return a remote call
+  // return error string if there was an error
+  return { status };
+}
+
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   PKT_ProtocolDirectory,
-  PKT_DeviceDirectory
+  PKT_DeviceDirectory,
+  PKT_RegisterInputs
 };

@@ -31,7 +31,8 @@ const {
 } = require('./svc-session-v1');
 const {
   PKT_ProtocolDirectory,
-  PKT_DeviceDirectory
+  PKT_DeviceDirectory,
+  PKT_RegisterInputs
 } = require('./svc-netdevices');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
 const DBG = require('./ur-dbg-settings');
@@ -76,6 +77,8 @@ function StartNetwork(options = {}) {
   // NEW DIRECTORY STUFF
   UR_HandleMessage('NET:SRV_PROTOCOLS', PKT_ProtocolDirectory);
   UR_HandleMessage('NET:SRV_DEVICES', PKT_DeviceDirectory);
+  // NEW CLIENT SETTING REGISTRATION
+  UR_HandleMessage('NET:SRV_REG_INPUTS', PKT_RegisterInputs);
   // START SOCKET SERVER
   m_StartSocketServer(options);
   //

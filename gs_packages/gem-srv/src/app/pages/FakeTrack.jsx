@@ -20,7 +20,7 @@ import 'lib/css/faketrack.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('FakeTrack');
+const PR = UR.PrefixUtil('FAKETR', 'TagInput');
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,6 +62,28 @@ class FakeTrack extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     Initialize(this);
     HookResize(window);
+    UR.HookPhase('UR/APP_READY', async () => {
+      const regData = {
+        uudid: 'uniquedeviceid',
+        uauth: 'jwtoken',
+        uname: "billy's input",
+        student: {
+          sid: 'student id',
+          sname: 'student name',
+          groups: { groupA: true },
+          roles: { roleA: true }
+        },
+        inputs: [
+          { control: 'x', type: 'uvec' },
+          { control: 'y', type: 'uvec' },
+          { control: 'h', type: 'uvec' },
+          { control: 'jump', type: 'btn' }
+        ]
+      };
+      // style two (note async in UR.HookPhase definition above)
+      const regInfo = await UR.RegisterInputs(regData);
+      console.log('RegisterInputs() returned regInfo', regInfo);
+    }); // end HookPhase
   }
 
   componentWillUnmount() {
