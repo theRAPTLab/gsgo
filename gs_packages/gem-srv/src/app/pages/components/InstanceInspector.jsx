@@ -1,6 +1,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 import React from 'react';
+import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -28,11 +29,22 @@ class InstanceInspector extends React.Component {
       alreadyRegistered: false,
       color: '#009900',
       colorActive: '#33FF33',
-      bgcolor: 'rgba(0,256,0,0.05)'
+      bgcolor: 'rgba(0,256,0,0.05)',
+      isHovered: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
+    this.GetInstanceId = this.GetInstanceId.bind(this);
     this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    // Sim Hover
+    this.HandleHoverOver = this.HandleHoverOver.bind(this);
+    this.HandleHoverOut = this.HandleHoverOut.bind(this);
+    // Local Inspector Hover
+    this.OnHoverOver = this.OnHoverOver.bind(this);
+    this.OnHoverOut = this.OnHoverOut.bind(this);
+
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
   }
 
   componentDidMount() {
@@ -48,6 +60,8 @@ class InstanceInspector extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
     // Don't unregister here because changing size can cause unmount?
     // so the agent ends up unregistered when really it should stay registered
   }
@@ -59,6 +73,12 @@ class InstanceInspector extends React.Component {
     const { instance } = this.props;
     if (!instance) return '';
     return instance.meta ? instance.meta.name : instance.name;
+  }
+
+  GetInstanceId() {
+    const { instance } = this.props;
+    if (!instance) return '';
+    return instance.id;
   }
 
   /**
@@ -125,8 +145,37 @@ class InstanceInspector extends React.Component {
     this.setState({ size: newsize, alreadyRegistered: registrationStatus });
   }
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Sim Instance Hover Events
+  /// User has hovered over an agent on the stage.
+  ///
+  HandleHoverOver(data) {
+    const agentId = this.GetInstanceId();
+    if (data.agentId === agentId) {
+      this.setState({ isHovered: true });
+    }
+  }
+  HandleHoverOut(data) {
+    const agentId = this.GetInstanceId();
+    if (data.agentId === agentId) {
+      this.setState({ isHovered: false });
+    }
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Local Events (on InstanceEditor container)
+  ///
+  OnHoverOver() {
+    const agentId = this.GetInstanceId();
+    UR.RaiseMessage('SIM_INSTANCE_HOVEROVER', { agentId });
+  }
+  OnHoverOut() {
+    const agentId = this.GetInstanceId();
+    UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
+  }
+
   render() {
-    const { title, size, color, colorActive, bgcolor } = this.state;
+    const { title, size, color, colorActive, bgcolor, isHovered } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
     const data = this.GetInstanceProperties();
@@ -137,7 +186,13 @@ class InstanceInspector extends React.Component {
           margin: '0.5em 0 0.5em 0.5em',
           cursor: 'pointer'
         }}
+        className={clsx(classes.instanceSpec, {
+          [classes.instanceSpecHovered]: isHovered
+          // [classes.instanceSpecSelected]: isSelected
+        })}
         onClick={this.OnInstanceClick}
+        onPointerEnter={this.OnHoverOver}
+        onPointerLeave={this.OnHoverOut}
       >
         <div>
           <div className={classes.inspectorData}>{agentName}</div>
