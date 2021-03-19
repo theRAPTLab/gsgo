@@ -238,7 +238,7 @@ class Messager {
     if (toLocal || fromNet) {
       console.log(
         ...PR(
-          `incoming NetCall: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
+          `incoming CallMessage: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
         )
       );
       // initiated from app

@@ -18,7 +18,7 @@ const PR = UR.PrefixUtil('SIM_INPUTS');
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.OnPhase('SIM/INPUTS', () => {
+UR.HookPhase('SIM/INPUTS', () => {
   // console.log('input');
 });
 

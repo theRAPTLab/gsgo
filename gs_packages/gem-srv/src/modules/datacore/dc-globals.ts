@@ -37,8 +37,8 @@ export const _frame = () => FRAME_TIME;
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// for erasing data structures
-UR.OnPhase('SIM/RESET', () => {});
-UR.OnPhase('SIM/INPUTS', frameTime => {
+UR.HookPhase('SIM/RESET', () => {});
+UR.HookPhase('SIM/INPUTS', frameTime => {
   FRAME_TIME = frameTime;
 });
 

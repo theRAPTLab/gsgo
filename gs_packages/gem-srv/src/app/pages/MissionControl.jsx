@@ -114,13 +114,13 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
 
     // System Hooks
-    UR.OnPhase('SIM/READY', () => {
+    UR.HookPhase('SIM/READY', () => {
       console.log(...PR('SIM/READY!'));
       const { modelId } = this.state;
       this.LoadModel(modelId);
     });
     // TEST: Probably not necessary so long as SIM/READY is only called once
-    UR.OnPhase('SIM/STAGED', () => {
+    UR.HookPhase('SIM/STAGED', () => {
       console.log(...PR('SIM/STAGED!'));
       // const { modelId } = this.state;
       // this.LoadModel(modelId);

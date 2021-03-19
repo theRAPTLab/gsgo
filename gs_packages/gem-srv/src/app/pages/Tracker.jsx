@@ -25,7 +25,7 @@ let ASSETS_LOADED = false;
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.OnPhase(
+UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {

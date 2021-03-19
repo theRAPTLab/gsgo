@@ -441,7 +441,15 @@ What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what
 
 
 
+WHATS THE DEAL WITH PHASEMACHINE versus UR
 
+
+
+UR.HookPhase('SIM/LALA')
+
+and 
+
+UR.HandleMessage(
 
 
 

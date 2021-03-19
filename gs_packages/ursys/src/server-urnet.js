@@ -22,7 +22,7 @@ const {
   ServerHandlerPromises,
   RemoteHandlerPromises
 } = require('./server-datacore');
-const { NetHandle, LocalSignal } = require('./server-message-api');
+const { UR_HandleMessage, UR_LocalSignal } = require('./server-message-api');
 const { PKT_RegisterHandler } = require('./svc-reg-handlers');
 const {
   PKT_SessionLogin,
@@ -66,16 +66,16 @@ function StartNetwork(options = {}) {
 
   // REGISTER SERVER-BASED MESSAGE HANDLERS
   LOGGER.Write('registering network services');
-  NetHandle('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
-  NetHandle('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
-  NetHandle('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
-  NetHandle('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
-  NetHandle('NET:SRV_SESSION', PKT_Session);
-  NetHandle('NET:SRV_REFLECT', PKT_Reflect);
-  NetHandle('NET:SRV_SERVICE_LIST', PKT_ServiceList);
+  UR_HandleMessage('NET:SRV_LOG_EVENT', LOGGER.PKT_LogEvent);
+  UR_HandleMessage('NET:SRV_REG_HANDLERS', PKT_RegisterHandler);
+  UR_HandleMessage('NET:SRV_SESSION_LOGIN', PKT_SessionLogin);
+  UR_HandleMessage('NET:SRV_SESSION_LOGOUT', PKT_SessionLogout);
+  UR_HandleMessage('NET:SRV_SESSION', PKT_Session);
+  UR_HandleMessage('NET:SRV_REFLECT', PKT_Reflect);
+  UR_HandleMessage('NET:SRV_SERVICE_LIST', PKT_ServiceList);
   // NEW DIRECTORY STUFF
-  NetHandle('NET:SRV_PROTOCOLS', PKT_ProtocolDirectory);
-  NetHandle('NET:SRV_DEVICES', PKT_DeviceDirectory);
+  UR_HandleMessage('NET:SRV_PROTOCOLS', PKT_ProtocolDirectory);
+  UR_HandleMessage('NET:SRV_DEVICES', PKT_DeviceDirectory);
   // START SOCKET SERVER
   m_StartSocketServer(options);
   //
@@ -99,7 +99,7 @@ function m_StartSocketServer(options) {
         socket.on('message', json => ProcessMessage(socket, json));
         socket.on('close', () => {
           const uaddr = SocketDelete(socket); // tell subscribers socket is gone
-          LocalSignal('SRV_SOCKET_DELETED', { uaddr });
+          UR_LocalSignal('SRV_SOCKET_DELETED', { uaddr });
         }); // end on 'connection'
       });
     });

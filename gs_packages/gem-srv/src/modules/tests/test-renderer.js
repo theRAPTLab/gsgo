@@ -137,7 +137,7 @@ function Draw() {}
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.OnPhase('UR/LOAD_ASSETS', () => {
+// UR.HookPhase('UR/LOAD_ASSETS', () => {
 //   const loadSprites = (resolve, reject) => {
 //     LOADER.add('static/sprites/bunny.json').load(loader => {
 //       let sheet = loader.resources['static/sprites/bunny.json'].spritesheet;

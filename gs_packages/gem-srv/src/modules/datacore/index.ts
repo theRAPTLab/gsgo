@@ -68,4 +68,4 @@ export function GetDefaultText() {
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// for erasing data structures
-UR.OnPhase('SIM/RESET', () => {});
+UR.HookPhase('SIM/RESET', () => {});

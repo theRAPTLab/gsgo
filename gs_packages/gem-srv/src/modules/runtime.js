@@ -30,11 +30,11 @@ let SIM_FRAME_MS = interval(33);
 let RX_SUB;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.OnPhase('UR/APP_STAGE');
-UR.OnPhase('UR/APP_START');
-UR.OnPhase('UR/APP_RUN');
-UR.OnPhase('UR/APP_RESET');
-UR.OnPhase('UR/APP_RESTAGE');
+UR.HookPhase('UR/APP_STAGE');
+UR.HookPhase('UR/APP_START');
+UR.HookPhase('UR/APP_RUN');
+UR.HookPhase('UR/APP_RESET');
+UR.HookPhase('UR/APP_RESTAGE');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

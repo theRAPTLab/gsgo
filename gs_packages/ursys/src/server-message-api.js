@@ -21,7 +21,7 @@ const DBG = { call: true };
  * @param {string} mesgName message to register a handler for
  * @param {function} handlerFunc function receiving 'data' object
  */
-function NetHandle(mesgName, handlerFunc) {
+function UR_HandleMessage(mesgName, handlerFunc) {
   if (typeof handlerFunc !== 'function') {
     TERM(`${mesgName} subscription failure`);
     throw Error('arg2 must be a function');
@@ -39,7 +39,7 @@ function NetHandle(mesgName, handlerFunc) {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-function NetUnhandle(mesgName, handlerFunc) {
+function UR_UnhandleMessage(mesgName, handlerFunc) {
   if (mesgName === undefined) {
     SVR_HANDLERS.clear();
   } else if (handlerFunc === undefined) {
@@ -60,7 +60,7 @@ function NetUnhandle(mesgName, handlerFunc) {
  * @param {function} handlerFunc function originally registered
  * @return {Array<Object>} array of returned data items
  */
-async function NetCall(mesgName, data) {
+async function UR_CallMessage(mesgName, data) {
   let pkt = new NetPacket(mesgName, data);
   let promises = RemoteHandlerPromises(pkt);
   if (DBG.call)
@@ -80,7 +80,7 @@ async function NetCall(mesgName, data) {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-function NetSend(mesgName, data) {
+function UR_SendMessage(mesgName, data) {
   let pkt = new NetPacket(mesgName, data);
   let promises = RemoteHandlerPromises(pkt);
   // we don't care about waiting for the promise to complete
@@ -96,14 +96,14 @@ function NetSend(mesgName, data) {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-function NetRaise(mesgName, data) {
-  NetSend(mesgName, data);
+function UR_RaiseMessage(mesgName, data) {
+  UR_SendMessage(mesgName, data);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side local server publishing. It executes synchronously, unlike the
  *  remote version. Doesn't return values.
  */
-function LocalSignal(mesgName, data) {
+function UR_LocalSignal(mesgName, data) {
   const handlers = SVR_HANDLERS.get(mesgName);
   if (!handlers) return;
   const results = [];
@@ -115,10 +115,10 @@ function LocalSignal(mesgName, data) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  NetHandle,
-  NetUnhandle,
-  NetCall,
-  NetSend,
-  NetRaise,
-  LocalSignal
+  UR_HandleMessage,
+  UR_UnhandleMessage,
+  UR_CallMessage,
+  UR_SendMessage,
+  UR_RaiseMessage,
+  UR_LocalSignal
 };
