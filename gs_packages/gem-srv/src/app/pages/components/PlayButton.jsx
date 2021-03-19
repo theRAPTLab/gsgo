@@ -7,7 +7,7 @@ class PlayButton extends React.Component {
   componentWillUnmount() {}
   render() {
     const { isRunning, onClick, classes } = this.props;
-    let label = isRunning ? 'STOP' : 'PLAY';
+    let label = isRunning ? 'STOP' : 'GO';
     let css = isRunning ? classes.buttonOn : classes.button;
     return (
       <button type="button" className={css} onClick={onClick}>
