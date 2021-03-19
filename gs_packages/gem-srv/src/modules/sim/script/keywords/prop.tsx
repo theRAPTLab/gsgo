@@ -83,7 +83,6 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.saveData();
   }
   onClick(e) {
-    const { propName, methodName, args } = this.state;
     e.preventDefault();
     e.stopPropagation();
     // Stop click here when user clicks inside form to edit.

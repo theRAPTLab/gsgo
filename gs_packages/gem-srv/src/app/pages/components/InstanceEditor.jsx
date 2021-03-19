@@ -59,7 +59,6 @@ class InstanceEditor extends React.Component {
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
@@ -72,7 +71,6 @@ class InstanceEditor extends React.Component {
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
-    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
