@@ -6,7 +6,7 @@
   "scripts": {
     "local": "npm run dev:gem",
     "dev:srv": "nodemon gem_run.js dev-skip",
-    "dev:gem": "nodemon --watch ../ursys/src  gem_run.js dev",
+    "dev:gem": "nodemon --watch ../ursys/src --watch server --watch gem_run.js gem_run.js dev",
     "..ursys": "cd ../ursys && npm run local",
     "..bootstrap": "cd ../../ && npm run bootstrap",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
