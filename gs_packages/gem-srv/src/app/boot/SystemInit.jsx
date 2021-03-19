@@ -35,6 +35,7 @@ import SystemShell from './SystemShell';
 const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM', 'TagSystem');
 const NPR = UR.PrefixUtil('URSYS ', 'TagUR');
+const AR = UR.PrefixUtil('URSYS ', 'TagRainbow');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -72,8 +73,10 @@ function Init() {
         document.getElementById('app-container'),
         () => {
           // at this time, the shell should be completely renderered
+          // but componentDidMount() happens AFTER the first render
+          // to guarantees that the DOM is stable
           UR.addConsoleTools();
-          console.log(...NPR('APP: <SystemShell> Rendered'));
+          console.log(...AR('APP: <SystemShell> React+UR lifecycles starting'));
         }
       );
     })();

@@ -21,6 +21,7 @@ import 'lib/css/faketrack.css';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FAKETR', 'TagInput');
+const AR = UR.PrefixUtil('REACT ', 'TagRainbow');
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
