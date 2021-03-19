@@ -11,9 +11,9 @@ const { LocalNode, NetNode } = require('./client-datacore');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('DEVICE','TagUR2');
-const HPR = PROMPTS.makeStyleFormatter('DEVICE','TagHook');
-const PPR = PROMPTS.makeStyleFormatter('DEVICE','TagOnPhase');
+const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagUR2');
+const PPR = PROMPTS.makeStyleFormatter('DEVICE', 'TagPhase');
+const HPR = PROMPTS.makeStyleFormatter('DEVICE', 'TagMessage');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
