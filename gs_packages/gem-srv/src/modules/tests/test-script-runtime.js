@@ -20,7 +20,7 @@ import * as RENDERER from 'modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('KWTEST', 'TagDkOrange');
+const PR = UR.PrefixUtil('KWTEST', 'TagTest');
 const TT = [];
 const TESTNUM = undefined; // undefined for all tests
 const log = console.log;
@@ -170,19 +170,19 @@ function TestExec(frameTime) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// if this test is imported into Compiler.jsx, SIM doesn't start until
 /// SAVE BLUEPRINT is clicked. Force SIM START here
-UR.SystemHook('SIM/READY', () => {
+UR.HookPhase('SIM/READY', () => {
   log(...PR('ready'));
   SIM.Start();
   // TestKeywords();
 });
-UR.SystemHook('SIM/PROGRAM', () => {
+UR.HookPhase('SIM/PROGRAM', () => {
   log(...PR('program'));
   MakeInstances();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// if this test is imported into Compiler.jdx, sim-* modules are running
 /// after SIM.Start has been fired
-UR.SystemHook('SIM/CONDITIONS_UPDATE', TestCondition);
-UR.SystemHook('SIM/AGENTS_UPDATE', TestUpdate);
-UR.SystemHook('SIM/AGENTS_THINK', TestThink);
-UR.SystemHook('SIM/AGENTS_EXEC', TestExec);
+UR.HookPhase('SIM/CONDITIONS_UPDATE', TestCondition);
+UR.HookPhase('SIM/AGENTS_UPDATE', TestUpdate);
+UR.HookPhase('SIM/AGENTS_THINK', TestThink);
+UR.HookPhase('SIM/AGENTS_EXEC', TestExec);

@@ -75,15 +75,15 @@ class ScriptEditor extends React.Component {
     // data is not answered.  Use SIM/STAGED instead?
     // This is mostly a problem when saving this file triggers a
     // rebuild and reload.  But it's not consistent.
-    UR.SystemHook('SIM/READY', () => {
+    UR.HookPhase('SIM/READY', () => {
       console.warn('sim/READY!');
       const { modelId } = this.state;
       this.LoadModel(modelId);
     });
 
     // REVIEW
-    // Is this necessary?  SIM/READY seems to work most of the time?
-    UR.SystemHook('SIM/STAGED', () => {
+    // Is this necessary?  Does SIM/READY work?
+    UR.HookPhase('SIM/STAGED', () => {
       console.warn('SIM/STAGED!');
       // const { modelId } = this.state;
       // this.LoadModel(modelId);

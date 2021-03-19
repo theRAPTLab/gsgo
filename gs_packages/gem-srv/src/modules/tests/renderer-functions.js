@@ -47,12 +47,12 @@ function TestRenderParameters(dobj, vobj) {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.SystemHook('SIM/RESET', AgentReset);
-// UR.SystemHook('SIM/SETMODE', AgentSelect);
-// UR.SystemHook('SIM/PROGRAM', AgentProgram);
-// UR.SystemHook('SIM/AGENTS_UPDATE', AgentUpdate);
-// UR.SystemHook('SIM/AGENTS_THINK', AgentThink);
-// UR.SystemHook('SIM/AGENTS_EXEC', AgentExec);
+// UR.HookPhase('SIM/RESET', AgentReset);
+// UR.HookPhase('SIM/SETMODE', AgentSelect);
+// UR.HookPhase('SIM/PROGRAM', AgentProgram);
+// UR.HookPhase('SIM/AGENTS_UPDATE', AgentUpdate);
+// UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
+// UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

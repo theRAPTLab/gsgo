@@ -23,7 +23,7 @@ const BUNDLE_CONTEXTS = [
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const PR = UR.PrefixUtil('DCBDL', 'TagRed');
+/// const PR = UR.PrefixUtil('DCBDL');
 
 /// GLOBAL DATACORE STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

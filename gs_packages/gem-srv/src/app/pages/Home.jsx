@@ -14,8 +14,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('HOME', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('console-left');
+const PR = UR.PrefixUtil('HOME');
 
 /// UI HELPERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,6 +53,8 @@ const NavItem = props => {
 class Home extends React.Component {
   componentDidMount() {
     document.title = 'GEMSTEP';
+    // start URSYS
+    UR.SystemAppConfig({ autoRun: true });
   }
 
   componentWillUnmount() {
@@ -65,7 +66,7 @@ class Home extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>INDEX</span>
+          <span style={{ fontSize: '32px' }}>INDEX</span> {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <b className={classes.title}>Demo Routes</b>
@@ -138,6 +139,14 @@ class Home extends React.Component {
     );
   }
 }
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HandleMessage('NET:GEM_HOMEAPP', data => {
+  console.log('NET:GEM_HOMEAPP got data', JSON.stringify(data));
+  data.reply = 'hi yourself';
+  return data;
+});
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -20,8 +20,7 @@ import 'lib/css/faketrack.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('FakeTrack', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('console-left');
+const PR = UR.PrefixUtil('FakeTrack');
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -301,6 +300,10 @@ class FakeTrack extends React.Component {
     );
   }
 } // endclass
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HandleMessage('NET:GEM_FAKETRACKAPP', data => data);
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

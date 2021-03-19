@@ -64,7 +64,7 @@ function moveFloat(agent, y: number = -300) {
 
 /// Movement Agent Manager
 const MOVING_AGENTS = new Map();
-UR.SystemHook('SIM/FEATURES_UPDATE', () => {
+UR.HookPhase('SIM/FEATURES_UPDATE', () => {
   const agents = [...MOVING_AGENTS.values()];
   agents.forEach(agent => {
     // handle movement

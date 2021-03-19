@@ -33,6 +33,13 @@ const TRANSACTION_MODE = [
 ];
 const VALID_CHANNELS = ['LOCAL', 'NET', 'SVR', 'STATE']; // is all channels in list
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** utility to generate the official unique hash for packets in URSYS
+ */
+function PacketHash(pkt) {
+  return `${pkt.getSourceAddress()}:${pkt.id}`;
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
@@ -43,6 +50,7 @@ module.exports = {
   CFG_SVR_UADDR,
   PRE_SYS_MESG,
   PRE_UADDR_ID,
+  PacketHash, // function
   // NETPACK
   PRE_PACKET_ID,
   PRE_SVR_MESG,

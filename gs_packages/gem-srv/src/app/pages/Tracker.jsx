@@ -19,13 +19,13 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRACKER', 'TagGreen');
+const PR = UR.PrefixUtil('TRACKER', 'TagApp');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
+UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {

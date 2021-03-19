@@ -10,7 +10,7 @@ import * as TRANSPILER from 'script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TOKENIZE TEST', 'TagDkRed');
+const PR = UR.PrefixUtil('TOKENIZE TEST', 'TagTest');
 const tokenizer = new ScriptTokenizer({ show: true });
 
 /// TOKENIZER TRIALS //////////////////////////////////////////////////////////

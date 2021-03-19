@@ -40,7 +40,7 @@ const defaultText = DATACORE.GetDefaultText();
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
+UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
@@ -296,6 +296,9 @@ class Compiler extends React.Component {
     );
   }
 }
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HandleMessage('NET:GEM_COMPILERAPP', data => data);
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

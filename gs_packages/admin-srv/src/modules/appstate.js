@@ -50,7 +50,7 @@ function getRoute() {
   return ROUTE;
 }
 
-UR.SystemHook('UR/APP_CONFIGURE', () => {
+UR.HookPhase('UR/APP_CONFIGURE', () => {
   if (typeof window !== 'undefined') {
     console.log(
       ...PR('!!! SETTING imperative-style timer in declarative world!')

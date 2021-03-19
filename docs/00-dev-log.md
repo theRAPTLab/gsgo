@@ -1,4 +1,4 @@
-[PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
+PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY S20 SEP 28-OCT 11**
 
@@ -44,338 +44,412 @@
 **SUMMARY S2103 FEB 08 - FEB 21**
 
 * W1: new keywords, compiler tech documentation
-* W2: network/input blueprint+design
+* W2: network/input design, keyword jsx assist
+
+**SUMMARY S2104 FEB 22 - MAR 07**
+
+* W1: refactor ursys for new code, ben key/jsx help
+* W2: multinet design, start implement of directory. URSYS call bug found.
+
+**SUMMARY S2105 MAR 08 - MAR 21**
+
+* W1: URSYS debug remote-to-remote call, declare nofix because not needed with current data flow
+
+  
 
 
 ---
 
-# SPRINT 2103 - FEB 08 - FEB 21
+# SPRINT 2105 / MAR 08 - MAR 21
 
-* **TODO** - make sure can pass parameters to tests
-* **TODO** fix `when` to be able to pass parameters to tests
-* **TODO** - add stack operations for gvars and keywords
+## MAR 08 - Debugging URSYS
 
-This sprint is for **adding FakeTrack** input as well as related systems for **device directory and input management**, possibly also **distributed state updates**. 
+#### debugging URSYS calls between remotes infinite loop
 
-## FEB 09 TUE - Designing Input Manager
+**issue**: when two instances of URSYS each implementing`NET:HELLO` exist, the `call()` should only call one of them and receive data back. **what happens**: infinite loop. **what works:** using `send()` and `raise()` seem to work.
 
-There are two parts to this:
+### Debug Tracing
 
-(1) Device Addressibility
+* [ ] class-messager: 
+  * [ ] callMessage logic for determining 'a remote call' versus 'a local call' with the same message name seems to cause problems. This breaks local calls with a thrown error...
+  * [x] ...removing the `if (!channel.LOCAL && !fromNet)` seems to help local calls work but unknown if it breaks other things
+* [ ] server-urnet:
+  * [ ] it looks like the transaction never resolves correctly
+  * [x] hm, when the call is initiated from just one side, the other side seems to **initiate its own send**of the same message **instead** of just returning it
+  * [ ] this suggest a bug in class-messager **mishandling** a transaction packet as a **new message**
 
-* Main Server (on WAN) is for LAPTOPS to connect to a SIMULATION SERVER
-  * simulation server is a beefy laptop
-  * is an URSYS endpoint
-* Connecting devices select the role they want to use (this chooses the app)
-  * First  come, first served for roles
-  * Chromebooks for Script Editor, iPads for annotation/viewing
-* The global simulation state is owned by Simulation Server
-  * global simulation state is distributed to all devices
+**Q. What are the routing modes for `class-netpacket` ?**
 
-(2) Input Routing
-
-* Inputs are Devices with Roles and InputType
-
-I started `step/wip-role-mgr` to start blocking out functions. Putting it aside and looking now at adding some script keywords.
-
-### Script Improvements
-
-Switching to this...let's first look at **stack operations**: I think what we want to do is add `push()` and `pop()` to the gvars through `SMObject`
-
-* [ ] The gvar methods don't have access to `state` because they are invoked with parameters, so we need to do a bit of massaging in the keywords themselves
-* [ ] in `p[methodName](...args);` this is invoking the method name with args. Maybe we need a variation called `pushProp`?
-* [ ] Alternatively, maybe we need to make all the gvar methods accessible as methods?
-* [ ] Maybe we can always return the value by shoving the last returned value into an accumulator?
-* [ ] how to write `prop agent.x setTo agent.y` ?
-  * [ ] as `propPush` and `propPop`
-
-## FEB 10 WED - bug fixing featPropPush
-
-#### BUG
-
-There's a **bug** with featPropPush() where ref[0] for `featPropPush agent.Costume.costumeName` is undefined instead of 'agent'
-
-* [ ] the `refArg` coming into the compile() is already incorrect. This is produced by TRANSPILER
-* [ ] compile() is called by r_CompileUnit() which calls r_ExpandArgs()
-* [ ] `r_DecodeArg()` is already getting a bogus objref, so it's probably happening in `ScriptifyText()`
-* [ ] so let's check `class-gscript-tokenizer` to **ensure there are no bugs in it**
-
-There were several parse and logic bugs after running all the compiler tests. Seems to work now
-
-* [x] featPropPush works?
-* [x] featProp works?
-* [x] prop works/
-* [x] dbgStack works?
-* [x] propPush works
-* [x] propPop works?
-* [x] featPropPop works?
-* [x] dbgOut works?
-  * [x] crash on objref
-  * [x] no works on expression
-  * [x] added agent context to passed contet
-* [x] setCostume is wrapping things in multiple [ ] 
-  * [x] state.pop was returning an array for a single item pop
-
-### Stack Operations
-
-* [x] propPush, featPropPush - uses objrefs only, not expressions
-* [x] propPop, featPropPop - uses objrefs only, not expressions
-* [x] state.pop() fixed to return default top value, not an array of one value
-* [ ] dbgOut - can it still handle expressions?
-* [ ] prop - can it handle expression assignments?
-* [ ] prop - can it handle objref assignments?
-* [ ] dbgOut, dbgStack - better way to implement output limits?
-
-## FEB 11-12 THU/FRI - Documenting Compiler
-
-Spent a couple of days figuring out how to document it using Typora+Mermaid, billed for half the time because was experimenting with Mermaid diagram generation. **New file is `tech-compiler-internals.md`**
-
-Next up: INPUT STREAM RESUME...try to get to it over the weekend, then we can start writing more interesting Features.
-
-
-
-## FEB 15 MON - Message System and I/O work through
-
-I'm creating a new "MessageStream" class to figure out how this might work. I want:
-
-* [ ] all the registered messages with parameters in one place in new `MessageStream` class
-* [ ] use `MessageStream` to send all possible messages to server instead of `Messager` class
-* [ ] handles URSYS **messages** and URSYS **device addressing**/netlist stuff and 
-
-I'm not clear on what this will look like.
-
-The new `class-message-stream` definition keeps a map of message names to parameter objects, where the keys are the names of the properties and the values are string descriptions
-
-### IOSTREAM DEFINITION
-
-We have a shared mechanism for URSYS messaging that are sent on the main URSYS server
-
-* ursys apps span multiple app/devices, communicate via messages
-* ursys apps can have synced state and data resources
-* ursys apps use a "request change/received update/distribute" model
-
-Input/Output streams are a bit different in that they use different websockets than the main URSYS server. Currently we have the following io streams:
-
-* DisplayObject - currently implemented as an URSYS message
-* PTrack/FakeTrack - currently implemented as a socket-based module
-
-We want to add some more IO streams:
-
-* Annotation Devices: model of discrete and continuous interactions
-* Positional Devices: model of dimensional data updated continuously
-
-Probably we want to make it so we have arbitrary tracks with names, and requested a shared track name will be like stablishing a new channel over a **dedicated websocket** address by the message broker machine.
-
-in the IOSTREAM manager:
-
-`JoinChannel('PTrack',{ authenticate }).then(data=>{ /* setup */ });`
-
-then IOSTREAM caches all the changes to the PTRACK channel received over a particular port.
-
-The other input channels use a protocol that is better tuned for interactive events:
-
-* `triggerName`: triggerType, value --> update local input state by name, state
-* `triggerTypes`: a logical name for operations handled by RxJS that mean something to us
-* `filterTypes`: a list of [RxJS operators](https://rxjs-dev.firebaseapp.com/guide/operators) to apply with params
+These are the properties in NetPacket that message handlers on the server and clients use to determine how to route and respond to a NetPacket.
 
 ```
-input entry:          controlType, logicalName, filterArray
-controlTypes:         button, v1, v2, v3
-filterArray (rxjs):   transform, toggle, debounce, momentary, autoOff
+type    - tells the broker how to handle (msend, msig, mcall, state)
+rmode   - transation direction (req, res)
+seqnum  - number of hops (set to 0 at originator)
+seqlog  - starting with originator's uaddr, addded each hop
+          push transactionStart, transactionReturn
+          
+s_uaddr - set by message broker on first receive, because only it knows
+          what the definitive UADDR is from its socket map
+s_group - this is a 'token' that is sent with each packet (jwtoken someday)
+s_uid   - unused?
 ```
 
-**What is the order of operation for registering for input from various apps?**
+**Q. How is a transaction handled?**
 
-Let's start with how PTRACK works and expand:
+The core implementation details is in `class-netpacket` and `class-messager` 
 
 ```
-server establish UDP listener on port for PTRACK
-server establish TCP listener on port for FAKETRACK
-... some time later ...
-client connect to server on URSYS port
-.. receive identity and service list sockets from server
-.. register logical name, authentication credentials via URSYS port
-.. automatically start receiving background netlist, servicelist directory
+ORIGINATOR
+transactionStart( socket )
+* push our UADDR onto seqlog
+* return a promise that 
+		is hashed into transaction table
+		that stores function data=>resolve(data)
+		and calls socketSend on itself
 
-pick services based on websockets to participate in
-.. client optionally connect to servicelist with authentication credentials
-.. automatically start receiving background service-specific data and jwt token
-.. service websockets requre jwttoken on every request? or just on changes?
-.. register for particular messages on the service
+REMOTE message handler
+isTransaction() checks 
+* that this.rmode isn't a request (should be res)
+* that the seqnum is > 0, meaning it's at least hopped once
+* the originating address is not the same as us
+-- the USE is for the SERVER to see if it's a reflected transation response
+-- from a remote caller
 
-what mode is a particular app in? it depends on the service it's engaged
-what roles are available to select for a service? register input and type
+REMOTE
+transactionReturn( socket )
+* received packet by remote
+* remote adds its uaddr
+* sets rmode to 'res'
+* sends it back to the message broker
+
+ORIGINATOR message handler
+isTransaction() ?
+
+ORIGINATOR RETURN
+transactionComplete()
+* generates the hash key and looks up the resolver function
+* calls the resolver function with the contents of packet data
+
+The resolver function is created by class-messager and looks like this:
+function MakeResolverFunction( handlerFunc, inData) {
+  return new Promise(resolve=> {
+    let retval = handlerFunc(inData);
+    resolve(retval);
+  }
+}
+
+The way callMessage( mesg, inData, option ) works is:
+* look up handler by mesg
+* if it's a local call, then make a resolver function and add to promise list
+* if it's a net call, make a netpacket and use transactionStart() to get promise to add to primise list.
+* finally, Promise.all() all promises, returning a res array of results.
+* return the resObj (a composite)
+
 ```
 
-Now we're hooked up to a particular service that is maintaining its cached status and possibly also **forwarding events** to our own client code to do something with it. Can also pull **current state** from the service name as needed, which is updated every sim frame
+**Q. How does message handling distinguish between remote calls and returning transactions?** 
 
-### What does DISPLAY OBJECT look like with this model?
+On the **client-side**,  `client-urnet`  implements message handling in  `m_HandleMessage( pkt )` 
 
-**CURRENTLY**: 
+1. if `pkt.rmode==='res'`  then calls `pkt.transactionComplete()` (this checks if the packet is a **response to our own call**. 
+2. ottherwise this is an **incoming request** to handle:
+   * if `pkt.type==='msend'`  - call `sendMessage( msg, data, { fromNet: true } )`, then `pkt.transactionReturn()` to signal that the send was received (with no data)
+   * `pkt.type==='msig'` - Similar to `msend` but uses `raiseMessage( msg, data, { fromNet: true} )` instead 
+   * `pkt.type==='mcall'` - Use `callMessage( msg, data, { fromNet: true } )` which returns a promise. Invoke `then(result=>{}` on promise, which will `pkt.setData(result)` before calling `transactionReturn()` 
 
-* The display objects that are sent to `NET:DISPLAY_LIST` are calculated by `sim-agents` on every frame update. This is an *agent-to-dobj* map.
-* The display object capture happens in `RENDERER.UpdateDisplayList(dobjlist)`. The actual drawing is done by `RENDERER.Render()`.  This is a *dobj-to-vobj* mapping
+On the **server-side**, `server-urnet` implements the message broker logic in `m_RouteMessage(sock, pkt)`
 
-**UPDATED VERSION MIGHT BE**:
+1. if `pkt.mode==='res'` it's a **response to a remote call**, which was initiated as a new packet from THIS SERVER. Call `transactionComplete()` to call the resolver function **where???**
 
-* a single **producer** can register for the role of **SIM_DISPLAY** with the URSYS thing, so mission control would have to request ownership of the service. This would be a separate service request.
-* **subscriber** registers for DISPLAYLIST service, which is running on a different socket server
-* the display list service is similar to `RENDERER.UpdateDisplayList()`, receiving `NET:DISPLAY_LIST` automatically. 
-* All subscribers would request to become a client of `SIM_DISPLAY`. The `RENDERER` module would initialize itself when this service is requested, and then `Render()` would be available to call by the consumer.
+2. otherwise its a **new message to broker** on behalf of a client, so fetch handlers related to it.
+   * Is it a **server-implemented** or a **remote** message? Only can be one
+   * The handlers are promises, so `pktArray = await Promise.all(promises).catch(err)` 
+   * `pkt.type` of `msend` and `msig` require no additional return processing, *otherwise*...
+     * assemble aggregate data (should make this part of NetPacket)
+     * `pkt.setData(data)` and `pkt.transactionReturn(sock)`
+   
+3. the **magic** part is in the returned promises from `m_PromiseServerHandlers(pkt)` and `m_PromiseRemoteHandlers(pkt)`. 
 
-### What does PTRACK look like with this model?
+   1. For **server handlers**:
 
-There's `PTrackEndpoint` which is a class that tracks PTRACK-style frames through `ProcessFrame()`. This is the **continuous update** manager.
+      ```js
+      let promises = [];
+      handlers.forEach(hFunc => { 
+      	let p = new Promise( (resolve, reject) => {
+          let retval = hFunc(pkt);
+          if (typeof retval!=='object') reject(retval)
+          else resolve(retval)
+        });
+        promises.push(p);
+      });
+      return promises;
+      ```
 
-There's also `in-ptrack` which creates a` PTrackEndPoint` instance and connects, then updates filter settings. It also has the `GetInputs(ms)` **current state** retrieval function.
+      
 
-### What does FAKETRACK look like with this model?
+   2. for **remote handlers**, the packet has to be forwarded to possibly multiple remotes:
 
-* FakeTrack is a webapp. It would request to become a source of PTRACK data with a particular logical name, role, and address through URSYS
-* It receives-back the port to write to. This is all handled in the `in-ptrack` class or something similar.
+      ```js 
+      let promises = []
+      remotes.forEach(remote => {
+        ...
+        let r_sock = SocketLookup(remote);
+        let newpkt = new NetPacket(pkt)
+        newpkt.makeNewId();
+        newPkt.copySourceAddress(pkt); 
+        promises.push(newpkt.transactionStart(r_sock));
+      }
+      return promises
+      ```
 
-* FakeTrack is separate from PTrack but uses the same data format, so it can reuse the ptrack module for frame processing and transformation
+      Recall that `NetPacket.transactionStart()` returns a Promise that looks something like this:
 
-* The kind of FakeTrack entities might have a different input mode: **follow** or **embody**. 
+      ```js
+      transactionStart( socket ) {
+        seqlog.push(NetPacket.uaddr)
+        let p = new Promise( (resolve, reject) => {
+          let hash = m_GetHashKey(this);
+          m_transaction.set(hash, data -> {
+            let json = JSON.stringify(data);
+          	resolve(data);
+      	  	this.socketSend(socket)    	
+        });
+        return p;
+      }
+      ```
 
-  
+   3. The general **pattern behind Promise use** here is that they're used to package code that performs **asynch execution** of functions with *different* uses. 
 
-### What does Button Input look like with this model?
+      * for **ServerHandlers**: The message map points to arrays of **handler functions** of the form `hFunc(pkt)`. The promise wraps the call to `hFunc()` which returns a **data object** that is used to `resolve()` the promise. 
+      * for **RemoteHandlers**: The message map points to arrays of **remote addresses**. Each address in the array is used to begets a Promise that:
+        1. **clones** the original incoming packet into `newpkt`
+        2. **forwards the data** using `newpkt.transactionStart(r_sock)`, which returns a **promise** that is then `await`ed in the main ``m_RouteMessage()` server function
+      * for **Transaction chains**
+        1. for **client local calls**: `messager` provides the `callMessage(msg,data)` interface and uses `m_MakeResolverFunction(handlerFunc, inData)` to return a promise that just resolves the return value returned by `handlerFunc`, which is defined by the `UR.callMessage('MESG',hFunc()=>{})` invocation
 
-* **producer** of button input registers for the role as a Button Input. Possible other kinds of input. THe registration include logicalName and authetication on URSYS node, and in return service list is received. 
-* **producer** then registers itself as the producer of a certain named input type along with its logicalname/uaddr. If access is granted, establish the new socket connection that is returned. The producer can then write any data it wants to a particular logical named input
-* **subscriber** of ANNOTATION socket receives all the button inputs as-is, recording the logical name of the input and its value, maintaining state. The state of a particular input or all inputs can be read during the GET_INPUT phase.
+        2. for **clientnet calls**: `messager` gets the promise from `transactionStart(sock)` in `class-netpacket`. 
+           * the transaction map points a **computed hash of a netpacket** to a **resolver function** that contains the `resolve()` call to complete a Promise. 
+           * The transaction map contains all the outgoing network packets, and can be rematched to incoming packets that are completely different JS objects through the hash key. 
+           * On transaction start, a Promise is created to start the network send. Before it does that, it creates a **function object** (the "resolver function") that does two things: (1) it saves a reference to the original callback specified by `UR.CallMessage(MESG,func)` and (2) it passes the return value of the callback to the promise's `resolve()` function.
+           * Incoming packets are checked to see if they are associated with a transaction. This is done by **computing** the netpacket hash and looking for an associated resolver function. If it exists, `pkt.completeTracaction()`  calls the found resolver function is called, which (1) calls the original callback and (2) passes the result of the callback to the `resolve()` . This closes out the transaction, so the entry is deleted. 
+           
+        3. for **server message brokering**: the `m_RouteMessage(sock, pkt)` is the main handlers. When the broker receives a packet from a remote, it can either be (1) a new message request or (2) a returning message request. 
 
-### What does MQTT Input look like with this model?
+           > The non-obvious magic of `m_RouteMessage(sock,pkt)` is that **the entire function makes use of closures** to "remember" what socket to return the transaction. The entire function **pauses** in `(3C) Magical Async/Await block` , and continues AFTER the network promises have resolved in a *SUBSEQUENT* return of a transaction! It's fizzying.
 
-MQTT input from POSZYX is vector + trigger data, and I think we'd have a MQTT-to-URSYS bridge on the message broker. 
+           * In the case of a **new message request**, the broker ***clones*** the original packet and initiates a ***new transaction*** to the remote. There can be many such clones.
 
-* producer of MQTT data will need to identify the device type, and maybe it has to be hardcoded somehow as a particular kind of input stream like PTRACK, though it is massaged into PTRACK data.
+             * the list of promises is created from the list of remote handler addresses for the message, and each promise looks like this: 
 
-### INPUTS SUMMARY
+               ```js
+               let newpkt = netNetPacket(pkt); // clone data
+               // override ownership/source to point to server
+               newpkt.makeNewId(); 
+               newpkt.copySourceAddress(pkt)
+               // transactionStart() returns a Prommise
+               // here's what it looks like sorta
+               let p = new Promise((resolve,reject)=>{
+                 let hash = m_GetHashKey(newpkt);
+                 m_transactions.set(hash, data=>{
+                   resolve(data);
+                 });
+                	newpkt.socketSend(sock)
+               })
+               ```
 
-* on URSYS connect, receive a **list of services** which have socket addresses
-* To request a service, **activate** the service (essentially a channel) and register as either a **producer** or **subscriber** using a special message sent on the dedicated service socket.
-  * **producers**: declare logicalName, l ogicalRole. Receive service token. Can send formatted data at any point.
-  * **subscribers**: declare logicalName, logicalRole. Subscriber will now automatically receive data on that socket, which is buffered by the managing module and maintains the current state. Using `GetInput()` on the managing module returns the input
+           * In the case of a **returning** packet
 
-* [ ] how are **subnets** handled on a network with several mission control servers?
-* [ ] what does a general purpose service manager look like on the server and client sides?
+             *  it is distinguished from a new message request by checking its `rmode` property; it will be set to `res` if it's returning from the brokered message, otherwise it will be `req`. 
+             * See the special excerpt about `MAGICAL ASYNC/AWAIT BLOCK` above to understand how it works.
 
 
+### New Insights, Debug Transaction Time!
 
-```js
-// This creates the table of messages that this app expects to send or receive.
+It's much clearer now how this works. The critical bits that pertain to network calls (which are the only type that return data)
 
-import { NetM, AppM, UpdateMessageList } from '@gemstep/ursys/client';
+* originator sends a packet of type `mcall` and rmode `req` via `transactionStart()` which also sets `seqlog` to have a first value of the originator's uaddr
+* broker server  `m_RouteMessage(socket,pkt)`  receives the socket and packet. This entire method has `socket` and `pkt` in its closure which helps it work like an asynchronous sleeping thread. In this method:
+  * broker clones original packet and creates a Promise for each remote implementor that uses `transactionStart()` for each one. 
+  * **still in the same call invocation**, `let retval = await Promise.all(promises)`  suspends the thread until all promises are resolved. Those promises are resolved by *subsequent* calls to`m_RouteMessage()` that are detected as 'returning transactions'.
+  * **after Promise.all() in the same call invocation** the returned values are in an array of objects that are the returned values from remotes. These are all merged into a single return object currently.
+  * **at the end of the call invocation** the original packet has its data payload updated and`returnTransaction()` sends the packet back to its originator.
 
-// two arguments: SENDER signature
-// three arguments: CALL signature
-NetM('NET:MESG_NAME', { a:"string", b:"number" });
-AppM('MESG_NAME', { a:"str", b:"num", c:"bool" },{ result:{a:"str"} });
-UpdateMessageList();
-/*/
-RECAP OF URSYS CONCEPTS
+## MAR 09 TUE - Short Day of Debugging
 
-ursys applications can span multiple apps, sharing a conceptually unified space
-ursys applications share access to common data resources backed by a database
-ursys application share a common state object that is automatically updated
+To clean up the logic in the server, I split out the server-side URNET client API into its own module `server-message-api` . Also added ur_handle and ur_unhandle to the dbg interface for ursys.
 
-messages are our version of events that work network wide. they can be used to raise signals or send data, optionally receiving data in return.
-system events are defined by the browser or operating system
+**Bugs** known with **Call**
 
-EXTENDING URSYS TO IO STREAMS
+* [ ] if an implementor of a NET:MESSAGE also tries to call it on remotes (like a common service channel) the server never returns the transaction to the client and instead goes into a loop
+* [ ] local call does not seem to return data
+* [ ] defining a net:message after urconnect has happened doesn't update the list. Should add this provision in the updated protocol
 
-iostreams have a TYPE, a UADDR, and a LOGICAL NAME
-iostreams are requested through regular URSYS network protocol
-iostream connections provide AUTH CREDENTIALS consisting of:
-  logical name, token
-and receive
-	uaddr, list of available roles, list of active roles
-to register a role, iostream clients
-	send request role
-	receive role assignment and updated token
-	
-iostream maintains connection with
-	list of available roles
-	list of current role assignments and modes
-/*/
+## MAR 10 WED - Known Call Bugs
+
+### Immediate Testing Goals
+
+```
+01 [ ] R1 and R2 have NET:MESSAGE, R1 call NET:MESSAGE
+02 [ ] Just R2 has NET:MESSAGE, R1 call NET:MESSAGE
+03 [ ] Check that * works as expected
+04 [ ] Check why raising NET:UPDATE will also trigger the handler, when both are on the same app instance (it shouldn't happen). 
 ```
 
-## FEB 18 THU - Where are we on the Input stuff?
+Checking `02`:
 
-The past couple of days were largely merges and bug fixes, so today I want to get back to the hard stuff: IO SYSTEM DESIGN
+* implement `NET:GEM_COMPILER_PING` and `NET:GEM_INDEX_PING` 
+* is it possible to **`UR.RegisterMessages()`** at any time? **yes**
+  * `class-endpoint ursysRegisterMessages()` sends the message
+  * `svc-reg-handlers NET:SRV_REG_HANDLERS` receives the message
+* When are first messages registered? `UR/APP_CONFIGURE` just before `APP_READY` and after `LOAD_ASSETS`
+* When does a lazy-loaded application get loaded? It should catch `APP_CONFIGURE` because that's when all the messages are registered, and `APP_CONFIGURE` runs *AFTER* the SystemInit wrapper has completely rendered.
+* So there is **a bug in registering messages** on the server side???
 
-**getting a bead on my line of thinking** - first thing is to just make a registration system design, then block it all out. 
+There is something weird going on in the message router on the server!
 
-* [x] update `client-urnet` to set `m_status` through a call, rather than direct assignment
-* [x] what is the `client-urnet` handshake? outline in `draft-tech-ursys.md`
-* [x] what are all the modules involved and their names?
+> **RemoteHandlerPromise() seems unable to propertly look-up net:messages**
+>
+> not only that, but the call handler on the server side seems to be calling the originator as well, which is wrong, or the returning packet is somehow malformed. But it can't even find the remote. 
+>
+> **Need to check the entire call chain!!!**
 
-Largely I've just looked at the network startup, which is what I need to look at to be able to insert the device negotiation. 
+* [x] `NET_HANDLERS` has Map `mesg => Set<uaddr>`
+* [x] check for remotes length is incorrect (should be `size` for a Set)
+* [ ] it seems that `server-urnet` line 191 is triggering for some reason, I suspect on the RESPONSE side of things instead of completing the transaction
+* [ ] note: changing `Netpacket.isResponse()` to use more bulletproof check creates the infinite loop here too
 
-Currently, the startup looks like this:
+**Q. So what seems to be happening?**
+A. since SEND works but CALL does not, that implies that the Call Transaction Chain is broken. The message gets to the remote just fine, but gets misprocessed on return. So **how is a return packet understood by the server?** And why is it breaking?
 
-1. `gem_run` starts `gem-app-srv`, which launches the hot appserver. This also initializes the `NETINFO` module so frameworks can access the `/urnet/netinfo` web service that tells all served webapps where the URNET message broker lives.
-2. early in client startup, netinfo is fetched and passed to`EXEC.SystemBoot()` which is shared by both nextjs and express custom servers. In NextJS, `_app.jsx` does the boot. In Express, `SystemInit.jsx` in the bootstrap calls `SystemBoot()`
-3. Booting URSYS runs through `PHASE_BOOT`, `PHASE_INIT`, then `PHASE_CONNECT`, which runs before all other application phases. The two hooks are `UR/NET_CONNECT` and `UR/NET_REGISTER`
-4. `NET_CONNECT` is hooked by UR-CLIENT library when `SystemStart()` is called in `SystemInit.jsx` before `SystemBoot()` even happens, and it **calls URNET_Connect**
-5. `NET_REGISTER` is not currently hooked, but was formerly used to register messages right away 
 
-QUESTION TO ANSWERS
 
-* [ ] how do messages get registered during URNET_Connect?
-* [ ] how are messages updated after URNET_Connect?
-* [ ] what does this diagram look like of the calls?
-* [ ] where can we insert the **input handshaking** and other **device registration** during URNET_Connect?
+## MAR 11 THU - Debugging Continued
 
-## FEB 19 FRI - URSYS DATACORE
+Return packets are not being returned from the server for calls, but sends/raises work. This implies that the transaction return detection on the server is broken. 
 
-There are a lot of data structures scattered around URSYS, so I'd like to make a reliable datacore class for it.
+* [x] **find** the transaction processing code
+* [x] redo debug messages to uncover issue
+  * [x] fix bug introduced in server-datacore RemoteHandlerPromises()
+* [x] confirm: non-shared messages **send** works between apps
+* [ ] confirm: non-shared messages **call** works between apps
+  * [ ] checking NetCreate/MEME, I am not seeing a difference in the server code
+  * [ ] Check each part of the chain
+    * [ ] does the packet reach the server? YES
+    * [ ] does the packet find the matching handler on server? YES
+    * [ ] does server receive a transaction back 
 
-* [x] look through server-urnet for data to move
-* [x] look through class-netpacket for data to move
-* [x] make `server-datacore` , `ur-common` and `client-standalone` modules, and replace references to constants as possible. This centralizes several structures and establishes a rough template for expanding the network protocol
+Here's the [debug investigation](https://docs.google.com/document/d/1g4GqpDHR4hfOVBs_Xdyl6BOUTSGnqIoF_3cn8JMT_tY/edit?usp=sharing) (I'm spending way too much time trying to figure this out). The two main issues are:
 
-Next step: OUTLINE THIS ON SATURDAY
+* A mystery clone of the outgoing message packet that returns from the remote...what is initiating it?
+* The original packet that gets returned has bad data in it, but where does it come from? 
+  * `m_urlink.callMessage()` is returning the bad data
+  * is `m_urlink` the same endpoint as what registered the message?
+  * `m_urlink.callMessage()` is called with the `fromNet` option set.
+  * `class-endpoint` passes the `callMessage()` on to the MESSAGER singleton defined in the endpoint. There's only one and it's shared by all EndPoint instances.
+  * WEIRD: The "can't find 'NET:GEM_HOMEAPP'" message comes from the SERVER, which means that the call is returning not found?
 
-* where to insert **input handshaking** and **device registration** during connect?
+A little lost. It may be that remote-to-remote calls have been broken for a while, since neither NetCreate or MEME use them (they seem to be all server calls or broadcasts)
 
-* client connects to its domain + `/urnet/netinfo` to get URNET connnection ip, port
+* The originating call to NET:GEM_HOMEAPP has `ch:Net toNet:true toLocal:false isNet:true fromNet: false`
+* The reciever recieves `ch:Net toNet:true toNet:true isNet:true fromNet:true`
 
-* cient connects to ip, port and ? sends a hello?
+we don't seem to be processing `fromNet` correctly on the receiver.
 
-* server responds with ?
+**it looks like this has always been broken**
 
-  
+* remote-to-remote call has been broken for a while...it might have worked in PLAE
+* same message signal calls also broken, creating infinite loop
 
-## FEB 21 SUN - URSYS CLIENT DATACORE
+The last time this worked, maybe, was in netcreate. 
 
-There aren't as many movable data stores, other than the STANDALONE stuff we currently aren't using from MEME. So the cleanup was large to make the client's terminology match the server.
+* PLAE/ISTEP had an early version of UNISYS, but looking at the calls it seems only the server ones were used to get information. The ones that did return data used a SIGNAL/SIGNAL_ACK pattern!
+* NetCreate doesn't have peer-to-peer calling
 
-* [x] Move the URNET connection out of app-specific startup (_app.js, _start.js) and into UR's `SystemBoot()` to fetch it directly, now that the NetInfo is always fetchable using the hardcoded path in the webservice provided by the appserver. This reduces the boilerplate in our apps by one line.
-* [x] Rename `client-session` to `client-netinfo` and rename all the related code to "netinfo" instead of "options" or "session" consistently. Sessions still exist, but they are in the utility `session-keys` module for encoding/decoding.
-* [x] Also did the option renaming from `m_network_options` to `m_netinfo` consistently across both server and client
-* [x] Rename PHASE EXEC API from `SystemBoot` to `SystemNetBoot` and app-related phases to `SystemAppConfig` from `SystemConfig`, etc, to distinguish an app-scoped phase version a network specific action.
 
-This makes it a bit easier to follow
 
-## HOTFIX - Fixing Keyword JSX Rendering
+## MAR 15 MON - Back to Input Routing
 
-(curious if this will merge into my working branch)
+Ok, it's time to implement something from FakeTrack into the input system. In essence, we have a **list of input devices** available in the `sim-inputs` module, and these input devices are **updated as they come online and offline**. The input **device definition** is a bundle with the **input type** (vector, discrete, number), and the **student id, group, and device logical name**. It is up to sim-inputs and the GUI to give these things **application roles** depending on who's using it. 
 
-With the change to the unit token format, the JSX rendering in `Compiler.jsx` no longer works. I think that the units just need to be expended before they are rendered, as they are for the compiler.
+Where we last left off:
 
-* [x] `RenderScript()` is the call that does it
-* [x] React is crashing with an "object not allowed in component" error, maybe due to unit token objects
-* [x] In `RenderScript()`, make sure to call `r_ExpandArgs()` as we do for the compiler to convert tokens literals to literals. It will not touch tokens for objref, expr, program
-* [x] Move runtime evaluation helpers from `expr-evaluator` to more appropriate `class-keyword` 
+* [x] defining the client-server messages for handshake
+* [x] sketching-in server and client modules
+
+What comes next
+
+* [ ] Adding the client module to FakeTrack
+* [ ] Filling-out the client module so FakeTrack instances register with the server
+* [ ] When the client module recieves an input update, tells sim-inputs that it happened
+* [ ] sim-inputs defines a mapping algorithm for mapping inputs to agents
+
+**Question: what module "owns" the input-driven agents?**
+The input manager `sim-inputs` will "own" its input objects (IOBs) and make them available for mapping. It's up to `sim-agent` to determine what is done with those input objects. An IOB->AGENT SyncMap could be created by `sim-agent` , and the blueprints decide how to use the input object as either CURSOR or EMBODIMENT. 
+
+**Question: how do we associate an IOB with a visual in the case of a tracked element?**
+IOBS can also be mapped independently, but maybe it is easier to just pull the "active" IOBs out of the agents themselves during the AGENT->DOBJ syncmapping.
+
+## MAR 17 WED - Continuing Input Routing
+
+* Where is **client-module** initiating the input stuff? **in `client-netdevices`**
+* Where is **server-module** handling requests? **in `svc-netdevices`**
+
+Step by step:
+
+* [x] can client-module reuest something from server-module?
+  * `NET:SRV_PROTOCOLS` should return a data structure
+  * `NET:SRV_DEVICES` should return a data structure
+
+* [x] hook app ready to test calls through NetNode?
+
+What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what needs to happen for registration
+
+* [ ] `FakeTrack.jsx` loads UR. What does it really need to do with it?
+
+  * [ ] The device directory should automatically be populated by the module, which receives data from the server.
+  * [ ] Has to register as a device with a list of named input types (trigger, vector, xyz)
+  * [ ] When registered, it starts emitting its output periodically when told to.
+  * [ ] Has to respond to an input control language
+
+* [ ] The input server has to talk to FakeTrack
+
+  * [ ] receives input frames, and redistributes them
+  * [ ] receives input control modifiers (start, stop, reset, disable, rename, group, transforms) and tells devices
+  * [ ] don't worry about encoding efficiency yet
+
+* [ ] where do TRANSFORMS live? Adjustments are made on sending device, and these transforms can be overridden by another contorller that resets it, whatever
+
+* [ ] `sim-input`  has to subscribe to all these input frames and do something with them
+
+  * [ ] all input is mapped to a device which produces "frames" that are an array of InputObjects
+  * [ ] The device logical id is managed by URSYS, and is not synched to the agent id
+  * [ ] sim-input reads all the device state
+    * [ ] Saves each InputObject into a buffer
+    * [ ] Groups by shared groupname
+    * [ ] Returns pertinent inputs by request (logical name, group name, type) as InputObjects, which are returned as object references
+
+* [ ] `sim-agent` has to request inputs and map them to a set of agents that are input-controlled. 
+
+  * [ ] The number of a group input type needs to produce a corresponding agent with an agentID.
+  * [ ] These agents are assigned Ids from the input, since they are the defining instancer in this case. These ids will be distinct from other agents; the `MappedPool` class doesn't care if the ids are numeric or alphanumeric because it just uses `Map` to check fo uniqueness. However, the `Pool` class maps numbers; we'll have to **update** this and make sure it still works.
+  * [ ] As inputs appear/disappear, the agents also have to be added/removed or maybe deadened
+  * [ ] inputs objects are assigned to an agent, and it's up to the agent to figure out how to use it.
+  * [ ] input objects may make use of a particle effect to show where they are
+
+
+
+
+
+
+
+
 
 
 
 ---
 
-**ADDITIONAL THINGS TO IMPLEMENT**
+# FUTURE QUEUE
 
 + set the skin from a list of assets? - good
 + some way to load/save? - make cheese API to save a file (port)

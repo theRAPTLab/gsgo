@@ -12,7 +12,7 @@ const PR = UR.PrefixUtil('SIM_REFEREE');
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/REFEREE_EVAL');
+UR.HookPhase('SIM/REFEREE_EVAL');
 
 /// MODULE HELPERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
