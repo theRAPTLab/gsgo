@@ -45,9 +45,10 @@ class Model extends React.Component {
   }
 
   componentDidMount() {
-    let modelId = window.location.search.substring(1);
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
     this.setState({ modelId });
-    document.title = `GEMSTEP MODEL ${modelId}`;
+    document.title = `GEMSTEP PROJECT ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
   }
@@ -87,8 +88,8 @@ class Model extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>GEMSTEP MODEL {modelId}</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>GEMSTEP PROJECT {modelId}</span>{' '}
+            UGLY DEVELOPER MODE
           </div>
           <Link to={{ pathname: `/app/login` }} className={classes.navButton}>
             Back to HOME

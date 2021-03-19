@@ -319,8 +319,8 @@ class MissionControl extends React.Component {
           exclusive
           onChange={this.OnToggleRunEdit}
         >
-          <StyledToggleButton value="run">Run Model</StyledToggleButton>
-          <StyledToggleButton value="edit">Edit Map</StyledToggleButton>
+          <StyledToggleButton value="run">Go to Run</StyledToggleButton>
+          <StyledToggleButton value="edit">Stage Setup</StyledToggleButton>
         </ToggleButtonGroup>
       </div>
     );
@@ -349,14 +349,14 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
+            <span style={{ fontSize: '32px' }}>MAIN {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
           <Link
             to={{ pathname: `/app/model?model=${modelId}` }}
             className={classes.navButton}
           >
-            Back to MODEL
+            Back to PROJECT
           </Link>
         </div>
         <div

@@ -10,7 +10,7 @@ class PanelInstances extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Instances'
+      title: 'Characters'
     };
   }
 

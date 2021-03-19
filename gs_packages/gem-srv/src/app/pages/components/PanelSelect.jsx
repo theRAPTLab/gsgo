@@ -11,7 +11,7 @@ class PanelSelect extends React.Component {
       title: 'Select Work',
       options: [
         // Dummy Data
-        { id: 'missioncontrol', label: 'Mission Control' },
+        { id: 'missioncontrol', label: 'Main' },
         { id: 'scripteditor', label: 'Script Editor' },
         { id: 'faketrack', label: 'Fake Track' },
         { id: 'viewer', label: 'View-only' }
@@ -24,7 +24,7 @@ class PanelSelect extends React.Component {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     let { modelId } = this.props;
-    window.location = `/app/${url}?${modelId}`;
+    window.location = `/app/${url}?model=${modelId}`;
   }
 
   render() {

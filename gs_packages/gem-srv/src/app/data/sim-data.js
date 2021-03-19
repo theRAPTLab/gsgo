@@ -91,6 +91,15 @@ class SimData {
 
   /// API CALLS: REQUEST MODEL DATA //////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  GetModels() {
+    return [
+      { id: 'aquatic', label: 'Aquatic Ecosystems' },
+      { id: 'decomposition', label: 'Decomposition' },
+      { id: 'moths', label: 'Moths' },
+      { id: 'salt', label: 'Salt' },
+      { id: 'bees', label: 'Bees' }
+    ];
+  }
   /**
    * API Call
    * @param {string} modelId
@@ -135,14 +144,8 @@ class SimData {
    * @param {Object} data -- { modelId: <string> }
    */
   SendSimDataModels() {
-    let models = [
-      { id: 'aquatic', label: 'Aquatic Ecosystems' },
-      { id: 'decomposition', label: 'Decomposition' },
-      { id: 'moths', label: 'Moths' },
-      { id: 'salt', label: 'Salt' },
-      { id: 'bees', label: 'Bees' }
-    ];
-    UR.RaiseMessage('NET:UPDATE_MODELS', { models });
+    const models = this.GetModels();
+    UR.RaiseMessage('LOCAL:UPDATE_MODELS', { models });
   }
 
   /**

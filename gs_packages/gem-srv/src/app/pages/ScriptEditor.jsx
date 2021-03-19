@@ -292,7 +292,7 @@ class ScriptEditor extends React.Component {
             to={{ pathname: `/app/model?model=${modelId}` }}
             className={classes.navButton}
           >
-            Back to MODEL
+            Back to PROJECT
           </Link>
         </div>
         <div id="console-left" className={classes.left}>

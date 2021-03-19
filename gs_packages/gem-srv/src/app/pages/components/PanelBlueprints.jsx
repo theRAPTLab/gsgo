@@ -31,7 +31,7 @@ class PanelBlueprints extends React.Component {
     const { enableAdd } = this.props;
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
-    const title = enableAdd ? 'Add Blueprints' : 'Blueprints';
+    const title = enableAdd ? 'Add Characters' : 'Character Types';
     this.setState({ modelId, title });
   }
 
@@ -53,7 +53,7 @@ class PanelBlueprints extends React.Component {
   render() {
     const { title } = this.state;
     const { id, isActive, agents, enableAdd, classes } = this.props;
-    const instructions = enableAdd ? 'Click to add an instance' : '';
+    const instructions = enableAdd ? 'Click to add a character' : '';
     const onPanelClick = () => {
       // To be implemented
       console.log('Show instance');
