@@ -9,7 +9,7 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 // useFeature Label
-featCall Costume setCostume 'fish.json' 0
+// featCall Costume setCostume 'fish.json' 0
 // Have to set prop skin -- bug
 // otherwise, the costume isn't set
 prop agent.skin setTo 'fish.json'
