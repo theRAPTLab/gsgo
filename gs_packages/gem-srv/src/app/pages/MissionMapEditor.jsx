@@ -54,7 +54,7 @@ class MapEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { model, classes } = this.props;
+    const { modelId, model, classes } = this.props;
     const mapInstanceSpec = model.instances || [];
     const agents =
       model && model.scripts
@@ -69,7 +69,12 @@ class MapEditor extends React.Component {
           height: '100%'
         }}
       >
-        <PanelBlueprints id="blueprints" agents={agents} enableAdd />
+        <PanelBlueprints
+          id="blueprints"
+          modelId={modelId}
+          agents={agents}
+          enableAdd
+        />
         <PanelMapInstances id="instances" mapInstanceSpec={mapInstanceSpec} />
       </div>
     );

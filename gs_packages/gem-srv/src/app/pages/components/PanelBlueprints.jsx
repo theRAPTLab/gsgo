@@ -21,23 +21,19 @@ class PanelBlueprints extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: '',
-      modelId: ''
+      title: ''
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
   }
 
   componentDidMount() {
     const { enableAdd } = this.props;
-    const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
     const title = enableAdd ? 'Add Characters' : 'Character Types';
-    this.setState({ modelId, title });
+    this.setState({ title });
   }
 
   OnBlueprintClick(scriptId) {
-    const { modelId } = this.state;
-    const { enableAdd } = this.props;
+    const { modelId, enableAdd } = this.props;
     if (enableAdd) {
       // Add Instance
       UR.RaiseMessage('LOCAL:INSTANCE_ADD', { modelId, blueprintName: scriptId });
@@ -52,7 +48,7 @@ class PanelBlueprints extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { id, isActive, agents, enableAdd, classes } = this.props;
+    const { modelId, id, isActive, agents, enableAdd, classes } = this.props;
     const instructions = enableAdd ? 'Click to add a character' : '';
     const onPanelClick = () => {
       // To be implemented

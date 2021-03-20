@@ -177,7 +177,7 @@ class MissionControl extends React.Component {
       return; // skip update if it's already running
     }
     this.setState(
-      { model: data.model },
+      { modelId: data.modelId, model: data.model },
       // Need to call SimPlaces here after prop updates or agents won't reposition
       () => this.CallSimPlaces()
     );
@@ -347,9 +347,10 @@ class MissionControl extends React.Component {
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor model={model} />
+        <MissionMapEditor modelId={modelId} model={model} />
       ) : (
         <MissionRun
+          modelId={modelId}
           model={model}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}

@@ -52,7 +52,7 @@ class MissionControl extends React.Component {
   }
 
   render() {
-    const { model, minimized, classes } = this.props;
+    const { modelId, model, minimized, classes } = this.props;
 
     const agents =
       model && model.scripts
@@ -62,7 +62,7 @@ class MissionControl extends React.Component {
     return (
       <>
         <PanelMap id="map" isMinimized={minimized} onClick={this.OnPanelClick} />
-        <PanelBlueprints id="blueprints" agents={agents} />
+        <PanelBlueprints id="blueprints" modelId={modelId} agents={agents} />
       </>
     );
   }

@@ -156,7 +156,7 @@ class Viewer extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelBlueprints id="blueprints" agents={agents} />
+          <PanelBlueprints id="blueprints" modelId={modelId} agents={agents} />
           <PanelInstances id="instances" />
         </div>
         <div id="console-main" className={classes.main}>
