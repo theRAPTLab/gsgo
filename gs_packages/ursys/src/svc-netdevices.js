@@ -47,9 +47,9 @@ function PKT_RegisterInputs(pkt) {
   const uaddr = pkt.getSourceAddress();
   const { groups } = udev.getDeviceProp();
   const inputs = udev.getInputControlList();
-  const status = `${uaddr} registering input: '${Object.keys(groups).join(
-    ','
-  )}' with ${inputs.length} inputs`;
+  const status = `${uaddr} registering input: '${groups.join(',')}' with ${
+    inputs.length
+  } inputs`;
   if (DBG.device) TERM(status);
   // save the device to the list
   DEVICE_MAP.set(uaddr, udev);

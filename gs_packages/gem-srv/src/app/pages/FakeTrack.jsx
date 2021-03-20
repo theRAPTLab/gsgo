@@ -71,8 +71,8 @@ class FakeTrack extends React.Component {
       const regData = {
         device: {
           udid: 'uniquedeviceid',
-          groups: { groupA: true },
-          roles: { roleA: true }
+          groups: ['groupA'],
+          roles: ['roleA']
         },
         user: {
           uauth: 'jwtoken',

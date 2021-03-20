@@ -25,11 +25,13 @@ export function RegisterAsDevice(name: string, controlDef) {
   console.log('registering', name, controlDef);
   const promise = NetNode.callMessage('NET:SRV_REG_INPUTS', controlDef);
   return promise;
-} // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given search criteria, return an array of maching udevices
  */
 export function GetMatchingDevices(pattern) {
   const devices = [];
+
   return devices;
 }
 

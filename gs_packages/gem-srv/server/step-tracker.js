@@ -1,5 +1,3 @@
-let DBGTRK = true;
-
 /*/////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Create a UDP LAN multicast listener on port 21234
@@ -15,7 +13,7 @@ let DBGTRK = true;
 
 const dgram = require('dgram');
 const WebSocketServer = require('ws').Server;
-const { PrefixUtil } = require('@gemstep/ursys/server');
+const { PrefixUtil, DBG } = require('@gemstep/ursys/server');
 //
 const PR = PrefixUtil('PTRACK');
 const PT_GROUP = '224.0.0.1'; // ptrack UDP multicast address
@@ -61,7 +59,7 @@ function m_AddBrowserConnection(wsocket) {
     id: ptrack_id_counter++
   };
   ptrack_sockets.push(sobj);
-  if (DBGTRK) {
+  if (DBG.track) {
     console.log(...PR(`${OUT_DPORT} TrackData Client`, sobj.id, 'Connect'));
   }
 }
@@ -76,7 +74,7 @@ function m_RemoveBrowserConnection(wsocket) {
   for (let i = 0; i < ptrack_sockets.length; i++) {
     let sobj = ptrack_sockets[i];
     if (sobj.socket !== wsocket) new_sockets.push(sobj);
-    else if (DBGTRK)
+    else if (DBG.track)
       console.log(
         ...PR(`${OUT_DPORT} TrackData Client`, sobj.id, 'Disconnected')
       );
@@ -195,12 +193,12 @@ function m_BindFakeTrackListener() {
 
   // set connection handler
   ftrack_ss.on('connection', wsocket => {
-    console.log(...PR(`${IN_DPORT} TrackDataInjector Connected`));
+    if (DBG.track) console.log(...PR(`${IN_DPORT} TrackDataInjector Connected`));
     ftrack_socket = wsocket;
 
     // set close handler
     ftrack_socket.once('close', () => {
-      console.log(...PR(`${IN_DPORT} TrackDataInjector Closed`));
+      if (DBG.track) console.log(...PR(`${IN_DPORT} TrackDataInjector Closed`));
       ftrack_socket = null;
     });
 
@@ -228,24 +226,24 @@ function StartTrackerSystem() {
   // we sometimes attempt restart the server through gulp, and not all things
   if (!udp_socket) {
     m_BindPTrackListener();
-    if (DBGTRK) console.log(...PR('PTrackListener UDP bound'));
-  } else if (DBGTRK)
+    if (DBG.track) console.log(...PR('PTrackListener UDP bound'));
+  } else if (DBG.track)
     console.log(...PR('PTrackListener UDP is already established'));
 
   /** 2. CREATE BROWSER TCP SOCKET SERVER ******************************/
 
   if (!ptrack_ss) {
     m_BindPTrackForwarder();
-    if (DBGTRK) console.log(...PR('PTrackForwarder TCP bound'));
-  } else if (DBGTRK)
+    if (DBG.track) console.log(...PR('PTrackForwarder TCP bound'));
+  } else if (DBG.track)
     console.log(...PR('PTrackForwarder TCP is already established'));
 
   /** 3. CREATE FAKETRACK TCP SOCKET SERVER ****************************/
 
   if (!ftrack_ss) {
     m_BindFakeTrackListener();
-    if (DBGTRK) console.log(...PR('FakeTrackListener TCP bound'));
-  } else if (DBGTRK)
+    if (DBG.track) console.log(...PR('FakeTrackListener TCP bound'));
+  } else if (DBG.track)
     console.log(...PR('FakeTrackListener TCP already established'));
 } // StartTrackerSystem
 
@@ -255,7 +253,7 @@ function StartTrackerSystem() {
  *  web sockets. Called by our hacked-in mimosa server restart code.
  */
 function StopTrackerSystem() {
-  if (DBGTRK)
+  if (DBG.track)
     console.log(...PR('INQCOMM detect server change, closing connections'));
   if (ptrack_sockets) {
     for (let i = 0; i < ptrack_sockets.length; i++) {

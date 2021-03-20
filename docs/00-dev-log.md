@@ -499,7 +499,30 @@ The tricky part now is the **devices data structure**. But maybe it will be clea
 * [x] add registration code to FakeTrack and see that the server handles it and saves the information
 * [x] make sure `svc-netdevices` receives the socket deletion message
 
+So now the server is registering devices using the `UDevice` class! Now the **client** has to maintain its data structures to support querying for various things. This is what the incoming **device directory** looks like:
 
+```
+{ 
+  [uaddr]: {
+    udid, uapp, uname, utags[],
+    groups[], roles[],
+    inputs[]:[{ control, type }],
+    outputs[]:[{ control, type }]
+  }
+}
+```
+
+The `uaddr` is most likely to be unique. We will probably want to search for:
+
+* `control` (the name of the control) of a matching `type`) 
+* `udid` is used to identity a machine that might have changed uaddr
+* `uapp` is an app path, so can used to list only matching app types
+* `uname` is the user-set name of the device
+
+Here's the todo list:
+
+* [ ] store the NET:UR_DEVICES information so it can be searched
+* [ ] query by pattern shape `{ udid, uapp, uname, {control,type}, utags, groups, roles }`
 
 
 

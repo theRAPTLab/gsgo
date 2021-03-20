@@ -63,12 +63,12 @@ function m_NewData() {
     // udevice meta information
     udid: '', // unique device id
     uaddr: '', // URNET address
-    uname: '', // device label (non-unique)
+    uname: '', // device label (non-unique)s
     uapp: '', // device appserver route
-    utags: {}, // device 'tags' for identifying uapp subtypes
+    utags: [], // device 'tags' for identifying uapp subtypes
     // udevice app-specific memberships
-    groups: {}, // what logical groups this device belongs to
-    roles: {} // what logical roles this device has
+    groups: [], // what logical groups this device belongs to
+    roles: [] // what logical roles this device has
   };
   data.user = {
     uauth: '', // authentication token (JWT) to use
@@ -104,9 +104,9 @@ function m_CloneData(obj) {
     if (uaddr) data.device.uaddr = uaddr;
     if (uname) data.device.uname = uname;
     if (uapp) data.device.uapp = uapp;
-    if (utags) data.device.utags = utags;
-    if (groups) data.device.groups = groups;
-    if (roles) data.device.roles = roles;
+    if (Array.isArray(utags)) data.device.utags = utags;
+    if (Array.isArray(groups)) data.device.groups = groups;
+    if (Array.isArray(roles)) data.device.roles = roles;
   }
   if (user) {
     const { uauth, student } = user;
@@ -166,11 +166,11 @@ class UDevice {
     this._pushControl(this.data.outputControls, controlName, type);
   }
   getDeviceDirectoryEntry() {
-    const { udid, uapp, uname } = this.data.device;
+    const { udid, uapp, uname, utags, ugroup } = this.data.device;
     const { inputControls, outputControls } = this.data;
     const inputs = m_MakeControlDescriptor(inputControls);
     const outputs = m_MakeControlDescriptor(outputControls);
-    return { udid, uapp, uname, inputs, outputs };
+    return { udid, uapp, uname, ugroup, utags, inputs, outputs };
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
