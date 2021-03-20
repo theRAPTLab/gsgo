@@ -57,6 +57,7 @@ const CLR_BORDER = BaseColorShift(128, 0.3); // 'rgba(128,256,128,0.3)';
 const CLR_BORDER_ACTIVE = BaseColorShift(0, 0.6); // 'rgba(0,256,0,0.6)';
 
 const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1);
+const CLR_HI2 = RGBA(CLR_HI_R, CLR_HI_R, CLR_HI_B, 0.8);
 
 const FONT_FAMILY = 'Andale Mono, monospace';
 
@@ -77,6 +78,12 @@ const useStylesHOC = theme => ({
   },
   title: {
     fontSize: 'large'
+  },
+  a: {
+    color: CLR_HI2,
+    '&:hover': {
+      color: CLR_HI
+    }
   },
   cell: {
     padding: '5px',
@@ -219,7 +226,9 @@ const useStylesHOC = theme => ({
     border: '1px solid #ff880088'
   },
   instanceSpecSelected: {
-    border: '1px solid #ffff00'
+    border: '1px solid #ffff00',
+    width: '180px',
+    padding: '10px'
   },
   instanceEditorLine: {
     display: 'inline-block'
@@ -277,12 +286,24 @@ const useStylesHOC = theme => ({
     minHeight: '15px',
     minWidth: '15px',
     borderRadius: '3px',
-    color: CLR_DATA,
+    color: CLR_HI2,
     backgroundColor: CLR_OBJECT_CLICKABLE,
     borderTopColor: BaseColorShift(0, 0.2),
     borderLeftColor: BaseColorShift(0, 0.2),
     borderRightColor: BaseColorShift(-240, 0.2),
     borderBottomColor: BaseColorShift(-240, 0.2),
+    cursor: 'pointer'
+  },
+  buttonLink: {
+    // Text only button
+    fontSize: '10px',
+    padding: '2px',
+    margin: '2px',
+    minHeight: '15px',
+    minWidth: '15px',
+    color: CLR_HI2,
+    backgroundColor: 'transparent',
+    border: 'none',
     cursor: 'pointer'
   },
   buttonOn: {

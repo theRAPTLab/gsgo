@@ -32,6 +32,16 @@ export function DefineInstance(instanceDef: TInstance) {
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0)
+    console.error(...PR(`DeleteInstance couldn't find instance ${id}`));
+  bpi.splice(index, 1);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetAllInstances() {
   const instances = [];
   const map = [...INSTANCES.values()];
@@ -95,16 +105,18 @@ export function SaveAgent(agent) {
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, name } = instancedef;
+  const { blueprint, id, name } = instancedef;
   if (!AGENTS.has(blueprint)) {
     console.error(...PR(`blueprint ${blueprint} not found`));
     return;
   }
   const agents = AGENTS.get(blueprint);
   const agentsArray = Array.from(agents.values()); // convert for finding
-  let agent = agentsArray.find(a => a.meta.name === name);
+  /// REVIEW: This will break if agent name changes!
+  // let agent = agentsArray.find(a => a.meta.name === name);
+  const agent = agentsArray.find(a => a.id === id);
   if (agent === undefined) {
-    console.error(...PR(`agent ${name} not found`));
+    console.error(...PR(`DeleteAgent: agent ${name} not found`));
     return;
   }
   agents.delete(agent.id);

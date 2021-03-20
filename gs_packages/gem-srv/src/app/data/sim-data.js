@@ -12,7 +12,13 @@
 // instances for the current session.  No data is saved.
 
 import UR from '@gemstep/ursys/client';
-import { GetAgentById, GetAllInstances } from 'modules/datacore/dc-agents';
+import {
+  GetAllInstances,
+  DeleteInstance,
+  GetAllAgents,
+  GetAgentById,
+  DeleteAgent
+} from 'modules/datacore/dc-agents';
 import * as SIM from 'modules/sim/api-sim';
 import * as TRANSPILER from 'script/transpiler';
 
@@ -54,6 +60,7 @@ class SimData {
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
     this.ReplacePropLine = this.ReplacePropLine.bind(this);
     this.InstanceRequestEdit = this.InstanceRequestEdit.bind(this);
+    this.InstanceDelete = this.InstanceDelete.bind(this);
     this.InstanceSelect = this.InstanceSelect.bind(this);
     this.InstanceDeselect = this.InstanceDeselect.bind(this);
     this.InstanceHoverOver = this.InstanceHoverOver.bind(this);
@@ -64,6 +71,7 @@ class SimData {
     UR.HandleMessage('NET:INSTANCE_UPDATE', this.InstanceUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
     UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
+    UR.HandleMessage('NET:INSTANCE_DELETE', this.InstanceDelete);
     UR.HandleMessage('NET:INSTANCE_SELECT', this.InstanceSelect);
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.InstanceDeselect);
     UR.HandleMessage('INSTANCE_HOVEROVER', this.InstanceHoverOver);
@@ -315,6 +323,26 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
     // 3. Update Sim View
     UR.RaiseMessage('AGENTS_RENDER');
+  }
+  /**
+   *
+   * @param {Object} data -- { modelId, instanceDef }
+   */
+  InstanceDelete(data) {
+    // Remove from Blueprint
+    const model = this.GetSimDataModel(data.modelId);
+    const instanceIndex = model.instances.findIndex(
+      i => i.id === data.instanceDef.id
+    );
+    model.instances.splice(instanceIndex, 1);
+
+    // Remove from Sim
+    DeleteInstance(data.instanceDef);
+    DeleteAgent(data.instanceDef);
+    this.SendSimDataModel(data.modelId);
+
+    // REVIEW
+    // Update the DB!
   }
 
   /// INSTANCE SELECTION HANDLERS ///////////////////////////////////////////////

@@ -47,6 +47,7 @@ class InstanceEditor extends React.Component {
     this.OnAddProperty = this.OnAddProperty.bind(this);
     this.OnEnableDeleteProperty = this.OnEnableDeleteProperty.bind(this);
     this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
+    this.OnDeleteInstance = this.OnDeleteInstance.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
@@ -228,6 +229,15 @@ class InstanceEditor extends React.Component {
     this.setState({ isAddingProperty: false });
   }
 
+  OnDeleteInstance() {
+    const { modelId } = this.state;
+    const { instance } = this.props;
+    UR.RaiseMessage('NET:INSTANCE_DELETE', {
+      modelId,
+      instanceDef: instance
+    });
+  }
+
   DoDeselect() {
     let { modelId, isSelected, isEditable } = this.state;
     const agentId = this.GetAgentId();
@@ -394,8 +404,21 @@ class InstanceEditor extends React.Component {
             </div>
           )}
           {isAddingProperty && propMenuJsx}
-          {/* ID display for debugging */}
+          {isEditable && (
+            <div style={{ textAlign: 'center' }}>
+              <br />
+              <button
+                type="button"
+                className={classes.buttonLink}
+                onClick={this.OnDeleteInstance}
+              >
+                DELETE CHARACTER
+              </button>
+            </div>
+          )}
+          {/* ID display for debugging
           <div className={classes.inspectorLabel}>{instance.id}&nbsp;</div>{' '}
+           */}
         </div>
       </div>
     );
