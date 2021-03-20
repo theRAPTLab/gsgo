@@ -90,14 +90,14 @@ class MissionControl extends React.Component {
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
@@ -150,7 +150,7 @@ class MissionControl extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
@@ -171,7 +171,7 @@ class MissionControl extends React.Component {
       () => this.CallSimPlaces() // necessary to update screen after overall model updates
     );
   }
-  OnSimDataUpdate(data) {
+  HandleSimDataUpdate(data) {
     if (SIM.IsRunning()) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
@@ -211,7 +211,9 @@ class MissionControl extends React.Component {
   /**
    * Handler for `NET:INSPECTOR_UPDATE`
    * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
-   * with agent information for every registered instance
+   * with agent information for every registered instance.
+   * In order to keep data to a minimum, we don't pass the full data
+   * for instances that haven't ben registered, just the bare minimum.
    * @param {Object} data { agents: [...agents]}
    *                 wHere `agents` are gagents
    */
