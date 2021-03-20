@@ -129,7 +129,7 @@ class PropElement extends React.Component<MyProps, MyState> {
               </button>
             </div>
           )}
-          <div className={classes.instanceEditorLine}>{propName}:</div>
+          <div className={classes.instanceEditorLabel}>{propName}</div>
           <div className={classes.instanceEditorLine}>
             <input
               onChange={this.onChange}
@@ -138,7 +138,7 @@ class PropElement extends React.Component<MyProps, MyState> {
               onClick={this.onClick}
               type={type}
               value={args[0]}
-              style={{ width: '5em' }}
+              className={classes.instanceEditorField}
             />
           </div>
         </div>

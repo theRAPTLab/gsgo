@@ -384,29 +384,32 @@ class InstanceEditor extends React.Component {
           />
           <div>{jsx}</div>
           {isEditable && !isAddingProperty && (
-            <div style={{ textAlign: 'right' }}>
-              <button
-                onClick={this.OnEnableDeleteProperty}
-                type="button"
-                className={classes.buttonSmall}
-                title="Delete Property"
-              >
-                -
-              </button>
-              <button
-                onClick={this.OnAddProperty}
-                type="button"
-                className={classes.buttonSmall}
-                title="Add Property"
-              >
-                +
-              </button>
-            </div>
+            <>
+              <br />
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button
+                  onClick={this.OnEnableDeleteProperty}
+                  type="button"
+                  className={classes.buttonSmall}
+                  title="Delete Property"
+                  style={{}}
+                >
+                  -
+                </button>
+                <button
+                  onClick={this.OnAddProperty}
+                  type="button"
+                  className={classes.buttonSmall}
+                  title="Add Property"
+                >
+                  ADD PROPERTY
+                </button>
+              </div>
+            </>
           )}
           {isAddingProperty && propMenuJsx}
           {isEditable && (
-            <div style={{ textAlign: 'center' }}>
-              <br />
+            <div style={{ textAlign: 'center', marginTop: '1em' }}>
               <button
                 type="button"
                 className={classes.buttonLink}

@@ -228,10 +228,20 @@ const useStylesHOC = theme => ({
   instanceSpecSelected: {
     border: '1px solid #ffff00',
     width: '180px',
-    padding: '10px'
+    padding: '10px 5px'
   },
   instanceEditorLine: {
     display: 'inline-block'
+  },
+  instanceEditorLabel: {
+    display: 'inline-block',
+    color: CLR_DATA,
+    width: '80px',
+    textAlign: 'right',
+    paddingRight: '0.25em'
+  },
+  instanceEditorField: {
+    width: '6em'
   },
   navButton: {
     fontSize: '14px',
@@ -265,7 +275,7 @@ const useStylesHOC = theme => ({
     cursor: 'pointer'
   },
   buttonSmall: {
-    fontSize: '18px',
+    fontSize: '12px',
     padding: '5px',
     margin: '5px',
     minHeight: '25px',

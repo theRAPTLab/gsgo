@@ -83,7 +83,7 @@ class InputField extends React.Component {
       // Show Form
       jsx = (
         <>
-          <div className={classes.inspectorLabel}>{propName}:</div>
+          <div className={classes.instanceEditorLabel}>{propName} </div>
           <div className={classes.inspectorData}>
             <input
               onChange={this.onChange}
@@ -92,7 +92,7 @@ class InputField extends React.Component {
               onClick={this.onClick}
               type={type}
               value={currentValue}
-              style={{ width: '5em' }}
+              className={classes.instanceEditorField}
             />
           </div>
         </>
