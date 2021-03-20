@@ -337,9 +337,9 @@ class MissionControl extends React.Component {
           exclusive
           onChange={this.OnToggleRunEdit}
         >
-          <StyledToggleButton value="run">Go to Run</StyledToggleButton>
+          <StyledToggleButton value="run">Run</StyledToggleButton>
           <StyledToggleButton value="edit" disabled={SIM.IsRunning()}>
-            Stage Setup
+            Setup the Stage
           </StyledToggleButton>
         </ToggleButtonGroup>
       </div>
