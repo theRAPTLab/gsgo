@@ -18,6 +18,7 @@ import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
+import PanelBlueprints from './components/PanelBlueprints';
 import PanelInspector from './components/PanelInspector';
 import PanelInstances from './components/PanelInstances';
 
@@ -149,10 +150,16 @@ class Viewer extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
+          <PanelBlueprints id="blueprints" agents={agents} />
           <PanelInstances id="instances" />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
+        </div>
+        <div id="console-right" className={classes.right}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <PanelInstances id="instances" instances={instances} />
+          </div>
         </div>
         <div
           id="console-bottom"
