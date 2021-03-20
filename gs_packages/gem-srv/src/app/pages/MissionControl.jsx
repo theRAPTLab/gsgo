@@ -285,7 +285,7 @@ class MissionControl extends React.Component {
   /// PANEL UI CONFIGURATION
   ///
   OnToggleRunEdit(e, val) {
-    this.setState({ panelConfiguration: val });
+    this.setState({ panelConfiguration: val }, () => this.CallSimPlaces());
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({
