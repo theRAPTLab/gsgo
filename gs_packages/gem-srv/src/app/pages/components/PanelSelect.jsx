@@ -8,7 +8,7 @@ class PanelSelect extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Work',
+      title: 'Select',
       options: [
         // Dummy Data
         { id: 'missioncontrol', label: 'Main' },
