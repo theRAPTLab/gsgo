@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -29,13 +30,13 @@ import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MISSIONCONTROL');
+const PR = UR.PrefixUtil('VIEWER');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('instances', '15% auto'); // columns
-PANEL_CONFIG.set('sim', '5% auto'); // columns
+PANEL_CONFIG.set('instances', '15% auto 150px'); // columns
+PANEL_CONFIG.set('sim', '5% auto 150px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,9 +54,6 @@ class Viewer extends React.Component {
   }
 
   componentDidMount() {
-    let modelId = window.location.search.substring(1);
-    this.setState({ modelId });
-    document.title = `GEMSTEP VIEWER ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
   }
@@ -103,9 +101,12 @@ class Viewer extends React.Component {
             <span style={{ fontSize: '32px' }}>VIEWER {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnModelClick}>
-            Back to MODEL
-          </button>
+          <Link
+            to={{ pathname: `/app/model?model=${modelId}` }}
+            className={classes.navButton}
+          >
+            Back to PROJECT
+          </Link>
         </div>
         <div
           id="console-left"
