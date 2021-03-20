@@ -29,11 +29,8 @@ const {
   PKT_SessionLogout,
   PKT_Session
 } = require('./svc-session-v1');
-const {
-  PKT_ProtocolDirectory,
-  PKT_DeviceDirectory,
-  PKT_RegisterInputs
-} = require('./svc-netdevices');
+const { PKT_DeviceDirectory, PKT_RegisterInputs } = require('./svc-netdevices');
+const { PKT_ProtocolDirectory } = require('./svc-netprotocols');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
 const DBG = require('./ur-dbg-settings');
 
@@ -96,13 +93,14 @@ function m_StartSocketServer(options) {
       mu_wss.on('connection', (socket, req) => {
         // if (DBG) TERM('socket connected');
         // house keeping
-        SocketAdd(socket, req); // assign UADDR to socket
+        const added = SocketAdd(socket, req); // assign UADDR to socket
         ConnectAck(socket); // tell client HELLO with new UADDR
+        UR_LocalSignal('SRV_SOCKET_ADDED', { uaddr: added });
         // subscribe socket to handlers
         socket.on('message', json => ProcessMessage(socket, json));
         socket.on('close', () => {
-          const uaddr = SocketDelete(socket); // tell subscribers socket is gone
-          UR_LocalSignal('SRV_SOCKET_DELETED', { uaddr });
+          const deleted = SocketDelete(socket); // tell subscribers socket is gone
+          UR_LocalSignal('SRV_SOCKET_DELETED', { uaddr: deleted });
         }); // end on 'connection'
       });
     });
@@ -241,8 +239,8 @@ async function m_RouteMessage(socket, pkt) {
   */
 
   if (DBG.xact || DBG.calls) {
-    // if (notServer) log_PktTransaction(pkt, 'resolved');
-    // log_PktDirection(pkt, 'rtrn', promises);
+    if (notServer) log_PktTransaction(pkt, 'resolved');
+    log_PktDirection(pkt, 'rtrn', promises);
   }
 
   // (3e) If the call type doesn't expect return data, we are done!

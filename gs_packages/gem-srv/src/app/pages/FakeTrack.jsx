@@ -63,26 +63,35 @@ class FakeTrack extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     Initialize(this);
     HookResize(window);
+
+    // prototype device registration
+    // a device declares what kind of device it is
+    // and what data can be sent/received
     UR.HookPhase('UR/APP_READY', async () => {
       const regData = {
-        uudid: 'uniquedeviceid',
-        uauth: 'jwtoken',
-        uname: "billy's input",
-        student: {
-          sid: 'student id',
-          sname: 'student name',
+        device: {
+          udid: 'uniquedeviceid',
           groups: { groupA: true },
           roles: { roleA: true }
         },
-        inputs: [
-          { control: 'x', type: 'uvec' },
-          { control: 'y', type: 'uvec' },
-          { control: 'h', type: 'uvec' },
-          { control: 'jump', type: 'btn' }
-        ]
+        user: {
+          uauth: 'jwtoken',
+          uname: "billy's input",
+          student: {
+            sid: 'student id',
+            sname: 'student name'
+          }
+        },
+        inputControls: [
+          { control: 'x', type: 'axis' },
+          { control: 'y', type: 'axis' },
+          { control: 'h', type: 'float' },
+          { control: 'jump', type: 'trigger' }
+        ],
+        outputControls: [{ control: 'volume', type: 'float' }]
       };
       // style two (note async in UR.HookPhase definition above)
-      const regInfo = await UR.RegisterInputs(regData);
+      const regInfo = await UR.RegisterAsDevice('FakeTrak', regData);
       console.log('RegisterInputs() returned regInfo', regInfo);
     }); // end HookPhase
   }

@@ -130,7 +130,7 @@ const UR = {
   SystemNetReboot: EXEC.SystemNetReboot,
   SystemAppUnload: EXEC.SystemAppUnload,
   // FORWARDED DEVICE
-  RegisterInputs: DEVICES.RegisterInputs,
+  RegisterAsDevice: DEVICES.RegisterAsDevice,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,
