@@ -227,17 +227,7 @@ class MissionControl extends React.Component {
       console.error('OnInspectorUpdate got bad data', data);
       return;
     }
-    // merge the two lists, replacing instance specs with agents
-    const map = new Map();
-    const allInstances = GetAllInstances();
-    allInstances.forEach(i => {
-      map.set(i.id, i);
-    });
-    data.agents.forEach(a => {
-      map.set(a.id, a);
-    });
-    const instances = Array.from(map.values());
-    this.setState({ instances });
+    this.setState({ instances: data.agents });
   }
 
   PostMessage(text) {

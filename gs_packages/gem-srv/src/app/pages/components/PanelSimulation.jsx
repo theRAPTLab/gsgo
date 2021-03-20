@@ -102,9 +102,13 @@ class PanelSimulation extends React.Component {
   DoInstanceInspectorUpdate() {
     // walk down agents and broadcast results for monitored agents
     const agents = GetAllAgents();
-    const inspectorAgents = agents.filter(a =>
+    // Send all instances, but minmize non-monitored
+    const inspectorAgents = agents.map(a =>
       MONITORED_INSTANCES.includes(a.id)
+        ? a
+        : { id: a.id, name: a.name, blueprint: a.blueprint }
     );
+
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }

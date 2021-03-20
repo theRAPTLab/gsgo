@@ -95,6 +95,12 @@ class Viewer extends React.Component {
     document.title = `VIEWER ${data.modelId}`;
   }
 
+  HandleInspectorUpdate(data) {
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    this.setState({ instances: data.agents });
   }
 
   OnModelClick() {
