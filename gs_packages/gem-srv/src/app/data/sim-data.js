@@ -43,42 +43,63 @@ class SimData {
   constructor() {
     // Properties
     this.currentModelId = '';
+    this.MONITORED_INSTANCES = [];
+
     // Bind This
+    // LOAD MODEL DATA
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
+    // API CALLS: REQUEST MODEL DATA
     this.GetModels = this.GetModels.bind(this);
     this.GetModel = this.GetModel.bind(this);
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
+    // URSYS REQUEST MODEL DATA
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
     this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
     this.HandleRequestCurrentModel = this.HandleRequestCurrentModel.bind(this);
     this.SendSimDataModel = this.SendSimDataModel.bind(this);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
+    UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
+    UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleRequestCurrentModel);
+    UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
+    // INSPECTOR UTILS
+    this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
+    this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
+    this.SendInstanceInspectorUpdate = this.SendInstanceInspectorUpdate.bind(
+      this
+    );
+    UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
+    UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
+    UR.HandleMessage(
+      'NET:REQUEST_INSPECTOR_UPDATE',
+      this.SendInstanceInspectorUpdate
+    );
+
+    // INSTANCE UTILS
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdate = this.InstanceUpdate.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
     this.ReplacePropLine = this.ReplacePropLine.bind(this);
     this.InstanceRequestEdit = this.InstanceRequestEdit.bind(this);
     this.InstanceDelete = this.InstanceDelete.bind(this);
-    this.InstanceSelect = this.InstanceSelect.bind(this);
-    this.InstanceDeselect = this.InstanceDeselect.bind(this);
-    this.InstanceHoverOver = this.InstanceHoverOver.bind(this);
-    this.InstanceOverOut = this.InstanceHoverOut.bind(this);
-    // Register Listeners
-    UR.HandleMessage('LOCAL:INSTANCE_ADD', this.InstanceAdd);
-    UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE', this.InstanceUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
     UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
     UR.HandleMessage('NET:INSTANCE_DELETE', this.InstanceDelete);
+    UR.HandleMessage('LOCAL:INSTANCE_ADD', this.InstanceAdd);
+    // INSTANCE SELECTION HANDLERS
+    this.InstanceSelect = this.InstanceSelect.bind(this);
+    this.InstanceDeselect = this.InstanceDeselect.bind(this);
+    this.InstanceHoverOver = this.InstanceHoverOver.bind(this);
+    this.InstanceOverOut = this.InstanceHoverOut.bind(this);
     UR.HandleMessage('NET:INSTANCE_SELECT', this.InstanceSelect);
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.InstanceDeselect);
     UR.HandleMessage('INSTANCE_HOVEROVER', this.InstanceHoverOver);
     UR.HandleMessage('INSTANCE_HOVEROUT', this.InstanceHoverOut);
-    UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
-    UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
-    UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleRequestCurrentModel);
+
+    UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
   }
 
   /// LOAD MODEL DATA ///////////////////////////////////////////////////////////
@@ -220,6 +241,43 @@ class SimData {
   SendSimDataModel(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
     UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
+  }
+
+  /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * PanelSimulation keeps track of any instances that have been requested
+   * for inspector monitoring.
+   * We allow duplicate registrations so that when one device unregisters,
+   * the instance is still considered monitored.
+   * @param {Object} data { name: <string> } where name is the agent name.
+   */
+  DoRegisterInspector(data) {
+    const id = data.id;
+    this.MONITORED_INSTANCES.push(id);
+  }
+  DoUnRegisterInspector(data) {
+    const id = data.id;
+    const i = this.MONITORED_INSTANCES.indexOf(id);
+    if (i > -1) this.MONITORED_INSTANCES.splice(i, 1);
+  }
+
+  /**
+   * On every system loop, we broadcast instance updates
+   * for any instances that have registered for modeling.
+   * We keep this list small to keep from flooding the net with data.
+   */
+  SendInstanceInspectorUpdate() {
+    // walk down agents and broadcast results for monitored agents
+    const agents = GetAllAgents();
+    // Send all instances, but minmize non-monitored
+    const inspectorAgents = agents.map(a =>
+      this.MONITORED_INSTANCES.includes(a.id)
+        ? a
+        : { id: a.id, name: a.name, blueprint: a.blueprint }
+    );
+    // Broadcast data
+    UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }
 
   /// INSTANCE UTILS ////////////////////////////////////////////////////////////

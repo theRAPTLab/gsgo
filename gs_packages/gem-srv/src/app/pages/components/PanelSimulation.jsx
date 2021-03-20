@@ -19,7 +19,6 @@ import PanelChrome from './PanelChrome';
 const PR = UR.PrefixUtil('PanelSimulation');
 const DBG = false;
 
-const MONITORED_INSTANCES = [];
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,22 +41,16 @@ class PanelSimulation extends React.Component {
     this.state = {
       title: 'Virtual Stage'
     };
-    this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
-    this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
-    this.DoInstanceInspectorUpdate = this.DoInstanceInspectorUpdate.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.DoSimPlaces = this.DoSimPlaces.bind(this);
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
 
-    UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
-    UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
 
-    UR.HookPhase('SIM/UI_UPDATE', this.DoInstanceInspectorUpdate);
   }
 
   componentDidMount() {
@@ -69,49 +62,12 @@ class PanelSimulation extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
-    UR.UnhandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
     UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnhandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
 
-  /**
-   * PanelSimulation keeps track of any instances that have been requested
-   * for inspector monitoring.
-   * We allow duplicate registrations so that when one device unregisters,
-   * the instance is still considered monitored.
-   * @param {Object} data { name: <string> } where name is the agent name.
-   */
-  DoRegisterInspector(data) {
-    const id = data.id;
-    MONITORED_INSTANCES.push(id);
-  }
-  DoUnRegisterInspector(data) {
-    const id = data.id;
-    const i = MONITORED_INSTANCES.indexOf(id);
-    if (i > -1) MONITORED_INSTANCES.splice(i, 1);
-  }
-
-  /**
-   * On every system loop, we broadcast instance updates
-   * for any instances that have registered for modeling.
-   * We keep this list small to keep from flooding the net with data.
-   */
-  DoInstanceInspectorUpdate() {
-    // walk down agents and broadcast results for monitored agents
-    const agents = GetAllAgents();
-    // Send all instances, but minmize non-monitored
-    const inspectorAgents = agents.map(a =>
-      MONITORED_INSTANCES.includes(a.id)
-        ? a
-        : { id: a.id, name: a.name, blueprint: a.blueprint }
-    );
-
-    // Broadcast data
-    UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
-  }
 
   /**
    * WARNING: Do not call this before the simulation has loaded.
