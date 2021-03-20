@@ -423,7 +423,7 @@ class InstanceEditor extends React.Component {
                   className={classes.buttonSmall}
                   title="Add Property"
                 >
-                  ADD PROPERTY
+                  SHOW PROPERTY
                 </button>
               </div>
             </>
