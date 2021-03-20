@@ -318,9 +318,18 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     //          May not be necessary if we only allow one map editor
     // 1. Set Agent Data
     const agent = GetAgentById(data.agentId);
-    agent.setSelected(true);
-    // 2. Update UI
-    UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
+    // 2. If already selected, deselect it.
+    if (agent.isSelected) {
+      // 2a. Deselect it
+      agent.setSelected(false);
+      // Update UI
+      UR.RaiseMessage('INSTANCE_EDIT_DISABLE', data);
+    } else {
+      // 2b. Select it for editing
+      agent.setSelected(true);
+      // Update UI
+      UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
+    }
     // 3. Update Sim View
     UR.RaiseMessage('AGENTS_RENDER');
   }

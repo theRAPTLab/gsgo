@@ -49,6 +49,7 @@ class InstanceEditor extends React.Component {
     this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
     this.OnDeleteInstance = this.OnDeleteInstance.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
+    this.HandleEditDisable = this.HandleEditDisable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
     this.HandleDeselect = this.HandleDeselect.bind(this);
@@ -58,6 +59,7 @@ class InstanceEditor extends React.Component {
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.HandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
+    UR.HandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
@@ -70,6 +72,7 @@ class InstanceEditor extends React.Component {
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
+    UR.UnhandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
     UR.UnhandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
@@ -158,14 +161,15 @@ class InstanceEditor extends React.Component {
    * @param {*} e
    */
   OnInstanceClick(e) {
-    const { isEditable } = this.state;
-    if (isEditable) return; // Ignore click if editing
     // just pass it up to Map Editor so it's centralized?
     const agentId = this.GetAgentId();
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
   }
 
-  OnAddProperty() {
+  OnAddProperty(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
+
     const { modelId } = this.state;
     const { instance } = this.props;
     const blueprintName = this.GetBlueprintName();
@@ -192,14 +196,23 @@ class InstanceEditor extends React.Component {
     });
   }
 
-  OnEnableDeleteProperty() {
+  OnEnableDeleteProperty(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
     // enable deletion
     this.setState(state => ({
       isDeletingProperty: !state.isDeletingProperty
     }));
   }
 
+  StopEvent(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
+  }
+
   OnPropMenuSelect(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
     const selectedProp = e.target.value;
     if (selectedProp === '') return; // selected the help instructions
 
@@ -266,6 +279,14 @@ class InstanceEditor extends React.Component {
       this.setState({ isEditable, isSelected });
     } else {
       // always disable if message is not for us!
+      this.DoDeselect();
+    }
+  }
+  HandleEditDisable(data) {
+    const agentId = this.GetAgentId();
+    // Is this message for us?
+    if (data.agentId === agentId) {
+      // YES!  Disnable!
       this.DoDeselect();
     }
   }
@@ -353,7 +374,7 @@ class InstanceEditor extends React.Component {
     let propMenuJsx = '';
     if (isAddingProperty) {
       propMenuJsx = (
-        <select onChange={this.OnPropMenuSelect}>
+        <select onChange={this.OnPropMenuSelect} onClick={this.StopEvent}>
           <option value="">-- Select a property... --</option>
           {properties.map(p => (
             <option value={p.name} key={p.name}>

@@ -88,7 +88,9 @@ class PropElement extends React.Component<MyProps, MyState> {
     // Stop click here when user clicks inside form to edit.
     // Other clicks will propagage to InstanceEditor where it will exit edit mode
   }
-  onDeleteLine() {
+  onDeleteLine(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
     const updata = { index: this.index };
     UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
   }
