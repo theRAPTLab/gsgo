@@ -12,7 +12,7 @@
 // instances for the current session.  No data is saved.
 
 import UR from '@gemstep/ursys/client';
-import { GetAgentById } from 'modules/datacore/dc-agents';
+import { GetAgentById, GetAllInstances } from 'modules/datacore/dc-agents';
 import * as SIM from 'modules/sim/api-sim';
 import * as TRANSPILER from 'script/transpiler';
 
@@ -47,6 +47,7 @@ class SimData {
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
     this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
+    this.HandleRequestCurrentModel = this.HandleRequestCurrentModel.bind(this);
     this.SendSimDataModel = this.SendSimDataModel.bind(this);
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdate = this.InstanceUpdate.bind(this);
@@ -69,6 +70,7 @@ class SimData {
     UR.HandleMessage('INSTANCE_HOVEROUT', this.InstanceHoverOut);
     UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
     UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
+    UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleRequestCurrentModel);
   }
 
   /// LOAD MODEL DATA ///////////////////////////////////////////////////////////
@@ -204,9 +206,12 @@ class SimData {
   HandleSimDataModelRequest(data) {
     this.SendSimDataModel(data.modelId);
   }
+  HandleRequestCurrentModel() {
+    this.SendSimDataModel();
+  }
   SendSimDataModel(modelId = this.currentModelId) {
-    let model = this.GetSimDataModel(modelId);
-    UR.RaiseMessage('NET:UPDATE_MODEL', { model });
+    const model = this.GetSimDataModel(modelId);
+    UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
   }
 
   /// INSTANCE UTILS ////////////////////////////////////////////////////////////

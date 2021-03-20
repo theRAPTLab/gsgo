@@ -46,11 +46,28 @@ class Viewer extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'sim',
-      modelId: ''
+      modelId: '',
+      model: {},
+      instances: []
     };
+    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
+    this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+
+    // System Hooks
+    UR.HookPhase('SIM/STAGED', () => {
+      // **************************************************
+      // REVIEW
+      // This assumes that MissionControl is already running.
+      // This is not always reliable, especially during code
+      // refresh.  This call might go out before MissionControl.
+      // **************************************************
+      UR.RaiseMessage('NET:REQUEST_CURRENT_MODEL');
+    });
   }
 
   componentDidMount() {
@@ -63,7 +80,20 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+  }
+
+  HandleSimDataUpdate(data) {
+    console.error('onsimupdate');
+    this.setState({
+      modelId: data.modelId,
+      model: data.model,
+      instances: data.instances
+    });
+    document.title = `VIEWER ${data.modelId}`;
+  }
+
   }
 
   OnModelClick() {
@@ -83,8 +113,14 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, modelId } = this.state;
+    const { panelConfiguration, modelId, model, instances } = this.state;
     const { classes } = this.props;
+
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
+
     return (
       <div
         className={classes.root}
@@ -114,7 +150,6 @@ class Viewer extends React.Component {
           style={{ backgroundColor: 'transparent' }}
         >
           <PanelInstances id="instances" />
-          <PanelInspector isActive />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
