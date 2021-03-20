@@ -131,6 +131,8 @@ class InstanceInspector extends React.Component {
         newsize = SIZE_MAX;
         if (!alreadyRegistered) {
           UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
+          // Force an update
+          UR.RaiseMessage('NET:REQUEST_INSPECTOR_UPDATE');
           registrationStatus = true;
         }
         break;

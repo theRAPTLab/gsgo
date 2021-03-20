@@ -107,6 +107,9 @@ class PanelSimulation extends React.Component {
 
     // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
     UR.RaiseMessage('AGENTS_RENDER');
+
+    // 5. Update Inspectors
+    UR.RaiseMessage('NET:REQUEST_INSPECTOR_UPDATE');
   }
 
   DoSimStart() {
