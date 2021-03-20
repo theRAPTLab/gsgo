@@ -7,12 +7,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const NetPacket = require('./class-netpacket');
-const { SVR_HANDLERS, RemoteHandlerPromises } = require('./server-datacore');
+const { SVR_HANDLERS, RemoteHandlerPromises, DBG } = require('./server-datacore');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 
 /// CONSTANTS * DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { call: true };
 
 /// SERVER-SIDE MESSAGING API /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -86,7 +85,9 @@ function UR_SendMessage(mesgName, data, type = 'msend') {
   // we don't care about waiting for the promise to complete
   if (DBG.call)
     TERM(
-      `${pkt.getInfo()} NETSEND ${pkt.getMessage()} to ${promises.length} remotes`
+      `${pkt.getInfo()} ${type.toUpperCase()} ${pkt.getMessage()} to ${
+        promises.length
+      } remotes`
     );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

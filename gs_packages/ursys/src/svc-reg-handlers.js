@@ -6,13 +6,9 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { RegisterMessageList, NET_HANDLERS } = require('./server-datacore');
+const { RegisterMessageList, NET_HANDLERS, DBG } = require('./server-datacore');
 const NetPacket = require('./class-netpacket');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
-
-/// DEBUG MESSAGES ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { client: true };
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +41,7 @@ function PKT_RegisterHandler(pkt) {
       entry = new Set();
       NET_HANDLERS.set(msg, entry);
     }
-    if (DBG.client) TERM(`${uaddr} regr '${msg}'`);
+    if (DBG.reg) TERM(`${uaddr} regr '${msg}'`);
     entry.add(uaddr);
     regd.push(msg);
   });

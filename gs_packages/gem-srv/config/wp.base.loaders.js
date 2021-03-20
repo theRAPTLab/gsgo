@@ -17,7 +17,7 @@ const Path = require('path');
 const URSERV = require('@gemstep/ursys/server');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const PR = URSERV.PrefixUtil(' PACK/RSV');
+const PR = URSERV.PrefixUtil(' WPACK');
 
 /// CONSTANTS INFO ////////////////////////////////////////////////////////////
 const DIR_ROOT = Path.resolve(__dirname, '../');
@@ -31,7 +31,7 @@ const LOADER_CACHE = Path.join(DIR_ROOT, 'built/cache/cache-loader');
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WebpackLoaders = () => {
-  console.log(...PR('... setting common webpack loader rules'));
+  console.log(...PR('... wp.base.loaders setting default rules'));
   return {
     module: {
       rules: [

@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const IP = require('ip');
-const TERM = require('./util/prompts').makeTerminalOut(' ...dc');
+const TERM = require('./util/prompts').makeTerminalOut(' DCORE');
 const LOGGER = require('./server-logger');
 const NetPacket = require('./class-netpacket');
 const {
@@ -16,6 +16,7 @@ const {
   CFG_URNET_VERSION,
   PacketHash
 } = require('./ur-common');
+const { DBG } = require('./ur-dbg-settings');
 
 /// URNET DATA STRUCTURES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -26,7 +27,6 @@ const NET_HANDLERS = new Map(); // message map storing other handlers
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let mu_uaddr_counter = 0; // for generating  unique socket ids
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { mesg: true, sock: false, calls: true };
 
 /// URNET OPTIONS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,8 +47,10 @@ function InitializeNetInfo(o = {}) {
 /// MESSAGE DICTIONARY FOR ALL UADDR /////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterMessageList(uaddr, messages) {
-  if (MESSAGE_DICT.has(uaddr)) TERM(`${uaddr} message list UPDATING`);
-  else TERM(`${uaddr} message list INITIALIZING`);
+  if (DBG.reg) {
+    if (MESSAGE_DICT.has(uaddr)) TERM(`${uaddr} message list UPDATING`);
+    else TERM(`${uaddr} message list INITIALIZING`);
+  }
   MESSAGE_DICT.set(uaddr, messages);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,7 +78,7 @@ function SocketAdd(socket, req) {
   socket.ULOCAL = remoteIp === '127.0.0.1' || remoteIp === '::1';
   // save socket
   SOCKETS.set(uaddr, socket);
-  TERM(`socket ADD ${socket.UADDR} to network`);
+  if (DBG.sock) TERM(`socket ADD ${socket.UADDR} to network`);
   LOGGER.Write(socket.UADDR, 'joined network');
   log_ListSockets(`add ${uaddr}`);
   return uaddr;
@@ -128,6 +130,7 @@ function GetSocketCount() {
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** helper debug output used by SocketAdd(), SocketDelete() */
 function log_ListSockets(change) {
+  if (!DBG.sock) return;
   TERM(`socketlist changed: '${change}'`);
   // let's use iterators! for..of
   let values = [...SOCKETS.values()];
@@ -227,6 +230,8 @@ function RemoteHandlerPromises(pkt, ident) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  // DEBUG FLAGS
+  DBG,
   // URNET
   SOCKETS,
   MESSAGE_DICT,

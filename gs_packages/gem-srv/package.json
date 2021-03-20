@@ -19,7 +19,9 @@
     ],
     "watch": [
       "../ursys/server",
-      "./gem_run.js"
+      "./gem_run.js",
+      "./server",
+      "./config"
     ],
     "ext": "js json"
   },

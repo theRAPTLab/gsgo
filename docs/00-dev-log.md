@@ -482,6 +482,25 @@ In the case of the Simulation, we might be in certain modes:
 * The **sim-inputs** module requests input state by group and role. It's responsible for providing a way to **bridge InputObjects with Agents** in the simulation. These InputObjects come from the input modules (PTrack and udevices)
 * **sim-inputs** is in charge of managing the list of agents that should be created from a group/role pool with a certain blueprint. It also needs to de-assign these inputs in a way similar to PTrack.
 
+## MAR 20 SAT
+
+Picking up from Thursday after a long recovery period. We're working on getting FakeTrack to appear as inputs to the simulator. Focus **only** on **devices**, as we don't need protocols yet (this is the expansion of the network)
+
+### Synchronizing `client-netdevices` with `svc-netdevices`
+
+* [x] client-netdevices handles 'NET:UR_PROTOCOLS` message to maintain device directory
+* [x] svc-netdevices handles `NET:SRV_PROTOCOLS` to register devices
+
+The tricky part now is the **devices data structure**. But maybe it will be clearer if I design the API calls first, and call them from FakeTrack as a dummy thing. 
+
+* [x] make `UDevice` class
+* [x] split the PROTOCOL messages into `svc-netprotocols` and `client-netprotocols` respectively to make it easier to work
+* [x] add device directory support to `class-udevice`, `svc-netdevices`
+* [x] add registration code to FakeTrack and see that the server handles it and saves the information
+* [x] make sure `svc-netdevices` receives the socket deletion message
+
+
+
 
 
 

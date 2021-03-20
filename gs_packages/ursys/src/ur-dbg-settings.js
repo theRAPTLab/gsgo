@@ -7,9 +7,12 @@
 
 const DBG = {
   init: true, // urnet initialization
-  calls: false, // urnet message brokering
-  client: false, // urnet client
-  xact: true // urnet transaction
+  mesg: false, // urnet message logic
+  sock: false, // socket logic
+  calls: false, // message brokering
+  reg: false, // message registration
+  device: true, // device connections
+  xact: false // server-urnet mRouteMessage
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
