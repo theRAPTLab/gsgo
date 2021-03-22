@@ -101,8 +101,9 @@ function Init(element) {
         MakeDraggable(vobj);
         // add hover handler
         MakeHoverable(vobj);
-        // add selectable handler
-        MakeSelectable(vobj);
+        // selection is handled by drag
+        // // add selectable handler
+        // MakeSelectable(vobj);
       }
 
       // add to scene
