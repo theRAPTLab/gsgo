@@ -61,6 +61,29 @@ const CLR_HI2 = RGBA(CLR_HI_R, CLR_HI_R, CLR_HI_B, 0.8);
 
 const FONT_FAMILY = 'Andale Mono, monospace';
 
+/// BASE STYLES ///////////////////////////////////////////////////////////////
+const BUTTON = {
+  fontSize: '18px',
+  padding: '5px',
+  margin: '5px',
+  minHeight: '50px',
+  minWidth: '50px',
+  borderRadius: '5px',
+  color: CLR_DATA,
+  backgroundColor: CLR_OBJECT_CLICKABLE,
+  borderTopColor: BaseColorShift(0, 0.2),
+  borderLeftColor: BaseColorShift(0, 0.2),
+  borderRightColor: BaseColorShift(-240, 0.2),
+  borderBottomColor: BaseColorShift(-240, 0.2),
+  cursor: 'pointer',
+  '&:disabled': {
+    color: CLR_DATA_INACTIVE,
+    backgroundColor: CLR_OBJECT,
+    borderColor: BaseColorShift(-240, 0.2),
+    cursor: 'not-allowed'
+  }
+};
+
 /// STYLE DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const useStylesHOC = theme => ({
@@ -260,55 +283,24 @@ const useStylesHOC = theme => ({
     cursor: 'pointer'
   },
   button: {
-    fontSize: '18px',
-    padding: '5px',
-    margin: '5px',
-    minHeight: '50px',
-    minWidth: '50px',
-    borderRadius: '5px',
-    color: CLR_DATA,
-    backgroundColor: CLR_OBJECT_CLICKABLE,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    ...BUTTON
   },
   buttonSmall: {
+    ...BUTTON,
     fontSize: '12px',
-    padding: '5px',
-    margin: '5px',
     minHeight: '25px',
     minWidth: '25px',
-    borderRadius: '5px',
-    color: CLR_DATA,
-    backgroundColor: CLR_OBJECT_CLICKABLE,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer',
-    '&:disabled': {
-      color: CLR_DATA_INACTIVE,
-      backgroundColor: CLR_OBJECT,
-      borderColor: BaseColorShift(-240, 0.2),
-      cursor: 'not-allowed'
-    }
+    borderRadius: '5px'
   },
   buttonMini: {
+    ...BUTTON,
     fontSize: '10px',
     padding: '2px',
     margin: '2px',
     minHeight: '15px',
     minWidth: '15px',
     borderRadius: '3px',
-    color: CLR_HI2,
-    backgroundColor: CLR_OBJECT_CLICKABLE,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    color: CLR_HI2
   },
   buttonLink: {
     // Text only button
@@ -323,21 +315,12 @@ const useStylesHOC = theme => ({
     cursor: 'pointer'
   },
   buttonOn: {
-    fontSize: '18px',
-    padding: '5px',
-    margin: '5px',
-    minHeight: '50px',
-    minWidth: '50px',
-    borderRadius: '5px',
+    ...BUTTON,
     color: CLR_HI,
-    backgroundColor: CLR_OBJECT_HIGHLIGHT,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    backgroundColor: CLR_OBJECT_HIGHLIGHT
   },
   buttonDisabled: {
+    ...BUTTON,
     color: CLR_LABEL,
     backgroundColor: CLR_OBJECT,
     borderTopColor: BaseColorShift(0, 0.1),
