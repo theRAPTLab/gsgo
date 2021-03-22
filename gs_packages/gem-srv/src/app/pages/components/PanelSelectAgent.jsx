@@ -51,11 +51,7 @@ class PanelSelectAgent extends React.Component {
                   type="button"
                   disabled={m.editor !== undefined}
                   style={{ width: '300px' }}
-                  className={
-                    m.editor
-                      ? `${classes.button} ${classes.buttonDisabled}`
-                      : classes.button
-                  }
+                  className={classes.button}
                   onClick={() => this.OnScriptClick(m.id)}
                 >
                   {m.label}
