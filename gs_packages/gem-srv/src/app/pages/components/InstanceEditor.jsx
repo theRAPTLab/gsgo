@@ -34,7 +34,7 @@ class InstanceEditor extends React.Component {
       isEditable: false,
       isHovered: false,
       isSelected: false,
-      properties: [],
+      addableProperties: [],
       isAddingProperty: false,
       isDeletingProperty: false
     };
@@ -44,6 +44,7 @@ class InstanceEditor extends React.Component {
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.HandleScriptLineDelete = this.HandleScriptLineDelete.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.GetSettableProperties = this.GetAddableProperties.bind(this);
     this.OnAddProperty = this.OnAddProperty.bind(this);
     this.OnEnableDeleteProperty = this.OnEnableDeleteProperty.bind(this);
     this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
@@ -166,13 +167,12 @@ class InstanceEditor extends React.Component {
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
   }
 
-  OnAddProperty(e) {
-    e.preventDefault(); // prevent click from deselecting instance
-    e.stopPropagation();
-
+  GetAddableProperties() {
     const { modelId } = this.state;
     const { instance } = this.props;
     const blueprintName = this.GetBlueprintName();
+
+    if (!modelId || !instance) return [];
 
     // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
     // Assume we can get a list of properties from SimData
@@ -190,8 +190,15 @@ class InstanceEditor extends React.Component {
     // 2. Remove already set properties
     properties = properties.filter(p => !initProperties.includes(p.name));
 
+    return properties;
+  }
+
+  OnAddProperty(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
+    const addableProperties = this.GetAddableProperties();
     this.setState({
-      properties,
+      addableProperties,
       isAddingProperty: true
     });
   }
@@ -216,9 +223,9 @@ class InstanceEditor extends React.Component {
     const selectedProp = e.target.value;
     if (selectedProp === '') return; // selected the help instructions
 
-    const { modelId, properties } = this.state;
+    const { modelId, addableProperties } = this.state;
     const { instance } = this.props;
-    const property = properties.find(p => p.name === selectedProp);
+    const property = addableProperties.find(p => p.name === selectedProp);
     const keyword = property.isFeatProp ? 'featProp' : 'prop';
     const newScriptLine = `${keyword} ${property.name} setTo ${property.defaultValue}`;
 
@@ -355,7 +362,7 @@ class InstanceEditor extends React.Component {
       isEditable,
       isHovered,
       isSelected,
-      properties,
+      addableProperties,
       isAddingProperty,
       isDeletingProperty
     } = this.state;
@@ -376,7 +383,7 @@ class InstanceEditor extends React.Component {
       propMenuJsx = (
         <select onChange={this.OnPropMenuSelect} onClick={this.StopEvent}>
           <option value="">-- Select a property... --</option>
-          {properties.map(p => (
+          {addableProperties.map(p => (
             <option value={p.name} key={p.name}>
               {p.name}
             </option>
@@ -384,6 +391,8 @@ class InstanceEditor extends React.Component {
         </select>
       );
     }
+
+    const disableAddProperties = this.GetAddableProperties().length < 1;
 
     return (
       <div
@@ -422,6 +431,7 @@ class InstanceEditor extends React.Component {
                   type="button"
                   className={classes.buttonSmall}
                   title="Add Property"
+                  disabled={disableAddProperties}
                 >
                   SHOW PROPERTY
                 </button>

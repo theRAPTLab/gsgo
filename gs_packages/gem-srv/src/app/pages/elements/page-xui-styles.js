@@ -241,7 +241,7 @@ const useStylesHOC = theme => ({
     paddingRight: '0.25em'
   },
   instanceEditorField: {
-    width: '6em'
+    width: '5em'
   },
   navButton: {
     fontSize: '14px',
@@ -287,7 +287,13 @@ const useStylesHOC = theme => ({
     borderLeftColor: BaseColorShift(0, 0.2),
     borderRightColor: BaseColorShift(-240, 0.2),
     borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    cursor: 'pointer',
+    '&:disabled': {
+      color: CLR_DATA_INACTIVE,
+      backgroundColor: CLR_OBJECT,
+      borderColor: BaseColorShift(-240, 0.2),
+      cursor: 'not-allowed'
+    }
   },
   buttonMini: {
     fontSize: '10px',
