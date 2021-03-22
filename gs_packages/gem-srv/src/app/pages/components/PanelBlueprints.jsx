@@ -12,6 +12,8 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as DATACORE from 'modules/datacore';
+import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -28,7 +30,7 @@ class PanelBlueprints extends React.Component {
 
   componentDidMount() {
     const { enableAdd } = this.props;
-    const title = enableAdd ? 'Add Characters' : 'Character Types';
+    const title = enableAdd ? 'Add Characters' : 'Character Type Scripts';
     this.setState({ title });
   }
 
@@ -88,6 +90,11 @@ class PanelBlueprints extends React.Component {
                   onClick={() => this.OnBlueprintClick(a.id)}
                   key={a.label}
                 >
+                  {enableAdd ? (
+                    <AddIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
+                  ) : (
+                    <EditIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
+                  )}
                   {a.label}
                 </div>
               ))}
