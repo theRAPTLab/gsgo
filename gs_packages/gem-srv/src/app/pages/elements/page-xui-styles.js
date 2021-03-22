@@ -76,6 +76,13 @@ const BUTTON = {
   borderRightColor: BaseColorShift(-240, 0.2),
   borderBottomColor: BaseColorShift(-240, 0.2),
   cursor: 'pointer',
+  '&:hover': {
+    color: CLR_ACTIVE,
+    borderTopColor: BaseColorShift(0, 0.4),
+    borderLeftColor: BaseColorShift(0, 0.4),
+    borderRightColor: BaseColorShift(-240, 0.4),
+    borderBottomColor: BaseColorShift(-240, 0.4)
+  },
   '&:disabled': {
     color: CLR_DATA_INACTIVE,
     backgroundColor: CLR_OBJECT,
