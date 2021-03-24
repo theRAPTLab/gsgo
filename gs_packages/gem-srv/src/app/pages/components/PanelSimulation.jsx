@@ -19,7 +19,6 @@ import PanelChrome from './PanelChrome';
 const PR = UR.PrefixUtil('PanelSimulation');
 const DBG = false;
 
-
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase(
@@ -50,7 +49,6 @@ class PanelSimulation extends React.Component {
     UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
-
   }
 
   componentDidMount() {
@@ -67,7 +65,6 @@ class PanelSimulation extends React.Component {
     UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
   }
-
 
   /**
    * WARNING: Do not call this before the simulation has loaded.

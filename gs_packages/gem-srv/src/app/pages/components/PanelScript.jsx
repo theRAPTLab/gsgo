@@ -240,6 +240,26 @@ class PanelScript extends React.Component {
     const { title, lineHighlight } = this.state;
     const { id, script, onClick, classes } = this.props;
 
+    // CodeJar Refresh
+    // CodeJar does syntax highlighting when
+    // a. componentDidMount
+    // b. on keyboard input
+    // State updates causes PanelScript to re-render.
+    // Sending the script to the server causes state updates,
+    // and PanelScript rerenders with the updated script
+    // but codejar does not re-highlight the script because
+    // neither componentDidMount or a keyboard input was
+    // triggered. So the updated script remains
+    // un-highlighted.
+    // We could tell codejar to update with props.script,
+    // e.g. `this.jar.updateCode(script);`
+    // but that doesn't reflect the current state of the code.
+    // What ends up happening is the code reverts to the
+    // original source code, losing any changes the user
+    // may have made.
+    // This forces codejar to update with the current text
+    if (this.jar.updateCode) this.jar.updateCode(this.jar.toString());
+
     const BackBtn = (
       <button
         type="button"
