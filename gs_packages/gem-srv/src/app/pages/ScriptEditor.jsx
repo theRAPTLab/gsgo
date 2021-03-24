@@ -30,6 +30,15 @@ import './scrollbar.css';
 const PR = UR.PrefixUtil('SCRIPTEDITOR');
 const DBG = true;
 
+const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
+# PROGRAM DEFINE
+// useFeature Costume
+// useFeature Movement
+# PROGRAM EVENT
+// onEvent Tick [[ ]]
+# PROGRAM UPDATE
+// when xxx touches yyy [[ ]]`;
+
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('select', '50% auto 0px'); // columns
@@ -65,7 +74,7 @@ class ScriptEditor extends React.Component {
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
-    UR.HandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
+    UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
@@ -91,6 +100,7 @@ class ScriptEditor extends React.Component {
   }
 
   componentDidMount() {
+    if (DBG) console.log(...PR('componentDidMount'));
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
     const scriptId = params.get('script');
@@ -116,7 +126,7 @@ class ScriptEditor extends React.Component {
 
   CleanupComponents() {
     this.UnRegisterInstances();
-    UR.UnhandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
+    UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
@@ -134,6 +144,7 @@ class ScriptEditor extends React.Component {
    * @param {String} modelId
    */
   LoadModel(modelId) {
+    if (DBG) console.log(...PR('LoadModel'));
     UR.RaiseMessage('NET:REQUEST_MODEL', { modelId });
   }
   /**
@@ -143,10 +154,11 @@ class ScriptEditor extends React.Component {
    * @param {Object} data
    */
   OnSimDataUpdate(data) {
+    if (DBG) console.log(...PR('OnSimDataUpdate', data));
     const { scriptId } = this.state;
     this.setState({ model: data.model }, () => {
       if (scriptId) {
-        this.OnSelectScript(scriptId);
+        this.OnSelectScript({ scriptId });
       }
     });
   }
@@ -174,6 +186,7 @@ class ScriptEditor extends React.Component {
    *                       where 'instances' are instanceSpecs: {name, blueprint, init}
    */
   OnInstanceUpdate(data) {
+    if (DBG) console.log(...PR('OnInstanceUpdate'));
     const { scriptId, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
     const instances = data.instances.filter(i => {
@@ -198,6 +211,7 @@ class ScriptEditor extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
+    if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
     const { scriptId } = this.state;
     if (!data || data.agents === undefined) {
@@ -217,7 +231,13 @@ class ScriptEditor extends React.Component {
     });
   }
 
-  OnSelectScript(scriptId) {
+  /**
+   * Call with stringId=undefined to go to selection screen
+   * @param {string} data { scriptId }
+   */
+  OnSelectScript(data) {
+    const { scriptId } = data;
+    if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
     const { model, modelId } = this.state;
     if (model === undefined || model.scripts === undefined) {
@@ -229,7 +249,7 @@ class ScriptEditor extends React.Component {
       return; // no scripts defined
     }
     const agent = model.scripts.find(s => s.id === scriptId);
-    const script = agent && agent.script ? agent.script : {};
+    const script = agent && agent.script ? agent.script : SCRIPT_TEMPLATE;
 
     // add script to URL
     history.pushState(
@@ -238,8 +258,14 @@ class ScriptEditor extends React.Component {
       `/app/scripteditor?model=${modelId}&script=${scriptId}`
     );
 
+    // Show script selector if scriptId was not passed
+    let panelConfiguration = 'script';
+    if (scriptId === undefined) {
+      panelConfiguration = 'select';
+    }
+
     this.setState({
-      panelConfiguration: 'script',
+      panelConfiguration,
       script,
       scriptId
     });
@@ -257,6 +283,7 @@ class ScriptEditor extends React.Component {
    *  make this happen.
    */
   render() {
+    if (DBG) console.log(...PR('render'));
     const {
       panelConfiguration,
       modelId,
@@ -300,6 +327,7 @@ class ScriptEditor extends React.Component {
             <PanelSelectAgent
               id="select"
               agents={agents}
+              modelId={modelId}
               onClick={this.OnPanelClick}
             />
           )}
