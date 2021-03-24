@@ -54,6 +54,7 @@ class SimData {
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
+    this.BlueprintDelete = this.BlueprintDelete.bind(this);
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
     // URSYS REQUEST MODEL DATA
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
@@ -64,6 +65,9 @@ class SimData {
     UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
     UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleRequestCurrentModel);
     UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
+    // BLURPRINT UTILS
+    this.HandleBlueprintDelete = this.HandleBlueprintDelete.bind(this);
+    UR.HandleMessage('NET:BLUEPRINT_DELETE', this.HandleBlueprintDelete);
     // INSPECTOR UTILS
     this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
     this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
@@ -153,6 +157,15 @@ class SimData {
   GetCurrentModelId() {
     return this.currentModelId;
   }
+  /**
+   * Returns array of properties {name, type, defaultvalue, isFeatProp}
+   * that have been defined by the blueprint.
+   * Used to populate property menus when selecting properties to show
+   * in InstanceInspectors
+   * @param {string} modelId
+   * @param {string} blueprintName
+   * @return {array}
+   */
   GetBlueprintProperties(modelId, blueprintName) {
     // HACK
     // 1. Start with built in properties
@@ -180,14 +193,37 @@ class SimData {
   }
 
   /**
-   *
-   * @param {Object} data -- { script }
+   * Removes the script from `model` and related `model.instances`
+   * Does not remove sim instances/agents.
+   * @param {string} blueprintName
+   */
+  BlueprintDelete(blueprintName) {
+    const model = this.GetCurrentModel();
+    // 1. Delete the old blueprint from model
+    const index = model.scripts.findIndex(s => s.id === blueprintName);
+    if (index > -1) {
+      // Remove existing blueprint
+      model.scripts.splice(index, 1);
+    }
+    // 2. Delete any existing instances from model definition
+    model.instances = model.instances.filter(i => i.blueprint !== blueprintName);
+  }
+
+  /**
+   * This should just update the `model.scripts` and `model.instances` data.
+   * Any sim instance/agent data updates should be hanlded by sim-agents.
+   * @param {Object} data -- { script, origBlueprintName }
    */
   ScriptUpdate(data) {
     const model = this.GetCurrentModel();
     const source = TRANSPILER.ScriptifyText(data.script);
     const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
     const blueprintName = bundle.name;
+    // Did the blueprint name change?
+    if (data.origBlueprintName !== blueprintName) {
+      this.BlueprintDelete(data.origBlueprintName);
+    }
+    // Update the new blueprint
     const blueprint = {
       id: blueprintName,
       label: blueprintName,
@@ -202,19 +238,23 @@ class SimData {
       model.scripts.push(blueprint);
     }
 
-    this.SendSimDataModel();
-
-    // Add an instance if the sim is not running
+    // Add an instance if one isn't already defined
+    // Should not affect running sim until reset
     const bp = TRANSPILER.RegisterBlueprint(bundle);
     const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
     if (instancesSpec.length < 1) {
       // If the map has not been defined yet, then generate a single instance
       // instancesSpec.push({ name: `${bp.name}01`, init: '' });
-      this.InstanceAdd({
-        modelId: this.GetCurrentModelId(),
-        blueprintName: bp.name
-      });
+      this.InstanceAdd(
+        {
+          modelId: this.GetCurrentModelId(),
+          blueprintName: bp.name
+        },
+        false
+      );
     }
+
+    this.SendSimDataModel();
   }
 
   /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
@@ -241,6 +281,13 @@ class SimData {
   SendSimDataModel(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
     UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
+  }
+
+  /// BLUEPRINT UTILS ////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  HandleBlueprintDelete(data) {
+    this.BlueprintDelete(data.blueprintName);
+    this.SendSimDataModel();
   }
 
   /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
