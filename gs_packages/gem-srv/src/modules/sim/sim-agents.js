@@ -9,14 +9,22 @@ import SyncMap from 'lib/class-syncmap';
 import DisplayObject from 'lib/class-display-object';
 import {
   GetAllAgents,
+  DeleteAgent,
+  GetAgentsByType,
   GetAgentById,
   GetAgentByName,
   DeleteAllAgents,
   DefineInstance,
+  DeleteInstance,
   DeleteAllInstances,
   DeleteBlueprintInstances,
-  GetAllInstances
+  GetAllInstances,
+  GetInstancesType
 } from 'modules/datacore/dc-agents';
+import {
+  GetAllBlueprints,
+  DeleteBlueprint
+} from 'modules/datacore/dc-script-engine';
 import * as RENDERER from 'modules/render/api-render';
 import { MakeDraggable } from 'lib/vis/draggable';
 import * as TRANSPILER from 'script/transpiler';
@@ -132,15 +140,32 @@ export function AllAgentsProgramAdd(data) {
  *  This creates a MULTIPLE agents from a spec, replacing all instances of the
  *  same blueprint.  This is generally used to initialize a whole model.
  *
+ *  REVIEW: Should this be rewritten as a class-mapped-pool object?
+ *
  * @param {Object} blueprintNames Array of blueprint names
  * @param {Array} instancesSpec Array of to-be-defined spec objects {id, name, blueprint, init, ...args}
- * @param {Array} instances Array of existing instanceDef (TInstance) objects {id, name, blueprint, init, ...args }
+ * @param {Array} instanceDefs Array of existing instanceDef (TInstance) objects {id, name, blueprint, init, ...args }
  */
 export function AllAgentsProgramUpdate(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
   let instanceDefs = GetAllInstances();
-  // Update or Make an instance for each instance spec
+
+  // I. Remove Unused Blueprints and Agents
+  const blueprints = GetAllBlueprints(); // Array of SM_Bundle
+  blueprints.forEach(b => {
+    if (!blueprintNames.includes(b.name)) {
+      // remove the blueprint
+      DeleteBlueprint(b.name);
+      // remove any agents using the blueprint
+      GetInstancesType(b.name).forEach(a => DeleteAgent(a));
+      // remove instances using the blueprint
+      DeleteBlueprintInstances(b.name);
+    }
+  });
+
+  // II. Add or Update instanceDefs
+  const instancesSpecIds = []; // keep track of updated instances so we can remove those missing from spec
   instancesSpec.forEach(spec => {
     // Check for poorly defined spec?
     if (!spec.id)
@@ -152,7 +177,7 @@ export function AllAgentsProgramUpdate(data) {
     // Is the instance already defined?
     const instanceDef = instanceDefs.find(i => i.id === spec.id);
     if (!instanceDef) {
-      // Not defined yet
+      // Not defined yet, so define a new instance
       DefineInstance({
         id: spec.id,
         name: spec.name,
@@ -165,18 +190,26 @@ export function AllAgentsProgramUpdate(data) {
       instanceDef.name = spec.name;
       instanceDef.init = spec.init;
     }
+    instancesSpecIds.push(spec.id);
   });
 
-  // Update or Make an agent for each instance
+  // III. Remove instanceDefs that were not specd
   instanceDefs = GetAllInstances(); // update insteances since we may have added some
-  instanceDefs.forEach(instanceDef => {
+  // const updatedInstanceDefs = [];
+  instanceDefs.forEach(d => {
+    if (!instancesSpecIds.includes(d.id)) DeleteInstance(d);
+  });
+
+  // IV. Update or Make an agent for each updated instance def
+  // updatedInstanceDefs.forEach(instanceDef => {
+  instancesSpec.forEach(instanceDef => {
     const init = TRANSPILER.CompileText(instanceDef.init);
     let agent = GetAgentById(instanceDef.id);
     if (!agent) agent = TRANSPILER.MakeAgent(instanceDef);
     agent.exec(init, { agent });
   });
 
-  // Announce instance defs so UI can register instance names for inspector monitoring
+  // V. Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
   UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances: instanceDefs });
 }

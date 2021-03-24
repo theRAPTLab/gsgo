@@ -350,6 +350,17 @@ function CompileBlueprint(units: TScriptUnit[]): SM_Bundle {
   return bdl;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint name from a script
+ * Compiles raw scriptText to determine the blueprint name
+ * @param {string} script
+ */
+function ExtractBlueprintName(script) {
+  const source = ScriptifyText(script);
+  const bundle = CompileBlueprint(source); // compile to get name
+  return bundle.name;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
  *  @param {array} options -- { isEditable }
@@ -453,5 +464,6 @@ export {
 export {
   MakeAgent, // BlueprintName => Agent
   RemoveAgent,
-  RegisterBlueprint // TScriptUnit[] => ISM_Bundle
+  RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
+  ExtractBlueprintName
 };
