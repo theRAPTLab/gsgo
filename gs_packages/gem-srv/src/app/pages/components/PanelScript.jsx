@@ -11,6 +11,7 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
+import * as TRANSPILER from 'script/transpiler';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
@@ -21,6 +22,8 @@ import * as Prism from '../../../lib/vendor/prism_extended';
 import { CodeJar } from '../../../lib/vendor/codejar';
 import '../../../lib/vendor/prism_extended.css';
 import '../../../lib/css/prism_linehighlight.css'; // override TomorrowNight
+
+import DialogConfirm from './DialogConfirm';
 
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -126,13 +129,13 @@ const keywords = DATACORE.GetAllKeywords();
 const keywords_regex = new RegExp(
   '\\b(' + keywords.reduce((acc, cur) => `${acc}|${cur}`) + ')\\b'
 );
-console.log('PRISM gemscript keywords', keywords_regex);
+if (DBG) console.log(...PR('PRISM gemscript keywords', keywords_regex));
 
 const types = ['Number', 'String', 'Boolean'];
 const types_regex = new RegExp(
   '\\b(' + types.reduce((acc, cur) => `${acc}|${cur}`) + ')\\b'
 );
-console.log('PRISM gemscript types', types_regex);
+if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -142,13 +145,14 @@ class PanelScript extends React.Component {
     super();
     this.state = {
       title: 'Script',
-      lineHighlight: undefined
+      lineHighlight: undefined,
+      origBlueprintName: '',
+      openConfirmDelete: false
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
     };
     // codejar
     this.jarRef = React.createRef();
     this.jar = '';
-    this.SendText = this.SendText.bind(this);
 
     // The keys (keyword, namespace, inserted)  map to token definitions in the prism css file.
     Prism.languages.gemscript = Prism.languages.extend('javascript', {
@@ -157,13 +161,19 @@ class PanelScript extends React.Component {
       'inserted': types_regex
     });
 
+    this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
+    this.GetTitle = this.GetTitle.bind(this);
+    this.SendText = this.SendText.bind(this);
     this.OnButtonClick = this.OnButtonClick.bind(this);
     this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
+    this.OnDelete = this.OnDelete.bind(this);
+    this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
 
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
   componentDidMount() {
+    if (DBG) console.log(...PR('componentDidMount'));
     // initialize codejar
     const highlight = editor => {
       Prism.highlightElement(editor);
@@ -173,6 +183,11 @@ class PanelScript extends React.Component {
     this.jar.onUpdate(code => {
       this.text = code;
     });
+    // Read original blueprint name
+    // We need to save this in case the user changes the name
+    // If the name is changed we have to clean up the old instances
+    const { script } = this.props;
+    this.UpdateBlueprintName(script);
   }
 
   componentWillUnmount() {
@@ -180,6 +195,18 @@ class PanelScript extends React.Component {
       'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
     );
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
+  }
+
+  UpdateBlueprintName(script) {
+    const blueprintName = TRANSPILER.ExtractBlueprintName(script);
+    this.setState({
+      title: this.GetTitle(blueprintName),
+      origBlueprintName: blueprintName
+    });
+  }
+
+  GetTitle(blueprintName) {
+    return `Script: ${blueprintName}`;
   }
 
   /**
@@ -210,8 +237,18 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
+    const { origBlueprintName } = this.state;
     const text = this.jar.toString();
-    UR.RaiseMessage('NET:SCRIPT_UPDATE', { script: text });
+    const currentBlueprintName = TRANSPILER.ExtractBlueprintName(text);
+    UR.RaiseMessage('NET:SCRIPT_UPDATE', {
+      script: text,
+      origBlueprintName
+    });
+    this.setState({ origBlueprintName: currentBlueprintName });
+    // select the new script
+    if (origBlueprintName !== currentBlueprintName) {
+      UR.RaiseMessage('SELECT_SCRIPT', { scriptId: currentBlueprintName });
+    }
   }
 
   OnButtonClick(action) {
@@ -236,8 +273,31 @@ class PanelScript extends React.Component {
     );
   }
 
+  OnDelete() {
+    this.setState({
+      openConfirmDelete: true
+    });
+  }
+
+  OnDeleteConfirm(yesDelete) {
+    this.setState({
+      openConfirmDelete: false
+    });
+    if (yesDelete) {
+      const { origBlueprintName } = this.state;
+      const { script } = this.props;
+      // const blueprintName = this.ParseBlueprintName(script);
+      UR.RaiseMessage('SELECT_SCRIPT', { scriptId: undefined }); // go to selection screen
+      // UR.RaiseMessage('NET:BLUEPRINT_DELETE', { blueprintName });
+      UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
+        blueprintName: origBlueprintName
+      });
+    }
+  }
+
   render() {
-    const { title, lineHighlight } = this.state;
+    if (DBG) console.log(...PR('render'));
+    const { title, lineHighlight, openConfirmDelete } = this.state;
     const { id, script, onClick, classes } = this.props;
 
     // CodeJar Refresh
@@ -260,6 +320,9 @@ class PanelScript extends React.Component {
     // This forces codejar to update with the current text
     if (this.jar.updateCode) this.jar.updateCode(this.jar.toString());
 
+    const blueprintName = TRANSPILER.ExtractBlueprintName(script);
+    const updatedTitle = this.GetTitle(blueprintName);
+
     const BackBtn = (
       <button
         type="button"
@@ -268,6 +331,17 @@ class PanelScript extends React.Component {
         onClick={() => this.OnButtonClick('select')}
       >
         &lt; Select Script
+      </button>
+    );
+
+    const DeleteBtn = (
+      <button
+        type="button"
+        className={`${classes.colorData} ${classes.buttonLink}`}
+        style={{ alignSelf: 'flex-middle', fontSize: '12px' }}
+        onClick={this.OnDelete}
+      >
+        DELETE SCRIPT
       </button>
     );
 
@@ -291,18 +365,31 @@ class PanelScript extends React.Component {
         }}
       >
         {BackBtn}
+        {DeleteBtn}
         {SaveBtn}
+        <DialogConfirm
+          open={openConfirmDelete}
+          message={`Are you sure you want to delete the "${blueprintName}" script?`}
+          yesMessage={`Delete ${blueprintName}`}
+          onClose={this.OnDeleteConfirm}
+        />
       </div>
     );
 
     return (
       <PanelChrome
         id={id} // used by click handler to identify panel
-        title={title}
+        title={updatedTitle}
         onClick={onClick}
         bottombar={BottomBar}
       >
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            width: '100%'
+          }}
+        >
           <pre
             className="language-gemscript line-numbers match-braces"
             data-line={lineHighlight}

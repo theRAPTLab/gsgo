@@ -344,6 +344,9 @@ const useStylesHOC = theme => ({
     borderRightColor: BaseColorShift(0, 0.1),
     borderBottomColor: BaseColorShift(0, 0.1),
     backgroundColor: CLR_OBJECT_CLICKABLE
+  },
+  colorData: {
+    color: CLR_DATA
   }
 });
 
