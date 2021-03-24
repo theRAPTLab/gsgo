@@ -33,6 +33,7 @@ import PanelChrome from './PanelChrome';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PANELSCRIPT');
 const DBG = true;
+let needsSyntaxReHighlight = false;
 
 /// TEST SCRIPT ///////////////////////////////////////////////////////////////
 /// These demo scripts are for testing the highlighting scheme only.
@@ -161,6 +162,7 @@ class PanelScript extends React.Component {
       'inserted': types_regex
     });
 
+    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     this.SendText = this.SendText.bind(this);
@@ -169,6 +171,7 @@ class PanelScript extends React.Component {
     this.OnDelete = this.OnDelete.bind(this);
     this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
 
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
@@ -195,6 +198,10 @@ class PanelScript extends React.Component {
       'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
     );
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
+  }
+
+  HandleSimDataUpdate() {
+    needsSyntaxReHighlight = true;
   }
 
   UpdateBlueprintName(script) {
@@ -301,9 +308,11 @@ class PanelScript extends React.Component {
     const { id, script, onClick, classes } = this.props;
 
     // CodeJar Refresh
+    //
     // CodeJar does syntax highlighting when
     // a. componentDidMount
     // b. on keyboard input
+    //
     // State updates causes PanelScript to re-render.
     // Sending the script to the server causes state updates,
     // and PanelScript rerenders with the updated script
@@ -311,14 +320,25 @@ class PanelScript extends React.Component {
     // neither componentDidMount or a keyboard input was
     // triggered. So the updated script remains
     // un-highlighted.
-    // We could tell codejar to update with props.script,
+    //
+    // * We could tell codejar to update with props.script,
     // e.g. `this.jar.updateCode(script);`
     // but that doesn't reflect the current state of the code.
     // What ends up happening is the code reverts to the
     // original source code, losing any changes the user
     // may have made.
-    // This forces codejar to update with the current text
-    if (this.jar.updateCode) this.jar.updateCode(this.jar.toString());
+    //
+    // * We could force codejar to update with the current text
+    // e.g. `if (this.jar.updateCode) this.jar.updateCode(this.jar.toString());`
+    // but inspector updates cause PanelScript to re-render
+    // with every tick, and the updateCode call resets the input
+    // cursor
+    //
+    // * Update only after sending script
+    if (needsSyntaxReHighlight) {
+      this.jar.updateCode(this.jar.toString());
+      needsSyntaxReHighlight = false;
+    }
 
     const blueprintName = TRANSPILER.ExtractBlueprintName(script);
     const updatedTitle = this.GetTitle(blueprintName);
