@@ -82,7 +82,7 @@ class MissionControl extends React.Component {
       message: '',
       modelId: '',
       model: {},
-      instances: [],
+      inspectorInstances: [],
       runIsMinimized: true,
       scriptsNeedUpdate: false
     };
@@ -202,7 +202,7 @@ class MissionControl extends React.Component {
     this.setState(
       {
         model: {},
-        instances: [],
+        inspectorInstances: [],
         scriptsNeedUpdate: false
       },
       () => this.LoadModel()
@@ -229,7 +229,7 @@ class MissionControl extends React.Component {
       console.error('OnInspectorUpdate got bad data', data);
       return;
     }
-    this.setState({ instances: data.agents });
+    this.setState({ inspectorInstances: data.agents });
   }
 
   PostMessage(text) {
@@ -313,7 +313,7 @@ class MissionControl extends React.Component {
       message,
       modelId,
       model,
-      instances,
+      inspectorInstances,
       runIsMinimized,
       scriptsNeedUpdate
     } = this.state;
@@ -408,7 +408,7 @@ class MissionControl extends React.Component {
               model={model}
               needsUpdate={scriptsNeedUpdate}
             />
-            <PanelInstances id="instances" instances={instances} />
+            <PanelInstances id="instances" instances={inspectorInstances} />
           </div>
         </div>
         <div

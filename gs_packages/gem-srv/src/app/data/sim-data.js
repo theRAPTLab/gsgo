@@ -222,7 +222,9 @@ class SimData {
     // Did the blueprint name change?
     if (data.origBlueprintName !== blueprintName) {
       this.BlueprintDelete(data.origBlueprintName);
+      // NOTE sim agents and instances are added/removed in sim-agents.AllAgentsProgramUpdate
     }
+
     // Update the new blueprint
     const blueprint = {
       id: blueprintName,

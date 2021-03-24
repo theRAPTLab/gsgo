@@ -104,7 +104,7 @@ onEvent Tick [[
     },
     {
       id: 'Lightbeam',
-      label: 'LightBeam',
+      label: 'Lightbeam',
       script: `# BLUEPRINT Lightbeam
 # PROGRAM DEFINE
 useFeature Costume
@@ -119,7 +119,7 @@ prop agent.y setTo -300
     {
       id: 'Poop',
       label: 'Poop',
-      script: `# BLUEPRINT POOP
+      script: `# BLUEPRINT Poop
 # PROGRAM DEFINE
 useFeature Costume
 // featCall Costume setCostume 'poop.json' 0
