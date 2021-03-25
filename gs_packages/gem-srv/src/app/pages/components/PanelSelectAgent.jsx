@@ -75,7 +75,7 @@ class PanelSelectAgent extends React.Component {
               className={classes.button}
               onClick={this.OnAddScript}
             >
-              Add Character Type
+              ADD CHARACTER TYPE
             </button>
           </div>
         </div>
