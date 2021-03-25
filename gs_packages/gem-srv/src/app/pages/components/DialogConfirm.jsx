@@ -10,13 +10,20 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 function DialogConfirm(props) {
-  const { open, message, yesMessage, onClose, classes } = props;
+  const {
+    open,
+    message,
+    noMessage = 'Cancel',
+    yesMessage,
+    onClose,
+    classes
+  } = props;
   return (
     <Dialog onClose={onClose} open={open}>
       <DialogTitle>{message}</DialogTitle>
       <DialogActions>
         <Button type="button" onClick={() => onClose(false)}>
-          Cancel
+          {noMessage}
         </Button>
         <Button type="button" onClick={() => onClose(true)}>
           {yesMessage}
