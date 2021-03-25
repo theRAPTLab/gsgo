@@ -13,8 +13,8 @@ function DialogConfirm(props) {
   const {
     open,
     message,
-    noMessage = 'Cancel',
     yesMessage,
+    noMessage = 'Cancel',
     onClose,
     classes
   } = props;
