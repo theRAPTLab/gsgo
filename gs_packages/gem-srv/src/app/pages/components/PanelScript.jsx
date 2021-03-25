@@ -337,6 +337,7 @@ class PanelScript extends React.Component {
     const {
       title,
       lineHighlight,
+      isDirty,
       openConfirmDelete,
       openConfirmUnload
     } = this.state;
@@ -406,6 +407,7 @@ class PanelScript extends React.Component {
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
         onClick={() => this.SendText()}
+        disabled={!isDirty}
       >
         SAVE TO SERVER
       </button>
