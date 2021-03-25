@@ -481,8 +481,11 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
    */
   InstanceDeselect(data) {
     const agent = GetAgentById(data.agentId);
-    agent.setSelected(false);
-    UR.RaiseMessage('AGENTS_RENDER');
+    if (agent) {
+      // agent may have been deleted, so make sure it still exists
+      agent.setSelected(false);
+      UR.RaiseMessage('AGENTS_RENDER');
+    }
   }
   /**
    * Turns hover on
@@ -490,8 +493,11 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
    */
   InstanceHoverOver(data) {
     const agent = GetAgentById(data.agentId);
-    agent.setHovered(true);
-    UR.RaiseMessage('AGENTS_RENDER');
+    if (agent) {
+      // agent may have been deleted, so make sure it still exists
+      agent.setHovered(true);
+      UR.RaiseMessage('AGENTS_RENDER');
+    }
   }
   /**
    * Turns hover off
@@ -499,8 +505,11 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
    */
   InstanceHoverOut(data) {
     const agent = GetAgentById(data.agentId);
-    agent.setHovered(false);
-    UR.RaiseMessage('AGENTS_RENDER');
+    if (agent) {
+      // agent may have been deleted, so make sure it still exists
+      agent.setHovered(false);
+      UR.RaiseMessage('AGENTS_RENDER');
+    }
   }
 }
 
