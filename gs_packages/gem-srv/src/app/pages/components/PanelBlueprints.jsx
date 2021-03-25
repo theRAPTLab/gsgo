@@ -84,7 +84,8 @@ class PanelBlueprints extends React.Component {
                 <div
                   style={{
                     flex: '0 1 auto',
-                    height: '20px'
+                    height: '20px',
+                    overflow: 'hide'
                   }}
                   className={classes.instanceListItem}
                   onClick={() => this.OnBlueprintClick(a.id)}
@@ -95,7 +96,7 @@ class PanelBlueprints extends React.Component {
                   ) : (
                     <EditIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
                   )}
-                  {a.label}
+                  &nbsp;{a.label}
                 </div>
               ))}
             </div>
