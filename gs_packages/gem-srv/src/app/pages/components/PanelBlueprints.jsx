@@ -51,7 +51,9 @@ class PanelBlueprints extends React.Component {
   render() {
     const { title } = this.state;
     const { modelId, id, isActive, agents, enableAdd, classes } = this.props;
-    const instructions = enableAdd ? 'Click to add a character' : '';
+    const instructions = enableAdd
+      ? 'Click to add a character'
+      : 'Click to edit a character type script in a new window';
     const onPanelClick = () => {
       // To be implemented
       console.log('Show instance');

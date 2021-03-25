@@ -232,7 +232,8 @@ const useStylesHOC = theme => ({
   },
   instructions: {
     color: CLR_LABEL,
-    fontStyle: 'italic'
+    fontStyle: 'italic',
+    padding: '3px'
   },
   instanceListItem: {
     padding: '5px',
