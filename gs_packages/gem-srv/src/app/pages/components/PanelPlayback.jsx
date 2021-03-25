@@ -69,7 +69,7 @@ class PanelPlayback extends React.Component {
               <>
                 <button
                   type="button"
-                  className={classes.button}
+                  className={needsUpdate ? classes.buttonHi : classes.button}
                   onClick={this.OnResetClick}
                 >
                   RESET STAGE

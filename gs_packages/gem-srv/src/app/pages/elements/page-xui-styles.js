@@ -56,8 +56,8 @@ const CLR_BORDER_BACK = BaseColorShift(128, 0.15); // 'rgba(128,256,128,0.15)'; 
 const CLR_BORDER = BaseColorShift(128, 0.3); // 'rgba(128,256,128,0.3)';
 const CLR_BORDER_ACTIVE = BaseColorShift(0, 0.6); // 'rgba(0,256,0,0.6)';
 
-const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1);
-const CLR_HI2 = RGBA(CLR_HI_R, CLR_HI_R, CLR_HI_B, 0.8);
+const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1); // red
+const CLR_HI2 = RGBA(CLR_HI_R, CLR_HI_R, CLR_HI_B, 0.8); // yellow
 
 const FONT_FAMILY = 'Andale Mono, monospace';
 
@@ -291,6 +291,14 @@ const useStylesHOC = theme => ({
   },
   button: {
     ...BUTTON
+  },
+  buttonHi: {
+    ...BUTTON,
+    color: CLR_HI,
+    borderTopColor: CLR_HI2,
+    borderLeftColor: CLR_HI2,
+    borderRightColor: CLR_HI2,
+    borderBottomColor: CLR_HI2
   },
   buttonSmall: {
     ...BUTTON,
