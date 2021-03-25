@@ -9,7 +9,7 @@ class PanelSelectAgent extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Agent'
+      title: 'Select Character Type'
     };
     this.onClick = this.onClick.bind(this);
     this.OnScriptClick = this.OnScriptClick.bind(this);

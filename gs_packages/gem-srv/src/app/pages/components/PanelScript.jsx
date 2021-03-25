@@ -385,7 +385,7 @@ class PanelScript extends React.Component {
         style={{ alignSelf: 'flex-end' }}
         onClick={() => this.OnSelectScriptClick('select')}
       >
-        &lt; Select Script
+        &lt; SELECT SCRIPT
       </button>
     );
 
