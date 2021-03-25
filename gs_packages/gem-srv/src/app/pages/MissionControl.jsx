@@ -172,6 +172,7 @@ class MissionControl extends React.Component {
     );
   }
   HandleSimDataUpdate(data) {
+    if (DBG) console.error('HandleSimDataUpdate', data);
     if (SIM.IsRunning()) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
@@ -190,6 +191,8 @@ class MissionControl extends React.Component {
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
     this.PostMessage(firstline);
+    // Indicate script has changed
+    this.setState({ scriptsNeedUpdate: true });
   }
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');

@@ -12,8 +12,7 @@ class PanelPlayback extends React.Component {
     super();
     this.state = {
       title: 'Control',
-      isRunning: false,
-      needsUpdate: false
+      isRunning: false
     };
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
