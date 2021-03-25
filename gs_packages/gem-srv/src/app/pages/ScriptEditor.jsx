@@ -315,12 +315,13 @@ class ScriptEditor extends React.Component {
             <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <Link
-            to={{ pathname: `/app/model?model=${modelId}` }}
+          <button
+            type="button"
+            onClick={() => window.close()}
             className={classes.navButton}
           >
-            Back to PROJECT
-          </Link>
+            CLOSE
+          </button>
         </div>
         <div id="console-left" className={classes.left}>
           {panelConfiguration === 'select' && (
