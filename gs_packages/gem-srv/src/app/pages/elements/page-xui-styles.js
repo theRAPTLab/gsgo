@@ -128,11 +128,13 @@ const useStylesHOC = theme => ({
   top: {
     gridColumnEnd: 'span 3',
     color: 'white',
-    backgroundColor: BG_TITLE
+    backgroundColor: BG_TITLE,
+    overflow: 'hidden'
   },
   right: {
     gridColumnEnd: 'span 1',
-    backgroundColor: BG_COLOR
+    backgroundColor: BG_COLOR,
+    overflow: 'hidden'
   },
   left: {
     gridColumnEnd: 'span 1',
@@ -142,7 +144,8 @@ const useStylesHOC = theme => ({
   },
   bottom: {
     gridColumnEnd: 'span 3',
-    backgroundColor: BG_COLOR
+    backgroundColor: BG_COLOR,
+    overflow: 'hidden'
   },
   list: {
     marginLeft: 0,
@@ -162,8 +165,7 @@ const useStylesHOC = theme => ({
   panel: {
     color: CLR_DATA,
     border: `1px solid ${CLR_BORDER_BACK}`,
-    background: `linear-gradient(${CLR_PANEL_BG}, ${CLR_PANEL_BG_END})`,
-    padding: '3px'
+    background: `linear-gradient(${CLR_PANEL_BG}, ${CLR_PANEL_BG_END})`
   },
   panelTitle: {
     color: CLR_ACTIVE,

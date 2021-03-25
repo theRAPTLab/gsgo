@@ -416,7 +416,7 @@ class MissionControl extends React.Component {
         </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
           <PanelMessage message={message} />

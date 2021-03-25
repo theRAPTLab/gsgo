@@ -59,6 +59,9 @@ class Viewer extends React.Component {
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
 
+    // Instance Interaction Handlers
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+
     // System Hooks
     UR.HookPhase('SIM/STAGED', () => {
       // **************************************************
@@ -83,6 +86,10 @@ class Viewer extends React.Component {
   componentWillUnmount() {
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+  }
+
+  HandleSimInstanceHoverOver(data) {
+    console.error('hover!');
   }
 
   HandleSimDataUpdate(data) {
@@ -169,7 +176,7 @@ class Viewer extends React.Component {
         </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
           console-bottom

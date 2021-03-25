@@ -362,11 +362,23 @@ class ScriptEditor extends React.Component {
         </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <div style={{ display: 'flex' }}>
-            <PanelMessage message={message} isError={messageIsError} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 3fr',
+              columnGap: '5px',
+              height: '100%',
+              overflow: 'hidden'
+            }}
+          >
+            <PanelMessage
+              title="Log"
+              message={message}
+              isError={messageIsError}
+            />
             <PanelInstances
               id="instances"
               instances={instances}
