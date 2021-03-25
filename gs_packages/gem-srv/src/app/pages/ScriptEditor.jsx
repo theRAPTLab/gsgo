@@ -71,10 +71,13 @@ class ScriptEditor extends React.Component {
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectScript = this.OnSelectScript.bind(this);
+    this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
+    this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
@@ -127,6 +130,7 @@ class ScriptEditor extends React.Component {
   CleanupComponents() {
     this.UnRegisterInstances();
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.UnandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
@@ -269,6 +273,19 @@ class ScriptEditor extends React.Component {
       script,
       scriptId
     });
+  }
+
+  HandleScriptUpdate(data) {
+    const firstline = data.script.match(/.*/)[0];
+    this.PostSendMessage(firstline);
+  }
+
+  PostSendMessage(text) {
+    this.setState(state => ({
+      message: `${
+        state.message
+      }${new Date().toLocaleTimeString()} :: Sent script ${text}\n`
+    }));
   }
 
   OnDebugMessage(data) {
