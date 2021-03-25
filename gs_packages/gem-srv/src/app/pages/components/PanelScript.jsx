@@ -148,7 +148,10 @@ class PanelScript extends React.Component {
       title: 'Script',
       lineHighlight: undefined,
       origBlueprintName: '',
-      openConfirmDelete: false
+      openConfirmDelete: false,
+      isDirty: false,
+      openConfirmUnload: false,
+      confirmUnloadCallback: {} // fn called when user confirms unload
       // script: demoscript // Replace the prop `script` with this to test scripts defined in this file
     };
     // codejar
@@ -166,10 +169,11 @@ class PanelScript extends React.Component {
     this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     this.SendText = this.SendText.bind(this);
-    this.OnButtonClick = this.OnButtonClick.bind(this);
+    this.OnSelectScriptClick = this.OnSelectScriptClick.bind(this);
     this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
     this.OnDelete = this.OnDelete.bind(this);
     this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
+    this.OnUnloadConfirm = this.OnUnloadConfirm.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
@@ -185,12 +189,22 @@ class PanelScript extends React.Component {
     this.jar = CodeJar(editor, highlight);
     this.jar.onUpdate(code => {
       this.text = code;
+      this.setState({ isDirty: true });
     });
     // Read original blueprint name
     // We need to save this in case the user changes the name
     // If the name is changed we have to clean up the old instances
     const { script } = this.props;
     this.UpdateBlueprintName(script);
+
+    window.addEventListener('beforeunload', e => {
+      const { isDirty } = this.state;
+      if (isDirty) {
+        // Show "Leave site?" dialog
+        e.preventDefault();
+        e.returnValue = ''; // required by Chrome
+      }
+    });
   }
 
   componentWillUnmount() {
@@ -251,20 +265,27 @@ class PanelScript extends React.Component {
       script: text,
       origBlueprintName
     });
-    this.setState({ origBlueprintName: currentBlueprintName });
+    this.setState({ origBlueprintName: currentBlueprintName, isDirty: false });
     // select the new script
     if (origBlueprintName !== currentBlueprintName) {
       UR.RaiseMessage('SELECT_SCRIPT', { scriptId: currentBlueprintName });
     }
   }
 
-  OnButtonClick(action) {
-    // This should save to URSYS
-    // HACK now to go back to select screen
+  OnSelectScriptClick(action) {
+    // Go back to select screen
     // This calls the ScriptEditor onClick handler
     // to reconfigure the panels
+    const { isDirty } = this.state;
     const { onClick } = this.props;
-    onClick(action);
+    if (isDirty) {
+      this.setState({
+        openConfirmUnload: true,
+        confirmUnloadCallback: () => onClick(action)
+      });
+    } else {
+      onClick(action);
+    }
   }
 
   HighlightDebugLine(data) {
@@ -292,19 +313,33 @@ class PanelScript extends React.Component {
     });
     if (yesDelete) {
       const { origBlueprintName } = this.state;
-      const { script } = this.props;
-      // const blueprintName = this.ParseBlueprintName(script);
       UR.RaiseMessage('SELECT_SCRIPT', { scriptId: undefined }); // go to selection screen
-      // UR.RaiseMessage('NET:BLUEPRINT_DELETE', { blueprintName });
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
         blueprintName: origBlueprintName
       });
     }
   }
 
+  OnUnloadConfirm(yesLeave) {
+    const { unloadEvent, confirmUnloadCallback } = this.state;
+    console.log('unlaodevent is', unloadEvent);
+    this.setState({
+      openConfirmUnload: false
+    });
+    if (yesLeave) {
+      console.log('trying to leave');
+      confirmUnloadCallback();
+    }
+  }
+
   render() {
     if (DBG) console.log(...PR('render'));
-    const { title, lineHighlight, openConfirmDelete } = this.state;
+    const {
+      title,
+      lineHighlight,
+      openConfirmDelete,
+      openConfirmUnload
+    } = this.state;
     const { id, script, onClick, classes } = this.props;
 
     // CodeJar Refresh
@@ -336,7 +371,7 @@ class PanelScript extends React.Component {
     //
     // * Update only after sending script
     if (needsSyntaxReHighlight) {
-      this.jar.updateCode(this.jar.toString());
+      if (this.jar.updateCode) this.jar.updateCode(this.jar.toString());
       needsSyntaxReHighlight = false;
     }
 
@@ -348,7 +383,7 @@ class PanelScript extends React.Component {
         type="button"
         className={classes.button}
         style={{ alignSelf: 'flex-end' }}
-        onClick={() => this.OnButtonClick('select')}
+        onClick={() => this.OnSelectScriptClick('select')}
       >
         &lt; Select Script
       </button>
@@ -376,6 +411,25 @@ class PanelScript extends React.Component {
       </button>
     );
 
+    const DialogConfirmDelete = (
+      <DialogConfirm
+        open={openConfirmDelete}
+        message={`Are you sure you want to delete the "${blueprintName}" script?`}
+        yesMessage={`Delete ${blueprintName}`}
+        onClose={this.OnDeleteConfirm}
+      />
+    );
+
+    const DialogConfirmUnload = (
+      <DialogConfirm
+        open={openConfirmUnload}
+        message={`Are you sure you want to leave without saving the "${blueprintName}" script?`}
+        yesMessage={`Leave ${blueprintName} without saving`}
+        noMessage="Back to Edit"
+        onClose={this.OnUnloadConfirm}
+      />
+    );
+
     const BottomBar = (
       <div
         style={{
@@ -387,12 +441,8 @@ class PanelScript extends React.Component {
         {BackBtn}
         {DeleteBtn}
         {SaveBtn}
-        <DialogConfirm
-          open={openConfirmDelete}
-          message={`Are you sure you want to delete the "${blueprintName}" script?`}
-          yesMessage={`Delete ${blueprintName}`}
-          onClose={this.OnDeleteConfirm}
-        />
+        {DialogConfirmDelete}
+        {DialogConfirmUnload}
       </div>
     );
 
