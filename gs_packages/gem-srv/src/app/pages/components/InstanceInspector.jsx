@@ -11,8 +11,8 @@ const SIZE_MAX = 'max'; // all
 
 /**
  * InstanceInspector can display two types of data.
- *  * GAgent -- e.g. blueprint name is instance.meta.name
- *  * Instance Spec -- e.g. blueprint name is instance.name
+ *  * GAgent -- e.g. instance name is instance.meta.name
+ *  * Instance Spec -- e.g. instance name is instance.name
  *
  * We support both because
  * a) before the simulation is run, we only have the instance spec
@@ -180,6 +180,7 @@ class InstanceInspector extends React.Component {
     const { title, size, color, colorActive, bgcolor, isHovered } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
+    const blueprintName = instance.blueprint.name;
     const data = this.GetInstanceProperties();
     return (
       <div
@@ -219,6 +220,22 @@ class InstanceInspector extends React.Component {
                 <div className={classes.inspectorData}>{property.value}</div>
               </div>
             ))}
+          {data.length > 0 && (
+            <div
+              style={{
+                display: 'inline-block',
+                paddingRight: '1em'
+              }}
+            >
+              <div
+                className={classes.inspectorLabel}
+                style={{ fontsize: '10px' }}
+              >
+                Character Type:
+              </div>
+              <div className={classes.inspectorData}>{blueprintName}</div>
+            </div>
+          )}
         </div>
       </div>
     );

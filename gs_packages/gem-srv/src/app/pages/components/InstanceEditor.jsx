@@ -413,7 +413,23 @@ class InstanceEditor extends React.Component {
             onSave={this.OnNameSave}
           />
           <div>{jsx}</div>
-          {isEditable && !isAddingProperty && (
+          {isEditable && (
+            <div
+              className={classes.instanceEditorLineItem}
+              style={{ margin: '0.5em 0' }}
+            >
+              <div
+                className={classes.instanceEditorLabel}
+                style={{ fontSize: '10px' }}
+              >
+                Character Type:
+              </div>
+              <div className={classes.instanceEditorData}>
+                {instance.blueprint}
+              </div>
+            </div>
+          )}
+          {isEditable && (
             <>
               <br />
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>

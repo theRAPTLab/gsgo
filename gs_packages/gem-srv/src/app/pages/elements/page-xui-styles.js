@@ -260,8 +260,13 @@ const useStylesHOC = theme => ({
   },
   instanceSpecSelected: {
     border: '1px solid #ffff00',
-    width: '180px',
+    width: '200px',
     padding: '10px 5px'
+  },
+  instanceEditorLineItem: {
+    // parent group
+    display: 'grid',
+    gridTemplateColumns: '80px auto 15px'
   },
   instanceEditorLine: {
     display: 'inline-block'
