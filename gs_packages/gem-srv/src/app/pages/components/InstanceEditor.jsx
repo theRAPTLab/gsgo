@@ -411,14 +411,6 @@ class InstanceEditor extends React.Component {
         onPointerLeave={this.OnHoverOut}
       >
         <div>
-          <InputField
-            propName="Name"
-            value={instanceName}
-            type="string"
-            isEditable={isEditable}
-            onSave={this.OnNameSave}
-          />
-          <div>{jsx}</div>
           {isEditable && (
             <div
               className={classes.instanceEditorLineItem}
@@ -435,6 +427,15 @@ class InstanceEditor extends React.Component {
               </div>
             </div>
           )}
+          <InputField
+            propName="Name"
+            value={instanceName}
+            type="string"
+            isEditable={isEditable}
+            onSave={this.OnNameSave}
+          />
+          <div>{jsx}</div>
+          <br />
           {isEditable && (
             <>
               {isAddingProperty && isEditable && propMenuJsx}

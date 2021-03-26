@@ -207,19 +207,6 @@ class InstanceInspector extends React.Component {
             paddingLeft: '0.5em'
           }}
         >
-          {data &&
-            data.map(property => (
-              <div
-                style={{
-                  display: 'inline-block',
-                  paddingRight: '1em'
-                }}
-                key={property.label}
-              >
-                <div className={classes.inspectorLabel}>{property.label}:</div>
-                <div className={classes.inspectorData}>{property.value}</div>
-              </div>
-            ))}
           {data.length > 0 && (
             <div
               style={{
@@ -236,6 +223,19 @@ class InstanceInspector extends React.Component {
               <div className={classes.inspectorData}>{blueprintName}</div>
             </div>
           )}
+          {data &&
+            data.map(property => (
+              <div
+                style={{
+                  display: 'inline-block',
+                  paddingRight: '1em'
+                }}
+                key={property.label}
+              >
+                <div className={classes.inspectorLabel}>{property.label}:</div>
+                <div className={classes.inspectorData}>{property.value}</div>
+              </div>
+            ))}
         </div>
       </div>
     );
