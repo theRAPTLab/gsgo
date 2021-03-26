@@ -178,7 +178,7 @@ class InstanceEditor extends React.Component {
     // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
     // Assume we can get a list of properties from SimData
     // properties = [...{name, type, defaultvalue, isFeatProp }]
-    let properties = SimData.GetBlueprintProperties(modelId, blueprintName);
+    let properties = SimData.GetBlueprintProperties(blueprintName, modelId);
 
     // Remove properties that have already been set
     // 1. Get the list or properties
@@ -187,6 +187,7 @@ class InstanceEditor extends React.Component {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
       }
+      return undefined;
     });
     // 2. Remove already set properties
     properties = properties.filter(p => !initProperties.includes(p.name));

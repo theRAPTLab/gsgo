@@ -162,11 +162,11 @@ class SimData {
    * that have been defined by the blueprint.
    * Used to populate property menus when selecting properties to show
    * in InstanceInspectors
-   * @param {string} modelId
    * @param {string} blueprintName
-   * @return {array}
+   * @param {string} [modelId=currentModelId]
+   * @return {array} { name, type, defaultValue, isFeatProp }
    */
-  GetBlueprintProperties(modelId, blueprintName) {
+  GetBlueprintProperties(blueprintName, modelId = this.currentModelId) {
     // HACK
     // 1. Start with built in properties
     let properties = [
