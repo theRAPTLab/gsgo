@@ -14,6 +14,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import DeleteIcon from '@material-ui/icons/DeleteForever';
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword-collapsible';
 import { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
@@ -119,7 +120,17 @@ class PropElement extends React.Component<MyProps, MyState> {
     if (isEditable) {
       // Show Form
       jsx = (
-        <div>
+        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+          <div className={classes.instanceEditorLabel}>{propName}</div>
+          <input
+            onChange={this.onChange}
+            onKeyDown={this.onKeyDown}
+            onBlur={this.onBlur}
+            onClick={this.onClick}
+            type={type}
+            value={args[0]}
+            className={classes.instanceEditorField}
+          />
           {isDeletable && (
             <div className={classes.instanceEditorLine}>
               <button
@@ -127,22 +138,10 @@ class PropElement extends React.Component<MyProps, MyState> {
                 className={classes.buttonMini}
                 onClick={this.onDeleteLine}
               >
-                x
+                <DeleteIcon fontSize="small" />
               </button>
             </div>
           )}
-          <div className={classes.instanceEditorLabel}>{propName}</div>
-          <div className={classes.instanceEditorLine}>
-            <input
-              onChange={this.onChange}
-              onKeyDown={this.onKeyDown}
-              onBlur={this.onBlur}
-              onClick={this.onClick}
-              type={type}
-              value={args[0]}
-              className={classes.instanceEditorField}
-            />
-          </div>
         </div>
       );
     } else {
