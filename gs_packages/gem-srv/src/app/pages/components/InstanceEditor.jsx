@@ -184,7 +184,7 @@ class InstanceEditor extends React.Component {
     // 1. Get the list or properties
     const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
     const initProperties = scriptUnits.map(unit => {
-      if (unit[0].token === 'prop' || unit[0].token === 'featProp') {
+      if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
       }
     });

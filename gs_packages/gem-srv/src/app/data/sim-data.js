@@ -365,7 +365,10 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     );
     const instance = model.instances[instanceIndex];
     instance.name = data.instanceName || instance.name;
-    instance.init = data.instanceInit || instance.init;
+    instance.init =
+      data.instanceInit !== undefined // data.instanceInit might be ''
+        ? data.instanceInit
+        : instance.init;
     model.instances[instanceIndex] = instance;
     this.SendSimDataModel(data.modelId);
   }
