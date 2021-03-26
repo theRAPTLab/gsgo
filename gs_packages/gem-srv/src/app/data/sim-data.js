@@ -177,6 +177,7 @@ class SimData {
     //    by walking down script and looking for `addProp`
     const model = this.GetSimDataModel(modelId);
     const blueprint = model.scripts.find(s => s.id === blueprintName);
+    if (!blueprint) return []; // blueprint was probably deleted
     const script = blueprint.script;
     const scriptUnits = TRANSPILER.ScriptifyText(script);
     scriptUnits.forEach(unit => {
