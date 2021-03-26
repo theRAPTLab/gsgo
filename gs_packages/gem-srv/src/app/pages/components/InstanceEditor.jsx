@@ -16,6 +16,7 @@ props.instance = instance specification: {name, blueprint, init}
 
 import React from 'react';
 import clsx from 'clsx';
+import DeleteIcon from '@material-ui/icons/Delete';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
@@ -197,10 +198,10 @@ class InstanceEditor extends React.Component {
     e.preventDefault(); // prevent click from deselecting instance
     e.stopPropagation();
     const addableProperties = this.GetAddableProperties();
-    this.setState({
+    this.setState(state => ({
       addableProperties,
-      isAddingProperty: true
-    });
+      isAddingProperty: !state.isAddingProperty
+    }));
   }
 
   OnEnableDeleteProperty(e) {
@@ -322,7 +323,12 @@ class InstanceEditor extends React.Component {
   HandleDeselect(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
-      this.setState({ isEditable: false, isSelected: false, isHovered: false });
+      this.setState({
+        isEditable: false,
+        isSelected: false,
+        isHovered: false,
+        isAddingProperty: false
+      });
     }
   }
   OnNameSave(data) {
@@ -431,17 +437,8 @@ class InstanceEditor extends React.Component {
           )}
           {isEditable && (
             <>
-              <br />
+              {isAddingProperty && isEditable && propMenuJsx}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <button
-                  onClick={this.OnEnableDeleteProperty}
-                  type="button"
-                  className={classes.buttonSmall}
-                  title="Delete Property"
-                  style={{}}
-                >
-                  -
-                </button>
                 <button
                   onClick={this.OnAddProperty}
                   type="button"
@@ -449,12 +446,22 @@ class InstanceEditor extends React.Component {
                   title="Add Property"
                   disabled={disableAddProperties}
                 >
-                  SHOW PROPERTY
+                  {isAddingProperty ? 'HIDE PROPERTY MENU' : 'SHOW PROPERTY'}
                 </button>
+                {!isAddingProperty && (
+                  <button
+                    onClick={this.OnEnableDeleteProperty}
+                    type="button"
+                    className={classes.buttonSmall}
+                    title="Delete Property"
+                    style={{}}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </button>
+                )}
               </div>
             </>
           )}
-          {isAddingProperty && propMenuJsx}
           {isEditable && (
             <div style={{ textAlign: 'center', marginTop: '1em' }}>
               <button

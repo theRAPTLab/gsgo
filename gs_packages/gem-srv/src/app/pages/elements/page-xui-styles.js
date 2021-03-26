@@ -278,8 +278,11 @@ const useStylesHOC = theme => ({
     textAlign: 'right',
     paddingRight: '0.25em'
   },
+  instanceEditorData: {
+    color: CLR_ACTIVE
+  },
   instanceEditorField: {
-    width: '5em'
+    width: '100%'
   },
   navButton: {
     fontSize: '14px',
@@ -318,12 +321,12 @@ const useStylesHOC = theme => ({
   buttonMini: {
     ...BUTTON,
     fontSize: '10px',
-    padding: '2px',
-    margin: '2px',
+    padding: '0',
+    margin: '0',
     minHeight: '15px',
     minWidth: '15px',
     borderRadius: '3px',
-    color: CLR_HI2
+    color: CLR_DATA
   },
   buttonLink: {
     // Text only button
