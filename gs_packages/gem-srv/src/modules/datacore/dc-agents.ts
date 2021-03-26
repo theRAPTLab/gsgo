@@ -32,6 +32,14 @@ export function DefineInstance(instanceDef: TInstance) {
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function UpdateInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0)
+    console.error(...PR(`UpdateInstance couldn't find instance ${id}`));
+  bpi[index] = instanceDef;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteInstance(instanceDef: TInstance) {
   const { blueprint, id } = instanceDef;

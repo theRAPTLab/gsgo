@@ -15,6 +15,7 @@ import {
   GetAgentByName,
   DeleteAllAgents,
   DefineInstance,
+  UpdateInstance,
   DeleteInstance,
   DeleteAllInstances,
   DeleteBlueprintInstances,
@@ -22,6 +23,7 @@ import {
   GetInstancesType
 } from 'modules/datacore/dc-agents';
 import {
+  GetBlueprint,
   GetAllBlueprints,
   DeleteBlueprint
 } from 'modules/datacore/dc-script-engine';
@@ -176,6 +178,7 @@ export function AllAgentsProgramUpdate(data) {
       );
     // Is the instance already defined?
     const instanceDef = instanceDefs.find(i => i.id === spec.id);
+
     if (!instanceDef) {
       // Not defined yet, so define a new instance
       DefineInstance({
@@ -186,9 +189,10 @@ export function AllAgentsProgramUpdate(data) {
       });
     } else {
       // Already defined, update the init script
-      // Blueprint shouldn't change, it'd just be a new instance?
+      // Blueprint doesn't need updating, if blueprint changes, define a new instance
       instanceDef.name = spec.name;
       instanceDef.init = spec.init;
+      UpdateInstance(instanceDef);
     }
     instancesSpecIds.push(spec.id);
   });
@@ -201,8 +205,7 @@ export function AllAgentsProgramUpdate(data) {
   });
 
   // IV. Update or Make an agent for each updated instance def
-  // updatedInstanceDefs.forEach(instanceDef => {
-  instancesSpec.forEach(instanceDef => {
+  instanceDefs.forEach(instanceDef => {
     const init = TRANSPILER.CompileText(instanceDef.init);
     let agent = GetAgentById(instanceDef.id);
     if (!agent) agent = TRANSPILER.MakeAgent(instanceDef);
