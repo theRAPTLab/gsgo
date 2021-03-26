@@ -80,7 +80,7 @@ class ScriptEditor extends React.Component {
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     // REVIEW
     // Sometimes SIM/READY is too early.  The request for model
@@ -133,7 +133,7 @@ class ScriptEditor extends React.Component {
     UR.UnandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
@@ -179,12 +179,12 @@ class ScriptEditor extends React.Component {
   }
 
   /**
-   * Handler for `NET:INSTANCES_UPDATED`
-   * NET:INSTANCES_UPDATED is sent by sim-agents.AgentsProgram after instances are created.
+   * Handler for `NET:INSTANCES_UPDATE`
+   * NET:INSTANCES_UPDATE is sent by sim-agents.AgentsProgram after instances are created.
    * We use the list of instances created for this blueprint to register
    * the instances for inspector monitoring.
    * This is also called when other ScriptEditors on the network submit
-   * scripts and trigger NET:INSTANCES_UPDATED.  In that situation,
+   * scripts and trigger NET:INSTANCES_UPDATE.  In that situation,
    * we only update if the instance isn't already being monitored.
    * @param {Object} data { instances: [...instances]}
    *                       where 'instances' are instanceSpecs: {name, blueprint, init}

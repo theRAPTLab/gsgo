@@ -131,7 +131,7 @@ export function AllAgentsProgramAdd(data) {
 
   // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
+  UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
 }
 
 /** placeholder function
@@ -211,7 +211,7 @@ export function AllAgentsProgramUpdate(data) {
 
   // V. Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances: instanceDefs });
+  UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances: instanceDefs });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -261,7 +261,7 @@ export function AgentsProgram(data) {
 
   // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
+  UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -305,7 +305,7 @@ export function AgentProgram(blueprint) {
 
   // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
-  UR.RaiseMessage('NET:INSTANCES_UPDATED', { instances });
+  UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
