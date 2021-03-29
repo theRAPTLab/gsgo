@@ -200,7 +200,7 @@ class MissionControl extends React.Component {
    */
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
-    this.PostMessage(firstline);
+    this.PostMessage(`Received script ${firstline}`);
     // Indicate script has changed
     this.setState({ scriptsNeedUpdate: true });
   }
@@ -212,6 +212,7 @@ class MissionControl extends React.Component {
     setTimeout(() => this.forceUpdate(), 250);
   }
   DoSimReset() {
+    this.PostMessage(`Simulation Reset!`);
     this.setState(
       {
         model: {},
@@ -247,9 +248,7 @@ class MissionControl extends React.Component {
 
   PostMessage(text) {
     this.setState(state => ({
-      message: `${
-        state.message
-      }${new Date().toLocaleTimeString()} :: Received script ${text}\n`
+      message: `${state.message}${new Date().toLocaleTimeString()} :: ${text}\n`
     }));
   }
 
