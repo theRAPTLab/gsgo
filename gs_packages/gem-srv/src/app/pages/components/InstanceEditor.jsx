@@ -35,7 +35,6 @@ class InstanceEditor extends React.Component {
       isEditable: false,
       isHovered: false,
       isSelected: false,
-      addableProperties: [],
       isAddingProperty: false,
       isDeletingProperty: false
     };
@@ -198,9 +197,7 @@ class InstanceEditor extends React.Component {
   OnAddProperty(e) {
     e.preventDefault(); // prevent click from deselecting instance
     e.stopPropagation();
-    const addableProperties = this.GetAddableProperties();
     this.setState(state => ({
-      addableProperties,
       isAddingProperty: !state.isAddingProperty
     }));
   }
@@ -225,7 +222,8 @@ class InstanceEditor extends React.Component {
     const selectedProp = e.target.value;
     if (selectedProp === '') return; // selected the help instructions
 
-    const { modelId, addableProperties } = this.state;
+    const { modelId } = this.state;
+    const addableProperties = this.GetAddableProperties();
     const { instance } = this.props;
     const property = addableProperties.find(p => p.name === selectedProp);
     const keyword = property.isFeatProp ? 'featProp' : 'prop';
@@ -369,12 +367,13 @@ class InstanceEditor extends React.Component {
       isEditable,
       isHovered,
       isSelected,
-      addableProperties,
       isAddingProperty,
       isDeletingProperty
     } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
+
+    const addableProperties = this.GetAddableProperties();
 
     let jsx = '';
     if (instance) {

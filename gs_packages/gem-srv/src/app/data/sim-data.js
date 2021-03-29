@@ -167,30 +167,11 @@ class SimData {
    * @return {array} { name, type, defaultValue, isFeatProp }
    */
   GetBlueprintProperties(blueprintName, modelId = this.currentModelId) {
-    // HACK
-    // 1. Start with built in properties
-    let properties = [
-      { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-      { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
-    ];
-    // 2. Brute force deconstruct added properties
-    //    by walking down script and looking for `addProp`
     const model = this.GetSimDataModel(modelId);
     const blueprint = model.scripts.find(s => s.id === blueprintName);
     if (!blueprint) return []; // blueprint was probably deleted
     const script = blueprint.script;
-    const scriptUnits = TRANSPILER.ScriptifyText(script);
-    scriptUnits.forEach(unit => {
-      if (unit[0] && unit[0].token === 'addProp') {
-        properties.push({
-          name: unit[1].token,
-          type: unit[2].token.toLowerCase(),
-          defaultValue: unit[3].value,
-          isFeatProp: false
-        });
-      }
-    });
-    return properties;
+    return TRANSPILER.ExtractBlueprintProperties(script);
   }
 
   /**
@@ -211,6 +192,26 @@ class SimData {
   }
 
   /**
+   * Scrubs the init script and removes any invalid props
+   * Primarily used by ScriptUpdate.
+   * @param {object} instance instanceDef from models.instances
+   * @param {string[]} validPropNames e.g. ['x', 'y']
+   * @return {object} InstanceDef with init scrubbed
+   */
+  RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const scrubbedScriptUnits = scriptUnits.filter(unit => {
+      if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
+        return validPropNames.includes(unit[1].token);
+      }
+      return false;
+    });
+    instance.init = TRANSPILER.TextifyScript(scrubbedScriptUnits);
+    return instance;
+  }
+
+  /**
+   * Update the script for a single blueprint (not all blueprints in the model)
    * This should just update the `model.scripts` and `model.instances` data.
    * Any sim instance/agent data updates should be hanlded by sim-agents.
    * @param {Object} data -- { script, origBlueprintName }
@@ -220,13 +221,15 @@ class SimData {
     const source = TRANSPILER.ScriptifyText(data.script);
     const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
     const blueprintName = bundle.name;
-    // Did the blueprint name change?
+
+    // 1. Did the blueprint name change?
     if (data.origBlueprintName !== blueprintName) {
+      // If name changed, remove the original
       this.BlueprintDelete(data.origBlueprintName);
       // NOTE sim agents and instances are added/removed in sim-agents.AllAgentsProgramUpdate
     }
 
-    // Update the new blueprint
+    // 2. Update the new blueprint
     const blueprint = {
       id: blueprintName,
       label: blueprintName,
@@ -241,7 +244,14 @@ class SimData {
       model.scripts.push(blueprint);
     }
 
-    // Add an instance if one isn't already defined
+    // 3. Clean the init scripts
+    const validPropDefs = TRANSPILER.ExtractBlueprintProperties(data.script);
+    const validPropNames = validPropDefs.map(d => d.name);
+    model.instances = model.instances.map(i =>
+      this.RemoveInvalidPropsFromInstanceInit(i, validPropNames)
+    );
+
+    // 4. Add an instance if one isn't already defined
     // Should not affect running sim until reset
     const bp = TRANSPILER.RegisterBlueprint(bundle);
     const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);

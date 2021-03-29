@@ -89,15 +89,17 @@ class MissionControl extends React.Component {
 
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
-    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
+    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
+    this.HandleInstancesUpdate = this.HandleInstancesUpdate.bind(this);
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
-    UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
