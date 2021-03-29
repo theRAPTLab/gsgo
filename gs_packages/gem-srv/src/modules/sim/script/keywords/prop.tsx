@@ -14,6 +14,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import DeleteIcon from '@material-ui/icons/DeleteForever';
 import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword-collapsible';
 import { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
@@ -83,13 +84,14 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.saveData();
   }
   onClick(e) {
-    const { propName, methodName, args } = this.state;
     e.preventDefault();
     e.stopPropagation();
     // Stop click here when user clicks inside form to edit.
     // Other clicks will propagage to InstanceEditor where it will exit edit mode
   }
-  onDeleteLine() {
+  onDeleteLine(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
     const updata = { index: this.index };
     UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
   }
@@ -118,7 +120,17 @@ class PropElement extends React.Component<MyProps, MyState> {
     if (isEditable) {
       // Show Form
       jsx = (
-        <div>
+        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+          <div className={classes.instanceEditorLabel}>{propName}</div>
+          <input
+            onChange={this.onChange}
+            onKeyDown={this.onKeyDown}
+            onBlur={this.onBlur}
+            onClick={this.onClick}
+            type={type}
+            value={args[0]}
+            className={classes.instanceEditorField}
+          />
           {isDeletable && (
             <div className={classes.instanceEditorLine}>
               <button
@@ -126,22 +138,10 @@ class PropElement extends React.Component<MyProps, MyState> {
                 className={classes.buttonMini}
                 onClick={this.onDeleteLine}
               >
-                x
+                <DeleteIcon fontSize="small" />
               </button>
             </div>
           )}
-          <div className={classes.instanceEditorLine}>{propName}:</div>
-          <div className={classes.instanceEditorLine}>
-            <input
-              onChange={this.onChange}
-              onKeyDown={this.onKeyDown}
-              onBlur={this.onBlur}
-              onClick={this.onClick}
-              type={type}
-              value={args[0]}
-              style={{ width: '5em' }}
-            />
-          </div>
         </div>
       );
     } else {

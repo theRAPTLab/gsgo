@@ -12,6 +12,8 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as DATACORE from 'modules/datacore';
+import AddIcon from '@material-ui/icons/Add';
+import EditIcon from '@material-ui/icons/Edit';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -21,23 +23,19 @@ class PanelBlueprints extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: '',
-      modelId: ''
+      title: ''
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
   }
 
   componentDidMount() {
     const { enableAdd } = this.props;
-    const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
-    const title = enableAdd ? 'Add Characters' : 'Character Types';
-    this.setState({ modelId, title });
+    const title = enableAdd ? 'Add Characters' : 'Character Type Scripts';
+    this.setState({ title });
   }
 
   OnBlueprintClick(scriptId) {
-    const { modelId } = this.state;
-    const { enableAdd } = this.props;
+    const { modelId, enableAdd } = this.props;
     if (enableAdd) {
       // Add Instance
       UR.RaiseMessage('LOCAL:INSTANCE_ADD', { modelId, blueprintName: scriptId });
@@ -52,8 +50,10 @@ class PanelBlueprints extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { id, isActive, agents, enableAdd, classes } = this.props;
-    const instructions = enableAdd ? 'Click to add a character' : '';
+    const { modelId, id, isActive, agents, enableAdd, classes } = this.props;
+    const instructions = enableAdd
+      ? 'Click to add a character'
+      : 'Click to edit a character type script in a new window';
     const onPanelClick = () => {
       // To be implemented
       console.log('Show instance');
@@ -86,13 +86,19 @@ class PanelBlueprints extends React.Component {
                 <div
                   style={{
                     flex: '0 1 auto',
-                    height: '20px'
+                    height: '20px',
+                    overflow: 'hide'
                   }}
                   className={classes.instanceListItem}
                   onClick={() => this.OnBlueprintClick(a.id)}
                   key={a.label}
                 >
-                  {a.label}
+                  {enableAdd ? (
+                    <AddIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
+                  ) : (
+                    <EditIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
+                  )}
+                  &nbsp;{a.label}
                 </div>
               ))}
             </div>

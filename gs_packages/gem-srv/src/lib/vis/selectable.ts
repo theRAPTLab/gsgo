@@ -2,6 +2,12 @@
 
   Make Selectable
 
+  NOTE: Use draggable.ts if dragging is desired.
+        draggable will handle the click event.
+
+        Use selectable.ts if you ONLY want click
+        detection and NO drag support.
+
   Handles clicks on a sprite:
   1. This will set the `isSelected` state
   2. This will show an outline on the sprite

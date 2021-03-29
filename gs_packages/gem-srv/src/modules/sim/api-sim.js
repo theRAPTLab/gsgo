@@ -106,6 +106,12 @@ function Reset() {
   })();
 }
 
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsRunning() {
+  return SIM_RATE > 0;
+}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('UR/APP_STAGE', Stage);
@@ -115,4 +121,4 @@ UR.HookPhase('UR/APP_RESTAGE', Restage);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Stage, Start, Pause, End, Export, Reset };
+export { Stage, Start, Pause, End, Export, Reset, IsRunning };

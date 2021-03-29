@@ -32,6 +32,24 @@ export function DefineInstance(instanceDef: TInstance) {
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function UpdateInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0)
+    console.error(...PR(`UpdateInstance couldn't find instance ${id}`));
+  bpi[index] = instanceDef;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0)
+    console.error(...PR(`DeleteInstance couldn't find instance ${id}`));
+  bpi.splice(index, 1);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetAllInstances() {
   const instances = [];
   const map = [...INSTANCES.values()];
@@ -79,39 +97,26 @@ export function SaveAgent(agent) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- *  REVIEW: We are referencing `agent.meta.name` in order to look up
- *  the GAgent.id.  Is there a better way to look up the agent id
- *  using the information in `instancedef`?
- *
  *  To delete the agent, we need to remove it from: AGENT and AGENT_DICT.
  *
  *  1. AGENT map values are a second map of `agents`.
  *     `agents` key is a GAgent.id, which is based on an sm-object counter.
- *     The problem is that `instancedef` does not include the GAgent.id,
- *     `instancedef` does have the unique instance name, e.g. `Fish4519`
- *     as do the GAgent objects in the `agents` map saved as
- *     `agent.meta.name`.
- *  2. AGENT_DICT values are also a second map of `agents`
+ *  2. AGENT_DICT values are also a map of `agents`
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, name } = instancedef;
+  const { blueprint, id, name } = instancedef;
   if (!AGENTS.has(blueprint)) {
     console.error(...PR(`blueprint ${blueprint} not found`));
     return;
   }
   const agents = AGENTS.get(blueprint);
-  const agentsArray = Array.from(agents.values()); // convert for finding
-  let agent = agentsArray.find(a => a.meta.name === name);
-  if (agent === undefined) {
-    console.error(...PR(`agent ${name} not found`));
-    return;
-  }
-  agents.delete(agent.id);
-  AGENT_DICT.delete(agent.id);
+  agents.delete(id);
+  AGENTS.set(blueprint, agents);
+  AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return agent set by type */
+/** return GAgent array by type */
 export function GetAgentsByType(bpName) {
   const agentSet = AGENTS.get(bpName);
   if (!agentSet) {
@@ -124,15 +129,6 @@ export function GetAgentsByType(bpName) {
 export function GetAgentById(id): IAgent {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
-  console.warn(...PR(`agent ${id} not in AGENT_DICT`));
-  return undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAgentByName(name): IAgent {
-  const agents = GetAllAgents();
-  const agent = agents.find(a => a.meta.name === name);
-  if (agent) return agent;
-  console.warn(...PR(`agent ${name} not found`));
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,6 +139,13 @@ export function GetAllAgents() {
     arr.push(...map.values());
   });
   return arr;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAgentByName(name): IAgent {
+  const agents = GetAllAgents();
+  const agent = agents.find(a => a.meta.name === name);
+  if (agent) return agent;
+  return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllAgents() {

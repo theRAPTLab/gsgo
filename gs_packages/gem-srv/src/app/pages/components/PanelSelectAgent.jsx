@@ -9,10 +9,11 @@ class PanelSelectAgent extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Agent'
+      title: 'Select Character Type'
     };
     this.onClick = this.onClick.bind(this);
     this.OnScriptClick = this.OnScriptClick.bind(this);
+    this.OnAddScript = this.OnAddScript.bind(this);
   }
 
   onClick(id) {
@@ -23,13 +24,18 @@ class PanelSelectAgent extends React.Component {
   }
 
   OnScriptClick(id) {
-    // ScriptEditor handles `HACK_SELECT_AGENT` by opening the script
-    UR.RaiseMessage('HACK_SELECT_AGENT', id);
+    // ScriptEditor handles `SELECT_SCRIPT` by opening the script
+    // Need { id, label}
+    UR.RaiseMessage('SELECT_SCRIPT', { scriptId: id });
+  }
+
+  OnAddScript() {
+    UR.RaiseMessage('SELECT_SCRIPT', { scriptId: '' }); // empty agent sets new agent
   }
 
   render() {
     const { title } = this.state;
-    const { id, isActive, agents, onClick, classes } = this.props;
+    const { id, isActive, agents, modelId, onClick, classes } = this.props;
 
     // agents are [ {id, label}, ... ]
 
@@ -41,6 +47,7 @@ class PanelSelectAgent extends React.Component {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-around',
+              alignItems: 'center',
               width: '300px',
               padding: '30px'
             }}
@@ -51,11 +58,7 @@ class PanelSelectAgent extends React.Component {
                   type="button"
                   disabled={m.editor !== undefined}
                   style={{ width: '300px' }}
-                  className={
-                    m.editor
-                      ? `${classes.button} ${classes.buttonDisabled}`
-                      : classes.button
-                  }
+                  className={classes.button}
                   onClick={() => this.OnScriptClick(m.id)}
                 >
                   {m.label}
@@ -67,6 +70,13 @@ class PanelSelectAgent extends React.Component {
                 </div>
               </div>
             ))}
+            <button
+              type="button"
+              className={classes.button}
+              onClick={this.OnAddScript}
+            >
+              ADD CHARACTER TYPE
+            </button>
           </div>
         </div>
       </PanelChrome>

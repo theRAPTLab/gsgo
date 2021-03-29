@@ -36,7 +36,7 @@ class PanelPlayback extends React.Component {
 
   render() {
     const { title, isRunning } = this.state;
-    const { id, model, isActive, classes } = this.props;
+    const { id, model, needsUpdate, isActive, classes } = this.props;
 
     const onClick = () => {
       // To be implemented
@@ -55,6 +55,13 @@ class PanelPlayback extends React.Component {
             fontSize: '12px'
           }}
         >
+          {needsUpdate && (
+            <div className={classes.infoHighlightColor}>
+              Scripts Updated!
+              <br />
+              Reset Stage!
+            </div>
+          )}
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
             {isDisabled ? (
               <p>No model loaded</p>
@@ -62,7 +69,7 @@ class PanelPlayback extends React.Component {
               <>
                 <button
                   type="button"
-                  className={classes.button}
+                  className={needsUpdate ? classes.buttonHi : classes.button}
                   onClick={this.OnResetClick}
                 >
                   RESET STAGE

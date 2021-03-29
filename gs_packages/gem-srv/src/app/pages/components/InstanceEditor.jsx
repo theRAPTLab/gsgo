@@ -16,6 +16,7 @@ props.instance = instance specification: {name, blueprint, init}
 
 import React from 'react';
 import clsx from 'clsx';
+import DeleteIcon from '@material-ui/icons/Delete';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
@@ -34,7 +35,6 @@ class InstanceEditor extends React.Component {
       isEditable: false,
       isHovered: false,
       isSelected: false,
-      properties: [],
       isAddingProperty: false,
       isDeletingProperty: false
     };
@@ -44,10 +44,13 @@ class InstanceEditor extends React.Component {
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.HandleScriptLineDelete = this.HandleScriptLineDelete.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.GetSettableProperties = this.GetAddableProperties.bind(this);
     this.OnAddProperty = this.OnAddProperty.bind(this);
     this.OnEnableDeleteProperty = this.OnEnableDeleteProperty.bind(this);
     this.OnPropMenuSelect = this.OnPropMenuSelect.bind(this);
+    this.OnDeleteInstance = this.OnDeleteInstance.bind(this);
     this.HandleEditEnable = this.HandleEditEnable.bind(this);
+    this.HandleEditDisable = this.HandleEditDisable.bind(this);
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
     this.HandleDeselect = this.HandleDeselect.bind(this);
@@ -57,9 +60,9 @@ class InstanceEditor extends React.Component {
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.HandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.HandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
+    UR.HandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
@@ -70,9 +73,9 @@ class InstanceEditor extends React.Component {
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
+    UR.UnhandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
-    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
@@ -159,54 +162,70 @@ class InstanceEditor extends React.Component {
    * @param {*} e
    */
   OnInstanceClick(e) {
-    const { isEditable } = this.state;
-    if (isEditable) return; // Ignore click if editing
     // just pass it up to Map Editor so it's centralized?
     const agentId = this.GetAgentId();
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
   }
 
-  OnAddProperty() {
+  GetAddableProperties() {
     const { modelId } = this.state;
     const { instance } = this.props;
     const blueprintName = this.GetBlueprintName();
 
+    if (!modelId || !instance) return [];
+
     // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
     // Assume we can get a list of properties from SimData
     // properties = [...{name, type, defaultvalue, isFeatProp }]
-    let properties = SimData.GetBlueprintProperties(modelId, blueprintName);
+    let properties = SimData.GetBlueprintProperties(blueprintName, modelId);
 
     // Remove properties that have already been set
     // 1. Get the list or properties
     const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
     const initProperties = scriptUnits.map(unit => {
-      if (unit[0].token === 'prop' || unit[0].token === 'featProp') {
+      if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
       }
+      return undefined;
     });
     // 2. Remove already set properties
     properties = properties.filter(p => !initProperties.includes(p.name));
 
-    this.setState({
-      properties,
-      isAddingProperty: true
-    });
+    return properties;
   }
 
-  OnEnableDeleteProperty() {
+  OnAddProperty(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
+    this.setState(state => ({
+      isAddingProperty: !state.isAddingProperty
+    }));
+  }
+
+  OnEnableDeleteProperty(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
     // enable deletion
     this.setState(state => ({
       isDeletingProperty: !state.isDeletingProperty
     }));
   }
 
+  StopEvent(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
+  }
+
   OnPropMenuSelect(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
     const selectedProp = e.target.value;
     if (selectedProp === '') return; // selected the help instructions
 
-    const { modelId, properties } = this.state;
+    const { modelId } = this.state;
+    const addableProperties = this.GetAddableProperties();
     const { instance } = this.props;
-    const property = properties.find(p => p.name === selectedProp);
+    const property = addableProperties.find(p => p.name === selectedProp);
     const keyword = property.isFeatProp ? 'featProp' : 'prop';
     const newScriptLine = `${keyword} ${property.name} setTo ${property.defaultValue}`;
 
@@ -228,6 +247,15 @@ class InstanceEditor extends React.Component {
     });
 
     this.setState({ isAddingProperty: false });
+  }
+
+  OnDeleteInstance() {
+    const { modelId } = this.state;
+    const { instance } = this.props;
+    UR.RaiseMessage('NET:INSTANCE_DELETE', {
+      modelId,
+      instanceDef: instance
+    });
   }
 
   DoDeselect() {
@@ -261,6 +289,14 @@ class InstanceEditor extends React.Component {
       this.DoDeselect();
     }
   }
+  HandleEditDisable(data) {
+    const agentId = this.GetAgentId();
+    // Is this message for us?
+    if (data.agentId === agentId) {
+      // YES!  Disnable!
+      this.DoDeselect();
+    }
+  }
   HandleHoverOver(data) {
     const { isEditable } = this.state;
     const agentId = this.GetAgentId();
@@ -286,7 +322,12 @@ class InstanceEditor extends React.Component {
   HandleDeselect(data) {
     const agentId = this.GetAgentId();
     if (data.agentId === agentId) {
-      this.setState({ isEditable: false, isSelected: false, isHovered: false });
+      this.setState({
+        isEditable: false,
+        isSelected: false,
+        isHovered: false,
+        isAddingProperty: false
+      });
     }
   }
   OnNameSave(data) {
@@ -326,12 +367,13 @@ class InstanceEditor extends React.Component {
       isEditable,
       isHovered,
       isSelected,
-      properties,
       isAddingProperty,
       isDeletingProperty
     } = this.state;
     const { id, instance, classes } = this.props;
     const instanceName = instance.name;
+
+    const addableProperties = this.GetAddableProperties();
 
     let jsx = '';
     if (instance) {
@@ -345,9 +387,9 @@ class InstanceEditor extends React.Component {
     let propMenuJsx = '';
     if (isAddingProperty) {
       propMenuJsx = (
-        <select onChange={this.OnPropMenuSelect}>
+        <select onChange={this.OnPropMenuSelect} onClick={this.StopEvent}>
           <option value="">-- Select a property... --</option>
-          {properties.map(p => (
+          {addableProperties.map(p => (
             <option value={p.name} key={p.name}>
               {p.name}
             </option>
@@ -355,6 +397,8 @@ class InstanceEditor extends React.Component {
         </select>
       );
     }
+
+    const disableAddProperties = this.GetAddableProperties().length < 1;
 
     return (
       <div
@@ -367,6 +411,22 @@ class InstanceEditor extends React.Component {
         onPointerLeave={this.OnHoverOut}
       >
         <div>
+          {isEditable && (
+            <div
+              className={classes.instanceEditorLineItem}
+              style={{ margin: '0.5em 0' }}
+            >
+              <div
+                className={classes.instanceEditorLabel}
+                style={{ fontSize: '10px' }}
+              >
+                Character Type:
+              </div>
+              <div className={classes.instanceEditorData}>
+                {instance.blueprint}
+              </div>
+            </div>
+          )}
           <InputField
             propName="Name"
             value={instanceName}
@@ -375,29 +435,48 @@ class InstanceEditor extends React.Component {
             onSave={this.OnNameSave}
           />
           <div>{jsx}</div>
-          {isEditable && !isAddingProperty && (
-            <div style={{ textAlign: 'right' }}>
+          <br />
+          {isEditable && (
+            <>
+              {isAddingProperty && isEditable && propMenuJsx}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button
+                  onClick={this.OnAddProperty}
+                  type="button"
+                  className={classes.buttonSmall}
+                  title="Add Property"
+                  disabled={disableAddProperties}
+                >
+                  {isAddingProperty ? 'HIDE PROPERTY MENU' : 'SHOW PROPERTY'}
+                </button>
+                {!isAddingProperty && (
+                  <button
+                    onClick={this.OnEnableDeleteProperty}
+                    type="button"
+                    className={classes.buttonSmall}
+                    title="Delete Property"
+                    style={{}}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </button>
+                )}
+              </div>
+            </>
+          )}
+          {isEditable && (
+            <div style={{ textAlign: 'center', marginTop: '1em' }}>
               <button
-                onClick={this.OnEnableDeleteProperty}
                 type="button"
-                className={classes.buttonSmall}
-                title="Delete Property"
+                className={classes.buttonLink}
+                onClick={this.OnDeleteInstance}
               >
-                -
-              </button>
-              <button
-                onClick={this.OnAddProperty}
-                type="button"
-                className={classes.buttonSmall}
-                title="Add Property"
-              >
-                +
+                DELETE CHARACTER
               </button>
             </div>
           )}
-          {isAddingProperty && propMenuJsx}
-          {/* ID display for debugging */}
+          {/* ID display for debugging
           <div className={classes.inspectorLabel}>{instance.id}&nbsp;</div>{' '}
+           */}
         </div>
       </div>
     );
