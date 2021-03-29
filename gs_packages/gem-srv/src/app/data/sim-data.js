@@ -17,7 +17,8 @@ import {
   DeleteInstance,
   GetAllAgents,
   GetAgentById,
-  DeleteAgent
+  DeleteAgent,
+  GetInstancesType
 } from 'modules/datacore/dc-agents';
 import * as SIM from 'modules/sim/api-sim';
 import * as TRANSPILER from 'script/transpiler';
@@ -258,7 +259,17 @@ class SimData {
       this.RemoveInvalidPropsFromInstanceInit(i, validPropNames)
     );
 
-    // 4. Add an instance if one isn't already defined
+    // 4. Delete the old instance
+    //    If the sim is not running, delete the old instance
+    //    so AllAgentsPropgramUpdate will recreate it with
+    //    the new script.
+    //    If the sim IS running, we want to leave the instance
+    //    running with the old blueprint code.
+    if (!SIM.IsRunning()) {
+      GetInstancesType(blueprintName).forEach(a => DeleteAgent(a));
+    }
+
+    // 5. Add an instance if one isn't already defined
     // Should not affect running sim until reset
     const bp = TRANSPILER.RegisterBlueprint(bundle);
     const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);

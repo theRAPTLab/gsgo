@@ -291,6 +291,14 @@ class MissionControl extends React.Component {
   ///
   OnToggleRunEdit(e, newConfig) {
     if (newConfig === null) return; // skip if it's a click on the same button
+
+    // Reset when changing modes.
+    // This is necessary because blueprints are not recompiled
+    // if scripts are submitted while the sim is running
+    const { scriptsNeedUpdate } = this.state;
+    if (scriptsNeedUpdate) {
+      UR.RaiseMessage('NET:HACK_SIM_RESET');
+    }
     this.setState({ panelConfiguration: newConfig }, () => this.CallSimPlaces());
   }
   OnToggleNetworkMapSize() {

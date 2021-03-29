@@ -55,7 +55,7 @@ class MapEditor extends React.Component {
    */
   render() {
     const { modelId, model, classes } = this.props;
-    const mapInstanceSpec = model.instances || [];
+    const mapInstanceSpec = model && model.instances ? model.instances : [];
     const agents =
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
