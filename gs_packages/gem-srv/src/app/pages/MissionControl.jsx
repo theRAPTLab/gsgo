@@ -185,6 +185,14 @@ class MissionControl extends React.Component {
       () => this.CallSimPlaces()
     );
   }
+  HandleInstancesUpdate(data) {
+    if (DBG) console.error('HandleInstancesUpdate', data);
+    const { model } = this.state;
+    model.instances = data.instances;
+    this.setState(
+      { model }
+    );
+  }
   /**
    * User has submitted a new script, just update message
    * PanelSimulation handles instance creation
@@ -209,8 +217,8 @@ class MissionControl extends React.Component {
         model: {},
         inspectorInstances: [],
         scriptsNeedUpdate: false
-      },
-      () => this.LoadModel()
+      }
+      // SIM.Reset() will trigger SIM/READY, which triggers a LoadModel
     );
   }
   /**
@@ -292,14 +300,18 @@ class MissionControl extends React.Component {
   OnToggleRunEdit(e, newConfig) {
     if (newConfig === null) return; // skip if it's a click on the same button
 
-    // Reset when changing modes.
+    // Automatically trigger reset when changing modes.
     // This is necessary because blueprints are not recompiled
-    // if scripts are submitted while the sim is running
+    // if scripts are submitted while the sim is running.
+    // If the user then switches to edit the map, they may
+    // inadvertently select newly defined properties that
+    // the old instances do not support.  A reset will
+    // cause the instances to be recompiled.
     const { scriptsNeedUpdate } = this.state;
     if (scriptsNeedUpdate) {
-      UR.RaiseMessage('NET:HACK_SIM_RESET');
+      UR.RaiseMessage('NET:HACK_SIM_RESET'); // Reset will trigger SimPlaces
     }
-    this.setState({ panelConfiguration: newConfig }, () => this.CallSimPlaces());
+    this.setState({ panelConfiguration: newConfig });
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({
