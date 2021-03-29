@@ -45,30 +45,34 @@ class SimData {
     this.currentModelId = '';
     this.MONITORED_INSTANCES = [];
 
-    // Bind This
-    // LOAD MODEL DATA
+    // INITIALIZATION /////////////////////////////////////////////////////////
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
-    // API CALLS: REQUEST MODEL DATA
+    // API CALLS //////////////////////////////////////////////////////////////
+    // MODEL DATA REQUESTS ----------------------------------------------------
     this.GetModels = this.GetModels.bind(this);
     this.GetModel = this.GetModel.bind(this);
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
     this.BlueprintDelete = this.BlueprintDelete.bind(this);
+    this.RemoveInvalidPropsFromInstanceInit = this.RemoveInvalidPropsFromInstanceInit.bind(
+      this
+    );
+    // URSYS CALLS ////////////////////////////////////////////////////////////
+    // MODEL DATA REQUESTS ----------------------------------------------------
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
-    // URSYS REQUEST MODEL DATA
     this.SendSimDataModels = this.SendSimDataModels.bind(this);
+    this.SendSimDataModel = this.SendSimDataModel.bind(this);
     this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
     this.HandleRequestCurrentModel = this.HandleRequestCurrentModel.bind(this);
-    this.SendSimDataModel = this.SendSimDataModel.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
+    UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
     UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
     UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleRequestCurrentModel);
-    UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
-    // BLURPRINT UTILS
+    // BLUEPRINT UTILS --------------------------------------------------------
     this.HandleBlueprintDelete = this.HandleBlueprintDelete.bind(this);
     UR.HandleMessage('NET:BLUEPRINT_DELETE', this.HandleBlueprintDelete);
-    // INSPECTOR UTILS
+    // INSPECTOR UTILS --------------------------------------------------------
     this.DoRegisterInspector = this.DoRegisterInspector.bind(this);
     this.DoUnRegisterInspector = this.DoUnRegisterInspector.bind(this);
     this.SendInstanceInspectorUpdate = this.SendInstanceInspectorUpdate.bind(
@@ -80,20 +84,19 @@ class SimData {
       'NET:REQUEST_INSPECTOR_UPDATE',
       this.SendInstanceInspectorUpdate
     );
-
-    // INSTANCE UTILS
+    // INSTANCE UTILS ---------------------------------------------------------
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdate = this.InstanceUpdate.bind(this);
     this.InstanceUpdatePosition = this.InstanceUpdatePosition.bind(this);
     this.ReplacePropLine = this.ReplacePropLine.bind(this);
     this.InstanceRequestEdit = this.InstanceRequestEdit.bind(this);
     this.InstanceDelete = this.InstanceDelete.bind(this);
+    UR.HandleMessage('LOCAL:INSTANCE_ADD', this.InstanceAdd);
     UR.HandleMessage('NET:INSTANCE_UPDATE', this.InstanceUpdate);
     UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', this.InstanceUpdatePosition);
     UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', this.InstanceRequestEdit);
     UR.HandleMessage('NET:INSTANCE_DELETE', this.InstanceDelete);
-    UR.HandleMessage('LOCAL:INSTANCE_ADD', this.InstanceAdd);
-    // INSTANCE SELECTION HANDLERS
+    // INSTANCE SELECTION HANDLERS --------------------------------------------
     this.InstanceSelect = this.InstanceSelect.bind(this);
     this.InstanceDeselect = this.InstanceDeselect.bind(this);
     this.InstanceHoverOver = this.InstanceHoverOver.bind(this);
@@ -103,10 +106,11 @@ class SimData {
     UR.HandleMessage('INSTANCE_HOVEROVER', this.InstanceHoverOver);
     UR.HandleMessage('INSTANCE_HOVEROUT', this.InstanceHoverOut);
 
+    // SYSTEM HOOKS ///////////////////////////////////////////////////////////
     UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
   }
 
-  /// LOAD MODEL DATA ///////////////////////////////////////////////////////////
+  /// INITIALIZATION ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   GetSimDataModel(modelId) {
     let model;
@@ -132,7 +136,7 @@ class SimData {
     return model;
   }
 
-  /// API CALLS: REQUEST MODEL DATA //////////////////////////////////////////////
+  /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   GetModels() {
     return [
@@ -210,6 +214,9 @@ class SimData {
     return instance;
   }
 
+  /// URSYS MODEL DATA REQUESTS//////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   /**
    * Update the script for a single blueprint (not all blueprints in the model)
    * This should just update the `model.scripts` and `model.instances` data.
@@ -270,8 +277,6 @@ class SimData {
     this.SendSimDataModel();
   }
 
-  /// URSYS REQUEST MODEL DATA //////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /**
    *
    * @param {Object} data -- { modelId: <string> }

@@ -94,7 +94,7 @@ class PanelSimulation extends React.Component {
     const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
     const blueprintNames = blueprints.map(b => b.name);
 
-    // 3. Create All Instances
+    // 3. Create/Update All Instances
     const instancesSpec = model.instances;
     // Use 'UPDATE' so we don't clobber old instance values.
     UR.RaiseMessage('ALL_AGENTS_PROGRAM_UPDATE', {
