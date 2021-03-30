@@ -152,8 +152,10 @@ class SimData {
    * API Call
    * @param {string} modelId
    */
-  GetModel(modelId) {
+  SetCurrentModelId(modelId) {
     this.currentModelId = modelId;
+  }
+  GetModel(modelId) {
     return this.GetSimDataModel(modelId);
   }
   GetCurrentModel() {

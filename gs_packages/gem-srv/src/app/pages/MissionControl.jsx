@@ -165,9 +165,8 @@ class MissionControl extends React.Component {
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    // Direct SimData API Call
-    // This bypasses OnSimDataUpdate
-    const model = SimData.GetModel(modelId);
+    SimData.SetCurrentModelId(modelId);
+    const model = SimData.GetCurrentModel();
     this.setState(
       { model },
       () => this.CallSimPlaces() // necessary to update screen after overall model updates
@@ -189,9 +188,7 @@ class MissionControl extends React.Component {
     if (DBG) console.error('HandleInstancesUpdate', data);
     const { model } = this.state;
     model.instances = data.instances;
-    this.setState(
-      { model }
-    );
+    this.setState({ model });
   }
   /**
    * User has submitted a new script, just update message
