@@ -80,6 +80,7 @@ class PanelSimulation extends React.Component {
   }
 
   DoSimPlaces() {
+    if (DBG) console.log(...PR('DoSimPlaces! Commpiling...'));
     // 1. Load Model
     //    model data is loaded by the parent container MissionControl
     const { model } = this.props;

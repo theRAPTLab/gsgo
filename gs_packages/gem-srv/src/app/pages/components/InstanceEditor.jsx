@@ -25,6 +25,8 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 import ProjectData from '../../data/project-data';
 import InputField from './InputField';
 
+const DBG = true;
+
 class InstanceEditor extends React.Component {
   constructor() {
     super();

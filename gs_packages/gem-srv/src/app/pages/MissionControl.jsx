@@ -173,7 +173,7 @@ class MissionControl extends React.Component {
     );
   }
   HandleSimDataUpdate(data) {
-    if (DBG) console.error('HandleSimDataUpdate', data);
+    if (DBG) console.log('HandleSimDataUpdate', data);
     if (SIM.IsRunning()) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
@@ -185,7 +185,7 @@ class MissionControl extends React.Component {
     );
   }
   HandleInstancesUpdate(data) {
-    if (DBG) console.error('HandleInstancesUpdate', data);
+    if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
     model.instances = data.instances;
     this.setState({ model });
