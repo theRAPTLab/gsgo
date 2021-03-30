@@ -248,6 +248,7 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
  *  string arrays.
  */
 function ScriptifyText(text: string): TScriptUnit[] {
+  if (text === undefined) return [];
   const sourceStrings = text.split('\n');
   const script = scriptifier.tokenize(sourceStrings);
   return script;
