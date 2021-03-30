@@ -96,7 +96,7 @@ class InstanceSpecInspector extends React.Component {
     const { title, agent, data, size, color, colorActive, bgcolor } = this.state;
     const { id, instanceDef, isActive, classes } = this.props;
     const name = instanceDef ? instanceDef.name : '';
-    const init = instanceDef ? instanceDef.init : '';
+    const initScript = instanceDef ? instanceDef.initScript : '';
     console.log('instancedef is ', instanceDef);
     return (
       <div
@@ -122,7 +122,7 @@ class InstanceSpecInspector extends React.Component {
             ref={this.jarRef}
             style={{ width: '100%', height: 'auto' }}
           >
-            {init}
+            {initScript}
           </code>
           {data &&
             data.map(property => (

@@ -8,8 +8,8 @@ Shows instance init scripts.
 * Used to define instances in a map.
 * Allows properties to be edited.
 
-props.instance = instance specification: {name, blueprint, init}
-  e.g. {name: "fish01", blueprint: "Fish", init: "prop x setTo -220↵prop y setTo -220"}
+props.instance = instance specification: {name, blueprint, initScript}
+  e.g. {name: "fish01", blueprint: "Fish", initScript: "prop x setTo -220↵prop y setTo -220"}
 
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -114,7 +114,7 @@ class InstanceEditor extends React.Component {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
       // 1. Convert init script text to array
-      const scriptTextLines = instance.init.split('\n');
+      const scriptTextLines = instance.initScript.split('\n');
       // 2. Convert the updated line to text
       const updatedLineText = data.scriptUnit.join(' ');
       // 3. Replace the updated line in the script array
@@ -142,7 +142,7 @@ class InstanceEditor extends React.Component {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
       // 1. Convert init script text to array
-      const scriptTextLines = instance.init.split('\n');
+      const scriptTextLines = instance.initScript.split('\n');
       // 2. Remove the line
       scriptTextLines.splice(data.index, 1);
       // 3. Convert the script array back to script text
@@ -181,7 +181,7 @@ class InstanceEditor extends React.Component {
 
     // Remove properties that have already been set
     // 1. Get the list or properties
-    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
     const initProperties = scriptUnits.map(unit => {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
@@ -231,13 +231,11 @@ class InstanceEditor extends React.Component {
 
     const instanceName = this.GetInstanceName();
     // 1. Convert init script text to array
-    const scriptTextLines = instance.init.split('\n');
+    const scriptTextLines = instance.initScript.split('\n');
     // 2. Add the updated line in the script array
     scriptTextLines.push(newScriptLine);
     // 4. Convert the script array back to script text
     const updatedScript = scriptTextLines.join('\n');
-
-    console.error('current model id is', ProjectData.GetCurrentModelId());
 
     UR.RaiseMessage('NET:INSTANCE_UPDATE', {
       modelId,
@@ -377,7 +375,7 @@ class InstanceEditor extends React.Component {
 
     let jsx = '';
     if (instance) {
-      const source = TRANSPILER.ScriptifyText(instance.init);
+      const source = TRANSPILER.ScriptifyText(instance.initScript);
       jsx = TRANSPILER.RenderScript(source, {
         isEditable,
         isDeletable: isDeletingProperty

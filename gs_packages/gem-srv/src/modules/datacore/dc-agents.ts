@@ -21,7 +21,7 @@ let INSTANCE_COUNTER = 1000;
  *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
-  const { blueprint, id, init, name = '<none>' } = instanceDef;
+  const { blueprint, id, initScript, name = '<none>' } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
   if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
   const bpi = INSTANCES.get(blueprint);

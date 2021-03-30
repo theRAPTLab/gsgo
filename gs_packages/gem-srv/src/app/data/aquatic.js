@@ -130,56 +130,56 @@ useFeature Costume
   //   {
   //     name: 'fish01',
   //     blueprint: 'Fish',
-  //     init: `prop agent.x setTo {{ agent.x + -220 }}`
+  //     initScript: `prop agent.x setTo {{ agent.x + -220 }}`
   //   },
   //   {
   //     name: 'fatFish',
   //     blueprint: 'Fish',
-  //     init: `prop agent.x setTo 100`
+  //     initScript: `prop agent.x setTo 100`
   //   }
   instances: [
     {
       id: 501,
       name: 'fish01',
       blueprint: 'Fish',
-      // object test      init: `prop x setTo {{ x + -220 }}
-      init: `prop x setTo 0
-prop y setTo 0`
+      // object test      initScript: `prop x setTo {{ x + -220 }}
+      initScript: `prop x setTo 0
+    prop y setTo 0`
     },
     {
       id: 502,
       name: 'fatFish',
       blueprint: 'Fish',
-      init: `prop x setTo 100
-prop y setTo 100
-prop energyLevel setTo 1000` // extra property test
+      initScript: `prop x setTo 100
+    prop y setTo 100
+    prop energyLevel setTo 1000` // extra property test
     },
     {
       id: 503,
       name: 'starvedFish',
       blueprint: 'Fish',
-      init: `prop x setTo 200` // missing y test
+      initScript: `prop x setTo 200` // missing y test
     },
     {
       id: 504,
       name: 'algae01',
       blueprint: 'Algae',
-      init: `prop x setTo -220
-prop y setTo -220`
+      initScript: `prop x setTo -220
+        prop y setTo -220`
     },
     {
       id: 505,
       name: 'algae02',
       blueprint: 'Algae',
-      init: `prop x setTo -150
-prop y setTo -120`
+      initScript: `prop x setTo -150
+        prop y setTo -120`
     },
     {
       id: 506,
       name: 'algae03',
       blueprint: 'Algae',
-      init: `prop x setTo -120
-prop y setTo -90`
+      initScript: `prop x setTo -120
+        prop y setTo -90`
     }
   ]
 };

@@ -206,14 +206,14 @@ class ProjectData {
    * @return {object} InstanceDef with init scrubbed
    */
   RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
-    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
     const scrubbedScriptUnits = scriptUnits.filter(unit => {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return validPropNames.includes(unit[1].token);
       }
       return false;
     });
-    instance.init = TRANSPILER.TextifyScript(scrubbedScriptUnits);
+    instance.initScript = TRANSPILER.TextifyScript(scrubbedScriptUnits);
     return instance;
   }
 
@@ -366,7 +366,7 @@ class ProjectData {
       id: GetUID(),
       name: `${data.blueprintName}${model.instances.length}`,
       blueprint: data.blueprintName,
-      init: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
+      initScript: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
 prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     };
     model.instances.push(instance);
@@ -379,7 +379,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
   /**
    *
    * @param {Object} data -- { modelId, instanceId, instanceName, updatedData }
-   * where `updatedData` = { init } -- init is scriptText.
+   * where `updatedData` = { initScript } -- initScript is scriptText.
    *                 Leave instanceName or instanceInit undefined
    *                 if they're not being set.
    */
@@ -390,10 +390,10 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     );
     const instance = model.instances[instanceIndex];
     instance.name = data.instanceName || instance.name;
-    instance.init =
+    instance.initScript =
       data.instanceInit !== undefined // data.instanceInit might be ''
         ? data.instanceInit
-        : instance.init;
+        : instance.initScript;
     model.instances[instanceIndex] = instance;
     this.RaiseModelUpdate(data.modelId);
   }
@@ -408,11 +408,13 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       i => i.id === data.instanceId
     );
     const instance = model.instances[instanceIndex];
-    let scriptTextLines = instance.init ? instance.init.split('\n') : [];
+    let scriptTextLines = instance.initScript
+      ? instance.initScript.split('\n')
+      : [];
     this.ReplacePropLine('x', 'setTo', data.updatedData.x, scriptTextLines);
     this.ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
     const scriptText = scriptTextLines.join('\n');
-    instance.init = scriptText;
+    instance.initScript = scriptText;
     model.instances[instanceIndex] = instance;
     this.RaiseModelUpdate(data.modelId);
   }
