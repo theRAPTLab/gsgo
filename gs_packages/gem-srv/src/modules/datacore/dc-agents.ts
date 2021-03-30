@@ -46,7 +46,7 @@ export function DeleteInstance(instanceDef: TInstance) {
   const bpi = INSTANCES.get(blueprint);
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
-    console.error(...PR(`DeleteInstance couldn't find instance ${id}`));
+    console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
   bpi.splice(index, 1);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,7 +79,7 @@ export function DeleteAllInstances() {
   INSTANCE_COUNTER = 100;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteBlueprintInstances(blueprint) {
+export function DeleteInstancesByBlueprint(blueprint) {
   INSTANCES.set(blueprint, []);
 }
 
@@ -123,6 +123,12 @@ export function DeleteAgent(instancedef) {
   agents.delete(id);
   AGENTS.set(blueprint, agents);
   AGENT_DICT.delete(id);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAgentByBlueprint(blueprintName) {
+  const agents = AGENTS.get(blueprintName);
+  AGENTS.delete(blueprintName);
+  agents.forEach(a => AGENT_DICT.delete(a.id));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return GAgent array by type */

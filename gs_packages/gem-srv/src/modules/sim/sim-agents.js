@@ -11,6 +11,7 @@ import InstanceDef from 'lib/class-instance-def';
 import {
   GetAllAgents,
   DeleteAgent,
+  DeleteAgentByBlueprint,
   GetAgentsByType,
   GetAgentById,
   GetAgentByName,
@@ -19,7 +20,7 @@ import {
   UpdateInstance,
   DeleteInstance,
   DeleteAllInstances,
-  DeleteBlueprintInstances,
+  DeleteInstancesByBlueprint,
   GetAllInstances,
   GetInstance,
   GetInstancesType
@@ -118,7 +119,7 @@ INSTANCEDEF_SYNC_AGENT.setMapFunctions({
     MakeAgent(newDef);
   },
   onRemove: (newDef, def) => {
-    DeleteInstance(def);
+    DeleteInstance(newDef);
   }
 });
 
@@ -164,10 +165,13 @@ function FilterBlueprints(namesToKeep) {
     if (!namesToKeep.includes(b.name)) {
       // remove the blueprint
       DeleteBlueprint(b.name);
+
+      // [We can't rely on SyncMap to remove because it doesn't
+      //  sync to blueprints, just to instanceDefs]
       // remove any agents using the blueprint
-      GetInstancesType(b.name).forEach(a => DeleteAgent(a));
+      DeleteAgentByBlueprint(b.name);
       // remove instances using the blueprint
-      DeleteBlueprintInstances(b.name);
+      DeleteInstancesByBlueprint(b.name);
     }
   });
 }
