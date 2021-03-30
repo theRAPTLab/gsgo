@@ -139,8 +139,8 @@ class ScriptEditor extends React.Component {
 
   /**
    * This requests model data from Map Editor or Mission Control's
-   * SimData module.
-   * sim-data will respond with `NET:UPDATE_MODEL
+   * ProjectData module.
+   * project-data will respond with `NET:UPDATE_MODEL
    * which is handled by OnSimDataUpdate, below.
    *
    * REVIEW: Should this be done with a callback instead?

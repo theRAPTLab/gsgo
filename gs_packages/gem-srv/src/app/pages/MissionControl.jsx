@@ -35,7 +35,7 @@ import PanelMessage from './components/PanelMessage';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
-import SimData from '../data/sim-data';
+import ProjectData from '../data/project-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -165,8 +165,8 @@ class MissionControl extends React.Component {
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    SimData.SetCurrentModelId(modelId);
-    const model = SimData.GetCurrentModel();
+    ProjectData.SetCurrentModelId(modelId);
+    const model = ProjectData.GetCurrentModel();
     this.setState(
       { model },
       () => this.CallSimPlaces() // necessary to update screen after overall model updates
@@ -260,7 +260,7 @@ class MissionControl extends React.Component {
       const { modelId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      SimData.InstanceUpdatePosition({
+      ProjectData.InstanceUpdatePosition({
         modelId,
         instanceId: agent.id,
         updatedData: { x, y }
@@ -278,16 +278,16 @@ class MissionControl extends React.Component {
     const { panelConfiguration, modelId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      SimData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      ProjectData.InstanceRequestEdit({ modelId, agentId: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
-    SimData.InstanceHoverOver({ modelId, agentId: data.agentId });
+    ProjectData.InstanceHoverOver({ modelId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { modelId } = this.state;
-    SimData.InstanceHoverOut({ modelId, agentId: data.agentId });
+    ProjectData.InstanceHoverOut({ modelId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

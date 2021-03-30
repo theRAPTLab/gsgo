@@ -22,7 +22,7 @@ import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import SimData from '../../data/sim-data';
+import ProjectData from '../../data/project-data';
 import InputField from './InputField';
 
 class InstanceEditor extends React.Component {
@@ -67,7 +67,7 @@ class InstanceEditor extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ modelId: SimData.GetCurrentModelId() });
+    this.setState({ modelId: ProjectData.GetCurrentModelId() });
   }
 
   componentWillUnmount() {
@@ -177,7 +177,7 @@ class InstanceEditor extends React.Component {
     // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
     // Assume we can get a list of properties from SimData
     // properties = [...{name, type, defaultvalue, isFeatProp }]
-    let properties = SimData.GetBlueprintProperties(blueprintName, modelId);
+    let properties = ProjectData.GetBlueprintProperties(blueprintName, modelId);
 
     // Remove properties that have already been set
     // 1. Get the list or properties
@@ -237,7 +237,7 @@ class InstanceEditor extends React.Component {
     // 4. Convert the script array back to script text
     const updatedScript = scriptTextLines.join('\n');
 
-    console.error('current model id is', SimData.GetCurrentModelId());
+    console.error('current model id is', ProjectData.GetCurrentModelId());
 
     UR.RaiseMessage('NET:INSTANCE_UPDATE', {
       modelId,

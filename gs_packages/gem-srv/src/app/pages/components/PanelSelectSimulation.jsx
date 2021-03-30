@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 // HACK DATA LOADING
-import SimData from '../../data/sim-data';
+import ProjectData from '../../data/project-data';
 
 import PanelChrome from './PanelChrome';
 
@@ -26,7 +26,7 @@ class PanelSelectSimulation extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ models: SimData.GetModels() });
+    this.setState({ models: ProjectData.GetModels() });
   }
 
   onClick(modelId) {
