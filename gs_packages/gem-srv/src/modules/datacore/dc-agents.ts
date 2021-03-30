@@ -57,6 +57,15 @@ export function GetAllInstances() {
   return instances;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  if (bpi === undefined) return undefined;
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0) return undefined;
+  return bpi[index];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the instance definitions that are blueprint */
 export function GetInstancesType(blueprint: string) {
   if (typeof blueprint !== 'string')

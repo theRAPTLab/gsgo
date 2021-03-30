@@ -97,7 +97,7 @@ class PanelSimulation extends React.Component {
     // 3. Create/Update All Instances
     const instancesSpec = model.instances;
     // Use 'UPDATE' so we don't clobber old instance values.
-    UR.RaiseMessage('ALL_AGENTS_PROGRAM_UPDATE', {
+    UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
       blueprintNames,
       instancesSpec
     });
