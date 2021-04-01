@@ -1,10 +1,8 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  WIP -- THIS DOES NOT WORK!!!
-
   Generic User Input Field
 
-  Intended for use inside an InstanceEditor.
+  Intended for use with a class-keyword
 
   type = 'string' || 'number'
 
@@ -47,19 +45,13 @@ class InputElement extends React.Component<any, any> {
     const { args } = this.state;
     const { argindex } = this.props;
     args[argindex] = e.currentTarget.value;
-    this.setState(
-      {
-        args,
-        isDirty: true
-      },
-      () => {
-        const { isDirty } = this.state;
-        console.log('onChanged, dirty is', isDirty);
-      }
-    );
+    this.setState({
+      args,
+      isDirty: true
+    });
   }
   onKeyDown(e) {
-    if (e.key === 'Enter') this.saveData(true);
+    if (e.key === 'Enter') this.saveData();
   }
   onBlur() {
     this.saveData();
