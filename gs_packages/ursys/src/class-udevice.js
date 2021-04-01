@@ -37,7 +37,8 @@ const controlTypes = [
   'bits2', // a two dimension array of values either 0 or 1
   {} // an object describing its shape using the above types
 ];
-/// an control definition
+/// a control definition is a name of a control and a specified type
+///
 const exampleControlDefinition = [
   // simple declaration
   { control: 'x', type: 'axis' },
@@ -58,8 +59,15 @@ const exampleControlObject = {
 /** create a blank device record
  */
 function m_NewData() {
-  const data = { device: {}, user: {}, inputControls: [], outputControls: [] };
+  const data = {
+    device: {}, // device identifier, groups, and roles
+    user: {}, // user authentication and identitifying data
+    inputControls: [], // what inputs are provided as array of controlDefinition
+    outputControls: [] // what outputs are supported as array of controlDefinition
+  };
   data.device = {
+    // device class
+    uclass: '', // the name of this type of of device
     // udevice meta information
     udid: '', // unique device id
     uaddr: '', // URNET address
@@ -94,12 +102,13 @@ function m_MakeControlDescriptor(controlArray) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** clone a clean device record from a source object
  */
-function m_CloneData(obj) {
+function m_CloneData(obj, uaddr) {
   const data = {};
   const { device, user, inputControls, outputControls } = obj;
   if (device) {
-    const { udid, uaddr, uname, uapp, utags, groups, roles } = device;
+    const { uclass, udid, uname, uapp, utags, groups, roles } = device;
     data.device = {};
+    if (uclass) data.device.uclass = uclass;
     if (udid) data.device.udid = udid;
     if (uaddr) data.device.uaddr = uaddr;
     if (uname) data.device.uname = uname;
@@ -165,12 +174,24 @@ class UDevice {
   addOutputControl(controlName, type) {
     this._pushControl(this.data.outputControls, controlName, type);
   }
-  getDeviceDirectoryEntry() {
-    const { udid, uapp, uname, utags, ugroup } = this.data.device;
+
+  makeDeviceDirectoryEntry(uaddr) {
+    const { uclass, udid, uapp, uname, utags, groups, roles } = this.data.device;
     const { inputControls, outputControls } = this.data;
     const inputs = m_MakeControlDescriptor(inputControls);
     const outputs = m_MakeControlDescriptor(outputControls);
-    return { udid, uapp, uname, ugroup, utags, inputs, outputs };
+    return {
+      uclass,
+      uaddr,
+      udid,
+      uapp,
+      uname,
+      utags,
+      groups,
+      roles,
+      inputs,
+      outputs
+    };
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

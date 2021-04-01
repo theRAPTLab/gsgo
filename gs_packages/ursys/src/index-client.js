@@ -131,6 +131,7 @@ const UR = {
   SystemAppUnload: EXEC.SystemAppUnload,
   // FORWARDED DEVICE
   RegisterAsDevice: DEVICES.RegisterAsDevice,
+  GetMatchingDevices: DEVICES.GetMatchingDevices,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

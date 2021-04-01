@@ -70,6 +70,7 @@ class FakeTrack extends React.Component {
     UR.HookPhase('UR/APP_READY', async () => {
       const regData = {
         device: {
+          uclass: 'FakeTrack',
           udid: 'uniquedeviceid',
           groups: ['groupA'],
           roles: ['roleA']
@@ -82,17 +83,24 @@ class FakeTrack extends React.Component {
             sname: 'student name'
           }
         },
+        // this uses the 'compound declaration' style of an input that has thes
+        // properties
         inputControls: [
-          { control: 'x', type: 'axis' },
-          { control: 'y', type: 'axis' },
-          { control: 'h', type: 'float' },
-          { control: 'jump', type: 'trigger' }
+          {
+            control: 'markers',
+            type: {
+              x: 'axis',
+              y: 'axis',
+              jump: 'trigger'
+            }
+          }
         ],
-        outputControls: [{ control: 'volume', type: 'float' }]
+        // an example of a control value
+        outputControls: [{ control: 'count', type: 'uint' }]
       };
       // style two (note async in UR.HookPhase definition above)
       const regInfo = await UR.RegisterAsDevice('FakeTrak', regData);
-      console.log('RegisterInputs() returned regInfo', regInfo);
+      console.log(...PR('RegisterAsDevice() returned regInfo', regInfo));
     }); // end HookPhase
   }
 

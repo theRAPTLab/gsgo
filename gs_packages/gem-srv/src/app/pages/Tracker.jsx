@@ -22,6 +22,7 @@ import { useStylesHOC } from './elements/page-styles';
 const PR = UR.PrefixUtil('TRACKER', 'TagApp');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
+let bad_keyer = 0; // use to generate unique keys
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,9 +63,28 @@ UR.HandleMessage('NET:HELLO', data => {
   return { str: 'tracker got you' };
 });
 
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_GetDeviceArray(pattern = {}) {
+  const devices = [];
+  UR.GetMatchingDevices(pattern).forEach(device => {
+    devices.push(<li key={bad_keyer++}>{device.uaddr}</li>);
+  });
+  return devices;
+}
+
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class Tracker extends React.Component {
+  constructor() {
+    super();
+    this.state = {
+      devices: []
+    };
+    this.updateDeviceList = this.updateDeviceList.bind(this);
+    UR.HandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
+  }
+
   componentDidMount() {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
@@ -73,14 +93,24 @@ class Tracker extends React.Component {
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
+    this.updateDeviceList();
+    console.log(...PR('mounted'));
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
+  }
+
+  updateDeviceList() {
+    const devices = m_GetDeviceArray({ uclass: 'FakeTrack' });
+    this.setState({ devices });
+    console.log(...PR('devices', JSON.stringify(devices)));
   }
 
   render() {
     const { classes } = this.props;
+
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
@@ -97,6 +127,8 @@ class Tracker extends React.Component {
           <a href="/app/faketrack" target="_blank">
             spawn faketrack
           </a>
+          <h3>FakeTrack Devices Found</h3>
+          <ul>{this.state.devices}</ul>
         </div>
         <div id="root-renderer" className={classes.main} />
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
