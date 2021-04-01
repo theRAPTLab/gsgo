@@ -524,6 +524,53 @@ Here's the todo list:
 * [ ] store the NET:UR_DEVICES information so it can be searched
 * [ ] query by pattern shape `{ udid, uapp, uname, {control,type}, utags, groups, roles }`
 
+Notes: in handle device list update, we need to also remove it with the differ from MappedPool. We might want to make a variation of **mapped pool** with `syncFromArray()`and `mapObjects()`
+
+## MAR 21 - MAR 24 - SICK DAYS FOR TOOTH INFECTION
+
+Dental emergency, severe tooth pain, unable to work
+
+## MAR 25 THU - picking up from where I left off
+
+I need to store the NET:UR_DEVICES message on the client in a way that is searchable using a client-side API. 
+
+**Q. Where is the client-side API?**
+A. `class-udevice` and `client-netdevices` 
+
+## MAR 26 FRI - Adding client API for devices
+
+The idea is that we can register devices of a certain type, and then query the device directory to find matches. Let's go through the steps of registering a faketrack device.
+
+* [x] **Faketrack** says it has x, y, h properties
+  * [x] HookPhase UR/APP_READY
+  * [x] send device registration
+* [x] **Tracker** query devices
+  * [x] `client-netdevices` receives device map via NET:UR_DEVICES
+  * [x] `client-netdevices` process device map into queryable object db
+  * [x] `client-netdevices` has to be queryable by uclass
+  * [x] list of inputs updates with UADDR as proof of concept
+
+It turns out that I need to make a Differencer available in URSYS. So this is a second iteration of the original Pool, MappedPool, and SyncMap classes in GEMSTEP
+
+The essential elements of Differencer:
+
+```
+new Differ(uniqueKey)
+Differ.update(array or map)
+const { added, removed, deleted } = Differ.getChanges()
+```
+
+It's a pretty simple class. It doesn't require pooling because these are not expensive pieces. We just need to know what changed since the last call, and get the ids
+
+* [ ] add **DifferenceCache** to URSYS (variation of MappedPool, SyncMap)
+
+  * [ ] **intake** a collection of objects with unique key
+* [ ] **retrieve** the current list of objects
+  * [ ] extension: can **hook** adds, updates, and removes during intake
+  * [ ] extension: **retrieve** the differences since the last retrieval: updated, added, removed
+  
+  
+
 
 
 
