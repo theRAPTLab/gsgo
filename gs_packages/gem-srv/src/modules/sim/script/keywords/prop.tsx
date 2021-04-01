@@ -51,7 +51,9 @@ type MyProps = {
   type: string;
   isEditable: boolean;
   isDeletable: boolean;
+  isInstanceEditor: boolean;
   serialize: (state: MyState) => TScriptUnit;
+  classes: Object;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class PropElement extends React.Component<MyProps, MyState> {
@@ -87,7 +89,14 @@ class PropElement extends React.Component<MyProps, MyState> {
     UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
   }
   render() {
-    const { index, type, isEditable, isDeletable, classes } = this.props;
+    const {
+      index,
+      type,
+      isEditable,
+      isDeletable,
+      isInstanceEditor,
+      classes
+    } = this.props;
     const { propName, methodName, args } = this.state;
     return (
       <>
@@ -97,8 +106,11 @@ class PropElement extends React.Component<MyProps, MyState> {
           </>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
-            <div className={classes.instanceEditorLabel}>{propName}</div>
-            {/* prop {propName} setTo */}
+            {isInstanceEditor ? (
+              <div className={classes.instanceEditorLabel}>{propName}</div>
+            ) : (
+              <>prop {propName} setTo</>
+            )}
             {args.map((arg, i) => (
               <InputElement
                 state={this.state}
@@ -292,11 +304,13 @@ export class prop extends Keyword {
         type={type}
         isEditable={isEditable}
         isDeletable={isDeletable}
+        isInstanceEditor={isInstanceEditor}
         serialize={this.serialize}
       />
     );
 
     // Orig Method wraps a line number around the property
+    // The `super.jsx` call does the wrapping.
     // return super.jsx(
     //   index,
     //   unit,

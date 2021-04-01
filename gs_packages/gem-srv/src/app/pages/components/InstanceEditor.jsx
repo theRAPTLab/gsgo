@@ -380,7 +380,8 @@ class InstanceEditor extends React.Component {
       const source = TRANSPILER.ScriptifyText(instance.initScript);
       jsx = TRANSPILER.RenderScript(source, {
         isEditable,
-        isDeletable: isDeletingProperty
+        isDeletable: isDeletingProperty,
+        isInstanceEditor: true
       });
     }
 
