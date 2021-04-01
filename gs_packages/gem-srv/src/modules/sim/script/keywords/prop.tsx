@@ -289,19 +289,17 @@ export class prop extends Keyword {
       methodName,
       args
     };
-    // HACK force number for now
-    // In the future check for argument type
-    //    const type = 'number';
-    const type = 'number';
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const typeMap = children ? children.typeMap : 'String';
     const StyledPropElement = withStyles(useStylesHOC)(PropElement);
     return (
       <StyledPropElement
         state={state}
         index={index}
         key={index}
-        type={type}
+        type={typeMap.get(ref)}
         isEditable={isEditable}
         isDeletable={isDeletable}
         isInstanceEditor={isInstanceEditor}

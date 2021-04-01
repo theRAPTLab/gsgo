@@ -55,6 +55,9 @@ class ProjectData {
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
+    this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
+      this
+    );
     this.BlueprintDelete = this.BlueprintDelete.bind(this);
     this.RemoveInvalidPropsFromInstanceInit = this.RemoveInvalidPropsFromInstanceInit.bind(
       this
@@ -179,6 +182,18 @@ class ProjectData {
     if (!blueprint) return []; // blueprint was probably deleted
     const script = blueprint.script;
     return TRANSPILER.ExtractBlueprintProperties(script);
+  }
+
+  /**
+   * Used by InstanceEditor and props.tsx to look up property types
+   * @param {*} blueprintName
+   * @param {*} modelId
+   */
+  GetBlueprintPropertiesTypeMap(blueprintName, modelId = this.currentModelId) {
+    const properties = this.GetBlueprintProperties(blueprintName, modelId);
+    const map = new Map();
+    properties.forEach(p => map.set(p.name, p.type));
+    return map;
   }
 
   /**

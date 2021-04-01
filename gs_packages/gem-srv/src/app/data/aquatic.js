@@ -20,6 +20,7 @@ featCall Movement setMovementType 'wander' 0.2
 // featCall Label setPosition 'top'
 // featCall Movement setDirection 90
 addProp energyLevel Number 20
+addProp food String 'donuts'
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
@@ -152,6 +153,7 @@ useFeature Costume
       blueprint: 'Fish',
       initScript: `prop x setTo 100
     prop y setTo 100
+    prop food setTo 'bacon'
     prop energyLevel setTo 1000` // extra property test
     },
     {

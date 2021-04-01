@@ -378,10 +378,14 @@ class InstanceEditor extends React.Component {
     let jsx = '';
     if (instance) {
       const source = TRANSPILER.ScriptifyText(instance.initScript);
+      const typeMap = ProjectData.GetBlueprintPropertiesTypeMap(
+        instance.blueprint
+      );
       jsx = TRANSPILER.RenderScript(source, {
         isEditable,
         isDeletable: isDeletingProperty,
-        isInstanceEditor: true
+        isInstanceEditor: true,
+        typeMap
       });
     }
 
