@@ -165,9 +165,10 @@ Object.keys(tests).forEach(testName => {
   // get difference
   testDiffer.ingest(b);
   const { added, updated, removed } = testDiffer.getChanges();
-  log('compare added', dump_arr(added), cmp_arr(added, resAdd));
-  log('compare updat', dump_arr(updated), cmp_arr(updated, resUpd));
-  log('compare remov', dump_arr(removed), cmp_arr(removed, resRem));
+  if (!cmp_arr(added, resAdd)) log('fail: added !== expected result');
+  else if (!cmp_arr(updated, resUpd)) log('fail: added !== expected result');
+  else if (!cmp_arr(removed, resRem)) log('fail: added !== expected result');
+  else log('PASSED: added, updated, removed match expected results');
   console.groupEnd();
 });
 

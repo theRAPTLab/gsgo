@@ -14,11 +14,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const NetPacket = require('./class-netpacket');
+const { DBG } = require('./ur-dbg-settings');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MSGR_IDCOUNT = 0;
-let DBG = false;
 const PR = require('./util/prompts').makeStyleFormatter('MESSAGER', 'TagRed');
 
 /// URSYS HELPER METHODS //////////////////////////////////////////////////////
@@ -191,15 +191,16 @@ class Messager {
       pkt.socketSend();
       return;
     } // end toNetwork
-    console.log(
-      ...PR(
-        'unhandled message:',
-        `'${mesgName}' type:${options.type}`,
-        `toLocal:${toLocal} toNet:${toNet}`,
-        'handlerMap:',
-        this.handlerMap
-      )
-    );
+    if (DBG.handle)
+      console.log(
+        ...PR(
+          'unhandled message:',
+          `'${mesgName}' type:${options.type}`,
+          `toLocal:${toLocal} toNet:${toNet}`,
+          'handlerMap:',
+          this.handlerMap
+        )
+      );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Send message to everyone, local and network, and also mirrors back to self.
