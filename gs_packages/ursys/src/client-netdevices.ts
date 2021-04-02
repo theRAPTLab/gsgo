@@ -10,12 +10,15 @@ const PhaseMachine = require('./class-phase-machine');
 const Differ = require('./class-diff-cache');
 const PROMPTS = require('./util/prompts');
 const { LocalNode, NetNode } = require('./client-datacore');
+const DifferenceCache = require('./class-diff-cache');
 const UDevice = require('./class-udevice');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagDkRed');
 const DEVICE_MAP = new Map();
+
+const DEVICE_CACHE = new DifferenceCache('id');
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

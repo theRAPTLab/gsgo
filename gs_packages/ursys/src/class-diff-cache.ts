@@ -51,8 +51,13 @@ function cmp_arr(ar1, ar2, idKey = 'id') {
 /** The DifferenceCache ingests collections of data objects and keeps track
  *  of what changed since the last ingest.
  */
-export class DifferenceCache {
-  constructor(key) {
+class DifferenceCache {
+  collection: any; // pure object, map, or array
+  cMap: Map<string, object>;
+  keyProp: string;
+  changeLists: { added: any[]; updated: any[]; removed: any[] };
+
+  constructor(key: string) {
     this.collection = []; // holds the collection being ingested
     this.cMap = new Map(); // the mapped version of the collection
     this.keyProp = key || 'id'; // property to use as difference key
@@ -62,7 +67,6 @@ export class DifferenceCache {
       removed: []
     };
   }
-
   /** API: Ingest Data Collection
    *  provide the collection, and return { added, updated, removed } arrays
    */
@@ -92,8 +96,8 @@ export class DifferenceCache {
     return [...this.cMap.values()];
   }
 
-  ingestArray() {
-    const arr = this.collection;
+  ingestArray(collection) {
+    const arr = collection;
     const key = this.keyProp;
     const sobjs = this.cMap; // the last mapped collection
     const nobjs = new Map(); // ingested mapped collection
@@ -130,11 +134,11 @@ export class DifferenceCache {
     return this.changeLists;
   }
 
-  ingestMap() {
+  ingestMap(collection) {
     throw Error('not implemented');
   }
 
-  ingestSet() {
+  ingestSet(collection) {
     throw Error('not implemented');
   }
 
@@ -174,4 +178,4 @@ Object.keys(tests).forEach(testName => {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// above functions, classes are exported
+module.exports = DifferenceCache;
