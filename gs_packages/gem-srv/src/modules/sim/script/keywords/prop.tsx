@@ -16,9 +16,7 @@
 import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteForever';
 import UR from '@gemstep/ursys/client';
-import Keyword from 'lib/class-keyword-collapsible';
-import { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
-// import Keyword, { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
+import Keyword, { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
