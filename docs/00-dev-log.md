@@ -118,7 +118,25 @@ The current protocol will just rebroadcast the entire device list at once, so ou
 
 Tracker shows a list of devices in its sidebar; I want this to always reflect the current device pool.
 
-* [ ] `Tracker.updateDeviceList()` is called 
+* [x] `Tracker.updateDeviceList()` is called 
+* [ ] Add all methods of ingest to `DifferenceCache`
+* [ ] replace old code in `client-netdevices` with a DiffCache
+
+The differ is sort of working, but I'm not seeing dropped elements. When FakeTrack updates, I see two `NET:UR_DEVICES` messages:
+
+* 1: gets an empty object
+* 2: gets the current faketrack
+
+The first one happens on drop (sent by server), and the second one happens when FakeTrack fires up and registers. So the errorr is probably in `svc-netdevices`
+
+* [x] Is `SRV_SOCKET_DELETED` sending the right stuff? Yah, it's sending the updated map which is empty
+* [x] How does `DifferenceCache` handle an empty object? It should work just fine! I didn't change anything and it started working; I suspect the compiler was not picking up code changes properly. After I added an explicit check it started working, but then when I removed the check it STILL worked.
+
+
+
+
+
+
 
 
 

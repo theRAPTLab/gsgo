@@ -11,7 +11,7 @@ const DBG = {
   sock: false, // socket logic
   calls: false, // message brokering
   reg: false, // message registration
-  device: true, // device connections
+  devices: true, // device connections
   xact: false, // server-urnet mRouteMessage
   track: false, // step tracking system
   handle: false // check for unhandled messages

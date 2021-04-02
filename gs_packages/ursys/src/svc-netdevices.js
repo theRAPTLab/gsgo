@@ -49,7 +49,7 @@ function PKT_RegisterDevice(pkt) {
   const inputs = udev.getInputControlList();
   const deviceClass = udev.getDeviceProp('uclass');
   const status = `${uaddr} register '${deviceClass}' input with ${inputs.length} control(s)`;
-  if (DBG.device) TERM(status);
+  if (DBG.devices) TERM(status);
   // save the device to the list
   DEVICE_MAP.set(uaddr, udev);
 
@@ -69,7 +69,7 @@ function PKT_RegisterDevice(pkt) {
 UR_HandleMessage('SRV_SOCKET_DELETED', cmd => {
   const { uaddr } = cmd;
   const entry = DEVICE_MAP.get(uaddr);
-  if (DBG.device) {
+  if (DBG.devices) {
     if (entry === undefined) TERM(`${uaddr} no registered devices to drop`);
     else TERM(`${uaddr} dropping '${entry.getDeviceProp('uclass')}' input`);
   }

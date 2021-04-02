@@ -6,15 +6,19 @@
   Requires a unique key in objects that is provided at construct time.
 
   Main Operations
-  - ingest(collection)
+  - ingest(collection) sets changeList
+  - getChanges() returns changeLists { added, updated, removed }
+  - getValues() returns the current elements in the cache
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const DBG = require('./ur-dbg-settings');
+const PROMPTS = require('./util/prompts');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const log = console.log;
+const PR = PROMPTS.makeStyleFormatter('DiffCache', 'TagDkBlue');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,9 +82,12 @@ class DifferenceCache {
     this.collection = collection;
     if (Array.isArray(collection)) return this.ingestArray(collection);
     if (collection instanceof Map) return this.ingestMap(collection);
-    if (collection instanceof Set) return this.ingestSet(collection);
-    if (collection.constructor.name === 'object') return this.ingestFromObject();
-    console.warn('DifferenceCache.update non-mappable input', collection);
+    if (collection.constructor.name === 'Object')
+      return this.ingestObjectKeys(collection);
+    console.error(
+      'DifferenceCache.ingest non-mappable input',
+      collection.constructor.name
+    );
     return undefined;
   }
 
@@ -92,10 +99,38 @@ class DifferenceCache {
     return this.changeLists;
   }
 
-  getCollection() {
+  getValues() {
     return [...this.cMap.values()];
   }
 
+  /** API: Execute function of form ( value[,index,[array]])=>{},
+   *  which is passed to Array.forEach()
+   */
+  forEach(func) {
+    this.getValues().forEach(func);
+  }
+
+  /** ingest object with hashkeys mapped to objects with 'keyProp'
+   *  used as the unique key: { UADDR_01: { id:123 }, UADDR_02: { id:124 } }
+   *  The hashkeys aren't used in the differencing operation.
+   */
+  ingestObjectKeys(collection) {
+    const arr = Object.values(collection);
+    return this.ingestArray(arr);
+  }
+
+  /** ingest a Map with mapkeys mapped to objects with 'keyProp' used as unique key:
+   *  Map UADDR_01 => { id:123 }
+   *  The mapkeys aren't used in the differencing operation.
+   */
+  ingestMap(collection) {
+    const arr = [...collection.values()];
+    return this.ingestArray(arr);
+  }
+
+  /** ingest an array of objects with 'keyProp' used as unique key:
+   *  [ { id:123 }, { id:1224 } ]
+   */
   ingestArray(collection) {
     const arr = collection;
     const key = this.keyProp;
@@ -121,7 +156,8 @@ class DifferenceCache {
     // (STEP 2) To calculate what's missing, delete all the objects that were seen in
     // this object from the last collection defined in sobjs; the remainder are
     // the deleted objects
-    [...nobjs.values()].forEach(obj => {
+    const n = [...nobjs.values()];
+    n.forEach(obj => {
       // todo: removeHook
       const { id } = obj;
       if (sobjs.has(id)) sobjs.delete(id);
@@ -132,18 +168,6 @@ class DifferenceCache {
     this.cMap = nobjs;
     this.changeLists = { added, updated, removed };
     return this.changeLists;
-  }
-
-  ingestMap(collection) {
-    throw Error('not implemented');
-  }
-
-  ingestSet(collection) {
-    throw Error('not implemented');
-  }
-
-  ingestFromObject() {
-    throw Error('not implemented');
   }
 }
 
@@ -172,7 +196,7 @@ Object.keys(tests).forEach(testName => {
   if (!cmp_arr(added, resAdd)) log('fail: added !== expected result');
   else if (!cmp_arr(updated, resUpd)) log('fail: added !== expected result');
   else if (!cmp_arr(removed, resRem)) log('fail: added !== expected result');
-  else log('PASSED: added, updated, removed match expected results');
+  else log('PASSED: B diff A');
   console.groupEnd();
 });
 
