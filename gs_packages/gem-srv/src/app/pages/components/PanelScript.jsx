@@ -232,7 +232,7 @@ class PanelScript extends React.Component {
 
   /**
    * 1. PanelScript raises NET:SCRIPT_UPDATE
-   * 2. sim-data handles NET:SCRIPT_UPDATE
+   * 2. project-data handles NET:SCRIPT_UPDATE
    *    a. ScriptUpdate updates main data
    *    b. ScirptUpdate raises NET:UPDATE_MODEL
    * 3. MissionControl handles NET_UPDATE_MODEL

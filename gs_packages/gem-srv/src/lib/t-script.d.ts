@@ -180,7 +180,7 @@ export type TInstance = {
   blueprint: string;
   id?: number;
   name?: string;
-  init?: TScriptUnit[];
+  initScript?: TScriptUnit[];
 };
 export type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name
 

@@ -120,7 +120,6 @@ class GAgent extends SM_Object implements IAgent, IActable {
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
   toggleSelected = () => {
     this.isSelected = !this.isSelected;
-    console.log('toggling', this.isSelected);
   };
 
   /// PROPERTIES, METHODS, FEATURES ///////////////////////////////////////////

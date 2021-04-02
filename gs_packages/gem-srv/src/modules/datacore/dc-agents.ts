@@ -21,7 +21,7 @@ let INSTANCE_COUNTER = 1000;
  *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
-  const { blueprint, id, init, name = '<none>' } = instanceDef;
+  const { blueprint, id, initScript, name = '<none>' } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
   if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
   const bpi = INSTANCES.get(blueprint);
@@ -46,7 +46,7 @@ export function DeleteInstance(instanceDef: TInstance) {
   const bpi = INSTANCES.get(blueprint);
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
-    console.error(...PR(`DeleteInstance couldn't find instance ${id}`));
+    console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
   bpi.splice(index, 1);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,6 +55,15 @@ export function GetAllInstances() {
   const map = [...INSTANCES.values()];
   map.forEach(i => instances.push(...i));
   return instances;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  if (bpi === undefined) return undefined;
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0) return undefined;
+  return bpi[index];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the instance definitions that are blueprint */
@@ -70,7 +79,7 @@ export function DeleteAllInstances() {
   INSTANCE_COUNTER = 100;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteBlueprintInstances(blueprint) {
+export function DeleteInstancesByBlueprint(blueprint) {
   INSTANCES.set(blueprint, []);
 }
 
@@ -114,6 +123,12 @@ export function DeleteAgent(instancedef) {
   agents.delete(id);
   AGENTS.set(blueprint, agents);
   AGENT_DICT.delete(id);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAgentByBlueprint(blueprintName) {
+  const agents = AGENTS.get(blueprintName);
+  AGENTS.delete(blueprintName);
+  agents.forEach(a => AGENT_DICT.delete(a.id));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return GAgent array by type */

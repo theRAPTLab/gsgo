@@ -80,6 +80,7 @@ class PanelSimulation extends React.Component {
   }
 
   DoSimPlaces() {
+    if (DBG) console.log(...PR('DoSimPlaces! Commpiling...'));
     // 1. Load Model
     //    model data is loaded by the parent container MissionControl
     const { model } = this.props;
@@ -97,7 +98,7 @@ class PanelSimulation extends React.Component {
     // 3. Create/Update All Instances
     const instancesSpec = model.instances;
     // Use 'UPDATE' so we don't clobber old instance values.
-    UR.RaiseMessage('ALL_AGENTS_PROGRAM_UPDATE', {
+    UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
       blueprintNames,
       instancesSpec
     });
