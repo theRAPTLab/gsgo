@@ -165,10 +165,11 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
+    this.origBlueprintName = '';
     this.state = {
-      title: 'Script',
+      viewMode: 'code',
+      jsx: '',
       lineHighlight: undefined,
-      origBlueprintName: '',
       openConfirmDelete: false,
       isDirty: false,
       openConfirmUnload: false,
@@ -189,6 +190,8 @@ class PanelScript extends React.Component {
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
+    this.CompileToJSX = this.CompileToJSX.bind(this);
+    this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
     this.SendText = this.SendText.bind(this);
     this.OnSelectScriptClick = this.OnSelectScriptClick.bind(this);
     this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
@@ -198,6 +201,7 @@ class PanelScript extends React.Component {
     this.OnToggleWizard = this.OnToggleWizard.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
@@ -230,9 +234,7 @@ class PanelScript extends React.Component {
   }
 
   componentWillUnmount() {
-    console.warn(
-      'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
-    );
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
@@ -241,15 +243,52 @@ class PanelScript extends React.Component {
   }
 
   UpdateBlueprintName(script) {
+    if (DBG) console.log(...PR('UpdateBlueprintName -- setting state'));
     const blueprintName = TRANSPILER.ExtractBlueprintName(script);
-    this.setState({
-      title: this.GetTitle(blueprintName),
-      origBlueprintName: blueprintName
-    });
+    this.origBlueprintName = blueprintName;
   }
 
   GetTitle(blueprintName) {
     return `Script: ${blueprintName}`;
+  }
+
+  // compile source to jsx
+  CompileToJSX() {
+    if (DBG) console.group(...PR('toReact'));
+    const { modelId } = this.props;
+    const currentScript = this.jar.toString();
+    const source = TRANSPILER.ScriptifyText(currentScript);
+    // REVIEW: This seems like overkill, on the other hand, we do need
+    // to use the current name?
+    const blueprintName = TRANSPILER.ExtractBlueprintName(currentScript);
+    const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(currentScript);
+    const jsx = TRANSPILER.RenderScript(source, {
+      isEditable: true,
+      isDeletable: false,
+      isInstanceEditor: false,
+      propMap
+    });
+    this.setState({ jsx });
+    if (DBG) console.groupEnd();
+  }
+
+  /**
+   * keyword editor has sent updated script line
+   * @param {Object} data { index, scriptUnit, exitEdit }
+   */
+  HandleScriptUIChanged(data) {
+    const currentScript = this.jar.toString();
+    // 1. Convert script text to array
+    const scriptTextLines = currentScript.split('\n');
+    // 2. Conver the updated line to text
+    const updatedLineText = data.scriptUnit.join(' ');
+    // 3. Replace the updated line in the script array
+    scriptTextLines[data.index] = updatedLineText;
+    // 4. Convert the script array back to script text
+    const updatedScript = scriptTextLines.join('\n');
+    // 5. Update the codejar code
+    this.jar.updateCode(updatedScript);
+    this.setState({ isDirty: true });
   }
 
   /**
@@ -264,9 +303,9 @@ class PanelScript extends React.Component {
    *    b. DoSimPlaces scriptifys the text
    *    c. DoSimPlaces registers the new blueprint
    *       replacing any existing blueprint
-   *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM_UPDATE
+   *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM
    *    b. DoSimPlaces raises AGENTS_RENDER
-   * 4. sim-agents handles ALL_AGENTS_PROGRAM_UPDATE
+   * 4. sim-agents handles ALL_AGENTS_PROGRAM
    *    a. AllAgentsProgramUpdate either
    *       -- updates any existing instances
    *       -- or creates a new instance if it doesn't exist by calling
@@ -280,16 +319,16 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
-    const { origBlueprintName } = this.state;
     const text = this.jar.toString();
     const currentBlueprintName = TRANSPILER.ExtractBlueprintName(text);
     UR.RaiseMessage('NET:SCRIPT_UPDATE', {
       script: text,
-      origBlueprintName
+      origBlueprintName: this.origBlueprintName
     });
-    this.setState({ origBlueprintName: currentBlueprintName, isDirty: false });
+    this.setState({ isDirty: false });
     // select the new script
-    if (origBlueprintName !== currentBlueprintName) {
+    if (this.origBlueprintName !== currentBlueprintName) {
+      this.origBlueprintName = currentBlueprintName;
       UR.RaiseMessage('SELECT_SCRIPT', { scriptId: currentBlueprintName });
     }
   }
@@ -334,10 +373,9 @@ class PanelScript extends React.Component {
       openConfirmDelete: false
     });
     if (yesDelete) {
-      const { origBlueprintName } = this.state;
       UR.RaiseMessage('SELECT_SCRIPT', { scriptId: undefined }); // go to selection screen
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
-        blueprintName: origBlueprintName
+        blueprintName: this.origBlueprintName
       });
     }
   }
@@ -365,6 +403,7 @@ class PanelScript extends React.Component {
     const {
       title,
       viewMode,
+      jsx,
       lineHighlight,
       isDirty,
       openConfirmDelete,
