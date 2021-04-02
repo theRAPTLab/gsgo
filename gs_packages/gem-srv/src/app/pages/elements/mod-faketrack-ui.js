@@ -30,7 +30,7 @@ import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('FAKETK', 'TagInput');
+const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 
 // React user interface (the "view")
 let m_FAKEVIEW = null;

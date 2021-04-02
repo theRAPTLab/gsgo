@@ -10,7 +10,7 @@ import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SIM-INPUT', 'TagInput');
+const PR = UR.PrefixUtil('SIM-INPUT' /* 'TagInput' */);
 const DBG = false;
 
 /// CHEESE TESTING ////////////////////////////////////////////////////////////

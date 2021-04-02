@@ -19,7 +19,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRACKER', 'TagApp');
+const PR = UR.PrefixUtil('TRACKER' /* 'TagApp' */);
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
@@ -105,7 +105,7 @@ class Tracker extends React.Component {
   updateDeviceList() {
     const devices = m_GetDeviceArray({ uclass: 'FakeTrack' });
     this.setState({ devices });
-    console.log(...PR('devices', JSON.stringify(devices)));
+    // console.log(...PR('devices', JSON.stringify(devices)));
   }
 
   render() {

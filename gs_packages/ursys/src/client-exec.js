@@ -19,7 +19,7 @@ const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
 const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
-const RPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagRainbow');
+const RPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR3');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
