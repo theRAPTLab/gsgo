@@ -28,7 +28,7 @@ import './scrollbar.css';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SCRIPTEDITOR');
-const DBG = true;
+const DBG = false;
 
 const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # PROGRAM DEFINE
@@ -130,7 +130,7 @@ class ScriptEditor extends React.Component {
   CleanupComponents() {
     this.UnRegisterInstances();
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
-    UR.UnandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
@@ -245,10 +245,9 @@ class ScriptEditor extends React.Component {
     this.UnRegisterInstances();
     const { model, modelId } = this.state;
     if (model === undefined || model.scripts === undefined) {
-      console.error(
+      console.warn(
         'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
-        model,
-        model.scripts
+        model
       );
       return; // no scripts defined
     }
