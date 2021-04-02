@@ -261,8 +261,15 @@ function TextifyScript(units: TScriptUnit[]): string {
     if (unit[0] === '_comment') unit[0] = '//';
     const toks = [];
     unit.forEach((tok, uidx) => {
-      if (uidx === 0) toks.push(tok);
-      else toks.push(m_Tokenify(tok));
+      // Orig Call
+      // This was broken with the new script unit object model.
+      // It would return '{token: value}' instead of `value`
+      // if (uidx === 0) toks.push(tok);
+      // else toks.push(m_Tokenify(tok));
+
+      // HACK Fix to work around new object model
+      // This will probably break with nested expressions
+      toks.push(tok.token || tok.value);
     });
     lines.push(`${toks.join(' ')}`);
   });
@@ -348,6 +355,46 @@ function CompileBlueprint(units: TScriptUnit[]): SM_Bundle {
   }
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint name from a script
+ * Compiles raw scriptText to determine the blueprint name
+ * @param {string} script
+ */
+function ExtractBlueprintName(script) {
+  const source = ScriptifyText(script);
+  const bundle = CompileBlueprint(source); // compile to get name
+  return bundle.name;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint name
+ * @param {string} script
+ */
+function ExtractBlueprintProperties(script) {
+  // HACK in built in properties -- where should these be looked up?
+  // 1. Start with built in properties
+  let properties = [
+    { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+  ];
+  // 2. Brute force deconstruct added properties
+  //    by walking down script and looking for `addProp`
+  if (!script) return properties; // During update script can be undefined
+  const scriptUnits = ScriptifyText(script);
+  scriptUnits.forEach(unit => {
+    if (unit[0] && unit[0].token === 'addProp') {
+      properties.push({
+        name: unit[1].token,
+        type: unit[2].token.toLowerCase(),
+        defaultValue: unit[3].value,
+        isFeatProp: false
+      });
+    }
+  });
+  return properties;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
@@ -453,5 +500,7 @@ export {
 export {
   MakeAgent, // BlueprintName => Agent
   RemoveAgent,
-  RegisterBlueprint // TScriptUnit[] => ISM_Bundle
+  RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
+  ExtractBlueprintName,
+  ExtractBlueprintProperties
 };

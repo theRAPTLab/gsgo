@@ -30,6 +30,15 @@ import './scrollbar.css';
 const PR = UR.PrefixUtil('SCRIPTEDITOR');
 const DBG = true;
 
+const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
+# PROGRAM DEFINE
+// useFeature Costume
+// useFeature Movement
+# PROGRAM EVENT
+// onEvent Tick [[ ]]
+# PROGRAM UPDATE
+// when xxx touches yyy [[ ]]`;
+
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('select', '50% auto 0px'); // columns
@@ -62,13 +71,16 @@ class ScriptEditor extends React.Component {
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectScript = this.OnSelectScript.bind(this);
+    this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
+    this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
     // Sent by PanelSelectAgent
-    UR.HandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
+    UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.HandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     // REVIEW
     // Sometimes SIM/READY is too early.  The request for model
@@ -91,6 +103,7 @@ class ScriptEditor extends React.Component {
   }
 
   componentDidMount() {
+    if (DBG) console.log(...PR('componentDidMount'));
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
     const scriptId = params.get('script');
@@ -116,10 +129,11 @@ class ScriptEditor extends React.Component {
 
   CleanupComponents() {
     this.UnRegisterInstances();
-    UR.UnhandleMessage('HACK_SELECT_AGENT', this.OnSelectScript);
+    UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.UnandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
-    UR.UnhandleMessage('NET:INSTANCES_UPDATED', this.OnInstanceUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
@@ -134,6 +148,7 @@ class ScriptEditor extends React.Component {
    * @param {String} modelId
    */
   LoadModel(modelId) {
+    if (DBG) console.log(...PR('LoadModel'));
     UR.RaiseMessage('NET:REQUEST_MODEL', { modelId });
   }
   /**
@@ -143,10 +158,11 @@ class ScriptEditor extends React.Component {
    * @param {Object} data
    */
   OnSimDataUpdate(data) {
+    if (DBG) console.log(...PR('OnSimDataUpdate', data));
     const { scriptId } = this.state;
     this.setState({ model: data.model }, () => {
       if (scriptId) {
-        this.OnSelectScript(scriptId);
+        this.OnSelectScript({ scriptId });
       }
     });
   }
@@ -163,17 +179,18 @@ class ScriptEditor extends React.Component {
   }
 
   /**
-   * Handler for `NET:INSTANCES_UPDATED`
-   * NET:INSTANCES_UPDATED is sent by sim-agents.AgentsProgram after instances are created.
+   * Handler for `NET:INSTANCES_UPDATE`
+   * NET:INSTANCES_UPDATE is sent by sim-agents.AgentsProgram after instances are created.
    * We use the list of instances created for this blueprint to register
    * the instances for inspector monitoring.
    * This is also called when other ScriptEditors on the network submit
-   * scripts and trigger NET:INSTANCES_UPDATED.  In that situation,
+   * scripts and trigger NET:INSTANCES_UPDATE.  In that situation,
    * we only update if the instance isn't already being monitored.
    * @param {Object} data { instances: [...instances]}
    *                       where 'instances' are instanceSpecs: {name, blueprint, init}
    */
   OnInstanceUpdate(data) {
+    if (DBG) console.log(...PR('OnInstanceUpdate'));
     const { scriptId, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
     const instances = data.instances.filter(i => {
@@ -198,6 +215,7 @@ class ScriptEditor extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
+    if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
     const { scriptId } = this.state;
     if (!data || data.agents === undefined) {
@@ -217,7 +235,13 @@ class ScriptEditor extends React.Component {
     });
   }
 
-  OnSelectScript(scriptId) {
+  /**
+   * Call with stringId=undefined to go to selection screen
+   * @param {string} data { scriptId }
+   */
+  OnSelectScript(data) {
+    const { scriptId } = data;
+    if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
     const { model, modelId } = this.state;
     if (model === undefined || model.scripts === undefined) {
@@ -229,7 +253,7 @@ class ScriptEditor extends React.Component {
       return; // no scripts defined
     }
     const agent = model.scripts.find(s => s.id === scriptId);
-    const script = agent && agent.script ? agent.script : {};
+    const script = agent && agent.script ? agent.script : SCRIPT_TEMPLATE;
 
     // add script to URL
     history.pushState(
@@ -238,11 +262,30 @@ class ScriptEditor extends React.Component {
       `/app/scripteditor?model=${modelId}&script=${scriptId}`
     );
 
+    // Show script selector if scriptId was not passed
+    let panelConfiguration = 'script';
+    if (scriptId === undefined) {
+      panelConfiguration = 'select';
+    }
+
     this.setState({
-      panelConfiguration: 'script',
+      panelConfiguration,
       script,
       scriptId
     });
+  }
+
+  HandleScriptUpdate(data) {
+    const firstline = data.script.match(/.*/)[0];
+    this.PostSendMessage(firstline);
+  }
+
+  PostSendMessage(text) {
+    this.setState(state => ({
+      message: `${
+        state.message
+      }${new Date().toLocaleTimeString()} :: Sent script ${text}\n`
+    }));
   }
 
   OnDebugMessage(data) {
@@ -257,6 +300,7 @@ class ScriptEditor extends React.Component {
    *  make this happen.
    */
   render() {
+    if (DBG) console.log(...PR('render'));
     const {
       panelConfiguration,
       modelId,
@@ -288,18 +332,20 @@ class ScriptEditor extends React.Component {
             <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <Link
-            to={{ pathname: `/app/model?model=${modelId}` }}
+          <button
+            type="button"
+            onClick={() => window.close()}
             className={classes.navButton}
           >
-            Back to PROJECT
-          </Link>
+            CLOSE
+          </button>
         </div>
         <div id="console-left" className={classes.left}>
           {panelConfiguration === 'select' && (
             <PanelSelectAgent
               id="select"
               agents={agents}
+              modelId={modelId}
               onClick={this.OnPanelClick}
             />
           )}
@@ -316,11 +362,23 @@ class ScriptEditor extends React.Component {
         </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <div style={{ display: 'flex' }}>
-            <PanelMessage message={message} isError={messageIsError} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 3fr',
+              columnGap: '5px',
+              height: '100%',
+              overflow: 'hidden'
+            }}
+          >
+            <PanelMessage
+              title="Log"
+              message={message}
+              isError={messageIsError}
+            />
             <PanelInstances
               id="instances"
               instances={instances}

@@ -6,6 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -17,6 +18,7 @@ import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
+import PanelBlueprints from './components/PanelBlueprints';
 import PanelInspector from './components/PanelInspector';
 import PanelInstances from './components/PanelInstances';
 
@@ -29,13 +31,13 @@ import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MISSIONCONTROL');
+const PR = UR.PrefixUtil('VIEWER');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('instances', '15% auto'); // columns
-PANEL_CONFIG.set('sim', '5% auto'); // columns
+PANEL_CONFIG.set('instances', '15% auto 150px'); // columns
+PANEL_CONFIG.set('sim', '110px auto 150px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,17 +47,34 @@ class Viewer extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'sim',
-      modelId: ''
+      modelId: '',
+      model: {},
+      instances: []
     };
+    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
+    this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+
+    // Instance Interaction Handlers
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+
+    // System Hooks
+    UR.HookPhase('SIM/STAGED', () => {
+      // **************************************************
+      // REVIEW
+      // This assumes that MissionControl is already running.
+      // This is not always reliable, especially during code
+      // refresh.  This call might go out before MissionControl.
+      // **************************************************
+      UR.RaiseMessage('NET:REQUEST_CURRENT_MODEL');
+    });
   }
 
   componentDidMount() {
-    let modelId = window.location.search.substring(1);
-    this.setState({ modelId });
-    document.title = `GEMSTEP VIEWER ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
   }
@@ -65,7 +84,30 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+  }
+
+  HandleSimInstanceHoverOver(data) {
+    console.error('hover!');
+  }
+
+  HandleSimDataUpdate(data) {
+    console.error('onsimupdate');
+    this.setState({
+      modelId: data.modelId,
+      model: data.model,
+      instances: data.instances
+    });
+    document.title = `VIEWER ${data.modelId}`;
+  }
+
+  HandleInspectorUpdate(data) {
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    this.setState({ instances: data.agents });
   }
 
   OnModelClick() {
@@ -85,8 +127,14 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, modelId } = this.state;
+    const { panelConfiguration, modelId, model, instances } = this.state;
     const { classes } = this.props;
+
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
+
     return (
       <div
         className={classes.root}
@@ -103,24 +151,32 @@ class Viewer extends React.Component {
             <span style={{ fontSize: '32px' }}>VIEWER {modelId}</span> UGLY
             DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnModelClick}>
-            Back to MODEL
-          </button>
+          <Link
+            to={{ pathname: `/app/model?model=${modelId}` }}
+            className={classes.navButton}
+          >
+            Back to PROJECT
+          </Link>
         </div>
         <div
           id="console-left"
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
+          <PanelBlueprints id="blueprints" modelId={modelId} agents={agents} />
           <PanelInstances id="instances" />
-          <PanelInspector isActive />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
+        <div id="console-right" className={classes.right}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <PanelInstances id="instances" instances={instances} />
+          </div>
+        </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
           console-bottom

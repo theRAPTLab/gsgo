@@ -6,16 +6,18 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 import PanelChrome from './PanelChrome';
 
 class PanelMessage extends React.Component {
-  constructor() {
+  constructor(props) {
     super();
-    this.state = {
-      title: 'Messages'
-    };
   }
-
   render() {
-    const { title } = this.state;
-    const { id, isActive, message, isError, classes } = this.props;
+    const {
+      id,
+      title = 'Messages',
+      isActive,
+      message,
+      isError,
+      classes
+    } = this.props;
 
     const onClick = () => {
       // To be implemented

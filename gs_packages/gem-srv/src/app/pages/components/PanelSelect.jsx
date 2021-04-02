@@ -8,13 +8,12 @@ class PanelSelect extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Work',
+      title: 'Select',
       options: [
         // Dummy Data
         { id: 'missioncontrol', label: 'Main' },
-        { id: 'scripteditor', label: 'Script Editor' },
-        { id: 'faketrack', label: 'Fake Track' },
-        { id: 'viewer', label: 'View-only' }
+        { id: 'viewer', label: 'Viewer' },
+        { id: 'faketrack', label: 'Fake Track' }
       ]
     };
     this.onClick = this.onClick.bind(this);

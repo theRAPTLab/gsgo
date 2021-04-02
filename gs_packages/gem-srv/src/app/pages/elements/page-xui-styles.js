@@ -56,9 +56,40 @@ const CLR_BORDER_BACK = BaseColorShift(128, 0.15); // 'rgba(128,256,128,0.15)'; 
 const CLR_BORDER = BaseColorShift(128, 0.3); // 'rgba(128,256,128,0.3)';
 const CLR_BORDER_ACTIVE = BaseColorShift(0, 0.6); // 'rgba(0,256,0,0.6)';
 
-const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1);
+const CLR_HI = RGBA(CLR_HI_R, CLR_HI_G, CLR_HI_B, 1); // red
+const CLR_HI2 = RGBA(CLR_HI_R, CLR_HI_R, CLR_HI_B, 0.8); // yellow
 
 const FONT_FAMILY = 'Andale Mono, monospace';
+
+/// BASE STYLES ///////////////////////////////////////////////////////////////
+const BUTTON = {
+  fontSize: '18px',
+  padding: '5px',
+  margin: '5px',
+  minHeight: '50px',
+  minWidth: '50px',
+  borderRadius: '5px',
+  color: CLR_DATA,
+  backgroundColor: CLR_OBJECT_CLICKABLE,
+  borderTopColor: BaseColorShift(0, 0.2),
+  borderLeftColor: BaseColorShift(0, 0.2),
+  borderRightColor: BaseColorShift(-240, 0.2),
+  borderBottomColor: BaseColorShift(-240, 0.2),
+  cursor: 'pointer',
+  '&:hover': {
+    color: CLR_ACTIVE,
+    borderTopColor: BaseColorShift(0, 0.4),
+    borderLeftColor: BaseColorShift(0, 0.4),
+    borderRightColor: BaseColorShift(-240, 0.4),
+    borderBottomColor: BaseColorShift(-240, 0.4)
+  },
+  '&:disabled': {
+    color: CLR_DATA_INACTIVE,
+    backgroundColor: CLR_OBJECT,
+    borderColor: BaseColorShift(-240, 0.2),
+    cursor: 'not-allowed'
+  }
+};
 
 /// STYLE DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,6 +109,12 @@ const useStylesHOC = theme => ({
   title: {
     fontSize: 'large'
   },
+  a: {
+    color: CLR_HI2,
+    '&:hover': {
+      color: CLR_HI
+    }
+  },
   cell: {
     padding: '5px',
     fontFamily: FONT_FAMILY
@@ -91,11 +128,13 @@ const useStylesHOC = theme => ({
   top: {
     gridColumnEnd: 'span 3',
     color: 'white',
-    backgroundColor: BG_TITLE
+    backgroundColor: BG_TITLE,
+    overflow: 'hidden'
   },
   right: {
     gridColumnEnd: 'span 1',
-    backgroundColor: BG_COLOR
+    backgroundColor: BG_COLOR,
+    overflow: 'hidden'
   },
   left: {
     gridColumnEnd: 'span 1',
@@ -105,7 +144,8 @@ const useStylesHOC = theme => ({
   },
   bottom: {
     gridColumnEnd: 'span 3',
-    backgroundColor: BG_COLOR
+    backgroundColor: BG_COLOR,
+    overflow: 'hidden'
   },
   list: {
     marginLeft: 0,
@@ -125,8 +165,7 @@ const useStylesHOC = theme => ({
   panel: {
     color: CLR_DATA,
     border: `1px solid ${CLR_BORDER_BACK}`,
-    background: `linear-gradient(${CLR_PANEL_BG}, ${CLR_PANEL_BG_END})`,
-    padding: '3px'
+    background: `linear-gradient(${CLR_PANEL_BG}, ${CLR_PANEL_BG_END})`
   },
   panelTitle: {
     color: CLR_ACTIVE,
@@ -136,6 +175,9 @@ const useStylesHOC = theme => ({
     color: CLR_ACTIVE
   },
   panelMessageError: {
+    color: CLR_HI
+  },
+  infoHighlightColor: {
     color: CLR_HI
   },
   infoLabel: {
@@ -190,7 +232,8 @@ const useStylesHOC = theme => ({
   },
   instructions: {
     color: CLR_LABEL,
-    fontStyle: 'italic'
+    fontStyle: 'italic',
+    padding: '3px'
   },
   instanceListItem: {
     padding: '5px',
@@ -216,10 +259,30 @@ const useStylesHOC = theme => ({
     border: '1px solid #ff880088'
   },
   instanceSpecSelected: {
-    border: '1px solid #ffff00'
+    border: '1px solid #ffff00',
+    width: '200px',
+    padding: '10px 5px'
+  },
+  instanceEditorLineItem: {
+    // parent group
+    display: 'grid',
+    gridTemplateColumns: '80px auto 15px'
   },
   instanceEditorLine: {
     display: 'inline-block'
+  },
+  instanceEditorLabel: {
+    display: 'inline-block',
+    color: CLR_DATA,
+    width: '80px',
+    textAlign: 'right',
+    paddingRight: '0.25em'
+  },
+  instanceEditorData: {
+    color: CLR_ACTIVE
+  },
+  instanceEditorField: {
+    width: '100%'
   },
   navButton: {
     fontSize: '14px',
@@ -238,66 +301,52 @@ const useStylesHOC = theme => ({
     cursor: 'pointer'
   },
   button: {
-    fontSize: '18px',
-    padding: '5px',
-    margin: '5px',
-    minHeight: '50px',
-    minWidth: '50px',
-    borderRadius: '5px',
-    color: CLR_DATA,
-    backgroundColor: CLR_OBJECT_CLICKABLE,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    ...BUTTON
+  },
+  buttonHi: {
+    ...BUTTON,
+    color: CLR_HI,
+    borderTopColor: CLR_HI2,
+    borderLeftColor: CLR_HI2,
+    borderRightColor: CLR_HI2,
+    borderBottomColor: CLR_HI2
   },
   buttonSmall: {
-    fontSize: '18px',
-    padding: '5px',
-    margin: '5px',
+    ...BUTTON,
+    fontSize: '12px',
     minHeight: '25px',
     minWidth: '25px',
-    borderRadius: '5px',
-    color: CLR_DATA,
-    backgroundColor: CLR_OBJECT_CLICKABLE,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    borderRadius: '5px'
   },
   buttonMini: {
+    ...BUTTON,
+    fontSize: '10px',
+    padding: '0',
+    margin: '0',
+    minHeight: '15px',
+    minWidth: '15px',
+    borderRadius: '3px',
+    color: CLR_DATA
+  },
+  buttonLink: {
+    // Text only button
     fontSize: '10px',
     padding: '2px',
     margin: '2px',
     minHeight: '15px',
     minWidth: '15px',
-    borderRadius: '3px',
-    color: CLR_DATA,
-    backgroundColor: CLR_OBJECT_CLICKABLE,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
+    color: CLR_HI2,
+    backgroundColor: 'transparent',
+    border: 'none',
     cursor: 'pointer'
   },
   buttonOn: {
-    fontSize: '18px',
-    padding: '5px',
-    margin: '5px',
-    minHeight: '50px',
-    minWidth: '50px',
-    borderRadius: '5px',
+    ...BUTTON,
     color: CLR_HI,
-    backgroundColor: CLR_OBJECT_HIGHLIGHT,
-    borderTopColor: BaseColorShift(0, 0.2),
-    borderLeftColor: BaseColorShift(0, 0.2),
-    borderRightColor: BaseColorShift(-240, 0.2),
-    borderBottomColor: BaseColorShift(-240, 0.2),
-    cursor: 'pointer'
+    backgroundColor: CLR_OBJECT_HIGHLIGHT
   },
   buttonDisabled: {
+    ...BUTTON,
     color: CLR_LABEL,
     backgroundColor: CLR_OBJECT,
     borderTopColor: BaseColorShift(0, 0.1),
@@ -314,6 +363,9 @@ const useStylesHOC = theme => ({
     borderRightColor: BaseColorShift(0, 0.1),
     borderBottomColor: BaseColorShift(0, 0.1),
     backgroundColor: CLR_OBJECT_CLICKABLE
+  },
+  colorData: {
+    color: CLR_DATA
   }
 });
 
