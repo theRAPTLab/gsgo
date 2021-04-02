@@ -40,7 +40,7 @@ function GetUID() {
 
 /// CLASS DEFINTION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class SimData {
+class ProjectData {
   constructor() {
     // Properties
     this.currentModelId = '';
@@ -62,14 +62,14 @@ class SimData {
     // URSYS CALLS ////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
-    this.SendSimDataModels = this.SendSimDataModels.bind(this);
-    this.SendSimDataModel = this.SendSimDataModel.bind(this);
-    this.HandleSimDataModelRequest = this.HandleSimDataModelRequest.bind(this);
-    this.HandleRequestCurrentModel = this.HandleRequestCurrentModel.bind(this);
+    this.RaiseModelsUpdate = this.RaiseModelsUpdate.bind(this);
+    this.RaiseModelUpdate = this.RaiseModelUpdate.bind(this);
+    this.HandleModelRequest = this.HandleModelRequest.bind(this);
+    this.HandleCurrentModelRequest = this.HandleCurrentModelRequest.bind(this);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
-    UR.HandleMessage('*:REQUEST_MODELS', this.SendSimDataModels);
-    UR.HandleMessage('NET:REQUEST_MODEL', this.HandleSimDataModelRequest);
-    UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleRequestCurrentModel);
+    UR.HandleMessage('*:REQUEST_MODELS', this.RaiseModelsUpdate);
+    UR.HandleMessage('NET:REQUEST_MODEL', this.HandleModelRequest);
+    UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleCurrentModelRequest);
     // BLUEPRINT UTILS --------------------------------------------------------
     this.HandleBlueprintDelete = this.HandleBlueprintDelete.bind(this);
     UR.HandleMessage('NET:BLUEPRINT_DELETE', this.HandleBlueprintDelete);
@@ -152,8 +152,10 @@ class SimData {
    * API Call
    * @param {string} modelId
    */
-  GetModel(modelId) {
+  SetCurrentModelId(modelId) {
     this.currentModelId = modelId;
+  }
+  GetModel(modelId) {
     return this.GetSimDataModel(modelId);
   }
   GetCurrentModel() {
@@ -204,14 +206,14 @@ class SimData {
    * @return {object} InstanceDef with init scrubbed
    */
   RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
-    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
     const scrubbedScriptUnits = scriptUnits.filter(unit => {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return validPropNames.includes(unit[1].token);
       }
       return false;
     });
-    instance.init = TRANSPILER.TextifyScript(scrubbedScriptUnits);
+    instance.initScript = TRANSPILER.TextifyScript(scrubbedScriptUnits);
     return instance;
   }
 
@@ -285,14 +287,10 @@ class SimData {
       );
     }
 
-    this.SendSimDataModel();
+    this.RaiseModelUpdate();
   }
 
-  /**
-   *
-   * @param {Object} data -- { modelId: <string> }
-   */
-  SendSimDataModels() {
+  RaiseModelsUpdate() {
     const models = this.GetModels();
     UR.RaiseMessage('LOCAL:UPDATE_MODELS', { models });
   }
@@ -301,13 +299,13 @@ class SimData {
    *
    * @param {Object} data -- { modelId: <string> }
    */
-  HandleSimDataModelRequest(data) {
-    this.SendSimDataModel(data.modelId);
+  HandleModelRequest(data) {
+    this.RaiseModelUpdate(data.modelId);
   }
-  HandleRequestCurrentModel() {
-    this.SendSimDataModel();
+  HandleCurrentModelRequest() {
+    this.RaiseModelUpdate();
   }
-  SendSimDataModel(modelId = this.currentModelId) {
+  RaiseModelUpdate(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
     UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
   }
@@ -316,7 +314,7 @@ class SimData {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   HandleBlueprintDelete(data) {
     this.BlueprintDelete(data.blueprintName);
-    this.SendSimDataModel();
+    this.RaiseModelUpdate();
   }
 
   /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
@@ -368,7 +366,7 @@ class SimData {
       id: GetUID(),
       name: `${data.blueprintName}${model.instances.length}`,
       blueprint: data.blueprintName,
-      init: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
+      initScript: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
 prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     };
     model.instances.push(instance);
@@ -376,12 +374,12 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     // REVIEW
     // This needs to send data to db
     //
-    if (sendUpdate) this.SendSimDataModel(data.modelId);
+    if (sendUpdate) this.RaiseModelUpdate(data.modelId);
   }
   /**
    *
    * @param {Object} data -- { modelId, instanceId, instanceName, updatedData }
-   * where `updatedData` = { init } -- init is scriptText.
+   * where `updatedData` = { initScript } -- initScript is scriptText.
    *                 Leave instanceName or instanceInit undefined
    *                 if they're not being set.
    */
@@ -392,12 +390,12 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     );
     const instance = model.instances[instanceIndex];
     instance.name = data.instanceName || instance.name;
-    instance.init =
+    instance.initScript =
       data.instanceInit !== undefined // data.instanceInit might be ''
         ? data.instanceInit
-        : instance.init;
+        : instance.initScript;
     model.instances[instanceIndex] = instance;
-    this.SendSimDataModel(data.modelId);
+    this.RaiseModelUpdate(data.modelId);
   }
   /**
    * HACK: Manually change the init script when updating position.
@@ -410,13 +408,15 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       i => i.id === data.instanceId
     );
     const instance = model.instances[instanceIndex];
-    let scriptTextLines = instance.init ? instance.init.split('\n') : [];
+    let scriptTextLines = instance.initScript
+      ? instance.initScript.split('\n')
+      : [];
     this.ReplacePropLine('x', 'setTo', data.updatedData.x, scriptTextLines);
     this.ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
     const scriptText = scriptTextLines.join('\n');
-    instance.init = scriptText;
+    instance.initScript = scriptText;
     model.instances[instanceIndex] = instance;
-    this.SendSimDataModel(data.modelId);
+    this.RaiseModelUpdate(data.modelId);
   }
   /**
    * Used by InstanceUpdatePosition to find and replace existing
@@ -435,7 +435,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     const newLine = `prop ${propName} ${propMethod} ${params}`;
     if (lineNumber === -1) {
       console.warn(
-        `sim-data.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
+        `project-data.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
       );
       scriptTextLines.push(newLine);
     } else {
@@ -485,7 +485,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     // Remove from Sim
     DeleteInstance(data.instanceDef);
     DeleteAgent(data.instanceDef);
-    this.SendSimDataModel(data.modelId);
+    this.RaiseModelUpdate(data.modelId);
 
     // REVIEW
     // Update the DB!
@@ -543,6 +543,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
   }
 }
 
-const SIMDATA = new SimData();
+const PROJECTDATA = new ProjectData();
 
-export default SIMDATA;
+export default PROJECTDATA;

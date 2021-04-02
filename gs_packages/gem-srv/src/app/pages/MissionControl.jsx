@@ -35,7 +35,7 @@ import PanelMessage from './components/PanelMessage';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
-import SimData from '../data/sim-data';
+import ProjectData from '../data/project-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -165,16 +165,15 @@ class MissionControl extends React.Component {
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    // Direct SimData API Call
-    // This bypasses OnSimDataUpdate
-    const model = SimData.GetModel(modelId);
+    ProjectData.SetCurrentModelId(modelId);
+    const model = ProjectData.GetCurrentModel();
     this.setState(
       { model },
       () => this.CallSimPlaces() // necessary to update screen after overall model updates
     );
   }
   HandleSimDataUpdate(data) {
-    if (DBG) console.error('HandleSimDataUpdate', data);
+    if (DBG) console.log('HandleSimDataUpdate', data);
     if (SIM.IsRunning()) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
@@ -186,12 +185,10 @@ class MissionControl extends React.Component {
     );
   }
   HandleInstancesUpdate(data) {
-    if (DBG) console.error('HandleInstancesUpdate', data);
+    if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
     model.instances = data.instances;
-    this.setState(
-      { model }
-    );
+    this.setState({ model });
   }
   /**
    * User has submitted a new script, just update message
@@ -263,7 +260,7 @@ class MissionControl extends React.Component {
       const { modelId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      SimData.InstanceUpdatePosition({
+      ProjectData.InstanceUpdatePosition({
         modelId,
         instanceId: agent.id,
         updatedData: { x, y }
@@ -281,16 +278,16 @@ class MissionControl extends React.Component {
     const { panelConfiguration, modelId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      SimData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      ProjectData.InstanceRequestEdit({ modelId, agentId: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
-    SimData.InstanceHoverOver({ modelId, agentId: data.agentId });
+    ProjectData.InstanceHoverOver({ modelId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { modelId } = this.state;
-    SimData.InstanceHoverOut({ modelId, agentId: data.agentId });
+    ProjectData.InstanceHoverOut({ modelId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

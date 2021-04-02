@@ -8,8 +8,8 @@ Shows instance init scripts.
 * Used to define instances in a map.
 * Allows properties to be edited.
 
-props.instance = instance specification: {name, blueprint, init}
-  e.g. {name: "fish01", blueprint: "Fish", init: "prop x setTo -220↵prop y setTo -220"}
+props.instance = instance specification: {name, blueprint, initScript}
+  e.g. {name: "fish01", blueprint: "Fish", initScript: "prop x setTo -220↵prop y setTo -220"}
 
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -22,8 +22,10 @@ import { GetAgentByName } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import SimData from '../../data/sim-data';
+import ProjectData from '../../data/project-data';
 import InputField from './InputField';
+
+const DBG = true;
 
 class InstanceEditor extends React.Component {
   constructor() {
@@ -67,7 +69,7 @@ class InstanceEditor extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ modelId: SimData.GetCurrentModelId() });
+    this.setState({ modelId: ProjectData.GetCurrentModelId() });
   }
 
   componentWillUnmount() {
@@ -114,7 +116,7 @@ class InstanceEditor extends React.Component {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
       // 1. Convert init script text to array
-      const scriptTextLines = instance.init.split('\n');
+      const scriptTextLines = instance.initScript.split('\n');
       // 2. Convert the updated line to text
       const updatedLineText = data.scriptUnit.join(' ');
       // 3. Replace the updated line in the script array
@@ -142,7 +144,7 @@ class InstanceEditor extends React.Component {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
       // 1. Convert init script text to array
-      const scriptTextLines = instance.init.split('\n');
+      const scriptTextLines = instance.initScript.split('\n');
       // 2. Remove the line
       scriptTextLines.splice(data.index, 1);
       // 3. Convert the script array back to script text
@@ -177,11 +179,11 @@ class InstanceEditor extends React.Component {
     // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
     // Assume we can get a list of properties from SimData
     // properties = [...{name, type, defaultvalue, isFeatProp }]
-    let properties = SimData.GetBlueprintProperties(blueprintName, modelId);
+    let properties = ProjectData.GetBlueprintProperties(blueprintName, modelId);
 
     // Remove properties that have already been set
     // 1. Get the list or properties
-    const scriptUnits = TRANSPILER.ScriptifyText(instance.init);
+    const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
     const initProperties = scriptUnits.map(unit => {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
@@ -231,13 +233,11 @@ class InstanceEditor extends React.Component {
 
     const instanceName = this.GetInstanceName();
     // 1. Convert init script text to array
-    const scriptTextLines = instance.init.split('\n');
+    const scriptTextLines = instance.initScript.split('\n');
     // 2. Add the updated line in the script array
     scriptTextLines.push(newScriptLine);
     // 4. Convert the script array back to script text
     const updatedScript = scriptTextLines.join('\n');
-
-    console.error('current model id is', SimData.GetCurrentModelId());
 
     UR.RaiseMessage('NET:INSTANCE_UPDATE', {
       modelId,
@@ -377,7 +377,7 @@ class InstanceEditor extends React.Component {
 
     let jsx = '';
     if (instance) {
-      const source = TRANSPILER.ScriptifyText(instance.init);
+      const source = TRANSPILER.ScriptifyText(instance.initScript);
       jsx = TRANSPILER.RenderScript(source, {
         isEditable,
         isDeletable: isDeletingProperty
