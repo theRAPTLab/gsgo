@@ -22,6 +22,7 @@ import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
 import InputElement from '../components/InputElement.tsx';
+import SelectElement from '../components/SelectElement.tsx';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,6 +49,7 @@ type MyProps = {
   index: number;
   state: MyState;
   propMap: Map<any, any>;
+  propMethods: string[];
   isEditable: boolean;
   isDeletable: boolean;
   isInstanceEditor: boolean;
@@ -67,7 +69,11 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.serialize = serialize;
     this.onDeleteLine = this.onDeleteLine.bind(this);
     this.onInputElementChange = this.onInputElementChange.bind(this);
+    this.onSelectPropName = this.onSelectPropName.bind(this);
+    this.onSelectMethod = this.onSelectMethod.bind(this);
+    this.getType = this.getType.bind(this);
     this.saveData = this.saveData.bind(this);
+  }
   componentDidMount() {
     const { propName } = this.state;
     this.setState({ type: this.getType(propName) });
@@ -80,6 +86,18 @@ class PropElement extends React.Component<MyProps, MyState> {
   }
   onInputElementChange() {
     this.saveData();
+  }
+  onSelectPropName(value) {
+    this.setState(
+      {
+        propName: value,
+        type: this.getType(value)
+      },
+      () => this.saveData()
+    );
+  }
+  onSelectMethod(value) {
+    this.setState({ methodName: value }, () => this.saveData());
   }
   getType(propName) {
     // type should be dynamically calculated with each render
@@ -105,12 +123,16 @@ class PropElement extends React.Component<MyProps, MyState> {
     const {
       index,
       propMap,
+      propMethods,
       isEditable,
       isDeletable,
       isInstanceEditor,
       classes
     } = this.props;
     const { propName, methodName, args, type } = this.state;
+    console.log('PropElement render. methodName:', methodName);
+
+    let propNames = [...propMap.values()];
     propNames = propNames.map(p => p.name);
 
     const argsjsx = (
@@ -174,6 +196,22 @@ class PropElement extends React.Component<MyProps, MyState> {
             }}
           >
             prop
+            <SelectElement
+              state={this.state}
+              value={propName}
+              options={propNames}
+              selectMessage="-- Select a property... --"
+              onChange={this.onSelectPropName}
+              index={index}
+            />
+            <SelectElement
+              state={this.state}
+              value={methodName}
+              options={propMethods}
+              selectMessage="-- Select a method... --"
+              onChange={this.onSelectMethod}
+              index={index}
+            />
             {argsjsx}
           </div>
           {deletablejsx}
@@ -355,6 +393,7 @@ export class prop extends Keyword {
         index={index}
         key={index}
         propMap={propMap}
+        propMethods={propMethods}
         isEditable={isEditable}
         isDeletable={isDeletable}
         isInstanceEditor={isInstanceEditor}

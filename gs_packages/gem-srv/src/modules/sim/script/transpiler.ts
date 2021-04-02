@@ -532,5 +532,7 @@ export {
   RemoveAgent,
   RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
   ExtractBlueprintName,
-  ExtractBlueprintProperties
+  ExtractBlueprintProperties,
+  ExtractBlueprintPropertiesMap,
+  ExtractBlueprintPropertiesTypeMap
 };
