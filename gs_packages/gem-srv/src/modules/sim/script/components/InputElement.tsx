@@ -43,12 +43,16 @@ class InputElement extends React.Component<any, any> {
   }
   onChange(e) {
     const { args } = this.state;
-    const { argindex } = this.props;
+    const { argindex, onChange } = this.props;
     args[argindex] = e.currentTarget.value;
     this.setState({
       args,
       isDirty: true
     });
+    // Needed to trigger isDirty in prop.tsx
+    // otherwise, "SAVE To SERVER" is not available
+    // until a saveData is triggered by blur or Enter
+    onChange({ argindex, value: e.currentTarget.value });
   }
   onKeyDown(e) {
     if (e.key === 'Enter') this.saveData();

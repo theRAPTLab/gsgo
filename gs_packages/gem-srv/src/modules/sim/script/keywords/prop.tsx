@@ -42,11 +42,12 @@ type MyState = {
   propName: string;
   methodName: string;
   args: string[];
+  type: string; // this is set by Prop
 };
 type MyProps = {
   index: number;
   state: MyState;
-  type: string;
+  propMap: Map<any, any>;
   isEditable: boolean;
   isDeletable: boolean;
   isInstanceEditor: boolean;
@@ -65,13 +66,27 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.state = { ...state }; // copy state prop
     this.serialize = serialize;
     this.onDeleteLine = this.onDeleteLine.bind(this);
+    this.onInputElementChange = this.onInputElementChange.bind(this);
     this.saveData = this.saveData.bind(this);
+  componentDidMount() {
+    const { propName } = this.state;
+    this.setState({ type: this.getType(propName) });
   }
   onDeleteLine(e) {
     e.preventDefault(); // prevent click from deselecting instance
     e.stopPropagation();
     const updata = { index: this.index };
     UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
+  }
+  onInputElementChange() {
+    this.saveData();
+  }
+  getType(propName) {
+    // type should be dynamically calculated with each render
+    // in case propName changes to a different type
+    const { propMap } = this.props;
+    const type = propMap.get(propName).type;
+    return type;
   }
   /**
    *
@@ -89,51 +104,83 @@ class PropElement extends React.Component<MyProps, MyState> {
   render() {
     const {
       index,
-      type,
+      propMap,
       isEditable,
       isDeletable,
       isInstanceEditor,
       classes
     } = this.props;
-    const { propName, methodName, args } = this.state;
-    return (
+    const { propName, methodName, args, type } = this.state;
+    propNames = propNames.map(p => p.name);
+
+    const argsjsx = (
       <>
-        {!isEditable ? (
-          <>
-            {propName}:&nbsp;{args[0]}&nbsp;{' '}
-          </>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
-            {isInstanceEditor ? (
-              <div className={classes.instanceEditorLabel}>{propName}</div>
-            ) : (
-              <>prop {propName} setTo</>
-            )}
-            {args.map((arg, i) => (
-              <InputElement
-                state={this.state}
-                type={type}
-                onSave={this.saveData}
-                index={index}
-                argindex={i}
-                key={i}
-              />
-            ))}
-            {isDeletable && (
-              <div className={classes.instanceEditorLine}>
-                <button
-                  type="button"
-                  className={classes.buttonMini}
-                  onClick={this.onDeleteLine}
-                >
-                  <DeleteIcon fontSize="small" />
-                </button>
-              </div>
-            )}
+        {args.map((arg, i) => (
+          <InputElement
+            state={this.state}
+            type={type}
+            onChange={this.onInputElementChange}
+            onSave={this.saveData}
+            index={index}
+            argindex={i}
+            key={i}
+          />
+        ))}
+      </>
+    );
+
+    const deletablejsx = (
+      <>
+        {isDeletable && (
+          <div className={classes.instanceEditorLine}>
+            <button
+              type="button"
+              className={classes.buttonMini}
+              onClick={this.onDeleteLine}
+            >
+              <DeleteIcon fontSize="small" />
+            </button>
           </div>
         )}
       </>
     );
+
+    let jsx;
+    if (!isEditable) {
+      // Static Minimized View
+      jsx = (
+        <>
+          {propName}:&nbsp;{args[0]}&nbsp;{' '}
+        </>
+      );
+    } else if (isInstanceEditor) {
+      // InstanceEditor
+      jsx = (
+        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+          <div className={classes.instanceEditorLabel}>{propName}</div>
+          {argsjsx}
+          {deletablejsx}
+        </div>
+      );
+    } else {
+      // Script Wizard
+      jsx = (
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 15px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridAutoColumns: '1fr',
+              gridAutoFlow: 'column'
+            }}
+          >
+            prop
+            {argsjsx}
+          </div>
+          {deletablejsx}
+        </div>
+      );
+    }
+    return jsx;
   }
 } // end script element
 
@@ -246,11 +293,13 @@ class PropElement extends React.Component<MyProps, MyState> {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class prop extends Keyword {
   // base properties defined in KeywordDef
+  type: string;
 
   constructor() {
     super('prop');
     this.args = ['refArg:object', 'methodName:string', '...args'];
     this.serialize = this.serialize.bind(this);
+    this.type = '';
   }
 
   /** create smc blueprint code objects */
@@ -269,8 +318,13 @@ export class prop extends Keyword {
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { propName, methodName, ...arg } = state;
-    const args = Object.values(arg);
+    // pull `type` out so it doesn't get mixed in with `...arg`
+    const { propName, methodName, type, ...arg } = state;
+    let args = Object.values(arg);
+    // if string, need to wrap args in quotes
+    if (type === 'string') {
+      args = args.map(a => `'${a}'`);
+    }
     return [this.keyword, propName, methodName, ...args];
   }
 
@@ -285,25 +339,34 @@ export class prop extends Keyword {
     const state = {
       propName: ref,
       methodName,
-      args
+      args,
+      type: '' // set by PropElement
     };
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
-    const typeMap = children ? children.typeMap : 'String';
+    const propMap = children ? children.propMap : new Map();
+    const property = propMap.get(ref);
+    this.type = property ? property.type : 'string';
     const StyledPropElement = withStyles(useStylesHOC)(PropElement);
-    return (
+    const jsx = (
       <StyledPropElement
         state={state}
         index={index}
         key={index}
-        type={typeMap.get(ref)}
+        propMap={propMap}
         isEditable={isEditable}
         isDeletable={isDeletable}
         isInstanceEditor={isInstanceEditor}
         serialize={this.serialize}
       />
     );
+    if (!isInstanceEditor) {
+      // Script Editor, add line numbers
+      const retval = super.jsx(index, unit, jsx);
+      return retval;
+    }
+    return jsx;
 
     // Orig Method wraps a line number around the property
     // The `super.jsx` call does the wrapping.

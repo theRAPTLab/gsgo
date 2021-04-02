@@ -398,6 +398,35 @@ function ExtractBlueprintProperties(script) {
   return properties;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint property types
+ * Used by PanelScript to generate property menus
+ * @param {string} script
+ * @return {map} [ ...{name: {name, type, defaultValue, isFeatProp}]
+ */
+function ExtractBlueprintPropertiesMap(script) {
+  const properties = this.ExtractBlueprintProperties(script);
+  const map = new Map();
+  properties.forEach(p => map.set(p.name, p));
+  return map;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint property types
+ * Used by PanelScript to generate property menus
+ * @param {string} script
+ * @return {map} [ ...{name: type}]
+ */
+function ExtractBlueprintPropertiesTypeMap(script) {
+  const properties = this.ExtractBlueprintProperties(script);
+  const map = new Map();
+  properties.forEach(p => map.set(p.name, p.type));
+  return map;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
  *  @param {array} options -- { isEditable }
