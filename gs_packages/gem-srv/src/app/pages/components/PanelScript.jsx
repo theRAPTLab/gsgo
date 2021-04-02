@@ -341,7 +341,7 @@ class PanelScript extends React.Component {
       openConfirmDelete,
       openConfirmUnload
     } = this.state;
-    const { id, script, onClick, classes } = this.props;
+    const { id, script, modelId, onClick, classes } = this.props;
 
     // CodeJar Refresh
     //

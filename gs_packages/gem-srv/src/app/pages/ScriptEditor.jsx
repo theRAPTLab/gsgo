@@ -352,6 +352,7 @@ class ScriptEditor extends React.Component {
             <PanelScript
               id="script"
               script={script}
+              modelId={modelId}
               onClick={this.OnPanelClick}
             />
           )}
