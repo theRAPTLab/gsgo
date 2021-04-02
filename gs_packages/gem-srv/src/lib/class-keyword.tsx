@@ -79,7 +79,10 @@ class Keyword implements IKeyword {
     // stuff for originally hyphenated CSS properties so it doesn't
     // get marked by the linter as invalid CSS
     return (
-      <div key={m_GenerateKey()} style={styleLine}>
+      // old method generated a key instead of using index
+      // but this disconnects the instance from the script
+      // <div key={m_GenerateKey()} style={styleLine}>
+      <div key={index} style={styleLine}>
         <div style={styleIndex}>{index}</div>
         <div style={styleContent}>{children}</div>
       </div>
