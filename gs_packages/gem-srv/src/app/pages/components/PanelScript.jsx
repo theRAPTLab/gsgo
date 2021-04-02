@@ -9,6 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
@@ -32,8 +34,27 @@ import PanelChrome from './PanelChrome';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PANELSCRIPT');
-const DBG = true;
+const DBG = false;
 let needsSyntaxReHighlight = false;
+
+const StyledToggleButton = withStyles(theme => ({
+  root: {
+    color: 'rgba(0,156,156,1)',
+    backgroundColor: 'rgba(60,256,256,0.1)',
+    '&:hover': {
+      color: 'black',
+      backgroundColor: '#6effff'
+    },
+    '&.Mui-selected': {
+      color: '#6effff',
+      backgroundColor: 'rgba(60,256,256,0.3)',
+      '&:hover': {
+        color: 'black',
+        backgroundColor: '#6effff'
+      }
+    }
+  }
+}))(ToggleButton);
 
 /// TEST SCRIPT ///////////////////////////////////////////////////////////////
 /// These demo scripts are for testing the highlighting scheme only.
@@ -174,6 +195,7 @@ class PanelScript extends React.Component {
     this.OnDelete = this.OnDelete.bind(this);
     this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
     this.OnUnloadConfirm = this.OnUnloadConfirm.bind(this);
+    this.OnToggleWizard = this.OnToggleWizard.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
@@ -332,10 +354,17 @@ class PanelScript extends React.Component {
     }
   }
 
+  OnToggleWizard(e, value) {
+    console.log('clicked', value);
+    this.CompileToJSX();
+    this.setState({ viewMode: value });
+  }
+
   render() {
     if (DBG) console.log(...PR('render'));
     const {
       title,
+      viewMode,
       lineHighlight,
       isDirty,
       openConfirmDelete,
@@ -379,6 +408,19 @@ class PanelScript extends React.Component {
     const blueprintName = TRANSPILER.ExtractBlueprintName(script);
     const updatedTitle = this.GetTitle(blueprintName);
 
+    // TOP BAR ----------------------------------------------------------------
+    const TopBar = (
+      <ToggleButtonGroup
+        value={viewMode}
+        exclusive
+        onChange={this.OnToggleWizard}
+      >
+        <StyledToggleButton value="code">Code</StyledToggleButton>
+        <StyledToggleButton value="wizard">Wizard</StyledToggleButton>
+      </ToggleButtonGroup>
+    );
+
+    // BOTTOM BAR ----------------------------------------------------
     const BackBtn = (
       <button
         type="button"
@@ -389,7 +431,6 @@ class PanelScript extends React.Component {
         &lt; SELECT SCRIPT
       </button>
     );
-
     const DeleteBtn = (
       <button
         type="button"
@@ -400,7 +441,6 @@ class PanelScript extends React.Component {
         DELETE SCRIPT
       </button>
     );
-
     const SaveBtn = (
       <button
         type="button"
@@ -412,7 +452,6 @@ class PanelScript extends React.Component {
         SAVE TO SERVER
       </button>
     );
-
     const DialogConfirmDelete = (
       <DialogConfirm
         open={openConfirmDelete}
@@ -421,7 +460,6 @@ class PanelScript extends React.Component {
         onClose={this.OnDeleteConfirm}
       />
     );
-
     const DialogConfirmUnload = (
       <DialogConfirm
         open={openConfirmUnload}
@@ -431,7 +469,6 @@ class PanelScript extends React.Component {
         onClose={this.OnUnloadConfirm}
       />
     );
-
     const BottomBar = (
       <div
         style={{
@@ -448,11 +485,38 @@ class PanelScript extends React.Component {
       </div>
     );
 
+    // CODE -------------------------------------------------------------------
+    const Code = (
+      <pre
+        className="language-gemscript line-numbers match-braces"
+        data-line={lineHighlight}
+        style={{
+          fontSize: '10px',
+          lineHeight: 1,
+          whiteSpace: 'pre-line',
+          display: `${viewMode === 'code' ? 'inherit' : 'none'}`
+        }}
+      >
+        <code
+          id="codejar"
+          ref={this.jarRef}
+          style={{ width: '100%', height: 'auto' }}
+        >
+          {script}
+        </code>
+      </pre>
+    );
+
+    // WIZARD -----------------------------------------------------------------
+    const Wizard = <>Wizard{jsx}</>;
+
+    // RETURN -----------------------------------------------------------------
     return (
       <PanelChrome
         id={id} // used by click handler to identify panel
         title={updatedTitle}
         onClick={onClick}
+        topbar={TopBar}
         bottombar={BottomBar}
       >
         <div
@@ -462,23 +526,8 @@ class PanelScript extends React.Component {
             width: '100%'
           }}
         >
-          <pre
-            className="language-gemscript line-numbers match-braces"
-            data-line={lineHighlight}
-            style={{
-              fontSize: '10px',
-              lineHeight: 1,
-              whiteSpace: 'pre-line'
-            }}
-          >
-            <code
-              id="codejar"
-              ref={this.jarRef}
-              style={{ width: '100%', height: 'auto' }}
-            >
-              {script}
-            </code>
-          </pre>
+          {Code}
+          {Wizard}
         </div>
       </PanelChrome>
     );
