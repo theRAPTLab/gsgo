@@ -371,15 +371,18 @@ function ExtractBlueprintName(script) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * A brute force method of retrieving the blueprint properties from a script
- * Compiles raw scriptText to determine the blueprint name
+ * Compiles raw scriptText to determine the blueprint properties
  * @param {string} script
+ * @return {Object[]} [...{name, type, defaultValue, isFeatProp}]
  */
 function ExtractBlueprintProperties(script) {
   // HACK in built in properties -- where should these be looked up?
   // 1. Start with built in properties
   let properties = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
+    // HACKED IN FOR NOW
+    { name: 'skin', type: 'string', defaultValue: 'bunny.json', isFeatProp: true }
   ];
   // 2. Brute force deconstruct added properties
   //    by walking down script and looking for `addProp`
