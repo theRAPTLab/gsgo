@@ -43,13 +43,14 @@ type MyState = {
   propName: string;
   methodName: string;
   args: string[];
-  type: string; // this is set by Prop
+  type: string;
+  propMethods: string[];
 };
 type MyProps = {
   index: number;
   state: MyState;
   propMap: Map<any, any>;
-  propMethods: string[];
+  methodsMap: Map<string, string[]>;
   isEditable: boolean;
   isDeletable: boolean;
   isInstanceEditor: boolean;
@@ -75,8 +76,13 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.saveData = this.saveData.bind(this);
   }
   componentDidMount() {
+    const { methodsMap } = this.props;
     const { propName } = this.state;
-    this.setState({ type: this.getType(propName) });
+    const type = this.getType(propName);
+    this.setState({
+      type,
+      propMethods: methodsMap.get(type)
+    });
   }
   onDeleteLine(e) {
     e.preventDefault(); // prevent click from deselecting instance
@@ -88,10 +94,13 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.saveData();
   }
   onSelectPropName(value) {
+    const { methodsMap } = this.props;
+    const type = this.getType(value);
     this.setState(
       {
         propName: value,
-        type: this.getType(value)
+        type,
+        propMethods: methodsMap.get(type)
       },
       () => this.saveData()
     );
@@ -124,14 +133,12 @@ class PropElement extends React.Component<MyProps, MyState> {
     const {
       index,
       propMap,
-      propMethods,
       isEditable,
       isDeletable,
       isInstanceEditor,
       classes
     } = this.props;
-    const { propName, methodName, args, type } = this.state;
-    console.log('PropElement render. methodName:', methodName);
+    const { propName, methodName, args, type, propMethods } = this.state;
 
     let propNames = [...propMap.values()];
     propNames = propNames.map(p => p.name);
@@ -357,8 +364,8 @@ export class prop extends Keyword {
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    // pull `type` out so it doesn't get mixed in with `...arg`
-    const { propName, methodName, type, ...arg } = state;
+    // pull `type` and 'propMethods' out so it doesn't get mixed in with `...arg`
+    const { propName, methodName, type, propMethods, ...arg } = state;
     let args = Object.values(arg);
     // if string, need to wrap args in quotes
     if (type === 'string') {
@@ -379,7 +386,8 @@ export class prop extends Keyword {
       propName: ref,
       methodName,
       args,
-      type: '' // set by PropElement
+      type: '', // set by PropElement
+      propMethods: [] // set by PropElement
     };
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
@@ -387,7 +395,6 @@ export class prop extends Keyword {
     const propMap = children ? children.propMap : new Map();
     const property = propMap.get(ref);
     this.type = property ? property.type : 'string';
-    const propMethods = this.getMethods(this.type);
 
     const StyledPropElement = withStyles(useStylesHOC)(PropElement);
     const jsx = (
@@ -396,7 +403,7 @@ export class prop extends Keyword {
         index={index}
         key={index}
         propMap={propMap}
-        propMethods={propMethods}
+        methodsMap={this.getMethodsMap()} // in class-keyword
         isEditable={isEditable}
         isDeletable={isDeletable}
         isInstanceEditor={isInstanceEditor}

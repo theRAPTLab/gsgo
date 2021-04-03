@@ -104,42 +104,38 @@ class Keyword implements IKeyword {
     return [err];
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  getMethods(type) {
-    switch (type) {
-      case 'Boolean':
-        return [
-          'setTo',
-          'true',
-          'false',
-          'invert',
-          'and',
-          'or',
-          'eq',
-          'slightlyTrue',
-          'mostlyTrue',
-          'slightlyFalse',
-          'mostlyFalse'
-        ];
-      case 'Number':
-        return [
-          'setWrap',
-          'setMin',
-          'setMax',
-          'setTo',
-          'add',
-          'sub',
-          'div',
-          'mul',
-          'eq',
-          'gt',
-          'lt',
-          'gte',
-          'lte'
-        ];
-      default:
-      case 'String':
-        return ['setTo', 'eq'];
-    }
+  getMethodsMap() {
+    const map = new Map();
+    map.set('boolean', [
+      'setTo',
+      'true',
+      'false',
+      'invert',
+      'and',
+      'or',
+      'eq',
+      'slightlyTrue',
+      'mostlyTrue',
+      'slightlyFalse',
+      'mostlyFalse'
+    ]);
+    map.set('number', [
+      'setWrap',
+      'setMin',
+      'setMax',
+      'setTo',
+      'add',
+      'sub',
+      'div',
+      'mul',
+      'eq',
+      'gt',
+      'lt',
+      'gte',
+      'lte'
+    ]);
+    map.set('string', ['setTo', 'eq']);
+    return map;
   }
 } // end of Keyword Class
 
