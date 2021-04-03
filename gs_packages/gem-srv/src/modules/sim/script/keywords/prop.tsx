@@ -103,7 +103,8 @@ class PropElement extends React.Component<MyProps, MyState> {
     // type should be dynamically calculated with each render
     // in case propName changes to a different type
     const { propMap } = this.props;
-    const type = propMap.get(propName).type;
+    const prop = propMap.get(propName);
+    const type = prop ? prop.type : undefined;
     return type;
   }
   /**
