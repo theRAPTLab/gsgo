@@ -15,6 +15,10 @@ import { RegisterKeyword } from 'modules/datacore';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MAX_OUT = 100;
 let COUNTER = MAX_OUT;
+UR.HandleMessage('ALL_AGENTS_PROGRAM', () => {
+  console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
+  COUNTER = MAX_OUT;
+});
 UR.HandleMessage('AGENT_PROGRAM', () => {
   console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
   COUNTER = MAX_OUT;
