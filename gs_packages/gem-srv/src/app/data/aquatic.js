@@ -8,11 +8,8 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-// useFeature Label
-// featCall Costume setCostume 'fish.json' 0
-// Have to set prop skin -- bug
-// otherwise, the costume isn't set
-prop agent.skin setTo 'fish.json'
+// featCall Costume setCostume 'bunny.json' 0
+prop skin setTo 'fish.json'
 // featCall Movement setRandomStart
 featCall Movement setMovementType 'wander' 0.2
 // featCall Label setImage 'energyLevel-1.png'
@@ -21,10 +18,20 @@ featCall Movement setMovementType 'wander' 0.2
 // featCall Movement setDirection 90
 addProp energyLevel Number 20
 addProp food String 'donuts'
+prop food setTo 'spam'
+prop energyLevel setTo 32
+prop energyLevel setTo {{ 15 + 20 }}
+prop energyLevel setTo {{ energyLevel + 20 }}
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
   prop agent.energyLevel sub 1
+  dbgOut 'my tick' 'agent instance' {{ agent.getProp('energyLevel').value }}
+  dbgOut agent.skin
+  dbgOut 'skin' skin
+  dbgOut world
+  // dbgOut agent.world // doesn't work "TypeError: Cannot read property 'value' of undefined"
+
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
     featCall Costume setPose 0
@@ -49,25 +56,10 @@ onEvent Tick [[
   // ]]
 
 ]]
-
 # PROGRAM UPDATE
 when Fish touches Algae [[
   // dbgOut 'Touch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-
   prop Fish.energyLevel add 1
-
-  // setAgentProp Fish foodLevel {{ Fish.prop.foodLevel.value + 1 }}
-  // Code example for setting algae in this context, not needed actually
-  // setAgentProp Algae energyLevel {{ Algae.prop.energyLevel.value = 1 }}
-
-  // IDEAL CALL
-  // When fish touches algae, food level goes up
-  // propCall foodLevel inc 1
-  // kill Algae
-
-  // Counter Example
-  // We want to set the skin of Fish when Fish touches Algae
-  //    prop Fish.skin setTo 'full.json'
 ]]
 `
     },
