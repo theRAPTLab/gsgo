@@ -371,15 +371,18 @@ function ExtractBlueprintName(script) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * A brute force method of retrieving the blueprint properties from a script
- * Compiles raw scriptText to determine the blueprint name
+ * Compiles raw scriptText to determine the blueprint properties
  * @param {string} script
+ * @return {Object[]} [...{name, type, defaultValue, isFeatProp}]
  */
 function ExtractBlueprintProperties(script) {
   // HACK in built in properties -- where should these be looked up?
   // 1. Start with built in properties
   let properties = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
+    // HACKED IN FOR NOW
+    { name: 'skin', type: 'string', defaultValue: 'bunny.json', isFeatProp: true }
   ];
   // 2. Brute force deconstruct added properties
   //    by walking down script and looking for `addProp`
@@ -397,6 +400,35 @@ function ExtractBlueprintProperties(script) {
   });
   return properties;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint property types
+ * Used by PanelScript to generate property menus
+ * @param {string} script
+ * @return {map} [ ...{name: {name, type, defaultValue, isFeatProp}]
+ */
+function ExtractBlueprintPropertiesMap(script) {
+  const properties = this.ExtractBlueprintProperties(script);
+  const map = new Map();
+  properties.forEach(p => map.set(p.name, p));
+  return map;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint property types
+ * Used by PanelScript to generate property menus
+ * @param {string} script
+ * @return {map} [ ...{name: type}]
+ */
+function ExtractBlueprintPropertiesTypeMap(script) {
+  const properties = this.ExtractBlueprintProperties(script);
+  const map = new Map();
+  properties.forEach(p => map.set(p.name, p.type));
+  return map;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
@@ -503,5 +535,7 @@ export {
   RemoveAgent,
   RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
   ExtractBlueprintName,
-  ExtractBlueprintProperties
+  ExtractBlueprintProperties,
+  ExtractBlueprintPropertiesMap,
+  ExtractBlueprintPropertiesTypeMap
 };
