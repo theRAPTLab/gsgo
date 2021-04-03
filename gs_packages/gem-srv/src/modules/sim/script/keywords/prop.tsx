@@ -386,6 +386,8 @@ export class prop extends Keyword {
     const propMap = children ? children.propMap : new Map();
     const property = propMap.get(ref);
     this.type = property ? property.type : 'string';
+    const propMethods = this.getMethods(this.type);
+
     const StyledPropElement = withStyles(useStylesHOC)(PropElement);
     const jsx = (
       <StyledPropElement
