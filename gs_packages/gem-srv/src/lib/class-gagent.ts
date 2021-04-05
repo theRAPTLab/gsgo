@@ -262,7 +262,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     if (this.blueprint && this.blueprint.exec) {
       this.exec(this.blueprint.exec, ctx);
     }
-    this.thinkQueue.forEach(action => {
+    this.execQueue.forEach(action => {
       // console.log(this.name(), 'execAction', this.exec(action));
       this.exec(action, ctx);
     });
