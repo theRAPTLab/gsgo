@@ -76,6 +76,7 @@ class CostumePack extends GFeature {
       cf.value = poseName;
       cf.setMax(frameCount - 1);
     }
+    agent.getProp('skin').value = costumeName;
   }
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
