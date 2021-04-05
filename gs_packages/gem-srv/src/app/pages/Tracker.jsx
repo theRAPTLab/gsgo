@@ -67,7 +67,7 @@ UR.HandleMessage('NET:HELLO', data => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDeviceArray(pattern = {}) {
   const devices = [];
-  UR.GetMatchingDevices(pattern).forEach(device => {
+  UR.DeviceGetMatching(pattern).forEach(device => {
     devices.push(<li key={bad_keyer++}>{device.uaddr}</li>);
   });
   return devices;

@@ -84,6 +84,7 @@ class Home extends React.Component {
             <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
+            <NavItem route="controller">WIP character controller</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
@@ -115,8 +116,8 @@ class Home extends React.Component {
               annotation app.
             </li>
             <li>
-              <a href="/app/faketrack">FAKETRACK</a> - Ported from earlier
-              versions of STEP. This currently does not affect the simulation.
+              <a href="/app/controller">CHARACTER CONTROLLER</a> - Ported from
+              earlier versions FAKETRACK with the new device interface WIP.
             </li>
           </ol>
         </div>

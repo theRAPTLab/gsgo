@@ -55,6 +55,14 @@ const exampleControlObject = {
   y: 0,
   jump: true
 };
+const exampleDeviceDefinition = {
+  device: {
+    uclass: 'CharController',
+    udid: 'uniquedeviceid',
+    groups: ['groupA'],
+    roles: ['roleA']
+  }
+};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** create a blank device record
  */
@@ -66,13 +74,13 @@ function m_NewData() {
     outputControls: [] // what outputs are supported as array of controlDefinition
   };
   data.device = {
+    uapp: '', // device appserver route
     // device class
     uclass: '', // the name of this type of of device
     // udevice meta information
     udid: '', // unique device id
     uaddr: '', // URNET address
     uname: '', // device label (non-unique)s
-    uapp: '', // device appserver route
     utags: [], // device 'tags' for identifying uapp subtypes
     // udevice app-specific memberships
     groups: [], // what logical groups this device belongs to
@@ -174,7 +182,6 @@ class UDevice {
   addOutputControl(controlName, type) {
     this._pushControl(this.data.outputControls, controlName, type);
   }
-
   makeDeviceDirectoryEntry(uaddr) {
     const { uclass, udid, uapp, uname, utags, groups, roles } = this.data.device;
     const { inputControls, outputControls } = this.data;

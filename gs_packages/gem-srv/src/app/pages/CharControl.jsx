@@ -1,7 +1,9 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  FakeTrack - Main Application View
+  CharController - Main Application View
+  This is based on FakeTrack testbed for GEMSTEP, which is not feature
+  complete
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -10,36 +12,36 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
-import { Init, HookResize } from 'modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/mod-faketrack-ui';
+import { Init, HookResize } from '../../modules/render/api-render';
+import { Initialize, HandleStateChange } from './elements/mod-charcontrol-ui';
 import { useStylesHOC } from './elements/page-styles';
-import 'lib/css/faketrack.css';
+import '../../lib/css/charcontrol.css';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('FAKETR' /*'TagInput'*/);
+const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class FakeTrack extends React.Component {
+class CharController extends React.Component {
   constructor(props) {
     super(props);
     // save instance of mod_faketrack
     if (typeof props.controller === 'object') {
       this.controller = props.controller;
-      console.log('FakeTrack.jsx assigned controller', this.controller);
+      console.log('CharController.jsx assigned controller', this.controller);
     }
     // establish state here
     // which is changed through setState() call of React.Component
     this.state = {
-      num_entities: 2,
-      prefix: 'f',
+      num_entities: 1,
+      prefix: 'char',
       jitter: 1,
       burst: false,
-      status: 'entity status',
+      status: 'char status',
       width: 2,
       depth: 2,
       offx: 0,
@@ -69,7 +71,7 @@ class FakeTrack extends React.Component {
     UR.HookPhase('UR/APP_READY', async () => {
       const regData = {
         device: {
-          uclass: 'FakeTrack',
+          uclass: 'CharControl',
           udid: 'uniquedeviceid',
           groups: ['groupA'],
           roles: ['roleA']
@@ -98,7 +100,7 @@ class FakeTrack extends React.Component {
         outputControls: [{ control: 'count', type: 'uint' }]
       };
       // style two (note async in UR.HookPhase definition above)
-      const regInfo = await UR.DeviceRegister('FakeTrak', regData);
+      const regInfo = await UR.DeviceRegister('CharControl', regData);
       console.log(...PR('DeviceRegister() returned regInfo', regInfo));
     }); // end HookPhase
   }
@@ -135,7 +137,7 @@ class FakeTrack extends React.Component {
         }}
       >
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>FAKETRACK PORT</span>{' '}
+          <span style={{ fontSize: '32px' }}>CharControl</span>{' '}
           {UR.ConnectionString()}
         </div>
         <div
@@ -342,9 +344,9 @@ class FakeTrack extends React.Component {
 
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('NET:GEM_FAKETRACKAPP', data => data);
+UR.HandleMessage('NET:GEM_CHARCTRLAPP', data => data);
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(FakeTrack);
+export default withStyles(useStylesHOC)(CharController);

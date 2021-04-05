@@ -1,5 +1,5 @@
 {
   "extends": "../../tsconfig.build.json",
   "exclude": ["node_modules"],
-  "include": ["src/**/*", "../gem-srv/src/**/*"]
+  "include": ["src/**/*"]
 }

@@ -5,6 +5,7 @@ import React, { Suspense } from 'react';
 const Home = React.lazy(() => import('../pages/Home'));
 const Tracker = React.lazy(() => import('../pages/Tracker'));
 const FakeTrack = React.lazy(() => import('../pages/FakeTrack'));
+const CharControl = React.lazy(() => import('../pages/CharControl'));
 const XGUI = React.lazy(() => import('../src-xgui/App'));
 const Compiler = React.lazy(() => import('../pages/Compiler'));
 const Login = React.lazy(() => import('../pages/Login'));
@@ -28,6 +29,11 @@ export const LazyHome = () => (
 export const LazyFakeTrack = () => (
   <Suspense fallback={<div>loading</div>}>
     <FakeTrack />
+  </Suspense>
+);
+export const LazyCharacterController = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <CharControl />
   </Suspense>
 );
 export const LazyXGUI = () => (

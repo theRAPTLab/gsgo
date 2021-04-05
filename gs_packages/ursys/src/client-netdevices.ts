@@ -39,7 +39,7 @@ function m_SaveDeviceMap(devmap) {
     log_arr(added, 'added  ');
     log_arr(updated, 'updated');
     log_arr(removed, 'removed');
-  }
+  } //
   LocalNode.raiseMessage('UR_DEVICES_CHANGED');
 }
 
@@ -47,16 +47,16 @@ function m_SaveDeviceMap(devmap) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API placeholder - an app can use this to register with the server
  */
-export function RegisterAsDevice(name: string, controlDef) {
-  console.log(...PR('RegisterAsDevice() -', name, controlDef));
+export function DeviceRegister(name: string, controlDef) {
+  console.log(...PR('DeviceRegister() -', name, controlDef));
   const promise = NetNode.callMessage('NET:SRV_DEVICE_REG', controlDef);
   return promise;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API placeholder - given search criteria, return an array of maching udevices
- *  only handle 'uclass' for now inefficiently. This will
+ *  only handle 'uclass' for now inefficiently.
  */
-export function GetMatchingDevices(pattern: { uclass: string }) {
+export function DeviceGetMatching(pattern: { uclass: string }) {
   const uclass = pattern.uclass || '*';
   const devices = [];
   DEVICE_CACHE.forEach(device => {
@@ -64,6 +64,7 @@ export function GetMatchingDevices(pattern: { uclass: string }) {
   });
   return devices;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

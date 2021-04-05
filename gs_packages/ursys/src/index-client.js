@@ -122,16 +122,17 @@ const UR = {
   WebServerPort: NETWORK.WebServerPort,
   ConnectionString: NETWORK.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
-  // FORWARDED SYSTEM CONTROL VIA EXEC
+  // FORWARDED SYSTEM CONTROL API
   SystemNetBoot: EXEC.SystemNetBoot,
   SystemAppConfig: EXEC.SystemAppConfig,
   SystemAppRun: EXEC.SystemAppRun,
   SystemAppRestage: EXEC.SystemAppRestage,
   SystemNetReboot: EXEC.SystemNetReboot,
   SystemAppUnload: EXEC.SystemAppUnload,
-  // FORWARDED DEVICE
-  RegisterAsDevice: DEVICES.RegisterAsDevice,
-  GetMatchingDevices: DEVICES.GetMatchingDevices,
+  // FORWARDED DEVICE API
+  DeviceRegister: DEVICES.DeviceRegister,
+  DeviceGetMatching: DEVICES.DeviceGetMatching,
+  DeviceSubsribe: DEVICES.DeviceSubscribe,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,
