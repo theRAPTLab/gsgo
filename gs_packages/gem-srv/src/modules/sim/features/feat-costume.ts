@@ -26,7 +26,7 @@ class CostumePack extends GFeature {
     // add feature methods here
     this.featAddMethod('setCostume', this.setCostume);
     this.featAddMethod('setPose', this.setPose);
-    this.featAddMethod('setSize', this.setSize);
+    this.featAddMethod('setScale', this.setScale);
     this.featAddMethod('test', this.test);
     this.featAddMethod('thinkHook', agent => {
       const prop = agent.prop.Costume.counter;
@@ -82,9 +82,9 @@ class CostumePack extends GFeature {
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
   }
-  setSize(agent: IAgent, size: number) {
+  setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked
-    agent.getProp('size').setTo(size); // use the minmaxed number
+    agent.getProp('scale').setTo(scale); // use the minmaxed number
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);

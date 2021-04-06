@@ -10,7 +10,7 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Costume setSize 0.5
+featCall Costume setScale 1
 featCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 20
 # PROGRAM EVENT
@@ -54,7 +54,6 @@ when Fish touches Algae [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-prop agent.skin setTo 'algae.json'
 // featCall Movement setRandomStart
 featCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
@@ -128,7 +127,7 @@ useFeature Costume
       blueprint: 'Fish',
       initScript: `prop x setTo 100
     prop y setTo 100
- prop size setTo 50
+ prop scale setTo 50
     prop energyLevel setTo 1000` // extra property test
     },
     // {
