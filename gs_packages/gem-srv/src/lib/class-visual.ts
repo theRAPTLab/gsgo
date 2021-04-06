@@ -77,6 +77,7 @@ class Visual implements IVisual, IPoolable, IActable {
   // visual
   sprite: PIXI.Sprite;
   assetId: number;
+  size: number;
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
@@ -96,6 +97,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.sprite = spr;
     this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
+    this.size = 1;
     this.isSelected = false; // use primary selection effect
     this.isHovered = false; // use secondary highlight effect
     this.isGrouped = false; // use tertiary grouped effect

@@ -69,6 +69,9 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.x = new GVarNumber();
     this.prop.y = new GVarNumber();
     this.prop.skin = new GVarString('default');
+    this.prop.size = new GVarNumber(1);
+    this.prop.size.setMin(0.1);
+    this.prop.size.setMax(10);
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -98,6 +101,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set skin(num) {
     this.prop.skin.value = num;
+  }
+  get size() {
+    return this.prop.size.value;
+  }
+  set size(num) {
+    this.prop.size.setTo(num);
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////

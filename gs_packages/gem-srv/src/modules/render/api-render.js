@@ -96,6 +96,7 @@ function Init(element) {
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
 
       vobj.setTexture(dobj.skin, dobj.frame);
+      vobj.setScale(dobj.size);
       if (dobj.mode === 1 && SETTINGS.actable) {
         // add drag-and-drop handlers
         MakeDraggable(vobj);
@@ -129,6 +130,7 @@ function Init(element) {
 
       // inefficient texture update
       vobj.setTexture(dobj.skin, dobj.frame);
+      vobj.setScale(dobj.size);
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
