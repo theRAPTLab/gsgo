@@ -84,7 +84,6 @@ class CostumePack extends GFeature {
   }
   setSize(agent: IAgent, size: number) {
     // Use `setTo` so that min an max are checked
-    // const res = agent.getFeatProp(this.name, 'size').setTo(size);
     agent.getProp('size').setTo(size); // use the minmaxed number
   }
   test(agent: IAgent) {
