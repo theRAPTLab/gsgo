@@ -397,6 +397,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
         this.prop.y.value,
         'skin',
         this.prop.skin.value,
+        'scale',
+        this.prop.scale.value,
         'feature',
         this.featureMap.keys()
       ]);
