@@ -70,8 +70,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.y = new GVarNumber();
     this.prop.skin = new GVarString('default');
     this.prop.scale = new GVarNumber(1);
-    this.prop.scale.setMin(0.1);
     this.prop.scale.setMax(10);
+    this.prop.scale.setMin(0.1);
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
