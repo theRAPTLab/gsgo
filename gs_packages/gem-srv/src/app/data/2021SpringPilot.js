@@ -59,22 +59,12 @@ featCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
 # PROGRAM EVENT
 onEvent Tick [[
-  // energyLevel goes down every second
-  prop agent.energyLevel sub 1
+  prop energyLevel sub 1
 ]]
 # PROGRAM UPDATE
-// when Algae touches Lightbeam [[
-//   // When algae touches lightbeam, energyLevel goes up
-//   prop Algae.energyLevel inc 1
-//   ifExpr {{ Algae.getProp('energyLevel').value > 5 }} [[
-//     dbgOut 'spawn new algae'
-//     prop Algae.energyLevel setTo 1
-//   ]]
-//
-//   // Counter Example
-     // To increment Algae energyLevel, we would.
-     // prop Algae.energyLevel add 1
-// ]]
+when Algae touches Lightbeam [[
+  prop Algae.energyLevel add 1
+]]
 `
     },
     {
