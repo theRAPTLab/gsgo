@@ -53,6 +53,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.skin = agent.skin;
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
+    dobj.scaleY = agent.scaleY || agent.scale;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
@@ -63,6 +64,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.skin = agent.skin;
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
+    dobj.scaleY = agent.scaleY || agent.scale;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
@@ -213,7 +215,7 @@ export function AllAgentsProgram(data) {
 /** placeholder function
  *
  *  CURRENTLY ONLY USED BY Compiler
- *  REVIEW: Oudated.  See AllAgentsProgram Update
+ *  REVIEW: Outdated.  See AllAgentsProgram Update
  *
  *  This creates a SINGLE agent just for testing while the user is editing
  *  a script.

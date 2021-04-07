@@ -92,6 +92,9 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
 prop agent.skin setTo 'lightbeam.json'
+prop agent.scale setTo 0.25
+prop agent.scaleY setTo 0.5
+
 // featCall Movement setController 'user'
 prop agent.x setTo -300
 prop agent.y setTo -300
