@@ -40,9 +40,12 @@ when Fish touches Lightbeam [[
   ]]
 ]]
 when Fish touches Algae [[
-  dbgOut "Algae touched by " {{ Fish.meta.name }}
-  prop Fish.energyLevel add 1
-  featCall Costume setCostume 'bunny.json' 0
+  // dbgOut "Algae touched by " {{ Fish.meta.name }}
+  // Fish and Algae context are lost within the ifExpr in when
+  //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
+    prop Fish.energyLevel add 1
+    prop Algae.energyLevel sub 1
+  //]]
 ]]
 `
     },
@@ -54,12 +57,25 @@ when Fish touches Algae [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-// featCall Movement setRandomStart
-featCall Movement setMovementType 'wander' 0.2
-addProp energyLevel Number 50
+// keep scale above 0.3 so it remains visible
+prop scale setMin 0.3
+addProp energyLevel Number 100
 # PROGRAM EVENT
 onEvent Tick [[
   prop energyLevel sub 1
+
+  // set scale of algae based on energyLevel
+  exprPush {{ agent.getProp('energyLevel').value / 100 }}
+  propPop scale
+
+  // Experimental stack operations
+  propPush agent.energyLevel
+  exprPush {{ 1000 }}
+  // gobblygook is not triggering an error
+  gobblygook
+  // add does not seem to run
+  add
+  dbgStack
 ]]
 # PROGRAM UPDATE
 when Algae touches Lightbeam [[
@@ -111,15 +127,16 @@ useFeature Costume
       initScript: `prop x setTo 0
     prop y setTo 0`
     },
-    {
-      id: 502,
-      name: 'fatFish',
-      blueprint: 'Fish',
-      initScript: `prop x setTo 100
-    prop y setTo 100
- prop scale setTo 50
-    prop energyLevel setTo 1000` // extra property test
-    },
+    //     {
+    //       id: 502,
+    //       name: 'fatFish',
+    //       blueprint: 'Fish',
+    //       initScript: `prop x setTo 100
+    // prop y setTo 100
+    // // prop scale setTo 5
+    // // prop sizew setTo 80 // size doesn't work
+    // prop energyLevel setTo 1000` // extra property test
+    //     },
     // {
     //   id: 503,
     //   name: 'starvedFish',
@@ -131,8 +148,8 @@ useFeature Costume
       name: 'algae01',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
-        prop y setTo 120`
-    }
+prop y setTo 120`
+    },
     // {
     //   id: 505,
     //   name: 'algae02',
@@ -147,12 +164,12 @@ useFeature Costume
     //   initScript: `prop x setTo -120
     //     prop y setTo -90`
     // }
-    // {
-    //   id: 507,
-    //   name: 'lightbeam01',
-    //   blueprint: 'Lightbeam',
-    //   initScript: `prop x setTo -220
-    //     prop y setTo -220`
-    // }
+    {
+      id: 507,
+      name: 'lightbeam01',
+      blueprint: 'Lightbeam',
+      initScript: `prop x setTo -220
+        prop y setTo -220`
+    }
   ]
 };
