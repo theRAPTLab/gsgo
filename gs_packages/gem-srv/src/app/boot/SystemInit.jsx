@@ -26,8 +26,8 @@ import {
   ThemeProvider
 } from '@material-ui/core/styles';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
-import SETTINGS from 'config/app.settings';
-import theme from 'modules/style/theme';
+import SETTINGS from '../../../config/app.settings';
+import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

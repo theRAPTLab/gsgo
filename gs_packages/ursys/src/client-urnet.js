@@ -9,7 +9,13 @@
 const NetPacket = require('./class-netpacket');
 const NETINFO = require('./client-netinfo');
 const PROMPTS = require('./util/prompts');
-const { CFG_SVR_UADDR, CFG_URNET_SERVICE, PacketHash } = require('./ur-common');
+const DATACORE = require('./client-datacore');
+const {
+  CFG_SVR_UADDR,
+  CFG_URNET_SERVICE,
+  PacketHash,
+  CLI_UADDR
+} = require('./ur-common');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
 const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
@@ -92,6 +98,12 @@ function m_HandleRegistrationMessage(msgEvent) {
   if (DBG.reg) console.log('updating URSESSION with registration data');
   window.URSESSION.CLIENT_UADDR = UADDR;
   window.URSESSION.USRV_UADDR = SERVER_UADDR;
+  // (6) also save to new client-datacor, which should replace (5) above
+  DATACORE.SaveClientInfo({
+    uaddr: UADDR,
+    srv_uaddr: SERVER_UADDR,
+    isLocalServer: ULOCAL
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dispatch incoming event object from the network.
@@ -267,12 +279,13 @@ URNET.WebServerPort = () => window.location.port || 80;
 URNET.ConnectionString = () => {
   const { host } = NETINFO.GetNetInfo();
   const port = window.location.port;
-  let str = `${URNET.SocketUADDR()} ⇆ ${host}`;
+  let str = `${CLI_UADDR} ⇆ ${host}`;
   if (port) str += `:${port}`;
   return str;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.NetInfoRoute = () => CFG_URNET_SERVICE;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

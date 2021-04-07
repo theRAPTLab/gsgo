@@ -12,6 +12,8 @@ const DEVICES = require('./client-netdevices');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
+const DATACORE = require('./client-datacore');
+const EndPoint = require('./class-endpoint');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +23,9 @@ const PhaseMachine = require('./class-phase-machine');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
 const DBG = false;
-const { LocalNode, NetNode } = require('./client-datacore');
+const LocalNode = new EndPoint('ur-client-local');
+const NetNode = new EndPoint('ur-client-net');
+DATACORE.SetSharedEndPoints({ LocalNode, NetNode });
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,7 +120,8 @@ const UR = {
   SystemStart,
   SystemStop,
   // ROUTE INFO
-  IsRoute: route => URSYS_ROUTE === route,
+  IsAppRoute: route => URSYS_ROUTE === route,
+  AppRoute: () => URSYS_ROUTE,
   ServerIP: NETWORK.ServerIP,
   ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,
@@ -132,7 +137,7 @@ const UR = {
   // FORWARDED DEVICE API
   DeviceRegister: DEVICES.DeviceRegister,
   DeviceGetMatching: DEVICES.DeviceGetMatching,
-  DeviceSubsribe: DEVICES.DeviceSubscribe,
+  DeviceSubscribe: DEVICES.DeviceSubscribe,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

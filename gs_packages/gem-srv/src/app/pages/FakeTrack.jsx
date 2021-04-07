@@ -10,10 +10,10 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
-import { Init, HookResize } from 'modules/render/api-render';
+import { Init, HookResize } from '../../modules/render/api-render';
 import { Initialize, HandleStateChange } from './elements/mod-faketrack-ui';
 import { useStylesHOC } from './elements/page-styles';
-import 'lib/css/faketrack.css';
+import '../../lib/css/faketrack.css';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';

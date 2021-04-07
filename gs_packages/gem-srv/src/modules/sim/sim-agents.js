@@ -25,7 +25,7 @@ import * as TRANSPILER from 'script/transpiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
-const DO_TESTS = !UR.IsRoute('/app/compiler');
+const DO_TESTS = !UR.IsAppRoute('/app/compiler');
 
 const DOBJ_SYNC_AGENT = new SyncMap({
   Constructor: DisplayObject,
