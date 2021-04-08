@@ -10,6 +10,7 @@
 
 import * as PIXI from 'pixi.js';
 import { OutlineFilter } from '@pixi/filter-outline';
+import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import { IVisual } from './t-visual';
@@ -29,6 +30,7 @@ let REF_ID_COUNTER = 0;
 /// outline filters
 const outlineHover = new OutlineFilter(2, 0xffff0088);
 const outlineSelected = new OutlineFilter(3, 0xffff00);
+const glow = new GlowFilter({ distance: 50, outerStrength: 3 });
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -81,6 +83,7 @@ class Visual implements IVisual, IPoolable, IActable {
   isHovered: boolean;
   isGrouped: boolean;
   isCaptive: boolean;
+  isGlowing: boolean;
   // poolable
   id: any;
   _pool_id: any;
@@ -100,12 +103,14 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isHovered = false; // use secondary highlight effect
     this.isGrouped = false; // use tertiary grouped effect
     this.isCaptive = false; // use tertiary grouped effect
+    this.isGlowing = false;
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
   setHovered = (mode = this.isHovered) => (this.isHovered = mode);
   setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
+  setGlowing = (mode = this.isGlowing) => (this.isGlowing = mode);
 
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
@@ -137,6 +142,7 @@ class Visual implements IVisual, IPoolable, IActable {
     const filters = [];
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
+    if (this.isGlowing) filters.push(glow);
     this.sprite.filters = filters;
 
     // we're done

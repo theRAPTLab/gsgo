@@ -43,6 +43,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
+  isGlowing: boolean;
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
@@ -136,6 +137,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   setHovered = (mode = this.isHovered) => (this.isHovered = mode);
   setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
+  setGlowing = (mode = this.isGlowing) => (this.isGlowing = mode);
   toggleSelected = () => {
     this.isSelected = !this.isSelected;
   };
@@ -217,7 +219,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const hovered = this.isHovered ? FLAGS.SELECTION.HOVERED : 0;
     const grouped = this.isGrouped ? FLAGS.SELECTION.GROUPED : 0;
     const captive = this.isCaptive ? FLAGS.SELECTION.CAPTIVE : 0;
-    return selected | hovered | grouped | captive;
+    const glowing = this.isGlowing ? FLAGS.SELECTION.GLOWING : 0;
+    return selected | hovered | grouped | captive | glowing;
   }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

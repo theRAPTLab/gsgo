@@ -94,6 +94,7 @@ function Init(element) {
       vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
       vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
 
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
@@ -128,6 +129,7 @@ function Init(element) {
       vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
       vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
 
       // inefficient texture update
       vobj.setTexture(dobj.skin, dobj.frame);

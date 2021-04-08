@@ -41,6 +41,7 @@ when Fish touches Lightbeam [[
 ]]
 when Fish touches Algae [[
   // dbgOut "Algae touched by " {{ Fish.meta.name }}
+  featCall Costume setGlow 1
   // Fish and Algae context are lost within the ifExpr in when
   //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
     prop Fish.energyLevel add 1
