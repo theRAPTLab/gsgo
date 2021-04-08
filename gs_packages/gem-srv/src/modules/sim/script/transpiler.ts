@@ -380,10 +380,7 @@ function ExtractBlueprintProperties(script) {
   // 1. Start with built in properties
   let properties = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
-    // REVIEW: Should scale be a featProp?
-    // Currently if it is, the system can't parse the ref
-    { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false }
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
     // Don't allow wizard to set built-in skin property directly.
     // This should be handled via `featCall Costume setCostume` because that
     // call properly initializes the frameCount.
