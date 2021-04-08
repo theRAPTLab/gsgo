@@ -83,6 +83,11 @@ class CostumePack extends GFeature {
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
   }
+  /**
+   * If Physics are being used, it's better to use Physics' setSize()
+   * @param agent
+   * @param scale
+   */
   setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked
     agent.getProp('scale').setTo(scale); // use the minmaxed number

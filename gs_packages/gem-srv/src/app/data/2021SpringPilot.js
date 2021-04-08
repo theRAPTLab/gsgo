@@ -10,9 +10,16 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Costume setScale 1
-featCall Movement setMovementType 'wander' 0.2
+featCall Movement setMovementType 'wander' 0.5
+
 addProp energyLevel Number 20
+prop energyLevel setMax 100
+prop energyLevel setMin 0
+
+useFeature Physics
+featCall Physics setShape 'rectangle'
+featCall Physics setSize 64 64
+
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
@@ -27,25 +34,27 @@ onEvent Tick [[
     featCall Costume setPose 1
   ]]
   // dead
-  ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
+  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
     featCall Costume setPose 2
     featCall Movement setMovementType 'float'
   ]]
 ]]
 # PROGRAM UPDATE
-when Fish touches Lightbeam [[
-  prop Fish.energyLevel add 100
-  ifExpr {{ Fish.getProp('energyLevel').value > 100 }} [[
-    dbgOut 'FAT!'
-  ]]
-]]
 when Fish touches Algae [[
-  // dbgOut "Algae touched by " {{ Fish.meta.name }}
+  dbgOut "Algae touched by " {{ Fish.meta.name }}
+
   featCall Costume setGlow 1
-  // Fish and Algae context are lost within the ifExpr in when
+
+  // hack around ifExpr bug
+  exprPush {{ Fish.getProp('energyLevel').value + (Algae.getProp('energyLevel').value > 0 ? 1 : 0) }}
+  propPop Fish.energyLevel
+  // min is 0, so it's always OK to subtract one
+  prop Algae.energyLevel sub 1
+
+  // This doens't work: Fish and Algae context are lost within the ifExpr in when
   //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-    prop Fish.energyLevel add 1
-    prop Algae.energyLevel sub 1
+  //  prop Fish.energyLevel add 1
+  //  prop Algae.energyLevel sub 1
   //]]
 ]]
 `
@@ -59,8 +68,15 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'algae.json' 0
 // keep scale above 0.3 so it remains visible
-prop scale setMin 0.3
+// prop scale setMin 0.3
+
 addProp energyLevel Number 100
+prop energyLevel setMax 100
+prop energyLevel setMin 0
+
+useFeature Physics
+featProp Physics.radius setTo 16
+
 # PROGRAM EVENT
 onEvent Tick [[
   prop energyLevel sub 1
@@ -69,17 +85,17 @@ onEvent Tick [[
   exprPush {{ agent.getProp('energyLevel').value / 100 }}
   propPop scale
 
-  // Experimental stack operations
-  propPush agent.energyLevel
-  exprPush {{ 1000 }}
-  // gobblygook is not triggering an error
-  gobblygook
-  // add does not seem to run
-  add
-  dbgStack
+  // // Experimental stack operations
+  // propPush agent.energyLevel
+  // exprPush {{ 1000 }}
+  // // 'add' is not defined and does not run
+  // add
+  // dbgStack
+
 ]]
 # PROGRAM UPDATE
 when Algae touches Lightbeam [[
+  dbgOut 'touches! algae + lightbeam'
   prop Algae.energyLevel add 1
 ]]
 `
@@ -92,22 +108,22 @@ when Algae touches Lightbeam [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
+
+useFeature Physics
+featCall Physics setShape 'rectangle'
+featCall Physics setSize 100 256
+
 prop agent.skin setTo 'lightbeam.json'
-prop agent.scale setTo 0.25
-prop agent.scaleY setTo 0.5
 
 // featCall Movement setController 'user'
 prop agent.x setTo -300
 prop agent.y setTo -300
-`
-    },
-    {
-      id: 'Poop',
-      label: 'Poop',
-      script: `# BLUEPRINT Poop
-# PROGRAM DEFINE
-useFeature Costume
-// featCall Costume setCostume 'poop.json' 0
+
+# PROGRAM EVENT
+onEvent Tick [[
+  // featPropPush Physics.radius
+  // dbgStack
+]]
 `
     }
   ],
@@ -152,7 +168,7 @@ useFeature Costume
       name: 'algae01',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
-prop y setTo 120`
+    prop y setTo 120`
     },
     // {
     //   id: 505,
@@ -172,8 +188,8 @@ prop y setTo 120`
       id: 507,
       name: 'lightbeam01',
       blueprint: 'Lightbeam',
-      initScript: `prop x setTo -220
-        prop y setTo -220`
+      initScript: `prop x setTo 0
+        prop y setTo -160`
     }
   ]
 };
