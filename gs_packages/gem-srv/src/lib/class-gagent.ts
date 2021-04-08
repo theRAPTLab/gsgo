@@ -170,6 +170,15 @@ class GAgent extends SM_Object implements IAgent, IActable {
     fpack.decorate(this);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Returns true if the featurepack is associated with this agent instance.
+   *  Used by sim-conditions to check for feature before calling
+   *  without throwing an error like getFeature does */
+  hasFeature(fName: string): any {
+    const feat = this.featureMap.get(fName);
+    if (feat === undefined) return false;
+    return true;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Returns the featurepack associated with this agent instance. This is an
    *  object reference to a shared instance of IFeature */
   getFeature(fName: string): any {
@@ -194,6 +203,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
    */
   callFeatMethod(fName: string, mName: string, ...args): any {
     const [feat, featMethod] = this.getFeatMethod(fName, mName);
+    // console.log('callFeatMethod call', mName, ' with this', this);
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
