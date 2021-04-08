@@ -50,6 +50,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   // shortcut properties
   skin: string;
   scale: number;
+  scaleY: number;
   x: number;
   y: number;
   // name, value are defined in IScopeable

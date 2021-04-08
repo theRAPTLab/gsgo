@@ -58,10 +58,10 @@ export class GVarNumber extends SM_Object implements IScopeable {
   }
   // REVIEW
   // Always setMax BEFORE calling setMin
-  // If max is not set, u_CheckMinMax will
-  // will swap min and max and change
-  // any initial values that were set
-  // with the GVarNumber constructor.
+  // If max is not set (=0), and min is > 0
+  // u_CheckMinMax will swap min and max.
+  // Calling u_CheckMinMax will then change
+  // the initial value if it is > min.
   setMin(num: number) {
     this.min = num;
     u_CheckMinMax(this);
