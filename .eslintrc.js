@@ -69,7 +69,7 @@ module.exports = {
     },
     ecmaVersion: 2018, // parsing of modern javascript
     sourceType: 'module', // allows use of imports
-    project: ['./tsconfig.json', './gs_packages/*/tsconfig.json'], // remember, we're using typescript-eslint/parser
+    project: ['./tsconfig.json', './gs_packages/**/tsconfig.json'], // remember, we're using typescript-eslint/parser
     tsconfigRootDir: __dirname // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
