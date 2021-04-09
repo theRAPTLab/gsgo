@@ -38,6 +38,7 @@ onEvent Tick [[
     featCall Costume setPose 2
     featCall Movement setMovementType 'float'
     prop agent.alpha setTo 0.3
+    prop agent.isInert setTo true
   ]]
 ]]
 # PROGRAM UPDATE
@@ -46,17 +47,20 @@ when Fish touches Algae [[
 
   featCall Costume setGlow 1
 
+  // Add energy to Fish and subtract energy from Algae
+  //
+  // This doens't work: Fish and Algae context are lost within the ifExpr in when
+  //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
+  //  prop Fish.energyLevel add 1
+  //  prop Algae.energyLevel sub 1
+  //]]
+  //
   // hack around ifExpr bug
   exprPush {{ Fish.getProp('energyLevel').value + (Algae.getProp('energyLevel').value > 0 ? 1 : 0) }}
   propPop Fish.energyLevel
   // min is 0, so it's always OK to subtract one
   prop Algae.energyLevel sub 1
 
-  // This doens't work: Fish and Algae context are lost within the ifExpr in when
-  //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-  //  prop Fish.energyLevel add 1
-  //  prop Algae.energyLevel sub 1
-  //]]
 ]]
 `
     },
@@ -85,6 +89,12 @@ onEvent Tick [[
   // set scale of algae based on energyLevel
   exprPush {{ agent.getProp('energyLevel').value / 100 }}
   propPop scale
+
+  // dead
+  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
+    prop agent.alpha setTo 0.3
+    prop agent.isInert setTo true
+  ]]
 
   // // Experimental stack operations
   // propPush agent.energyLevel

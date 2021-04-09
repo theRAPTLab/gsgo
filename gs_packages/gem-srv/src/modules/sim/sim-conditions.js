@@ -36,6 +36,8 @@ RegisterFunction('dies', a => {
 RegisterFunction('touches', (a, b) => {
   // make sure both objects have the Physics feature
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  // if either is inert, no touches are possible
+  if (a.isInert || b.isInert) return false;
   const boundsA = a.callFeatMethod('Physics', 'getBounds');
   const boundsB = b.callFeatMethod('Physics', 'getBounds');
   const res =
