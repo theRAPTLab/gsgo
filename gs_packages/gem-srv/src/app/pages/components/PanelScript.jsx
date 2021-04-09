@@ -9,6 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
+import ToggleButton from '@material-ui/lab/ToggleButton';
+import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
@@ -32,8 +34,27 @@ import PanelChrome from './PanelChrome';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PANELSCRIPT');
-const DBG = true;
+const DBG = false;
 let needsSyntaxReHighlight = false;
+
+const StyledToggleButton = withStyles(theme => ({
+  root: {
+    color: 'rgba(0,156,156,1)',
+    backgroundColor: 'rgba(60,256,256,0.1)',
+    '&:hover': {
+      color: 'black',
+      backgroundColor: '#6effff'
+    },
+    '&.Mui-selected': {
+      color: '#6effff',
+      backgroundColor: 'rgba(60,256,256,0.3)',
+      '&:hover': {
+        color: 'black',
+        backgroundColor: '#6effff'
+      }
+    }
+  }
+}))(ToggleButton);
 
 /// TEST SCRIPT ///////////////////////////////////////////////////////////////
 /// These demo scripts are for testing the highlighting scheme only.
@@ -144,10 +165,11 @@ if (DBG) console.log(...PR('PRISM gemscript types', types_regex));
 class PanelScript extends React.Component {
   constructor() {
     super();
+    this.origBlueprintName = '';
     this.state = {
-      title: 'Script',
+      viewMode: 'code',
+      jsx: '',
       lineHighlight: undefined,
-      origBlueprintName: '',
       openConfirmDelete: false,
       isDirty: false,
       openConfirmUnload: false,
@@ -168,14 +190,18 @@ class PanelScript extends React.Component {
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
+    this.CompileToJSX = this.CompileToJSX.bind(this);
+    this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
     this.SendText = this.SendText.bind(this);
     this.OnSelectScriptClick = this.OnSelectScriptClick.bind(this);
     this.HighlightDebugLine = this.HighlightDebugLine.bind(this);
     this.OnDelete = this.OnDelete.bind(this);
     this.OnDeleteConfirm = this.OnDeleteConfirm.bind(this);
     this.OnUnloadConfirm = this.OnUnloadConfirm.bind(this);
+    this.OnToggleWizard = this.OnToggleWizard.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
@@ -208,9 +234,7 @@ class PanelScript extends React.Component {
   }
 
   componentWillUnmount() {
-    console.warn(
-      'PanelScript about to unmount.  We should save the script! (Not implemented yet)'
-    );
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
@@ -219,15 +243,52 @@ class PanelScript extends React.Component {
   }
 
   UpdateBlueprintName(script) {
+    if (DBG) console.log(...PR('UpdateBlueprintName -- setting state'));
     const blueprintName = TRANSPILER.ExtractBlueprintName(script);
-    this.setState({
-      title: this.GetTitle(blueprintName),
-      origBlueprintName: blueprintName
-    });
+    this.origBlueprintName = blueprintName;
   }
 
   GetTitle(blueprintName) {
     return `Script: ${blueprintName}`;
+  }
+
+  // compile source to jsx
+  CompileToJSX() {
+    if (DBG) console.group(...PR('toReact'));
+    const { modelId } = this.props;
+    const currentScript = this.jar.toString();
+    const source = TRANSPILER.ScriptifyText(currentScript);
+    // REVIEW: This seems like overkill, on the other hand, we do need
+    // to use the current name?
+    const blueprintName = TRANSPILER.ExtractBlueprintName(currentScript);
+    const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(currentScript);
+    const jsx = TRANSPILER.RenderScript(source, {
+      isEditable: true,
+      isDeletable: false,
+      isInstanceEditor: false,
+      propMap
+    });
+    this.setState({ jsx });
+    if (DBG) console.groupEnd();
+  }
+
+  /**
+   * keyword editor has sent updated script line
+   * @param {Object} data { index, scriptUnit, exitEdit }
+   */
+  HandleScriptUIChanged(data) {
+    const currentScript = this.jar.toString();
+    // 1. Convert script text to array
+    const scriptTextLines = currentScript.split('\n');
+    // 2. Conver the updated line to text
+    const updatedLineText = data.scriptUnit.join(' ');
+    // 3. Replace the updated line in the script array
+    scriptTextLines[data.index] = updatedLineText;
+    // 4. Convert the script array back to script text
+    const updatedScript = scriptTextLines.join('\n');
+    // 5. Update the codejar code
+    this.jar.updateCode(updatedScript);
+    this.setState({ isDirty: true });
   }
 
   /**
@@ -242,9 +303,9 @@ class PanelScript extends React.Component {
    *    b. DoSimPlaces scriptifys the text
    *    c. DoSimPlaces registers the new blueprint
    *       replacing any existing blueprint
-   *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM_UPDATE
+   *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM
    *    b. DoSimPlaces raises AGENTS_RENDER
-   * 4. sim-agents handles ALL_AGENTS_PROGRAM_UPDATE
+   * 4. sim-agents handles ALL_AGENTS_PROGRAM
    *    a. AllAgentsProgramUpdate either
    *       -- updates any existing instances
    *       -- or creates a new instance if it doesn't exist by calling
@@ -258,16 +319,16 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
-    const { origBlueprintName } = this.state;
     const text = this.jar.toString();
     const currentBlueprintName = TRANSPILER.ExtractBlueprintName(text);
     UR.RaiseMessage('NET:SCRIPT_UPDATE', {
       script: text,
-      origBlueprintName
+      origBlueprintName: this.origBlueprintName
     });
-    this.setState({ origBlueprintName: currentBlueprintName, isDirty: false });
+    this.setState({ isDirty: false });
     // select the new script
-    if (origBlueprintName !== currentBlueprintName) {
+    if (this.origBlueprintName !== currentBlueprintName) {
+      this.origBlueprintName = currentBlueprintName;
       UR.RaiseMessage('SELECT_SCRIPT', { scriptId: currentBlueprintName });
     }
   }
@@ -312,10 +373,9 @@ class PanelScript extends React.Component {
       openConfirmDelete: false
     });
     if (yesDelete) {
-      const { origBlueprintName } = this.state;
       UR.RaiseMessage('SELECT_SCRIPT', { scriptId: undefined }); // go to selection screen
       UR.RaiseMessage('NET:BLUEPRINT_DELETE', {
-        blueprintName: origBlueprintName
+        blueprintName: this.origBlueprintName
       });
     }
   }
@@ -332,16 +392,24 @@ class PanelScript extends React.Component {
     }
   }
 
+  OnToggleWizard(e, value) {
+    console.log('clicked', value);
+    this.CompileToJSX();
+    this.setState({ viewMode: value });
+  }
+
   render() {
     if (DBG) console.log(...PR('render'));
     const {
       title,
+      viewMode,
+      jsx,
       lineHighlight,
       isDirty,
       openConfirmDelete,
       openConfirmUnload
     } = this.state;
-    const { id, script, onClick, classes } = this.props;
+    const { id, script, modelId, onClick, classes } = this.props;
 
     // CodeJar Refresh
     //
@@ -379,6 +447,19 @@ class PanelScript extends React.Component {
     const blueprintName = TRANSPILER.ExtractBlueprintName(script);
     const updatedTitle = this.GetTitle(blueprintName);
 
+    // TOP BAR ----------------------------------------------------------------
+    const TopBar = (
+      <ToggleButtonGroup
+        value={viewMode}
+        exclusive
+        onChange={this.OnToggleWizard}
+      >
+        <StyledToggleButton value="code">Code</StyledToggleButton>
+        <StyledToggleButton value="wizard">Wizard</StyledToggleButton>
+      </ToggleButtonGroup>
+    );
+
+    // BOTTOM BAR ----------------------------------------------------
     const BackBtn = (
       <button
         type="button"
@@ -389,7 +470,6 @@ class PanelScript extends React.Component {
         &lt; SELECT SCRIPT
       </button>
     );
-
     const DeleteBtn = (
       <button
         type="button"
@@ -400,7 +480,6 @@ class PanelScript extends React.Component {
         DELETE SCRIPT
       </button>
     );
-
     const SaveBtn = (
       <button
         type="button"
@@ -412,7 +491,6 @@ class PanelScript extends React.Component {
         SAVE TO SERVER
       </button>
     );
-
     const DialogConfirmDelete = (
       <DialogConfirm
         open={openConfirmDelete}
@@ -421,7 +499,6 @@ class PanelScript extends React.Component {
         onClose={this.OnDeleteConfirm}
       />
     );
-
     const DialogConfirmUnload = (
       <DialogConfirm
         open={openConfirmUnload}
@@ -431,7 +508,6 @@ class PanelScript extends React.Component {
         onClose={this.OnUnloadConfirm}
       />
     );
-
     const BottomBar = (
       <div
         style={{
@@ -448,11 +524,38 @@ class PanelScript extends React.Component {
       </div>
     );
 
+    // CODE -------------------------------------------------------------------
+    const Code = (
+      <pre
+        className="language-gemscript line-numbers match-braces"
+        data-line={lineHighlight}
+        style={{
+          fontSize: '10px',
+          lineHeight: 1,
+          whiteSpace: 'pre-line',
+          display: `${viewMode === 'code' ? 'inherit' : 'none'}`
+        }}
+      >
+        <code
+          id="codejar"
+          ref={this.jarRef}
+          style={{ width: '100%', height: 'auto' }}
+        >
+          {script}
+        </code>
+      </pre>
+    );
+
+    // WIZARD -----------------------------------------------------------------
+    const Wizard = <>Wizard{jsx}</>;
+
+    // RETURN -----------------------------------------------------------------
     return (
       <PanelChrome
         id={id} // used by click handler to identify panel
         title={updatedTitle}
         onClick={onClick}
+        topbar={TopBar}
         bottombar={BottomBar}
       >
         <div
@@ -462,23 +565,8 @@ class PanelScript extends React.Component {
             width: '100%'
           }}
         >
-          <pre
-            className="language-gemscript line-numbers match-braces"
-            data-line={lineHighlight}
-            style={{
-              fontSize: '10px',
-              lineHeight: 1,
-              whiteSpace: 'pre-line'
-            }}
-          >
-            <code
-              id="codejar"
-              ref={this.jarRef}
-              style={{ width: '100%', height: 'auto' }}
-            >
-              {script}
-            </code>
-          </pre>
+          {Code}
+          {Wizard}
         </div>
       </PanelChrome>
     );

@@ -1,15 +1,14 @@
-// HACK
-// Bare Bones SIM DATA Module
-//
-// This hack was created to make it easy to create
-// and load different sets of simulations scripts for
-// any given model.
-//
-// This just listens for requests via URSYS and sends data back.
-// This should be replaced by a proper database module.
-//
-// As of 2021-02-25, the instance updates just update
-// instances for the current session.  No data is saved.
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  Project Data - Data Module for Mission Control
+
+  NOTE: This should NOT be used by ScriptEditor or PanelScript!!!
+
+  Currently this is a placeholder class.  No data is saved between sessions.
+  Eventually it will communicate with as erver database.
+
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import {
@@ -55,6 +54,9 @@ class ProjectData {
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
+    this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
+      this
+    );
     this.BlueprintDelete = this.BlueprintDelete.bind(this);
     this.RemoveInvalidPropsFromInstanceInit = this.RemoveInvalidPropsFromInstanceInit.bind(
       this
@@ -171,14 +173,34 @@ class ProjectData {
    * in InstanceInspectors
    * @param {string} blueprintName
    * @param {string} [modelId=currentModelId]
-   * @return {array} { name, type, defaultValue, isFeatProp }
+   * @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
    */
   GetBlueprintProperties(blueprintName, modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
+    if (!model) return []; // Called too early?
     const blueprint = model.scripts.find(s => s.id === blueprintName);
     if (!blueprint) return []; // blueprint was probably deleted
     const script = blueprint.script;
     return TRANSPILER.ExtractBlueprintProperties(script);
+  }
+
+  /**
+   * Used by InstanceEditor and props.tsx to look up property types
+   * NOTE: Non-MissionControl panels should always call this with a
+   * modelId, since currentModelId may not be set.
+   * @param {*} blueprintName
+   * @param {*} modelId
+   * @return {map} [ ...{name: type}]
+   */
+  GetBlueprintPropertiesTypeMap(blueprintName, modelId = this.currentModelId) {
+    if (modelId === '')
+      console.error(
+        'GetBlueprintPRopertiesTypeMap needs to specify modelId -- You are probably calling this from PanelScript!'
+      );
+    const properties = this.GetBlueprintProperties(blueprintName, modelId);
+    const map = new Map();
+    properties.forEach(p => map.set(p.name, p.type));
+    return map;
   }
 
   /**

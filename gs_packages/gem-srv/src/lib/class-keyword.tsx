@@ -79,7 +79,10 @@ class Keyword implements IKeyword {
     // stuff for originally hyphenated CSS properties so it doesn't
     // get marked by the linter as invalid CSS
     return (
-      <div key={m_GenerateKey()} style={styleLine}>
+      // old method generated a key instead of using index
+      // but this disconnects the instance from the script
+      // <div key={m_GenerateKey()} style={styleLine}>
+      <div key={index} style={styleLine}>
         <div style={styleIndex}>{index}</div>
         <div style={styleContent}>{children}</div>
       </div>
@@ -99,6 +102,40 @@ class Keyword implements IKeyword {
   errLine(err: string, idx?: number) {
     if (idx !== undefined) return [err, idx];
     return [err];
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getMethodsMap() {
+    const map = new Map();
+    map.set('boolean', [
+      'setTo',
+      'true',
+      'false',
+      'invert',
+      'and',
+      'or',
+      'eq',
+      'slightlyTrue',
+      'mostlyTrue',
+      'slightlyFalse',
+      'mostlyFalse'
+    ]);
+    map.set('number', [
+      'setWrap',
+      'setMin',
+      'setMax',
+      'setTo',
+      'add',
+      'sub',
+      'div',
+      'mul',
+      'eq',
+      'gt',
+      'lt',
+      'gte',
+      'lte'
+    ]);
+    map.set('string', ['setTo', 'eq']);
+    return map;
   }
 } // end of Keyword Class
 

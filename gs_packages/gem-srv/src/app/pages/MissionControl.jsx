@@ -198,8 +198,7 @@ class MissionControl extends React.Component {
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
     this.PostMessage(`Received script ${firstline}`);
-    // Indicate script has changed
-    this.setState({ scriptsNeedUpdate: true });
+    // HandleSimDataUpdate will set scriptNeedsUpdate flag
   }
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');
