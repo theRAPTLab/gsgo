@@ -18,7 +18,6 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
-featCall Physics setScale 2
 
 # PROGRAM EVENT
 onEvent Tick [[
@@ -108,6 +107,7 @@ onEvent Tick [[
 when Algae touches Lightbeam [[
   dbgOut 'touches! algae + lightbeam'
   prop Algae.energyLevel add 1
+  featCall Costume setGlow 1
 ]]
 `
     },
