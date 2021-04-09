@@ -30,7 +30,7 @@ let REF_ID_COUNTER = 0;
 /// outline filters
 const outlineHover = new OutlineFilter(2, 0xffff0088);
 const outlineSelected = new OutlineFilter(3, 0xffff00);
-const glow = new GlowFilter({ distance: 50, outerStrength: 3 });
+const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0x00ff00 });
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
