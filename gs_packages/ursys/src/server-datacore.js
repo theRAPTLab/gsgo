@@ -16,7 +16,7 @@ const {
   CFG_URNET_VERSION,
   PacketHash
 } = require('./ur-common');
-const { DBG } = require('./ur-dbg-settings');
+const DBG = require('./ur-dbg-settings');
 
 /// URNET DATA STRUCTURES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -8,7 +8,7 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { UR_RaiseMessage, UR_HandleMessage } = require('./server-message-api');
 const UDevice = require('./class-udevice');
-const { DBG } = require('./ur-dbg-settings');
+const DBG = require('./ur-dbg-settings');
 const TERM = require('./util/prompts').makeTerminalOut('NETDVC');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

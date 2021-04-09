@@ -10,7 +10,7 @@
 const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
-const { DBG } = require('./ur-dbg-settings');
+const DBG = require('./ur-dbg-settings');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

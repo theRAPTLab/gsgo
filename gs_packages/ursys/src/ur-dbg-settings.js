@@ -19,7 +19,5 @@ const DBG = {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = {
-  // server-wide debug flags
-  DBG
-};
+module.exports = DBG;
+// server-wide debug flags
