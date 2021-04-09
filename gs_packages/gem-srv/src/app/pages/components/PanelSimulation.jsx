@@ -73,6 +73,7 @@ class PanelSimulation extends React.Component {
     DATACORE.DeleteAllTests();
     // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
     DATACORE.DeleteAllScriptEvents();
+    DATACORE.DeleteAllBlueprints();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
     SIM.Reset();

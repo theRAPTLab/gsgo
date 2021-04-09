@@ -274,6 +274,7 @@ class PanelScript extends React.Component {
 
   /**
    * keyword editor has sent updated script line
+   * update codejar text
    * @param {Object} data { index, scriptUnit, exitEdit }
    */
   HandleScriptUIChanged(data) {

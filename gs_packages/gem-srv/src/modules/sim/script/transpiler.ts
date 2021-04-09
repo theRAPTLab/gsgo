@@ -380,9 +380,11 @@ function ExtractBlueprintProperties(script) {
   // 1. Start with built in properties
   let properties = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
-    // HACKED IN FOR NOW
-    { name: 'skin', type: 'string', defaultValue: 'bunny.json', isFeatProp: true }
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+    // Don't allow wizard to set built-in skin property directly.
+    // This should be handled via `featCall Costume setCostume` because that
+    // call properly initializes the frameCount.
+    // { name: 'skin', type: 'string', defaultValue: 'bunny.json', isFeatProp: true }
   ];
   // 2. Brute force deconstruct added properties
   //    by walking down script and looking for `addProp`

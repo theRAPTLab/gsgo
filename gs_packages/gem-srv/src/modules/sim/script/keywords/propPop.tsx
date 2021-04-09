@@ -26,7 +26,12 @@ export class propPop extends Keyword {
     const progout = [];
     progout.push((agent, state) => {
       const p = deref(agent, state.ctx);
-      if (optMethod === undefined) p.value = state.pop();
+
+      // this bypasses min/max
+      // if (optMethod === undefined) p.value = state.pop();
+
+      // use setTo so that min/max are honored
+      if (optMethod === undefined) p.setTo(state.pop());
       else p[optMethod](...state.stack);
     });
     return progout;

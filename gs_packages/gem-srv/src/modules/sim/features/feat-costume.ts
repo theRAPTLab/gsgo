@@ -13,7 +13,7 @@ import { GetTextureInfo } from 'modules/datacore/dc-globals';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('FeatMovement');
+const PR = UR.PrefixUtil('FeatCostume');
 const DBG = false;
 let COUNTER = 0;
 
@@ -26,6 +26,8 @@ class CostumePack extends GFeature {
     // add feature methods here
     this.featAddMethod('setCostume', this.setCostume);
     this.featAddMethod('setPose', this.setPose);
+    this.featAddMethod('setScale', this.setScale);
+    this.featAddMethod('setGlow', this.setGlow);
     this.featAddMethod('test', this.test);
     this.featAddMethod('thinkHook', agent => {
       const prop = agent.prop.Costume.counter;
@@ -76,9 +78,25 @@ class CostumePack extends GFeature {
       cf.value = poseName;
       cf.setMax(frameCount - 1);
     }
+    agent.getProp('skin').value = costumeName;
   }
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
+  }
+  /**
+   * If Physics are being used, it's better to use Physics' setSize()
+   * @param agent
+   * @param scale
+   */
+  setScale(agent: IAgent, scale: number) {
+    // Use `setTo` so that min an max are checked
+    agent.getProp('scale').setTo(scale); // use the minmaxed number
+  }
+  setGlow(agent: IAgent, seconds: number) {
+    agent.isGlowing = true;
+    setTimeout(() => {
+      agent.isGlowing = false;
+    }, seconds * 1000);
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);

@@ -71,6 +71,7 @@ class PixiAssetManager {
     this.getAssetById = this.getAssetById.bind(this);
     this.lookupAssetId = this.lookupAssetId.bind(this);
     this.getTextureInfo = this.getTextureInfo.bind(this);
+    this.getSpriteDimensions = this.getSpriteDimensions.bind(this);
   }
 
   load(id: AssetId, name: AssetName, url: AssetURL) {
@@ -180,7 +181,24 @@ class PixiAssetManager {
     const rsrc: any = this.getAssetById(assetId as number);
     if (rsrc.texture) return { frameCount: 1 };
     if (rsrc.spritesheet)
-      return { frameCount: rsrc.spritesheet._frameKeys.length };
+      return {
+        frameCount: rsrc.spritesheet._frameKeys.length
+      };
+    return { err: 'not a texture or spritesheet' };
+  }
+
+  getSpriteDimensions(idOrName: number | string, frame: number) {
+    let assetId = idOrName;
+    if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
+    const rsrc: any = this.getAssetById(assetId as number);
+    if (rsrc.texture)
+      console.error('getSpriteDimensions: Unexpected texture, not spritesheet.');
+    if (rsrc.spritesheet) {
+      const key = rsrc.spritesheet._frameKeys[frame];
+      return {
+        ...rsrc.spritesheet._frames[key].sourceSize
+      };
+    }
     return { err: 'not a texture or spritesheet' };
   }
 

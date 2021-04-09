@@ -153,6 +153,10 @@ export function DeleteBlueprint(name: string) {
   BLUEPRINTS.delete(name);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllBlueprints() {
+  BLUEPRINTS.clear();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a program name [[progname]] might be passed, which needs to be dereferenced
  *  into a TSMCProgram stored in the FUNCTIONS table
  */

@@ -16,56 +16,56 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const add = (): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a, b] = STATE.popArgs(2);
-    STATE.pushArgs((a as number) + (b as number));
+    const [a, b] = STATE.pop(2);
+    STATE.push((a as number) + (b as number));
   };
 };
 const addImmediate = (num: number): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a] = STATE.popArgs(1);
-    STATE.pushArgs((a as number) + num);
+    const [a] = STATE.pop(1);
+    STATE.push((a as number) + num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const sub = (): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a, b] = STATE.popArgs(2);
-    STATE.pushArgs((b as number) - (a as number));
+    const [a, b] = STATE.pop(2);
+    STATE.push((b as number) - (a as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const subImmediate = (num: number): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a] = STATE.popArgs(1);
-    STATE.pushArgs((a as number) - num);
+    const [a] = STATE.pop(1);
+    STATE.push((a as number) - num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const mul = (): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a, b] = STATE.popArgs(2);
-    STATE.pushArgs((a as number) * (b as number));
+    const [a, b] = STATE.pop(2);
+    STATE.push((a as number) * (b as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const mulImmediate = (num: number): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a] = STATE.popArgs(1);
-    STATE.pushArgs((a as number) * num);
+    const [a] = STATE.pop(1);
+    STATE.push((a as number) * num);
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const div = (): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a, b] = STATE.popArgs(2);
-    STATE.pushArgs((a as number) / (b as number));
+    const [a, b] = STATE.pop(2);
+    STATE.push((a as number) / (b as number));
   };
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const divImmediate = (num: number): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a] = STATE.popArgs(1);
-    STATE.pushArgs((a as number) / num);
+    const [a] = STATE.pop(1);
+    STATE.push((a as number) / num);
   };
 };
 
@@ -73,8 +73,8 @@ const divImmediate = (num: number): TOpcode => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const abs = (): TOpcode => {
   return (agent: IAgent, STATE: IState): TOpWait => {
-    const [a] = STATE.popArgs(1);
-    STATE.pushArgs(Math.abs(a as number));
+    const [a] = STATE.pop(1);
+    STATE.push(Math.abs(a as number));
   };
 };
 
