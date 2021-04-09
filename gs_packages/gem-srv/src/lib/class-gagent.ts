@@ -22,7 +22,7 @@ import {
   ISMCBundle,
   ControlMode
 } from 'lib/t-script.d';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import FLAGS from 'modules/flags';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
@@ -76,6 +76,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.scaleY = new GVarNumber(0); // if 0, then use scale
     this.prop.scaleY.setMax(10);
     this.prop.scaleY.setMin(0);
+    this.prop.alpha = new GVarNumber(1);
+    this.prop.alpha.setMax(1);
+    this.prop.alpha.setMin(0);
+    this.prop.isInert = new GVarBoolean(false);
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -97,26 +101,38 @@ class GAgent extends SM_Object implements IAgent, IActable {
   get y() {
     return this.prop.y.value;
   }
-  set y(num) {
+  set y(num: number) {
     this.prop.y.value = num;
   }
   get skin() {
     return this.prop.skin.value;
   }
-  set skin(num) {
-    this.prop.skin.value = num;
+  set skin(str: string) {
+    this.prop.skin.value = str;
   }
   get scale() {
     return this.prop.scale.value;
   }
-  set scale(num) {
+  set scale(num: number) {
     this.prop.scale.setTo(num);
   }
   get scaleY() {
     return this.prop.scaleY.value;
   }
-  set scaleY(num) {
+  set scaleY(num: number) {
     this.prop.scaleY.setTo(num);
+  }
+  get alpha() {
+    return this.prop.alpha.value;
+  }
+  set alpha(num: number) {
+    this.prop.alpha.setTo(num);
+  }
+  get isInert() {
+    return this.prop.isInert.value;
+  }
+  set isInert(bool: boolean) {
+    this.prop.isInert.setTo(bool);
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -421,6 +437,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
         this.prop.skin.value,
         'scale',
         this.prop.scale.value,
+        'scaleY',
+        this.prop.scaleY.value,
+        'alpha',
+        this.prop.alpha.value,
+        'isInert',
+        this.prop.isInert.value,
         'feature',
         this.featureMap.keys()
       ]);

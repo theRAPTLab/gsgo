@@ -37,6 +37,7 @@ onEvent Tick [[
   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
     featCall Costume setPose 2
     featCall Movement setMovementType 'float'
+    prop agent.alpha setTo 0.3
   ]]
 ]]
 # PROGRAM UPDATE

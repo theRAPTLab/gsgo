@@ -86,7 +86,7 @@ function Init(element) {
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
 
-      // copy sedlection states?
+      // copy selection states?
       // Set selection state from flags.
       // This needs to be set before the setTexture call
       // because they are added/removed on the vobj with setTexture
@@ -96,6 +96,7 @@ function Init(element) {
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
 
+      vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
 
@@ -132,6 +133,7 @@ function Init(element) {
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
 
       // inefficient texture update
+      vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
 

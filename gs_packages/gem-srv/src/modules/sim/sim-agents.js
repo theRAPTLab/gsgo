@@ -54,6 +54,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
     dobj.scaleY = agent.scaleY || agent.scale;
+    dobj.alpha = agent.alpha;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
@@ -65,6 +66,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
     dobj.scaleY = agent.scaleY || agent.scale;
+    dobj.alpha = agent.alpha;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
