@@ -18,6 +18,7 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
+featCall Physics setScale 2
 
 # PROGRAM EVENT
 onEvent Tick [[

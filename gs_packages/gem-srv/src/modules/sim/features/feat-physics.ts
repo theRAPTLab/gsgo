@@ -35,6 +35,7 @@ class PhysicsPack extends GFeature {
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
     this.featAddMethod('getBounds', this.getBounds);
+    this.featAddMethod('setScale', this.setScale);
     this.featAddMethod('init', this.init);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,6 +142,21 @@ class PhysicsPack extends GFeature {
       width: w,
       height: h
     };
+  }
+  /**
+   * Use this to scale in place of agent setScale so that
+   * physics body bounds are also set.  Scale is relative
+   * to the current size.  e.g. scale=2 is twice as big.
+   * Calling it twice in a row would make the object 4x as big.
+   * This should be run after init.
+   * @param agent
+   * @param scaleX
+   * @param scaleY
+   */
+  setScale(agent: IAgent, scaleX: number, scaleY: number = scaleX) {
+    const w = this.getWidth(agent);
+    const h = this.getHeight(agent);
+    this.setSize(agent, w * scaleX, h * scaleY);
   }
   /**
    * Init
