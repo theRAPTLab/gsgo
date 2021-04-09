@@ -31,6 +31,13 @@ let REF_ID_COUNTER = 0;
 const outlineHover = new OutlineFilter(2, 0xffff0088);
 const outlineSelected = new OutlineFilter(3, 0xffff00);
 const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0x00ff00 });
+// text styles
+const style = new PIXI.TextStyle({
+  fontFamily: 'Arial',
+  fontSize: 12,
+  fill: ['#ffffff99'],
+  stroke: '#ffffff'
+});
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,6 +85,8 @@ class Visual implements IVisual, IPoolable, IActable {
   refId?: any;
   // visual
   sprite: PIXI.Sprite;
+  text: PIXI.Text;
+  textContent: string; // cache value to avoid unecessary updates
   assetId: number;
   isSelected: boolean;
   isHovered: boolean;
@@ -88,7 +97,7 @@ class Visual implements IVisual, IPoolable, IActable {
   id: any;
   _pool_id: any;
   // sprite
-  root: PIXI.Container;
+  root: PIXI.Container; // parent container
 
   constructor(id: number) {
     this.id = id; // store reference
@@ -241,6 +250,32 @@ class Visual implements IVisual, IPoolable, IActable {
 
   /** rotate by angle (+ is counterclockwise) */
   rotateBy() {}
+
+  /**
+   * This should be called after setTexture so that we know
+   * the bounds of the sprite for placing the text
+   */
+  setText(str: string) {
+    if (this.textContent === str) return; // no update necessary
+
+    // Remove any old text
+    // We have to remove the child and reset it to update the text?
+    this.sprite.removeChild(this.text);
+
+    this.text = new PIXI.Text(str, style);
+    this.textContent = str; // cache
+
+    // position text bottom centered
+    const spriteBounds = new PIXI.Rectangle();
+    this.sprite.getBounds(true, spriteBounds);
+    const textBounds = this.text.getBounds();
+    const spacer = 5;
+    const x = spriteBounds.width / 2 - textBounds.width / 2;
+    const y = spriteBounds.height + spacer;
+    this.text.position.set(x, y);
+
+    this.sprite.addChild(this.text);
+  }
 } // end class Sprite
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////

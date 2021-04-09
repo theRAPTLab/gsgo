@@ -98,6 +98,8 @@ function Init(element) {
 
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
+      // has to be called after setTexture so font placement can be calculated
+      if (dobj.text) vobj.setText(dobj.text);
       vobj.setScale(dobj.scale, dobj.scaleY);
 
       if (dobj.mode === 1 && SETTINGS.actable) {
@@ -135,6 +137,8 @@ function Init(element) {
       // inefficient texture update
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
+      // has to be called after setTexture so font placement can be calculated
+      if (dobj.text) vobj.setText(dobj.text);
       vobj.setScale(dobj.scale, dobj.scaleY);
 
       // force vobj rotation, scale, alpha for PIXI testing

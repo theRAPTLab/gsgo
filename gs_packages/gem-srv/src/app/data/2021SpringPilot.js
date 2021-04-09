@@ -19,6 +19,10 @@ prop energyLevel setMin 0
 useFeature Physics
 featCall Physics init
 
+// set name
+exprPush {{ agent.name }}
+propPop text
+
 # PROGRAM EVENT
 onEvent Tick [[
   // foodLevel goes down every second
@@ -81,9 +85,17 @@ prop energyLevel setMin 0
 useFeature Physics
 featProp Physics.radius setTo 16
 
+// show initial level (otherwise level is not shown until run)
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
+
 # PROGRAM EVENT
 onEvent Tick [[
   prop energyLevel sub 1
+
+  // show energyLevel
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
 
   // set scale of algae based on energyLevel
   exprPush {{ agent.getProp('energyLevel').value / 100 }}
