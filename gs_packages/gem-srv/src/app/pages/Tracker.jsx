@@ -5,16 +5,16 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
 // SELECT RUNTIME MODULES FOR APP
-import * as RENDERER from 'modules/render/api-render';
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as INPUT from 'modules/input/api-input';
+import * as INPUT from '../../modules/input/api-input';
+import * as RENDERER from '../../modules/render/api-render';
+import * as GLOBAL from '../../modules/datacore/dc-globals';
 //
-import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -66,10 +66,10 @@ UR.HandleMessage('NET:HELLO', data => {
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDeviceArray(pattern = {}) {
-  const devices = [];
-  UR.DeviceGetMatching(pattern).forEach(device => {
-    devices.push(<li key={bad_keyer++}>{device.uaddr}</li>);
-  });
+  const devices = ['replace UR.DeviceGetMatching() call'];
+  // UR.DeviceGetMatching(pattern).forEach(device => {
+  //   devices.push(<li key={bad_keyer++}>{device.uaddr}</li>);
+  // });
   return devices;
 }
 

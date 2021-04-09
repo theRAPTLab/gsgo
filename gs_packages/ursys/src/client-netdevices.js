@@ -13,7 +13,7 @@
 /// note: these are CJS modules so use require syntax
 const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
-const { GetSharedEndPoints, SaveDeviceSub } = require('./client-datacore');
+const DATACORE = require('./client-datacore');
 const DifferenceCache = require('./class-diff-cache');
 const UDevice = require('./class-udevice');
 const DBG = require('./ur-dbg-settings');
@@ -22,18 +22,17 @@ const DBG = require('./ur-dbg-settings');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagDkRed');
 const DEVICE_CACHE = new DifferenceCache('id');
-const log = console.log;
 let LocalNode;
 let NetNode;
 
 /// FAKEY TYPE DEFINITIONS ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// These are Typescript-like declarations but we're not using typescript for
-/// URSYS modules
+/// URSYS modules. These are just for reference.
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** device selectors hold function that are used to select matching
  *  input types, return a quantity of the matches, and be notified of
- *  changes. Used by DeviceSubscribe
+ *  changes. Used by SubscribeDevice
  */
 const TDeviceSelector = {
   selectify: device => {
@@ -42,59 +41,45 @@ const TDeviceSelector = {
   quantify: deviceList => {
     return deviceList;
   },
-  notify: (added, updated, removed) => {}
+  notify: (valid, added, updated, removed) => {}
 };
-
-/// DEVICE SUBSCRIPTION ///////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: hook into DeviceBridger. Provide three optional functions that will be
- *  used to select, quantify the devices you want, and your notify function
- *  will be called with added,updated,removed list of devices. Returns
- *  the "DeviceBridgeNumber" which can be used to delete a device subscription
- */
-export function DeviceSubscribe(config) {
-  const dbr = {}; // renamed to deviceBridge
-  if (Array.isArray(config)) {
-    dbr.selectify = config[0];
-    dbr.quantify = config[1];
-    dbr.notify = config[2];
-  } else if (typeof config === 'object') {
-    dbr.selectify = config.selectify;
-    dbr.quantify = config.quantify;
-    dbr.notify = config.notify;
-  } else throw Error('invalid device bridge config');
-  return SaveDeviceSub(dbr);
-}
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function log_arr(arr, prompt = 'array') {
   if (arr.length > 0) console.log(`${prompt}: ${arr.length} elements`, arr);
   else console.log(`${prompt}: 0 elements []`);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** placeholder - save device map received from URNET server
- *  does not do careful update or removes old entries
+} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Save device map received from URNET server
+ *  TODO: careful update or removes old entries
  */
 function m_SaveDeviceMap(devmap) {
+  console.log(...PR('SaveDeviceMap:', devmap));
   const { added, updated, removed } = DEVICE_CACHE.ingest(devmap);
   if (DBG.devices) {
     log_arr(added, 'added  ');
     log_arr(updated, 'updated');
     log_arr(removed, 'removed');
-  } //
-  LocalNode.raiseMessage('UR_DEVICES_CHANGED');
+  }
+  LocalNode.raiseMessage('UR_DEVICES_CHANGED', { added, updated, removed });
+  // subscribers get a chance to handle the change
+  // returning references because DEVICE_CACHE.getChanges() will reset the
+  // changeList, so multiple subscribers would miss the changes
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** when DEVICE_CACHE changes, update all subscriptions */
+function m_UpdateSubs() {}
+
+/// DEVICE CREATION ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: create a new UDevice */
+export function NewDevice(className) {
+  if (typeof className !== 'string')
+    throw Error(`NewDevice() accepts class name as string, not ${className}`);
+  return new UDevice(className);
 }
 
-/// API METHODS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API placeholder - an app can use this to register with the server
- */
-export function DeviceRegister(name, controlDef) {
-  console.log(...PR('DeviceRegister() -', name, controlDef));
-  const promise = NetNode.callMessage('NET:SRV_DEVICE_REG', controlDef);
-  return promise;
-}
+/// DEVICE SUBSCRIPTION API ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API placeholder - given search criteria, return an array of maching udevices
  *  only handle 'uclass' for now inefficiently.
@@ -106,6 +91,44 @@ export function DeviceGetMatching(pattern = {}) {
     if (uclass === '*' || device.uclass === uclass) devices.push(device);
   });
   return devices;
+}
+/** API: hook into DeviceBridger. Provide three optional functions that will be
+ *  used to select, quantify the devices you want, and your notify function
+ *  will be called with added,updated,removed list of devices. Returns
+ *  the "DeviceBridgeNumber" which can be used to delete a device subscription
+ */
+export function SubscribeDevice(config) {
+  // device bridge holds al the functions as follows:
+  // selectify is filter function: device => boolean
+  // quantify is quantity gate function: device[] => deviceSubset[] || undefined
+  // notify is device[] change handler: (valid, added[], updated[], removed[]
+  // note: 'valid' is true when quantify() returns an array, not undefined
+  const dbr = {};
+  if (typeof config === 'object') {
+    dbr.selectify = config.selectify; // device => boolean
+    dbr.quantify = config.quantify; // device[] => deviceSubset[] || undefined
+    dbr.notify = config.notify; // (valid, added[], updated[], removed[]
+  } else throw Error('invalid device bridge config');
+  // return device bridge number
+  const unsub = DATACORE.SaveDeviceSub(dbr);
+  const getInputs = () => {};
+  const getChanges = () => {};
+  const putOutputs = () => {};
+  return { unsub, getInputs, getChanges, putOutputs };
+}
+
+/// DEVICE REGISTRATION API ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API placeholder - an app can use this to register with the server.
+ */
+export function RegisterDevice(udevice) {
+  const { uclass, uname, udid } = udevice.meta;
+  console.log(
+    ...PR(`RegisterDevice class:${uclass} uname:${uname} udid:${udid}`)
+  );
+  DATACORE.DeclareNewDevice(udevice);
+  const promise = NetNode.callMessage('NET:SRV_DEVICE_REG', udevice);
+  return promise; // returns reginfo {
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
@@ -119,12 +142,14 @@ PhaseMachine.Hook(
     new Promise((resolve, reject) => {
       // LocalNode, NetNode should be stable after NET_CONNECT, which
       // occurs before NET_DEVICES
-      const EPS = GetSharedEndPoints();
+      const EPS = DATACORE.GetSharedEndPoints();
       LocalNode = EPS.LocalNode;
       NetNode = EPS.NetNode;
       NetNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
         resolve();
         m_SaveDeviceMap(devmap);
+        /** when DEVICE_CACHE changes, update all subscriptions tha */
+        m_UpdateSubs();
       });
       /// MESSAGE HANDLERS ///////////////////////////////////////////////////
       /** process incoming netdevice directory, which is defined as an object
@@ -134,6 +159,8 @@ PhaseMachine.Hook(
        */
       NetNode.handleMessage('NET:UR_DEVICES', devmap => {
         m_SaveDeviceMap(devmap);
+        /** when DEVICE_CACHE changes, update all subscriptions tha */
+        m_UpdateSubs();
       });
     })
 );

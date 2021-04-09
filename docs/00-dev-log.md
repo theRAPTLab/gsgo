@@ -132,11 +132,188 @@ The first one happens on drop (sent by server), and the second one happens when 
 * [x] Is `SRV_SOCKET_DELETED` sending the right stuff? Yah, it's sending the updated map which is empty
 * [x] How does `DifferenceCache` handle an empty object? It should work just fine! I didn't change anything and it started working; I suspect the compiler was not picking up code changes properly. After I added an explicit check it started working, but then when I removed the check it STILL worked.
 
+**DeviceSync** is working, with the client keeping itself updated whenever the server reports a change in the devices. So **what's next?**
 
+The **InputManager** API is similar to PTRACK in operation, but also has an `inputSpec`. There is a distinct InputManager instance for each type of input you need.
 
+* `UseInputs( inputSpec )` - tells the InputManager what your application is looking for, the minimum, and the maximum. 
+* `MapInputs( mapSpec )` will optionally tell the InputManager how to handle added, updated, removed inputs. 
+* `PreTransform()` will accept a function that receives the object and transforms it by whatever means it needs to be before `MapInputs()` runs. 
+* `Transform()` will accept a function that transforms data after `MapInputs()` is run. 
+* `GetInputs()` will return the list of current entities for that InputManager instance, mapped and transformed if those options were used. 
 
+**Modules that use InputManager** can use the results of `GetInputs()` as-is, but they may need to do a **secondary mapping** from those entities to assign to **agents**. So how does that work?
 
+* module gets inputs, which will be a variable number from 0 to MAX
+* The inputs are objects with ids provided from the input device, and are guaranteed to be unique across the entire system.
+* the module has to figure out what to do with the inputs. 
+  * For simple inputs, it's just pulling the value out of it during the `SIM/GET_INPUTS` phase. 
+  * For tracker inputs, it has to allocate then to interested agents.
 
+There are **two ways** I am forseeing how agents use inputs that use the `axis` type (-1 to +1)
+
+1. Agents are **created** to use the input as-is, and hold a reference to it. When an input goes away, so does that agent instance. 
+2. A fixed pool of Agents are **mapped** to the available inputs which dance around the screen as **cursors**. If not enough inputs are available, those agents are either dead or in some kind of AI state. These agents need to have either an **assignment** or **capture** method to bind the input to it.
+
+We need the **easiest way** to get inputs into the system now. For now, I think this is to just **get the InputManager's** `GetInputs()` call to deliver **InputObjects** (or **Controls**) that have:
+
+```
+{ 
+	udid: 'uniqueDeviceId',
+	id: 'controllerId for devices with more than one control',
+	[controlSpecificProperties]: value
+}
+```
+
+conceivably, an InputObject could also deliver 
+
+```
+{ 
+	udid: 'uniqueDeviceId',
+	ids: {
+		[id]:{ [controlSpecificValues]:controlValue ... }
+	}
+}
+```
+
+Note that **these data objects should be as small as possible**, users of a particular InputModule will need to know what type it is and what to expect from it.
+
+## APR 04 - FakeTrack Hookups
+
+* [x] Let's start converting FakeTrack into a CharacterController. 
+* [ ] Add `DeviceSubscribe` stub which accelts a TDevice specifier and a TDeviceQuant
+
+## APR 05-08 - Subscribing to an Input
+
+The idea is that you can use `UR.DeviceSubscribe()` to request a certain kind of device. I think that instead of having a type for the selector, we pass a **device filter function**.
+
+### When creating a NEW source device, need
+
+need: `uaddr` `uname` `uapp` `udid` which is added through **DATACORESaveClientInfo({ uapp })**
+
+* [x] `uaddr` - this is available from `client-urnet` when client registers on URNET
+  * [x]  refactor `ur-common` to not import EndPoint
+  * [x]  `client-datacore` now saves shared information redundantly; will eventually remove other sources of truth in NetPacket, and client-urnet
+  * [x]  `client-datacore` now has `MyUADDR()` method to provide (required much refactoring)
+* [x] `uname` - this has to be provided by the client io source ('FakeTrack') implementing device
+* [x] ` uapp` - this is the app path, `UR.IsRoute()` is worth looking into. It's set in `SystemStart()` which is just `document.location.pathname`. **Now available in client-datacore**
+* [ ] device: `udid` 
+
+Now we have to figure out how to **generate unique UDIDs**. 
+
+A udid has to be unique across the entire URNET, and can be based in UADDR. We will strip the last numbers out. `client-netdevices` will hold it. 
+
+* **CharControl.jsx** has an example device registration
+
+### Creating a Device
+
+Construct a `UDevice` instance. You can pass the following to the constructor depending on what you need to do:
+
+* **make new device** - the deviceClass name if you want to use a **named template**, or a **custom name** if a template doesn't already exist. You'll use this UDevice instance to **register in the network-wide Device Directory**
+* **deserialize json into device** -  an **plain object** converted into a UDevice instance, a struct that looks like `{ device, user, student, inputs, outputs }`. This is used by the input module to convert JSON into the local **Device Directory** of all devices on the network.
+
+Once you have defined a device, you can **specify what controls** it implements. There are both **input** and **output** controls. You receive data from the device from its inputs, and you can tell the device what to display with its outputs.
+
+### Defining Device Controls
+
+Every device can define a number of **Controls**, which are defined using a **ControlDef** structure:
+
+```
+struct ControlDef {
+  controlName: string                   // name of control within device
+  controlProps: { [prop]:EncodingType } // produces or receives objects of this shape
+}
+```
+
+The **EncodingType** is one of several special URSYS-defined values:
+
+```
+enum EncodingType {
+  int, float, string, uint, ufloat,
+  byte, word, dword, qword,
+  axis, vec2, vec3, matrix3, matrix4,
+  bistate, edge+, edge-,
+  enum, bits, bits2, fix2, fix3,
+  {} // composite shape using above enums
+}
+```
+
+Note that the controlProps property is a type definition. When actual input data is **received** from a device control, it will always be **an array of ControlDataObjects**. If there is just one output, it will be an array with a length of 1.
+
+* Use  **UDevice.defineInputs()** to add ControlDefs that describe what this device can provide.
+* Use **UDevice.defineOutputs()** to describe what this device can receive
+
+### Registering a Device
+
+Once you've created a UDevice and specified its input/output controls, you can register it to the URNET device directory so all clients will know it's available.
+
+* **UR.RegisterDevice( udevice )** will make it available to the entire URNET
+
+### Subscribing to a Device
+
+The `UR.DeviceSubscribe()` call lets you define functions that are used to determine what **ControlDataObjects** will be returned when retrieving data.
+
+Pass in the following function properties to the **UR.SubscribeDevice()** call as an object:
+
+* `selectify(udevice)=>boolean`: filter by pattern all available devices
+* `quantify(udevices[])=>UDevice[]`: return a subset of matching devices
+* `notify({ valid, added, updated, removed }=>void)`: called when device list changes. if `valid` is true, then the conditions set by `selectify()` and `quantify()` have been met.
+
+You will receive an array of **device API functions** that you can use to perform inputs operations:
+
+1. **DeviceGetInputs**(): `()=>controlDataObject[]` - first function returns all entities
+2. **DeviceGetChanges()**: `()=>{ added, updated, removed }` - second function returns what's changed, if any
+3. **DevicePutOuputs():** `(controlDataObject[])=>Promise.resolve(status)` - third function sends control data objects to the named output
+4. **DeviceUnsubscribe()**: `()=>void` - third function will unsubscribe to the control
+
+### Receiving a Device List
+
+The input system handles this for you after you use **UR.SubscribeDevice()** to pick a device you are interested in. After you receive the device API functions, you'll use them to 
+
+### Receiving Control Data Objects
+
+The input system handles this for you after you use **UR.SubscribeDevice()**. 
+
+Use either **DeviceGetInputs** or **DeviceGetChanges** to receive an array of **ControlDataObjects**. It keep track of incoming inputs and maintains an internal input buffer, which you can read using **DeviceGetInputs()** you received when subscribing. You can alternatively use **DeviceGetChanges()** if you want to know what has changed since the last DeviceGetChanges() or DeviceGetInputs() call.
+
+### Devices Overview
+
+#### To register a new device
+
+1. `let dev = new UDevice(devTemplate)` from a device class template (or custom name)
+2. `dev.addInputControl(controlName, controlProps)` to add **input** controls
+3. `dev.addOutputControl(controlName, controlProps)` to add **output** controls
+4. `UR.RegisterDevice(dev)` to save new device declaration and send to server
+
+#### To subscribe to a device
+
+1. `const selectify = udevice => boolean`
+2. `const quantify = deviceList[] => deviceSubset[]`
+3. `const notify = (valid, added[], updated[], removed[]) => void`
+4. `UR.SubscribeDevice({ selectify, quantify, notify })`
+
+## APR 09 FRI - ToDo
+
+#### Part 1
+
+* [ ] CharControl.jsx declare itself as a device
+* [ ] Tracker.jsx subscribe to devices using DBR, print matching devices
+* [ ] Multiple CharControls add/remove handled by Tracker.jsx
+
+#### Part 2
+
+* [ ] CharControl.jsx sends Control Data Objects
+* [ ] Tracker.jsx read ChangeList through provided function
+* [ ] Tracker.jsx read AllEntities through provided function
+
+#### Part 3
+
+* [ ] test client-netdevices.SubscribeDevice() returned functions
+* [ ] how does client-netdevices actually receive inputs and route them to the right device bridge?
+
+### Part 1 Notes
+
+CharControl.jsx needs to define the device.
 
 
 

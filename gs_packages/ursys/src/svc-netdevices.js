@@ -9,19 +9,26 @@
 const { UR_RaiseMessage, UR_HandleMessage } = require('./server-message-api');
 const UDevice = require('./class-udevice');
 const { DBG } = require('./ur-dbg-settings');
-const TERM = require('./util/prompts').makeTerminalOut('NETDEV');
+const TERM = require('./util/prompts').makeTerminalOut('NETDVC');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEVICE_MAP = new Map(); // map uaddr to udevice entry
+const DEVICE_BY_UADDR = new Map(); // map uaddr to udevice map []
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return a device directory in the form of a Map<uaddr,direntry>
+/** return a device directory in the form of a hash of udids
  */
 function m_CreateDeviceDirectoryFromMap() {
   const devices = {};
-  [...DEVICE_MAP.keys()].forEach(uaddr => {
-    const udev = DEVICE_MAP.get(uaddr);
-    devices[uaddr] = udev.makeDeviceDirectoryEntry(uaddr);
+  [...DEVICE_BY_UADDR.keys()].forEach(uaddr => {
+    const dMap = DEVICE_BY_UADDR.get(uaddr);
+    [...dMap.values()].forEach(udev => {
+      const udid = udev.meta.udid;
+      if (udid !== undefined) {
+        devices[udid] = udev.getDeviceDirectoryEntry();
+      } else {
+        console.warn('*** bad udid in dmap', JSON.stringify(udev));
+      }
+    });
   });
   return devices;
 }
@@ -44,14 +51,22 @@ function PKT_DeviceDirectory(pkt) {
  */
 function PKT_RegisterDevice(pkt) {
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const uaddr = pkt.getSourceAddress();
-  const udev = new UDevice(pkt.getData(), uaddr);
-  const inputs = udev.getInputControlList();
-  const deviceClass = udev.getDeviceProp('uclass');
-  const status = `${uaddr} register '${deviceClass}' input with ${inputs.length} control(s)`;
+  const udev = new UDevice(pkt.getData());
+  const udid = udev.getMetaProp('udid');
+  const ins = udev
+    .getInputControlList()
+    .reduce((acc, i) => `[${i.controlName}]`, '');
+  const outs = udev
+    .getOutputControlList()
+    .reduce((acc, i) => `[${i.controlName}]`, '');
+  const deviceClass = udev.getMetaProp('uclass');
+  const status = `register ${udid} as '${deviceClass}' device w/ inputs:${ins}, outputs:${outs}`;
   if (DBG.devices) TERM(status);
   // save the device to the list
-  DEVICE_MAP.set(uaddr, udev);
+  const uaddr = pkt.getSourceAddress();
+  if (!DEVICE_BY_UADDR.has(uaddr)) DEVICE_BY_UADDR.set(uaddr, new Map());
+  const dMap = DEVICE_BY_UADDR.get(uaddr);
+  dMap.set(udev.udid, udev);
 
   // broadcast the changed device list
   const dir = m_CreateDeviceDirectoryFromMap();
@@ -68,13 +83,13 @@ function PKT_RegisterDevice(pkt) {
  */
 UR_HandleMessage('SRV_SOCKET_DELETED', cmd => {
   const { uaddr } = cmd;
-  const entry = DEVICE_MAP.get(uaddr);
+  const dMap = DEVICE_BY_UADDR.get(uaddr);
   if (DBG.devices) {
-    if (entry === undefined) TERM(`${uaddr} no registered devices to drop`);
-    else TERM(`${uaddr} dropping '${entry.getDeviceProp('uclass')}' input`);
+    if (dMap === undefined) TERM(`${uaddr} has no registered device(s) to drop`);
+    else TERM(`${uaddr} dropping ${dMap.size} registered device(s)`);
   }
   if (uaddr !== undefined) {
-    DEVICE_MAP.delete(uaddr);
+    DEVICE_BY_UADDR.delete(uaddr);
     const dir = m_CreateDeviceDirectoryFromMap();
     UR_RaiseMessage('NET:UR_DEVICES', dir);
   }

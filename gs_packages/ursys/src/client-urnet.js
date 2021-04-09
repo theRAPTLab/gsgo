@@ -241,13 +241,6 @@ URNET.URNET_Close = (code, reason) => {
   m_socket.close(code, reason);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return the current uaddr of this client, which is stored in NetPacket
- *  when the client initializes.
- */
-URNET.SocketUADDR = () => {
-  return NetPacket.SocketUADDR();
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return TRUE if client is in "standalone" mode. This was a NetCreate
  *  that was used to disable network communication for HTML-only snapshots.
  */
@@ -263,26 +256,6 @@ URNET.WasInitialized = () => {
  *  This can be used as quick way to enable admin-only features.
  */
 URNET.IsLocalhost = () => NetPacket.IsLocalhost();
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.ServerIP = () => {
-  const { host } = NETINFO.GetNetInfo();
-  return host;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.URNetPort = () => {
-  const { port } = NETINFO.GetNetInfo();
-  return port;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.WebServerPort = () => window.location.port || 80;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.ConnectionString = () => {
-  const { host } = NETINFO.GetNetInfo();
-  const port = window.location.port;
-  let str = `${CLI_UADDR} ⇆ ${host}`;
-  if (port) str += `:${port}`;
-  return str;
-};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.NetInfoRoute = () => CFG_URNET_SERVICE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -59,7 +59,7 @@ class SystemShell extends React.Component {
         <Route path="/app/faketrack">
           <LazyFakeTrack />
         </Route>
-        <Route path="/app/controller">
+        <Route path="/app/charcontrol">
           <LazyCharacterController />
         </Route>
         <Route path="/app/login">

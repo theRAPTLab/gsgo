@@ -69,39 +69,9 @@ class CharController extends React.Component {
     // a device declares what kind of device it is
     // and what data can be sent/received
     UR.HookPhase('UR/APP_READY', async () => {
-      const regData = {
-        device: {
-          uclass: 'CharControl',
-          udid: 'uniquedeviceid',
-          groups: ['groupA'],
-          roles: ['roleA']
-        },
-        user: {
-          uauth: 'jwtoken',
-          uname: "billy's input",
-          student: {
-            sid: 'student id',
-            sname: 'student name'
-          }
-        },
-        // this uses the 'compound declaration' style of an input that has thes
-        // properties
-        inputControls: [
-          {
-            control: 'markers',
-            type: {
-              x: 'axis',
-              y: 'axis',
-              jump: 'trigger'
-            }
-          }
-        ],
-        // an example of a control value
-        outputControls: [{ control: 'count', type: 'uint' }]
-      };
-      // style two (note async in UR.HookPhase definition above)
-      const regInfo = await UR.DeviceRegister('CharControl', regData);
-      console.log(...PR('DeviceRegister() returned regInfo', regInfo));
+      const dev = UR.NewDevice('CharControl');
+      const regInfo = await UR.RegisterDevice(dev);
+      console.log(...PR('RegisterDevice() returned regInfo', regInfo));
     }); // end HookPhase
   }
 

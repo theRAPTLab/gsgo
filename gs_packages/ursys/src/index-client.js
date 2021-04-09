@@ -85,6 +85,7 @@ async function SystemStart(route) {
   // complete startup
   URSYS_RUNNING = true;
   URSYS_ROUTE = route;
+  DATACORE.SaveClientInfo({ uapp: URSYS_ROUTE });
 
   return Promise.resolve();
 }
@@ -122,10 +123,10 @@ const UR = {
   // ROUTE INFO
   IsAppRoute: route => URSYS_ROUTE === route,
   AppRoute: () => URSYS_ROUTE,
-  ServerIP: NETWORK.ServerIP,
+  BrokerIP: NETWORK.ServerIP,
   ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,
-  ConnectionString: NETWORK.ConnectionString,
+  ConnectionString: DATACORE.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
   // FORWARDED SYSTEM CONTROL API
   SystemNetBoot: EXEC.SystemNetBoot,
@@ -135,9 +136,9 @@ const UR = {
   SystemNetReboot: EXEC.SystemNetReboot,
   SystemAppUnload: EXEC.SystemAppUnload,
   // FORWARDED DEVICE API
-  DeviceRegister: DEVICES.DeviceRegister,
-  DeviceGetMatching: DEVICES.DeviceGetMatching,
-  DeviceSubscribe: DEVICES.DeviceSubscribe,
+  NewDevice: DEVICES.NewDevice,
+  RegisterDevice: DEVICES.RegisterDevice,
+  SubscribeDevice: DEVICES.SubscribeDevice,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

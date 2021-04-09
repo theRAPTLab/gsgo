@@ -81,10 +81,10 @@ class Home extends React.Component {
           </ul>
           <b className={classes.title}>Dev Testing Routes</b>
           <ul className={classes.list}>
-            <NavItem route="compiler">script compiler tests</NavItem>
+            <NavItem route="charcontrol">WIP character controller</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
+            <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
-            <NavItem route="controller">WIP character controller</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
@@ -116,7 +116,7 @@ class Home extends React.Component {
               annotation app.
             </li>
             <li>
-              <a href="/app/controller">CHARACTER CONTROLLER</a> - Ported from
+              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
               earlier versions FAKETRACK with the new device interface WIP.
             </li>
           </ol>
