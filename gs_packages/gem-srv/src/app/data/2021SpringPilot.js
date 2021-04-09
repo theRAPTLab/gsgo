@@ -17,8 +17,7 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 useFeature Physics
-featCall Physics setShape 'rectangle'
-featCall Physics setSize 64 64
+featCall Physics init
 
 # PROGRAM EVENT
 onEvent Tick [[

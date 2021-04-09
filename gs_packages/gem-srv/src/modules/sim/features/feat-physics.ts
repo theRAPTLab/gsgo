@@ -35,6 +35,7 @@ class PhysicsPack extends GFeature {
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
     this.featAddMethod('getBounds', this.getBounds);
+    this.featAddMethod('init', this.init);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
@@ -71,7 +72,7 @@ class PhysicsPack extends GFeature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Physics setRadius value
    */
-  setShape(agent: IAgent, shape: number) {
+  setShape(agent: IAgent, shape: string) {
     agent.getFeatProp(this.name, 'shape').value = shape;
   }
   /**
@@ -82,16 +83,19 @@ class PhysicsPack extends GFeature {
    * @param height
    */
   setSize(agent: IAgent, width: number, height: number = width) {
-    // set Phyiscs body boundaries
-    this.setWidth(agent, width);
-    this.setHeight(agent, height);
-    // set agent visuals
     if (!agent.hasFeature('Costume')) return; // no costume
     const costumeName = agent.getProp('skin').value;
-    const frame = agent.getFeatProp('Costume', 'currentFrame').value;
+    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
     const { w, h } = GetSpriteDimensions(costumeName, frame);
-    const scaleX = width / w;
-    const scaleY = height / h;
+    // if width and height were undefined, default to same size as sprite
+    const newWidth = width || w;
+    const newHeight = height || h;
+    // set Physics body boundaries
+    this.setWidth(agent, newWidth);
+    this.setHeight(agent, newHeight);
+    // set agent visuals
+    const scaleX = newWidth / w;
+    const scaleY = newHeight / h;
     agent.scale = scaleX;
     agent.scaleY = scaleY;
   }
@@ -137,6 +141,15 @@ class PhysicsPack extends GFeature {
       width: w,
       height: h
     };
+  }
+  /**
+   * Init
+   * Automatically initializes Physics with the default
+   * values based on the current Costume.
+   */
+  init(agent: IAgent) {
+    this.setShape(agent, RECTANGLE);
+    this.setSize(agent, undefined); // default to sprite size
   }
 }
 
