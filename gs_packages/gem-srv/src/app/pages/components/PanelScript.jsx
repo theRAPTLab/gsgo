@@ -188,6 +188,7 @@ class PanelScript extends React.Component {
     });
 
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
+    this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
     this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
     this.CompileToJSX = this.CompileToJSX.bind(this);
@@ -201,6 +202,7 @@ class PanelScript extends React.Component {
     this.OnToggleWizard = this.OnToggleWizard.bind(this);
 
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
@@ -235,11 +237,17 @@ class PanelScript extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('SCRIPT_IS_DIRTY', this.HandleScriptIsDirty);
+    UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUIChanged);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.HighlightDebugLine);
   }
 
   HandleSimDataUpdate() {
     needsSyntaxReHighlight = true;
+  }
+
+  HandleScriptIsDirty() {
+    this.setState({ isDirty: true });
   }
 
   UpdateBlueprintName(script) {
@@ -255,12 +263,8 @@ class PanelScript extends React.Component {
   // compile source to jsx
   CompileToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    const { modelId } = this.props;
     const currentScript = this.jar.toString();
     const source = TRANSPILER.ScriptifyText(currentScript);
-    // REVIEW: This seems like overkill, on the other hand, we do need
-    // to use the current name?
-    const blueprintName = TRANSPILER.ExtractBlueprintName(currentScript);
     const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(currentScript);
     const jsx = TRANSPILER.RenderScript(source, {
       isEditable: true,
