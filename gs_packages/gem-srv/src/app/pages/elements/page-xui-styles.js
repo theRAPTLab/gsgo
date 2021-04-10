@@ -132,6 +132,7 @@ const useStylesHOC = theme => ({
     overflow: 'hidden'
   },
   right: {
+    display: 'grid',
     gridColumnEnd: 'span 1',
     backgroundColor: BG_COLOR,
     overflow: 'hidden'

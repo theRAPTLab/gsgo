@@ -66,7 +66,8 @@ class MapEditor extends React.Component {
         style={{
           display: 'grid',
           gridTemplateRows: '100px auto',
-          height: '100%'
+          height: '100%',
+          overflow: 'hidden'
         }}
       >
         <PanelBlueprints

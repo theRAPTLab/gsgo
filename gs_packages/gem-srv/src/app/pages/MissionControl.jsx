@@ -382,7 +382,8 @@ class MissionControl extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
+          gridTemplateRows: '50px auto 100px'
         }}
       >
         <div
@@ -422,7 +423,13 @@ class MissionControl extends React.Component {
           <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: '150px auto',
+              overflow: 'hidden'
+            }}
+          >
             <PanelPlayback
               id="playback"
               model={model}
