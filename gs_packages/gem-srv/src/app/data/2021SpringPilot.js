@@ -149,6 +149,38 @@ onEvent Tick [[
   // dbgStack
 ]]
 `
+    },
+    {
+      id: 'Reporter',
+      label: 'Reporter',
+      script: `# BLUEPRINT Reporter
+# PROGRAM DEFINE
+useFeature Population
+exprPush {{ 'Reporter' }}
+propPop text
+# PROGRAM EVENT
+onEvent Tick [[
+  // count of agents by type
+  // featCall Population countAgents 'Algae'
+  // exprPush {{ agent.getFeatProp('Population', 'count').value }}
+  // propPop text
+
+  // count, sum, avg of agent property
+  featCall Population countAgentProp 'Algae' 'energyLevel'
+  exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
+  propPop text
+
+  // min
+  // featCall Population minAgentProp 'Algae' 'energyLevel'
+  // exprPush {{ agent.getFeatProp('Population', 'min').value }}
+  // propPop text
+
+  // max
+  // featCall Population maxAgentProp 'Algae' 'energyLevel'
+  // exprPush {{ agent.getFeatProp('Population', 'max').value }}
+  // propPop text
+]]
+`
     }
   ],
   // instances: [
@@ -192,28 +224,35 @@ onEvent Tick [[
       name: 'algae01',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
-    prop y setTo 120`
+prop y setTo 120`
     },
-    // {
-    //   id: 505,
-    //   name: 'algae02',
-    //   blueprint: 'Algae',
-    //   initScript: `prop x setTo -150
-    //     prop y setTo -120`
-    // },
-    // {
-    //   id: 506,
-    //   name: 'algae03',
-    //   blueprint: 'Algae',
-    //   initScript: `prop x setTo -120
-    //     prop y setTo -90`
-    // }
+    {
+      id: 505,
+      name: 'algae02',
+      blueprint: 'Algae',
+      initScript: `prop x setTo -150
+        prop y setTo -120`
+    },
+    {
+      id: 506,
+      name: 'algae03',
+      blueprint: 'Algae',
+      initScript: `prop x setTo -120
+        prop y setTo -90`
+    },
     {
       id: 507,
       name: 'lightbeam01',
       blueprint: 'Lightbeam',
       initScript: `prop x setTo 0
-        prop y setTo -160`
+prop y setTo -160`
+    },
+    {
+      id: 510,
+      name: 'reporter',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 0
+prop y setTo 200`
     }
   ]
 };
