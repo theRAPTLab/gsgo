@@ -119,7 +119,10 @@ onEvent Tick [[
 ]]
 # PROGRAM UPDATE
 when Algae touches Lightbeam [[
-  prop Algae.energyLevel add 1
+  exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
+  propPop Algae.energyLevel
+
+  //prop Algae.energyLevel add 1
   featCall Costume setGlow 1
 ]]
 `
@@ -132,6 +135,8 @@ when Algae touches Lightbeam [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
+addProp speed Number 1
+addProp energyRate Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
@@ -140,13 +145,15 @@ featCall Physics setSize 100 256
 prop agent.skin setTo 'lightbeam.json'
 
 // featCall Movement setController 'user'
-prop agent.x setTo -300
-prop agent.y setTo -300
+// prop agent.x setTo -300
+// prop agent.y setTo -300
 
 # PROGRAM EVENT
 onEvent Tick [[
   // featPropPush Physics.radius
   // dbgStack
+  exprPush {{agent.x + agent.getProp('speed').value}}
+  propPop x
 ]]
 `
     }
@@ -212,7 +219,7 @@ onEvent Tick [[
       id: 507,
       name: 'lightbeam01',
       blueprint: 'Lightbeam',
-      initScript: `prop x setTo 0
+      initScript: `prop x setTo -600
         prop y setTo -160`
     }
   ]
