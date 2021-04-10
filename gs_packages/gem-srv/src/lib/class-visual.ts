@@ -169,6 +169,7 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
+    this.sprite.removeChild(this.text);
     this.root.removeChild(this.sprite);
     this.root = undefined;
   }
