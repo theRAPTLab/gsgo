@@ -152,8 +152,11 @@ prop agent.skin setTo 'lightbeam.json'
 onEvent Tick [[
   // featPropPush Physics.radius
   // dbgStack
-  exprPush {{agent.x + agent.getProp('speed').value}}
+  exprPush {{agent.x + agent.getProp('speed').value; }}
   propPop x
+  ifExpr {{ agent.x > 600 }} [[
+      prop x setTo -600
+  ]]
 ]]
 `
     }
