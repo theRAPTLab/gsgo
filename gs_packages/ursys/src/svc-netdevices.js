@@ -19,17 +19,20 @@ const DEVICE_BY_UADDR = new Map(); // map uaddr to udevice map []
  */
 function m_CreateDeviceDirectoryFromMap() {
   const devices = {};
+  let out = '';
   [...DEVICE_BY_UADDR.keys()].forEach(uaddr => {
     const dMap = DEVICE_BY_UADDR.get(uaddr);
     [...dMap.values()].forEach(udev => {
-      const udid = udev.meta.udid;
+      const udid = udev.udid;
       if (udid !== undefined) {
+        out += `${udid} `;
         devices[udid] = udev.getDeviceDirectoryEntry();
       } else {
         console.warn('*** bad udid in dmap', JSON.stringify(udev));
       }
     });
   });
+  TERM('devicedir is now:', out);
   return devices;
 }
 
@@ -41,8 +44,8 @@ function m_CreateDeviceDirectoryFromMap() {
  *  to filter the returned map by access privilege
  */
 function PKT_DeviceDirectory(pkt) {
-  const directory = m_CreateDeviceDirectoryFromMap();
-  return directory;
+  const dir = m_CreateDeviceDirectoryFromMap();
+  return dir; // call will return
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Handle an Input Registration Packet
@@ -52,7 +55,7 @@ function PKT_DeviceDirectory(pkt) {
 function PKT_RegisterDevice(pkt) {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const udev = new UDevice(pkt.getData());
-  const udid = udev.getMetaProp('udid');
+  const udid = udev.udid;
   const ins = udev
     .getInputControlList()
     .reduce((acc, i) => `[${i.controlName}]`, '');
@@ -84,11 +87,10 @@ function PKT_RegisterDevice(pkt) {
 UR_HandleMessage('SRV_SOCKET_DELETED', cmd => {
   const { uaddr } = cmd;
   const dMap = DEVICE_BY_UADDR.get(uaddr);
-  if (DBG.devices) {
-    if (dMap === undefined) TERM(`${uaddr} has no registered device(s) to drop`);
-    else TERM(`${uaddr} dropping ${dMap.size} registered device(s)`);
-  }
-  if (uaddr !== undefined) {
+  if (dMap === undefined) {
+    TERM(`${uaddr} has no registered device(s) to drop`);
+  } else {
+    TERM(`${uaddr} dropping ${dMap.size} registered device(s)`);
     DEVICE_BY_UADDR.delete(uaddr);
     const dir = m_CreateDeviceDirectoryFromMap();
     UR_RaiseMessage('NET:UR_DEVICES', dir);

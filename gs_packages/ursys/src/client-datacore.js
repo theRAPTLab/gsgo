@@ -117,7 +117,7 @@ function DeclareNewDevice(udevice) {
   const { PRE_UADDR_ID, PRE_UDEVICE_ID } = $$;
   const base_id = `${PRE_UDEVICE_ID}${MyUADDR().slice(PRE_UADDR_ID.length)}`;
   const udid = `${base_id}:${DEVICE_COUNT++}`;
-  udevice.setMetaProp('udid', udid);
+  udevice.udid = udid;
   DEVICE_DECLARATIONS.set(udid, udevice);
 }
 

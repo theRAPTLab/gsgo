@@ -23,19 +23,30 @@ const PR = PROMPTS.makeStyleFormatter('DiffCache', 'TagDkBlue');
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** print an array of objects keyProp values */
-function dump_arr(arr, idKey = 'id') {
-  if (!Array.isArray(arr)) {
-    log('not an array', typeof arr);
-    return '<not an array>';
+function dump_set(input, idKey = 'id') {
+  let result;
+  if (Array.isArray(input)) {
+    if (input.length === 0) result = '[ ]';
+    const stop = input.length - 1;
+    const str = input.reduce((acc, o, idx) => {
+      let s = `${acc} ${o[idKey]}`;
+      if (idx !== stop) s += ',';
+      return s;
+    }, '');
+    result = `[${str} ]`;
   }
-  if (arr.length === 0) return '[ ]';
-  const stop = arr.length - 1;
-  const str = arr.reduce((acc, o, idx) => {
-    let s = `${acc} ${o[idKey]}`;
-    if (idx !== stop) s += ',';
-    return s;
-  }, '');
-  return `[${str} ]`;
+  if (input.constructor.name === 'Object') {
+    const vals = Object.values(input);
+    if (vals.length === 0) result = '[ ]';
+    const stop = vals.length - 1;
+    const str = vals.reduce((acc, o, idx) => {
+      let s = `${acc} ${o[idKey]}`;
+      if (idx !== stop) s += ',';
+      return s;
+    }, '');
+    result = `[${str} ]`;
+  }
+  return result;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** simple comparison of two arrays of objects with obj[keyProp] values */
@@ -82,8 +93,7 @@ class DifferenceCache {
     this.collection = collection;
     if (Array.isArray(collection)) return this.ingestArray(collection);
     if (collection instanceof Map) return this.ingestMap(collection);
-    if (collection.constructor.name === 'Object')
-      return this.ingestObjectKeys(collection);
+    if (typeof collection === 'object') return this.ingestObj(collection);
     console.error(
       'DifferenceCache.ingest non-mappable input',
       collection.constructor.name
@@ -114,7 +124,7 @@ class DifferenceCache {
    *  used as the unique key: { UADDR_01: { id:123 }, UADDR_02: { id:124 } }
    *  The hashkeys aren't used in the differencing operation.
    */
-  ingestObjectKeys(collection) {
+  ingestObj(collection) {
     const arr = Object.values(collection);
     return this.ingestArray(arr);
   }
@@ -143,6 +153,7 @@ class DifferenceCache {
     // "new" nobjs to mark it as seen.
     arr.forEach((obj, i) => {
       const id = obj[key];
+      if (id === undefined) console.error(`no comparison key '${key}' in`, obj);
       const old = sobjs.get(id);
       if (old) {
         // todo: updateHook
@@ -159,7 +170,7 @@ class DifferenceCache {
     const n = [...nobjs.values()];
     n.forEach(obj => {
       // todo: removeHook
-      const { id } = obj;
+      const id = obj[key];
       if (sobjs.has(id)) sobjs.delete(id);
     });
     const removed = [...sobjs.values()];
@@ -176,26 +187,36 @@ class DifferenceCache {
 const testDiffer = new DifferenceCache('id');
 const tests = {
   'array comparison': {
-    a: [{ id: 1 }, { id: 2 }],
+    a: [{ id: 1 }, { id: 2 }, { id: 3 }],
     b: [{ id: 2 }, { id: 4 }],
     resAdd: [{ id: 4 }],
     resUpd: [{ id: 2 }],
-    resRem: [{ id: 1 }]
+    resRem: [{ id: 1 }, { id: 3 }]
+  },
+  'obj comparison': {
+    a: { uaddr01: { id: 1 }, uaddr02: { id: 2 }, uaddr03: { id: 3 } },
+    b: { uaddr01: { id: 2 }, uaddr02: { id: 4 } },
+    resAdd: [{ id: 4 }],
+    resUpd: [{ id: 2 }],
+    resRem: [{ id: 1 }, { id: 3 }]
   }
 };
 Object.keys(tests).forEach(testName => {
   console.group('testing', testName);
   const { a, b, resAdd, resUpd, resRem } = tests[testName];
-  log('set a:', dump_arr(a));
-  log('set b:', dump_arr(b));
+  log('set a:', dump_set(a));
+  log('set b:', dump_set(b));
   // set initial
   testDiffer.ingest(a);
   // get difference
   testDiffer.ingest(b);
   const { added, updated, removed } = testDiffer.getChanges();
-  if (!cmp_arr(added, resAdd)) log('fail: added !== expected result');
-  else if (!cmp_arr(updated, resUpd)) log('fail: added !== expected result');
-  else if (!cmp_arr(removed, resRem)) log('fail: added !== expected result');
+  if (!cmp_arr(added, resAdd))
+    log('*FAIL* added !== expected result', added, resAdd);
+  else if (!cmp_arr(updated, resUpd))
+    log('*FAIL* updated !== expected result', updated, resUpd);
+  else if (!cmp_arr(removed, resRem))
+    log('*FAIL* removed !== expected result', removed, resRem);
   else log('PASSED: B diff A');
   console.groupEnd();
 });

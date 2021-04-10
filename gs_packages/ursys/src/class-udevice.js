@@ -133,8 +133,9 @@ class UDevice {
    *  directory. It doesn't have user or student data
    */
   getDeviceDirectoryEntry() {
-    const { meta, inputs, outputs } = this;
+    const { udid, meta, inputs, outputs } = this;
     return {
+      udid,
       meta,
       inputs,
       outputs
@@ -144,7 +145,7 @@ class UDevice {
   getInputControlList() {
     if (Array.isArray(this.inputs)) return this.inputs.slice();
     console.log(
-      ...PR(`warning: ${this.meta.udid} inputs is not an array so returning []`)
+      ...PR(`warning: ${this.udid} inputs is not an array so returning []`)
     );
     return [];
   }
@@ -152,7 +153,7 @@ class UDevice {
   getOutputControlList() {
     if (Array.isArray(this.outputs)) return this.outputs.slice();
     console.log(
-      ...PR(`warning: ${this.meta.udid} outputs is not an array so returning []`)
+      ...PR(`warning: ${this.udid} outputs is not an array so returning []`)
     );
     return [];
   }
@@ -161,12 +162,14 @@ class UDevice {
     if (typeof deviceObj === 'string') deviceObj = JSON.parse(deviceObj);
     if (typeof deviceObj !== 'object')
       throw Error(`can not deserialize device ${deviceObj}`);
-    const { meta, user, student, inputs, outputs } = deviceObj;
+    const { udid, meta, user, student, inputs, outputs } = deviceObj;
+    if (udid === undefined)
+      throw Error('cannot deserialize deviceObj with missing udid');
+    this.udid = udid;
     if (meta) {
-      const { uapp, udid, uaddr, uname, uclass, uapp_label, uapp_tags } = meta;
+      const { uapp, uaddr, uname, uclass, uapp_label, uapp_tags } = meta;
       this.meta = {};
       if (uapp) this.meta.uapp = uapp;
-      if (udid) this.meta.udid = udid;
       if (uaddr) this.meta.uaddr = uaddr;
       if (uname) this.meta.uname = uname;
       if (uclass) this.meta.uclass = uclass;
@@ -218,9 +221,9 @@ class UDevice {
   _initNew(uclass) {
     const uaddr = MyUADDR();
     const uapp = MyAppPath();
+    this.udid = ''; // unique device id will be set by DATACORE.DeclareNewDevice()
     this.meta = {
       uapp, // device appserver route
-      udid: '', // unique device id will be set by DATACORE.DeclareNewDevice()
       uaddr, // URNET address
       uclass, // device template or custom device name
       uapp_label: '', // non-unique name label

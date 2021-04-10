@@ -94,6 +94,17 @@ class Tracker extends React.Component {
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
     this.updateDeviceList();
+    UR.HookPhase('UR/APP_START', async () => {
+      const inFuncs = UR.SubscribeDevice({
+        selectify: device => device.meta.uclass === 'CharControl',
+        quantify: list => list,
+        notify: changes => {
+          const { valid, added, updated, removed } = changes;
+          console.log(...PR('notify', changes));
+        }
+      });
+      const { unsub, getInputs, getChanges, putOutputs } = inFuncs;
+    }); // end HookPhase
     console.log(...PR('mounted'));
   }
 

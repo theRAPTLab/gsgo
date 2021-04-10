@@ -21,7 +21,7 @@ const DBG = require('./ur-dbg-settings');
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagDkRed');
-const DEVICE_CACHE = new DifferenceCache('id');
+const DEVICE_CACHE = new DifferenceCache('udid');
 let LocalNode;
 let NetNode;
 
@@ -48,27 +48,25 @@ const TDeviceSelector = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function log_arr(arr, prompt = 'array') {
   if (arr.length > 0) console.log(`${prompt}: ${arr.length} elements`, arr);
-  else console.log(`${prompt}: 0 elements []`);
 } /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Save device map received from URNET server
  *  TODO: careful update or removes old entries
  */
-function m_SaveDeviceMap(devmap) {
-  console.log(...PR('SaveDeviceMap:', devmap));
+function m_UpdateDeviceMap(devmap) {
+  // (1) figure out what changed in the device map
+  if (DBG.devices) console.group(...PR('UpdateDeviceMap'));
   const { added, updated, removed } = DEVICE_CACHE.ingest(devmap);
   if (DBG.devices) {
     log_arr(added, 'added  ');
     log_arr(updated, 'updated');
     log_arr(removed, 'removed');
   }
+  if (DBG.devices) console.groupEnd();
   LocalNode.raiseMessage('UR_DEVICES_CHANGED', { added, updated, removed });
   // subscribers get a chance to handle the change
   // returning references because DEVICE_CACHE.getChanges() will reset the
   // changeList, so multiple subscribers would miss the changes
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** when DEVICE_CACHE changes, update all subscriptions */
-function m_UpdateSubs() {}
 
 /// DEVICE CREATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,14 +105,14 @@ export function SubscribeDevice(config) {
   if (typeof config === 'object') {
     dbr.selectify = config.selectify; // device => boolean
     dbr.quantify = config.quantify; // device[] => deviceSubset[] || undefined
-    dbr.notify = config.notify; // (valid, added[], updated[], removed[]
+    dbr.notify = config.notify; // { valid, added[], updated[], removed[] } => void
   } else throw Error('invalid device bridge config');
   // return device bridge number
   const unsub = DATACORE.SaveDeviceSub(dbr);
-  const getInputs = () => {};
-  const getChanges = () => {};
-  const putOutputs = () => {};
-  return { unsub, getInputs, getChanges, putOutputs };
+  const getInputs = () => []; // return current control data objects
+  const getChanges = () => {}; // return changeList arrays of controlDataObjects
+  const putOutput = () => {}; // post a single output control data object
+  return { unsub, getInputs, getChanges, putOutput };
 }
 
 /// DEVICE REGISTRATION API ///////////////////////////////////////////////////
@@ -122,7 +120,8 @@ export function SubscribeDevice(config) {
 /** API placeholder - an app can use this to register with the server.
  */
 export function RegisterDevice(udevice) {
-  const { uclass, uname, udid } = udevice.meta;
+  const udid = udevice.udid;
+  const { uclass, uname } = udevice.meta;
   console.log(
     ...PR(`RegisterDevice class:${uclass} uname:${uname} udid:${udid}`)
   );
@@ -136,39 +135,26 @@ export function RegisterDevice(udevice) {
 /** This hook will grab the current device directory during startup, before
  *  React has a chance to render. See client-exec for the phase order
  */
+PhaseMachine.Hook('UR/NET_DEVICES', () => {
+  // LocalNode, NetNode should be stable after NET_CONNECT, which
+  // occurs before NET_DEVICES
+  const EPS = DATACORE.GetSharedEndPoints();
+  LocalNode = EPS.LocalNode;
+  NetNode = EPS.NetNode;
+  /// MESSAGE HANDLERS ///////////////////////////////////////////////////
+  NetNode.handleMessage('NET:UR_DEVICES', devmap => {
+    m_UpdateDeviceMap(devmap);
+  });
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** When app is ready to run, request the device map immediately */
 PhaseMachine.Hook(
-  'UR/NET_DEVICES',
+  'UR/APP_READY',
   () =>
     new Promise((resolve, reject) => {
-      // LocalNode, NetNode should be stable after NET_CONNECT, which
-      // occurs before NET_DEVICES
-      const EPS = DATACORE.GetSharedEndPoints();
-      LocalNode = EPS.LocalNode;
-      NetNode = EPS.NetNode;
       NetNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
+        m_UpdateDeviceMap(devmap);
         resolve();
-        m_SaveDeviceMap(devmap);
-        /** when DEVICE_CACHE changes, update all subscriptions tha */
-        m_UpdateSubs();
-      });
-      /// MESSAGE HANDLERS ///////////////////////////////////////////////////
-      /** process incoming netdevice directory, which is defined as an object
-       *  with the uaddr as keys and this data structure from
-       *  UDevice.GetDeviceDirectoryEntry: [uaddr] : { udid, uapp, uname,
-       *  ugroup[], utags[], inputs[], outputs[] }
-       */
-      NetNode.handleMessage('NET:UR_DEVICES', devmap => {
-        m_SaveDeviceMap(devmap);
-        /** when DEVICE_CACHE changes, update all subscriptions tha */
-        m_UpdateSubs();
       });
     })
 );
-
-/// HANDLE DEVICE DIRECTORY MESSAGES //////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** process incoming netdevice directory, which is defined as an object with
- *  the uaddr as keys and this data structure from
- *  UDevice.GetDeviceDirectoryEntry:
- *  [uaddr] : { udid, uapp, uname, ugroup[], utags[], inputs[], outputs[] }
- */
