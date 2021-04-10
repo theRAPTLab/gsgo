@@ -51,7 +51,8 @@ class PanelInstances extends React.Component {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            fontSize: '12px'
+            fontSize: '12px',
+            overflow: 'hidden'
           }}
         >
           <span className={classes.instructions}>click to show/hide data</span>

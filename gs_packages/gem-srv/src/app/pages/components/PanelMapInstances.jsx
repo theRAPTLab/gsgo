@@ -58,7 +58,8 @@ class PanelMapInstances extends React.Component {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            fontSize: '12px'
+            fontSize: '12px',
+            overflow: 'hidden'
           }}
         >
           <span className={classes.instructions}>click to edit character</span>
