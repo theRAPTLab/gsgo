@@ -411,7 +411,7 @@ class MissionControl extends React.Component {
             style={{
               display: 'grid',
               gridTemplateRows:
-                panelConfiguration === 'edit' ? '60px auto' : '60px auto 100px',
+                panelConfiguration === 'edit' ? '60px auto' : '60px auto auto',
               overflow: 'hidden'
             }}
           >
