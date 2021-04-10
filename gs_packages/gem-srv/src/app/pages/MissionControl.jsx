@@ -305,6 +305,10 @@ class MissionControl extends React.Component {
     const { scriptsNeedUpdate } = this.state;
     if (scriptsNeedUpdate) {
       UR.RaiseMessage('NET:HACK_SIM_RESET'); // Reset will trigger SimPlaces
+    } else {
+      // Call SimPlaces so instanceInspector will update
+      // after adding instances in mapeditor
+      this.CallSimPlaces();
     }
     this.setState({ panelConfiguration: newConfig });
   }
