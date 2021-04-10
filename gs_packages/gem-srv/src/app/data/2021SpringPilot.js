@@ -28,6 +28,10 @@ onEvent Tick [[
   // foodLevel goes down every second
   prop agent.energyLevel sub 1
 
+  // set name + energyLevel
+  exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
+  propPop text
+
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
     featCall Costume setPose 0
@@ -46,8 +50,6 @@ onEvent Tick [[
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
-  dbgOut "Algae touched by " {{ Fish.meta.name }}
-
   featCall Costume setGlow 1
 
   // Add energy to Fish and subtract energy from Algae
@@ -117,7 +119,6 @@ onEvent Tick [[
 ]]
 # PROGRAM UPDATE
 when Algae touches Lightbeam [[
-  dbgOut 'touches! algae + lightbeam'
   prop Algae.energyLevel add 1
   featCall Costume setGlow 1
 ]]
