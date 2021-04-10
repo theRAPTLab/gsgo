@@ -23,6 +23,7 @@ import * as SIM from 'modules/sim/api-sim';
 import * as TRANSPILER from 'script/transpiler';
 
 // HACK DATA LOADING
+import { MODEL as SpringPilot } from './2021SpringPilot';
 import { MODEL as AquaticModel } from './aquatic';
 import { MODEL as DecompositionModel } from './decomposition';
 import { MODEL as MothsModel } from './moths';
@@ -118,6 +119,9 @@ class ProjectData {
   GetSimDataModel(modelId) {
     let model;
     switch (modelId) {
+      case 'pilot':
+        model = SpringPilot;
+        break;
       case 'aquatic':
         model = AquaticModel;
         break;
@@ -143,6 +147,7 @@ class ProjectData {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   GetModels() {
     return [
+      { id: 'pilot', label: 'Spring 2021 Pilot' },
       { id: 'aquatic', label: 'Aquatic Ecosystems' },
       { id: 'decomposition', label: 'Decomposition' },
       { id: 'moths', label: 'Moths' },

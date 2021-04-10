@@ -22,6 +22,7 @@ export * from './propPush'; // push prop value onto data stack
 export * from './propPop'; // pop prop value onto data stack
 export * from './featPropPush'; // objref method args
 export * from './featPropPop'; // objref method args
+export * from './exprPush'; // push expr onto data stack
 
 // conditional keywords
 export * from './when'; // filtering global condition

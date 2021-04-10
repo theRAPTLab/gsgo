@@ -86,7 +86,7 @@ function Init(element) {
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
 
-      // copy sedlection states?
+      // copy selection states?
       // Set selection state from flags.
       // This needs to be set before the setTexture call
       // because they are added/removed on the vobj with setTexture
@@ -94,10 +94,14 @@ function Init(element) {
       vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
       vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
 
+      vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
+      vobj.setScale(dobj.scale, dobj.scaleY);
+
       if (dobj.mode === 1 && SETTINGS.actable) {
-        // add drag-and-drop handlers
+        // add drag-and-drop and selection handlers
         MakeDraggable(vobj);
         // add hover handler
         MakeHoverable(vobj);
@@ -126,9 +130,13 @@ function Init(element) {
       vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
       vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
 
       // inefficient texture update
+      vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
+      vobj.setScale(dobj.scale, dobj.scaleY);
+
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);

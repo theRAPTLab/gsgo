@@ -8,7 +8,8 @@ FLAGS.SELECTION = {
   SELECTED: 1,
   HOVERED: 2,
   GROUPED: 4,
-  CAPTIVE: 8
+  CAPTIVE: 8,
+  GLOWING: 16
 };
 
 export default FLAGS;

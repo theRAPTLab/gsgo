@@ -22,7 +22,7 @@ import {
   ISMCBundle,
   ControlMode
 } from 'lib/t-script.d';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import FLAGS from 'modules/flags';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
@@ -43,6 +43,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
+  isGlowing: boolean;
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
@@ -69,6 +70,16 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.x = new GVarNumber();
     this.prop.y = new GVarNumber();
     this.prop.skin = new GVarString('default');
+    this.prop.scale = new GVarNumber(1); // implicit x
+    this.prop.scale.setMax(10);
+    this.prop.scale.setMin(0.1);
+    this.prop.scaleY = new GVarNumber(0); // if 0, then use scale
+    this.prop.scaleY.setMax(10);
+    this.prop.scaleY.setMin(0);
+    this.prop.alpha = new GVarNumber(1);
+    this.prop.alpha.setMax(1);
+    this.prop.alpha.setMin(0);
+    this.prop.isInert = new GVarBoolean(false);
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -90,14 +101,38 @@ class GAgent extends SM_Object implements IAgent, IActable {
   get y() {
     return this.prop.y.value;
   }
-  set y(num) {
+  set y(num: number) {
     this.prop.y.value = num;
   }
   get skin() {
     return this.prop.skin.value;
   }
-  set skin(num) {
-    this.prop.skin.value = num;
+  set skin(str: string) {
+    this.prop.skin.value = str;
+  }
+  get scale() {
+    return this.prop.scale.value;
+  }
+  set scale(num: number) {
+    this.prop.scale.setTo(num);
+  }
+  get scaleY() {
+    return this.prop.scaleY.value;
+  }
+  set scaleY(num: number) {
+    this.prop.scaleY.setTo(num);
+  }
+  get alpha() {
+    return this.prop.alpha.value;
+  }
+  set alpha(num: number) {
+    this.prop.alpha.setTo(num);
+  }
+  get isInert() {
+    return this.prop.isInert.value;
+  }
+  set isInert(bool: boolean) {
+    this.prop.isInert.setTo(bool);
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -118,6 +153,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   setHovered = (mode = this.isHovered) => (this.isHovered = mode);
   setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
+  setGlowing = (mode = this.isGlowing) => (this.isGlowing = mode);
   toggleSelected = () => {
     this.isSelected = !this.isSelected;
   };
@@ -150,6 +186,15 @@ class GAgent extends SM_Object implements IAgent, IActable {
     fpack.decorate(this);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Returns true if the featurepack is associated with this agent instance.
+   *  Used by sim-conditions to check for feature before calling
+   *  without throwing an error like getFeature does */
+  hasFeature(fName: string): any {
+    const feat = this.featureMap.get(fName);
+    if (feat === undefined) return false;
+    return true;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Returns the featurepack associated with this agent instance. This is an
    *  object reference to a shared instance of IFeature */
   getFeature(fName: string): any {
@@ -174,6 +219,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
    */
   callFeatMethod(fName: string, mName: string, ...args): any {
     const [feat, featMethod] = this.getFeatMethod(fName, mName);
+    // console.log('callFeatMethod call', mName, ' with this', this);
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
@@ -199,7 +245,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const hovered = this.isHovered ? FLAGS.SELECTION.HOVERED : 0;
     const grouped = this.isGrouped ? FLAGS.SELECTION.GROUPED : 0;
     const captive = this.isCaptive ? FLAGS.SELECTION.CAPTIVE : 0;
-    return selected | hovered | grouped | captive;
+    const glowing = this.isGlowing ? FLAGS.SELECTION.GLOWING : 0;
+    return selected | hovered | grouped | captive | glowing;
   }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -262,7 +309,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     if (this.blueprint && this.blueprint.exec) {
       this.exec(this.blueprint.exec, ctx);
     }
-    this.thinkQueue.forEach(action => {
+    this.execQueue.forEach(action => {
       // console.log(this.name(), 'execAction', this.exec(action));
       this.exec(action, ctx);
     });
@@ -388,6 +435,14 @@ class GAgent extends SM_Object implements IAgent, IActable {
         this.prop.y.value,
         'skin',
         this.prop.skin.value,
+        'scale',
+        this.prop.scale.value,
+        'scaleY',
+        this.prop.scaleY.value,
+        'alpha',
+        this.prop.alpha.value,
+        'isInert',
+        this.prop.isInert.value,
         'feature',
         this.featureMap.keys()
       ]);

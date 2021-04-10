@@ -56,6 +56,12 @@ export class GVarNumber extends SM_Object implements IScopeable {
   setWrap(flag: boolean = true) {
     this.wrap = flag;
   }
+  // REVIEW
+  // Always setMax BEFORE calling setMin
+  // If max is not set (=0), and min is > 0
+  // u_CheckMinMax will swap min and max.
+  // Calling u_CheckMinMax will then change
+  // the initial value if it is > min.
   setMin(num: number) {
     this.min = num;
     u_CheckMinMax(this);
