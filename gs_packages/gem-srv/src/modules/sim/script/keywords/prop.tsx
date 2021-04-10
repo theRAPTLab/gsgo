@@ -91,7 +91,7 @@ class PropElement extends React.Component<MyProps, MyState> {
     UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
   }
   onInputElementChange() {
-    this.saveData();
+    UR.RaiseMessage('SCRIPT_IS_DIRTY');
   }
   onSelectPropName(value) {
     const { methodsMap } = this.props;

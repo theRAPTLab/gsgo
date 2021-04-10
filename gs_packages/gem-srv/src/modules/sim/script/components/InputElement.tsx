@@ -2,7 +2,7 @@
 
   Generic User Input Field
 
-  Intended for use with a class-keyword
+  Intended for use with a class-keyword.
 
   type = 'string' || 'number'
 
@@ -49,7 +49,7 @@ class InputElement extends React.Component<any, any> {
       args,
       isDirty: true
     });
-    // Needed to trigger isDirty in prop.tsx
+    // Needed to trigger isDirty in PanelSimulation
     // otherwise, "SAVE To SERVER" is not available
     // until a saveData is triggered by blur or Enter
     onChange({ argindex, value: e.currentTarget.value });

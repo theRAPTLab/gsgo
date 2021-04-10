@@ -42,7 +42,7 @@ export class exprPush extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
     const [kw, expr] = unit;
-    return super.jsx(index, unit, <>exprPush {expr}</>);
+    return super.jsx(index, unit, <>exprPush {`'${expr}'`}</>);
   }
 } // end of DefProp
 

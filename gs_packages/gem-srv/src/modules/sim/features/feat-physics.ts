@@ -103,9 +103,19 @@ class PhysicsPack extends GFeature {
   setRadius(agent: IAgent, radius: number) {
     agent.getFeatProp(this.name, 'radius').value = radius;
   }
+  /**
+   * NOTE: This only changes the physics body, not the agent visual
+   * @param agent
+   * @param num
+   */
   setWidth(agent: IAgent, num: number) {
     agent.getFeatProp(this.name, 'width').value = num;
   }
+  /**
+   * NOTE: This only changes the physics body, not the agent visual
+   * @param agent
+   * @param num
+   */
   setHeight(agent: IAgent, num: number) {
     agent.getFeatProp(this.name, 'height').value = num;
   }
