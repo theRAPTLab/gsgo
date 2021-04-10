@@ -51,6 +51,10 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   skin: string;
   scale: number;
   scaleY: number;
+  alpha: number;
+  isInert: boolean;
+  isGlowing: boolean;
+  text: string;
   x: number;
   y: number;
   // name, value are defined in IScopeable
