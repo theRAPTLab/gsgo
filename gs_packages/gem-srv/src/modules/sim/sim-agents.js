@@ -56,6 +56,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.scaleY = agent.scaleY || agent.scale;
     dobj.alpha = agent.alpha;
     dobj.text = agent.text;
+    dobj.meter = agent.meter;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
@@ -69,6 +70,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
     dobj.scaleY = agent.scaleY || agent.scale;
     dobj.alpha = agent.alpha;
     dobj.text = agent.text;
+    dobj.meter = agent.meter;
     dobj.mode = agent.mode();
     dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();

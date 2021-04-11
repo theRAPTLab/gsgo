@@ -26,7 +26,7 @@ export function MakeHoverable(vobj: Visual) {
     }
   }
 
-  const spr = vobj.sprite;
+  const spr = vobj.container;
   spr.interactive = true; // enable interactive events
   spr.on('pointerover', onPointerOver);
   spr.on('pointerout', onPointerOut);

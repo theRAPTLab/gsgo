@@ -32,6 +32,10 @@ onEvent Tick [[
   exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
   propPop text
 
+  // set meter
+  exprPush {{ agent.getProp('energyLevel').value / 100 }}
+  propPop meter
+
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
     featCall Costume setPose 0

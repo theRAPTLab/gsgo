@@ -81,6 +81,9 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
     this.prop.text = new GVarString();
+    this.prop.meter = new GVarNumber();
+    this.prop.meter.setMax(1);
+    this.prop.meter.setMin(0);
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -140,6 +143,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set text(str: string) {
     this.prop.text.setTo(str);
+  }
+  get meter() {
+    return this.prop.meter.value;
+  }
+  set meter(num: number) {
+    this.prop.meter.setTo(num);
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////

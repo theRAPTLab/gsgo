@@ -78,7 +78,7 @@ export function MakeDraggable(vobj: Visual) {
       }
     }
   }
-  const spr = vobj.sprite;
+  const spr = vobj.container;
   spr.interactive = true; // enable interactive events
   spr.on('mousedown', onDragStart);
   spr.on('mouseup', onDragEnd);
