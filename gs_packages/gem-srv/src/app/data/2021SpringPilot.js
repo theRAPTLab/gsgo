@@ -137,12 +137,12 @@ onEvent Tick [[
     prop agent.isInert setTo true
   ]]
 ]]
+
 # PROGRAM UPDATE
 when Algae touches Lightbeam [[
   exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
   propPop Algae.energyLevel
 
-  //prop Algae.energyLevel add 1
   featCall Costume setGlow 1
 ]]
 `
@@ -186,7 +186,7 @@ onEvent Tick [[
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
 useFeature Population
-exprPush {{ 'avg Algae energyLevel' }}
+exprPush {{ 'Algae energyLevel avg' }}
 propPop text
 
 // Make skin invisible
@@ -213,7 +213,6 @@ onEvent Tick [[
   featCall Population countAgentProp 'Algae' 'energyLevel'
   exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
   propPop meter
-
 
   // min
   // featCall Population minAgentProp 'Algae' 'energyLevel'
@@ -246,24 +245,24 @@ onEvent Tick [[
       blueprint: 'Fish',
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
-    prop y setTo 0`
+prop y setTo 0
+prop energyLevel setTo 54`
     },
-    //     {
-    //       id: 502,
-    //       name: 'fatFish',
-    //       blueprint: 'Fish',
-    //       initScript: `prop x setTo 100
-    // prop y setTo 100
-    // // prop scale setTo 5
-    // // prop sizew setTo 80 // size doesn't work
-    // prop energyLevel setTo 1000` // extra property test
-    //     },
-    // {
-    //   id: 503,
-    //   name: 'starvedFish',
-    //   blueprint: 'Fish',
-    //   initScript: `prop x setTo 200` // missing y test
-    // },
+    {
+      id: 502,
+      name: 'fatFish',
+      blueprint: 'Fish',
+      initScript: `prop x setTo 100
+prop y setTo 100
+featCall Physics setScale 2
+prop energyLevel setTo 1000` // extra property test
+    },
+    {
+      id: 503,
+      name: 'starvedFish',
+      blueprint: 'Fish',
+      initScript: `prop x setTo 200` // missing y test
+    },
     {
       id: 504,
       name: 'algae01',
@@ -276,28 +275,28 @@ prop y setTo 120`
       name: 'algae02',
       blueprint: 'Algae',
       initScript: `prop x setTo -150
-        prop y setTo -120`
+prop y setTo -120`
     },
     {
       id: 506,
       name: 'algae03',
       blueprint: 'Algae',
       initScript: `prop x setTo -120
-        prop y setTo -90`
+prop y setTo -90`
     },
     {
       id: 507,
       name: 'lightbeam01',
       blueprint: 'Lightbeam',
       initScript: `prop x setTo -600
-        prop y setTo -160`
+prop y setTo -160`
     },
     {
       id: 510,
       name: 'reporter',
       blueprint: 'Reporter',
       initScript: `prop x setTo 0
-prop y setTo 200`
+prop y setTo 300`
     }
   ]
 };
