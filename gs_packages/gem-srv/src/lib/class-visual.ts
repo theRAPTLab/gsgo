@@ -273,12 +273,10 @@ class Visual implements IVisual, IPoolable, IActable {
     this.textContent = str; // cache
 
     // position text bottom centered
-    const spriteBounds = new PIXI.Rectangle();
-    this.sprite.getBounds(true, spriteBounds);
     const textBounds = this.text.getBounds();
     const spacer = 5;
     const x = -textBounds.width / 2;
-    const y = spriteBounds.height / 2 + spacer;
+    const y = this.sprite.height / 2 + spacer;
     this.text.position.set(x, y);
 
     this.container.addChild(this.text);
@@ -289,14 +287,11 @@ class Visual implements IVisual, IPoolable, IActable {
 
     if (!this.meter) this.meter = new PIXI.Graphics();
 
-    const spriteBounds = new PIXI.Rectangle();
-    this.sprite.getBounds(true, spriteBounds);
-
     const w = 10;
     const h = 40;
     const spacer = w + 5;
-    const x = -spriteBounds.width / 2 - spacer;
-    const y = -spriteBounds.height / 2;
+    const x = -this.sprite.width / 2 - spacer;
+    const y = this.sprite.height / 2 - h; // flush with bottom of sprite
 
     this.meter.clear();
 
