@@ -175,6 +175,8 @@ onEvent Tick [[
 useFeature Population
 exprPush {{ 'avg Algae energyLevel' }}
 propPop text
+// Make skin invisible
+prop skin setTo '1x1'
 # PROGRAM EVENT
 onEvent Tick [[
   // count of agents by type
