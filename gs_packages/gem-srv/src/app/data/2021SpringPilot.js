@@ -123,14 +123,6 @@ onEvent Tick [[
     prop agent.alpha setTo 0.3
     prop agent.isInert setTo true
   ]]
-
-  // // Experimental stack operations
-  // propPush agent.energyLevel
-  // exprPush {{ 1000 }}
-  // // 'add' is not defined and does not run
-  // add
-  // dbgStack
-
 ]]
 # PROGRAM UPDATE
 when Algae touches Lightbeam [[
@@ -181,7 +173,7 @@ onEvent Tick [[
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
 useFeature Population
-exprPush {{ 'Reporter' }}
+exprPush {{ 'avg Algae energyLevel' }}
 propPop text
 # PROGRAM EVENT
 onEvent Tick [[
@@ -191,9 +183,15 @@ onEvent Tick [[
   // propPop text
 
   // count, sum, avg of agent property
+  // featCall Population countAgentProp 'Algae' 'energyLevel'
+  // exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
+  // propPop text
+
+  // meter
   featCall Population countAgentProp 'Algae' 'energyLevel'
-  exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
-  propPop text
+  exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+  propPop meter
+
 
   // min
   // featCall Population minAgentProp 'Algae' 'energyLevel'
