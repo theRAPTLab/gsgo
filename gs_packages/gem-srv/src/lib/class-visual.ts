@@ -282,10 +282,10 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.addChild(this.text);
   }
 
-  setMeter(percent: number) {
+  setMeter(percent: number, color: number, isLargeMeter: boolean) {
     if (percent === this.meterValue) return; // no update necessary
-
     if (!this.meter) this.meter = new PIXI.Graphics();
+    if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
     const w = 10;
     const h = 40;
@@ -301,7 +301,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.meter.endFill();
 
     // bar
-    this.meter.beginFill(0xff6600, 0.5);
+    this.meter.beginFill(color, 0.5);
     this.meter.drawRect(x, y + h - percent * h, w, percent * h);
     this.meter.endFill();
 
