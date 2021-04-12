@@ -65,7 +65,7 @@ class MapEditor extends React.Component {
       <div
         style={{
           display: 'grid',
-          gridTemplateRows: '100px auto',
+          gridTemplateRows: 'auto auto',
           height: '100%',
           overflow: 'hidden'
         }}
