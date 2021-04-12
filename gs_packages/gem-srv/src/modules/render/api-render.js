@@ -106,6 +106,7 @@ function Init(element) {
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
+          dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
 
       if (dobj.mode === 1 && SETTINGS.actable) {
@@ -151,6 +152,7 @@ function Init(element) {
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
+          dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
 
       // force vobj rotation, scale, alpha for PIXI testing

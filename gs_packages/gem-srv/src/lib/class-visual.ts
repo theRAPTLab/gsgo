@@ -287,10 +287,10 @@ class Visual implements IVisual, IPoolable, IActable {
     if (!this.meter) this.meter = new PIXI.Graphics();
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
-    const w = 10;
-    const h = 40;
+    const w = isLargeMeter ? 40 : 10;
+    const h = isLargeMeter ? 80 : 40;
     const spacer = w + 5;
-    const x = -this.sprite.width / 2 - spacer;
+    const x = isLargeMeter ? -w / 2 : -this.sprite.width / 2 - spacer;
     const y = this.sprite.height / 2 - h; // flush with bottom of sprite
 
     this.meter.clear();
