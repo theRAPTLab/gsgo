@@ -71,10 +71,10 @@ when Fish touches Algae [[
   //]]
   //
   // hack around ifExpr bug
-  exprPush {{ Fish.getProp('energyLevel').value + (Algae.getProp('energyLevel').value > 0 ? 1 : 0) }}
-  propPop Fish.energyLevel
-  // min is 0, so it's always OK to subtract one
-  prop Algae.energyLevel sub 1
+  // exprPush {{ Fish.getProp('energyLevel').value + (Algae.getProp('energyLevel').value > 0 ? 1 : 0) }}
+  // propPop Fish.energyLevel
+  // // min is 0, so it's always OK to subtract one
+  // prop Algae.energyLevel sub 1
 
 ]]
 `
