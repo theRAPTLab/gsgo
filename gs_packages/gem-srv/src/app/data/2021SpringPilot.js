@@ -18,6 +18,12 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
+featCall Physics setSize 90
+
+// show meter immediately
+exprPush {{ agent.getProp('energyLevel').value / 100 }}
+propPop meter
+
 
 // set name
 exprPush {{ agent.name }}
