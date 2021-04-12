@@ -41,22 +41,19 @@ onEvent Tick [[
   ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
     featCall Costume setPose 0
     // Green = 0x00FF00
-    exprPush {{ 65280 }}
-    propPop meterClr
+    prop meterClr setTo 65280
   ]]
   // could eat
   ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
     featCall Costume setPose 1
     // Orange = 0xFF6600
-    exprPush {{ 16737792 }}
-    propPop meterClr
+    prop meterClr 16737792
   ]]
   // hungry
   ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
     featCall Costume setPose 1
     // Red = 0xFF0000
-    exprPush {{ 16711680 }}
-    propPop meterClr
+    prop meterClr 16711680
   ]]
   // dead
   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
