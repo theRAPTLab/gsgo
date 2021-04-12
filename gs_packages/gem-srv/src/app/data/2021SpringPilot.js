@@ -24,7 +24,6 @@ featCall Physics setSize 90
 exprPush {{ agent.getProp('energyLevel').value / 100 }}
 propPop meter
 
-
 // set name
 exprPush {{ agent.name }}
 propPop text
@@ -66,6 +65,11 @@ onEvent Tick [[
     prop agent.alpha setTo 0.3
     prop agent.isInert setTo true
   ]]
+
+  // set meter
+  exprPush {{ agent.getProp('energyLevel').value / 100 }}
+  propPop meter
+
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
@@ -184,8 +188,15 @@ onEvent Tick [[
 useFeature Population
 exprPush {{ 'avg Algae energyLevel' }}
 propPop text
+
 // Make skin invisible
 prop skin setTo '1x1'
+
+// Show meter on start.
+prop meterLarge setTo true
+exprPush {{ 1 }}
+propPop meter
+
 # PROGRAM EVENT
 onEvent Tick [[
   // count of agents by type
