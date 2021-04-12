@@ -60,7 +60,12 @@ onEvent Tick [[
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
-  featCall Costume setGlow 1
+
+  ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
+    prop Fish.energyLevel add 1
+    prop Algae.energyLevel sub 1
+    featCall Fish.Costume setGlow 1
+  ]]
 
   // Add energy to Fish and subtract energy from Algae
   //
@@ -98,8 +103,8 @@ useFeature Physics
 featProp Physics.radius setTo 16
 
 // show initial level (otherwise level is not shown until run)
-  exprPush {{ agent.getProp('energyLevel').value }}
-  propPop text
+exprPush {{ agent.getProp('energyLevel').value }}
+propPop text
 
 # PROGRAM EVENT
 onEvent Tick [[
