@@ -152,14 +152,16 @@ when Algae touches Lightbeam [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
-addProp speed Number 1
+addProp speed Number 10
 addProp energyRate Number 1
+addProp direction Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 256
 
 prop agent.skin setTo 'lightbeam.json'
+prop agent.alpha setTo 0.3
 
 // featCall Movement setController 'user'
 // prop agent.x setTo -300
@@ -169,10 +171,12 @@ prop agent.skin setTo 'lightbeam.json'
 onEvent Tick [[
   // featPropPush Physics.radius
   // dbgStack
-  exprPush {{agent.x + agent.getProp('speed').value; }}
+  exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
   propPop x
-  ifExpr {{ agent.x > 600 }} [[
-      prop x setTo -600
+
+  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 600)) || ((agent.getProp('direction').value == -1) && (agent.x < -600))}} [[
+      exprPush {{600 * agent.getProp('direction').value * -1}}
+      propPop x
   ]]
 ]]
 `
@@ -314,7 +318,8 @@ prop y setTo -160`
       name: 'reporter',
       blueprint: 'Reporter',
       initScript: `prop x setTo 0
-prop y setTo 300`
+prop y setTo 300
+prop alpha setTo 0.3`
     },
     {
       id: 511,
