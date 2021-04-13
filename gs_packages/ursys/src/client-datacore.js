@@ -5,6 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const $$ = require('./ur-common');
+const DifferenceCache = require('./class-diff-cache');
+const DBG = require('./ur-dbg-settings');
 
 /// URNET MESSAGING SYSTEM ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -86,39 +88,89 @@ function GetSharedEndPoints() {
 
 /// DEVICE BRIDGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEVICE_SUBS = new Map();
+const DEVICES_SUBBED = new Map();
 let DB_COUNT = 0;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** a device bridge has three named function properties (defined in
+/** a deviceSpec has three named function properties (defined in
  *  client-netdevices as TDeviceSelector)
  *  selectify: udevice => true|falase
  *  quantify:  udeviceList => deviceList
  *  notify:    (added,updated,removed) => voic
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** a device subscription saves a "device bridge" when it's received from the
+/** a device subscription saves a "device controller" when it's received from the
  *  device connector. It's called by client-netdevices SubscribeDevice() which
  *  is exported from UR client.
- *  returns a function to delete the subscription
+ *  returns a deviceAPI object
  */
-function SaveDeviceSub(deviceBridge) {
-  DEVICE_SUBS.set(DB_COUNT, deviceBridge);
-  return function DeleteDeviceSub() {
+function SaveDeviceSub(deviceSpec) {
+  const dcache = new DifferenceCache('udid'); // device changes for this spec
+  const cobjs = new DifferenceCache('id'); // control objects received
+  deviceSpec.cobjs = cobjs;
+  deviceSpec.dcache = dcache;
+  DEVICES_SUBBED.set(DB_COUNT, deviceSpec);
+  const unsub = () => {
     console.log('deleting device sub', DB_COUNT);
-    DEVICE_SUBS.delete(DB_COUNT);
+    DEVICES_SUBBED.delete(DB_COUNT);
   };
+  const deviceNum = () => {
+    return DB_COUNT;
+  };
+  const getInputs = () => {
+    return cobjs.getInputs();
+  };
+  const getChanges = () => {
+    return cobjs.getChanges();
+  };
+  const putOutput = () => {
+    console.log('putOutput() is unmplemented');
+  };
+  ++DB_COUNT; // increment device counter
+  return { unsub, getInputs, getChanges, putOutput, deviceNum };
 }
+
 /// DEVICE DEFINITION & CREATION //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DEVICE_DECLARATIONS = new Map();
+const DEVICES_LOCAL = new Map();
 let DEVICE_COUNT = 0;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function DeclareNewDevice(udevice) {
+function SaveDevice(udevice) {
+  DEVICES_LOCAL.set(udevice.udid, udevice);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function NewDeviceID() {
   const { PRE_UADDR_ID, PRE_UDEVICE_ID } = $$;
   const base_id = `${PRE_UDEVICE_ID}${MyUADDR().slice(PRE_UADDR_ID.length)}`;
   const udid = `${base_id}:${DEVICE_COUNT++}`;
-  udevice.udid = udid;
-  DEVICE_DECLARATIONS.set(udid, udevice);
+  return udid;
+}
+
+/// DEVICE DIRECTORY //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DEVICE_DIR = new DifferenceCache('udid');
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function log_arr(arr, prompt = 'array') {
+  if (arr.length > 0) console.log(`${prompt}: ${arr.length} elements`, arr);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IngestDevices(devices) {
+  if (DBG.devices) console.group('IngestDeviceMap');
+  const { added, updated, removed } = DEVICE_DIR.ingest(devices);
+  if (DBG.devices) {
+    log_arr(added, 'added  ');
+    log_arr(updated, 'updated');
+    log_arr(removed, 'removed');
+  }
+  if (DBG.devices) console.groupEnd();
+  return { added, updated, removed };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDevicesChangeList() {
+  return DEVICE_DIR.getChanges();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDevices() {
+  return DEVICE_DIR.getValues();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -139,5 +191,9 @@ module.exports = {
   GetSharedEndPoints,
   // DEVICES
   SaveDeviceSub,
-  DeclareNewDevice
+  SaveDevice,
+  NewDeviceID,
+  IngestDevices,
+  GetDevicesChangeList,
+  GetDevices
 };

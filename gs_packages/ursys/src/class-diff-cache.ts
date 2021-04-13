@@ -12,13 +12,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const DBG = require('./ur-dbg-settings');
-const PROMPTS = require('./util/prompts');
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const log = console.log;
-const PR = PROMPTS.makeStyleFormatter('DiffCache', 'TagDkBlue');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,8 +105,17 @@ class DifferenceCache {
     return this.changeLists;
   }
 
+  /** API: Retrieve the current list of objects
+   */
   getValues() {
     return [...this.cMap.values()];
+  }
+
+  /** API: return TRUE if passed id is in the map, meaning it's currently
+   *  an active object
+   */
+  hasKey(id) {
+    return this.cMap.has(id);
   }
 
   /** API: Execute function of form ( value[,index,[array]])=>{},

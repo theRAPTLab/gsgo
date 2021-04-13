@@ -26,7 +26,7 @@ function m_CreateDeviceDirectoryFromMap() {
       const udid = udev.udid;
       if (udid !== undefined) {
         out += `${udid} `;
-        devices[udid] = udev.getDeviceDirectoryEntry();
+        devices[udid] = udev.getDeviceDescriptor();
       } else {
         console.warn('*** bad udid in dmap', JSON.stringify(udev));
       }
@@ -56,12 +56,8 @@ function PKT_RegisterDevice(pkt) {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const udev = new UDevice(pkt.getData());
   const udid = udev.udid;
-  const ins = udev
-    .getInputControlList()
-    .reduce((acc, i) => `[${i.controlName}]`, '');
-  const outs = udev
-    .getOutputControlList()
-    .reduce((acc, i) => `[${i.controlName}]`, '');
+  const ins = udev.getInputDefs().reduce((acc, i) => `[${i.controlName}]`, '');
+  const outs = udev.getOutputDefs().reduce((acc, i) => `[${i.controlName}]`, '');
   const deviceClass = udev.getMetaProp('uclass');
   const status = `register ${udid} as '${deviceClass}' device w/ inputs:${ins}, outputs:${outs}`;
   if (DBG.devices) TERM(status);

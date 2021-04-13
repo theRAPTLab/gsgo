@@ -7,12 +7,11 @@
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('./util/prompts');
-const { PRE_UADDR_ID, PRE_UDEVICE_ID } = require('./ur-common');
-const { MyUADDR, MyAppPath } = require('./client-datacore');
+const { MyUADDR, MyAppPath, NewDeviceID } = require('./client-datacore');
+const DBG = require('./ur-dbg-settings');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
 const PR = PROMPTS.makeStyleFormatter('UDEVICE');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
@@ -122,17 +121,17 @@ class UDevice {
   }
 
   /** add a control definition to the device inputs array */
-  addInputControl(controlName, controlProps) {
+  addInputDef(controlName, controlProps) {
     this._pushControlDef(this.inputs, controlName, controlProps);
   }
   /** add a control definition to the device outputs array */
-  addOutputControl(controlName, controlProps) {
+  addOutputDef(controlName, controlProps) {
     this._pushControlDef(this.outputs, controlName, controlProps);
   }
-  /** create a subset of device data that will be used for the device
+  /** return a SUBSET of device data that will be used for the device
    *  directory. It doesn't have user or student data
    */
-  getDeviceDirectoryEntry() {
+  getDeviceDescriptor() {
     const { udid, meta, inputs, outputs } = this;
     return {
       udid,
@@ -142,7 +141,7 @@ class UDevice {
     };
   }
   /** return a copy of this devices inputs array */
-  getInputControlList() {
+  getInputDefs() {
     if (Array.isArray(this.inputs)) return this.inputs.slice();
     console.log(
       ...PR(`warning: ${this.udid} inputs is not an array so returning []`)
@@ -150,7 +149,7 @@ class UDevice {
     return [];
   }
   /** return a copy of this devices outputs array */
-  getOutputControlList() {
+  getOutputDefs() {
     if (Array.isArray(this.outputs)) return this.outputs.slice();
     console.log(
       ...PR(`warning: ${this.udid} outputs is not an array so returning []`)
@@ -215,13 +214,13 @@ class UDevice {
   }
   /** internal method to create a blank device with default properties from
    *  the instantiating client with empty inputs, outputs. Use the
-   *  addInputControl() and addOutputControl () methods to populate before
+   *  addInputDef() and addOutputDef () methods to populate before
    *  registering the device
    */
   _initNew(uclass) {
+    this.udid = NewDeviceID(); // in DATACORE
     const uaddr = MyUADDR();
     const uapp = MyAppPath();
-    this.udid = ''; // unique device id will be set by DATACORE.DeclareNewDevice()
     this.meta = {
       uapp, // device appserver route
       uaddr, // URNET address
@@ -251,7 +250,7 @@ class UDevice {
     }
   }
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// using CommonJS format on purpose for nodeJS cross-compatibility
 module.exports = UDevice;

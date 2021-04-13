@@ -14,14 +14,12 @@
 const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
-const DifferenceCache = require('./class-diff-cache');
 const UDevice = require('./class-udevice');
 const DBG = require('./ur-dbg-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagDkRed');
-const DEVICE_CACHE = new DifferenceCache('udid');
 let LocalNode;
 let NetNode;
 
@@ -46,78 +44,30 @@ const TDeviceSelector = {
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function log_arr(arr, prompt = 'array') {
-  if (arr.length > 0) console.log(`${prompt}: ${arr.length} elements`, arr);
-} /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Save device map received from URNET server
  *  TODO: careful update or removes old entries
  */
 function m_UpdateDeviceMap(devmap) {
   // (1) figure out what changed in the device map
-  if (DBG.devices) console.group(...PR('UpdateDeviceMap'));
-  const { added, updated, removed } = DEVICE_CACHE.ingest(devmap);
-  if (DBG.devices) {
-    log_arr(added, 'added  ');
-    log_arr(updated, 'updated');
-    log_arr(removed, 'removed');
-  }
-  if (DBG.devices) console.groupEnd();
-  LocalNode.raiseMessage('UR_DEVICES_CHANGED', { added, updated, removed });
+  const changeList = DATACORE.IngestDevices(devmap);
+  LocalNode.raiseMessage('UR_DEVICES_CHANGED', changeList);
   // subscribers get a chance to handle the change
-  // returning references because DEVICE_CACHE.getChanges() will reset the
+  // returning references because DEVICE_DIR.getChanges() will reset the
   // changeList, so multiple subscribers would miss the changes
 }
 
 /// DEVICE CREATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: create a new UDevice */
+/** API: create a new blank UDevice */
 export function NewDevice(className) {
   if (typeof className !== 'string')
     throw Error(`NewDevice() accepts class name as string, not ${className}`);
   return new UDevice(className);
 }
 
-/// DEVICE SUBSCRIPTION API ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API placeholder - given search criteria, return an array of maching udevices
- *  only handle 'uclass' for now inefficiently.
- */
-export function DeviceGetMatching(pattern = {}) {
-  const uclass = pattern.uclass || '*';
-  const devices = [];
-  DEVICE_CACHE.forEach(device => {
-    if (uclass === '*' || device.uclass === uclass) devices.push(device);
-  });
-  return devices;
-}
-/** API: hook into DeviceBridger. Provide three optional functions that will be
- *  used to select, quantify the devices you want, and your notify function
- *  will be called with added,updated,removed list of devices. Returns
- *  the "DeviceBridgeNumber" which can be used to delete a device subscription
- */
-export function SubscribeDevice(config) {
-  // device bridge holds al the functions as follows:
-  // selectify is filter function: device => boolean
-  // quantify is quantity gate function: device[] => deviceSubset[] || undefined
-  // notify is device[] change handler: (valid, added[], updated[], removed[]
-  // note: 'valid' is true when quantify() returns an array, not undefined
-  const dbr = {};
-  if (typeof config === 'object') {
-    dbr.selectify = config.selectify; // device => boolean
-    dbr.quantify = config.quantify; // device[] => deviceSubset[] || undefined
-    dbr.notify = config.notify; // { valid, added[], updated[], removed[] } => void
-  } else throw Error('invalid device bridge config');
-  // return device bridge number
-  const unsub = DATACORE.SaveDeviceSub(dbr);
-  const getInputs = () => []; // return current control data objects
-  const getChanges = () => {}; // return changeList arrays of controlDataObjects
-  const putOutput = () => {}; // post a single output control data object
-  return { unsub, getInputs, getChanges, putOutput };
-}
-
 /// DEVICE REGISTRATION API ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API placeholder - an app can use this to register with the server.
+/** API: egister with the server.
  */
 export function RegisterDevice(udevice) {
   const udid = udevice.udid;
@@ -125,9 +75,34 @@ export function RegisterDevice(udevice) {
   console.log(
     ...PR(`RegisterDevice class:${uclass} uname:${uname} udid:${udid}`)
   );
-  DATACORE.DeclareNewDevice(udevice);
+  DATACORE.SaveDevice(udevice);
   const promise = NetNode.callMessage('NET:SRV_DEVICE_REG', udevice);
-  return promise; // returns reginfo {
+  return promise; // returns reginfo
+}
+
+/// DEVICE SUBSCRIPTION API ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: hook into DeviceBridger. Provide three optional functions that will be
+ *  used to select, quantify the devices you want, and your notify function
+ *  will be called with added,updated,removed list of devices. Returns
+ *  the "DeviceBridgeNumber" which can be used to delete a device subscription
+ */
+export function SubscribeDevice(deviceSpec) {
+  // device bridge holds al the functions as follows:
+  // selectify is filter function: device => boolean
+  // quantify is quantity gate function: device[] => { valid, devices }
+  // notify is device[] change handler: (valid, added[], updated[], removed[]
+  // note: 'valid' returned by quantify() as { valid, inputs }
+  const sub = {};
+  if (typeof deviceSpec === 'object') {
+    sub.selectify = deviceSpec.selectify; // device => boolean
+    sub.quantify = deviceSpec.quantify; // devices => { valid, devices }
+    sub.notify = deviceSpec.notify; // { valid, added[], updated[], removed[] } => void
+  } else throw Error('invalid deviceSpec object');
+  // return device bridge number
+  const deviceAPI = DATACORE.SaveDeviceSub(sub);
+  // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
+  return deviceAPI;
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
