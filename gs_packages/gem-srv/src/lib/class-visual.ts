@@ -156,6 +156,7 @@ class Visual implements IVisual, IPoolable, IActable {
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
 
+  }
 
   /**
    * Call this AFTER
