@@ -56,132 +56,14 @@ PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 * W1: URSYS debug remote-to-remote call, declare nofix because not needed with current data flow
 * W2: Start implementing device routing and skeleton input system 
 
+**SUMMARY S2106 MAR 22 - APR 04**
+
+* W1: start client registration, DifferenceCache
+* W2: CharControl, UDevice + DeviceSync start
+
 ---
 
-# SPRINT 2106 / MAR 22 - APR 04
-
-## MAR 25 THU - picking up from where I left off
-
-I need to store the NET:UR_DEVICES message on the client in a way that is searchable using a client-side API. 
-
-**Q. Where is the client-side API?**
-A. `class-udevice` and `client-netdevices` 
-
-## MAR 26 FRI - Adding client API for devices
-
-The idea is that we can register devices of a certain type, and then query the device directory to find matches. Let's go through the steps of registering a faketrack device.
-
-* [x] **Faketrack** says it has x, y, h properties
-  * [x] HookPhase UR/APP_READY
-  * [x] send device registration
-* [x] **Tracker** query devices
-  * [x] `client-netdevices` receives device map via NET:UR_DEVICES
-  * [x] `client-netdevices` process device map into queryable object db
-  * [x] `client-netdevices` has to be queryable by uclass
-  * [x] list of inputs updates with UADDR as proof of concept
-
-It turns out that I need to make a Differencer available in URSYS. So this is a second iteration of the original Pool, MappedPool, and SyncMap classes in GEMSTEP
-
-The essential elements of Differencer:
-
-```
-new Differ(uniqueKey)
-Differ.update(array or map)
-const { added, removed, deleted } = Differ.getChanges()
-```
-
-It's a pretty simple class. It doesn't require pooling because these are not expensive pieces. We just need to know what changed since the last call, and get the ids
-
-* [ ] add **DifferenceCache** to URSYS (variation of MappedPool, SyncMap)
-
-  * [ ] **intake** a collection of objects with unique key
-* [ ] **retrieve** the current list of objects
-  * [ ] extension: can **hook** adds, updates, and removes during intake
-  * [ ] extension: **retrieve** the differences since the last retrieval: updated, added, removed
-  
-  
-
-## APR 02 FRI - Slow progress
-
-The dental emergency knocked me on my ass last week and this week. Trying to recover from two weeks of delay and not get mad about it.
-
-I had been working on the DifferenceCache which is supposed to help the device system **be aware of changes** in a way that's different from a SyncMap, which handles much more than changes. DifferenceCache probably should be used in MappedPool so the code is reused, but we'd have to write tests for it so maybe not.
-
-DifferenceCache is being tested in-module and has better reporting of PASS/FAIL
-
-### Using DifferenceCache in device directory
-
-The current protocol will just rebroadcast the entire device list at once, so our difference cache will be used to see what was added/removed.
-
-* [ ] FakeTrack registers itself
-* [ ] Tracker detects registrations, but not deletions
-
-Tracker shows a list of devices in its sidebar; I want this to always reflect the current device pool.
-
-* [x] `Tracker.updateDeviceList()` is called 
-* [ ] Add all methods of ingest to `DifferenceCache`
-* [ ] replace old code in `client-netdevices` with a DiffCache
-
-The differ is sort of working, but I'm not seeing dropped elements. When FakeTrack updates, I see two `NET:UR_DEVICES` messages:
-
-* 1: gets an empty object
-* 2: gets the current faketrack
-
-The first one happens on drop (sent by server), and the second one happens when FakeTrack fires up and registers. So the errorr is probably in `svc-netdevices`
-
-* [x] Is `SRV_SOCKET_DELETED` sending the right stuff? Yah, it's sending the updated map which is empty
-* [x] How does `DifferenceCache` handle an empty object? It should work just fine! I didn't change anything and it started working; I suspect the compiler was not picking up code changes properly. After I added an explicit check it started working, but then when I removed the check it STILL worked.
-
-**DeviceSync** is working, with the client keeping itself updated whenever the server reports a change in the devices. So **what's next?**
-
-The **InputManager** API is similar to PTRACK in operation, but also has an `inputSpec`. There is a distinct InputManager instance for each type of input you need.
-
-* `UseInputs( inputSpec )` - tells the InputManager what your application is looking for, the minimum, and the maximum. 
-* `MapInputs( mapSpec )` will optionally tell the InputManager how to handle added, updated, removed inputs. 
-* `PreTransform()` will accept a function that receives the object and transforms it by whatever means it needs to be before `MapInputs()` runs. 
-* `Transform()` will accept a function that transforms data after `MapInputs()` is run. 
-* `GetInputs()` will return the list of current entities for that InputManager instance, mapped and transformed if those options were used. 
-
-**Modules that use InputManager** can use the results of `GetInputs()` as-is, but they may need to do a **secondary mapping** from those entities to assign to **agents**. So how does that work?
-
-* module gets inputs, which will be a variable number from 0 to MAX
-* The inputs are objects with ids provided from the input device, and are guaranteed to be unique across the entire system.
-* the module has to figure out what to do with the inputs. 
-  * For simple inputs, it's just pulling the value out of it during the `SIM/GET_INPUTS` phase. 
-  * For tracker inputs, it has to allocate then to interested agents.
-
-There are **two ways** I am forseeing how agents use inputs that use the `axis` type (-1 to +1)
-
-1. Agents are **created** to use the input as-is, and hold a reference to it. When an input goes away, so does that agent instance. 
-2. A fixed pool of Agents are **mapped** to the available inputs which dance around the screen as **cursors**. If not enough inputs are available, those agents are either dead or in some kind of AI state. These agents need to have either an **assignment** or **capture** method to bind the input to it.
-
-We need the **easiest way** to get inputs into the system now. For now, I think this is to just **get the InputManager's** `GetInputs()` call to deliver **InputObjects** (or **Controls**) that have:
-
-```
-{ 
-	udid: 'uniqueDeviceId',
-	id: 'controllerId for devices with more than one control',
-	[controlSpecificProperties]: value
-}
-```
-
-conceivably, an InputObject could also deliver 
-
-```
-{ 
-	udid: 'uniqueDeviceId',
-	ids: {
-		[id]:{ [controlSpecificValues]:controlValue ... }
-	}
-}
-```
-
-Note that **these data objects should be as small as possible**, users of a particular InputModule will need to know what type it is and what to expect from it.
-
-## APR 04 - FakeTrack Hookups
-
-* [x] Let's start converting FakeTrack into a CharacterController. 
-* [ ] Add `DeviceSubscribe` stub which accelts a TDevice specifier and a TDeviceQuant
+# SPRINT 2107 / APR 05 - APR 18
 
 ## APR 05-08 - Subscribing to an Input
 
@@ -296,7 +178,7 @@ Use either **DeviceGetInputs** or **DeviceGetChanges** to receive an array of **
 
 #### Part 1
 
-* [ ] CharControl.jsx declare itself as a device
+* [x] CharControl.jsx declare itself as a device
 * [ ] Tracker.jsx subscribe to devices using DBR, print matching devices
 * [ ] Multiple CharControls add/remove handled by Tracker.jsx
 
@@ -313,7 +195,131 @@ Use either **DeviceGetInputs** or **DeviceGetChanges** to receive an array of **
 
 ### Part 1 Notes
 
-CharControl.jsx needs to define the device.
+**CharControl.jsx** needs to define the device during `APP_READY`. Tis seems to be working now. Each uaddr now has its own map of devices keyed by udid, as each uaddr can have more than one device potentially.
+
+* [x] Now, is client-netdevices getting **changes** to the device list? **YUPPERSS**
+
+Now **Tracker.jsx** needs to subscribe to `CharControl` devices. To mirror CharControl, we hook into `APP_READY` in `componentDidMount` by hooking the phase. 
+
+* [ ] **SubscribeDevice** gets `selectify() etc`
+* [ ] The `selectify() etc` is stored as a "device bridge" object in DATACORE
+* [ ] **SubscribeDevice** returns `unsub() getInputs() getChanges() putOutputs()` functions
+
+So now we need to handle each type of function
+
+* `selectify()` is **passed udevice**, returns true or false
+* `quantify()` is **passed udevice[]**, returns subset (or everything or nothing)
+* `notify()` is **called** whenever the device **directory changes**, and also provides `valid` flag if `selectify` and `quantify` return a device list
+
+We also need to write at minimum:
+
+* `getInputs()` function will return all the current control data objects
+
+Also, **how does a device send control object** ???
+
+```
+{ 
+	udid,
+	inputs: {
+		[controlName]: [ cdo, cdo, cdo ]
+	}
+}
+cdo = { id, x, y } // controlProps
+```
+
+These are gathered by any means necesary and sent to the server. 
+
+The client has to:
+
+* create a **DifferenceCache** for each controlName defined by the device that has been subscribed to
+  * DifferenceCache provides the `getInputs()` and `getChanges()`  functions that are returned by SubscribeDevice. `putOutputs()` is a function that sends `{ udid, outputs: {[controlName]: [ cdo, cdo ]}}` back to the server, which then looks up the associated uaddr and forwards it
+* when `udid` comes in, look it up on the Device Directory, iterate over the keys in controlObject `inputs`  and pass the array to the associated DifferenceCache instance
+
+#### SubscribeDevice() wiring
+
+* [x] fix **bug** when two devices are attached and one updates. We should be getting a **removed** detectin in updateDeviceMap, but instead we're seeing one element update and not seeing the remove
+
+Now we have a stabled device map, so **SubscribeDevice** should be workable.
+
+* in Tracker during `UR/APP_START`, we call SubscribeDevice to let the device subsystem know we want to receive  notifications and get some kind of API to perform functions.
+
+* DATACORE has  `DEVICE_SUBS` map which maps `key:subnumber, => value:deviceBridge`
+  * device bridges store the user-supplied **selectify, quantify, notify** functions 
+  * we use these device bridges to handle updates to the system
+  
+* DATACORE also has `DEVICE_DECLARATION` map which maps `key:udid => value:udevice`
+
+  used by **RegisterDevice** to hold in the client itself, and also to send to network.
+
+* The `DEVICE_CACHE` is the current network-wide directory, but it's located in client-netdevices
+
+  * It's a **DiffCache** that can `ingest()` a collection and then be queried for **what changed** and the **list of all devices** by `udid` 
+
+* [x] for consistency, move `DEVICE_CACHE` to DATACORE
+
+#### Using DeviceBridges and DeviceAPIs
+
+```js
+const deviceSub = { selectify, quantify, notify, dcache, cobjs } 
+```
+
+The bridge is saved through `DATACORE.SaveDeviceSub(deviceSub)`. We have to build-in the differenceCache in `SaveDeviceSub()`, and use it to return the deviceAPI structure.
+
+**EVENT: DeviceList Changes** - check the updated devicelist against every deviceSub in DEVICE_SUBS. If `selectify()` and `quantify()` returns `{ valid, devices }` . If `valid` is false, then `devices` may contain an empty list of a partial number of inputs so they can still be used by the UI
+
+**EVENT: ControlObjects Arrive** - A device update contains a number of control data objects.
+
+```
+deviceInput = { udid, inputs: { [controlName]:[cobj, cobj,...] } }
+cobj = { id, inputs: [ cobj, cobj ... ] }
+```
+
+When you subscribe to a device, your selectify function returns a list of matching devices. Each of those devices has:
+
+* a unique **udid**
+* presumably the same **inputs controlDefs**
+
+When `deviceInput { udid, inputs: { [controlName]:[cobj, cobj,...] } }` arrives, we want to route those inputs to an **aggregate collection** of all matches that are part of the subscription. So how do we route things?
+
+* device subs filter the device list, creating a **deviceCollection** that is part of the sub.
+* the **deviceCollection** is just a set of udids.
+* when a **deviceInput** arrives, its udid can be checked against the deviceCollection
+* for matching udids in the deviceCollection, the `inputs` property is scanned for **named arrays** of **controlObjects**
+* For each named array, a new **inputCache** is stored by controlName. 
+* Each input property is processed into this data structure
+
+Now how do we **retrieve** the associated inputCache by name? This isn't quite working...
+
+SLEEP ON THESE QUESTIONS:
+
+* How can I combine the inputs from multiple devices each with multiple named controls?
+* How can I create a unique controlObj id from the udid+cobj.id? 
+
+## APR 10 SAT - Sending Control Data
+
+The last bit is wiring the **deviceBridge.getInputs()** to control data sent by a remote device!
+
+* the **sending device** constructs a `ControlFrame` that looks like this
+
+  ```
+  ControlFrame = { 
+    udid, 
+    markers: [ { id, x:1, y:1 }, ...]
+  } 
+  ```
+
+  (a) This is sent to the server using `sendMessage('NET:SRV_INGEST_INPUT', controlFrame)`. It's up to the program to construct the control frame.  The broker has to figure out which devices to forward that message to by inspecting the `udid` property, and seeing which sockets have subscribed to it.
+  (b) Alternatively, use `sendMessage('NET:UR_CONTROL_IN', controlFrame)` to **bypass the input broker**. This is easier for right now.
+
+* the **input broker** forwards the controlFrame to interested devices by using the `selectify` criteria from each device subscription.
+
+* the **receiving device** receives `NET:UR_CONTROL_IN` with the controlFrame and processes it as follows:
+
+  ```
+   
+  ```
+
+  
 
 
 

@@ -144,3 +144,8 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 
 * W1: URSYS debug remote-to-remote call, declare nofix because not needed with current data flow
 * W2: Start implementing device routing and skeleton input system 
+
+**SUMMARY S2106 MAR 22 - APR 04**
+
+* W1: start client registration, DifferenceCache
+* W2: CharControl, UDevice + DeviceSync start
