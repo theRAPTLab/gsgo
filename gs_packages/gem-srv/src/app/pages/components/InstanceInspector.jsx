@@ -35,6 +35,7 @@ class InstanceInspector extends React.Component {
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetInstanceId = this.GetInstanceId.bind(this);
     this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
+    this.HandleInspectorClick = this.HandleInspectorClick.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
     // Sim Hover
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
@@ -43,6 +44,7 @@ class InstanceInspector extends React.Component {
     this.OnHoverOver = this.OnHoverOver.bind(this);
     this.OnHoverOut = this.OnHoverOut.bind(this);
 
+    UR.HandleMessage('INSPECTOR_CLICK', this.HandleInspectorClick);
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
   }
@@ -111,6 +113,12 @@ class InstanceInspector extends React.Component {
     // show id too -- useful for debugging
     // data.push({ label: 'id', value: instance.id });
     return data;
+  }
+
+  HandleInspectorClick(data) {
+    const { id, instance } = this.props;
+    console.error('inspector lcick', id, instance, data);
+    if (data.id === instance.id) this.OnInstanceClick();
   }
 
   /**
