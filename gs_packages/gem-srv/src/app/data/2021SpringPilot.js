@@ -222,6 +222,27 @@ onEvent Tick [[
   // propPop text
 ]]
 `
+    },
+    {
+      id: 'Timer',
+      label: 'Timer',
+      script: `# BLUEPRINT Timer
+      # PROGRAM DEFINE
+      // useFeature Costume
+      // useFeature Movement
+      prop skin setTo '1x1'
+      addProp time Number 0
+      prop text setTo 'Time: 0'
+      # PROGRAM EVENT
+      onEvent Tick [[
+        prop time add 1
+        exprPush {{ 'Time: ' + agent.getProp('time').value }}
+        propPop text
+
+      ]]
+      # PROGRAM UPDATE
+      // when xxx touches yyy [[ ]]
+`
     }
   ],
   // instances: [
@@ -233,7 +254,7 @@ onEvent Tick [[
   //   {
   //     name: 'fatFish',
   //     blueprint: 'Fish',
-  //     initScript: `prop agent.x setTo 100`
+  //     initScript: `prop agent.x setTo 100
   //   }
   instances: [
     {
@@ -294,6 +315,13 @@ prop y setTo -160`
       blueprint: 'Reporter',
       initScript: `prop x setTo 0
 prop y setTo 300`
+    },
+    {
+      id: 511,
+      name: 'timer',
+      blueprint: 'Timer',
+      initScript: `prop x setTo 300
+prop y setTo -280`
     }
   ]
 };
