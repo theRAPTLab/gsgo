@@ -63,18 +63,22 @@ RegisterFunction('firstTouches', (a, b) => {
 
   // HACK firstTouches by stuffing a Map into the agents
   // 1. Initialize if not set
-  a.wasTouching = a.wasTouching || new Map();
-  b.wasTouching = b.wasTouching || new Map();
+  a.wasFirstTouching = a.wasFirstTouching || new Map();
+  b.wasFirstTouching = b.wasFirstTouching || new Map();
   // 2. Is this a firstTouch?
   let res = false;
-  if (isTouching && !a.wasTouching.get(b.id) && !b.wasTouching.get(a.id)) {
+  if (
+    isTouching &&
+    !a.wasFirstTouching.get(b.id) &&
+    !b.wasFirstTouching.get(a.id)
+  ) {
     // they were not touching, so this is thefirst touch
     if (DBG) console.log(...PR('first touch!', a.id, b.id));
     res = true;
   }
   // 3. Save touch status
-  a.wasTouching.set(b.id, isTouching);
-  b.wasTouching.set(a.id, isTouching);
+  a.wasFirstTouching.set(b.id, isTouching);
+  b.wasFirstTouching.set(a.id, isTouching);
 
   return res;
 });
@@ -94,18 +98,18 @@ RegisterFunction('lastTouches', (a, b) => {
 
   // HACK lastTouches by stuffing a Map into the agents
   // 1. Initialize if not set
-  a.wasTouching = a.wasTouching || new Map();
-  b.wasTouching = b.wasTouching || new Map();
+  a.wasLastTouching = a.wasLastTouching || new Map();
+  b.wasLastTouching = b.wasLastTouching || new Map();
   // 2. Is this a firstTouch?
   let res = false;
-  if (!isTouching && a.wasTouching.get(b.id) && b.wasTouching.get(a.id)) {
+  if (!isTouching && a.wasLastTouching.get(b.id) && b.wasLastTouching.get(a.id)) {
     // they are not touching now, but were touching before, so this is last touch
     if (DBG) console.log(...PR('last touch!', a.id, b.id));
     res = true;
   }
   // 3. Save touch status
-  a.wasTouching.set(b.id, isTouching);
-  b.wasTouching.set(a.id, isTouching);
+  a.wasLastTouching.set(b.id, isTouching);
+  b.wasLastTouching.set(a.id, isTouching);
 
   return res;
 });

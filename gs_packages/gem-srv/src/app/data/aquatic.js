@@ -185,10 +185,13 @@ onEvent Tick [[
 ]]
 
 # PROGRAM UPDATE
-when Algae lastTouches Lightbeam [[
+when Algae firstTouches Lightbeam [[
   exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
   propPop Algae.energyLevel
-
+  featCall Algae.Costume setGlow 0.1
+]]
+when Algae lastTouches Lightbeam [[
+  dbgOut 'last touch'
   featCall Algae.Costume setGlow 1
 ]]
 `
@@ -203,7 +206,7 @@ useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
 prop agent.alpha setTo 0.3
 addProp speed Number 5
-addProp energyRate Number 1
+addProp energyRate Number 10
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
