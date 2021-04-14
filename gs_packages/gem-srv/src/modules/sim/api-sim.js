@@ -69,6 +69,7 @@ function Start() {
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
