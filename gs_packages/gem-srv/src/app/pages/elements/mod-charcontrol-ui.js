@@ -2,20 +2,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  mod-faketrack is the code that creates the faketrack tool inside of an
-  existing HTML structure. It produces fake PTrack-style UDP via  the nodejs
-  server's step-tracker.js module.
-
-  The root UI is instantiated in 1401-games/faketrack/game-run.js:
-  .. game-run.jsx instantiates <FakeTrack controller={mod_faketrack}
-  .. FakeTrack.componentDidMount calls this.controller.Initialize( this );
-
-  This module is the "controller", and FakeTrack.jsx implements the "view"
-  that talks to us through the exm_fakeported controller interface.
+  mod-charcontrol-ui is based on mod-faketrack-ui
+  see that file
 
   *** WARNING ***
   This module was created in 2014 and still uses fishy Javascript practices!
-  - Dave 5/29/2017
+  - Dave.Sri 5/29/2017
 
   *** NOTES ***
   Touch support from: stackoverflow.com/questions/5186441
@@ -33,7 +25,7 @@ import UR from '@gemstep/ursys/client';
 const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 
 // React user interface (the "view")
-let m_FAKEVIEW = null;
+let m_CHARVIEW = null;
 // dimensions
 let m_canvaswidth;
 let m_canvasheight;
@@ -45,7 +37,7 @@ let m_container; // parent div
 let m_entities; // HTMLCollection of moveable markers
 let m_testentities; // HTMLCollection of moveable markers
 
-// current FAKETRACK frame
+// current CharContol frame
 let m_frame = {
   header: {},
   tracks: []
@@ -54,7 +46,7 @@ let m_seq = 0; // sequence number
 let m_status = ''; // HTML status string
 
 // constants for packet update rate
-const FRAMERATE = 15;
+const FRAMERATE = 10;
 const INTERVAL = (1 / FRAMERATE) * 1000;
 let m_current_time = 0;
 
@@ -64,11 +56,6 @@ const BURST_INT = 150;
 const BURST_RAD = 100;
 
 let m_burst_end = 0;
-
-// socket connection for FAKETRACK packet submission
-let m_fakesock = null;
-let m_fakeport = 2525;
-let m_fakeaddress = `ws://${document.domain}:${m_fakeport}`;
 
 // flags
 let m_data_object_name_changed = false;
@@ -124,7 +111,7 @@ function m_AddTouchEvents(touchContainer) {
   touchContainer.addEventListener('touchcancel', m_TouchHandler, true);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_CreateEntities(container, num = m_FAKEVIEW.state.num_entities) {
+function m_CreateEntities(container, num = m_CHARVIEW.state.num_entities) {
   for (let i = 0; i < num; i++) {
     const child = document.createElement('div');
     child.classList.add('entity');
@@ -193,7 +180,7 @@ function m_AddMouseEvents(container) {
     dragElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
 
     // handle group dragging
-    if (m_FAKEVIEW.state.grouped) {
+    if (m_CHARVIEW.state.grouped) {
       for (let i = 0; i < m_entities.length; i++) {
         const fdiv = m_entities[i];
         if (fdiv !== dragElement) {
@@ -236,18 +223,18 @@ function m_isHidden(el) {
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is called from the React FakeTrack component's handleChangeState()
+/** This is called from the React CharContol component's handleChangeState()
  *  which decomposes the event object received when a form element changes
  *  state. The name is the property name of the form element, and the value
  *  is the new value.
  *
- *  NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
+ *  NOTE: m_CHARVIEW is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
  */
 function HandleStateChange(name, value) {
   if (name !== 'status') console.log('NAME', name, 'VALUE', value);
-  // handle the m_FAKEVIEW state
-  m_FAKEVIEW.setState(
+  // handle the m_CHARVIEW state
+  m_CHARVIEW.setState(
     {
       [name]: value
     },
@@ -258,7 +245,7 @@ function HandleStateChange(name, value) {
           DoBurstTest(value);
           break;
         case 'num_entities':
-          Initialize(m_FAKEVIEW);
+          Initialize(m_CHARVIEW);
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
@@ -268,16 +255,16 @@ function HandleStateChange(name, value) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** This is called by the FakeTrack component once it's completely rendered,
+/** This is called by the CharControl component once it's completely rendered,
  *  at which time this module can start adding its own objects. This code
- *  relies on m_FAKEVIEW (the FakeTrack view)
+ *  relies on m_CHARVIEW (the CharContol view)
  *
- *  NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
+ *  NOTE: m_CHARVIEW is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
 /*/
 function Initialize(componentInstance) {
   // save React component to grab state from and setstate
-  m_FAKEVIEW = componentInstance;
+  m_CHARVIEW = componentInstance;
 
   // setup container, entity listsm
   m_container = m_SetupContainer('container');
@@ -303,31 +290,21 @@ function Initialize(componentInstance) {
     const y = BURST_RAD - Math.random() * BURST_RAD;
     m_Translate(div, x, y);
   }
+  // send periodic control frames
+  setInterval(SendControlFrame, INTERVAL);
 
-  // setup faketrack socket connection to server
-  if (m_fakesock === null) {
-    // establish faketrack m_fakesock connection to node server
-    // also startup the data push interval as 1/FRAMERATE
-    console.log(...PR('Connected-FakeTrackAddress', m_fakeaddress, '...'));
-    m_fakesock = new WebSocket(m_fakeaddress);
-    m_fakesock.onopen = () => {
-      console.log(...PR('FAKETRACK CHANNEL CONNECTED!'));
-      setInterval(SendFrame, INTERVAL);
-    };
-    m_fakesock.onclose = msg => {
-      console.log(...PR('FAKETRACK SOCKET CLOSED: CODE', msg.code));
-      m_fakesock = null;
-    };
-  }
   // save dimensions of m_container. this isn't actually a canvas element.
   // it's used to calculate normalized coordinates of entities
   m_canvaswidth = m_container.offsetWidth;
   m_canvasheight = m_container.offsetHeight;
+
+  // push interval
+  m_CHARVIEW.setState({ rate: FRAMERATE });
 } // Initialize()a
 
 /// SEND PTRACK-COMPATIBLE DATA ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SendFrame() {
+function SendControlFrame() {
   // update current time
   m_current_time += INTERVAL;
   // calculate compatible timer format
@@ -336,7 +313,7 @@ function SendFrame() {
 
   // create empty PTRACK data object
   // (this might have to be less than 4K)
-  switch (m_FAKEVIEW.state.data_track) {
+  switch (m_CHARVIEW.state.ctrl_name) {
     case 'people_tracks':
       m_frame = {
         header: {},
@@ -388,47 +365,6 @@ function SendFrame() {
 
   // update status UI (lower left)
   HandleStateChange('status', m_status);
-
-  // if m_fakesock is defined, send to server
-  if (m_fakesock) {
-    m_frame.header.stamp = {
-      'sec': sec,
-      'nsec': nsec
-    };
-    m_frame.header.frame_id = 'faketrack';
-    m_frame.fake_id = m_FAKEVIEW.state.prefix;
-    m_frame.header.seq = m_seq++;
-    m_fakesock.send(JSON.stringify(m_frame));
-  }
-
-  // OPTIONAL: emit a fake object frame (as oppoed to people frame)
-  // if checkbox dragActive in UI
-  if (m_FAKEVIEW.state.mprop === true) {
-    // hack in an object
-    m_frame = {
-      header: {
-        seq: m_seq++,
-        stamp: {
-          sec,
-          nsec
-        },
-        frame_id: 'faketrack'
-      },
-      //
-      object_tracks: [
-        {
-          age: 5,
-          object_name: 'red',
-          x: Math.random() * 0.25 - 0.125, //Math.sin(sec),
-          y: Math.random() * 0.25 - 0.125, //Math.cos(sec),
-          id: 'dprop01',
-          confidence: Math.random(),
-          height: 1
-        }
-      ]
-    };
-    if (m_fakesock) m_fakesock.send(JSON.stringify(m_frame));
-  }
 }
 
 /// SUPPORTING FEATURES //////////////////////////////////////////////////////
@@ -437,7 +373,7 @@ function SendFrame() {
  *  noise that might be caused by bad PTRACK calibration or environment
  *  lighting. The tracker should ignore entities that exist for less than
  *  the value of BURST_INT. This test is initated if the 'burst' checkbox
- *  is set; and it is reset automatically by SendFrame()
+ *  is set; and it is reset automatically by SendControlFrame()
  */
 function DoBurstTest(value) {
   if (value) BurstStart();
@@ -469,7 +405,7 @@ function BurstStop() {
   m_burst_end = 0;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Used by SendFrame()
+/** Used by SendControlFrame()
  *  Utility function to add the passed div to m_frame and update m_status
  *  string.
  */
@@ -482,7 +418,7 @@ function u_AddEntityToFrame(div) {
   if (m_data_object_name_changed) {
     div.setAttribute('entity-id', parseInt(Math.random() * 1000, 10));
   }
-  let id = m_FAKEVIEW.state.prefix + div.getAttribute('entity-id').toString();
+  let id = m_CHARVIEW.state.prefix + div.getAttribute('entity-id').toString();
   // getBoundingClientRect return DOMRect
   // { x, y, width, height, top, right, bottom, left }
   const rect = div.getBoundingClientRect();
@@ -493,16 +429,16 @@ function u_AddEntityToFrame(div) {
   };
   let offX = rect.width / 2;
   let offY = rect.height / 2;
-  let speedX = m_FAKEVIEW.state.jitter * Math.random();
-  let speedY = m_FAKEVIEW.state.jitter * Math.random();
+  let speedX = m_CHARVIEW.state.jitter * Math.random();
+  let speedY = m_CHARVIEW.state.jitter * Math.random();
   // xx & yy are normalized -1 to 1
   let xx = (pos.left + offX + speedX) / m_canvaswidth - 0.5;
   let yy = (pos.top + offY + speedY) / m_canvasheight - 0.5;
   // expanded position
-  let x = xx * (m_FAKEVIEW.state.width / 2) + parseFloat(m_FAKEVIEW.state.offx);
-  let y = yy * (m_FAKEVIEW.state.depth / 2) + parseFloat(m_FAKEVIEW.state.offy);
+  let x = xx * (m_CHARVIEW.state.width / 2) + parseFloat(m_CHARVIEW.state.offx);
+  let y = yy * (m_CHARVIEW.state.depth / 2) + parseFloat(m_CHARVIEW.state.offy);
 
-  // Align faketrack to match the PTrack coordinate system, which may be
+  // Align CharContol to match the PTrack coordinate system, which may be
   // rotated and offset from the origin
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
     1. CALCULATE MATRIX PARAMETERS
@@ -526,50 +462,48 @@ function u_AddEntityToFrame(div) {
 
   /*** insert gl-matrix calculations here to transform position ****************/
 
-  // add entity to frame.tracks to be JSONified
-  let framedata = {
+  // in 2021, CharControl works with the UR Device system, so we send controlFrames
+  // using a different API
+  let controlFrame = {
     id,
     x,
-    y,
-    z: 0,
-    height: 1.4,
-    isFaketrack: true // mark the entity as faketrack
-    // data so we can ignore it
-    // during transforms
+    y
   };
 
-  switch (m_FAKEVIEW.state.data_track) {
+  switch (m_CHARVIEW.state.ctrl_name) {
     case 'people_tracks':
-      m_frame.people_tracks.push(framedata);
+      m_frame.people_tracks.push(controlFrame);
       break;
     case 'object_tracks':
       // insert form-defined name of object
-      framedata.object_name = m_FAKEVIEW.state.data_object_name;
-      m_frame.object_tracks.push(framedata);
+      controlFrame.object_name = m_CHARVIEW.state.data_object_name;
+      m_frame.object_tracks.push(controlFrame);
       break;
     case 'pose_tracks':
       // insert form-defined name of pose
-      framedata.predicted_pose_name = m_FAKEVIEW.state.data_object_name;
+      controlFrame.predicted_pose_name = m_CHARVIEW.state.data_object_name;
       // Fake data
-      framedata.orientation = 1;
-      framedata.joints = {
+      controlFrame.orientation = 1;
+      controlFrame.joints = {
         'CHEST': {
-          'x': framedata.x,
-          'y': framedata.y,
+          'x': controlFrame.x,
+          'y': controlFrame.y,
           'z': 0,
           'confidence': 1
         }
       };
-      m_frame.pose_tracks.push(framedata);
+      m_frame.pose_tracks.push(controlFrame);
       break;
     case 'fake_tracks':
-      m_frame.fake_tracks.push(framedata);
+      m_frame.fake_tracks.push(controlFrame);
       break;
   }
   // update status
-  m_status += `[${id}]`;
-  m_status += ` ${x.toFixed(2)}`;
-  m_status += `, ${y.toFixed(2)}`;
+  const xspc = x < 0 ? '' : ' ';
+  const yspc = y < 0 ? '' : ' ';
+  m_status += `[${id}]\t`;
+  m_status += ` ${xspc}${x.toFixed(2)}`;
+  m_status += `, ${yspc}${y.toFixed(2)}`;
   m_status += '\n';
 }
 

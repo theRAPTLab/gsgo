@@ -5,12 +5,12 @@
   position: relative;
   float: left;
 }
-#data_track_controls,
-#faketrack_entities {
-  float: left;
-  padding-left: 10px;
+#data_track_controls {
 }
-#faketrack_entities {
+#charctrl_entities {
+  float: left;
+}
+#fcharctrl_entities {
   font-family: monospace;
 }
 .entity {
@@ -31,19 +31,13 @@ label + label {
 h2 {
   margin: 0;
 }
-#data_track {
+#ctrl_name {
   display: inline-block;
-  width: 160px;
-}
-#faketrack_xform input {
-  width: 50px;
-}
-#faketrack_xform label {
   width: 120px;
 }
-/* hide stuff for Indiana U */
-#faketrack_tests,
-#faketrack_xform,
-#faketrack_entities {
-  /*display:none;		/* display:none to hide stuff */
+#charctrl_xform input {
+  width: 50px;
+}
+#charctrl_xform label {
+  width: 120px;
 }

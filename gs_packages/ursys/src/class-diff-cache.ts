@@ -12,6 +12,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// TYPESCRIPT CJS HACK ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export {}; // stops VSC from seeing "duplicate functions" across CJS modules
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const log = console.log;
@@ -207,7 +211,7 @@ const tests = {
   }
 };
 Object.keys(tests).forEach(testName => {
-  console.group('testing', testName);
+  console.groupCollapsed('testing', testName);
   const { a, b, resAdd, resUpd, resRem } = tests[testName];
   log('set a:', dump_set(a));
   log('set b:', dump_set(b));

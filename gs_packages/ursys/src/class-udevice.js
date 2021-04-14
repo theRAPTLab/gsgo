@@ -74,12 +74,19 @@ const DEVICE_CLASS_TEMPLATES = {
   'URBroker': {} // URNET broker endpoint
 };
 
-/// a control definition is a name of a control and a specified type
-/// NOTE: arrays of control defs are used when defining the device so
-/// more than one kind ofnamed control is available
+/// a control definition is a name of a control and a specified type.
+/// A device can have more than one control!
 const exampleControlDefinition = {
   controlName: 'markers',
   controlProps: { x: 'axis', y: 'axis', jump: 'trigger' }
+};
+/// A UDEVICE defines multiple control inputs and outputs in the eponymous
+/// class properties.
+const cdef = exampleControlDefinition;
+const exampleUDevice = {
+  udid: 'udev01:1',
+  meta: {},
+  inputs: [cdef, cdef]
 };
 /// when a device is actually sending data in an ControlDataObject format, the
 /// id is the only required property, and the ControlProps from the device
@@ -90,6 +97,13 @@ const exampleControlDataObject = {
   x: 0,
   y: 0,
   jump: true
+};
+/// devices have to tell clients what data is being mapped to what, and this
+/// is handled with control frames. The unique device number is used.
+const cdo = exampleControlDataObject;
+const exampleControlFrame = {
+  udid: 'udev01:1',
+  markers: [cdo, cdo]
 };
 
 /// URSYS UDEVICE CLASS ////////////////////////////////////////////////////

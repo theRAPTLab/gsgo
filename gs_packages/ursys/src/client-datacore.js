@@ -86,7 +86,7 @@ function GetSharedEndPoints() {
   return { LocalNode, NetNode };
 }
 
-/// DEVICE BRIDGES ////////////////////////////////////////////////////////////
+/// DEVICE DATA STORES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DEVICES_SUBBED = new Map();
 let DB_COUNT = 0;
