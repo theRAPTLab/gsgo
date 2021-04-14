@@ -23,6 +23,21 @@ prop energyLevel setTo 32
 prop energyLevel setTo {{ 15 + 20 }}
 prop energyLevel setTo {{ energyLevel + 20 }}
 # PROGRAM EVENT
+onEvent Start [[
+  dbgOut 'Start'
+
+  onEvery 3 [[
+    // foodLevel goes down every n seconds
+    prop agent.energyLevel sub 1
+    // eat and glow
+    ifExpr {{ agent.getProp('isTouching').value == true }} [[
+      featCall Costume setGlow 1
+      prop agent.energyLevel add 10
+      prop agent.isTouching setTo false
+    ]]
+  ]]
+
+]]
 onEvent Tick [[
   // foodLevel goes down every second
   prop agent.energyLevel sub 1
@@ -76,6 +91,15 @@ prop agent.skin setTo 'algae.json'
 featCall Movement setMovementType 'wander' 0.2
 addProp energyLevel Number 50
 # PROGRAM EVENT
+onEvent Start [[
+  dbgOut 'Start Algae'
+  onEvery 3 [[
+    ifExpr {{ agent.getProp('isTouching').value == true }} [[
+      prop agent.energyLevel sub 10
+      prop agent.isTouching setTo false
+    ]]
+  ]]
+]]
 onEvent Tick [[
   // energyLevel goes down every second
   prop agent.energyLevel sub 1
@@ -101,6 +125,16 @@ prop agent.skin setTo 'lightbeam.json'
 // featCall Movement setController 'user'
 prop agent.x setTo -300
 prop agent.y setTo -300
+# PROGRAM EVENT
+onEvent Start [[
+  onEvery 0.1 [[
+    exprPush {{agent.x + agent.getProp('speed').value; }}
+    propPop x
+    ifExpr {{ agent.x > 500 }} [[
+        prop x setTo -500
+    ]]
+  ]]
+]]
 `
     },
     {
