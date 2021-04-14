@@ -81,18 +81,12 @@ onEvent Tick [[
   prop agent.energyLevel sub 1
 ]]
 # PROGRAM UPDATE
-// when Algae touches Lightbeam [[
-//   // When algae touches lightbeam, energyLevel goes up
-//   prop Algae.energyLevel inc 1
-//   ifExpr {{ Algae.getProp('energyLevel').value > 5 }} [[
-//     dbgOut 'spawn new algae'
-//     prop Algae.energyLevel setTo 1
-//   ]]
-//
-//   // Counter Example
-     // To increment Algae energyLevel, we would.
-     // prop Algae.energyLevel add 1
-// ]]
+when Algae firstTouches Lightbeam [[
+  exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
+  propPop Algae.energyLevel
+
+  featCall Algae.Costume setGlow 1
+]]
 `
     },
     {
