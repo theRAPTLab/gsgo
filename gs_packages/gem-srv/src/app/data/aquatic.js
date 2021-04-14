@@ -35,7 +35,7 @@ addProp isTouching Boolean false
 onEvent Start [[
   dbgOut 'Start'
 
-  onEvery 3 [[
+  doEvery 3 [[
     // foodLevel goes down every n seconds
     prop agent.energyLevel sub 1
     // eat and glow
@@ -96,7 +96,7 @@ onEvent Tick [[
 when Fish touches Algae [[
 
   ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-    // handled by 'onEvery'
+    // handled by 'doEvery'
     // prop Fish.energyLevel add 1
     // prop Algae.energyLevel sub 1
     prop Fish.isTouching setTo true
@@ -149,8 +149,7 @@ addProp isTouching Boolean false
 
 # PROGRAM EVENT
 onEvent Start [[
-  dbgOut 'Start Algae'
-  onEvery 3 [[
+  doEvery 3 [[
     ifExpr {{ agent.getProp('isTouching').value == true }} [[
       prop agent.energyLevel sub 10
       prop agent.isTouching setTo false
@@ -191,7 +190,6 @@ when Algae firstTouches Lightbeam [[
   featCall Algae.Costume setGlow 0.1
 ]]
 when Algae lastTouches Lightbeam [[
-  dbgOut 'last touch'
   featCall Algae.Costume setGlow 1
 ]]
 `
@@ -212,23 +210,30 @@ useFeature Physics
 featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 1000
 
-# PROGRAM EVENT
-onEvent Start [[
-  onEvery 0.1 [[
+# PROGRAM UPDATE
     exprPush {{agent.x + agent.getProp('speed').value; }}
     propPop x
     ifExpr {{ agent.x > 500 }} [[
         prop x setTo -500
     ]]
-  ]]
-]]
-onEvent Tick [[
-  // exprPush {{agent.x + agent.getProp('speed').value; }}
-  // propPop x
-  // ifExpr {{ agent.x > 500 }} [[
-  //     prop x setTo -500
-  // ]]
-]]
+
+# PROGRAM EVENT
+// onEvent Start [[
+//   doEvery 0.1 [[
+//     exprPush {{agent.x + agent.getProp('speed').value; }}
+//     propPop x
+//     ifExpr {{ agent.x > 500 }} [[
+//         prop x setTo -500
+//     ]]
+//   ]]
+// ]]
+// onEvent Tick [[
+//   // exprPush {{agent.x + agent.getProp('speed').value; }}
+//   // propPop x
+//   // ifExpr {{ agent.x > 500 }} [[
+//   //     prop x setTo -500
+//   // ]]
+// ]]
 `
     },
     {

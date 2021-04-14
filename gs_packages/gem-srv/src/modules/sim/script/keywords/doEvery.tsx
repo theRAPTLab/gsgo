@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "onEvery" command object
+  implementation of keyword "doEvery" command object
 
   1. Compilation will define the timers.
 
@@ -28,17 +28,17 @@ import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('onEvery');
+const PR = UR.PrefixUtil('doEvery');
 const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class onEvery extends Keyword {
+export class doEvery extends Keyword {
   // base properties defined in KeywordDef
   subscribers: any[];
 
   constructor() {
-    super('onEvery');
+    super('doEvery');
     this.args = ['period:number', 'consq:TMethod'];
 
     this.runProgs = this.runProgs.bind(this);
@@ -63,7 +63,7 @@ export class onEvery extends Keyword {
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, period, consq] = unit;
-    if (DBG) console.log('compile onEvery', kw, period, consq);
+    if (DBG) console.log('compile doEvery', kw, period, consq);
 
     const prog = [];
     prog.push((agent, state) => {
@@ -91,7 +91,7 @@ export class onEvery extends Keyword {
       index,
       unit,
       <>
-        onEvery {`'${period}'`} run {consq.length} ops
+        doEvery {`'${period}'`} run {consq.length} ops
       </>
     );
   }
@@ -100,4 +100,4 @@ export class onEvery extends Keyword {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(onEvery);
+RegisterKeyword(doEvery);

@@ -27,7 +27,7 @@ export * from './exprPush'; // push expr onto data stack
 // conditional keywords
 export * from './when'; // filtering global condition
 export * from './onEvent'; // script event processing
-export * from './onEvery'; // script event processing
+export * from './doEvery'; // script event processing
 
 // system keywords being with _
 export * from './_comment'; // embed comment data
