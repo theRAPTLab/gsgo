@@ -81,7 +81,7 @@ onEvent Tick [[
   prop agent.energyLevel sub 1
 ]]
 # PROGRAM UPDATE
-when Algae firstTouches Lightbeam [[
+when Algae lastTouches Lightbeam [[
   exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
   propPop Algae.energyLevel
 
