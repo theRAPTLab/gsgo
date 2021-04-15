@@ -230,13 +230,13 @@ onEvent Tick [[
   // Fish meter
   ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
     featCall Population maxAgentProp 'Fish' 'energyLevel'
-    exprPush {{ agent.getFeatProp('Population', 'avg').value }}
+    exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
     propPop meter
 
     exprPush {{ agent.getProp('reportSubject').value + ' max: ' + agent.getFeatProp('Population', 'max').value}}
     propPop text
 
-    prop meterClr setTo 65280
+    prop meterClr setTo 3120383
   ]]
 
   // min
@@ -300,7 +300,7 @@ prop energyLevel setTo 54`
       blueprint: 'Fish',
       initScript: `prop x setTo 100
 prop y setTo 100
-prop energyLevel setTo 1000` // extra property test
+prop energyLevel setTo 100` // extra property test
     },
     {
       id: 503,
