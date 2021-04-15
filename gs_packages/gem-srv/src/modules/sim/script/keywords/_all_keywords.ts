@@ -22,12 +22,10 @@ export * from './propPush'; // push prop value onto data stack
 export * from './propPop'; // pop prop value onto data stack
 export * from './featPropPush'; // objref method args
 export * from './featPropPop'; // objref method args
-export * from './exprPush'; // push expr onto data stack
 
 // conditional keywords
 export * from './when'; // filtering global condition
 export * from './onEvent'; // script event processing
-export * from './doEvery'; // script event processing
 
 // system keywords being with _
 export * from './_comment'; // embed comment data
@@ -40,11 +38,14 @@ export * from './_blueprint'; // set the name of a blueprint bundle
 
 // utility keywords
 export * from './randomPos'; // randomizes position (bad use of Math.random()
+export * from './exprPush'; // push expr onto data stack
 
 // conditional keywords
 export * from './ifExpr'; // run an expression test
 // export * from './ifTest'; // run a named test during agent runtime
 // export * from './ifProg'; // experimental placeholder
+export * from './doEvery'; // script event processing
+export * from './every'; // script event processing
 
 // subprogram keywords
 export * from './exec'; // execute an smc program (?)

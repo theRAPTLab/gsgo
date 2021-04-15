@@ -184,14 +184,19 @@ onEvent Tick [[
 ]]
 
 # PROGRAM UPDATE
-when Algae firstTouches Lightbeam [[
-  exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
-  propPop Algae.energyLevel
-  featCall Algae.Costume setGlow 0.1
+when Algae touches Lightbeam [[
+  every 1 [[
+    featCall Algae.Costume setGlow 0.1
+  ]]
 ]]
-when Algae lastTouches Lightbeam [[
-  featCall Algae.Costume setGlow 1
-]]
+// when Algae firstTouches Lightbeam [[
+//   exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
+//   propPop Algae.energyLevel
+//   featCall Algae.Costume setGlow 0.1
+// ]]
+// when Algae lastTouches Lightbeam [[
+//   featCall Algae.Costume setGlow 1
+// ]]
 `
     },
     {
@@ -203,7 +208,7 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
 prop agent.alpha setTo 0.3
-addProp speed Number 5
+addProp speed Number 1
 addProp energyRate Number 10
 
 useFeature Physics
@@ -211,11 +216,11 @@ featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 1000
 
 # PROGRAM UPDATE
-    exprPush {{agent.x + agent.getProp('speed').value; }}
-    propPop x
-    ifExpr {{ agent.x > 500 }} [[
-        prop x setTo -500
-    ]]
+exprPush {{agent.x + agent.getProp('speed').value; }}
+propPop x
+ifExpr {{ agent.x > 500 }} [[
+    prop x setTo -500
+]]
 
 # PROGRAM EVENT
 // onEvent Start [[
