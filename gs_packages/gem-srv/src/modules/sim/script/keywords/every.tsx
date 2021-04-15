@@ -2,6 +2,11 @@
 
   implementation of keyword "every" command object
 
+  IMPORTANT: DO NOT USE THIS in a 'when' BLOCK!
+             It will not do what you expect!
+             The prog code will run for EVERY agent of that blueprint type
+             regardless of whether they match the when condition.
+
   This should be run used in an UPDATE loop, e.g.
   in `# PROGRAM UPDATE` or `when`.
 
@@ -37,6 +42,7 @@ const DBG = true;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class every extends Keyword {
   // base properties defined in KeywordDef
+  EVERY_STATEMENT_ID: number;
   TIMER: any;
   COUNTER: number;
   LAST_FIRED: any;
@@ -48,6 +54,7 @@ export class every extends Keyword {
     this.startTimer = this.startTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
 
+    this.EVERY_STATEMENT_ID = 0;
     this.TIMER = {};
     this.COUNTER = 0;
     this.LAST_FIRED = new Map();
@@ -72,7 +79,8 @@ export class every extends Keyword {
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, period, consq] = unit;
-    if (DBG) console.log(...PR('compile every', kw, period, consq));
+    console.error('compiling', idx, kw, period, consq);
+    // if (DBG) console.log(...PR('compile every', kw, period, consq));
 
     // period is time to wait between runs
     // e.g. period = 1 is run 1 time every second
@@ -82,14 +90,37 @@ export class every extends Keyword {
     // e.g. COUNTER at 1 sec = 30
     // e.g. COUNTER at 5 sec = 150
 
+    // EVERY_STATEMENT_ID is the number of 'every' statements in
+    // the blueprint.  Since an agent might have more than one
+    // 'every' statement, eacher timer has to be keyed to
+    // both the unique agent and the 'every' instance.
+    this.EVERY_STATEMENT_ID++;
     const frames = period * 30;
     const prog = [];
+    const uid = this.EVERY_STATEMENT_ID;
     prog.push((agent, state) => {
-      const lastFired = this.LAST_FIRED.get(agent) || 0;
+      // Inside a 'when' loop, the prog is run whether or not
+      // the when condition is met.
+      // Example: Algae touches Lightbeam
+      // Let's say algae01 touches Lightbeam, but algae02 does not
+      // 1. for algae01, the code will run with
+      //      agent     = algae01
+      //      state.ctx = [Algae=algae01, Lightbeam=lightbeam01, and agent=algae01]
+      // 2. for algae02, the code will also run
+      //      agent     = algae02
+      //      state.ctx = [Algae=algae01, Lightbeam=lightbeam01, and agent=algae01]
+      // So #1 fires as expected.
+      // But #2 will also fire even though the right context is passed.
+      // this results in the code being applied twice to algae01 and lightbeam01
+      //
+      // agent is every single agent regardless of when condition
+      // state.ctx contains Algae, Lightbeam, and agent (parent script agent)
+      const key = `${agent.id}:${uid}`; // `${agent.id}:${this.UID}`;
+      const lastFired = this.LAST_FIRED.get(key) || 0;
       const elapsed = this.COUNTER - lastFired;
       if (elapsed > frames) {
         agent.exec(consq, state.ctx);
-        this.LAST_FIRED.set(agent, this.COUNTER);
+        this.LAST_FIRED.set(key, this.COUNTER);
       }
     });
     return prog;
