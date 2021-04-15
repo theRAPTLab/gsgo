@@ -187,7 +187,7 @@ onEvent Tick [[
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
 useFeature Population
-exprPush {{ 'Algae energyLevel avg' }}
+exprPush {{ 'Avg Algae energy: 0'}}
 propPop text
 
 // Make skin invisible
@@ -214,6 +214,9 @@ onEvent Tick [[
   featCall Population countAgentProp 'Algae' 'energyLevel'
   exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
   propPop meter
+
+  exprPush {{ 'Avg Algae energy: ' + agent.getFeatProp('Population', 'avg').value}}
+  propPop text
 
   // min
   // featCall Population minAgentProp 'Algae' 'energyLevel'
@@ -276,7 +279,6 @@ prop energyLevel setTo 54`
       blueprint: 'Fish',
       initScript: `prop x setTo 100
 prop y setTo 100
-featCall Physics setScale 2
 prop energyLevel setTo 1000` // extra property test
     },
     {
