@@ -186,9 +186,13 @@ onEvent Tick [[
       label: 'Reporter',
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
+addProp reportSubject String ''
+
 useFeature Population
-exprPush {{ 'Avg Algae energy: 0'}}
-propPop text
+//exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
+//propPop text
+prop text setTo 'meter'
+
 
 // Make skin invisible
 prop skin setTo '1x1'
@@ -210,13 +214,30 @@ onEvent Tick [[
   // exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
   // propPop text
 
-  // meter
-  featCall Population countAgentProp 'Algae' 'energyLevel'
-  exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
-  propPop meter
 
-  exprPush {{ 'Avg Algae energy: ' + agent.getFeatProp('Population', 'avg').value}}
-  propPop text
+  // Algae meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Algae' }} [[
+    featCall Population countAgentProp 'Algae' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+    propPop text
+
+    prop meterClr setTo 65280
+  ]]
+
+  // Fish meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
+    featCall Population maxAgentProp 'Fish' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' max: ' + agent.getFeatProp('Population', 'max').value}}
+    propPop text
+
+    prop meterClr setTo 65280
+  ]]
 
   // min
   // featCall Population minAgentProp 'Algae' 'energyLevel'
@@ -317,18 +338,30 @@ prop y setTo -160`
     },
     {
       id: 510,
-      name: 'reporter',
+      name: 'Avg Algae Health',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 0
-prop y setTo 300
-prop alpha setTo 0.3`
+      initScript: `prop x setTo 235
+prop y setTo -260
+prop reportSubject setTo 'Algae'
+prop alpha setTo 0.3
+prop meterClr setTo 65280`
     },
     {
       id: 511,
+      name: 'Max Fish  Health',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 350
+prop y setTo -260
+prop reportSubject setTo 'Fish'
+prop alpha setTo 0.3
+prop meterClr setTo 3120383`
+    },
+    {
+      id: 512,
       name: 'timer',
       blueprint: 'Timer',
-      initScript: `prop x setTo 300
-prop y setTo -280`
+      initScript: `prop x setTo 150
+prop y setTo -260`
     }
   ]
 };
