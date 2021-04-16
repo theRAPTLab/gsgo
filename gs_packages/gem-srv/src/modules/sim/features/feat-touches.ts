@@ -46,6 +46,11 @@
   5. You can then check the value of `didTouchDict` for `LightBeam` to see if
      there was a touch:
         `ifExpr {{ agent.getFeatProp('Touches', 'didTouchDict').getItem('Lightbeam').value }} [[`
+  6.  Or more convienently, you can check the results of the featCall directly:
+        ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
+          // do something
+        ]]
+      With this method you do not need to make a second call to didTouchDict.
 
   Full Example:
       # PROGRAM DEFINE
@@ -58,6 +63,11 @@
         // do something
       ]]
 
+  Simple Example (with convenient return):
+      # PROGRAM UPDATE
+      ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
+        // do something
+      ]]
 
   Rationale
   * We're storing the lookup table with the Feature itself so that
@@ -71,6 +81,11 @@
     want to test the data once you've turned on monitoring.  Rather than
     specifying the period window when setting up the monitoring, you can
     request a different period with each call.
+  * Even though `touchedWithin` will return the result, didTouchDict can
+    still be used to test for touches with other blueprints previously
+    tracked.  e.g. you call `touchedWithin` on 'Lightbeam', then call
+    it again with 'Fish'.  The 'Lightbeam' status is still available
+    in didTouchDict even after you call `touchedWithin` with fish.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -169,16 +184,30 @@ class TouchesPack extends GFeature {
     console.error(agent.id, 'monitoring', BTYPE_TBL);
   }
   /**
+   * Returns true if agent touched ANY agent of targetBlueprintName type
+   * Also updates didTouchDict with the result.
+   *
    * Using this requires two calls:
    * 1. Request the test:
    *      featCall Touches touchedWithin 'Lightbeam' 1
    * 2. Retreive the result:
    *      agent.getFeatProp('Touches', 'touched').getItem('Lightbeam').value
+   *
+   * For convenience, touchedWithin also returns true if one of the
+   * target type agents did touch the agent, so you can use it in an ifExpr.
+   *        ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
+   *          // do something
+   *        ]]
+   *
    * @param agent
    * @param targetBlueprintName
    * @param period
    */
-  touchedWithin(agent: IAgent, targetBlueprintName: string, period: number) {
+  touchedWithin(
+    agent: IAgent,
+    targetBlueprintName: string,
+    period: number
+  ): boolean {
     const BTYPE_TBL = AGENTS_TBL.get(agent.id);
 
     // Users might call `touchedWithin` without first registering for monitoring
@@ -192,16 +221,15 @@ class TouchesPack extends GFeature {
         ...PR(`touchedWithin: ${targetBlueprintName} missing TAGENT_TBL`)
       );
 
-    let didTouchOne = false;
+    let didTouchAny = false;
     const targetAgents = GetAgentsByType(targetBlueprintName);
     targetAgents.forEach(targetAgent => {
       const lastTouch = TAGENT_TBL.get(targetAgent.id);
       const timeElapsed = COUNTER - lastTouch;
-      console.log('...lastTOuch', lastTouch, 'elapsed', timeElapsed);
 
-      // period is time since last touch
-      // e.g. period = 1 is run 1 time every second
-      // e.g. period = 5 is run 1 time every 5 seconds
+      // period is time period since last touch in seconds
+      // e.g. period = 1 is last touch was within 1 second
+      // e.g. period = 5 is rlast touch was within 5 seconds
 
       // COUNTER goes up by 1 every 33 ms.
       // e.g. COUNTER at 1 sec = 30
@@ -211,9 +239,9 @@ class TouchesPack extends GFeature {
       didTouchAny = didTouchAny || isTouching;
     });
     const didTouchDict = agent.getFeatProp(this.name, 'didTouchDict');
-    didTouchDict.updateItem(targetBlueprintName, new GVarBoolean(didTouchOne));
+    didTouchDict.updateItem(targetBlueprintName, new GVarBoolean(didTouchAny));
 
-    return didTouchOne;
+    return didTouchAny;
   }
 }
 
