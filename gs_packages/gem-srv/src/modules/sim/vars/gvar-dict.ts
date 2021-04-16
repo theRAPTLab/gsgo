@@ -23,11 +23,18 @@ export class GVarDictionary extends SM_Object implements IScopeable {
     if (gvar instanceof SM_Object) this.dict.set(key, gvar);
     else throw Error(`value to set must be GVar, not typeof ${typeof gvar}`);
   }
+  updateItem(key: string, gvar: IScopeable) {
+    if (gvar instanceof SM_Object) this.dict.set(key, gvar);
+    else throw Error(`value to set must be GVar, not typeof ${typeof gvar}`);
+  }
   getItem(key: string): IScopeable {
     return this.dict.get(key);
   }
   has(key: string): boolean {
     return this.dict.has(key);
+  }
+  getKeys(): string[] {
+    return Array.from(this.dict.keys());
   }
 }
 
