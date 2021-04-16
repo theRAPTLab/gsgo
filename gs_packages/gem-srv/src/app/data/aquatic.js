@@ -130,7 +130,7 @@ every 1 [[
 
   // touching lightbeam?
   featCall Touches touchedWithin 'Lightbeam' 1
-  ifExpr {{ agent.getFeatProp('Touches', 'touched').getItem('Lightbeam').value }} [[
+  ifExpr {{ agent.getFeatProp('Touches', 'didTouchDict').getItem('Lightbeam').value }} [[
     prop energyLevel add 6
     featCall agent.Costume setGlow 0.5
   ]]
