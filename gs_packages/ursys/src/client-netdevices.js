@@ -129,7 +129,7 @@ export function SubscribeDevice(deviceSpec) {
  *  as a prototype
  */
 export function SendControlFrame(cFrame) {
-  NetNode.sendMessage('NET:SRV_CONTROL_IN', cFrame);
+  NetNode.sendMessage('NET:UR_CFRAME', cFrame);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
@@ -146,6 +146,16 @@ PhaseMachine.Hook('UR/NET_DEVICES', () => {
   /// MESSAGE HANDLERS ///////////////////////////////////////////////////
   NetNode.handleMessage('NET:UR_DEVICES', devmap => {
     m_UpdateDeviceMap(devmap);
+  });
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  NetNode.handleMessage('NET:UR_CFRAME', cFrame => {
+    const { udid, ...controls } = cFrame;
+    let out = `${udid}: `;
+    Object.entries(controls).forEach(entry => {
+      const [key, arr] = entry;
+      out += `${arr.length} cobj(s) in control '${key}' `;
+    });
+    console.log(...PR(out));
   });
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

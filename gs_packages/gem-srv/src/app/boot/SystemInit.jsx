@@ -90,8 +90,10 @@ function Init() {
 }
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// console debugger message listeners
-UR.addConsoleToolHandlers();
+UR.HookPhase('UR/APP_READY', () => {
+  /// console debugger message listeners
+  UR.addConsoleToolHandlers();
+});
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

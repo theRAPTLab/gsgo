@@ -76,15 +76,13 @@ function PKT_RegisterDevice(pkt) {
   return { status };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** receive a control frame from a remote, and forward it to everyone
- *  Note: this is PLACEHOLDER implementation; this protocol should be on its
- *  own dedicated websocket and sent only to device subscribers of this
- *  particular control frame.
+/** Receive a control frame from a remote, and forward it to everyone
+ *  Note: this is a placeholder for eventually doing smarter forwarding
+ *  on a dedicated socket server
  */
 function PKT_ControlFrameIn(pkt) {
   const cFrame = pkt.getData();
-  // just forward to everyone without parsing
-  UR_RaiseMessage('NET:UR_CFRAME', cFrame);
+  // TODO: inspect cFrame and send only to subscribers
   // debug output
   const { udid, ...controls } = cFrame;
   // controls contains controlName:[ cobj, cobj ]

@@ -24,9 +24,9 @@
 // NOTE: This module uses the COMMONJS module format for compatibility
 // between node and browser-side Javascript.
 const Messager = require('./class-messager');
-const URNet = require('./client-urnet');
 const PROMPTS = require('./util/prompts');
 const MessageStream = require('./class-message-stream');
+const DATACORE = require('./client-datacore');
 
 /** implements endpoints for talking to the URSYS network
  *  @module MessagerEndpoint
@@ -46,10 +46,11 @@ const MAX_UNODES = 100;
 let UNODE_COUNTER = 0; // URSYS connector node id counter
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetUniqueId() {
+  const base_id = `UDL${DATACORE.GetUAddressNumber()}`;
   const id = `${++UNODE_COUNTER}`.padStart(3, '0');
   if (UNODE_COUNTER > MAX_UNODES)
-    console.warn('Unexpectedly high number of URCHAN nodes created!');
-  return `UDL${id}`;
+    console.warn('Unexpectedly high number of Endpoints created!');
+  return `${base_id}:${id}`;
 }
 
 /// GLOBAL MESSAGES ///////////////////////////////////////////////////////////
@@ -77,16 +78,15 @@ class MessagerEndpoint {
       throw Error(BAD_NAME);
     }
     // bind function
+    this.ursysRegisterMessages = this.ursysRegisterMessages.bind(this);
+    //
     this.getUID = this.getUID.bind(this);
     this.getName = this.getName.bind(this);
-    this.getUADDR = this.getUADDR.bind(this);
     this.handleMessage = this.handleMessage.bind(this);
     this.unhandleMessage = this.unhandleMessage.bind(this);
     //
     this.callMessage = this.callMessage.bind(this);
     this.sendMessage = this.sendMessage.bind(this);
-    //
-    this.ursysRegisterMessages = this.ursysRegisterMessages.bind(this);
 
     // generate and save unique id
     this.uid = m_GetUniqueId();
@@ -106,10 +106,6 @@ class MessagerEndpoint {
 
   getName() {
     return this.name;
-  }
-
-  getUADDR() {
-    return URNet.SocketUADDR();
   }
 
   /// MESSAGES ////////////////////////////////////////////////////////////////
@@ -182,10 +178,6 @@ class MessagerEndpoint {
    * subscribers.
    */
   async ursysRegisterMessages(messages = []) {
-    if (URNet.IsStandaloneMode()) {
-      console.warn(PR, 'STANDALONE MODE: ursysRegisterMessages() suppressed!');
-      return Promise.resolve();
-    }
     // if there are no messages passed, then
     if (messages.length) {
       messages = MESSAGER.validateMessageNames(messages);

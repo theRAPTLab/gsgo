@@ -13,7 +13,6 @@ const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
-const EndPoint = require('./class-endpoint');
 const TestHasher = require('./class-pathed-hasher');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
@@ -24,9 +23,6 @@ const PhaseMachine = require('./class-phase-machine');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
 const DBG = false;
-const LocalNode = new EndPoint('ur-client-local');
-const NetNode = new EndPoint('ur-client-net');
-DATACORE.SetSharedEndPoints({ LocalNode, NetNode });
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,12 +40,14 @@ const META = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
+let LocalNode;
+let NetNode;
 
 /// SUPPORT API PART 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** register messages */
 async function RegisterMessages() {
-  if (DBG) console.log(...PR('registering messages'));
+  console.log(...PR('registering messages'));
   return LocalNode.ursysRegisterMessages();
 }
 
@@ -70,12 +68,16 @@ async function SystemStart(route) {
     return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
-  PhaseMachine.Hook(
-    'UR/NET_CONNECT',
-    () =>
-      new Promise((resolve, reject) =>
-        NETWORK.URNET_Connect(NetNode, { success: resolve, failure: reject })
-      )
+  PhaseMachine.Hook('UR/NET_CONNECT', () =>
+    new Promise((resolve, reject) =>
+      NETWORK.URNET_Connect({ success: resolve, failure: reject })
+    ).then(data => {
+      console.log(...PR('URNET established. UADDR is stable.'));
+      const eps = DATACORE.GetSharedEndPoints();
+      LocalNode = eps.LocalNode;
+      NetNode = eps.NetNode;
+      return data;
+    })
   );
   // autoregister messages
   PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
@@ -104,18 +106,41 @@ async function SystemStop() {
   return Promise.resolve();
 }
 
+/** wrap LocalNode functions so we can export them before LocalNode is valid */
+function DeclareMessage(mesgName, dataProps) {
+  return LocalNode.declareMessage(mesgName, dataProps);
+}
+function HasMessage(mesgName) {
+  return LocalNode.hasMessage(mesgName);
+}
+function HandleMessage(mesgName, listener) {
+  LocalNode.handleMessage(mesgName, listener);
+}
+function UnhandleMessage(mesgName, listener) {
+  LocalNode.unhandleMessage(mesgName, listener);
+}
+function CallMessage(mesgName, inData, options) {
+  return LocalNode.callMessage(mesgName, inData, options);
+}
+function RaiseMessage(mesgName, inData, options) {
+  LocalNode.raiseMessage(mesgName, inData, options);
+}
+function SendMessage(mesgName, inData, options) {
+  LocalNode.sendMessage(mesgName, inData, options);
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
   // NETWORK MESSAGES
-  DeclareMessage: LocalNode.declareMessage,
-  HasMessage: LocalNode.hasMessage,
-  HandleMessage: LocalNode.handleMessage,
-  UnhandleMessage: LocalNode.unhandleMessage,
-  SendMessage: LocalNode.sendMessage,
-  RaiseMessage: LocalNode.raiseMessage,
-  CallMessage: LocalNode.callMessage,
+  DeclareMessage,
+  HasMessage,
+  HandleMessage,
+  UnhandleMessage,
+  SendMessage,
+  RaiseMessage,
+  CallMessage,
   // FORWARDED GENERIC PHASE MACHINE
   HookPhase: PhaseMachine.Hook,
   // SYSTEM STARTUP

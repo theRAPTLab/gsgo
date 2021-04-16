@@ -7,7 +7,7 @@
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('./util/prompts');
-const { MyUADDR, MyAppPath, GetNewDeviceUDID } = require('./client-datacore');
+const DATACORE = require('./client-datacore');
 const DBG = require('./ur-dbg-settings');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
@@ -263,9 +263,9 @@ class UDevice {
    *  registering the device
    */
   _initNew(uclass) {
-    this.udid = GetNewDeviceUDID(); // in DATACORE
-    const uaddr = MyUADDR();
-    const uapp = MyAppPath();
+    this.udid = DATACORE.GetNewDeviceUDID(); // in DATACORE
+    const uaddr = DATACORE.MyUADDR();
+    const uapp = DATACORE.MyAppPath();
     this.meta = {
       uapp, // device appserver route
       uaddr, // URNET address

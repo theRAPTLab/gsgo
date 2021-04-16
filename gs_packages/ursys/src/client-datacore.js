@@ -142,9 +142,15 @@ function GetDeviceByUDID(udid) {
   return DEVICES_LOCAL.get(udid);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetNewDeviceUDID() {
+/** returns the unique UADDR number */
+function GetUAddressNumber() {
   const { PRE_UADDR_ID, PRE_UDEVICE_ID } = $$;
   const base_id = `${PRE_UDEVICE_ID}${MyUADDR().slice(PRE_UADDR_ID.length)}`;
+  return base_id;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetNewDeviceUDID() {
+  const base_id = GetUAddressNumber();
   const udid = `${base_id}:${DEVICE_COUNT++}`;
   return udid;
 }
@@ -194,6 +200,7 @@ module.exports = {
   SetSharedEndPoints,
   GetSharedEndPoints,
   // DEVICES
+  GetUAddressNumber,
   SaveDeviceSub,
   SaveDevice,
   GetDeviceByUDID,
