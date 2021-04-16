@@ -58,6 +58,8 @@ function Stage() {
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
 function Run() {
   // prepare to run simulation and do first-time setup
+  // compiles happen after Run()
+  // but simulation has not started
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** once the simluation is initialized, start the periodic frame update */

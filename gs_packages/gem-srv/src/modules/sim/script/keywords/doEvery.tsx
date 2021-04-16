@@ -2,6 +2,8 @@
 
   implementation of keyword "doEvery" command object
 
+  This creates a timer for every "doEvery" call.
+
   1. Compilation will define the timers.
 
   2. This should be placed in a `onEvent Start [[ ... ]]` block insdie a
@@ -63,7 +65,7 @@ export class doEvery extends Keyword {
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, period, consq] = unit;
-    if (DBG) console.log('compile doEvery', kw, period, consq);
+    if (DBG) console.log(...PR('compile doEvery', kw, period, consq));
 
     const prog = [];
     prog.push((agent, state) => {

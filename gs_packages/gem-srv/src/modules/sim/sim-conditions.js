@@ -18,6 +18,7 @@ import { GetGlobalAgent } from 'lib/class-gagent';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_CONDITIONS');
+const DBG = false;
 const GLOBAL_AGENT = GetGlobalAgent();
 let EVENT_QUEUE = [];
 let GLOBAL_INTERACTIONS = [];

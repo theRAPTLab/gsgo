@@ -36,7 +36,7 @@ import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('every');
-const DBG = true;
+const DBG = false;
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -79,8 +79,7 @@ export class every extends Keyword {
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, period, consq] = unit;
-    console.error('compiling', idx, kw, period, consq);
-    // if (DBG) console.log(...PR('compile every', kw, period, consq));
+    if (DBG) console.log(...PR('compile every', kw, period, consq));
 
     // period is time to wait between runs
     // e.g. period = 1 is run 1 time every second

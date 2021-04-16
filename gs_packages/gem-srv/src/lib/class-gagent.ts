@@ -249,7 +249,6 @@ class GAgent extends SM_Object implements IAgent, IActable {
    */
   callFeatMethod(fName: string, mName: string, ...args): any {
     const [feat, featMethod] = this.getFeatMethod(fName, mName);
-    // console.log('callFeatMethod call', mName, ' with this', this);
     return featMethod.call(feat, this, ...args);
   }
   /** Return prop given the passed agent and key. This prop is stored
