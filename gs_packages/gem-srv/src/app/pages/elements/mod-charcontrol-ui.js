@@ -265,12 +265,17 @@ async function Initialize(componentInstance) {
   // prototype device registration
   // a device declares what kind of device it is
   // and what data can be sent/received
-  const dev = UR.NewDevice('CharControl');
-  const { udid, status, error } = await UR.RegisterDevice(dev);
-  if (error) console.error(error);
-  if (status) console.log(...PR(status));
-  if (udid) DEVICE_UDID = udid;
-  MarkerFramer = dev.getControlFramer('markers');
+  if (MarkerFramer === undefined) {
+    const dev = UR.NewDevice('CharControl');
+    const { udid, status, error } = await UR.RegisterDevice(dev);
+    if (error) console.error(error);
+    if (status) console.log(...PR(status));
+    if (udid) DEVICE_UDID = udid;
+    MarkerFramer = dev.getControlFramer('markers');
+
+    // send periodic control frames
+    setInterval(SendControlFrame, INTERVAL);
+  }
 
   // save React component to grab state from and setstate
   m_CHARVIEW = componentInstance;
@@ -299,8 +304,6 @@ async function Initialize(componentInstance) {
     const y = BURST_RAD - Math.random() * BURST_RAD;
     m_Translate(div, x, y);
   }
-  // send periodic control frames
-  setInterval(SendControlFrame, INTERVAL);
 
   // save dimensions of m_container. this isn't actually a canvas element.
   // it's used to calculate normalized coordinates of entities
