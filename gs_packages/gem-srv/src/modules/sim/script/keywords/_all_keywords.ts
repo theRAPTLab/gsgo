@@ -44,7 +44,6 @@ export * from './exprPush'; // push expr onto data stack
 export * from './ifExpr'; // run an expression test
 // export * from './ifTest'; // run a named test during agent runtime
 // export * from './ifProg'; // experimental placeholder
-export * from './doEvery'; // script event processing
 export * from './every'; // script event processing
 
 // subprogram keywords
