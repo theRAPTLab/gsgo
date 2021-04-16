@@ -171,6 +171,8 @@ class MovementPack extends GFeature {
         case 'edgeToEdge':
           agent.getFeatProp(this.name, 'distance').value = params[0];
           agent.getFeatProp(this.name, 'direction').value = params[1];
+          if (params[2] == 'rand')
+            agent.getFeatProp(this.name, 'direction').value = Math.random() * 180;
           break;
         case 'jitter':
           // min max

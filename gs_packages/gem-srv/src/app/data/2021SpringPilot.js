@@ -10,8 +10,16 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
+
+// ** pick a movement below:
+// this line for wandering:
 // featCall Movement setMovementType 'wander' 0.5
-featCall Movement setMovementType 'edgeToEdge' 1 0
+
+// this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
+// featCall Movement setMovementType 'edgeToEdge' 1 0
+
+// this line to pick a random direction and go until you hit the edge then reverse
+featCall Movement setMovementType 'edgeToEdge' 1 0 'rand'
 
 addProp energyLevel Number 20
 prop energyLevel setMax 100
