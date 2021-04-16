@@ -211,6 +211,8 @@ class TouchesPack extends GFeature {
     });
     const didTouchDict = agent.getFeatProp(this.name, 'didTouchDict');
     didTouchDict.updateItem(targetBlueprintName, new GVarBoolean(didTouchOne));
+
+    return didTouchOne;
   }
 }
 
