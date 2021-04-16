@@ -10,7 +10,8 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Movement setMovementType 'wander' 0.5
+// featCall Movement setMovementType 'wander' 0.5
+featCall Movement setMovementType 'edgeToEdge' 1 0
 
 addProp energyLevel Number 20
 prop energyLevel setMax 100
