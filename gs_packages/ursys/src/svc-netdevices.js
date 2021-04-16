@@ -60,7 +60,7 @@ function PKT_RegisterDevice(pkt) {
   const ins = udev.getInputControlNames().reduce((acc, i) => `[${i}]`, '');
   const outs = udev.getOutputControlNames().reduce((acc, o) => `[${o}]`, '');
   const deviceClass = udev.getMetaProp('uclass');
-  const status = `register ${udid} as '${deviceClass}' device w/ inputs:${ins}, outputs:${outs}`;
+  const status = `registered ${udid} dclass:'${deviceClass}' inputs:${ins} outputs:${outs}`;
   if (DBG.devices) TERM(status);
   // save the device to the list
   const uaddr = pkt.getSourceAddress();
@@ -74,6 +74,27 @@ function PKT_RegisterDevice(pkt) {
   // return data object to return a remote call
   // return error string if there was an error
   return { status };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** receive a control frame from a remote, and forward it to everyone
+ *  Note: this is PLACEHOLDER implementation; this protocol should be on its
+ *  own dedicated websocket and sent only to device subscribers of this
+ *  particular control frame.
+ */
+function PKT_ControlFrameIn(pkt) {
+  const cFrame = pkt.getData();
+  // just forward to everyone without parsing
+  UR_RaiseMessage('NET:UR_CFRAME', cFrame);
+  // debug output
+  const { udid, ...controls } = cFrame;
+  // controls contains controlName:[ cobj, cobj ]
+  let out = `${udid}: `;
+  Object.entries(controls).forEach(entry => {
+    const [key, arr] = entry;
+    out += `${arr.length} cobj(s) in control '${key}' `;
+  });
+  TERM(out);
+  return {};
 }
 
 /// MODULE INITIALIZATION /////////////////////////////////////////////////////
@@ -100,5 +121,6 @@ UR_HandleMessage('SRV_SOCKET_ADDED', cmd => {});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   PKT_DeviceDirectory,
-  PKT_RegisterDevice
+  PKT_RegisterDevice,
+  PKT_ControlFrameIn
 };

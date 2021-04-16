@@ -37,11 +37,8 @@ let m_container; // parent div
 let m_entities; // HTMLCollection of moveable markers
 let m_testentities; // HTMLCollection of moveable markers
 
-// current CharContol frame
-let m_frame = {
-  header: {},
-  tracks: []
-};
+let DEVICE_UDID; // registered UDID
+let MarkerFramer; // hold function that generates "marker" control frames
 let m_seq = 0; // sequence number
 let m_status = ''; // HTML status string
 
@@ -221,7 +218,7 @@ function m_isHidden(el) {
   return style.display === 'none';
 }
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+/// REACT INTEGRATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This is called from the React CharContol component's handleChangeState()
  *  which decomposes the event object received when a form element changes
@@ -254,6 +251,8 @@ function HandleStateChange(name, value) {
     }
   );
 }
+
+/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This is called by the CharControl component once it's completely rendered,
  *  at which time this module can start adding its own objects. This code
@@ -262,7 +261,17 @@ function HandleStateChange(name, value) {
  *  NOTE: m_CHARVIEW is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
 /*/
-function Initialize(componentInstance) {
+async function Initialize(componentInstance) {
+  // prototype device registration
+  // a device declares what kind of device it is
+  // and what data can be sent/received
+  const dev = UR.NewDevice('CharControl');
+  const { udid, status, error } = await UR.RegisterDevice(dev);
+  if (error) console.error(error);
+  if (status) console.log(...PR(status));
+  if (udid) DEVICE_UDID = udid;
+  MarkerFramer = dev.getControlFramer('markers');
+
   // save React component to grab state from and setstate
   m_CHARVIEW = componentInstance;
 
@@ -300,7 +309,7 @@ function Initialize(componentInstance) {
 
   // push interval
   m_CHARVIEW.setState({ rate: FRAMERATE });
-} // Initialize()a
+} // Initialize()
 
 /// SEND PTRACK-COMPATIBLE DATA ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -313,50 +322,16 @@ function SendControlFrame() {
 
   // the controlFrame looks like:
   // { udid, [controlName]: [ {id},{id},... ] }
-
   const controlName = m_CHARVIEW.state.ctrl_name;
-  m_frame = {};
-
-  // get control de
-  // create empty PTRACK data object
-  // (this might have to be less than 4K)
-  switch (m_CHARVIEW.state.ctrl_name) {
-    case 'people_tracks':
-      m_frame = {
-        header: {},
-        people_tracks: []
-      };
-      break;
-    case 'object_tracks':
-      m_frame = {
-        header: {},
-        object_tracks: []
-      };
-      break;
-    case 'pose_tracks':
-      m_frame = {
-        header: {},
-        pose_tracks: []
-      };
-      break;
-    case 'fake_tracks':
-      m_frame = {
-        header: {},
-        fake_tracks: []
-      };
-      break;
-  }
-
-  // allocation storage for status string calculation
-  m_status = '';
+  m_status = ''; // makes list of entities on right column
 
   // x,y ranges within m_spacewidth x m_spacedepth meters,
   // centered on 0 in the space
+  const cobjs = [];
   for (let i = 0; i < m_entities.length; i++) {
     const div = m_entities[i];
-    u_AddEntityToFrame(div); // m_frame is global, urk
+    cobjs.push(u_MakeControlDataObject(div));
   }
-
   // clear flag for next frame
   m_data_object_name_changed = false;
 
@@ -365,13 +340,16 @@ function SendControlFrame() {
     if (m_current_time < m_burst_end) {
       for (let i = 0; i < m_testentities.length; i++) {
         const div = m_testentities[i];
-        u_AddEntityToFrame(div);
+        u_MakeControlDataObject(div);
       }
     } else HandleStateChange('burst', false);
   }
-
   // update status UI (lower left)
   HandleStateChange('status', m_status);
+
+  // create the control frame
+  const controlFrame = MarkerFramer(cobjs);
+  UR.SendControlFrame(controlFrame);
 }
 
 /// SUPPORTING FEATURES //////////////////////////////////////////////////////
@@ -413,10 +391,9 @@ function BurstStop() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Used by SendControlFrame()
- *  Utility function to add the passed div to m_frame and update m_status
- *  string.
+ *  Utility to return a Marker ControlDataObject { id, x, y }
  */
-function u_AddEntityToFrame(div) {
+function u_MakeControlDataObject(div) {
   if (m_isHidden(div)) return;
 
   // if data_object_name has changed, we update the entity id so that
@@ -469,45 +446,16 @@ function u_AddEntityToFrame(div) {
 
   /*** insert gl-matrix calculations here to transform position ****************/
 
-  // in 2021, CharControl works with the UR Device system, so we send controlFrames
-  // using a different API
-  let controlFrame = {};
-
-  switch (m_CHARVIEW.state.ctrl_name) {
-    case 'people_tracks':
-      m_frame.people_tracks.push(controlFrame);
-      break;
-    case 'object_tracks':
-      // insert form-defined name of object
-      controlFrame.object_name = m_CHARVIEW.state.data_object_name;
-      m_frame.object_tracks.push(controlFrame);
-      break;
-    case 'pose_tracks':
-      // insert form-defined name of pose
-      controlFrame.predicted_pose_name = m_CHARVIEW.state.data_object_name;
-      // Fake data
-      controlFrame.orientation = 1;
-      controlFrame.joints = {
-        'CHEST': {
-          'x': controlFrame.x,
-          'y': controlFrame.y,
-          'z': 0,
-          'confidence': 1
-        }
-      };
-      m_frame.pose_tracks.push(controlFrame);
-      break;
-    case 'fake_tracks':
-      m_frame.fake_tracks.push(controlFrame);
-      break;
-  }
-  // update status
+  // update status on right side of CharControl UI
   const xspc = x < 0 ? '' : ' ';
   const yspc = y < 0 ? '' : ' ';
   m_status += `[${id}]\t`;
   m_status += ` ${xspc}${x.toFixed(2)}`;
   m_status += `, ${yspc}${y.toFixed(2)}`;
   m_status += '\n';
+
+  // return ControlDataObject
+  return { id, x, y };
 }
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////

@@ -140,6 +140,7 @@ const UR = {
   NewDevice: DEVICES.NewDevice,
   RegisterDevice: DEVICES.RegisterDevice,
   SubscribeDevice: DEVICES.SubscribeDevice,
+  SendControlFrame: DEVICES.SendControlFrame,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

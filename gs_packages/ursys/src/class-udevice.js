@@ -7,7 +7,7 @@
 /// DEPENDENCIES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROMPTS = require('./util/prompts');
-const { MyUADDR, MyAppPath, NewDeviceID } = require('./client-datacore');
+const { MyUADDR, MyAppPath, GetNewDeviceUDID } = require('./client-datacore');
 const DBG = require('./ur-dbg-settings');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
@@ -112,7 +112,6 @@ class UDevice {
    */
   constructor(objOrClass, uname) {
     /// this.descriptor = { device, user, student, inputs, outputs }
-
     if (typeof objOrClass === 'object') this.deserialize(objOrClass);
     else if (typeof objOrClass === 'string') this._initNew(objOrClass, uname);
     else throw Error('UDevice constructor got invalid parameter:', objOrClass);
@@ -134,11 +133,13 @@ class UDevice {
     // this._pushControlDef(this.inputs, controlName, controlProps);
     this._addControlDef(this.inputs, controlName, controlProps);
   }
+
   /** add a control definition to the device outputs array */
   addOutputDef(controlName, controlProps) {
     // this._pushControlDef(this.outputs, controlName, controlProps);
     this._addControlDef(this.outputs, controlName, controlProps);
   }
+
   /** return a SUBSET of device data that will be used for the device
    *  directory. It doesn't have user or student data
    */
@@ -151,6 +152,7 @@ class UDevice {
       outputs
     };
   }
+
   /** return a copy of this devices inputs hash */
   getInputDefs() {
     // if (Array.isArray(this.inputs)) return this.inputs.slice();
@@ -160,6 +162,7 @@ class UDevice {
     );
     return [];
   }
+
   /** return a copy of this devices outputs hash */
   getOutputDefs() {
     // if (Array.isArray(this.outputs)) return this.outputs.slice();
@@ -169,17 +172,33 @@ class UDevice {
     );
     return [];
   }
+
   /** list input names */
   getInputControlNames() {
     return Object.keys(this.inputs);
   }
+
   /** list output names */
   getOutputControlNames() {
     return Object.keys(this.outputs);
   }
 
-  /** create an empty control frame based on control name */
-  newControlFrame(controlName) {}
+  /** return a "builder" function that generates a control frame with your name */
+  getControlFramer(cName) {
+    if (typeof cName !== 'string') throw Error('arg1 must be string');
+    // make sure the controlName is actually valid
+    if (!(this.inputs[cName] || this.outputs[cName]))
+      throw Error(`${cName} is not a defined control`);
+    /** create a function that takes cdata (obj or obj[]) and returns
+     *  the appropriate controlFrame populated with that cdata, with
+     *  optional cProp validation
+     */
+    return (cdata, opt = { validate: false }) => {
+      if (!Array.isArray(cdata)) cdata = [cdata];
+      if (opt.validate) console.log('cData validation not yet implemented');
+      return { udid: this.udid, [cName]: cdata };
+    }; // end return function
+  }
 
   /** convert a JSON string or object into a UDevice instance */
   deserialize(deviceObj) {
@@ -217,6 +236,7 @@ class UDevice {
     if (typeof inputs === 'object') this.inputs = inputs;
     if (typeof outputs === 'object') this.outputs = outputs;
   }
+
   /** return JSON string version of the data payload */
   serialize() {
     return JSON.stringify(this);
@@ -243,7 +263,7 @@ class UDevice {
    *  registering the device
    */
   _initNew(uclass) {
-    this.udid = NewDeviceID(); // in DATACORE
+    this.udid = GetNewDeviceUDID(); // in DATACORE
     const uaddr = MyUADDR();
     const uapp = MyAppPath();
     this.meta = {

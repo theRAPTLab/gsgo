@@ -79,10 +79,22 @@ export function RegisterDevice(udevice) {
   DATACORE.SaveDevice(udevice);
   const promise = new Promise((resolve, reject) => {
     NetNode.callMessage('NET:SRV_DEVICE_REG', udevice).then(data => {
-      resolve(data); // pass data onward
+      if (data && data.error) {
+        resolve(data);
+      } else {
+        data.udid = udid;
+        resolve(data); // pass data onward
+      }
     });
   });
   return promise; // returns reginfo
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: retrieves device previously registered through RegisterDevice() on
+ *  this app instance
+ */
+export function GetDeviceByUDID(udid) {
+  return DATACORE.GetDeviceByUDID(udid);
 }
 
 /// DEVICE SUBSCRIPTION API ///////////////////////////////////////////////////
@@ -108,6 +120,16 @@ export function SubscribeDevice(deviceSpec) {
   const deviceAPI = DATACORE.SaveDeviceSub(sub);
   // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
   return deviceAPI;
+}
+
+/// CONTROL FRAME PROTOCOLS ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: send a control frame to the input broker. In the future this should
+ *  use a dedicated socket server, but for now we're just using URSYS messaging
+ *  as a prototype
+ */
+export function SendControlFrame(cFrame) {
+  NetNode.sendMessage('NET:SRV_CONTROL_IN', cFrame);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

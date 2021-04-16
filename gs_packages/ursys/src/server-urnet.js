@@ -29,7 +29,11 @@ const {
   PKT_SessionLogout,
   PKT_Session
 } = require('./svc-session-v1');
-const { PKT_RegisterDevice, PKT_DeviceDirectory } = require('./svc-netdevices');
+const {
+  PKT_RegisterDevice,
+  PKT_DeviceDirectory,
+  PKT_ControlFrameIn
+} = require('./svc-netdevices');
 const { PKT_ProtocolDirectory } = require('./svc-netprotocols');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
 const DBG = require('./ur-dbg-settings');
@@ -76,6 +80,7 @@ function StartNetwork(options = {}) {
   // NEW DEVICES STUFF
   UR_HandleMessage('NET:SRV_DEVICE_REG', PKT_RegisterDevice);
   UR_HandleMessage('NET:SRV_DEVICE_DIR', PKT_DeviceDirectory);
+  UR_HandleMessage('NET:SRV_CONTROL_IN', PKT_ControlFrameIn);
   // START SOCKET SERVER
   m_StartSocketServer(options);
   //

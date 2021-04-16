@@ -138,7 +138,11 @@ function SaveDevice(udevice) {
   DEVICES_LOCAL.set(udevice.udid, udevice);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function NewDeviceID() {
+function GetDeviceByUDID(udid) {
+  return DEVICES_LOCAL.get(udid);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetNewDeviceUDID() {
   const { PRE_UADDR_ID, PRE_UDEVICE_ID } = $$;
   const base_id = `${PRE_UDEVICE_ID}${MyUADDR().slice(PRE_UADDR_ID.length)}`;
   const udid = `${base_id}:${DEVICE_COUNT++}`;
@@ -192,8 +196,9 @@ module.exports = {
   // DEVICES
   SaveDeviceSub,
   SaveDevice,
-  NewDeviceID,
+  GetDeviceByUDID,
+  GetDevices,
+  GetNewDeviceUDID,
   IngestDevices,
-  GetDevicesChangeList,
-  GetDevices
+  GetDevicesChangeList
 };
