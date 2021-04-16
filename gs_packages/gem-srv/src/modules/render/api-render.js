@@ -89,9 +89,9 @@ function Init(element) {
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
-      // has to be called after setTexture so font placement can be calculated
-      // has to be called after setScale so font placement can be calculated relative to scale
-      if (dobj.text) vobj.setText(dobj.text);
+      // has to be called after setTexture and
+      // setScale so font placement can be calculated relative to scale
+      if (dobj.text !== undefined) vobj.setText(dobj.text);
       if (dobj.meter)
         vobj.setMeter(
           dobj.meter,
@@ -136,9 +136,9 @@ function Init(element) {
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
-      // has to be called after setTexture so font placement can be calculated
-      // has to be called after setScale so font placement can be calculated relative to scale
-      if (dobj.text) vobj.setText(dobj.text);
+      // has to be called after setTexture and
+      // setScale so font placement can be calculated relative to scale
+      if (dobj.text !== undefined) vobj.setText(dobj.text);
       if (dobj.meter)
         vobj.setMeter(
           dobj.meter,
