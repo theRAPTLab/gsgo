@@ -62,7 +62,8 @@ function m_UpdateDeviceMap(devmap) {
 export function NewDevice(className) {
   if (typeof className !== 'string')
     throw Error(`NewDevice() accepts class name as string, not ${className}`);
-  return new UDevice(className);
+  const device = new UDevice(className);
+  return device;
 }
 
 /// DEVICE REGISTRATION API ///////////////////////////////////////////////////
@@ -76,7 +77,11 @@ export function RegisterDevice(udevice) {
     ...PR(`RegisterDevice class:${uclass} uname:${uname} udid:${udid}`)
   );
   DATACORE.SaveDevice(udevice);
-  const promise = NetNode.callMessage('NET:SRV_DEVICE_REG', udevice);
+  const promise = new Promise((resolve, reject) => {
+    NetNode.callMessage('NET:SRV_DEVICE_REG', udevice).then(data => {
+      resolve(data); // pass data onward
+    });
+  });
   return promise; // returns reginfo
 }
 

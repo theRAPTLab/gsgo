@@ -52,21 +52,18 @@ const DEVICE_ENCODINGS = [
 const DEVICE_CLASS_TEMPLATES = {
   // character controller
   'CharControl': {
-    inputs: [{ controlName: 'markers', controlProps: { x: 'axis', y: 'axis' } }],
-    outputs: [{ controlName: 'setGroup', controlProps: { groups: 'array' } }]
+    inputs: { 'markers': { x: 'axis', y: 'axis' } },
+    outputs: { 'setGroup': { groups: 'array' } }
   },
   // ptrack simulator
   'FakeTrack': {
-    inputs: [{ controlName: 'markers', controlProps: { x: 'axis', y: 'axis' } }]
+    inputs: { 'markers': { x: 'axis', y: 'axis' } }
   },
   // speculative display object
   'SimDisplay': {
-    outputs: [
-      {
-        controlName: 'displaylist',
-        controlProps: { x: 'axis', y: 'axis', sprite: 'uint', state: 'byte' }
-      }
-    ]
+    outputs: {
+      'displaylist': { x: 'axis', y: 'axis', sprite: 'uint', state: 'byte' }
+    }
   },
   'PTrack': {}, // ptrack generator
   'Sim': {}, // simulation engine
@@ -76,17 +73,15 @@ const DEVICE_CLASS_TEMPLATES = {
 
 /// a control definition is a name of a control and a specified type.
 /// A device can have more than one control!
-const exampleControlDefinition = {
-  controlName: 'markers',
-  controlProps: { x: 'axis', y: 'axis', jump: 'trigger' }
-};
+const exampleControlDefinition = { x: 'axis', y: 'axis', jump: 'trigger' };
+
 /// A UDEVICE defines multiple control inputs and outputs in the eponymous
 /// class properties.
 const cdef = exampleControlDefinition;
 const exampleUDevice = {
   udid: 'udev01:1',
   meta: {},
-  inputs: [cdef, cdef]
+  inputs: { 'markers': cdef } // an array of cdef objects
 };
 /// when a device is actually sending data in an ControlDataObject format, the
 /// id is the only required property, and the ControlProps from the device
@@ -136,11 +131,13 @@ class UDevice {
 
   /** add a control definition to the device inputs array */
   addInputDef(controlName, controlProps) {
-    this._pushControlDef(this.inputs, controlName, controlProps);
+    // this._pushControlDef(this.inputs, controlName, controlProps);
+    this._addControlDef(this.inputs, controlName, controlProps);
   }
   /** add a control definition to the device outputs array */
   addOutputDef(controlName, controlProps) {
-    this._pushControlDef(this.outputs, controlName, controlProps);
+    // this._pushControlDef(this.outputs, controlName, controlProps);
+    this._addControlDef(this.outputs, controlName, controlProps);
   }
   /** return a SUBSET of device data that will be used for the device
    *  directory. It doesn't have user or student data
@@ -156,20 +153,26 @@ class UDevice {
   }
   /** return a copy of this devices inputs array */
   getInputDefs() {
-    if (Array.isArray(this.inputs)) return this.inputs.slice();
+    // if (Array.isArray(this.inputs)) return this.inputs.slice();
+    if (typeof this.inputs === 'object') return [...Object.values(this.inputs)];
     console.log(
-      ...PR(`warning: ${this.udid} inputs is not an array so returning []`)
+      ...PR(`warning: ${this.udid} inputs is not a object so returning []`)
     );
     return [];
   }
   /** return a copy of this devices outputs array */
   getOutputDefs() {
-    if (Array.isArray(this.outputs)) return this.outputs.slice();
+    // if (Array.isArray(this.outputs)) return this.outputs.slice();
+    if (typeof this.outputs === 'object') return [...Object.values(this.outputs)];
     console.log(
-      ...PR(`warning: ${this.udid} outputs is not an array so returning []`)
+      ...PR(`warning: ${this.udid} outputs is not an object so returning []`)
     );
     return [];
   }
+
+  /** create an empty control frame based on control name */
+  newControlFrame(controlName) {}
+
   /** convert a JSON string or object into a UDevice instance */
   deserialize(deviceObj) {
     if (typeof deviceObj === 'string') deviceObj = JSON.parse(deviceObj);
@@ -203,28 +206,28 @@ class UDevice {
       if (sname) this.user.sname = sname;
       if (sauth) this.user.sauth = sauth;
     }
-    if (Array.isArray(inputs)) this.inputs = inputs;
-    if (Array.isArray(outputs)) this.outputs = outputs;
+    if (typeof inputs === 'object') this.inputs = inputs;
+    if (typeof outputs === 'object') this.outputs = outputs;
   }
   /** return JSON string version of the data payload */
   serialize() {
     return JSON.stringify(this);
   }
   /** internal method used to add a control definition which looks like
-   *  {
-   *    controlName: 'markers',
-   *    controlProps: { x: 'axis', y: 'axis', jump: 'trigger' }
-   *  }
+   *  control = { 'markers':{ x:'axis', y:'axis', jump:'trigger' } }
+   *  should only add one
    */
-  _pushControlDef(arr, cn, cp) {
-    if (!DEVICE_ENCODINGS.includes(cp))
-      throw Error(`no such controlType '${cp}'`);
-    const control = {
-      controlName: cn, // the name of the control (e.g. 'x')
-      controlProps: cp, // the type of values produced by the control
-      meta: {} // optional type-specific meta information (e.g. range)
-    };
-    arr.push(control);
+  _addControlDef(ioHash, cName, cProps) {
+    // validate control object
+    const cTypes = Object.values(cProps); // array of encodings 'axis'
+    cTypes.forEach(enc => {
+      if (!DEVICE_ENCODINGS.includes(enc))
+        throw Error(`invalid encoding '${enc}'`);
+    });
+    if (ioHash[cName] !== undefined)
+      console.warn(`'${cName}' control is being overwritten`);
+    // add to hash
+    ioHash[cName] = cProps;
   }
   /** internal method to create a blank device with default properties from
    *  the instantiating client with empty inputs, outputs. Use the
@@ -256,11 +259,11 @@ class UDevice {
     if (DEVICE_CLASS_TEMPLATES[uclass]) {
       this.meta.uclass = uclass;
       const template = DEVICE_CLASS_TEMPLATES[uclass];
-      if (template.inputs) this.inputs = template.inputs.slice(); // make copy of controlDefs
-      if (template.outputs) this.outputs = template.outputs.slice(); // make copy controlDefs
+      if (template.inputs) this.inputs = Object.assign({}, template.inputs); // shallow copy of controlDef map
+      if (template.outputs) this.outputs = Object.assign({}, template.outputs); // shallow copy controlDef map
     } else {
-      this.inputs = []; // array of controlDefs
-      this.outputs = []; // array of controlDefs
+      this.inputs = {}; // hash of controlName, controlDef
+      this.outputs = {}; //hash of controlName, controlDef
     }
   }
 }
