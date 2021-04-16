@@ -19,6 +19,10 @@ useFeature Physics
 featCall Physics init
 featCall Physics setSize 90
 
+// set Touches
+useFeature Touches
+featCall Touches monitorTouchesWith Algae
+
 // show meter immediately
 exprPush {{ agent.getProp('energyLevel').value / 100 }}
 propPop meter
@@ -28,15 +32,16 @@ exprPush {{ agent.name }}
 propPop text
 
 # PROGRAM EVENT
-onEvent Tick [[
-  // // foodLevel goes down every second
-  // prop agent.energyLevel sub 1
+# PROGRAM UPDATE
+every 1 [[
+  // foodLevel goes down every n seconds
+  prop agent.energyLevel sub 1
 
-  // ifExpr {{ agent.getProp('isTouching').value == true }} [[
-  //   dbgOut 'TOUCH!'
-  //   prop agent.energyLevel add 2
-  //   prop agent.isTouching setTo false
-  // ]]
+  // touching Algae?
+  ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Algae', 1) }} [[
+    prop energyLevel add 10
+    featCall agent.Costume setGlow 0.5
+  ]]
 
   // set name + energyLevel
   exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
@@ -73,21 +78,6 @@ onEvent Tick [[
   propPop meter
 
 ]]
-# PROGRAM UPDATE
-every 1 [[
-  // foodLevel goes down every n seconds
-  prop agent.energyLevel sub 1
-]]
-when Fish touches Algae [[
-  featCall Algae.Costume setGlow 1
-  every 2 [[
-    ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-      featCall Fish.Costume setGlow 1
-      prop Fish.energyLevel add 10
-      prop Algae.energyLevel sub 10
-    ]]
-  ]]
-]]
 `
     },
     {
@@ -115,18 +105,20 @@ propPop text
 
 // touches
 useFeature Touches
+featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
 
 # PROGRAM EVENT
-// every 5 [[
-//   dbgOut 'every 5 -- fired never because event loop'
-// ]]
-
 
 # PROGRAM UPDATE
 every 1 [[
   // energyLevel dec
   prop energyLevel sub 1
+
+  // touching fish?
+  ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Fish', 1) }} [[
+    prop energyLevel sub 10
+  ]]
 
   // touching lightbeam?
   ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
@@ -259,15 +251,15 @@ every 1 [[
     }
   ],
   instances: [
-    // {
-    //   id: 501,
-    //   name: 'fish01',
-    //   blueprint: 'Fish',
-    //   // object test      initScript: `prop x setTo {{ x + -220 }}
-    //   initScript: `prop x setTo 0
-    // prop y setTo 0
-    // prop energyLevel setTo 54`
-    // },
+    {
+      id: 501,
+      name: 'fish01',
+      blueprint: 'Fish',
+      // object test      initScript: `prop x setTo {{ x + -220 }}
+      initScript: `prop x setTo 0
+    prop y setTo 0
+    prop energyLevel setTo 54`
+    },
     // {
     //   id: 502,
     //   name: 'fatFish',
