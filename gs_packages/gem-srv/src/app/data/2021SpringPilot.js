@@ -10,7 +10,16 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Movement setMovementType 'wander' 0.5
+
+// ** pick a movement below:
+// this line for wandering:
+// featCall Movement setMovementType 'wander' 0.5
+
+// this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
+// featCall Movement setMovementType 'edgeToEdge' 1 0
+
+// this line to pick a random direction and go until you hit the edge then reverse
+featCall Movement setMovementType 'edgeToEdge' 1 0 'rand'
 
 addProp energyLevel Number 20
 prop energyLevel setMax 100
@@ -152,14 +161,16 @@ when Algae touches Lightbeam [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
-addProp speed Number 1
+addProp speed Number 10
 addProp energyRate Number 1
+addProp direction Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 256
 
 prop agent.skin setTo 'lightbeam.json'
+prop agent.alpha setTo 0.3
 
 // featCall Movement setController 'user'
 // prop agent.x setTo -300
@@ -169,10 +180,12 @@ prop agent.skin setTo 'lightbeam.json'
 onEvent Tick [[
   // featPropPush Physics.radius
   // dbgStack
-  exprPush {{agent.x + agent.getProp('speed').value; }}
+  exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
   propPop x
-  ifExpr {{ agent.x > 600 }} [[
-      prop x setTo -600
+
+  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 600)) || ((agent.getProp('direction').value == -1) && (agent.x < -600))}} [[
+      exprPush {{600 * agent.getProp('direction').value * -1}}
+      propPop x
   ]]
 ]]
 `
@@ -182,9 +195,13 @@ onEvent Tick [[
       label: 'Reporter',
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
+addProp reportSubject String ''
+
 useFeature Population
-exprPush {{ 'Algae energyLevel avg' }}
-propPop text
+//exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
+//propPop text
+prop text setTo 'meter'
+
 
 // Make skin invisible
 prop skin setTo '1x1'
@@ -206,10 +223,30 @@ onEvent Tick [[
   // exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
   // propPop text
 
-  // meter
-  featCall Population countAgentProp 'Algae' 'energyLevel'
-  exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
-  propPop meter
+
+  // Algae meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Algae' }} [[
+    featCall Population countAgentProp 'Algae' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+    propPop text
+
+    prop meterClr setTo 65280
+  ]]
+
+  // Fish meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
+    featCall Population maxAgentProp 'Fish' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' max: ' + agent.getFeatProp('Population', 'max').value}}
+    propPop text
+
+    prop meterClr setTo 3120383
+  ]]
 
   // min
   // featCall Population minAgentProp 'Algae' 'energyLevel'
@@ -272,8 +309,7 @@ prop energyLevel setTo 54`
       blueprint: 'Fish',
       initScript: `prop x setTo 100
 prop y setTo 100
-featCall Physics setScale 2
-prop energyLevel setTo 1000` // extra property test
+prop energyLevel setTo 100` // extra property test
     },
     {
       id: 503,
@@ -311,17 +347,30 @@ prop y setTo -160`
     },
     {
       id: 510,
-      name: 'reporter',
+      name: 'Avg Algae Health',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 0
-prop y setTo 300`
+      initScript: `prop x setTo 235
+prop y setTo -260
+prop reportSubject setTo 'Algae'
+prop alpha setTo 0.3
+prop meterClr setTo 65280`
     },
     {
       id: 511,
+      name: 'Max Fish  Health',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 350
+prop y setTo -260
+prop reportSubject setTo 'Fish'
+prop alpha setTo 0.3
+prop meterClr setTo 3120383`
+    },
+    {
+      id: 512,
       name: 'timer',
       blueprint: 'Timer',
-      initScript: `prop x setTo 300
-prop y setTo -280`
+      initScript: `prop x setTo 150
+prop y setTo -260`
     }
   ]
 };

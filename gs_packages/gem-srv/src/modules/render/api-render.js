@@ -86,16 +86,6 @@ function Init(element) {
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
 
-      // copy selection states?
-      // Set selection state from flags.
-      // This needs to be set before the setTexture call
-      // because they are added/removed on the vobj with setTexture
-      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
-      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
-      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
-      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
-      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
-
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
@@ -108,6 +98,16 @@ function Init(element) {
           dobj.meterClr,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
+
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
+      vobj.applyFilters();
 
       if (dobj.mode === 1 && SETTINGS.actable) {
         // add drag-and-drop and selection handlers
@@ -132,15 +132,6 @@ function Init(element) {
         vobj.sprite.alpha = 0.5;
       }
 
-      // Set selection state from flags.
-      // This needs to be set before the setTexture call
-      // because they are added/removed on the vobj with setTexture
-      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
-      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
-      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
-      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
-      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
-
       // inefficient texture update
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
@@ -155,6 +146,15 @@ function Init(element) {
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
 
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
+      vobj.applyFilters();
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);

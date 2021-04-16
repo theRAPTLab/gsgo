@@ -56,6 +56,30 @@ function moveWander(agent) {
   agent.prop.y.value = Math.max(-500, Math.min(500, agent.prop.y.value));
 }
 
+/// EDGE to EDGE (of the entire tank / system)
+function moveEdgeToEdge(agent) {
+  // Go in the same direction most of the way across the space, then turn back and do similar
+  const distance = agent.prop.Movement.distance.value;
+  const wanderBoundary = 400; // this is hard-coded but should be set to the boundary of the sim container later
+  let direction = agent.prop.Movement.direction.value;
+
+  const angle = m_DegreesToRadians(direction);
+  agent.prop.x.value += Math.cos(angle) * distance;
+  agent.prop.y.value -= Math.sin(angle) * distance;
+
+  if (
+    agent.prop.x.value >= wanderBoundary ||
+    agent.prop.y.value >= wanderBoundary
+  ) {
+    agent.prop.Movement.direction.value = direction + 180;
+  } else if (
+    agent.prop.x.value <= -wanderBoundary ||
+    agent.prop.y.value <= -wanderBoundary
+  ) {
+    agent.prop.Movement.direction.value = direction - 180;
+  }
+}
+
 /// FLOAT
 function moveFloat(agent, y: number = -300) {
   // Move to some designated vertical position
@@ -72,6 +96,9 @@ UR.HookPhase('SIM/FEATURES_UPDATE', () => {
     switch (type) {
       case 'wander':
         moveWander(agent);
+        break;
+      case 'edgeToEdge':
+        moveEdgeToEdge(agent);
         break;
       case 'jitter':
         moveJitter(agent);
@@ -140,6 +167,12 @@ class MovementPack extends GFeature {
         case 'wander':
           // first param is distance
           agent.getFeatProp(this.name, 'distance').value = params[0];
+          break;
+        case 'edgeToEdge':
+          agent.getFeatProp(this.name, 'distance').value = params[0];
+          agent.getFeatProp(this.name, 'direction').value = params[1];
+          if (params[2] == 'rand')
+            agent.getFeatProp(this.name, 'direction').value = Math.random() * 180;
           break;
         case 'jitter':
           // min max

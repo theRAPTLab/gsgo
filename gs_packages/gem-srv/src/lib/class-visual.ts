@@ -28,8 +28,8 @@ interface ISpriteStore {
 }
 let REF_ID_COUNTER = 0;
 /// outline filters
-const outlineHover = new OutlineFilter(2, 0xffff0088);
-const outlineSelected = new OutlineFilter(3, 0xffff00);
+const outlineHover = new OutlineFilter(3, 0xffff0088);
+const outlineSelected = new OutlineFilter(6, 0xffff00);
 const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0x00ff00 });
 // text styles
 const style = new PIXI.TextStyle({
@@ -85,6 +85,7 @@ class Visual implements IVisual, IPoolable, IActable {
   refId?: any;
   // visual
   container: PIXI.Container;
+  filterbox: PIXI.Container; // Filters are applied to everything in this container
   sprite: PIXI.Sprite;
   text: PIXI.Text;
   meter: PIXI.Graphics;
@@ -105,10 +106,13 @@ class Visual implements IVisual, IPoolable, IActable {
   constructor(id: number) {
     this.id = id; // store reference
     const spr = new PIXI.Sprite();
-    spr.filters = []; // init for hover and select outlines
     spr.pivot.x = spr.width / 2;
     spr.pivot.y = spr.height / 2;
     this.sprite = spr;
+    const filterbox = new PIXI.Container();
+    filterbox.filters = []; // init for hover and select outlines
+    filterbox.addChild(this.sprite);
+    this.filterbox = filterbox;
     this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
     this.isSelected = false; // use primary selection effect
@@ -117,7 +121,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isCaptive = false; // use tertiary grouped effect
     this.isGlowing = false;
     this.container = new PIXI.Container();
-    this.container.addChild(this.sprite);
+    this.container.addChild(this.filterbox);
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
@@ -152,14 +156,25 @@ class Visual implements IVisual, IPoolable, IActable {
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
 
+  }
+
+  /**
+   * Call this AFTER
+   *  setAlpha
+   *  setTexture
+   *  setScale
+   */
+  applyFilters() {
     // selected?
     const filters = [];
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
     if (this.isGlowing) filters.push(glow);
-    this.sprite.filters = filters;
-
-    // we're done
+    if (filters.length > 0) {
+      // override opacity so outlines will display
+      this.sprite.alpha = 1;
+    }
+    this.filterbox.filters = filters;
   }
 
   setFrame(frameKey: string | number) {
@@ -174,8 +189,10 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
-    this.sprite.removeChild(this.text);
-    this.container.removeChild(this.sprite);
+    this.filterbox.removeChild(this.meter);
+    this.filterbox.removeChild(this.sprite);
+    this.container.removeChild(this.filterbox);
+    this.container.removeChild(this.text);
     this.root.removeChild(this.container);
     this.root = undefined;
   }
@@ -306,7 +323,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.meter.endFill();
 
     this.meterValue = percent;
-    this.container.addChild(this.meter);
+    this.filterbox.addChild(this.meter);
   }
 } // end class Sprite
 
