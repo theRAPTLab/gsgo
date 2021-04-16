@@ -460,8 +460,10 @@ function u_MakeControlDataObject(div) {
   // make x,y fixed point
   x = x.toFixed(3);
   y = y.toFixed(3);
+  // rewrite id to be unique
+  const newId = `${UR.GetUAddressNumber()}-${id}`;
   // return ControlDataObject
-  return { id, x, y };
+  return { id: newId, x, y };
 }
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////

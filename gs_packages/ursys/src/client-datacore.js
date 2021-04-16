@@ -100,7 +100,7 @@ let DB_COUNT = 0;
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a device subscription saves a "device controller" when it's received from the
- *  device connector. It's called by client-netdevices SubscribeDevice() which
+ *  device connector. It's called by client-netdevices SubscribeDevices() which
  *  is exported from UR client.
  *  returns a deviceAPI object
  */
@@ -110,25 +110,43 @@ function SaveDeviceSub(deviceSpec) {
   const cobjs = new Map(); // cName to DifferenceCache for this sub
   sub.cobjs = cobjs;
   sub.dcache = dcache;
-  DEVICES_SUBBED.set(DB_COUNT, sub);
-  const unsub = () => {
-    console.log('deleting device sub', DB_COUNT);
-    DEVICES_SUBBED.delete(DB_COUNT);
+  const deviceID = DB_COUNT++; // capture deviceID
+  DEVICES_SUBBED.set(deviceID, sub);
+  const unsubscribe = () => {
+    console.log('deleting device sub', deviceID);
+    DEVICES_SUBBED.delete(deviceID);
   };
   const deviceNum = () => {
-    return DB_COUNT;
+    return deviceID;
   };
-  const getInputs = () => {
-    return cobjs.getInputs();
+  const getController = cName => {
+    const sub = DEVICES_SUBBED.get(deviceID);
+    return {
+      getInputs: () => {
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
+        if (control) {
+          control.diffBuffer();
+          return control.getValues();
+        }
+        return [];
+      },
+      getChanges: () => {
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
+
+        if (control) return control.getChanges();
+        return [];
+      },
+      putOutputs: cData => {
+        if (!Array.isArray(cData)) cData = [cData];
+        console.warn('UNIMPLEMENTED: this would send cData to all devices');
+        // sub.dcache is the device cache of all matching devices
+        // but we need to have direct-addressibility through a device websocket
+        // to make this work, because we can only use NET:UR_CFRAME as a broadcast
+        // in this urrent version
+      }
+    };
   };
-  const getChanges = () => {
-    return cobjs.getChanges();
-  };
-  const putOutput = () => {
-    console.log('putOutput() is unmplemented');
-  };
-  ++DB_COUNT; // increment device counter
-  return { unsub, getInputs, getChanges, putOutput, deviceNum };
+  return { unsubscribe, getController, deviceNum };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return all subscriptions in the DEVICES_SUBBED map */
@@ -159,14 +177,15 @@ function GetDeviceByUDID(udid) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns the unique UADDR number */
 function GetUAddressNumber() {
-  const { PRE_UADDR_ID, PRE_UDEVICE_ID } = $$;
-  const base_id = `${PRE_UDEVICE_ID}${MyUADDR().slice(PRE_UADDR_ID.length)}`;
+  const { PRE_UADDR_ID } = $$;
+  const base_id = MyUADDR().slice(PRE_UADDR_ID.length);
   return base_id;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetNewDeviceUDID() {
+  const { PRE_UDEVICE_ID } = $$;
   const base_id = GetUAddressNumber();
-  const udid = `${base_id}:${DEVICE_COUNT++}`;
+  const udid = `${PRE_UDEVICE_ID}${base_id}:${DEVICE_COUNT++}`;
   return udid;
 }
 
@@ -179,18 +198,19 @@ function log_arr(arr, prompt = 'array') {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns { added, updated, removed } by default unless opt is overridden */
-function IngestDevices(devices, opt) {
-  const results = DEVICE_DIR.ingest(devices, opt);
+function IngestDevices(devices) {
+  DEVICE_DIR.diff(devices);
+  const all = DEVICE_DIR.getValues();
+  const { added, updated, removed } = DEVICE_DIR.getChanges();
   if (DBG.devices) {
     console.group('IngestDevices');
-    const { all, added, updated, removed } = results;
     if (added) log_arr(added, 'added  ');
     if (updated) log_arr(updated, 'updated');
     if (removed) log_arr(removed, 'removed');
     if (all) log_arr(all, 'all');
     console.groupEnd();
   }
-  return results;
+  return { all, added, updated, removed };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetDevicesChangeList() {

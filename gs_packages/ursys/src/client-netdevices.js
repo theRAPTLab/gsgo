@@ -31,7 +31,7 @@ let NetNode;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** device selectors hold function that are used to select matching
  *  input types, return a quantity of the matches, and be notified of
- *  changes. Used by SubscribeDevice
+ *  changes. Used by SubscribeDevices
  */
 const TDeviceSelector = {
   selectify: device => {
@@ -91,7 +91,7 @@ export function GetDeviceByUDID(udid) {
  *  will be called with added,updated,removed list of devices. Returns
  *  the "DeviceBridgeNumber" which can be used to delete a device subscription
  */
-export function SubscribeDevice(deviceSpec) {
+export function SubscribeDevices(deviceSpec) {
   // device bridge holds al the functions as follows:
   // selectify is filter function: device => boolean
   // quantify is quantity gate function: device[] => { valid, devices }
@@ -125,7 +125,8 @@ export function SendControlFrame(cFrame) {
 function m_ProcessDeviceMap(devmap) {
   // figure out what changed in the device map
   console.log(...PR('ProcessDeviceMap'));
-  const { all } = DATACORE.IngestDevices(devmap, { all: true });
+  DATACORE.IngestDevices(devmap, { all: true });
+  const all = DATACORE.GetDevices();
   LocalNode.raiseMessage('UR_DEVICES_CHANGED');
   // go over the entire hash of devices
   const subs = DATACORE.GetAllSubs();
@@ -149,22 +150,30 @@ function m_ProcessDeviceMap(devmap) {
 /** Process controlFrame received from NET:UR_CFRAME */
 function m_ProcessControlFrame(cFrame) {
   const { udid, ...controls } = cFrame;
-  const controlNames = Object.keys(controls);
+  const controlNames = Object.keys(controls); // all named controls
   const numControls = controlNames.length;
   // find which subs have this udid
-  const subs = DATACORE.GetSubsByUDID(udid);
-  // process the cFrame into the sub
+  const subs = DATACORE.GetSubsByUDID(udid); // all matching subs with this udid
+  // process the cFrame into each subscription
   subs.forEach(sub => {
-    // need to update the cobjs in each subscription
-    // cobjs is a Map of controlName to DifferenceCache
+    // cobjs is a Map of controlName to DifferenceCache for each subscription
+    // a subscription has multiple devices that are kept in dcache
     controlNames.forEach(name => {
       const objs = cFrame[name];
       if (!sub.cobjs.has(name)) sub.cobjs.set(name, new DifferenceCache('id'));
-      sub.cobjs.get(name).ingest(objs);
-      if (DBG.cframe)
-        console.log(
-          ...PR([...sub.cobjs.get(name).getValues()].map(o => `${o.x},${o.y}`))
-        );
+      // note: since a cFrame can come from multiple devices that are part of the
+      // subscription, we can't use the normal ingest because it will overwrite
+      // the previous cFrame from another device.
+      sub.cobjs.get(name).buffer(objs);
+      if (DBG.cframe) {
+        const ident = `${udid}`;
+        // return all the current buffered values for this controlName
+        // across multiple devices
+        // const controls = [...sub.cobjs.get(name).getBufferValues()];
+        // const allCData = controls.map(v => `${v.id}`);
+        const allObjs = objs.map(v => `${v.id}`);
+        console.log(...PR(`[${ident}] buffering '${name}' cData:`, allObjs));
+      }
     }); // controlNames
   }); // subs
 }

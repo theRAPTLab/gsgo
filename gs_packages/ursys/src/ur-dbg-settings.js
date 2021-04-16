@@ -12,7 +12,7 @@ const DBG = {
   calls: false, // message brokering
   reg: false, // message registration
   devices: true, // device connections
-  cframe: true, // controlFrame data
+  cframe: false, // controlFrame data
   xact: false, // server-urnet mRouteMessage
   track: false, // step tracking system
   handle: false // check for unhandled messages

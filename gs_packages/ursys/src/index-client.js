@@ -154,6 +154,7 @@ const UR = {
   WebServerPort: NETWORK.WebServerPort,
   ConnectionString: DATACORE.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
+  GetUAddressNumber: DATACORE.GetUAddressNumber,
   // FORWARDED SYSTEM CONTROL API
   SystemNetBoot: EXEC.SystemNetBoot,
   SystemAppConfig: EXEC.SystemAppConfig,
@@ -164,7 +165,7 @@ const UR = {
   // FORWARDED DEVICE API
   NewDevice: DEVICES.NewDevice,
   RegisterDevice: DEVICES.RegisterDevice,
-  SubscribeDevice: DEVICES.SubscribeDevice,
+  SubscribeDevices: DEVICES.SubscribeDevices,
   SendControlFrame: DEVICES.SendControlFrame,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,

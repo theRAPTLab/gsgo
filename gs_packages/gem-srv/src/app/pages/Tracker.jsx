@@ -23,6 +23,7 @@ const PR = UR.PrefixUtil('TRACKER' /* 'TagApp' */);
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
+let INTERVAL;
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -92,15 +93,24 @@ class Tracker extends React.Component {
     document.title = 'TRACKER';
     this.updateDeviceList();
     UR.HookPhase('UR/APP_START', async () => {
-      const inFuncs = UR.SubscribeDevice({
+      const devAPI = UR.SubscribeDevices({
         selectify: device => device.meta.uclass === 'CharControl',
-        quantify: list => list,
+        quantify: list => (list.length > 1 ? list : []),
         notify: changes => {
           const { valid, added, updated, removed } = changes;
           console.log(...PR('notify', changes));
         }
       });
-      const { unsub, getInputs, getChanges, putOutputs } = inFuncs;
+      // these are all the device API calls
+      // we need to move them outside of Tracker.jsx
+      const { unsubscribe, getController, deviceNum } = devAPI;
+      const { getInputs, getChanges, putOutputs } = getController('markers');
+      if (INTERVAL === undefined) {
+        INTERVAL = setInterval(() => {
+          const objs = getInputs();
+          console.log(objs.map(o => `(${o.x},${o.y})`).join(', '));
+        }, 1000);
+      }
     }); // end HookPhase
     console.log(...PR('mounted'));
   }

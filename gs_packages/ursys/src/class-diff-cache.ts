@@ -6,7 +6,7 @@
   Requires a unique key in objects that is provided at construct time.
 
   Main Operations
-  - ingest(collection) sets changeList
+  - diff(collection) sets changeList
   - getChanges() returns changeLists { added, updated, removed }
   - getValues() returns the current elements in the cache
 
@@ -70,12 +70,14 @@ function cmp_arr(ar1, ar2, idKey = 'id') {
 class DifferenceCache {
   collection: any; // pure object, map, or array
   cMap: Map<string, object>;
+  cBuffer: Map<string, object>;
   keyProp: string;
   changeLists: { added: any[]; updated: any[]; removed: any[] };
 
   constructor(key: string) {
     this.collection = []; // holds the collection being ingested
     this.cMap = new Map(); // the mapped version of the collection
+    this.cBuffer = new Map(); // used to buffer multiple cFrames into one map
     this.keyProp = key || 'id'; // property to use as difference key
     this.changeLists = {
       added: [],
@@ -84,84 +86,39 @@ class DifferenceCache {
     };
   }
 
+  /// IMMEDIATE MODE //////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** API: Clear the DifferenceCache */
   clear() {
     const size = this.cMap.size;
     this.cMap.clear();
     return size;
   }
-
-  /** API: Ingest Data Collection
-   *  provide the collection, and return { added, updated, removed } arrays
+  /** API: Calculate difference between this collection and the last.
+   *  Returns { added, updated, removed } arrays by default. This
    */
-  ingest(collection, opt = { added: true, updated: true, removed: true }) {
+  diff(collection, opt = { added: true, updated: true, removed: true }) {
     if (collection === undefined) {
       console.warn('DifferenceCache.update arg1 must be collection');
       return undefined;
     }
+    let arr;
     this.collection = collection;
-    if (Array.isArray(collection)) return this.ingestArray(collection, opt);
-    if (collection instanceof Map) return this.ingestMap(collection, opt);
-    if (typeof collection === 'object') return this.ingestObj(collection, opt);
+    if (Array.isArray(collection)) arr = collection;
+    if (collection instanceof Map) arr = [...collection.values()];
+    if (typeof collection === 'object') arr = Object.values(collection);
+    if (Array.isArray(arr)) return this.diffArray(arr);
     console.error(
       'DifferenceCache.ingest non-mappable input',
       collection.constructor.name
     );
     return undefined;
   }
-
-  /** API: Retrieve last changes of for ingest, returning an object with
-   *  added, updated, removed array properties. The changes are updated
-   *  every time ingest() is called.
-   */
-  getChanges() {
-    return this.changeLists;
-  }
-
-  /** API: Retrieve the current list of objects
-   */
-  getValues() {
-    return [...this.cMap.values()];
-  }
-
-  /** API: return TRUE if passed id is in the map, meaning it's currently
-   *  an active object.
-   */
-  hasKey(id) {
-    return this.cMap.has(id);
-  }
-
-  /** API: Execute function of form ( value[,index,[array]])=>{},
-   *  which is passed to Array.forEach()
-   */
-  forEach(func) {
-    this.getValues().forEach(func);
-  }
-
-  /** ingest object with hashkeys mapped to objects with 'keyProp'
-   *  used as the unique key: { UADDR_01: { id:123 }, UADDR_02: { id:124 } }
-   *  The hashkeys aren't used in the differencing operation.
-   */
-  ingestObj(collection, opt) {
-    const arr = Object.values(collection);
-    return this.ingestArray(arr, opt);
-  }
-
-  /** ingest a Map with mapkeys mapped to objects with 'keyProp' used as unique key:
-   *  Map UADDR_01 => { id:123 }
-   *  The mapkeys aren't used in the differencing operation.
-   */
-  ingestMap(collection, opt) {
-    const arr = [...collection.values()];
-    return this.ingestArray(arr, opt);
-  }
-
   /** ingest an array of objects with 'keyProp' used as unique key:
    *  [ { id:123 }, { id:1224 } ]
    */
-  ingestArray(collection, opt) {
-    const arr = collection;
-    const key = this.keyProp;
+  diffArray(arr) {
+    const idKey = this.keyProp;
     const sobjs = this.cMap; // the last mapped collection
     const nobjs = new Map(); // ingested mapped collection
     const updated = [];
@@ -169,11 +126,10 @@ class DifferenceCache {
     // (STEP 1) Of incoming collection, objects that are already in the cMap are
     // added to update list, or added list. Each processed object is set in the
     // "new" nobjs to mark it as seen.
-    arr.forEach((obj, i) => {
-      const id = obj[key];
-      if (id === undefined) console.error(`no comparison key '${key}' in`, obj);
-      const old = sobjs.get(id);
-      if (old) {
+    arr.forEach(obj => {
+      const id = obj[idKey];
+      if (id === undefined) console.error(`no comparison key '${idKey}' in`, obj);
+      if (sobjs.has(id)) {
         // todo: updateHook
         updated.push(obj);
       } else {
@@ -182,28 +138,92 @@ class DifferenceCache {
       }
       nobjs.set(id, obj);
     });
-    // (STEP 2) To calculate what's missing, delete all the objects that were seen in
-    // this object from the last collection defined in sobjs; the remainder are
-    // the deleted objects
-    const n = [...nobjs.values()];
-    n.forEach(obj => {
-      // todo: removeHook
-      const id = obj[key];
+    // (STEP 2) To calculate what's missing, delete all the objects that were seen before
+    // from the last mapped collection (cMap aka sobjs). The remaining objects in sobjs
+    // that were not deleted are the elements that weren't seen this time, meaning they
+    // have disappeared and thus are the "removed objects"
+    arr.forEach(obj => {
+      const id = obj[idKey];
       if (sobjs.has(id)) sobjs.delete(id);
     });
     const removed = [...sobjs.values()];
-    // (STEP 3) the current collectionMap is the new map.
-    // also save the changes arrays
+    // (STEP 3) The nobjs is the mapped array, and represents everything that's in the
+    // current set. This becomes the new "last saved collection" for the next run
     this.cMap = nobjs;
+    // (STEP 4) update the change lists; diff() implicitly does the differencing operation
     this.changeLists = { added, updated, removed };
-    const retobj: any = {};
-    if (opt.updated) retobj.updated = updated;
-    if (opt.added) retobj.added = added;
-    if (opt.removed) retobj.removed = removed;
-    if (opt.all) retobj.all = this.getValues();
-    return retobj;
+    // doesn't return anything, use either getChanges() or getValues() to retrieve them
   }
-}
+
+  /// BUFFERED MODE ///////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: Clear the Buffer */
+  clearBuffer() {
+    this.cBuffer.clear();
+  }
+  /** API: Collect input data into a buffer map that for later
+   */
+  buffer(collection) {
+    if (collection === undefined) {
+      console.warn('DifferenceCache.update arg1 must be collection');
+      return undefined;
+    }
+    const idKey = this.keyProp;
+    let arr;
+    this.collection = collection;
+    if (Array.isArray(collection)) arr = collection;
+    if (collection instanceof Map) arr = [...collection.values()];
+    if (typeof collection === 'object') arr = Object.values(collection);
+    // blind write object into buffer
+    arr.forEach(obj => {
+      const id = obj[idKey];
+      this.cBuffer.set(id, obj);
+    });
+  }
+  /** API: perform difference operation from the cBuffer through diffArray.
+   *  If passed a collection, it's buffered before the diffArray is called
+   *  with the contents of the cBuffer
+   */
+  diffBuffer(collection) {
+    if (collection !== undefined) this.buffer(collection);
+    const results = this.diffArray(this.cBuffer);
+    this.clearBuffer();
+    return results;
+  }
+
+  /// ACCESSORS ///////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** API: Retrieve last changes of for ingest, returning an object with
+   *  added, updated, removed array properties. The changes are updated
+   *  every time diff() is called.
+   */
+  getChanges() {
+    return this.changeLists;
+  }
+  /** API: Retrieve the current list of objects
+   */
+  getValues() {
+    return [...this.cMap.values()];
+  }
+
+  /** API: Retrieve the current list of objects in the buffer
+   */
+  getBufferValues() {
+    return [...this.cBuffer.values()];
+  }
+  /** API: return TRUE if passed id is in the map, meaning it's currently
+   *  an active object.
+   */
+  hasKey(id) {
+    return this.cMap.has(id);
+  }
+  /** API: Execute function of form ( value[,index,[array]])=>{},
+   *  which is passed to Array.forEach()
+   */
+  forEach(func) {
+    this.getValues().forEach(func);
+  }
+} // end class
 
 /// TESTERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,9 +251,9 @@ if (TEST) {
     log('set a:', dump_set(a));
     log('set b:', dump_set(b));
     // set initial
-    testDiffer.ingest(a);
+    testDiffer.diff(a);
     // get difference
-    testDiffer.ingest(b);
+    testDiffer.diff(b);
     const { added, updated, removed } = testDiffer.getChanges();
     if (!cmp_arr(added, resAdd))
       log('*FAIL* added !== expected result', added, resAdd);
@@ -244,7 +264,7 @@ if (TEST) {
     else log('PASSED: B diff A');
     console.groupEnd();
   });
-}
+} // end tester
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

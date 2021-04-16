@@ -109,10 +109,11 @@ class CharController extends React.Component {
         />
         <div
           id="console-right"
-          className={clsx(classes.cell, classes.left)}
+          className={clsx(classes.cell, classes.right)}
           style={{
             boxSizing: 'border-box',
-            gridColumnEnd: 'span 1'
+            gridColumnEnd: 'span 1',
+            minWidth: '280px'
           }}
         >
           <div id="charctrl_id"></div>
