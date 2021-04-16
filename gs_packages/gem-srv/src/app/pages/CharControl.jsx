@@ -42,7 +42,7 @@ class CharController extends React.Component {
       prefix: '',
       jitter: 1,
       burst: false,
-      status: 'char status',
+      status: '-',
       width: 2,
       depth: 2,
       offx: 0,
@@ -55,8 +55,8 @@ class CharController extends React.Component {
       yrot: 0,
       zrot: 0,
       mprop: false,
-      ctrl_name: 'fake_tracks',
-      data_object_name: 'bb_g',
+      ctrl_name: '-',
+      data_object_name: '-',
       rate: 0
     };
   }

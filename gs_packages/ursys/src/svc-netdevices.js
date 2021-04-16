@@ -32,6 +32,7 @@ function m_CreateDeviceDirectoryFromMap() {
       }
     });
   });
+  if (!out) out = '<empty>';
   TERM('devicedir is now:', out);
   return devices;
 }

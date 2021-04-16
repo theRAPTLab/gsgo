@@ -311,6 +311,13 @@ function SendControlFrame() {
   let sec = Math.floor(m_current_time / 1000);
   let nsec = (m_current_time - sec * 1000) * 1e6;
 
+  // the controlFrame looks like:
+  // { udid, [controlName]: [ {id},{id},... ] }
+
+  const controlName = m_CHARVIEW.state.ctrl_name;
+  m_frame = {};
+
+  // get control de
   // create empty PTRACK data object
   // (this might have to be less than 4K)
   switch (m_CHARVIEW.state.ctrl_name) {
@@ -464,11 +471,7 @@ function u_AddEntityToFrame(div) {
 
   // in 2021, CharControl works with the UR Device system, so we send controlFrames
   // using a different API
-  let controlFrame = {
-    id,
-    x,
-    y
-  };
+  let controlFrame = {};
 
   switch (m_CHARVIEW.state.ctrl_name) {
     case 'people_tracks':
