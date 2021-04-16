@@ -81,6 +81,11 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
     this.prop.text = new GVarString();
+    this.prop.meter = new GVarNumber();
+    this.prop.meter.setMax(1);
+    this.prop.meter.setMin(0);
+    this.prop.meterClr = new GVarNumber();
+    this.prop.meterLarge = new GVarBoolean(false);
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -140,6 +145,24 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set text(str: string) {
     this.prop.text.setTo(str);
+  }
+  get meter() {
+    return this.prop.meter.value;
+  }
+  set meter(num: number) {
+    this.prop.meter.setTo(num);
+  }
+  get meterClr() {
+    return this.prop.meterClr.value;
+  }
+  set meterClr(num: number) {
+    this.prop.meterClr.setTo(num);
+  }
+  get meterLarge() {
+    return this.prop.meterLarge.value;
+  }
+  set meterLarge(mode: boolean) {
+    this.prop.meterLarge.setTo(mode);
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -253,7 +276,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const grouped = this.isGrouped ? FLAGS.SELECTION.GROUPED : 0;
     const captive = this.isCaptive ? FLAGS.SELECTION.CAPTIVE : 0;
     const glowing = this.isGlowing ? FLAGS.SELECTION.GLOWING : 0;
-    return selected | hovered | grouped | captive | glowing;
+    const largeMeter = this.prop.meterLarge.value
+      ? FLAGS.SELECTION.LARGEMETER
+      : 0;
+    return selected | hovered | grouped | captive | glowing | largeMeter;
   }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

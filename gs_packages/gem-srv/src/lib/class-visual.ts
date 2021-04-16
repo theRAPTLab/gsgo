@@ -84,9 +84,12 @@ class Visual implements IVisual, IPoolable, IActable {
   // class
   refId?: any;
   // visual
+  container: PIXI.Container;
   sprite: PIXI.Sprite;
   text: PIXI.Text;
+  meter: PIXI.Graphics;
   textContent: string; // cache value to avoid unecessary updates
+  meterValue: number;
   assetId: number;
   isSelected: boolean;
   isHovered: boolean;
@@ -113,6 +116,8 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isGrouped = false; // use tertiary grouped effect
     this.isCaptive = false; // use tertiary grouped effect
     this.isGlowing = false;
+    this.container = new PIXI.Container();
+    this.container.addChild(this.sprite);
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
@@ -165,12 +170,13 @@ class Visual implements IVisual, IPoolable, IActable {
 
   add(root: PIXI.Container) {
     this.root = root;
-    root.addChild(this.sprite);
+    root.addChild(this.container);
   }
 
   dispose() {
     this.sprite.removeChild(this.text);
-    this.root.removeChild(this.sprite);
+    this.container.removeChild(this.sprite);
+    this.root.removeChild(this.container);
     this.root = undefined;
   }
 
@@ -220,7 +226,7 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   setPosition(x: number, y: number) {
-    this.sprite.position.set(x, y);
+    this.container.position.set(x, y);
   }
 
   turnAngle(deltaA: number) {
@@ -261,21 +267,46 @@ class Visual implements IVisual, IPoolable, IActable {
 
     // Remove any old text
     // We have to remove the child and reset it to update the text?
-    this.sprite.removeChild(this.text);
+    this.container.removeChild(this.text);
 
     this.text = new PIXI.Text(str, style);
     this.textContent = str; // cache
 
     // position text bottom centered
-    const spriteBounds = new PIXI.Rectangle();
-    this.sprite.getBounds(true, spriteBounds);
     const textBounds = this.text.getBounds();
     const spacer = 5;
-    const x = spriteBounds.width / 2 - textBounds.width / 2;
-    const y = spriteBounds.height + spacer;
+    const x = -textBounds.width / 2;
+    const y = this.sprite.height / 2 + spacer;
     this.text.position.set(x, y);
 
-    this.sprite.addChild(this.text);
+    this.container.addChild(this.text);
+  }
+
+  setMeter(percent: number, color: number, isLargeMeter: boolean) {
+    if (percent === this.meterValue) return; // no update necessary
+    if (!this.meter) this.meter = new PIXI.Graphics();
+    if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
+
+    const w = isLargeMeter ? 40 : 10;
+    const h = isLargeMeter ? 80 : 40;
+    const spacer = w + 5;
+    const x = isLargeMeter ? -w / 2 : -this.sprite.width / 2 - spacer;
+    const y = this.sprite.height / 2 - h; // flush with bottom of sprite
+
+    this.meter.clear();
+
+    // background
+    this.meter.beginFill(0xffffff, 0.3);
+    this.meter.drawRect(x, y, w, h);
+    this.meter.endFill();
+
+    // bar
+    this.meter.beginFill(color, 0.5);
+    this.meter.drawRect(x, y + h - percent * h, w, percent * h);
+    this.meter.endFill();
+
+    this.meterValue = percent;
+    this.container.addChild(this.meter);
   }
 } // end class Sprite
 

@@ -278,6 +278,8 @@ class MissionControl extends React.Component {
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
       ProjectData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+    } else {
+      UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
