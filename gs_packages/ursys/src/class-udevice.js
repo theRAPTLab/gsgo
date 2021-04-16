@@ -151,23 +151,31 @@ class UDevice {
       outputs
     };
   }
-  /** return a copy of this devices inputs array */
+  /** return a copy of this devices inputs hash */
   getInputDefs() {
     // if (Array.isArray(this.inputs)) return this.inputs.slice();
-    if (typeof this.inputs === 'object') return [...Object.values(this.inputs)];
+    if (typeof this.inputs === 'object') return this.inputs;
     console.log(
       ...PR(`warning: ${this.udid} inputs is not a object so returning []`)
     );
     return [];
   }
-  /** return a copy of this devices outputs array */
+  /** return a copy of this devices outputs hash */
   getOutputDefs() {
     // if (Array.isArray(this.outputs)) return this.outputs.slice();
-    if (typeof this.outputs === 'object') return [...Object.values(this.outputs)];
+    if (typeof this.outputs === 'object') return this.outputs;
     console.log(
       ...PR(`warning: ${this.udid} outputs is not an object so returning []`)
     );
     return [];
+  }
+  /** list input names */
+  getInputControlNames() {
+    return Object.keys(this.inputs);
+  }
+  /** list output names */
+  getOutputControlNames() {
+    return Object.keys(this.outputs);
   }
 
   /** create an empty control frame based on control name */

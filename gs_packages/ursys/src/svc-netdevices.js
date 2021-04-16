@@ -33,7 +33,7 @@ function m_CreateDeviceDirectoryFromMap() {
     });
   });
   if (!out) out = '<empty>';
-  TERM('devicedir is now:', out);
+  TERM('devicedir is:', out);
   return devices;
 }
 
@@ -57,8 +57,8 @@ function PKT_RegisterDevice(pkt) {
   // eslint-disable-next-line @typescript-eslint/no-shadow
   const udev = new UDevice(pkt.getData());
   const udid = udev.udid;
-  const ins = udev.getInputDefs().reduce((acc, i) => `[${i.controlName}]`, '');
-  const outs = udev.getOutputDefs().reduce((acc, i) => `[${i.controlName}]`, '');
+  const ins = udev.getInputControlNames().reduce((acc, i) => `[${i}]`, '');
+  const outs = udev.getOutputControlNames().reduce((acc, o) => `[${o}]`, '');
   const deviceClass = udev.getMetaProp('uclass');
   const status = `register ${udid} as '${deviceClass}' device w/ inputs:${ins}, outputs:${outs}`;
   if (DBG.devices) TERM(status);
