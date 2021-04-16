@@ -43,7 +43,7 @@ let m_seq = 0; // sequence number
 let m_status = ''; // HTML status string
 
 // constants for packet update rate
-const FRAMERATE = 10;
+const FRAMERATE = 1;
 const INTERVAL = (1 / FRAMERATE) * 1000;
 let m_current_time = 0;
 
@@ -457,6 +457,9 @@ function u_MakeControlDataObject(div) {
   m_status += `, ${yspc}${y.toFixed(2)}`;
   m_status += '\n';
 
+  // make x,y fixed point
+  x = x.toFixed(3);
+  y = y.toFixed(3);
   // return ControlDataObject
   return { id, x, y };
 }

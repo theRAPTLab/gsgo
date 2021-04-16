@@ -47,7 +47,7 @@ let NetNode;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** register messages */
 async function RegisterMessages() {
-  console.log(...PR('registering messages'));
+  if (DBG) console.log(...PR('registering messages'));
   return LocalNode.ursysRegisterMessages();
 }
 

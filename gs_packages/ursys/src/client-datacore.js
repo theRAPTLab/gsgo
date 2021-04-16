@@ -6,6 +6,7 @@
 
 const $$ = require('./ur-common');
 const DifferenceCache = require('./class-diff-cache');
+const PathedHasher = require('./class-pathed-hasher');
 const DBG = require('./ur-dbg-settings');
 
 /// URNET MESSAGING SYSTEM ////////////////////////////////////////////////////
@@ -104,11 +105,12 @@ let DB_COUNT = 0;
  *  returns a deviceAPI object
  */
 function SaveDeviceSub(deviceSpec) {
-  const dcache = new DifferenceCache('udid'); // device changes for this spec
-  const cobjs = new DifferenceCache('id'); // control objects received
-  deviceSpec.cobjs = cobjs;
-  deviceSpec.dcache = dcache;
-  DEVICES_SUBBED.set(DB_COUNT, deviceSpec);
+  const sub = deviceSpec;
+  const dcache = new Map(); // udid to deviceDef
+  const cobjs = new Map(); // cName to DifferenceCache for this sub
+  sub.cobjs = cobjs;
+  sub.dcache = dcache;
+  DEVICES_SUBBED.set(DB_COUNT, sub);
   const unsub = () => {
     console.log('deleting device sub', DB_COUNT);
     DEVICES_SUBBED.delete(DB_COUNT);
@@ -127,6 +129,19 @@ function SaveDeviceSub(deviceSpec) {
   };
   ++DB_COUNT; // increment device counter
   return { unsub, getInputs, getChanges, putOutput, deviceNum };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return all subscriptions in the DEVICES_SUBBED map */
+function GetAllSubs() {
+  return [...DEVICES_SUBBED.values()];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** device subscriptions have a dcache property which is the DifferenceCache
+ *  of all devices hashed by udid
+ */
+function GetSubsByUDID(udid) {
+  const subs = GetAllSubs();
+  return subs.filter(sub => sub.dcache.has(udid));
 }
 
 /// DEVICE DEFINITION & CREATION //////////////////////////////////////////////
@@ -163,16 +178,19 @@ function log_arr(arr, prompt = 'array') {
   if (arr.length > 0) console.log(`${prompt}: ${arr.length} elements`, arr);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function IngestDevices(devices) {
-  if (DBG.devices) console.group('IngestDeviceMap');
-  const { added, updated, removed } = DEVICE_DIR.ingest(devices);
+/** Returns { added, updated, removed } by default unless opt is overridden */
+function IngestDevices(devices, opt) {
+  const results = DEVICE_DIR.ingest(devices, opt);
   if (DBG.devices) {
-    log_arr(added, 'added  ');
-    log_arr(updated, 'updated');
-    log_arr(removed, 'removed');
+    console.group('IngestDevices');
+    const { all, added, updated, removed } = results;
+    if (added) log_arr(added, 'added  ');
+    if (updated) log_arr(updated, 'updated');
+    if (removed) log_arr(removed, 'removed');
+    if (all) log_arr(all, 'all');
+    console.groupEnd();
   }
-  if (DBG.devices) console.groupEnd();
-  return { added, updated, removed };
+  return results;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetDevicesChangeList() {
@@ -202,6 +220,8 @@ module.exports = {
   // DEVICES
   GetUAddressNumber,
   SaveDeviceSub,
+  GetAllSubs,
+  GetSubsByUDID,
   SaveDevice,
   GetDeviceByUDID,
   GetDevices,

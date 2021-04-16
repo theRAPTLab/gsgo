@@ -12,6 +12,7 @@
 
 /// note: these are CJS modules so use require syntax
 const PhaseMachine = require('./class-phase-machine');
+const DifferenceCache = require('./class-diff-cache');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
 const UDevice = require('./class-udevice');
@@ -41,20 +42,6 @@ const TDeviceSelector = {
   },
   notify: (valid, added, updated, removed) => {}
 };
-
-/// HELPERS ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Save device map received from URNET server
- *  TODO: careful update or removes old entries
- */
-function m_UpdateDeviceMap(devmap) {
-  // (1) figure out what changed in the device map
-  const changeList = DATACORE.IngestDevices(devmap);
-  LocalNode.raiseMessage('UR_DEVICES_CHANGED', changeList);
-  // subscribers get a chance to handle the change
-  // returning references because DEVICE_DIR.getChanges() will reset the
-  // changeList, so multiple subscribers would miss the changes
-}
 
 /// DEVICE CREATION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -132,6 +119,56 @@ export function SendControlFrame(cFrame) {
   NetNode.sendMessage('NET:UR_CFRAME', cFrame);
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Process device map received from URNET server
+ */
+function m_ProcessDeviceMap(devmap) {
+  // figure out what changed in the device map
+  console.log(...PR('ProcessDeviceMap'));
+  const { all } = DATACORE.IngestDevices(devmap, { all: true });
+  LocalNode.raiseMessage('UR_DEVICES_CHANGED');
+  // go over the entire hash of devices
+  const subs = DATACORE.GetAllSubs();
+  console.log('subs', subs);
+  subs.forEach(sub => {
+    sub.dcache.clear();
+    const { selectify, quantify } = sub;
+    const selected = all.filter(selectify);
+    if (selected.length === 0) return;
+    console.log('selectified', selected.length);
+    const quantified = quantify(selected);
+    if (quantified.length === 0) return;
+    console.log('quantified', quantified.length);
+    quantified.forEach(udev => {
+      const { udid } = udev;
+      sub.dcache.set(udid, udev);
+    });
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Process controlFrame received from NET:UR_CFRAME */
+function m_ProcessControlFrame(cFrame) {
+  const { udid, ...controls } = cFrame;
+  const controlNames = Object.keys(controls);
+  const numControls = controlNames.length;
+  // find which subs have this udid
+  const subs = DATACORE.GetSubsByUDID(udid);
+  // process the cFrame into the sub
+  subs.forEach(sub => {
+    // need to update the cobjs in each subscription
+    // cobjs is a Map of controlName to DifferenceCache
+    controlNames.forEach(name => {
+      const objs = cFrame[name];
+      if (!sub.cobjs.has(name)) sub.cobjs.set(name, new DifferenceCache('id'));
+      sub.cobjs.get(name).ingest(objs);
+      if (DBG.cframe)
+        console.log(
+          ...PR([...sub.cobjs.get(name).getValues()].map(o => `${o.x},${o.y}`))
+        );
+    }); // controlNames
+  }); // subs
+}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This hook will grab the current device directory during startup, before
@@ -143,19 +180,20 @@ PhaseMachine.Hook('UR/NET_DEVICES', () => {
   const EPS = DATACORE.GetSharedEndPoints();
   LocalNode = EPS.LocalNode;
   NetNode = EPS.NetNode;
-  /// MESSAGE HANDLERS ///////////////////////////////////////////////////
+
+  /// MESSAGE HANDLERS ////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle device directory updates */
   NetNode.handleMessage('NET:UR_DEVICES', devmap => {
-    m_UpdateDeviceMap(devmap);
+    m_ProcessDeviceMap(devmap);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** handle incoming control frames */
   NetNode.handleMessage('NET:UR_CFRAME', cFrame => {
-    const { udid, ...controls } = cFrame;
-    let out = `${udid}: `;
-    Object.entries(controls).forEach(entry => {
-      const [key, arr] = entry;
-      out += `${arr.length} cobj(s) in control '${key}' `;
-    });
-    console.log(...PR(out));
+    m_ProcessControlFrame(cFrame);
+    // all subscriptions associated with this udid have been updated
+    // each subscription's controls are in cobjs.get(cName)=>DifferenceCache,
+    // so use .getValues() or .getChanges()
   });
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -165,7 +203,7 @@ PhaseMachine.Hook(
   () =>
     new Promise((resolve, reject) => {
       NetNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
-        m_UpdateDeviceMap(devmap);
+        m_ProcessDeviceMap(devmap);
         resolve();
       });
     })

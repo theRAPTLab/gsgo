@@ -19,6 +19,7 @@ export {}; // stops VSC from seeing "duplicate functions" across CJS modules
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const log = console.log;
+const TEST = false;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,18 +83,26 @@ class DifferenceCache {
       removed: []
     };
   }
+
+  /** API: Clear the DifferenceCache */
+  clear() {
+    const size = this.cMap.size;
+    this.cMap.clear();
+    return size;
+  }
+
   /** API: Ingest Data Collection
    *  provide the collection, and return { added, updated, removed } arrays
    */
-  ingest(collection) {
+  ingest(collection, opt = { added: true, updated: true, removed: true }) {
     if (collection === undefined) {
       console.warn('DifferenceCache.update arg1 must be collection');
       return undefined;
     }
     this.collection = collection;
-    if (Array.isArray(collection)) return this.ingestArray(collection);
-    if (collection instanceof Map) return this.ingestMap(collection);
-    if (typeof collection === 'object') return this.ingestObj(collection);
+    if (Array.isArray(collection)) return this.ingestArray(collection, opt);
+    if (collection instanceof Map) return this.ingestMap(collection, opt);
+    if (typeof collection === 'object') return this.ingestObj(collection, opt);
     console.error(
       'DifferenceCache.ingest non-mappable input',
       collection.constructor.name
@@ -116,7 +125,7 @@ class DifferenceCache {
   }
 
   /** API: return TRUE if passed id is in the map, meaning it's currently
-   *  an active object
+   *  an active object.
    */
   hasKey(id) {
     return this.cMap.has(id);
@@ -133,24 +142,24 @@ class DifferenceCache {
    *  used as the unique key: { UADDR_01: { id:123 }, UADDR_02: { id:124 } }
    *  The hashkeys aren't used in the differencing operation.
    */
-  ingestObj(collection) {
+  ingestObj(collection, opt) {
     const arr = Object.values(collection);
-    return this.ingestArray(arr);
+    return this.ingestArray(arr, opt);
   }
 
   /** ingest a Map with mapkeys mapped to objects with 'keyProp' used as unique key:
    *  Map UADDR_01 => { id:123 }
    *  The mapkeys aren't used in the differencing operation.
    */
-  ingestMap(collection) {
+  ingestMap(collection, opt) {
     const arr = [...collection.values()];
-    return this.ingestArray(arr);
+    return this.ingestArray(arr, opt);
   }
 
   /** ingest an array of objects with 'keyProp' used as unique key:
    *  [ { id:123 }, { id:1224 } ]
    */
-  ingestArray(collection) {
+  ingestArray(collection, opt) {
     const arr = collection;
     const key = this.keyProp;
     const sobjs = this.cMap; // the last mapped collection
@@ -187,48 +196,55 @@ class DifferenceCache {
     // also save the changes arrays
     this.cMap = nobjs;
     this.changeLists = { added, updated, removed };
-    return this.changeLists;
+    const retobj: any = {};
+    if (opt.updated) retobj.updated = updated;
+    if (opt.added) retobj.added = added;
+    if (opt.removed) retobj.removed = removed;
+    if (opt.all) retobj.all = this.getValues();
+    return retobj;
   }
 }
 
 /// TESTERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const testDiffer = new DifferenceCache('id');
-const tests = {
-  'array comparison': {
-    a: [{ id: 1 }, { id: 2 }, { id: 3 }],
-    b: [{ id: 2 }, { id: 4 }],
-    resAdd: [{ id: 4 }],
-    resUpd: [{ id: 2 }],
-    resRem: [{ id: 1 }, { id: 3 }]
-  },
-  'obj comparison': {
-    a: { uaddr01: { id: 1 }, uaddr02: { id: 2 }, uaddr03: { id: 3 } },
-    b: { uaddr01: { id: 2 }, uaddr02: { id: 4 } },
-    resAdd: [{ id: 4 }],
-    resUpd: [{ id: 2 }],
-    resRem: [{ id: 1 }, { id: 3 }]
-  }
-};
-Object.keys(tests).forEach(testName => {
-  console.groupCollapsed('testing', testName);
-  const { a, b, resAdd, resUpd, resRem } = tests[testName];
-  log('set a:', dump_set(a));
-  log('set b:', dump_set(b));
-  // set initial
-  testDiffer.ingest(a);
-  // get difference
-  testDiffer.ingest(b);
-  const { added, updated, removed } = testDiffer.getChanges();
-  if (!cmp_arr(added, resAdd))
-    log('*FAIL* added !== expected result', added, resAdd);
-  else if (!cmp_arr(updated, resUpd))
-    log('*FAIL* updated !== expected result', updated, resUpd);
-  else if (!cmp_arr(removed, resRem))
-    log('*FAIL* removed !== expected result', removed, resRem);
-  else log('PASSED: B diff A');
-  console.groupEnd();
-});
+if (TEST) {
+  const testDiffer = new DifferenceCache('id');
+  const tests = {
+    'array comparison': {
+      a: [{ id: 1 }, { id: 2 }, { id: 3 }],
+      b: [{ id: 2 }, { id: 4 }],
+      resAdd: [{ id: 4 }],
+      resUpd: [{ id: 2 }],
+      resRem: [{ id: 1 }, { id: 3 }]
+    },
+    'obj comparison': {
+      a: { uaddr01: { id: 1 }, uaddr02: { id: 2 }, uaddr03: { id: 3 } },
+      b: { uaddr01: { id: 2 }, uaddr02: { id: 4 } },
+      resAdd: [{ id: 4 }],
+      resUpd: [{ id: 2 }],
+      resRem: [{ id: 1 }, { id: 3 }]
+    }
+  };
+  Object.keys(tests).forEach(testName => {
+    console.groupCollapsed('testing', testName);
+    const { a, b, resAdd, resUpd, resRem } = tests[testName];
+    log('set a:', dump_set(a));
+    log('set b:', dump_set(b));
+    // set initial
+    testDiffer.ingest(a);
+    // get difference
+    testDiffer.ingest(b);
+    const { added, updated, removed } = testDiffer.getChanges();
+    if (!cmp_arr(added, resAdd))
+      log('*FAIL* added !== expected result', added, resAdd);
+    else if (!cmp_arr(updated, resUpd))
+      log('*FAIL* updated !== expected result', updated, resUpd);
+    else if (!cmp_arr(removed, resRem))
+      log('*FAIL* removed !== expected result', removed, resRem);
+    else log('PASSED: B diff A');
+    console.groupEnd();
+  });
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
