@@ -11,14 +11,16 @@
   AGENTS_TBL.get(agentId).get(blueprintName).get(targetId)
 
       AGENTS_TBL = [
-        [ blueprintId, [
-            [ agentId, lastTouchTime ],
-            [ agentId, lastTouchTime ],
-        ]],
-        [ blueprintId, [
-            [ agentId, lastTouchTime ],
-            [ agentId, lastTouchTime ],
-        ]],
+        [ agentId, [
+          [ blueprintId, [
+              [ agentId, lastTouchTime ],
+              [ agentId, lastTouchTime ],
+          ]],
+          [ blueprintId, [
+              [ agentId, lastTouchTime ],
+              [ agentId, lastTouchTime ],
+          ]],
+        ]
         ...
       ]
 
@@ -34,11 +36,11 @@
 
   To Use:
   1. Use the Feature: `useFeat Touches`
-  2. Log the agents to be monitored: `featCall Touches monitorTouchesWith 'Lightbeam'`
+  2. Log the blueprint to be monitored: `featCall Touches monitorTouchesWith 'Lightbeam'`
   3. When the sim starts, the Touches Feature will update AGENTS_TBL with the
      last time the two agents touched each other during each SIM/PHYSICS loop.
-  4. When you want to see if there was a touch, you first have to call `touchedWithin`
-     method to define a perid.  e.g. to look for all touches with any Lightbeam
+  4. When you want to see if there was a touch, you first have to call the `touchedWithin`
+     method to define a period.  e.g. to look for all touches with any Lightbeam
      within the last second, use:
         `featCall Touches touchedWithin 'Lightbeam' 1`
      This will look for touches within the last second in AGENTS_TBL and
@@ -46,7 +48,7 @@
   5. You can then check the value of `didTouchDict` for `LightBeam` to see if
      there was a touch:
         `ifExpr {{ agent.getFeatProp('Touches', 'didTouchDict').getItem('Lightbeam').value }} [[`
-  6.  Or more convienently, you can check the results of the featCall directly:
+  6.  Or more conveniently, you can check the results of the featCall directly:
         ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
           // do something
         ]]
@@ -280,9 +282,6 @@ function m_isTouching(a: IAgent, b: IAgent) {
     boundsA.x + boundsA.width > boundsB.x &&
     boundsA.y < boundsB.y + boundsB.height &&
     boundsA.y + boundsA.height > boundsB.y;
-  if (res) {
-    console.error(a.id, 'is', res, 'touching', b.id);
-  }
   return res;
 }
 

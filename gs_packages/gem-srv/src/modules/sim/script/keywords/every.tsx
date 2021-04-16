@@ -7,22 +7,16 @@
              The prog code will run for EVERY agent of that blueprint type
              regardless of whether they match the when condition.
 
-  This should be run used in an UPDATE loop, e.g.
-  in `# PROGRAM UPDATE` or `when`.
+  This should be used in an UPDATE loop, e.g. in `# PROGRAM UPDATE` or `when`.
+  (It will not run in a `# PROGRAM EVENT` block.)
 
-  The global timer will start when HACK_SIM_START
-  is raised.
+  The global timer will start when HACK_SIM_START is raised.
+  Timers are reset on HACK_SIM_STOP or HACK_SIM_RESET.
 
-  The code block will run:
-  1. Immediately when first called
-  2. Every n seconds according to the period.
+  The code block will run every n seconds according to the period.
 
   You can use floating point seconds.
   It will not fire more frequently than the sim update loop cycle (33ms)
-
-  Unlike "doEvery", this uses a single global timer.
-
-  The NET:HACK_SIM_START handler (runProgs) is probably not needed.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
