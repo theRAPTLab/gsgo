@@ -65,6 +65,9 @@ export class every extends Keyword {
 
   startTimer() {
     if (DBG) console.log(...PR('Start Timer'));
+    // Reset Data
+    this.COUNTER = 0;
+    this.LAST_FIRED.clear();
     // Start Timer
     const size = 33; // Interval size matches sim rate
     this.TIMER = interval(size).subscribe(count => {

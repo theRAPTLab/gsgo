@@ -131,6 +131,8 @@ class TouchesPack extends GFeature {
     this.featAddMethod('monitorTouchesWith', this.monitorTouchesWith);
     this.featAddMethod('touchedWithin', this.touchedWithin);
 
+    this.startTimer = this.startTimer.bind(this);
+
     UR.HandleMessage('NET:HACK_SIM_START', this.startTimer);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.stopTimer);
   }
@@ -141,9 +143,25 @@ class TouchesPack extends GFeature {
     super.initialize(simloop);
     simloop.hook('INPUT', frame => console.log(frame));
   }
+  clear() {
+    const agents = Array.from(AGENTS_TBL.keys());
+    agents.forEach(a => {
+      const BTYPE_TBL = AGENTS_TBL.get(a);
+      const blueprints = Array.from(BTYPE_TBL.keys());
+      blueprints.forEach(b => {
+        const TAGENT_TBL = BTYPE_TBL.get(b);
+        const targets = Array.from(TAGENT_TBL.keys());
+        targets.forEach(t => {
+          TAGENT_TBL.set(t, 0);
+        });
+      });
+    });
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   startTimer() {
     if (DBG) console.log(...PR('Start Timer'));
+    COUNTER = 0;
+    this.clear();
     const size = 1000 / FPS; // Interval size matches sim rate
     TIMER = interval(size).subscribe(count => {
       COUNTER = count;
