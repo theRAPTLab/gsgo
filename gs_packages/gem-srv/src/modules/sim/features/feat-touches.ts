@@ -101,6 +101,7 @@ const AGENTS_TBL = new Map(); // [ ...[ agentId, BTYPE_TBL: map ]]
 // Blueprint Type: BTYPE_TBL  = [ ...[ blueprintName, TAGENT_TBL: map ]]
 // Target Agent:   TAGENT_TBL = [ ...[ targetAgentId, lastTouched: number ]]
 
+const FPS = 30;
 let TIMER: any;
 let COUNTER: number;
 
@@ -128,7 +129,7 @@ class TouchesPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   startTimer() {
     if (DBG) console.log(...PR('Start Timer'));
-    const size = 33; // Interval size matches sim rate
+    const size = 1000 / FPS; // Interval size matches sim rate
     TIMER = interval(size).subscribe(count => {
       COUNTER = count;
     });
@@ -206,8 +207,8 @@ class TouchesPack extends GFeature {
       // e.g. COUNTER at 1 sec = 30
       // e.g. COUNTER at 5 sec = 150
 
-      const isTouching = timeElapsed < period * 30;
-      didTouchOne = didTouchOne || isTouching;
+      const isTouching = timeElapsed < period * FPS;
+      didTouchAny = didTouchAny || isTouching;
     });
     const didTouchDict = agent.getFeatProp(this.name, 'didTouchDict');
     didTouchDict.updateItem(targetBlueprintName, new GVarBoolean(didTouchOne));
