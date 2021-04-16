@@ -98,9 +98,16 @@ function Init(element) {
 
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
-      // has to be called after setTexture so font placement can be calculated
-      if (dobj.text) vobj.setText(dobj.text);
       vobj.setScale(dobj.scale, dobj.scaleY);
+      // has to be called after setTexture so font placement can be calculated
+      // has to be called after setScale so font placement can be calculated relative to scale
+      if (dobj.text) vobj.setText(dobj.text);
+      if (dobj.meter)
+        vobj.setMeter(
+          dobj.meter,
+          dobj.meterClr,
+          dobj.flags & FLAGS.SELECTION.LARGEMETER
+        );
 
       if (dobj.mode === 1 && SETTINGS.actable) {
         // add drag-and-drop and selection handlers
@@ -137,9 +144,16 @@ function Init(element) {
       // inefficient texture update
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
-      // has to be called after setTexture so font placement can be calculated
-      if (dobj.text) vobj.setText(dobj.text);
       vobj.setScale(dobj.scale, dobj.scaleY);
+      // has to be called after setTexture so font placement can be calculated
+      // has to be called after setScale so font placement can be calculated relative to scale
+      if (dobj.text) vobj.setText(dobj.text);
+      if (dobj.meter)
+        vobj.setMeter(
+          dobj.meter,
+          dobj.meterClr,
+          dobj.flags & FLAGS.SELECTION.LARGEMETER
+        );
 
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents

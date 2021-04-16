@@ -54,7 +54,7 @@ export function MakeSelectable(vobj: Visual) {
     }
   }
 
-  const spr = vobj.sprite;
+  const spr = vobj.container;
   spr.interactive = true; // enable interactive events
   spr.on('pointertap', onTap);
 }

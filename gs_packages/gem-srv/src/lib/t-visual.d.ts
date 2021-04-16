@@ -11,6 +11,7 @@ import { IActable } from 'lib/t-script';
 /// VISUALS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IVisual {
+  container: PIXI.Container;
   sprite: PIXI.Sprite;
   add: (root: PIXI.Container) => void;
   dispose: () => void;

@@ -2,41 +2,46 @@
   "sprites": [
     {
       "assetId": 1,
+      "assetName": "1x1",
+      "assetUrl": "static/sprites/1x1.png"
+    },
+    {
+      "assetId": 2,
       "assetName": "default",
       "assetUrl": "static/sprites/default-sprite.png"
     },
     {
-      "assetId": 2,
+      "assetId": 3,
       "assetName": "bunny.json",
       "assetUrl": "static/sprites/bunny.json"
     },
     {
-      "assetId": 3,
+      "assetId": 4,
       "assetName": "bee.json",
       "assetUrl": "static/sprites/bee.json"
     },
     {
-      "assetId": 4,
+      "assetId": 5,
       "assetName": "hive.json",
       "assetUrl": "static/sprites/hive.json"
     },
     {
-      "assetId": 5,
+      "assetId": 6,
       "assetName": "flower.json",
       "assetUrl": "static/sprites/flower.json"
     },
     {
-      "assetId": 6,
+      "assetId": 7,
       "assetName": "fish.json",
       "assetUrl": "static/sprites/fish.json"
     },
     {
-      "assetId": 7,
+      "assetId": 8,
       "assetName": "algae.json",
       "assetUrl": "static/sprites/algae.json"
     },
     {
-      "assetId": 8,
+      "assetId": 9,
       "assetName": "lightbeam.json",
       "assetUrl": "static/sprites/lightbeam.json"
     }
