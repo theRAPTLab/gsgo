@@ -11,19 +11,11 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
 
-// ** pick a movement below:
-// this line for wandering:
-// featCall Movement setMovementType 'wander' 0.5
-
-// this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
-// featCall Movement setMovementType 'edgeToEdge' 1 0
-
-// this line to pick a random direction and go until you hit the edge then reverse
-featCall Movement setMovementType 'edgeToEdge' 1 0 'rand'
-
 addProp energyLevel Number 20
 prop energyLevel setMax 100
 prop energyLevel setMin 0
+
+addProp startDirection Number 0
 
 useFeature Physics
 featCall Physics init
@@ -38,7 +30,22 @@ exprPush {{ agent.name }}
 propPop text
 
 # PROGRAM EVENT
+onEvent Start [[
+    // ** pick a movement below:
+    // this line for wandering:
+    // featCall Movement setMovementType 'wander' 0.5
 
+    // this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
+    // featCall Movement setMovementType 'edgeToEdge' 1 0
+
+    // this line to pick a random direction and go until you hit the edge then reverse ... add 'rand' if you want to pick starting directions randomly
+    // in this example it will be ignored anyhow because I am setting  the startDirection just below:
+    featCall Movement setMovementType 'edgeToEdge' 1 0
+
+    exprPush {{ agent.getProp('startDirection').value }}
+    featPropPop agent.Movement.direction
+
+]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
   every 1 [[
@@ -282,7 +289,8 @@ onEvent Tick [[
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
 prop y setTo 0
-prop energyLevel setTo 54`
+prop energyLevel setTo 54
+prop startDirection setTo 160`
     },
     {
       id: 502,
@@ -290,13 +298,15 @@ prop energyLevel setTo 54`
       blueprint: 'Fish',
       initScript: `prop x setTo 100
 prop y setTo 100
-prop energyLevel setTo 100` // extra property test
+prop energyLevel setTo 100
+prop startDirection setTo 90` // extra property test
     },
     {
       id: 503,
       name: 'Sara Fish',
       blueprint: 'Fish',
-      initScript: `prop x setTo 200` // missing y test
+      initScript: `prop x setTo 200
+      prop startDirection setTo 0` // missing y test
     },
     {
       id: 504,
