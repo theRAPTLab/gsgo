@@ -62,15 +62,6 @@ class FakeTrack extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     Initialize(this);
     HookResize(window);
-
-    // prototype device registration
-    // a device declares what kind of device it is
-    // and what data can be sent/received
-    UR.HookPhase('UR/APP_READY', async () => {
-      const dev = UR.NewDevice('FakeTrack');
-      const regInfo = await UR.RegisterDevice(dev);
-      console.log(...PR('RegisterDevice() returned regInfo', regInfo));
-    }); // end HookPhase
   }
 
   componentWillUnmount() {
