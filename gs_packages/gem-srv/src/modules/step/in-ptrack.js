@@ -17,7 +17,7 @@ import PTrackEndPoint from './lib/class-ptrack-endpoint';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('IN-PTRACK', 'TagInput');
+const PR = UR.PrefixUtil('IN-PTRACK' /*'TagInput'*/);
 
 /// INITIALIZE ENTITY POOL //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

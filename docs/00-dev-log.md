@@ -54,392 +54,447 @@ PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 **SUMMARY S2105 MAR 08 - MAR 21**
 
 * W1: URSYS debug remote-to-remote call, declare nofix because not needed with current data flow
+* W2: Start implementing device routing and skeleton input system 
 
-  
+**SUMMARY S2106 MAR 22 - APR 04**
 
+* W1: start client registration, DifferenceCache
+* W2: CharControl, UDevice + DeviceSync start
 
 ---
 
-# SPRINT 2105 / MAR 08 - MAR 21
+# SPRINT 2107 / APR 05 - APR 18
 
-## MAR 08 - Debugging URSYS
+## APR 05-08 - Subscribing to an Input
 
-#### debugging URSYS calls between remotes infinite loop
+The idea is that you can use `UR.DeviceSubscribe()` to request a certain kind of device. I think that instead of having a type for the selector, we pass a **device filter function**.
 
-**issue**: when two instances of URSYS each implementing`NET:HELLO` exist, the `call()` should only call one of them and receive data back. **what happens**: infinite loop. **what works:** using `send()` and `raise()` seem to work.
+### When creating a NEW source device, need
 
-### Debug Tracing
+need: `uaddr` `uname` `uapp` `udid` which is added through **DATACORESaveClientInfo({ uapp })**
 
-* [ ] class-messager: 
-  * [ ] callMessage logic for determining 'a remote call' versus 'a local call' with the same message name seems to cause problems. This breaks local calls with a thrown error...
-  * [x] ...removing the `if (!channel.LOCAL && !fromNet)` seems to help local calls work but unknown if it breaks other things
-* [ ] server-urnet:
-  * [ ] it looks like the transaction never resolves correctly
-  * [x] hm, when the call is initiated from just one side, the other side seems to **initiate its own send**of the same message **instead** of just returning it
-  * [ ] this suggest a bug in class-messager **mishandling** a transaction packet as a **new message**
+* [x] `uaddr` - this is available from `client-urnet` when client registers on URNET
+  * [x]  refactor `ur-common` to not import EndPoint
+  * [x]  `client-datacore` now saves shared information redundantly; will eventually remove other sources of truth in NetPacket, and client-urnet
+  * [x]  `client-datacore` now has `MyUADDR()` method to provide (required much refactoring)
+* [x] `uname` - this has to be provided by the client io source ('FakeTrack') implementing device
+* [x] ` uapp` - this is the app path, `UR.IsRoute()` is worth looking into. It's set in `SystemStart()` which is just `document.location.pathname`. **Now available in client-datacore**
+* [ ] device: `udid` 
 
-**Q. What are the routing modes for `class-netpacket` ?**
+Now we have to figure out how to **generate unique UDIDs**. 
 
-These are the properties in NetPacket that message handlers on the server and clients use to determine how to route and respond to a NetPacket.
+A udid has to be unique across the entire URNET, and can be based in UADDR. We will strip the last numbers out. `client-netdevices` will hold it. 
 
-```
-type    - tells the broker how to handle (msend, msig, mcall, state)
-rmode   - transation direction (req, res)
-seqnum  - number of hops (set to 0 at originator)
-seqlog  - starting with originator's uaddr, addded each hop
-          push transactionStart, transactionReturn
-          
-s_uaddr - set by message broker on first receive, because only it knows
-          what the definitive UADDR is from its socket map
-s_group - this is a 'token' that is sent with each packet (jwtoken someday)
-s_uid   - unused?
-```
+* **CharControl.jsx** has an example device registration
 
-**Q. How is a transaction handled?**
+### Creating a Device
 
-The core implementation details is in `class-netpacket` and `class-messager` 
+Construct a `UDevice` instance. You can pass the following to the constructor depending on what you need to do:
+
+* **make new device** - the deviceClass name if you want to use a **named template**, or a **custom name** if a template doesn't already exist. You'll use this UDevice instance to **register in the network-wide Device Directory**
+* **deserialize json into device** -  an **plain object** converted into a UDevice instance, a struct that looks like `{ device, user, student, inputs, outputs }`. This is used by the input module to convert JSON into the local **Device Directory** of all devices on the network.
+
+Once you have defined a device, you can **specify what controls** it implements. There are both **input** and **output** controls. You receive data from the device from its inputs, and you can tell the device what to display with its outputs.
+
+### Defining Device Controls
+
+Every device can define a number of **Controls**, which are defined using a **ControlDef** structure:
 
 ```
-ORIGINATOR
-transactionStart( socket )
-* push our UADDR onto seqlog
-* return a promise that 
-		is hashed into transaction table
-		that stores function data=>resolve(data)
-		and calls socketSend on itself
-
-REMOTE message handler
-isTransaction() checks 
-* that this.rmode isn't a request (should be res)
-* that the seqnum is > 0, meaning it's at least hopped once
-* the originating address is not the same as us
--- the USE is for the SERVER to see if it's a reflected transation response
--- from a remote caller
-
-REMOTE
-transactionReturn( socket )
-* received packet by remote
-* remote adds its uaddr
-* sets rmode to 'res'
-* sends it back to the message broker
-
-ORIGINATOR message handler
-isTransaction() ?
-
-ORIGINATOR RETURN
-transactionComplete()
-* generates the hash key and looks up the resolver function
-* calls the resolver function with the contents of packet data
-
-The resolver function is created by class-messager and looks like this:
-function MakeResolverFunction( handlerFunc, inData) {
-  return new Promise(resolve=> {
-    let retval = handlerFunc(inData);
-    resolve(retval);
-  }
+struct ControlDef {
+  controlName: string                   // name of control within device
+  controlProps: { [prop]:EncodingType } // produces or receives objects of this shape
 }
+```
 
-The way callMessage( mesg, inData, option ) works is:
-* look up handler by mesg
-* if it's a local call, then make a resolver function and add to promise list
-* if it's a net call, make a netpacket and use transactionStart() to get promise to add to primise list.
-* finally, Promise.all() all promises, returning a res array of results.
-* return the resObj (a composite)
+The **EncodingType** is one of several special URSYS-defined values:
+
+```
+enum EncodingType {
+  int, float, string, uint, ufloat,
+  byte, word, dword, qword,
+  axis, vec2, vec3, matrix3, matrix4,
+  bistate, edge+, edge-,
+  enum, bits, bits2, fix2, fix3,
+  {} // composite shape using above enums
+}
+```
+
+Note that the controlProps property is a type definition. When actual input data is **received** from a device control, it will always be **an array of ControlDataObjects**. If there is just one output, it will be an array with a length of 1.
+
+* Use  **UDevice.defineInputs()** to add ControlDefs that describe what this device can provide.
+* Use **UDevice.defineOutputs()** to describe what this device can receive
+
+### Registering a Device
+
+Once you've created a UDevice and specified its input/output controls, you can register it to the URNET device directory so all clients will know it's available.
+
+* **UR.RegisterDevice( udevice )** will make it available to the entire URNET
+
+### Subscribing to a Device
+
+The `UR.DeviceSubscribe()` call lets you define functions that are used to determine what **ControlDataObjects** will be returned when retrieving data.
+
+Pass in the following function properties to the **UR.SubscribeDevice()** call as an object:
+
+* `selectify(udevice)=>boolean`: filter by pattern all available devices
+* `quantify(udevices[])=>UDevice[]`: return a subset of matching devices
+* `notify({ valid, added, updated, removed }=>void)`: called when device list changes. if `valid` is true, then the conditions set by `selectify()` and `quantify()` have been met.
+
+You will receive an array of **device API functions** that you can use to perform inputs operations:
+
+1. **DeviceGetInputs**(): `()=>controlDataObject[]` - first function returns all entities
+2. **DeviceGetChanges()**: `()=>{ added, updated, removed }` - second function returns what's changed, if any
+3. **DevicePutOuputs():** `(controlDataObject[])=>Promise.resolve(status)` - third function sends control data objects to the named output
+4. **DeviceUnsubscribe()**: `()=>void` - third function will unsubscribe to the control
+
+### Receiving a Device List
+
+The input system handles this for you after you use **UR.SubscribeDevice()** to pick a device you are interested in. After you receive the device API functions, you'll use them to 
+
+### Receiving Control Data Objects
+
+The input system handles this for you after you use **UR.SubscribeDevice()**. 
+
+Use either **DeviceGetInputs** or **DeviceGetChanges** to receive an array of **ControlDataObjects**. It keep track of incoming inputs and maintains an internal input buffer, which you can read using **DeviceGetInputs()** you received when subscribing. You can alternatively use **DeviceGetChanges()** if you want to know what has changed since the last DeviceGetChanges() or DeviceGetInputs() call.
+
+### Devices Overview
+
+#### To register a new device
+
+1. `let dev = new UDevice(devTemplate)` from a device class template (or custom name)
+2. `dev.addInputControl(controlName, controlProps)` to add **input** controls
+3. `dev.addOutputControl(controlName, controlProps)` to add **output** controls
+4. `UR.RegisterDevice(dev)` to save new device declaration and send to server
+
+#### To subscribe to a device
+
+1. `const selectify = udevice => boolean`
+2. `const quantify = deviceList[] => deviceSubset[]`
+3. `const notify = (valid, added[], updated[], removed[]) => void`
+4. `UR.SubscribeDevice({ selectify, quantify, notify })`
+
+## APR 09 FRI - ToDo
+
+#### Part 1
+
+* [x] CharControl.jsx declare itself as a device
+* [ ] Tracker.jsx subscribe to devices using DBR, print matching devices
+* [ ] Multiple CharControls add/remove handled by Tracker.jsx
+
+#### Part 2
+
+* [ ] CharControl.jsx sends Control Data Objects
+* [ ] Tracker.jsx read ChangeList through provided function
+* [ ] Tracker.jsx read AllEntities through provided function
+
+#### Part 3
+
+* [ ] test client-netdevices.SubscribeDevice() returned functions
+* [ ] how does client-netdevices actually receive inputs and route them to the right device bridge?
+
+### Part 1 Notes
+
+**CharControl.jsx** needs to define the device during `APP_READY`. Tis seems to be working now. Each uaddr now has its own map of devices keyed by udid, as each uaddr can have more than one device potentially.
+
+* [x] Now, is client-netdevices getting **changes** to the device list? **YUPPERSS**
+
+Now **Tracker.jsx** needs to subscribe to `CharControl` devices. To mirror CharControl, we hook into `APP_READY` in `componentDidMount` by hooking the phase. 
+
+* [ ] **SubscribeDevice** gets `selectify() etc`
+* [ ] The `selectify() etc` is stored as a "device bridge" object in DATACORE
+* [ ] **SubscribeDevice** returns `unsub() getInputs() getChanges() putOutputs()` functions
+
+So now we need to handle each type of function
+
+* `selectify()` is **passed udevice**, returns true or false
+* `quantify()` is **passed udevice[]**, returns subset (or everything or nothing)
+* `notify()` is **called** whenever the device **directory changes**, and also provides `valid` flag if `selectify` and `quantify` return a device list
+
+We also need to write at minimum:
+
+* `getInputs()` function will return all the current control data objects
+
+Also, **how does a device send control object** ???
+
+```
+{ 
+	udid,
+	inputs: {
+		[controlName]: [ cdo, cdo, cdo ]
+	}
+}
+cdo = { id, x, y } // controlProps
+```
+
+These are gathered by any means necesary and sent to the server. 
+
+The client has to:
+
+* create a **DifferenceCache** for each controlName defined by the device that has been subscribed to
+  * DifferenceCache provides the `getInputs()` and `getChanges()`  functions that are returned by SubscribeDevice. `putOutputs()` is a function that sends `{ udid, outputs: {[controlName]: [ cdo, cdo ]}}` back to the server, which then looks up the associated uaddr and forwards it
+* when `udid` comes in, look it up on the Device Directory, iterate over the keys in controlObject `inputs`  and pass the array to the associated DifferenceCache instance
+
+#### SubscribeDevice() wiring
+
+* [x] fix **bug** when two devices are attached and one updates. We should be getting a **removed** detectin in updateDeviceMap, but instead we're seeing one element update and not seeing the remove
+
+Now we have a stabled device map, so **SubscribeDevice** should be workable.
+
+* in Tracker during `UR/APP_START`, we call SubscribeDevice to let the device subsystem know we want to receive  notifications and get some kind of API to perform functions.
+
+* DATACORE has  `DEVICE_SUBS` map which maps `key:subnumber, => value:deviceBridge`
+  * device bridges store the user-supplied **selectify, quantify, notify** functions 
+  * we use these device bridges to handle updates to the system
+  
+* DATACORE also has `DEVICE_DECLARATION` map which maps `key:udid => value:udevice`
+
+  used by **RegisterDevice** to hold in the client itself, and also to send to network.
+
+* The `DEVICE_CACHE` is the current network-wide directory, but it's located in client-netdevices
+
+  * It's a **DiffCache** that can `ingest()` a collection and then be queried for **what changed** and the **list of all devices** by `udid` 
+
+* [x] for consistency, move `DEVICE_CACHE` to DATACORE
+
+#### Using DeviceBridges and DeviceAPIs
+
+```js
+const deviceSub = { selectify, quantify, notify, dcache, cobjs } 
+```
+
+The bridge is saved through `DATACORE.SaveDeviceSub(deviceSub)`. We have to build-in the differenceCache in `SaveDeviceSub()`, and use it to return the deviceAPI structure.
+
+**EVENT: DeviceList Changes** - check the updated devicelist against every deviceSub in DEVICE_SUBS. If `selectify()` and `quantify()` returns `{ valid, devices }` . If `valid` is false, then `devices` may contain an empty list of a partial number of inputs so they can still be used by the UI
+
+**EVENT: ControlObjects Arrive** - A device update contains a number of control data objects.
+
+```
+deviceInput = { udid, inputs: { [controlName]:[cobj, cobj,...] } }
+cobj = { id, inputs: [ cobj, cobj ... ] }
+```
+
+When you subscribe to a device, your selectify function returns a list of matching devices. Each of those devices has:
+
+* a unique **udid**
+* presumably the same **inputs controlDefs**
+
+When `deviceInput { udid, inputs: { [controlName]:[cobj, cobj,...] } }` arrives, we want to route those inputs to an **aggregate collection** of all matches that are part of the subscription. So how do we route things?
+
+* device subs filter the device list, creating a **deviceCollection** that is part of the sub.
+* the **deviceCollection** is just a set of udids.
+* when a **deviceInput** arrives, its udid can be checked against the deviceCollection
+* for matching udids in the deviceCollection, the `inputs` property is scanned for **named arrays** of **controlObjects**
+* For each named array, a new **inputCache** is stored by controlName. 
+* Each input property is processed into this data structure
+
+Now how do we **retrieve** the associated inputCache by name? This isn't quite working...
+
+SLEEP ON THESE QUESTIONS:
+
+* How can I combine the inputs from multiple devices each with multiple named controls?
+* How can I create a unique controlObj id from the udid+cobj.id? 
+
+## APR 10 SAT - Sending Control Data
+
+The last bit is wiring the **deviceBridge.getInputs()** to control data sent by a remote device!
+
+* the **sending device** constructs a `ControlFrame` that looks like this
+
+  ```
+  ControlFrame = { 
+    udid, 
+    markers: [ { id, x:1, y:1 }, ...]
+  } 
+  ```
+
+  (a) This is sent to the server using `sendMessage('NET:SRV_INGEST_INPUT', controlFrame)`. It's up to the program to construct the control frame.  The broker has to figure out which devices to forward that message to by inspecting the `udid` property, and seeing which sockets have subscribed to it.
+  (b) Alternatively, use `sendMessage('NET:UR_CONTROL_IN', controlFrame)` to **bypass the input broker**. This is easier for right now.
+
+  *the **input broker** forwards the controlFrame to interested devices by using the `selectify` criteria from each device subscription.
+  
+  * the **receiving device** receives `NET:UR_CONTROL_IN` with the controlFrame and processes it as follows:
+
+## APR 13 TUE - Algorithm Implementation!
+
+In the [Whimsical Diagram](https://whimsical.com/input-system-dr01-Y2xuF7r1N1kxNJ2MyfzqZY) there's some algorithms on the right side
+
+* when **DeviceDirectory changes**, run the device list through all subscription conditions
+* retrieving a **Controller** returns a `getInputs()` method where you specify the controlName you want to receive
+* when **receiving ControlFrame**, rewrite ids to udid+id, then ingest them into the cProp map
+
+Where are we currently? Well, there are a number of data structures we need:
+
+* ` DEVICE_DIRECTORY` is the cache of all devices descriptors, implemented as a DifferenceCache, and used to manages changes in the device directory that is sent network-wide
+
+* `DEVICES_LOCAL` is used by a **device provider**, and is mapped by udid to UDevice. The udid is created by combining UADDR with the local device count, which guarantees a unique device id across the entire network. Each UDevice can be used to create a **deviceDescriptor** which is describes the device to the network without any credentials.
+
+* `DEVICES_SUBBED` is used by **device subscribers** to hold a "subscription" mapped from a "subscription id". This id is just an int that is used to look-up the subscription to delete it. The DeviceSpec has the selectify/quantify/notify functios, and has some **added** properties: `dcache` to cache the multiple devices that this subscription could have, and `cobjs` for the controlObjects received from al these devices. 
+
+* `DEVICES_INPUT` maps `udid` to a buffer. This map is populated by the subscriber client code, so if an incoming control frame has a udid that's in the map, that means it's been selectified/quantified. The mapping is a bit convoluted:
+
+  ```
+  udid --> Map<controlName, [FINISH WRITING HTIS OUT]
+  ```
+
+So...
+
+**Q. How is UDevice used to create a ControlFrame?**
+
+**Q. In the extended DeviceSpec, is `cobjs` adequate for handling all the controls?** 
+Or do we have to make sure that the DeviceSpec designates a **single control name per device specification**? Look at `UR.SubscribeDevice()` to determine where to insert this.
+
+## APR 14 WED - Algorithm Implementation II
+
+There are three subsystems that I want to implement, and also nail down the actual map needs. The thing that's confusing me now is how to access a **named control** from the deviceDescription. Again, this is what is looks like:
+
+```js
+// A CONTROL
+const exampleControlDefinition = {
+  controlName: 'markers',
+  controlProps: { x: 'axis', y: 'axis', jump: 'trigger' }
+};
+// A DEVICE WITH MULTIPLE INPUT CONTROL
+const cdef = exampleControlDefinition;
+const exampleUDevice = {
+  udid: 'udev01:1',
+  meta: {},
+  inputs: [cdef, cdef]
+};
+// A CONTROL OBJECT 
+const exampleControlDataObject = {
+  id: 0, // this is not the same as udid, but it the instance control
+  x: 0,
+  y: 0,
+  jump: true
+};
+// A FRAME ASSOCIATES CONTROL OBJECTS WITH A UDID
+const cdo = exampleControlDataObject;
+const exampleControlFrame = {
+  udid: 'udev01:1',
+  markers: [cdo, cdo]
+};
+```
+
+The **controlData** object is the same as **controlProp** in gneral shape, though the 'encoding' in the deintiion is replaced with actual data in the controlData of course, and the **id** is added as well. 
+
+* We want to subscribe to a device which can be any device. We get a device handle from the call.
+* Since devices can have multipe controls, we need to tell the device handler's control to get input from.
+* When devices send updates for a control, they appear as a bunch of named properties that are written to a device's buffer object, which can contain a buffer for each controlName's controldata type
+
+We want to detect packets from a udevice and map them 
+
+algorithm for writing a hashed path
 
 ```
 
-**Q. How does message handling distinguish between remote calls and returning transactions?** 
-
-On the **client-side**,  `client-urnet`  implements message handling in  `m_HandleMessage( pkt )` 
-
-1. if `pkt.rmode==='res'`  then calls `pkt.transactionComplete()` (this checks if the packet is a **response to our own call**. 
-2. ottherwise this is an **incoming request** to handle:
-   * if `pkt.type==='msend'`  - call `sendMessage( msg, data, { fromNet: true } )`, then `pkt.transactionReturn()` to signal that the send was received (with no data)
-   * `pkt.type==='msig'` - Similar to `msend` but uses `raiseMessage( msg, data, { fromNet: true} )` instead 
-   * `pkt.type==='mcall'` - Use `callMessage( msg, data, { fromNet: true } )` which returns a promise. Invoke `then(result=>{}` on promise, which will `pkt.setData(result)` before calling `transactionReturn()` 
-
-On the **server-side**, `server-urnet` implements the message broker logic in `m_RouteMessage(sock, pkt)`
-
-1. if `pkt.mode==='res'` it's a **response to a remote call**, which was initiated as a new packet from THIS SERVER. Call `transactionComplete()` to call the resolver function **where???**
-
-2. otherwise its a **new message to broker** on behalf of a client, so fetch handlers related to it.
-   * Is it a **server-implemented** or a **remote** message? Only can be one
-   * The handlers are promises, so `pktArray = await Promise.all(promises).catch(err)` 
-   * `pkt.type` of `msend` and `msig` require no additional return processing, *otherwise*...
-     * assemble aggregate data (should make this part of NetPacket)
-     * `pkt.setData(data)` and `pkt.transactionReturn(sock)`
-   
-3. the **magic** part is in the returned promises from `m_PromiseServerHandlers(pkt)` and `m_PromiseRemoteHandlers(pkt)`. 
-
-   1. For **server handlers**:
-
-      ```js
-      let promises = [];
-      handlers.forEach(hFunc => { 
-      	let p = new Promise( (resolve, reject) => {
-          let retval = hFunc(pkt);
-          if (typeof retval!=='object') reject(retval)
-          else resolve(retval)
-        });
-        promises.push(p);
-      });
-      return promises;
-      ```
-
-      
-
-   2. for **remote handlers**, the packet has to be forwarded to possibly multiple remotes:
-
-      ```js 
-      let promises = []
-      remotes.forEach(remote => {
-        ...
-        let r_sock = SocketLookup(remote);
-        let newpkt = new NetPacket(pkt)
-        newpkt.makeNewId();
-        newPkt.copySourceAddress(pkt); 
-        promises.push(newpkt.transactionStart(r_sock));
-      }
-      return promises
-      ```
-
-      Recall that `NetPacket.transactionStart()` returns a Promise that looks something like this:
-
-      ```js
-      transactionStart( socket ) {
-        seqlog.push(NetPacket.uaddr)
-        let p = new Promise( (resolve, reject) => {
-          let hash = m_GetHashKey(this);
-          m_transaction.set(hash, data -> {
-            let json = JSON.stringify(data);
-          	resolve(data);
-      	  	this.socketSend(socket)    	
-        });
-        return p;
-      }
-      ```
-
-   3. The general **pattern behind Promise use** here is that they're used to package code that performs **asynch execution** of functions with *different* uses. 
-
-      * for **ServerHandlers**: The message map points to arrays of **handler functions** of the form `hFunc(pkt)`. The promise wraps the call to `hFunc()` which returns a **data object** that is used to `resolve()` the promise. 
-      * for **RemoteHandlers**: The message map points to arrays of **remote addresses**. Each address in the array is used to begets a Promise that:
-        1. **clones** the original incoming packet into `newpkt`
-        2. **forwards the data** using `newpkt.transactionStart(r_sock)`, which returns a **promise** that is then `await`ed in the main ``m_RouteMessage()` server function
-      * for **Transaction chains**
-        1. for **client local calls**: `messager` provides the `callMessage(msg,data)` interface and uses `m_MakeResolverFunction(handlerFunc, inData)` to return a promise that just resolves the return value returned by `handlerFunc`, which is defined by the `UR.callMessage('MESG',hFunc()=>{})` invocation
-
-        2. for **clientnet calls**: `messager` gets the promise from `transactionStart(sock)` in `class-netpacket`. 
-           * the transaction map points a **computed hash of a netpacket** to a **resolver function** that contains the `resolve()` call to complete a Promise. 
-           * The transaction map contains all the outgoing network packets, and can be rematched to incoming packets that are completely different JS objects through the hash key. 
-           * On transaction start, a Promise is created to start the network send. Before it does that, it creates a **function object** (the "resolver function") that does two things: (1) it saves a reference to the original callback specified by `UR.CallMessage(MESG,func)` and (2) it passes the return value of the callback to the promise's `resolve()` function.
-           * Incoming packets are checked to see if they are associated with a transaction. This is done by **computing** the netpacket hash and looking for an associated resolver function. If it exists, `pkt.completeTracaction()`  calls the found resolver function is called, which (1) calls the original callback and (2) passes the result of the callback to the `resolve()` . This closes out the transaction, so the entry is deleted. 
-           
-        3. for **server message brokering**: the `m_RouteMessage(sock, pkt)` is the main handlers. When the broker receives a packet from a remote, it can either be (1) a new message request or (2) a returning message request. 
-
-           > The non-obvious magic of `m_RouteMessage(sock,pkt)` is that **the entire function makes use of closures** to "remember" what socket to return the transaction. The entire function **pauses** in `(3C) Magical Async/Await block` , and continues AFTER the network promises have resolved in a *SUBSEQUENT* return of a transaction! It's fizzying.
-
-           * In the case of a **new message request**, the broker ***clones*** the original packet and initiates a ***new transaction*** to the remote. There can be many such clones.
-
-             * the list of promises is created from the list of remote handler addresses for the message, and each promise looks like this: 
-
-               ```js
-               let newpkt = netNetPacket(pkt); // clone data
-               // override ownership/source to point to server
-               newpkt.makeNewId(); 
-               newpkt.copySourceAddress(pkt)
-               // transactionStart() returns a Prommise
-               // here's what it looks like sorta
-               let p = new Promise((resolve,reject)=>{
-                 let hash = m_GetHashKey(newpkt);
-                 m_transactions.set(hash, data=>{
-                   resolve(data);
-                 });
-                	newpkt.socketSend(sock)
-               })
-               ```
-
-           * In the case of a **returning** packet
-
-             *  it is distinguished from a new message request by checking its `rmode` property; it will be set to `res` if it's returning from the brokered message, otherwise it will be `req`. 
-             * See the special excerpt about `MAGICAL ASYNC/AWAIT BLOCK` above to understand how it works.
-
-
-### New Insights, Debug Transaction Time!
-
-It's much clearer now how this works. The critical bits that pertain to network calls (which are the only type that return data)
-
-* originator sends a packet of type `mcall` and rmode `req` via `transactionStart()` which also sets `seqlog` to have a first value of the originator's uaddr
-* broker server  `m_RouteMessage(socket,pkt)`  receives the socket and packet. This entire method has `socket` and `pkt` in its closure which helps it work like an asynchronous sleeping thread. In this method:
-  * broker clones original packet and creates a Promise for each remote implementor that uses `transactionStart()` for each one. 
-  * **still in the same call invocation**, `let retval = await Promise.all(promises)`  suspends the thread until all promises are resolved. Those promises are resolved by *subsequent* calls to`m_RouteMessage()` that are detected as 'returning transactions'.
-  * **after Promise.all() in the same call invocation** the returned values are in an array of objects that are the returned values from remotes. These are all merged into a single return object currently.
-  * **at the end of the call invocation** the original packet has its data payload updated and`returnTransaction()` sends the packet back to its originator.
-
-## MAR 09 TUE - Short Day of Debugging
-
-To clean up the logic in the server, I split out the server-side URNET client API into its own module `server-message-api` . Also added ur_handle and ur_unhandle to the dbg interface for ursys.
-
-**Bugs** known with **Call**
-
-* [ ] if an implementor of a NET:MESSAGE also tries to call it on remotes (like a common service channel) the server never returns the transaction to the client and instead goes into a loop
-* [ ] local call does not seem to return data
-* [ ] defining a net:message after urconnect has happened doesn't update the list. Should add this provision in the updated protocol
-
-## MAR 10 WED - Known Call Bugs
-
-### Immediate Testing Goals
+we want to check that all props except the last one is a map
+bits = path.split('.');
+map = this.map;
+bits.reduce( acc,cv => {
+	if (!map instanceOf Map) throw Error('err:path contains non-map');
+	map = map.get(cv);
+	return acc&&map instanceOf Map;
+},true);
 
 ```
-01 [ ] R1 and R2 have NET:MESSAGE, R1 call NET:MESSAGE
-02 [ ] Just R2 has NET:MESSAGE, R1 call NET:MESSAGE
-03 [ ] Check that * works as expected
-04 [ ] Check why raising NET:UPDATE will also trigger the handler, when both are on the same app instance (it shouldn't happen). 
-```
 
-Checking `02`:
+## APR 15 THU - Implementation III
 
-* implement `NET:GEM_COMPILER_PING` and `NET:GEM_INDEX_PING` 
-* is it possible to **`UR.RegisterMessages()`** at any time? **yes**
-  * `class-endpoint ursysRegisterMessages()` sends the message
-  * `svc-reg-handlers NET:SRV_REG_HANDLERS` receives the message
-* When are first messages registered? `UR/APP_CONFIGURE` just before `APP_READY` and after `LOAD_ASSETS`
-* When does a lazy-loaded application get loaded? It should catch `APP_CONFIGURE` because that's when all the messages are registered, and `APP_CONFIGURE` runs *AFTER* the SystemInit wrapper has completely rendered.
-* So there is **a bug in registering messages** on the server side???
+We have the beginnings of the PathedHash class, and I realized that the controlFrame processing is different than how I documented it. 
 
-There is something weird going on in the message router on the server!
+**GOAL: send an arbitrary control frame from CharControl**
 
-> **RemoteHandlerPromise() seems unable to propertly look-up net:messages**
->
-> not only that, but the call handler on the server side seems to be calling the originator as well, which is wrong, or the returning packet is somehow malformed. But it can't even find the remote. 
->
-> **Need to check the entire call chain!!!**
+* `CharControl.jsx` called `Initialize()` in `componentDidMount()`
+* in `mod-charcontrol-ui.js`,  frame data is periodically sent through `setInterval(SendControlFrame, INTERVAL)`
 
-* [x] `NET_HANDLERS` has Map `mesg => Set<uaddr>`
-* [x] check for remotes length is incorrect (should be `size` for a Set)
-* [ ] it seems that `server-urnet` line 191 is triggering for some reason, I suspect on the RESPONSE side of things instead of completing the transaction
-* [ ] note: changing `Netpacket.isResponse()` to use more bulletproof check creates the infinite loop here too
+* Cleaned up CharControl, now how do we make the correct control frame?
+* [ ] On device registration, we need to keep the device udid handy afterwards
 
-**Q. So what seems to be happening?**
-A. since SEND works but CALL does not, that implies that the Call Transaction Chain is broken. The message gets to the remote just fine, but gets misprocessed on return. So **how is a return packet understood by the server?** And why is it breaking?
+## APR 16 FRI - Implementation IV
 
+* [x] return udid from RegisterDevice, save in mod-charcontrol-ui
+* [x] new method `UDEV.makeControlFramer(cName)` returns a function that generates a control frame for the named control
+* [x] how to send the controlFrame to all devices? `NET:UR_CFRAME`
+* [x] fix class-endpoint so it can use the UAddressNumber by declaring NetNode, LocalNode later
+* [x] why is DATACORE.IngestDevices() called every time CharControl adds another entity? Initialize is called whenever numEntities changes
+* [x] Why does input rate increase every time numEntities is incremented? Same as the Initialize thing above
 
+**GOAL: process received control data into entities**
 
-## MAR 11 THU - Debugging Continued
+* [ ] `client-netdevices`compare incoming controlFrame against `udid` via `sub.dcache.hasKey(udid)` 
+* [ ] why is DEVICES_SUBBED empty? We have not processed the device directory to populate it!!!
 
-Return packets are not being returned from the server for calls, but sends/raises work. This implies that the transaction return detection on the server is broken. 
+a DeviceSub has additional things added to it
 
-* [x] **find** the transaction processing code
-* [x] redo debug messages to uncover issue
-  * [x] fix bug introduced in server-datacore RemoteHandlerPromises()
-* [x] confirm: non-shared messages **send** works between apps
-* [ ] confirm: non-shared messages **call** works between apps
-  * [ ] checking NetCreate/MEME, I am not seeing a difference in the server code
-  * [ ] Check each part of the chain
-    * [ ] does the packet reach the server? YES
-    * [ ] does the packet find the matching handler on server? YES
-    * [ ] does server receive a transaction back 
+* dcache - all the udids in this sub, stored in a DifferenceCache of udid=>Device
+* cobjs - received control objects, grouped by controlName =>DifferenceCache **this is what needs to be fillled with control objects**
 
-Here's the [debug investigation](https://docs.google.com/document/d/1g4GqpDHR4hfOVBs_Xdyl6BOUTSGnqIoF_3cn8JMT_tY/edit?usp=sharing) (I'm spending way too much time trying to figure this out). The two main issues are:
+`DEVICES_SUBBED` contains all the subscriptions, but when is it actually populated? That should occur whenever the Device Directory updates
 
-* A mystery clone of the outgoing message packet that returns from the remote...what is initiating it?
-* The original packet that gets returned has bad data in it, but where does it come from? 
-  * `m_urlink.callMessage()` is returning the bad data
-  * is `m_urlink` the same endpoint as what registered the message?
-  * `m_urlink.callMessage()` is called with the `fromNet` option set.
-  * `class-endpoint` passes the `callMessage()` on to the MESSAGER singleton defined in the endpoint. There's only one and it's shared by all EndPoint instances.
-  * WEIRD: The "can't find 'NET:GEM_HOMEAPP'" message comes from the SERVER, which means that the call is returning not found?
+* [x] it's in `client-netdevices` `m_UpdateDeviceMap`, which calls `DATACORE.IngestDevices()`
+* [x] `IngestDevices() ` populates `DEVICE_DIR` and produces added/ updated, subbed. 
+* [x] Change `IngestDevices()` to allow selection of what to retrieve by setting option `{ all: true }`
+* [x] `all` is an array of udevice directory entries, which do not have user or student info
+* [x] `GetSubsByUDID()` want to process the list against the subscribed devices in `DEVICES_SUBBED` to find matching subs for a controlFrame
 
-A little lost. It may be that remote-to-remote calls have been broken for a while, since neither NetCreate or MEME use them (they seem to be all server calls or broadcasts)
+`DEVICES_SUBBED` is a `Map<int,devSub>`, and the sub has `dcache` and `cobjs `. The dcache is a udid-to-cName map for this sub's valid udevices. **Now the subscriptions are being updated when cFrames come in!**
 
-* The originating call to NET:GEM_HOMEAPP has `ch:Net toNet:true toLocal:false isNet:true fromNet: false`
-* The reciever recieves `ch:Net toNet:true toNet:true isNet:true fromNet:true`
+Now CFRAME and DEVMAP are being processed into SUB.DCACHE and GetSubsByUDID...we want to **notify** when **subscription lock** occurs and also **get the DeviceAPI** from the subscription.
 
-we don't seem to be processing `fromNet` correctly on the receiver.
+* [x] `DATACORE.SaveDeviceSub()` is what returned dAPI object.
+* [x] This dAPI is returned by `UR.SubscribeDevice()`, and this is called by `Tracker.jsx`  during componentDidMount. 
 
-**it looks like this has always been broken**
+We are not returning ALL the markers for some reason...that's because we need to iterate over all the devices.
 
-* remote-to-remote call has been broken for a while...it might have worked in PLAE
-* same message signal calls also broken, creating infinite loop
+* [ ] a subscription has  `dcache (udid=>udev)`
+* [ ] and also has `cobjs controlName=>diffcache` 
+* [ ] when processing a controlFrame, subscription d.cache is used to look up a device, and **also** it needs to update cobjs as well with ingest.
+* [ ] that means **controlFrame** has to be careful about not erasing cobjs
+* [ ] need to add an "additiveIngest" somehow. **The differenceCache in cObjects has to be a map.**
 
-The last time this worked, maybe, was in netcreate. 
+What is happening is that the ingest is happening one after the other. We need to keep a map of the incoming objects instead, I think.
 
-* PLAE/ISTEP had an early version of UNISYS, but looking at the calls it seems only the server ones were used to get information. The ones that did return data used a SIGNAL/SIGNAL_ACK pattern!
-* NetCreate doesn't have peer-to-peer calling
+`--- Intermission ---`
 
+1. write a new ingestAdditive method for DifferenceCache
+2. add Tracker update to FakeTrackDevices and also CurrentEntities
+3. fix deviceDirectory sync on Tracker first load
 
+**Fixing DifferenceCache** - the issue starts in the controlFrame parser in client-netdevices `m_ProcessControlFrame(cFrame)`
 
-## MAR 15 MON - Back to Input Routing
+the ingest algorithm:
 
-Ok, it's time to implement something from FakeTrack into the input system. In essence, we have a **list of input devices** available in the `sim-inputs` module, and these input devices are **updated as they come online and offline**. The input **device definition** is a bundle with the **input type** (vector, discrete, number), and the **student id, group, and device logical name**. It is up to sim-inputs and the GUI to give these things **application roles** depending on who's using it. 
+* input: the array of `{ id }` objec `arr`
+* the "last mapped collection" is stored in `sobjs` ("seen objects"), which is a ref to `this.cMap`
+* a "new mapped collection" is stored in `nobjs` ("new objects")
+* pass1: use `sobj` as "objects we've seen before", and compare against the incoming `arr`.  If arrElement is not in the `sobj`, it's **added** since last time. If it's already in `sobj`, then is **updated** since last time `ingest()` was called
+* pass2: scan the incoming `arr` now against the seen objects `sobj` from last run through, and delete anything that is seen now. Any remaining keys in `sobj` are for objects that have disappeared and are considered **removed**
 
-Where we last left off:
+How to fix this???
 
-* [x] defining the client-server messages for handshake
-* [x] sketching-in server and client modules
+well, ingest() has the effect of essentially resetting the "seen objects" cache in this.cMap, so maybe we just make a version that doesn't? Maybe with an **explict reset** version. Let's rename ingest to somethat that implies that it differences. Maybe **`diff()`**  is the replacement for `ingest`
 
-What comes next
+ingest now means "take in inputs without performing the difference", so we want to buffer inputs now.
 
-* [ ] Adding the client module to FakeTrack
-* [ ] Filling-out the client module so FakeTrack instances register with the server
-* [ ] When the client module recieves an input update, tells sim-inputs that it happened
-* [ ] sim-inputs defines a mapping algorithm for mapping inputs to agents
+* [x] add `buffer()` and `diffBuffer()` equivalents 
+* [x] in `m_ProcessControlFrame()` change `diff()` to `buffer()`
+* [x] in `DATACORE.SaveDeviceSub()` make `getInputs()` perform `diffBuffer()` 
 
-**Question: what module "owns" the input-driven agents?**
-The input manager `sim-inputs` will "own" its input objects (IOBs) and make them available for mapping. It's up to `sim-agent` to determine what is done with those input objects. An IOB->AGENT SyncMap could be created by `sim-agent` , and the blueprints decide how to use the input object as either CURSOR or EMBODIMENT. 
+**adding Tracker FakeTrackDeviceFound**
 
-**Question: how do we associate an IOB with a visual in the case of a tracked element?**
-IOBS can also be mapped independently, but maybe it is easier to just pull the "active" IOBs out of the agents themselves during the AGENT->DOBJ syncmapping.
+* [ ] `this.state.devices` needs to be set.
+  * [ ] `Tracker.updateDeviceList()`  tries to update that display
+  * [ ] `UR_DEVICES_CHANGED` handler in constructor should be calling it
 
-## MAR 17 WED - Continuing Input Routing
+**why is deviceDirectory not read on startup?**
 
-* Where is **client-module** initiating the input stuff? **in `client-netdevices`**
-* Where is **server-module** handling requests? **in `svc-netdevices`**
+if Tracker starts after CharControllers are already running, the devices come online, but the **device comm does not**. If Tracker already running and CharController starts, **device comm happens**.
 
-Step by step:
+* [x] when a device pops online, offline, it sends `NET:UR_DEVICES` which is handled by `m_ProcessDeviceMap()`. It happens pretty early, before any subs are registered.
+* [x] Tracker does `UR.SubscribeDevices()` during `UR/APP_READY`, so it also needs to process the device list at that time.
 
-* [x] can client-module reuest something from server-module?
-  * `NET:SRV_PROTOCOLS` should return a data structure
-  * `NET:SRV_DEVICES` should return a data structure
-
-* [x] hook app ready to test calls through NetNode?
-
-What's next? Let's load `client-netdevices` into `FakeTrack` and figure out what needs to happen for registration
-
-* [ ] `FakeTrack.jsx` loads UR. What does it really need to do with it?
-
-  * [ ] The device directory should automatically be populated by the module, which receives data from the server.
-  * [ ] Has to register as a device with a list of named input types (trigger, vector, xyz)
-  * [ ] When registered, it starts emitting its output periodically when told to.
-  * [ ] Has to respond to an input control language
-
-* [ ] The input server has to talk to FakeTrack
-
-  * [ ] receives input frames, and redistributes them
-  * [ ] receives input control modifiers (start, stop, reset, disable, rename, group, transforms) and tells devices
-  * [ ] don't worry about encoding efficiency yet
-
-* [ ] where do TRANSFORMS live? Adjustments are made on sending device, and these transforms can be overridden by another contorller that resets it, whatever
-
-* [ ] `sim-input`  has to subscribe to all these input frames and do something with them
-
-  * [ ] all input is mapped to a device which produces "frames" that are an array of InputObjects
-  * [ ] The device logical id is managed by URSYS, and is not synched to the agent id
-  * [ ] sim-input reads all the device state
-    * [ ] Saves each InputObject into a buffer
-    * [ ] Groups by shared groupname
-    * [ ] Returns pertinent inputs by request (logical name, group name, type) as InputObjects, which are returned as object references
-
-* [ ] `sim-agent` has to request inputs and map them to a set of agents that are input-controlled. 
-
-  * [ ] The number of a group input type needs to produce a corresponding agent with an agentID.
-  * [ ] These agents are assigned Ids from the input, since they are the defining instancer in this case. These ids will be distinct from other agents; the `MappedPool` class doesn't care if the ids are numeric or alphanumeric because it just uses `Map` to check fo uniqueness. However, the `Pool` class maps numbers; we'll have to **update** this and make sure it still works.
-  * [ ] As inputs appear/disappear, the agents also have to be added/removed or maybe deadened
-  * [ ] inputs objects are assigned to an agent, and it's up to the agent to figure out how to use it.
-  * [ ] input objects may make use of a particle effect to show where they are
-
-
-
-
+This is **good enough to merge**!
 
 
 
@@ -511,6 +566,4 @@ Persistant Data
 [ ] handle app packaging, asset packing, identitifying groups, students, orgs that it belongs to. 
 
 ```
-
----
 

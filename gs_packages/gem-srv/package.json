@@ -6,7 +6,7 @@
   "scripts": {
     "local": "npm run dev:gem",
     "dev:srv": "nodemon gem_run.js dev-skip",
-    "dev:gem": "node gem_run dev",
+    "dev:gem": "nodemon gem_run.js dev",
     "..ursys": "cd ../ursys && npm run local",
     "..bootstrap": "cd ../../ && npm run bootstrap",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",
@@ -15,13 +15,13 @@
   "nodemonConfig": {
     "verbose": true,
     "ignore": [
-      "node_modules",
-      ".next"
+      "node_modules"
     ],
     "watch": [
       "../ursys/server",
-      "../ursys/client",
-      "src/*.js"
+      "./gem_run.js",
+      "./server",
+      "./config"
     ],
     "ext": "js json"
   },

@@ -106,7 +106,7 @@ BEES.SetHandler('GetInput', function( int_ms ) {
 ```
 
 PTRACK CONNECTION AND MAPPING
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   InitializeConnection (token, serverAddress )
   -
   InitializeTrackerPiecePool ({ count: cstrFunc: initFunc })
@@ -114,17 +114,17 @@ PTRACK CONNECTION AND MAPPING
   GetValidTrackerPieces ()
 
   LOCATION USER INTERFACE BINDING
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   BindLocationUI ( viewmodel )
 
 
   SET LOCATION (PTRACK) AND GAME WORLD TRANSFORMS
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SetLocationTransform ( locationObj )
   SetWorldTransform ( dimObj )
 
   NOISE REJECTION PARAMETERS & RAW DATA ACCESS
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   UpdateFilterSettings ()
   SetFilterTimeout ( nop )
   SetFilterAgeThreshold ( age )
@@ -135,6 +135,6 @@ PTRACK CONNECTION AND MAPPING
   PTrackEntityDict ()
 
   INPUT SAVING AND PLAYBACK
-  - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   SelectReplayFile ( filename )
   ReplayTrackerData ( filename )

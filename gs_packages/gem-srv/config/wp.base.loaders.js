@@ -17,7 +17,7 @@ const Path = require('path');
 const URSERV = require('@gemstep/ursys/server');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
-const PR = URSERV.PrefixUtil(' PACK/RSV');
+const PR = URSERV.PrefixUtil(' WPACK');
 
 /// CONSTANTS INFO ////////////////////////////////////////////////////////////
 const DIR_ROOT = Path.resolve(__dirname, '../');
@@ -31,7 +31,7 @@ const LOADER_CACHE = Path.join(DIR_ROOT, 'built/cache/cache-loader');
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const WebpackLoaders = () => {
-  console.log(...PR('... setting common webpack loader rules'));
+  console.log(...PR('... wp.base.loaders setting default rules'));
   return {
     module: {
       rules: [
@@ -50,6 +50,10 @@ const WebpackLoaders = () => {
         {
           test: /\.(jsx?|tsx?)$/,
           // CACHE OPTION 2: USE BUILT-IN BABEL CACHE
+          // note: this uses query properties to specify cacheDirectory,
+          // but that is Webpack 1.0 syntax. current practice is to
+          // use a loader object with options.
+          // https://stackoverflow.com/a/33117368
           loader: `babel-loader?cacheDirectory=${BABEL_CACHE}`,
           include: DIR_INCLUDES,
           // don't process js/jsx in node_modules

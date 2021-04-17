@@ -6,7 +6,7 @@
     "audit": "lerna bootstrap && lerna-audit",
     "build": "lerna run build",
     "start": "npm run build && multiview [npm run gem:multi] [npm run admin:multi]",
-    "ursys": "#ERR 'ursys is not runnable from lerna root'",
+    "ursys": "cd gs_packages/ursys/ && npm run local",
     "gem:multi": "npm run build && lerna run dev:gem --stream --no-prefix",
     "gem": "npm run build && cd gs_packages/gem-srv/ && npm run local",
     "admin:multi": "npm run build && lerna run dev:admin --stream --no-prefix",

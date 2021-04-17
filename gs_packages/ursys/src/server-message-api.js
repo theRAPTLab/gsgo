@@ -7,12 +7,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const NetPacket = require('./class-netpacket');
-const { SVR_HANDLERS, RemoteHandlerPromises } = require('./server-datacore');
+const { SVR_HANDLERS, RemoteHandlerPromises, DBG } = require('./server-datacore');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
 
 /// CONSTANTS * DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = { call: true };
 
 /// SERVER-SIDE MESSAGING API /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,13 +79,15 @@ async function UR_CallMessage(mesgName, data) {
  * @param {string} mesgName message to unregister a handler for
  * @param {function} handlerFunc function originally registered
  */
-function UR_SendMessage(mesgName, data) {
-  let pkt = new NetPacket(mesgName, data);
+function UR_SendMessage(mesgName, data, type = 'msend') {
+  let pkt = new NetPacket(mesgName, data, type);
   let promises = RemoteHandlerPromises(pkt);
   // we don't care about waiting for the promise to complete
   if (DBG.call)
     TERM(
-      `${pkt.getInfo()} NETSEND ${pkt.getMessage()} to ${promises.length} remotes`
+      `${pkt.getInfo()} ${type.toUpperCase()} ${pkt.getMessage()} to ${
+        promises.length
+      } remotes`
     );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,7 +98,7 @@ function UR_SendMessage(mesgName, data) {
  * @param {function} handlerFunc function originally registered
  */
 function UR_RaiseMessage(mesgName, data) {
-  UR_SendMessage(mesgName, data);
+  UR_SendMessage(mesgName, data, 'msig');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Server-side local server publishing. It executes synchronously, unlike the

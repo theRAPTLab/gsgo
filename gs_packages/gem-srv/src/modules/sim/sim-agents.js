@@ -5,8 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import SyncMap from 'lib/class-syncmap';
-import DisplayObject from 'lib/class-display-object';
+import DisplayObject from '../../lib/class-display-object';
 import InstanceDef from 'lib/class-instance-def';
 import {
   GetAllAgents,
@@ -24,21 +23,22 @@ import {
   GetAllInstances,
   GetInstance,
   GetInstancesType
-} from 'modules/datacore/dc-agents';
+} from '../datacore/dc-agents';
 import {
   GetBlueprint,
   GetAllBlueprints,
   DeleteBlueprint
 } from 'modules/datacore/dc-script-engine';
-import * as RENDERER from 'modules/render/api-render';
-import { MakeDraggable } from 'lib/vis/draggable';
-import * as TRANSPILER from 'script/transpiler';
+import * as RENDERER from '../render/api-render';
+import { MakeDraggable } from '../../lib/vis/draggable';
+import * as TRANSPILER from './script/transpiler';
+import SyncMap from '../../lib/class-syncmap';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
-const DO_TESTS = !UR.IsRoute('/app/compiler');
+const DO_TESTS = !UR.IsAppRoute('/app/compiler');
 
 const DOBJ_SYNC_AGENT = new SyncMap({
   Constructor: DisplayObject,

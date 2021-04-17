@@ -1,4 +1,9 @@
 {
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
   "search.exclude": {
     "**/node_modules": true,
     "**/.next": true,
