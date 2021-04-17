@@ -62,7 +62,7 @@ export class featCall extends Keyword {
     }
     return [
       (agent: IAgent, state: IState) => {
-        callRef(agent, state.ctx, methodName, ...args);
+        return callRef(agent, state.ctx, methodName, ...args);
       }
     ];
   }

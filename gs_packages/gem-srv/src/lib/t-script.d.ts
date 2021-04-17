@@ -35,6 +35,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   featureMap: Map<string, IFeature>;
   execMethod: (name: string, ...args: any) => any;
   addFeature: (name: string) => void;
+  hasFeature: (name: string) => boolean;
   getFeature: (name: string) => any;
   updateQueue: TMethod[];
   queueUpdateMessage: (msg: IMessage) => void;

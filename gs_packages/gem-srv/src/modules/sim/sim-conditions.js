@@ -18,6 +18,7 @@ import { GetGlobalAgent } from 'lib/class-gagent';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_CONDITIONS');
+const DBG = false;
 const GLOBAL_AGENT = GetGlobalAgent();
 let EVENT_QUEUE = [];
 let GLOBAL_INTERACTIONS = [];
@@ -47,7 +48,72 @@ RegisterFunction('touches', (a, b) => {
     boundsA.y + boundsA.height > boundsB.y;
   return res;
 });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('firstTouches', (a, b) => {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  // if either is inert, no touches are possible
+  if (a.isInert || b.isInert) return false;
+  const boundsA = a.callFeatMethod('Physics', 'getBounds');
+  const boundsB = b.callFeatMethod('Physics', 'getBounds');
+  const isTouching =
+    boundsA.x < boundsB.x + boundsB.width &&
+    boundsA.x + boundsA.width > boundsB.x &&
+    boundsA.y < boundsB.y + boundsB.height &&
+    boundsA.y + boundsA.height > boundsB.y;
 
+  // HACK firstTouches by stuffing a Map into the agents
+  // 1. Initialize if not set
+  a.wasFirstTouching = a.wasFirstTouching || new Map();
+  b.wasFirstTouching = b.wasFirstTouching || new Map();
+  // 2. Is this a firstTouch?
+  let res = false;
+  if (
+    isTouching &&
+    !a.wasFirstTouching.get(b.id) &&
+    !b.wasFirstTouching.get(a.id)
+  ) {
+    // they were not touching, so this is thefirst touch
+    if (DBG) console.log(...PR('first touch!', a.id, b.id));
+    res = true;
+  }
+  // 3. Save touch status
+  a.wasFirstTouching.set(b.id, isTouching);
+  b.wasFirstTouching.set(a.id, isTouching);
+
+  return res;
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('lastTouches', (a, b) => {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  // if either is inert, no touches are possible
+  if (a.isInert || b.isInert) return false;
+  const boundsA = a.callFeatMethod('Physics', 'getBounds');
+  const boundsB = b.callFeatMethod('Physics', 'getBounds');
+  const isTouching =
+    boundsA.x < boundsB.x + boundsB.width &&
+    boundsA.x + boundsA.width > boundsB.x &&
+    boundsA.y < boundsB.y + boundsB.height &&
+    boundsA.y + boundsA.height > boundsB.y;
+
+  // HACK lastTouches by stuffing a Map into the agents
+  // 1. Initialize if not set
+  a.wasLastTouching = a.wasLastTouching || new Map();
+  b.wasLastTouching = b.wasLastTouching || new Map();
+  // 2. Is this a firstTouch?
+  let res = false;
+  if (!isTouching && a.wasLastTouching.get(b.id) && b.wasLastTouching.get(a.id)) {
+    // they are not touching now, but were touching before, so this is last touch
+    if (DBG) console.log(...PR('last touch!', a.id, b.id));
+    res = true;
+  }
+  // 3. Save touch status
+  a.wasLastTouching.set(b.id, isTouching);
+  b.wasLastTouching.set(a.id, isTouching);
+
+  return res;
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('isCloseTo', (a, b, distance = 30) => {
   // checks if distance between agents is less than distance
