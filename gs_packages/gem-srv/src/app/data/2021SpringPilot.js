@@ -38,8 +38,17 @@ exprPush {{ agent.name }}
 propPop text
 
 # PROGRAM EVENT
-onEvent Tick [[
-  // foodLevel goes down every second
+
+# PROGRAM UPDATE
+when Fish touches Algae [[
+  every 1 [[
+    prop Fish.energyLevel add 10
+    prop Algae.energyLevel sub 10
+    featCall Fish.Costume setGlow 0.5
+  ]]
+]]
+every 1 [[
+  // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
 
   // set name + energyLevel
@@ -75,30 +84,6 @@ onEvent Tick [[
   // set meter
   exprPush {{ agent.getProp('energyLevel').value / 100 }}
   propPop meter
-
-]]
-# PROGRAM UPDATE
-when Fish touches Algae [[
-
-  ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-    prop Fish.energyLevel add 1
-    prop Algae.energyLevel sub 1
-    featCall Fish.Costume setGlow 1
-  ]]
-
-  // Add energy to Fish and subtract energy from Algae
-  //
-  // This doens't work: Fish and Algae context are lost within the ifExpr in when
-  //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-  //  prop Fish.energyLevel add 1
-  //  prop Algae.energyLevel sub 1
-  //]]
-  //
-  // hack around ifExpr bug
-  // exprPush {{ Fish.getProp('energyLevel').value + (Algae.getProp('energyLevel').value > 0 ? 1 : 0) }}
-  // propPop Fish.energyLevel
-  // // min is 0, so it's always OK to subtract one
-  // prop Algae.energyLevel sub 1
 
 ]]
 `
@@ -145,36 +130,43 @@ onEvent Tick [[
 ]]
 
 # PROGRAM UPDATE
-when Algae touches Lightbeam [[
-  exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
-  propPop Algae.energyLevel
+when Algae touches Sunbeam [[
+  every 1 [[
+    featCall Algae.Costume setGlow 1
+    exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
+    propPop energyLevel
+  ]]
 
-  featCall Costume setGlow 1
+  // update name
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
+]]
+every 1 [[
+  prop energyLevel sub 1
+  // update name
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
 ]]
 `
     },
     {
-      id: 'Lightbeam',
-      label: 'Lightbeam',
-      script: `# BLUEPRINT Lightbeam
+      id: 'Sunbeam',
+      label: 'Sunbeam',
+      script: `# BLUEPRINT Sunbeam
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
 addProp speed Number 10
-addProp energyRate Number 1
+addProp energyRate Number 5
 addProp direction Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 256
+featCall Physics setSize 100 500
 
 prop agent.skin setTo 'lightbeam.json'
 prop agent.alpha setTo 0.3
-
-// featCall Movement setController 'user'
-// prop agent.x setTo -300
-// prop agent.y setTo -300
 
 # PROGRAM EVENT
 onEvent Tick [[
@@ -296,7 +288,7 @@ onEvent Tick [[
   instances: [
     {
       id: 501,
-      name: 'fish01',
+      name: 'Nathan Fish',
       blueprint: 'Fish',
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
@@ -305,7 +297,7 @@ prop energyLevel setTo 54`
     },
     {
       id: 502,
-      name: 'fatFish',
+      name: 'Kalani Fish',
       blueprint: 'Fish',
       initScript: `prop x setTo 100
 prop y setTo 100
@@ -313,44 +305,45 @@ prop energyLevel setTo 100` // extra property test
     },
     {
       id: 503,
-      name: 'starvedFish',
+      name: 'Sara Fish',
       blueprint: 'Fish',
       initScript: `prop x setTo 200` // missing y test
     },
     {
       id: 504,
-      name: 'algae01',
+      name: 'Algae 1',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
 prop y setTo 120`
     },
     {
       id: 505,
-      name: 'algae02',
+      name: 'Algae 2',
       blueprint: 'Algae',
       initScript: `prop x setTo -150
-prop y setTo -120`
+prop y setTo -120
+prop energyLevel setTo 50`
     },
     {
       id: 506,
-      name: 'algae03',
+      name: 'Algae 3',
       blueprint: 'Algae',
       initScript: `prop x setTo -120
 prop y setTo -90`
     },
     {
       id: 507,
-      name: 'lightbeam01',
-      blueprint: 'Lightbeam',
+      name: 'Sunbeam 1',
+      blueprint: 'Sunbeam',
       initScript: `prop x setTo -600
-prop y setTo -160`
+prop y setTo -180`
     },
     {
       id: 510,
       name: 'Avg Algae Health',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 235
-prop y setTo -260
+      initScript: `prop x setTo 50
+prop y setTo 320
 prop reportSubject setTo 'Algae'
 prop alpha setTo 0.3
 prop meterClr setTo 65280`
@@ -359,18 +352,18 @@ prop meterClr setTo 65280`
       id: 511,
       name: 'Max Fish  Health',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 350
-prop y setTo -260
+      initScript: `prop x setTo -50
+prop y setTo 320
 prop reportSubject setTo 'Fish'
 prop alpha setTo 0.3
 prop meterClr setTo 3120383`
     },
     {
       id: 512,
-      name: 'timer',
+      name: 'Timer',
       blueprint: 'Timer',
-      initScript: `prop x setTo 150
-prop y setTo -260`
+      initScript: `prop x setTo 0
+prop y setTo 350`
     }
   ]
 };
