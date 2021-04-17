@@ -33,18 +33,26 @@ RegisterFunction('dies', a => {
   return false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('touches', (a, b, distance = 30) => {
-  // not actually a "touch"
-  // checks if distance between agents is less than 10
+RegisterFunction('touches', (a, b) => {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  // if either is inert, no touches are possible
+  if (a.isInert || b.isInert) return false;
+  const boundsA = a.callFeatMethod('Physics', 'getBounds');
+  const boundsB = b.callFeatMethod('Physics', 'getBounds');
+  const res =
+    boundsA.x < boundsB.x + boundsB.width &&
+    boundsA.x + boundsA.width > boundsB.x &&
+    boundsA.y < boundsB.y + boundsB.height &&
+    boundsA.y + boundsA.height > boundsB.y;
+  return res;
+});
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('isCloseTo', (a, b, distance = 30) => {
+  // checks if distance between agents is less than distance
   let xs = a.prop.x.value - b.prop.x.value;
   let ys = a.prop.y.value - b.prop.y.value;
-  // INSPECTOR HACK
-  let data = {
-    name: a.name,
-    x: a.prop.x.value,
-    y: b.prop.y.value,
-    energyLevel: a.prop.energyLevel ? a.prop.energyLevel.value : ''
-  };
   if (Math.hypot(xs, ys) < distance) {
     return true; // touches!
   }

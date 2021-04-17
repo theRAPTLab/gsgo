@@ -49,6 +49,12 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   getFeatProp: (fName: string, pName: string) => IScopeable;
   // shortcut properties
   skin: string;
+  scale: number;
+  scaleY: number;
+  alpha: number;
+  isInert: boolean;
+  isGlowing: boolean;
+  text: string;
   x: number;
   y: number;
   // name, value are defined in IScopeable
@@ -180,7 +186,7 @@ export type TInstance = {
   blueprint: string;
   id?: number;
   name?: string;
-  init?: TScriptUnit[];
+  initScript?: TScriptUnit[];
 };
 export type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name
 

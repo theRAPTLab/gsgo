@@ -14,8 +14,6 @@ addProp health Number 3
 propCall health setMin 0
 propCall health setMax 10
 
-# PROGRAM INIT
-
 # PROGRAM UPDATE
 
 # PROGRAM EVENT
@@ -49,14 +47,14 @@ when Rabbit touches Grass [[
       id: 501,
       name: 'bee01',
       blueprint: 'Bee',
-      init: `prop x setTo 0
+      initScript: `prop x setTo 0
 prop y setTo 0`
     },
     {
       id: 502,
       name: 'bee02',
       blueprint: 'Bee',
-      init: `prop x setTo 100
+      initScript: `prop x setTo 100
 prop y setTo 100`
     }
   ]

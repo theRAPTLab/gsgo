@@ -1,7 +1,7 @@
 /* eslint-disable max-classes-per-file */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  implementation of keyword "ifExpr" command object
+  implementation of keyword "exprPush" command object
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -12,11 +12,11 @@ import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export class ifExpr extends Keyword {
+export class exprPush extends Keyword {
   // base properties defined in KeywordDef
   constructor() {
-    super('ifExpr');
-    this.args = ['test:TMethod', 'consequent:TMethod', 'alternate:TMethod'];
+    super('exprPush');
+    this.args = ['expr:TMethod'];
   }
 
   /** create smc blueprint code objects
@@ -24,39 +24,29 @@ export class ifExpr extends Keyword {
    *  from {{ }} to a ParseTree
    */
   compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, test, consq, alter] = unit;
+    const [kw, expr] = unit;
     const code = [];
     code.push((agent, state) => {
-      const vals = agent.exec(test, state.ctx);
-      const result = UtilFirstValue(vals);
-      if (result && consq) agent.exec(consq, state.ctx);
-      if (!result && alter) agent.exec(alter, state.ctx);
+      const vals = agent.exec(expr, state.ctx);
+      state.push(vals);
     });
     return code;
   }
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { testName, consequent, alternate } = state;
-    return [this.keyword, testName, consequent, alternate];
+    const { expr } = state;
+    return [this.keyword, expr];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
-    const [kw, testName, consequent, alternate] = unit;
-    const cc = consequent ? 'TRUE:[consequent]' : '';
-    const aa = alternate ? 'FALSE:[alternate]' : '';
-    return super.jsx(
-      index,
-      unit,
-      <>
-        ifExpr {testName} {cc} {aa}
-      </>
-    );
+    const [kw, expr] = unit;
+    return super.jsx(index, unit, <>exprPush {`'${expr}'`}</>);
   }
 } // end of DefProp
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for keyword export
-RegisterKeyword(ifExpr);
+RegisterKeyword(exprPush);

@@ -248,6 +248,7 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
  *  string arrays.
  */
 function ScriptifyText(text: string): TScriptUnit[] {
+  if (text === undefined) return [];
   const sourceStrings = text.split('\n');
   const script = scriptifier.tokenize(sourceStrings);
   return script;
@@ -261,8 +262,15 @@ function TextifyScript(units: TScriptUnit[]): string {
     if (unit[0] === '_comment') unit[0] = '//';
     const toks = [];
     unit.forEach((tok, uidx) => {
-      if (uidx === 0) toks.push(tok);
-      else toks.push(m_Tokenify(tok));
+      // Orig Call
+      // This was broken with the new script unit object model.
+      // It would return '{token: value}' instead of `value`
+      // if (uidx === 0) toks.push(tok);
+      // else toks.push(m_Tokenify(tok));
+
+      // HACK Fix to work around new object model
+      // This will probably break with nested expressions
+      toks.push(tok.token || tok.value);
     });
     lines.push(`${toks.join(' ')}`);
   });
@@ -349,6 +357,80 @@ function CompileBlueprint(units: TScriptUnit[]): SM_Bundle {
   bdl.setType(EBundleType.BLUEPRINT);
   return bdl;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint name from a script
+ * Compiles raw scriptText to determine the blueprint name
+ * @param {string} script
+ */
+function ExtractBlueprintName(script) {
+  const source = ScriptifyText(script);
+  const bundle = CompileBlueprint(source); // compile to get name
+  return bundle.name;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint properties
+ * @param {string} script
+ * @return {Object[]} [...{name, type, defaultValue, isFeatProp}]
+ */
+function ExtractBlueprintProperties(script) {
+  // HACK in built in properties -- where should these be looked up?
+  // 1. Start with built in properties
+  let properties = [
+    { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+    // Don't allow wizard to set built-in skin property directly.
+    // This should be handled via `featCall Costume setCostume` because that
+    // call properly initializes the frameCount.
+    // { name: 'skin', type: 'string', defaultValue: 'bunny.json', isFeatProp: true }
+  ];
+  // 2. Brute force deconstruct added properties
+  //    by walking down script and looking for `addProp`
+  if (!script) return properties; // During update script can be undefined
+  const scriptUnits = ScriptifyText(script);
+  scriptUnits.forEach(unit => {
+    if (unit[0] && unit[0].token === 'addProp') {
+      properties.push({
+        name: unit[1].token,
+        type: unit[2].token.toLowerCase(),
+        defaultValue: unit[3].value,
+        isFeatProp: false
+      });
+    }
+  });
+  return properties;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint property types
+ * Used by PanelScript to generate property menus
+ * @param {string} script
+ * @return {map} [ ...{name: {name, type, defaultValue, isFeatProp}]
+ */
+function ExtractBlueprintPropertiesMap(script) {
+  const properties = this.ExtractBlueprintProperties(script);
+  const map = new Map();
+  properties.forEach(p => map.set(p.name, p));
+  return map;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving the blueprint properties from a script
+ * Compiles raw scriptText to determine the blueprint property types
+ * Used by PanelScript to generate property menus
+ * @param {string} script
+ * @return {map} [ ...{name: type}]
+ */
+function ExtractBlueprintPropertiesTypeMap(script) {
+  const properties = this.ExtractBlueprintProperties(script);
+  const map = new Map();
+  properties.forEach(p => map.set(p.name, p.type));
+  return map;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
@@ -453,5 +535,9 @@ export {
 export {
   MakeAgent, // BlueprintName => Agent
   RemoveAgent,
-  RegisterBlueprint // TScriptUnit[] => ISM_Bundle
+  RegisterBlueprint, // TScriptUnit[] => ISM_Bundle
+  ExtractBlueprintName,
+  ExtractBlueprintProperties,
+  ExtractBlueprintPropertiesMap,
+  ExtractBlueprintPropertiesTypeMap
 };

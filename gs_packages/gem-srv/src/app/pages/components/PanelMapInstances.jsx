@@ -18,7 +18,7 @@ class PanelMapInstances extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Map Instances'
+      title: 'Characters'
     };
   }
 
@@ -58,10 +58,11 @@ class PanelMapInstances extends React.Component {
           style={{
             display: 'flex',
             flexDirection: 'column',
-            fontSize: '12px'
+            fontSize: '12px',
+            overflow: 'hidden'
           }}
         >
-          <span className={classes.instructions}>click to show/hide data</span>
+          <span className={classes.instructions}>click to edit character</span>
           <div>
             {instancesByBlueprint.map(blueprint => (
               <div

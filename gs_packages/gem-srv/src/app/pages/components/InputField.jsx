@@ -82,20 +82,18 @@ class InputField extends React.Component {
     if (isEditable) {
       // Show Form
       jsx = (
-        <>
-          <div className={classes.inspectorLabel}>{propName}:</div>
-          <div className={classes.inspectorData}>
-            <input
-              onChange={this.onChange}
-              onKeyDown={this.onKeyDown}
-              onBlur={this.onBlur}
-              onClick={this.onClick}
-              type={type}
-              value={currentValue}
-              style={{ width: '5em' }}
-            />
-          </div>
-        </>
+        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+          <div className={classes.instanceEditorLabel}>{propName} </div>
+          <input
+            onChange={this.onChange}
+            onKeyDown={this.onKeyDown}
+            onBlur={this.onBlur}
+            onClick={this.onClick}
+            type={type}
+            value={currentValue}
+            className={classes.instanceEditorField}
+          />
+        </div>
       );
     } else {
       // Show Static Value

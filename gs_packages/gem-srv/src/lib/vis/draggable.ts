@@ -54,6 +54,11 @@ export function MakeDraggable(vobj: Visual) {
         // otherwise it's a click, so restore the original position
         agent.prop.x.value = origX;
         agent.prop.y.value = origY;
+        // and raise SIM_INSTANCE_CLICK
+        // used in place of selectable.ts
+        // need to handle this here in draggable to differentiate
+        // the mouseup from dragging
+        UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId: agent.id });
       }
     }
     // set the interaction data to null
@@ -73,7 +78,7 @@ export function MakeDraggable(vobj: Visual) {
       }
     }
   }
-  const spr = vobj.sprite;
+  const spr = vobj.container;
   spr.interactive = true; // enable interactive events
   spr.on('mousedown', onDragStart);
   spr.on('mouseup', onDragEnd);

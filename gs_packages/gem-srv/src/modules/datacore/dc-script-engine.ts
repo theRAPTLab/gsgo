@@ -135,7 +135,27 @@ export function GetBlueprint(name: string): ISMCBundle {
   if (!bdl) console.warn(`blueprint '${name}' does not exist`);
   return bdl;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAllBlueprints() {
+  const arr = [];
+  const maps = [...BLUEPRINTS.values()];
+  maps.forEach(map => {
+    arr.push(map);
+  });
+  return arr;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteBlueprint(name: string) {
+  if (!BLUEPRINTS.has(name)) {
+    console.warn(`trying to delete non-existent blueprint '${name}'`);
+    return;
+  }
+  BLUEPRINTS.delete(name);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllBlueprints() {
+  BLUEPRINTS.clear();
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a program name [[progname]] might be passed, which needs to be dereferenced
  *  into a TSMCProgram stored in the FUNCTIONS table

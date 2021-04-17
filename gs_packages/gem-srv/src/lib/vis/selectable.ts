@@ -2,6 +2,12 @@
 
   Make Selectable
 
+  NOTE: Use draggable.ts if dragging is desired.
+        draggable will handle the click event.
+
+        Use selectable.ts if you ONLY want click
+        detection and NO drag support.
+
   Handles clicks on a sprite:
   1. This will set the `isSelected` state
   2. This will show an outline on the sprite
@@ -13,7 +19,7 @@
         => sends SIM_INSTANCE_CLICK
     2.  InstanceEditor handles SIM_INSTANCE_CLICK
         => sends NET:INSTANCE_REQUEST_EDIT
-    3.  sim-data handles NET:INSTANCE_REQUEST_EDIT
+    3.  project-data handles NET:INSTANCE_REQUEST_EDIT
         => Sets agent.isSelected
         => raises INSTANCE_EDIT_ENABLE
            InstanceEditor handles INSTANCE_EDIT_ENABLE
@@ -48,7 +54,7 @@ export function MakeSelectable(vobj: Visual) {
     }
   }
 
-  const spr = vobj.sprite;
+  const spr = vobj.container;
   spr.interactive = true; // enable interactive events
   spr.on('pointertap', onTap);
 }

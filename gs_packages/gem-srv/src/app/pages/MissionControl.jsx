@@ -35,7 +35,7 @@ import PanelMessage from './components/PanelMessage';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
-import SimData from '../data/sim-data';
+import ProjectData from '../data/project-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -82,19 +82,25 @@ class MissionControl extends React.Component {
       message: '',
       modelId: '',
       model: {},
-      instances: [],
-      runIsMinimized: true
+      inspectorInstances: [],
+      runIsMinimized: true,
+      scriptsNeedUpdate: false
     };
 
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
+    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.HandleInstancesUpdate = this.HandleInstancesUpdate.bind(this);
     this.CallSimPlaces = this.CallSimPlaces.bind(this);
+    this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
-    UR.HandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    this.PostMessage = this.PostMessage.bind(this);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
+    UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
 
@@ -145,8 +151,8 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
@@ -159,20 +165,30 @@ class MissionControl extends React.Component {
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    // Direct SimData API Call
-    // This bypasses OnSimDataUpdate
-    const model = SimData.GetModel(modelId);
+    ProjectData.SetCurrentModelId(modelId);
+    const model = ProjectData.GetCurrentModel();
     this.setState(
       { model },
       () => this.CallSimPlaces() // necessary to update screen after overall model updates
     );
   }
-  OnSimDataUpdate(data) {
+  HandleSimDataUpdate(data) {
+    if (DBG) console.log('HandleSimDataUpdate', data);
+    if (SIM.IsRunning()) {
+      this.setState({ scriptsNeedUpdate: true });
+      return; // skip update if it's already running
+    }
     this.setState(
-      { model: data.model },
+      { modelId: data.modelId, model: data.model },
       // Need to call SimPlaces here after prop updates or agents won't reposition
       () => this.CallSimPlaces()
     );
+  }
+  HandleInstancesUpdate(data) {
+    if (DBG) console.log('HandleInstancesUpdate', data);
+    const { model } = this.state;
+    model.instances = data.instances;
+    this.setState({ model });
   }
   /**
    * User has submitted a new script, just update message
@@ -181,26 +197,33 @@ class MissionControl extends React.Component {
    */
   DoScriptUpdate(data) {
     const firstline = data.script.match(/.*/)[0];
-    this.setState(state => ({
-      message: `${state.message}Received script ${firstline}\n`
-    }));
+    this.PostMessage(`Received script ${firstline}`);
+    // HandleSimDataUpdate will set scriptNeedsUpdate flag
   }
   CallSimPlaces() {
     UR.RaiseMessage('*:SIM_PLACES');
   }
+  DoSimStop() {
+    // Give it extra time after the "HACK_SIM_STOP" message is raised as the sim does not stop  immediately
+    setTimeout(() => this.forceUpdate(), 250);
+  }
   DoSimReset() {
+    this.PostMessage(`Simulation Reset!`);
     this.setState(
       {
         model: {},
-        instances: []
-      },
-      () => this.LoadModel()
+        inspectorInstances: [],
+        scriptsNeedUpdate: false
+      }
+      // SIM.Reset() will trigger SIM/READY, which triggers a LoadModel
     );
   }
   /**
    * Handler for `NET:INSPECTOR_UPDATE`
    * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
-   * with agent information for every registered instance
+   * with agent information for every registered instance.
+   * In order to keep data to a minimum, we don't pass the full data
+   * for instances that haven't ben registered, just the bare minimum.
    * @param {Object} data { agents: [...agents]}
    *                 wHere `agents` are gagents
    */
@@ -216,33 +239,32 @@ class MissionControl extends React.Component {
       console.error('OnInspectorUpdate got bad data', data);
       return;
     }
-    // merge the two lists, replacing instance specs with agents
-    const map = new Map();
-    const allInstances = GetAllInstances();
-    allInstances.forEach(i => {
-      map.set(i.id, i);
-    });
-    data.agents.forEach(a => {
-      map.set(a.id, a);
-    });
-    const instances = Array.from(map.values());
-    this.setState({ instances });
+    this.setState({ inspectorInstances: data.agents });
+  }
+
+  PostMessage(text) {
+    this.setState(state => ({
+      message: `${state.message}${new Date().toLocaleTimeString()} :: ${text}\n`
+    }));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// INSTANCE INTERACTION HANDLERS
   ///
   HandleDragEnd(data) {
-    const agent = data.agent;
-    console.log('dropped', agent.prop.x.value, agent.prop.y.value);
-    const { modelId } = this.state;
-    const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
-    const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-    SimData.InstanceUpdatePosition({
-      modelId,
-      instanceId: agent.id,
-      updatedData: { x, y }
-    });
+    const { panelConfiguration } = this.state;
+    // Only update init if we're in edit mode
+    if (panelConfiguration === 'edit') {
+      const agent = data.agent;
+      const { modelId } = this.state;
+      const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
+      const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
+      ProjectData.InstanceUpdatePosition({
+        modelId,
+        instanceId: agent.id,
+        updatedData: { x, y }
+      });
+    }
   }
   /**
    * User clicked on agent instance in simulation view
@@ -252,23 +274,45 @@ class MissionControl extends React.Component {
    * @param {object} data { agentId }
    */
   HandleSimInstanceClick(data) {
-    const { modelId } = this.state;
-    SimData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+    const { panelConfiguration, modelId } = this.state;
+    // Only request instance edit in edit mode
+    if (panelConfiguration === 'edit') {
+      ProjectData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+    } else {
+      UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
+    }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
-    SimData.InstanceHoverOver({ modelId, agentId: data.agentId });
+    ProjectData.InstanceHoverOver({ modelId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { modelId } = this.state;
-    SimData.InstanceHoverOut({ modelId, agentId: data.agentId });
+    ProjectData.InstanceHoverOut({ modelId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// PANEL UI CONFIGURATION
   ///
-  OnToggleRunEdit(e, val) {
-    this.setState({ panelConfiguration: val });
+  OnToggleRunEdit(e, newConfig) {
+    if (newConfig === null) return; // skip if it's a click on the same button
+
+    // Automatically trigger reset when changing modes.
+    // This is necessary because blueprints are not recompiled
+    // if scripts are submitted while the sim is running.
+    // If the user then switches to edit the map, they may
+    // inadvertently select newly defined properties that
+    // the old instances do not support.  A reset will
+    // cause the instances to be recompiled.
+    const { scriptsNeedUpdate } = this.state;
+    if (scriptsNeedUpdate) {
+      UR.RaiseMessage('NET:HACK_SIM_RESET'); // Reset will trigger SimPlaces
+    } else {
+      // Call SimPlaces so instanceInspector will update
+      // after adding instances in mapeditor
+      this.CallSimPlaces();
+    }
+    this.setState({ panelConfiguration: newConfig });
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({
@@ -295,8 +339,9 @@ class MissionControl extends React.Component {
       message,
       modelId,
       model,
-      instances,
-      runIsMinimized
+      inspectorInstances,
+      runIsMinimized,
+      scriptsNeedUpdate
     } = this.state;
     const { classes } = this.props;
 
@@ -319,17 +364,20 @@ class MissionControl extends React.Component {
           exclusive
           onChange={this.OnToggleRunEdit}
         >
-          <StyledToggleButton value="run">Run Model</StyledToggleButton>
-          <StyledToggleButton value="edit">Edit Map</StyledToggleButton>
+          <StyledToggleButton value="run">Run</StyledToggleButton>
+          <StyledToggleButton value="edit" disabled={SIM.IsRunning()}>
+            Setup the Stage
+          </StyledToggleButton>
         </ToggleButtonGroup>
       </div>
     );
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor model={model} />
+        <MissionMapEditor modelId={modelId} model={model} />
       ) : (
         <MissionRun
+          modelId={modelId}
           model={model}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}
@@ -340,7 +388,8 @@ class MissionControl extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration)
+          gridTemplateColumns: PANEL_CONFIG.get(panelConfiguration),
+          gridTemplateRows: '50px auto 100px'
         }}
       >
         <div
@@ -349,14 +398,14 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MISSION CONTROL {modelId}</span>{' '}
+            <span style={{ fontSize: '32px' }}>MAIN {modelId}</span>{' '}
             {UR.ConnectionString()}
           </div>
           <Link
             to={{ pathname: `/app/model?model=${modelId}` }}
             className={classes.navButton}
           >
-            Back to MODEL
+            Back to PROJECT
           </Link>
         </div>
         <div
@@ -368,7 +417,7 @@ class MissionControl extends React.Component {
             style={{
               display: 'grid',
               gridTemplateRows:
-                panelConfiguration === 'edit' ? '60px auto' : '60px auto 100px',
+                panelConfiguration === 'edit' ? '60px auto' : '60px auto auto',
               overflow: 'hidden'
             }}
           >
@@ -380,14 +429,24 @@ class MissionControl extends React.Component {
           <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <PanelPlayback id="playback" model={model} />
-            <PanelInstances id="instances" instances={instances} />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: '150px auto',
+              overflow: 'hidden'
+            }}
+          >
+            <PanelPlayback
+              id="playback"
+              model={model}
+              needsUpdate={scriptsNeedUpdate}
+            />
+            <PanelInstances id="instances" instances={inspectorInstances} />
           </div>
         </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
           <PanelMessage message={message} />

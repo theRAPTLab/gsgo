@@ -32,7 +32,9 @@ class PanelChrome extends React.PureComponent {
             fontSize: '12px',
             textTransform: 'uppercase',
             paddingLeft: '0.5em',
-            cursor: 'pointer'
+            cursor: 'pointer',
+            minHeight: '1.3em',
+            overflow: 'hidden'
           }}
           onClick={() => onClick(id)}
         >
@@ -41,9 +43,8 @@ class PanelChrome extends React.PureComponent {
         {topbar}
         <div
           style={{
-            overflow: 'auto',
             flexGrow: 1,
-            height: '100%'
+            overflow: 'auto'
           }}
         >
           {children}

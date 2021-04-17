@@ -21,7 +21,7 @@ let INSTANCE_COUNTER = 1000;
  *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
-  const { blueprint, id, init, name = '<none>' } = instanceDef;
+  const { blueprint, id, initScript, name = '<none>' } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
   if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
   const bpi = INSTANCES.get(blueprint);
@@ -32,11 +32,38 @@ export function DefineInstance(instanceDef: TInstance) {
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function UpdateInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0)
+    console.error(...PR(`UpdateInstance couldn't find instance ${id}`));
+  bpi[index] = instanceDef;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0)
+    console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
+  bpi.splice(index, 1);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetAllInstances() {
   const instances = [];
   const map = [...INSTANCES.values()];
   map.forEach(i => instances.push(...i));
   return instances;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetInstance(instanceDef: TInstance) {
+  const { blueprint, id } = instanceDef;
+  const bpi = INSTANCES.get(blueprint);
+  if (bpi === undefined) return undefined;
+  const index = bpi.findIndex(i => i.id === id);
+  if (index < 0) return undefined;
+  return bpi[index];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the instance definitions that are blueprint */
@@ -52,7 +79,7 @@ export function DeleteAllInstances() {
   INSTANCE_COUNTER = 100;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function DeleteBlueprintInstances(blueprint) {
+export function DeleteInstancesByBlueprint(blueprint) {
   INSTANCES.set(blueprint, []);
 }
 
@@ -79,39 +106,32 @@ export function SaveAgent(agent) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- *  REVIEW: We are referencing `agent.meta.name` in order to look up
- *  the GAgent.id.  Is there a better way to look up the agent id
- *  using the information in `instancedef`?
- *
  *  To delete the agent, we need to remove it from: AGENT and AGENT_DICT.
  *
  *  1. AGENT map values are a second map of `agents`.
  *     `agents` key is a GAgent.id, which is based on an sm-object counter.
- *     The problem is that `instancedef` does not include the GAgent.id,
- *     `instancedef` does have the unique instance name, e.g. `Fish4519`
- *     as do the GAgent objects in the `agents` map saved as
- *     `agent.meta.name`.
- *  2. AGENT_DICT values are also a second map of `agents`
+ *  2. AGENT_DICT values are also a map of `agents`
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, name } = instancedef;
+  const { blueprint, id, name } = instancedef;
   if (!AGENTS.has(blueprint)) {
     console.error(...PR(`blueprint ${blueprint} not found`));
     return;
   }
   const agents = AGENTS.get(blueprint);
-  const agentsArray = Array.from(agents.values()); // convert for finding
-  let agent = agentsArray.find(a => a.meta.name === name);
-  if (agent === undefined) {
-    console.error(...PR(`agent ${name} not found`));
-    return;
-  }
-  agents.delete(agent.id);
-  AGENT_DICT.delete(agent.id);
+  agents.delete(id);
+  AGENTS.set(blueprint, agents);
+  AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return agent set by type */
+export function DeleteAgentByBlueprint(blueprintName) {
+  const agents = AGENTS.get(blueprintName);
+  AGENTS.delete(blueprintName);
+  agents.forEach(a => AGENT_DICT.delete(a.id));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return GAgent array by type */
 export function GetAgentsByType(bpName) {
   const agentSet = AGENTS.get(bpName);
   if (!agentSet) {
@@ -124,15 +144,6 @@ export function GetAgentsByType(bpName) {
 export function GetAgentById(id): IAgent {
   const agent = AGENT_DICT.get(id);
   if (agent) return agent;
-  console.warn(...PR(`agent ${id} not in AGENT_DICT`));
-  return undefined;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetAgentByName(name): IAgent {
-  const agents = GetAllAgents();
-  const agent = agents.find(a => a.meta.name === name);
-  if (agent) return agent;
-  console.warn(...PR(`agent ${name} not found`));
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,6 +154,13 @@ export function GetAllAgents() {
     arr.push(...map.values());
   });
   return arr;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAgentByName(name): IAgent {
+  const agents = GetAllAgents();
+  const agent = agents.find(a => a.meta.name === name);
+  if (agent) return agent;
+  return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllAgents() {

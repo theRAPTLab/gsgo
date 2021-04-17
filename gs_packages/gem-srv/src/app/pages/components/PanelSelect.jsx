@@ -8,13 +8,12 @@ class PanelSelect extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Work',
+      title: 'Select',
       options: [
         // Dummy Data
-        { id: 'missioncontrol', label: 'Mission Control' },
-        { id: 'scripteditor', label: 'Script Editor' },
-        { id: 'faketrack', label: 'Fake Track' },
-        { id: 'viewer', label: 'View-only' }
+        { id: 'missioncontrol', label: 'Main' },
+        { id: 'viewer', label: 'Viewer' },
+        { id: 'faketrack', label: 'Fake Track' }
       ]
     };
     this.onClick = this.onClick.bind(this);
@@ -24,7 +23,7 @@ class PanelSelect extends React.Component {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     let { modelId } = this.props;
-    window.location = `/app/${url}?${modelId}`;
+    window.location = `/app/${url}?model=${modelId}`;
   }
 
   render() {

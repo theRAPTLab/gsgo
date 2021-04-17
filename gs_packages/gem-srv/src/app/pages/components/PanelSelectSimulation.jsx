@@ -4,7 +4,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 // HACK DATA LOADING
-import SimData from '../../data/sim-data';
+import ProjectData from '../../data/project-data';
 
 import PanelChrome from './PanelChrome';
 
@@ -12,7 +12,7 @@ class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Simulation',
+      title: 'Select Project',
       models: []
       // models: [
       //   // Dummy Data
@@ -23,17 +23,10 @@ class PanelSelectSimulation extends React.Component {
       // ]
     };
     this.onClick = this.onClick.bind(this);
-    this.OnModelsUpdate = this.OnModelsUpdate.bind(this);
-
-    UR.HandleMessage('NET:UPDATE_MODELS', this.OnModelsUpdate);
   }
 
   componentDidMount() {
-    UR.RaiseMessage('*:REQUEST_MODELS');
-  }
-
-  componentWillUnmount() {
-    UR.UnhandleMessage('NET:UPDATE_MODELS', this.OnModelsUpdate);
+    this.setState({ models: ProjectData.GetModels() });
   }
 
   onClick(modelId) {
@@ -42,10 +35,6 @@ class PanelSelectSimulation extends React.Component {
     // HACK for now to go to main select screen
     const { onClick } = this.props;
     onClick(modelId); // Tell Login panel to show Panelselect
-  }
-
-  OnModelsUpdate(data) {
-    this.setState({ models: data.models });
   }
 
   render() {
@@ -65,7 +54,7 @@ class PanelSelectSimulation extends React.Component {
             }}
           >
             <div className={classes.instructions}>
-              <p>Select a simulation to work on:</p>
+              <p>Select a project to work on:</p>
             </div>
             {models.map(m => (
               <button
