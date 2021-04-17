@@ -81,18 +81,16 @@ class Home extends React.Component {
           </ul>
           <b className={classes.title}>Dev Testing Routes</b>
           <ul className={classes.list}>
-            <NavItem route="compiler">script compiler tests</NavItem>
+            <NavItem route="charcontrol">WIP character controller</NavItem>
             <NavItem route="tracker">display all entities in system</NavItem>
+            <NavItem route="compiler">script compiler tests</NavItem>
             <NavItem route="faketrack">testbed for annotation input</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
-          <h2>Workshop Demo Dec 23, 2020</h2>
+          <h2>April Demo WIP</h2>
           <p>
-            This demo showed how scripting works, and is the first look at the
-            research team had. The user interfaces are to provide minimal support
-            for showing the multi-app operation, and are not intended to represent
-            the final design.{' '}
+            {' '}
             <b>
               For performance, open each app in its own browser window, NOT a tab.
             </b>
@@ -118,16 +116,10 @@ class Home extends React.Component {
               annotation app.
             </li>
             <li>
-              <a href="/app/faketrack">FAKETRACK</a> - Ported from earlier
-              versions of STEP. This currently does not affect the simulation.
+              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
+              earlier versions FAKETRACK with the new device interface WIP.
             </li>
           </ol>
-          <p>
-            This prototype is very rough so many edge cases do not work. The
-            script language is also still in a primitive state and has some
-            showstopper bugs with WHEN conditions, but you can make simple changes
-            in the scripts.
-          </p>
         </div>
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
           console-right

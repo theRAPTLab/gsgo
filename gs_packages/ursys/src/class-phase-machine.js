@@ -185,7 +185,7 @@ class PhaseMachine {
         return values;
       })
       .catch(err => {
-        if (DBG.ops) console.log(...PR(`[${op}]: ${err}`));
+        console.log(...PR(`[${op}]: ${err}`));
         throw Error(`[${op}]: ${err}`);
       });
   }

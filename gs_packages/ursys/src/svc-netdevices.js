@@ -1,95 +1,43 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS Server Message Handler - URNET directory services
-
-  A protocol consists of the type of service that uses a particular websocket
-  data format. For 'message' protocol (our existing messaging system), it
-  uses the NetMessage packet format. NetMessage packets can also be used
-  for protocols that are message based. Services that require more efficient
-  data encoding will use whatever it needs.
-
-  The unique identifier used across all protocols and devices is the UADDR
-  even for services that don't rely on messages.
+  URSYS Server Message Handler - URNET device services
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = require('./util/prompts').makeTerminalOut(' URNET');
+const { UR_RaiseMessage, UR_HandleMessage } = require('./server-message-api');
+const UDevice = require('./class-udevice');
+const DBG = require('./ur-dbg-settings');
+const TERM = require('./util/prompts').makeTerminalOut('NETDVC');
 
-/// DEBUG MESSAGES ////////////////////////////////////////////////////////////
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// const DBG = false;
-
-/// DUMMY DATA DEFINITION /////////////////////////////////////////////////////
+const DEVICE_BY_UADDR = new Map(); // map uaddr to udevice map []
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// DEVICE DEFINITION
-const uaddr = 'address'; // assigned URNET address (sent by server)
-const uuid = 'uniqueid'; // device identifier unique id (sent by client)
-const uname = 'device name'; // device identifier non-unique name (sent by client)
-const uauth = 'jwtoken'; // auth request based on student info (sent by client)
-
-/// PROTOCOL HOST DEFINITION
-const uhost = {
-  host: 'host ip',
-  port: 'port number',
-  uaddr: 'server-specific uaddr',
-  ustats: {
-    load: 'how loaded it is',
-    clients: ['array of client endpoints by uaddr']
-  }
-};
-/// CLIENT DEVICE DEFINITIONS
-const udevice = {
-  uaddr,
-  uuid,
-  uname,
-  student: {
-    sid: 'information about the student',
-    sname: 'student name',
-    groups: { groupA: true, groupB: false },
-    roles: { roleA: true, roleB: false }
-  }
-};
+/** return a device directory in the form of a hash of udids
+ */
+function m_CreateDeviceDirectoryFromMap() {
+  const devices = {};
+  let out = '';
+  [...DEVICE_BY_UADDR.keys()].forEach(uaddr => {
+    const dMap = DEVICE_BY_UADDR.get(uaddr);
+    [...dMap.values()].forEach(udev => {
+      const udid = udev.udid;
+      if (udid !== undefined) {
+        out += `${udid} `;
+        devices[udid] = udev.getDeviceDescriptor();
+      } else {
+        console.warn('*** bad udid in dmap', JSON.stringify(udev));
+      }
+    });
+  });
+  if (!out) out = '<empty>';
+  TERM('devicedir is:', out);
+  return devices;
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** returns a map of available protocols and the servers that are accepting
- *  service requests via URNET message. This is maintained by all URSYS client
- *  devices behind the scenes. The pkt must include a uident that determines
- *  what protocols it is allowed to access with a follow-up websocket connection
- *  using the same uident
- */
-function PKT_ProtocolDirectory(pkt) {
-  console.log('returning dummy protocol directory', pkt.getInfo());
-
-  const hosts = {
-    // protocols that are accessible by this uident on the URNET
-    // they are all considered part of ONE BIG WEB APP
-    // note: each protocol implements its own datastream format
-    // note: multiple protocols can be handled by a particular uaddr
-    // note: protocolHosts are returned sorted by suggestion quality
-    protocolHosts: {
-      'message': [uhost], // list of URNET message brokers
-      'track': [uhost], // list of PTRACK-style data sources
-      // proposed protocols
-      'file': [uhost], // list of file save and request
-      'db': [uhost], // list of database service
-      'log': [uhost], // list of logging utility
-      'netstate': [uhost], // shared synchronized state
-      'simview': [uhost], // display object host
-      'simdata': [uhost], // simulation data
-      'siminput': [uhost], // input host
-      'simcontrol': [uhost], // simulation controller
-      'simrecord': [uhost], // session record / playback
-      'video': [uhost], // video streaming out
-      'chat': [uhost], // chat host
-      'asset': [uhost], // asset host
-      'udpfwd': [uhost] // UDP-to-TCP bridge service
-    }
-  };
-  return hosts;
-}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns a map of all client devices which are reachable within the current
  *  URNET segment.
@@ -97,41 +45,80 @@ function PKT_ProtocolDirectory(pkt) {
  *  to filter the returned map by access privilege
  */
 function PKT_DeviceDirectory(pkt) {
-  console.log('returning dummy uaddr directory', pkt.getInfo());
-
-  // return data
-  const devices = {
-    // confirmation of uident for debugging purposes
-    uaddrs: {
-      uaddrA: udevice,
-      uaddrB: udevice
-    },
-    protocolDevices: {
-      'message': [uaddr, uaddr, uaddr],
-      'track': [uaddr],
-      'file': [uaddr, uaddr, uaddr],
-      'db': [uaddr],
-      'log': [uaddr, uaddr, uaddr],
-      'netstate': [uaddr, uaddr, uaddr],
-      'simview': [uaddr, uaddr, uaddr],
-      'simdata': [uaddr, uaddr, uaddr],
-      'siminput': [uaddr, uaddr, uaddr],
-      'simcontrol': [uaddr, uaddr, uaddr],
-      'simrecord': [uaddr, uaddr, uaddr],
-      'video': [uaddr, uaddr, uaddr],
-      'chat': [uaddr, uaddr, uaddr],
-      'asset': [uaddr, uaddr, uaddr],
-      'udpfwd': [uaddr, uaddr, uaddr]
-    }
-
-    // udevices by name, uaddr, and protocols
-  };
-  return devices;
+  const dir = m_CreateDeviceDirectoryFromMap();
+  return dir; // call will return
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Handle an Input Registration Packet
+ *  The client provides a udevice definition as the datapacket, and receives
+ *  back confirmation that registration succeeded
+ */
+function PKT_RegisterDevice(pkt) {
+  // eslint-disable-next-line @typescript-eslint/no-shadow
+  const udev = new UDevice(pkt.getData());
+  const udid = udev.udid;
+  const ins = udev.getInputControlNames().reduce((acc, i) => `[${i}]`, '');
+  const outs = udev.getOutputControlNames().reduce((acc, o) => `[${o}]`, '');
+  const deviceClass = udev.getMetaProp('uclass');
+  const status = `registered ${udid} dclass:'${deviceClass}' inputs:${ins} outputs:${outs}`;
+  if (DBG.devices) TERM(status);
+  // save the device to the list
+  const uaddr = pkt.getSourceAddress();
+  if (!DEVICE_BY_UADDR.has(uaddr)) DEVICE_BY_UADDR.set(uaddr, new Map());
+  const dMap = DEVICE_BY_UADDR.get(uaddr);
+  dMap.set(udev.udid, udev);
+
+  // broadcast the changed device list
+  const dir = m_CreateDeviceDirectoryFromMap();
+  UR_RaiseMessage('NET:UR_DEVICES', dir);
+  // return data object to return a remote call
+  // return error string if there was an error
+  return { status };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Receive a control frame from a remote, and forward it to everyone
+ *  Note: this is a placeholder for eventually doing smarter forwarding
+ *  on a dedicated socket server
+ */
+function PKT_ControlFrameIn(pkt) {
+  const cFrame = pkt.getData();
+  // TODO: inspect cFrame and send only to subscribers
+  // debug output
+  const { udid, ...controls } = cFrame;
+  // controls contains controlName:[ cobj, cobj ]
+  let out = `${udid}: `;
+  Object.entries(controls).forEach(entry => {
+    const [key, arr] = entry;
+    out += `${arr.length} cobj(s) in control '${key}' `;
+  });
+  TERM(out);
+  return {};
+}
+
+/// MODULE INITIALIZATION /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** The SRV_SOCKET_DELETED signal is fired by server-urnet when a socket is
+ *  dropped (browser closes, or is refreshed
+ */
+UR_HandleMessage('SRV_SOCKET_DELETED', cmd => {
+  const { uaddr } = cmd;
+  const dMap = DEVICE_BY_UADDR.get(uaddr);
+  if (dMap === undefined) {
+    TERM(`${uaddr} has no registered device(s) to drop`);
+  } else {
+    TERM(`${uaddr} dropping ${dMap.size} registered device(s)`);
+    DEVICE_BY_UADDR.delete(uaddr);
+    const dir = m_CreateDeviceDirectoryFromMap();
+    UR_RaiseMessage('NET:UR_DEVICES', dir);
+  }
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR_HandleMessage('SRV_SOCKET_ADDED', cmd => {});
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  PKT_ProtocolDirectory,
-  PKT_DeviceDirectory
+  PKT_DeviceDirectory,
+  PKT_RegisterDevice,
+  PKT_ControlFrameIn
 };
