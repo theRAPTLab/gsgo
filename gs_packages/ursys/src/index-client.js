@@ -167,6 +167,7 @@ const UR = {
   RegisterDevice: DEVICES.RegisterDevice,
   SubscribeDevices: DEVICES.SubscribeDevices,
   SendControlFrame: DEVICES.SendControlFrame,
+  LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

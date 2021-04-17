@@ -112,15 +112,13 @@ function SaveDeviceSub(deviceSpec) {
   sub.dcache = dcache;
   const deviceID = DB_COUNT++; // capture deviceID
   DEVICES_SUBBED.set(deviceID, sub);
-  const unsubscribe = () => {
-    console.log('deleting device sub', deviceID);
-    DEVICES_SUBBED.delete(deviceID);
-  };
+  /// DEVICE API METHODS ///
   const deviceNum = () => {
     return deviceID;
   };
   const getController = cName => {
     const sub = DEVICES_SUBBED.get(deviceID);
+    /// CONTROLLER METHODS ///
     return {
       getInputs: () => {
         const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
@@ -146,12 +144,40 @@ function SaveDeviceSub(deviceSpec) {
       }
     };
   };
+  const unsubscribe = () => {
+    console.log('deleting device sub', deviceID);
+    DEVICES_SUBBED.delete(deviceID);
+  };
+
+  // make sure we process devices through this new subscription!
+
   return { unsubscribe, getController, deviceNum };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return all subscriptions in the DEVICES_SUBBED map */
 function GetAllSubs() {
   return [...DEVICES_SUBBED.values()];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** when the device list updates, call this to scan all existing subs to update
+ *  their state
+ */
+function LinkSubsToDevices(devices = GetDevices()) {
+  const subs = GetAllSubs();
+  subs.forEach(sub => {
+    sub.dcache.clear();
+    const { selectify, quantify } = sub;
+    const selected = devices.filter(selectify);
+    if (selected.length === 0) return;
+    // console.log('selectified', selected.length);
+    const quantified = quantify(selected);
+    if (quantified.length === 0) return;
+    // console.log('quantified', quantified.length);
+    quantified.forEach(udev => {
+      const { udid } = udev;
+      sub.dcache.set(udid, udev);
+    });
+  });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** device subscriptions have a dcache property which is the DifferenceCache
@@ -241,6 +267,7 @@ module.exports = {
   GetUAddressNumber,
   SaveDeviceSub,
   GetAllSubs,
+  LinkSubsToDevices,
   GetSubsByUDID,
   SaveDevice,
   GetDeviceByUDID,

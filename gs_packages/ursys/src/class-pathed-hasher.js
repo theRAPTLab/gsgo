@@ -5,12 +5,12 @@
   A key-value store like a Map, but the key can be 'a.b.c' and the class
   will automatically create Maps within Maps for your value.
 
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const log = console.log;
+const TEST = false;
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -103,81 +103,83 @@ class PathedMap {
 
 /// TESTERS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let base = new Map();
-// make test data
-let m = base; // base map
-let n = new Map();
-m.set('one', n);
-m = n;
-n = new Map();
-m.set('two', n);
-m = n;
-n = new Map();
-m.set('three', n);
-// define tests
+if (TEST) {
+  let base = new Map();
+  // make test data
+  let m = base; // base map
+  let n = new Map();
+  m.set('one', n);
+  m = n;
+  n = new Map();
+  m.set('two', n);
+  m = n;
+  n = new Map();
+  m.set('three', n);
+  // define tests
 
-function _test123(srcmap) {
-  const tests = {
-    'hasPath one.two.three': {
-      testMap: srcmap,
-      testPath: 'one.two.three',
-      expect: true
-    },
-    'hasPath one.blah.three': {
-      testMap: srcmap,
-      testPath: 'one.blah.three',
-      expect: false
-    },
-    'hasPath one.two.three.four': {
-      testMap: srcmap,
-      testPath: 'one.two.three.four',
-      expect: false
-    }
-  };
-  Object.keys(tests).forEach(testName => {
-    const { testMap, testPath, expect } = tests[testName];
-    log(
-      testName,
-      'testPath',
-      testPath,
-      'expect:',
-      expect,
-      'pass:',
-      expect === _hasPathedMap(testPath, testMap)
-    );
-  });
+  function _test123(srcmap) {
+    const tests = {
+      'hasPath one.two.three': {
+        testMap: srcmap,
+        testPath: 'one.two.three',
+        expect: true
+      },
+      'hasPath one.blah.three': {
+        testMap: srcmap,
+        testPath: 'one.blah.three',
+        expect: false
+      },
+      'hasPath one.two.three.four': {
+        testMap: srcmap,
+        testPath: 'one.two.three.four',
+        expect: false
+      }
+    };
+    Object.keys(tests).forEach(testName => {
+      const { testMap, testPath, expect } = tests[testName];
+      log(
+        testName,
+        'testPath',
+        testPath,
+        'expect:',
+        expect,
+        'pass:',
+        expect === _hasPathedMap(testPath, testMap)
+      );
+    });
+  }
+  console.groupCollapsed('testing _hasPathedMap');
+  _test123(base);
+  console.groupEnd();
+
+  console.groupCollapsed('testing _ensurePathedMap with _hasPathedMap');
+  base = new Map();
+  _ensurePathedMap('one.two.three', base);
+  _test123(base);
+  console.groupEnd();
+
+  console.groupCollapsed('testing _getPathedMap with _ensurePathedMap');
+  _ensurePathedMap('one.alpha', base); // add a map
+  const amap = _getPathedMap('one.alpha', base);
+  log('get map one.alpha expect:true pass:', amap instanceof Map === true);
+  log(
+    'add one.alpha map expect:true pass:',
+    _hasPathedMap('one.alpha', base) === true
+  );
+  log(
+    'add one.alpha.zed map expect:false pass:',
+    _hasPathedMap('one.alpha.zed', base) === false
+  );
+  log(
+    'add one.two.three map expect:true pass:',
+    _hasPathedMap('one.two.three', base) === true
+  );
+  console.groupEnd();
+
+  console.group('testing PathedHasher class');
+  const pHasher = new PathedMap();
+  console.groupEnd();
 }
-console.groupCollapsed('testing _hasPathedMap');
-_test123(base);
-console.groupEnd();
-
-console.groupCollapsed('testing _ensurePathedMap with _hasPathedMap');
-base = new Map();
-_ensurePathedMap('one.two.three', base);
-_test123(base);
-console.groupEnd();
-
-console.groupCollapsed('testing _getPathedMap with _ensurePathedMap');
-_ensurePathedMap('one.alpha', base); // add a map
-const amap = _getPathedMap('one.alpha', base);
-log('get map one.alpha expect:true pass:', amap instanceof Map === true);
-log(
-  'add one.alpha map expect:true pass:',
-  _hasPathedMap('one.alpha', base) === true
-);
-log(
-  'add one.alpha.zed map expect:false pass:',
-  _hasPathedMap('one.alpha.zed', base) === false
-);
-log(
-  'add one.two.three map expect:true pass:',
-  _hasPathedMap('one.two.three', base) === true
-);
-console.groupEnd();
-
-console.group('testing PathedHasher class');
-const pHasher = new PathedMap();
-console.groupEnd();
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

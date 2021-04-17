@@ -311,15 +311,191 @@ The last bit is wiring the **deviceBridge.getInputs()** to control data sent by 
   (a) This is sent to the server using `sendMessage('NET:SRV_INGEST_INPUT', controlFrame)`. It's up to the program to construct the control frame.  The broker has to figure out which devices to forward that message to by inspecting the `udid` property, and seeing which sockets have subscribed to it.
   (b) Alternatively, use `sendMessage('NET:UR_CONTROL_IN', controlFrame)` to **bypass the input broker**. This is easier for right now.
 
-* the **input broker** forwards the controlFrame to interested devices by using the `selectify` criteria from each device subscription.
-
-* the **receiving device** receives `NET:UR_CONTROL_IN` with the controlFrame and processes it as follows:
-
-  ```
-   
-  ```
-
+  *the **input broker** forwards the controlFrame to interested devices by using the `selectify` criteria from each device subscription.
   
+  * the **receiving device** receives `NET:UR_CONTROL_IN` with the controlFrame and processes it as follows:
+
+## APR 13 TUE - Algorithm Implementation!
+
+In the [Whimsical Diagram](https://whimsical.com/input-system-dr01-Y2xuF7r1N1kxNJ2MyfzqZY) there's some algorithms on the right side
+
+* when **DeviceDirectory changes**, run the device list through all subscription conditions
+* retrieving a **Controller** returns a `getInputs()` method where you specify the controlName you want to receive
+* when **receiving ControlFrame**, rewrite ids to udid+id, then ingest them into the cProp map
+
+Where are we currently? Well, there are a number of data structures we need:
+
+* ` DEVICE_DIRECTORY` is the cache of all devices descriptors, implemented as a DifferenceCache, and used to manages changes in the device directory that is sent network-wide
+
+* `DEVICES_LOCAL` is used by a **device provider**, and is mapped by udid to UDevice. The udid is created by combining UADDR with the local device count, which guarantees a unique device id across the entire network. Each UDevice can be used to create a **deviceDescriptor** which is describes the device to the network without any credentials.
+
+* `DEVICES_SUBBED` is used by **device subscribers** to hold a "subscription" mapped from a "subscription id". This id is just an int that is used to look-up the subscription to delete it. The DeviceSpec has the selectify/quantify/notify functios, and has some **added** properties: `dcache` to cache the multiple devices that this subscription could have, and `cobjs` for the controlObjects received from al these devices. 
+
+* `DEVICES_INPUT` maps `udid` to a buffer. This map is populated by the subscriber client code, so if an incoming control frame has a udid that's in the map, that means it's been selectified/quantified. The mapping is a bit convoluted:
+
+  ```
+  udid --> Map<controlName, [FINISH WRITING HTIS OUT]
+  ```
+
+So...
+
+**Q. How is UDevice used to create a ControlFrame?**
+
+**Q. In the extended DeviceSpec, is `cobjs` adequate for handling all the controls?** 
+Or do we have to make sure that the DeviceSpec designates a **single control name per device specification**? Look at `UR.SubscribeDevice()` to determine where to insert this.
+
+## APR 14 WED - Algorithm Implementation II
+
+There are three subsystems that I want to implement, and also nail down the actual map needs. The thing that's confusing me now is how to access a **named control** from the deviceDescription. Again, this is what is looks like:
+
+```js
+// A CONTROL
+const exampleControlDefinition = {
+  controlName: 'markers',
+  controlProps: { x: 'axis', y: 'axis', jump: 'trigger' }
+};
+// A DEVICE WITH MULTIPLE INPUT CONTROL
+const cdef = exampleControlDefinition;
+const exampleUDevice = {
+  udid: 'udev01:1',
+  meta: {},
+  inputs: [cdef, cdef]
+};
+// A CONTROL OBJECT 
+const exampleControlDataObject = {
+  id: 0, // this is not the same as udid, but it the instance control
+  x: 0,
+  y: 0,
+  jump: true
+};
+// A FRAME ASSOCIATES CONTROL OBJECTS WITH A UDID
+const cdo = exampleControlDataObject;
+const exampleControlFrame = {
+  udid: 'udev01:1',
+  markers: [cdo, cdo]
+};
+```
+
+The **controlData** object is the same as **controlProp** in gneral shape, though the 'encoding' in the deintiion is replaced with actual data in the controlData of course, and the **id** is added as well. 
+
+* We want to subscribe to a device which can be any device. We get a device handle from the call.
+* Since devices can have multipe controls, we need to tell the device handler's control to get input from.
+* When devices send updates for a control, they appear as a bunch of named properties that are written to a device's buffer object, which can contain a buffer for each controlName's controldata type
+
+We want to detect packets from a udevice and map them 
+
+algorithm for writing a hashed path
+
+```
+
+we want to check that all props except the last one is a map
+bits = path.split('.');
+map = this.map;
+bits.reduce( acc,cv => {
+	if (!map instanceOf Map) throw Error('err:path contains non-map');
+	map = map.get(cv);
+	return acc&&map instanceOf Map;
+},true);
+
+```
+
+## APR 15 THU - Implementation III
+
+We have the beginnings of the PathedHash class, and I realized that the controlFrame processing is different than how I documented it. 
+
+**GOAL: send an arbitrary control frame from CharControl**
+
+* `CharControl.jsx` called `Initialize()` in `componentDidMount()`
+* in `mod-charcontrol-ui.js`,  frame data is periodically sent through `setInterval(SendControlFrame, INTERVAL)`
+
+* Cleaned up CharControl, now how do we make the correct control frame?
+* [ ] On device registration, we need to keep the device udid handy afterwards
+
+## APR 16 FRI - Implementation IV
+
+* [x] return udid from RegisterDevice, save in mod-charcontrol-ui
+* [x] new method `UDEV.makeControlFramer(cName)` returns a function that generates a control frame for the named control
+* [x] how to send the controlFrame to all devices? `NET:UR_CFRAME`
+* [x] fix class-endpoint so it can use the UAddressNumber by declaring NetNode, LocalNode later
+* [x] why is DATACORE.IngestDevices() called every time CharControl adds another entity? Initialize is called whenever numEntities changes
+* [x] Why does input rate increase every time numEntities is incremented? Same as the Initialize thing above
+
+**GOAL: process received control data into entities**
+
+* [ ] `client-netdevices`compare incoming controlFrame against `udid` via `sub.dcache.hasKey(udid)` 
+* [ ] why is DEVICES_SUBBED empty? We have not processed the device directory to populate it!!!
+
+a DeviceSub has additional things added to it
+
+* dcache - all the udids in this sub, stored in a DifferenceCache of udid=>Device
+* cobjs - received control objects, grouped by controlName =>DifferenceCache **this is what needs to be fillled with control objects**
+
+`DEVICES_SUBBED` contains all the subscriptions, but when is it actually populated? That should occur whenever the Device Directory updates
+
+* [x] it's in `client-netdevices` `m_UpdateDeviceMap`, which calls `DATACORE.IngestDevices()`
+* [x] `IngestDevices() ` populates `DEVICE_DIR` and produces added/ updated, subbed. 
+* [x] Change `IngestDevices()` to allow selection of what to retrieve by setting option `{ all: true }`
+* [x] `all` is an array of udevice directory entries, which do not have user or student info
+* [x] `GetSubsByUDID()` want to process the list against the subscribed devices in `DEVICES_SUBBED` to find matching subs for a controlFrame
+
+`DEVICES_SUBBED` is a `Map<int,devSub>`, and the sub has `dcache` and `cobjs `. The dcache is a udid-to-cName map for this sub's valid udevices. **Now the subscriptions are being updated when cFrames come in!**
+
+Now CFRAME and DEVMAP are being processed into SUB.DCACHE and GetSubsByUDID...we want to **notify** when **subscription lock** occurs and also **get the DeviceAPI** from the subscription.
+
+* [x] `DATACORE.SaveDeviceSub()` is what returned dAPI object.
+* [x] This dAPI is returned by `UR.SubscribeDevice()`, and this is called by `Tracker.jsx`  during componentDidMount. 
+
+We are not returning ALL the markers for some reason...that's because we need to iterate over all the devices.
+
+* [ ] a subscription has  `dcache (udid=>udev)`
+* [ ] and also has `cobjs controlName=>diffcache` 
+* [ ] when processing a controlFrame, subscription d.cache is used to look up a device, and **also** it needs to update cobjs as well with ingest.
+* [ ] that means **controlFrame** has to be careful about not erasing cobjs
+* [ ] need to add an "additiveIngest" somehow. **The differenceCache in cObjects has to be a map.**
+
+What is happening is that the ingest is happening one after the other. We need to keep a map of the incoming objects instead, I think.
+
+`--- Intermission ---`
+
+1. write a new ingestAdditive method for DifferenceCache
+2. add Tracker update to FakeTrackDevices and also CurrentEntities
+3. fix deviceDirectory sync on Tracker first load
+
+**Fixing DifferenceCache** - the issue starts in the controlFrame parser in client-netdevices `m_ProcessControlFrame(cFrame)`
+
+the ingest algorithm:
+
+* input: the array of `{ id }` objec `arr`
+* the "last mapped collection" is stored in `sobjs` ("seen objects"), which is a ref to `this.cMap`
+* a "new mapped collection" is stored in `nobjs` ("new objects")
+* pass1: use `sobj` as "objects we've seen before", and compare against the incoming `arr`.  If arrElement is not in the `sobj`, it's **added** since last time. If it's already in `sobj`, then is **updated** since last time `ingest()` was called
+* pass2: scan the incoming `arr` now against the seen objects `sobj` from last run through, and delete anything that is seen now. Any remaining keys in `sobj` are for objects that have disappeared and are considered **removed**
+
+How to fix this???
+
+well, ingest() has the effect of essentially resetting the "seen objects" cache in this.cMap, so maybe we just make a version that doesn't? Maybe with an **explict reset** version. Let's rename ingest to somethat that implies that it differences. Maybe **`diff()`**  is the replacement for `ingest`
+
+ingest now means "take in inputs without performing the difference", so we want to buffer inputs now.
+
+* [x] add `buffer()` and `diffBuffer()` equivalents 
+* [x] in `m_ProcessControlFrame()` change `diff()` to `buffer()`
+* [x] in `DATACORE.SaveDeviceSub()` make `getInputs()` perform `diffBuffer()` 
+
+**adding Tracker FakeTrackDeviceFound**
+
+* [ ] `this.state.devices` needs to be set.
+  * [ ] `Tracker.updateDeviceList()`  tries to update that display
+  * [ ] `UR_DEVICES_CHANGED` handler in constructor should be calling it
+
+**why is deviceDirectory not read on startup?**
+
+if Tracker starts after CharControllers are already running, the devices come online, but the **device comm does not**. If Tracker already running and CharController starts, **device comm happens**.
+
+* [x] when a device pops online, offline, it sends `NET:UR_DEVICES` which is handled by `m_ProcessDeviceMap()`. It happens pretty early, before any subs are registered.
+* [x] Tracker does `UR.SubscribeDevices()` during `UR/APP_READY`, so it also needs to process the device list at that time.
+
+This is **good enough to merge**!
+
 
 
 
@@ -390,6 +566,4 @@ Persistant Data
 [ ] handle app packaging, asset packing, identitifying groups, students, orgs that it belongs to. 
 
 ```
-
----
 

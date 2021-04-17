@@ -86,13 +86,14 @@ export function GetDeviceByUDID(udid) {
 
 /// DEVICE SUBSCRIPTION API ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: hook into DeviceBridger. Provide three optional functions that will be
+/** API: provide deviceAPI. Provide three optional functions that will be
  *  used to select, quantify the devices you want, and your notify function
  *  will be called with added,updated,removed list of devices. Returns
- *  the "DeviceBridgeNumber" which can be used to delete a device subscription
+ *  a DeviceAPI with useful methods for obtaining controllers to named
+ *  controls in a DeviceSpec group
  */
 export function SubscribeDevices(deviceSpec) {
-  // device bridge holds al the functions as follows:
+  // deviceSpec holds al the functions as follows:
   // selectify is filter function: device => boolean
   // quantify is quantity gate function: device[] => { valid, devices }
   // notify is device[] change handler: (valid, added[], updated[], removed[]
@@ -103,10 +104,22 @@ export function SubscribeDevices(deviceSpec) {
     sub.quantify = deviceSpec.quantify; // devices => { valid, devices }
     sub.notify = deviceSpec.notify; // { valid, added[], updated[], removed[] } => void
   } else throw Error('invalid deviceSpec object');
-  // return device bridge number
+  // return device API
   const deviceAPI = DATACORE.SaveDeviceSub(sub);
   // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
+  const props = Object.keys(sub).join(', ');
+  const api = Object.keys(deviceAPI).join(', ');
+  console.log(...PR(`SubscribeDevices\nsub:[${props}]\napi:[${api}]`));
   return deviceAPI;
+}
+
+/// DEVICE-TO-SUBSCRIPTION LINKING ////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** API: when a subscription OR device is added, need to update the tables
+ *  that connect device UDIDS to interested subscribers
+ */
+export function LinkSubsToDevices(deviceList) {
+  DATACORE.LinkSubsToDevices(deviceList);
 }
 
 /// CONTROL FRAME PROTOCOLS ///////////////////////////////////////////////////
@@ -124,27 +137,11 @@ export function SendControlFrame(cFrame) {
  */
 function m_ProcessDeviceMap(devmap) {
   // figure out what changed in the device map
-  console.log(...PR('ProcessDeviceMap'));
   DATACORE.IngestDevices(devmap, { all: true });
   const all = DATACORE.GetDevices();
   LocalNode.raiseMessage('UR_DEVICES_CHANGED', all);
-  // go over the entire hash of devices
-  const subs = DATACORE.GetAllSubs();
-  console.log('subs', subs);
-  subs.forEach(sub => {
-    sub.dcache.clear();
-    const { selectify, quantify } = sub;
-    const selected = all.filter(selectify);
-    if (selected.length === 0) return;
-    console.log('selectified', selected.length);
-    const quantified = quantify(selected);
-    if (quantified.length === 0) return;
-    console.log('quantified', quantified.length);
-    quantified.forEach(udev => {
-      const { udid } = udev;
-      sub.dcache.set(udid, udev);
-    });
-  });
+  // go over the entire hash of devices when a new device arrive
+  LinkSubsToDevices(all);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Process controlFrame received from NET:UR_CFRAME */

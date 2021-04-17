@@ -93,6 +93,7 @@ class Tracker extends React.Component {
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
     this.updateDeviceList([]);
+
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDevices({
         selectify: device => device.meta.uclass === 'CharControl',
@@ -102,6 +103,8 @@ class Tracker extends React.Component {
           console.log(...PR('notify', changes));
         }
       });
+      // with the new sub registered, scan the devicemap anew
+      UR.LinkSubsToDevices();
       // these are all the device API calls
       // we need to move them outside of Tracker.jsx
       const { unsubscribe, getController, deviceNum } = devAPI;
@@ -139,7 +142,6 @@ class Tracker extends React.Component {
 
   updateDeviceList(deviceList = []) {
     if (Array.isArray(deviceList)) {
-      console.log(...PR('UDL deviceList', deviceList));
       let devices = '';
       deviceList.forEach(d => {
         const { udid, inputs, outputs } = d;
