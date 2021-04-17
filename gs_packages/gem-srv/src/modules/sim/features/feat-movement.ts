@@ -14,6 +14,7 @@ import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
+import PROJ from 'app/data/project-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,8 +35,7 @@ function moveJitter(
 ) {
   const x = m_Random(min, max, round);
   const y = m_Random(min, max, round);
-  agent.prop.x.value += x;
-  agent.prop.y.value += y;
+  m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
 }
 
 /// WANDER
@@ -49,11 +49,9 @@ function moveWander(agent) {
     agent.prop.Movement.direction.value = direction;
   }
   const angle = m_DegreesToRadians(direction);
-  agent.prop.x.value += Math.cos(angle) * distance;
-  agent.prop.y.value -= Math.sin(angle) * distance;
-  // keep it in bounds
-  agent.prop.x.value = Math.max(-500, Math.min(500, agent.prop.x.value));
-  agent.prop.y.value = Math.max(-500, Math.min(500, agent.prop.y.value));
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  m_setPosition(agent, x, y);
 }
 
 /// EDGE to EDGE (of the entire tank / system)
@@ -64,20 +62,9 @@ function moveEdgeToEdge(agent) {
   let direction = agent.prop.Movement.direction.value;
 
   const angle = m_DegreesToRadians(direction);
-  agent.prop.x.value += Math.cos(angle) * distance;
-  agent.prop.y.value -= Math.sin(angle) * distance;
-
-  if (
-    agent.prop.x.value >= wanderBoundary ||
-    agent.prop.y.value >= wanderBoundary
-  ) {
-    agent.prop.Movement.direction.value = direction + 180;
-  } else if (
-    agent.prop.x.value <= -wanderBoundary ||
-    agent.prop.y.value <= -wanderBoundary
-  ) {
-    agent.prop.Movement.direction.value = direction - 180;
-  }
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  m_setPosition(agent, x, y);
 }
 
 /// FLOAT
@@ -120,13 +107,14 @@ class MovementPack extends GFeature {
     super(name);
     if (DBG) console.log(...PR('construct'));
     this.handleInput = this.handleInput.bind(this);
-    this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('setController', this.setController);
+    this.featAddMethod('setPosition', this.setPosition);
     this.featAddMethod('setMovementType', this.setMovementType);
     this.featAddMethod('setDirection', this.setDirection);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
     this.featAddMethod('setRandomStart', this.setRandomStart);
+    this.featAddMethod('jitterPos', this.jitterPos);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -156,6 +144,10 @@ class MovementPack extends GFeature {
   setController(agent, x) {
     if (DBG) console.log(...PR(`setting control to ${x}`));
     agent.getProp('controller').value = x;
+  }
+
+  setPosition(agent, x, y) {
+    m_setPosition(agent, x, y);
   }
 
   // TYPES
@@ -192,8 +184,10 @@ class MovementPack extends GFeature {
   }
 
   setRandomPosition(agent: IAgent) {
-    agent.prop.x.value = m_Random(-300, 300); // HACK!  Bounds are hard coded!
-    agent.prop.y.value = m_Random(-300, 300); // HACK!  Bounds are hard coded!
+    const bounds = PROJ.GetBounds();
+    const x = m_Random(bounds.left, bounds.right);
+    const y = m_Random(bounds.top, bounds.bottom);
+    m_setPosition(agent, x, y);
   }
 
   setRandomStart(agent: IAgent) {
@@ -204,8 +198,7 @@ class MovementPack extends GFeature {
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
     const x = m_Random(min, max, round);
     const y = m_Random(min, max, round);
-    agent.prop.x.value += x;
-    agent.prop.y.value += y;
+    m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
   }
 } // end of feature class
 
@@ -218,6 +211,42 @@ function m_Random(min, max, round = true) {
 }
 function m_DegreesToRadians(degree) {
   return (degree * Math.PI) / 180;
+}
+function m_setPosition(agent, x, y) {
+  const bounds = PROJ.GetBounds();
+  const pad = 1;
+  let hwidth = pad; // half width -- default to some padding
+  let hheight = pad;
+  // If agent uses physics, we can get height/width, otherwise default
+  // to small padding.
+  if (agent.hasFeature('Physics')) {
+    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+  }
+  let xx = x;
+  let yy = y;
+  if (PROJ.Wraps('left')) {
+    xx = x <= bounds.left ? bounds.right - pad : xx;
+  } else {
+    xx = x - hwidth < bounds.left ? bounds.left + hwidth : xx;
+  }
+  if (PROJ.Wraps('right')) {
+    xx = x >= bounds.right ? bounds.left + pad : xx;
+  } else {
+    xx = x + hwidth >= bounds.right ? bounds.right - hwidth : xx;
+  }
+  if (PROJ.Wraps('top')) {
+    yy = y <= bounds.top ? bounds.bottom - pad : yy;
+  } else {
+    yy = y - hheight <= bounds.top ? bounds.top + hheight : yy;
+  }
+  if (PROJ.Wraps('bottom')) {
+    yy = y >= bounds.bottom ? bounds.top + pad : yy;
+  } else {
+    yy = y + hheight > bounds.bottom ? bounds.bottom - hheight : yy;
+  }
+  agent.prop.x.value = xx;
+  agent.prop.y.value = yy;
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
