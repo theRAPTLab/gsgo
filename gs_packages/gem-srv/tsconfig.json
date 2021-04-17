@@ -16,6 +16,6 @@
     "allowSyntheticDefaultImports": true,
     "sourceMap": true
   },
-  "include": ["src/**/*.ts", "gem_run.js"],
+  "include": ["src/**/*.ts", "gem_run.js", "../ursys/src/**/*"],
   "exclude": ["node_modules"]
 }

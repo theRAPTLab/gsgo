@@ -12,6 +12,8 @@ const DEVICES = require('./client-netdevices');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
+const DATACORE = require('./client-datacore');
+const TestHasher = require('./class-pathed-hasher');
 
 /// CLASSES ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +23,6 @@ const PhaseMachine = require('./class-phase-machine');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
 const DBG = false;
-const { LocalNode, NetNode } = require('./client-datacore');
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,6 +40,8 @@ const META = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
+let LocalNode;
+let NetNode;
 
 /// SUPPORT API PART 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,12 +68,16 @@ async function SystemStart(route) {
     return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
-  PhaseMachine.Hook(
-    'UR/NET_CONNECT',
-    () =>
-      new Promise((resolve, reject) =>
-        NETWORK.URNET_Connect(NetNode, { success: resolve, failure: reject })
-      )
+  PhaseMachine.Hook('UR/NET_CONNECT', () =>
+    new Promise((resolve, reject) =>
+      NETWORK.URNET_Connect({ success: resolve, failure: reject })
+    ).then(data => {
+      console.log(...PR('URNET established. UADDR is stable.'));
+      const eps = DATACORE.GetSharedEndPoints();
+      LocalNode = eps.LocalNode;
+      NetNode = eps.NetNode;
+      return data;
+    })
   );
   // autoregister messages
   PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
@@ -81,6 +88,7 @@ async function SystemStart(route) {
   // complete startup
   URSYS_RUNNING = true;
   URSYS_ROUTE = route;
+  DATACORE.SaveClientInfo({ uapp: URSYS_ROUTE });
 
   return Promise.resolve();
 }
@@ -98,37 +106,68 @@ async function SystemStop() {
   return Promise.resolve();
 }
 
+/** wrap LocalNode functions so we can export them before LocalNode is valid */
+function DeclareMessage(mesgName, dataProps) {
+  return LocalNode.declareMessage(mesgName, dataProps);
+}
+function HasMessage(mesgName) {
+  return LocalNode.hasMessage(mesgName);
+}
+function HandleMessage(mesgName, listener) {
+  LocalNode.handleMessage(mesgName, listener);
+}
+function UnhandleMessage(mesgName, listener) {
+  LocalNode.unhandleMessage(mesgName, listener);
+}
+function CallMessage(mesgName, inData, options) {
+  return LocalNode.callMessage(mesgName, inData, options);
+}
+function RaiseMessage(mesgName, inData, options) {
+  LocalNode.raiseMessage(mesgName, inData, options);
+}
+function SendMessage(mesgName, inData, options) {
+  LocalNode.sendMessage(mesgName, inData, options);
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
   // NETWORK MESSAGES
-  DeclareMessage: LocalNode.declareMessage,
-  HasMessage: LocalNode.hasMessage,
-  HandleMessage: LocalNode.handleMessage,
-  UnhandleMessage: LocalNode.unhandleMessage,
-  SendMessage: LocalNode.sendMessage,
-  RaiseMessage: LocalNode.raiseMessage,
-  CallMessage: LocalNode.callMessage,
+  DeclareMessage,
+  HasMessage,
+  HandleMessage,
+  UnhandleMessage,
+  SendMessage,
+  RaiseMessage,
+  CallMessage,
   // FORWARDED GENERIC PHASE MACHINE
   HookPhase: PhaseMachine.Hook,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
   // ROUTE INFO
-  IsRoute: route => URSYS_ROUTE === route,
-  ServerIP: NETWORK.ServerIP,
+  IsAppRoute: route => URSYS_ROUTE === route,
+  AppRoute: () => URSYS_ROUTE,
+  BrokerIP: NETWORK.ServerIP,
   ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,
-  ConnectionString: NETWORK.ConnectionString,
+  ConnectionString: DATACORE.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
-  // FORWARDED SYSTEM CONTROL VIA EXEC
+  GetUAddressNumber: DATACORE.GetUAddressNumber,
+  // FORWARDED SYSTEM CONTROL API
   SystemNetBoot: EXEC.SystemNetBoot,
   SystemAppConfig: EXEC.SystemAppConfig,
   SystemAppRun: EXEC.SystemAppRun,
   SystemAppRestage: EXEC.SystemAppRestage,
   SystemNetReboot: EXEC.SystemNetReboot,
   SystemAppUnload: EXEC.SystemAppUnload,
+  // FORWARDED DEVICE API
+  NewDevice: DEVICES.NewDevice,
+  RegisterDevice: DEVICES.RegisterDevice,
+  SubscribeDevices: DEVICES.SubscribeDevices,
+  SendControlFrame: DEVICES.SendControlFrame,
+  LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

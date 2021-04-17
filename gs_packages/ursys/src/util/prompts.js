@@ -109,21 +109,19 @@ CSS_COLORS.TagTest = CSS_COLORS.TagRed;
 CSS_COLORS.TagDebug = `color:#fff;background-color:IndianRed;${CSS_PAD}`;
 CSS_COLORS.TagData = CSS_COLORS.TagDkOrange;
 CSS_COLORS.TagInput = CSS_COLORS.TagDkOrange;
-CSS_COLORS.TagHook = `color:#fff;background-color:MediumSlateBlue;${CSS_PAD}`;
-CSS_COLORS.TagOnPhase = `color:#fff;background-color:MediumVioletRed;${CSS_PAD}`;
-CSS_COLORS.TagRainbow = `color:#fff;background:linear-gradient(
-  45deg,
-  rgba(255, 0, 0, 1) 0%,
-  rgba(255, 154, 0, 1) 10%,
-  rgba(208, 222, 33, 1) 20%,
-  rgba(79, 220, 74, 1) 30%,
-  rgba(63, 218, 216, 1) 40%,
-  rgba(47, 201, 226, 1) 50%,
-  rgba(28, 127, 238, 1) 60%,
-  rgba(95, 21, 242, 1) 70%,
-  rgba(186, 12, 248, 1) 80%,
-  rgba(251, 7, 217, 1) 90%,
-  rgba(255, 0, 0, 1) 100%
+CSS_COLORS.TagMessage = `color:#fff;background-color:MediumSlateBlue;${CSS_PAD}`;
+CSS_COLORS.TagPhase = `color:#fff;background-color:MediumVioletRed;${CSS_PAD}`;
+CSS_COLORS.TagAlert = `color:#fff;background:linear-gradient(
+  -45deg,
+  rgb(29,161,242),
+  rgb(184,107,107),
+  rgb(76,158,135)
+);${CSS_PAD}`;
+CSS_COLORS.TagUR3 = `color:#fff;background:linear-gradient(
+  -45deg,
+  CornflowerBlue 0%,
+  LightSkyBlue 25%,
+  RoyalBlue 100%
 );${CSS_PAD}`;
 
 // div console

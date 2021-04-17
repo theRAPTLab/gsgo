@@ -10,6 +10,7 @@
 const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
+const DBG = require('./ur-dbg-settings');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -68,6 +69,8 @@ function URNET_Start(options) {
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  // SHARED DEBUG FLAGS
+  DBG,
   // META
   ...META,
   NetInfoRoute: NETINFO.NetInfoRoute,

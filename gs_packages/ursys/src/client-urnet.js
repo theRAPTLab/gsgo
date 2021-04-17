@@ -7,9 +7,16 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 const NetPacket = require('./class-netpacket');
+const EndPoint = require('./class-endpoint');
 const NETINFO = require('./client-netinfo');
 const PROMPTS = require('./util/prompts');
-const { CFG_SVR_UADDR, CFG_URNET_SERVICE, PacketHash } = require('./ur-common');
+const DATACORE = require('./client-datacore');
+const {
+  CFG_SVR_UADDR,
+  CFG_URNET_SERVICE,
+  PacketHash,
+  CLI_UADDR
+} = require('./ur-common');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
 const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
@@ -82,16 +89,27 @@ function m_HandleRegistrationMessage(msgEvent) {
     peers: PEERS,
     is_local: ULOCAL
   });
-  // (3) connect regular message handler
+  // (3) also save to new client-datacor, which should replace (5) above
+  DATACORE.SaveClientInfo({
+    uaddr: UADDR,
+    srv_uaddr: SERVER_UADDR,
+    isLocalServer: ULOCAL
+  });
+  // (4) connect regular message handler
   m_AddListener('message', m_HandleMessage);
   m_SetStatus(M4_READY);
-  // (4) network is initialized
+  // (5) network is initialized
   if (typeof m_options.success === 'function') m_options.success();
-  // (5) also update window.URSESSION with UADDR
+  // (6) also update window.URSESSION with UADDR
   if (!window.URSESSION) window.URSESSION = {};
   if (DBG.reg) console.log('updating URSESSION with registration data');
   window.URSESSION.CLIENT_UADDR = UADDR;
   window.URSESSION.USRV_UADDR = SERVER_UADDR;
+  // (7) initialize endpoint
+  const LocalNode = new EndPoint('ur-client-local');
+  const NetNode = new EndPoint('ur-client-net');
+  DATACORE.SetSharedEndPoints({ LocalNode, NetNode });
+  m_urlink = LocalNode; // used for forwarding
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dispatch incoming event object from the network.
@@ -175,10 +193,10 @@ const URNET = {};
 /** Establish connection to URSYS server. This is called by client.js during
  *  NetworkInitialize(), which itself fires after the application has rendered
  *  completely.
- *  @param datalink - an urchannel endpoint
+ *  @param datalink - DEPRECATED an urchannel endpoint
  *  @param opt - { success, failure } functions
  */
-URNET.URNET_Connect = (datalink, opt) => {
+URNET.URNET_Connect = opt => {
   return new Promise(resolve => {
     if (URNET.WasInitialized()) {
       let err =
@@ -187,12 +205,9 @@ URNET.URNET_Connect = (datalink, opt) => {
       return;
     }
     m_SetStatus(M1_CONNECTING);
-
-    // check and save parms
-    if (datalink.constructor.name !== 'MessagerEndpoint') {
-      throw Error(ERR_BAD_URCHAN);
-    }
-    if (!m_urlink) m_urlink = datalink;
+    // note: datalink used to be assigned to m_urlink, but now it's handled
+    // in HandleRegistrationMessage because that's the earlier the UADDR is
+    // stable.
     m_options = opt || {};
 
     // create websocket
@@ -229,13 +244,6 @@ URNET.URNET_Close = (code, reason) => {
   m_socket.close(code, reason);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Return the current uaddr of this client, which is stored in NetPacket
- *  when the client initializes.
- */
-URNET.SocketUADDR = () => {
-  return NetPacket.SocketUADDR();
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return TRUE if client is in "standalone" mode. This was a NetCreate
  *  that was used to disable network communication for HTML-only snapshots.
  */
@@ -252,27 +260,8 @@ URNET.WasInitialized = () => {
  */
 URNET.IsLocalhost = () => NetPacket.IsLocalhost();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.ServerIP = () => {
-  const { host } = NETINFO.GetNetInfo();
-  return host;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.URNetPort = () => {
-  const { port } = NETINFO.GetNetInfo();
-  return port;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.WebServerPort = () => window.location.port || 80;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-URNET.ConnectionString = () => {
-  const { host } = NETINFO.GetNetInfo();
-  const port = window.location.port;
-  let str = `${URNET.SocketUADDR()} ⇆ ${host}`;
-  if (port) str += `:${port}`;
-  return str;
-};
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 URNET.NetInfoRoute = () => CFG_URNET_SERVICE;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

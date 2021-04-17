@@ -10,6 +10,7 @@
 const DBG = false;
 const PR = require('./util/prompts').makeStyleFormatter('UR.SES');
 const { CFG_URNET_SERVICE } = require('./ur-common');
+const DATACORE = require('./client-datacore');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -50,8 +51,8 @@ function m_CheckNetOptions(netOpt) {
 function SaveNetInfo(netInfo: NetProps) {
   if (DBG) console.log(...PR('saving netInfo for broker'), netInfo);
   const { broker, client } = netInfo;
-  NET_BROKER = broker;
-  CLIENT_INFO = client;
+  NET_BROKER = DATACORE.SaveBrokerInfo(broker); // make accessible
+  CLIENT_INFO = DATACORE.SaveClientInfo(client);
   if (DBG)
     console.log(...PR('session broker', NET_BROKER, 'client info', CLIENT_INFO));
 }

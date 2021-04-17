@@ -6,7 +6,7 @@
 module.exports = {
   env: {
     browser: true,
-    es6: true,
+    es2020: true,
     node: true
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
@@ -67,9 +67,9 @@ module.exports = {
     ecmaFeatures: {
       jsx: true // enable jsx parsing (plugin:react/recommended)
     },
-    ecmaVersion: 2018, // parsing of modern javascript
+    ecmaVersion: 2020, // parsing of modern javascript
     sourceType: 'module', // allows use of imports
-    project: ['./tsconfig.json', './gs_packages/*/tsconfig.json'], // remember, we're using typescript-eslint/parser
+    project: ['./tsconfig.json', './gs_packages/**/tsconfig.json'], // remember, we're using typescript-eslint/parser
     tsconfigRootDir: __dirname // hack: github.com/typescript-eslint/typescript-eslint/issues/251#issuecomment-567365174
   },
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
@@ -82,6 +82,7 @@ module.exports = {
     'no-console': 'off',
     'no-debugger': 'warn',
     'no-alert': 'warn',
+    'no-restricted-syntax','off',
     /* ursys style overrides */
     'spaced-comment': 'off',
     'camelcase': 'off',
