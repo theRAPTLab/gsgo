@@ -36,6 +36,10 @@ export function MakeDraggable(vobj: Visual) {
   }
   function onDragEnd() {
     const dragStopTime = Date.now();
+    // ignore mouseup if we did not receive a mousedown
+    // this fixes a problem where dragging one agent and releasing it
+    // near another agent causes the two agents to swap positions.
+    if (!vobj.isCaptive) return;
     vobj.setCaptive(false);
     this.alpha = 1;
     this.tint = 0xffffff;
