@@ -59,6 +59,17 @@ export class when extends Keyword {
         const passed = GetInteractionResults(key);
         passed.forEach(pairs => {
           const [aa, bb] = pairs;
+
+          // PROPOSED FIX
+          // Extra Test: Only run if the passed agents [aa, bb] includes the
+          // current agent.  The when conditional will pass as true if ANY
+          // agent passes.  So even though the current agent may not pass the
+          // test, code is still run for the current agent, using the context
+          // of the pair that DID patch the test.
+          if (aa.id !== agent.id && bb.id !== agent.id) {
+            console.log('...skipping', agent.id);
+            return;
+          }
           const ctx = { [A]: aa, [B]: bb };
           agent.exec(consq, ctx);
         }); // foreach
