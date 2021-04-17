@@ -107,26 +107,15 @@ useFeature Physics
 featProp Physics.radius setTo 16
 
 // show initial level (otherwise level is not shown until run)
-exprPush {{ agent.getProp('energyLevel').value }}
-propPop text
+//exprPush {{ agent.getProp('energyLevel').value }}
+//propPop text
+prop text setTo '##'
+
 
 # PROGRAM EVENT
-onEvent Tick [[
-  prop energyLevel sub 1
-
-  // show energyLevel
+onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
-
-  // set scale of algae based on energyLevel
-  exprPush {{ agent.getProp('energyLevel').value / 100 }}
-  propPop scale
-
-  // dead
-  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
-    prop agent.alpha setTo 0.3
-    prop agent.isInert setTo true
-  ]]
 ]]
 
 # PROGRAM UPDATE
