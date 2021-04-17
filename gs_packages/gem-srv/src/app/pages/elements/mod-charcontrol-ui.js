@@ -24,6 +24,11 @@ import UR from '@gemstep/ursys/client';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 
+// constants for packet update rate
+const FRAMERATE = 15;
+const INTERVAL = (1 / FRAMERATE) * 1000;
+let m_current_time = 0;
+
 // React user interface (the "view")
 let m_CHARVIEW = null;
 // dimensions
@@ -41,11 +46,6 @@ let DEVICE_UDID; // registered UDID
 let MarkerFramer; // hold function that generates "marker" control frames
 let m_seq = 0; // sequence number
 let m_status = ''; // HTML status string
-
-// constants for packet update rate
-const FRAMERATE = 1;
-const INTERVAL = (1 / FRAMERATE) * 1000;
-let m_current_time = 0;
 
 // constants for "burst noise" resilience test
 const BURST_NUM = 10;
@@ -461,7 +461,7 @@ function u_MakeControlDataObject(div) {
   x = x.toFixed(3);
   y = y.toFixed(3);
   // rewrite id to be unique
-  const newId = `${UR.GetUAddressNumber()}-${id}`;
+  const newId = `CC${UR.GetUAddressNumber()}_${id}`;
   // return ControlDataObject
   return { id: newId, x, y };
 }

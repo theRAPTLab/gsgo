@@ -40,7 +40,7 @@ class CharController extends React.Component {
     this.state = {
       num_entities: 1,
       prefix: '',
-      jitter: 1,
+      jitter: 0,
       burst: false,
       status: '-',
       width: 2,

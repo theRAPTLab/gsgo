@@ -127,7 +127,7 @@ function m_ProcessDeviceMap(devmap) {
   console.log(...PR('ProcessDeviceMap'));
   DATACORE.IngestDevices(devmap, { all: true });
   const all = DATACORE.GetDevices();
-  LocalNode.raiseMessage('UR_DEVICES_CHANGED');
+  LocalNode.raiseMessage('UR_DEVICES_CHANGED', all);
   // go over the entire hash of devices
   const subs = DATACORE.GetAllSubs();
   console.log('subs', subs);
