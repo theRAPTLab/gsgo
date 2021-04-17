@@ -54,6 +54,8 @@ class ProjectData {
     this.GetModel = this.GetModel.bind(this);
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
+    this.GetBounds = this.GetBounds.bind(this);
+    this.Wraps = this.Wraps.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
     this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
       this
@@ -170,6 +172,36 @@ class ProjectData {
   }
   GetCurrentModelId() {
     return this.currentModelId;
+  }
+  GetBounds(modelId = this.currentModelId) {
+    const model = this.GetSimDataModel(modelId);
+    return model.bounds;
+  }
+  Wraps(wall = 'any', modelId = this.currentModelId) {
+    const model = this.GetSimDataModel(modelId);
+    const wrap = model.bounds.wrap;
+    let wallWrap;
+    if (!Array.isArray(wrap)) {
+      wallWrap = [wrap, wrap, wrap, wrap];
+    } else if (wrap.length === 4) {
+      wallWrap = wrap;
+    } else if (wrap.length === 2) {
+      wallWrap = [wrap[0], wrap[1], wrap[0], wrap[1]];
+    }
+    switch (wall) {
+      case 'top':
+        return wallWrap[0];
+      case 'right':
+        return wallWrap[1];
+      case 'bottom':
+        return wallWrap[2];
+      case 'left':
+        return wallWrap[3];
+      case 'any':
+      default:
+        // Generally you should only call this if there is a single wrap setting
+        return wallWrap[0];
+    }
   }
   /**
    * Returns array of properties {name, type, defaultvalue, isFeatProp}

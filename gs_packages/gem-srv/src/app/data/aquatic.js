@@ -1,5 +1,12 @@
 export const MODEL = {
   label: 'Aquatic Ecosystem',
+  bounds: {
+    top: -300,
+    right: 300,
+    bottom: 300,
+    left: -300,
+    wrap: false
+  },
   scripts: [
     {
       id: 'Fish',
