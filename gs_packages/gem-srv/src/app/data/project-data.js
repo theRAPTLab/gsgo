@@ -175,11 +175,17 @@ class ProjectData {
   }
   GetBounds(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
-    return model.bounds;
+    const bounds = model.bounds || {
+      top: -400, // default if not set
+      right: 400,
+      bottom: 400,
+      left: -400
+    };
+    return bounds;
   }
   Wraps(wall = 'any', modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
-    const wrap = model.bounds.wrap;
+    const wrap = model && model.bounds ? model.bounds.wrap : undefined;
     let wallWrap;
     if (!wrap) {
       // default if wrap is not set
