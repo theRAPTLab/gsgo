@@ -181,7 +181,10 @@ class ProjectData {
     const model = this.GetSimDataModel(modelId);
     const wrap = model.bounds.wrap;
     let wallWrap;
-    if (!Array.isArray(wrap)) {
+    if (!wrap) {
+      // default if wrap is not set
+      wallWrap = [false, false, false, false];
+    } else if (!Array.isArray(wrap)) {
       wallWrap = [wrap, wrap, wrap, wrap];
     } else if (wrap.length === 4) {
       wallWrap = wrap;
