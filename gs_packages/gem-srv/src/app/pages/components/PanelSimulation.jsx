@@ -89,6 +89,13 @@ class PanelSimulation extends React.Component {
     // Skip if no model is loaded
     if (!model) return;
 
+    // 2. Show Boundary
+    const width = model.bounds.right - model.bounds.left;
+    const height = model.bounds.bottom - model.bounds.top;
+    RENDERER.ShowBoundary(width, height);
+    // And Set Listeners too
+    UR.RaiseMessage('NET:SET_BOUNDARY', { width, height });
+
     // 2. Compile All Agents
     const scripts = model.scripts;
     const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));

@@ -1,11 +1,11 @@
 export const MODEL = {
   label: 'Aquatic Ecosystem',
   bounds: {
-    top: -300,
-    right: 300,
-    bottom: 300,
-    left: -300,
-    wrap: false
+    top: -400,
+    right: 400,
+    bottom: 400,
+    left: -400,
+    wrap: [false, true]
   },
   scripts: [
     {
