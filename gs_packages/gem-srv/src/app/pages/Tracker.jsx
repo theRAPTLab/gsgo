@@ -95,7 +95,7 @@ class Tracker extends React.Component {
     this.updateDeviceList([]);
 
     UR.HookPhase('UR/APP_START', async () => {
-      const devAPI = UR.SubscribeDevices({
+      const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'CharControl',
         quantify: list => list,
         notify: changes => {
@@ -103,8 +103,6 @@ class Tracker extends React.Component {
           console.log(...PR('notify', changes));
         }
       });
-      // with the new sub registered, scan the devicemap anew
-      UR.LinkSubsToDevices();
       // these are all the device API calls
       // we need to move them outside of Tracker.jsx
       const { unsubscribe, getController, deviceNum } = devAPI;

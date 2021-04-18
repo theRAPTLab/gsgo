@@ -31,7 +31,7 @@ let NetNode;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** device selectors hold function that are used to select matching
  *  input types, return a quantity of the matches, and be notified of
- *  changes. Used by SubscribeDevices
+ *  changes. Used by SubscribeDeviceSpec
  */
 const TDeviceSelector = {
   selectify: device => {
@@ -92,7 +92,7 @@ export function GetDeviceByUDID(udid) {
  *  a DeviceAPI with useful methods for obtaining controllers to named
  *  controls in a DeviceSpec group
  */
-export function SubscribeDevices(deviceSpec) {
+export function SubscribeDeviceSpec(deviceSpec) {
   // deviceSpec holds al the functions as follows:
   // selectify is filter function: device => boolean
   // quantify is quantity gate function: device[] => { valid, devices }
@@ -106,10 +106,11 @@ export function SubscribeDevices(deviceSpec) {
   } else throw Error('invalid deviceSpec object');
   // return device API
   const deviceAPI = DATACORE.SaveDeviceSub(sub);
+  LinkSubsToDevices();
   // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
   const props = Object.keys(sub).join(', ');
   const api = Object.keys(deviceAPI).join(', ');
-  console.log(...PR(`SubscribeDevices\nsub:[${props}]\napi:[${api}]`));
+  console.log(...PR(`SubscribeDeviceSpec\nsub:[${props}]\napi:[${api}]`));
   return deviceAPI;
 }
 
