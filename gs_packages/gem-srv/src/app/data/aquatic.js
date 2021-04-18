@@ -5,7 +5,8 @@ export const MODEL = {
     right: 400,
     bottom: 400,
     left: -400,
-    wrap: [false, true]
+    wrap: [false, false],
+    bounce: true
   },
   scripts: [
     {

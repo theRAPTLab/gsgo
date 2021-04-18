@@ -221,7 +221,7 @@ function m_DegreesToRadians(degree) {
 }
 function m_setPosition(agent, x, y) {
   const bounds = PROJ.GetBounds();
-  const pad = 1;
+  const pad = 5;
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
   // If agent uses physics, we can get height/width, otherwise default
@@ -233,24 +233,40 @@ function m_setPosition(agent, x, y) {
   let xx = x;
   let yy = y;
   if (PROJ.Wraps('left')) {
+    // This lets the agent poke its nose out before wrapping
+    // to the other side.  Otherwise, the agent will suddenly
+    // pop to other side.
     xx = x <= bounds.left ? bounds.right - pad : xx;
   } else {
-    xx = x - hwidth < bounds.left ? bounds.left + hwidth : xx;
+    // wall
+    if (x - hwidth < bounds.left) {
+      xx = bounds.left + hwidth + pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+    }
   }
   if (PROJ.Wraps('right')) {
     xx = x >= bounds.right ? bounds.left + pad : xx;
   } else {
-    xx = x + hwidth >= bounds.right ? bounds.right - hwidth : xx;
+    if (x + hwidth >= bounds.right) {
+      xx = bounds.right - hwidth - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+    }
   }
   if (PROJ.Wraps('top')) {
     yy = y <= bounds.top ? bounds.bottom - pad : yy;
   } else {
-    yy = y - hheight <= bounds.top ? bounds.top + hheight : yy;
+    if (y - hheight <= bounds.top) {
+      yy = bounds.top + hheight + pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+    }
   }
   if (PROJ.Wraps('bottom')) {
     yy = y >= bounds.bottom ? bounds.top + pad : yy;
   } else {
-    yy = y + hheight > bounds.bottom ? bounds.bottom - hheight : yy;
+    if (y + hheight > bounds.bottom) {
+      yy = bounds.bottom - hheight - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+    }
   }
   agent.prop.x.value = xx;
   agent.prop.y.value = yy;
