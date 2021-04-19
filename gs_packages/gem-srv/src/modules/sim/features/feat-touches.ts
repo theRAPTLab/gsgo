@@ -114,9 +114,13 @@ import { GetSpriteDimensions } from 'modules/datacore/dc-globals';
 const PR = UR.PrefixUtil('TouchesPack');
 const DBG = true;
 
-const AGENTS_TBL = new Map(); // [ ...[ agentId, BTYPE_TBL: map ]]
+// Stuff in agents instead
+// const AGENTS_TBL = new Map(); // [ ...[ agentId, BTYPE_TBL: map ]]
 // Blueprint Type: BTYPE_TBL  = [ ...[ blueprintName, TAGENT_TBL: map ]]
 // Target Agent:   TAGENT_TBL = [ ...[ targetAgentId, lastTouched: number ]]
+
+// Stuff in agents instead
+const MONITORED_AGENTS = [];
 
 const FPS = 30;
 let TIMER: any;
@@ -146,12 +150,16 @@ class TouchesPack extends GFeature {
     simloop.hook('INPUT', frame => console.log(frame));
   }
   clear() {
-    const agents = Array.from(AGENTS_TBL.keys());
+    // Stuff in agents instead
+    // const agents = Array.from(AGENTS_TBL.keys());
+    const agents = MONITORED_AGENTS;
     agents.forEach(a => {
-      const BTYPE_TBL = AGENTS_TBL.get(a);
+      // Stuff in agents instead
+      // const BTYPE_TBL = AGENTS_TBL.get(a);
+      const BTYPE_TBL = a.touchTable || new Map();
       const blueprints = Array.from(BTYPE_TBL.keys());
       blueprints.forEach(b => {
-        const TAGENT_TBL = BTYPE_TBL.get(b);
+        const TAGENT_TBL = BTYPE_TBL.get(b) || new Map();
         const targets = Array.from(TAGENT_TBL.keys());
         targets.forEach(t => {
           TAGENT_TBL.set(t, 0);
@@ -197,11 +205,15 @@ class TouchesPack extends GFeature {
    * @param targetBlueprintName -- blueprint name
    */
   monitorTouchesWith(agent: IAgent, targetBlueprintName: string) {
-    const BTYPE_TBL = AGENTS_TBL.get(agent.id) || new Map();
+    // Stuff in agents instead
+    // const BTYPE_TBL = AGENTS_TBL.get(agent.id) || new Map();
+    const BTYPE_TBL = agent.touchTable || new Map();
     const TAGENT_TBL = BTYPE_TBL.get(targetBlueprintName) || new Map();
     BTYPE_TBL.set(targetBlueprintName, TAGENT_TBL);
-    AGENTS_TBL.set(agent.id, BTYPE_TBL);
-    console.error(agent.id, 'monitoring', BTYPE_TBL);
+    // Stuff in agents instead
+    // AGENTS_TBL.set(agent.id, BTYPE_TBL);
+    agent.touchTable = BTYPE_TBL;
+    MONITORED_AGENTS.push(agent.id);
   }
   /**
    * Returns true if agent touched ANY agent of targetBlueprintName type
@@ -228,8 +240,9 @@ class TouchesPack extends GFeature {
     targetBlueprintName: string,
     period: number
   ): boolean {
-    const BTYPE_TBL = AGENTS_TBL.get(agent.id);
-
+    // Stuff in agents instead
+    // const BTYPE_TBL = AGENTS_TBL.get(agent.id);
+    const BTYPE_TBL = agent.touchTable;
     // Users might call `touchedWithin` without first registering for monitoring
     if (!BTYPE_TBL)
       console.error(
@@ -286,10 +299,14 @@ function m_isTouching(a: IAgent, b: IAgent) {
 }
 
 function m_update() {
-  const agents = Array.from(AGENTS_TBL.keys());
+  // Stuff it in agents instead
+  // const agents = Array.from(AGENTS_TBL.keys());
+  const agents = MONITORED_AGENTS;
   agents.forEach(agentId => {
     const a = GetAgentById(agentId);
-    const BTYPE_TBL = AGENTS_TBL.get(agentId);
+    // Stuff it in agents instead
+    // const BTYPE_TBL = AGENTS_TBL.get(agentId);
+    const BTYPE_TBL = a.touchTable;
     const blueprintNames = Array.from(BTYPE_TBL.keys());
     blueprintNames.forEach(blueprintName => {
       const targets = GetAgentsByType(blueprintName);
@@ -297,7 +314,6 @@ function m_update() {
       targets.forEach(b => {
         if (m_isTouching(a, b)) {
           TAGENT_TBL.set(b.id, COUNTER);
-          console.error('is touching at', COUNTER, TAGENT_TBL.get(b.id));
         }
       });
     });
