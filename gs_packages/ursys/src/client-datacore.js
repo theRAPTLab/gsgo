@@ -75,12 +75,12 @@ function ConnectionString() {
 
 /// ENDPOINT DATA STRUCTURES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let LocalNode;
-let NetNode;
+let LocalNode; // used for client handle, send, raise, call
+let NetNode; // only used for forwarding remote messages to localnode
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetSharedEndPoints(eps) {
-  LocalNode = eps.LocalNode;
-  NetNode = eps.NetNode;
+  LocalNode = eps.LocalNode; // used for client handle, send, raise, call
+  NetNode = eps.NetNode; // only used for forwarding remote messages to localnode
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetSharedEndPoints() {
