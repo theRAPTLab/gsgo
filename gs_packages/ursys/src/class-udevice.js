@@ -28,7 +28,6 @@ const DEVICE_ENCODINGS = [
   'word', // 16-bit word (hex)
   'dword', // 32-bit word (hex)
   'qword', // 64-bit word (hex)
-  'array', //
   // special types
   'axis', // a floating-point value between -1 and 1
   'vec2', // a 2D vector [x y]
