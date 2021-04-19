@@ -11,7 +11,7 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
 
-addProp energyLevel Number 20
+addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
