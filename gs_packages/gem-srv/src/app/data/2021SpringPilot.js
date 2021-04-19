@@ -171,8 +171,8 @@ onEvent Tick [[
   exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
   propPop x
 
-  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 600)) || ((agent.getProp('direction').value == -1) && (agent.x < -600))}} [[
-      exprPush {{600 * agent.getProp('direction').value * -1}}
+  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 400)) || ((agent.getProp('direction').value == -1) && (agent.x < -400))}} [[
+      exprPush {{400 * agent.getProp('direction').value * -1}}
       propPop x
   ]]
 ]]
@@ -334,7 +334,7 @@ prop y setTo -90`
       id: 507,
       name: 'Sunbeam 1',
       blueprint: 'Sunbeam',
-      initScript: `prop x setTo -600
+      initScript: `prop x setTo -400
 prop y setTo -180`
     },
     {

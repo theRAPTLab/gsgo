@@ -61,16 +61,47 @@ function moveWander(agent) {
 }
 
 /// EDGE to EDGE (of the entire tank / system)
+// Go in the same direction most of the way across the space, then turn back and do similar
+
 function moveEdgeToEdge(agent) {
-  // Go in the same direction most of the way across the space, then turn back and do similar
-  const distance = agent.prop.Movement.distance.value;
-  const wanderBoundary = 400; // this is hard-coded but should be set to the boundary of the sim container later
+  const bounds = PROJ.GetBounds();
+  const pad = 5;
+  let hwidth = pad; // half width -- default to some padding
+  let hheight = pad;
+
+  // If agent uses physics, we can get height/width, otherwise default
+  // to small padding.
+  if (agent.hasFeature('Physics')) {
+    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+  }
+
   let direction = agent.prop.Movement.direction.value;
+
+  // if we are near the edge, reverse direction
+  if (
+    agent.prop.x.value >= bounds.right - hwidth ||
+    agent.prop.y.value <= bounds.top + hheight
+  ) {
+    direction = direction + 180;
+  } else if (
+    agent.prop.x.value <= bounds.left + hwidth ||
+    agent.prop.y.value >= bounds.bottom - hheight
+  ) {
+    direction = direction - 180;
+  }
+
+  // now move with the current direction and distance
+  agent.prop.Movement.direction.value = direction;
+  const distance = agent.prop.Movement.distance.value;
 
   const angle = m_DegreesToRadians(direction);
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
-  m_setPosition(agent, x, y);
+
+  // we handled our own bounce, so set x and y directly
+  agent.prop.x.value = x;
+  agent.prop.y.value = y;
 }
 
 /// FLOAT
