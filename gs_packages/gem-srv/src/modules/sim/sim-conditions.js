@@ -34,6 +34,46 @@ RegisterFunction('dies', a => {
   return false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ *  wasTouchedWithin provides touch testing over time periods
+ *  in contrast with the instantaneous touch tests of "touhces"
+ *
+ *  This uses the `didTouchDict` set by the Touches feature for the touch
+ *  test.  It requires both Physics and Touches features.
+ *  Call touchedWithin to update didTouchDIct before using wasTouchedWithin
+ *
+ *  Example:
+ *     # PROGRAM UPDATE
+ *     every 1 [[
+ *       featCall Touches touchedWithin Ligthbeam 0.1
+ *       when Algae wasTouchedWithin Lightbeam [[
+ *         featCall Algae.Costume setGlow 0.5
+ *       ]]
+ *     ]]
+ */
+RegisterFunction('wasTouchedWithin', (a, b) => {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
+    console.error('wasTouchedWithin requires Physics');
+  // make sure both objects have the Touches feature
+  if (!a.hasFeature('Touches') || !b.hasFeature('Touches'))
+    console.error('wasTouchedWithin requires Touches');
+  // if either is inert, no touches are possible
+  if (a.isInert || b.isInert) return false;
+  // Look at touch table
+  let wasTouched = false;
+
+  const atouch = a
+    .getFeatProp('Touches', 'didTouchDict')
+    .getItem(b.blueprint.name);
+  if (atouch && atouch.value) wasTouched = true;
+  const btouch = b
+    .getFeatProp('Touches', 'didTouchDict')
+    .getItem(a.blueprint.name);
+  if (btouch && btouch.value) wasTouched = true;
+  return wasTouched;
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('touches', (a, b) => {
   // make sure both objects have the Physics feature
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;

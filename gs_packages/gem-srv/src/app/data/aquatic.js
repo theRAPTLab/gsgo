@@ -33,15 +33,22 @@ propPop text
 
 # PROGRAM EVENT
 # PROGRAM UPDATE
+when Fish touches Algae [[
+  every 1 [[
+    prop Fish.energyLevel add 10
+    prop Algae.energyLevel sub 10
+    featCall Fish.Costume setGlow 0.5
+  ]]
+]]
 every 1 [[
   // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
 
-  // touching Algae?
-  ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Algae', 1) }} [[
-    prop energyLevel add 10
-    featCall agent.Costume setGlow 0.5
-  ]]
+  // // touching Algae?
+  // ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Algae', 1) }} [[
+  //   prop energyLevel add 10
+  //   featCall agent.Costume setGlow 0.5
+  // ]]
 
   // set name + energyLevel
   exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
@@ -111,25 +118,55 @@ featCall Touches monitorTouchesWith 'Lightbeam'
 # PROGRAM EVENT
 
 # PROGRAM UPDATE
-every 1 [[
-  // energyLevel dec
-  prop energyLevel sub 1
-
-  // touching fish?
-  ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Fish', 1) }} [[
-    prop energyLevel sub 10
-  ]]
-
-  // touching lightbeam?
-  ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
-    prop energyLevel add 6
-    featCall agent.Costume setGlow 0.5
+when Algae touches Lightbeam [[
+  every 1 [[
+    featCall Algae.Costume setGlow 0.5
+    prop Algae.energyLevel add 10
   ]]
 
   // update name
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 ]]
+every 1 [[
+  prop energyLevel sub 1
+  // update name
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
+]]
+
+// every ... when
+// every 1 [[
+//   featCall Touches touchedWithin Lightbeam 0.1
+//   when Algae wasTouchedWithin Lightbeam [[
+//     featCall Algae.Costume setGlow 0.5
+//     prop Algae.energyLevel add 10
+//   ]]
+
+//   // update name
+//   exprPush {{ agent.getProp('energyLevel').value }}
+//   propPop text
+// ]]
+
+// every 1 [[
+//   // energyLevel dec
+//   prop energyLevel sub 1
+
+//   // touching fish?
+//   ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Fish', 1) }} [[
+//     prop energyLevel sub 10
+//   ]]
+
+//   // touching lightbeam?
+//   ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Lightbeam', 1) }} [[
+//     prop energyLevel add 6
+//     featCall agent.Costume setGlow 0.5
+//   ]]
+
+//   // update name
+//   exprPush {{ agent.getProp('energyLevel').value }}
+//   propPop text
+// ]]
 
 
 // every 1 [[
@@ -187,6 +224,9 @@ addProp energyRate Number 1
 useFeature Physics
 featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 1000
+
+// touches
+useFeature Touches
 
 # PROGRAM UPDATE
 exprPush {{agent.x + agent.getProp('speed').value; }}
