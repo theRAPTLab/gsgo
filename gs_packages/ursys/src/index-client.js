@@ -74,8 +74,8 @@ async function SystemStart(route) {
     ).then(data => {
       console.log(...PR('URNET established. UADDR is stable.'));
       const eps = DATACORE.GetSharedEndPoints();
-      LocalNode = eps.LocalNode;
-      NetNode = eps.NetNode;
+      LocalNode = eps.LocalNode; // used only for local handle, send, call
+      NetNode = eps.NetNode; // used only for forwarding remote messages
       return data;
     })
   );
