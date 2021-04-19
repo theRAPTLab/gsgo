@@ -30,4 +30,5 @@ export function MakeHoverable(vobj: Visual) {
   spr.interactive = true; // enable interactive events
   spr.on('pointerover', onPointerOver);
   spr.on('pointerout', onPointerOut);
+  spr.on('pointerupoutside', onPointerOut);
 }

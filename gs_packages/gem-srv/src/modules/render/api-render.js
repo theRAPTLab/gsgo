@@ -48,7 +48,11 @@ function Init(element) {
   // Initialize PIXI APP
   if (!element) throw Error('received null element for Renderer.Init()');
   PIXI.utils.skipHello();
-  PIXI_APP = new PIXI.Application({ width: 512, height: 512 });
+  PIXI_APP = new PIXI.Application({
+    width: 512,
+    height: 512,
+    backgroundColor: 0x222222
+  });
   // CSS styling
   document.body.style.margin = '0px';
   PIXI_DIV = element;
@@ -224,6 +228,20 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ShowBoundary(width, height, color = 0x000000) {
+  // Stage
+  let boundaryRect = CONTAINERS.Boundary;
+  if (!boundaryRect) {
+    boundaryRect = new PIXI.Graphics();
+    CONTAINERS.Boundary = boundaryRect;
+    CONTAINERS.Root.addChild(boundaryRect);
+  }
+  boundaryRect.beginFill(color);
+  boundaryRect.drawRect(-width / 2, -height / 2, width, height);
+  boundaryRect.endFill();
+  boundaryRect.zIndex = -999;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
   const { actable } = opt;
   SETTINGS.actable = actable || false; // default non-interative
@@ -268,6 +286,7 @@ export {
   SetGlobalConfig,
   Init,
   HookResize,
+  ShowBoundary,
   UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,

@@ -5,6 +5,12 @@
   This is the "FeaturePack" base class, which you can extend to implement
   your own features.
 
+  Always use m_Random to generate random values.
+
+  Direction
+    0  = right
+    90 = up
+
   TODO: add methods for initialization management
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -14,6 +20,7 @@ import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
+import PROJ from 'app/data/project-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,10 +39,9 @@ function moveJitter(
   max: number = 5,
   round: boolean = true
 ) {
-  const x = m_Random(min, max, round);
-  const y = m_Random(min, max, round);
-  agent.prop.x.value += x;
-  agent.prop.y.value += y;
+  const x = m_random(min, max, round);
+  const y = m_random(min, max, round);
+  m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
 }
 
 /// WANDER
@@ -44,40 +50,58 @@ function moveWander(agent) {
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
   let direction = agent.prop.Movement.direction.value;
-  if (Math.random() > 0.98) {
-    direction += Math.random() * 180;
+  if (m_random() > 0.98) {
+    direction += m_random(-90, 90);
     agent.prop.Movement.direction.value = direction;
   }
   const angle = m_DegreesToRadians(direction);
-  agent.prop.x.value += Math.cos(angle) * distance;
-  agent.prop.y.value -= Math.sin(angle) * distance;
-  // keep it in bounds
-  agent.prop.x.value = Math.max(-500, Math.min(500, agent.prop.x.value));
-  agent.prop.y.value = Math.max(-500, Math.min(500, agent.prop.y.value));
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  m_setPosition(agent, x, y);
 }
 
 /// EDGE to EDGE (of the entire tank / system)
+// Go in the same direction most of the way across the space, then turn back and do similar
+
 function moveEdgeToEdge(agent) {
-  // Go in the same direction most of the way across the space, then turn back and do similar
-  const distance = agent.prop.Movement.distance.value;
-  const wanderBoundary = 400; // this is hard-coded but should be set to the boundary of the sim container later
+  const bounds = PROJ.GetBounds();
+  const pad = 5;
+  let hwidth = pad; // half width -- default to some padding
+  let hheight = pad;
+
+  // If agent uses physics, we can get height/width, otherwise default
+  // to small padding.
+  if (agent.hasFeature('Physics')) {
+    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+  }
+
   let direction = agent.prop.Movement.direction.value;
 
-  const angle = m_DegreesToRadians(direction);
-  agent.prop.x.value += Math.cos(angle) * distance;
-  agent.prop.y.value -= Math.sin(angle) * distance;
-
+  // if we are near the edge, reverse direction
   if (
-    agent.prop.x.value >= wanderBoundary ||
-    agent.prop.y.value >= wanderBoundary
+    agent.prop.x.value >= bounds.right - hwidth ||
+    agent.prop.y.value <= bounds.top + hheight
   ) {
-    agent.prop.Movement.direction.value = direction + 180;
+    direction = direction + 180;
   } else if (
-    agent.prop.x.value <= -wanderBoundary ||
-    agent.prop.y.value <= -wanderBoundary
+    agent.prop.x.value <= bounds.left + hwidth ||
+    agent.prop.y.value >= bounds.bottom - hheight
   ) {
-    agent.prop.Movement.direction.value = direction - 180;
+    direction = direction - 180;
   }
+
+  // now move with the current direction and distance
+  agent.prop.Movement.direction.value = direction;
+  const distance = agent.prop.Movement.distance.value;
+
+  const angle = m_DegreesToRadians(direction);
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+
+  // we handled our own bounce, so set x and y directly
+  agent.prop.x.value = x;
+  agent.prop.y.value = y;
 }
 
 /// FLOAT
@@ -120,13 +144,14 @@ class MovementPack extends GFeature {
     super(name);
     if (DBG) console.log(...PR('construct'));
     this.handleInput = this.handleInput.bind(this);
-    this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('setController', this.setController);
+    this.featAddMethod('setPosition', this.setPosition);
     this.featAddMethod('setMovementType', this.setMovementType);
     this.featAddMethod('setDirection', this.setDirection);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
     this.featAddMethod('setRandomStart', this.setRandomStart);
+    this.featAddMethod('jitterPos', this.jitterPos);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -158,6 +183,10 @@ class MovementPack extends GFeature {
     agent.getProp('controller').value = x;
   }
 
+  setPosition(agent, x, y) {
+    m_setPosition(agent, x, y);
+  }
+
   // TYPES
   //   'wander' -- params: distance
   setMovementType(agent: IAgent, type: string, ...params) {
@@ -172,7 +201,7 @@ class MovementPack extends GFeature {
           agent.getFeatProp(this.name, 'distance').value = params[0];
           agent.getFeatProp(this.name, 'direction').value = params[1];
           if (params[2] == 'rand')
-            agent.getFeatProp(this.name, 'direction').value = Math.random() * 180;
+            agent.getFeatProp(this.name, 'direction').value = m_random(0, 180);
           break;
         case 'jitter':
           // min max
@@ -184,16 +213,18 @@ class MovementPack extends GFeature {
 
   setDirection(agent: IAgent, direction: number) {
     console.log('setting direction to', direction);
-    agent.getFeatProp(this.name, 'direction').value = direction;
+    m_setDirection(agent, direction);
   }
 
   setRandomDirection(agent: IAgent) {
-    agent.getFeatProp(this.name, 'direction').value = Math.random() * 360;
+    m_setDirection(agent, m_random(0, 360));
   }
 
   setRandomPosition(agent: IAgent) {
-    agent.prop.x.value = m_Random(-300, 300); // HACK!  Bounds are hard coded!
-    agent.prop.y.value = m_Random(-300, 300); // HACK!  Bounds are hard coded!
+    const bounds = PROJ.GetBounds();
+    const x = m_random(bounds.left, bounds.right);
+    const y = m_random(bounds.top, bounds.bottom);
+    m_setPosition(agent, x, y);
   }
 
   setRandomStart(agent: IAgent) {
@@ -202,22 +233,78 @@ class MovementPack extends GFeature {
   }
 
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
-    const x = m_Random(min, max, round);
-    const y = m_Random(min, max, round);
-    agent.prop.x.value += x;
-    agent.prop.y.value += y;
+    const x = m_random(min, max, round);
+    const y = m_random(min, max, round);
+    m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
   }
 } // end of feature class
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_Random(min, max, round = true) {
+function m_random(min = 0, max = 1, round = false) {
+  // REVIEW: Replace with a seeded random number generator
   const n = Math.random() * (max - min) + min;
   if (round) return Math.round(n);
   return n;
 }
 function m_DegreesToRadians(degree) {
   return (degree * Math.PI) / 180;
+}
+function m_setPosition(agent, x, y) {
+  const bounds = PROJ.GetBounds();
+  const pad = 5;
+  let hwidth = pad; // half width -- default to some padding
+  let hheight = pad;
+  // If agent uses physics, we can get height/width, otherwise default
+  // to small padding.
+  if (agent.hasFeature('Physics')) {
+    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+  }
+  let xx = x;
+  let yy = y;
+  if (PROJ.Wraps('left')) {
+    // This lets the agent poke its nose out before wrapping
+    // to the other side.  Otherwise, the agent will suddenly
+    // pop to other side.
+    xx = x <= bounds.left ? bounds.right - pad : xx;
+  } else {
+    // wall
+    if (x - hwidth < bounds.left) {
+      xx = bounds.left + hwidth + pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+    }
+  }
+  if (PROJ.Wraps('right')) {
+    xx = x >= bounds.right ? bounds.left + pad : xx;
+  } else {
+    if (x + hwidth >= bounds.right) {
+      xx = bounds.right - hwidth - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+    }
+  }
+  if (PROJ.Wraps('top')) {
+    yy = y <= bounds.top ? bounds.bottom - pad : yy;
+  } else {
+    if (y - hheight <= bounds.top) {
+      yy = bounds.top + hheight + pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+    }
+  }
+  if (PROJ.Wraps('bottom')) {
+    yy = y >= bounds.bottom ? bounds.top + pad : yy;
+  } else {
+    if (y + hheight > bounds.bottom) {
+      yy = bounds.bottom - hheight - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+    }
+  }
+  agent.prop.x.value = xx;
+  agent.prop.y.value = yy;
+}
+function m_setDirection(agent, degrees) {
+  console.error('direction', degrees);
+  agent.prop.Movement.direction.value = degrees;
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////

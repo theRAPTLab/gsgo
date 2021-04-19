@@ -60,11 +60,11 @@ class PhysicsPack extends GFeature {
     prop = new GVarNumber();
     prop.setMax(100);
     prop.setMin(0);
-    this.featAddProp(agent, 'width', prop);
+    this.featAddProp(agent, 'width', prop); // in general, use getWidth
     prop = new GVarNumber();
     prop.setMax(100);
     prop.setMin(0);
-    this.featAddProp(agent, 'height', prop);
+    this.featAddProp(agent, 'height', prop); // in general, use getHeight
     // shape = [ circle, rectangle ]
   }
 
@@ -119,7 +119,7 @@ class PhysicsPack extends GFeature {
   setHeight(agent: IAgent, num: number) {
     agent.getFeatProp(this.name, 'height').value = num;
   }
-  getWidth(agent: IAgent) {
+  getWidth(agent: IAgent): number {
     switch (agent.getFeatProp(this.name, 'shape').value) {
       case RECTANGLE:
         return agent.getFeatProp(this.name, 'width').value;
@@ -128,7 +128,7 @@ class PhysicsPack extends GFeature {
         return agent.getFeatProp(this.name, 'radius').value;
     }
   }
-  getHeight(agent: IAgent) {
+  getHeight(agent: IAgent): number {
     switch (agent.getFeatProp(this.name, 'shape').value) {
       case RECTANGLE:
         return agent.getFeatProp(this.name, 'height').value;

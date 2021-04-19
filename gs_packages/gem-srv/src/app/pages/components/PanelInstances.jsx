@@ -61,7 +61,7 @@ class PanelInstances extends React.Component {
               <div
                 style={{
                   display: 'flex',
-                  flexDirection: 'row',
+                  flexDirection: 'column',
                   flexWrap: 'wrap'
                 }}
                 key={blueprint.name}

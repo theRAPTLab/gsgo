@@ -47,13 +47,8 @@ UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
   }
 });
 
-/// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
+/// CLASS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('NET:HELLO', data => {
-  console.log('NET:HELLO processing', data);
-  return { str: 'tracker got you' };
-});
-
 class PanelSimViewer extends React.Component {
   constructor() {
     super();
@@ -62,6 +57,8 @@ class PanelSimViewer extends React.Component {
       color: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.1)'
     };
+    this.handleShowBoundary = this.handleShowBoundary.bind(this);
+    UR.HandleMessage('NET:SET_BOUNDARY', this.handleShowBoundary);
   }
 
   componentDidMount() {
@@ -72,7 +69,11 @@ class PanelSimViewer extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    UR.UnhandleMessage('NET:SET_BOUNDARY', this.handleShowBoundary);
+  }
+
+  handleShowBoundary(data) {
+    RENDERER.ShowBoundary(data.width, data.height);
   }
 
   render() {

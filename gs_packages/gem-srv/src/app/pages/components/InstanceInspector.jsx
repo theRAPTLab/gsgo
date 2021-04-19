@@ -62,6 +62,7 @@ class InstanceInspector extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnhandleMessage('INSPECTOR_CLICK', this.HandleInspectorClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
     // Don't unregister here because changing size can cause unmount?
@@ -163,6 +164,10 @@ class InstanceInspector extends React.Component {
     const agentId = this.GetInstanceId();
     if (data.agentId === agentId) {
       this.setState({ isHovered: true });
+    } else {
+      // Only one hover allowed, so if someone else is
+      // hovering, we unhover
+      this.setState({ isHovered: false });
     }
   }
   HandleHoverOut(data) {
@@ -175,15 +180,14 @@ class InstanceInspector extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Local Events (on InstanceEditor container)
   ///
-  OnHoverOver() {
+  OnHoverOver(e) {
     const agentId = this.GetInstanceId();
     UR.RaiseMessage('SIM_INSTANCE_HOVEROVER', { agentId });
   }
-  OnHoverOut() {
+  OnHoverOut(e) {
     const agentId = this.GetInstanceId();
     UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
   }
-
   render() {
     const { title, size, color, colorActive, bgcolor, isHovered } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
