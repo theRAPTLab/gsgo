@@ -149,3 +149,9 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 
 * W1: start client registration, DifferenceCache
 * W2: CharControl, UDevice + DeviceSync start
+
+**SUMMARY  S2107 APR 05 - APR 18**
+
+* W1: CharControl, DeviceSub, Directory, Data Structure documentation
+* W2: Device Define/Publish, Subscribe/Read Complete DR01!
+

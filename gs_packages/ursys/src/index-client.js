@@ -165,7 +165,7 @@ const UR = {
   // FORWARDED DEVICE API
   NewDevice: DEVICES.NewDevice,
   RegisterDevice: DEVICES.RegisterDevice,
-  SubscribeDevices: DEVICES.SubscribeDevices,
+  SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED PROMPT UTILITY
