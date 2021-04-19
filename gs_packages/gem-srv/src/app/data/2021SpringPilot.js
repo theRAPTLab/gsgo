@@ -11,19 +11,11 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
 
-// ** pick a movement below:
-// this line for wandering:
-// featCall Movement setMovementType 'wander' 0.5
-
-// this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
-// featCall Movement setMovementType 'edgeToEdge' 1 0
-
-// this line to pick a random direction and go until you hit the edge then reverse
-featCall Movement setMovementType 'edgeToEdge' 1 0 'rand'
-
-addProp energyLevel Number 20
+addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
+
+addProp startDirection Number 0
 
 useFeature Physics
 featCall Physics init
@@ -38,8 +30,35 @@ exprPush {{ agent.name }}
 propPop text
 
 # PROGRAM EVENT
-onEvent Tick [[
-  // foodLevel goes down every second
+onEvent Start [[
+    // ** pick a movement below:
+    // this line for wandering:
+    // featCall Movement setMovementType 'wander' 0.5
+
+    // this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
+    // featCall Movement setMovementType 'edgeToEdge' 1 0
+
+    // this line to pick a random direction and go until you hit the edge then reverse ... add 'rand' if you want to pick starting directions randomly
+    // in this example it will be ignored anyhow because I am setting  the startDirection just below:
+    featCall Movement setMovementType 'edgeToEdge' 1 0
+
+    exprPush {{ agent.getProp('startDirection').value }}
+    featPropPop agent.Movement.direction
+
+    exprPush {{ agent.getProp('energyLevel').value / 100 }}
+    propPop meter
+
+]]
+# PROGRAM UPDATE
+when Fish touches Algae [[
+  every 1 [[
+    prop Fish.energyLevel add 10
+    prop Algae.energyLevel sub 10
+    featCall Fish.Costume setGlow 0.5
+  ]]
+]]
+every 1 runAtStart [[
+  // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
 
   // set name + energyLevel
@@ -77,30 +96,6 @@ onEvent Tick [[
   propPop meter
 
 ]]
-# PROGRAM UPDATE
-when Fish touches Algae [[
-
-  ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-    prop Fish.energyLevel add 1
-    prop Algae.energyLevel sub 1
-    featCall Fish.Costume setGlow 1
-  ]]
-
-  // Add energy to Fish and subtract energy from Algae
-  //
-  // This doens't work: Fish and Algae context are lost within the ifExpr in when
-  //ifExpr {{ Algae.getProp('energyLevel').value > 0 }} [[
-  //  prop Fish.energyLevel add 1
-  //  prop Algae.energyLevel sub 1
-  //]]
-  //
-  // hack around ifExpr bug
-  // exprPush {{ Fish.getProp('energyLevel').value + (Algae.getProp('energyLevel').value > 0 ? 1 : 0) }}
-  // propPop Fish.energyLevel
-  // // min is 0, so it's always OK to subtract one
-  // prop Algae.energyLevel sub 1
-
-]]
 `
     },
     {
@@ -122,59 +117,55 @@ useFeature Physics
 featProp Physics.radius setTo 16
 
 // show initial level (otherwise level is not shown until run)
-exprPush {{ agent.getProp('energyLevel').value }}
-propPop text
+//exprPush {{ agent.getProp('energyLevel').value }}
+//propPop text
+prop text setTo '##'
+
 
 # PROGRAM EVENT
-onEvent Tick [[
-  prop energyLevel sub 1
-
-  // show energyLevel
+onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
-
-  // set scale of algae based on energyLevel
-  exprPush {{ agent.getProp('energyLevel').value / 100 }}
-  propPop scale
-
-  // dead
-  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
-    prop agent.alpha setTo 0.3
-    prop agent.isInert setTo true
-  ]]
 ]]
 
 # PROGRAM UPDATE
-when Algae touches Lightbeam [[
-  exprPush {{Algae.getProp('energyLevel').value + Lightbeam.getProp('energyRate').value}}
-  propPop Algae.energyLevel
+when Algae touches Sunbeam [[
+  every 1 [[
+    featCall Algae.Costume setGlow 1
+    exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
+    propPop energyLevel
+  ]]
 
-  featCall Costume setGlow 1
+  // update name
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
+]]
+every 1 [[
+  prop energyLevel sub 1
+  // update name
+  exprPush {{ agent.getProp('energyLevel').value }}
+  propPop text
 ]]
 `
     },
     {
-      id: 'Lightbeam',
-      label: 'Lightbeam',
-      script: `# BLUEPRINT Lightbeam
+      id: 'Sunbeam',
+      label: 'Sunbeam',
+      script: `# BLUEPRINT Sunbeam
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'lightbeam.json' 0
 addProp speed Number 10
-addProp energyRate Number 1
+addProp energyRate Number 5
 addProp direction Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 256
+featCall Physics setSize 100 500
 
 prop agent.skin setTo 'lightbeam.json'
 prop agent.alpha setTo 0.3
-
-// featCall Movement setController 'user'
-// prop agent.x setTo -300
-// prop agent.y setTo -300
 
 # PROGRAM EVENT
 onEvent Tick [[
@@ -183,8 +174,8 @@ onEvent Tick [[
   exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
   propPop x
 
-  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 600)) || ((agent.getProp('direction').value == -1) && (agent.x < -600))}} [[
-      exprPush {{600 * agent.getProp('direction').value * -1}}
+  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 400)) || ((agent.getProp('direction').value == -1) && (agent.x < -400))}} [[
+      exprPush {{400 * agent.getProp('direction').value * -1}}
       propPop x
   ]]
 ]]
@@ -296,61 +287,65 @@ onEvent Tick [[
   instances: [
     {
       id: 501,
-      name: 'fish01',
+      name: 'Nathan Fish',
       blueprint: 'Fish',
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
 prop y setTo 0
-prop energyLevel setTo 54`
+prop energyLevel setTo 54
+prop startDirection setTo 160`
     },
     {
       id: 502,
-      name: 'fatFish',
+      name: 'Kalani Fish',
       blueprint: 'Fish',
       initScript: `prop x setTo 100
 prop y setTo 100
-prop energyLevel setTo 100` // extra property test
+prop energyLevel setTo 100
+prop startDirection setTo 90` // extra property test
     },
     {
       id: 503,
-      name: 'starvedFish',
+      name: 'Sara Fish',
       blueprint: 'Fish',
-      initScript: `prop x setTo 200` // missing y test
+      initScript: `prop x setTo 200
+      prop startDirection setTo 0` // missing y test
     },
     {
       id: 504,
-      name: 'algae01',
+      name: 'Algae 1',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
 prop y setTo 120`
     },
     {
       id: 505,
-      name: 'algae02',
+      name: 'Algae 2',
       blueprint: 'Algae',
       initScript: `prop x setTo -150
-prop y setTo -120`
+prop y setTo -120
+prop energyLevel setTo 50`
     },
     {
       id: 506,
-      name: 'algae03',
+      name: 'Algae 3',
       blueprint: 'Algae',
       initScript: `prop x setTo -120
 prop y setTo -90`
     },
     {
       id: 507,
-      name: 'lightbeam01',
-      blueprint: 'Lightbeam',
-      initScript: `prop x setTo -600
-prop y setTo -160`
+      name: 'Sunbeam 1',
+      blueprint: 'Sunbeam',
+      initScript: `prop x setTo -400
+prop y setTo -180`
     },
     {
       id: 510,
       name: 'Avg Algae Health',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 235
-prop y setTo -260
+      initScript: `prop x setTo 50
+prop y setTo 320
 prop reportSubject setTo 'Algae'
 prop alpha setTo 0.3
 prop meterClr setTo 65280`
@@ -359,18 +354,18 @@ prop meterClr setTo 65280`
       id: 511,
       name: 'Max Fish  Health',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 350
-prop y setTo -260
+      initScript: `prop x setTo -50
+prop y setTo 320
 prop reportSubject setTo 'Fish'
 prop alpha setTo 0.3
 prop meterClr setTo 3120383`
     },
     {
       id: 512,
-      name: 'timer',
+      name: 'Timer',
       blueprint: 'Timer',
-      initScript: `prop x setTo 150
-prop y setTo -260`
+      initScript: `prop x setTo 0
+prop y setTo 350`
     }
   ]
 };

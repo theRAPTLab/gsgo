@@ -1,5 +1,13 @@
 export const MODEL = {
   label: 'Aquatic Ecosystem',
+  bounds: {
+    top: -400,
+    right: 400,
+    bottom: 400,
+    left: -400,
+    wrap: [false, false],
+    bounce: true
+  },
   scripts: [
     {
       id: 'Fish',
@@ -40,7 +48,7 @@ when Fish touches Algae [[
     featCall Fish.Costume setGlow 0.5
   ]]
 ]]
-every 1 [[
+every 1 runAtStart [[
   // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
 

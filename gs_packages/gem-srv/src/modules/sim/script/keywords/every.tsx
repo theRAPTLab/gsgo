@@ -15,6 +15,9 @@
 
   The code block will run every n seconds according to the period.
 
+  If you pass the `runAtStart` option, the agent code will execute
+  immediately instead of waiting until after the first period.
+
   You can use floating point seconds.
   It will not fire more frequently than the sim update loop cycle (33ms)
 
@@ -43,7 +46,7 @@ export class every extends Keyword {
 
   constructor() {
     super('every');
-    this.args = ['period:number', 'consq:TMethod'];
+    this.args = ['period:number', ',,,args'];
 
     this.startTimer = this.startTimer.bind(this);
     this.stopTimer = this.stopTimer.bind(this);
@@ -75,8 +78,16 @@ export class every extends Keyword {
   }
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
-    let [kw, period, consq] = unit;
-    if (DBG) console.log(...PR('compile every', kw, period, consq));
+    let [kw, period, ...args] = unit;
+    let options = '';
+    let consq;
+    if (args.length > 1) {
+      options = args[0];
+      consq = args[1];
+    } else {
+      consq = args[0];
+    }
+    if (DBG) console.log(...PR('compile every', kw, period, options, consq));
 
     // period is time to wait between runs
     // e.g. period = 1 is run 1 time every second
@@ -112,9 +123,10 @@ export class every extends Keyword {
       // agent is every single agent regardless of when condition
       // state.ctx contains Algae, Lightbeam, and agent (parent script agent)
       const key = `${agent.id}:${uid}`; // `${agent.id}:${this.UID}`;
+      const firstFire = this.LAST_FIRED.get(key) === undefined;
       const lastFired = this.LAST_FIRED.get(key) || 0;
       const elapsed = this.COUNTER - lastFired;
-      if (elapsed > frames) {
+      if (elapsed > frames || (options === 'runAtStart' && firstFire)) {
         agent.exec(consq, state.ctx);
         this.LAST_FIRED.set(key, this.COUNTER);
       }
@@ -124,18 +136,34 @@ export class every extends Keyword {
 
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
-    const { event: period, consq } = state;
-    return [this.keyword, period, consq];
+    const { event, period, ...args } = state;
+    let options = false;
+    let consq;
+    if (args.length > 1) {
+      options = args[0];
+      consq = args[1];
+    } else {
+      consq = args[0];
+    }
+    return [this.keyword, period, options, consq];
   }
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, period, consq] = unit;
+    const [kw, period, ...args] = unit;
+    let options = false;
+    let consq;
+    if (args.length > 1) {
+      options = args[0];
+      consq = args[1];
+    } else {
+      consq = args[0];
+    }
     return super.jsx(
       index,
       unit,
       <>
-        every {`'${period}'`} run {consq.length} ops
+        every {`'${period}'`} run {options} {consq.length} ops
       </>
     );
   }

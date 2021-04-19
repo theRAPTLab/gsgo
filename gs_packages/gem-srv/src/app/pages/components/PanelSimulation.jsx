@@ -13,6 +13,7 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
+import PROJ from '../../data/project-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,6 +89,14 @@ class PanelSimulation extends React.Component {
 
     // Skip if no model is loaded
     if (!model) return;
+
+    // 2. Show Boundary
+    const bounds = PROJ.GetBounds();
+    const width = bounds.right - bounds.left;
+    const height = bounds.bottom - bounds.top;
+    RENDERER.ShowBoundary(width, height);
+    // And Set Listeners too
+    UR.RaiseMessage('NET:SET_BOUNDARY', { width, height });
 
     // 2. Compile All Agents
     const scripts = model.scripts;

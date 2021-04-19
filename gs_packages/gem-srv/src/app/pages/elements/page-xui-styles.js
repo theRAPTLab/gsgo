@@ -253,6 +253,7 @@ const useStylesHOC = theme => ({
     backgroundColor: '#000',
     margin: '0.5em 0 0.5em 0.5em',
     padding: '3px',
+    border: '1px solid #00000000',
     borderRadius: '5px',
     cursor: 'pointer'
   },
