@@ -48,7 +48,7 @@ when Fish touches Algae [[
     featCall Fish.Costume setGlow 0.5
   ]]
 ]]
-every 1 [[
+every 1 runAtStart [[
   // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
 
