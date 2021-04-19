@@ -58,6 +58,8 @@ function Stage() {
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
 function Run() {
   // prepare to run simulation and do first-time setup
+  // compiles happen after Run()
+  // but simulation has not started
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** once the simluation is initialized, start the periodic frame update */
@@ -69,6 +71,7 @@ function Start() {
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
