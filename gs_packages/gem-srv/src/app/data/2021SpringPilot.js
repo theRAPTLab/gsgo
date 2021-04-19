@@ -45,6 +45,9 @@ onEvent Start [[
     exprPush {{ agent.getProp('startDirection').value }}
     featPropPop agent.Movement.direction
 
+    exprPush {{ agent.getProp('energyLevel').value / 100 }}
+    propPop meter
+
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
