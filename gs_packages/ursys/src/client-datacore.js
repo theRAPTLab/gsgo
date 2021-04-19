@@ -100,7 +100,7 @@ let DB_COUNT = 0;
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** a device subscription saves a "device controller" when it's received from the
- *  device connector. It's called by client-netdevices SubscribeDevices() which
+ *  device connector. It's called by client-netdevices SubscribeDeviceSpec() which
  *  is exported from UR client.
  *  returns a deviceAPI object
  */
