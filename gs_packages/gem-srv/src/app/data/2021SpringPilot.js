@@ -55,6 +55,12 @@ when Fish touches Algae [[
     prop Fish.energyLevel add 10
     prop Algae.energyLevel sub 10
     featCall Fish.Costume setGlow 0.5
+
+    ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
+      prop Algae.alpha setTo 0.3
+      prop Algae.isInert setTo true
+    ]]
+
   ]]
 ]]
 every 1 runAtStart [[
@@ -131,11 +137,9 @@ onEvent Start [[
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
   every 1 [[
-    ifExpr {{Algae.getProp('energyLevel').value > 0}} [[
     featCall Algae.Costume setGlow 1
     exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
     propPop energyLevel
-    ]]
   ]]
 
   // update name
