@@ -132,6 +132,9 @@ prop text setTo '##'
 onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
+
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  propPop agent.scale
 ]]
 
 # PROGRAM UPDATE
@@ -151,6 +154,12 @@ every 1 [[
   // update name
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
+
+]]
+
+every 0.5 [[
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  propPop agent.scale
 ]]
 `
     },
