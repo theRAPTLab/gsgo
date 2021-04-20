@@ -56,10 +56,18 @@ when Fish touches Algae [[
     prop Algae.energyLevel sub 10
     featCall Fish.Costume setGlow 0.5
 
+    // grow if above 80% energy
+    ifExpr {{Fish.getProp('energyLevel').value > 90 }} [[
+      prop Fish.scale setTo 2
+    ]]
+
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
     ]]
+
+
+
 
   ]]
 ]]
