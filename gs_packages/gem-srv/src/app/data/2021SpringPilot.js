@@ -16,7 +16,7 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 // turns on the feature that allows the fish to grow if this is 1
-addProp grows Boolean 0
+addProp grows Boolean 1
 
 addProp startDirection Number 0
 
@@ -34,6 +34,9 @@ propPop text
 
 # PROGRAM EVENT
 onEvent Start [[
+  // start at normal size unless you eat
+  featCall Physics setSize 90
+
     // ** pick a movement below:
     // this line for wandering:
     // featCall Movement setMovementType 'wander' 0.5
@@ -61,7 +64,8 @@ when Fish touches Algae [[
 
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
-      prop Fish.scale setTo 2
+      featCall Physics setSize 150
+
     ]]
 
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
