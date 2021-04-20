@@ -118,7 +118,6 @@ class InstanceInspector extends React.Component {
 
   HandleInspectorClick(data) {
     const { id, instance } = this.props;
-    console.error('inspector lcick', id, instance, data);
     if (data.id === instance.id) this.OnInstanceClick();
   }
 

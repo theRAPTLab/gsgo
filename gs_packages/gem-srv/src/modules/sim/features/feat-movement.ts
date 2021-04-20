@@ -303,7 +303,6 @@ function m_setPosition(agent, x, y) {
   agent.prop.y.value = yy;
 }
 function m_setDirection(agent, degrees) {
-  console.error('direction', degrees);
   agent.prop.Movement.direction.value = degrees;
 }
 
