@@ -15,6 +15,9 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+// turns on the feature that allows the fish to grow if this is 1
+addProp grows Boolean 0
+
 addProp startDirection Number 0
 
 useFeature Physics
@@ -57,7 +60,7 @@ when Fish touches Algae [[
     featCall Fish.Costume setGlow 0.5
 
     // grow if above 80% energy
-    ifExpr {{Fish.getProp('energyLevel').value > 90 }} [[
+    ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
       prop Fish.scale setTo 2
     ]]
 
@@ -74,6 +77,11 @@ when Fish touches Algae [[
 every 1 runAtStart [[
   // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
+
+  // if fish is bigger than 1, use even more energy
+  ifExpr {{(agent.getProp('scale').value > 1)}} [[
+    prop agent.energyLevel sub 1
+  ]]
 
   // set name + energyLevel
   exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
