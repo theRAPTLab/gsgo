@@ -83,7 +83,7 @@ every 1 runAtStart [[
   prop agent.energyLevel sub 1
 
   // if fish is bigger than 1, use even more energy
-  ifExpr {{(agent.getProp('scale').value > 1)}} [[
+  ifExpr {{(agent.getProp('scale').value > 1.5)}} [[
     prop agent.energyLevel sub 1
   ]]
 
