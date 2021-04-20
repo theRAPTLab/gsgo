@@ -105,7 +105,7 @@ export function SubscribeDeviceSpec(deviceSpec) {
     sub.notify = deviceSpec.notify; // { valid, added[], updated[], removed[] } => void
   } else throw Error('invalid deviceSpec object');
   // return device API
-  const deviceAPI = DATACORE.SaveDeviceSub(sub);
+  const deviceAPI = SaveDeviceSub(sub);
   LinkSubsToDevices();
   // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
   const props = Object.keys(sub).join(', ');
@@ -113,14 +113,76 @@ export function SubscribeDeviceSpec(deviceSpec) {
   console.log(...PR(`SubscribeDeviceSpec\nsub:[${props}]\napi:[${api}]`));
   return deviceAPI;
 }
+/** a device subscription saves a "device controller" when it's received from the
+ *  device connector. It's called by client-netdevices SubscribeDeviceSpec() which
+ *  is exported from UR client.
+ *  returns a deviceAPI object
+ */
+function SaveDeviceSub(deviceSpec) {
+  const subId = DATACORE.SaveDeviceSub(deviceSpec);
+  /// DEVICE API METHODS ///
+  const subscriptionID = () => {
+    return subId;
+  };
+  const getController = cName => {
+    const sub = DATACORE.GetSubByID(subId);
+    /// CONTROLLER METHODS ///
+    return {
+      getInputs: () => {
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
+        if (control) {
+          control.diffBuffer();
+          return control.getValues();
+        }
+        return [];
+      },
+      getChanges: () => {
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
+
+        if (control) return control.getChanges();
+        return [];
+      },
+      putOutputs: cData => {
+        if (!Array.isArray(cData)) cData = [cData];
+        console.warn('UNIMPLEMENTED: this would send cData to all devices');
+        // sub.dcache is the device cache of all matching devices
+        // but we need to have direct-addressibility through a device websocket
+        // to make this work, because we can only use NET:UR_CFRAME as a broadcast
+        // in this urrent version
+      }
+    };
+  };
+  const unsubscribe = () => {
+    console.log('deleting device sub', subId);
+    DATACORE.DeleteSubByID(subId);
+  };
+
+  // make sure we process devices through this new subscription!
+
+  return { unsubscribe, getController, subscriptionID };
+}
 
 /// DEVICE-TO-SUBSCRIPTION LINKING ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: when a subscription OR device is added, need to update the tables
  *  that connect device UDIDS to interested subscribers
  */
-export function LinkSubsToDevices(deviceList) {
-  DATACORE.LinkSubsToDevices(deviceList);
+export function LinkSubsToDevices(devices = DATACORE.GetDevices()) {
+  const subs = DATACORE.GetAllSubs();
+  subs.forEach(sub => {
+    sub.dcache.clear();
+    const { selectify, quantify } = sub;
+    const selected = devices.filter(selectify);
+    if (selected.length === 0) return;
+    // console.log('selectified', selected.length);
+    const quantified = quantify(selected);
+    if (quantified.length === 0) return;
+    // console.log('quantified', quantified.length);
+    quantified.forEach(udev => {
+      const { udid } = udev;
+      sub.dcache.set(udid, udev);
+    });
+  });
 }
 
 /// CONTROL FRAME PROTOCOLS ///////////////////////////////////////////////////
@@ -132,7 +194,6 @@ export function LinkSubsToDevices(deviceList) {
 export function SendControlFrame(cFrame) {
   NetNode.sendMessage('NET:UR_CFRAME', cFrame);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Process device map received from URNET server
  */

@@ -104,54 +104,14 @@ let DB_COUNT = 0;
  *  is exported from UR client.
  *  returns a deviceAPI object
  */
-function SaveDeviceSub(deviceSpec) {
-  const sub = deviceSpec;
+function SaveDeviceSub(sub) {
   const dcache = new Map(); // udid to deviceDef
   const cobjs = new Map(); // cName to DifferenceCache for this sub
   sub.cobjs = cobjs;
   sub.dcache = dcache;
-  const deviceID = DB_COUNT++; // capture deviceID
-  DEVICES_SUBBED.set(deviceID, sub);
-  /// DEVICE API METHODS ///
-  const deviceNum = () => {
-    return deviceID;
-  };
-  const getController = cName => {
-    const sub = DEVICES_SUBBED.get(deviceID);
-    /// CONTROLLER METHODS ///
-    return {
-      getInputs: () => {
-        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
-        if (control) {
-          control.diffBuffer();
-          return control.getValues();
-        }
-        return [];
-      },
-      getChanges: () => {
-        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
-
-        if (control) return control.getChanges();
-        return [];
-      },
-      putOutputs: cData => {
-        if (!Array.isArray(cData)) cData = [cData];
-        console.warn('UNIMPLEMENTED: this would send cData to all devices');
-        // sub.dcache is the device cache of all matching devices
-        // but we need to have direct-addressibility through a device websocket
-        // to make this work, because we can only use NET:UR_CFRAME as a broadcast
-        // in this urrent version
-      }
-    };
-  };
-  const unsubscribe = () => {
-    console.log('deleting device sub', deviceID);
-    DEVICES_SUBBED.delete(deviceID);
-  };
-
-  // make sure we process devices through this new subscription!
-
-  return { unsubscribe, getController, deviceNum };
+  const subID = DB_COUNT++; // capture deviceID
+  DEVICES_SUBBED.set(subID, sub);
+  return subID;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return all subscriptions in the DEVICES_SUBBED map */
@@ -159,25 +119,12 @@ function GetAllSubs() {
   return [...DEVICES_SUBBED.values()];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** when the device list updates, call this to scan all existing subs to update
- *  their state
- */
-function LinkSubsToDevices(devices = GetDevices()) {
-  const subs = GetAllSubs();
-  subs.forEach(sub => {
-    sub.dcache.clear();
-    const { selectify, quantify } = sub;
-    const selected = devices.filter(selectify);
-    if (selected.length === 0) return;
-    // console.log('selectified', selected.length);
-    const quantified = quantify(selected);
-    if (quantified.length === 0) return;
-    // console.log('quantified', quantified.length);
-    quantified.forEach(udev => {
-      const { udid } = udev;
-      sub.dcache.set(udid, udev);
-    });
-  });
+function GetSubByID(subID) {
+  return DEVICES_SUBBED.get(subID);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DeleteSubByID(subID) {
+  DEVICES_SUBBED.delete(subID);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** device subscriptions have a dcache property which is the DifferenceCache
@@ -266,8 +213,9 @@ module.exports = {
   // DEVICES
   GetUAddressNumber,
   SaveDeviceSub,
+  GetSubByID,
+  DeleteSubByID,
   GetAllSubs,
-  LinkSubsToDevices,
   GetSubsByUDID,
   SaveDevice,
   GetDeviceByUDID,

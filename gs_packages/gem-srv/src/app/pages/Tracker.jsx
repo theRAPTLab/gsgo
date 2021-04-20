@@ -23,7 +23,9 @@ const PR = UR.PrefixUtil('TRACKER', 'TagApp');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
-let INTERVAL;
+let FRAME_TIMER;
+const FPS = 4;
+const INTERVAL = (1 / FPS) * 1000;
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -107,8 +109,8 @@ class Tracker extends React.Component {
       // we need to move them outside of Tracker.jsx
       const { unsubscribe, getController, deviceNum } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
-      if (INTERVAL === undefined) {
-        INTERVAL = setInterval(() => {
+      if (FRAME_TIMER === undefined) {
+        FRAME_TIMER = setInterval(() => {
           const objs = getInputs().slice();
           objs.sort((a, b) => {
             if (a.id < b.id) return -1;
@@ -127,7 +129,7 @@ class Tracker extends React.Component {
             })
             .join('\n');
           this.setState({ entities });
-        }, 250);
+        }, INTERVAL);
       }
     }); // end HookPhase
     console.log(...PR('mounted'));
