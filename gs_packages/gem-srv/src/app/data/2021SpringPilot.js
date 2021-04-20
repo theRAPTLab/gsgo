@@ -46,7 +46,7 @@ onEvent Start [[
 
     // this line to pick a random direction and go until you hit the edge then reverse ... add 'rand' if you want to pick starting directions randomly
     // in this example it will be ignored anyhow because I am setting  the startDirection just below:
-    featCall Movement setMovementType 'edgeToEdge' 1 0
+    featCall Movement setMovementType 'edgeToEdge' 1 0 180
 
     exprPush {{ agent.getProp('startDirection').value }}
     featPropPop agent.Movement.direction
