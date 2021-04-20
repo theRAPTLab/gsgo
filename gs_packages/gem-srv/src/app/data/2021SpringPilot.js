@@ -51,7 +51,7 @@ onEvent Start [[
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
-  every 1 [[
+  every 1 runAtStart [[
     prop Fish.energyLevel add 10
     prop Algae.energyLevel sub 10
     featCall Fish.Costume setGlow 0.5
