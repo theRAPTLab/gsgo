@@ -166,10 +166,10 @@ class Tracker extends React.Component {
       >
         <div
           id="console-top"
-          className={clsx(classes.cell, classes.top)}
+          className={clsx(classes.cell, classes.top, classes.devBG)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          <span style={{ fontSize: '32px' }}>TRACKER/TEST</span>{' '}
+          <span style={{ fontSize: '32px' }}>DEV/TRACKER</span>{' '}
           {UR.ConnectionString()}
         </div>
         <div
