@@ -3,32 +3,23 @@ import React, { Suspense } from 'react';
 /// COMPONENTS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Home = React.lazy(() => import('../pages/Home'));
-const Tracker = React.lazy(() => import('../pages/Tracker'));
-const FakeTrack = React.lazy(() => import('../pages/FakeTrack'));
 const CharControl = React.lazy(() => import('../pages/CharControl'));
 const XGUI = React.lazy(() => import('../src-xgui/App'));
-const Compiler = React.lazy(() => import('../pages/Compiler'));
 const Login = React.lazy(() => import('../pages/Login'));
 const Model = React.lazy(() => import('../pages/Model'));
 const MissionControl = React.lazy(() => import('../pages/MissionControl'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
+const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
+const DevTracker = React.lazy(() => import('../pages/DevTracker'));
+const DevFakeTrack = React.lazy(() => import('../pages/DevFakeTrack'));
+const DevDevice = React.lazy(() => import('../pages/DevDevice'));
 
 /// LAZY COMPONENTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const LazyTracker = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <Tracker />
-  </Suspense>
-);
 export const LazyHome = () => (
   <Suspense fallback={<div>loading</div>}>
     <Home />
-  </Suspense>
-);
-export const LazyFakeTrack = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <FakeTrack />
   </Suspense>
 );
 export const LazyCharacterController = () => (
@@ -39,11 +30,6 @@ export const LazyCharacterController = () => (
 export const LazyXGUI = () => (
   <Suspense fallback={<div>loading</div>}>
     <XGUI />
-  </Suspense>
-);
-export const LazyCompiler = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <Compiler />
   </Suspense>
 );
 export const LazyLogin = () => (
@@ -69,6 +55,28 @@ export const LazyScriptEditor = () => (
 export const LazyViewer = () => (
   <Suspense fallback={<div>loading</div>}>
     <Viewer />
+  </Suspense>
+);
+
+/** DEVELOPER APPS **/
+export const LazyDevice = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevDevice />
+  </Suspense>
+);
+export const LazyCompiler = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevCompiler />
+  </Suspense>
+);
+export const LazyTracker = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevTracker />
+  </Suspense>
+);
+export const LazyFakeTrack = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevFakeTrack />
   </Suspense>
 );
 

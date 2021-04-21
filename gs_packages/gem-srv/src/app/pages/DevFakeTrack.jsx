@@ -11,7 +11,7 @@ import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/mod-faketrack-ui';
+import { Initialize, HandleStateChange } from './elements/dev-faketrack-ui';
 import { useStylesHOC } from './elements/page-styles';
 import '../../lib/css/faketrack.css';
 
@@ -95,8 +95,11 @@ class FakeTrack extends React.Component {
           gridTemplateRows: '50px 720px auto'
         }}
       >
-        <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>FAKETRACK PORT</span>{' '}
+        <div
+          id="console-top"
+          className={clsx(classes.cell, classes.top, classes.devBG)}
+        >
+          <span style={{ fontSize: '32px' }}>DEV/FAKETRACK</span>{' '}
           {UR.ConnectionString()}
         </div>
         <div
