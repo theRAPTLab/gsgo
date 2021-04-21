@@ -40,13 +40,13 @@ const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
 const DO_TESTS = !UR.IsAppRoute('/app/compiler');
 
-const DOBJ_SYNC_AGENT = new SyncMap({
+const AGENT_TO_DOBJ = new SyncMap({
   Constructor: DisplayObject,
   autoGrow: true,
   name: 'AgentToDOBJ'
 });
 
-DOBJ_SYNC_AGENT.setMapFunctions({
+AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
@@ -82,7 +82,10 @@ DOBJ_SYNC_AGENT.setMapFunctions({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INSTANCE DEF
 
-const INSTANCEDEF_SYNC_AGENT = new SyncMap({
+/**
+ * From `model.instances` script spec to an instance definition
+ */
+const SCRIPT_TO_INSTANCE = new SyncMap({
   Constructor: InstanceDef,
   autoGrow: true,
   name: 'ScriptToInstance'
@@ -99,7 +102,7 @@ function MakeAgent(def) {
   agent.exec(initScript, { agent });
 }
 
-INSTANCEDEF_SYNC_AGENT.setMapFunctions({
+SCRIPT_TO_INSTANCE.setMapFunctions({
   onAdd: (newDef, def) => {
     def.name = newDef.name;
     def.blueprint = newDef.blueprint;
@@ -212,10 +215,10 @@ export function AllAgentsProgram(data) {
   // I. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
-  INSTANCEDEF_SYNC_AGENT.syncFromArray(instancesSpec);
-  INSTANCEDEF_SYNC_AGENT.mapObjects();
+  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
+  SCRIPT_TO_INSTANCE.mapObjects();
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
-    instances: INSTANCEDEF_SYNC_AGENT.getMappedObjects()
+    instances: SCRIPT_TO_INSTANCE.getMappedObjects()
   });
 }
 
