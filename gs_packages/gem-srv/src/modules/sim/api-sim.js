@@ -38,6 +38,10 @@ function m_Step(frameCount) {
   if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
   /* insert game logic here */
 }
+// Timer PRERUN loop
+function monitor_STEP(frameCount) {
+  GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -52,6 +56,9 @@ function Stage() {
     console.log(...PR('Staging Simulation'));
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
+    console.log(...PR('Pre-run Loop Starting'));
+    RX_SUB = SIM_FRAME_MS.subscribe(monitor_STEP);
+    console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
   })();
 }
 
