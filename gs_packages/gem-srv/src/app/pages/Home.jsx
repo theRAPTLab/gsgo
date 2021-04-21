@@ -78,13 +78,14 @@ class Home extends React.Component {
             </NavItem>
             <NavItem route="scripteditor?model=aquatic">script editor</NavItem>
             <NavItem route="viewer?model=aquatic">viewer</NavItem>
+            <NavItem route="charcontrol">WIP character controller</NavItem>
           </ul>
           <b className={classes.title}>Dev Testing Routes</b>
           <ul className={classes.list}>
-            <NavItem route="charcontrol">WIP character controller</NavItem>
-            <NavItem route="tracker">display all entities in system</NavItem>
-            <NavItem route="compiler">script compiler tests</NavItem>
-            <NavItem route="faketrack">testbed for annotation input</NavItem>
+            <NavItem route="tracker">display client testbed</NavItem>
+            <NavItem route="compiler">script compiler testbed</NavItem>
+            <NavItem route="device">device system testbed</NavItem>
+            <NavItem route="faketrack">faketrack testbed</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>

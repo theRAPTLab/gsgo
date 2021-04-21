@@ -72,6 +72,9 @@ const useStylesHOC = theme => ({
     },
     '& a:visited': { color: theme.palette.primary },
     '& li + li': { marginTop: theme.spacing(2) }
+  },
+  devBG: {
+    background: 'maroon'
   }
 });
 
