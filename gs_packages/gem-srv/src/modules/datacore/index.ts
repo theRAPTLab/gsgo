@@ -40,24 +40,6 @@ addProp foodLevel Number 50
 featCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 prop agent.skin setTo 'bunny.json'
-featCall Movement jitterPos -5 5
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  ifExpr {{ 1===1 }} [[
-    dbgOut 'expr true'
-  ]]
-  prop agent.foodLevel sub 2
-  dbgOut 'foodLevel' agent.foodLevel
-]]
-# PROGRAM CONDITION
-when Bee sometest [[
-  // dbgOut SingleTest
-]]
-when Bee sometest Bee [[
-  // dbgOut PairTest
-]]
 `;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
