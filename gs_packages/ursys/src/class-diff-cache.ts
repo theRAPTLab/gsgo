@@ -105,8 +105,9 @@ class DifferenceCache {
     let arr;
     this.collection = collection;
     if (Array.isArray(collection)) arr = collection;
-    if (collection instanceof Map) arr = [...collection.values()];
-    if (typeof collection === 'object') arr = Object.values(collection);
+    else if (collection instanceof Map) arr = [...collection.values()];
+    else if (typeof collection === 'object') arr = Object.values(collection);
+
     if (Array.isArray(arr)) return this.diffArray(arr);
     console.error(
       'DifferenceCache.ingest non-mappable input',
@@ -117,7 +118,7 @@ class DifferenceCache {
   /** ingest an array of objects with 'keyProp' used as unique key:
    *  [ { id:123 }, { id:1224 } ]
    */
-  diffArray(arr) {
+  diffArray(arr: any[]) {
     const idKey = this.keyProp;
     const sobjs = this.cMap; // the last mapped collection
     const nobjs = new Map(); // ingested mapped collection
@@ -129,13 +130,9 @@ class DifferenceCache {
     arr.forEach(obj => {
       const id = obj[idKey];
       if (id === undefined) console.error(`no comparison key '${idKey}' in`, obj);
-      if (sobjs.has(id)) {
-        // todo: updateHook
-        updated.push(obj);
-      } else {
-        // todo: addHook
-        added.push(obj);
-      }
+      if (sobjs.has(id)) updated.push(obj);
+      else added.push(obj);
+      this.ageTable[id] = 0;
       nobjs.set(id, obj);
     });
     // (STEP 2) To calculate what's missing, delete all the objects that were seen before
