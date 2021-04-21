@@ -169,7 +169,8 @@ class MissionControl extends React.Component {
     const model = ProjectData.GetCurrentModel();
     this.setState(
       { model },
-      () => this.CallSimPlaces() // necessary to update screen after overall model updates
+      // Call Sim Places to compile agents after model load
+      () => this.CallSimPlaces()
     );
   }
   HandleSimDataUpdate(data) {
@@ -180,7 +181,7 @@ class MissionControl extends React.Component {
     }
     this.setState(
       { modelId: data.modelId, model: data.model },
-      // Need to call SimPlaces here after prop updates or agents won't reposition
+      // Call Sim Places to recompile agents.
       () => this.CallSimPlaces()
     );
   }
@@ -296,27 +297,18 @@ class MissionControl extends React.Component {
   ///
   OnToggleRunEdit(e, newConfig) {
     if (newConfig === null) return; // skip if it's a click on the same button
-
-    // // Automatically trigger reset when changing modes.
-    // // This is necessary because blueprints are not recompiled
-    // // if scripts are submitted while the sim is running.
-    // // If the user then switches to edit the map, they may
-    // // inadvertently select newly defined properties that
-    // // the old instances do not support.  A reset will
-    // // cause the instances to be recompiled.
-    // const { scriptsNeedUpdate } = this.state;
-    // if (scriptsNeedUpdate) {
-    //   UR.RaiseMessage('NET:HACK_SIM_RESET'); // Reset will trigger SimPlaces
-    // } else {
-    //   // Call SimPlaces so instanceInspector will update
-    //   // after adding instances in mapeditor
-    //   this.CallSimPlaces();
-    // }
-
+    // Automatically trigger reset when changing modes.
+    // This is necessary because blueprints are not recompiled
+    // if scripts are submitted while the sim is running.
+    // If the user then switches to edit the map, they may
+    // inadvertently select newly defined properties that
+    // the old instances do not support.  A reset will
+    // cause the instances to be recompiled.
     // Always reset!  Otherwise, scale commands get re-applied?
-    // Only reason not to reset is ...?
     UR.RaiseMessage('NET:HACK_SIM_RESET');
-    this.setState({ panelConfiguration: newConfig });
+    this.setState({
+      panelConfiguration: newConfig
+    });
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({

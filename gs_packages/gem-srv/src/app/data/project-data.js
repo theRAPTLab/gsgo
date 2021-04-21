@@ -625,6 +625,10 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
 
   /// RUN HANDLERS //////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Compiles blueprints after model loading.
+   * Also updates the boundary display (since model might define new boundaries)
+   */
   DoSimPlaces() {
     if (DBG) console.warn(...PR('DoSimPlaces! Commpiling...'));
     // 1. Load Model
@@ -656,17 +660,8 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       instancesSpec
     });
 
-    // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
-
-    // a. Orig Call
-    // UR.RaiseMessage('AGENTS_RENDER');
-
-    // b. Instea dof short cut call, call each individually
-    // UR.RaiseMessage('HACK_AGENTS_UPDATE');
-    // UR.RaiseMessage('HACK_VIS_UPDATE');
-    // UR.RaiseMessage('HACK_RENDER');
-
-    // c. don't need to call b/c monitor loop will update!
+    // 4. Update Agent Display
+    // Agent displays are automatically updated during SIM/VIS_UPDATE
 
     // 5. Update Inspectors
     // Inspectors will be automatically updated during SIM/UI_UPDATE phase
