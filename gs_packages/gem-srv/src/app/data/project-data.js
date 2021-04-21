@@ -86,10 +86,6 @@ class ProjectData {
     );
     UR.HandleMessage('NET:INSPECTOR_REGISTER', this.DoRegisterInspector);
     UR.HandleMessage('NET:INSPECTOR_UNREGISTER', this.DoUnRegisterInspector);
-    UR.HandleMessage(
-      'NET:REQUEST_INSPECTOR_UPDATE',
-      this.SendInstanceInspectorUpdate
-    );
     // INSTANCE UTILS ---------------------------------------------------------
     this.InstanceAdd = this.InstanceAdd.bind(this);
     this.InstanceUpdate = this.InstanceUpdate.bind(this);
@@ -609,6 +605,8 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       UR.RaiseMessage('AGENTS_RENDER');
     }
   }
+    // 5. Update Inspectors
+    // Inspectors will be automatically updated during SIM/UI_UPDATE phase
 }
 
 const PROJECTDATA = new ProjectData();
