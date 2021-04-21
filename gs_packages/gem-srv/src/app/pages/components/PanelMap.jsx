@@ -8,14 +8,14 @@ class PanelMap extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'NETWORK / DEVICES (FAKE DATA)',
+      title: 'CHARACTER CONTROLLERS',
       simulationName: 'Aquatic Ecosystems'
     };
   }
 
   render() {
     const { title, simulationName } = this.state;
-    const { id, isMinimized, onClick, classes } = this.props;
+    const { id, devices, isMinimized, onClick, classes } = this.props;
 
     // STYLES - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const styleDeviceConnector = {
@@ -31,9 +31,10 @@ class PanelMap extends React.Component {
     const styleDevice = {
       borderBottomLeftRadius: '10px',
       borderBottomRightRadius: '10px',
-      width: isMinimized ? '70px' : '200px',
+      width: isMinimized ? '100px' : '200px',
       padding: '3px',
-      fontSize: '12px'
+      fontSize: '12px',
+      textAlign: 'center'
     };
     const styleDeviceLeft = {
       ...styleDevice,
@@ -109,6 +110,17 @@ class PanelMap extends React.Component {
         <div className={classLabel}>Observing</div>
       </div>
     ));
+    const devicesJSX = devices.map(d => (
+      <div
+        style={styleDeviceCenter}
+        className={classes.filledOutline}
+        key={d.udid}
+      >
+        <div className={classLabel}>Device</div>
+        <div className={classData}>{d.meta.uaddr}</div>
+        {/* <div className={classData}>{[...Object.keys(d.inputs)].join(', ')}</div> */}
+      </div>
+    ));
 
     return (
       <PanelChrome
@@ -124,16 +136,17 @@ class PanelMap extends React.Component {
             padding: '20px'
           }}
         >
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* <div style={{ display: 'flex', flexDirection: 'column' }}>
             {scriptEditorsJSX}
-          </div>
-          <div style={styleDevice} className={classes.outline}>
+          </div> */}
+          {/* <div style={styleDevice} className={classes.outline}>
             SIMULATION:
             <br />
             {simulationName}
-          </div>
+          </div> */}
           <div style={{ display: 'flex', flexDirection: 'column' }}>
-            {controllersJSX}
+            {/* {controllersJSX} */}
+            {devicesJSX}
           </div>
         </div>
         <div style={{ display: 'flex' }}>
@@ -145,7 +158,7 @@ class PanelMap extends React.Component {
               flexWrap: 'wrap'
             }}
           >
-            {observersJSX}
+            {/* {observersJSX} */}
           </div>
         </div>
       </PanelChrome>

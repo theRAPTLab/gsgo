@@ -82,10 +82,15 @@ class MissionControl extends React.Component {
       message: '',
       modelId: '',
       model: {},
+      devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
       scriptsNeedUpdate: false
     };
+
+    // Devices
+    this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
+    UR.HandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
 
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
@@ -144,6 +149,10 @@ class MissionControl extends React.Component {
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
+
+    // inputs
+    this.UpdateDeviceList([]);
+
   }
 
   componentDidCatch(e) {
@@ -151,17 +160,31 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
+    UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
-    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// DEVICE HANDLERS
+  ///
+  UpdateDeviceList(devices = []) {
+    if (Array.isArray(devices)) {
+      this.setState({ devices });
+      return;
+    }
+    console.error(...PR('UDL error, got', devices));
+  }
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
@@ -230,7 +253,6 @@ class MissionControl extends React.Component {
    */
   OnInspectorUpdate(data) {
     const { panelConfiguration } = this.state;
-
     // Don't do updates if we're editing the map
     // This triggers state changes, which causes InstanceEditor
     // and prop.tsx to re-render AMD text input fields to lose focus
@@ -335,6 +357,7 @@ class MissionControl extends React.Component {
       message,
       modelId,
       model,
+      devices,
       inspectorInstances,
       runIsMinimized,
       scriptsNeedUpdate
@@ -375,6 +398,7 @@ class MissionControl extends React.Component {
         <MissionRun
           modelId={modelId}
           model={model}
+          devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}
         />
