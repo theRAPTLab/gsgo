@@ -274,14 +274,6 @@ function AgentsUpdate(frameTime) {
   allAgents.forEach(agent => {
     agent.agentUPDATE(frameTime);
   });
-
-  // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
-  // force agent movement for display list testing
-  DOBJ_SYNC_AGENT.syncFromArray(allAgents);
-  DOBJ_SYNC_AGENT.mapObjects();
-  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
-  RENDERER.UpdateDisplayList(dobjs);
-  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
@@ -301,14 +293,20 @@ function AgentExec(frameTime) {
 function AgentReset(frameTime) {
   /* reset agent */
 }
-  RENDERER.Render();
+
+function VisUpdate(frameTime) {
+  const allAgents = GetAllAgents();
+  AGENT_TO_DOBJ.syncFromArray(allAgents);
+  AGENT_TO_DOBJ.mapObjects();
+  const dobjs = AGENT_TO_DOBJ.getMappedObjects();
+  RENDERER.UpdateDisplayList(dobjs);
+  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 
 /// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HandleMessage('SIM_RESET', AgentReset);
 UR.HandleMessage('SIM_MODE', AgentSelect);
-
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model update
 
@@ -317,6 +315,7 @@ UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model update
 UR.HookPhase('SIM/AGENTS_UPDATE', AgentsUpdate);
 UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
 UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
+UR.HookPhase('SIM/VIS_UPDATE', VisUpdate);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
