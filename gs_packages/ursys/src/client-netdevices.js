@@ -206,7 +206,17 @@ function m_ProcessDeviceMap(devmap) {
   LinkSubsToDevices(all);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Process controlFrame received from NET:UR_CFRAME */
+/** Process controlFrame received from NET:UR_CFRAME
+ *
+ *  Blind-copies the named control data arrays in the frame to a
+ *  Map<controlName,DiffCache> stored in the Subscription Map as 'cobjs'.
+ *  A SubscriptionMap maps a udid to the subscriptions it is part of.
+ *
+ *  The 'cobjs' map is used to retrieve a DifferenceCache so its
+ *  buffer() method can be used to accumulate data from multiple devices.
+ *  The diffBuffer() method compares this buffer to the last results of
+ *  the previous diffBuffer() call
+ */
 function m_ProcessControlFrame(cFrame) {
   const { udid, ...controls } = cFrame;
   const controlNames = Object.keys(controls); // all named controls
