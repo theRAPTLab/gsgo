@@ -223,11 +223,11 @@ export function AllAgentsProgram(data) {
 /** placeholder function
  *
  *  CURRENTLY ONLY USED BY Compiler
- *  REVIEW: Outdated.  See AllAgentsProgram Update
+ *  (which Sri uses to test stuff in isolation so please don't break it)
  *
- *  This creates a SINGLE agent just for testing while the user is editing
- *  a script.
- *  If the agent instance already exists, it replaces the existing instance.
+ *  This creates a SINGLE agent just for testing while the user is editing a
+ *  script. If the agent instance already exists, it replaces the existing
+ *  instance.
  */
 export function AgentProgram(blueprint) {
   if (!blueprint) return console.warn(...PR('no blueprint'));
@@ -242,7 +242,7 @@ export function AgentProgram(blueprint) {
     }
   });
   // And clear the INSTANCES map for the blueprint
-  DeleteBlueprintInstances(blueprint);
+  DeleteInstancesByBlueprint(blueprint);
 
   // Initiate a new instance for the submitted blueprint
   // using a unique name.
