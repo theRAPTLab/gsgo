@@ -28,18 +28,18 @@ PhaseMachine.Hook(
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 PhaseMachine.Hook('UR/APP_READY', () => {
   // test manual protocol request
-  // NetNode.callMessage('NET:SRV_PROTOCOLS').then(data => {
+  // LocalNode.callMessage('NET:SRV_PROTOCOLS').then(data => {
   //   console.log(...PPR('received PROTOCOL data from call', data));
   // });
   // test manual device list request
-  // NetNode.callMessage('NET:SRV_DEVICES').then(data => {
+  // LocalNode.callMessage('NET:SRV_DEVICES').then(data => {
   //   console.log(...PPR('received DEVICES data from call', data));
   // });
 });
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-NetNode.handleMessage('NET:UR_PROTOCOLS', data => {
+LocalNode.handleMessage('NET:UR_PROTOCOLS', data => {
   console.log(...HPR('handling NET:UR_PROTOCOLS, got', data));
 });
 

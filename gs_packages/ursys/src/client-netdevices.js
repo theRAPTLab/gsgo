@@ -65,7 +65,7 @@ export function RegisterDevice(udevice) {
   );
   DATACORE.SaveDevice(udevice);
   const promise = new Promise((resolve, reject) => {
-    NetNode.callMessage('NET:SRV_DEVICE_REG', udevice).then(data => {
+    LocalNode.callMessage('NET:SRV_DEVICE_REG', udevice).then(data => {
       if (data && data.error) {
         resolve(data);
       } else {
@@ -130,7 +130,7 @@ export function LinkSubsToDevices(deviceList) {
  *  as a prototype
  */
 export function SendControlFrame(cFrame) {
-  NetNode.sendMessage('NET:UR_CFRAME', cFrame);
+  LocalNode.sendMessage('NET:UR_CFRAME', cFrame);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -191,12 +191,12 @@ PhaseMachine.Hook('UR/NET_DEVICES', () => {
   /// MESSAGE HANDLERS ////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handle device directory updates */
-  NetNode.handleMessage('NET:UR_DEVICES', devmap => {
+  LocalNode.handleMessage('NET:UR_DEVICES', devmap => {
     m_ProcessDeviceMap(devmap);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handle incoming control frames */
-  NetNode.handleMessage('NET:UR_CFRAME', cFrame => {
+  LocalNode.handleMessage('NET:UR_CFRAME', cFrame => {
     m_ProcessControlFrame(cFrame);
     // all subscriptions associated with this udid have been updated
     // each subscription's controls are in cobjs.get(cName)=>DifferenceCache,
@@ -209,7 +209,7 @@ PhaseMachine.Hook(
   'UR/APP_READY',
   () =>
     new Promise((resolve, reject) => {
-      NetNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
+      LocalNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
         m_ProcessDeviceMap(devmap);
         resolve();
       });
