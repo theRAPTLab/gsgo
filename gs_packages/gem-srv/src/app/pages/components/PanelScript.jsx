@@ -309,7 +309,6 @@ class PanelScript extends React.Component {
    *    c. DoSimPlaces registers the new blueprint
    *       replacing any existing blueprint
    *    a. DoSimPlaces raises ALL_AGENTS_PROGRAM
-   *    b. DoSimPlaces raises AGENTS_RENDER
    * 4. sim-agents handles ALL_AGENTS_PROGRAM
    *    a. AllAgentsProgramUpdate either
    *       -- updates any existing instances

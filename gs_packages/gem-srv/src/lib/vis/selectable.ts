@@ -26,10 +26,7 @@
            => enables editing if agentId matches
            => disables eidting if agentID doesn't match
               => also rasies NET:INSTANCE_DESELECT
-        => raises AGENTS_RENDER
-    4.  sim-agents handles AGENTS_RENDER
-        => Runs AgentUpdate()
-        => Calls RENDERER.Render()
+    4.  SIM/UI_UPDATE and SIM/VIS_RENDER phases will update the display
 
   See https://whimsical.com/selection-call-order-FpmKdWgi4ffz9dsdT84sZa
 

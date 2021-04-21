@@ -548,8 +548,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       // Update UI
       UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
     }
-    // 3. Update Sim View
-    UR.RaiseMessage('AGENTS_RENDER');
   }
   /**
    *
@@ -584,7 +582,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     const model = this.GetSimDataModel(data.modelId);
     const agent = GetAgentById(data.agentId);
     agent.setSelected(true);
-    UR.RaiseMessage('AGENTS_RENDER');
   }
   /**
    * Deselects the selection state of the agent
@@ -595,7 +592,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     if (agent) {
       // agent may have been deleted, so make sure it still exists
       agent.setSelected(false);
-      UR.RaiseMessage('AGENTS_RENDER');
     }
   }
   /**
@@ -607,7 +603,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     if (agent) {
       // agent may have been deleted, so make sure it still exists
       agent.setHovered(true);
-      UR.RaiseMessage('AGENTS_RENDER');
     }
   }
   /**
@@ -619,7 +614,6 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     if (agent) {
       // agent may have been deleted, so make sure it still exists
       agent.setHovered(false);
-      UR.RaiseMessage('AGENTS_RENDER');
     }
   }
 
