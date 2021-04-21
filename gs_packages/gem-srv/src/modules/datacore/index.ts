@@ -18,6 +18,7 @@ import UR from '@gemstep/ursys/client';
 export * from './dc-varprops';
 export * from './dc-agents';
 export * from './dc-features';
+// export * from './dc-inputs';
 export * from './dc-script-bundle';
 export * from './dc-script-engine';
 export * from './dc-named-methods';

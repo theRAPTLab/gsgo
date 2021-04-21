@@ -273,6 +273,7 @@ class UDevice {
       uapp_tags: [], // app tagged capabilities
       uname: 'a_device' // human-readable device label (non-unique)s
     };
+    console.warn('meta', this.meta);
     this.user = {
       uident: '', // user login for this device, if any
       uauth: '' // authentication token (JWT), if any

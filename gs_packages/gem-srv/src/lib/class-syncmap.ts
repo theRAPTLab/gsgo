@@ -126,6 +126,7 @@ export default class SyncMap implements ISyncMap {
    */
   syncFromArray(sobjs: PoolableArray) {
     this.deltas = this.map.syncFromArray(sobjs);
+    // console.log('deltas', this.deltas);
     return this.deltas;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

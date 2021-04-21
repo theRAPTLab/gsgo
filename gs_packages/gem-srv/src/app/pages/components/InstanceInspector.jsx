@@ -140,6 +140,7 @@ class InstanceInspector extends React.Component {
         if (!alreadyRegistered) {
           UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
           // Force an update
+          console.error('InstanceInspector raise NET:REQUEST_INSPECTOR_UPDATE');
           UR.RaiseMessage('NET:REQUEST_INSPECTOR_UPDATE');
           registrationStatus = true;
         }

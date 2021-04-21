@@ -156,6 +156,11 @@ class Visual implements IVisual, IPoolable, IActable {
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
 
+    //HACK Tint test
+    // this.sprite.tint = Math.random() * 0xffffff;
+    // this.sprite.tint = 0xff0000;
+
+    // we're done
   }
 
   /**
@@ -264,8 +269,31 @@ class Visual implements IVisual, IPoolable, IActable {
   /** set plotting parameters all at once */
   setPlotValues(x, y, angle) {}
 
-  /** set width, height in pixels. if arg==0, then means autoscale to fix */
-  setSizeValues(w, h) {}
+  /** set width, height in pixels. if arg==0, then means autoscale to fix
+   *
+   *  This doesn't quite work.
+   *  The math is fine, but size is screwed up with hovers and selections.
+   */
+  /** scale is set during setTexture  */
+  setSizeValues(w: number, h: number) {
+    console.log('.setSizeValues', w, h);
+    const bounds = new PIXI.Rectangle();
+    this.sprite.getBounds(true, bounds);
+    // if (h === 0) {
+    //   // set scale to largest side
+    //   const side = Math.max(bounds.width, bounds.height);
+    //   const scale = w / side;
+    //   this.scalex = scale;
+    //   this.scaley = scale;
+    // } else {
+    this.scalex = w / bounds.width;
+    this.scaley = h / bounds.height;
+    console.log('..setSizeValues', this.scalex, this.scaley);
+    // this.scalex = w / this.sprite.scale.x;
+    // this.scaley = h / this.sprite.scale.y;
+
+    this.sprite.scale.set(this.scalex, this.scaley);
+  }
 
   /** set the scale factor of sprite, which affects width/height */
   setScale(x: number, y: number = x) {

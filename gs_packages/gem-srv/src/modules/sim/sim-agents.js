@@ -82,7 +82,10 @@ DOBJ_SYNC_AGENT.setMapFunctions({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INSTANCE DEF
 
-const INSTANCEDEF_SYNC_AGENT = new SyncMap({
+/**
+ * From `model.instances` spec to an instance definition
+ */
+const SCRIPT_TO_INSTANCE = new SyncMap({
   Constructor: InstanceDef,
   autoGrow: true,
   name: 'ScriptToInstance'
@@ -99,7 +102,7 @@ function MakeAgent(def) {
   agent.exec(initScript, { agent });
 }
 
-INSTANCEDEF_SYNC_AGENT.setMapFunctions({
+SCRIPT_TO_INSTANCE.setMapFunctions({
   onAdd: (newDef, def) => {
     def.name = newDef.name;
     def.blueprint = newDef.blueprint;
@@ -212,10 +215,10 @@ export function AllAgentsProgram(data) {
   // I. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
-  INSTANCEDEF_SYNC_AGENT.syncFromArray(instancesSpec);
-  INSTANCEDEF_SYNC_AGENT.mapObjects();
+  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
+  SCRIPT_TO_INSTANCE.mapObjects();
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
-    instances: INSTANCEDEF_SYNC_AGENT.getMappedObjects()
+    instances: SCRIPT_TO_INSTANCE.getMappedObjects()
   });
 }
 
@@ -275,13 +278,15 @@ function AgentsUpdate(frameTime) {
     agent.agentUPDATE(frameTime);
   });
 
-  // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
-  // force agent movement for display list testing
-  DOBJ_SYNC_AGENT.syncFromArray(allAgents);
-  DOBJ_SYNC_AGENT.mapObjects();
-  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
-  RENDERER.UpdateDisplayList(dobjs);
-  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
+  // Move to VisUpdate ala HACK message? Is that DisplayListOut phase?
+  //
+  // // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
+  // // force agent movement for display list testing
+  // DOBJ_SYNC_AGENT.syncFromArray(allAgents);
+  // DOBJ_SYNC_AGENT.mapObjects();
+  // const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
+  // RENDERER.UpdateDisplayList(dobjs);
+  // UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
@@ -302,11 +307,31 @@ function AgentReset(frameTime) {
   /* reset agent */
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// REVIEW: This call should not be necessary!  It should probably be removed
+///         in favor of proper cycles.
+///
 /// Force AgentsUpdate, then force Render
 /// This is used to update data objects and refresh the screen during
 /// the initial PLACES call and when an instance is selected in MapEditor
 function AgentsRender(frameTime) {
-  AgentsUpdate(frameTime);
+  // AgentsUpdate is not necessary since it just runs PROGRAM UPDATE?
+  // AgentsUpdate(frameTime);
+  VisUpdate(frameTime);
+  Render(frameTime);
+}
+
+function VisUpdate(frameTime) {
+  const allAgents = GetAllAgents();
+  // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
+  // force agent movement for display list testing
+  DOBJ_SYNC_AGENT.syncFromArray(allAgents);
+  DOBJ_SYNC_AGENT.mapObjects();
+  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
+  RENDERER.UpdateDisplayList(dobjs);
+  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
+}
+
+function Render(frameTime) {
   RENDERER.Render();
 }
 
@@ -319,11 +344,17 @@ UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model update
 UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentsUpdate + Render
 
+// Pre-Run Workarounds
+UR.HandleMessage('NET:HACK_AGENTS_UPDATE', AgentsUpdate);
+UR.HandleMessage('NET:HACK_VIS_UPDATE', VisUpdate);
+UR.HandleMessage('NET:HACK_RENDER', Render);
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/AGENTS_UPDATE', AgentsUpdate);
 UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
 UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
+UR.HookPhase('SIM/VIS_UPDATE', VisUpdate);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

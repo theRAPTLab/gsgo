@@ -36,6 +36,8 @@ function m_Step(frameCount) {
   /* insert conditional run control here */
   GAME_LOOP.executePhase('GLOOP', frameCount);
   if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
+  if (frameCount % (30 * 5) === 0)
+    UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tock' });
   /* insert game logic here */
 }
 
@@ -52,7 +54,17 @@ function Stage() {
     console.log(...PR('Staging Simulation'));
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
+    MonitorInputs();
   })();
+}
+
+function monitor_STEP(frameCount) {
+  GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
+}
+function MonitorInputs() {
+  console.log(...PR('Pre-run Starting...Monitoring Inputs'));
+  RX_SUB = SIM_FRAME_MS.subscribe(monitor_STEP);
+  console.log(...PR('Pre-run Completed'));
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
@@ -71,6 +83,7 @@ function Start() {
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
+  console.error('Start()');
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
 

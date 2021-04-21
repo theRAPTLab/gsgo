@@ -22,6 +22,15 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'READY'
   ],
   GLOOP_STAGED: ['STAGED'], // GLOOP_LOAD completed, ready to load model
+  GLOOP_PRERUN: [
+    // GLOOP_STAGED completed, monitor inputs before run
+    `INPUTS`,
+    // INPUT_AGENTS_UPDATE is not necessary since it just runs agentUPDATE?
+    // 'INPUT_AGENTS_UPDATE', // just for input agents to render while inputs are moving
+    // `AGENTS_UPDATE`, // don't want map editor agents to update
+    `VIS_UPDATE`,
+    'VIS_RENDER'
+  ],
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state

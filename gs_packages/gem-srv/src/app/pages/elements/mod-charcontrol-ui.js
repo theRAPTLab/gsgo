@@ -57,6 +57,14 @@ let m_burst_end = 0;
 // flags
 let m_data_object_name_changed = false;
 
+// tags
+// HACK in for now
+// REVIEW: This should be read from project-data.
+const TAGS = [
+  { 'id': 'bp_Fish', 'label': 'Fish' },
+  { 'id': 'bp_Algae', 'label': 'Algae' }
+];
+
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetupContainer(id = 'container') {
@@ -247,6 +255,10 @@ function HandleStateChange(name, value) {
         case 'data_object_name':
           m_data_object_name_changed = true;
           break;
+        case 'tags':
+          MarkerFramer = undefined; // clear it so we can create a new one with different tags
+          Initialize(m_CHARVIEW, value);
+          break;
       }
     }
   );
@@ -261,12 +273,17 @@ function HandleStateChange(name, value) {
  *  NOTE: m_CHARVIEW is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
 /*/
-async function Initialize(componentInstance) {
+async function Initialize(componentInstance, tag = TAGS[0].id) {
+  console.warn('Initializing with', tag);
   // prototype device registration
   // a device declares what kind of device it is
   // and what data can be sent/received
   if (MarkerFramer === undefined) {
     const dev = UR.NewDevice('CharControl');
+
+    // HACK IN Blueprint for now
+    dev.meta.uapp_tags.push(tag);
+
     const { udid, status, error } = await UR.RegisterDevice(dev);
     if (error) console.error(error);
     if (status) console.log(...PR(status));
@@ -351,6 +368,7 @@ function SendControlFrame() {
   HandleStateChange('status', m_status);
 
   // create the control frame
+  if (!MarkerFramer) return; // catch undefined MarkerFrame during re-initialization after a blueprint selection
   const controlFrame = MarkerFramer(cobjs);
   UR.SendControlFrame(controlFrame);
 }
@@ -469,4 +487,4 @@ function u_MakeControlDataObject(div) {
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
-export { Initialize, HandleStateChange };
+export { TAGS, Initialize, HandleStateChange };

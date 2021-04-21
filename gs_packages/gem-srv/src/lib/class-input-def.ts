@@ -1,17 +1,15 @@
 import { TScriptUnit } from 'lib/t-script.d';
 import { IPoolable } from './t-pool.d';
 
-class InstanceDef implements IPoolable {
+class InputDef implements IPoolable {
   // poolable
   id: any;
   refId?: any;
   _pool_id: any;
-  // instanceDef
-  blueprint: string;
+  // inputDef
+  bpname: string; // blueprint name
   name?: string;
-  initScript?: TScriptUnit[]; // is defined in TInstance, but not used in sim-agents update
   valid: boolean;
-  flag: number;
   x: number;
   y: number;
 
@@ -34,4 +32,4 @@ class InstanceDef implements IPoolable {
 
   dispose() {}
 }
-export default InstanceDef;
+export default InputDef;

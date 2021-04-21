@@ -2,7 +2,11 @@
 
   Project Data - Data Module for Mission Control
 
-  NOTE: This should NOT be used by ScriptEditor or PanelScript!!!
+  This manages the project definition data, specifically:
+  * blueprints
+  * instance defintions
+
+  NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
   Currently this is a placeholder class.  No data is saved between sessions.
   Eventually it will communicate with as erver database.
@@ -11,6 +15,10 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as INPUT from '../../modules/input/api-input';
+import * as DATACORE from 'modules/datacore';
+import * as RENDERER from 'modules/render/api-render';
+// REVIEW: Not needed?
 import {
   GetAllInstances,
   DeleteInstance,
@@ -29,6 +37,11 @@ import { MODEL as DecompositionModel } from './decomposition';
 import { MODEL as MothsModel } from './moths';
 import { MODEL as SaltModel } from './salt';
 import { MODEL as BeesModel } from './bees';
+
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('ProjectData');
+const DBG = true;
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,6 +77,9 @@ class ProjectData {
     this.RemoveInvalidPropsFromInstanceInit = this.RemoveInvalidPropsFromInstanceInit.bind(
       this
     );
+
+    // INPUTS /////////////////////////////////////////////////////////////////
+
     // URSYS CALLS ////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
@@ -111,6 +127,15 @@ class ProjectData {
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.InstanceDeselect);
     UR.HandleMessage('INSTANCE_HOVEROVER', this.InstanceHoverOver);
     UR.HandleMessage('INSTANCE_HOVEROUT', this.InstanceHoverOut);
+    // RUN HANDLERS -----------------------------------------------------------
+    this.DoSimPlaces = this.DoSimPlaces.bind(this);
+    this.DoSimReset = this.DoSimReset.bind(this);
+    this.DoSimStart = this.DoSimStart.bind(this);
+    this.DoSimStop = this.DoSimStop.bind(this);
+    UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
+    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
+    UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
 
     // SYSTEM HOOKS ///////////////////////////////////////////////////////////
     UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
@@ -418,6 +443,7 @@ class ProjectData {
         ? a
         : { id: a.id, name: a.name, blueprint: a.blueprint }
     );
+    console.error('SendInstanceInspectorUpdate', inspectorAgents);
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }
@@ -539,6 +565,33 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     UR.RaiseMessage('AGENTS_RENDER');
   }
   /**
+   * REVIEW: Currently not used
+   *
+   * Deletes all the instances for a blueprint
+   * for this model definition.
+   * NOTE: Does not remove it from the datacore.
+   * @param {Object} data { modelId, blueprintName }
+   */
+  InstancesDeleteForBlueprint(data) {
+    console.log('instances Delete', data);
+    const model = this.GetSimDataModel(data.modelId);
+    console.log(
+      'instances bvefore delete',
+      model.instances.length,
+      model.instances
+    );
+
+    // Remove from Blueprint
+    model.instances = model.instances.filter(
+      i => i.blueprint !== data.blueprintName
+    );
+    console.log(
+      '...instances after delete',
+      model.instances.length,
+      model.instances
+    );
+  }
+  /**
    *
    * @param {Object} data -- { modelId, instanceDef }
    */
@@ -608,6 +661,78 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
       agent.setHovered(false);
       UR.RaiseMessage('AGENTS_RENDER');
     }
+  }
+
+  /// RUN HANDLERS ///////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  DoSimPlaces() {
+    if (DBG) console.warn(...PR('DoSimPlaces! Commpiling...'));
+    // 1. Load Model
+    const model = this.GetCurrentModel();
+
+    // Skip if no model is loaded
+    if (!model) return;
+
+    // 2. Show Boundary
+    const bounds = this.GetBounds();
+    const width = bounds.right - bounds.left;
+    const height = bounds.bottom - bounds.top;
+    RENDERER.ShowBoundary(width, height);
+    // And Set Listeners too
+    UR.RaiseMessage('NET:SET_BOUNDARY', { width, height });
+
+    // 2. Compile All Agents
+    const scripts = model.scripts;
+    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
+    const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
+    const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
+    const blueprintNames = blueprints.map(b => b.name);
+
+    // 3. Create/Update All Instances
+    const instancesSpec = model.instances;
+    // Use 'UPDATE' so we don't clobber old instance values.
+    UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
+      blueprintNames,
+      instancesSpec
+    });
+
+    // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
+
+    // a. Orig Call
+    // UR.RaiseMessage('AGENTS_RENDER');
+
+    // b. Instea dof short cut call, call each individually
+    // UR.RaiseMessage('HACK_AGENTS_UPDATE');
+    // UR.RaiseMessage('HACK_VIS_UPDATE');
+    // UR.RaiseMessage('HACK_RENDER');
+
+    // c. don't need to call b/c monitor loop will update!
+
+    // 5. Update Inspectors
+    console.error('projectData.DoSimPlaces raise NET:REQEST_INSPECTOR_UPDATE');
+    UR.RaiseMessage('NET:REQUEST_INSPECTOR_UPDATE');
+  }
+
+  /**
+   * WARNING: Do not call this before the simulation has loaded.
+   */
+  DoSimReset() {
+    DATACORE.DeleteAllTests();
+    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
+    DATACORE.DeleteAllScriptEvents();
+    DATACORE.DeleteAllBlueprints();
+    DATACORE.DeleteAllAgents();
+    DATACORE.DeleteAllInstances();
+    SIM.Reset();
+    // SimPlaces is called by Mission Control.
+  }
+
+  DoSimStart() {
+    SIM.Start();
+  }
+
+  DoSimStop() {
+    SIM.End();
   }
 }
 

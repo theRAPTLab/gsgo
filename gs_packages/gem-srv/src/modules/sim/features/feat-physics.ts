@@ -84,6 +84,7 @@ class PhysicsPack extends GFeature {
    * @param height
    */
   setSize(agent: IAgent, width: number, height: number = width) {
+    console.log('setSize to', width, height);
     if (!agent.hasFeature('Costume')) return; // no costume
     const costumeName = agent.getProp('skin').value;
     const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;

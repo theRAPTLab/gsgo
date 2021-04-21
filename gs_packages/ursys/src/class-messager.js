@@ -178,7 +178,7 @@ class Messager {
           console.warn(
             `sendMessage: [${mesgName}] skip call since ${srcUID} = ${handlerFunc.ulink_id}`
           );
-          return;
+          // return;
         }
         // trigger the local handler (no return expected)
         handlerFunc(inData, {}); // second param is for control message expansion

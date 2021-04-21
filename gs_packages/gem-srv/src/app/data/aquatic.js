@@ -1,4 +1,5 @@
 export const MODEL = {
+  id: 'Aquatic',
   label: 'Aquatic Ecosystem',
   bounds: {
     top: -400,
@@ -17,7 +18,7 @@ export const MODEL = {
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Movement setMovementType 'wander' 0.5
+featCall Movement setMovementType 'wander' 10
 
 addProp energyLevel Number 20
 prop energyLevel setMax 100
@@ -306,7 +307,7 @@ every 1 [[
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
     prop y setTo 0
-    prop energyLevel setTo 54`
+    prop energyLevel setTo 20`
     },
     // {
     //   id: 502,

@@ -495,7 +495,9 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  *  dc-agents, because datacore modules must be pure definition
  */
 function MakeAgent(instanceDef: TInstance) {
+  console.log('MakeAgent', instanceDef);
   const { blueprint, name } = instanceDef;
+  console.log('blueprint, name', blueprint, name);
   const agent = new GAgent(name, instanceDef.id);
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions

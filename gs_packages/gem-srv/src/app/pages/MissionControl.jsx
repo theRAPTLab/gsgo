@@ -46,6 +46,8 @@ import './scrollbar.css';
 const PR = UR.PrefixUtil('MISSIONCONTROL', 'TagRed');
 const DBG = false;
 
+let INTERVAL;
+
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
@@ -82,10 +84,15 @@ class MissionControl extends React.Component {
       message: '',
       modelId: '',
       model: {},
+      devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
       scriptsNeedUpdate: false
     };
+
+    // Devices
+    this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
+    UR.HandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
 
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
@@ -102,7 +109,10 @@ class MissionControl extends React.Component {
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', data => {
+      console.log('Handle INSPECTOR_UPDATE');
+      this.OnInspectorUpdate(data);
+    });
 
     // Instance Interaction Handlers
     this.HandleDragEnd = this.HandleDragEnd.bind(this);
@@ -144,6 +154,11 @@ class MissionControl extends React.Component {
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
+
+    // inputs
+    this.UpdateDeviceList([]);
+
+    console.log(...PR('mounted'));
   }
 
   componentDidCatch(e) {
@@ -151,20 +166,36 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
+    UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
-    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// DEVICE HANDLERS
+  ///
+  UpdateDeviceList(devices = []) {
+    if (Array.isArray(devices)) {
+      this.setState({ devices });
+      console.log('devices', devices);
+      return;
+    }
+    console.log(...PR('UDL error, got', devices));
+  }
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
+    console.warn('LOAD MODEL');
     ProjectData.SetCurrentModelId(modelId);
     const model = ProjectData.GetCurrentModel();
     this.setState(
@@ -173,20 +204,31 @@ class MissionControl extends React.Component {
     );
   }
   HandleSimDataUpdate(data) {
+    console.warn('HandlSimDataUpdate');
     if (DBG) console.log('HandleSimDataUpdate', data);
     if (SIM.IsRunning()) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
     }
+    console.warn('HandlSimDataUpdate...not running so calling SimPlaces');
+
     this.setState(
-      { modelId: data.modelId, model: data.model },
-      // Need to call SimPlaces here after prop updates or agents won't reposition
-      () => this.CallSimPlaces()
+      { modelId: data.modelId, model: data.model }
+      // REVIEW: This is not necessary now that render is split into viz updates.
+      // This would result in multiple SimPlaces calls upon load.
+      // SimPlaces is OVERKILL for get agents to display.
+      // // Need to call SimPlaces here after prop updates or agents won't reposition
+      // () => this.CallSimPlaces()
     );
   }
   HandleInstancesUpdate(data) {
     if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
+    // REVIEW why is model not loaded?
+    if (!model) {
+      console.error('MissionControl state is missing model?!?', this.state);
+      return;
+    }
     model.instances = data.instances;
     this.setState({ model });
   }
@@ -229,7 +271,7 @@ class MissionControl extends React.Component {
    */
   OnInspectorUpdate(data) {
     const { panelConfiguration } = this.state;
-
+    console.error('OPnInspecotrUpdate', data);
     // Don't do updates if we're editing the map
     // This triggers state changes, which causes InstanceEditor
     // and prop.tsx to re-render AMD text input fields to lose focus
@@ -343,6 +385,7 @@ class MissionControl extends React.Component {
       message,
       modelId,
       model,
+      devices,
       inspectorInstances,
       runIsMinimized,
       scriptsNeedUpdate
@@ -383,6 +426,7 @@ class MissionControl extends React.Component {
         <MissionRun
           modelId={modelId}
           model={model}
+          devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}
         />

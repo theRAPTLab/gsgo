@@ -22,6 +22,7 @@ import {
   ISMCBundle,
   ControlMode
 } from 'lib/t-script.d';
+import { IPoolable } from 'lib/t-pool.d';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import FLAGS from 'modules/flags';
 import SM_Message from './class-sm-message';

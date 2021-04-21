@@ -74,6 +74,12 @@ function Init(element) {
   root.pivot.x = root.width / 2; // set origin to center of root
   root.pivot.y = root.height / 2;
   PIXI_APP.stage.addChild(root);
+  // mouse events
+  root.interactive = true;
+  root.on('pointerup', e => {
+    // console.error('clicked on', e.data.getLocalPosition(root));
+  });
+
   // save
   CONTAINERS.Root = root;
 

@@ -13,7 +13,11 @@ import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/mod-charcontrol-ui';
+import {
+  TAGS,
+  Initialize,
+  HandleStateChange
+} from './elements/mod-charcontrol-ui';
 import { useStylesHOC } from './elements/page-styles';
 import '../../lib/css/charcontrol.css';
 
@@ -38,6 +42,7 @@ class CharController extends React.Component {
     // establish state here
     // which is changed through setState() call of React.Component
     this.state = {
+      tags: '', // REVIEW: This should be an array
       num_entities: 1,
       prefix: '',
       jitter: 0,
@@ -59,6 +64,7 @@ class CharController extends React.Component {
       data_object_name: '-',
       rate: 0
     };
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -116,7 +122,29 @@ class CharController extends React.Component {
             minWidth: '280px'
           }}
         >
+          <h1>{UR.GetUAddressNumber()}</h1>
           <div id="charctrl_id"></div>
+          <div>
+            <select
+              id="tags"
+              name="tags"
+              value={this.state.tags}
+              onChange={this.handleInputChange}
+              className="form-control"
+            >
+              {TAGS.map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <label className="control-label">&nbsp;Blueprint</label>
+            <br />
+            <br />
+            <br />
+            <br />
+            <hr />
+          </div>
           <p style={{ marginTop: 0 }}>Sample Rate = {this.state.rate}/sec </p>
           <div id="charctrl_tests">
             <input
