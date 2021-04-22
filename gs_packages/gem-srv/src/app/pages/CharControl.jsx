@@ -122,8 +122,10 @@ class CharController extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          <span style={{ fontSize: '32px' }}>CharControl</span>{' '}
-          {UR.ConnectionString()}
+          <span style={{ fontSize: '32px' }}>
+            Controller CC{UR.GetUAddressNumber()}
+          </span>
+          <span style={{ float: 'right' }}>{UR.ConnectionString()}</span>
         </div>
         <div
           className={classes.main}
