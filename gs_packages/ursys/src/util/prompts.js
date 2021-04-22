@@ -20,8 +20,6 @@ const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
   : 0; // not nodejs
 const DEFAULT_COLOR = 'TagNull';
-const CSS_PAD = 'padding:3px 5px;border-radius:2px';
-const CSS_TAB = '4px';
 
 const TERM_COLORS = {
   // TOUT = makeTerminalOut(str); TOUT('hi')
@@ -63,6 +61,7 @@ const TERM_COLORS = {
 };
 
 // NAME LIST MUST MATCH TERM_COLORS!
+const CSS_COMMON = 'padding:3px 5px;border-radius:2px;';
 const CSS_COLORS = {
   Reset: 'color:auto;background-color:auto',
   // COLOR FOREGROUND
@@ -75,20 +74,20 @@ const CSS_COLORS = {
   Blue: 'color:blue',
   Magenta: 'color:magenta',
   // COLOR BACKGROUND
-  TagRed: `color:#000;background-color:#f66;${CSS_PAD}`,
-  TagYellow: `color:#000;background-color:#fd4;${CSS_PAD}`,
-  TagGreen: `color:#000;background-color:#5c8;${CSS_PAD}`,
-  TagCyan: `color:#000;background-color:#2dd;${CSS_PAD}`,
-  TagBlue: `color:#000;background-color:#2bf;${CSS_PAD}`,
-  TagPurple: `color:#000;background-color:#b6f;${CSS_PAD}`,
-  TagPink: `color:#000;background-color:#f9f;${CSS_PAD}`,
-  TagGray: `color:#fff;background-color:#999;${CSS_PAD}`,
-  TagNull: `color:#999;border:1px solid #ddd;${CSS_PAD}`,
+  TagRed: `color:#000;background-color:#f66;${CSS_COMMON}`,
+  TagYellow: `color:#000;background-color:#fd4;${CSS_COMMON}`,
+  TagGreen: `color:#000;background-color:#5c8;${CSS_COMMON}`,
+  TagCyan: `color:#000;background-color:#2dd;${CSS_COMMON}`,
+  TagBlue: `color:#000;background-color:#2bf;${CSS_COMMON}`,
+  TagPurple: `color:#000;background-color:#b6f;${CSS_COMMON}`,
+  TagPink: `color:#000;background-color:#f9f;${CSS_COMMON}`,
+  TagGray: `color:#fff;background-color:#999;${CSS_COMMON}`,
+  TagNull: `color:#999;border:1px solid #ddd;${CSS_COMMON}`,
   // COLOR BACKGROUND DARK (BROWSER ONLY)
-  TagDkRed: `color:white;background-color:red;${CSS_PAD}`,
-  TagDkGreen: `color:white;background-color:green;${CSS_PAD}`,
-  TagDkBlue: `color:white;background-color:blue;${CSS_PAD}`,
-  TagDkOrange: `color:white;background-color:orange;${CSS_PAD}`
+  TagDkRed: `color:white;background-color:red;${CSS_COMMON}`,
+  TagDkGreen: `color:white;background-color:green;${CSS_COMMON}`,
+  TagDkBlue: `color:white;background-color:blue;${CSS_COMMON}`,
+  TagDkOrange: `color:white;background-color:orange;${CSS_COMMON}`
 };
 
 TERM_COLORS.TagSystem = TERM_COLORS.TagGray;
@@ -101,28 +100,28 @@ TERM_COLORS.TagData = TERM_COLORS.TagGreen;
 TERM_COLORS.TagInput = TERM_COLORS.TagBlue;
 
 CSS_COLORS.TagSystem = CSS_COLORS.TagGray;
-CSS_COLORS.TagUR = `color:#fff;background-color:CornflowerBlue;${CSS_PAD}`;
-CSS_COLORS.TagUR2 = `color:#fff;background-color:Navy;${CSS_PAD}`;
+CSS_COLORS.TagUR = `color:#fff;background-color:CornflowerBlue;${CSS_COMMON}`;
+CSS_COLORS.TagUR2 = `color:#fff;background-color:Navy;${CSS_COMMON}`;
 CSS_COLORS.TagNetwork = CSS_COLORS.TagCyan;
 CSS_COLORS.TagApp = CSS_COLORS.TagPink;
 CSS_COLORS.TagTest = CSS_COLORS.TagRed;
-CSS_COLORS.TagDebug = `color:#fff;background-color:IndianRed;${CSS_PAD}`;
+CSS_COLORS.TagDebug = `color:#fff;background-color:IndianRed;${CSS_COMMON}`;
 CSS_COLORS.TagData = CSS_COLORS.TagDkOrange;
 CSS_COLORS.TagInput = CSS_COLORS.TagDkOrange;
-CSS_COLORS.TagMessage = `color:#fff;background-color:MediumSlateBlue;${CSS_PAD}`;
-CSS_COLORS.TagPhase = `color:#fff;background-color:MediumVioletRed;${CSS_PAD}`;
+CSS_COLORS.TagMessage = `color:#fff;background-color:MediumSlateBlue;${CSS_COMMON}`;
+CSS_COLORS.TagPhase = `color:#fff;background-color:MediumVioletRed;${CSS_COMMON}`;
 CSS_COLORS.TagAlert = `color:#fff;background:linear-gradient(
   -45deg,
   rgb(29,161,242),
   rgb(184,107,107),
   rgb(76,158,135)
-);${CSS_PAD}`;
+);${CSS_COMMON}`;
 CSS_COLORS.TagUR3 = `color:#fff;background:linear-gradient(
   -45deg,
   CornflowerBlue 0%,
   LightSkyBlue 25%,
   RoyalBlue 100%
-);${CSS_PAD}`;
+);${CSS_COMMON}`;
 
 // div console
 const HTCONSOLES = {};

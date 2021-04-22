@@ -12,7 +12,7 @@
 
 /// note: these are CJS modules so use require syntax
 const PhaseMachine = require('./class-phase-machine');
-const DifferenceCache = require('./class-diff-cache');
+const StickyCache = require('./class-sticky-cache');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
 const UDevice = require('./class-udevice');
@@ -105,7 +105,7 @@ export function SubscribeDeviceSpec(deviceSpec) {
     sub.notify = deviceSpec.notify; // { valid, added[], updated[], removed[] } => void
   } else throw Error('invalid deviceSpec object');
   // return device API
-  const deviceAPI = DATACORE.SaveDeviceSub(sub);
+  const deviceAPI = SaveDeviceSub(sub);
   LinkSubsToDevices();
   // deviceAPI has { unsub, getInputs, getChanges, putOutput } functions
   const props = Object.keys(sub).join(', ');
@@ -113,14 +113,75 @@ export function SubscribeDeviceSpec(deviceSpec) {
   console.log(...PR(`SubscribeDeviceSpec\nsub:[${props}]\napi:[${api}]`));
   return deviceAPI;
 }
+/** a device subscription saves a "device controller" when it's received from the
+ *  device connector. It's called by client-netdevices SubscribeDeviceSpec() which
+ *  is exported from UR client.
+ *  returns a deviceAPI object
+ */
+function SaveDeviceSub(deviceSpec) {
+  const subId = DATACORE.SaveDeviceSub(deviceSpec);
+  /// DEVICE API METHODS ///
+  const subscriptionID = () => {
+    return subId;
+  };
+  const getController = cName => {
+    const sub = DATACORE.GetSubByID(subId);
+    /// CONTROLLER METHODS ///
+    return {
+      getInputs: () => {
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
+        if (control) return control.getBufferValues();
+        // no control, emit error
+        if (DBG.controller) console.warn(`control '${cName}' doesn't exists`);
+        return [];
+      },
+      getChanges: () => {
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
+        if (control) return control.getChanges();
+        return [];
+      },
+      putOutputs: cData => {
+        if (!Array.isArray(cData)) cData = [cData];
+        if (DBG.controller)
+          console.warn('UNIMPLEMENTED: this would send cData to all devices');
+        // sub.dcache is the device cache of all matching devices
+        // but we need to have direct-addressibility through a device websocket
+        // to make this work, because we can only use NET:UR_CFRAME as a broadcast
+        // in this urrent version
+      }
+    };
+  };
+  const unsubscribe = () => {
+    console.log('deleting device sub', subId);
+    DATACORE.DeleteSubByID(subId);
+  };
+
+  // make sure we process devices through this new subscription!
+
+  return { unsubscribe, getController, subscriptionID };
+}
 
 /// DEVICE-TO-SUBSCRIPTION LINKING ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: when a subscription OR device is added, need to update the tables
  *  that connect device UDIDS to interested subscribers
  */
-export function LinkSubsToDevices(deviceList) {
-  DATACORE.LinkSubsToDevices(deviceList);
+export function LinkSubsToDevices(devices = DATACORE.GetDevices()) {
+  const subs = DATACORE.GetAllSubs();
+  subs.forEach(sub => {
+    sub.dcache.clear();
+    const { selectify, quantify } = sub;
+    const selected = devices.filter(selectify);
+    if (selected.length === 0) return;
+    // console.log('selectified', selected.length);
+    const quantified = quantify(selected);
+    if (quantified.length === 0) return;
+    // console.log('quantified', quantified.length);
+    quantified.forEach(udev => {
+      const { udid } = udev;
+      sub.dcache.set(udid, udev);
+    });
+  });
 }
 
 /// CONTROL FRAME PROTOCOLS ///////////////////////////////////////////////////
@@ -132,7 +193,6 @@ export function LinkSubsToDevices(deviceList) {
 export function SendControlFrame(cFrame) {
   LocalNode.sendMessage('NET:UR_CFRAME', cFrame);
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Process device map received from URNET server
  */
@@ -145,7 +205,17 @@ function m_ProcessDeviceMap(devmap) {
   LinkSubsToDevices(all);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Process controlFrame received from NET:UR_CFRAME */
+/** Process controlFrame received from NET:UR_CFRAME
+ *
+ *  Blind-copies the named control data arrays in the frame to a
+ *  Map<controlName,DiffCache> stored in the Subscription Map as 'cobjs'.
+ *  A SubscriptionMap maps a udid to the subscriptions it is part of.
+ *
+ *  The 'cobjs' map is used to retrieve a StickyCache so its
+ *  buffer() method can be used to accumulate data from multiple devices.
+ *  The diffBuffer() method compares this buffer to the last results of
+ *  the previous diffBuffer() call
+ */
 function m_ProcessControlFrame(cFrame) {
   const { udid, ...controls } = cFrame;
   const controlNames = Object.keys(controls); // all named controls
@@ -154,11 +224,15 @@ function m_ProcessControlFrame(cFrame) {
   const subs = DATACORE.GetSubsByUDID(udid); // all matching subs with this udid
   // process the cFrame into each subscription
   subs.forEach(sub => {
-    // cobjs is a Map of controlName to DifferenceCache for each subscription
+    // cobjs is a Map of controlName to StickyCache for each subscription
     // a subscription has multiple devices that are kept in dcache
     controlNames.forEach(name => {
       const objs = cFrame[name];
-      if (!sub.cobjs.has(name)) sub.cobjs.set(name, new DifferenceCache('id'));
+      if (!sub.cobjs.has(name)) {
+        const controlBuffer = new StickyCache('id');
+        controlBuffer.setAgeThreshold(15);
+        sub.cobjs.set(name, controlBuffer);
+      }
       // note: since a cFrame can come from multiple devices that are part of the
       // subscription, we can't use the normal ingest because it will overwrite
       // the previous cFrame from another device.
@@ -199,7 +273,7 @@ PhaseMachine.Hook('UR/NET_DEVICES', () => {
   LocalNode.handleMessage('NET:UR_CFRAME', cFrame => {
     m_ProcessControlFrame(cFrame);
     // all subscriptions associated with this udid have been updated
-    // each subscription's controls are in cobjs.get(cName)=>DifferenceCache,
+    // each subscription's controls are in cobjs.get(cName)=>StickyCache,
     // so use .getValues() or .getChanges()
   });
 });

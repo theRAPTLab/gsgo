@@ -26,7 +26,7 @@ const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 const DBG = false;
 
 // constants for packet update rate
-const FRAMERATE = 15;
+const FRAMERATE = 2; // 500ms
 const INTERVAL = (1 / FRAMERATE) * 1000;
 let m_current_time = 0;
 
