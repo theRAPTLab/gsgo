@@ -99,7 +99,7 @@ class CharController extends React.Component {
           className={clsx(classes.cell, classes.top, classes.devBG)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          <span style={{ fontSize: '32px' }}>DEV/DEVICE</span>{' '}
+          <span style={{ fontSize: '32px' }}>DEV/CONTROLLER</span>{' '}
           {UR.ConnectionString()}
         </div>
         <div
