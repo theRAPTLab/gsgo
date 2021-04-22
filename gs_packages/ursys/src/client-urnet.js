@@ -41,7 +41,8 @@ const M_STANDALONE = 5;
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_socket; // contain socket information on registration message
-let m_urlink; // assigned during URNET.Connect()
+let m_local_node; // assigned during URNET.Connect()
+let m_net_node; // assigned during URNET.Connect()
 let m_options;
 let m_status = M0_INIT; // current status
 
@@ -106,10 +107,11 @@ function m_HandleRegistrationMessage(msgEvent) {
   window.URSESSION.CLIENT_UADDR = UADDR;
   window.URSESSION.USRV_UADDR = SERVER_UADDR;
   // (7) initialize endpoint
-  const LocalNode = new EndPoint('ur-client-local');
-  const NetNode = new EndPoint('ur-client-net');
+  const LocalNode = new EndPoint('ur-client-local'); // used for local handle, call, send
+  const NetNode = new EndPoint('ur-client-net'); // used only for forwarding remote messages
   DATACORE.SetSharedEndPoints({ LocalNode, NetNode });
-  m_urlink = new EndPoint('ur-client-remote'); // used for forwarding
+  m_local_node = LocalNode; // used for local message routine
+  m_net_node = NetNode; // used for network message forwarding
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dispatch incoming event object from the network.
@@ -141,19 +143,19 @@ function m_HandleMessage(msgEvent) {
     case 'msend':
       // network message received
       if (dbgout) cout_ReceivedStatus(pkt);
-      m_urlink.sendMessage(msg, data, { fromNet: true });
+      m_net_node.sendMessage(msg, data, { fromNet: true });
       pkt.transactionReturn();
       break;
     case 'msig':
       // network signal to raise
       if (dbgout) cout_ReceivedStatus(pkt);
-      m_urlink.raiseMessage(msg, data, { fromNet: true });
+      m_net_node.raiseMessage(msg, data, { fromNet: true });
       pkt.transactionReturn();
       break;
     case 'mcall':
       // network call received
       if (dbgout) cout_ReceivedStatus(pkt);
-      m_urlink.callMessage(msg, data, { fromNet: true }).then(result => {
+      m_net_node.callMessage(msg, data, { fromNet: true }).then(result => {
         console.log(...PR(`transaction ${msg} ${hash} returned`, result));
         console.log(...PR('original sent data', data));
         if (dbgout) cout_ForwardedStatus(pkt, result);
@@ -205,7 +207,7 @@ URNET.URNET_Connect = opt => {
       return;
     }
     m_SetStatus(M1_CONNECTING);
-    // note: datalink used to be assigned to m_urlink, but now it's handled
+    // note: datalink used to be assigned to m_local_node, but now it's handled
     // in HandleRegistrationMessage because that's the earlier the UADDR is
     // stable.
     m_options = opt || {};

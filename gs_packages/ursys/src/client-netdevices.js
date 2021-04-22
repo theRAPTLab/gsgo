@@ -65,7 +65,7 @@ export function RegisterDevice(udevice) {
   );
   DATACORE.SaveDevice(udevice);
   const promise = new Promise((resolve, reject) => {
-    NetNode.callMessage('NET:SRV_DEVICE_REG', udevice).then(data => {
+    LocalNode.callMessage('NET:SRV_DEVICE_REG', udevice).then(data => {
       if (data && data.error) {
         resolve(data);
       } else {
@@ -132,7 +132,7 @@ function SaveDeviceSub(deviceSpec) {
         const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
         if (control) return control.getBufferValues();
         // no control, emit error
-        console.warn(`control '${cName}' doesn't exists`);
+        if (DBG.controller) console.warn(`control '${cName}' doesn't exists`);
         return [];
       },
       getChanges: () => {
@@ -142,7 +142,8 @@ function SaveDeviceSub(deviceSpec) {
       },
       putOutputs: cData => {
         if (!Array.isArray(cData)) cData = [cData];
-        console.warn('UNIMPLEMENTED: this would send cData to all devices');
+        if (DBG.controller)
+          console.warn('UNIMPLEMENTED: this would send cData to all devices');
         // sub.dcache is the device cache of all matching devices
         // but we need to have direct-addressibility through a device websocket
         // to make this work, because we can only use NET:UR_CFRAME as a broadcast
@@ -190,7 +191,7 @@ export function LinkSubsToDevices(devices = DATACORE.GetDevices()) {
  *  as a prototype
  */
 export function SendControlFrame(cFrame) {
-  NetNode.sendMessage('NET:UR_CFRAME', cFrame);
+  LocalNode.sendMessage('NET:UR_CFRAME', cFrame);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Process device map received from URNET server
@@ -264,12 +265,12 @@ PhaseMachine.Hook('UR/NET_DEVICES', () => {
   /// MESSAGE HANDLERS ////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handle device directory updates */
-  NetNode.handleMessage('NET:UR_DEVICES', devmap => {
+  LocalNode.handleMessage('NET:UR_DEVICES', devmap => {
     m_ProcessDeviceMap(devmap);
   });
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handle incoming control frames */
-  NetNode.handleMessage('NET:UR_CFRAME', cFrame => {
+  LocalNode.handleMessage('NET:UR_CFRAME', cFrame => {
     m_ProcessControlFrame(cFrame);
     // all subscriptions associated with this udid have been updated
     // each subscription's controls are in cobjs.get(cName)=>StickyCache,
@@ -282,7 +283,7 @@ PhaseMachine.Hook(
   'UR/APP_READY',
   () =>
     new Promise((resolve, reject) => {
-      NetNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
+      LocalNode.callMessage('NET:SRV_DEVICE_DIR').then(devmap => {
         m_ProcessDeviceMap(devmap);
         resolve();
       });
