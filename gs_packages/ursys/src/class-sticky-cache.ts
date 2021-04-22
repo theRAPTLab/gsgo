@@ -73,8 +73,7 @@ class StickyCache {
     this.cBufferMap.forEach(obj => {
       const { id } = obj;
       // let out = `${id} age ${obj.age}: `;
-      ++obj.age;
-      if (obj.age > this.ageMax) {
+      if (obj.age++ >= this.ageMax) {
         this.cBufferMap.delete(id);
         // out += 'DELETED';
         // console.log(out);
