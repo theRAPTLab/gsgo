@@ -55,6 +55,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   alpha: number;
   isInert: boolean;
   isGlowing: boolean;
+  isLargeMeter: boolean;
   text: string;
   x: number;
   y: number;
@@ -293,8 +294,9 @@ export type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export enum ControlMode {
   static = 0,
-  puppet,
-  auto
+  drag, // temporarily override control by system, e.g. during drag
+  puppet, // someone (not system) is controlling it
+  auto // AI
 }
 
 export interface IActable {
@@ -313,10 +315,12 @@ export interface IActable {
 export interface IMovementMode {
   mode: () => ControlMode;
   setPreviousMode: () => ControlMode;
+  setModeStatic: () => ControlMode;
+  setModeDrag: () => ControlMode;
   setModePuppet: () => ControlMode;
   setModeAuto: () => ControlMode;
-  setModeStatic: () => ControlMode;
+  isModeStatic: () => boolean;
+  isModeDrag: () => boolean;
   isModePuppet: () => boolean;
   isModeAuto: () => boolean;
-  isModeStatic: () => boolean;
 }

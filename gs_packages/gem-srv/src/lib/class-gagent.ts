@@ -64,7 +64,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.thinkQueue = [];
     this.execQueue = [];
     // built-in movement control states
-    this.controlMode = ControlMode.puppet;
+    this.controlMode = ControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
     this.prop.x = new GVarNumber();
@@ -85,7 +85,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.meter.setMax(1);
     this.prop.meter.setMin(0);
     this.prop.meterClr = new GVarNumber();
-    this.prop.meterLarge = new GVarBoolean(false);
+    this.prop.meterLarge = new GVarBoolean(false); // script accessible
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -173,12 +173,14 @@ class GAgent extends SM_Object implements IAgent, IActable {
   };
   mode = () => this.controlMode;
   setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
+  setModeStatic = () => this.pushMode(ControlMode.static);
+  setModeDrag = () => this.pushMode(ControlMode.drag);
   setModePuppet = () => this.pushMode(ControlMode.puppet);
   setModeAuto = () => this.pushMode(ControlMode.auto);
-  setModeStatic = () => this.pushMode(ControlMode.static);
+  isModeStatic = () => this.controlMode === ControlMode.static;
+  isModeDrag = () => this.controlMode === ControlMode.drag;
   isModePuppet = () => this.controlMode === ControlMode.puppet;
   isModeAuto = () => this.controlMode === ControlMode.auto;
-  isModeStatic = () => this.controlMode === ControlMode.static;
 
   /// AGENT INTERACTION STATES ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
