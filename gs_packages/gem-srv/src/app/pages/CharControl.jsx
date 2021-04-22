@@ -16,6 +16,7 @@ import { Init, HookResize } from '../../modules/render/api-render';
 import { Initialize, HandleStateChange } from './elements/mod-charcontrol-ui';
 import { useStylesHOC } from './elements/page-styles';
 import '../../lib/css/charcontrol.css';
+import PanelSimViewer from './components/PanelSimViewer';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';
@@ -139,7 +140,8 @@ class CharController extends React.Component {
           }}
         >
           <div id="charctrl_id"></div>
-          <p style={{ marginTop: 0 }}>Sample Rate = {this.state.rate}/sec </p>
+          <PanelSimViewer id="sim" />
+          {/* <p style={{ marginTop: 0 }}>Sample Rate = {this.state.rate}/sec </p>
           <div id="charctrl_tests">
             <input
               name="num_entities"
@@ -281,7 +283,7 @@ class CharController extends React.Component {
                 DEPTH-Y
               </label>
             </div>
-          </div>
+          </div> */}
         </div>
         <div
           id="console-bottom"
