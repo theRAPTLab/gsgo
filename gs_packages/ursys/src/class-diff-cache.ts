@@ -88,7 +88,7 @@ class DifferenceCache {
       updated: [],
       removed: []
     };
-    this.staleMax = 1; // maximum "age" for when the buffer is empty
+    this.staleMax = 10; // maximum "age" for when the buffer is empty
   }
 
   /// IMMEDIATE MODE //////////////////////////////////////////////////////////
@@ -195,17 +195,38 @@ class DifferenceCache {
     if (collection !== undefined) this.buffer(collection);
     const fullBuffer = this.cBufferMap.size > 0;
     if (fullBuffer) {
+      console.log('normal diff+clear');
       this.diff(this.cBufferMap);
-      this.cLastMap.forEach(obj => (obj.age = 0));
+      // everything in the current cLastMap gets its age reset
+      // if it is also in the buffer
+      console.log(
+        'full: cmap',
+        JSON.stringify([...this.cLastMap.values()]),
+        'cbuf',
+        JSON.stringify([...this.cBufferMap.values()])
+      );
+      this.cLastMap.forEach(obj => {
+        if (this.cBufferMap.has(obj.id)) obj.age = 0;
+        else console.log('not aging', obj.id, obj.age);
+      });
       this.clearBuffer();
     } else {
       // cLastMap is a map of id => cobj
+      // don't clear lastMap, but remove aged objects
+      console.log(
+        'emty: cmap',
+        JSON.stringify([...this.cLastMap.values()]),
+        'cbuf',
+        JSON.stringify([...this.cBufferMap.values()])
+      );
       this.cLastMap.forEach(obj => {
         const { id } = obj;
+        let out = `testing ${id} age ${obj.age}: `;
         if (++obj.age > this.staleMax) {
           this.cLastMap.delete(id);
-          if (DBG.cframe) console.log('deleting', id, obj);
+          out += 'DELETED';
         }
+        // console.log(out);
       });
     }
   }
