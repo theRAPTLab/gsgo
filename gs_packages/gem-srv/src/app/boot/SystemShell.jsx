@@ -69,17 +69,17 @@ class SystemShell extends React.Component {
         <Route path="/app/viewer">
           <LazyViewer />
         </Route>
-
-        <Route path="/app/tracker">
+        {/* Developer Routes */}
+        <Route path="/app/dev-tracker">
           <LazyTracker />
         </Route>
-        <Route path="/app/compiler">
+        <Route path="/app/dev-compiler">
           <LazyCompiler />
         </Route>
-        <Route path="/app/faketrack">
+        <Route path="/app/dev-faketrack">
           <LazyFakeTrack />
         </Route>
-        <Route path="/app/device">
+        <Route path="/app/dev-controller">
           <LazyDevice />
         </Route>
         {/* catchall routes */}
