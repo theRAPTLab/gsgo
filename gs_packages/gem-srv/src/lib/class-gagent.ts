@@ -48,7 +48,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   thinkQueue: TMethod[];
   execQueue: TMethod[];
   //
-  constructor(agentName = '<anon>', id) {
+  constructor(agentName = '<anon>', id?: string) {
     super(agentName); // sets value to agentName, which is only for debugging
 
     // override default SM_Object id with instance id
