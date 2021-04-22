@@ -167,7 +167,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  private pushMode = (mode: ControlMode) => this.controlModeHistory.push(mode);
+  private pushMode = (mode: ControlMode) => {
+    this.controlMode = mode;
+    return this.controlModeHistory.push(mode);
+  };
   mode = () => this.controlMode;
   setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
   setModePuppet = () => this.pushMode(ControlMode.puppet);
