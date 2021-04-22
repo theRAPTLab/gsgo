@@ -57,8 +57,10 @@ class PanelSimViewer extends React.Component {
       color: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.1)'
     };
-    this.handleShowBoundary = this.handleShowBoundary.bind(this);
-    UR.HandleMessage('NET:SET_BOUNDARY', this.handleShowBoundary);
+    this.requestBoundary = this.requestBoundary.bind(this);
+    this.handleSetBoundary = this.handleSetBoundary.bind(this);
+    UR.HookPhase('UR/APP_RUN', this.requestBoundary);
+    UR.HandleMessage('NET:SET_BOUNDARY', this.handleSetBoundary);
   }
 
   componentDidMount() {
@@ -69,11 +71,15 @@ class PanelSimViewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:SET_BOUNDARY', this.handleShowBoundary);
+    UR.UnhandleMessage('NET:SET_BOUNDARY', this.handleSetBoundary);
   }
 
-  handleShowBoundary(data) {
-    RENDERER.ShowBoundary(data.width, data.height);
+  requestBoundary() {
+    UR.RaiseMessage('NET:REQUEST_BOUNDARY');
+  }
+
+  handleSetBoundary(data) {
+    RENDERER.SetBoundary(data.width, data.height);
   }
 
   render() {
@@ -87,7 +93,10 @@ class PanelSimViewer extends React.Component {
         bgcolor={bgcolor}
         onClick={onClick}
       >
-        <div id="root-renderer" style={{ color: bgcolor, height: '100%' }}>
+        <div
+          id="root-renderer"
+          style={{ color: bgcolor, width: '100%', height: '100%' }}
+        >
           Ho this is the sim!
         </div>
       </PanelChrome>

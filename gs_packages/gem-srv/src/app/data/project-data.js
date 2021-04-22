@@ -68,6 +68,7 @@ class ProjectData {
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetBounds = this.GetBounds.bind(this);
+    this.GetBoundary = this.GetBoundary.bind(this);
     this.Wraps = this.Wraps.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
     this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
@@ -77,6 +78,7 @@ class ProjectData {
     this.RemoveInvalidPropsFromInstanceInit = this.RemoveInvalidPropsFromInstanceInit.bind(
       this
     );
+    this.SendBoundary = this.SendBoundary.bind(this);
     // URSYS CALLS ////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
@@ -88,6 +90,7 @@ class ProjectData {
     UR.HandleMessage('*:REQUEST_MODELS', this.RaiseModelsUpdate);
     UR.HandleMessage('NET:REQUEST_MODEL', this.HandleModelRequest);
     UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleCurrentModelRequest);
+    UR.HandleMessage('NET:REQUEST_BOUNDARY', this.SendBoundary);
     // INPUT UTILS ------------------------------------------------------------
     this.HandleInputBPnamesRequest = this.HandleInputBPnamesRequest.bind(this);
     UR.HandleMessage('NET:REQUEST_INPUT_BPNAMES', this.HandleInputBPnamesRequest);
@@ -203,6 +206,20 @@ class ProjectData {
       left: -400
     };
     return bounds;
+  }
+  GetBoundary(modelId = this.currentModelId) {
+    const bounds = this.GetBounds(modelId);
+    const width = bounds.right - bounds.left;
+    const height = bounds.bottom - bounds.top;
+    return { width, height };
+  }
+  SendBoundary() {
+    console.error('sending boundary');
+    const boundary = this.GetBoundary();
+    UR.RaiseMessage('NET:SET_BOUNDARY', {
+      width: boundary.width,
+      height: boundary.height
+    });
   }
   /**
    * Test function used by feat-movement to determine whether a wall
@@ -668,16 +685,14 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     if (!model) return;
 
     // 2. Show Boundary
-    const bounds = this.GetBounds();
-    const width = bounds.right - bounds.left;
-    const height = bounds.bottom - bounds.top;
-    RENDERER.ShowBoundary(width, height);
+    const boundary = this.GetBoundary();
+    RENDERER.SetBoundary(boundary.width, boundary.height);
     // And Set Listeners too
-    UR.RaiseMessage('NET:SET_BOUNDARY', { width, height });
+    this.SendBoundary();
 
     // 3. Update Input System
     //    Set Input transforms
-    SetInputStageBounds(width, height); // dc-inputs
+    SetInputStageBounds(boundary.width, boundary.height); // dc-inputs
     //    Set Input controlled agents
     const inputBPnames = this.GetInputBPNames();
     SetInputBPnames(inputBPnames); // dc-inputs

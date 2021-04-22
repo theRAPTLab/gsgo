@@ -233,7 +233,7 @@ addProp energyRate Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 1000
+featCall Physics setSize 100 800
 
 // touches
 useFeature Touches
@@ -241,8 +241,8 @@ useFeature Touches
 # PROGRAM UPDATE
 exprPush {{agent.x + agent.getProp('speed').value; }}
 propPop x
-ifExpr {{ agent.x > 500 }} [[
-    prop x setTo -500
+ifExpr {{ agent.x > 400 }} [[
+    prop x setTo -400
 ]]
 `
     },
@@ -308,7 +308,7 @@ every 1 [[
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
     prop y setTo 0
-    prop energyLevel setTo 54`
+    prop energyLevel setTo 20`
     },
     // {
     //   id: 502,

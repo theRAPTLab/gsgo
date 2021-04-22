@@ -48,9 +48,10 @@ function Init(element) {
   // Initialize PIXI APP
   if (!element) throw Error('received null element for Renderer.Init()');
   PIXI.utils.skipHello();
+  const size = 512;
   PIXI_APP = new PIXI.Application({
-    width: 512,
-    height: 512,
+    width: size,
+    height: size,
     backgroundColor: 0x222222
   });
   // CSS styling
@@ -76,6 +77,7 @@ function Init(element) {
   PIXI_APP.stage.addChild(root);
   // save
   CONTAINERS.Root = root;
+  RescaleToFit(size);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // map model display objects to sprites
@@ -113,7 +115,7 @@ function Init(element) {
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
       vobj.applyFilters();
 
-      // Old Approach: Only allow drag and hover if controlMode is puppet (1)
+      // Old Approach: Only enable drag and hover if controlMode is puppet (1)
       // But this doesn't work for two reasons:
       // 1. Input controlled agents (controlMode 3) need to be hoverable and selectable
       // 2. Selection needs to be handled by draggable so we can distinguish between
@@ -237,7 +239,16 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ShowBoundary(width, height, color = 0x000000) {
+function RescaleToFit(width, height = width) {
+  const pad = 20; // add padding so you can see the edges
+  const scaleFactor = Math.min(
+    PIXI_DIV.offsetWidth / (width + pad),
+    PIXI_DIV.offsetHeight / (height + pad)
+  );
+  CONTAINERS.Root.scale.set(scaleFactor);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SetBoundary(width, height, color = 0x000000) {
   // Stage
   let boundaryRect = CONTAINERS.Boundary;
   if (!boundaryRect) {
@@ -249,6 +260,8 @@ function ShowBoundary(width, height, color = 0x000000) {
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
   boundaryRect.zIndex = -999;
+
+  RescaleToFit(width, height);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
@@ -295,7 +308,7 @@ export {
   SetGlobalConfig,
   Init,
   HookResize,
-  ShowBoundary,
+  SetBoundary,
   UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,
