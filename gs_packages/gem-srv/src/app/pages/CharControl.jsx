@@ -26,6 +26,7 @@ import PanelSimViewer from './components/PanelSimViewer';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
 const MATRIX_INPUT_WIDTH = 50;
+const SENDING_FSP = 5;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,7 +98,7 @@ class CharController extends React.Component {
         tags,
         tag: tags.length > 0 ? tags[0].id : '' // default to first tag
       },
-      () => Initialize(this)
+      () => Initialize(this, { sampleRate: SENDING_FSP })
     );
   }
 

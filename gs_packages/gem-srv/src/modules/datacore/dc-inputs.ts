@@ -13,8 +13,9 @@ import SyncMap from '../../lib/class-syncmap';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('DCINPT');
-const DBG = false;
+const SAMPLE_FPS = 30;
+const INTERVAL = (1 / SAMPLE_FPS) * 1000;
+let FRAME_TIMER;
 
 let STAGE_WIDTH = 100; // default
 let STAGE_HEIGHT = 100; // default
@@ -23,6 +24,9 @@ let BPNAMES = []; // names of user-controllable blueprints
 
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
+
+const PR = UR.PrefixUtil('DCINPT');
+const DBG = false;
 
 /// DATA UPDATE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,6 +89,7 @@ export function GetInputBPnames() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export async function InputInit(bpname: string) {
+  // STEP 1 is to get a "deviceAPI" from a Device Subscription
   const devAPI = UR.SubscribeDeviceSpec({
     // set group here
     selectify: device =>
@@ -109,20 +114,33 @@ export function InputsUpdate() {
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
 function InputUpdate(devAPI, bpname) {
-  const { unsubscribe, getController, deviceNum } = devAPI;
+  // STEP 2 is to grab the getController('name') method which we
+  // can call any time we want without mucking about with device
+  // interfaces
+  const { getController, deviceNum, unsubscribe } = devAPI;
   const { getInputs, getChanges, putOutputs } = getController('markers'); // group = markers
-  const raw_cobjs = getInputs().slice();
-  // HACK: Stuff Blueprint spec into the cobjs for now
-  // Technically cobjs should not have a blueprint parameter
-  // but InputDefs need it to be able to generate an agent.
-  const overriden_cobjs = raw_cobjs.map(o => {
-    o.bpname = bpname;
-    o.name = o.id;
-    return o;
-  });
-  if (DBG) console.log('cobs', overriden_cobjs);
-  COBJ_TO_INPUTDEF.syncFromArray(overriden_cobjs);
-  COBJ_TO_INPUTDEF.mapObjects();
+
+  // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
+  // these are all the device API calls for testing. Since Tracker does
+  // not have a simulation loop to get getInputs(), we just use a timer
+  // for testing.
+  if (FRAME_TIMER === undefined) {
+    FRAME_TIMER = setInterval(() => {
+      // get all the current inputs
+      const raw_cobjs = getInputs().slice();
+      // HACK: Stuff Blueprint spec into the cobjs for now
+      // Technically cobjs should not have a blueprint parameter
+      // but InputDefs need it to be able to generate an agent.
+      const overriden_cobjs = raw_cobjs.map(o => {
+        o.bpname = bpname;
+        o.name = o.id;
+        return o;
+      });
+      if (DBG) console.log('cobs', overriden_cobjs);
+      COBJ_TO_INPUTDEF.syncFromArray(overriden_cobjs);
+      COBJ_TO_INPUTDEF.mapObjects();
+    }, INTERVAL);
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetInputGroups(): any {

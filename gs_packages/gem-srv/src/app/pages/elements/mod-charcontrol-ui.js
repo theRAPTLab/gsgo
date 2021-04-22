@@ -26,8 +26,8 @@ const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 const DBG = false;
 
 // constants for packet update rate
-const FRAMERATE = 2; // 500ms
-const INTERVAL = (1 / FRAMERATE) * 1000;
+let SENDING_FPS = 15;
+let INTERVAL = (1 / SENDING_FPS) * 1000;
 let m_current_time = 0;
 
 // React user interface (the "view")
@@ -266,9 +266,14 @@ function HandleStateChange(name, value) {
  *  NOTE: m_CHARVIEW is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
 /*/
-async function Initialize(componentInstance) {
+async function Initialize(componentInstance, opt = {}) {
   // save React component to grab state from and setstate
   m_CHARVIEW = componentInstance;
+
+  // options
+  const { sampleRate } = opt;
+  if (sampleRate) SENDING_FPS = sampleRate;
+  INTERVAL = (1 / SENDING_FPS) * 1000;
 
   // prototype device registration
   // a device declares what kind of device it is
@@ -320,7 +325,7 @@ async function Initialize(componentInstance) {
   m_canvasheight = m_container.offsetHeight;
 
   // push interval
-  m_CHARVIEW.setState({ rate: FRAMERATE });
+  m_CHARVIEW.setState({ rate: SENDING_FPS });
 } // Initialize()
 
 /// SEND PTRACK-COMPATIBLE DATA ///////////////////////////////////////////////
