@@ -2,7 +2,11 @@
 
   Project Data - Data Module for Mission Control
 
-  NOTE: This should NOT be used by ScriptEditor or PanelScript!!!
+  This manages the project definition data, specifically:
+  * blueprints
+  * instance defintions
+
+  NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
   Currently this is a placeholder class.  No data is saved between sessions.
   Eventually it will communicate with as erver database.
@@ -22,6 +26,7 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
+import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
 import * as SIM from 'modules/sim/api-sim';
 import * as TRANSPILER from 'script/transpiler';
 
@@ -83,6 +88,9 @@ class ProjectData {
     UR.HandleMessage('*:REQUEST_MODELS', this.RaiseModelsUpdate);
     UR.HandleMessage('NET:REQUEST_MODEL', this.HandleModelRequest);
     UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleCurrentModelRequest);
+    // INPUT UTILS ------------------------------------------------------------
+    this.HandleInputBPnamesRequest = this.HandleInputBPnamesRequest.bind(this);
+    UR.HandleMessage('NET:REQUEST_INPUT_BPNAMES', this.HandleInputBPnamesRequest);
     // BLUEPRINT UTILS --------------------------------------------------------
     this.HandleBlueprintDelete = this.HandleBlueprintDelete.bind(this);
     UR.HandleMessage('NET:BLUEPRINT_DELETE', this.HandleBlueprintDelete);
@@ -196,6 +204,13 @@ class ProjectData {
     };
     return bounds;
   }
+  /**
+   * Test function used by feat-movement to determine whether a wall
+   * is set to wrap or prevent passing
+   * @param {*} wall
+   * @param {*} modelId
+   * @returns
+   */
   Wraps(wall = 'any', modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
     const wrap = model && model.bounds ? model.bounds.wrap : undefined;
@@ -262,6 +277,20 @@ class ProjectData {
     return map;
   }
 
+  /**
+   * Returns array of blueprint names that are controllable by user input.
+   * Used to set sim-inputs and CharControl.
+   * @param {string} modelId
+   * @return {string[]} [ ...bpnames ]
+   */
+  GetInputBPNames(modelId = this.currentModelId) {
+    const model = this.GetModel(modelId);
+    if (!model)
+      console.error(...PR('GetInputBPNames could not load model', modelId));
+    const scripts = model.scripts;
+    const res = scripts.filter(s => s.isControllable).map(s => s.id);
+    return res;
+  }
   /**
    * Removes the script from `model` and related `model.instances`
    * Does not remove sim instances/agents.
@@ -389,6 +418,13 @@ class ProjectData {
   RaiseModelUpdate(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
     UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
+  }
+
+  /// INPUT UTILS /////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  HandleInputBPnamesRequest() {
+    const inputBPnames = this.GetInputBPNames();
+    UR.RaiseMessage('NET:SET_INPUT_BPNAMES', { bpnames: inputBPnames });
   }
 
   /// BLUEPRINT UTILS ////////////////////////////////////////////////////////////
@@ -639,25 +675,32 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     // And Set Listeners too
     UR.RaiseMessage('NET:SET_BOUNDARY', { width, height });
 
-    // 2. Compile All Agents
+    // 3. Update Input System
+    //    Set Input transforms
+    SetInputStageBounds(width, height); // dc-inputs
+    //    Set Input controlled agents
+    const inputBPnames = this.GetInputBPNames();
+    SetInputBPnames(inputBPnames); // dc-inputs
+    UR.RaiseMessage('NET:SET_INPUT_BPNAMES', { bpnames: inputBPnames });
+
+    // 4. Compile All Agents
     const scripts = model.scripts;
     const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
     const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
     const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
     const blueprintNames = blueprints.map(b => b.name);
 
-    // 3. Create/Update All Instances
+    // 5. Create/Update All Instances
     const instancesSpec = model.instances;
-    // Use 'UPDATE' so we don't clobber old instance values.
     UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
       blueprintNames,
       instancesSpec
     });
 
-    // 4. Update Agent Display
+    // 6. Update Agent Display
     // Agent displays are automatically updated during SIM/VIS_UPDATE
 
-    // 5. Update Inspectors
+    // 7. Update Inspectors
     // Inspectors will be automatically updated during SIM/UI_UPDATE phase
   }
 

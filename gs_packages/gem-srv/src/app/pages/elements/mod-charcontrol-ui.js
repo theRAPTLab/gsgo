@@ -23,6 +23,7 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
+const DBG = false;
 
 // constants for packet update rate
 const FRAMERATE = 15;
@@ -247,6 +248,10 @@ function HandleStateChange(name, value) {
         case 'data_object_name':
           m_data_object_name_changed = true;
           break;
+        case 'tag':
+          MarkerFramer = undefined; // clear it so we can create a new one with different tags
+          Initialize(m_CHARVIEW);
+          break;
       }
     }
   );
@@ -262,11 +267,18 @@ function HandleStateChange(name, value) {
  *  the UISTATE module to manage state propagation
 /*/
 async function Initialize(componentInstance) {
+  // save React component to grab state from and setstate
+  m_CHARVIEW = componentInstance;
+
   // prototype device registration
   // a device declares what kind of device it is
   // and what data can be sent/received
   if (MarkerFramer === undefined) {
     const dev = UR.NewDevice('CharControl');
+
+    // Update blueprint names for "Blueprint" selector
+    dev.meta.uapp_tags.push(m_CHARVIEW.state.tag);
+
     const { udid, status, error } = await UR.RegisterDevice(dev);
     if (error) console.error(error);
     if (status) console.log(...PR(status));
@@ -276,9 +288,6 @@ async function Initialize(componentInstance) {
     // send periodic control frames
     setInterval(SendControlFrame, INTERVAL);
   }
-
-  // save React component to grab state from and setstate
-  m_CHARVIEW = componentInstance;
 
   // setup container, entity listsm
   m_container = m_SetupContainer('container');
@@ -351,7 +360,9 @@ function SendControlFrame() {
   HandleStateChange('status', m_status);
 
   // create the control frame
+  if (!MarkerFramer) return; // catch undefined MarkerFrame during re-initialization after a blueprint selection
   const controlFrame = MarkerFramer(cobjs);
+  if (DBG) console.log('controlFrame', controlFrame);
   UR.SendControlFrame(controlFrame);
 }
 

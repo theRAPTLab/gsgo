@@ -38,6 +38,8 @@ class CharController extends React.Component {
     // establish state here
     // which is changed through setState() call of React.Component
     this.state = {
+      tag: '',
+      tags: [],
       num_entities: 1,
       prefix: '',
       jitter: 0,
@@ -59,17 +61,35 @@ class CharController extends React.Component {
       data_object_name: '-',
       rate: 0
     };
+    this.handleSetInputBPnames = this.handleSetInputBPnames.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
+    UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPnames);
   }
 
   componentDidMount() {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-    Initialize(this);
     HookResize(window);
+    // Initialize will run after NET:SET_INPUT_BPNAMES is received.
+    UR.RaiseMessage('NET:REQUEST_INPUT_BPNAMES');
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
+    UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPnames);
+  }
+
+  handleSetInputBPnames(data) {
+    const bpnames = data.bpnames;
+    // TAGS is in mod-charcontrol-ui.js
+    const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
+    this.setState(
+      {
+        tags,
+        tag: tags.length > 0 ? tags[0].id : '' // default to first tag
+      },
+      () => Initialize(this)
+    );
   }
 
   // FORM CHANGE METHOD
@@ -82,8 +102,10 @@ class CharController extends React.Component {
   }
 
   render() {
+    const { tag, tags } = this.state;
     const controlNames = [{ 'id': 'markers', 'label': 'markers' }];
     const { classes } = this.props;
+    const selectedTag = tag ? tag : tags.length > 0 ? tags[0] : '';
     //
     return (
       <div
@@ -266,7 +288,27 @@ class CharController extends React.Component {
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          console-bottom
+          <div>
+            <select
+              id="tag"
+              name="tag"
+              value={selectedTag}
+              onChange={this.handleInputChange}
+              className="form-control"
+            >
+              {tags.map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <label className="control-label">&nbsp;Blueprint</label>
+            <br />
+            <br />
+            <br />
+            <br />
+            <hr />
+          </div>
         </div>
       </div>
     );

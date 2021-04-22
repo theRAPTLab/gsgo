@@ -12,12 +12,13 @@ export const MODEL = {
     {
       id: 'Fish',
       label: 'Fish',
+      isControllable: true,
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Movement setMovementType 'wander' 0.5
+featCall Movement setMovementType 'wander' 10
 
 addProp energyLevel Number 20
 prop energyLevel setMax 100
@@ -98,6 +99,7 @@ every 1 runAtStart [[
     {
       id: 'Algae',
       label: 'Algae',
+      isControllable: true,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume

@@ -61,5 +61,5 @@ UR.HookPhase('UR/APP_CONFIGURE', () => {
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/INPUTS', () => {
-  console.log('sim/input');
+  // console.log('sim/input');
 });
