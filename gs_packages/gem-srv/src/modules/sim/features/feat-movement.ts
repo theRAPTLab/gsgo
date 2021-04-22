@@ -83,12 +83,12 @@ function moveEdgeToEdge(agent) {
     agent.prop.x.value >= bounds.right - hwidth ||
     agent.prop.y.value <= bounds.top + hheight
   ) {
-    direction = direction + 180;
+    direction = direction + agent.prop.Movement.bounceAngle.value;
   } else if (
     agent.prop.x.value <= bounds.left + hwidth ||
     agent.prop.y.value >= bounds.bottom - hheight
   ) {
-    direction = direction - 180;
+    direction = direction - agent.prop.Movement.bounceAngle.value;
   }
 
   // now move with the current direction and distance
@@ -171,6 +171,7 @@ class MovementPack extends GFeature {
     prop.setWrap();
     this.featAddProp(agent, 'direction', prop); // degrees
     this.featAddProp(agent, 'distance', new GVarNumber(0.5));
+    this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
   }
 
   handleInput() {
@@ -200,8 +201,12 @@ class MovementPack extends GFeature {
         case 'edgeToEdge':
           agent.getFeatProp(this.name, 'distance').value = params[0];
           agent.getFeatProp(this.name, 'direction').value = params[1];
-          if (params[2] == 'rand')
-            agent.getFeatProp(this.name, 'direction').value = m_random(0, 180);
+
+          if (params.length > 2) {
+            agent.getFeatProp(this.name, 'bounceAngle').value = params[2];
+            if (params[3] == 'rand')
+              agent.getFeatProp(this.name, 'direction').value = m_random(0, 180);
+          }
           break;
         case 'jitter':
           // min max

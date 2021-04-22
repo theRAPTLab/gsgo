@@ -15,6 +15,9 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+// turns on the feature that allows the fish to grow if this is 1
+addProp grows Boolean 0
+
 addProp startDirection Number 0
 
 useFeature Physics
@@ -31,6 +34,9 @@ propPop text
 
 # PROGRAM EVENT
 onEvent Start [[
+  // start at normal size unless you eat
+  featCall Physics setSize 90
+
     // ** pick a movement below:
     // this line for wandering:
     // featCall Movement setMovementType 'wander' 0.5
@@ -40,7 +46,7 @@ onEvent Start [[
 
     // this line to pick a random direction and go until you hit the edge then reverse ... add 'rand' if you want to pick starting directions randomly
     // in this example it will be ignored anyhow because I am setting  the startDirection just below:
-    featCall Movement setMovementType 'edgeToEdge' 1 0
+    featCall Movement setMovementType 'edgeToEdge' 1 0 180
 
     exprPush {{ agent.getProp('startDirection').value }}
     featPropPop agent.Movement.direction
@@ -51,15 +57,35 @@ onEvent Start [[
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
-  every 1 [[
+  every 1 runAtStart [[
     prop Fish.energyLevel add 10
     prop Algae.energyLevel sub 10
     featCall Fish.Costume setGlow 0.5
+
+    // grow if above 80% energy
+    ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
+      featCall Physics setSize 150
+
+    ]]
+
+    ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
+      prop Algae.alpha setTo 0.3
+      prop Algae.isInert setTo true
+    ]]
+
+
+
+
   ]]
 ]]
 every 1 runAtStart [[
   // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
+
+  // if fish is bigger than 1, use even more energy
+  ifExpr {{(agent.getProp('scale').value > 1.5)}} [[
+    prop agent.energyLevel sub 1
+  ]]
 
   // set name + energyLevel
   exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
@@ -126,6 +152,9 @@ prop text setTo '##'
 onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
+
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  propPop agent.scale
 ]]
 
 # PROGRAM UPDATE
@@ -145,6 +174,12 @@ every 1 [[
   // update name
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
+
+]]
+
+every 0.5 [[
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  propPop agent.scale
 ]]
 `
     },
