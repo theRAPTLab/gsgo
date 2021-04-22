@@ -115,6 +115,8 @@ const MOVING_AGENTS = new Map();
 UR.HookPhase('SIM/FEATURES_UPDATE', () => {
   const agents = [...MOVING_AGENTS.values()];
   agents.forEach(agent => {
+    // ignore AI movement if input agent
+    if (agent.isModePuppet()) return;
     // handle movement
     const type = agent.prop.Movement.movementType.value;
     switch (type) {

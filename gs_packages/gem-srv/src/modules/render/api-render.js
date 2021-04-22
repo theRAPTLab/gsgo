@@ -113,13 +113,22 @@ function Init(element) {
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
       vobj.applyFilters();
 
-      if (dobj.mode === 1 && SETTINGS.actable) {
+      // Old Approach: Only allow drag and hover if controlMode is puppet (1)
+      // But this doesn't work for two reasons:
+      // 1. Input controlled agents (controlMode 3) need to be hoverable and selectable
+      // 2. Selection needs to be handled by draggable so we can distinguish between
+      //    drags and selections.
+      // if (dobj.mode === 1 && SETTINGS.actable) {
+
+      // New Approach: Make everything Draggable and Hoverable regardless of controlMode
+      // draggable will take care of testing whether it is allowed to override
+      // based on controlMode
+      if (SETTINGS.actable) {
         // add drag-and-drop and selection handlers
         MakeDraggable(vobj);
         // add hover handler
         MakeHoverable(vobj);
         // selection is handled by drag
-        // // add selectable handler
         // MakeSelectable(vobj);
       }
 

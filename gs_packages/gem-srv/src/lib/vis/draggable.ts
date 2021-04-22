@@ -28,7 +28,7 @@ export function MakeDraggable(vobj: Visual) {
     //
     const agent = GetAgentById(vobj.id);
     if (agent) {
-      agent.setModePuppet();
+      agent.setModeDrag();
       agent.setCaptive(true);
       origX = agent.prop.x.value;
       origY = agent.prop.y.value;
@@ -73,10 +73,14 @@ export function MakeDraggable(vobj: Visual) {
       const { x, y } = this.data.getLocalPosition(this.parent);
       const newx = x + offsetX;
       const newy = y + offsetY;
-      this.x = newx;
-      this.y = newy;
+      // Don't set x/y here or input agent will get dragged
+      // this.x = newx;
+      // this.y = newy;
       const agent = GetAgentById(vobj.id);
-      if (agent) {
+      if (agent && !agent.isModePuppet()) {
+        // don't move if agent is user input
+        this.x = newx;
+        this.y = newy;
         agent.prop.x.value = newx;
         agent.prop.y.setTo(newy); // alt way of setting
       }

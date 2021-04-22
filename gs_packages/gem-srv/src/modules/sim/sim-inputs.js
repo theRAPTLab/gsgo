@@ -57,6 +57,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
   oldInputDef.y = newInputDef.y;
   agent.x = newInputDef.x;
   agent.y = newInputDef.y;
+  agent.setModePuppet();
 }
 
 // REVIEW: This is probably an abuse of syncMap
