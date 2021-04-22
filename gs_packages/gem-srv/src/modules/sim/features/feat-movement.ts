@@ -110,6 +110,15 @@ function moveFloat(agent, y: number = -300) {
   agent.prop.y.value = Math.max(y, agent.prop.y.value - 2);
 }
 
+/// Movement Function Library
+const MOVEMENT_FUNCTIONS = new Map([
+  ['static', undefined],
+  ['wander', moveWander],
+  ['edgeToEdge', moveEdgeToEdge],
+  ['jitter', moveJitter],
+  ['float', moveFloat]
+]);
+
 /// Movement Agent Manager
 const MOVING_AGENTS = new Map();
 UR.HookPhase('SIM/FEATURES_UPDATE', () => {
@@ -118,24 +127,8 @@ UR.HookPhase('SIM/FEATURES_UPDATE', () => {
     // ignore AI movement if input agent
     if (agent.isModePuppet()) return;
     // handle movement
-    const type = agent.prop.Movement.movementType.value;
-    switch (type) {
-      case 'wander':
-        moveWander(agent);
-        break;
-      case 'edgeToEdge':
-        moveEdgeToEdge(agent);
-        break;
-      case 'jitter':
-        moveJitter(agent);
-        break;
-      case 'float':
-        moveFloat(agent);
-        break;
-      case 'static':
-      default:
-        break;
-    }
+    const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
+    if (moveFn) moveFn(agent);
   });
 });
 
@@ -190,7 +183,6 @@ class MovementPack extends GFeature {
   }
 
   // TYPES
-  //   'wander' -- params: distance
   setMovementType(agent: IAgent, type: string, ...params) {
     agent.getFeatProp(this.name, 'movementType').value = type;
     if (params.length > 0) {
