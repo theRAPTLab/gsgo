@@ -82,7 +82,7 @@ module.exports = {
     'no-console': 'off',
     'no-debugger': 'warn',
     'no-alert': 'warn',
-    'no-restricted-syntax','off',
+    'no-restricted-syntax': 'off',
     /* ursys style overrides */
     'spaced-comment': 'off',
     'camelcase': 'off',
