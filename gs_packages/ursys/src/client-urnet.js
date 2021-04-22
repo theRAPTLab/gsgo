@@ -109,7 +109,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   const LocalNode = new EndPoint('ur-client-local');
   const NetNode = new EndPoint('ur-client-net');
   DATACORE.SetSharedEndPoints({ LocalNode, NetNode });
-  m_urlink = LocalNode; // used for forwarding
+  m_urlink = new EndPoint('ur-client-remote'); // used for forwarding
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dispatch incoming event object from the network.
