@@ -194,8 +194,9 @@ class Tracker extends React.Component {
             minWidth: '280px'
           }}
         >
-          Tracker plots <i>FakeTrack</i> and <i>DisplayObjects</i> as well as look
-          for <i>CharControl</i> devices at <b>{SAMPLE_FPS}</b> samples/sec.
+          Plots <i>FakeTrack</i> and <i>Display</i> entities. Lists{' '}
+          <i>CharControl</i> entities.
+          <br />
           <p>
             <b>Devices Online</b>
           </p>
@@ -204,7 +205,7 @@ class Tracker extends React.Component {
             <b>Devices Entities</b>
             <br />
             <span style={{ fontSize: 'smaller', fontStyle: 'italic' }}>
-              device entities aren't rendered
+              sample rate = {SAMPLE_FPS}/sec.
             </span>
           </p>
           <pre style={{ fontSize: 'smaller' }}>{this.state.entities}</pre>

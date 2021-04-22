@@ -22,7 +22,7 @@ import '../../lib/css/charcontrol.css';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
 const MATRIX_INPUT_WIDTH = 50;
-const SENDING_FPS = 5;
+const SENDING_FPS = 15;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -116,7 +116,7 @@ class CharController extends React.Component {
           }}
         >
           <div id="charctrl_id"></div>
-          <p style={{ marginTop: 0 }}>Sample Rate = {this.state.rate}/sec </p>
+          <p style={{ marginTop: 0 }}>Output Rate = {this.state.rate}/sec </p>
           <div id="charctrl_tests">
             <input
               name="num_entities"
