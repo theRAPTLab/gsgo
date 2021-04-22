@@ -19,13 +19,15 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRACKER', 'TagApp');
-const FCON = UR.HTMLConsoleUtil('console-bottom');
+const SAMPLE_FPS = 30;
+const INTERVAL = (1 / SAMPLE_FPS) * 1000;
+/// RUNTIME VARS //////////////////////////////////////////////////////////////
 let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
 let FRAME_TIMER;
-const FPS = 4;
-const INTERVAL = (1 / FPS) * 1000;
+/// DEBUG UTILS ///////////////////////////////////////////////////////////////
+const PR = UR.PrefixUtil('TRACKER', 'TagApp');
+const FCON = UR.HTMLConsoleUtil('console-bottom');
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,6 +99,7 @@ class Tracker extends React.Component {
     this.updateDeviceList([]);
 
     UR.HookPhase('UR/APP_START', async () => {
+      // STEP 1 is to get a "deviceAPI" from a Device Subscription
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'CharControl',
         quantify: list => list,
@@ -105,19 +108,27 @@ class Tracker extends React.Component {
           console.log(...PR('notify', changes));
         }
       });
-      // these are all the device API calls
-      // we need to move them outside of Tracker.jsx
-      const { unsubscribe, getController, deviceNum } = devAPI;
+      // STEP 2 is to grab the getController('name') method which we
+      // can call any time we want without mucking about with device
+      // interfaces
+      const { getController, deviceNum, unsubscribe } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
+      // there is no STEP 3!!!
+
+      // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
+      // these are all the device API calls for testing. Since Tracker does
+      // not have a simulation loop to get getInputs(), we just use a timer
+      // for testing.
       if (FRAME_TIMER === undefined) {
         FRAME_TIMER = setInterval(() => {
+          // get all the current inputs
           const objs = getInputs().slice();
           objs.sort((a, b) => {
             if (a.id < b.id) return -1;
             else if (a.id > b.id) return 1;
             return 0;
           });
-          // const entities = `obj count = ${objs.length}`;
+          // update the device entities list on the left side
           const entities = objs
             .map(o => {
               const id = `${o.id}`.padEnd(10, ' ');
@@ -183,19 +194,8 @@ class Tracker extends React.Component {
             minWidth: '280px'
           }}
         >
-          USE SHIFT-CLICK TO OPEN LINKS IN NEW WINDOW in CHROME
-          <br />
-          <a href="/app/compiler" target="_blank">
-            spawn Compiler
-          </a>
-          <br />
-          <a href="/app/charcontrol" target="_blank">
-            spawn CharControl
-          </a>
-          <br />
-          <a href="/app/faketrack" target="_blank">
-            spawn FakeTrack
-          </a>
+          Tracker plots <i>FakeTrack</i> and <i>DisplayObjects</i> as well as look
+          for <i>CharControl</i> devices at <b>{SAMPLE_FPS}</b> samples/sec.
           <p>
             <b>Devices Online</b>
           </p>

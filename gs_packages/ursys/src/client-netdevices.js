@@ -12,7 +12,7 @@
 
 /// note: these are CJS modules so use require syntax
 const PhaseMachine = require('./class-phase-machine');
-const DifferenceCache = require('./class-diff-cache');
+const StickyCache = require('./class-sticky-cache');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
 const UDevice = require('./class-udevice');
@@ -129,16 +129,14 @@ function SaveDeviceSub(deviceSpec) {
     /// CONTROLLER METHODS ///
     return {
       getInputs: () => {
-        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
-        if (control) {
-          control.diffBuffer();
-          return control.getValues();
-        }
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
+        if (control) return control.getBufferValues();
+        // no control, emit error
+        console.warn(`control '${cName}' doesn't exists`);
         return [];
       },
       getChanges: () => {
-        const control = sub.cobjs.get(cName); // e.g. "markers" => cData DifferenceCache
-
+        const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
         if (control) return control.getChanges();
         return [];
       },
@@ -212,7 +210,7 @@ function m_ProcessDeviceMap(devmap) {
  *  Map<controlName,DiffCache> stored in the Subscription Map as 'cobjs'.
  *  A SubscriptionMap maps a udid to the subscriptions it is part of.
  *
- *  The 'cobjs' map is used to retrieve a DifferenceCache so its
+ *  The 'cobjs' map is used to retrieve a StickyCache so its
  *  buffer() method can be used to accumulate data from multiple devices.
  *  The diffBuffer() method compares this buffer to the last results of
  *  the previous diffBuffer() call
@@ -225,11 +223,15 @@ function m_ProcessControlFrame(cFrame) {
   const subs = DATACORE.GetSubsByUDID(udid); // all matching subs with this udid
   // process the cFrame into each subscription
   subs.forEach(sub => {
-    // cobjs is a Map of controlName to DifferenceCache for each subscription
+    // cobjs is a Map of controlName to StickyCache for each subscription
     // a subscription has multiple devices that are kept in dcache
     controlNames.forEach(name => {
       const objs = cFrame[name];
-      if (!sub.cobjs.has(name)) sub.cobjs.set(name, new DifferenceCache('id'));
+      if (!sub.cobjs.has(name)) {
+        const controlBuffer = new StickyCache('id');
+        controlBuffer.setAgeThreshold(15);
+        sub.cobjs.set(name, controlBuffer);
+      }
       // note: since a cFrame can come from multiple devices that are part of the
       // subscription, we can't use the normal ingest because it will overwrite
       // the previous cFrame from another device.
@@ -270,7 +272,7 @@ PhaseMachine.Hook('UR/NET_DEVICES', () => {
   NetNode.handleMessage('NET:UR_CFRAME', cFrame => {
     m_ProcessControlFrame(cFrame);
     // all subscriptions associated with this udid have been updated
-    // each subscription's controls are in cobjs.get(cName)=>DifferenceCache,
+    // each subscription's controls are in cobjs.get(cName)=>StickyCache,
     // so use .getValues() or .getChanges()
   });
 });

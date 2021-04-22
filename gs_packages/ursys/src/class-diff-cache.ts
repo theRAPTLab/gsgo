@@ -5,7 +5,6 @@
   Works on simple collections: pure objects, maps, and arrays.
   Requires a unique key in objects that is provided at construct time.
 
-  Main Operations
   - diff(collection) sets changeList
   - getChanges() returns changeLists { added, updated, removed }
   - getValues() returns the current elements in the cache
@@ -72,33 +71,21 @@ function cmp_arr(ar1, ar2, idKey = 'id') {
 class DifferenceCache {
   collection: any; // pure object, map, or array
   cLastMap: Map<string, any>;
-  cBufferMap: Map<string, any>;
   keyProp: string;
   changeLists: { added: any[]; updated: any[]; removed: any[] };
-  staleMax: number;
-  ageTable: any;
 
   constructor(key: string) {
     this.collection = []; // holds the collection being ingested
     this.cLastMap = new Map(); // the mapped version of the collection
-    this.cBufferMap = new Map(); // used to buffer multiple cFrames into one map
     this.keyProp = key || 'id'; // property to use as difference key
     this.changeLists = {
       added: [],
       updated: [],
       removed: []
     };
-    this.staleMax = 10; // maximum "age" for when the buffer is empty
   }
 
-  /// IMMEDIATE MODE //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Clear the DifferenceCache */
-  clear() {
-    const size = this.cLastMap.size;
-    this.cLastMap.clear();
-    return size;
-  }
   /** API: Calculate difference between this collection and the last.
    *  Returns { added, updated, removed } arrays by default. This
    */
@@ -155,91 +142,6 @@ class DifferenceCache {
     this.changeLists = { added, updated, removed };
     // doesn't return anything, use either getChanges() or getValues() to retrieve them
   }
-
-  /// BUFFERED MODE ///////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: Clear the Buffer */
-  clearBuffer(objs?: any[]) {
-    if (!Array.isArray(objs)) {
-      if (DBG.cframe) console.log('clearing entire buffer');
-      this.cBufferMap.clear();
-      return;
-    }
-    const objText = JSON.stringify(objs.map(o => o.id));
-    console.warn('selectively clear buffer (unimplemented)', objText);
-  }
-  /** API: Collect input data into a buffer map that for later
-   */
-  buffer(collection) {
-    if (collection === undefined) {
-      console.warn('DifferenceCache.update arg1 must be collection');
-      return undefined;
-    }
-    const idKey = this.keyProp;
-    let arr;
-    this.collection = collection;
-    if (Array.isArray(collection)) arr = collection;
-    else if (collection instanceof Map) arr = [...collection.values()];
-    else if (typeof collection === 'object') arr = Object.values(collection);
-    // blind write object into buffer
-    arr.forEach(obj => {
-      const id = obj[idKey];
-      this.cBufferMap.set(id, obj);
-    });
-  }
-  /** API: perform difference operation from the cBufferMap through diffArray.
-   *  If passed a collection, it's buffered before the diffArray is called
-   *  with the contents of the cBufferMap
-   */
-  diffBuffer(collection) {
-    if (collection !== undefined) this.buffer(collection);
-    const fullBuffer = this.cBufferMap.size > 0;
-    if (fullBuffer) {
-      console.log('normal diff+clear');
-      this.diff(this.cBufferMap);
-      // everything in the current cLastMap gets its age reset
-      // if it is also in the buffer
-      console.log(
-        'full: cmap',
-        JSON.stringify([...this.cLastMap.values()]),
-        'cbuf',
-        JSON.stringify([...this.cBufferMap.values()])
-      );
-      this.cLastMap.forEach(obj => {
-        if (this.cBufferMap.has(obj.id)) obj.age = 0;
-        else console.log('not aging', obj.id, obj.age);
-      });
-      this.clearBuffer();
-    } else {
-      // cLastMap is a map of id => cobj
-      // don't clear lastMap, but remove aged objects
-      console.log(
-        'emty: cmap',
-        JSON.stringify([...this.cLastMap.values()]),
-        'cbuf',
-        JSON.stringify([...this.cBufferMap.values()])
-      );
-      this.cLastMap.forEach(obj => {
-        const { id } = obj;
-        let out = `testing ${id} age ${obj.age}: `;
-        if (++obj.age > this.staleMax) {
-          this.cLastMap.delete(id);
-          out += 'DELETED';
-        }
-        // console.log(out);
-      });
-    }
-  }
-
-  /// ACCESSORS ///////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** API: "staleness" is the max value of the object age counter. It is
-   *  incremented if an entity has disappeared (step 2 of diffArray), and
-   *  reset to 0 if freshly added/updated. Default is no staleness check
-   */
-  setStalenessThreshold(age = 1) {
-    this.staleMax = age;
-  }
   /** API: Retrieve last changes of for ingest, returning an object with
    *  added, updated, removed array properties. The changes are updated
    *  every time diff() is called.
@@ -252,12 +154,6 @@ class DifferenceCache {
   getValues() {
     return [...this.cLastMap.values()];
   }
-
-  /** API: Retrieve the current list of objects in the buffer
-   */
-  getBufferValues() {
-    return [...this.cBufferMap.values()];
-  }
   /** API: return TRUE if passed id is in the map, meaning it's currently
    *  an active object.
    */
@@ -269,6 +165,12 @@ class DifferenceCache {
    */
   forEach(func) {
     this.getValues().forEach(func);
+  }
+  /** API: Clear the DifferenceCache */
+  clear() {
+    const size = this.cLastMap.size;
+    this.cLastMap.clear();
+    return size;
   }
 } // end class
 
