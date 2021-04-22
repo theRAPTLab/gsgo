@@ -7,23 +7,22 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// REACT & MATERIAL UI STUFF /////////////////////////////////////////////////
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-
+/// URSYS STUFF ///////////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/dev-device-ui';
+import { Initialize, HandleStateChange } from './elements/dev-controller-ui';
 import { useStylesHOC } from './elements/page-styles';
 import '../../lib/css/charcontrol.css';
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// import '../modules/sim/runtime';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
 const MATRIX_INPUT_WIDTH = 50;
+const SENDING_FPS = 5;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,7 +63,7 @@ class CharController extends React.Component {
   componentDidMount() {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-    Initialize(this);
+    Initialize(this, { sampleRate: SENDING_FPS });
     HookResize(window);
   }
 
