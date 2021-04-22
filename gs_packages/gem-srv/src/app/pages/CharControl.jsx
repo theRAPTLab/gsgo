@@ -14,7 +14,8 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
 import { Initialize, HandleStateChange } from './elements/mod-charcontrol-ui';
-import { useStylesHOC } from './elements/page-styles';
+import { useStylesHOC } from './elements/page-xui-styles';
+import './scrollbar.css';
 import '../../lib/css/charcontrol.css';
 import PanelSimViewer from './components/PanelSimViewer';
 
@@ -62,22 +63,29 @@ class CharController extends React.Component {
       data_object_name: '-',
       rate: 0
     };
+    this.requestBPNames = this.requestBPNames.bind(this);
     this.handleSetInputBPnames = this.handleSetInputBPnames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPnames);
+
+    UR.HookPhase('UR/APP_RUN', this.requestBPNames);
   }
 
   componentDidMount() {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     HookResize(window);
-    // Initialize will run after NET:SET_INPUT_BPNAMES is received.
-    UR.RaiseMessage('NET:REQUEST_INPUT_BPNAMES');
   }
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
     UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPnames);
+  }
+
+  requestBPNames() {
+    // Request after APP_RUN (URSYS Is loaded) otherwise the response
+    // will come back before we're ready
+    UR.RaiseMessage('NET:REQUEST_INPUT_BPNAMES');
   }
 
   handleSetInputBPnames(data) {
@@ -112,185 +120,20 @@ class CharController extends React.Component {
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: '720px auto',
-          gridTemplateRows: '50px 720px auto',
-          boxSizing: 'border-box'
+          gridTemplateColumns: '50% 50%', // always fit
+          gridTemplateRows: '30px auto 0',
+          boxSizing: 'border-box',
+          overflow: 'hidden'
         }}
       >
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top)}
-          style={{ gridColumnEnd: 'span 2' }}
-        >
-          <span style={{ fontSize: '32px' }}>
-            Controller CC{UR.GetUAddressNumber()}
-          </span>
-          <span style={{ float: 'right' }}>{UR.ConnectionString()}</span>
-        </div>
-        <div
-          className={classes.main}
-          id="container"
-          style={{ width: '720px', height: '720px', gridColumnEnd: 'span 1' }}
-        />
-        <div
-          id="console-right"
-          className={clsx(classes.cell, classes.right)}
           style={{
-            boxSizing: 'border-box',
-            gridColumnEnd: 'span 1',
-            minWidth: '280px'
+            gridColumnEnd: 'span 2',
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr'
           }}
-        >
-          <div id="charctrl_id"></div>
-          <PanelSimViewer id="sim" />
-          {/* <p style={{ marginTop: 0 }}>Sample Rate = {this.state.rate}/sec </p>
-          <div id="charctrl_tests">
-            <input
-              name="num_entities"
-              style={{ width: '50px' }}
-              type="number"
-              min="1"
-              max="100"
-              defaultValue={this.state.num_entities}
-              onChange={this.handleInputChange}
-            />{' '}
-            <label>Num</label>
-            <label>
-              <input
-                name="prefix"
-                style={{ width: '60px' }}
-                type="text"
-                value={this.state.prefix}
-                onChange={this.handleInputChange}
-              />{' '}
-              Prefix
-            </label>
-            <br />
-            <label>
-              <input
-                name="jitter"
-                style={{ width: '50px' }}
-                type="number"
-                min="0"
-                max="10"
-                value={this.state.jitter}
-                onChange={this.handleInputChange}
-              />{' '}
-              Jitter
-            </label>
-            <br />
-            <label style={{ marginTop: '1em' }}>
-              <input
-                name="burst"
-                type="checkbox"
-                checked={this.state.burst}
-                onChange={this.handleInputChange}
-              />{' '}
-              Do Burst
-            </label>
-            <br />
-            <div id="data_track_controls" style={{ marginTop: '1em' }}>
-              <select
-                id="ctrl_name"
-                name="ctrl_name"
-                value={this.state.ctrl_name}
-                onChange={this.handleInputChange}
-                className="form-control"
-              >
-                {controlNames.map(option => (
-                  <option key={option.id} value={option.id}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-              <label className="control-label">&nbsp;ControlName</label>
-            </div>
-            <p style={{}}>
-              Normalized Output ID X,Y
-              <br />
-              <span style={{ fontSize: 'smaller', fontStyle: 'italic' }}>
-                nominal range is -0.5 to +0.5
-              </span>
-            </p>
-            <pre style={{ margin: 0, padding: 0 }}>{this.state.status}</pre>
-            <div id="charctrl_xform" style={{ clear: 'both' }}>
-              <p style={{ marginTop: '1.5em' }}>
-                Output Transformations
-                <br />
-                <span style={{ fontSize: 'smaller', fontStyle: 'italic' }}>
-                  sim usually expects -1 to +1 range
-                </span>
-              </p>
-
-              <label>
-                <input
-                  name="xscale"
-                  style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
-                  type="number"
-                  value={this.state.xscale}
-                  onChange={this.handleInputChange}
-                />{' '}
-                XSCALE
-              </label>
-              <label>
-                <input
-                  name="yscale"
-                  style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
-                  type="number"
-                  value={this.state.yscale}
-                  onChange={this.handleInputChange}
-                />{' '}
-                YSCALE
-              </label>
-              <br />
-              <label>
-                <input
-                  name="offx"
-                  style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
-                  type="number"
-                  value={this.state.offx}
-                  onChange={this.handleInputChange}
-                />{' '}
-                OFF-X{' '}
-              </label>
-              <label>
-                <input
-                  name="offy"
-                  style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
-                  type="number"
-                  value={this.state.offy}
-                  onChange={this.handleInputChange}
-                />{' '}
-                OFF-Y
-              </label>
-              <br />
-              <label>
-                <input
-                  name="width"
-                  style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
-                  type="number"
-                  value={this.state.width || 5}
-                  onChange={this.handleInputChange}
-                />{' '}
-                WIDTH-X
-              </label>
-              <label>
-                <input
-                  name="depth"
-                  style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
-                  type="number"
-                  value={this.state.depth || 5}
-                  onChange={this.handleInputChange}
-                />{' '}
-                DEPTH-Y
-              </label>
-            </div>
-          </div> */}
-        </div>
-        <div
-          id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
-          style={{ gridColumnEnd: 'span 2' }}
         >
           <div>
             <select
@@ -307,13 +150,187 @@ class CharController extends React.Component {
               ))}
             </select>
             <label className="control-label">&nbsp;Blueprint</label>
-            <br />
-            <br />
-            <br />
-            <br />
-            <hr />
+          </div>
+          <div style={{ fontSize: '16px', lineHeight: '16px' }}>
+            Controller CC{UR.GetUAddressNumber()}
+          </div>
+          <div
+            style={{
+              lineHeight: '16px',
+              textAlign: 'right',
+              marginRight: '10px'
+            }}
+          >
+            {UR.ConnectionString()}
           </div>
         </div>
+        <div
+          className={classes.main}
+          id="container"
+          style={{ gridColumnEnd: 'span 1' }}
+        />
+        <div
+          id="console-right"
+          className={classes.right}
+          style={{
+            boxSizing: 'border-box',
+            gridColumnEnd: 'span 1',
+            minWidth: '280px'
+          }}
+        >
+          <PanelSimViewer id="sim" />
+          {/*
+          <div id="charctrl_id"></div>
+            <p style={{ marginTop: 0 }}>Sample Rate = {this.state.rate}/sec </p>
+            <div id="charctrl_tests">
+              <input
+                name="num_entities"
+                style={{ width: '50px' }}
+                type="number"
+                min="1"
+                max="100"
+                defaultValue={this.state.num_entities}
+                onChange={this.handleInputChange}
+              />{' '}
+              <label>Num</label>
+              <label>
+                <input
+                  name="prefix"
+                  style={{ width: '60px' }}
+                  type="text"
+                  value={this.state.prefix}
+                  onChange={this.handleInputChange}
+                />{' '}
+                Prefix
+              </label>
+              <br />
+              <label>
+                <input
+                  name="jitter"
+                  style={{ width: '50px' }}
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={this.state.jitter}
+                  onChange={this.handleInputChange}
+                />{' '}
+                Jitter
+              </label>
+              <br />
+              <label style={{ marginTop: '1em' }}>
+                <input
+                  name="burst"
+                  type="checkbox"
+                  checked={this.state.burst}
+                  onChange={this.handleInputChange}
+                />{' '}
+                Do Burst
+              </label>
+              <br />
+              <div id="data_track_controls" style={{ marginTop: '1em' }}>
+                <select
+                  id="ctrl_name"
+                  name="ctrl_name"
+                  value={this.state.ctrl_name}
+                  onChange={this.handleInputChange}
+                  className="form-control"
+                >
+                  {controlNames.map(option => (
+                    <option key={option.id} value={option.id}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                <label className="control-label">&nbsp;ControlName</label>
+              </div>
+              <p style={{}}>
+                Normalized Output ID X,Y
+                <br />
+                <span style={{ fontSize: 'smaller', fontStyle: 'italic' }}>
+                  nominal range is -0.5 to +0.5
+                </span>
+              </p>
+              <pre style={{ margin: 0, padding: 0 }}>{this.state.status}</pre>
+              <div id="charctrl_xform" style={{ clear: 'both' }}>
+                <p style={{ marginTop: '1.5em' }}>
+                  Output Transformations
+                  <br />
+                  <span style={{ fontSize: 'smaller', fontStyle: 'italic' }}>
+                    sim usually expects -1 to +1 range
+                  </span>
+                </p>
+
+                <label>
+                  <input
+                    name="xscale"
+                    style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
+                    type="number"
+                    value={this.state.xscale}
+                    onChange={this.handleInputChange}
+                  />{' '}
+                  XSCALE
+                </label>
+                <label>
+                  <input
+                    name="yscale"
+                    style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
+                    type="number"
+                    value={this.state.yscale}
+                    onChange={this.handleInputChange}
+                  />{' '}
+                  YSCALE
+                </label>
+                <br />
+                <label>
+                  <input
+                    name="offx"
+                    style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
+                    type="number"
+                    value={this.state.offx}
+                    onChange={this.handleInputChange}
+                  />{' '}
+                  OFF-X{' '}
+                </label>
+                <label>
+                  <input
+                    name="offy"
+                    style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
+                    type="number"
+                    value={this.state.offy}
+                    onChange={this.handleInputChange}
+                  />{' '}
+                  OFF-Y
+                </label>
+                <br />
+                <label>
+                  <input
+                    name="width"
+                    style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
+                    type="number"
+                    value={this.state.width || 5}
+                    onChange={this.handleInputChange}
+                  />{' '}
+                  WIDTH-X
+                </label>
+                <label>
+                  <input
+                    name="depth"
+                    style={{ width: `${MATRIX_INPUT_WIDTH}px` }}
+                    type="number"
+                    value={this.state.depth || 5}
+                    onChange={this.handleInputChange}
+                  />{' '}
+                  DEPTH-Y
+                </label>
+              </div>
+            </div>
+        */}
+        </div>
+        <div
+          id="console-bottom"
+          className={clsx(classes.cell, classes.bottom)}
+          style={{ gridColumnEnd: 'span 2' }}
+        ></div>
       </div>
     );
   }
