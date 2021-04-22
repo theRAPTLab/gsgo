@@ -1,36 +1,5 @@
 PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
-**SUMMARY S20 SEP 28-OCT 11**
-
-* W1: DisplayObjects w/ actables (drag). Generator and Tracker. URSYS diagram+enable network calls.
-* W2: Sim-driven rendering. X-GEMSTEP-GUI review+integration. URSYS + gsgo refactor. 
-
-**SUMMARY S21 OCT 12 - OCT 25**
-
-* W1: fast compile. source-to-script/ui compilers.
-* W2: researched and integrated arithmetic expressions
-
-**SUMMARY S22 OCT 26 - NOV 08**
-
-* W1: Parse/Evaluation, Source-to GUI and SMC, GUI compiler API
-* W2: Tokenize, GUI for ModelLoop, script-to-blueprint-to-instance
-
-**SUMMARY S23 NOV 09 - NOV 22**
-
-* W1: Save/instance agent blueprint, runtime expression evaluation
-* W2: Start conditions, start a second gemscript tokenizer for blocks
-
-**SUMMARY S24 NOV 23 - DEC 06**
-
-* W1: handle multiline blocks, agentset and event conditions
-* W2: finalize event conditions, delivery, break
-
-**SUMMARY S2025 DEC 07 - DEC 20**
-
-* W1: Port FakeTrack/PTrack into GEMSRV
-* W2: Simplify agent prop, method, features for use by non-Sri peeps
-* W2.1: Prep for Dec 23 demo, review features with Ben
-
 **SUMMARY S2101 JAN 11 - JAN 24**
 
 * W1: Ramp up 2020. Draft of System Overview docs.
@@ -75,9 +44,65 @@ PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 # SPRINT 2108 / APR 19 - MAY 02
 
+## APR 20 TUE - Look at DifferenceCache Aging
 
+* [x] set char controller to 2 FPS (500ms)
+* [x] set tracker to read 4 FPS (250ms)
+* [x] confirm that this breaks
 
+**HOW TO FIX**
 
+I think we need a custom remove function for our inputs diffcache that is based on **aging**. But how to we age stuff?
+
+A lot of today was answering random tech questions.
+
+## APR 21 WED - DiffCache
+
+* Figuring out **when to clear the buffer** is tricky, because different devices that can be grouped together  may have **different update rates**
+* Also, there is a **fixed sim tick** that may be *FASTER* than the input rates.
+* Not to mention that the devices are running on different start times. 
+
+It could be that Sim registers as a device and has its SimRate as one of the shared values, so inputs can adjust themselves to it.
+
+Some trigger possibilities:
+
+* frame aging per entity probably works best
+* remembering last value of getInput() might help too
+
+Let's try the latter first.
+
+How does FrameAging work? Well, I think it menas that everytime we are about to remove an entity, we check its age first. 
+
+* [x] add `ageMax` to DifferenceCache
+* [x] add ageMax check in `diffArray()` step 2
+* [x] confirm it still works in Tracker
+
+After several hours, the solution that works is:
+
+* check that buffer is full during `diffBuffer`
+* if full, then do normal diff
+* if empty, then scan cMap for aged items and remove
+
+There is an issue when **two controllers** are going, and they will merge into one ping-pong...one disappearsa and the other is valid, then vice versa. 
+
+* [ ] the age is getting reset to 0 instead of being incremented
+
+I'm not sure where my logic is messing up, but it's not working as expected. 
+
+If there are TWO cFrames possible:
+
+* what happens only one is available every other frame
+
+  * cframe1 -> diffBuffer
+  * cframe2 -> diffBuffer
+
+  
+
+## APR 22 THU - Buffering Again
+
+It occurred to me last night that maybe **clearing the buffer** is something that can just never be done. We have to use the careful check every time. But no...
+
+It turns out the solution was **make buffer its own class** because it really has nothing to do with the way DifferenceCache works. The new class is **StickyCache**.
 
 ---
 

@@ -80,13 +80,6 @@ class Home extends React.Component {
             <NavItem route="viewer?model=aquatic">viewer</NavItem>
             <NavItem route="charcontrol">WIP character controller</NavItem>
           </ul>
-          <b className={classes.title}>Dev Testing Routes</b>
-          <ul className={classes.list}>
-            <NavItem route="tracker">display client testbed</NavItem>
-            <NavItem route="compiler">script compiler testbed</NavItem>
-            <NavItem route="device">device system testbed</NavItem>
-            <NavItem route="faketrack">faketrack testbed</NavItem>
-          </ul>
         </div>
         <div id="instructions" className={classes.main}>
           <h2>April Demo WIP</h2>
@@ -119,6 +112,25 @@ class Home extends React.Component {
             <li>
               <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
               earlier versions FAKETRACK with the new device interface WIP.
+            </li>
+          </ol>
+          <h4>DevTools</h4>
+          <ol>
+            <li>
+              <a href="/app/dev-tracker">TRACKER</a> - Test Device 'CharControl',
+              PTrack, and Renderer Module entities.
+            </li>
+            <li>
+              <a href="/app/dev-controller">CONTROLLER</a> - For device and
+              control systems testing.
+            </li>
+            <li>
+              <a href="/app/dev-tracker">FAKETRACK</a> - For PTrack protocol
+              testing. Non-devs should use Character Controller instead.
+            </li>
+            <li>
+              <a href="/app/dev-compiler">COMPILER</a> - ScriptText Compiler /
+              Simulator / Renderer Source
             </li>
           </ol>
         </div>
