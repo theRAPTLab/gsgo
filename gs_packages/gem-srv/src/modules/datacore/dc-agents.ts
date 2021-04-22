@@ -114,7 +114,7 @@ export function SaveAgent(agent) {
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, id, name } = instancedef;
+  const { blueprint, id } = instancedef;
   if (!AGENTS.has(blueprint)) {
     console.error(...PR(`blueprint ${blueprint} not found`));
     return;

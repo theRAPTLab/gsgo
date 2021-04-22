@@ -12,6 +12,8 @@ class InstanceDef implements IPoolable {
   initScript?: TScriptUnit[]; // is defined in TInstance, but not used in sim-agents update
   valid: boolean;
   flag: number;
+  x: number;
+  y: number;
 
   constructor(id?: any) {
     this.init(id);
