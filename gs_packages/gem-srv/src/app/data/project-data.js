@@ -73,6 +73,7 @@ class ProjectData {
     this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
       this
     );
+    this.GetInputBPNames = this.GetInputBPNames.bind(this);
     this.BlueprintDelete = this.BlueprintDelete.bind(this);
     this.RemoveInvalidPropsFromInstanceInit = this.RemoveInvalidPropsFromInstanceInit.bind(
       this
