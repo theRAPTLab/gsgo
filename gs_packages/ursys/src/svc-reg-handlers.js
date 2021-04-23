@@ -36,8 +36,6 @@ function PKT_RegisterHandler(pkt) {
   // add uaddr for each message in the list
   // NET_HANDLERS[mesg] contains a Set
   messages.forEach(msg => {
-    if (msg === 'NET:GEM_TRACKERAPP')
-      TERM('*** registering', 'NET:GEM_TRACKERAPP');
     let entry = NET_HANDLERS.get(msg);
     if (!entry) {
       entry = new Set();

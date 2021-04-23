@@ -127,8 +127,6 @@ function m_HandleMessage(msgEvent) {
   // our OWN previously-sent messages that we expected a return value.
   // Call CompleteTransaction() to invoke the function handler
   if (pkt.isResponse()) {
-    if (msg === 'NET:GEM_TRACKERAPP')
-      console.log(`<<< ROUTE: ${msg} completing my transaction ${hash}`);
     if (DBG.handle) console.log(...PR(`${hash} completing transaction ${msg}`));
     pkt.transactionComplete();
     return;
@@ -149,31 +147,20 @@ function m_HandleMessage(msgEvent) {
       if (dbgout) cout_ReceivedStatus(pkt);
       m_urlink.sendMessage(msg, data, { fromNet: true });
       pkt.transactionReturn();
-      if (msg === 'NET:GEM_TRACKERAPP') console.log('!!! ROUTE: msend???');
-
       break;
     case 'msig':
       // network signal to raise
       if (dbgout) cout_ReceivedStatus(pkt);
       m_urlink.raiseMessage(msg, data, { fromNet: true });
       pkt.transactionReturn();
-      if (msg === 'NET:GEM_TRACKERAPP') console.log('!!! ROUTE: msig???');
       break;
     case 'mcall':
       // network call received
       if (dbgout) cout_ReceivedStatus(pkt);
-      if (msg === 'NET:GEM_TRACKERAPP')
-        console.log(`>>> ROUTE: incoming ${msg} call rmode ${pkt.rmode}`);
       m_urlink.callMessage(msg, data, { fromNet: true }).then(result => {
-        console.log(...PR(`transaction ${msg} ${hash} returned`, result));
-        console.log(...PR('original sent data', data));
         if (dbgout) cout_ForwardedStatus(pkt, result);
         // now return the packet
         pkt.setData(result);
-        if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
-          console.log('*** TRANSACTION RETURN ***');
-        if (msg === 'NET:GEM_TRACKERAPP')
-          console.log(`<<< ROUTE: returning ${msg} transaction to caller`);
         pkt.transactionReturn();
       });
       break;

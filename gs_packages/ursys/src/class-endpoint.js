@@ -144,8 +144,6 @@ class MessagerEndpoint {
     options = Object.assign(options, { type: 'mcall' });
     options.srcUID = this.getUID();
     // returns promise that resolves to data object
-    if (mesgName === 'NET:GEM_TRACKERAPP')
-      console.log('*** ENDPOINT MESSAGER ***', options);
     let result = MESSAGER.callMessage(mesgName, inData, options);
     return result;
   }

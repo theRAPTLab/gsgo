@@ -403,9 +403,6 @@ class NetPacket {
    *  @returns {boolean} true if this is a transaction response
    */
   isResponse() {
-    if (this.getMessage() === 'NET:GEM_TRACKERAPP')
-      console.log(`*** packet isResponse: rmode`, this.rmode);
-
     return this.rmode === 'res';
     // more bulletproof check, but unnecessary
     // return this.rmode === 'res' && this.getSourceAddress() === NetPacket.UADDR;
