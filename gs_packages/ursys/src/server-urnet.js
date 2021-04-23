@@ -172,6 +172,10 @@ async function m_RouteMessage(socket, pkt) {
   const thread = `T${count}`;
   const hash = PacketHash(pkt);
   const msg = `'${pkt.getMessage()}'`;
+  if (pkt.getMessage() === 'NET:GEM_TRACKERAPP') {
+    TERM('');
+    TERM('>>> NEW ROUTE: NET:GEM_TRACKERAPP', hash);
+  }
   // TERM('');
   // TERM(`${thread} received ${hash} '${pkt.msg}' on socket ${socket.UADDR}`);
   // (1) Is the incoming message a response to a message that the server sent?
@@ -182,7 +186,8 @@ async function m_RouteMessage(socket, pkt) {
   // recombines and returns to the original packet sender
   if (pkt.isResponse()) {
     const slog = pkt.seqlog.join('>');
-    // TERM(`${thread} ${msg} completing transaction ${hash} ${slog}`);
+    if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
+      TERM(`${thread} ${msg} completing transaction ${hash} ${slog}`);
     pkt.transactionComplete();
     return;
   }
@@ -190,16 +195,20 @@ async function m_RouteMessage(socket, pkt) {
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.
   let promises = ServerHandlerPromises(pkt, thread);
+  if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
+    TERM(`>>> ROUTE: server found ${promises.length} promises`);
 
   // (3) If the server doesn't implement any promises, check if there are
   // any remotes that have registered one.
   if (promises.length === 0) promises = RemoteHandlerPromises(pkt, thread);
+  if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
+    TERM(`>>> ROUTE: remotes found ${promises.length} promises`);
 
   // (3a) If there were NO HANDLERS defined for the incoming message, then
   // this is an error. If the message is a CALL, then report an error back to
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
-    const out = `${hash} can't find ${msg}`;
+    const out = `${hash} can't find ${msg} for ${hash}`;
     const info = 'check (1) remote is offline or (2) using send instead of raise';
     if (DBG.calls) TERM.warn(`${thread} ${out}`);
     // return transaction to resolve callee
@@ -229,11 +238,13 @@ async function m_RouteMessage(socket, pkt) {
      which sends a packet and stores a hashkey that has the
      resolve() in it.
   */
-  // TERM(`${thread} sleeping ${msg} ${hash}`);
+  if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
+    TERM(`${thread} sleeping ${msg} ${hash}`);
   let pktArray = await Promise.all(promises).catch(err => {
     TERM(`${thread} ERROR IN PROMISE`, err);
   });
-  // TERM(`${thread} waking up ${msg} ${hash}`);
+  if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
+    TERM(`${thread} waking up ${msg} ${hash}`);
   /* END MAGICAL ASYNC/AWAIT BLOCK *****************************/
   // (3d) Print some more debugging messages after async
   /* SERVER MESSAGES: runs immediately in this thread
@@ -243,7 +254,7 @@ async function m_RouteMessage(socket, pkt) {
      resolve() function.
   */
 
-  if (DBG.xact || DBG.calls) {
+  if (DBG.xact) {
     if (notServer) log_PktTransaction(pkt, 'resolved');
     log_PktDirection(pkt, 'rtrn', promises);
   }
@@ -257,6 +268,7 @@ async function m_RouteMessage(socket, pkt) {
      multiple results, an array of results are returned. Otherwise, a plain
      object is returned.
   */
+
   let data;
   if (pktArray.length === 0) data = {};
   if (pktArray.length === 1) data = pktArray[0];
@@ -271,6 +283,8 @@ async function m_RouteMessage(socket, pkt) {
   const json = JSON.stringify(data);
   // TERM(`${thread} transaction ${hash} return payload:`);
   // TERM(json);
+  if (pkt.getMessage() === 'NET:GEM_TRACKERAPP')
+    TERM('<<< ROUTE: return transaction', pkt.getInfo());
   pkt.transactionReturn(socket); // original requesting packet
 }
 

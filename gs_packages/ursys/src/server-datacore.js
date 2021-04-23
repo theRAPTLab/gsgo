@@ -182,6 +182,8 @@ function ServerHandlerPromises(pkt) {
 function RemoteHandlerPromises(pkt, ident) {
   let origin = pkt.getSourceAddress();
   let mesgName = pkt.getMessage();
+  if (mesgName === 'NET:GEM_TRACKERAPP')
+    TERM('*** datacore: looking for NET:GEM_TRACKERAPP', pkt.getSourceAddress());
   let type = pkt.getType();
   let promises = [];
 
@@ -190,40 +192,75 @@ function RemoteHandlerPromises(pkt, ident) {
     TERM(`err  BAD REQUEST of SERVER SERVICE on REMOTE ${mesgName}`);
     return promises;
   }
+  if (mesgName === 'NET:GEM_TRACKERAPP')
+    TERM(
+      '*** datacore: checking NET_HANDLERS',
+      NET_HANDLERS.size,
+      pkt.getSourceAddress()
+    );
   // if the message doesn't have a handler, return empty list of promises
   if (!NET_HANDLERS.has(mesgName)) {
     // TERM(`err  '${mesgName}' is not registered`);
+    if (mesgName === 'NET:GEM_TRACKERAPP')
+      TERM(
+        '*** datacore error: NET:GEM_TRACKERAPP not in NET_HANDLERS, size',
+        NET_HANDLERS.size,
+        pkt.getSourceAddress()
+      );
     return promises;
   }
 
   let remotes = NET_HANDLERS.get(mesgName);
+
+  if (mesgName === 'NET:GEM_TRACKERAPP') {
+    if (remotes.size === 0)
+      TERM(
+        '*** datacore: found NET:GEM_TRACKERAPP handlers, but they are empty',
+        pkt.getSourceAddress()
+      );
+    else
+      TERM(
+        '*** datacore: found NET:GEM_TRACKERAPP',
+        NET_HANDLERS.size,
+        pkt.getSourceAddress(),
+        'remotes=',
+        remotes.size
+      );
+  }
 
   const dontReflect = type !== 'msig';
   remotes.forEach(remote => {
     if (ident === undefined) ident = '';
     const remoteIsSender = origin === remote;
     if (remoteIsSender && dontReflect) {
-      // const hash = PacketHash(pkt);
-      // const msg = pkt.msg;
-      // const seq = pkt.seqlog.join('>');
-      // TERM(`${ident} skip packet ${hash} ${msg} to ${remote}`);
-      // TERM(`${ident} skip packet ${hash} ${seq}`);
-      // TERM(`${ident} ${JSON.stringify(pkt.data)}`);
+      const hash = PacketHash(pkt);
+      const msg = pkt.msg;
+      const seq = pkt.seqlog.join('>');
+      if (mesgName === 'NET:GEM_TRACKERAPP') {
+        TERM(`${ident} skip packet ${hash} ${msg} to ${remote}`);
+        TERM(`${ident} skip packet ${hash} ${seq}`);
+        TERM(`${ident} ${JSON.stringify(pkt.data)}`);
+      }
     } else {
       let r_sock = SocketLookup(remote);
       if (r_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${remote}`);
       let newpkt = new NetPacket(pkt); // clone packet data to new packet
       newpkt.makeNewId(); // make new packet unique
-      // newpkt.copySourceAddress(pkt); // clone original source address
+      // newpkt.copySourceAddress(pkt); // clone original source address (leave it as SRV01)
       promises.push(newpkt.transactionStart(r_sock));
       const fwdHash = PacketHash(newpkt);
       const fwdMsg = newpkt.msg;
       const fwdSeq = newpkt.seqlog.join('>');
-      // TERM(`${ident} fwd  packet ${fwdHash} '${fwdMsg}' to ${remote}`);
-      // TERM(`${ident} fwd  packet ${fwdHash} ${fwdSeq}`);
-      // TERM(`${ident} ${JSON.stringify(pkt.data)}`);
+      if (mesgName === 'NET:GEM_TRACKERAPP') {
+        TERM(`${ident} fwd  packet ${fwdHash} '${fwdMsg}' to ${remote}`);
+        TERM(`${ident}      data ${JSON.stringify(pkt.data)}`);
+        TERM(`${ident}      seqlog ${fwdSeq}`);
+      }
     }
   });
+  if (mesgName === 'NET:GEM_TRACKERAPP') {
+    TERM(`*** datacore: returning ${promises.length} promises`);
+  }
   return promises;
 }
 

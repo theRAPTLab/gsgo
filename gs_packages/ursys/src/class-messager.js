@@ -232,7 +232,12 @@ class Messager {
     let { srcUID, type } = options;
     let { fromNet = false } = options;
     const { channel, message, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
-    // console.log(mesgName, `channel:${channel} local:${toLocal} toNet:${toNet}`);
+    if (mesgName === 'NET:GEM_TRACKERAPP')
+      console.log(
+        'CALL MESSSAGE ***',
+        mesgName,
+        `channel:${channel} local:${toLocal} toNet:${toNet} fromNet:${fromNet}`
+      );
     const handlers = this.handlerMap.get(mesgName);
     let promises = [];
     /// handle a call from the network
@@ -262,6 +267,7 @@ class Messager {
           // Create a promise. if handlerFunc returns a promise, it follows
           let p = m_MakeResolverFunction(handlerFunc, inData);
           promises.push(p);
+          if (mesgName === 'NET:GEM_TRACKERAPP') console.log(`MAKE RESOLVER ***`);
         }); // end foreach
       } else {
         // no handlers
@@ -270,9 +276,10 @@ class Messager {
     } // to local
 
     /// toNetwork (initiated from app)
-    if (toNet) {
+    if (toNet && !fromNet) {
       if (!isNet) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';
+      if (mesgName === 'NET:GEM_TRACKERAPP') console.log(`TO NET NEW PACKET ***`);
       let pkt = new NetPacket(mesgName, inData, type);
       let p = pkt.transactionStart();
       promises.push(p);
@@ -281,6 +288,8 @@ class Messager {
     /// do the work
     let resArray = await Promise.all(promises);
     let resObj = Object.assign({}, ...resArray);
+    if (mesgName === 'NET:GEM_TRACKERAPP') console.log(`*** RETURNING`, resObj);
+
     return resObj;
   }
 
