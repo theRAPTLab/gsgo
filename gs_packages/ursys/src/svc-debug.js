@@ -30,7 +30,7 @@ function PKT_ServiceList(pkt) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function PKT_Reflect(pkt) {
-  const data = pkt.Data();
+  const data = pkt.getData();
   data.serverSays = 'REFLECTING';
   data.stack = data.stack || [];
   data.stack.push(CFG_SVR_UADDR); // usually hardcoded to SVR_01

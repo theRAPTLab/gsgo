@@ -61,13 +61,6 @@ UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
   }
 });
 
-/// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('NET:HELLO', data => {
-  console.log('NET:HELLO processing', data);
-  return { str: 'tracker got you' };
-});
-
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDeviceArray(pattern = {}) {
@@ -125,7 +118,7 @@ class Tracker extends React.Component {
           const objs = getInputs().slice();
           objs.sort((a, b) => {
             if (a.id < b.id) return -1;
-            else if (a.id > b.id) return 1;
+            if (a.id > b.id) return 1;
             return 0;
           });
           // update the device entities list on the left side
@@ -226,6 +219,13 @@ class Tracker extends React.Component {
     );
   }
 }
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HandleMessage('NET:GEM_TRACKERAPP', data => {
+  console.log('got data', data);
+  return data || { nodata: true };
+});
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -181,7 +181,7 @@ async function m_RouteMessage(socket, pkt) {
   // of the original packet and the forwarded duplicate packet(s) that the server
   // recombines and returns to the original packet sender
   if (pkt.isResponse()) {
-    const slog = pkt.seqlog.join('>');
+    // const slog = pkt.seqlog.join('>');
     // TERM(`${thread} ${msg} completing transaction ${hash} ${slog}`);
     pkt.transactionComplete();
     return;
@@ -190,16 +190,14 @@ async function m_RouteMessage(socket, pkt) {
   // Does the server implement any of the messages? Let's add that to our
   // list of promises. It will return empty array if there are none.
   let promises = ServerHandlerPromises(pkt, thread);
-
   // (3) If the server doesn't implement any promises, check if there are
   // any remotes that have registered one.
   if (promises.length === 0) promises = RemoteHandlerPromises(pkt, thread);
-
   // (3a) If there were NO HANDLERS defined for the incoming message, then
   // this is an error. If the message is a CALL, then report an error back to
   // the originator; other message types don't expect a return value.
   if (promises.length === 0) {
-    const out = `${hash} can't find ${msg}`;
+    const out = `${hash} can't find ${msg} for ${hash}`;
     const info = 'check (1) remote is offline or (2) using send instead of raise';
     if (DBG.calls) TERM.warn(`${thread} ${out}`);
     // return transaction to resolve callee
@@ -243,7 +241,7 @@ async function m_RouteMessage(socket, pkt) {
      resolve() function.
   */
 
-  if (DBG.xact || DBG.calls) {
+  if (DBG.xact) {
     if (notServer) log_PktTransaction(pkt, 'resolved');
     log_PktDirection(pkt, 'rtrn', promises);
   }
@@ -257,6 +255,7 @@ async function m_RouteMessage(socket, pkt) {
      multiple results, an array of results are returned. Otherwise, a plain
      object is returned.
   */
+
   let data;
   if (pktArray.length === 0) data = {};
   if (pktArray.length === 1) data = pktArray[0];

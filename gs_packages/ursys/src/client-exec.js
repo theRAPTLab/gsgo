@@ -80,7 +80,7 @@ const PHASES = {
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let PHASE_MACHINE = new PhaseMachine('UR', PHASES, '');
-const { executePhase, execute } = PHASE_MACHINE;
+const { executePhase, execute, consolePhaseInfo } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemAppConfig */
@@ -124,6 +124,7 @@ async function SystemAppConfig(options = {}) {
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
   //
+  console.log(...NPR('APP: EXECUTING [READY] PHASE'));
   await executePhase('PHASE_READY');
 
   //
@@ -195,6 +196,12 @@ async function SystemNetReboot() {
   //
   if (DBG) console.groupEnd();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: console print phase info for phase machine
+ */
+function ConsolePhaseInfo(prompt) {
+  consolePhaseInfo(prompt);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -205,5 +212,6 @@ module.exports = {
   SystemAppUpdate,
   SystemAppRestage,
   SystemAppUnload,
-  SystemNetReboot
+  SystemNetReboot,
+  ConsolePhaseInfo
 };

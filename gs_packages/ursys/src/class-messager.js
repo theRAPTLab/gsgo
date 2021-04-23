@@ -232,7 +232,6 @@ class Messager {
     let { srcUID, type } = options;
     let { fromNet = false } = options;
     const { channel, message, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
-    // console.log(mesgName, `channel:${channel} local:${toLocal} toNet:${toNet}`);
     const handlers = this.handlerMap.get(mesgName);
     let promises = [];
     /// handle a call from the network
@@ -270,7 +269,7 @@ class Messager {
     } // to local
 
     /// toNetwork (initiated from app)
-    if (toNet) {
+    if (toNet && !fromNet) {
       if (!isNet) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';
       let pkt = new NetPacket(mesgName, inData, type);
@@ -278,8 +277,9 @@ class Messager {
       promises.push(p);
     } // end toNetwork
 
-    /// do the work
+    /// do the work calling multiple handlers
     let resArray = await Promise.all(promises);
+    // converts the array into an object that will be returned, with numbered properties
     let resObj = Object.assign({}, ...resArray);
     return resObj;
   }
