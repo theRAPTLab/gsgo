@@ -121,14 +121,6 @@ export async function InputInit(bpname: string) {
   // console.error('input_groups', INPUT_GROUPS);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function InputsUpdate() {
-  const blueprintNames = Array.from(INPUT_GROUPS.keys());
-  INPUTDEFS.length = 0; // Clear INPUTDEFS with each update
-  blueprintNames.forEach(bpname => {
-    InputUpdate(INPUT_GROUPS.get(bpname), bpname);
-  });
-  INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
-}
 function InputUpdate(devAPI, bpname) {
   // STEP 2 is to grab the getController('name') method which we
   // can call any time we want without mucking about with device
@@ -149,6 +141,14 @@ function InputUpdate(devAPI, bpname) {
   if (DBG) console.log('cobs', overriden_cobjs);
   COBJ_TO_INPUTDEF.syncFromArray(overriden_cobjs);
   COBJ_TO_INPUTDEF.mapObjects();
+}
+export function InputsUpdate() {
+  const blueprintNames = Array.from(INPUT_GROUPS.keys());
+  INPUTDEFS.length = 0; // Clear INPUTDEFS with each update
+  blueprintNames.forEach(bpname => {
+    InputUpdate(INPUT_GROUPS.get(bpname), bpname);
+  });
+  INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetInputGroups(): any {
