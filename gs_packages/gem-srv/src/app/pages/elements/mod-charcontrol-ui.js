@@ -243,14 +243,14 @@ function HandleStateChange(name, value) {
           DoBurstTest(value);
           break;
         case 'num_entities':
-          Initialize(m_CHARVIEW);
+          Initialize(m_CHARVIEW, { sampleRate: SENDING_FPS });
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
           break;
         case 'tag':
           MarkerFramer = undefined; // clear it so we can create a new one with different tags
-          Initialize(m_CHARVIEW);
+          Initialize(m_CHARVIEW, { sampleRate: SENDING_FPS });
           break;
       }
     }
