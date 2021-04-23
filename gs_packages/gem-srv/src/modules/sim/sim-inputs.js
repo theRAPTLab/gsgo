@@ -5,8 +5,6 @@
 // instead of this, the entities should be in DATACORE
 
 import UR from '@gemstep/ursys/client';
-import SyncMap from '../../lib/class-syncmap';
-import InputDef from '../../lib/class-input-def';
 import {
   GetInputBPnames,
   InputInit,
@@ -14,6 +12,8 @@ import {
   GetInputDefs
 } from 'modules/datacore/dc-inputs';
 import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-agents';
+import SyncMap from '../../lib/class-syncmap';
+import InputDef from '../../lib/class-input-def';
 import * as TRANSPILER from './script/transpiler';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////

@@ -26,7 +26,7 @@ import PanelSimViewer from './components/PanelSimViewer';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
 const MATRIX_INPUT_WIDTH = 50;
-const SENDING_FSP = 5;
+const SENDING_FPS = 5;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,9 +65,9 @@ class CharController extends React.Component {
       rate: 0
     };
     this.requestBPNames = this.requestBPNames.bind(this);
-    this.handleSetInputBPnames = this.handleSetInputBPnames.bind(this);
+    this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPnames);
+    UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
 
     UR.HookPhase('UR/APP_RUN', this.requestBPNames);
   }
@@ -80,7 +80,7 @@ class CharController extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPnames);
+    UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
   }
 
   requestBPNames() {
@@ -89,7 +89,7 @@ class CharController extends React.Component {
     UR.RaiseMessage('NET:REQUEST_INPUT_BPNAMES');
   }
 
-  handleSetInputBPnames(data) {
+  handleSetInputBPNames(data) {
     const bpnames = data.bpnames;
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
@@ -98,7 +98,7 @@ class CharController extends React.Component {
         tags,
         tag: tags.length > 0 ? tags[0].id : '' // default to first tag
       },
-      () => Initialize(this, { sampleRate: SENDING_FSP })
+      () => Initialize(this, { sampleRate: SENDING_FPS })
     );
   }
 
@@ -115,7 +115,7 @@ class CharController extends React.Component {
     const { tag, tags } = this.state;
     const controlNames = [{ 'id': 'markers', 'label': 'markers' }];
     const { classes } = this.props;
-    const selectedTag = tag ? tag : tags.length > 0 ? tags[0] : '';
+    const selectedTag = tag || (tags.length > 0 && tags[0]) || '';
     //
     return (
       <div
@@ -331,7 +331,7 @@ class CharController extends React.Component {
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 2' }}
-        ></div>
+        />
       </div>
     );
   }

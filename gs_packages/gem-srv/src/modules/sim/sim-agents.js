@@ -5,8 +5,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import DisplayObject from '../../lib/class-display-object';
 import InstanceDef from 'lib/class-instance-def';
+import {
+  GetBlueprint,
+  GetAllBlueprints,
+  DeleteBlueprint
+} from 'modules/datacore/dc-script-engine';
 import {
   GetAllAgents,
   DeleteAgent,
@@ -24,11 +28,7 @@ import {
   GetInstance,
   GetInstancesType
 } from '../datacore/dc-agents';
-import {
-  GetBlueprint,
-  GetAllBlueprints,
-  DeleteBlueprint
-} from 'modules/datacore/dc-script-engine';
+import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
 import * as TRANSPILER from './script/transpiler';

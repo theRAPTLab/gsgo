@@ -496,7 +496,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  */
 function MakeAgent(instanceDef: TInstance) {
   const { blueprint, name } = instanceDef;
-  const agent = new GAgent(name, instanceDef.id);
+  const agent = new GAgent(name, String(instanceDef.id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof blueprint === 'string') {

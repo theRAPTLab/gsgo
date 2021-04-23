@@ -15,11 +15,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as INPUT from '../../modules/input/api-input';
+import * as TRANSPILER from 'script/transpiler';
+import * as SIM from 'modules/sim/api-sim';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import {
-  GetAllInstances,
   DeleteInstance,
   GetAllAgents,
   GetAgentById,
@@ -27,8 +27,7 @@ import {
   GetInstancesType
 } from 'modules/datacore/dc-agents';
 import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
-import * as SIM from 'modules/sim/api-sim';
-import * as TRANSPILER from 'script/transpiler';
+import * as INPUT from '../../modules/input/api-input';
 
 // HACK DATA LOADING
 import { MODEL as SpringPilot } from './2021SpringPilot';

@@ -28,6 +28,22 @@ export const INPUTDEFS = []; //
 const PR = UR.PrefixUtil('DCINPT');
 const DBG = false;
 
+/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Transforms unit values to project values
+ * @param numberString CharControl output is -0.5 to 0.5
+ * @returns
+ */
+function transformX(numberString: string) {
+  const n = Number(numberString);
+  return n * STAGE_WIDTH;
+}
+function transformY(numberString: string) {
+  const n = Number(numberString);
+  return n * STAGE_HEIGHT;
+}
+
 /// DATA UPDATE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Control Object Sync to InputDef
@@ -37,14 +53,14 @@ const COBJ_TO_INPUTDEF = new SyncMap({
   name: 'CObjToAgent'
 });
 COBJ_TO_INPUTDEF.setMapFunctions({
-  onAdd: (cobj, inputDef: InputDef) => {
+  onAdd: (cobj: any, inputDef: InputDef) => {
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
     // HACK Blueprints into cobj
     inputDef.bpname = cobj.bpname;
     inputDef.name = cobj.name;
   },
-  onUpdate: (cobj, inputDef: InputDef) => {
+  onUpdate: (cobj: any, inputDef: InputDef) => {
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
     inputDef.bpname = cobj.bpname;
@@ -140,20 +156,4 @@ export function GetInputGroups(): any {
 }
 export function GetInputDefs(): object[] {
   return INPUTDEFS;
-}
-
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Transforms unit values to project values
- * @param numberString CharControl output is -0.5 to 0.5
- * @returns
- */
-function transformX(numberString: string) {
-  const n = Number(numberString);
-  return n * STAGE_WIDTH;
-}
-function transformY(numberString: string) {
-  const n = Number(numberString);
-  return n * STAGE_HEIGHT;
 }
