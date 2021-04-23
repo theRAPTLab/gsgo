@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   PanelScript - Script Editing and Highlighting
@@ -14,10 +15,7 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
-
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as DATACORE from 'modules/datacore';
+import { GetAllKeywords } from 'modules/datacore';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
 import * as Prism from '../../../lib/vendor/prism_extended';
@@ -147,7 +145,7 @@ when Bee sometest Bee [[
 `;
 
 /// PRISM GEMSCRIPT DEFINITION ////////////////////////////////////////////////
-const keywords = DATACORE.GetAllKeywords();
+const keywords = GetAllKeywords();
 const keywords_regex = new RegExp(
   '\\b(' + keywords.reduce((acc, cur) => `${acc}|${cur}`) + ')\\b'
 );
