@@ -132,7 +132,7 @@ function SaveDeviceSub(deviceSpec) {
         const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
         if (control) return control.getBufferValues();
         // no control, emit error
-        console.warn(`control '${cName}' doesn't exists`);
+        if (DBG.controller) console.warn(`control '${cName}' doesn't exist`);
         return [];
       },
       getChanges: () => {
