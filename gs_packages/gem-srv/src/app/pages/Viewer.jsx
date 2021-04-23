@@ -11,11 +11,6 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
-
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelBlueprints from './components/PanelBlueprints';
@@ -92,7 +87,7 @@ class Viewer extends React.Component {
   }
 
   RequestModel() {
-    if (DBG) console.log(...PR('LoadModel...NET:REQUEST_MODEL'));
+    if (DBG) console.log(...PR('RequestModel...'));
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName: 'GetCurrentModelData'
     }).then(rdata => {
