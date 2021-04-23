@@ -13,7 +13,7 @@ class PanelSelect extends React.Component {
         // Dummy Data
         { id: 'missioncontrol', label: 'Main' },
         { id: 'viewer', label: 'Viewer' },
-        { id: 'faketrack', label: 'Fake Track' }
+        { id: 'charcontrol', label: 'Character Controller' }
       ]
     };
     this.onClick = this.onClick.bind(this);
