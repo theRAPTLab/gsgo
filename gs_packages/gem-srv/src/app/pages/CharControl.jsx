@@ -152,7 +152,7 @@ class CharController extends React.Component {
                 </option>
               ))}
             </select>
-            <label className="control-label">&nbsp;Blueprint</label>
+            <label className="control-label">&nbsp;Character Type</label>
           </div>
           <div style={{ fontSize: '16px', lineHeight: '16px' }}>
             Controller CC{UR.GetUAddressNumber()}
