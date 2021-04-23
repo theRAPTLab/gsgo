@@ -86,11 +86,13 @@ class CharController extends React.Component {
   requestBPNames() {
     // Request after APP_RUN (URSYS Is loaded) otherwise the response
     // will come back before we're ready
-    UR.RaiseMessage('NET:REQUEST_INPUT_BPNAMES');
+    UR.CallMessage('NET:REQ_PROJDATA', { fnName: 'GetInputBPNames' }).then(
+      this.handleSetInputBPNames
+    );
   }
 
   handleSetInputBPNames(data) {
-    const bpnames = data.bpnames;
+    const bpnames = data.result;
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
     this.setState(

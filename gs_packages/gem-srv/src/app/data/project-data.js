@@ -42,6 +42,15 @@ import { MODEL as BeesModel } from './bees';
 const PR = UR.PrefixUtil('ProjectData');
 const DBG = true;
 
+/// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
+const API_PROJDATA = [
+  'GetModel',
+  'GetCurrentModel',
+  'GetCurrentModelData',
+  'GetBoundary',
+  'GetInputBPNames'
+];
+
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -63,9 +72,11 @@ class ProjectData {
     // API CALLS //////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
     this.GetModels = this.GetModels.bind(this);
+    this.SetCurrentModelId = this.SetCurrentModelId.bind(this);
     this.GetModel = this.GetModel.bind(this);
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
+    this.GetCurrentModelData = this.GetCurrentModelData.bind(this);
     this.GetBounds = this.GetBounds.bind(this);
     this.GetBoundary = this.GetBoundary.bind(this);
     this.Wraps = this.Wraps.bind(this);
@@ -81,19 +92,13 @@ class ProjectData {
     this.SendBoundary = this.SendBoundary.bind(this);
     // URSYS CALLS ////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
+    this.HandleRequestProjData = this.HandleRequestProjData.bind(this);
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
     this.RaiseModelsUpdate = this.RaiseModelsUpdate.bind(this);
     this.RaiseModelUpdate = this.RaiseModelUpdate.bind(this);
-    this.HandleModelRequest = this.HandleModelRequest.bind(this);
-    this.HandleCurrentModelRequest = this.HandleCurrentModelRequest.bind(this);
+    UR.HandleMessage('NET:REQ_PROJDATA', this.HandleRequestProjData);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
-    UR.HandleMessage('*:REQUEST_MODELS', this.RaiseModelsUpdate);
-    UR.HandleMessage('NET:REQUEST_MODEL', this.HandleModelRequest);
-    UR.HandleMessage('NET:REQUEST_CURRENT_MODEL', this.HandleCurrentModelRequest);
-    UR.HandleMessage('NET:REQUEST_BOUNDARY', this.SendBoundary);
     // INPUT UTILS ------------------------------------------------------------
-    this.HandleInputBPnamesRequest = this.HandleInputBPnamesRequest.bind(this);
-    UR.HandleMessage('NET:REQUEST_INPUT_BPNAMES', this.HandleInputBPnamesRequest);
     // BLUEPRINT UTILS --------------------------------------------------------
     this.HandleBlueprintDelete = this.HandleBlueprintDelete.bind(this);
     UR.HandleMessage('NET:BLUEPRINT_DELETE', this.HandleBlueprintDelete);
@@ -142,7 +147,7 @@ class ProjectData {
 
   /// INITIALIZATION ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  GetSimDataModel(modelId) {
+  GetSimDataModel(modelId = this.currentModelId) {
     let model;
     switch (modelId) {
       case 'pilot':
@@ -181,10 +186,6 @@ class ProjectData {
       { id: 'bees', label: 'Bees' }
     ];
   }
-  /**
-   * API Call
-   * @param {string} modelId
-   */
   SetCurrentModelId(modelId) {
     this.currentModelId = modelId;
   }
@@ -196,6 +197,13 @@ class ProjectData {
   }
   GetCurrentModelId() {
     return this.currentModelId;
+  }
+  // Used for URSYS requests for full project data, e.g. Viewer
+  GetCurrentModelData() {
+    return {
+      modelId: this.GetCurrentModelId(),
+      model: this.GetCurrentModel()
+    };
   }
   GetBounds(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
@@ -346,6 +354,28 @@ class ProjectData {
 
   /// URSYS MODEL DATA REQUESTS//////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  HandleRequestProjData(data) {
+    console.error('NET:REQ_PROJDATA got request', data);
+    if (!data.fnName) {
+      console.error(...PR('NET:REQ_PROJDATA got bad function name', data.fnName));
+      return { result: undefined };
+    }
+    if (!API_PROJDATA.includes(data.fnName)) {
+      console.error(
+        ...PR(`NET:REQ_PROJDATA Calling ${data.fnName} is not allowed!`)
+      );
+      return { result: undefined };
+    }
+    const fn = this[data.fnName]; // convert into a function
+    if (typeof fn === 'function') {
+      let res;
+      if (data.parms && Array.isArray(data.parms)) res = fn(...data.parms);
+      else res = fn();
+      console.log('...result', res);
+      return { result: res };
+    }
+    return { result: undefined };
+  }
 
   /**
    * Update the script for a single blueprint (not all blueprints in the model)
@@ -421,28 +451,14 @@ class ProjectData {
     const models = this.GetModels();
     UR.RaiseMessage('LOCAL:UPDATE_MODELS', { models });
   }
-
-  /**
-   *
-   * @param {Object} data -- { modelId: <string> }
-   */
-  HandleModelRequest(data) {
-    this.RaiseModelUpdate(data.modelId);
-  }
-  HandleCurrentModelRequest() {
-    this.RaiseModelUpdate();
-  }
   RaiseModelUpdate(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
-    UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
+    // Use SendMessage so that message is not reflected, otherwise SimPlaces will get called again.
+    UR.SendMessage('NET:UPDATE_MODEL', { modelId, model });
   }
 
   /// INPUT UTILS /////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  HandleInputBPnamesRequest() {
-    const inputBPnames = this.GetInputBPNames();
-    UR.RaiseMessage('NET:SET_INPUT_BPNAMES', { bpnames: inputBPnames });
-  }
 
   /// BLUEPRINT UTILS ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

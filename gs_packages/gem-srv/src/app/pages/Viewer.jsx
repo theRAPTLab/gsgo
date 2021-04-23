@@ -19,7 +19,6 @@ import * as DATACORE from 'modules/datacore';
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelBlueprints from './components/PanelBlueprints';
-import PanelInspector from './components/PanelInspector';
 import PanelInstances from './components/PanelInstances';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
@@ -51,26 +50,29 @@ class Viewer extends React.Component {
       model: {},
       instances: []
     };
-    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
+    this.RequestModel = this.RequestModel.bind(this);
+    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
+    this.UpdateModelData = this.UpdateModelData.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
 
     // Instance Interaction Handlers
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
 
     // System Hooks
-    UR.HookPhase('SIM/STAGED', () => {
+    UR.HookPhase('UR/APP_RUN', () => {
       // **************************************************
       // REVIEW
       // This assumes that MissionControl is already running.
       // This is not always reliable, especially during code
       // refresh.  This call might go out before MissionControl.
       // **************************************************
-      UR.RaiseMessage('NET:REQUEST_CURRENT_MODEL');
+      if (DBG) console.log('requesting current model');
+      this.RequestModel();
     });
   }
 
@@ -84,22 +86,37 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+  }
+
+  RequestModel() {
+    if (DBG) console.log(...PR('LoadModel...NET:REQUEST_MODEL'));
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetCurrentModelData'
+    }).then(rdata => {
+      this.UpdateModelData(rdata.result.modelId, rdata.result.model);
+    });
+  }
+
+  HandleModelUpdate(data) {
+    if (DBG) console.log('HandleModelUpdate', data);
+    this.UpdateModelData(data.model, data.modelId);
+  }
+
+  UpdateModelData(modelId, model) {
+    if (DBG) console.log('UpdateModelData', modelId, model);
+    this.setState({
+      modelId,
+      model,
+      instances: model.instances
+    });
+    document.title = `VIEWER ${modelId}`;
   }
 
   HandleSimInstanceHoverOver(data) {
-    console.error('hover!');
-  }
-
-  HandleSimDataUpdate(data) {
-    console.error('onsimupdate');
-    this.setState({
-      modelId: data.modelId,
-      model: data.model,
-      instances: data.instances
-    });
-    document.title = `VIEWER ${data.modelId}`;
+    if (DBG) console.log('hover!');
   }
 
   HandleInspectorUpdate(data) {
@@ -116,7 +133,7 @@ class Viewer extends React.Component {
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
+    if (DBG) console.log('click', id); // e, e.target, e.target.value);
     this.setState({
       panelConfiguration: id
     });

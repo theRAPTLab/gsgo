@@ -60,7 +60,6 @@ class PanelSimViewer extends React.Component {
     this.requestBoundary = this.requestBoundary.bind(this);
     this.handleSetBoundary = this.handleSetBoundary.bind(this);
     UR.HookPhase('UR/APP_RUN', this.requestBoundary);
-    UR.HandleMessage('NET:SET_BOUNDARY', this.handleSetBoundary);
   }
 
   componentDidMount() {
@@ -70,16 +69,16 @@ class PanelSimViewer extends React.Component {
     RENDERER.HookResize(window);
   }
 
-  componentWillUnmount() {
-    UR.UnhandleMessage('NET:SET_BOUNDARY', this.handleSetBoundary);
-  }
+  componentWillUnmount() {}
 
   requestBoundary() {
-    UR.RaiseMessage('NET:REQUEST_BOUNDARY');
+    UR.CallMessage('NET:REQ_PROJDATA', { fnName: 'GetBoundary' }).then(
+      this.handleSetBoundary
+    );
   }
 
   handleSetBoundary(data) {
-    RENDERER.SetBoundary(data.width, data.height);
+    RENDERER.SetBoundary(data.result.width, data.result.height);
   }
 
   render() {
