@@ -141,7 +141,7 @@ const UR = {
   SendMessage,
   RaiseMessage,
   CallMessage,
-  // FORWARDED GENERIC PHASE MACHINE
+  // FORWARDED GENERIC PHASE MACHINEc
   HookPhase: PhaseMachine.Hook,
   // SYSTEM STARTUP
   SystemStart,
@@ -162,6 +162,7 @@ const UR = {
   SystemAppRestage: EXEC.SystemAppRestage,
   SystemNetReboot: EXEC.SystemNetReboot,
   SystemAppUnload: EXEC.SystemAppUnload,
+  ConsolePhaseInfo: EXEC.ConsolePhaseInfo,
   // FORWARDED DEVICE API
   NewDevice: DEVICES.NewDevice,
   RegisterDevice: DEVICES.RegisterDevice,

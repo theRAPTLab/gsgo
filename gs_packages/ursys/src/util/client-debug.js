@@ -84,9 +84,15 @@ function addConsoleTools(UR) {
     },
 
     // server service test: request service data
-    ur_services: () => {
+    ur_services: key => {
       CallMessage('NET:SRV_SERVICE_LIST').then(data => {
-        console.log('NET:SRV_SERVICE_LIST returned', data);
+        const validKey = typeof key === 'string' && key.length > 0;
+        let keyOut = '';
+        if (validKey) {
+          data = data[key] || `invalid key '${key}'`;
+          keyOut += `prop[${key}] =`;
+        }
+        console.log(`NET:SRV_SERVICE_LIST returned ${keyOut}`, data);
       });
       return 'services() is calling NET:SRV_SERVICE_LIST...';
     }
@@ -135,6 +141,8 @@ function addConsoleToolHandlers(UR) {
     console.log('unknown testData condition, so no special handling');
     return undefined;
   }
+
+  UR.ConsolePhaseInfo('addConsoleToolHandlers');
 
   UR.HandleMessage('NET:HELLO', data => {
     console.log('NET:HELLO handler received', data);

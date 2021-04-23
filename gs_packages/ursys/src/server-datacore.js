@@ -203,9 +203,9 @@ function RemoteHandlerPromises(pkt, ident) {
     if (ident === undefined) ident = '';
     const remoteIsSender = origin === remote;
     if (remoteIsSender && dontReflect) {
-      // const hash = PacketHash(pkt);
-      // const msg = pkt.msg;
-      // const seq = pkt.seqlog.join('>');
+      const hash = PacketHash(pkt);
+      const msg = pkt.msg;
+      const seq = pkt.seqlog.join('>');
       // TERM(`${ident} skip packet ${hash} ${msg} to ${remote}`);
       // TERM(`${ident} skip packet ${hash} ${seq}`);
       // TERM(`${ident} ${JSON.stringify(pkt.data)}`);
@@ -214,14 +214,14 @@ function RemoteHandlerPromises(pkt, ident) {
       if (r_sock === undefined) throw Error(`${ERR_INVALID_DEST} ${remote}`);
       let newpkt = new NetPacket(pkt); // clone packet data to new packet
       newpkt.makeNewId(); // make new packet unique
-      // newpkt.copySourceAddress(pkt); // clone original source address
+      // newpkt.copySourceAddress(pkt); // clone original source address (leave it as SRV01)
       promises.push(newpkt.transactionStart(r_sock));
-      const fwdHash = PacketHash(newpkt);
-      const fwdMsg = newpkt.msg;
-      const fwdSeq = newpkt.seqlog.join('>');
+      // const fwdHash = PacketHash(newpkt);
+      // const fwdMsg = newpkt.msg;
+      // const fwdSeq = newpkt.seqlog.join('>');
       // TERM(`${ident} fwd  packet ${fwdHash} '${fwdMsg}' to ${remote}`);
-      // TERM(`${ident} fwd  packet ${fwdHash} ${fwdSeq}`);
-      // TERM(`${ident} ${JSON.stringify(pkt.data)}`);
+      // TERM(`${ident}      data ${JSON.stringify(pkt.data)}`);
+      // TERM(`${ident}      seqlog ${fwdSeq}`);
     }
   });
   return promises;
