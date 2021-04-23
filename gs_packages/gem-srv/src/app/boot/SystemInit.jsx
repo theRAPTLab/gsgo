@@ -90,7 +90,7 @@ function Init() {
 }
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_READY', () => {
+UR.HookPhase('UR/NET_READY', () => {
   /// console debugger message listeners
   UR.addConsoleToolHandlers();
 });

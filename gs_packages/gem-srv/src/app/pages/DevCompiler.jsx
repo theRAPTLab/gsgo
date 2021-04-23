@@ -11,14 +11,14 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim';
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
-import * as RENDERER from 'modules/render/api-render';
-import * as TRANSPILER from 'script/transpiler';
-import * as Prism from 'lib/vendor/prism';
-import { CodeJar } from 'lib/vendor/codejar';
-import 'lib/vendor/prism.css';
+import * as SIM from '../../modules/sim/api-sim';
+import * as GLOBAL from '../../modules/datacore/dc-globals';
+import * as DATACORE from '../../modules/datacore';
+import * as RENDERER from '../../modules/render/api-render';
+import * as TRANSPILER from '../../modules/sim/script/transpiler';
+import * as Prism from '../../lib/vendor/prism';
+import { CodeJar } from '../../lib/vendor/codejar';
+import '../../lib/vendor/prism.css';
 
 /// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
 // import 'modules/tests/test-expr-parser'; // test parser evaluation
@@ -298,7 +298,9 @@ class Compiler extends React.Component {
 }
 /// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('NET:GEM_COMPILERAPP', data => data);
+UR.HandleMessage('NET:GEM_COMPILERAPP', data => {
+  return data || { nodata: true };
+});
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

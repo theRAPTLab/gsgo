@@ -42,8 +42,6 @@ const M_STANDALONE = 5;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let m_socket; // contain socket information on registration message
 let m_urlink; // assigned during URNET.Connect()
-let m_local;
-let m_remote;
 let m_options;
 let m_status = M0_INIT; // current status
 
@@ -111,9 +109,7 @@ function m_HandleRegistrationMessage(msgEvent) {
   const LocalNode = new EndPoint('ur-client-local');
   const NetNode = new EndPoint('ur-client-net');
   DATACORE.SetSharedEndPoints({ LocalNode, NetNode });
-  m_urlink = new EndPoint('ur-client-remote'); // used for forwarding
-  m_local = LocalNode;
-  m_remote = NetNode;
+  m_urlink = new EndPoint('ur-net-fwd'); // handle remote call request
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Dispatch incoming event object from the network.

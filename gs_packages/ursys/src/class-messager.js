@@ -277,10 +277,10 @@ class Messager {
       promises.push(p);
     } // end toNetwork
 
-    /// do the work
+    /// do the work calling multiple handlers
     let resArray = await Promise.all(promises);
+    // converts the array into an object that will be returned, with numbered properties
     let resObj = Object.assign({}, ...resArray);
-
     return resObj;
   }
 
