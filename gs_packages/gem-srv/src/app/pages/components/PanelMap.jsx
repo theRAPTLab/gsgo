@@ -4,6 +4,15 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
+function FriendlifyName(deviceName) {
+  let name;
+  // Strip out 'UADDR_'
+  name = String(deviceName).substring(6);
+  // Add "CC" to match input names
+  name = `CC${name}`;
+  return name;
+}
+
 class PanelMap extends React.Component {
   constructor() {
     super();
@@ -55,7 +64,7 @@ class PanelMap extends React.Component {
       ? `${classes.infoData} ${classes.infoDataMinimized}`
       : classes.infoData;
 
-    // DATA - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // FAKE DATA - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     const scriptEditors = [
       { uaddr: 'UADDR01', name: 'Corey', script: 'Fish' },
       { uaddr: 'UADDR02', name: 'Noel', script: 'Algae' },
@@ -117,7 +126,7 @@ class PanelMap extends React.Component {
         key={d.udid}
       >
         <div className={classLabel}>Device</div>
-        <div className={classData}>{d.meta.uaddr}</div>
+        <div className={classData}>{FriendlifyName(d.meta.uaddr)}</div>
         {/* <div className={classData}>{[...Object.keys(d.inputs)].join(', ')}</div> */}
       </div>
     ));
