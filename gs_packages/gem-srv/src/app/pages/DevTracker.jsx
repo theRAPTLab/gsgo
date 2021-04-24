@@ -78,7 +78,6 @@ class Tracker extends React.Component {
       entities: 'pre string'
     };
     this.updateDeviceList = this.updateDeviceList.bind(this);
-    UR.HandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
   }
 
   componentDidMount() {
@@ -89,7 +88,6 @@ class Tracker extends React.Component {
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
-    this.updateDeviceList([]);
 
     UR.HookPhase('UR/APP_START', async () => {
       // STEP 1 is to get a "deviceAPI" from a Device Subscription
@@ -97,10 +95,7 @@ class Tracker extends React.Component {
         selectify: device => device.meta.uclass === 'CharControl',
         // if a function is not provided, you'll just get everything
         // quantify: list => list,
-        notify: deviceLists => {
-          const { selected, quantified, valid } = deviceLists;
-          console.log(...PR(`notify got ${quantified.length} qualified devices`));
-        }
+        notify: this.updateDeviceList
       });
       // STEP 2 is to grab the getController('name') method which we
       // can call any time we want without mucking about with device
@@ -115,6 +110,7 @@ class Tracker extends React.Component {
       // for testing.
       if (FRAME_TIMER === undefined) {
         FRAME_TIMER = setInterval(() => {
+          UR.GetDeviceDirectory();
           // get all the current inputs
           const objs = getInputs().slice();
           objs.sort((a, b) => {
@@ -145,18 +141,18 @@ class Tracker extends React.Component {
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
   }
 
-  updateDeviceList(deviceList = []) {
-    if (Array.isArray(deviceList)) {
+  updateDeviceList(deviceLists) {
+    const { selected, quantified, valid } = deviceLists;
+    if (Array.isArray(quantified)) {
+      console.log(...PR(`notify got ${quantified.length} qualified devices`));
       let devices = '';
-      deviceList.forEach(d => {
+      quantified.forEach(d => {
         const { udid, inputs, outputs } = d;
         const istr = [...Object.keys(inputs)].join(', ');
         devices += `${udid} inputs:${istr}\n`;
       });
       this.setState({ devices });
-      return;
     }
-    console.log(...PR('UDL error, got', deviceList));
   }
 
   render() {
