@@ -63,7 +63,6 @@ class ScriptEditor extends React.Component {
       message: '',
       messageIsError: false
     };
-    this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.RequestModel = this.RequestModel.bind(this);
@@ -77,8 +76,6 @@ class ScriptEditor extends React.Component {
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
-    // hooks
-    UR.HandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
@@ -102,6 +99,19 @@ class ScriptEditor extends React.Component {
 
     // Set model section
     this.setState({ modelId, scriptId });
+
+    UR.HookPhase('UR/APP_START', async () => {
+      const devAPI = UR.SubscribeDeviceSpec({
+        selectify: device => device.meta.uclass === 'Sim',
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          if (valid) {
+            if (DBG) console.log(...PR('Main Sim Online!'));
+            this.Initialize();
+          }
+        }
+      });
+    });
   }
 
   componentDidCatch(e) {
@@ -115,29 +125,12 @@ class ScriptEditor extends React.Component {
 
   CleanupComponents() {
     this.UnRegisterInstances();
-    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
-  }
-
-  /**
-   * Checks if Main Sim device is loaded.
-   * If loaded, initialize this device.
-   */
-  UpdateDeviceList(deviceList = []) {
-    if (this.state.isReady) return; // already loaded
-    if (Array.isArray(deviceList)) {
-      deviceList.forEach(d => {
-        if (d.meta && d.meta.uclass === 'Sim') {
-          if (DBG) console.log(...PR('Main Sim Available!'));
-          this.Initialize();
-        }
-      });
-    }
   }
 
   Initialize() {

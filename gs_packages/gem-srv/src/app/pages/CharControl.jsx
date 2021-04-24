@@ -66,13 +66,11 @@ class CharController extends React.Component {
       data_object_name: '-',
       rate: 0
     };
-    this.updateDeviceList = this.updateDeviceList.bind(this);
     this.initialize = this.initialize.bind(this);
     this.updateInputBPNames = this.updateInputBPNames.bind(this);
     this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    UR.HandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
     UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
   }
 
@@ -80,28 +78,24 @@ class CharController extends React.Component {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     HookResize(window);
+
+    UR.HookPhase('UR/APP_START', async () => {
+      const devAPI = UR.SubscribeDeviceSpec({
+        selectify: device => device.meta.uclass === 'Sim',
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          if (valid) {
+            if (DBG) console.log(...PR('Main Sim Online!'));
+            this.initialize();
+          }
+        }
+      });
+    });
   }
 
   componentWillUnmount() {
     if (DBG) console.log(...PR('componentWillUnmount'));
-    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
     UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
-  }
-
-  /**
-   * Checks if Main Sim device is loaded.
-   * If loaded, initialize this device.
-   */
-  updateDeviceList(deviceList = []) {
-    if (this.state.isReady) return; // already loaded
-    if (Array.isArray(deviceList)) {
-      deviceList.forEach(d => {
-        if (d.meta && d.meta.uclass === 'Sim') {
-          if (DBG) console.log(...PR('Main Sim Available!'));
-          this.initialize();
-        }
-      });
-    }
   }
 
   initialize() {
