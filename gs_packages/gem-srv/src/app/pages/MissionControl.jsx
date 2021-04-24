@@ -152,7 +152,6 @@ class MissionControl extends React.Component {
 
     // inputs
     this.UpdateDeviceList([]);
-
   }
 
   componentDidCatch(e) {

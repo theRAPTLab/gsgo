@@ -25,7 +25,6 @@ export function UpdateModel(model) {
   MODEL.label = model.label;
   MODEL.scripts = model.scripts;
   MODEL.instances = model.instances;
-  console.error('updated instances', MODEL.instances);
 }
 export function UpdateBounds(bounds) {
   BOUNDS.top = bounds.top;

@@ -49,7 +49,7 @@ import { MODEL as BeesModel } from './bees';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ProjectData');
-const DBG = true;
+const DBG = false;
 
 /// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
 const API_PROJDATA = [
@@ -244,7 +244,6 @@ class ProjectData {
     return GetBoundary();
   }
   SendBoundary() {
-    console.error('sending boundary');
     const boundary = GetBoundary();
     UR.RaiseMessage('NET:SET_BOUNDARY', {
       width: boundary.width,
@@ -278,6 +277,7 @@ class ProjectData {
    * @return {string[]} [ ...bpnames ]
    */
   GetInputBPNames(modelId = this.currentModelId) {
+    if (DBG) console.log(...PR('GetInputBPNames called with', modelId));
     const model = this.GetModel(modelId);
     if (!model)
       console.error(...PR('GetInputBPNames could not load model', modelId));
@@ -324,7 +324,7 @@ class ProjectData {
   /// URSYS MODEL DATA REQUESTS//////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   HandleRequestProjData(data) {
-    console.error('NET:REQ_PROJDATA got request', data);
+    if (DBG) console.log('NET:REQ_PROJDATA got request', data);
     if (!data.fnName) {
       console.error(...PR('NET:REQ_PROJDATA got bad function name', data.fnName));
       return { result: undefined };
@@ -340,7 +340,6 @@ class ProjectData {
       let res;
       if (data.parms && Array.isArray(data.parms)) res = fn(...data.parms);
       else res = fn();
-      console.log('...result', res);
       return { result: res };
     }
     return { result: undefined };
