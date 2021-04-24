@@ -98,7 +98,7 @@ function addConsoleTools(UR) {
     },
 
     // client device directory (should be up-to-date automatically)
-    ur_devicedir: () => UR.GetDevicesDirectory()
+    ur_devicedir: () => UR.GetDeviceDirectory()
   };
 
   // add ur_* utilities to console

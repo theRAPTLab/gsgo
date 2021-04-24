@@ -163,7 +163,7 @@ function SaveDeviceSub(deviceSpec) {
 /** API: when a subscription OR device is added, need to update the tables
  *  that connect device UDIDS to interested subscribers
  */
-export function LinkSubsToDevices(devices = DATACORE.GetDevicesDirectory()) {
+export function LinkSubsToDevices(devices = DATACORE.GetDeviceDirectory()) {
   const subs = DATACORE.GetAllSubs();
   subs.forEach(sub => {
     sub.dcache.clear(); // nuke the device cache for this sub
@@ -202,7 +202,7 @@ export function SendControlFrame(cFrame) {
 function m_ProcessDeviceMap(devmap) {
   // figure out what changed in the device map
   DATACORE.IngestDevices(devmap, { all: true });
-  const all = DATACORE.GetDevicesDirectory();
+  const all = DATACORE.GetDeviceDirectory();
   LocalNode.raiseMessage('UR_DEVICES_CHANGED', all);
   // go over the entire hash of devices when a new device arrive
   LinkSubsToDevices(all);
@@ -255,8 +255,8 @@ function m_ProcessControlFrame(cFrame) {
 
 /// DEVICE DIRECTORY //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetDevicesDirectory() {
-  return DATACORE.GetDevicesDirectory();
+export function GetDeviceDirectory() {
+  return DATACORE.GetDeviceDirectory();
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

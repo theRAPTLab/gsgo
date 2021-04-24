@@ -186,11 +186,11 @@ function IngestDevices(devices) {
   return { all, added, updated, removed };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetDevicesChangeList() {
+function GetDeviceChangeList() {
   return DEVICE_DIR.getChanges();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetDevicesDirectory() {
+function GetDeviceDirectory() {
   return DEVICE_DIR.getValues();
 }
 
@@ -219,8 +219,8 @@ module.exports = {
   GetSubsByUDID,
   SaveDevice,
   GetDeviceByUDID,
-  GetDevicesDirectory,
+  GetDeviceDirectory,
   GetNewDeviceUDID,
   IngestDevices,
-  GetDevicesChangeList
+  GetDeviceChangeList
 };
