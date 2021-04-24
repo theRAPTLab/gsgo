@@ -164,6 +164,7 @@ const UR = {
   SystemAppUnload: EXEC.SystemAppUnload,
   ConsolePhaseInfo: EXEC.ConsolePhaseInfo,
   // FORWARDED DEVICE API
+  GetDevicesDirectory: DEVICES.GetDevicesDirectory,
   NewDevice: DEVICES.NewDevice,
   RegisterDevice: DEVICES.RegisterDevice,
   SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,

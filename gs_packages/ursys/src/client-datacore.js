@@ -190,7 +190,7 @@ function GetDevicesChangeList() {
   return DEVICE_DIR.getChanges();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function GetDevices() {
+function GetDevicesDirectory() {
   return DEVICE_DIR.getValues();
 }
 
@@ -219,7 +219,7 @@ module.exports = {
   GetSubsByUDID,
   SaveDevice,
   GetDeviceByUDID,
-  GetDevices,
+  GetDevicesDirectory,
   GetNewDeviceUDID,
   IngestDevices,
   GetDevicesChangeList

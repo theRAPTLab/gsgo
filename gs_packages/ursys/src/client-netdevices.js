@@ -154,9 +154,7 @@ function SaveDeviceSub(deviceSpec) {
     console.log('deleting device sub', subId);
     DATACORE.DeleteSubByID(subId);
   };
-
   // make sure we process devices through this new subscription!
-
   return { unsubscribe, getController, subscriptionID };
 }
 
@@ -165,7 +163,7 @@ function SaveDeviceSub(deviceSpec) {
 /** API: when a subscription OR device is added, need to update the tables
  *  that connect device UDIDS to interested subscribers
  */
-export function LinkSubsToDevices(devices = DATACORE.GetDevices()) {
+export function LinkSubsToDevices(devices = DATACORE.GetDevicesDirectory()) {
   const subs = DATACORE.GetAllSubs();
   subs.forEach(sub => {
     sub.dcache.clear(); // nuke the device cache for this sub
@@ -204,7 +202,7 @@ export function SendControlFrame(cFrame) {
 function m_ProcessDeviceMap(devmap) {
   // figure out what changed in the device map
   DATACORE.IngestDevices(devmap, { all: true });
-  const all = DATACORE.GetDevices();
+  const all = DATACORE.GetDevicesDirectory();
   LocalNode.raiseMessage('UR_DEVICES_CHANGED', all);
   // go over the entire hash of devices when a new device arrive
   LinkSubsToDevices(all);
@@ -253,6 +251,12 @@ function m_ProcessControlFrame(cFrame) {
       }
     }); // controlNames
   }); // subs
+}
+
+/// DEVICE DIRECTORY //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetDevicesDirectory() {
+  return DATACORE.GetDevicesDirectory();
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
