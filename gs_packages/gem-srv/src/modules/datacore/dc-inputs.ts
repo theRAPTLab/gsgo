@@ -10,6 +10,7 @@
 import UR from '@gemstep/ursys/client';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
+import { DeleteAgent } from './dc-agents';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -156,4 +157,14 @@ export function GetInputGroups(): any {
 }
 export function GetInputDefs(): object[] {
   return INPUTDEFS;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Trigger deletion of Input Agents after agent blueprint is recompiled
+ * Input agents should re-create themsevles with next INPUT cycle
+ */
+export function InputsReset() {
+  const defs = GetInputDefs();
+  console.error('delete input agents');
+  defs.forEach(d => DeleteAgent(d));
 }

@@ -29,7 +29,11 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
-import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
+import {
+  SetInputStageBounds,
+  SetInputBPnames,
+  InputsReset
+} from 'modules/datacore/dc-inputs';
 import {
   UpdateModel,
   UpdateBounds,
@@ -399,6 +403,8 @@ class ProjectData {
     //    running with the old blueprint code.
     if (!SIM.IsRunning()) {
       GetInstancesType(blueprintName).forEach(a => DeleteAgent(a));
+      // Also delete input agents
+      InputsReset();
     }
 
     // 5. Add an instance if one isn't already defined
