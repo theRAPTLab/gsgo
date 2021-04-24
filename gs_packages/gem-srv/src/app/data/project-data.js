@@ -373,9 +373,14 @@ class ProjectData {
     };
     const index = model.scripts.findIndex(s => s.id === blueprintName);
     if (index > -1) {
+      // Copy isControllable
+      blueprint.isControllable = model.scripts[index].isControllable;
       // Replace existing blueprint
       model.scripts[index] = blueprint;
     } else {
+      // REVIEW: Need to set isControllable here?
+      // For now automatically make it controllable.
+      blueprint.isControllable = true;
       // New Blueprint
       model.scripts.push(blueprint);
     }
