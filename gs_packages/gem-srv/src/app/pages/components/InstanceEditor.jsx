@@ -19,10 +19,10 @@ import clsx from 'clsx';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
+import { GetBlueprintProperties } from 'modules/datacore/dc-project';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import ProjectData from '../../data/project-data';
 import InputField from './InputField';
 
 const DBG = true;
@@ -168,17 +168,14 @@ class InstanceEditor extends React.Component {
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
   }
 
-  async GetAddableProperties() {
+  GetAddableProperties() {
     const { modelId, instance } = this.props;
     const blueprintName = this.GetBlueprintName();
 
     if (!modelId || !instance) return [];
 
-    // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
-    // Assume we can get a list of properties from SimData
     // properties = [...{name, type, defaultvalue, isFeatProp }]
-    let properties = ProjectData.GetBlueprintProperties(blueprintName, modelId);
-
+    let properties = GetBlueprintProperties(blueprintName);
     // Remove properties that have already been set
     // 1. Get the list or properties
     const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);

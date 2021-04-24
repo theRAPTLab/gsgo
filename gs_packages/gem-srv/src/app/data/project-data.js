@@ -31,6 +31,7 @@ import {
 } from 'modules/datacore/dc-agents';
 import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
 import {
+  UpdateModel,
   UpdateBounds,
   GetBounds,
   GetBoundary
@@ -216,6 +217,7 @@ class ProjectData {
       bottom: 400,
       left: -400
     };
+    UpdateModel(model);
     UpdateBounds(bounds);
     return model;
   }
@@ -248,23 +250,6 @@ class ProjectData {
       width: boundary.width,
       height: boundary.height
     });
-  }
-  /**
-   * Returns array of properties {name, type, defaultvalue, isFeatProp}
-   * that have been defined by the blueprint.
-   * Used to populate property menus when selecting properties to show
-   * in InstanceInspectors
-   * @param {string} blueprintName
-   * @param {string} [modelId=currentModelId]
-   * @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
-   */
-  GetBlueprintProperties(blueprintName, modelId = this.currentModelId) {
-    const model = this.GetSimDataModel(modelId);
-    if (!model) return []; // Called too early?
-    const blueprint = model.scripts.find(s => s.id === blueprintName);
-    if (!blueprint) return []; // blueprint was probably deleted
-    const script = blueprint.script;
-    return TRANSPILER.ExtractBlueprintProperties(script);
   }
 
   /**
@@ -437,8 +422,10 @@ class ProjectData {
   }
   RaiseModelUpdate(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
-    // Use SendMessage so that message is not reflected, otherwise SimPlaces will get called again.
-    UR.SendMessage('NET:UPDATE_MODEL', { modelId, model });
+    UpdateModel(model); // update dc-project
+
+    // MissionControl instances need to be updated as well.
+    UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
   }
 
   /// INPUT UTILS /////////////////////////////////////////////////////////////

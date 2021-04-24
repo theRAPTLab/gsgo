@@ -188,8 +188,7 @@ class MissionControl extends React.Component {
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    ProjectData.SetCurrentModelId(modelId);
-    const model = ProjectData.GetCurrentModel();
+    const model = ProjectData.LoadModel(modelId);
     this.setState(
       { model },
       // Call Sim Places to compile agents after model load
