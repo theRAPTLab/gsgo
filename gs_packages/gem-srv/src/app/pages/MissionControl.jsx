@@ -177,7 +177,10 @@ class MissionControl extends React.Component {
   ///
   UpdateDeviceList(devices = []) {
     if (Array.isArray(devices)) {
-      this.setState({ devices });
+      const UDID = ProjectData.GetUDID();
+      console.log(UDID, devices);
+      const filtered = devices.filter(d => d.udid !== UDID); // remove self
+      this.setState({ devices: filtered });
       return;
     }
     console.error(...PR('UDL error, got', devices));

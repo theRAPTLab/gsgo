@@ -96,6 +96,8 @@ class ProjectData {
     this.MONITORED_INSTANCES = [];
 
     // INITIALIZATION /////////////////////////////////////////////////////////
+    this.Initialize = this.Initialize.bind(this);
+    this.GetUDID = this.GetUDID.bind(this);
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
     // API CALLS //////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
@@ -174,6 +176,21 @@ class ProjectData {
 
   /// INITIALIZATION ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  async Initialize() {
+    // prototype device registration
+    // a device declares what kind of device it is
+    // and what data can be sent/received
+    // devices templates are defined in class-udevice.js
+    const dev = UR.NewDevice('Sim');
+    const { udid, status, error } = await UR.RegisterDevice(dev);
+    if (error) console.error(error);
+    if (status) console.log(...PR(status));
+    if (udid) DEVICE_UDID = udid;
+    if (DBG) console.log(...PR('DEVICE_UDID', DEVICE_UDID));
+  }
+  GetUDID() {
+    return DEVICE_UDID;
+  }
   GetSimDataModel(modelId = this.currentModelId) {
     let model;
     switch (modelId) {
@@ -212,18 +229,6 @@ class ProjectData {
       { id: 'salt', label: 'Salt' },
       { id: 'bees', label: 'Bees' }
     ];
-  }
-  async Initialize() {
-    // prototype device registration
-    // a device declares what kind of device it is
-    // and what data can be sent/received
-    // devices templates are defined in class-udevice.js
-    const dev = UR.NewDevice('Sim');
-    const { udid, status, error } = await UR.RegisterDevice(dev);
-    if (error) console.error(error);
-    if (status) console.log(...PR(status));
-    if (udid) DEVICE_UDID = udid;
-    if (DBG) console.log(...PR('DEVICE_UDID', DEVICE_UDID));
   }
   // Main Load Model Call -- sets dc-project parameters
   async LoadModel(modelId) {
