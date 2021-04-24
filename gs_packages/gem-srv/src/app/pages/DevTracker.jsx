@@ -95,10 +95,11 @@ class Tracker extends React.Component {
       // STEP 1 is to get a "deviceAPI" from a Device Subscription
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'CharControl',
-        quantify: list => list,
-        notify: changes => {
-          const { valid, added, updated, removed } = changes;
-          console.log(...PR('notify', changes));
+        // if a function is not provided, you'll just get everything
+        // quantify: list => list,
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          console.log(...PR(`notify got ${quantified.length} qualified devices`));
         }
       });
       // STEP 2 is to grab the getController('name') method which we
