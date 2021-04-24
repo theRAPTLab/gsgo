@@ -95,7 +95,10 @@ function addConsoleTools(UR) {
         console.log(`NET:SRV_SERVICE_LIST returned ${keyOut}`, data);
       });
       return 'services() is calling NET:SRV_SERVICE_LIST...';
-    }
+    },
+
+    // client device directory (should be up-to-date automatically)
+    ur_devicedir: () => UR.GetDeviceDirectory()
   };
 
   // add ur_* utilities to console
