@@ -20,7 +20,7 @@ import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
-import PROJ from 'app/data/project-data';
+import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,7 +45,7 @@ function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
 function m_setPosition(agent, x, y) {
-  const bounds = PROJ.GetBounds();
+  const bounds = GetBounds();
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
@@ -57,7 +57,7 @@ function m_setPosition(agent, x, y) {
   }
   let xx = x;
   let yy = y;
-  if (PROJ.Wraps('left')) {
+  if (Wraps('left')) {
     // This lets the agent poke its nose out before wrapping
     // to the other side.  Otherwise, the agent will suddenly
     // pop to other side.
@@ -67,19 +67,19 @@ function m_setPosition(agent, x, y) {
     xx = bounds.left + hwidth + pad;
     if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
   }
-  if (PROJ.Wraps('right')) {
+  if (Wraps('right')) {
     xx = x >= bounds.right ? bounds.left + pad : xx;
   } else if (x + hwidth >= bounds.right) {
     xx = bounds.right - hwidth - pad;
     if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
   }
-  if (PROJ.Wraps('top')) {
+  if (Wraps('top')) {
     yy = y <= bounds.top ? bounds.bottom - pad : yy;
   } else if (y - hheight <= bounds.top) {
     yy = bounds.top + hheight + pad;
     if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
   }
-  if (PROJ.Wraps('bottom')) {
+  if (Wraps('bottom')) {
     yy = y >= bounds.bottom ? bounds.top + pad : yy;
   } else if (y + hheight > bounds.bottom) {
     yy = bounds.bottom - hheight - pad;
@@ -121,7 +121,7 @@ function moveWander(agent) {
 // Go in the same direction most of the way across the space, then turn back and do similar
 
 function moveEdgeToEdge(agent) {
-  const bounds = PROJ.GetBounds();
+  const bounds = GetBounds();
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
@@ -277,7 +277,7 @@ class MovementPack extends GFeature {
   }
 
   setRandomPosition(agent: IAgent) {
-    const bounds = PROJ.GetBounds();
+    const bounds = GetBounds();
     const x = m_random(bounds.left, bounds.right);
     const y = m_random(bounds.top, bounds.bottom);
     m_setPosition(agent, x, y);

@@ -6,6 +6,9 @@
   * blueprints
   * instance defintions
 
+  Also, this sets up all of the phase hooks that manage the running of
+  the sim.
+
   NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
   Currently this is a placeholder class.  No data is saved between sessions.
@@ -27,6 +30,11 @@ import {
   GetInstancesType
 } from 'modules/datacore/dc-agents';
 import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
+import {
+  UpdateBounds,
+  GetBounds,
+  GetBoundary
+} from 'modules/datacore/dc-project';
 import * as INPUT from '../../modules/input/api-input';
 
 // HACK DATA LOADING
@@ -44,11 +52,13 @@ const DBG = true;
 
 /// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
 const API_PROJDATA = [
+  'GetModels',
   'GetModel',
   'GetCurrentModel',
   'GetCurrentModelData',
   'GetBoundary',
-  'GetInputBPNames'
+  'GetInputBPNames',
+  'GetBlueprintProperties'
 ];
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
@@ -72,14 +82,12 @@ class ProjectData {
     // API CALLS //////////////////////////////////////////////////////////////
     // MODEL DATA REQUESTS ----------------------------------------------------
     this.GetModels = this.GetModels.bind(this);
+    this.LoadModel = this.LoadModel.bind(this);
     this.SetCurrentModelId = this.SetCurrentModelId.bind(this);
     this.GetModel = this.GetModel.bind(this);
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetCurrentModelData = this.GetCurrentModelData.bind(this);
-    this.GetBounds = this.GetBounds.bind(this);
-    this.GetBoundary = this.GetBoundary.bind(this);
-    this.Wraps = this.Wraps.bind(this);
     this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
     this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
       this
@@ -96,6 +104,7 @@ class ProjectData {
     this.ScriptUpdate = this.ScriptUpdate.bind(this);
     this.RaiseModelsUpdate = this.RaiseModelsUpdate.bind(this);
     this.RaiseModelUpdate = this.RaiseModelUpdate.bind(this);
+    UR.HandleMessage('REQ_PROJDATA', this.HandleRequestProjData);
     UR.HandleMessage('NET:REQ_PROJDATA', this.HandleRequestProjData);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.ScriptUpdate);
     // INPUT UTILS ------------------------------------------------------------
@@ -186,6 +195,19 @@ class ProjectData {
       { id: 'bees', label: 'Bees' }
     ];
   }
+  // Main Load Model Call -- sets dc-project parameters
+  LoadModel(modelId) {
+    this.currentModelId = modelId;
+    const model = this.GetModel(modelId);
+    const bounds = model.bounds || {
+      top: -400, // default if not set
+      right: 400,
+      bottom: 400,
+      left: -400
+    };
+    UpdateBounds(bounds);
+    return model;
+  }
   SetCurrentModelId(modelId) {
     this.currentModelId = modelId;
   }
@@ -205,65 +227,13 @@ class ProjectData {
       model: this.GetCurrentModel()
     };
   }
-  GetBounds(modelId = this.currentModelId) {
-    const model = this.GetSimDataModel(modelId);
-    const bounds = model.bounds || {
-      top: -400, // default if not set
-      right: 400,
-      bottom: 400,
-      left: -400
-    };
-    return bounds;
-  }
-  GetBoundary(modelId = this.currentModelId) {
-    const bounds = this.GetBounds(modelId);
-    const width = bounds.right - bounds.left;
-    const height = bounds.bottom - bounds.top;
-    return { width, height };
-  }
   SendBoundary() {
     console.error('sending boundary');
-    const boundary = this.GetBoundary();
+    const boundary = GetBoundary();
     UR.RaiseMessage('NET:SET_BOUNDARY', {
       width: boundary.width,
       height: boundary.height
     });
-  }
-  /**
-   * Test function used by feat-movement to determine whether a wall
-   * is set to wrap or prevent passing
-   * @param {*} wall
-   * @param {*} modelId
-   * @returns
-   */
-  Wraps(wall = 'any', modelId = this.currentModelId) {
-    const model = this.GetSimDataModel(modelId);
-    const wrap = model && model.bounds ? model.bounds.wrap : undefined;
-    let wallWrap;
-    if (!wrap) {
-      // default if wrap is not set
-      wallWrap = [false, false, false, false];
-    } else if (!Array.isArray(wrap)) {
-      wallWrap = [wrap, wrap, wrap, wrap];
-    } else if (wrap.length === 4) {
-      wallWrap = wrap;
-    } else if (wrap.length === 2) {
-      wallWrap = [wrap[0], wrap[1], wrap[0], wrap[1]];
-    }
-    switch (wall) {
-      case 'top':
-        return wallWrap[0];
-      case 'right':
-        return wallWrap[1];
-      case 'bottom':
-        return wallWrap[2];
-      case 'left':
-        return wallWrap[3];
-      case 'any':
-      default:
-        // Generally you should only call this if there is a single wrap setting
-        return wallWrap[0];
-    }
   }
   /**
    * Returns array of properties {name, type, defaultvalue, isFeatProp}
@@ -701,7 +671,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     if (!model) return;
 
     // 2. Show Boundary
-    const boundary = this.GetBoundary();
+    const boundary = GetBoundary();
     RENDERER.SetBoundary(boundary.width, boundary.height);
     // And Set Listeners too
     this.SendBoundary();
