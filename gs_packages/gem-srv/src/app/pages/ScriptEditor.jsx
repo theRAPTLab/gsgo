@@ -52,6 +52,7 @@ class ScriptEditor extends React.Component {
   constructor() {
     super();
     this.state = {
+      isReady: false,
       panelConfiguration: 'select',
       modelId: '',
       model: {},
@@ -62,7 +63,8 @@ class ScriptEditor extends React.Component {
       message: '',
       messageIsError: false
     };
-    // bind
+    this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
+    this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
     this.RequestModel = this.RequestModel.bind(this);
     this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
@@ -76,6 +78,7 @@ class ScriptEditor extends React.Component {
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
     // hooks
+    UR.HandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
@@ -83,11 +86,6 @@ class ScriptEditor extends React.Component {
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
-
-    UR.HookPhase('UR/APP_RUN', () => {
-      const { modelId } = this.state;
-      this.RequestModel(modelId);
-    });
   }
 
   componentDidMount() {
@@ -117,12 +115,37 @@ class ScriptEditor extends React.Component {
 
   CleanupComponents() {
     this.UnRegisterInstances();
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+  }
+
+  /**
+   * Checks if Main Sim device is loaded.
+   * If loaded, initialize this device.
+   */
+  UpdateDeviceList(deviceList = []) {
+    if (this.state.isReady) return; // already loaded
+    if (Array.isArray(deviceList)) {
+      deviceList.forEach(d => {
+        if (d.meta && d.meta.uclass === 'Sim') {
+          if (DBG) console.log(...PR('Main Sim Available!'));
+          this.Initialize();
+        }
+      });
+    }
+  }
+
+  Initialize() {
+    if (this.state.isReady) return; // already initialized
+    const { modelId } = this.state;
+    this.RequestModel(modelId);
+    UR.RaiseMessage('INIT_PROJECT'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
   }
 
   /**

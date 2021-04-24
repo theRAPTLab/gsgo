@@ -55,6 +55,8 @@ import { MODEL as BeesModel } from './bees';
 const PR = UR.PrefixUtil('ProjectData');
 const DBG = false;
 
+let DEVICE_UDID; // registered UDID
+
 /// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
 const API_PROJDATA = [
   'GetModels',
@@ -211,8 +213,20 @@ class ProjectData {
       { id: 'bees', label: 'Bees' }
     ];
   }
+  async Initialize() {
+    // prototype device registration
+    // a device declares what kind of device it is
+    // and what data can be sent/received
+    // devices templates are defined in class-udevice.js
+    const dev = UR.NewDevice('Sim');
+    const { udid, status, error } = await UR.RegisterDevice(dev);
+    if (error) console.error(error);
+    if (status) console.log(...PR(status));
+    if (udid) DEVICE_UDID = udid;
+    if (DBG) console.log(...PR('DEVICE_UDID', DEVICE_UDID));
+  }
   // Main Load Model Call -- sets dc-project parameters
-  LoadModel(modelId) {
+  async LoadModel(modelId) {
     this.currentModelId = modelId;
     const model = this.GetModel(modelId);
     const bounds = model.bounds || {
@@ -223,6 +237,7 @@ class ProjectData {
     };
     UpdateModel(model);
     UpdateBounds(bounds);
+    await this.Initialize();
     return model;
   }
   SetCurrentModelId(modelId) {

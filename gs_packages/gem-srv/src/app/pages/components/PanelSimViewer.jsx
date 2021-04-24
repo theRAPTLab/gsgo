@@ -59,7 +59,8 @@ class PanelSimViewer extends React.Component {
     };
     this.requestBoundary = this.requestBoundary.bind(this);
     this.handleSetBoundary = this.handleSetBoundary.bind(this);
-    UR.HookPhase('UR/APP_RUN', this.requestBoundary);
+    // Sent by parent after it knows the Main Sim project has loaded
+    UR.HandleMessage('INIT_PROJECT', this.requestBoundary);
   }
 
   componentDidMount() {

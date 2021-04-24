@@ -40,11 +40,14 @@ class Viewer extends React.Component {
   constructor() {
     super();
     this.state = {
+      isReady: false,
       panelConfiguration: 'sim',
       modelId: '',
       model: {},
       instances: []
     };
+    this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
+    this.Initialize = this.Initialize.bind(this);
     this.RequestModel = this.RequestModel.bind(this);
     this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
     this.UpdateModelData = this.UpdateModelData.bind(this);
@@ -52,23 +55,12 @@ class Viewer extends React.Component {
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    UR.HandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
 
     // Instance Interaction Handlers
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
-
-    // System Hooks
-    UR.HookPhase('UR/APP_RUN', () => {
-      // **************************************************
-      // REVIEW
-      // This assumes that MissionControl is already running.
-      // This is not always reliable, especially during code
-      // refresh.  This call might go out before MissionControl.
-      // **************************************************
-      if (DBG) console.log('requesting current model');
-      this.RequestModel();
-    });
   }
 
   componentDidMount() {
@@ -81,9 +73,33 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+  }
+
+  /**
+   * Checks if Main Sim device is loaded.
+   * If loaded, initialize this device.
+   */
+  UpdateDeviceList(deviceList = []) {
+    if (this.state.isReady) return; // already loaded
+    if (Array.isArray(deviceList)) {
+      deviceList.forEach(d => {
+        if (d.meta && d.meta.uclass === 'Sim') {
+          if (DBG) console.log(...PR('Main Sim Available!'));
+          this.Initialize();
+        }
+      });
+    }
+  }
+
+  Initialize() {
+    if (this.state.isReady) return; // already initialized
+    this.RequestModel();
+    UR.RaiseMessage('INIT_PROJECT'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
   }
 
   RequestModel() {

@@ -25,6 +25,7 @@ import PanelSimViewer from './components/PanelSimViewer';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
+const DBG = false;
 const MATRIX_INPUT_WIDTH = 50;
 const SENDING_FPS = 5;
 
@@ -41,6 +42,7 @@ class CharController extends React.Component {
     // establish state here
     // which is changed through setState() call of React.Component
     this.state = {
+      isReady: false, // project data has been successfully retrieved
       tag: '',
       tags: [],
       num_entities: 1,
@@ -64,13 +66,14 @@ class CharController extends React.Component {
       data_object_name: '-',
       rate: 0
     };
-    this.requestBPNames = this.requestBPNames.bind(this);
+    this.updateDeviceList = this.updateDeviceList.bind(this);
+    this.initialize = this.initialize.bind(this);
+    this.updateInputBPNames = this.updateInputBPNames.bind(this);
     this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
-    this.setInputBPNames = this.setInputBPNames.bind(this);
+    this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    UR.HandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
     UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
-
-    UR.HookPhase('UR/APP_RUN', this.requestBPNames);
   }
 
   componentDidMount() {
@@ -80,11 +83,36 @@ class CharController extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    if (DBG) console.log(...PR('componentWillUnmount'));
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
     UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
   }
 
-  setInputBPNames(bpnames) {
+  /**
+   * Checks if Main Sim device is loaded.
+   * If loaded, initialize this device.
+   */
+  updateDeviceList(deviceList = []) {
+    if (this.state.isReady) return; // already loaded
+    if (Array.isArray(deviceList)) {
+      deviceList.forEach(d => {
+        if (d.meta && d.meta.uclass === 'Sim') {
+          if (DBG) console.log(...PR('Main Sim Available!'));
+          this.initialize();
+        }
+      });
+    }
+  }
+
+  initialize() {
+    if (this.state.isReady) return; // already initialized
+    this.requestBPNames();
+    UR.RaiseMessage('INIT_PROJECT'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
+  }
+
+  updateInputBPNames(bpnames) {
+    if (DBG) console.log(...PR('setInputBPNames', bpnames));
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
     this.setState(
@@ -98,16 +126,19 @@ class CharController extends React.Component {
 
   // URSYS Handler
   handleSetInputBPNames(data) {
-    this.setInputBPNames(data.bpnames);
+    if (DBG) console.log(...PR('handleSetInputBPNames', data));
+    this.updateInputBPNames(data.bpnames);
   }
 
   // Direct Call
   requestBPNames() {
-    // Request after APP_RUN (URSYS Is loaded) otherwise the response
+    // Wait for Main to load before requesting
+    // Also, request after APP_RUN (URSYS Is loaded) otherwise the response
     // will come back before we're ready
+    if (DBG) console.log(...PR('requestBPNames'));
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName: 'GetInputBPNames'
-    }).then(rdata => this.setInputBPNames(rdata.result));
+    }).then(rdata => this.updateInputBPNames(rdata.result));
   }
 
   // FORM CHANGE METHOD
@@ -116,6 +147,7 @@ class CharController extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
+    if (DBG) console.log(...PR('selected', name, value));
     HandleStateChange(name, value);
   }
 
