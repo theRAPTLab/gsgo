@@ -72,9 +72,9 @@ class PanelSimViewer extends React.Component {
   componentWillUnmount() {}
 
   requestBoundary() {
-    UR.CallMessage('NET:REQ_PROJDATA', { fnName: 'GetBoundary' }).then(
-      this.handleSetBoundary
-    );
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetProjectBoundary'
+    }).then(this.handleSetBoundary);
   }
 
   handleSetBoundary(data) {

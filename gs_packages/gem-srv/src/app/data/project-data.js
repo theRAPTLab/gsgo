@@ -56,7 +56,7 @@ const API_PROJDATA = [
   'GetModel',
   'GetCurrentModel',
   'GetCurrentModelData',
-  'GetBoundary',
+  'GetProjectBoundary',
   'GetInputBPNames',
   'GetBlueprintProperties'
 ];
@@ -99,7 +99,7 @@ class ProjectData {
     this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
     this.GetCurrentModelData = this.GetCurrentModelData.bind(this);
-    this.GetBlueprintProperties = this.GetBlueprintProperties.bind(this);
+    this.GetProjectBoundary = this.GetProjectBoundary.bind(this);
     this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
       this
     );
@@ -237,6 +237,9 @@ class ProjectData {
       modelId: this.GetCurrentModelId(),
       model: this.GetCurrentModel()
     };
+  }
+  GetProjectBoundary() {
+    return GetBoundary();
   }
   SendBoundary() {
     console.error('sending boundary');
