@@ -254,7 +254,12 @@ if (toNet && !fromNet) {
 
 Fixes everything.
 
+## APR 24 SAT - Adding Notification to Device Manager
 
+Ben's testing the device system as a way to check asynchronously for the existence of certain client apps. Right now he's polling, but the `notify()` function provided by a Device Subscription should take care of that more seamlessly. Just need to implement it.
+
+* [x] insert a call to `notify()` in `client-netdevices.LinkSubsToDevices()` that has `{ selected:udevice[], quantified:udevice[], valid:boolean }` 
+* [x] make sure the **lack** of `selectify` and `quantify` functions just passes everything
 
 ---
 

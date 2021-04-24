@@ -132,7 +132,7 @@ function SaveDeviceSub(deviceSpec) {
         const control = sub.cobjs.get(cName); // e.g. "markers" => cData StickyCache
         if (control) return control.getBufferValues();
         // no control, emit error
-        if (DBG.controller) console.warn(`control '${cName}' doesn't exist`);
+        if (DBG.controller) console.warn(`control '${cName}' doesn't exists`);
         return [];
       },
       getChanges: () => {
@@ -168,18 +168,24 @@ function SaveDeviceSub(deviceSpec) {
 export function LinkSubsToDevices(devices = DATACORE.GetDevices()) {
   const subs = DATACORE.GetAllSubs();
   subs.forEach(sub => {
-    sub.dcache.clear();
-    const { selectify, quantify } = sub;
-    const selected = devices.filter(selectify);
+    sub.dcache.clear(); // nuke the device cache for this sub
+    const { selectify, quantify, notify } = sub;
+    // (1) filter devices desired by this sub, if selectify was provided
+    const selected = selectify ? devices.filter(selectify) : devices;
     if (selected.length === 0) return;
-    // console.log('selectified', selected.length);
-    const quantified = quantify(selected);
+    // (2) limit devices returned by the selection criteria
+    // return [] if quantity criteria is not met
+    // IF the quantify function was provided for this sub
+    const quantified = quantify ? quantify(selected) : selected;
     if (quantified.length === 0) return;
     // console.log('quantified', quantified.length);
     quantified.forEach(udev => {
       const { udid } = udev;
       sub.dcache.set(udid, udev);
     });
+    // (3) inform subscribers that the device conditions have changed
+    const valid = quantified.length > 0;
+    if (notify) notify({ valid, selected, quantified });
   });
 }
 
