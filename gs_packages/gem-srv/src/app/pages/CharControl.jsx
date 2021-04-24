@@ -66,6 +66,7 @@ class CharController extends React.Component {
     };
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
+    this.setInputBPNames = this.setInputBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
 
@@ -83,16 +84,7 @@ class CharController extends React.Component {
     UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
   }
 
-  requestBPNames() {
-    // Request after APP_RUN (URSYS Is loaded) otherwise the response
-    // will come back before we're ready
-    UR.CallMessage('NET:REQ_PROJDATA', { fnName: 'GetInputBPNames' }).then(
-      this.handleSetInputBPNames
-    );
-  }
-
-  handleSetInputBPNames(data) {
-    const bpnames = data.result;
+  setInputBPNames(bpnames) {
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
     this.setState(
@@ -102,6 +94,20 @@ class CharController extends React.Component {
       },
       () => Initialize(this, { sampleRate: SENDING_FPS })
     );
+  }
+
+  // URSYS Handler
+  handleSetInputBPNames(data) {
+    this.setInputBPNames(data.bpnames);
+  }
+
+  // Direct Call
+  requestBPNames() {
+    // Request after APP_RUN (URSYS Is loaded) otherwise the response
+    // will come back before we're ready
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetInputBPNames'
+    }).then(rdata => this.setInputBPNames(rdata.result));
   }
 
   // FORM CHANGE METHOD
