@@ -29,6 +29,7 @@ export function DefineInstance(instanceDef: TInstance) {
   if (!instanceDef.id) {
     instanceDef.id = INSTANCE_COUNTER++;
   }
+  instanceDef.id = String(instanceDef.id); // enforce string
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

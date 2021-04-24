@@ -186,7 +186,7 @@ export interface IScriptUpdate {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TInstance = {
   blueprint: string;
-  id?: number;
+  id?: string;
   name?: string;
   initScript?: TScriptUnit[];
 };

@@ -69,6 +69,17 @@ function GetUID() {
   return SEED++;
 }
 
+// InstanceDef Ids should be strings, but hand-editing project files can
+// result in numeric ids.  This will cause problems with AGENT_DICT lookups.
+function FixInstanceIds(model) {
+  const cleaned = model;
+  cleaned.instances = cleaned.instances.map(i => {
+    i.id = String(i.id);
+    return i;
+  });
+  return cleaned;
+}
+
 /// CLASS DEFINTION ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class ProjectData {
@@ -180,7 +191,7 @@ class ProjectData {
       default:
         break;
     }
-    return model;
+    return FixInstanceIds(model);
   }
 
   /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////

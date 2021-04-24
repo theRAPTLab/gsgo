@@ -8,7 +8,7 @@ import { IPoolable } from './t-pool.d';
 
 class InputDef implements IPoolable {
   // poolable
-  id: any;
+  id: string; // match instanceDef, GAgent
   refId?: any;
   _pool_id: any;
   // inputDef
@@ -18,11 +18,11 @@ class InputDef implements IPoolable {
   x: number;
   y: number;
 
-  constructor(id?: any) {
+  constructor(id?: string) {
     this.init(id);
   }
 
-  init(id?: any) {
+  init(id?: string) {
     this.id = id;
     this.valid = false;
   }
