@@ -67,7 +67,11 @@ class PanelInstances extends React.Component {
                 key={blueprint.name}
               >
                 {blueprint.instances.map(i => (
-                  <InstanceInspector instance={i} key={i.id} disallowDeRegister />
+                  <InstanceInspector
+                    instance={i}
+                    key={i.id}
+                    disallowDeRegister={disallowDeRegister}
+                  />
                 ))}
               </div>
             ))}
