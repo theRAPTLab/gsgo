@@ -61,7 +61,6 @@ let DEVICE_UDID; // registered UDID
 const API_PROJDATA = [
   'GetModels',
   'GetModel',
-  'GetCurrentModel',
   'GetCurrentModelData',
   'GetProjectBoundary',
   'GetInputBPNames',
@@ -104,9 +103,8 @@ class ProjectData {
     this.GetModels = this.GetModels.bind(this);
     this.LoadModel = this.LoadModel.bind(this);
     this.SetCurrentModelId = this.SetCurrentModelId.bind(this);
-    this.GetModel = this.GetModel.bind(this);
-    this.GetCurrentModel = this.GetCurrentModel.bind(this);
     this.GetCurrentModelId = this.GetCurrentModelId.bind(this);
+    this.GetModel = this.GetModel.bind(this);
     this.GetCurrentModelData = this.GetCurrentModelData.bind(this);
     this.GetProjectBoundary = this.GetProjectBoundary.bind(this);
     this.GetBlueprintPropertiesTypeMap = this.GetBlueprintPropertiesTypeMap.bind(
@@ -166,7 +164,8 @@ class ProjectData {
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
-    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    // Let MissionControl handle NET:HACK_SIM_RESET, then call this.DoSimReset directly.
+    // UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
 
@@ -201,7 +200,8 @@ class ProjectData {
       default:
         break;
     }
-    return FixInstanceIds(model);
+    const res = FixInstanceIds(model);
+    return res;
   }
 
   /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
@@ -217,7 +217,7 @@ class ProjectData {
     ];
   }
   // Main Load Model Call -- sets dc-project parameters
-  async LoadModel(modelId) {
+  LoadModel(modelId) {
     this.currentModelId = modelId;
     const model = this.GetModel(modelId);
     const bounds = model.bounds || {
@@ -233,20 +233,18 @@ class ProjectData {
   SetCurrentModelId(modelId) {
     this.currentModelId = modelId;
   }
-  GetModel(modelId) {
-    return this.GetSimDataModel(modelId);
-  }
-  GetCurrentModel() {
-    return this.GetSimDataModel(this.currentModelId);
-  }
   GetCurrentModelId() {
     return this.currentModelId;
+  }
+  GetModel(modelId = this.currentModelId) {
+    if (!modelId) throw 'Tried to GetModel before setting modelId';
+    return this.GetSimDataModel(modelId);
   }
   // Used for URSYS requests for full project data, e.g. Viewer
   GetCurrentModelData() {
     return {
       modelId: this.GetCurrentModelId(),
-      model: this.GetCurrentModel()
+      model: this.GetModel()
     };
   }
   GetProjectBoundary() {
@@ -300,7 +298,7 @@ class ProjectData {
    * @param {string} blueprintName
    */
   BlueprintDelete(blueprintName) {
-    const model = this.GetCurrentModel();
+    const model = this.GetModel();
     // 1. Delete the old blueprint from model
     const index = model.scripts.findIndex(s => s.id === blueprintName);
     if (index > -1) {
@@ -361,7 +359,7 @@ class ProjectData {
    * @param {Object} data -- { script, origBlueprintName }
    */
   ScriptUpdate(data) {
-    const model = this.GetCurrentModel();
+    const model = this.GetModel();
     const source = TRANSPILER.ScriptifyText(data.script);
     const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
     const blueprintName = bundle.name;
@@ -679,9 +677,9 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
    * Also updates the boundary display (since model might define new boundaries)
    */
   DoSimPlaces() {
-    if (DBG) console.warn(...PR('DoSimPlaces! Commpiling...'));
+    if (DBG) console.warn(...PR('DoSimPlaces! Compiling...'));
     // 1. Load Model
-    const model = this.GetCurrentModel();
+    const model = this.GetModel();
 
     // Skip if no model is loaded
     if (!model) return;
@@ -722,7 +720,9 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
   }
 
   /**
-   * WARNING: Do not call this before the simulation has loaded.
+   * WARNINGS:
+   * * Do not call this before the simulation has loaded.
+   * * Do not call this directly.  The call should originate from MissionControl
    */
   DoSimReset() {
     DATACORE.DeleteAllTests();
@@ -732,7 +732,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
     SIM.Reset();
-    // SimPlaces is called by Mission Control.
+    // MissionControl will take care of reloading and calling SimPlaces
   }
 
   DoSimStart() {

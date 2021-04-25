@@ -107,6 +107,7 @@ class MissionControl extends React.Component {
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
+    UR.HandleMessage('LOAD_MODEL', this.LoadModel); // re from project-data
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
@@ -209,7 +210,6 @@ class MissionControl extends React.Component {
   UpdateDeviceList(devices = []) {
     if (Array.isArray(devices)) {
       const UDID = PROJ.GetUDID();
-      console.log(UDID, devices);
       const filtered = devices.filter(d => d.udid !== UDID); // remove self
       this.setState({ devices: filtered });
       return;
@@ -264,14 +264,17 @@ class MissionControl extends React.Component {
     setTimeout(() => this.forceUpdate(), 250);
   }
   DoSimReset() {
-    this.PostMessage(`Simulation Reset!`);
+    this.PostMessage('Simulation Reset!');
     this.setState(
       {
         model: {},
         inspectorInstances: [],
         scriptsNeedUpdate: false
+      },
+      () => {
+        PROJ.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
+        this.LoadModel(this.state.modelId); // This will also call SimPlaces
       }
-      // SIM.Reset() will trigger SIM/READY, which triggers a LoadModel
     );
   }
   /**
