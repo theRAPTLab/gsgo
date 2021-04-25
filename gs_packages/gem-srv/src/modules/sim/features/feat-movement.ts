@@ -202,6 +202,8 @@ class MovementPack extends GFeature {
     this.featAddMethod('setDirection', this.setDirection);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
+    this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
+    this.featAddMethod('setRandomPositionY', this.setRandomPositionY);
     this.featAddMethod('setRandomStart', this.setRandomStart);
     this.featAddMethod('jitterPos', this.jitterPos);
   }
@@ -281,6 +283,18 @@ class MovementPack extends GFeature {
     const x = m_random(bounds.left, bounds.right);
     const y = m_random(bounds.top, bounds.bottom);
     m_setPosition(agent, x, y);
+  }
+
+  setRandomPositionX(agent: IAgent) {
+    const bounds = GetBounds();
+    const x = m_random(bounds.left, bounds.right);
+    m_setPosition(agent, x, agent.prop.y.value);
+  }
+
+  setRandomPositionY(agent: IAgent) {
+    const bounds = GetBounds();
+    const y = m_random(bounds.top, bounds.bottom);
+    m_setPosition(agent, agent.prop.x.value, y);
   }
 
   setRandomStart(agent: IAgent) {
