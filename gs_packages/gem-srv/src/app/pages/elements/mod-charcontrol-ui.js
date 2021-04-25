@@ -43,6 +43,8 @@ let m_container; // parent div
 let m_entities; // HTMLCollection of moveable markers
 let m_testentities; // HTMLCollection of moveable markers
 
+let Device; // uDevice devAPI
+let SENDER; // interval timer for sending frames
 let DEVICE_UDID; // registered UDID
 let MarkerFramer; // hold function that generates "marker" control frames
 let m_seq = 0; // sequence number
@@ -279,19 +281,21 @@ async function Initialize(componentInstance, opt = {}) {
   // a device declares what kind of device it is
   // and what data can be sent/received
   if (MarkerFramer === undefined) {
-    const dev = UR.NewDevice('CharControl');
+    if (!Device) Device = UR.NewDevice('CharControl');
 
     // Update blueprint names for "Blueprint" selector
-    dev.meta.uapp_tags.push(m_CHARVIEW.state.tag);
+    // NOTE: Currently we only allow a single blueprint type per device
+    Device.meta.uapp_tags = [m_CHARVIEW.state.tag];
 
-    const { udid, status, error } = await UR.RegisterDevice(dev);
+    const { udid, status, error } = await UR.RegisterDevice(Device);
     if (error) console.error(error);
     if (status) console.log(...PR(status));
     if (udid) DEVICE_UDID = udid;
-    MarkerFramer = dev.getControlFramer('markers');
+    MarkerFramer = Device.getControlFramer('markers');
 
     // send periodic control frames
-    setInterval(SendControlFrame, INTERVAL);
+    clearInterval(SENDER); // clear the old one if we're initializing a new one
+    SENDER = setInterval(SendControlFrame, INTERVAL);
   }
 
   // setup container, entity listsm
