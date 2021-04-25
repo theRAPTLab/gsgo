@@ -23,19 +23,19 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelSimulation from './components/PanelSimulation';
 import MissionMapEditor from './MissionMapEditor';
 import MissionRun from './MissionRun';
-
+import PanelSimulation from './components/PanelSimulation';
 import PanelPlayback from './components/PanelPlayback';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
-import ProjectData from '../data/project-data';
+import PROJ from '../data/project-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -85,8 +85,13 @@ class MissionControl extends React.Component {
       devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
-      scriptsNeedUpdate: false
+      scriptsNeedUpdate: false,
+      openConfirmClose: false
     };
+
+    // Initialization
+    this.Initialize = this.Initialize.bind(this);
+    this.FailSimAlreadyRunning = this.FailSimAlreadyRunning.bind(this);
 
     // Devices
     this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
@@ -123,19 +128,10 @@ class MissionControl extends React.Component {
     this.OnToggleRunEdit = this.OnToggleRunEdit.bind(this);
     this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.OnSelectView = this.OnSelectView.bind(this);
 
     // System Hooks
-    UR.HookPhase('SIM/READY', () => {
-      console.log(...PR('SIM/READY!'));
-      const { modelId } = this.state;
-      this.LoadModel(modelId);
-    });
-    // TEST: Probably not necessary so long as SIM/READY is only called once
-    UR.HookPhase('SIM/STAGED', () => {
-      console.log(...PR('SIM/STAGED!'));
-      // const { modelId } = this.state;
-      // this.LoadModel(modelId);
-    });
+    UR.HookPhase('UR/APP_START', this.Initialize);
   }
 
   componentDidMount() {
@@ -149,9 +145,6 @@ class MissionControl extends React.Component {
     document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
-
-    // inputs
-    this.UpdateDeviceList([]);
   }
 
   componentDidCatch(e) {
@@ -172,12 +165,50 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
   }
 
+  /// INITIALIZATION ////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  async Initialize() {
+    // 1. Check for other 'Sim' devices.
+    const devices = UR.GetDeviceDirectory();
+    const sim = devices.filter(d => d.meta.uclass === 'Sim');
+    if (sim.length > 0) {
+      this.FailSimAlreadyRunning();
+      return;
+    }
+
+    // 2. Load Model
+    const { modelId } = this.state;
+    this.LoadModel(modelId);
+
+    // 3. Register as 'Sim' Device
+    // devices templates are defined in class-udevice.js
+    const dev = UR.NewDevice('Sim');
+    const { udid, status, error } = await UR.RegisterDevice(dev);
+    if (error) console.error(error);
+    if (status) console.log(...PR(status));
+    // if (udid) DEVICE_UDID = udid;
+
+    // 4. Listen for Controllers
+    const charControllerDevAPI = UR.SubscribeDeviceSpec({
+      selectify: device => device.meta.uclass === 'CharController',
+      notify: deviceLists => {
+        const { selected, quantified, valid } = deviceLists;
+        if (valid) {
+          this.UpdateDeviceList(selected);
+        }
+      }
+    });
+  }
+  FailSimAlreadyRunning() {
+    this.setState({ openConfirmClose: true });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DEVICE HANDLERS
   ///
   UpdateDeviceList(devices = []) {
     if (Array.isArray(devices)) {
-      const UDID = ProjectData.GetUDID();
+      const UDID = PROJ.GetUDID();
       console.log(UDID, devices);
       const filtered = devices.filter(d => d.udid !== UDID); // remove self
       this.setState({ devices: filtered });
@@ -186,11 +217,11 @@ class MissionControl extends React.Component {
     console.error(...PR('UDL error, got', devices));
   }
 
-  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    const model = ProjectData.LoadModel(modelId);
+    const model = PROJ.LoadModel(modelId);
     this.setState(
       { model },
       // Call Sim Places to compile agents after model load
@@ -283,7 +314,7 @@ class MissionControl extends React.Component {
       const { modelId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      ProjectData.InstanceUpdatePosition({
+      PROJ.InstanceUpdatePosition({
         modelId,
         instanceId: agent.id,
         updatedData: { x, y }
@@ -301,18 +332,18 @@ class MissionControl extends React.Component {
     const { panelConfiguration, modelId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      ProjectData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      PROJ.InstanceRequestEdit({ modelId, agentId: data.agentId });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
-    ProjectData.InstanceHoverOver({ modelId, agentId: data.agentId });
+    PROJ.InstanceHoverOver({ modelId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { modelId } = this.state;
-    ProjectData.InstanceHoverOut({ modelId, agentId: data.agentId });
+    PROJ.InstanceHoverOut({ modelId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -344,6 +375,10 @@ class MissionControl extends React.Component {
       panelConfiguration: id
     });
   }
+  OnSelectView() {
+    const { modelId } = this.state;
+    window.location = `/app/model?model=${modelId}`;
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER
@@ -361,7 +396,8 @@ class MissionControl extends React.Component {
       devices,
       inspectorInstances,
       runIsMinimized,
-      scriptsNeedUpdate
+      scriptsNeedUpdate,
+      openConfirmClose
     } = this.state;
     const { classes } = this.props;
 
@@ -404,6 +440,16 @@ class MissionControl extends React.Component {
           minimized={runIsMinimized}
         />
       );
+
+    const DialogConfirmClose = (
+      <DialogConfirm
+        open={openConfirmClose}
+        message={`A "Main" window is already open.  Select another view?`}
+        yesMessage={`OK`}
+        noMessage=""
+        onClose={this.OnSelectView}
+      />
+    );
 
     return (
       <div
@@ -471,6 +517,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3' }}
         >
           <PanelMessage message={message} />
+          {DialogConfirmClose}
         </div>
       </div>
     );

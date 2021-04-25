@@ -79,6 +79,7 @@ function GetUID() {
 // InstanceDef Ids should be strings, but hand-editing project files can
 // result in numeric ids.  This will cause problems with AGENT_DICT lookups.
 function FixInstanceIds(model) {
+  if (!model) return {}; // not loaded yet
   const cleaned = model;
   cleaned.instances = cleaned.instances.map(i => {
     i.id = String(i.id);
@@ -96,7 +97,6 @@ class ProjectData {
     this.MONITORED_INSTANCES = [];
 
     // INITIALIZATION /////////////////////////////////////////////////////////
-    this.Initialize = this.Initialize.bind(this);
     this.GetUDID = this.GetUDID.bind(this);
     this.GetSimDataModel = this.GetSimDataModel.bind(this);
     // API CALLS //////////////////////////////////////////////////////////////
@@ -174,20 +174,6 @@ class ProjectData {
     UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
   }
 
-  /// INITIALIZATION ////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  async Initialize() {
-    // prototype device registration
-    // a device declares what kind of device it is
-    // and what data can be sent/received
-    // devices templates are defined in class-udevice.js
-    const dev = UR.NewDevice('Sim');
-    const { udid, status, error } = await UR.RegisterDevice(dev);
-    if (error) console.error(error);
-    if (status) console.log(...PR(status));
-    if (udid) DEVICE_UDID = udid;
-    if (DBG) console.log(...PR('DEVICE_UDID', DEVICE_UDID));
-  }
   GetUDID() {
     return DEVICE_UDID;
   }
@@ -242,7 +228,6 @@ class ProjectData {
     };
     UpdateModel(model);
     UpdateBounds(bounds);
-    await this.Initialize();
     return model;
   }
   SetCurrentModelId(modelId) {
