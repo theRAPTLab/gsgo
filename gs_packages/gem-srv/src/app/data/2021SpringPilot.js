@@ -149,9 +149,13 @@ featProp Physics.radius setTo 16
 //propPop text
 prop text setTo '##'
 
+// put new algae into bottom left for the farming setup if needed
+prop x setTo -430
+prop y setTo 380
 
 # PROGRAM EVENT
 onEvent Start [[
+
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 
@@ -310,44 +314,33 @@ onEvent Tick [[
 `
     }
   ],
-  // instances: [
-  //   {
-  //     name: 'fish01',
-  //     blueprint: 'Fish',
-  //     initScript: `prop agent.x setTo {{ agent.x + -220 }}`
-  //   },
-  //   {
-  //     name: 'fatFish',
-  //     blueprint: 'Fish',
-  //     initScript: `prop agent.x setTo 100
-  //   }
   instances: [
-    {
-      id: 501,
-      name: 'Nathan Fish',
-      blueprint: 'Fish',
-      // object test      initScript: `prop x setTo {{ x + -220 }}
-      initScript: `prop x setTo 0
-prop y setTo 0
-prop energyLevel setTo 54
-prop startDirection setTo 160`
-    },
-    {
-      id: 502,
-      name: 'Kalani Fish',
-      blueprint: 'Fish',
-      initScript: `prop x setTo 100
-prop y setTo 100
-prop energyLevel setTo 100
-prop startDirection setTo 90` // extra property test
-    },
-    {
-      id: 503,
-      name: 'Sara Fish',
-      blueprint: 'Fish',
-      initScript: `prop x setTo 200
-      prop startDirection setTo 0` // missing y test
-    },
+    //    {
+    //      id: 501,
+    //      name: 'Nathan Fish',
+    //      blueprint: 'Fish',
+    //      // object test      initScript: `prop x setTo {{ x + -220 }}
+    //      initScript: `prop x setTo 0
+    //prop y setTo 0
+    //prop energyLevel setTo 54
+    //prop startDirection setTo 160`
+    //    },
+    //    {
+    //      id: 502,
+    //      name: 'Kalani Fish',
+    //      blueprint: 'Fish',
+    //      initScript: `prop x setTo 100
+    //prop y setTo 100
+    //prop energyLevel setTo 100
+    //prop startDirection setTo 90` // extra property test
+    //   },
+    //   {
+    //     id: 503,
+    //     name: 'Sara Fish',
+    //     blueprint: 'Fish',
+    //     initScript: `prop x setTo 200
+    //     prop startDirection setTo 0` // missing y test
+    //   },
     {
       id: 504,
       name: 'Algae 1',
