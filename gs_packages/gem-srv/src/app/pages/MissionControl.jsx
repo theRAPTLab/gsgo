@@ -241,7 +241,7 @@ class MissionControl extends React.Component {
     );
   }
   HandleInstancesUpdate(data) {
-    if (DBG) console.log('HandleInstancesUpdate', data);
+    // if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
     model.instances = data.instances;
     this.setState({ model });

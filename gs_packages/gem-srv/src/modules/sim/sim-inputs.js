@@ -43,6 +43,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
   // HACK WORKAROUND
   oldInputDef.blueprint = oldInputDef.bpname;
   newInputDef.blueprint = newInputDef.bpname;
+
   let agent = GetAgentById(newInputDef.id);
   if (!agent) {
     agent = TRANSPILER.MakeAgent(newInputDef);
@@ -75,7 +76,7 @@ INPUTDEF_TO_AGENT.setMapFunctions({
   }
 });
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+/// UR/PHASE METHODS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InputsInit(frameTime) {
   const BPNAMES = GetInputBPnames();

@@ -53,7 +53,6 @@ class MissionControl extends React.Component {
 
   render() {
     const { modelId, model, devices, minimized, classes } = this.props;
-
     const agents =
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
