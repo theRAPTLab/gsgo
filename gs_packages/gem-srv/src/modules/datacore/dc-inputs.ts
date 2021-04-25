@@ -25,6 +25,7 @@ let BPNAMES = []; // names of user-controllable blueprints
 
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
+const ACTIVE_DEVICES = new Map();
 
 const PR = UR.PrefixUtil('DCINPT');
 const DBG = false;
@@ -43,6 +44,17 @@ function transformX(numberString: string) {
 function transformY(numberString: string) {
   const n = Number(numberString);
   return n * STAGE_HEIGHT;
+}
+
+// "UADDR_340" to "340"
+function UADDRtoID(uaddr) {
+  return String(uaddr).substring(6);
+}
+// "CC340_0" to "340"
+function COBJIDtoID(cobjid) {
+  const re = /([0-9])+\B/;
+  // console.log(re.exec(cobjid));
+  return re.exec(cobjid)[0];
 }
 
 /// DATA UPDATE ///////////////////////////////////////////////////////////////
@@ -69,9 +81,15 @@ COBJ_TO_INPUTDEF.setMapFunctions({
   shouldRemove: (cobj, map) => {
     // Inputs do not necessarily come in with every INPUTS phase fire
     // so we should NOT be removing them on every update.
-    //
-    // REVIEW: HACK Never Remove for now.
-    return false;
+
+    // HACK FOR NOW
+    // At least remove agents that no longer have active devices
+    // cobj = {id, name, blueprint, bpname, valid, x, y}
+    //         id = "CC340_0"
+    return !ACTIVE_DEVICES.has(COBJIDtoID(cobj.id));
+
+    // HACK Never Remove for now.
+    // return false;
 
     // REVIEW: At some point, we'll want remove when CharControllers
     //         drop out.  This is hack where we insert a frameCount
@@ -86,7 +104,18 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     // }
   }
 });
-
+/**
+ *
+ * @param changes {valid: boolean, selected: object[], quantified: object[] }
+ *                devObject = { udid = "UDEV_340:0",
+ *                              meta = { uaddr: "UADDR_340", uapp, uapp_tags, uclass, uname }
+ *                            , inputs, outputs}
+ */
+function UpdateActiveDevices(changes) {
+  const { selected } = changes;
+  ACTIVE_DEVICES.clear();
+  selected.forEach(s => ACTIVE_DEVICES.set(UADDRtoID(s.meta.uaddr), true));
+}
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SetInputStageBounds(width, height) {
@@ -114,8 +143,9 @@ export async function InputInit(bpname: string) {
       device.meta.uapp_tags.includes(`bp_${bpname}`),
     quantify: list => list,
     notify: changes => {
-      const { valid, added, updated, removed } = changes;
-      console.log(...PR('notify', changes));
+      UpdateActiveDevices(changes);
+      // const { valid, added, updated, removed } = changes;
+      // console.error(...PR('notify', changes));
     }
   });
   INPUT_GROUPS.set(bpname, devAPI);
