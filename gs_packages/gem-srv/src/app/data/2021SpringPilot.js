@@ -149,6 +149,7 @@ featProp Physics.radius setTo 16
 //propPop text
 prop text setTo '##'
 
+# PROGRAM INIT
 // put new algae into bottom left for the farming setup if needed
 prop x setTo -430
 prop y setTo 370
