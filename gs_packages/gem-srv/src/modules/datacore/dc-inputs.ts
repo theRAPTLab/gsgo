@@ -56,6 +56,14 @@ function COBJIDtoID(cobjid) {
   // console.log(re.exec(cobjid));
   return re.exec(cobjid)[0];
 }
+// "CC340_0" to "340_0"
+function COBJIDtoID_n(cobjid) {
+  return String(cobjid).substring(2);
+}
+// "UDEV_340:0" to "340_0"
+function UDIDtoID_n(udid) {
+  return String(udid).substring(5).replace(':', '_');
+}
 
 /// DATA UPDATE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -86,7 +94,7 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     // At least remove agents that no longer have active devices
     // cobj = {id, name, blueprint, bpname, valid, x, y}
     //         id = "CC340_0"
-    return !ACTIVE_DEVICES.has(COBJIDtoID(cobj.id));
+    return !ACTIVE_DEVICES.has(COBJIDtoID_n(cobj.id));
 
     // HACK Never Remove for now.
     // return false;
@@ -112,9 +120,13 @@ COBJ_TO_INPUTDEF.setMapFunctions({
  *                            , inputs, outputs}
  */
 function UpdateActiveDevices(changes) {
-  const { selected } = changes;
+  // `changes` only contains the devices that notify is announcing
+  // we actually want to update ALL devices.
+  const devices = UR.GetDeviceDirectory();
+  const inputDevices = devices.filter(d => d.meta.uclass === 'CharControl');
+
   ACTIVE_DEVICES.clear();
-  selected.forEach(s => ACTIVE_DEVICES.set(UADDRtoID(s.meta.uaddr), true));
+  inputDevices.forEach(d => ACTIVE_DEVICES.set(UDIDtoID_n(d.udid), true));
 }
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
