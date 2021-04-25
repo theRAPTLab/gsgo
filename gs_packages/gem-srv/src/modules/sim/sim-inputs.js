@@ -43,6 +43,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
   // HACK WORKAROUND
   oldInputDef.blueprint = oldInputDef.bpname;
   newInputDef.blueprint = newInputDef.bpname;
+
   let agent = GetAgentById(newInputDef.id);
   if (!agent) {
     agent = TRANSPILER.MakeAgent(newInputDef);
@@ -57,6 +58,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
   oldInputDef.y = newInputDef.y;
   agent.x = newInputDef.x;
   agent.y = newInputDef.y;
+  agent.zIndex = -100; // Force all inputs behind NPCs so NPCs can get clicks
   agent.setModePuppet();
 }
 
@@ -74,7 +76,7 @@ INPUTDEF_TO_AGENT.setMapFunctions({
   }
 });
 
-/// API METHODS ///////////////////////////////////////////////////////////////
+/// UR/PHASE METHODS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InputsInit(frameTime) {
   const BPNAMES = GetInputBPnames();

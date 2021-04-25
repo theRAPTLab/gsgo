@@ -230,6 +230,10 @@ class Visual implements IVisual, IPoolable, IActable {
     return [spr.x, spr.y];
   }
 
+  getZIndex() {
+    return this.container.zIndex;
+  }
+
   /** get direction by angle (0 points right) */
   getAngle() {
     return this.sprite.angle;
@@ -244,6 +248,16 @@ class Visual implements IVisual, IPoolable, IActable {
 
   setPosition(x: number, y: number) {
     this.container.position.set(x, y);
+  }
+
+  /**
+   * REVIEW: Using zIndex might reduce performance
+   *         Layers might be better: https://github.com/pixijs/pixi-display
+   * See https://pixijs.download/release/docs/PIXI.Container.html#sortableChildren
+   * @param zIndex
+   */
+  setZIndex(zIndex: number) {
+    this.container.zIndex = zIndex;
   }
 
   turnAngle(deltaA: number) {

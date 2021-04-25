@@ -241,7 +241,7 @@ class MissionControl extends React.Component {
     );
   }
   HandleInstancesUpdate(data) {
-    if (DBG) console.log('HandleInstancesUpdate', data);
+    // if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
     model.instances = data.instances;
     this.setState({ model });
@@ -511,7 +511,11 @@ class MissionControl extends React.Component {
               model={model}
               needsUpdate={scriptsNeedUpdate}
             />
-            <PanelInstances id="instances" instances={inspectorInstances} />
+            <PanelInstances
+              id="instances"
+              instances={inspectorInstances}
+              disallowDeRegister={false}
+            />
           </div>
         </div>
         <div
