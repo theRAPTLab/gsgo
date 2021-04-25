@@ -57,6 +57,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
   oldInputDef.y = newInputDef.y;
   agent.x = newInputDef.x;
   agent.y = newInputDef.y;
+  agent.zIndex = -100; // Force all inputs behind NPCs so NPCs can get clicks
   agent.setModePuppet();
 }
 

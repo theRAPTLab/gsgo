@@ -69,6 +69,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     // shared basic props in props for conceptual symmetry
     this.prop.x = new GVarNumber();
     this.prop.y = new GVarNumber();
+    this.prop.zIndex = new GVarNumber();
     this.prop.skin = new GVarString('default');
     this.prop.scale = new GVarNumber(1); // implicit x
     this.prop.scale.setMax(10);
@@ -109,6 +110,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set y(num: number) {
     this.prop.y.value = num;
+  }
+  get zIndex() {
+    return this.prop.zIndex.value;
+  }
+  set zIndex(num: number) {
+    this.prop.zIndex.value = num;
   }
   get skin() {
     return this.prop.skin.value;

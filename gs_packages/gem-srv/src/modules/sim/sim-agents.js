@@ -50,6 +50,7 @@ AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
+    dobj.zIndex = agent.zIndex;
     dobj.skin = agent.skin;
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
@@ -65,6 +66,7 @@ AGENT_TO_DOBJ.setMapFunctions({
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
+    dobj.zIndex = agent.zIndex;
     dobj.skin = agent.skin;
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
