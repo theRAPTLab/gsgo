@@ -511,7 +511,11 @@ class MissionControl extends React.Component {
               model={model}
               needsUpdate={scriptsNeedUpdate}
             />
-            <PanelInstances id="instances" instances={inspectorInstances} />
+            <PanelInstances
+              id="instances"
+              instances={inspectorInstances}
+              disallowDeRegister={false}
+            />
           </div>
         </div>
         <div
