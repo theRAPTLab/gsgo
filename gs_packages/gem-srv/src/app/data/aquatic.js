@@ -125,6 +125,10 @@ useFeature Touches
 featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
 
+# PROGRAM INIT
+prop x setTo 400
+dbgOut "Init"
+
 # PROGRAM EVENT
 
 # PROGRAM UPDATE

@@ -499,10 +499,18 @@ class ProjectData {
     const instance = {
       id: GetUID(),
       name: `${data.blueprintName}${model.instances.length}`,
-      blueprint: data.blueprintName,
-      initScript: `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
-prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`
+      blueprint: data.blueprintName
     };
+
+    // If blueprint has `# PROGRAM INIT` we run that
+    // otherwise we auto-place the agent around the center of the screen
+    const blueprint = model.scripts.find(s => s.id === data.blueprintName);
+    const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
+    if (!hasInit) {
+      instance.initScript = `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
+prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`;
+    }
+
     model.instances.push(instance);
     //
     // REVIEW
