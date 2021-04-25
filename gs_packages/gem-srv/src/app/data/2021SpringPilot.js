@@ -151,7 +151,7 @@ prop text setTo '##'
 
 // put new algae into bottom left for the farming setup if needed
 prop x setTo -430
-prop y setTo 380
+prop y setTo 370
 
 # PROGRAM EVENT
 onEvent Start [[
