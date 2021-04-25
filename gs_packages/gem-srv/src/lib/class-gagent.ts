@@ -44,6 +44,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isHovered: boolean;
   isGrouped: boolean;
   isGlowing: boolean;
+  isLargeMeter: boolean;
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
