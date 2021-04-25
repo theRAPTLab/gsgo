@@ -60,11 +60,14 @@ function PKT_RegisterDevice(pkt) {
   const ins = udev.getInputControlNames().reduce((acc, i) => `[${i}]`, '');
   const outs = udev.getOutputControlNames().reduce((acc, o) => `[${o}]`, '');
   const deviceClass = udev.getMetaProp('uclass');
-  const status = `registered ${udid} dclass:'${deviceClass}' inputs:${ins} outputs:${outs}`;
-  if (DBG.devices) TERM(status);
+  const status = `${udid} dclass:'${deviceClass}' inputs:${ins} outputs:${outs}`;
   // save the device to the list
   const uaddr = pkt.getSourceAddress();
-  if (!DEVICE_BY_UADDR.has(uaddr)) DEVICE_BY_UADDR.set(uaddr, new Map());
+  if (!DEVICE_BY_UADDR.has(uaddr)) {
+    DEVICE_BY_UADDR.set(uaddr, new Map());
+    if (DBG.devices) TERM('registering', status);
+  } else if (DBG.devices) TERM('re-registering', status);
+
   const dMap = DEVICE_BY_UADDR.get(uaddr);
   dMap.set(udev.udid, udev);
 
