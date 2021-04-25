@@ -325,6 +325,10 @@ class Visual implements IVisual, IPoolable, IActable {
     this.meterValue = percent;
     this.filterbox.addChild(this.meter);
   }
+
+  removeMeter() {
+    if (this.meter) this.meter.clear();
+  }
 } // end class Sprite
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////

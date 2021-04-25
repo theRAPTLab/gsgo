@@ -160,6 +160,7 @@ function Init(element) {
           dobj.meterClr,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
+      else vobj.removeMeter();
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
