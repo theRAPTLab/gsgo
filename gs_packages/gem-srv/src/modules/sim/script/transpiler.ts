@@ -431,6 +431,28 @@ function ExtractBlueprintPropertiesTypeMap(script) {
   return map;
 }
 
+/**
+ * A brute force method of checking to see if the script has a directive
+ * Used by project-data.InstanceAdd to check for the presence of
+ * '# PROGRAM INIT' to decide whether or not to replace
+ * the init script.
+ * @param script
+ * @param directive
+ * @returns boolean
+ */
+function HasDirective(script: string, directive: string) {
+  if (!script) return false; // During update script can be undefined
+  const units = ScriptifyText(script);
+  let result = false;
+  units.forEach(rawUnit => {
+    const unit = r_ExpandArgs(rawUnit);
+    if (unit.length !== 3) return; // we're expecting `# PROGRAM xxx` so length = 3
+    if (unit[0] === '_pragma' && unit[1] === 'PROGRAM' && unit[2] === directive)
+      result = true;
+  });
+  return result;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
@@ -539,5 +561,6 @@ export {
   ExtractBlueprintName,
   ExtractBlueprintProperties,
   ExtractBlueprintPropertiesMap,
-  ExtractBlueprintPropertiesTypeMap
+  ExtractBlueprintPropertiesTypeMap,
+  HasDirective
 };

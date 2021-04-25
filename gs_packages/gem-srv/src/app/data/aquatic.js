@@ -125,6 +125,11 @@ useFeature Touches
 featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
 
+# PROGRAM INIT
+prop x setTo 400
+featCall Movement setRandomPositionY
+dbgOut "Init"
+
 # PROGRAM EVENT
 
 # PROGRAM UPDATE
