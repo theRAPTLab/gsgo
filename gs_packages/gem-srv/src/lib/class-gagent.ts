@@ -48,7 +48,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   thinkQueue: TMethod[];
   execQueue: TMethod[];
   //
-  constructor(agentName = '<anon>', id) {
+  constructor(agentName = '<anon>', id?: string | number) {
     super(agentName); // sets value to agentName, which is only for debugging
 
     // override default SM_Object id with instance id
@@ -488,7 +488,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
 /// The global agent is our "World Agent" that contains shared properties for
 /// a running simulation
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const GLOBAL_AGENT = new GAgent();
+const GLOBAL_AGENT = new GAgent('GlobalAgent');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetGlobalAgent() {
   return GLOBAL_AGENT;
