@@ -106,14 +106,15 @@ const exampleControlFrame = {
  */
 class UDevice {
   /** if provided an object, we want to create a UDevice instance from
-   *  a plain object that was received  over the network. Otherwise4,
+   *  a plain object that was received  over the network. Otherwise,
    *  we are making a new device
    */
   constructor(objOrClass, uname) {
     /// this.descriptor = { device, user, student, inputs, outputs }
+    if (objOrClass === '') throw Error('UDevice got invalid arg1: empty string');
     if (typeof objOrClass === 'object') this.deserialize(objOrClass);
     else if (typeof objOrClass === 'string') this._initNew(objOrClass, uname);
-    else throw Error('UDevice constructor got invalid parameter:', objOrClass);
+    else throw Error('UDevice constructor got non-string arg1:', objOrClass);
   }
 
   /** set a device property */
@@ -283,11 +284,11 @@ class UDevice {
       sauth: '' // student authentication token, if any
     };
     // if a uclass was specified, then copy the inputs/outputs from the template
+    this.meta.uclass = uclass;
     if (DEVICE_CLASS_TEMPLATES[uclass]) {
-      this.meta.uclass = uclass;
       const template = DEVICE_CLASS_TEMPLATES[uclass];
-      if (template.inputs) this.inputs = Object.assign({}, template.inputs); // shallow copy of controlDef map
-      if (template.outputs) this.outputs = Object.assign({}, template.outputs); // shallow copy controlDef map
+      if (template.inputs) this.inputs = { ...template.inputs }; // shallow copy of controlDef map
+      if (template.outputs) this.outputs = { ...template.outputs }; // shallow copy controlDef map
     } else {
       this.inputs = {}; // hash of controlName, controlDef
       this.outputs = {}; //hash of controlName, controlDef
