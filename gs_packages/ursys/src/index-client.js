@@ -13,11 +13,18 @@ const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
-const TestHasher = require('./class-pathed-hasher');
+const COMMON = require('./ur-common');
 
-/// CLASSES ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// classes
 const PhaseMachine = require('./class-phase-machine');
+//
+const {
+  IsBrowser,
+  IsNode,
+  IsElectron,
+  IsElectronMain,
+  IsElectronRenderer
+} = COMMON;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -143,6 +150,12 @@ const UR = {
   CallMessage,
   // FORWARDED GENERIC PHASE MACHINEc
   HookPhase: PhaseMachine.Hook,
+  // SYSTEM ENVIRONMENT
+  IsNode,
+  IsBrowser,
+  IsElectron,
+  IsElectronRenderer,
+  IsElectronMain,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
