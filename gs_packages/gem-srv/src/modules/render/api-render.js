@@ -34,6 +34,7 @@ let SETTINGS = {};
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PIXI_DIV > PIXI_APP . stage > Root > Boundary
 function Init(element) {
   // if PIXI_APP already exists, maybe we just need to reattach the canvas
   if (PIXI_APP) {
@@ -241,6 +242,7 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Rescales Root to fit in PIXI_DIV
 function RescaleToFit(width, height = width) {
   const pad = 20; // add padding so you can see the edges
   const scaleFactor = Math.min(
@@ -250,7 +252,7 @@ function RescaleToFit(width, height = width) {
   CONTAINERS.Root.scale.set(scaleFactor);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function SetBoundary(width, height, color = 0x000000) {
+function SetBoundary(width, height, bgcolor = 0x000000) {
   // Stage
   let boundaryRect = CONTAINERS.Boundary;
   if (!boundaryRect) {
@@ -258,7 +260,7 @@ function SetBoundary(width, height, color = 0x000000) {
     CONTAINERS.Boundary = boundaryRect;
     CONTAINERS.Root.addChild(boundaryRect);
   }
-  boundaryRect.beginFill(color);
+  boundaryRect.beginFill(bgcolor);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
   boundaryRect.zIndex = -999;

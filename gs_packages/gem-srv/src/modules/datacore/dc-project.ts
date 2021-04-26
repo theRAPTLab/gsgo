@@ -33,6 +33,7 @@ export function UpdateDCBounds(bounds) {
   BOUNDS.left = bounds.left;
   BOUNDS.wrap = bounds.wrap;
   BOUNDS.bounce = bounds.bounce;
+  BOUNDS.bgcolor = bounds.bgcolor;
 }
 
 /// BOUNDS METHODS ////////////////////////////////////////////////////////////
@@ -44,7 +45,8 @@ export function GetBounds() {
 export function GetBoundary() {
   const width = BOUNDS.right - BOUNDS.left;
   const height = BOUNDS.bottom - BOUNDS.top;
-  return { width, height };
+  const bgcolor = BOUNDS.bgcolor;
+  return { width, height, bgcolor };
 }
 /**
  * Test function used by feat-movement to determine whether a wall

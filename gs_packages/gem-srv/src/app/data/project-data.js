@@ -256,7 +256,8 @@ class ProjectData {
     const boundary = GetBoundary();
     UR.RaiseMessage('NET:SET_BOUNDARY', {
       width: boundary.width,
-      height: boundary.height
+      height: boundary.height,
+      bgcolor: boundary.bgcolor
     });
   }
 
@@ -698,7 +699,7 @@ prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`;
 
     // 2. Show Boundary
     const boundary = GetBoundary();
-    RENDERER.SetBoundary(boundary.width, boundary.height);
+    RENDERER.SetBoundary(boundary.width, boundary.height, boundary.bgcolor);
     // And Set Listeners too
     this.SendBoundary();
 
