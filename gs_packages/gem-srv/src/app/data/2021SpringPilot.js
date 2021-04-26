@@ -67,9 +67,14 @@ onEvent Start [[
 # PROGRAM UPDATE
 when Fish touches Algae [[
   every 1 runAtStart [[
-    prop Fish.energyLevel add 10
-    prop Algae.energyLevel sub 10
+    // always glow to show the interaction
     featCall Fish.Costume setGlow 0.5
+
+    // only eat if the algae is above 0
+    ifExpr {{Algae.getProp('energyLevel').value > 0}} [[
+      prop Fish.energyLevel add 10
+      prop Algae.energyLevel sub 10
+    ]]
 
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
@@ -81,9 +86,6 @@ when Fish touches Algae [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
     ]]
-
-
-
 
   ]]
 ]]
@@ -218,7 +220,7 @@ featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 500
 
 prop agent.skin setTo 'lightbeam.json'
-prop agent.alpha setTo 0.3
+prop agent.alpha setTo 0.5
 
 # PROGRAM EVENT
 onEvent Tick [[
