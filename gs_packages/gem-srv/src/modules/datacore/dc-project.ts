@@ -21,12 +21,12 @@ const BOUNDS: any = {};
 
 /// PRIVATE METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UpdateModel(model) {
+export function UpdateDCModel(model) {
   MODEL.label = model.label;
   MODEL.scripts = model.scripts;
   MODEL.instances = model.instances;
 }
-export function UpdateBounds(bounds) {
+export function UpdateDCBounds(bounds) {
   BOUNDS.top = bounds.top;
   BOUNDS.right = bounds.right;
   BOUNDS.bottom = bounds.bottom;
