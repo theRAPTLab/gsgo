@@ -394,9 +394,11 @@ class ProjectData {
     // 3. Clean the init scripts
     const validPropDefs = TRANSPILER.ExtractBlueprintProperties(data.script);
     const validPropNames = validPropDefs.map(d => d.name);
-    model.instances = model.instances.map(i =>
-      this.RemoveInvalidPropsFromInstanceInit(i, validPropNames)
-    );
+    model.instances = model.instances.map(i => {
+      // Only clean init scripts for the submitted blueprint
+      if (i.blueprint !== blueprintName) return i;
+      return this.RemoveInvalidPropsFromInstanceInit(i, validPropNames);
+    });
 
     // 4. Delete the old instance
     //    If the sim is not running, delete the old instance
