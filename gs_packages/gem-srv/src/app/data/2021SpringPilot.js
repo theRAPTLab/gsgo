@@ -222,6 +222,11 @@ featCall Physics setSize 100 500
 prop agent.skin setTo 'lightbeam.json'
 prop agent.alpha setTo 0.5
 
+# PROGRAM INIT
+// default position for moving across the top
+prop x setTo -400
+prop y setTo -180
+
 # PROGRAM EVENT
 onEvent Tick [[
   // featPropPush Physics.radius
