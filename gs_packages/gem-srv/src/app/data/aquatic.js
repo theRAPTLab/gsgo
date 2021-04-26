@@ -261,7 +261,7 @@ exprPush {{ 'Algae energyLevel avg' }}
 propPop text
 
 // Make skin invisible
-prop skin setTo '1x1'
+prop skin setTo onexone
 prop scale setTo 80
 prop scaleY setTo 40
 
