@@ -92,7 +92,7 @@ class Viewer extends React.Component {
   Initialize() {
     if (this.state.isReady) return; // already initialized
     this.RequestModel();
-    UR.RaiseMessage('INIT_PROJECT'); // Tell PanelSimViewer to request boundaries
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
 

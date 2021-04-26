@@ -34,6 +34,7 @@ let SETTINGS = {};
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PIXI_DIV > PIXI_APP . stage > Root > Boundary
 function Init(element) {
   // if PIXI_APP already exists, maybe we just need to reattach the canvas
   if (PIXI_APP) {
@@ -241,6 +242,7 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Rescales Root to fit in PIXI_DIV
 function RescaleToFit(width, height = width) {
   const pad = 20; // add padding so you can see the edges
   const scaleFactor = Math.min(

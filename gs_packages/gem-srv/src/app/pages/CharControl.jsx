@@ -13,7 +13,11 @@ import clsx from 'clsx';
 
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/mod-charcontrol-ui';
+import {
+  Initialize,
+  HandleStateChange,
+  UpdateDimensions
+} from './elements/mod-charcontrol-ui';
 import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
 import '../../lib/css/charcontrol.css';
@@ -79,6 +83,9 @@ class CharController extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     HookResize(window);
 
+    // Update size of controller canvas and entities
+    window.addEventListener('resize', UpdateDimensions);
+
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
@@ -101,7 +108,7 @@ class CharController extends React.Component {
   initialize() {
     if (this.state.isReady) return; // already initialized
     this.requestBPNames();
-    UR.RaiseMessage('INIT_PROJECT'); // Tell PanelSimViewer to request boundaries
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
 

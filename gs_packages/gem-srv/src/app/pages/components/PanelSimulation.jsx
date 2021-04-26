@@ -40,6 +40,7 @@ class PanelSimulation extends React.Component {
     this.state = {
       title: 'Virtual Stage'
     };
+    this.setBoundary = this.setBoundary.bind(this);
   }
 
   componentDidMount() {
@@ -48,13 +49,19 @@ class PanelSimulation extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    window.addEventListener('resize', this.setBoundary);
   }
 
   componentWillUnmount() {}
 
+  setBoundary() {
+    const { width, height } = this.props;
+    RENDERER.SetBoundary(width, height);
+  }
+
   render() {
     const { title } = this.state;
-    const { id, model, isActive, onClick, classes } = this.props;
+    const { id, model, width, height, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

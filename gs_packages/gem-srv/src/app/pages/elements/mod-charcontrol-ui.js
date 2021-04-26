@@ -332,6 +332,26 @@ async function Initialize(componentInstance, opt = {}) {
   m_CHARVIEW.setState({ rate: SENDING_FPS });
 } // Initialize()
 
+/// HACKY
+/// Keep entities in approximately the same position as the window
+/// resizes.
+function UpdateDimensions(e) {
+  // Update entities
+  for (let i = 0; i < m_entities.length; i++) {
+    const fdiv = m_entities[i];
+    const cobj = u_MakeControlDataObject(fdiv);
+    const w = m_container.offsetWidth;
+    const h = m_container.offsetHeight;
+    const x = (0.5 + Number(cobj.x)) * w - fdiv.offsetWidth / 2;
+    const y = (0.5 + Number(cobj.y)) * h - fdiv.offsetHeight / 2;
+    fdiv.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  }
+  // save dimensions of m_container. this isn't actually a canvas element.
+  // it's used to calculate normalized coordinates of entities
+  m_canvaswidth = m_container.offsetWidth;
+  m_canvasheight = m_container.offsetHeight;
+}
+
 /// SEND PTRACK-COMPATIBLE DATA ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SendControlFrame() {
@@ -489,4 +509,4 @@ function u_MakeControlDataObject(div) {
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
-export { Initialize, HandleStateChange };
+export { Initialize, HandleStateChange, UpdateDimensions };

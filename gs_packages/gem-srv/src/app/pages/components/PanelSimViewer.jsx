@@ -63,7 +63,7 @@ class PanelSimViewer extends React.Component {
     this.requestBoundary = this.requestBoundary.bind(this);
     this.handleSetBoundary = this.handleSetBoundary.bind(this);
     // Sent by parent after it knows the Main Sim project has loaded
-    UR.HandleMessage('INIT_PROJECT', this.requestBoundary);
+    UR.HandleMessage('INIT_RENDERER', this.requestBoundary);
   }
 
   componentDidMount() {
@@ -76,17 +76,20 @@ class PanelSimViewer extends React.Component {
 
   componentWillUnmount() {}
 
+  /**
+   * The simulation bounds is set by each project.  So it needs to be updated
+   * whenever a project loads.  It also needs to be updated when the window
+   * resizes.
+   */
   setBoundary() {
     const { width, height } = this.state;
     RENDERER.SetBoundary(width, height);
   }
-
   requestBoundary() {
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName: 'GetProjectBoundary'
     }).then(this.handleSetBoundary);
   }
-
   handleSetBoundary(data) {
     this.setState(
       {

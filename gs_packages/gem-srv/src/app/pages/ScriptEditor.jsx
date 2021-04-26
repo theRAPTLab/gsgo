@@ -137,7 +137,7 @@ class ScriptEditor extends React.Component {
     if (this.state.isReady) return; // already initialized
     const { modelId } = this.state;
     this.RequestModel(modelId);
-    UR.RaiseMessage('INIT_PROJECT'); // Tell PanelSimViewer to request boundaries
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
 
