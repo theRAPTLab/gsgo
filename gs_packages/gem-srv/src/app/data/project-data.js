@@ -35,8 +35,8 @@ import {
   InputsReset
 } from 'modules/datacore/dc-inputs';
 import {
-  UpdateModel,
-  UpdateBounds,
+  UpdateDCModel,
+  UpdateDCBounds,
   GetBounds,
   GetBoundary
 } from 'modules/datacore/dc-project';
@@ -56,6 +56,8 @@ const PR = UR.PrefixUtil('ProjectData');
 const DBG = false;
 
 let DEVICE_UDID; // registered UDID
+
+let CURRENT_MODEL;
 
 /// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
 const API_PROJDATA = [
@@ -219,16 +221,16 @@ class ProjectData {
   // Main Load Model Call -- sets dc-project parameters
   LoadModel(modelId) {
     this.currentModelId = modelId;
-    const model = this.GetModel(modelId);
-    const bounds = model.bounds || {
+    CURRENT_MODEL = this.GetSimDataModel(modelId);
+    const bounds = CURRENT_MODEL.bounds || {
       top: -400, // default if not set
       right: 400,
       bottom: 400,
       left: -400
     };
-    UpdateModel(model);
-    UpdateBounds(bounds);
-    return model;
+    UpdateDCModel(CURRENT_MODEL);
+    UpdateDCBounds(bounds);
+    return CURRENT_MODEL;
   }
   SetCurrentModelId(modelId) {
     this.currentModelId = modelId;
@@ -238,7 +240,7 @@ class ProjectData {
   }
   GetModel(modelId = this.currentModelId) {
     if (!modelId) throw 'Tried to GetModel before setting modelId';
-    return this.GetSimDataModel(modelId);
+    return CURRENT_MODEL || this.LoadModel(modelId);
   }
   // Used for URSYS requests for full project data, e.g. Viewer
   GetCurrentModelData() {
@@ -394,9 +396,11 @@ class ProjectData {
     // 3. Clean the init scripts
     const validPropDefs = TRANSPILER.ExtractBlueprintProperties(data.script);
     const validPropNames = validPropDefs.map(d => d.name);
-    model.instances = model.instances.map(i =>
-      this.RemoveInvalidPropsFromInstanceInit(i, validPropNames)
-    );
+    model.instances = model.instances.map(i => {
+      // Only clean init scripts for the submitted blueprint
+      if (i.blueprint !== blueprintName) return i;
+      return this.RemoveInvalidPropsFromInstanceInit(i, validPropNames);
+    });
 
     // 4. Delete the old instance
     //    If the sim is not running, delete the old instance
@@ -435,7 +439,7 @@ class ProjectData {
   }
   RaiseModelUpdate(modelId = this.currentModelId) {
     const model = this.GetSimDataModel(modelId);
-    UpdateModel(model); // update dc-project
+    UpdateDCModel(model); // update dc-project
 
     // MissionControl instances need to be updated as well.
     UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
