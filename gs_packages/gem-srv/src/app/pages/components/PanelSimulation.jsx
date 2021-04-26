@@ -55,13 +55,22 @@ class PanelSimulation extends React.Component {
   componentWillUnmount() {}
 
   setBoundary() {
-    const { width, height } = this.props;
-    RENDERER.SetBoundary(width, height);
+    const { width, height, bgcolor } = this.props;
+    RENDERER.SetBoundary(width, height, bgcolor);
   }
 
   render() {
     const { title } = this.state;
-    const { id, model, width, height, isActive, onClick, classes } = this.props;
+    const {
+      id,
+      model,
+      width,
+      height,
+      bgcolor,
+      isActive,
+      onClick,
+      classes
+    } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
