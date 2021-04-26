@@ -1,6 +1,14 @@
 export const MODEL = {
-  id: 'Aquatic',
   label: 'Aquatic Ecosystem',
+  bounds: {
+    top: -400,
+    right: 400,
+    bottom: 400,
+    left: -400,
+    wrap: [true, true],
+    bounce: false,
+    bgcolor: 0x000066
+  },
   scripts: [
     {
       id: 'Fish',
@@ -149,6 +157,9 @@ featProp Physics.radius setTo 16
 //propPop text
 prop text setTo '##'
 
+// disabled algae wander because the hack of putting algae off to the side is wonky with it
+//featCall Movement setMovementType 'wander' 0.2
+
 # PROGRAM INIT
 // put new algae into bottom left for the farming setup if needed
 prop x setTo -480
@@ -237,7 +248,7 @@ prop text setTo 'meter'
 
 
 // Make skin invisible
-prop skin setTo '1x1'
+prop skin setTo 'onexone'
 
 // Show meter on start.
 prop meterLarge setTo true
@@ -300,7 +311,7 @@ onEvent Tick [[
       # PROGRAM DEFINE
       // useFeature Costume
       // useFeature Movement
-      prop skin setTo '1x1'
+      prop skin setTo 'onexone'
       addProp time Number 0
       prop text setTo 'Time: 0'
       # PROGRAM EVENT
