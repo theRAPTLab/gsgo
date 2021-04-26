@@ -50,7 +50,7 @@ const DBG = false;
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('edit', '15% auto 0px'); // columns
+PANEL_CONFIG.set('edit', '15% auto 150px'); // columns
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
@@ -514,16 +514,20 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            <PanelPlayback
-              id="playback"
-              model={model}
-              needsUpdate={scriptsNeedUpdate}
-            />
-            <PanelInstances
-              id="instances"
-              instances={inspectorInstances}
-              disallowDeRegister={false}
-            />
+            {panelConfiguration !== 'edit' && (
+              <>
+                <PanelPlayback
+                  id="playback"
+                  model={model}
+                  needsUpdate={scriptsNeedUpdate}
+                />
+                <PanelInstances
+                  id="instances"
+                  instances={inspectorInstances}
+                  disallowDeRegister={false}
+                />
+              </>
+            )}
           </div>
         </div>
         <div
