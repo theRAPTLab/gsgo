@@ -403,7 +403,7 @@ class MissionControl extends React.Component {
       openConfirmClose
     } = this.state;
     const { classes } = this.props;
-    const { width, height } = PROJ.GetProjectBoundary();
+    const { width, height, bgcolor } = PROJ.GetProjectBoundary();
 
     const agents =
       model && model.scripts
@@ -502,6 +502,7 @@ class MissionControl extends React.Component {
             model={model}
             width={width}
             height={height}
+            bgcolor={bgcolor}
             onClick={this.OnPanelClick}
           />
         </div>
