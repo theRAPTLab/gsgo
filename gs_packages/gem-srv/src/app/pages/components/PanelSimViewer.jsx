@@ -82,8 +82,8 @@ class PanelSimViewer extends React.Component {
    * resizes.
    */
   setBoundary() {
-    const { width, height } = this.state;
-    RENDERER.SetBoundary(width, height);
+    const { width, height, bgcolor } = this.state;
+    RENDERER.SetBoundary(width, height, bgcolor);
   }
   requestBoundary() {
     UR.CallMessage('NET:REQ_PROJDATA', {
@@ -94,7 +94,8 @@ class PanelSimViewer extends React.Component {
     this.setState(
       {
         width: data.result.width,
-        height: data.result.height
+        height: data.result.height,
+        bgcolor: data.result.bgcolor
       },
       () => this.setBoundary()
     );

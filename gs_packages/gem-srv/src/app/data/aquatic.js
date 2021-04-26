@@ -6,7 +6,8 @@ export const MODEL = {
     bottom: 400,
     left: -400,
     wrap: [false, false],
-    bounce: true
+    bounce: true,
+    bgcolor: 0x000066
   },
   scripts: [
     {
