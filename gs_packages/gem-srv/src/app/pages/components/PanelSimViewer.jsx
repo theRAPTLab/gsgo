@@ -55,8 +55,11 @@ class PanelSimViewer extends React.Component {
     this.state = {
       title: 'Virtual Stage (view-only)',
       color: '#33FF33',
-      bgcolor: 'rgba(0,256,0,0.1)'
+      bgcolor: 'rgba(0,256,0,0.1)',
+      width: 400,
+      height: 400
     };
+    this.setBoundary = this.setBoundary.bind(this);
     this.requestBoundary = this.requestBoundary.bind(this);
     this.handleSetBoundary = this.handleSetBoundary.bind(this);
     // Sent by parent after it knows the Main Sim project has loaded
@@ -68,9 +71,15 @@ class PanelSimViewer extends React.Component {
     RENDERER.SetGlobalConfig({ actable: false });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    window.addEventListener('resize', this.setBoundary);
   }
 
   componentWillUnmount() {}
+
+  setBoundary() {
+    const { width, height } = this.state;
+    RENDERER.SetBoundary(width, height);
+  }
 
   requestBoundary() {
     UR.CallMessage('NET:REQ_PROJDATA', {
@@ -79,7 +88,13 @@ class PanelSimViewer extends React.Component {
   }
 
   handleSetBoundary(data) {
-    RENDERER.SetBoundary(data.result.width, data.result.height);
+    this.setState(
+      {
+        width: data.result.width,
+        height: data.result.height
+      },
+      () => this.setBoundary()
+    );
   }
 
   render() {
