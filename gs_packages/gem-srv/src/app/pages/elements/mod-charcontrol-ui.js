@@ -245,14 +245,20 @@ function HandleStateChange(name, value) {
           DoBurstTest(value);
           break;
         case 'num_entities':
-          Initialize(m_CHARVIEW, { sampleRate: SENDING_FPS });
+          // ORIG CODE: Initialize is overkill
+          // Initialize(m_CHARVIEW, { sampleRate: SENDING_FPS });
+
+          // We just need to:
+          // 1. clear the container (remove old entities)
+          m_container = m_SetupContainer('container');
+          // 2. update entities
+          m_entities = m_CreateEntities(m_container);
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
           break;
         case 'tag':
-          MarkerFramer = undefined; // clear it so we can create a new one with different tags
-          Initialize(m_CHARVIEW, { sampleRate: SENDING_FPS });
+          m_MakeDevice(); // Only make a new device for blueprint, don't re-initialize UI
           break;
       }
     }
@@ -261,6 +267,28 @@ function HandleStateChange(name, value) {
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is primarily called by Initialize to create the device.
+ *  It is also called when the user selects a new blueprint and we need to
+ *  create a new device for the blueprint without re-initializing the whole UI.
+ */
+async function m_MakeDevice() {
+  if (!Device) Device = UR.NewDevice('CharControl');
+
+  // Update blueprint names for "Blueprint" selector
+  // NOTE: Currently we only allow a single blueprint type per device
+  Device.meta.uapp_tags = [m_CHARVIEW.state.tag];
+
+  const { udid, status, error } = await UR.RegisterDevice(Device);
+  if (error) console.error(error);
+  if (status) console.log(...PR(status));
+  if (udid) DEVICE_UDID = udid;
+  MarkerFramer = Device.getControlFramer('markers');
+
+  // send periodic control frames
+  clearInterval(SENDER); // clear the old one if we're initializing a new one
+  SENDER = setInterval(SendControlFrame, INTERVAL);
+}
+
 /** This is called by the CharControl component once it's completely rendered,
  *  at which time this module can start adding its own objects. This code
  *  relies on m_CHARVIEW (the CharContol view)
@@ -269,6 +297,10 @@ function HandleStateChange(name, value) {
  *  the UISTATE module to manage state propagation
 /*/
 async function Initialize(componentInstance, opt = {}) {
+  // Initialize only needs to be called once.
+  // If MarkerFramer is already defined, then we've been initialized
+  if (MarkerFramer !== undefined) return;
+
   // save React component to grab state from and setstate
   m_CHARVIEW = componentInstance;
 
@@ -281,21 +313,7 @@ async function Initialize(componentInstance, opt = {}) {
   // a device declares what kind of device it is
   // and what data can be sent/received
   if (MarkerFramer === undefined) {
-    if (!Device) Device = UR.NewDevice('CharControl');
-
-    // Update blueprint names for "Blueprint" selector
-    // NOTE: Currently we only allow a single blueprint type per device
-    Device.meta.uapp_tags = [m_CHARVIEW.state.tag];
-
-    const { udid, status, error } = await UR.RegisterDevice(Device);
-    if (error) console.error(error);
-    if (status) console.log(...PR(status));
-    if (udid) DEVICE_UDID = udid;
-    MarkerFramer = Device.getControlFramer('markers');
-
-    // send periodic control frames
-    clearInterval(SENDER); // clear the old one if we're initializing a new one
-    SENDER = setInterval(SendControlFrame, INTERVAL);
+    m_MakeDevice();
   }
 
   // setup container, entity listsm

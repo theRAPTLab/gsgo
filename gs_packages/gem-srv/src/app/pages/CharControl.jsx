@@ -70,7 +70,7 @@ class CharController extends React.Component {
       data_object_name: '-',
       rate: 0
     };
-    this.initialize = this.initialize.bind(this);
+    this.init = this.init.bind(this);
     this.updateInputBPNames = this.updateInputBPNames.bind(this);
     this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
     this.requestBPNames = this.requestBPNames.bind(this);
@@ -93,7 +93,7 @@ class CharController extends React.Component {
           const { selected, quantified, valid } = deviceLists;
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
-            this.initialize();
+            this.init();
           }
         }
       });
@@ -105,7 +105,7 @@ class CharController extends React.Component {
     UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
   }
 
-  initialize() {
+  init() {
     if (this.state.isReady) return; // already initialized
     this.requestBPNames();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
@@ -117,10 +117,11 @@ class CharController extends React.Component {
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
     this.setState(
-      {
+      state => ({
         tags,
-        tag: tags.length > 0 ? tags[0].id : '' // default to first tag
-      },
+        tag: state.tag || (tags.length > 0 ? tags[0].id : '')
+        // keep currently selected tag, or default to first tag
+      }),
       () => Initialize(this, { sampleRate: SENDING_FPS })
     );
   }
