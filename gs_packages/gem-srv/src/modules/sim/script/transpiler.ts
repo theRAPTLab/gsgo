@@ -270,7 +270,12 @@ function TextifyScript(units: TScriptUnit[]): string {
 
       // HACK Fix to work around new object model
       // This will probably break with nested expressions
-      toks.push(tok.token || tok.value);
+      // toks.push(tok.token || tok.value || tok.string);
+
+      // HACK 2 Return ANY token value
+      // This assumes there is only ONE value in the object
+      const vals = Object.values(tok);
+      if (vals.length > 0) toks.push(vals[0]);
     });
     lines.push(`${toks.join(' ')}`);
   });
