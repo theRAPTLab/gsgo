@@ -377,7 +377,7 @@ prop y setTo -180`
       blueprint: 'Reporter',
       initScript: `prop x setTo 50
 prop y setTo 320
-prop reportSubject setTo 'Algae'
+prop reportSubject setTo Algae
 prop alpha setTo 0.3
 prop meterClr setTo 65280`
     },
@@ -387,7 +387,7 @@ prop meterClr setTo 65280`
       blueprint: 'Reporter',
       initScript: `prop x setTo -50
 prop y setTo 320
-prop reportSubject setTo 'Fish'
+prop reportSubject setTo Fish
 prop alpha setTo 0.3
 prop meterClr setTo 3120383`
     },
