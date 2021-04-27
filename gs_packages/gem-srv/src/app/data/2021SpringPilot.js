@@ -1,6 +1,14 @@
 export const MODEL = {
-  id: 'Aquatic',
   label: 'Aquatic Ecosystem',
+  bounds: {
+    top: -400,
+    right: 400,
+    bottom: 400,
+    left: -400,
+    wrap: [true, true],
+    bounce: false,
+    bgcolor: 0x000066
+  },
   scripts: [
     {
       id: 'Fish',
@@ -59,9 +67,14 @@ onEvent Start [[
 # PROGRAM UPDATE
 when Fish touches Algae [[
   every 1 runAtStart [[
-    prop Fish.energyLevel add 10
-    prop Algae.energyLevel sub 10
+    // always glow to show the interaction
     featCall Fish.Costume setGlow 0.5
+
+    // only eat if the algae is above 0
+    ifExpr {{Algae.getProp('energyLevel').value > 0}} [[
+      prop Fish.energyLevel add 10
+      prop Algae.energyLevel sub 10
+    ]]
 
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
@@ -73,9 +86,6 @@ when Fish touches Algae [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
     ]]
-
-
-
 
   ]]
 ]]
@@ -149,9 +159,17 @@ featProp Physics.radius setTo 16
 //propPop text
 prop text setTo '##'
 
+// disabled algae wander because the hack of putting algae off to the side is wonky with it
+//featCall Movement setMovementType 'wander' 0.2
+
+# PROGRAM INIT
+// put new algae into bottom left for the farming setup if needed
+prop x setTo -480
+prop y setTo 370
 
 # PROGRAM EVENT
 onEvent Start [[
+
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 
@@ -202,7 +220,12 @@ featCall Physics setShape 'rectangle'
 featCall Physics setSize 100 500
 
 prop agent.skin setTo 'lightbeam.json'
-prop agent.alpha setTo 0.3
+prop agent.alpha setTo 0.5
+
+# PROGRAM INIT
+// default position for moving across the top
+prop x setTo -400
+prop y setTo -180
 
 # PROGRAM EVENT
 onEvent Tick [[
@@ -232,7 +255,7 @@ prop text setTo 'meter'
 
 
 // Make skin invisible
-prop skin setTo '1x1'
+prop skin setTo 'onexone'
 
 // Show meter on start.
 prop meterLarge setTo true
@@ -295,7 +318,7 @@ onEvent Tick [[
       # PROGRAM DEFINE
       // useFeature Costume
       // useFeature Movement
-      prop skin setTo '1x1'
+      prop skin setTo 'onexone'
       addProp time Number 0
       prop text setTo 'Time: 0'
       # PROGRAM EVENT
@@ -310,44 +333,33 @@ onEvent Tick [[
 `
     }
   ],
-  // instances: [
-  //   {
-  //     name: 'fish01',
-  //     blueprint: 'Fish',
-  //     initScript: `prop agent.x setTo {{ agent.x + -220 }}`
-  //   },
-  //   {
-  //     name: 'fatFish',
-  //     blueprint: 'Fish',
-  //     initScript: `prop agent.x setTo 100
-  //   }
   instances: [
-    {
-      id: 501,
-      name: 'Nathan Fish',
-      blueprint: 'Fish',
-      // object test      initScript: `prop x setTo {{ x + -220 }}
-      initScript: `prop x setTo 0
-prop y setTo 0
-prop energyLevel setTo 54
-prop startDirection setTo 160`
-    },
-    {
-      id: 502,
-      name: 'Kalani Fish',
-      blueprint: 'Fish',
-      initScript: `prop x setTo 100
-prop y setTo 100
-prop energyLevel setTo 100
-prop startDirection setTo 90` // extra property test
-    },
-    {
-      id: 503,
-      name: 'Sara Fish',
-      blueprint: 'Fish',
-      initScript: `prop x setTo 200
-      prop startDirection setTo 0` // missing y test
-    },
+    //    {
+    //      id: 501,
+    //      name: 'Nathan Fish',
+    //      blueprint: 'Fish',
+    //      // object test      initScript: `prop x setTo {{ x + -220 }}
+    //      initScript: `prop x setTo 0
+    //prop y setTo 0
+    //prop energyLevel setTo 54
+    //prop startDirection setTo 160`
+    //    },
+    //    {
+    //      id: 502,
+    //      name: 'Kalani Fish',
+    //      blueprint: 'Fish',
+    //      initScript: `prop x setTo 100
+    //prop y setTo 100
+    //prop energyLevel setTo 100
+    //prop startDirection setTo 90` // extra property test
+    //   },
+    //   {
+    //     id: 503,
+    //     name: 'Sara Fish',
+    //     blueprint: 'Fish',
+    //     initScript: `prop x setTo 200
+    //     prop startDirection setTo 0` // missing y test
+    //   },
     {
       id: 504,
       name: 'Algae 1',
@@ -383,7 +395,7 @@ prop y setTo -180`
       blueprint: 'Reporter',
       initScript: `prop x setTo 50
 prop y setTo 320
-prop reportSubject setTo 'Algae'
+prop reportSubject setTo Algae
 prop alpha setTo 0.3
 prop meterClr setTo 65280`
     },
@@ -393,7 +405,7 @@ prop meterClr setTo 65280`
       blueprint: 'Reporter',
       initScript: `prop x setTo -50
 prop y setTo 320
-prop reportSubject setTo 'Fish'
+prop reportSubject setTo Fish
 prop alpha setTo 0.3
 prop meterClr setTo 3120383`
     },
