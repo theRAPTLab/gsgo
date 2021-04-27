@@ -28,7 +28,7 @@ const {
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('URSYS', 'TagUR');
+const PR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
 const DBG = false;
 
 /// META DATA /////////////////////////////////////////////////////////////////
