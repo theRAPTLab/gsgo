@@ -355,6 +355,7 @@ async function Initialize(componentInstance, opt = {}) {
 /// resizes.
 function UpdateDimensions(e) {
   // Update entities
+  if (!m_entities) return; // when page first loads, no m_entities are defined.
   for (let i = 0; i < m_entities.length; i++) {
     const fdiv = m_entities[i];
     const cobj = u_MakeControlDataObject(fdiv);
