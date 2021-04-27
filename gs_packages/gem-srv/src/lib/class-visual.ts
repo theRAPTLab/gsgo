@@ -34,8 +34,9 @@ const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0x00ff00 })
 // text styles
 const style = new PIXI.TextStyle({
   fontFamily: 'Arial',
-  fontSize: 12,
-  fill: ['#ffffff99'],
+  fontSize: 18,
+  fontWeight: 'bold',
+  fill: ['#ffffffcc'],
   stroke: '#ffffff'
 });
 
