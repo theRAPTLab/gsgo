@@ -179,6 +179,15 @@ class CharController extends React.Component {
           }}
         >
           <div>
+            <input
+              name="num_entities"
+              style={{ width: '50px' }}
+              type="number"
+              min="1"
+              max="100"
+              defaultValue={this.state.num_entities}
+              onChange={this.handleInputChange}
+            />{' '}
             <select
               id="tag"
               name="tag"
@@ -194,7 +203,9 @@ class CharController extends React.Component {
             </select>
             <label className="control-label">&nbsp;Character Type</label>
           </div>
-          <div style={{ fontSize: '16px', lineHeight: '16px' }}>
+          <div
+            style={{ fontSize: '16px', lineHeight: '16px', textAlign: 'center' }}
+          >
             Controller CC{UR.GetUAddressNumber()}
           </div>
           <div
