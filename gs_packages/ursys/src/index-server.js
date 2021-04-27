@@ -11,6 +11,15 @@ const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
 const DBG = require('./ur-dbg-settings');
+const COMMON = require('./ur-common');
+//
+const {
+  IsBrowser,
+  IsNode,
+  IsElectron,
+  IsElectronMain,
+  IsElectronRenderer
+} = COMMON;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,6 +83,12 @@ module.exports = {
   // META
   ...META,
   NetInfoRoute: NETINFO.NetInfoRoute,
+  // SYSTEM ENVIRONMENT
+  IsNode,
+  IsBrowser,
+  IsElectron,
+  IsElectronRenderer,
+  IsElectronMain,
   // MAIN API
   Initialize,
   Shutdown,

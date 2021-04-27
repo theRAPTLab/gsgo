@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS default configuration
+  URSYS default configuration-related stuff
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -40,6 +40,35 @@ function PacketHash(pkt) {
   return `${pkt.getSourceAddress()}:${pkt.id}`;
 }
 
+/// ENVIRONMENT DETECTION /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsNode() {
+  return typeof window === 'undefined';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsBrowser() {
+  return typeof window !== 'undefined';
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsElectronRenderer() {
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.process === 'object' &&
+    window.process.type === 'renderer'
+  );
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsElectronMain() {
+  return (
+    typeof process !== 'undefined' &&
+    typeof process.versions === 'object' &&
+    !!process.versions.electron
+  );
+}
+function IsElectron() {
+  return IsElectronMain() || IsElectronRenderer();
+}
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
@@ -57,5 +86,11 @@ module.exports = {
   PRE_SVR_MESG,
   PACKET_TYPES,
   TRANSACTION_MODE,
-  VALID_CHANNELS
+  VALID_CHANNELS,
+  // ENVIRONMENT
+  IsBrowser,
+  IsNode,
+  IsElectron,
+  IsElectronRenderer,
+  IsElectronMain
 };

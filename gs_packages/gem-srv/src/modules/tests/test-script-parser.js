@@ -5,8 +5,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import ScriptTokenizer from 'lib/class-gscript-tokenizer';
-import * as TRANSPILER from 'script/transpiler';
+import ScriptTokenizer from '../../lib/class-gscript-tokenizer';
+import * as TRANSPILER from '../sim/script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -62,3 +62,6 @@ TokenizeTest(
     // dbgOut PairTest
   ]]`.trim()
 );
+
+/// CONSOLE TESTS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
