@@ -29,7 +29,7 @@ import 'script/keywords/_all_keywords';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TRNPLR', 'TagDebug');
 const scriptifier = new GScriptTokenizer();
-const COMPILER_AGENT = new GAgent();
+const COMPILER_AGENT = new GAgent('CompilerAgent');
 const COMPILER_STATE = new SM_State();
 //
 const DBG = false;
