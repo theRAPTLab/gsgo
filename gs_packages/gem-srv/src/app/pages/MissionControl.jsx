@@ -95,7 +95,6 @@ class MissionControl extends React.Component {
 
     // Devices
     this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
-    UR.HandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
 
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
@@ -191,7 +190,7 @@ class MissionControl extends React.Component {
 
     // 4. Listen for Controllers
     const charControllerDevAPI = UR.SubscribeDeviceSpec({
-      selectify: device => device.meta.uclass === 'CharController',
+      selectify: device => device.meta.uclass === 'CharControl',
       notify: deviceLists => {
         const { selected, quantified, valid } = deviceLists;
         if (valid) {
