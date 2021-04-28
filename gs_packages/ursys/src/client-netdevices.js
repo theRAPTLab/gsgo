@@ -170,12 +170,20 @@ export function LinkSubsToDevices(devices = DATACORE.GetDeviceDirectory()) {
     const { selectify, quantify, notify } = sub;
     // (1) filter devices desired by this sub, if selectify was provided
     const selected = selectify ? devices.filter(selectify) : devices;
-    if (selected.length === 0) return;
+    // HACK REVIEW: Always allow notify to fire.
+    //              BL workaround for notify not returning 'removed'
+    //              Need notification to detect the need to remove a device
+    // if (selected.length === 0) return;
+
     // (2) limit devices returned by the selection criteria
     // return [] if quantity criteria is not met
     // IF the quantify function was provided for this sub
     const quantified = quantify ? quantify(selected) : selected;
-    if (quantified.length === 0) return;
+    // HACK REVIEW: Always allow notify to fire.
+    //              BL workaround for notify not returning 'removed'
+    //              Need notification to detect the need to remove a device
+    // if (quantified.length === 0) return;
+
     // console.log('quantified', quantified.length);
     quantified.forEach(udev => {
       const { udid } = udev;

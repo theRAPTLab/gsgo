@@ -157,6 +157,9 @@ export async function InputInit(bpname: string) {
     quantify: list => list,
     notify: changes => {
       UpdateActiveDevices(changes);
+      // NOTE: `removed` is not implemented yet.
+      // There's a HACK in client-netdevices to always send a notify
+      // update to get around this.
       // const { valid, added, updated, removed } = changes;
       // console.error(...PR('notify', changes));
     }
