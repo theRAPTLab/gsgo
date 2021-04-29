@@ -351,8 +351,7 @@ class MissionControl extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// PANEL UI CONFIGURATION
   ///
-  OnToggleRunEdit(e, newConfig) {
-    if (newConfig === null) return; // skip if it's a click on the same button
+  OnToggleRunEdit(e) {
     // Automatically trigger reset when changing modes.
     // This is necessary because blueprints are not recompiled
     // if scripts are submitted while the sim is running.
@@ -362,9 +361,9 @@ class MissionControl extends React.Component {
     // cause the instances to be recompiled.
     // Always reset!  Otherwise, scale commands get re-applied?
     UR.RaiseMessage('NET:HACK_SIM_RESET');
-    this.setState({
-      panelConfiguration: newConfig
-    });
+    this.setState(state => ({
+      panelConfiguration: state.panelConfiguration === 'edit' ? 'run' : 'edit'
+    }));
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({
@@ -409,25 +408,34 @@ class MissionControl extends React.Component {
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
         : [];
 
+    const stageBtn = (
+      <>
+        <div className={classes.colorData} style={{ fontSize: '18px' }}>
+          STAGE:{' '}
+        </div>
+        <button
+          type="button"
+          className={classes.button}
+          onClick={this.OnToggleRunEdit}
+          disabled={SIM.IsRunning()}
+        >
+          {panelConfiguration === 'edit' ? 'SAVE' : 'SETUP'}
+        </button>
+      </>
+    );
+
     const jsxRunOrEdit = (
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
-          height: '50px',
-          width: '100%'
+          alignItems: 'baseline',
+          height: '70px',
+          width: '100%',
+          marginBottom: '10px'
         }}
       >
-        <ToggleButtonGroup
-          value={panelConfiguration}
-          exclusive
-          onChange={this.OnToggleRunEdit}
-        >
-          <StyledToggleButton value="run">Run</StyledToggleButton>
-          <StyledToggleButton value="edit" disabled={SIM.IsRunning()}>
-            Setup the Stage
-          </StyledToggleButton>
-        </ToggleButtonGroup>
+        {stageBtn}
       </div>
     );
 
@@ -487,7 +495,7 @@ class MissionControl extends React.Component {
             style={{
               display: 'grid',
               gridTemplateRows:
-                panelConfiguration === 'edit' ? '60px auto' : '60px auto auto',
+                panelConfiguration === 'edit' ? '70px auto' : '70px auto auto',
               overflow: 'hidden'
             }}
           >
@@ -509,7 +517,7 @@ class MissionControl extends React.Component {
           <div
             style={{
               display: 'grid',
-              gridTemplateRows: '150px auto',
+              gridTemplateRows: 'auto auto',
               overflow: 'hidden'
             }}
           >
