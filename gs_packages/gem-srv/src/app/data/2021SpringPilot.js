@@ -382,33 +382,33 @@ prop energyLevel setTo 50`
       initScript: `prop x setTo -120
 prop y setTo -90`
     },
-    {
-      id: 507,
-      name: 'Sunbeam 1',
-      blueprint: 'Sunbeam',
-      initScript: `prop x setTo -400
-prop y setTo -180`
-    },
-    {
-      id: 510,
-      name: 'Avg Algae Health',
-      blueprint: 'Reporter',
-      initScript: `prop x setTo 50
-prop y setTo 320
-prop reportSubject setTo Algae
-prop alpha setTo 0.3
-prop meterClr setTo 65280`
-    },
-    {
-      id: 511,
-      name: 'Max Fish  Health',
-      blueprint: 'Reporter',
-      initScript: `prop x setTo -50
-prop y setTo 320
-prop reportSubject setTo Fish
-prop alpha setTo 0.3
-prop meterClr setTo 3120383`
-    },
+    //     {
+    //       id: 507,
+    //       name: 'Sunbeam 1',
+    //       blueprint: 'Sunbeam',
+    //       initScript: `prop x setTo -400
+    // prop y setTo -180`
+    //     },
+    //     {
+    //       id: 510,
+    //       name: 'Avg Algae Health',
+    //       blueprint: 'Reporter',
+    //       initScript: `prop x setTo 50
+    // prop y setTo 320
+    // prop reportSubject setTo Algae
+    // prop alpha setTo 0.3
+    // prop meterClr setTo 65280`
+    //     },
+    //     {
+    //       id: 511,
+    //       name: 'Max Fish  Health',
+    //       blueprint: 'Reporter',
+    //       initScript: `prop x setTo -50
+    // prop y setTo 320
+    // prop reportSubject setTo Fish
+    // prop alpha setTo 0.3
+    // prop meterClr setTo 3120383`
+    //     },
     {
       id: 512,
       name: 'Timer',
