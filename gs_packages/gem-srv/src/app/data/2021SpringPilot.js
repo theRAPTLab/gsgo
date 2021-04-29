@@ -63,6 +63,10 @@ onEvent Start [[
     exprPush {{ agent.getProp('energyLevel').value / 100 }}
     propPop meter
 
+    // set name + energyLevel
+    exprPush {{ agent.name }}
+    propPop text
+
 ]]
 # PROGRAM UPDATE
 when Fish touches Algae [[
@@ -97,10 +101,6 @@ every 1 runAtStart [[
   ifExpr {{(agent.getProp('scale').value > 1.5)}} [[
     prop agent.energyLevel sub 1
   ]]
-
-  // set name + energyLevel
-  exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
-  propPop text
 
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
@@ -192,8 +192,14 @@ when Algae touches Sunbeam [[
 every 1 [[
   prop energyLevel sub 1
   // update name
+  ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
+]]
+ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
+  prop text setTo 'xx'
+]]
+
 
 ]]
 
