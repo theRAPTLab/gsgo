@@ -17,6 +17,7 @@ import PanelSelectAgent from './components/PanelSelectAgent';
 import PanelScript from './components/PanelScript';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -53,6 +54,7 @@ class ScriptEditor extends React.Component {
     super();
     this.state = {
       isReady: false,
+      noMain: true,
       panelConfiguration: 'select',
       modelId: '',
       model: {},
@@ -108,6 +110,9 @@ class ScriptEditor extends React.Component {
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
             this.Initialize();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
           }
         }
       });
@@ -307,6 +312,7 @@ class ScriptEditor extends React.Component {
   render() {
     // if (DBG) console.log(...PR('render'));
     const {
+      noMain,
       panelConfiguration,
       modelId,
       model,
@@ -317,6 +323,16 @@ class ScriptEditor extends React.Component {
       messageIsError
     } = this.state;
     const { classes } = this.props;
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
+
     const agents =
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
@@ -390,6 +406,7 @@ class ScriptEditor extends React.Component {
               instances={instances}
               disallowDeRegister
             />
+            {DialogNoMain}
           </div>
         </div>
       </div>

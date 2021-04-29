@@ -22,6 +22,7 @@ import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
 import '../../lib/css/charcontrol.css';
 import PanelSimViewer from './components/PanelSimViewer';
+import DialogConfirm from './components/DialogConfirm';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';
@@ -47,6 +48,7 @@ class CharController extends React.Component {
     // which is changed through setState() call of React.Component
     this.state = {
       isReady: false, // project data has been successfully retrieved
+      noMain: true,
       tag: '',
       tags: [],
       num_entities: 1,
@@ -79,6 +81,8 @@ class CharController extends React.Component {
   }
 
   componentDidMount() {
+    document.title = 'GEMSTEP Controller';
+
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     HookResize(window);
@@ -94,6 +98,9 @@ class CharController extends React.Component {
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
             this.init();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
           }
         }
       });
@@ -154,10 +161,19 @@ class CharController extends React.Component {
   }
 
   render() {
-    const { tag, tags } = this.state;
+    const { noMain, tag, tags } = this.state;
     const controlNames = [{ 'id': 'markers', 'label': 'markers' }];
     const { classes } = this.props;
     const selectedTag = tag || (tags.length > 0 && tags[0]) || '';
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
     //
     return (
       <div
@@ -384,7 +400,9 @@ class CharController extends React.Component {
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 2' }}
-        />
+        >
+          {DialogNoMain}
+        </div>
       </div>
     );
   }

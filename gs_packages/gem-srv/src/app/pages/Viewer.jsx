@@ -15,6 +15,7 @@ import UR from '@gemstep/ursys/client';
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -41,6 +42,7 @@ class Viewer extends React.Component {
     super();
     this.state = {
       isReady: false,
+      noMain: true,
       panelConfiguration: 'sim',
       modelId: '',
       model: {},
@@ -62,6 +64,8 @@ class Viewer extends React.Component {
   }
 
   componentDidMount() {
+    document.title = 'GEMSTEP Viewer';
+
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
 
@@ -73,6 +77,9 @@ class Viewer extends React.Component {
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
             this.Initialize();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
           }
         }
       });
@@ -149,8 +156,17 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, modelId, model, instances } = this.state;
+    const { noMain, panelConfiguration, modelId, model, instances } = this.state;
     const { classes } = this.props;
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
 
     const agents =
       model && model.scripts
@@ -201,7 +217,7 @@ class Viewer extends React.Component {
           className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          {DialogNoMain}
         </div>
       </div>
     );
