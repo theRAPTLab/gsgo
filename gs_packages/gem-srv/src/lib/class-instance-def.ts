@@ -3,7 +3,9 @@ import { IPoolable } from './t-pool.d';
 
 class InstanceDef implements IPoolable {
   // poolable
-  id: any;
+  id: string; // enforce string for ids so numbers don't slip in
+  // since GAgents share ids with vobj, dobj, and instanceDef
+  // the id type needs to be consistent across them.
   refId?: any;
   _pool_id: any;
   // instanceDef
@@ -12,12 +14,14 @@ class InstanceDef implements IPoolable {
   initScript?: TScriptUnit[]; // is defined in TInstance, but not used in sim-agents update
   valid: boolean;
   flag: number;
+  x: number;
+  y: number;
 
-  constructor(id?: any) {
+  constructor(id?: string) {
     this.init(id);
   }
 
-  init(id?: any) {
+  init(id?: string) {
     this.id = id;
     this.valid = false;
   }

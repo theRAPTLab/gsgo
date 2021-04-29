@@ -1,4 +1,5 @@
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -13,13 +14,33 @@ class PanelSelect extends React.Component {
         // Dummy Data
         { id: 'missioncontrol', label: 'Main' },
         { id: 'viewer', label: 'Viewer' },
-        { id: 'faketrack', label: 'Fake Track' }
+        { id: 'charcontrol', label: 'Character Controller' }
       ]
     };
-    this.onClick = this.onClick.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.OnClick = this.OnClick.bind(this);
+
+    // System Hooks
+    UR.HookPhase('UR/APP_START', this.Initialize);
   }
 
-  onClick(url) {
+  async Initialize() {
+    // 1. Check for other 'Sim' devices.
+    const devices = UR.GetDeviceDirectory();
+    const sim = devices.filter(d => d.meta.uclass === 'Sim');
+    console.error('Init devices', devices, sim);
+    if (sim.length > 0) {
+      // HACKY
+      this.setState(state => ({
+        options: state.options.map(o => {
+          if (o.id === 'missioncontrol') o.disabled = true;
+          return o;
+        })
+      }));
+    }
+  }
+
+  OnClick(url) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     let { modelId } = this.props;
@@ -47,7 +68,8 @@ class PanelSelect extends React.Component {
                 type="button"
                 className={classes.button}
                 key={m.id}
-                onClick={() => this.onClick(m.id)}
+                disabled={m.disabled}
+                onClick={() => this.OnClick(m.id)}
               >
                 {m.label}
               </button>

@@ -13,7 +13,6 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
-import PROJ from '../../data/project-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,15 +40,7 @@ class PanelSimulation extends React.Component {
     this.state = {
       title: 'Virtual Stage'
     };
-    this.DoSimReset = this.DoSimReset.bind(this);
-    this.DoSimPlaces = this.DoSimPlaces.bind(this);
-    this.DoSimStart = this.DoSimStart.bind(this);
-    this.DoSimStop = this.DoSimStop.bind(this);
-
-    UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.HandleMessage('*:SIM_PLACES', this.DoSimPlaces);
-    UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
-    UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    this.setBoundary = this.setBoundary.bind(this);
   }
 
   componentDidMount() {
@@ -58,79 +49,28 @@ class PanelSimulation extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    window.addEventListener('resize', this.setBoundary);
   }
 
-  componentWillUnmount() {
-    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.UnhandleMessage('*:SIM_PLACES', this.DoSimPlaces);
-    UR.UnhandleMessage('NET:HACK_SIM_START', this.DoSimStart);
-    UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
-  }
+  componentWillUnmount() {}
 
-  /**
-   * WARNING: Do not call this before the simulation has loaded.
-   */
-  DoSimReset() {
-    DATACORE.DeleteAllTests();
-    // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
-    DATACORE.DeleteAllScriptEvents();
-    DATACORE.DeleteAllBlueprints();
-    DATACORE.DeleteAllAgents();
-    DATACORE.DeleteAllInstances();
-    SIM.Reset();
-    // SimPlaces is called by Mission Control.
-  }
-
-  DoSimPlaces() {
-    if (DBG) console.log(...PR('DoSimPlaces! Commpiling...'));
-    // 1. Load Model
-    //    model data is loaded by the parent container MissionControl
-    const { model } = this.props;
-
-    // Skip if no model is loaded
-    if (!model) return;
-
-    // 2. Show Boundary
-    const bounds = PROJ.GetBounds();
-    const width = bounds.right - bounds.left;
-    const height = bounds.bottom - bounds.top;
-    RENDERER.ShowBoundary(width, height);
-    // And Set Listeners too
-    UR.RaiseMessage('NET:SET_BOUNDARY', { width, height });
-
-    // 2. Compile All Agents
-    const scripts = model.scripts;
-    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
-    const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
-    const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
-    const blueprintNames = blueprints.map(b => b.name);
-
-    // 3. Create/Update All Instances
-    const instancesSpec = model.instances;
-    // Use 'UPDATE' so we don't clobber old instance values.
-    UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
-      blueprintNames,
-      instancesSpec
-    });
-
-    // 4. Places Alternative!  Just call AgentUpdate and RENDERER.Render
-    UR.RaiseMessage('AGENTS_RENDER');
-
-    // 5. Update Inspectors
-    UR.RaiseMessage('NET:REQUEST_INSPECTOR_UPDATE');
-  }
-
-  DoSimStart() {
-    SIM.Start();
-  }
-
-  DoSimStop() {
-    SIM.End();
+  setBoundary() {
+    const { width, height, bgcolor } = this.props;
+    RENDERER.SetBoundary(width, height, bgcolor);
   }
 
   render() {
     const { title } = this.state;
-    const { id, model, isActive, onClick, classes } = this.props;
+    const {
+      id,
+      model,
+      width,
+      height,
+      bgcolor,
+      isActive,
+      onClick,
+      classes
+    } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

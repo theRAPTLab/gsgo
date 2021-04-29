@@ -118,7 +118,6 @@ class InstanceInspector extends React.Component {
 
   HandleInspectorClick(data) {
     const { id, instance } = this.props;
-    console.error('inspector lcick', id, instance, data);
     if (data.id === instance.id) this.OnInstanceClick();
   }
 
@@ -140,8 +139,7 @@ class InstanceInspector extends React.Component {
         newsize = SIZE_MAX;
         if (!alreadyRegistered) {
           UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
-          // Force an update
-          UR.RaiseMessage('NET:REQUEST_INSPECTOR_UPDATE');
+          // Inspectors will be automatically updated during SIM/UI_UPDATE phase
           registrationStatus = true;
         }
         break;

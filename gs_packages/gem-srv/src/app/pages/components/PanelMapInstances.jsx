@@ -24,7 +24,7 @@ class PanelMapInstances extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { id, isActive, mapInstanceSpec, classes } = this.props;
+    const { id, modelId, isActive, mapInstanceSpec, classes } = this.props;
 
     if (!mapInstanceSpec) return <></>;
 
@@ -74,7 +74,7 @@ class PanelMapInstances extends React.Component {
                 key={blueprint.name}
               >
                 {blueprint.instances.map(i => (
-                  <InstanceEditor instance={i} key={i.id} />
+                  <InstanceEditor modelId={modelId} instance={i} key={i.id} />
                 ))}
               </div>
             ))}

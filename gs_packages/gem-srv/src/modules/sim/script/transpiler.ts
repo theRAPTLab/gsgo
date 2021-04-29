@@ -270,7 +270,12 @@ function TextifyScript(units: TScriptUnit[]): string {
 
       // HACK Fix to work around new object model
       // This will probably break with nested expressions
-      toks.push(tok.token || tok.value);
+      // toks.push(tok.token || tok.value || tok.string);
+
+      // HACK 2 Return ANY token value
+      // This assumes there is only ONE value in the object
+      const vals = Object.values(tok);
+      if (vals.length > 0) toks.push(vals[0]);
     });
     lines.push(`${toks.join(' ')}`);
   });
@@ -380,7 +385,23 @@ function ExtractBlueprintProperties(script) {
   // 1. Start with built in properties
   let properties = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
+    { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
+    { name: 'text', type: 'string', defaultValue: '', isFeatProp: false },
+    { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
+    {
+      name: 'meterLarge',
+      type: 'boolean',
+      defaultValue: false,
+      isFeatProp: false
+    }
+
     // Don't allow wizard to set built-in skin property directly.
     // This should be handled via `featCall Costume setCostume` because that
     // call properly initializes the frameCount.
@@ -429,6 +450,28 @@ function ExtractBlueprintPropertiesTypeMap(script) {
   const map = new Map();
   properties.forEach(p => map.set(p.name, p.type));
   return map;
+}
+
+/**
+ * A brute force method of checking to see if the script has a directive
+ * Used by project-data.InstanceAdd to check for the presence of
+ * '# PROGRAM INIT' to decide whether or not to replace
+ * the init script.
+ * @param script
+ * @param directive
+ * @returns boolean
+ */
+function HasDirective(script: string, directive: string) {
+  if (!script) return false; // During update script can be undefined
+  const units = ScriptifyText(script);
+  let result = false;
+  units.forEach(rawUnit => {
+    const unit = r_ExpandArgs(rawUnit);
+    if (unit.length !== 3) return; // we're expecting `# PROGRAM xxx` so length = 3
+    if (unit[0] === '_pragma' && unit[1] === 'PROGRAM' && unit[2] === directive)
+      result = true;
+  });
+  return result;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -496,7 +539,7 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  */
 function MakeAgent(instanceDef: TInstance) {
   const { blueprint, name } = instanceDef;
-  const agent = new GAgent(name, instanceDef.id);
+  const agent = new GAgent(name, String(instanceDef.id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
   if (typeof blueprint === 'string') {
@@ -539,5 +582,6 @@ export {
   ExtractBlueprintName,
   ExtractBlueprintProperties,
   ExtractBlueprintPropertiesMap,
-  ExtractBlueprintPropertiesTypeMap
+  ExtractBlueprintPropertiesTypeMap,
+  HasDirective
 };

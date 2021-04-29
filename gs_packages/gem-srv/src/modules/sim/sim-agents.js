@@ -5,8 +5,12 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import DisplayObject from '../../lib/class-display-object';
 import InstanceDef from 'lib/class-instance-def';
+import {
+  GetBlueprint,
+  GetAllBlueprints,
+  DeleteBlueprint
+} from 'modules/datacore/dc-script-engine';
 import {
   GetAllAgents,
   DeleteAgent,
@@ -24,11 +28,7 @@ import {
   GetInstance,
   GetInstancesType
 } from '../datacore/dc-agents';
-import {
-  GetBlueprint,
-  GetAllBlueprints,
-  DeleteBlueprint
-} from 'modules/datacore/dc-script-engine';
+import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
 import * as TRANSPILER from './script/transpiler';
@@ -40,16 +40,17 @@ const PR = UR.PrefixUtil('SIM_AGENTS');
 const DBG = true;
 const DO_TESTS = !UR.IsAppRoute('/app/compiler');
 
-const DOBJ_SYNC_AGENT = new SyncMap({
+const AGENT_TO_DOBJ = new SyncMap({
   Constructor: DisplayObject,
   autoGrow: true,
   name: 'AgentToDOBJ'
 });
 
-DOBJ_SYNC_AGENT.setMapFunctions({
+AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
+    dobj.zIndex = agent.zIndex;
     dobj.skin = agent.skin;
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
@@ -65,6 +66,7 @@ DOBJ_SYNC_AGENT.setMapFunctions({
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
+    dobj.zIndex = agent.zIndex;
     dobj.skin = agent.skin;
     dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
     dobj.scale = agent.scale;
@@ -82,7 +84,10 @@ DOBJ_SYNC_AGENT.setMapFunctions({
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INSTANCE DEF
 
-const INSTANCEDEF_SYNC_AGENT = new SyncMap({
+/**
+ * From `model.instances` script spec to an instance definition
+ */
+const SCRIPT_TO_INSTANCE = new SyncMap({
   Constructor: InstanceDef,
   autoGrow: true,
   name: 'ScriptToInstance'
@@ -99,7 +104,7 @@ function MakeAgent(def) {
   agent.exec(initScript, { agent });
 }
 
-INSTANCEDEF_SYNC_AGENT.setMapFunctions({
+SCRIPT_TO_INSTANCE.setMapFunctions({
   onAdd: (newDef, def) => {
     def.name = newDef.name;
     def.blueprint = newDef.blueprint;
@@ -212,10 +217,10 @@ export function AllAgentsProgram(data) {
   // I. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
-  INSTANCEDEF_SYNC_AGENT.syncFromArray(instancesSpec);
-  INSTANCEDEF_SYNC_AGENT.mapObjects();
+  SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
+  SCRIPT_TO_INSTANCE.mapObjects();
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
-    instances: INSTANCEDEF_SYNC_AGENT.getMappedObjects()
+    instances: SCRIPT_TO_INSTANCE.getMappedObjects()
   });
 }
 
@@ -274,14 +279,6 @@ function AgentsUpdate(frameTime) {
   allAgents.forEach(agent => {
     agent.agentUPDATE(frameTime);
   });
-
-  // TEMP DISPLAY HACK: This should move to the DisplayListOut phase
-  // force agent movement for display list testing
-  DOBJ_SYNC_AGENT.syncFromArray(allAgents);
-  DOBJ_SYNC_AGENT.mapObjects();
-  const dobjs = DOBJ_SYNC_AGENT.getMappedObjects();
-  RENDERER.UpdateDisplayList(dobjs);
-  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentThink(frameTime) {
@@ -301,29 +298,29 @@ function AgentExec(frameTime) {
 function AgentReset(frameTime) {
   /* reset agent */
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Force AgentsUpdate, then force Render
-/// This is used to update data objects and refresh the screen during
-/// the initial PLACES call and when an instance is selected in MapEditor
-function AgentsRender(frameTime) {
-  AgentsUpdate(frameTime);
-  RENDERER.Render();
+
+function VisUpdate(frameTime) {
+  const allAgents = GetAllAgents();
+  AGENT_TO_DOBJ.syncFromArray(allAgents);
+  AGENT_TO_DOBJ.mapObjects();
+  const dobjs = AGENT_TO_DOBJ.getMappedObjects();
+  RENDERER.UpdateDisplayList(dobjs);
+  UR.SendMessage('NET:DISPLAY_LIST', dobjs);
 }
 
 /// ASYNC MESSAGE INTERFACE ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HandleMessage('SIM_RESET', AgentReset);
 UR.HandleMessage('SIM_MODE', AgentSelect);
-
 UR.HandleMessage('AGENT_PROGRAM', AgentProgram);
 UR.HandleMessage('ALL_AGENTS_PROGRAM', AllAgentsProgram); // whole model update
-UR.HandleMessage('AGENTS_RENDER', AgentsRender); // AgentsUpdate + Render
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/AGENTS_UPDATE', AgentsUpdate);
 UR.HookPhase('SIM/AGENTS_THINK', AgentThink);
 UR.HookPhase('SIM/AGENTS_EXEC', AgentExec);
+UR.HookPhase('SIM/VIS_UPDATE', VisUpdate);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

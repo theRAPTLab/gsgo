@@ -76,7 +76,11 @@ class MapEditor extends React.Component {
           agents={agents}
           enableAdd
         />
-        <PanelMapInstances id="instances" mapInstanceSpec={mapInstanceSpec} />
+        <PanelMapInstances
+          id="instances"
+          modelId={modelId}
+          mapInstanceSpec={mapInstanceSpec}
+        />
       </div>
     );
   }

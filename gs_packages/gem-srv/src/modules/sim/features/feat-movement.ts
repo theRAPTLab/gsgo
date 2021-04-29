@@ -20,7 +20,7 @@ import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
-import PROJ from 'app/data/project-data';
+import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -30,7 +30,64 @@ const DBG = false;
 /// MOVING_AGENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// Movement helper functions
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_random(min = 0, max = 1, round = false) {
+  // REVIEW: Replace with a seeded random number generator
+  const n = Math.random() * (max - min) + min;
+  if (round) return Math.round(n);
+  return n;
+}
+function m_DegreesToRadians(degree) {
+  return (degree * Math.PI) / 180;
+}
+function m_setDirection(agent, degrees) {
+  agent.prop.Movement.direction.value = degrees;
+}
+function m_setPosition(agent, x, y) {
+  const bounds = GetBounds();
+  const pad = 5;
+  let hwidth = pad; // half width -- default to some padding
+  let hheight = pad;
+  // If agent uses physics, we can get height/width, otherwise default
+  // to small padding.
+  if (agent.hasFeature('Physics')) {
+    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+  }
+  let xx = x;
+  let yy = y;
+  if (Wraps('left')) {
+    // This lets the agent poke its nose out before wrapping
+    // to the other side.  Otherwise, the agent will suddenly
+    // pop to other side.
+    xx = x <= bounds.left ? bounds.right - pad : xx;
+  } else if (x - hwidth < bounds.left) {
+    // wall
+    xx = bounds.left + hwidth + pad;
+    if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+  }
+  if (Wraps('right')) {
+    xx = x >= bounds.right ? bounds.left + pad : xx;
+  } else if (x + hwidth >= bounds.right) {
+    xx = bounds.right - hwidth - pad;
+    if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+  }
+  if (Wraps('top')) {
+    yy = y <= bounds.top ? bounds.bottom - pad : yy;
+  } else if (y - hheight <= bounds.top) {
+    yy = bounds.top + hheight + pad;
+    if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+  }
+  if (Wraps('bottom')) {
+    yy = y >= bounds.bottom ? bounds.top + pad : yy;
+  } else if (y + hheight > bounds.bottom) {
+    yy = bounds.bottom - hheight - pad;
+    if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+  }
+  agent.prop.x.value = xx;
+  agent.prop.y.value = yy;
+}
 
 /// JITTER
 function moveJitter(
@@ -64,7 +121,7 @@ function moveWander(agent) {
 // Go in the same direction most of the way across the space, then turn back and do similar
 
 function moveEdgeToEdge(agent) {
-  const bounds = PROJ.GetBounds();
+  const bounds = GetBounds();
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
@@ -83,12 +140,12 @@ function moveEdgeToEdge(agent) {
     agent.prop.x.value >= bounds.right - hwidth ||
     agent.prop.y.value <= bounds.top + hheight
   ) {
-    direction = direction + agent.prop.Movement.bounceAngle.value;
+    direction += agent.prop.Movement.bounceAngle.value;
   } else if (
     agent.prop.x.value <= bounds.left + hwidth ||
     agent.prop.y.value >= bounds.bottom - hheight
   ) {
-    direction = direction - agent.prop.Movement.bounceAngle.value;
+    direction -= agent.prop.Movement.bounceAngle.value;
   }
 
   // now move with the current direction and distance
@@ -110,30 +167,25 @@ function moveFloat(agent, y: number = -300) {
   agent.prop.y.value = Math.max(y, agent.prop.y.value - 2);
 }
 
+/// Movement Function Library
+const MOVEMENT_FUNCTIONS = new Map([
+  ['static', undefined],
+  ['wander', moveWander],
+  ['edgeToEdge', moveEdgeToEdge],
+  ['jitter', moveJitter],
+  ['float', moveFloat]
+]);
+
 /// Movement Agent Manager
 const MOVING_AGENTS = new Map();
 UR.HookPhase('SIM/FEATURES_UPDATE', () => {
   const agents = [...MOVING_AGENTS.values()];
   agents.forEach(agent => {
+    // ignore AI movement if input agent
+    if (agent.isModePuppet()) return;
     // handle movement
-    const type = agent.prop.Movement.movementType.value;
-    switch (type) {
-      case 'wander':
-        moveWander(agent);
-        break;
-      case 'edgeToEdge':
-        moveEdgeToEdge(agent);
-        break;
-      case 'jitter':
-        moveJitter(agent);
-        break;
-      case 'float':
-        moveFloat(agent);
-        break;
-      case 'static':
-      default:
-        break;
-    }
+    const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
+    if (moveFn) moveFn(agent);
   });
 });
 
@@ -150,6 +202,8 @@ class MovementPack extends GFeature {
     this.featAddMethod('setDirection', this.setDirection);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
+    this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
+    this.featAddMethod('setRandomPositionY', this.setRandomPositionY);
     this.featAddMethod('setRandomStart', this.setRandomStart);
     this.featAddMethod('jitterPos', this.jitterPos);
   }
@@ -189,7 +243,6 @@ class MovementPack extends GFeature {
   }
 
   // TYPES
-  //   'wander' -- params: distance
   setMovementType(agent: IAgent, type: string, ...params) {
     agent.getFeatProp(this.name, 'movementType').value = type;
     if (params.length > 0) {
@@ -204,7 +257,7 @@ class MovementPack extends GFeature {
 
           if (params.length > 2) {
             agent.getFeatProp(this.name, 'bounceAngle').value = params[2];
-            if (params[3] == 'rand')
+            if (params[3] === 'rand')
               agent.getFeatProp(this.name, 'direction').value = m_random(0, 180);
           }
           break;
@@ -226,10 +279,22 @@ class MovementPack extends GFeature {
   }
 
   setRandomPosition(agent: IAgent) {
-    const bounds = PROJ.GetBounds();
+    const bounds = GetBounds();
     const x = m_random(bounds.left, bounds.right);
     const y = m_random(bounds.top, bounds.bottom);
     m_setPosition(agent, x, y);
+  }
+
+  setRandomPositionX(agent: IAgent) {
+    const bounds = GetBounds();
+    const x = m_random(bounds.left, bounds.right);
+    m_setPosition(agent, x, agent.prop.y.value);
+  }
+
+  setRandomPositionY(agent: IAgent) {
+    const bounds = GetBounds();
+    const y = m_random(bounds.top, bounds.bottom);
+    m_setPosition(agent, agent.prop.x.value, y);
   }
 
   setRandomStart(agent: IAgent) {
@@ -243,74 +308,6 @@ class MovementPack extends GFeature {
     m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
   }
 } // end of feature class
-
-/// CLASS HELPERS /////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_random(min = 0, max = 1, round = false) {
-  // REVIEW: Replace with a seeded random number generator
-  const n = Math.random() * (max - min) + min;
-  if (round) return Math.round(n);
-  return n;
-}
-function m_DegreesToRadians(degree) {
-  return (degree * Math.PI) / 180;
-}
-function m_setPosition(agent, x, y) {
-  const bounds = PROJ.GetBounds();
-  const pad = 5;
-  let hwidth = pad; // half width -- default to some padding
-  let hheight = pad;
-  // If agent uses physics, we can get height/width, otherwise default
-  // to small padding.
-  if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
-  }
-  let xx = x;
-  let yy = y;
-  if (PROJ.Wraps('left')) {
-    // This lets the agent poke its nose out before wrapping
-    // to the other side.  Otherwise, the agent will suddenly
-    // pop to other side.
-    xx = x <= bounds.left ? bounds.right - pad : xx;
-  } else {
-    // wall
-    if (x - hwidth < bounds.left) {
-      xx = bounds.left + hwidth + pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
-    }
-  }
-  if (PROJ.Wraps('right')) {
-    xx = x >= bounds.right ? bounds.left + pad : xx;
-  } else {
-    if (x + hwidth >= bounds.right) {
-      xx = bounds.right - hwidth - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
-    }
-  }
-  if (PROJ.Wraps('top')) {
-    yy = y <= bounds.top ? bounds.bottom - pad : yy;
-  } else {
-    if (y - hheight <= bounds.top) {
-      yy = bounds.top + hheight + pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
-    }
-  }
-  if (PROJ.Wraps('bottom')) {
-    yy = y >= bounds.bottom ? bounds.top + pad : yy;
-  } else {
-    if (y + hheight > bounds.bottom) {
-      yy = bounds.bottom - hheight - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
-    }
-  }
-  agent.prop.x.value = xx;
-  agent.prop.y.value = yy;
-}
-function m_setDirection(agent, degrees) {
-  console.error('direction', degrees);
-  agent.prop.Movement.direction.value = degrees;
-}
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

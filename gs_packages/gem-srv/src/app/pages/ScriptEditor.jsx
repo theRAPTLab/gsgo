@@ -17,6 +17,7 @@ import PanelSelectAgent from './components/PanelSelectAgent';
 import PanelScript from './components/PanelScript';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -52,6 +53,8 @@ class ScriptEditor extends React.Component {
   constructor() {
     super();
     this.state = {
+      isReady: false,
+      noMain: true,
       panelConfiguration: 'select',
       modelId: '',
       model: {},
@@ -62,10 +65,11 @@ class ScriptEditor extends React.Component {
       message: '',
       messageIsError: false
     };
-    // bind
+    this.Initialize = this.Initialize.bind(this);
     this.CleanupComponents = this.CleanupComponents.bind(this);
-    this.LoadModel = this.LoadModel.bind(this);
-    this.OnSimDataUpdate = this.OnSimDataUpdate.bind(this);
+    this.RequestModel = this.RequestModel.bind(this);
+    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
+    this.UpdateModelData = this.UpdateModelData.bind(this);
     this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
     this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
@@ -74,32 +78,13 @@ class ScriptEditor extends React.Component {
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
     this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
-    // hooks
     // Sent by PanelSelectAgent
     UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
-    // REVIEW
-    // Sometimes SIM/READY is too early.  The request for model
-    // data is not answered.  Use SIM/STAGED instead?
-    // This is mostly a problem when saving this file triggers a
-    // rebuild and reload.  But it's not consistent.
-    UR.HookPhase('SIM/READY', () => {
-      console.warn('sim/READY!');
-      const { modelId } = this.state;
-      this.LoadModel(modelId);
-    });
-
-    // REVIEW
-    // Is this necessary?  Does SIM/READY work?
-    UR.HookPhase('SIM/STAGED', () => {
-      console.warn('SIM/STAGED!');
-      // const { modelId } = this.state;
-      // this.LoadModel(modelId);
-    });
   }
 
   componentDidMount() {
@@ -116,6 +101,22 @@ class ScriptEditor extends React.Component {
 
     // Set model section
     this.setState({ modelId, scriptId });
+
+    UR.HookPhase('UR/APP_START', async () => {
+      const devAPI = UR.SubscribeDeviceSpec({
+        selectify: device => device.meta.uclass === 'Sim',
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          if (valid) {
+            if (DBG) console.log(...PR('Main Sim Online!'));
+            this.Initialize();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
+          }
+        }
+      });
+    });
   }
 
   componentDidCatch(e) {
@@ -132,35 +133,45 @@ class ScriptEditor extends React.Component {
     UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
     UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.OnSimDataUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
+  Initialize() {
+    if (this.state.isReady) return; // already initialized
+    const { modelId } = this.state;
+    this.RequestModel(modelId);
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
+  }
+
   /**
-   * This requests model data from Map Editor or Mission Control's
+   * This requests model data from Mission Control's
    * ProjectData module.
-   * project-data will respond with `NET:UPDATE_MODEL
-   * which is handled by OnSimDataUpdate, below.
-   *
-   * REVIEW: Should this be done with a callback instead?
-   *
-   * @param {String} modelId
+   * project-data will respond with model data { result: model }
+   * which is handled by UpdateModelData, below.
    */
-  LoadModel(modelId) {
-    if (DBG) console.log(...PR('LoadModel'));
-    UR.RaiseMessage('NET:REQUEST_MODEL', { modelId });
+  RequestModel(modelId) {
+    if (DBG) console.log(...PR('RequestModel...', modelId));
+    const fnName = 'GetModel';
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName,
+      parms: [modelId]
+    }).then(rdata => this.UpdateModelData(rdata.result));
+  }
+  HandleModelUpdate(data) {
+    this.UpdateModelData(data.model);
   }
   /**
-   * Second part of LoadModel
    * This saves the model data to the local state
    * and loads the current script if it's been specified
-   * @param {Object} data
+   * @param {Object} model
    */
-  OnSimDataUpdate(data) {
-    if (DBG) console.log(...PR('OnSimDataUpdate', data));
+  UpdateModelData(model) {
+    if (DBG) console.log(...PR('UpdateModelData', model));
     const { scriptId } = this.state;
-    this.setState({ model: data.model }, () => {
+    this.setState({ model }, () => {
       if (scriptId) {
         this.OnSelectScript({ scriptId });
       }
@@ -190,7 +201,7 @@ class ScriptEditor extends React.Component {
    *                       where 'instances' are instanceSpecs: {name, blueprint, init}
    */
   OnInstanceUpdate(data) {
-    if (DBG) console.log(...PR('OnInstanceUpdate'));
+    // if (DBG) console.log(...PR('OnInstanceUpdate'));
     const { scriptId, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
     const instances = data.instances.filter(i => {
@@ -215,7 +226,7 @@ class ScriptEditor extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
-    if (DBG) console.log(...PR('OnInspectorUpdate'));
+    // if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
     const { scriptId } = this.state;
     if (!data || data.agents === undefined) {
@@ -299,8 +310,9 @@ class ScriptEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    if (DBG) console.log(...PR('render'));
+    // if (DBG) console.log(...PR('render'));
     const {
+      noMain,
       panelConfiguration,
       modelId,
       model,
@@ -311,6 +323,16 @@ class ScriptEditor extends React.Component {
       messageIsError
     } = this.state;
     const { classes } = this.props;
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
+
     const agents =
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
@@ -384,6 +406,7 @@ class ScriptEditor extends React.Component {
               instances={instances}
               disallowDeRegister
             />
+            {DialogNoMain}
           </div>
         </div>
       </div>

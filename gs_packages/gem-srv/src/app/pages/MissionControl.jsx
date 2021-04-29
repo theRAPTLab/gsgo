@@ -23,19 +23,19 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
-import PanelSimulation from './components/PanelSimulation';
 import MissionMapEditor from './MissionMapEditor';
 import MissionRun from './MissionRun';
-
+import PanelSimulation from './components/PanelSimulation';
 import PanelPlayback from './components/PanelPlayback';
 import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
-import ProjectData from '../data/project-data';
+import PROJ from '../data/project-data';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -50,7 +50,7 @@ const DBG = false;
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('edit', '15% auto 0px'); // columns
+PANEL_CONFIG.set('edit', '15% auto 150px'); // columns
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
@@ -82,10 +82,19 @@ class MissionControl extends React.Component {
       message: '',
       modelId: '',
       model: {},
+      devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
-      scriptsNeedUpdate: false
+      scriptsNeedUpdate: false,
+      openConfirmClose: false
     };
+
+    // Initialization
+    this.Initialize = this.Initialize.bind(this);
+    this.FailSimAlreadyRunning = this.FailSimAlreadyRunning.bind(this);
+
+    // Devices
+    this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
 
     // Data Update Handlers
     this.LoadModel = this.LoadModel.bind(this);
@@ -97,6 +106,7 @@ class MissionControl extends React.Component {
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
+    UR.HandleMessage('LOAD_MODEL', this.LoadModel); // re from project-data
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
@@ -118,19 +128,10 @@ class MissionControl extends React.Component {
     this.OnToggleRunEdit = this.OnToggleRunEdit.bind(this);
     this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.OnSelectView = this.OnSelectView.bind(this);
 
     // System Hooks
-    UR.HookPhase('SIM/READY', () => {
-      console.log(...PR('SIM/READY!'));
-      const { modelId } = this.state;
-      this.LoadModel(modelId);
-    });
-    // TEST: Probably not necessary so long as SIM/READY is only called once
-    UR.HookPhase('SIM/STAGED', () => {
-      console.log(...PR('SIM/STAGED!'));
-      // const { modelId } = this.state;
-      // this.LoadModel(modelId);
-    });
+    UR.HookPhase('UR/APP_START', this.Initialize);
   }
 
   componentDidMount() {
@@ -141,7 +142,7 @@ class MissionControl extends React.Component {
     if (!modelId) window.location = '/app/login';
 
     this.setState({ modelId });
-    document.title = `GEMSTEP MISSION CONTROL ${modelId}`;
+    document.title = `GEMSTEP MAIN ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
   }
@@ -151,25 +152,79 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
+    UR.UnhandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
     UR.UnhandleMessage('DRAG_END', this.HandleDragEnd);
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
-    UR.UnhandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+  }
+
+  /// INITIALIZATION ////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  async Initialize() {
+    // 1. Check for other 'Sim' devices.
+    const devices = UR.GetDeviceDirectory();
+    const sim = devices.filter(d => d.meta.uclass === 'Sim');
+    if (sim.length > 0) {
+      this.FailSimAlreadyRunning();
+      return;
+    }
+
+    // 2. Load Model
+    const { modelId } = this.state;
+    this.LoadModel(modelId);
+
+    // 3. Register as 'Sim' Device
+    // devices templates are defined in class-udevice.js
+    const dev = UR.NewDevice('Sim');
+    const { udid, status, error } = await UR.RegisterDevice(dev);
+    if (error) console.error(error);
+    if (status) console.log(...PR(status));
+    // if (udid) DEVICE_UDID = udid;
+
+    // 4. Listen for Controllers
+    const charControllerDevAPI = UR.SubscribeDeviceSpec({
+      selectify: device => device.meta.uclass === 'CharControl',
+      notify: deviceLists => {
+        const { selected, quantified, valid } = deviceLists;
+        if (valid) {
+          this.UpdateDeviceList(selected);
+        }
+      }
+    });
+  }
+  FailSimAlreadyRunning() {
+    this.setState({ openConfirmClose: true });
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// DEVICE HANDLERS
+  ///
+  UpdateDeviceList(devices = []) {
+    if (Array.isArray(devices)) {
+      const UDID = PROJ.GetUDID();
+      const filtered = devices.filter(d => d.udid !== UDID); // remove self
+      this.setState({ devices: filtered });
+      return;
+    }
+    console.error(...PR('UDL error, got', devices));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    ProjectData.SetCurrentModelId(modelId);
-    const model = ProjectData.GetCurrentModel();
+    const model = PROJ.LoadModel(modelId);
     this.setState(
       { model },
-      () => this.CallSimPlaces() // necessary to update screen after overall model updates
+      // Call Sim Places to compile agents after model load
+      () => this.CallSimPlaces()
     );
   }
   HandleSimDataUpdate(data) {
@@ -180,12 +235,12 @@ class MissionControl extends React.Component {
     }
     this.setState(
       { modelId: data.modelId, model: data.model },
-      // Need to call SimPlaces here after prop updates or agents won't reposition
+      // Call Sim Places to recompile agents.
       () => this.CallSimPlaces()
     );
   }
   HandleInstancesUpdate(data) {
-    if (DBG) console.log('HandleInstancesUpdate', data);
+    // if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
     model.instances = data.instances;
     this.setState({ model });
@@ -208,14 +263,17 @@ class MissionControl extends React.Component {
     setTimeout(() => this.forceUpdate(), 250);
   }
   DoSimReset() {
-    this.PostMessage(`Simulation Reset!`);
+    this.PostMessage('Simulation Reset!');
     this.setState(
       {
         model: {},
         inspectorInstances: [],
         scriptsNeedUpdate: false
+      },
+      () => {
+        PROJ.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
+        this.LoadModel(this.state.modelId); // This will also call SimPlaces
       }
-      // SIM.Reset() will trigger SIM/READY, which triggers a LoadModel
     );
   }
   /**
@@ -229,7 +287,6 @@ class MissionControl extends React.Component {
    */
   OnInspectorUpdate(data) {
     const { panelConfiguration } = this.state;
-
     // Don't do updates if we're editing the map
     // This triggers state changes, which causes InstanceEditor
     // and prop.tsx to re-render AMD text input fields to lose focus
@@ -259,7 +316,7 @@ class MissionControl extends React.Component {
       const { modelId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      ProjectData.InstanceUpdatePosition({
+      PROJ.InstanceUpdatePosition({
         modelId,
         instanceId: agent.id,
         updatedData: { x, y }
@@ -277,46 +334,36 @@ class MissionControl extends React.Component {
     const { panelConfiguration, modelId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      ProjectData.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      PROJ.InstanceRequestEdit({ modelId, agentId: data.agentId });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
-    ProjectData.InstanceHoverOver({ modelId, agentId: data.agentId });
+    PROJ.InstanceHoverOver({ modelId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { modelId } = this.state;
-    ProjectData.InstanceHoverOut({ modelId, agentId: data.agentId });
+    PROJ.InstanceHoverOut({ modelId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// PANEL UI CONFIGURATION
   ///
-  OnToggleRunEdit(e, newConfig) {
-    if (newConfig === null) return; // skip if it's a click on the same button
-
-    // // Automatically trigger reset when changing modes.
-    // // This is necessary because blueprints are not recompiled
-    // // if scripts are submitted while the sim is running.
-    // // If the user then switches to edit the map, they may
-    // // inadvertently select newly defined properties that
-    // // the old instances do not support.  A reset will
-    // // cause the instances to be recompiled.
-    // const { scriptsNeedUpdate } = this.state;
-    // if (scriptsNeedUpdate) {
-    //   UR.RaiseMessage('NET:HACK_SIM_RESET'); // Reset will trigger SimPlaces
-    // } else {
-    //   // Call SimPlaces so instanceInspector will update
-    //   // after adding instances in mapeditor
-    //   this.CallSimPlaces();
-    // }
-
+  OnToggleRunEdit(e) {
+    // Automatically trigger reset when changing modes.
+    // This is necessary because blueprints are not recompiled
+    // if scripts are submitted while the sim is running.
+    // If the user then switches to edit the map, they may
+    // inadvertently select newly defined properties that
+    // the old instances do not support.  A reset will
+    // cause the instances to be recompiled.
     // Always reset!  Otherwise, scale commands get re-applied?
-    // Only reason not to reset is ...?
     UR.RaiseMessage('NET:HACK_SIM_RESET');
-    this.setState({ panelConfiguration: newConfig });
+    this.setState(state => ({
+      panelConfiguration: state.panelConfiguration === 'edit' ? 'run' : 'edit'
+    }));
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({
@@ -328,6 +375,10 @@ class MissionControl extends React.Component {
     this.setState({
       panelConfiguration: id
     });
+  }
+  OnSelectView() {
+    const { modelId } = this.state;
+    window.location = `/app/model?model=${modelId}`;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -343,36 +394,48 @@ class MissionControl extends React.Component {
       message,
       modelId,
       model,
+      devices,
       inspectorInstances,
       runIsMinimized,
-      scriptsNeedUpdate
+      scriptsNeedUpdate,
+      openConfirmClose
     } = this.state;
     const { classes } = this.props;
+    const { width, height, bgcolor } = PROJ.GetProjectBoundary();
 
     const agents =
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
         : [];
 
+    const stageBtn = (
+      <>
+        <div className={classes.colorData} style={{ fontSize: '18px' }}>
+          STAGE:{' '}
+        </div>
+        <button
+          type="button"
+          className={classes.button}
+          onClick={this.OnToggleRunEdit}
+          disabled={SIM.IsRunning()}
+        >
+          {panelConfiguration === 'edit' ? 'SAVE' : 'SETUP'}
+        </button>
+      </>
+    );
+
     const jsxRunOrEdit = (
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
-          height: '50px',
-          width: '100%'
+          alignItems: 'baseline',
+          height: '70px',
+          width: '100%',
+          marginBottom: '10px'
         }}
       >
-        <ToggleButtonGroup
-          value={panelConfiguration}
-          exclusive
-          onChange={this.OnToggleRunEdit}
-        >
-          <StyledToggleButton value="run">Run</StyledToggleButton>
-          <StyledToggleButton value="edit" disabled={SIM.IsRunning()}>
-            Setup the Stage
-          </StyledToggleButton>
-        </ToggleButtonGroup>
+        {stageBtn}
       </div>
     );
 
@@ -383,10 +446,21 @@ class MissionControl extends React.Component {
         <MissionRun
           modelId={modelId}
           model={model}
+          devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}
         />
       );
+
+    const DialogConfirmClose = (
+      <DialogConfirm
+        open={openConfirmClose}
+        message={`A "Main" window is already open.  Select another view?`}
+        yesMessage={`OK`}
+        noMessage=""
+        onClose={this.OnSelectView}
+      />
+    );
 
     return (
       <div
@@ -421,7 +495,7 @@ class MissionControl extends React.Component {
             style={{
               display: 'grid',
               gridTemplateRows:
-                panelConfiguration === 'edit' ? '60px auto' : '60px auto auto',
+                panelConfiguration === 'edit' ? '70px auto' : '70px auto auto',
               overflow: 'hidden'
             }}
           >
@@ -430,22 +504,37 @@ class MissionControl extends React.Component {
           </div>
         </div>
         <div id="console-main" className={classes.main}>
-          <PanelSimulation id="sim" model={model} onClick={this.OnPanelClick} />
+          <PanelSimulation
+            id="sim"
+            model={model}
+            width={width}
+            height={height}
+            bgcolor={bgcolor}
+            onClick={this.OnPanelClick}
+          />
         </div>
         <div id="console-right" className={classes.right}>
           <div
             style={{
               display: 'grid',
-              gridTemplateRows: '150px auto',
+              gridTemplateRows: 'auto auto',
               overflow: 'hidden'
             }}
           >
-            <PanelPlayback
-              id="playback"
-              model={model}
-              needsUpdate={scriptsNeedUpdate}
-            />
-            <PanelInstances id="instances" instances={inspectorInstances} />
+            {panelConfiguration !== 'edit' && (
+              <>
+                <PanelPlayback
+                  id="playback"
+                  model={model}
+                  needsUpdate={scriptsNeedUpdate}
+                />
+                <PanelInstances
+                  id="instances"
+                  instances={inspectorInstances}
+                  disallowDeRegister={false}
+                />
+              </>
+            )}
           </div>
         </div>
         <div
@@ -454,6 +543,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3' }}
         >
           <PanelMessage message={message} />
+          {DialogConfirmClose}
         </div>
       </div>
     );

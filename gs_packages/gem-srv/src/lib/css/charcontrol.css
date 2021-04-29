@@ -1,5 +1,7 @@
 /* faketrack css */
-
+html {
+  overflow: hidden;
+}
 #container {
   background-color: #e0e0e0;
   position: relative;

@@ -5,6 +5,9 @@
   `shape` defines the type of boundary: radius vs height/width
   `shape` defaults to CIRCLE.
 
+  You generally want to define Costume and sprite before `init`ing Physics
+  so that the size can be automatically set.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';

@@ -29,6 +29,7 @@ export function DefineInstance(instanceDef: TInstance) {
   if (!instanceDef.id) {
     instanceDef.id = INSTANCE_COUNTER++;
   }
+  instanceDef.id = String(instanceDef.id); // enforce string
   bpi.push(instanceDef);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -114,7 +115,7 @@ export function SaveAgent(agent) {
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, id, name } = instancedef;
+  const { blueprint, id } = instancedef;
   if (!AGENTS.has(blueprint)) {
     console.error(...PR(`blueprint ${blueprint} not found`));
     return;

@@ -114,13 +114,12 @@ import { GetSpriteDimensions } from 'modules/datacore/dc-globals';
 const PR = UR.PrefixUtil('TouchesPack');
 const DBG = true;
 
-// Stuff in agents instead
 // const AGENTS_TBL = new Map(); // [ ...[ agentId, BTYPE_TBL: map ]]
 // Blueprint Type: BTYPE_TBL  = [ ...[ blueprintName, TAGENT_TBL: map ]]
 // Target Agent:   TAGENT_TBL = [ ...[ targetAgentId, lastTouched: number ]]
 
 // Stuff in agents instead
-const MONITORED_AGENTS = [];
+const MONITORED_AGENTS = new Map();
 
 const FPS = 30;
 let TIMER: any;
@@ -144,7 +143,7 @@ class TouchesPack extends GFeature {
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
-  /// REVIEW: initialie is not called at the moment!
+  /// REVIEW: initialize is not called at the moment!
   initialize(simloop) {
     super.initialize(simloop);
     simloop.hook('INPUT', frame => console.log(frame));
@@ -152,19 +151,27 @@ class TouchesPack extends GFeature {
   clear() {
     // Stuff in agents instead
     // const agents = Array.from(AGENTS_TBL.keys());
-    const agents = MONITORED_AGENTS;
-    agents.forEach(a => {
+    const agentIds = Array.from(MONITORED_AGENTS.keys());
+    agentIds.forEach(id => {
       // Stuff in agents instead
       // const BTYPE_TBL = AGENTS_TBL.get(a);
+      const a = GetAgentById(id);
       const BTYPE_TBL = a.touchTable || new Map();
       const blueprints = Array.from(BTYPE_TBL.keys());
       blueprints.forEach(b => {
         const TAGENT_TBL = BTYPE_TBL.get(b) || new Map();
-        const targets = Array.from(TAGENT_TBL.keys());
-        targets.forEach(t => {
-          TAGENT_TBL.set(t, 0);
-        });
+        // shouldn't we just clear them instead?
+        TAGENT_TBL.clear();
+
+        // Orig method
+        // const targets = Array.from(TAGENT_TBL.keys());
+        // targets.forEach(t => {
+        //   TAGENT_TBL.set(t, 0);
+        // });
       });
+      // clear blueprint type too
+      BTYPE_TBL.clear();
+      a.touchTable = BTYPE_TBL;
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -213,7 +220,7 @@ class TouchesPack extends GFeature {
     // Stuff in agents instead
     // AGENTS_TBL.set(agent.id, BTYPE_TBL);
     agent.touchTable = BTYPE_TBL;
-    MONITORED_AGENTS.push(agent.id);
+    MONITORED_AGENTS.set(agent.id, agent.id);
   }
   /**
    * Returns true if agent touched ANY agent of targetBlueprintName type
@@ -301,8 +308,8 @@ function m_isTouching(a: IAgent, b: IAgent) {
 function m_update() {
   // Stuff it in agents instead
   // const agents = Array.from(AGENTS_TBL.keys());
-  const agents = MONITORED_AGENTS;
-  agents.forEach(agentId => {
+  const agentIds = Array.from(MONITORED_AGENTS.keys());
+  agentIds.forEach(agentId => {
     const a = GetAgentById(agentId);
     // Stuff it in agents instead
     // const BTYPE_TBL = AGENTS_TBL.get(agentId);
