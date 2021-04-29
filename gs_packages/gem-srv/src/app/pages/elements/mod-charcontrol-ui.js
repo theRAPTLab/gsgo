@@ -23,10 +23,11 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
+const DBG = false;
 
 // constants for packet update rate
-const FRAMERATE = 2; // 500ms
-const INTERVAL = (1 / FRAMERATE) * 1000;
+let SENDING_FPS = 15;
+let INTERVAL = (1 / SENDING_FPS) * 1000;
 let m_current_time = 0;
 
 // React user interface (the "view")
@@ -42,6 +43,8 @@ let m_container; // parent div
 let m_entities; // HTMLCollection of moveable markers
 let m_testentities; // HTMLCollection of moveable markers
 
+let Device; // uDevice devAPI
+let SENDER; // interval timer for sending frames
 let DEVICE_UDID; // registered UDID
 let MarkerFramer; // hold function that generates "marker" control frames
 let m_seq = 0; // sequence number
@@ -242,10 +245,20 @@ function HandleStateChange(name, value) {
           DoBurstTest(value);
           break;
         case 'num_entities':
-          Initialize(m_CHARVIEW);
+          // ORIG CODE: Initialize is overkill
+          // Initialize(m_CHARVIEW, { sampleRate: SENDING_FPS });
+
+          // We just need to:
+          // 1. clear the container (remove old entities)
+          m_container = m_SetupContainer('container');
+          // 2. update entities
+          m_entities = m_CreateEntities(m_container);
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
+          break;
+        case 'tag':
+          m_MakeDevice(); // Only make a new device for blueprint, don't re-initialize UI
           break;
       }
     }
@@ -254,6 +267,28 @@ function HandleStateChange(name, value) {
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is primarily called by Initialize to create the device.
+ *  It is also called when the user selects a new blueprint and we need to
+ *  create a new device for the blueprint without re-initializing the whole UI.
+ */
+async function m_MakeDevice() {
+  if (!Device) Device = UR.NewDevice('CharControl');
+
+  // Update blueprint names for "Blueprint" selector
+  // NOTE: Currently we only allow a single blueprint type per device
+  Device.meta.uapp_tags = [m_CHARVIEW.state.tag];
+
+  const { udid, status, error } = await UR.RegisterDevice(Device);
+  if (error) console.error(error);
+  if (status) console.log(...PR(status));
+  if (udid) DEVICE_UDID = udid;
+  MarkerFramer = Device.getControlFramer('markers');
+
+  // send periodic control frames
+  clearInterval(SENDER); // clear the old one if we're initializing a new one
+  SENDER = setInterval(SendControlFrame, INTERVAL);
+}
+
 /** This is called by the CharControl component once it's completely rendered,
  *  at which time this module can start adding its own objects. This code
  *  relies on m_CHARVIEW (the CharContol view)
@@ -261,24 +296,25 @@ function HandleStateChange(name, value) {
  *  NOTE: m_CHARVIEW is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
 /*/
-async function Initialize(componentInstance) {
+async function Initialize(componentInstance, opt = {}) {
+  // Initialize only needs to be called once.
+  // If MarkerFramer is already defined, then we've been initialized
+  if (MarkerFramer !== undefined) return;
+
+  // save React component to grab state from and setstate
+  m_CHARVIEW = componentInstance;
+
+  // options
+  const { sampleRate } = opt;
+  if (sampleRate) SENDING_FPS = sampleRate;
+  INTERVAL = (1 / SENDING_FPS) * 1000;
+
   // prototype device registration
   // a device declares what kind of device it is
   // and what data can be sent/received
   if (MarkerFramer === undefined) {
-    const dev = UR.NewDevice('CharControl');
-    const { udid, status, error } = await UR.RegisterDevice(dev);
-    if (error) console.error(error);
-    if (status) console.log(...PR(status));
-    if (udid) DEVICE_UDID = udid;
-    MarkerFramer = dev.getControlFramer('markers');
-
-    // send periodic control frames
-    setInterval(SendControlFrame, INTERVAL);
+    m_MakeDevice();
   }
-
-  // save React component to grab state from and setstate
-  m_CHARVIEW = componentInstance;
 
   // setup container, entity listsm
   m_container = m_SetupContainer('container');
@@ -311,8 +347,29 @@ async function Initialize(componentInstance) {
   m_canvasheight = m_container.offsetHeight;
 
   // push interval
-  m_CHARVIEW.setState({ rate: FRAMERATE });
+  m_CHARVIEW.setState({ rate: SENDING_FPS });
 } // Initialize()
+
+/// HACKY
+/// Keep entities in approximately the same position as the window
+/// resizes.
+function UpdateDimensions(e) {
+  // Update entities
+  if (!m_entities) return; // when page first loads, no m_entities are defined.
+  for (let i = 0; i < m_entities.length; i++) {
+    const fdiv = m_entities[i];
+    const cobj = u_MakeControlDataObject(fdiv);
+    const w = m_container.offsetWidth;
+    const h = m_container.offsetHeight;
+    const x = (0.5 + Number(cobj.x)) * w - fdiv.offsetWidth / 2;
+    const y = (0.5 + Number(cobj.y)) * h - fdiv.offsetHeight / 2;
+    fdiv.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  }
+  // save dimensions of m_container. this isn't actually a canvas element.
+  // it's used to calculate normalized coordinates of entities
+  m_canvaswidth = m_container.offsetWidth;
+  m_canvasheight = m_container.offsetHeight;
+}
 
 /// SEND PTRACK-COMPATIBLE DATA ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -351,7 +408,9 @@ function SendControlFrame() {
   HandleStateChange('status', m_status);
 
   // create the control frame
+  if (!MarkerFramer) return; // catch undefined MarkerFrame during re-initialization after a blueprint selection
   const controlFrame = MarkerFramer(cobjs);
+  if (DBG) console.log('controlFrame', controlFrame);
   UR.SendControlFrame(controlFrame);
 }
 
@@ -469,4 +528,4 @@ function u_MakeControlDataObject(div) {
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
-export { Initialize, HandleStateChange };
+export { Initialize, HandleStateChange, UpdateDimensions };

@@ -19,10 +19,10 @@ import clsx from 'clsx';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
+import { GetBlueprintProperties } from 'modules/datacore/dc-project';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import ProjectData from '../../data/project-data';
 import InputField from './InputField';
 
 const DBG = true;
@@ -32,7 +32,6 @@ class InstanceEditor extends React.Component {
     super();
     this.state = {
       title: 'EDITOR',
-      modelId: undefined,
       agentId: undefined,
       isEditable: false,
       isHovered: false,
@@ -68,9 +67,7 @@ class InstanceEditor extends React.Component {
     UR.HandleMessage('NET:INSTANCE_DESELECT', this.HandleDeselect);
   }
 
-  componentDidMount() {
-    this.setState({ modelId: ProjectData.GetCurrentModelId() });
-  }
+  componentDidMount() {}
 
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
@@ -111,7 +108,8 @@ class InstanceEditor extends React.Component {
    */
   HandleScriptUpdate(data) {
     // Update the script
-    const { modelId, isEditable } = this.state;
+    const { modelId } = this.props;
+    const { isEditable } = this.state;
     if (isEditable) {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
@@ -139,7 +137,8 @@ class InstanceEditor extends React.Component {
 
   HandleScriptLineDelete(data) {
     // Update the script
-    const { modelId, isEditable } = this.state;
+    const { modelId } = this.props;
+    const { isEditable } = this.state;
     if (isEditable) {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
@@ -170,17 +169,13 @@ class InstanceEditor extends React.Component {
   }
 
   GetAddableProperties() {
-    const { modelId } = this.state;
-    const { instance } = this.props;
+    const { modelId, instance } = this.props;
     const blueprintName = this.GetBlueprintName();
 
     if (!modelId || !instance) return [];
 
-    // REVIEW: Should InstanceEditor be talkign to SimData directly!?!
-    // Assume we can get a list of properties from SimData
     // properties = [...{name, type, defaultvalue, isFeatProp }]
-    let properties = ProjectData.GetBlueprintProperties(blueprintName, modelId);
-
+    let properties = GetBlueprintProperties(blueprintName);
     // Remove properties that have already been set
     // 1. Get the list or properties
     const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
@@ -224,7 +219,7 @@ class InstanceEditor extends React.Component {
     const selectedProp = e.target.value;
     if (selectedProp === '') return; // selected the help instructions
 
-    const { modelId } = this.state;
+    const { modelId } = this.props;
     const addableProperties = this.GetAddableProperties();
     const { instance } = this.props;
     const property = addableProperties.find(p => p.name === selectedProp);
@@ -250,8 +245,7 @@ class InstanceEditor extends React.Component {
   }
 
   OnDeleteInstance() {
-    const { modelId } = this.state;
-    const { instance } = this.props;
+    const { modelId, instance } = this.props;
     UR.RaiseMessage('NET:INSTANCE_DELETE', {
       modelId,
       instanceDef: instance
@@ -259,7 +253,8 @@ class InstanceEditor extends React.Component {
   }
 
   DoDeselect() {
-    let { modelId, isSelected, isEditable } = this.state;
+    const { modelId } = this.props;
+    let { isSelected, isEditable } = this.state;
     const agentId = this.GetAgentId();
     isEditable = false;
     isSelected = false;
@@ -332,8 +327,8 @@ class InstanceEditor extends React.Component {
   }
   OnNameSave(data) {
     // Update the script
-    const { instance } = this.props;
-    const { modelId, isEditable } = this.state;
+    const { modelId, instance } = this.props;
+    const { isEditable } = this.state;
     const instanceName = data.instanceName;
     if (isEditable) {
       if (data.exitEdit) {
@@ -363,14 +358,13 @@ class InstanceEditor extends React.Component {
   render() {
     const {
       title,
-      modelId,
       isEditable,
       isHovered,
       isSelected,
       isAddingProperty,
       isDeletingProperty
     } = this.state;
-    const { id, instance, classes } = this.props;
+    const { id, modelId, instance, classes } = this.props;
     const instanceName = instance.name;
 
     const addableProperties = this.GetAddableProperties();

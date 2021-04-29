@@ -44,6 +44,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isHovered: boolean;
   isGrouped: boolean;
   isGlowing: boolean;
+  isLargeMeter: boolean;
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
@@ -64,11 +65,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.thinkQueue = [];
     this.execQueue = [];
     // built-in movement control states
-    this.controlMode = ControlMode.puppet;
+    this.controlMode = ControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
     this.prop.x = new GVarNumber();
     this.prop.y = new GVarNumber();
+    this.prop.zIndex = new GVarNumber();
     this.prop.skin = new GVarString('default');
     this.prop.scale = new GVarNumber(1); // implicit x
     this.prop.scale.setMax(10);
@@ -85,7 +87,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.meter.setMax(1);
     this.prop.meter.setMin(0);
     this.prop.meterClr = new GVarNumber();
-    this.prop.meterLarge = new GVarBoolean(false);
+    this.prop.meterLarge = new GVarBoolean(false); // script accessible
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -109,6 +111,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set y(num: number) {
     this.prop.y.value = num;
+  }
+  get zIndex() {
+    return this.prop.zIndex.value;
+  }
+  set zIndex(num: number) {
+    this.prop.zIndex.value = num;
   }
   get skin() {
     return this.prop.skin.value;
@@ -167,15 +175,20 @@ class GAgent extends SM_Object implements IAgent, IActable {
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  private pushMode = (mode: ControlMode) => this.controlModeHistory.push(mode);
+  private pushMode = (mode: ControlMode) => {
+    this.controlMode = mode;
+    return this.controlModeHistory.push(mode);
+  };
   mode = () => this.controlMode;
   setPreviousMode = () => this.controlModeHistory.pop() || ControlMode.auto;
+  setModeStatic = () => this.pushMode(ControlMode.static);
+  setModeDrag = () => this.pushMode(ControlMode.drag);
   setModePuppet = () => this.pushMode(ControlMode.puppet);
   setModeAuto = () => this.pushMode(ControlMode.auto);
-  setModeStatic = () => this.pushMode(ControlMode.static);
+  isModeStatic = () => this.controlMode === ControlMode.static;
+  isModeDrag = () => this.controlMode === ControlMode.drag;
   isModePuppet = () => this.controlMode === ControlMode.puppet;
   isModeAuto = () => this.controlMode === ControlMode.auto;
-  isModeStatic = () => this.controlMode === ControlMode.static;
 
   /// AGENT INTERACTION STATES ////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

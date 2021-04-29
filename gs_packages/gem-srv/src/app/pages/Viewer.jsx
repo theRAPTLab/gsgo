@@ -11,16 +11,11 @@ import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
-
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelBlueprints from './components/PanelBlueprints';
-import PanelInspector from './components/PanelInspector';
 import PanelInstances from './components/PanelInstances';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -46,37 +41,49 @@ class Viewer extends React.Component {
   constructor() {
     super();
     this.state = {
+      isReady: false,
+      noMain: true,
       panelConfiguration: 'sim',
       modelId: '',
       model: {},
       instances: []
     };
-    this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.RequestModel = this.RequestModel.bind(this);
+    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
+    this.UpdateModelData = this.UpdateModelData.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
 
     // Instance Interaction Handlers
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
-
-    // System Hooks
-    UR.HookPhase('SIM/STAGED', () => {
-      // **************************************************
-      // REVIEW
-      // This assumes that MissionControl is already running.
-      // This is not always reliable, especially during code
-      // refresh.  This call might go out before MissionControl.
-      // **************************************************
-      UR.RaiseMessage('NET:REQUEST_CURRENT_MODEL');
-    });
   }
 
   componentDidMount() {
+    document.title = 'GEMSTEP Viewer';
+
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
+
+    UR.HookPhase('UR/APP_START', async () => {
+      const devAPI = UR.SubscribeDeviceSpec({
+        selectify: device => device.meta.uclass === 'Sim',
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          if (valid) {
+            if (DBG) console.log(...PR('Main Sim Online!'));
+            this.Initialize();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
+          }
+        }
+      });
+    });
   }
 
   componentDidCatch(e) {
@@ -84,22 +91,44 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+  }
+
+  Initialize() {
+    if (this.state.isReady) return; // already initialized
+    this.RequestModel();
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
+  }
+
+  RequestModel() {
+    if (DBG) console.log(...PR('RequestModel...'));
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetCurrentModelData'
+    }).then(rdata => {
+      this.UpdateModelData(rdata.result.modelId, rdata.result.model);
+    });
+  }
+
+  HandleModelUpdate(data) {
+    if (DBG) console.log('HandleModelUpdate', data);
+    this.UpdateModelData(data.model, data.modelId);
+  }
+
+  UpdateModelData(modelId, model) {
+    if (DBG) console.log('UpdateModelData', modelId, model);
+    this.setState({
+      modelId,
+      model,
+      instances: model.instances
+    });
+    document.title = `VIEWER ${modelId}`;
   }
 
   HandleSimInstanceHoverOver(data) {
-    console.error('hover!');
-  }
-
-  HandleSimDataUpdate(data) {
-    console.error('onsimupdate');
-    this.setState({
-      modelId: data.modelId,
-      model: data.model,
-      instances: data.instances
-    });
-    document.title = `VIEWER ${data.modelId}`;
+    if (DBG) console.log('hover!');
   }
 
   HandleInspectorUpdate(data) {
@@ -116,7 +145,7 @@ class Viewer extends React.Component {
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
+    if (DBG) console.log('click', id); // e, e.target, e.target.value);
     this.setState({
       panelConfiguration: id
     });
@@ -127,8 +156,17 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, modelId, model, instances } = this.state;
+    const { noMain, panelConfiguration, modelId, model, instances } = this.state;
     const { classes } = this.props;
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
 
     const agents =
       model && model.scripts
@@ -179,7 +217,7 @@ class Viewer extends React.Component {
           className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          {DialogNoMain}
         </div>
       </div>
     );

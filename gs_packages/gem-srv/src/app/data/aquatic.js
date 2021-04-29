@@ -6,18 +6,20 @@ export const MODEL = {
     bottom: 400,
     left: -400,
     wrap: [false, false],
-    bounce: true
+    bounce: true,
+    bgcolor: 0x000066
   },
   scripts: [
     {
       id: 'Fish',
       label: 'Fish',
+      isControllable: true,
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'fish.json' 0
-featCall Movement setMovementType 'wander' 0.5
+featCall Movement setMovementType 'wander' 10
 
 addProp energyLevel Number 20
 prop energyLevel setMax 100
@@ -98,6 +100,7 @@ every 1 runAtStart [[
     {
       id: 'Algae',
       label: 'Algae',
+      isControllable: true,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume
@@ -122,6 +125,11 @@ propPop text
 useFeature Touches
 featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
+
+# PROGRAM INIT
+prop x setTo 400
+featCall Movement setRandomPositionY
+dbgOut "Init"
 
 # PROGRAM EVENT
 
@@ -231,7 +239,7 @@ addProp energyRate Number 1
 
 useFeature Physics
 featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 1000
+featCall Physics setSize 100 800
 
 // touches
 useFeature Touches
@@ -239,8 +247,8 @@ useFeature Touches
 # PROGRAM UPDATE
 exprPush {{agent.x + agent.getProp('speed').value; }}
 propPop x
-ifExpr {{ agent.x > 500 }} [[
-    prop x setTo -500
+ifExpr {{ agent.x > 400 }} [[
+    prop x setTo -400
 ]]
 `
     },
@@ -254,7 +262,7 @@ exprPush {{ 'Algae energyLevel avg' }}
 propPop text
 
 // Make skin invisible
-prop skin setTo '1x1'
+prop skin setTo onexone
 prop scale setTo 80
 prop scaleY setTo 40
 
@@ -306,7 +314,7 @@ every 1 [[
       // object test      initScript: `prop x setTo {{ x + -220 }}
       initScript: `prop x setTo 0
     prop y setTo 0
-    prop energyLevel setTo 54`
+    prop energyLevel setTo 20`
     },
     // {
     //   id: 502,

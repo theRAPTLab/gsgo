@@ -2,8 +2,8 @@
   "sprites": [
     {
       "assetId": 1,
-      "assetName": "1x1",
-      "assetUrl": "static/sprites/1x1.png"
+      "assetName": "onexone",
+      "assetUrl": "static/sprites/onexone.png"
     },
     {
       "assetId": 2,

@@ -56,7 +56,10 @@ class PanelPlayback extends React.Component {
           }}
         >
           {needsUpdate && (
-            <div className={classes.infoHighlightColor}>
+            <div
+              className={classes.infoHighlightColor}
+              style={{ padding: '5px' }}
+            >
               Scripts Updated!
               <br />
               Reset Stage!

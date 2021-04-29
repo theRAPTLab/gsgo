@@ -7,7 +7,7 @@
 /// POOLS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export interface IPoolableConstructor {
-  new (id?: number): IPoolable;
+  new (id?: any): IPoolable;
 }
 export interface IPoolable {
   id: any; // id referencing original (agentInstance)

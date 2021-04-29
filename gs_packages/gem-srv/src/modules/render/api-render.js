@@ -34,6 +34,7 @@ let SETTINGS = {};
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PIXI_DIV > PIXI_APP . stage > Root > Boundary
 function Init(element) {
   // if PIXI_APP already exists, maybe we just need to reattach the canvas
   if (PIXI_APP) {
@@ -48,9 +49,10 @@ function Init(element) {
   // Initialize PIXI APP
   if (!element) throw Error('received null element for Renderer.Init()');
   PIXI.utils.skipHello();
+  const size = 512;
   PIXI_APP = new PIXI.Application({
-    width: 512,
-    height: 512,
+    width: size,
+    height: size,
     backgroundColor: 0x222222
   });
   // CSS styling
@@ -76,6 +78,7 @@ function Init(element) {
   PIXI_APP.stage.addChild(root);
   // save
   CONTAINERS.Root = root;
+  RescaleToFit(size);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // map model display objects to sprites
@@ -89,7 +92,7 @@ function Init(element) {
       // copy parameters
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
-
+      vobj.setZIndex(dobj.zIndex);
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
@@ -113,13 +116,22 @@ function Init(element) {
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
       vobj.applyFilters();
 
-      if (dobj.mode === 1 && SETTINGS.actable) {
+      // Old Approach: Only enable drag and hover if controlMode is puppet (1)
+      // But this doesn't work for two reasons:
+      // 1. Input controlled agents (controlMode 3) need to be hoverable and selectable
+      // 2. Selection needs to be handled by draggable so we can distinguish between
+      //    drags and selections.
+      // if (dobj.mode === 1 && SETTINGS.actable) {
+
+      // New Approach: Make everything Draggable and Hoverable regardless of controlMode
+      // draggable will take care of testing whether it is allowed to override
+      // based on controlMode
+      if (SETTINGS.actable) {
         // add drag-and-drop and selection handlers
         MakeDraggable(vobj);
         // add hover handler
         MakeHoverable(vobj);
         // selection is handled by drag
-        // // add selectable handler
         // MakeSelectable(vobj);
       }
 
@@ -135,6 +147,7 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+      vobj.setZIndex(dobj.zIndex);
 
       // inefficient texture update
       vobj.setAlpha(dobj.alpha);
@@ -149,6 +162,7 @@ function Init(element) {
           dobj.meterClr,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
+      else vobj.removeMeter();
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
@@ -228,7 +242,17 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function ShowBoundary(width, height, color = 0x000000) {
+/// Rescales Root to fit in PIXI_DIV
+function RescaleToFit(width, height = width) {
+  const pad = 20; // add padding so you can see the edges
+  const scaleFactor = Math.min(
+    PIXI_DIV.offsetWidth / (width + pad),
+    PIXI_DIV.offsetHeight / (height + pad)
+  );
+  CONTAINERS.Root.scale.set(scaleFactor);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SetBoundary(width, height, bgcolor = 0x000000) {
   // Stage
   let boundaryRect = CONTAINERS.Boundary;
   if (!boundaryRect) {
@@ -236,10 +260,12 @@ function ShowBoundary(width, height, color = 0x000000) {
     CONTAINERS.Boundary = boundaryRect;
     CONTAINERS.Root.addChild(boundaryRect);
   }
-  boundaryRect.beginFill(color);
+  boundaryRect.beginFill(bgcolor);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
   boundaryRect.zIndex = -999;
+
+  RescaleToFit(width, height);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
@@ -286,7 +312,7 @@ export {
   SetGlobalConfig,
   Init,
   HookResize,
-  ShowBoundary,
+  SetBoundary,
   UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,
