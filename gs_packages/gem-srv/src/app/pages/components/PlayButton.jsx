@@ -10,7 +10,12 @@ class PlayButton extends React.Component {
     let label = isRunning ? 'STOP' : 'GO';
     let css = isRunning ? classes.buttonOn : classes.button;
     return (
-      <button type="button" className={css} onClick={onClick}>
+      <button
+        type="button"
+        className={css}
+        onClick={onClick}
+        style={{ width: '100%' }}
+      >
         {label}
       </button>
     );
