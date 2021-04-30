@@ -480,7 +480,8 @@ class ProjectData {
    * for any instances that have registered for modeling.
    * We keep this list small to keep from flooding the net with data.
    */
-  SendInstanceInspectorUpdate() {
+  SendInstanceInspectorUpdate(frametime) {
+    if (frametime % 30 !== 0) return;
     // walk down agents and broadcast results for monitored agents
     const agents = GetAllAgents();
     // Send all instances, but minmize non-monitored
