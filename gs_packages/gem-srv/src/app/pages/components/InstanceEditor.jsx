@@ -116,7 +116,7 @@ class InstanceEditor extends React.Component {
       // 1. Convert init script text to array
       const scriptTextLines = instance.initScript.split('\n');
       // 2. Convert the updated line to text
-      const updatedLineText = data.scriptUnit.join(' ');
+      const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
       // 3. Replace the updated line in the script array
       scriptTextLines[data.index] = updatedLineText;
       // 4. Convert the script array back to script text
