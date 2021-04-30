@@ -16,9 +16,13 @@
 import React from 'react';
 import DeleteIcon from '@material-ui/icons/DeleteForever';
 import UR from '@gemstep/ursys/client';
-import Keyword, { DerefProp, JSXFieldsFromUnit } from 'lib/class-keyword';
+import Keyword, {
+  DerefProp,
+  JSXFieldsFromUnit,
+  TextifyScriptUnitValues,
+  ScriptifyText
+} from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
-import * as TRANSPILER from 'script/transpiler';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
@@ -366,10 +370,10 @@ export class prop extends Keyword {
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
     // pull `type` and 'propMethods' out so it doesn't get mixed in with `...arg`
-    const { propName, methodName, type, propMethods, args, ...arg } = state;
-    const scriptArr = [...[this.keyword, propName, methodName], ...args];
-    const scriptText = TRANSPILER.TextifyArray(scriptArr);
-    const scriptUnits = TRANSPILER.ScriptifyText(scriptText);
+    const { propName, methodName, type, propMethods, args } = state;
+    const scriptArr = [this.keyword, propName, methodName, ...args];
+    const scriptText = TextifyScriptUnitValues(scriptArr);
+    const scriptUnits = ScriptifyText(scriptText);
     return scriptUnits;
   }
 
