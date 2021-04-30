@@ -247,26 +247,13 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
+// REVIEW: This is current duplicated in class-keyword
+//         Should this be moved there?
 function ScriptifyText(text: string): TScriptUnit[] {
   if (text === undefined) return [];
   const sourceStrings = text.split('\n');
   const script = scriptifier.tokenize(sourceStrings);
   return script;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given an array of raw script commands, produce a source text
- *  This is used by keyword serializers to convert their data into a line
- *  of script text.
- *    e.g. ['prop', 'x', 'setTo', '5'] => 'prop x setTo 5'
- *  The challenge is dealing with empty args,  So we can't simply use joins.
- *    e.g. ['prop', 'x', 'setTo', ''] => 'prop x setTo ""'
- */
-function TextifyArray(arr: string[]): string {
-  const scriptText: string = arr.reduce((acc: string, curr: string) => {
-    if (curr === '') return `${acc} ""`;
-    return `${acc} ${curr}`;
-  });
-  return scriptText.trim();
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -595,7 +582,6 @@ export {
   ScriptifyText, // text w/ newlines => TScriptUnit[]
   CompileText, // text w/ newlines => TSMCProgram
   CompileBlueprint, // combine scriptunits through m_CompileBundle
-  TextifyArray, // string[] => script Text
   TextifyScript, // TScriptUnit[] => produce source text from units
   RenderScript // TScriptUnit[] => JSX for wizards
 };
