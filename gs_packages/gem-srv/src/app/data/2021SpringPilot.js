@@ -248,17 +248,16 @@ onEvent Tick [[
 `
     },
     {
-      id: 'Reporter',
-      label: 'Reporter',
-      script: `# BLUEPRINT Reporter
+      id: 'AlgaeAvgMeter',
+      label: 'Algae avg meter',
+      script: `# BLUEPRINT AlgaeAvgMeter
 # PROGRAM DEFINE
-addProp reportSubject String ''
+addProp reportSubject String 'Algae'
 
 useFeature Population
 //exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
 //propPop text
-prop text setTo 'meter'
-
+prop text setTo 'Algae avg'
 
 // Make skin invisible
 prop skin setTo 'onexone'
@@ -268,7 +267,92 @@ prop meterLarge setTo true
 exprPush {{ 1 }}
 propPop meter
 
+# PROGRAM INIT
+prop x setTo 75
+prop y setTo 320
+prop reportSubject setTo Algae
+prop alpha setTo 0.3
+prop meterClr setTo 65280
+
 # PROGRAM EVENT
+
+onEvent Tick [[
+  // count of agents by type
+  // featCall Population countAgents 'Algae'
+  // exprPush {{ agent.getFeatProp('Population', 'count').value }}
+  // propPop text
+
+  // count, sum, avg of agent property
+  // featCall Population countAgentProp 'Algae' 'energyLevel'
+  // exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
+  // propPop text
+
+
+  // Algae meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Algae' }} [[
+    featCall Population countAgentProp 'Algae' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+    propPop text
+
+    prop meterClr setTo 65280
+  ]]
+
+  // Fish meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
+    featCall Population maxAgentProp 'Fish' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' max: ' + agent.getFeatProp('Population', 'max').value}}
+    propPop text
+
+    prop meterClr setTo 3120383
+  ]]
+
+  // min
+  // featCall Population minAgentProp 'Algae' 'energyLevel'
+  // exprPush {{ agent.getFeatProp('Population', 'min').value }}
+  // propPop text
+
+  // max
+  // featCall Population maxAgentProp 'Algae' 'energyLevel'
+  // exprPush {{ agent.getFeatProp('Population', 'max').value }}
+  // propPop text
+]]
+`
+    },
+    {
+      id: 'FishMaxMeter',
+      label: 'Fish max meter',
+      script: `# BLUEPRINT FishMaxMeter
+# PROGRAM DEFINE
+addProp reportSubject String 'Fish'
+
+useFeature Population
+//exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
+//propPop text
+prop text setTo 'Fish max'
+
+// Make skin invisible
+prop skin setTo 'onexone'
+
+// Show meter on start.
+prop meterLarge setTo true
+exprPush {{ 1 }}
+propPop meter
+
+# PROGRAM INIT
+prop x setTo -75
+prop y setTo 320
+prop reportSubject setTo Fish
+prop alpha setTo 0.3
+prop meterClr setTo 3120383
+
+# PROGRAM EVENT
+
 onEvent Tick [[
   // count of agents by type
   // featCall Population countAgents 'Algae'
