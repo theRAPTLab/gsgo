@@ -254,6 +254,22 @@ function ScriptifyText(text: string): TScriptUnit[] {
   return script;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given an array of raw script commands, produce a source text
+ *  This is used by keyword serializers to convert their data into a line
+ *  of script text.
+ *    e.g. ['prop', 'x', 'setTo', '5'] => 'prop x setTo 5'
+ *  The challenge is dealing with empty args,  So we can't simply use joins.
+ *    e.g. ['prop', 'x', 'setTo', ''] => 'prop x setTo ""'
+ */
+function TextifyArray(arr: string[]): string {
+  const scriptText: string = arr.reduce((acc: string, curr: string) => {
+    if (curr === '') return `${acc} ""`;
+    return `${acc} ${curr}`;
+  });
+  return scriptText.trim();
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
 function TextifyScript(units: TScriptUnit[]): string {
   const lines = [];
@@ -268,14 +284,22 @@ function TextifyScript(units: TScriptUnit[]): string {
       // if (uidx === 0) toks.push(tok);
       // else toks.push(m_Tokenify(tok));
 
-      // HACK Fix to work around new object model
+      // HACK 1 Fix to work around new object model
       // This will probably break with nested expressions
       // toks.push(tok.token || tok.value || tok.string);
 
       // HACK 2 Return ANY token value
       // This assumes there is only ONE value in the object
+      // const vals = Object.values(tok);
+      // if (vals.length > 0) toks.push(vals[0]);
+
+      // HACK 3 Return ANY token value AND handle empty value
       const vals = Object.values(tok);
       if (vals.length > 0) toks.push(vals[0]);
+      // special handling for empty script
+      // If we don't explicitly insert the quotes, the join
+      // below will not preserve the empty quotes
+      if (vals[0] === '') toks.push('""');
     });
     lines.push(`${toks.join(' ')}`);
   });
@@ -571,6 +595,7 @@ export {
   ScriptifyText, // text w/ newlines => TScriptUnit[]
   CompileText, // text w/ newlines => TSMCProgram
   CompileBlueprint, // combine scriptunits through m_CompileBundle
+  TextifyArray, // string[] => script Text
   TextifyScript, // TScriptUnit[] => produce source text from units
   RenderScript // TScriptUnit[] => JSX for wizards
 };
