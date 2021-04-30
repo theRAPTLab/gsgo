@@ -468,6 +468,9 @@ class ProjectData {
   DoRegisterInspector(data) {
     const id = data.id;
     this.MONITORED_INSTANCES.push(id);
+    // force inspector update immediately so that the inspector
+    // will open up.  otherwise there is a 1 second delay
+    this.SendInstanceInspectorUpdate(30);
   }
   DoUnRegisterInspector(data) {
     const id = data.id;
