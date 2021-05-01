@@ -143,8 +143,6 @@ every 1 runAtStart [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-// keep scale above 0.3 so it remains visible
-// prop scale setMin 0.3
 
 addProp energyLevel Number 100
 prop energyLevel setMax 100
@@ -159,12 +157,7 @@ featProp Physics.radius setTo 16
 prop text setTo '##'
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
-//featCall Movement setMovementType 'wander' 0.2
-
-# PROGRAM INIT
-// put new algae into bottom left for the farming setup if needed
-prop x setTo -480
-prop y setTo 370
+featCall Movement setMovementType 'wander' 0.2
 
 # PROGRAM EVENT
 onEvent Start [[
