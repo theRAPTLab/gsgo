@@ -92,6 +92,7 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     // Inputs do not necessarily come in with every INPUTS phase fire
     // so we should NOT be removing them on every update.
 
+      return true;
     // HACK FOR NOW
     // At least remove agents that no longer have active devices
     // cobj = {id, name, blueprint, bpname, valid, x, y}
