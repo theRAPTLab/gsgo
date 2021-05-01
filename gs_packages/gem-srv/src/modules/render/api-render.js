@@ -296,6 +296,16 @@ function GetDisplayList() {
   return RP_DOBJ_TO_VOBJ.getMappedObjects(); // array of display objects
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ReportMemory(frametime) {
+  if (frametime % 300) {
+    const baseTexturesCount = Object.keys(PIXI.utils.BaseTextureCache).length;
+    const textureCount = Object.keys(PIXI.utils.TextureCache).length;
+    console.log('baseTextures textures:', baseTexturesCount, textureCount);
+    // console.log('baseTextures', Object.keys(PIXI.utils.TextureCache));
+    // console.log('ProgramCache', PIXI.utils.ProgramCache);
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
 function Render() {
   if (!RP_DOBJ_TO_VOBJ) return;
@@ -317,5 +327,6 @@ export {
   UpdatePTrackList,
   UpdateAnnotationList,
   GetDisplayList,
+  ReportMemory,
   Render
 };

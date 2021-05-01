@@ -49,6 +49,7 @@ import { MODEL as DecompositionModel } from './decomposition';
 import { MODEL as MothsModel } from './moths';
 import { MODEL as SaltModel } from './salt';
 import { MODEL as BeesModel } from './bees';
+import { ReportMemory } from '../../modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -493,6 +494,10 @@ class ProjectData {
         ? a
         : { id: a.id, name: a.name, blueprint: a.blueprint }
     );
+
+    // Debug PIXI Output
+    ReportMemory(frametime);
+
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }
