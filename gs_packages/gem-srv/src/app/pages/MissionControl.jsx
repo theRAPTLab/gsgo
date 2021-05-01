@@ -264,7 +264,7 @@ class MissionControl extends React.Component {
   }
   DoSimReset() {
     this.PostMessage('Simulation Reset!');
-    UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
+    if (SIM.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
     this.setState(
       {
         model: {},
