@@ -403,7 +403,7 @@ function ExtractBlueprintProperties(script) {
     { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
     { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
     { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
-    { name: 'text', type: 'string', defaultValue: '', isFeatProp: false },
+    { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
     { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
     {
