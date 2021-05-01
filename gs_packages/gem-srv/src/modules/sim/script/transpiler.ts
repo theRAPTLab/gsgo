@@ -427,7 +427,7 @@ function ExtractBlueprintProperties(script) {
       properties.push({
         name: unit[1].token,
         type: unit[2].token.toLowerCase(),
-        defaultValue: unit[3].value,
+        defaultValue: Object.values(unit[3]), // might be a 'value' or 'string' or 'token'
         isFeatProp: false
       });
     }
