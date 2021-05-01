@@ -180,9 +180,9 @@ onEvent Start [[
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
   every 1 [[
-    featCall Algae.Costume setGlow 1
-    exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
-    propPop energyLevel
+      featCall Algae.Costume setGlow 1
+      exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
+      propPop energyLevel
   ]]
 
   // update name
@@ -198,6 +198,7 @@ every 1 [[
 ]]
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
   prop text setTo 'xx'
+  prop isInert setTo true
 ]]
 
 
