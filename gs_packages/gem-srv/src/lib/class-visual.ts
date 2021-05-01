@@ -190,19 +190,24 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
-    this.root.removeChild(this.container);
-
     // `removeChild` does not actually remove the sprite
     // and leads to a memory leak.
     // We need to destroy the sprite.
     this.container.destroy({ children: true });
 
-    // this.filterbox.removeChild(this.meter);
-    // this.filterbox.removeChild(this.sprite);
-    // this.container.removeChild(this.filterbox);
-    // this.container.removeChild(this.text);
-    // this.root.removeChild(this.container);
-    // this.root = undefined;
+    // REVIEW: destroy might take care of this for us?
+    this.filterbox.removeChild(this.meter);
+    this.filterbox.removeChild(this.sprite);
+    this.container.removeChild(this.filterbox);
+    this.container.removeChild(this.text);
+    this.root.removeChild(this.container);
+
+    // REVIEW: js objects remain after destroying
+    //         Is it necessary to clear them too?
+    this.meter = undefined;
+    this.sprite = undefined;
+    this.filterbox = undefined;
+    this.text = undefined;
   }
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
