@@ -190,12 +190,19 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
-    this.filterbox.removeChild(this.meter);
-    this.filterbox.removeChild(this.sprite);
-    this.container.removeChild(this.filterbox);
-    this.container.removeChild(this.text);
     this.root.removeChild(this.container);
-    this.root = undefined;
+
+    // `removeChild` does not actually remove the sprite
+    // and leads to a memory leak.
+    // We need to destroy the sprite.
+    this.container.destroy({ children: true });
+
+    // this.filterbox.removeChild(this.meter);
+    // this.filterbox.removeChild(this.sprite);
+    // this.container.removeChild(this.filterbox);
+    // this.container.removeChild(this.text);
+    // this.root.removeChild(this.container);
+    // this.root = undefined;
   }
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
