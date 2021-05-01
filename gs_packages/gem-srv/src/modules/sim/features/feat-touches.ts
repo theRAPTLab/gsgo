@@ -202,7 +202,7 @@ class TouchesPack extends GFeature {
   }
   stopTimer() {
     if (DBG) console.log(...PR('Stop Timer'));
-    TIMER.unsubscribe();
+    if (TIMER) TIMER.unsubscribe();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add physics-specific properties to the agent. The feature methods
