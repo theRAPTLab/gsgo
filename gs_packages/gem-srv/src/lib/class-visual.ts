@@ -343,7 +343,10 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   removeMeter() {
-    if (this.meter) this.meter.clear();
+    if (this.meter) {
+      this.meter.destroy();
+      this.meter = undefined;
+    }
   }
 } // end class Sprite
 
