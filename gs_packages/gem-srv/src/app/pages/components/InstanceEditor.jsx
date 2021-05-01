@@ -228,7 +228,9 @@ class InstanceEditor extends React.Component {
 
     const instanceName = this.GetInstanceName();
     // 1. Convert init script text to array
-    const scriptTextLines = instance.initScript.split('\n');
+    const scriptTextLines = instance.initScript
+      ? instance.initScript.split('\n')
+      : [];
     // 2. Add the updated line in the script array
     scriptTextLines.push(newScriptLine);
     // 4. Convert the script array back to script text
