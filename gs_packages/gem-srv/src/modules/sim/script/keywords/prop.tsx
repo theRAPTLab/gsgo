@@ -14,7 +14,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import DeleteIcon from '@material-ui/icons/DeleteForever';
+import DeleteIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import Keyword, {
   DerefProp,

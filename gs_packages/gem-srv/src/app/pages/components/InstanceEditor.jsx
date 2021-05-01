@@ -16,7 +16,9 @@ props.instance = instance specification: {name, blueprint, initScript}
 
 import React from 'react';
 import clsx from 'clsx';
+import Button from '@material-ui/core/Button';
 import DeleteIcon from '@material-ui/icons/Delete';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import { GetBlueprintProperties } from 'modules/datacore/dc-project';
@@ -458,7 +460,7 @@ class InstanceEditor extends React.Component {
                     title="Delete Property"
                     style={{}}
                   >
-                    <DeleteIcon fontSize="small" />
+                    <VisibilityIcon fontSize="small" />
                   </button>
                 )}
               </div>
@@ -466,13 +468,14 @@ class InstanceEditor extends React.Component {
           )}
           {isEditable && (
             <div style={{ textAlign: 'center', marginTop: '1em' }}>
-              <button
+              <Button
                 type="button"
                 className={classes.buttonLink}
                 onClick={this.OnDeleteInstance}
+                startIcon={<DeleteIcon fontSize="small" />}
               >
                 DELETE CHARACTER
-              </button>
+              </Button>
             </div>
           )}
           {/* ID display for debugging
