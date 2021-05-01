@@ -300,6 +300,7 @@ class Visual implements IVisual, IPoolable, IActable {
     // Remove any old text
     // We have to remove the child and reset it to update the text?
     this.container.removeChild(this.text);
+    if (this.text) this.text.destroy();
 
     this.text = new PIXI.Text(str, style);
     this.textContent = str; // cache
