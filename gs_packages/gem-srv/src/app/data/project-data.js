@@ -496,7 +496,7 @@ class ProjectData {
     );
 
     // Debug PIXI Output
-    ReportMemory(frametime);
+    if (DBG) ReportMemory(frametime);
 
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
