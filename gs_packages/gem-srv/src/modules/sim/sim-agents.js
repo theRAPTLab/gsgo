@@ -50,7 +50,9 @@ AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    if (agent.zIndex) dobj.zIndex = agent.zIndex;
+    // NPC always default to 200 if not set explicitly?
+    // so NPC agents (200) always appera on top of input agents (-100)
+    dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
@@ -66,7 +68,9 @@ AGENT_TO_DOBJ.setMapFunctions({
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    if (agent.zIndex) dobj.zIndex = agent.zIndex;
+    // NPC always default to 200 if not set explicitly?
+    // so NPC agents (200) always appera on top of input agents (-100)
+    dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
