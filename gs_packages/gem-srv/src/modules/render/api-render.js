@@ -257,8 +257,9 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
   let boundaryRect = CONTAINERS.Boundary;
   if (!boundaryRect) {
     boundaryRect = new PIXI.Graphics();
+    boundaryRect.zIndex = -1000;
     CONTAINERS.Boundary = boundaryRect;
-    CONTAINERS.Root.addChildAt(boundaryRect, 0);
+    CONTAINERS.Root.addChild(boundaryRect);
   }
   boundaryRect.beginFill(bgcolor);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
