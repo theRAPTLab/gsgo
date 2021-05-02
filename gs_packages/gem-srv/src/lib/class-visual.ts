@@ -190,24 +190,30 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
-    // `removeChild` does not actually remove the sprite
-    // and leads to a memory leak.
-    // We need to destroy the sprite.
-    this.container.destroy({ children: true });
-
-    // REVIEW: destroy might take care of this for us?
+    console.error('dispose', this.id);
+    /* Properly disposing of vobjs is complicated:
+       1. Nested objects need to be removed via `removeChild`
+       2. But `removeChild` does not actually remove all of the pixi components
+          and leads to a memory leak as more objects are added.
+       3. `destroy()` will properly dispose of textures, but it leaves the
+          pixi object intact.  e.g. this.text.destroy() does not =leave
+          this.text undefined.  So we want it undefined, we have to explicitly
+          set it so.
+       4. We can't simply destroy the whole container because class-visual is
+          is a pooled object that is re-used.  As such, the constructor is
+          only called once.  If we destroy the container, we end up destroying
+          some of the pixi components the constructor creates, such as the
+          filterbox and the sprite.
+       5. We also have to remove the container from the root or the
+          vobj will remain on screen.
+    */
     this.filterbox.removeChild(this.meter);
-    this.filterbox.removeChild(this.sprite);
-    this.container.removeChild(this.filterbox);
     this.container.removeChild(this.text);
-    this.root.removeChild(this.container);
+    this.removeText();
+    this.removeMeter();
+    this.root.removeChild(this.container); // needed or vobj is not removed
+    this.root = undefined;
 
-    // REVIEW: js objects remain after destroying
-    //         Is it necessary to clear them too?
-    this.meter = undefined;
-    this.sprite = undefined;
-    this.filterbox = undefined;
-    this.text = undefined;
   }
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
@@ -327,9 +333,21 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.addChild(this.text);
   }
 
+  removeText() {
+    if (this.text) {
+      this.text.destroy();
+      // After text.destroy() it is still a pixi object
+      // so we have to set it explicitly to undefined so that setText will
+      // not inadvertently call destroy() on it again.
+      this.text = undefined;
+    }
+  }
+
   setMeter(percent: number, color: number, isLargeMeter: boolean) {
     if (percent === this.meterValue) return; // no update necessary
-    if (!this.meter) this.meter = new PIXI.Graphics();
+    if (!this.meter) {
+      this.meter = new PIXI.Graphics();
+    }
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
     const w = isLargeMeter ? 40 : 10;
