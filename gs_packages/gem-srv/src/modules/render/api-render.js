@@ -258,12 +258,11 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
   if (!boundaryRect) {
     boundaryRect = new PIXI.Graphics();
     CONTAINERS.Boundary = boundaryRect;
-    CONTAINERS.Root.addChild(boundaryRect);
+    CONTAINERS.Root.addChildAt(boundaryRect, 0);
   }
   boundaryRect.beginFill(bgcolor);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
-  boundaryRect.zIndex = -999;
 
   RescaleToFit(width, height);
 }
