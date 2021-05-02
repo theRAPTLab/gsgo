@@ -454,6 +454,30 @@ prop y setTo -90`
       blueprint: 'Timer',
       initScript: `prop x setTo 0
 prop y setTo 350`
+    },
+    {
+      id: 505,
+      name: 'DecorationYellow1',
+      blueprint: 'DecorationYellow',
+      initScript: `prop x setTo -384
+prop y setTo 362
+prop zIndex setTo 200`
+    },
+    {
+      id: 506,
+      name: 'DecorationRed1',
+      blueprint: 'DecorationRed',
+      initScript: `prop x setTo -308
+prop y setTo 384
+prop zIndex setTo 220`
+    },
+    {
+      id: 507,
+      name: 'DecorationBlue1',
+      blueprint: 'DecorationBlue',
+      initScript: `prop x setTo -350
+prop y setTo 378
+prop zIndex setTo 210`
     }
   ]
 };
