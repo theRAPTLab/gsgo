@@ -385,8 +385,6 @@ onEvent Tick [[
       label: 'Timer',
       script: `# BLUEPRINT Timer
       # PROGRAM DEFINE
-      // useFeature Costume
-      // useFeature Movement
       prop skin setTo 'onexone'
       addProp time Number 0
       prop text setTo 'Time: 0'
@@ -400,6 +398,33 @@ onEvent Tick [[
       # PROGRAM UPDATE
       // when xxx touches yyy [[ ]]
 `
+    },
+    {
+      id: 'DecorationRed',
+      label: 'Decoration Red',
+      script: `# BLUEPRINT DecorationRed
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'flower.json' 1
+      `
+    },
+    {
+      id: 'DecorationYellow',
+      label: 'Decoration Yellow',
+      script: `# BLUEPRINT DecorationYellow
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'flower.json' 0
+      `
+    },
+    {
+      id: 'DecorationBlue',
+      label: 'Decoration Blue',
+      script: `# BLUEPRINT DecorationBlue
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'flower.json' 2
+      `
     }
   ],
   instances: [
