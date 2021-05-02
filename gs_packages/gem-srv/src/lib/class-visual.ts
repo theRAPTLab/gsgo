@@ -269,11 +269,23 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.position.set(x, y);
   }
 
-  /**
+  /** zIndex depends on:
+   *  --  parent.sortableChildren = true
+   *  --  Sorting happens only when
+   *      1. sortChildren() is called, or
+   *      2. updateTransform() is called
+   *      AND
+   *      sortDirty has been set to true by
+   *      1. adding a child, or
+   *      2. setting zIndex of a child
+   * In general, then it's best to set zIndex and make sure it's followed by a call
+   * that updates the transform, like setting position.
+   * We don't wnat to force an updateTransform here becasue it would trigger a
+   * updateTransform for every display object update.
+   *
    * REVIEW: Using zIndex might reduce performance
    *         Layers might be better: https://github.com/pixijs/pixi-display
    * See https://pixijs.download/release/docs/PIXI.Container.html#sortableChildren
-   * @param zIndex
    */
   setZIndex(zIndex: number) {
     this.container.zIndex = zIndex;
