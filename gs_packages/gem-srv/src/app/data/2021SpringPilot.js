@@ -151,9 +151,7 @@ prop energyLevel setMin 0
 useFeature Physics
 featProp Physics.radius setTo 16
 
-// show initial level (otherwise level is not shown until run)
-//exprPush {{ agent.getProp('energyLevel').value }}
-//propPop text
+// This is so that the numbers don't suddenly change at start and confusing things
 prop text setTo '##'
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
