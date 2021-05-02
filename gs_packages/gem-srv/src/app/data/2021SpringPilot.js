@@ -428,41 +428,15 @@ onEvent Tick [[
     }
   ],
   instances: [
-    //    {
-    //      id: 501,
-    //      name: 'Nathan Fish',
-    //      blueprint: 'Fish',
-    //      // object test      initScript: `prop x setTo {{ x + -220 }}
-    //      initScript: `prop x setTo 0
-    //prop y setTo 0
-    //prop energyLevel setTo 54
-    //prop startDirection setTo 160`
-    //    },
-    //    {
-    //      id: 502,
-    //      name: 'Kalani Fish',
-    //      blueprint: 'Fish',
-    //      initScript: `prop x setTo 100
-    //prop y setTo 100
-    //prop energyLevel setTo 100
-    //prop startDirection setTo 90` // extra property test
-    //   },
-    //   {
-    //     id: 503,
-    //     name: 'Sara Fish',
-    //     blueprint: 'Fish',
-    //     initScript: `prop x setTo 200
-    //     prop startDirection setTo 0` // missing y test
-    //   },
     {
-      id: 504,
+      id: 501,
       name: 'Algae 1',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
 prop y setTo 120`
     },
     {
-      id: 505,
+      id: 502,
       name: 'Algae 2',
       blueprint: 'Algae',
       initScript: `prop x setTo -150
@@ -470,41 +444,14 @@ prop y setTo -120
 prop energyLevel setTo 50`
     },
     {
-      id: 506,
+      id: 503,
       name: 'Algae 3',
       blueprint: 'Algae',
       initScript: `prop x setTo -120
 prop y setTo -90`
     },
-    //     {
-    //       id: 507,
-    //       name: 'Sunbeam 1',
-    //       blueprint: 'Sunbeam',
-    //       initScript: `prop x setTo -400
-    // prop y setTo -180`
-    //     },
-    //     {
-    //       id: 510,
-    //       name: 'Avg Algae Health',
-    //       blueprint: 'Reporter',
-    //       initScript: `prop x setTo 50
-    // prop y setTo 320
-    // prop reportSubject setTo Algae
-    // prop alpha setTo 0.3
-    // prop meterClr setTo 65280`
-    //     },
-    //     {
-    //       id: 511,
-    //       name: 'Max Fish  Health',
-    //       blueprint: 'Reporter',
-    //       initScript: `prop x setTo -50
-    // prop y setTo 320
-    // prop reportSubject setTo Fish
-    // prop alpha setTo 0.3
-    // prop meterClr setTo 3120383`
-    //     },
     {
-      id: 512,
+      id: 504,
       name: 'Timer',
       blueprint: 'Timer',
       initScript: `prop x setTo 0
