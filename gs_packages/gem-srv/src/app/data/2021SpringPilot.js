@@ -163,10 +163,10 @@ onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 
-  //exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-  //propPop agent.scale
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  propPop agent.scale
 
-  featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  // featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 
@@ -198,9 +198,9 @@ ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
 ]]
 
 every 0.5 [[
- // exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
- // propPop agent.scale
- featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+propPop agent.scale
+//featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 `
