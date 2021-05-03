@@ -50,33 +50,37 @@ AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    dobj.zIndex = agent.zIndex;
-    dobj.skin = agent.skin;
-    dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
-    dobj.scale = agent.scale;
-    dobj.scaleY = agent.scaleY || agent.scale;
-    dobj.alpha = agent.alpha;
-    dobj.text = agent.text;
-    dobj.meter = agent.meter;
-    dobj.meterClr = agent.meterClr;
-    dobj.mode = agent.mode();
-    dobj.dragging = agent.isCaptive;
+    // NPC always default to 200 if not set explicitly?
+    // so NPC agents (200) always appera on top of input agents (-100)
+    dobj.zIndex = agent.zIndex || 200;
+    if (agent.skin) dobj.skin = agent.skin;
+    if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
+    if (agent.scale) dobj.scale = agent.scale;
+    if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
+    if (agent.alpha) dobj.alpha = agent.alpha;
+    if (agent.text) dobj.text = agent.text;
+    if (agent.meter) dobj.meter = agent.meter;
+    if (agent.meterClr) dobj.meterClr = agent.meterClr;
+    if (agent.mode) dobj.mode = agent.mode();
+    if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    dobj.zIndex = agent.zIndex;
-    dobj.skin = agent.skin;
-    dobj.frame = agent.prop.Costume ? agent.prop.Costume.currentFrame.value : '';
-    dobj.scale = agent.scale;
-    dobj.scaleY = agent.scaleY || agent.scale;
-    dobj.alpha = agent.alpha;
-    dobj.text = agent.text;
-    dobj.meter = agent.meter;
-    dobj.meterClr = agent.meterClr;
-    dobj.mode = agent.mode();
-    dobj.dragging = agent.isCaptive;
+    // NPC always default to 200 if not set explicitly?
+    // so NPC agents (200) always appera on top of input agents (-100)
+    dobj.zIndex = agent.zIndex || 200;
+    if (agent.skin) dobj.skin = agent.skin;
+    if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
+    if (agent.scale) dobj.scale = agent.scale;
+    if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
+    if (agent.alpha) dobj.alpha = agent.alpha;
+    if (agent.text || dobj.text) dobj.text = agent.text; // clear old text if previously set
+    if (agent.meter || dobj.meter) dobj.meter = agent.meter; // clear old meter if previously set
+    if (agent.meterClr) dobj.meterClr = agent.meterClr;
+    if (agent.mode) dobj.mode = agent.mode();
+    if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
   }
 });

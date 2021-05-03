@@ -148,6 +148,7 @@ class InstanceInspector extends React.Component {
         newsize = SIZE_MIN;
         if (alreadyRegistered && !disallowDeRegister) {
           UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
+          registrationStatus = false;
         }
         break;
     }

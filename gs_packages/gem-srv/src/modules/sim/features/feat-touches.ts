@@ -127,6 +127,21 @@ let COUNTER: number;
 
 UR.HookPhase('SIM/PHYSICS', m_update);
 
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Returns agent if it exists.
+ * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
+ * MONITORED AGENTS
+ * @param agentId
+ */
+function m_getAgent(agentId): IAgent {
+  const a = GetAgentById(agentId);
+  if (!a) MONITORED_AGENTS.delete(agentId);
+  return a;
+}
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class TouchesPack extends GFeature {
@@ -155,8 +170,9 @@ class TouchesPack extends GFeature {
     agentIds.forEach(id => {
       // Stuff in agents instead
       // const BTYPE_TBL = AGENTS_TBL.get(a);
-      const a = GetAgentById(id);
-      const BTYPE_TBL = a.touchTable || new Map();
+      const agent = m_getAgent(id);
+      if (!agent) return; // usu charControl dropped
+      const BTYPE_TBL = agent.touchTable || new Map();
       const blueprints = Array.from(BTYPE_TBL.keys());
       blueprints.forEach(b => {
         const TAGENT_TBL = BTYPE_TBL.get(b) || new Map();
@@ -171,7 +187,7 @@ class TouchesPack extends GFeature {
       });
       // clear blueprint type too
       BTYPE_TBL.clear();
-      a.touchTable = BTYPE_TBL;
+      agent.touchTable = BTYPE_TBL;
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,7 +202,7 @@ class TouchesPack extends GFeature {
   }
   stopTimer() {
     if (DBG) console.log(...PR('Stop Timer'));
-    TIMER.unsubscribe();
+    if (TIMER) TIMER.unsubscribe();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add physics-specific properties to the agent. The feature methods
@@ -280,7 +296,6 @@ class TouchesPack extends GFeature {
     });
     const didTouchDict = agent.getFeatProp(this.name, 'didTouchDict');
     didTouchDict.updateItem(targetBlueprintName, new GVarBoolean(didTouchAny));
-
     return didTouchAny;
   }
 }
@@ -310,16 +325,18 @@ function m_update() {
   // const agents = Array.from(AGENTS_TBL.keys());
   const agentIds = Array.from(MONITORED_AGENTS.keys());
   agentIds.forEach(agentId => {
-    const a = GetAgentById(agentId);
+    const agent = m_getAgent(agentId);
+    if (!agent) return; // usu charControl dropped
+
     // Stuff it in agents instead
     // const BTYPE_TBL = AGENTS_TBL.get(agentId);
-    const BTYPE_TBL = a.touchTable;
+    const BTYPE_TBL = agent.touchTable;
     const blueprintNames = Array.from(BTYPE_TBL.keys());
     blueprintNames.forEach(blueprintName => {
       const targets = GetAgentsByType(blueprintName);
       const TAGENT_TBL = BTYPE_TBL.get(blueprintName);
       targets.forEach(b => {
-        if (m_isTouching(a, b)) {
+        if (m_isTouching(agent, b)) {
           TAGENT_TBL.set(b.id, COUNTER);
         }
       });

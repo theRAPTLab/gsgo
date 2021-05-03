@@ -21,6 +21,7 @@ class PanelPlayback extends React.Component {
   componentWillUnmount() {}
 
   OnResetClick() {
+    this.setState({ isRunning: false });
     UR.RaiseMessage('NET:HACK_SIM_RESET');
   }
 

@@ -16,7 +16,9 @@ props.instance = instance specification: {name, blueprint, initScript}
 
 import React from 'react';
 import clsx from 'clsx';
+import Button from '@material-ui/core/Button';
 import DeleteIcon from '@material-ui/icons/Delete';
+import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import { GetBlueprintProperties } from 'modules/datacore/dc-project';
@@ -116,7 +118,7 @@ class InstanceEditor extends React.Component {
       // 1. Convert init script text to array
       const scriptTextLines = instance.initScript.split('\n');
       // 2. Convert the updated line to text
-      const updatedLineText = data.scriptUnit.join(' ');
+      const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
       // 3. Replace the updated line in the script array
       scriptTextLines[data.index] = updatedLineText;
       // 4. Convert the script array back to script text
@@ -228,7 +230,9 @@ class InstanceEditor extends React.Component {
 
     const instanceName = this.GetInstanceName();
     // 1. Convert init script text to array
-    const scriptTextLines = instance.initScript.split('\n');
+    const scriptTextLines = instance.initScript
+      ? instance.initScript.split('\n')
+      : [];
     // 2. Add the updated line in the script array
     scriptTextLines.push(newScriptLine);
     // 4. Convert the script array back to script text
@@ -456,7 +460,7 @@ class InstanceEditor extends React.Component {
                     title="Delete Property"
                     style={{}}
                   >
-                    <DeleteIcon fontSize="small" />
+                    <VisibilityIcon fontSize="small" />
                   </button>
                 )}
               </div>
@@ -464,13 +468,14 @@ class InstanceEditor extends React.Component {
           )}
           {isEditable && (
             <div style={{ textAlign: 'center', marginTop: '1em' }}>
-              <button
+              <Button
                 type="button"
                 className={classes.buttonLink}
                 onClick={this.OnDeleteInstance}
+                startIcon={<DeleteIcon fontSize="small" />}
               >
                 DELETE CHARACTER
-              </button>
+              </Button>
             </div>
           )}
           {/* ID display for debugging

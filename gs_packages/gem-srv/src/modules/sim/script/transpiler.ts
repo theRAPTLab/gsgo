@@ -247,12 +247,15 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
  *  back into a single line with m_StitchifyBlocks(). Returns an array of
  *  string arrays.
  */
+// REVIEW: This is current duplicated in class-keyword
+//         Should this be moved there?
 function ScriptifyText(text: string): TScriptUnit[] {
   if (text === undefined) return [];
   const sourceStrings = text.split('\n');
   const script = scriptifier.tokenize(sourceStrings);
   return script;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, produce a source text */
 function TextifyScript(units: TScriptUnit[]): string {
@@ -268,14 +271,22 @@ function TextifyScript(units: TScriptUnit[]): string {
       // if (uidx === 0) toks.push(tok);
       // else toks.push(m_Tokenify(tok));
 
-      // HACK Fix to work around new object model
+      // HACK 1 Fix to work around new object model
       // This will probably break with nested expressions
       // toks.push(tok.token || tok.value || tok.string);
 
       // HACK 2 Return ANY token value
       // This assumes there is only ONE value in the object
+      // const vals = Object.values(tok);
+      // if (vals.length > 0) toks.push(vals[0]);
+
+      // HACK 3 Return ANY token value AND handle empty value
       const vals = Object.values(tok);
       if (vals.length > 0) toks.push(vals[0]);
+      // special handling for empty script
+      // If we don't explicitly insert the quotes, the join
+      // below will not preserve the empty quotes
+      if (vals[0] === '') toks.push('""');
     });
     lines.push(`${toks.join(' ')}`);
   });
@@ -392,7 +403,7 @@ function ExtractBlueprintProperties(script) {
     { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
     { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
     { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
-    { name: 'text', type: 'string', defaultValue: '', isFeatProp: false },
+    { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
     { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
     {
@@ -416,7 +427,7 @@ function ExtractBlueprintProperties(script) {
       properties.push({
         name: unit[1].token,
         type: unit[2].token.toLowerCase(),
-        defaultValue: unit[3].value,
+        defaultValue: Object.values(unit[3]), // might be a 'value' or 'string' or 'token'
         isFeatProp: false
       });
     }

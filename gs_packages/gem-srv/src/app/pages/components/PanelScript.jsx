@@ -284,7 +284,7 @@ class PanelScript extends React.Component {
     // 1. Convert script text to array
     const scriptTextLines = currentScript.split('\n');
     // 2. Conver the updated line to text
-    const updatedLineText = data.scriptUnit.join(' ');
+    const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
     // 3. Replace the updated line in the script array
     scriptTextLines[data.index] = updatedLineText;
     // 4. Convert the script array back to script text

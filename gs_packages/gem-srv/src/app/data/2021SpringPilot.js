@@ -24,6 +24,8 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+addProp energyUse Number 1
+
 // turns on the feature that allows the fish to grow if this is 1
 addProp grows Boolean 0
 
@@ -83,6 +85,7 @@ when Fish touches Algae [[
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
       featCall Physics setSize 150
+      prop Fish.energyUse setTo 2
 
     ]]
 
@@ -95,12 +98,8 @@ when Fish touches Algae [[
 ]]
 every 1 runAtStart [[
   // foodLevel goes down every n seconds
-  prop agent.energyLevel sub 1
-
-  // if fish is bigger than 1, use even more energy
-  ifExpr {{(agent.getProp('scale').value > 1.5)}} [[
-    prop agent.energyLevel sub 1
-  ]]
+  exprPush {{ agent.getProp('energyLevel').value - agent.getProp('energyUse').value}}
+  propPop agent.energyLevel
 
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
@@ -144,8 +143,6 @@ every 1 runAtStart [[
 useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-// keep scale above 0.3 so it remains visible
-// prop scale setMin 0.3
 
 addProp energyLevel Number 100
 prop energyLevel setMax 100
@@ -160,12 +157,7 @@ featProp Physics.radius setTo 16
 prop text setTo '##'
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
-//featCall Movement setMovementType 'wander' 0.2
-
-# PROGRAM INIT
-// put new algae into bottom left for the farming setup if needed
-prop x setTo -480
-prop y setTo 370
+featCall Movement setMovementType 'wander' 0.2
 
 # PROGRAM EVENT
 onEvent Start [[
@@ -173,16 +165,19 @@ onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 
-  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-  propPop agent.scale
+  //exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  //propPop agent.scale
+
+  featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+
 ]]
 
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
   every 1 [[
-    featCall Algae.Costume setGlow 1
-    exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
-    propPop energyLevel
+      featCall Algae.Costume setGlow 1
+      exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
+      propPop energyLevel
   ]]
 
   // update name
@@ -198,14 +193,17 @@ every 1 [[
 ]]
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
   prop text setTo 'xx'
+  prop isInert setTo true
 ]]
 
 
 ]]
 
 every 0.5 [[
-  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-  propPop agent.scale
+ // exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+ // propPop agent.scale
+ featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+
 ]]
 `
     },
@@ -248,17 +246,16 @@ onEvent Tick [[
 `
     },
     {
-      id: 'Reporter',
-      label: 'Reporter',
-      script: `# BLUEPRINT Reporter
+      id: 'AlgaeAvgMeter',
+      label: 'Algae avg meter',
+      script: `# BLUEPRINT AlgaeAvgMeter
 # PROGRAM DEFINE
-addProp reportSubject String ''
+addProp reportSubject String 'Algae'
 
 useFeature Population
 //exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
 //propPop text
-prop text setTo 'meter'
-
+prop text setTo 'Algae avg'
 
 // Make skin invisible
 prop skin setTo 'onexone'
@@ -268,7 +265,15 @@ prop meterLarge setTo true
 exprPush {{ 1 }}
 propPop meter
 
+# PROGRAM INIT
+prop x setTo 75
+prop y setTo 320
+prop reportSubject setTo Algae
+prop alpha setTo 0.3
+prop meterClr setTo 65280
+
 # PROGRAM EVENT
+
 onEvent Tick [[
   // count of agents by type
   // featCall Population countAgents 'Algae'
@@ -318,12 +323,68 @@ onEvent Tick [[
 `
     },
     {
+      id: 'FishMaxMeter',
+      label: 'Fish max meter',
+      script: `# BLUEPRINT FishMaxMeter
+# PROGRAM DEFINE
+addProp reportSubject String 'Fish'
+
+useFeature Population
+//exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
+//propPop text
+prop text setTo 'Fish max'
+
+// Make skin invisible
+prop skin setTo 'onexone'
+
+// Show meter on start.
+prop meterLarge setTo true
+exprPush {{ 1 }}
+propPop meter
+
+# PROGRAM INIT
+prop x setTo -75
+prop y setTo 320
+prop reportSubject setTo Fish
+prop alpha setTo 0.3
+prop meterClr setTo 3120383
+
+# PROGRAM EVENT
+
+onEvent Tick [[
+
+  // Algae meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Algae' }} [[
+    featCall Population countAgentProp 'Algae' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+    propPop meter
+
+    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+    propPop text
+
+    prop meterClr setTo 65280
+  ]]
+
+  // Fish meter
+  ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
+    featCall Population maxAgentProp 'Fish' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
+    propPop meter
+
+
+    exprPush {{ agent.getProp('reportSubject').value + ' max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
+    propPop text
+
+    prop meterClr setTo 3120383
+  ]]
+]]
+`
+    },
+    {
       id: 'Timer',
       label: 'Timer',
       script: `# BLUEPRINT Timer
       # PROGRAM DEFINE
-      // useFeature Costume
-      // useFeature Movement
       prop skin setTo 'onexone'
       addProp time Number 0
       prop text setTo 'Time: 0'
@@ -337,44 +398,45 @@ onEvent Tick [[
       # PROGRAM UPDATE
       // when xxx touches yyy [[ ]]
 `
+    },
+    {
+      id: 'DecorationRed',
+      label: 'Decoration Red',
+      script: `# BLUEPRINT DecorationRed
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'flower.json' 1
+      `
+    },
+    {
+      id: 'DecorationYellow',
+      label: 'Decoration Yellow',
+      script: `# BLUEPRINT DecorationYellow
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'flower.json' 0
+      `
+    },
+    {
+      id: 'DecorationBlue',
+      label: 'Decoration Blue',
+      script: `# BLUEPRINT DecorationBlue
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'flower.json' 2
+      `
     }
   ],
   instances: [
-    //    {
-    //      id: 501,
-    //      name: 'Nathan Fish',
-    //      blueprint: 'Fish',
-    //      // object test      initScript: `prop x setTo {{ x + -220 }}
-    //      initScript: `prop x setTo 0
-    //prop y setTo 0
-    //prop energyLevel setTo 54
-    //prop startDirection setTo 160`
-    //    },
-    //    {
-    //      id: 502,
-    //      name: 'Kalani Fish',
-    //      blueprint: 'Fish',
-    //      initScript: `prop x setTo 100
-    //prop y setTo 100
-    //prop energyLevel setTo 100
-    //prop startDirection setTo 90` // extra property test
-    //   },
-    //   {
-    //     id: 503,
-    //     name: 'Sara Fish',
-    //     blueprint: 'Fish',
-    //     initScript: `prop x setTo 200
-    //     prop startDirection setTo 0` // missing y test
-    //   },
     {
-      id: 504,
+      id: 501,
       name: 'Algae 1',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
 prop y setTo 120`
     },
     {
-      id: 505,
+      id: 502,
       name: 'Algae 2',
       blueprint: 'Algae',
       initScript: `prop x setTo -150
@@ -382,41 +444,14 @@ prop y setTo -120
 prop energyLevel setTo 50`
     },
     {
-      id: 506,
+      id: 503,
       name: 'Algae 3',
       blueprint: 'Algae',
       initScript: `prop x setTo -120
 prop y setTo -90`
     },
-    //     {
-    //       id: 507,
-    //       name: 'Sunbeam 1',
-    //       blueprint: 'Sunbeam',
-    //       initScript: `prop x setTo -400
-    // prop y setTo -180`
-    //     },
-    //     {
-    //       id: 510,
-    //       name: 'Avg Algae Health',
-    //       blueprint: 'Reporter',
-    //       initScript: `prop x setTo 50
-    // prop y setTo 320
-    // prop reportSubject setTo Algae
-    // prop alpha setTo 0.3
-    // prop meterClr setTo 65280`
-    //     },
-    //     {
-    //       id: 511,
-    //       name: 'Max Fish  Health',
-    //       blueprint: 'Reporter',
-    //       initScript: `prop x setTo -50
-    // prop y setTo 320
-    // prop reportSubject setTo Fish
-    // prop alpha setTo 0.3
-    // prop meterClr setTo 3120383`
-    //     },
     {
-      id: 512,
+      id: 504,
       name: 'Timer',
       blueprint: 'Timer',
       initScript: `prop x setTo 0
