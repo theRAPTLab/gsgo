@@ -52,7 +52,7 @@ export class every extends Keyword {
     this.stopTimer = this.stopTimer.bind(this);
 
     this.EVERY_STATEMENT_ID = 0;
-    this.TIMER = {};
+    this.TIMER = undefined;
     this.COUNTER = 0;
     this.LAST_FIRED = new Map();
 
@@ -74,7 +74,7 @@ export class every extends Keyword {
 
   stopTimer() {
     if (DBG) console.log(...PR('Stop Timer'));
-    this.TIMER.unsubscribe();
+    if (this.TIMER) this.TIMER.unsubscribe();
   }
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {

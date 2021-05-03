@@ -81,22 +81,30 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     // HACK Blueprints into cobj
     inputDef.bpname = cobj.bpname;
     inputDef.name = cobj.name;
+    inputDef.framesSinceLastUpdate = 0;
   },
   onUpdate: (cobj: any, inputDef: InputDef) => {
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
     inputDef.bpname = cobj.bpname;
     inputDef.name = cobj.name;
+    inputDef.framesSinceLastUpdate = 0;
   },
-  shouldRemove: (cobj, map) => {
+  shouldRemove: (inputDef, map) => {
     // Inputs do not necessarily come in with every INPUTS phase fire
     // so we should NOT be removing them on every update.
+
+    // HACK
+    inputDef.framesSinceLastUpdate++;
+    if (inputDef.framesSinceLastUpdate > 60) {
+      return true;
+    }
 
     // HACK FOR NOW
     // At least remove agents that no longer have active devices
     // cobj = {id, name, blueprint, bpname, valid, x, y}
     //         id = "CC340_0"
-    return !ACTIVE_DEVICES.has(COBJIDtoID(cobj.id));
+    return !ACTIVE_DEVICES.has(COBJIDtoID(inputDef.id));
 
     // HACK Never Remove for now.
     // return false;

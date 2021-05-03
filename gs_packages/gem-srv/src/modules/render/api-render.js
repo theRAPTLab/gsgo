@@ -90,9 +90,10 @@ function Init(element) {
   RP_DOBJ_TO_VOBJ.setMapFunctions({
     onAdd: (dobj, vobj) => {
       // copy parameters
+      // zIndex needs to be set before updateTransform is called
+      vobj.setZIndex(dobj.zIndex);
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
-      vobj.setZIndex(dobj.zIndex);
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
@@ -139,6 +140,8 @@ function Init(element) {
       vobj.add(CONTAINERS.Root);
     },
     onUpdate: (dobj, vobj) => {
+      // zIndex needs to be set before updateTransform is called
+      vobj.setZIndex(dobj.zIndex);
       if (!vobj.isDragging) vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.dragging) {
         vobj.sprite.tint = 0xffffff;
@@ -147,7 +150,6 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
-      vobj.setZIndex(dobj.zIndex);
 
       // inefficient texture update
       vobj.setAlpha(dobj.alpha);
@@ -257,13 +259,13 @@ function SetBoundary(width, height, bgcolor = 0x000000) {
   let boundaryRect = CONTAINERS.Boundary;
   if (!boundaryRect) {
     boundaryRect = new PIXI.Graphics();
+    boundaryRect.zIndex = -1000;
     CONTAINERS.Boundary = boundaryRect;
     CONTAINERS.Root.addChild(boundaryRect);
   }
   boundaryRect.beginFill(bgcolor);
   boundaryRect.drawRect(-width / 2, -height / 2, width, height);
   boundaryRect.endFill();
-  boundaryRect.zIndex = -999;
 
   RescaleToFit(width, height);
 }
@@ -296,6 +298,16 @@ function GetDisplayList() {
   return RP_DOBJ_TO_VOBJ.getMappedObjects(); // array of display objects
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ReportMemory(frametime) {
+  if (frametime % 300) {
+    const baseTexturesCount = Object.keys(PIXI.utils.BaseTextureCache).length;
+    const textureCount = Object.keys(PIXI.utils.TextureCache).length;
+    console.log('baseTextures textures:', baseTexturesCount, textureCount);
+    // console.log('baseTextures', Object.keys(PIXI.utils.TextureCache));
+    // console.log('ProgramCache', PIXI.utils.ProgramCache);
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
 function Render() {
   if (!RP_DOBJ_TO_VOBJ) return;
@@ -317,5 +329,6 @@ export {
   UpdatePTrackList,
   UpdateAnnotationList,
   GetDisplayList,
+  ReportMemory,
   Render
 };

@@ -19,12 +19,12 @@
 
 import React from 'react';
 import { IKeyword, TOpcode, TScriptUnit, IAgent } from 'lib/t-script';
-
+import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import { Evaluate } from 'lib/expr-evaluator';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = false;
+const scriptifier = new GScriptTokenizer();
 const styleIndex = {
   fontWeight: 'bold' as 'bold', // this dumb typescriptery css workaround
   backgroundColor: 'black',
@@ -37,6 +37,8 @@ const styleIndex = {
 };
 const styleLine = { borderTop: '1px dotted gray' };
 const styleContent = { padding: '0.5em', overflow: 'hidden' };
+const DBG = false;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** HACK: used to generate ever-increasing ID for rendering. They are all unique
  *  because our rendering loop just rerenders the entire list into a GUI every
@@ -302,6 +304,37 @@ function JSXFieldsFromUnit(unit: TScriptUnit): any {
   const jsxArray = unit.map(arg => JSXifyArg(arg));
   return jsxArray;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given an array of untokenized script unit strings, produce a source text
+ *  This is used by keyword serializers to convert their data into a line
+ *  of script text.
+ *    e.g. ['prop', 'x', 'setTo', '5'] => 'prop x setTo 5'
+ *  The challenge is dealing with empty args,  So we can't simply use joins.
+ *    e.g. with a join, ['prop', 'x', 'setTo', ''] => 'prop x setTo '
+ *    but instead we want ['prop', 'x', 'setTo', ''] => 'prop x setTo ""'
+ */
+function TextifyScriptUnitValues(unit: string[]): string {
+  const scriptText: string = unit.reduce((acc: string, curr: string) => {
+    if (curr === '') return `${acc} ""`;
+    return `${acc} ${curr}`;
+  });
+  return scriptText.trim();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Given a text with multiline blocks, emit an array of strings corresponding
+ *  to regular strings and [[ ]] demarked lines. The output nodes are processed
+ *  back into a single line with m_StitchifyBlocks(). Returns an array of
+ *  string arrays.
+ */
+// REVIEW: This is duplicated in transpiler.
+//         It's here so that keywords (like props) can ScriptifyText directly
+//         avoiding a dependency cycle with transpiloer.
+function ScriptifyText(text: string): TScriptUnit[] {
+  if (text === undefined) return [];
+  const sourceStrings = text.split('\n');
+  const script = scriptifier.tokenize(sourceStrings);
+  return script;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -310,5 +343,7 @@ export {
   EvalRuntimeUnitArgs, // convert all args in unit to runtime values
   JSXFieldsFromUnit, // convert arg to JSX-renderable item
   DerefProp, // return function to access agent prop at runtime
-  DerefFeatureProp // return function to access agent prop at runtime
+  DerefFeatureProp, // return function to access agent prop at runtime
+  TextifyScriptUnitValues,
+  ScriptifyText
 };

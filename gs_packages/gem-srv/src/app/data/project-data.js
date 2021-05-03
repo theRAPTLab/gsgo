@@ -49,6 +49,7 @@ import { MODEL as DecompositionModel } from './decomposition';
 import { MODEL as MothsModel } from './moths';
 import { MODEL as SaltModel } from './salt';
 import { MODEL as BeesModel } from './bees';
+import { ReportMemory } from '../../modules/render/api-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -468,6 +469,9 @@ class ProjectData {
   DoRegisterInspector(data) {
     const id = data.id;
     this.MONITORED_INSTANCES.push(id);
+    // force inspector update immediately so that the inspector
+    // will open up.  otherwise there is a 1 second delay
+    this.SendInstanceInspectorUpdate(30);
   }
   DoUnRegisterInspector(data) {
     const id = data.id;
@@ -480,7 +484,8 @@ class ProjectData {
    * for any instances that have registered for modeling.
    * We keep this list small to keep from flooding the net with data.
    */
-  SendInstanceInspectorUpdate() {
+  SendInstanceInspectorUpdate(frametime) {
+    if (frametime % 30 !== 0) return;
     // walk down agents and broadcast results for monitored agents
     const agents = GetAllAgents();
     // Send all instances, but minmize non-monitored
@@ -489,6 +494,10 @@ class ProjectData {
         ? a
         : { id: a.id, name: a.name, blueprint: a.blueprint }
     );
+
+    // Debug PIXI Output
+    if (DBG) ReportMemory(frametime);
+
     // Broadcast data
     UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
   }

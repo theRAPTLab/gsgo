@@ -190,12 +190,30 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
+    console.error('dispose', this.id);
+    /* Properly disposing of vobjs is complicated:
+       1. Nested objects need to be removed via `removeChild`
+       2. But `removeChild` does not actually remove all of the pixi components
+          and leads to a memory leak as more objects are added.
+       3. `destroy()` will properly dispose of textures, but it leaves the
+          pixi object intact.  e.g. this.text.destroy() does not =leave
+          this.text undefined.  So we want it undefined, we have to explicitly
+          set it so.
+       4. We can't simply destroy the whole container because class-visual is
+          is a pooled object that is re-used.  As such, the constructor is
+          only called once.  If we destroy the container, we end up destroying
+          some of the pixi components the constructor creates, such as the
+          filterbox and the sprite.
+       5. We also have to remove the container from the root or the
+          vobj will remain on screen.
+    */
     this.filterbox.removeChild(this.meter);
-    this.filterbox.removeChild(this.sprite);
-    this.container.removeChild(this.filterbox);
     this.container.removeChild(this.text);
-    this.root.removeChild(this.container);
+    this.removeText();
+    this.removeMeter();
+    this.root.removeChild(this.container); // needed or vobj is not removed
     this.root = undefined;
+
   }
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
@@ -251,11 +269,23 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.position.set(x, y);
   }
 
-  /**
+  /** zIndex depends on:
+   *  --  parent.sortableChildren = true
+   *  --  Sorting happens only when
+   *      1. sortChildren() is called, or
+   *      2. updateTransform() is called
+   *      AND
+   *      sortDirty has been set to true by
+   *      1. adding a child, or
+   *      2. setting zIndex of a child
+   * In general, then it's best to set zIndex and make sure it's followed by a call
+   * that updates the transform, like setting position.
+   * We don't wnat to force an updateTransform here becasue it would trigger a
+   * updateTransform for every display object update.
+   *
    * REVIEW: Using zIndex might reduce performance
    *         Layers might be better: https://github.com/pixijs/pixi-display
    * See https://pixijs.download/release/docs/PIXI.Container.html#sortableChildren
-   * @param zIndex
    */
   setZIndex(zIndex: number) {
     this.container.zIndex = zIndex;
@@ -300,6 +330,7 @@ class Visual implements IVisual, IPoolable, IActable {
     // Remove any old text
     // We have to remove the child and reset it to update the text?
     this.container.removeChild(this.text);
+    if (this.text) this.text.destroy();
 
     this.text = new PIXI.Text(str, style);
     this.textContent = str; // cache
@@ -314,9 +345,21 @@ class Visual implements IVisual, IPoolable, IActable {
     this.container.addChild(this.text);
   }
 
+  removeText() {
+    if (this.text) {
+      this.text.destroy();
+      // After text.destroy() it is still a pixi object
+      // so we have to set it explicitly to undefined so that setText will
+      // not inadvertently call destroy() on it again.
+      this.text = undefined;
+    }
+  }
+
   setMeter(percent: number, color: number, isLargeMeter: boolean) {
     if (percent === this.meterValue) return; // no update necessary
-    if (!this.meter) this.meter = new PIXI.Graphics();
+    if (!this.meter) {
+      this.meter = new PIXI.Graphics();
+    }
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
     const w = isLargeMeter ? 40 : 10;
@@ -342,7 +385,10 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   removeMeter() {
-    if (this.meter) this.meter.clear();
+    if (this.meter) {
+      this.meter.destroy();
+      this.meter = undefined;
+    }
   }
 } // end class Sprite
 
