@@ -96,6 +96,7 @@ when Fish touches Algae [[
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
+      prop Algae.text setTo 'xx'
     ]]
 
   ]]
@@ -202,6 +203,7 @@ every 1 [[
 ]]
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
   prop text setTo 'xx'
+  prop agent.alpha setTo 0.3
   prop isInert setTo true
 ]]
 
