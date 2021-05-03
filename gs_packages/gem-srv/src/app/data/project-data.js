@@ -173,7 +173,9 @@ class ProjectData {
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
 
     // SYSTEM HOOKS ///////////////////////////////////////////////////////////
-    UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
+
+    // Hook only after system starts?
+    // UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
   }
 
   GetUDID() {
@@ -231,6 +233,7 @@ class ProjectData {
     };
     UpdateDCModel(CURRENT_MODEL);
     UpdateDCBounds(bounds);
+    UR.HookPhase('SIM/UI_UPDATE', this.SendInstanceInspectorUpdate);
     return CURRENT_MODEL;
   }
   SetCurrentModelId(modelId) {
