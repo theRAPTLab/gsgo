@@ -56,7 +56,7 @@ function m_update(frame) {
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) {
-      console.error('could not find', agentId, 'Probably removed?');
+      // console.error('could not find', agentId, 'Probably removed?');
       return;
     }
     // 1. Get Costume Defaults
@@ -68,7 +68,6 @@ function m_update(frame) {
     //    Get Current Scale Overrides
     const scale = agent.getFeatProp('Physics', 'scale').value;
     const scaleY = agent.getFeatProp('Physics', 'scaleY').value || scale;
-    // console.log('updating', agentId, cw, ch, w, h, scale, scaleY);
 
     //    Calculate new size (apply scale to user-defined w/h)
     let newW;

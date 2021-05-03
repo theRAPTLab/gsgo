@@ -94,14 +94,14 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     // Inputs do not necessarily come in with every INPUTS phase fire
     // so we should NOT be removing them on every update.
 
-    // HACK
+    // HACK: Remove agent if no update for 4 seconds
     inputDef.framesSinceLastUpdate++;
-    if (inputDef.framesSinceLastUpdate > 60) {
+    if (inputDef.framesSinceLastUpdate > 120) {
       return true;
     }
 
-    // HACK FOR NOW
-    // At least remove agents that no longer have active devices
+    // HACK
+    // Remove agents that no longer have active devices
     // cobj = {id, name, blueprint, bpname, valid, x, y}
     //         id = "CC340_0"
     return !ACTIVE_DEVICES.has(COBJIDtoID(inputDef.id));
