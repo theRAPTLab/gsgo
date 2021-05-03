@@ -65,6 +65,7 @@ class PopulationPack extends GFeature {
    */
   countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
+    if (agents.length < 1) return;
     const sum = agents
       .map(a => a.getProp(prop).value)
       .reduce((acc, cur) => acc + cur);
@@ -76,6 +77,7 @@ class PopulationPack extends GFeature {
   }
   minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
+    if (agents.length < 1) return;
     const minimizer = (min, cur) => Math.min(min, cur);
     const min = agents
       .map(a => a.getProp(prop).value)
@@ -84,6 +86,7 @@ class PopulationPack extends GFeature {
   }
   maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
+    if (agents.length < 1) return;
     const maximizer = (max, cur) => Math.max(max, cur);
     const max = agents
       .map(a => a.getProp(prop).value)
