@@ -43,7 +43,7 @@ propPop text
 # PROGRAM EVENT
 # PROGRAM UPDATE
 when Fish touches Algae [[
-  every 1 [[
+  every 1 runAtStart [[
     prop Fish.energyLevel add 10
     prop Algae.energyLevel sub 10
     featCall Fish.Costume setGlow 0.5
@@ -53,7 +53,7 @@ every 1 runAtStart [[
   // foodLevel goes down every n seconds
   prop agent.energyLevel sub 1
 
-  // // touching Algae?
+  // // touching Algae test using featMethod
   // ifExpr {{ agent.callFeatMethod('Touches', 'touchedWithin', 'Algae', 1) }} [[
   //   prop energyLevel add 10
   //   featCall agent.Costume setGlow 0.5
@@ -114,6 +114,7 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
+featCall Physics setSize 32 42
 
 // show initial level (otherwise level is not shown until run)
 exprPush {{ agent.getProp('energyLevel').value }}
@@ -128,9 +129,8 @@ featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
 
 # PROGRAM INIT
-prop x setTo 400
+prop x setTo -430
 featCall Movement setRandomPositionY
-dbgOut "Init"
 
 # PROGRAM EVENT
 
@@ -149,7 +149,7 @@ every 1 runAtStart [[
   prop energyLevel sub 1
 
   // update size
-  exprPush {{ agent.getProp('energyLevel').value / 100 * 4}}
+  exprPush {{ agent.getProp('energyLevel').value / 100 * 2}}
   featPropPop agent.Physics scale
 
   // update name
@@ -244,8 +244,9 @@ addProp speed Number 1
 addProp energyRate Number 1
 
 useFeature Physics
-featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 800
+featCall Physics init
+featProp Physics scale setTo 0.5
+featProp Physics scaleY setTo 8
 
 // touches
 useFeature Touches
