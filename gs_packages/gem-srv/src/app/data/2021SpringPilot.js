@@ -35,6 +35,10 @@ useFeature Physics
 featCall Physics init
 featCall Physics setSize 90
 
+// set Touches
+useFeature Touches
+featCall Touches monitorTouchesWith Algae
+
 // show meter immediately
 exprPush {{ agent.getProp('energyLevel').value / 100 }}
 propPop meter
@@ -149,7 +153,12 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 useFeature Physics
-featProp Physics.radius setTo 16
+featCall Physics init
+//featProp Physics.radius setTo 16
+
+useFeature Touches
+featCall Touches monitorTouchesWith 'Fish'
+featCall Touches monitorTouchesWith 'Sunbeam'
 
 // This is so that the numbers don't suddenly change at start and confusing things
 prop text setTo '##'
@@ -164,7 +173,9 @@ onEvent Start [[
   propPop text
 
   exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-  propPop agent.scale
+  //propPop agent.scale
+  featPropPop agent.Physics scale
+
 
   // featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
@@ -199,7 +210,9 @@ ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
 
 every 0.5 [[
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-propPop agent.scale
+//propPop agent.scale
+featPropPop agent.Physics scale
+
 //featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
@@ -218,11 +231,17 @@ addProp energyRate Number 5
 addProp direction Number 1
 
 useFeature Physics
-featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 500
+featCall Physics init
+featProp Physics scale setTo 0.4
+featProp Physics scaleY setTo 2.5
+
+
+useFeature Touches
 
 prop agent.skin setTo 'lightbeam.json'
 prop agent.alpha setTo 0.5
+
+
 
 # PROGRAM INIT
 // default position for moving across the top
@@ -231,8 +250,6 @@ prop y setTo -180
 
 # PROGRAM EVENT
 onEvent Tick [[
-  // featPropPush Physics.radius
-  // dbgStack
   exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
   propPop x
 
