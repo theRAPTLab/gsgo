@@ -114,14 +114,13 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
-featCall Physics setSize 32 42
+featCall Physics setSize 32 64
+// start scale at 50% to match energyLevel (scale is not set until run)
+featProp Physics scale setTo 0.5
 
 // show initial level (otherwise level is not shown until run)
 exprPush {{ agent.getProp('energyLevel').value }}
 propPop text
-
-// set scale at 50% since energyLevel starts at 50 (50% x 4)
-featProp Physics scale setTo 2
 
 // touches
 useFeature Touches
@@ -149,7 +148,8 @@ every 1 runAtStart [[
   prop energyLevel sub 1
 
   // update size
-  exprPush {{ agent.getProp('energyLevel').value / 100 * 2}}
+  // This only runs after "GO" is pushed
+  exprPush {{ agent.getProp('energyLevel').value / 100}}
   featPropPop agent.Physics scale
 
   // update name
