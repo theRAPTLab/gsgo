@@ -151,9 +151,7 @@ prop energyLevel setMin 0
 useFeature Physics
 featProp Physics.radius setTo 16
 
-// show initial level (otherwise level is not shown until run)
-//exprPush {{ agent.getProp('energyLevel').value }}
-//propPop text
+// This is so that the numbers don't suddenly change at start and confusing things
 prop text setTo '##'
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
@@ -165,10 +163,10 @@ onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 
-  //exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-  //propPop agent.scale
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  propPop agent.scale
 
-  featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  // featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 
@@ -200,9 +198,9 @@ ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
 ]]
 
 every 0.5 [[
- // exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
- // propPop agent.scale
- featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+propPop agent.scale
+//featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 `
@@ -456,6 +454,30 @@ prop y setTo -90`
       blueprint: 'Timer',
       initScript: `prop x setTo 0
 prop y setTo 350`
+    },
+    {
+      id: 505,
+      name: 'DecorationYellow1',
+      blueprint: 'DecorationYellow',
+      initScript: `prop x setTo -384
+prop y setTo 362
+prop zIndex setTo 200`
+    },
+    {
+      id: 506,
+      name: 'DecorationRed1',
+      blueprint: 'DecorationRed',
+      initScript: `prop x setTo -308
+prop y setTo 384
+prop zIndex setTo 220`
+    },
+    {
+      id: 507,
+      name: 'DecorationBlue1',
+      blueprint: 'DecorationBlue',
+      initScript: `prop x setTo -350
+prop y setTo 378
+prop zIndex setTo 210`
     }
   ]
 };
