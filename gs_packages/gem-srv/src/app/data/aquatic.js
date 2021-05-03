@@ -27,7 +27,6 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
-featCall Physics setSize 90
 
 // set Touches
 useFeature Touches
@@ -115,11 +114,13 @@ prop energyLevel setMin 0
 
 useFeature Physics
 featCall Physics init
-featCall Physics setScale 2
 
 // show initial level (otherwise level is not shown until run)
 exprPush {{ agent.getProp('energyLevel').value }}
 propPop text
+
+// set scale at 50% since energyLevel starts at 50 (50% x 4)
+featProp Physics scale setTo 2
 
 // touches
 useFeature Touches
@@ -144,8 +145,13 @@ when Algae touches Lightbeam [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 ]]
-every 1 [[
+every 1 runAtStart [[
   prop energyLevel sub 1
+
+  // update size
+  exprPush {{ agent.getProp('energyLevel').value / 100 * 4}}
+  featPropPop agent.Physics scale
+
   // update name
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
