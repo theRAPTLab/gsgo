@@ -13,6 +13,7 @@ import UR from '@gemstep/ursys/client';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSelect from './components/PanelSelect';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -23,7 +24,7 @@ import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('LOGIN');
+const PR = UR.PrefixUtil('MODEL');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
@@ -38,7 +39,8 @@ class Model extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'select',
-      modelId: ''
+      modelId: '',
+      openRedirectDialog: false
     };
 
     this.OnPanelClick = this.OnPanelClick.bind(this);
@@ -47,7 +49,11 @@ class Model extends React.Component {
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const modelId = params.get('model');
-    this.setState({ modelId });
+    const wasRedirected = params.get('redirect') !== null;
+    this.setState({
+      modelId,
+      openRedirectDialog: wasRedirected
+    });
     document.title = `GEMSTEP PROJECT ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
@@ -73,8 +79,19 @@ class Model extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, modelId } = this.state;
+    const { panelConfiguration, modelId, openRedirectDialog } = this.state;
     const { classes } = this.props;
+
+    const DialogMainRedirect = (
+      <DialogConfirm
+        open={openRedirectDialog}
+        message={'A "Main" window was already open.  Select another view.'}
+        yesMessage="OK"
+        noMessage=""
+        onClose={() => this.setState({ openRedirectDialog: false })}
+      />
+    );
+
     return (
       <div
         className={classes.root}
@@ -89,7 +106,6 @@ class Model extends React.Component {
         >
           <div style={{ flexGrow: '1' }}>
             <span style={{ fontSize: '32px' }}>GEMSTEP PROJECT {modelId}</span>{' '}
-            UGLY DEVELOPER MODE
           </div>
           <Link to={{ pathname: `/app/login` }} className={classes.navButton}>
             Back to HOME
@@ -114,7 +130,7 @@ class Model extends React.Component {
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          {DialogMainRedirect}
         </div>
       </div>
     );
