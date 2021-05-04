@@ -40,7 +40,7 @@ class Login extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'login'
+      panelConfiguration: 'selectSimulation' // default should be 'login'
     };
 
     this.OnPanelClick = this.OnPanelClick.bind(this);

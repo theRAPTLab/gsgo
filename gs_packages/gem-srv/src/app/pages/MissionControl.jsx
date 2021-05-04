@@ -86,7 +86,7 @@ class MissionControl extends React.Component {
       inspectorInstances: [],
       runIsMinimized: true,
       scriptsNeedUpdate: false,
-      openConfirmClose: false
+      openRedirectDialog: false
     };
 
     // Initialization
@@ -200,7 +200,10 @@ class MissionControl extends React.Component {
     });
   }
   FailSimAlreadyRunning() {
-    this.setState({ openConfirmClose: true });
+    const { modelId } = this.state;
+    this.setState({ openRedirectDialog: true });
+    // redirect to project view
+    window.location = `/app/model?model=${modelId}&redirect`;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -399,7 +402,7 @@ class MissionControl extends React.Component {
       inspectorInstances,
       runIsMinimized,
       scriptsNeedUpdate,
-      openConfirmClose
+      openRedirectDialog
     } = this.state;
     const { classes } = this.props;
     const { width, height, bgcolor } = PROJ.GetProjectBoundary();
@@ -453,13 +456,12 @@ class MissionControl extends React.Component {
         />
       );
 
-    const DialogConfirmClose = (
+    const DialogMainRedirect = (
       <DialogConfirm
-        open={openConfirmClose}
-        message={`A "Main" window is already open.  Select another view?`}
-        yesMessage={`OK`}
+        open={openRedirectDialog}
+        message={'A "Main" window is already open.  Redirecting...'}
+        yesMessage=""
         noMessage=""
-        onClose={this.OnSelectView}
       />
     );
 
@@ -544,7 +546,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3' }}
         >
           <PanelMessage message={message} />
-          {DialogConfirmClose}
+          {DialogMainRedirect}
         </div>
       </div>
     );

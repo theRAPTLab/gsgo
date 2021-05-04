@@ -190,7 +190,6 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   dispose() {
-    console.error('dispose', this.id);
     /* Properly disposing of vobjs is complicated:
        1. Nested objects need to be removed via `removeChild`
        2. But `removeChild` does not actually remove all of the pixi components
@@ -213,7 +212,6 @@ class Visual implements IVisual, IPoolable, IActable {
     this.removeMeter();
     this.root.removeChild(this.container); // needed or vobj is not removed
     this.root = undefined;
-
   }
 
   /// POOLABLE REQUIREMENTS ///////////////////////////////////////////////////
