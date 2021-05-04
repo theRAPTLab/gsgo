@@ -18,7 +18,7 @@ import { interval } from 'rxjs';
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('RT-MAIN', 'TagCyan');
+const PR = UR.PrefixUtil('RT-MAIN');
 const DBG = false;
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
@@ -30,11 +30,11 @@ let SIM_FRAME_MS = interval(33);
 let RX_SUB;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/APP_STAGE');
-UR.SystemHook('UR/APP_START');
-UR.SystemHook('UR/APP_RUN');
-UR.SystemHook('UR/APP_RESET');
-UR.SystemHook('UR/APP_RESTAGE');
+UR.HookPhase('UR/APP_STAGE');
+UR.HookPhase('UR/APP_START');
+UR.HookPhase('UR/APP_RUN');
+UR.HookPhase('UR/APP_RESET');
+UR.HookPhase('UR/APP_RESTAGE');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

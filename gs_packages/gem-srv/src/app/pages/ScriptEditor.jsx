@@ -1,11 +1,12 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ScriptEditor - Script Editing
+  ScriptEditor - Edit Script Blueprints
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
@@ -14,8 +15,9 @@ import UR from '@gemstep/ursys/client';
 import PanelSimViewer from './components/PanelSimViewer';
 import PanelSelectAgent from './components/PanelSelectAgent';
 import PanelScript from './components/PanelScript';
-import PanelInspector from './components/PanelInspector';
+import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -27,166 +29,22 @@ import './scrollbar.css';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SCRIPTEDITOR');
-const DBG = true;
+const DBG = false;
+
+const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
+# PROGRAM DEFINE
+// useFeature Costume
+// useFeature Movement
+# PROGRAM EVENT
+// onEvent Tick [[ ]]
+# PROGRAM UPDATE
+// when xxx touches yyy [[ ]]`;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('select', '50% auto 0px'); // columns
 PANEL_CONFIG.set('script', '50% auto 0px'); // columns
 PANEL_CONFIG.set('sim', '50% auto 0px'); // columns
-
-/// DUMMY DATA ////////////////////////////////////////////////////////////////
-///
-/// This dummy code is passed to PanelScript when an agent is selected.
-///
-/// This should be loaded from the db
-/// Hacked in for now
-const agents = [
-  { id: 'bunny', label: 'Bunny' },
-  { id: 'fish', label: 'Fish' },
-  { id: 'algae', label: 'Algae' },
-  { id: 'lightbeam', label: 'Lightbeam' },
-  { id: 'poop', label: 'Poop', editor: 'UADDR01: Ben' }
-];
-const scripts = [
-  {
-    id: 'bunny',
-    script: `# BLUEPRINT Bunny
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'bunny.json' 0
-featureCall Movement setMovementType 'wander'
-addProp energyLevel Number 10
-# PROGRAM UPDATE
-setProp skin 'bunny.json'
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  // energyLevel goes down every second
-  propCall energyLevel sub 1
-  dbgOut 'energyLevel' {{ agent.getProp('energyLevel').value }}
-  // hungry -- get jittery
-  ifExpr {{ agent.getProp('energyLevel').value < 5 }} [[
-    featureCall Costume setPose 1
-    featureCall Movement setMovementType 'jitter'
-  ]]
-  // dead -- stop moving
-  ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
-    featureCall Costume setPose 2
-    featureCall Movement setMovementType 'static'
-  ]]
-]]
-# PROGRAM CONDITION
-when Bunny sometest [[
-  // dbgOut SingleTest
-]]
-when Bunny touches Bunny [[
-  // dbgOut PairTest
-]]`
-  },
-  {
-    id: 'fish',
-    script: `# BLUEPRINT Fish
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'fish.json' 0
-featureCall Movement setMovementType 'wander' 1
-// featureCall Movement setDirection 90
-addProp energyLevel Number 20
-# PROGRAM UPDATE
-setProp skin 'fish.json'
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  // foodLevel goes down every second
-  propCall energyLevel sub 1
-  // dbgOut 'fish energyLevel' {{ agent.getProp('energyLevel').value }}
-  // sated
-  ifExpr {{ agent.getProp('energyLevel').value > 15 }} [[
-    featureCall Costume setPose 0
-    featureCall Movement setMovementType 'wander'
-  ]]
-  // hungry
-  ifExpr {{ agent.getProp('energyLevel').value < 15 }} [[
-    featureCall Costume setPose 1
-    featureCall Movement setMovementType 'wander'
-  ]]
-  // dead
-  ifExpr {{ agent.getProp('energyLevel').value < 0 }} [[
-    featureCall Costume setPose 2
-    featureCall Movement setMovementType 'float'
-  ]]
-]]
-# PROGRAM CONDITION
-when Fish touches Algae [[
-  // dbgOut 'Touch!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
-  // dbgContext
-
-  setProp energyLevel {{ Fish.prop.energyLevel.value + 1 }}
-
-  // IDEAL CALL
-  // When fish touches algae, food level goes up
-  // propCall foodLevel inc 1
-  // kill Algae
-]]
-`
-  },
-  {
-    id: 'algae',
-    script: `# BLUEPRINT Algae
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'algae.json' 0
-// featureCall Movement setRandomStart
-featureCall Movement setMovementType 'wander' 0.2
-addProp energyLevel Number 50
-# PROGRAM UPDATE
-setProp skin 'algae.json'
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-onEvent Tick [[
-  // energyLevel goes down every second
-  propCall energyLevel sub 1
-  dbgOut 'algae energyLevel' {{ agent.getProp('energyLevel').value }}
-]]
-# PROGRAM CONDITION
-// when Algae touches Lightbeam [[
-//   // When algae touches lightbeam, energyLevel goes up
-//   propCall energyLevel inc 1
-//   ifExpr {{ agent.getProp('energyLevel').value > 5 }} [[
-//     dbgOut 'spawn new algae'
-//     propCall energyLevel setTo 1
-//   ]]
-// ]]
-`
-  },
-  {
-    id: 'lightbeam',
-    script: `# BLUEPRINT Lightbeam
-# PROGRAM DEFINE
-useFeature Costume
-useFeature Movement
-featureCall Costume setCostume 'lightbeam.json' 0
-setProp x -300
-setProp y -300
-# PROGRAM UPDATE
-setProp skin 'lightbeam.json'
-featureCall Movement jitterPos -5 5
-// featureCall Movement setController user
-# PROGRAM THINK
-// featureHook Costume thinkHook
-# PROGRAM EVENT
-# PROGRAM CONDITION
-`
-  },
-  { id: 'poop', script: '// nada' }
-];
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -195,25 +53,70 @@ class ScriptEditor extends React.Component {
   constructor() {
     super();
     this.state = {
+      isReady: false,
+      noMain: true,
       panelConfiguration: 'select',
+      modelId: '',
+      model: {},
+      scriptId: '',
+      script: '',
+      instances: [],
+      monitoredInstances: [],
       message: '',
       messageIsError: false
     };
-    // bind
-    this.OnModelClick = this.OnModelClick.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.CleanupComponents = this.CleanupComponents.bind(this);
+    this.RequestModel = this.RequestModel.bind(this);
+    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
+    this.UpdateModelData = this.UpdateModelData.bind(this);
+    this.UnRegisterInstances = this.UnRegisterInstances.bind(this);
+    this.OnInstanceUpdate = this.OnInstanceUpdate.bind(this);
+    this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    this.OnSelectAgent = this.OnSelectAgent.bind(this);
+    this.OnSelectScript = this.OnSelectScript.bind(this);
+    this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
+    this.PostSendMessage = this.PostSendMessage.bind(this);
     this.OnDebugMessage = this.OnDebugMessage.bind(this);
-    // hooks
     // Sent by PanelSelectAgent
-    UR.RegisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
-    UR.RegisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.HandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.HandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.HandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.HandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP SCRIPT EDITOR';
+    if (DBG) console.log(...PR('componentDidMount'));
+    const params = new URLSearchParams(window.location.search.substring(1));
+    const modelId = params.get('model');
+    const scriptId = params.get('script');
+    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
+
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
+
+    window.addEventListener('beforeunload', this.CleanupComponents);
+
+    // Set model section
+    this.setState({ modelId, scriptId });
+
+    UR.HookPhase('UR/APP_START', async () => {
+      const devAPI = UR.SubscribeDeviceSpec({
+        selectify: device => device.meta.uclass === 'Sim',
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          if (valid) {
+            if (DBG) console.log(...PR('Main Sim Online!'));
+            this.Initialize();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
+          }
+        }
+      });
+    });
   }
 
   componentDidCatch(e) {
@@ -221,30 +124,178 @@ class ScriptEditor extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
-    UR.UnregisterMessage('HACK_SELECT_AGENT', this.OnSelectAgent);
-    UR.UnregisterMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    this.CleanupComponents();
+    window.removeEventListener('beforeunload', this.CleanupComponents);
   }
 
-  OnModelClick() {
-    window.location = '/app/model';
+  CleanupComponents() {
+    this.UnRegisterInstances();
+    UR.UnhandleMessage('SELECT_SCRIPT', this.OnSelectScript);
+    UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.HandleScriptUpdate);
+    UR.UnhandleMessage('HACK_DEBUG_MESSAGE', this.OnDebugMessage);
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.UnhandleMessage('NET:INSTANCES_UPDATE', this.OnInstanceUpdate);
+    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+  }
+
+  Initialize() {
+    if (this.state.isReady) return; // already initialized
+    const { modelId } = this.state;
+    this.RequestModel(modelId);
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
+  }
+
+  /**
+   * This requests model data from Mission Control's
+   * ProjectData module.
+   * project-data will respond with model data { result: model }
+   * which is handled by UpdateModelData, below.
+   */
+  RequestModel(modelId) {
+    if (DBG) console.log(...PR('RequestModel...', modelId));
+    const fnName = 'GetModel';
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName,
+      parms: [modelId]
+    }).then(rdata => this.UpdateModelData(rdata.result));
+  }
+  HandleModelUpdate(data) {
+    this.UpdateModelData(data.model);
+  }
+  /**
+   * This saves the model data to the local state
+   * and loads the current script if it's been specified
+   * @param {Object} model
+   */
+  UpdateModelData(model) {
+    if (DBG) console.log(...PR('UpdateModelData', model));
+    const { scriptId } = this.state;
+    this.setState({ model }, () => {
+      if (scriptId) {
+        this.OnSelectScript({ scriptId });
+      }
+    });
+  }
+
+  UnRegisterInstances() {
+    const { instances, monitoredInstances } = this.state;
+    if (!instances) return;
+    instances.forEach(i => {
+      const name = i.name || i.meta.name; // instance spec || GAgent
+      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
+      monitoredInstances.splice(monitoredInstances.indexOf(name), 1);
+    });
+    this.setState({ monitoredInstances });
+  }
+
+  /**
+   * Handler for `NET:INSTANCES_UPDATE`
+   * NET:INSTANCES_UPDATE is sent by sim-agents.AgentsProgram after instances are created.
+   * We use the list of instances created for this blueprint to register
+   * the instances for inspector monitoring.
+   * This is also called when other ScriptEditors on the network submit
+   * scripts and trigger NET:INSTANCES_UPDATE.  In that situation,
+   * we only update if the instance isn't already being monitored.
+   * @param {Object} data { instances: [...instances]}
+   *                       where 'instances' are instanceSpecs: {name, blueprint, init}
+   */
+  OnInstanceUpdate(data) {
+    // if (DBG) console.log(...PR('OnInstanceUpdate'));
+    const { scriptId, monitoredInstances } = this.state;
+    // Only show instances for the current blueprint
+    const instances = data.instances.filter(i => {
+      return i.blueprint === scriptId;
+    });
+    // Register the instances for monitoring
+    instances.forEach(i => {
+      if (monitoredInstances.includes(i.id)) return; // skip if already monitored
+      UR.RaiseMessage('NET:INSPECTOR_REGISTER', {
+        id: i.id
+      });
+      monitoredInstances.push(i.id);
+    });
+    this.setState({ instances, monitoredInstances });
+  }
+
+  /**
+   * Handler for `NET:INSPECTOR_UPDATE`
+   * NET:INSPECTOR_UPDATE is sent by PanelSimulation on every sim loop
+   * with agent information for every registered instance
+   * @param {Object} data { agents: [...agents]}
+   *                 wHere `agents` are gagents
+   */
+  OnInspectorUpdate(data) {
+    // if (DBG) console.log(...PR('OnInspectorUpdate'));
+    // Only show instances for the current blueprint
+    const { scriptId } = this.state;
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    const instances = data.agents.filter(i => {
+      return i.blueprint.name === scriptId;
+    });
+    this.setState({ instances });
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
     if (id === 'sim') return; // don't do anything if user clicks on sim panel
     this.setState({
       panelConfiguration: id
     });
   }
 
-  OnSelectAgent(id) {
-    console.log('OnSelectAgent', id);
+  /**
+   * Call with stringId=undefined to go to selection screen
+   * @param {string} data { scriptId }
+   */
+  OnSelectScript(data) {
+    const { scriptId } = data;
+    if (DBG) console.warn(...PR('OnSelectScript', data));
+    this.UnRegisterInstances();
+    const { model, modelId } = this.state;
+    if (model === undefined || model.scripts === undefined) {
+      console.warn(
+        'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
+        model
+      );
+      return; // no scripts defined
+    }
+    const agent = model.scripts.find(s => s.id === scriptId);
+    const script = agent && agent.script ? agent.script : SCRIPT_TEMPLATE;
+
+    // add script to URL
+    history.pushState(
+      {},
+      '',
+      `/app/scripteditor?model=${modelId}&script=${scriptId}`
+    );
+
+    // Show script selector if scriptId was not passed
+    let panelConfiguration = 'script';
+    if (scriptId === undefined) {
+      panelConfiguration = 'select';
+    }
+
     this.setState({
-      panelConfiguration: 'script',
-      // HACK: This should be retrieving the script from the server
-      script: scripts.find(s => s.id === id).script
+      panelConfiguration,
+      script,
+      scriptId
     });
+  }
+
+  HandleScriptUpdate(data) {
+    const firstline = data.script.match(/.*/)[0];
+    this.PostSendMessage(firstline);
+  }
+
+  PostSendMessage(text) {
+    this.setState(state => ({
+      message: `${
+        state.message
+      }${new Date().toLocaleTimeString()} :: Sent script ${text}\n`
+    }));
   }
 
   OnDebugMessage(data) {
@@ -259,8 +310,33 @@ class ScriptEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, script, message, messageIsError } = this.state;
+    // if (DBG) console.log(...PR('render'));
+    const {
+      noMain,
+      panelConfiguration,
+      modelId,
+      model,
+      scriptId,
+      script,
+      instances,
+      message,
+      messageIsError
+    } = this.state;
     const { classes } = this.props;
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
+
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
     return (
       <div
         className={classes.root}
@@ -274,11 +350,15 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR</span> UGLY DEVELOPER
-            MODE
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
+            DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnModelClick}>
-            Back to MODEL
+          <button
+            type="button"
+            onClick={() => window.close()}
+            className={classes.navButton}
+          >
+            CLOSE
           </button>
         </div>
         <div id="console-left" className={classes.left}>
@@ -286,6 +366,7 @@ class ScriptEditor extends React.Component {
             <PanelSelectAgent
               id="select"
               agents={agents}
+              modelId={modelId}
               onClick={this.OnPanelClick}
             />
           )}
@@ -293,6 +374,7 @@ class ScriptEditor extends React.Component {
             <PanelScript
               id="script"
               script={script}
+              modelId={modelId}
               onClick={this.OnPanelClick}
             />
           )}
@@ -302,12 +384,29 @@ class ScriptEditor extends React.Component {
         </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <div style={{ display: 'flex' }}>
-            <PanelMessage message={message} isError={messageIsError} />
-            <PanelInspector isActive />
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 3fr',
+              columnGap: '5px',
+              height: '100%',
+              overflow: 'hidden'
+            }}
+          >
+            <PanelMessage
+              title="Log"
+              message={message}
+              isError={messageIsError}
+            />
+            <PanelInstances
+              id="instances"
+              instances={instances}
+              disallowDeRegister
+            />
+            {DialogNoMain}
           </div>
         </div>
       </div>

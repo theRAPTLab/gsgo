@@ -7,16 +7,19 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { Keyword } from 'lib/class-keyword';
-import { TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
+import Keyword, { EvalRuntimeUnitArgs } from 'lib/class-keyword';
+import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
-import { EvalUnitArgs } from 'lib/expr-evaluator';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MAX_OUT = 100;
 let COUNTER = MAX_OUT;
-UR.RegisterMessage('AGENT_PROGRAM', () => {
+UR.HandleMessage('ALL_AGENTS_PROGRAM', () => {
+  console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
+  COUNTER = MAX_OUT;
+});
+UR.HandleMessage('AGENT_PROGRAM', () => {
   console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
   COUNTER = MAX_OUT;
 });
@@ -36,7 +39,10 @@ export class dbgOut extends Keyword {
 
     progout.push((agent, state) => {
       if (COUNTER-- > 0) {
-        console.log('?dbgOut', ...EvalUnitArgs(unit.slice(1), state.ctx));
+        console.log(
+          'DBGOUT:',
+          ...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx })
+        );
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
     });

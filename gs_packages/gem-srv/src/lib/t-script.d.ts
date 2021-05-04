@@ -35,19 +35,28 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   featureMap: Map<string, IFeature>;
   execMethod: (name: string, ...args: any) => any;
   addFeature: (name: string) => void;
+  hasFeature: (name: string) => boolean;
   getFeature: (name: string) => any;
   updateQueue: TMethod[];
   queueUpdateMessage: (msg: IMessage) => void;
   thinkQueue: TMethod[];
   queueThinkMessage: (msg: IMessage) => void;
   execQueue: TMethod[];
-  queueExecAction: (msg: IMessage) => void;
+  queueExecMessage: (msg: IMessage) => void;
   evaluateArgs: (...args: any) => any;
   exec: (prog: TMethod, ctx?: object, ...args) => any;
-  featExec: (fName: string, mName: string, ...args) => any;
-  featProp: (fName: string, pName: string) => IScopeable;
+  getFeatMethod: (fname: string, mName: string) => [IFeature, TMethod];
+  callFeatMethod: (fName: string, mName: string, ...args) => any;
+  getFeatProp: (fName: string, pName: string) => IScopeable;
   // shortcut properties
   skin: string;
+  scale: number;
+  scaleY: number;
+  alpha: number;
+  isInert: boolean;
+  isGlowing: boolean;
+  isLargeMeter: boolean;
+  text: string;
   x: number;
   y: number;
   // name, value are defined in IScopeable
@@ -91,7 +100,8 @@ export interface IMessage {
   channel?: string;
   message?: string;
   context?: {}; // context object for expressions, programs
-  actions?: TSMCProgram[];
+  actions?: TMethod[];
+  conseq?: TMethod;
   inputs?: any;
 }
 
@@ -101,7 +111,7 @@ export interface IMessage {
  *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
  *  renderable JSX for a UI.
  */
-export type TScriptUnit = [string?, ...any[]];
+export type TScriptUnit = [...any[]];
 export type TScript = TScriptUnit[]; // not generally used\
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////
@@ -136,6 +146,7 @@ export interface ISMCBundle extends ISMCPrograms {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles */
 export enum EBundleType {
+  INIT = 'init', // freshly created or empty bundle (set to another type)
   PROG = 'program', // a program type
   COND = 'condition', // test, conseq, alter program,
   BLUEPRINT = 'blueprint', // blueprint for initializing agents
@@ -153,7 +164,6 @@ export interface IKeyword {
   compile(unit: TScriptUnit): TOpcode[];
   serialize(state: object): TScriptUnit;
   jsx(index: number, state: object, children?: any[]): any;
-  generateKey(): any;
   getName(): string;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -176,9 +186,9 @@ export interface IScriptUpdate {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TInstance = {
   blueprint: string;
-  id?: number;
+  id?: string;
   name?: string;
-  init?: TScriptUnit[];
+  initScript?: TScriptUnit[];
 };
 export type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name
 
@@ -194,9 +204,8 @@ export interface IState {
   scope: IScopeable[]; // scope stack (current execution context)
   flags: IComparator; // condition flags
   peek(): TStackable;
-  pop(): TStackable;
-  popArgs(num: number): TStackable[];
-  pushArgs(...args: number[]): void;
+  pop(num: number): TStackable[]; // return n things as array
+  push(...args: any): void;
   reset(): void;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -273,7 +282,8 @@ export type TSMCProgram = TOpcode[];
 export type TSMCGlobalProgram = TRegcode[];
 export type TSMCFunction = TOpcode;
 /** Also could be an AST, which is an object with a type property */
-export type TExpressionAST = { type: string };
+export type TExpressionAST = { expr: object }; // expr is binary tre
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A stackmachine method can be either a stackmachine program OR a regular
  *  function. The invocation method will check what it is
@@ -284,8 +294,9 @@ export type TMethod = TSMCProgram | TSMCFunction | TExpressionAST;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export enum ControlMode {
   static = 0,
-  puppet,
-  auto
+  drag, // temporarily override control by system, e.g. during drag
+  puppet, // someone (not system) is controlling it
+  auto // AI
 }
 
 export interface IActable {
@@ -304,10 +315,12 @@ export interface IActable {
 export interface IMovementMode {
   mode: () => ControlMode;
   setPreviousMode: () => ControlMode;
+  setModeStatic: () => ControlMode;
+  setModeDrag: () => ControlMode;
   setModePuppet: () => ControlMode;
   setModeAuto: () => ControlMode;
-  setModeStatic: () => ControlMode;
+  isModeStatic: () => boolean;
+  isModeDrag: () => boolean;
   isModePuppet: () => boolean;
   isModeAuto: () => boolean;
-  isModeStatic: () => boolean;
 }

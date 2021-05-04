@@ -9,12 +9,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
+import { OutlineFilter } from '@pixi/filter-outline';
+import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
+import { MakeHoverable } from './vis/hoverable';
+import { MakeSelectable } from './vis/selectable';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,6 +27,18 @@ interface ISpriteStore {
   sheet?: PIXI.Spritesheet;
 }
 let REF_ID_COUNTER = 0;
+/// outline filters
+const outlineHover = new OutlineFilter(3, 0xffff0088);
+const outlineSelected = new OutlineFilter(6, 0xffff00);
+const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0x00ff00 });
+// text styles
+const style = new PIXI.TextStyle({
+  fontFamily: 'Arial',
+  fontSize: 18,
+  fontWeight: 'bold',
+  fill: ['#ffffffcc'],
+  stroke: '#ffffff'
+});
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,17 +85,24 @@ class Visual implements IVisual, IPoolable, IActable {
   // class
   refId?: any;
   // visual
+  container: PIXI.Container;
+  filterbox: PIXI.Container; // Filters are applied to everything in this container
   sprite: PIXI.Sprite;
+  text: PIXI.Text;
+  meter: PIXI.Graphics;
+  textContent: string; // cache value to avoid unecessary updates
+  meterValue: number;
   assetId: number;
   isSelected: boolean;
   isHovered: boolean;
   isGrouped: boolean;
   isCaptive: boolean;
+  isGlowing: boolean;
   // poolable
   id: any;
   _pool_id: any;
   // sprite
-  root: PIXI.Container;
+  root: PIXI.Container; // parent container
 
   constructor(id: number) {
     this.id = id; // store reference
@@ -87,18 +110,26 @@ class Visual implements IVisual, IPoolable, IActable {
     spr.pivot.x = spr.width / 2;
     spr.pivot.y = spr.height / 2;
     this.sprite = spr;
+    const filterbox = new PIXI.Container();
+    filterbox.filters = []; // init for hover and select outlines
+    filterbox.addChild(this.sprite);
+    this.filterbox = filterbox;
     this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
     this.isSelected = false; // use primary selection effect
     this.isHovered = false; // use secondary highlight effect
     this.isGrouped = false; // use tertiary grouped effect
     this.isCaptive = false; // use tertiary grouped effect
+    this.isGlowing = false;
+    this.container = new PIXI.Container();
+    this.container.addChild(this.filterbox);
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
   setHovered = (mode = this.isHovered) => (this.isHovered = mode);
   setGrouped = (mode = this.isGrouped) => (this.isGrouped = mode);
   setCaptive = (mode = this.isCaptive) => (this.isCaptive = mode);
+  setGlowing = (mode = this.isGlowing) => (this.isGlowing = mode);
 
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
@@ -125,7 +156,26 @@ class Visual implements IVisual, IPoolable, IActable {
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
-    // we're done
+
+  }
+
+  /**
+   * Call this AFTER
+   *  setAlpha
+   *  setTexture
+   *  setScale
+   */
+  applyFilters() {
+    // selected?
+    const filters = [];
+    if (this.isSelected) filters.push(outlineSelected);
+    if (this.isHovered) filters.push(outlineHover);
+    if (this.isGlowing) filters.push(glow);
+    if (filters.length > 0) {
+      // override opacity so outlines will display
+      this.sprite.alpha = 1;
+    }
+    this.filterbox.filters = filters;
   }
 
   setFrame(frameKey: string | number) {
@@ -136,11 +186,31 @@ class Visual implements IVisual, IPoolable, IActable {
 
   add(root: PIXI.Container) {
     this.root = root;
-    root.addChild(this.sprite);
+    root.addChild(this.container);
   }
 
   dispose() {
-    this.root.removeChild(this.sprite);
+    /* Properly disposing of vobjs is complicated:
+       1. Nested objects need to be removed via `removeChild`
+       2. But `removeChild` does not actually remove all of the pixi components
+          and leads to a memory leak as more objects are added.
+       3. `destroy()` will properly dispose of textures, but it leaves the
+          pixi object intact.  e.g. this.text.destroy() does not =leave
+          this.text undefined.  So we want it undefined, we have to explicitly
+          set it so.
+       4. We can't simply destroy the whole container because class-visual is
+          is a pooled object that is re-used.  As such, the constructor is
+          only called once.  If we destroy the container, we end up destroying
+          some of the pixi components the constructor creates, such as the
+          filterbox and the sprite.
+       5. We also have to remove the container from the root or the
+          vobj will remain on screen.
+    */
+    this.filterbox.removeChild(this.meter);
+    this.container.removeChild(this.text);
+    this.removeText();
+    this.removeMeter();
+    this.root.removeChild(this.container); // needed or vobj is not removed
     this.root = undefined;
   }
 
@@ -177,6 +247,10 @@ class Visual implements IVisual, IPoolable, IActable {
     return [spr.x, spr.y];
   }
 
+  getZIndex() {
+    return this.container.zIndex;
+  }
+
   /** get direction by angle (0 points right) */
   getAngle() {
     return this.sprite.angle;
@@ -190,7 +264,29 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   setPosition(x: number, y: number) {
-    this.sprite.position.set(x, y);
+    this.container.position.set(x, y);
+  }
+
+  /** zIndex depends on:
+   *  --  parent.sortableChildren = true
+   *  --  Sorting happens only when
+   *      1. sortChildren() is called, or
+   *      2. updateTransform() is called
+   *      AND
+   *      sortDirty has been set to true by
+   *      1. adding a child, or
+   *      2. setting zIndex of a child
+   * In general, then it's best to set zIndex and make sure it's followed by a call
+   * that updates the transform, like setting position.
+   * We don't wnat to force an updateTransform here becasue it would trigger a
+   * updateTransform for every display object update.
+   *
+   * REVIEW: Using zIndex might reduce performance
+   *         Layers might be better: https://github.com/pixijs/pixi-display
+   * See https://pixijs.download/release/docs/PIXI.Container.html#sortableChildren
+   */
+  setZIndex(zIndex: number) {
+    this.container.zIndex = zIndex;
   }
 
   turnAngle(deltaA: number) {
@@ -221,6 +317,77 @@ class Visual implements IVisual, IPoolable, IActable {
 
   /** rotate by angle (+ is counterclockwise) */
   rotateBy() {}
+
+  /**
+   * This should be called after setTexture so that we know
+   * the bounds of the sprite for placing the text
+   */
+  setText(str: string) {
+    if (this.textContent === str) return; // no update necessary
+
+    // Remove any old text
+    // We have to remove the child and reset it to update the text?
+    this.container.removeChild(this.text);
+    if (this.text) this.text.destroy();
+
+    this.text = new PIXI.Text(str, style);
+    this.textContent = str; // cache
+
+    // position text bottom centered
+    const textBounds = this.text.getBounds();
+    const spacer = 5;
+    const x = -textBounds.width / 2;
+    const y = this.sprite.height / 2 + spacer;
+    this.text.position.set(x, y);
+
+    this.container.addChild(this.text);
+  }
+
+  removeText() {
+    if (this.text) {
+      this.text.destroy();
+      // After text.destroy() it is still a pixi object
+      // so we have to set it explicitly to undefined so that setText will
+      // not inadvertently call destroy() on it again.
+      this.text = undefined;
+    }
+  }
+
+  setMeter(percent: number, color: number, isLargeMeter: boolean) {
+    if (percent === this.meterValue) return; // no update necessary
+    if (!this.meter) {
+      this.meter = new PIXI.Graphics();
+    }
+    if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
+
+    const w = isLargeMeter ? 40 : 10;
+    const h = isLargeMeter ? 80 : 40;
+    const spacer = w + 5;
+    const x = isLargeMeter ? -w / 2 : -this.sprite.width / 2 - spacer;
+    const y = this.sprite.height / 2 - h; // flush with bottom of sprite
+
+    this.meter.clear();
+
+    // background
+    this.meter.beginFill(0xffffff, 0.3);
+    this.meter.drawRect(x, y, w, h);
+    this.meter.endFill();
+
+    // bar
+    this.meter.beginFill(color, 0.5);
+    this.meter.drawRect(x, y + h - percent * h, w, percent * h);
+    this.meter.endFill();
+
+    this.meterValue = percent;
+    this.filterbox.addChild(this.meter);
+  }
+
+  removeMeter() {
+    if (this.meter) {
+      this.meter.destroy();
+      this.meter = undefined;
+    }
+  }
 } // end class Sprite
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
@@ -236,3 +403,5 @@ class Visual implements IVisual, IPoolable, IActable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Visual;
 export { MakeDraggable };
+export { MakeHoverable };
+export { MakeSelectable };

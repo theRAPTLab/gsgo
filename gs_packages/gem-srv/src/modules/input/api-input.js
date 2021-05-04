@@ -10,7 +10,7 @@ import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('SIM-INPUT', 'TagRed');
+const PR = UR.PrefixUtil('SIM-INPUT' /* 'TagInput' */);
 const DBG = false;
 
 /// CHEESE TESTING ////////////////////////////////////////////////////////////
@@ -47,19 +47,19 @@ export function StartTrackerVisuals() {
 
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/LOAD_CONFIG', () => {
+UR.HookPhase('UR/LOAD_CONFIG', () => {
   const addr = document.domain;
   console.log(...PR('Initializing Connection to', addr));
   ConnectTracker(addr);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/APP_CONFIGURE', () => {
+UR.HookPhase('UR/APP_CONFIGURE', () => {
   // this fires after UR/LOAD_ASSETS, so sprites are loaded
   const addr = document.domain;
   console.log(...PR('Starting Tracker Visuals', addr));
   StartTrackerVisuals();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('SIM/INPUTS', () => {
-  console.log('sim/input');
+UR.HookPhase('SIM/INPUTS', () => {
+  // console.log('sim/input');
 });

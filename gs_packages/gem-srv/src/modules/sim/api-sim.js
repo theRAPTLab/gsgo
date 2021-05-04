@@ -38,6 +38,10 @@ function m_Step(frameCount) {
   if (frameCount % 30 === 0) UR.RaiseMessage('SCRIPT_EVENT', { type: 'Tick' });
   /* insert game logic here */
 }
+// Timer PRERUN loop
+function monitor_STEP(frameCount) {
+  GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -49,12 +53,20 @@ function Stage() {
     console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
     console.log(...PR('Simulation Loaded'));
+    console.log(...PR('Staging Simulation'));
+    await GAME_LOOP.executePhase('GLOOP_STAGED');
+    console.log(...PR('Simulation Staged'));
+    console.log(...PR('Pre-run Loop Starting'));
+    RX_SUB = SIM_FRAME_MS.subscribe(monitor_STEP);
+    console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
   })();
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
 function Run() {
   // prepare to run simulation and do first-time setup
+  // compiles happen after Run()
+  // but simulation has not started
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** once the simluation is initialized, start the periodic frame update */
@@ -66,6 +78,7 @@ function Start() {
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
 
 /// MODE CHANGE CONTROL ///////////////////////////////////////////////////////
@@ -103,13 +116,19 @@ function Reset() {
   })();
 }
 
+/// UTILITIES /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsRunning() {
+  return SIM_RATE > 0;
+}
+
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook('UR/APP_STAGE', Stage);
-UR.SystemHook('UR/APP_RUN', Run);
-UR.SystemHook('UR/APP_RESET', Reset);
-UR.SystemHook('UR/APP_RESTAGE', Restage);
+UR.HookPhase('UR/APP_STAGE', Stage);
+UR.HookPhase('UR/APP_RUN', Run);
+UR.HookPhase('UR/APP_RESET', Reset);
+UR.HookPhase('UR/APP_RESTAGE', Restage);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Stage, Start, Pause, End, Export, Reset };
+export { Stage, Start, Pause, End, Export, Reset, IsRunning };

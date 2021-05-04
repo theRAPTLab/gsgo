@@ -7,6 +7,7 @@ import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import * as TRANSPILER from 'script/transpiler';
+import { GetAllAgents } from 'modules/datacore';
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -20,7 +21,7 @@ const DBG = false;
 
 /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.SystemHook(
+UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
@@ -28,9 +29,6 @@ UR.SystemHook(
       (async () => {
         let map = await GLOBAL.LoadAssetsSync('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
-        console.log(...PR('Waiting for user input'));
-        // SIM.Start();
-        // if (DBG) console.log(...PR('SIMULATION STARTED'));
         resolve();
       })();
     })
@@ -40,15 +38,9 @@ class PanelSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Simulation'
+      title: 'Virtual Stage'
     };
-    this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    this.DoSimReset = this.DoSimReset.bind(this);
-    this.DoSimStart = this.DoSimStart.bind(this);
-
-    UR.RegisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.RegisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.RegisterMessage('NET:HACK_SIM_START', this.DoSimStart);
+    this.setBoundary = this.setBoundary.bind(this);
   }
 
   componentDidMount() {
@@ -57,40 +49,28 @@ class PanelSimulation extends React.Component {
     RENDERER.SetGlobalConfig({ actable: true });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
-    this.DoSimReset();
+    window.addEventListener('resize', this.setBoundary);
   }
 
-  componentWillUnmount() {
-    UR.UnregisterMessage('NET:HACK_SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.UnregisterMessage('NET:HACK_SIM_RESET', this.DoSimReset);
-    UR.UnregisterMessage('NET:HACK_SIM_START', this.DoSimStart);
-  }
+  componentWillUnmount() {}
 
-  DoSimReset() {
-    console.log('sim reset');
-    DATACORE.DeleteAllTests();
-    DATACORE.DeleteAllGlobalConditions();
-    DATACORE.DeleteAllScriptEvents();
-    DATACORE.DeleteAllAgents();
-    DATACORE.DeleteAllInstances();
-  }
-
-  DoScriptUpdate(data) {
-    console.log('script update');
-    DATACORE.DeleteAllInstances(); // Delete all instances otherwise previously created instances will stick around
-    const source = TRANSPILER.ScriptifyText(data.script);
-    const bp = TRANSPILER.RegisterBlueprint(source);
-    UR.RaiseMessage('AGENT_PROGRAM', bp.name);
-  }
-
-  DoSimStart() {
-    console.log('sim start');
-    SIM.Start();
+  setBoundary() {
+    const { width, height, bgcolor } = this.props;
+    RENDERER.SetBoundary(width, height, bgcolor);
   }
 
   render() {
     const { title } = this.state;
-    const { id, isActive, onClick, classes } = this.props;
+    const {
+      id,
+      model,
+      width,
+      height,
+      bgcolor,
+      isActive,
+      onClick,
+      classes
+    } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

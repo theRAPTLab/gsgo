@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
+import Keyword from 'lib/class-keyword';
 import SM_Message from 'lib/class-sm-message';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { CompilerState } from 'modules/datacore/dc-script-bundle';
@@ -13,7 +13,7 @@ import {
   RegisterKeyword,
   UtilDerefArg,
   SubscribeToScriptEvent
-} from 'modules/datacore/dc-script';
+} from 'modules/datacore/dc-script-engine';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -22,16 +22,16 @@ export class onEvent extends Keyword {
 
   constructor() {
     super('onEvent');
-    this.args = ['event:string', 'consq:smcprogram'];
+    this.args = ['eventName:string', 'consq:smcprogram'];
   }
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
-    let [kw, event, consq] = unit;
-    consq = UtilDerefArg(consq);
+    let [kw, eventName, consq] = unit;
+    consq = UtilDerefArg(consq); // a program name possibly?
     const { bundleName } = CompilerState();
-    SubscribeToScriptEvent(event, bundleName, consq);
-    // this runs in global context
-    return [];
+    SubscribeToScriptEvent(eventName, bundleName, consq);
+    // this runs in global context inside sim-conditions
+    return []; // subscriptions don't need to return any compiled code
   }
 
   /** return a state object that turn react state back into source */

@@ -1,4 +1,5 @@
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -8,27 +9,47 @@ class PanelSelect extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Work',
+      title: 'Select',
       options: [
         // Dummy Data
-        { id: 'missioncontrol', label: 'Mission Control' },
-        { id: 'scripteditor', label: 'Edit Script' },
-        { id: 'faketrack', label: 'Fake Track' },
-        { id: 'viewer', label: 'View-only' }
+        { id: 'missioncontrol', label: 'Main' },
+        { id: 'viewer', label: 'Viewer' },
+        { id: 'charcontrol', label: 'Character Controller' }
       ]
     };
-    this.onClick = this.onClick.bind(this);
+    this.Initialize = this.Initialize.bind(this);
+    this.OnClick = this.OnClick.bind(this);
+
+    // System Hooks
+    UR.HookPhase('UR/APP_START', this.Initialize);
   }
 
-  onClick(url) {
+  async Initialize() {
+    // 1. Check for other 'Sim' devices.
+    const devices = UR.GetDeviceDirectory();
+    const sim = devices.filter(d => d.meta.uclass === 'Sim');
+    console.error('Init devices', devices, sim);
+    if (sim.length > 0) {
+      // HACKY
+      this.setState(state => ({
+        options: state.options.map(o => {
+          if (o.id === 'missioncontrol') o.disabled = true;
+          return o;
+        })
+      }));
+    }
+  }
+
+  OnClick(url) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    window.location = `/app/${url}`;
+    let { modelId } = this.props;
+    window.location = `/app/${url}?model=${modelId}`;
   }
 
   render() {
     const { title, options } = this.state;
-    const { id, isActive, onClick, classes } = this.props;
+    const { id, modelId, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -47,7 +68,8 @@ class PanelSelect extends React.Component {
                 type="button"
                 className={classes.button}
                 key={m.id}
-                onClick={() => this.onClick(m.id)}
+                disabled={m.disabled}
+                onClick={() => this.OnClick(m.id)}
               >
                 {m.label}
               </button>

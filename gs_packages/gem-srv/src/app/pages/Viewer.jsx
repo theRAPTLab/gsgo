@@ -6,19 +6,16 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
-
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
-import PanelInspector from './components/PanelInspector';
+import PanelBlueprints from './components/PanelBlueprints';
 import PanelInstances from './components/PanelInstances';
+import DialogConfirm from './components/DialogConfirm';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -29,13 +26,13 @@ import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MISSIONCONTROL');
+const PR = UR.PrefixUtil('VIEWER');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('instances', '15% auto'); // columns
-PANEL_CONFIG.set('sim', '5% auto'); // columns
+PANEL_CONFIG.set('instances', '15% auto 150px'); // columns
+PANEL_CONFIG.set('sim', '110px auto 150px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,16 +41,49 @@ class Viewer extends React.Component {
   constructor() {
     super();
     this.state = {
-      panelConfiguration: 'sim'
+      isReady: false,
+      noMain: true,
+      panelConfiguration: 'sim',
+      modelId: '',
+      model: {},
+      instances: []
     };
+    this.Initialize = this.Initialize.bind(this);
+    this.RequestModel = this.RequestModel.bind(this);
+    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
+    this.UpdateModelData = this.UpdateModelData.bind(this);
+    this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
+    this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+
+    // Instance Interaction Handlers
+    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
   componentDidMount() {
-    document.title = 'GEMSTEP VIEWER';
+    document.title = 'GEMSTEP Viewer';
+
     // start URSYS
-    UR.SystemConfig({ autoRun: true });
+    UR.SystemAppConfig({ autoRun: true });
+
+    UR.HookPhase('UR/APP_START', async () => {
+      const devAPI = UR.SubscribeDeviceSpec({
+        selectify: device => device.meta.uclass === 'Sim',
+        notify: deviceLists => {
+          const { selected, quantified, valid } = deviceLists;
+          if (valid) {
+            if (DBG) console.log(...PR('Main Sim Online!'));
+            this.Initialize();
+            this.setState({ noMain: false });
+          } else {
+            this.setState({ noMain: true });
+          }
+        }
+      });
+    });
   }
 
   componentDidCatch(e) {
@@ -61,15 +91,61 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
+    UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
+  }
+
+  Initialize() {
+    if (this.state.isReady) return; // already initialized
+    this.RequestModel();
+    UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
+    this.setState({ isReady: true });
+  }
+
+  RequestModel() {
+    if (DBG) console.log(...PR('RequestModel...'));
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetCurrentModelData'
+    }).then(rdata => {
+      this.UpdateModelData(rdata.result.modelId, rdata.result.model);
+    });
+  }
+
+  HandleModelUpdate(data) {
+    if (DBG) console.log('HandleModelUpdate', data);
+    this.UpdateModelData(data.model, data.modelId);
+  }
+
+  UpdateModelData(modelId, model) {
+    if (DBG) console.log('UpdateModelData', modelId, model);
+    this.setState({
+      modelId,
+      model,
+      instances: model.instances
+    });
+    document.title = `VIEWER ${modelId}`;
+  }
+
+  HandleSimInstanceHoverOver(data) {
+    if (DBG) console.log('hover!');
+  }
+
+  HandleInspectorUpdate(data) {
+    if (!data || data.agents === undefined) {
+      console.error('OnInspectorUpdate got bad data', data);
+      return;
+    }
+    this.setState({ instances: data.agents });
   }
 
   OnModelClick() {
-    window.location = '/app/model';
+    const { modelId } = this.state;
+    window.location = `/app/model?${modelId}`;
   }
 
   OnPanelClick(id) {
-    console.log('click', id); // e, e.target, e.target.value);
+    if (DBG) console.log('click', id); // e, e.target, e.target.value);
     this.setState({
       panelConfiguration: id
     });
@@ -80,8 +156,23 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration } = this.state;
+    const { noMain, panelConfiguration, modelId, model, instances } = this.state;
     const { classes } = this.props;
+
+    const DialogNoMain = (
+      <DialogConfirm
+        open={noMain}
+        message={`Waiting for a "Main" project to load...`}
+        yesMessage=""
+        noMessage=""
+      />
+    );
+
+    const agents =
+      model && model.scripts
+        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+        : [];
+
     return (
       <div
         className={classes.root}
@@ -95,29 +186,38 @@ class Viewer extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>VIEWER</span> UGLY DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>VIEWER {modelId}</span> UGLY
+            DEVELOPER MODE
           </div>
-          <button type="button" onClick={this.OnModelClick}>
-            Back to MODEL
-          </button>
+          <Link
+            to={{ pathname: `/app/model?model=${modelId}` }}
+            className={classes.navButton}
+          >
+            Back to PROJECT
+          </Link>
         </div>
         <div
           id="console-left"
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
+          <PanelBlueprints id="blueprints" modelId={modelId} agents={agents} />
           <PanelInstances id="instances" />
-          <PanelInspector isActive />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
+        <div id="console-right" className={classes.right}>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <PanelInstances id="instances" instances={instances} />
+          </div>
+        </div>
         <div
           id="console-bottom"
-          className={clsx(classes.cell, classes.bottom)}
+          className={classes.bottom}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          console-bottom
+          {DialogNoMain}
         </div>
       </div>
     );

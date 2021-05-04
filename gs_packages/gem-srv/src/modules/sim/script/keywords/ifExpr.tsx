@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
+import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
 
@@ -29,8 +29,8 @@ export class ifExpr extends Keyword {
     code.push((agent, state) => {
       const vals = agent.exec(test, state.ctx);
       const result = UtilFirstValue(vals);
-      if (result && consq) agent.exec(consq);
-      if (!result && alter) agent.exec(alter);
+      if (result && consq) agent.exec(consq, state.ctx);
+      if (!result && alter) agent.exec(alter, state.ctx);
     });
     return code;
   }

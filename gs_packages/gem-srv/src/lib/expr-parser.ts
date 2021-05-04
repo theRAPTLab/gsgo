@@ -15,7 +15,7 @@ import ExpressionParser from 'lib/class-expr-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('PARSER', 'TagRed');
+const PR = UR.PrefixUtil('PARSER', 'TagDebug');
 /// NOTE: TOKENIZER and PARSER are not directly related to each other
 /// The tokenizer converts GEMscript text source into GEMscript code, which can
 /// contain expression strings. The parser creates an AST from the contents of

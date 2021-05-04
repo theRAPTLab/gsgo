@@ -5,33 +5,46 @@ import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
+import PlayButton from './PlayButton';
 
 class PanelPlayback extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Sim Control'
+      title: 'Control',
+      isRunning: false
     };
     this.OnResetClick = this.OnResetClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
   }
 
+  componentWillUnmount() {}
+
   OnResetClick() {
+    this.setState({ isRunning: false });
     UR.RaiseMessage('NET:HACK_SIM_RESET');
   }
 
   OnStartClick() {
-    UR.RaiseMessage('NET:HACK_SIM_START');
+    const { isRunning } = this.state;
+    if (isRunning) {
+      UR.RaiseMessage('NET:HACK_SIM_STOP');
+    } else {
+      UR.RaiseMessage('NET:HACK_SIM_START');
+    }
+    this.setState({ isRunning: !isRunning });
   }
 
   render() {
-    const { title } = this.state;
-    const { id, isActive, classes } = this.props;
+    const { title, isRunning } = this.state;
+    const { id, model, needsUpdate, isActive, classes } = this.props;
 
     const onClick = () => {
       // To be implemented
       console.log('Show instance');
     };
+
+    const isDisabled = model === undefined;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -43,22 +56,33 @@ class PanelPlayback extends React.Component {
             fontSize: '12px'
           }}
         >
+          {needsUpdate && (
+            <div
+              className={classes.infoHighlightColor}
+              style={{ padding: '5px' }}
+            >
+              Scripts Updated!
+              <br />
+              Reset Stage!
+            </div>
+          )}
           <div style={{ display: 'flex', flexWrap: 'wrap' }}>
-            <button
-              type="button"
-              className={classes.button}
-              onClick={this.OnResetClick}
-            >
-              RESET
-            </button>
-            <button
-              type="button"
-              className={classes.button}
-              onClick={this.OnStartClick}
-            >
-              START
-            </button>
-            <div className={clsx(classes.button, classes.buttonDisabled)}>
+            {isDisabled ? (
+              <p>No model loaded</p>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  className={needsUpdate ? classes.buttonHi : classes.button}
+                  onClick={this.OnResetClick}
+                >
+                  RESET STAGE
+                </button>
+                <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
+              </>
+            )}
+
+            {/* <div className={clsx(classes.button, classes.buttonDisabled)}>
               PAUSE
             </div>
             <div className={clsx(classes.button, classes.buttonDisabled)}>
@@ -66,7 +90,7 @@ class PanelPlayback extends React.Component {
             </div>
             <div className={clsx(classes.button, classes.buttonDisabled)}>
               REPLAY
-            </div>
+            </div> */}
           </div>
         </div>
       </PanelChrome>

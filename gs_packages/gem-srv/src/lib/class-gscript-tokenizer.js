@@ -33,8 +33,8 @@ const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-const DBG = true;
-const DBG_SHOW = false;
+let DBG = false;
+let DBG_SHOW = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,7 +123,7 @@ class ScriptTokenizer {
   //
   constructor(doFlags) {
     if (doFlags)
-      console.log('ScriptTokenizer initialized with showProgress tracing');
+      console.log('ScriptTokenizer initialized with showCursor tracing');
     doFlags = doFlags || {
       show: DBG_SHOW // show progress
     };
@@ -134,23 +134,22 @@ class ScriptTokenizer {
     this.length = 0;
   }
 
-  showProgress(prompt) {
+  showCursor(prompt) {
     const s1 = this.line.substring(0, this.index);
     const s2 = this.line[this.index] || 'EOL';
     const s3 = this.line.substring(this.index + 1) || '';
-    const pr = prompt === undefined ? '' : `! ${prompt} !\n`;
-    if (DBG)
-      console.log(
-        `%c${pr}%c${s1}%c${s2}%c${s3}`,
-        'color:white;background-color:#FF0000;padding:2px 0 2px 0',
-        'color:black;',
-        'background-color:#FFB000',
-        'color:#C0C0C0'
-      );
+    const pr = prompt === undefined ? '' : `${prompt}`;
+    console.log(
+      `%c${s1}%c${s2}%c${s3} %c${pr}`,
+      'color:black;',
+      'background-color:#FFB000',
+      'color:#C0C0C0',
+      'color:white;background-color:#FF0000;padding:2px 0 2px 0'
+    );
   }
 
   throwError(err) {
-    this.showProgress('ERROR');
+    this.showCursor('ERROR');
     throw Error(err);
   }
   exprI(i) {
@@ -172,13 +171,14 @@ class ScriptTokenizer {
 
   /////////////////////////////////////////////////////////////////////////////
   /** TOKENIZER **************************************************************/
-  tokenize(lines) {
+  tokenize(lines, flag) {
     this.lines = lines; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;
     this.line = '';
     this.index = 0;
     this.length = this.line.length;
+    DBG_SHOW = flag === 'show';
 
     let units = [];
 
@@ -203,7 +203,7 @@ class ScriptTokenizer {
 
     /*
       algorithm: this returns whole lines in a block array
-      The way tokenize is called by Transpiler.CompileScript() is
+      The way tokenize is called by Transpiler.CompileBlueprint() is
       to use one main pass to capture all the outer level blocks into
       an array, so the ScriptUnit is [ term, term, [ line, line ] ]
       Each term of the script unit is "Expanded", and if the unit is
@@ -243,7 +243,7 @@ class ScriptTokenizer {
       // capture the untokenized string for subblock processing
     }
     // either we're out of lines or level is 0
-    if (level === 0) return block;
+    if (level === 0) return { block }; // return block;
     return this.throwError('Unclosed [[ in text');
   }
 
@@ -268,9 +268,9 @@ class ScriptTokenizer {
 
   // grab a compiler directive
   gobbleDirective() {
-    const nodes = ['#'];
-    while (++this.index < this.length) {
-      this.gobbleSpaces();
+    const nodes = [{ directive: '#' }];
+    this.index++;
+    while (this.index < this.length) {
       nodes.push(this.gobbleToken());
     }
     return nodes;
@@ -287,17 +287,16 @@ class ScriptTokenizer {
 
   // Return the next token (eq to gobbleExpression)
   gobbleToken() {
+    this.gobbleSpaces();
+    if (DBG_SHOW) this.showCursor();
     let ch = this.exprICode(this.index);
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
-
-    if (this.do.show) this.showProgress();
-
     /* HACK GEMSCRIPT ADDITION FOR [[ ]] */
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
-      return this.gobbleBlock(); // in gobbleVariable() also
+      return this.gobbleBlock(); // in gobbleParts() also
     }
     /* HACK GEMSCRIPT ADDITION FOR {{ expr }} */
     if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
@@ -315,6 +314,7 @@ class ScriptTokenizer {
       // Single or double quotes
       return this.gobbleStringLiteral();
     }
+
     to_check = this.line.substr(this.index, max_unop_len);
     tc_len = to_check.length;
     while (tc_len > 0) {
@@ -328,18 +328,17 @@ class ScriptTokenizer {
             !isIdentifierPart(this.exprICode(this.index + to_check.length))))
       ) {
         this.index += tc_len;
-        let arg = this.gobbleToken();
+        let arg = this.gobbleToken(); // produces object
         // { '-': t, '!': t, '~': t, '+': t };
         // skip + for unary operator
-        if (to_check === '-') arg = -arg;
-        else if (to_check === '!') arg = !arg;
-        else if (to_check === '~') arg = ~arg;
-        return arg;
+        if (to_check === '-') arg.value = -arg.value;
+        else if (to_check === '!') arg.value = !arg.value;
+        else if (to_check === '~') arg.value = ~arg.value;
+        return arg; // return arg;
       }
       to_check = to_check.substr(0, --tc_len);
     }
-
-    return this.gobbleIdentifier();
+    return this.gobbleParts();
   }
 
   // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
@@ -351,12 +350,12 @@ class ScriptTokenizer {
     while (isDecimalDigit(this.exprICode(this.index))) {
       number += this.exprI(this.index++);
     }
-
     if (this.exprICode(this.index) === PERIOD_CODE) {
       // can start with a decimal marker
       number += this.exprI(this.index++);
 
       while (isDecimalDigit(this.exprICode(this.index))) {
+        if (DBG_SHOW) this.showCursor();
         number += this.exprI(this.index++);
       }
     }
@@ -395,7 +394,7 @@ class ScriptTokenizer {
       this.throwError(`Unexpected period at ${this.index}`);
     }
 
-    return parseFloat(number);
+    return { value: parseFloat(number) }; // was: return parseFloat(number);
   }
 
   // Parses a string literal, staring with single or double quotes with basic support for escape codes
@@ -443,7 +442,7 @@ class ScriptTokenizer {
 
     if (!closed)
       this.throwError(`Unclosed quote after "${str}" at ${this.index}`);
-    return str;
+    return { string: str }; // was: return str;
   }
   // Gobbles only identifiers
   // e.g.: `foo`, `value`, `$x1`
@@ -471,111 +470,50 @@ class ScriptTokenizer {
     identifier = this.line.slice(start, this.index);
 
     if (Object.prototype.hasOwnProperty.call(literals, identifier)) {
-      return literals[identifier];
+      return { identifier: literals[identifier] }; // was: return literals[identifier];
     }
-    return identifier;
+
+    //
+    return { identifier }; // was: return identifier;
   }
-  // Gobbles a list of arguments within the context of a function call
-  // or array literal. This function also assumes that the opening character
-  // `(` or `[` has already been gobbled, and gobbles expressions and commas
-  // until the terminator character `)` or `]` is encountered.
-  // e.g. `foo(bar, baz)`, `my_func()`, or `[bar, baz]`
-  gobbleArguments(termination) {
-    let ch_i;
-    let args = [];
-    let node;
-    let closed = false;
-    let separator_count = 0;
-    while (this.index < this.length) {
-      this.gobbleSpaces();
-      ch_i = this.exprICode(this.index);
-      if (ch_i === termination) {
-        // done parsing
-        closed = true;
-        this.index++;
-        if (
-          termination === CPAREN_CODE &&
-          separator_count &&
-          separator_count >= args.length
-        ) {
-          this.throwError(
-            `Unexpected token ${String.fromCharCode(termination)} at ${
-              this.index
-            }`
-          );
-        }
-        break;
-      } else if (ch_i === COMMA_CODE) {
-        // between expressions
-        this.index++;
-        separator_count++;
-        if (separator_count !== args.length) {
-          // missing argument
-          if (termination === CPAREN_CODE) {
-            this.throwError(`Unexpected token at ${this.index}`);
-          } else if (termination === CBRACK_CODE) {
-            for (let arg = args.length; arg < separator_count; arg++) {
-              args.push(null);
-            }
-          }
-        }
-      } else {
-        node = this.gobbleToken();
-        if (!node) {
-          this.throwError(`Expected comma at ${this.index}`);
-        }
-        args.push(node);
-      }
-    }
-    if (!closed) {
-      this.throwError(
-        `Expected ${String.fromCharCode(termination)} at ${this.index}`
-      );
-    }
-    return args;
-  }
+
   // Gobble a non-literal variable name. This variable name may include properties
   // e.g. `foo`, `bar.baz`, `foo['bar'].baz`
   // It also gobbles function calls:
   // e.g. `Math.acos(obj.angle)`
-  gobbleVariable() {
+  gobbleParts() {
     let ch_i;
-    let node;
+    let node = []; // let node;
     ch_i = this.exprICode(this.index);
     if (ch_i === OPAREN_CODE) {
       // is group ( expression )?
-      node = this.gobbleGroup();
+      node.push(this.gobbleGroup()); // node = this.gobbleGroup();
     } else {
-      node = this.gobbleIdentifier(); // otherwise it's an identifier
+      node.push(this.gobbleIdentifier()); // node = this.gobbleIdentifier(); // otherwise it's an identifier
     }
     // note: check for subsequent identifier variations
     // note: identifier check for dot property, array
     this.gobbleSpaces();
+
     ch_i = this.exprICode(this.index);
-    // this all gets skipped if it's not dot, array, call, or group
-    while (ch_i === PERIOD_CODE || ch_i === OBRACK_CODE || ch_i === OPAREN_CODE) {
+    // allow dotted variables. removed checks for OPAREN_CODE and OBRACK_CODE
+    while (ch_i === PERIOD_CODE) {
       this.index++;
+      if (DBG_SHOW) this.showCursor();
+      // handle conversion of initial identifier object into string
+      node[0] = node[0].identifier ? node[0].identifier : node[0];
       if (ch_i === PERIOD_CODE) {
-        // dot property
-        this.gobbleSpaces();
-        node = this.gobbleIdentifier();
-      } else if (ch_i === OBRACK_CODE) {
-        // array gobble
-        node = this.gobbleToken();
-        this.gobbleSpaces();
-        ch_i = this.exprICode(this.index);
-        if (ch_i !== CBRACK_CODE) {
-          this.throwError(`Unclosed [ at ${this.index}`);
-        }
-        this.index++;
-      } else if (ch_i === OPAREN_CODE) {
-        // A function call is being made; gobble all the arguments
-        node = this.gobbleArguments(CPAREN_CODE);
+        // dot propertties
+        // node += '.';
+        const part = this.gobbleIdentifier();
+        node.push(part.identifier); // node += this.gobbleIdentifier();
       }
       this.gobbleSpaces();
       ch_i = this.exprICode(this.index);
     }
-    return node;
+    // node is the collection of variable props (dotted)
+    if (node.length === 1) return { token: node[0].identifier };
+    return { objref: node }; // was: return node;
   }
 
   // Responsible for parsing a group of things within parentheses `()`
@@ -608,7 +546,7 @@ class ScriptTokenizer {
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
         this.index += 2;
         this.gobbleSpaces();
-        return `{{${str}}}`;
+        return { expr: str }; // was: return `{{${str}}}`;
       }
       str += String.fromCharCode(ch);
     }
@@ -621,7 +559,7 @@ class ScriptTokenizer {
   // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
   // implementor to know which one it is
   gobbleBlock() {
-    // when this is called from gobbleVariable, we're already pointing
+    // when this is called from gobbleParts, we're already pointing
     // at the second [ in <<
     let ch;
     let cch;
@@ -637,7 +575,7 @@ class ScriptTokenizer {
       if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
         this.index++;
         level--;
-        if (level === 0) return `[[${str}]]`;
+        if (level === 0) return { program: str }; // was: return `[[${str}]]`;
         str += ']]';
       } else if (ch === OBRACK_CODE && cch === OBRACK_CODE) {
         this.index++;
@@ -655,19 +593,12 @@ class ScriptTokenizer {
   // skip the first two // and output the entire rest of the line
   gobbleComment() {
     const eol = this.line.length;
-    const cstring = this.line.substring(2, eol).trim();
+    const comment = this.line.substring(2, eol).trim();
     this.index = eol;
-    return ['_comment', cstring]; // comment keyword
+
+    return [{ comment }]; // comments comment keyword
   }
   /* END OF HACK HACKS */
-
-  // Responsible for parsing Array literals `[1, 2, 3]`
-  // This function assumes that it needs to gobble the opening bracket
-  // and then tries to gobble the expressions as arguments.
-  gobbleArray() {
-    this.index++;
-    return this.gobbleArguments(CBRACK_CODE);
-  }
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////

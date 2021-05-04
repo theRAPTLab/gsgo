@@ -1,6 +1,10 @@
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+
+// HACK DATA LOADING
+import ProjectData from '../../data/project-data';
 
 import PanelChrome from './PanelChrome';
 
@@ -8,16 +12,21 @@ class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'Select Simulation',
-      models: [
-        // Dummy Data
-        { id: 'HASH1', label: 'Aquatic Ecosystems' },
-        { id: 'HASH2', label: 'Decomposition' },
-        { id: 'HASH3', label: 'Particles' },
-        { id: 'HASH4', label: 'Blue Group Aquatic' }
-      ]
+      title: 'Select Project',
+      models: []
+      // models: [
+      //   // Dummy Data
+      //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
+      //   { id: 'decomposition', label: 'Decomposition' },
+      //   { id: 'particles', label: 'Particles' },
+      //   { id: 'aquatic-blue', label: 'Blue Group Aquatic' }
+      // ]
     };
     this.onClick = this.onClick.bind(this);
+  }
+
+  componentDidMount() {
+    this.setState({ models: ProjectData.GetModels() });
   }
 
   onClick(modelId) {
@@ -25,7 +34,7 @@ class PanelSelectSimulation extends React.Component {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     const { onClick } = this.props;
-    onClick('select'); // Tell Login panel to show Panelselect
+    onClick(modelId); // Tell Login panel to show Panelselect
   }
 
   render() {
@@ -45,11 +54,7 @@ class PanelSelectSimulation extends React.Component {
             }}
           >
             <div className={classes.instructions}>
-              <p>
-                Select a simulation to work on:
-                <br />
-                (FAKE DATA -- Click any button to view the model)
-              </p>
+              <p>Select a project to work on:</p>
             </div>
             {models.map(m => (
               <button

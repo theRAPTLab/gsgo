@@ -21,6 +21,15 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'INIT',
     'READY'
   ],
+  GLOOP_STAGED: ['STAGED'], // GLOOP_LOAD completed, ready to load model
+  GLOOP_PRERUN: [
+    // GLOOP_STAGED completed, monitor inputs before run
+    `INPUTS`,
+    'PHYSICS', // force phyiscs update for size updates?  REVIEW: Not sure hti si sthe right thing to do
+    `VIS_UPDATE`,
+    'UI_UPDATE',
+    'VIS_RENDER'
+  ],
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state
@@ -46,6 +55,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'SIM_EVAL',
     'REFEREE_EVAL',
     // display output
+    'UI_UPDATE',
     'VIS_UPDATE',
     'VIS_RENDER'
   ]

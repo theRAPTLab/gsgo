@@ -160,7 +160,7 @@ const scopedMethod = (methodName: string, ...args: any[]): TOpcode => {
     // call the method, which is also a stackmachine program
     // the results of the method, if any, are returned as a stack
     // so we need to push this onto the existing stack
-    const RSTACK: TStackable = SOBJ.method(methodName)(...args);
+    const RSTACK: TStackable = SOBJ.getMethod(methodName)(...args);
     // push elements returned from scoped call onto our stack
     stack.push(RSTACK);
   };

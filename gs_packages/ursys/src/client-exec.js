@@ -10,11 +10,16 @@
 /**
  * @module URExec
  */
+
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const URSession = require('./client-session');
-const URPhaseMachine = require('./class-phase-machine');
-const PR = require('./util/prompts').makeStyleFormatter('SYSTEM', 'TagBlue');
+const NETINFO = require('./client-netinfo');
+const PhaseMachine = require('./class-phase-machine');
+const PROMPTS = require('./util/prompts');
+
+const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
+const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
+const RPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR3');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,9 +38,10 @@ const PHASES = {
     'TEST_LOCAL' // run local tests that don't require network calls
   ],
   PHASE_CONNECT: [
-    'NET_CONNECT', // initiate connection
-    'NET_REGISTER', // initiate registration
-    'NET_READY', // the network is stable
+    'NET_CONNECT', // initiate connection to URNET message broker
+    'NET_PROTOCOLS', // retrieve initial list of service protocols
+    'NET_DEVICES', // retrieve initial list of accessible devices
+    'NET_READY', // the network is stable with initial services
     'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
@@ -73,14 +79,13 @@ const PHASES = {
 
 /// PHASER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let PHASE_MACHINE = new URPhaseMachine('UR', PHASES, '');
-const { executePhase, execute } = PHASE_MACHINE;
+let PHASE_MACHINE = new PhaseMachine('UR', PHASES, '');
+const { executePhase, execute, consolePhaseInfo } = PHASE_MACHINE;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** UTILITY: check options passed to SystemBoot, etc
- */
-function m_CheckOptions(options) {
-  const { autoRun, netProps, ...other } = options;
+/** UTILITY: check options passed to SystemAppConfig */
+function m_CheckConfigOptions(cfgOpt) {
+  const { autoRun, ...other } = cfgOpt;
   const unknown = Object.keys(other);
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
@@ -94,38 +99,40 @@ function m_CheckOptions(options) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle state engine, connecting to the network
  */
-async function SystemBoot(options = {}) {
+async function SystemNetBoot() {
   //
-  if (DBG) console.groupCollapsed('** URSYS: Boot');
-  else console.log(...PR('EXEC PHASE_BOOT, PHASE_INIT, PHASE_CONNECT'));
-  //
-  m_CheckOptions(options);
-  URSession.InitializeNetProps(options.netProps);
-  //
+  if (DBG) console.groupCollapsed('EXEC: BOOT INIT CONNECT');
+  // APP INITIALIZATION
   await executePhase('PHASE_BOOT');
   await executePhase('PHASE_INIT');
-  await executePhase('PHASE_CONNECT');
+  // CONNECT TO URNET
+  const netInfo = await NETINFO.FetchNetInfo();
+  console.info(...NPR('URNET got connect info:', netInfo));
+  await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
   //
   if (DBG) console.groupEnd();
 }
 //// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** API: initialize, configure, and load data after SystemBoot
+/** API: initialize, configure, and load data after SystemNetBoot
  */
-async function SystemConfig(options = {}) {
+async function SystemAppConfig(options = {}) {
   //
-  if (DBG) console.groupCollapsed('** URSYS: Config');
-  else console.log(...PR('EXEC PHASE_LOAD, PHASE_CONFIG, PHASE_READY'));
+  if (DBG) console.groupCollapsed('EXEC: LOAD CONFIG READY');
+  m_CheckConfigOptions(options);
   //
+  console.log(...NPR('APP: EXECUTING [LOAD, CONFIG] PHASES'));
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
   //
+  console.log(...NPR('APP: EXECUTING [READY] PHASE'));
   await executePhase('PHASE_READY');
+
   //
   if (options.autoRun) {
     if (DBG) console.log(...PR('info - autoRun to next phase'));
-    if (DBG) console.groupEnd();
-    SystemRun(options);
+    SystemAppRun(options);
   }
+  if (DBG) console.groupEnd();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: start the lifecycle run engine. This code is a bit convoluted because
@@ -133,16 +140,16 @@ async function SystemConfig(options = {}) {
  *  to grow for each timer.
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function SystemRun(options = {}) {
+async function SystemAppRun(options = {}) {
   // PART 1 - SYSTEM RUN (part of PHASE_RUN group)
-  m_CheckOptions(options);
+  m_CheckConfigOptions(options);
   //
-  if (DBG) console.log(...PR('URSYS: STAGE START RUN'));
-  else console.log(...PR('EXEC APP_STAGE APP_START APP_RUN'));
+  if (DBG) console.groupCollapsed(...PR('EXEC: STAGE START RUN'));
+  console.log(...NPR('APP: EXECUTING [STAGE, START, RUN] PHASES'));
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  if (DBG) console.log(...PR('URSYS: PHASED STARTUP COMPLETE'));
+  console.log(...RPR('APP STARTED [RUN] PHASE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();
@@ -150,29 +157,29 @@ async function SystemRun(options = {}) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: something important application-wide has updated
  */
-async function SystemUpdate() {
+async function SystemAppUpdate() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
   await execute('APP_RESTAGE');
   //
   if (DBG) console.groupEnd();
-  SystemRun();
+  SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: force loop back to run
  */
-async function SystemRestage() {
+async function SystemAppRestage() {
   if (DBG) console.groupCollapsed('** URSYS: Restage');
   //
   await execute('APP_RESET');
   //
   if (DBG) console.groupEnd();
-  SystemRun();
+  SystemAppRun();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: end the lifecycle state engine
  */
-async function SystemUnload() {
+async function SystemAppUnload() {
   if (DBG) console.groupCollapsed('** URSYS: Unload');
   //
   await executePhase('PHASE_UNLOAD');
@@ -182,22 +189,29 @@ async function SystemUnload() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** API: restart the lifecycle from boot
  */
-async function SystemReboot() {
+async function SystemNetReboot() {
   if (DBG) console.groupCollapsed('** URSYS: Reboot');
   //
   await executePhase('PHASE_REBOOT');
   //
   if (DBG) console.groupEnd();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** UTILITY: console print phase info for phase machine
+ */
+function ConsolePhaseInfo(prompt) {
+  consolePhaseInfo(prompt);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  SystemBoot,
-  SystemConfig,
-  SystemRun,
-  SystemUpdate,
-  SystemRestage,
-  SystemUnload,
-  SystemReboot
+  SystemNetBoot,
+  SystemAppConfig,
+  SystemAppRun,
+  SystemAppUpdate,
+  SystemAppRestage,
+  SystemAppUnload,
+  SystemNetReboot,
+  ConsolePhaseInfo
 };

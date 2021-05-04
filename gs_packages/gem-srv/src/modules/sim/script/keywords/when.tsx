@@ -5,15 +5,14 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
-import SM_Message from 'lib/class-sm-message';
-
+import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
+import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 import {
-  RegisterKeyword,
-  SingleAgentFilter,
-  PairAgentFilter
-} from 'modules/datacore';
+  RegisterSingleInteraction,
+  RegisterPairInteraction,
+  GetInteractionResults
+} from 'modules/datacore/dc-interactions';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -37,37 +36,43 @@ export class when extends Keyword {
     const prog = [];
     if (unit.length < 4 || unit.length > 5) {
       prog.push(this.errLine('when: invalid number of args', idx));
+      console.warn('error parsing when units <4 >5', unit);
     } else if (unit.length === 4) {
-      const [kw, A, testName, consq] = unit;
+      /** SINGLE AGENT WHEN TEST *********************************************/
+      const [kw, A, testName, ...args] = unit;
+      const consq = args.pop();
+      const key = RegisterSingleInteraction([A, testName, ...args]);
       // return a function that will do all the things
       prog.push((agent, state) => {
-        const [passed] = SingleAgentFilter(A, testName);
-        passed.forEach(sub => {
-          // HACK: workaround queues not remembering context in messages
-          // problem is that this executes during global condition,
-          // not during AGENT_UPDATE
-          // sub.queueUpdateMessage(new SM_Message('QUEUE', { actions: consq }))
-          sub.exec(consq, [], { [A]: sub });
+        const passed = GetInteractionResults(key);
+        passed.forEach(subject => {
+          const ctx = { [A]: subject };
+          agent.exec(consq, ctx);
         });
-        // console.log(`single test '${testName}' passed '${A}'`);
       });
     } else if (unit.length === 5) {
-      // PAIR TYPE
-      const [kw, A, testName, B, consq] = unit;
+      /** PAIRED AGENTS WHEN TEST ********************************************/
+      const [kw, A, testName, B, ...args] = unit;
+      const consq = args.pop();
+      const key = RegisterPairInteraction([A, testName, B, ...args]);
       prog.push((agent, state) => {
-        const [passed] = PairAgentFilter(A, B, testName);
+        const passed = GetInteractionResults(key);
         passed.forEach(pairs => {
           const [aa, bb] = pairs;
-          // HACK: workaround queues not remembering context in messages
-          // problem is that this executes during global condition,
-          // not during AGENT_UPDATE
-          // aa.queueUpdateMessage(
-          //   new SM_Message('QUEUE', { actions: consq, context: bb })
-          // );
-          aa.exec(consq, { [A]: aa, [B]: bb });
-          bb.exec(consq, { [A]: aa, [B]: bb });
+
+          // PROPOSED FIX
+          // Extra Test: Only run if the passed agents [aa, bb] includes the
+          // current agent.  The when conditional will pass as true if ANY
+          // agent passes.  So even though the current agent may not pass the
+          // test, code is still run for the current agent, using the context
+          // of the pair that DID patch the test.
+          if (aa.id !== agent.id && bb.id !== agent.id) {
+            return;
+          }
+
+          const ctx = { [A]: aa, [B]: bb };
+          agent.exec(consq, ctx);
         }); // foreach
-        // console.log(`pair test ${testName} passed '${A}', '${B}'`);
       });
     }
     return prog;

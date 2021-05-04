@@ -174,3 +174,47 @@ app_srv/
 ```
 
 You can see that the `tsconfig.json` files is defining both `compilerOptions` for path aliases (the `path` property) and `include` for which files that will be processed by Typescript. It is this latter setting that matters for ESLint. The `compilerOptions` one is used by webpack when it invokes its typescript loader (maybe...I haven't confirmed this). 
+
+### Multi-root Workspaces
+
+If you have two roots in your workspace, say `gem-srv` and `ursys`, then the `vscode-eslint` extension may only correctly lint ONE of the open roots. If you have aliases defined in your `tsconfig` only one set will be recognized.
+
+The workaround is to add a workspace setting in the folder `.vscode/settings.json` file. The contents should look something like this:
+
+```
+ {
+  "editor.renderWhitespace": "all",
+  "editor.wordWrap": "off",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "[markdown]": {
+    "editor.formatOnSave": false,
+    "editor.wordWrap": "on"
+  },
+  "[javascriptreact]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "typescript.suggest.completeJSDocs": false,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
+  "search.exclude": {
+    "node_modules": true,
+    "/server": true,
+    "/client": true,
+    "package-lock.json": true
+  }
+}
+```
+
+The critical entry is  `eslint.workingDirectories` , and I think every multiroot home has to have that setting, otherwise if eslint loads a root that doesn't have that setting the feature will be turned off. I believe this tells Eslint when run as an editor linter (note this is a different linter than what webpack is using at compile time, which uses it's on config) where to look for its working files. In this case, we need to make sure that `tsconfig.json` is found, because that is where our **module aliases** are defined.
+
+Note that in our ESLINT setup, it's been set to use the Typescript Parser, which is why finding the `tsconfig` file is so critical.

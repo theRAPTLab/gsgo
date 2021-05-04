@@ -6,9 +6,14 @@
 import UR from '@gemstep/ursys/client';
 import debounce from 'debounce';
 import * as PIXI from 'pixi.js';
-import Visual, { MakeDraggable } from 'lib/class-visual';
+import Visual, {
+  MakeDraggable,
+  MakeHoverable,
+  MakeSelectable
+} from 'lib/class-visual';
 import SyncMap from 'lib/class-syncmap';
 import { SetModelRP, SetTrackerRP, SetAnnotRP } from 'modules/datacore/dc-render';
+import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,6 +34,7 @@ let SETTINGS = {};
 
 /// MODULE METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PIXI_DIV > PIXI_APP . stage > Root > Boundary
 function Init(element) {
   // if PIXI_APP already exists, maybe we just need to reattach the canvas
   if (PIXI_APP) {
@@ -43,7 +49,12 @@ function Init(element) {
   // Initialize PIXI APP
   if (!element) throw Error('received null element for Renderer.Init()');
   PIXI.utils.skipHello();
-  PIXI_APP = new PIXI.Application({ width: 512, height: 512 });
+  const size = 512;
+  PIXI_APP = new PIXI.Application({
+    width: size,
+    height: size,
+    backgroundColor: 0x222222
+  });
   // CSS styling
   document.body.style.margin = '0px';
   PIXI_DIV = element;
@@ -67,6 +78,7 @@ function Init(element) {
   PIXI_APP.stage.addChild(root);
   // save
   CONTAINERS.Root = root;
+  RescaleToFit(size);
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // map model display objects to sprites
@@ -78,15 +90,58 @@ function Init(element) {
   RP_DOBJ_TO_VOBJ.setMapFunctions({
     onAdd: (dobj, vobj) => {
       // copy parameters
+      // zIndex needs to be set before updateTransform is called
+      vobj.setZIndex(dobj.zIndex);
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
+      vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
-      // add drag-and-drop handlers
-      if (dobj.mode === 1 && SETTINGS.actable) MakeDraggable(vobj);
+      vobj.setScale(dobj.scale, dobj.scaleY);
+      // has to be called after setTexture and
+      // setScale so font placement can be calculated relative to scale
+      if (dobj.text !== undefined) vobj.setText(dobj.text);
+      if (dobj.meter)
+        vobj.setMeter(
+          dobj.meter,
+          dobj.meterClr,
+          dobj.flags & FLAGS.SELECTION.LARGEMETER
+        );
+
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
+      vobj.applyFilters();
+
+      // Old Approach: Only enable drag and hover if controlMode is puppet (1)
+      // But this doesn't work for two reasons:
+      // 1. Input controlled agents (controlMode 3) need to be hoverable and selectable
+      // 2. Selection needs to be handled by draggable so we can distinguish between
+      //    drags and selections.
+      // if (dobj.mode === 1 && SETTINGS.actable) {
+
+      // New Approach: Make everything Draggable and Hoverable regardless of controlMode
+      // draggable will take care of testing whether it is allowed to override
+      // based on controlMode
+      if (SETTINGS.actable) {
+        // add drag-and-drop and selection handlers
+        MakeDraggable(vobj);
+        // add hover handler
+        MakeHoverable(vobj);
+        // selection is handled by drag
+        // MakeSelectable(vobj);
+      }
+
       // add to scene
       vobj.add(CONTAINERS.Root);
     },
     onUpdate: (dobj, vobj) => {
+      // zIndex needs to be set before updateTransform is called
+      vobj.setZIndex(dobj.zIndex);
       if (!vobj.isDragging) vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.dragging) {
         vobj.sprite.tint = 0xffffff;
@@ -95,8 +150,31 @@ function Init(element) {
         vobj.sprite.tint = 0xff0000;
         vobj.sprite.alpha = 0.5;
       }
+
       // inefficient texture update
+      vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
+      vobj.setScale(dobj.scale, dobj.scaleY);
+      // has to be called after setTexture and
+      // setScale so font placement can be calculated relative to scale
+      if (dobj.text !== undefined) vobj.setText(dobj.text);
+      if (dobj.meter)
+        vobj.setMeter(
+          dobj.meter,
+          dobj.meterClr,
+          dobj.flags & FLAGS.SELECTION.LARGEMETER
+        );
+      else vobj.removeMeter();
+
+      // Set selection state from flags.
+      // This needs to be set before the setTexture call
+      // because they are added/removed on the vobj with setTexture
+      vobj.setSelected(dobj.flags & FLAGS.SELECTION.SELECTED);
+      vobj.setHovered(dobj.flags & FLAGS.SELECTION.HOVERED);
+      vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
+      vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
+      vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
+      vobj.applyFilters();
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
@@ -166,6 +244,32 @@ function HookResize(element) {
   );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Rescales Root to fit in PIXI_DIV
+function RescaleToFit(width, height = width) {
+  const pad = 20; // add padding so you can see the edges
+  const scaleFactor = Math.min(
+    PIXI_DIV.offsetWidth / (width + pad),
+    PIXI_DIV.offsetHeight / (height + pad)
+  );
+  CONTAINERS.Root.scale.set(scaleFactor);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function SetBoundary(width, height, bgcolor = 0x000000) {
+  // Stage
+  let boundaryRect = CONTAINERS.Boundary;
+  if (!boundaryRect) {
+    boundaryRect = new PIXI.Graphics();
+    boundaryRect.zIndex = -1000;
+    CONTAINERS.Boundary = boundaryRect;
+    CONTAINERS.Root.addChild(boundaryRect);
+  }
+  boundaryRect.beginFill(bgcolor);
+  boundaryRect.drawRect(-width / 2, -height / 2, width, height);
+  boundaryRect.endFill();
+
+  RescaleToFit(width, height);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function SetGlobalConfig(opt) {
   const { actable } = opt;
   SETTINGS.actable = actable || false; // default non-interative
@@ -194,6 +298,16 @@ function GetDisplayList() {
   return RP_DOBJ_TO_VOBJ.getMappedObjects(); // array of display objects
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ReportMemory(frametime) {
+  if (frametime % 300) {
+    const baseTexturesCount = Object.keys(PIXI.utils.BaseTextureCache).length;
+    const textureCount = Object.keys(PIXI.utils.TextureCache).length;
+    console.log('baseTextures textures:', baseTexturesCount, textureCount);
+    // console.log('baseTextures', Object.keys(PIXI.utils.TextureCache));
+    // console.log('ProgramCache', PIXI.utils.ProgramCache);
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let renderFrames = 0;
 function Render() {
   if (!RP_DOBJ_TO_VOBJ) return;
@@ -210,9 +324,11 @@ export {
   SetGlobalConfig,
   Init,
   HookResize,
+  SetBoundary,
   UpdateDisplayList,
   UpdatePTrackList,
   UpdateAnnotationList,
   GetDisplayList,
+  ReportMemory,
   Render
 };

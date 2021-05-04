@@ -106,6 +106,9 @@ class PhaseMachine {
     this.executePhaseParallel = this.executePhaseParallel.bind(this);
     this.getHookFunctions = this.getHookFunctions.bind(this);
     this.getPhaseFunctionsAsMap = this.getPhaseFunctionsAsMap.bind(this);
+    this.consolePhaseInfo = this.consolePhaseInfo.bind(this);
+    this.currentPhase = '<none>'; // phase group
+    this.currentOp = '<none>'; // phase op
     // save instance by name
     m_machines.set(shortName, this);
     if (DBG.init) console.log(...PR(`phasemachine '${shortName}' saved`));
@@ -150,7 +153,7 @@ class PhaseMachine {
     if (!this.OP_HOOKS.has(op)) throw Error(`${op} is not a recognized EXEC op`);
     if (op.startsWith('PHASE_') && DBG.phases)
       console.log(`warning:${op} phase group executed as single op`);
-
+    this.currentOp = op;
     // check that there are promises to execute
     let hooks = this.OP_HOOKS.get(op);
     if (hooks.length === 0) {
@@ -185,7 +188,7 @@ class PhaseMachine {
         return values;
       })
       .catch(err => {
-        if (DBG.ops) console.log(...PR(`[${op}]: ${err}`));
+        console.log(...PR(`[${op}]: ${err}`));
         throw Error(`[${op}]: ${err}`);
       });
   }
@@ -196,6 +199,7 @@ class PhaseMachine {
    */
   executePhase(phaseName, ...args) {
     if (DBG.phases) console.log(...PR(`executePhase('${phaseName}')`));
+    this.currentPhase = phaseName;
     const ops = this.PHASES[phaseName];
     if (ops === undefined)
       throw Error(`Phase "${phaseName}" doesn't exist in ${this.NAME}`);
@@ -224,7 +228,7 @@ class PhaseMachine {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** UTILITY: Return hooks array for a given operation. Useful when
    *  using closures to create an optimal execution function as in
-   *  client-exec SystemRun()
+   *  client-exec SystemAppRun()
    */
   getHookFunctions(op) {
     if (DBG.ops) console.log(...PR(`getting hook for '${op}'`));
@@ -248,6 +252,16 @@ class PhaseMachine {
     });
     return map;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** UTILITY: print current phase information to console
+   */
+  consolePhaseInfo(pr = 'PhaseInfo') {
+    console.log(
+      `%c${pr}%c ${this.NAME}/${this.currentPhase}:${this.currentOp}`,
+      'color:#fff;background-color:MediumVioletRed;padding:3px 10px;border-radius:10px;',
+      'color:auto;background-color:auto'
+    );
+  }
 }
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
@@ -255,7 +269,7 @@ class PhaseMachine {
 /** Queue hook requests even if machine isn't already defined.
  *  This routine can be used as the standard hook method for UR clients.
  */
-PhaseMachine.QueueHookFor = (phaseSel, f) => {
+PhaseMachine.Hook = (phaseSel, f) => {
   if (typeof phaseSel !== 'string')
     throw Error('arg1 must be phase selector like MACHINE/PHASE');
   if (typeof f !== 'function' && f !== undefined)

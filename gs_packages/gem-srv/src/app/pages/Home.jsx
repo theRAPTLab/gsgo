@@ -14,8 +14,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('HOME', 'TagBlue');
-const HCON = UR.HTMLConsoleUtil('console-left');
+const PR = UR.PrefixUtil('HOME');
 
 /// UI HELPERS ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,7 +22,10 @@ const HCON = UR.HTMLConsoleUtil('console-left');
 const NavItem = props => {
   const { route, children } = props;
   const disabled = route.charAt(0) === '-';
-  const linkName = `${route.toUpperCase()}`;
+  const qq = route.indexOf('?');
+  let linkName;
+  if (qq > 0) linkName = `${route.toUpperCase().substring(0, qq)}`;
+  else linkName = `${route.toUpperCase()}`;
   const style = {
     fontSize: '150%',
     fontWeight: 'bold',
@@ -51,6 +53,8 @@ const NavItem = props => {
 class Home extends React.Component {
   componentDidMount() {
     document.title = 'GEMSTEP';
+    // start URSYS
+    UR.SystemAppConfig({ autoRun: true });
   }
 
   componentWillUnmount() {
@@ -62,28 +66,25 @@ class Home extends React.Component {
     return (
       <div className={classes.root}>
         <div id="console-top" className={clsx(classes.cell, classes.top)}>
-          <span style={{ fontSize: '32px' }}>INDEX</span>
+          <span style={{ fontSize: '32px' }}>INDEX</span> {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
-          <b className={classes.title}>Available Routes</b>
+          <b className={classes.title}>Demo Routes</b>
           <ul className={classes.list}>
-            <NavItem route="compiler">script compiler tests</NavItem>
-            <NavItem route="tracker">display all entities in system</NavItem>
-            <NavItem route="login">login</NavItem>
-            <NavItem route="model">model</NavItem>
-            <NavItem route="missioncontrol">mission control</NavItem>
-            <NavItem route="scripteditor">script editor</NavItem>
-            <NavItem route="viewer">viewer</NavItem>
-            <NavItem route="faketrack">testbed for annotation input</NavItem>
+            <NavItem route="login?model=aquatic">login</NavItem>
+            <NavItem route="model?model=aquatic">model</NavItem>
+            <NavItem route="missioncontrol?model=aquatic">
+              mission control
+            </NavItem>
+            <NavItem route="scripteditor?model=aquatic">script editor</NavItem>
+            <NavItem route="viewer?model=aquatic">viewer</NavItem>
+            <NavItem route="charcontrol">WIP character controller</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
-          <h2>Workshop Demo Dec 23, 2020</h2>
+          <h2>April Demo WIP</h2>
           <p>
-            This demo showed how scripting works, and is the first look at the
-            research team had. The user interfaces are to provide minimal support
-            for showing the multi-app operation, and are not intended to represent
-            the final design.{' '}
+            {' '}
             <b>
               For performance, open each app in its own browser window, NOT a tab.
             </b>
@@ -109,16 +110,29 @@ class Home extends React.Component {
               annotation app.
             </li>
             <li>
-              <a href="/app/faketrack">FAKETRACK</a> - Ported from earlier
-              versions of STEP. This currently does not affect the simulation.
+              <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
+              earlier versions FAKETRACK with the new device interface WIP.
             </li>
           </ol>
-          <p>
-            This prototype is very rough so many edge cases do not work. The
-            script language is also still in a primitive state and has some
-            showstopper bugs with WHEN conditions, but you can make simple changes
-            in the scripts.
-          </p>
+          <h4>DevTools</h4>
+          <ol>
+            <li>
+              <a href="/app/dev-tracker">TRACKER</a> - Test Device 'CharControl',
+              PTrack, and Renderer Module entities.
+            </li>
+            <li>
+              <a href="/app/dev-controller">CONTROLLER</a> - For device and
+              control systems testing.
+            </li>
+            <li>
+              <a href="/app/dev-tracker">FAKETRACK</a> - For PTrack protocol
+              testing. Non-devs should use Character Controller instead.
+            </li>
+            <li>
+              <a href="/app/dev-compiler">COMPILER</a> - ScriptText Compiler /
+              Simulator / Renderer Source
+            </li>
+          </ol>
         </div>
         <div id="console-right" className={clsx(classes.cell, classes.right)}>
           console-right
@@ -130,6 +144,14 @@ class Home extends React.Component {
     );
   }
 }
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HandleMessage('NET:GEM_HOMEAPP', data => {
+  console.log('NET:GEM_HOMEAPP got data', JSON.stringify(data));
+  data.reply = 'hi yourself';
+  return data;
+});
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -2,10 +2,13 @@
 
 implementation of keyword "randomPos" keyword object
 
+HACK: This is should not use Math.random() for generating random numbers in
+the simulation.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import { Keyword } from 'lib/class-keyword';
+import Keyword from 'lib/class-keyword';
 import { IScopeable, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 

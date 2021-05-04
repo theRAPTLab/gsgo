@@ -13,12 +13,12 @@ import PanelChrome from './PanelChrome';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('PanelSimViewer', 'TagBlue');
+const PR = UR.PrefixUtil('PanelSimViewer');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 const DBG = true;
 let ASSETS_LOADED = false;
 
-UR.SystemHook('UR/LOAD_ASSETS', () => {
+UR.HookPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {
@@ -34,7 +34,7 @@ UR.SystemHook('UR/LOAD_ASSETS', () => {
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateCount = 0;
-UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
+UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
   if (ASSETS_LOADED) {
     FCON.plot(
       `${updateCount++} NET:DISPLAY_LIST received ${
@@ -47,21 +47,23 @@ UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
   }
 });
 
-/// MESSAGER TEST HANDLER /////////////////////////////////////////////////////
+/// CLASS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('NET:HELLO', data => {
-  console.log('NET:HELLO processing', data);
-  return { str: 'tracker got you' };
-});
-
 class PanelSimViewer extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: 'SIM (Viewer)',
+      title: 'Virtual Stage (view-only)',
       color: '#33FF33',
-      bgcolor: 'rgba(0,256,0,0.1)'
+      bgcolor: 'rgba(0,256,0,0.1)',
+      width: 400,
+      height: 400
     };
+    this.setBoundary = this.setBoundary.bind(this);
+    this.requestBoundary = this.requestBoundary.bind(this);
+    this.handleSetBoundary = this.handleSetBoundary.bind(this);
+    // Sent by parent after it knows the Main Sim project has loaded
+    UR.HandleMessage('INIT_RENDERER', this.requestBoundary);
   }
 
   componentDidMount() {
@@ -69,10 +71,34 @@ class PanelSimViewer extends React.Component {
     RENDERER.SetGlobalConfig({ actable: false });
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
+    window.addEventListener('resize', this.setBoundary);
   }
 
-  componentWillUnmount() {
-    console.log('componentWillUnmount');
+  componentWillUnmount() {}
+
+  /**
+   * The simulation bounds is set by each project.  So it needs to be updated
+   * whenever a project loads.  It also needs to be updated when the window
+   * resizes.
+   */
+  setBoundary() {
+    const { width, height, bgcolor } = this.state;
+    RENDERER.SetBoundary(width, height, bgcolor);
+  }
+  requestBoundary() {
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetProjectBoundary'
+    }).then(this.handleSetBoundary);
+  }
+  handleSetBoundary(data) {
+    this.setState(
+      {
+        width: data.result.width,
+        height: data.result.height,
+        bgcolor: data.result.bgcolor
+      },
+      () => this.setBoundary()
+    );
   }
 
   render() {
@@ -86,7 +112,10 @@ class PanelSimViewer extends React.Component {
         bgcolor={bgcolor}
         onClick={onClick}
       >
-        <div id="root-renderer" style={{ color: bgcolor, height: '100%' }}>
+        <div
+          id="root-renderer"
+          style={{ color: bgcolor, width: '100%', height: '100%' }}
+        >
           Ho this is the sim!
         </div>
       </PanelChrome>

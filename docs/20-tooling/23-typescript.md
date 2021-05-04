@@ -16,3 +16,25 @@ There are a couple of uses I can think of:
 My recommendation at this time (June 25, 2020) is to **retain the typescript compiler** in our development environment so we have the option of using it, but not requiring it at all except perhaps in refactoring some of the critical URSYS libraries as a separate expense. This requires a different approach to development than we've been using, however: more structured, top-down design.  It demands a certain kind of thinking to do well.
 
 The practical payoff is minimal, I think. Runtime checks are already necessary for any dynamic data. , unit and integration testing is way more important. If we were working with a larger development team, I could see this being more useful but also much more expensive in terms of developer time and resources.
+
+### Continuing stupid issues with typescript
+
+when I'm in gsgo, it's fine, but when in gem-srv workspace, tsconfig will throw an error on the first open file, unable to find the configuration.
+
+Maybe the workaround is to use gsgo but hide the projects that are not in use in WORKSPACE SETTINGS. This seems to work correctly then. There might be a way to override the working directories using some kind of path setting in eslint [see here](https://github.com/microsoft/vscode-eslint/issues/722)
+
+```
+  "eslint.workingDirectories": [
+    { "directory": "front", "changeProcessCWD": true },
+    { "directory": "server", "changeProcessCWD": true }
+  ]
+```
+
+I'm not sure what's going on here.
+
+Multi-root also has issues with paths ot being resolved by vscode-eslint becuase it's not switching directories properly. 
+
+**Maybe I need to upgrade my version of eslint from 6.8 to latest 7.x**... there is a configuration change where it loads files relative to the first loaded configuration file, not the current working directory.  **Typescript 4.03 could be updated to latest 4.2.3** to see if it resolves some of these stupid path issues.
+
+Newer versions of Typescript no longer allow import of `d.ts` files. Instead these pure type classes have to be pecified in `compilerOptions.typeRoots` as [described here](
+

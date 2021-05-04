@@ -56,14 +56,14 @@ The simulation runs several agent-related PHASES in each simulation step. All ag
 
 **Property Objects** extend SM_Object to make use of the `value` get/set features, as the primary use for a property is to hold a value and manipulate it. They are stored in an Agent's `props` map and can be used as arguments on the SMC datastack or scopestack.
 
-Property Objects do not use any of the method or property features of SM_Object. However, each type of property has its own set of methods defined in the class itself. These direct methods manipulate the values, providing math and logical operations. Each method also returns another instance of the appropriate property class. For example, for a NumberProp n, executing `n.set(10).eq(10)` will return a BooleanProp with value = true.
+Property Objects do not use any of the method or property features of SM_Object. However, each type of property has its own set of methods defined in the class itself. These direct methods manipulate the values, providing math and logical operations. Each method also returns another instance of the appropriate property class. For example, for a GVarNumber n, executing `n.set(10).eq(10)` will return a GVarBoolean with value = true.
 
 Current property objects are:
 
-* `BooleanProp`
-* `NumberProp`
-* `StringProp`
-* `DictionaryProp`
+* `GVarBoolean`
+* `GVarNumber`
+* `GVarString`
+* `GVarDictionary`
 
 NOTE: These property methods are not currently used for calculations using SM_Programs, but might be useful for non-SMC functions (e.g. used in Features) They might not be useful after all.
 

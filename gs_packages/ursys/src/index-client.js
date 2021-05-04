@@ -7,18 +7,29 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EndPoint = require('./client-endpoint');
-const URNet = require('./client-urnet');
-const ClientExec = require('./client-exec');
+const NETWORK = require('./client-urnet');
+const DEVICES = require('./client-netdevices');
+const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
+const DATACORE = require('./client-datacore');
+const COMMON = require('./ur-common');
 
-const PR = PROMPTS.makeStyleFormatter('UR');
-const DBG = false;
-
-/// CLASSES ///////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// classes
 const PhaseMachine = require('./class-phase-machine');
+//
+const {
+  IsBrowser,
+  IsNode,
+  IsElectron,
+  IsElectronMain,
+  IsElectronRenderer
+} = COMMON;
+
+/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
+const DBG = false;
 
 /// META DATA /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,15 +45,23 @@ const META = {
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const EP_LOCAL = new EndPoint('ur-client');
-const EP_NET = new EndPoint('ur-sender');
 let URSYS_RUNNING = false;
 let URSYS_ROUTE = '';
+let LocalNode;
+let NetNode;
+
+/// SUPPORT API PART 1 ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** register messages */
+async function RegisterMessages() {
+  if (DBG) console.log(...PR('registering messages'));
+  return LocalNode.ursysRegisterMessages();
+}
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize modules that participate in UR EXEC PhaseMachine before running
- *  SystemBoot, which starts the URSYS lifecycle.
+ *  SystemNetBoot, which starts the URSYS lifecycle.
  */
 async function SystemStart(route) {
   if (URSYS_RUNNING) {
@@ -56,21 +75,28 @@ async function SystemStart(route) {
     return Promise.reject(out);
   }
   // autoconnect to URSYS network during NET_CONNECT
-  PhaseMachine.QueueHookFor(
-    'UR/NET_CONNECT',
-    () =>
-      new Promise((resolve, reject) =>
-        URNet.Connect(EP_NET, { success: resolve, failure: reject })
-      )
+  PhaseMachine.Hook('UR/NET_CONNECT', () =>
+    new Promise((resolve, reject) =>
+      NETWORK.URNET_Connect({ success: resolve, failure: reject })
+    ).then(data => {
+      console.log(...PR('URNET established. UADDR is stable.'));
+      const eps = DATACORE.GetSharedEndPoints();
+      LocalNode = eps.LocalNode; // used only for local handle, send, call
+      NetNode = eps.NetNode; // used only for forwarding remote messages
+      return data;
+    })
   );
   // autoregister messages
-  PhaseMachine.QueueHookFor('UR/APP_CONFIGURE', async () => {
-    let result = await EP_LOCAL.ursysRegisterMessages();
+  PhaseMachine.Hook('UR/APP_CONFIGURE', async () => {
+    let result = await RegisterMessages();
     if (DBG)
-      console.log(...PR('message handlers registered with URNET:', result));
+      console.log(...PR('message handlers registered with NETWORK:', result));
   });
+  // complete startup
   URSYS_RUNNING = true;
   URSYS_ROUTE = route;
+  DATACORE.SaveClientInfo({ uapp: URSYS_ROUTE });
+
   return Promise.resolve();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,39 +108,81 @@ async function SystemStop() {
     return Promise.resolve();
   }
   // close the network
-  await URNet.Close();
+  await NETWORK.URNET_Close();
   URSYS_RUNNING = false;
   return Promise.resolve();
+}
+
+/** wrap LocalNode functions so we can export them before LocalNode is valid */
+function DeclareMessage(mesgName, dataProps) {
+  return LocalNode.declareMessage(mesgName, dataProps);
+}
+function HasMessage(mesgName) {
+  return LocalNode.hasMessage(mesgName);
+}
+function HandleMessage(mesgName, listener) {
+  LocalNode.handleMessage(mesgName, listener);
+}
+function UnhandleMessage(mesgName, listener) {
+  LocalNode.unhandleMessage(mesgName, listener);
+}
+function CallMessage(mesgName, inData, options) {
+  return LocalNode.callMessage(mesgName, inData, options);
+}
+function RaiseMessage(mesgName, inData, options) {
+  LocalNode.raiseMessage(mesgName, inData, options);
+}
+function SendMessage(mesgName, inData, options) {
+  LocalNode.sendMessage(mesgName, inData, options);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
-  // FORWARDED PUB/SUB
-  RegisterMessage: EP_LOCAL.registerMessage,
-  UnregisterMessage: EP_LOCAL.unregisterMessage,
-  SendMessage: EP_LOCAL.sendMessage,
-  RaiseMessage: EP_LOCAL.raiseMessage,
-  CallMessage: EP_LOCAL.callMessage,
-  // FORWARDED GENERIC PHASE MACHINE
-  SystemHook: PhaseMachine.QueueHookFor,
+  // NETWORK MESSAGES
+  DeclareMessage,
+  HasMessage,
+  HandleMessage,
+  UnhandleMessage,
+  SendMessage,
+  RaiseMessage,
+  CallMessage,
+  // FORWARDED GENERIC PHASE MACHINEc
+  HookPhase: PhaseMachine.Hook,
+  // SYSTEM ENVIRONMENT
+  IsNode,
+  IsBrowser,
+  IsElectron,
+  IsElectronRenderer,
+  IsElectronMain,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
   // ROUTE INFO
-  IsRoute: route => URSYS_ROUTE === route,
-  ServerIP: URNet.ServerIP,
-  URNetPort: URNet.ServerPort,
-  WebServerPort: URNet.WebServerPort,
-  ConnectionString: URNet.ConnectionString,
-  // FORWARDED SYSTEM CONTROL VIA UREXEC
-  SystemBoot: ClientExec.SystemBoot,
-  SystemConfig: ClientExec.SystemConfig,
-  SystemRun: ClientExec.SystemRun,
-  SystemRestage: ClientExec.SystemRestage,
-  SystemReboot: ClientExec.SystemReboot,
-  SystemUnload: ClientExec.SystemUnload,
+  IsAppRoute: route => URSYS_ROUTE === route,
+  AppRoute: () => URSYS_ROUTE,
+  BrokerIP: NETWORK.ServerIP,
+  ServerPort: NETWORK.ServerPort,
+  WebServerPort: NETWORK.WebServerPort,
+  ConnectionString: DATACORE.ConnectionString,
+  NetInfoRoute: NETWORK.NetInfoRoute,
+  GetUAddressNumber: DATACORE.GetUAddressNumber,
+  // FORWARDED SYSTEM CONTROL API
+  SystemNetBoot: EXEC.SystemNetBoot,
+  SystemAppConfig: EXEC.SystemAppConfig,
+  SystemAppRun: EXEC.SystemAppRun,
+  SystemAppRestage: EXEC.SystemAppRestage,
+  SystemNetReboot: EXEC.SystemNetReboot,
+  SystemAppUnload: EXEC.SystemAppUnload,
+  ConsolePhaseInfo: EXEC.ConsolePhaseInfo,
+  // FORWARDED DEVICE API
+  GetDeviceDirectory: DEVICES.GetDeviceDirectory,
+  NewDevice: DEVICES.NewDevice,
+  RegisterDevice: DEVICES.RegisterDevice,
+  SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,
+  SendControlFrame: DEVICES.SendControlFrame,
+  LinkSubsToDevices: DEVICES.LinkSubsToDevices,
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,
@@ -123,9 +191,12 @@ const UR = {
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED CLASSES
   class: { PhaseMachine },
-  // FORWARDED DEBUG UTILITY
+  // FORWARDED CONSOLE DEBUG UTILITIES
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);
+  },
+  addConsoleToolHandlers: (ur = UR) => {
+    DBGTEST.addConsoleToolHandlers(ur);
   }
 };
 module.exports = UR;

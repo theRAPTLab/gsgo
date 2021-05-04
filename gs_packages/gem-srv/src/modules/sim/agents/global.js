@@ -6,12 +6,12 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Agent from 'lib/class-agent';
+import GAgent from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const WORLD = new Agent('WORLD');
-const REFEREE = new Agent('REFEREE');
+const WORLD = new GAgent('WorldAgent');
+const REFEREE = new GAgent('RefereeAgent');
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

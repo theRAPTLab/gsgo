@@ -16,9 +16,7 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 /// URSYS LIBRARIES ///////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
-import SETTINGS from 'config/app.settings';
 /// MATERIAL UI LIBRARIES /////////////////////////////////////////////////////
-import theme from 'modules/style/theme';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { create } from 'jss';
 import extend from 'jss-plugin-extend';
@@ -28,12 +26,16 @@ import {
   ThemeProvider
 } from '@material-ui/core/styles';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
+import SETTINGS from '../../../config/app.settings';
+import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
-const PR = UR.PrefixUtil('SYSTEM', 'TagBlue');
+const PR = UR.PrefixUtil('SYSTEM', 'TagSystem');
+const NPR = UR.PrefixUtil('URSYS ', 'TagUR');
+const AR = UR.PrefixUtil('URSYS ', 'TagUR3');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,11 +58,8 @@ function Init() {
     console.log(...PR('FYI: setting document.body.style.margin to 0'));
     // initialize URSYS synchronously
     (async () => {
-      const response = await fetch('/urnet/getinfo');
-      const netProps = await response.json();
       await UR.SystemStart(document.location.pathname);
-      // system boot runs BOOT,INIT,CONNECT phases
-      await UR.SystemBoot({ netProps });
+      await UR.SystemNetBoot();
       // start React
       ReactDOM.render(
         <StylesProvider jss={jss}>
@@ -73,7 +72,11 @@ function Init() {
         </StylesProvider>,
         document.getElementById('app-container'),
         () => {
+          // at this time, the shell should be completely renderered
+          // but componentDidMount() happens AFTER the first render
+          // to guarantees that the DOM is stable
           UR.addConsoleTools();
+          console.log(...AR('APP: <SystemShell> React+UR lifecycles starting'));
         }
       );
     })();
@@ -85,6 +88,12 @@ function Init() {
     document.location.reload();
   });
 }
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HookPhase('UR/NET_READY', () => {
+  /// console debugger message listeners
+  UR.addConsoleToolHandlers();
+});
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

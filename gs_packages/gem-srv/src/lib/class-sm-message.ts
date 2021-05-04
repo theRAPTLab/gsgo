@@ -1,3 +1,4 @@
+/* eslint-disable react/static-property-placement */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -5,7 +6,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IMessage, TSMCProgram } from './t-script';
+import { IMessage, TMethod, TSMCProgram } from './t-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -35,7 +36,9 @@ export default class SM_Message implements IMessage {
   channel?: string;
   message?: string;
   inputs?: any;
-  actions?: TSMCProgram[]; // array of array of topcodes!
+  actions?: TMethod[]; // array of array of topcodes!
+  context?: any;
+  conseq?: TMethod;
   data?: object;
   //
   constructor(msg: string, init: IMessage) {

@@ -17,11 +17,7 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
+  "eslint.workingDirectories": ["./", "../ursys"],
   "search.exclude": {
     "**/node_modules": true,
     "**/built": true,

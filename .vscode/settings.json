@@ -17,11 +17,7 @@
     "typescript",
     "typescriptreact"
   ],
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ],
+  "eslint.workingDirectories": [{ "pattern": "./gs_packages/*/" }],
   "search.exclude": {
     "**/node_modules": true,
     "**/.next": true,

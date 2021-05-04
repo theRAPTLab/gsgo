@@ -15,7 +15,7 @@ import './compiled-scss.css';
 
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.RegisterMessage('NET:DISPLAY_LIST', remoteList => {
+UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
   console.log('got displaylist', remoteList.length);
 });
 
@@ -35,7 +35,7 @@ class App extends React.Component {
 
   componentDidMount() {
     // required URSYS lifecycle startup
-    UR.SystemConfig({ autoRun: true }); // initialize renderer
+    UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     document.title = 'XGUI WIP';
   }
 

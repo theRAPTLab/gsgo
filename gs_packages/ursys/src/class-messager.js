@@ -7,16 +7,18 @@
     This is a low-level class used by other URSYS modules both by client
     browsers and nodejs.
 
+    NOTE: This module uses the COMMONJS module format for compatibility
+    between node and browser-side Javascript, though it is only used
+    on the client side
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
-// NOTE: This module uses the COMMONJS module format for compatibility
-// between node and browser-side Javascript.
 const NetPacket = require('./class-netpacket');
+const DBG = require('./ur-dbg-settings');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let MSGR_IDCOUNT = 0;
-let DBG = true;
 const PR = require('./util/prompts').makeStyleFormatter('MESSAGER', 'TagRed');
 
 /// URSYS HELPER METHODS //////////////////////////////////////////////////////
@@ -28,9 +30,12 @@ function m_DecodeMessage(msg) {
   const bits = msg.split(':');
   if (bits.length > 2) throw Error(`${PR} too many colons in message name`);
   if (bits.length < 2) {
-    return { channel: '', message: bits[0], toNet: false, toLocal: true };
+    const message = bits[0].toUpperCase();
+    return { channel: 'LOCAL', message, toNet: false, toLocal: true };
   }
-  const [channel, message] = bits;
+  // exactly two parts
+  const channel = bits[0].toUpperCase();
+  const message = bits[1].toUpperCase();
   const obj = {};
   // got this far, is valid message
   switch (channel) {
@@ -40,6 +45,7 @@ function m_DecodeMessage(msg) {
       obj.isNet = true;
       break;
     case 'LOCAL':
+    case '': // no channel = local call only
       obj.toNet = false;
       obj.toLocal = true;
       obj.isLocal = true;
@@ -47,13 +53,7 @@ function m_DecodeMessage(msg) {
     case '*': // both local and net
       obj.toNet = true;
       obj.toLocal = true;
-      obj.isLocal = true;
       obj.isNet = true;
-      break;
-    case '': // no channel = local call only
-      obj.toNet = false;
-      obj.toLocal = true;
-      obj.isLocal = true;
       break;
     default:
       throw Error(`${PR} unrecognized channel '${channel}'`);
@@ -61,6 +61,17 @@ function m_DecodeMessage(msg) {
   obj.channel = channel;
   obj.message = message;
   return obj;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// remember MESSAGER class is used for more than just Network Calls
+/// the state manager also uses it, so the resolved value may be of any type
+function m_MakeResolverFunction(handlerFunc, inData) {
+  return new Promise(resolve => {
+    let retval = handlerFunc(inData, {
+      /*control functions go here*/
+    });
+    resolve(retval);
+  });
 }
 
 /// URSYS MESSAGER CLASS //////////////////////////////////////////////////////
@@ -103,6 +114,7 @@ class Messager {
       handlerFunc.ulink_id = handlerUID;
     }
     // parse message to set flags
+    mesgName = mesgName.toUpperCase();
     const { isNet } = m_DecodeMessage(mesgName);
     handlerFunc.isNetFunc = isNet === true; // registering NET:
     let handlers = this.handlerMap.get(mesgName);
@@ -124,6 +136,7 @@ class Messager {
    *  @param {function} handlerFunc function originally registered
    */
   unregisterMessage(mesgName, handlerFunc) {
+    mesgName = mesgName.toUpperCase();
     if (!arguments.length) {
       this.handlerMap.clear();
     } else if (arguments.length === 1) {
@@ -152,6 +165,7 @@ class Messager {
    */
   sendMessage(mesgName, inData, options = {}) {
     let { srcUID, type, fromNet } = options;
+    mesgName = mesgName.toUpperCase();
     const handlers = this.handlerMap.get(mesgName);
     const { toLocal, toNet } = m_DecodeMessage(mesgName);
     /// toLocal ///
@@ -177,15 +191,16 @@ class Messager {
       pkt.socketSend();
       return;
     } // end toNetwork
-    console.log(
-      ...PR(
-        'unhandled message:',
-        `'${mesgName}' type:${options.type}`,
-        `toLocal:${toLocal} toNet:${toNet}`,
-        'handlerMap:',
-        this.handlerMap
-      )
-    );
+    if (DBG.handle)
+      console.log(
+        ...PR(
+          'unhandled message:',
+          `'${mesgName}' type:${options.type}`,
+          `toLocal:${toLocal} toNet:${toNet}`,
+          'handlerMap:',
+          this.handlerMap
+        )
+      );
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Send message to everyone, local and network, and also mirrors back to self.
@@ -195,6 +210,7 @@ class Messager {
    *  @param {Object} [options] see sendMessage() for option details
    */
   raiseMessage(mesgName, data, options = {}) {
+    mesgName = mesgName.toUpperCase();
     if (options.srcUID) {
       console.warn(
         `overriding srcUID ${options.srcUID} with NULL because raiseMessage() doesn't use it`
@@ -212,64 +228,48 @@ class Messager {
    *  @returns {Array} an array of Promises
    */
   async callMessage(mesgName, inData, options = {}) {
+    mesgName = mesgName.toUpperCase();
     let { srcUID, type } = options;
     let { fromNet = false } = options;
-    const { channel, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
+    const { channel, message, toLocal, toNet, isNet } = m_DecodeMessage(mesgName);
     const handlers = this.handlerMap.get(mesgName);
     let promises = [];
     /// handle a call from the network
-    if (toLocal) {
-      if (!channel.LOCAL && !fromNet)
-        throw Error(`'${mesgName}' for local calls remove channel prefix`);
+    if (toLocal || fromNet) {
+      console.log(
+        ...PR(
+          `incoming CallMessage: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
+        )
+      );
+      // initiated from app
+      // NOTE: THIS SEEMS SUSPICIOUS AND UNNECESSARY
+      // if (!channel.LOCAL && !fromNet)
+      //   throw Error(`'${mesgName}' for local calls remove channel prefix`);
       if (handlers) {
+        let count = 1;
         handlers.forEach(handlerFunc => {
+          console.log(...PR(count++, 'calling func'));
           /*/
           handlerFunc signature: (data,dataReturn) => {}
           handlerFunc has ulink_id property to note originating URCHAN object
           handlerFunc has fromNet property if it expects to receive network sourced calls
           /*/
           // skip calls that don't have their fromNet stat set if it's a net call
-          if (fromNet && !handlerFunc.isNetFunc) {
-            if (DBG)
-              console.warn(
-                `MessagerCall: [${mesgName}] skip netcall for handler uninterested in net`
-              );
-            return;
-          }
+          if (fromNet && !handlerFunc.isNetFunc) return;
           // skip "same origin" calls
-          if (srcUID && handlerFunc.ulink_id === srcUID) {
-            if (DBG)
-              console.warn(
-                `MessagerCall: [${mesgName}] skip call since origin = destination; use Signal() if intended`
-              );
-            return;
-          }
+          if (srcUID && handlerFunc.ulink_id === srcUID) return;
           // Create a promise. if handlerFunc returns a promise, it follows
-          let p = f_MakeResolverFunction(handlerFunc, inData);
+          let p = m_MakeResolverFunction(handlerFunc, inData);
           promises.push(p);
         }); // end foreach
       } else {
         // no handlers
-        promises.push(
-          Promise.resolve({ error: 'local message handler not found' })
-        );
+        promises.push(Promise.resolve({ error: 'message handler not found' }));
       }
     } // to local
 
-    // end if handlers
-    /// resolver function
-    /// remember MESSAGER class is used for more than just Network Calls
-    /// the state manager also uses it, so the resolved value may be of any type
-    function f_MakeResolverFunction(handlerFunc) {
-      return new Promise(resolve => {
-        let retval = handlerFunc(inData, {
-          /*control functions go here*/
-        });
-        resolve(retval);
-      });
-    }
-    /// toNetwork
-    if (toNet) {
+    /// toNetwork (initiated from app)
+    if (toNet && !fromNet) {
       if (!isNet) throw Error('net calls must use NET: message prefix');
       type = type || 'mcall';
       let pkt = new NetPacket(mesgName, inData, type);
@@ -277,8 +277,9 @@ class Messager {
       promises.push(p);
     } // end toNetwork
 
-    /// do the work
+    /// do the work calling multiple handlers
     let resArray = await Promise.all(promises);
+    // converts the array into an object that will be returned, with numbered properties
     let resObj = Object.assign({}, ...resArray);
     return resObj;
   }

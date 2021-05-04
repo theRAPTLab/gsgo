@@ -12,3 +12,6 @@
 import './features/feat-movement';
 import './features/feat-timer';
 import './features/feat-costume';
+import './features/feat-physics';
+import './features/feat-population';
+import './features/feat-touches';

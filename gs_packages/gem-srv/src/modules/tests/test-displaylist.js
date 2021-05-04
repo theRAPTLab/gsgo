@@ -18,7 +18,7 @@ import { UpdateDisplayList } from 'modules/render/api-render';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TEST = false;
-const PR = UR.PrefixUtil('TestDisplayList', 'TagBlue');
+const PR = UR.PrefixUtil('TestDisplayList', 'TagTest');
 
 /// CREATE POOLS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -219,9 +219,9 @@ function TestRender(frameTime) {
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (TEST) {
-  UR.SystemHook('SIM/INIT', TestInit);
-  UR.SystemHook('SIM/VIS_UPDATE', TestUpdateDisplayList);
-  UR.SystemHook('SIM/VIS_RENDER', TestRender);
+  UR.HookPhase('SIM/INIT', TestInit);
+  UR.HookPhase('SIM/VIS_UPDATE', TestUpdateDisplayList);
+  UR.HookPhase('SIM/VIS_RENDER', TestRender);
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
