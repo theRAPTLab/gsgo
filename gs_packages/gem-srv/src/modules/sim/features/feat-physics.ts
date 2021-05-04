@@ -14,6 +14,7 @@ import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
+import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetSpriteDimensions } from 'modules/datacore/dc-globals';
 
@@ -24,6 +25,74 @@ const DBG = false;
 
 const CIRCLE = 'circle';
 const RECTANGLE = 'rectangle';
+
+const PHYSICS_AGENTS = new Map();
+
+/// CLASS HELPERS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Returns agent if it exists.
+ * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
+ * PHYSICS_AGENTS
+ * @param agentId
+ */
+function m_getAgent(agentId): IAgent {
+  const a = GetAgentById(agentId);
+  if (!a) PHYSICS_AGENTS.delete(agentId);
+  return a;
+}
+
+/// PHYSICS LOOP ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Physics Update Loop -- Runs once per gameloop
+ * Sets physics body and agent scale based on an application of
+ * user-defined scale to user-defined width / height
+ */
+function m_update(frame) {
+  const agentIds = Array.from(PHYSICS_AGENTS.keys());
+  agentIds.forEach(agentId => {
+    const agent = m_getAgent(agentId);
+    if (!agent) {
+      // console.error('could not find', agentId, 'Probably removed?');
+      return;
+    }
+    // 1. Get Costume Defaults
+    const cw = agent.getFeatProp('Physics', 'costumeWidth').value;
+    const ch = agent.getFeatProp('Physics', 'costumeHeight').value;
+    //    Get User-Defined W/H Overrides (defaults to costume size if not set explicitly)
+    const w = agent.callFeatMethod('Physics', 'getWidth'); //  use featMethod
+    const h = agent.callFeatMethod('Physics', 'getHeight'); // because might be circle
+    //    Get Current Scale Overrides
+    const scale = agent.getFeatProp('Physics', 'scale').value;
+    const scaleY = agent.getFeatProp('Physics', 'scaleY').value || scale;
+
+    //    Calculate new size (apply scale to user-defined w/h)
+    let newW;
+    let newH;
+    if (scale) {
+      newW = scale * w; // apply scale on top of width overrides
+      newH = scaleY * h;
+    } else {
+      newW = w;
+      newH = h;
+    }
+
+    // 2. Update Physics Body
+    agent.getFeatProp('Physics', 'bodyWidth').setTo(newW);
+    agent.getFeatProp('Physics', 'bodyHeight').setTo(newH);
+
+    // 3. Update Agent Scale if necessary
+    const newScale = newW / cw;
+    const newScaleY = newH / ch;
+    if (newScale !== agent.scale || newScaleY !== agent.scaleY) {
+      agent.scale = newScale;
+      agent.scaleY = newScaleY;
+    }
+  });
+}
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,11 +107,13 @@ class PhysicsPack extends GFeature {
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
     this.featAddMethod('getBounds', this.getBounds);
-    this.featAddMethod('setScale', this.setScale);
     this.featAddMethod('init', this.init);
+
+    UR.HookPhase('SIM/PHYSICS', m_update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */
+  // initalize is not implemented and currently DOES NOT RUN!!!!
   initialize(simloop) {
     super.initialize(simloop);
     simloop.hook('INPUT', frame => console.log(frame));
@@ -55,20 +126,53 @@ class PhysicsPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     // add feature props here
-    this.featAddProp(agent, 'shape', new GVarString(CIRCLE));
+    this.featAddProp(agent, 'shape', new GVarString(CIRCLE)); // default to small round body
+
+    // Student-settable Script Setting
     let prop = new GVarNumber();
     prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'radius', prop);
     prop = new GVarNumber();
-    prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'width', prop); // in general, use getWidth
     prop = new GVarNumber();
-    prop.setMax(100);
     prop.setMin(0);
     this.featAddProp(agent, 'height', prop); // in general, use getHeight
+
+    // Private Costume Defaults
+    prop = new GVarNumber();
+    prop.setMin(0);
+    this.featAddProp(agent, 'costumeWidth', prop); // intended internal use only
+    prop = new GVarNumber();
+    prop.setMin(0);
+    this.featAddProp(agent, 'costumeHeight', prop); // intended for internal use only
+
+    // Private Physics Body
+    prop = new GVarNumber(1); // default to small round body
+    prop.setMax(100);
+    prop.setMin(0);
+    this.featAddProp(agent, 'bodyRadius', prop);
+    prop = new GVarNumber();
+    prop.setMin(0);
+    this.featAddProp(agent, 'bodyWidth', prop); // intended internal use only
+    prop = new GVarNumber();
+    prop.setMin(0);
+    this.featAddProp(agent, 'bodyHeight', prop); // intended for internal use only
+
     // shape = [ circle, rectangle ]
+    prop = new GVarNumber(1);
+    prop.setMax(100);
+    prop.setMin(0);
+    this.featAddProp(agent, 'scale', prop); // in general, set featProp directly rather than calling the method
+    // scale is absolute scale relative to the base size of the Costume
+    prop = new GVarNumber();
+    prop.setMax(100);
+    prop.setMin(0);
+    this.featAddProp(agent, 'scaleY', prop); // in general, set featProp directly rather than calling the method
+
+    // REGISTER the Agent for updates
+    PHYSICS_AGENTS.set(agent.id, agent.id);
   }
 
   /// PHYSICS METHODS /////////////////////////////////////////////////////////
@@ -77,78 +181,70 @@ class PhysicsPack extends GFeature {
    *  featCall Physics setRadius value
    */
   setShape(agent: IAgent, shape: string) {
-    agent.getFeatProp(this.name, 'shape').value = shape;
+    agent.getFeatProp(this.name, 'shape').setTo(shape);
   }
   /**
-   * Student should generally use setSize to set the size of agents.
-   * This will set the scale and the physics body boundary
-   * @param agent
-   * @param width
-   * @param height
+   * Convenience function for setting width/height variables.
+   * The actual application of the size happens during m_update.
+   * This is the same as calling `featProp Physics width setTo n`
+   * followed by `featProp Physics height setTo n`
    */
   setSize(agent: IAgent, width: number, height: number = width) {
-    if (!agent.hasFeature('Costume')) return; // no costume
-    const costumeName = agent.getProp('skin').value;
-    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
-    const { w, h } = GetSpriteDimensions(costumeName, frame);
-    // if width and height were undefined, default to same size as sprite
-    const newWidth = width || w;
-    const newHeight = height || h;
-    // set Physics body boundaries
-    this.setWidth(agent, newWidth);
-    this.setHeight(agent, newHeight);
-    // set agent visuals
-    const scaleX = newWidth / w;
-    const scaleY = newHeight / h;
-    agent.scale = scaleX;
-    agent.scaleY = scaleY;
+    this.setWidth(agent, width);
+    this.setHeight(agent, height);
   }
   setRadius(agent: IAgent, radius: number) {
-    agent.getFeatProp(this.name, 'radius').value = radius;
+    agent.getFeatProp(this.name, 'radius').setTo(radius);
   }
   /**
-   * NOTE: This only changes the physics body, not the agent visual
-   * @param agent
-   * @param num
+   * NOTE: This only saves a local value.  The physics body and agent visual
+   * are updated during m_update.
    */
   setWidth(agent: IAgent, num: number) {
-    agent.getFeatProp(this.name, 'width').value = num;
+    agent.getFeatProp(this.name, 'width').setTo(num);
   }
   /**
-   * NOTE: This only changes the physics body, not the agent visual
-   * @param agent
-   * @param num
+   * NOTE: This only saves a local value.  The physics body and agent visual
+   * are updated during m_update.
    */
   setHeight(agent: IAgent, num: number) {
-    agent.getFeatProp(this.name, 'height').value = num;
+    agent.getFeatProp(this.name, 'height').setTo(num);
+  }
+  getRadius(agent: IAgent): number {
+    return agent.getFeatProp(this.name, 'radius').value;
   }
   getWidth(agent: IAgent): number {
-    switch (agent.getFeatProp(this.name, 'shape').value) {
-      case RECTANGLE:
-        return agent.getFeatProp(this.name, 'width').value;
-      case CIRCLE:
-      default:
-        return agent.getFeatProp(this.name, 'radius').value;
-    }
+    return agent.getFeatProp(this.name, 'width').value;
   }
   getHeight(agent: IAgent): number {
+    return agent.getFeatProp(this.name, 'height').value;
+  }
+  getBodyWidth(agent: IAgent): number {
     switch (agent.getFeatProp(this.name, 'shape').value) {
       case RECTANGLE:
-        return agent.getFeatProp(this.name, 'height').value;
+        return agent.getFeatProp(this.name, 'bodyWidth').value;
       case CIRCLE:
       default:
-        return agent.getFeatProp(this.name, 'radius').value;
+        return agent.getFeatProp(this.name, 'bodyRadius').value * 2;
+    }
+  }
+  getBodyHeight(agent: IAgent): number {
+    switch (agent.getFeatProp(this.name, 'shape').value) {
+      case RECTANGLE:
+        return agent.getFeatProp(this.name, 'bodyHeight').value;
+      case CIRCLE:
+      default:
+        return agent.getFeatProp(this.name, 'bodyRadius').value * 2;
     }
   }
   /**
+   * Returns the Physics Body bounds, which is scale * width||height
    * Since sprites are centered, we adjust the x and y
-   * @param agent
-   * @returns
    */
   getBounds(agent: IAgent) {
     // console.log('getting bounds for', agent);
-    const w = this.getWidth(agent);
-    const h = this.getHeight(agent);
+    const w = this.getBodyWidth(agent);
+    const h = this.getBodyHeight(agent);
     return {
       x: agent.x - w / 2,
       y: agent.y - h / 2,
@@ -157,19 +253,18 @@ class PhysicsPack extends GFeature {
     };
   }
   /**
-   * Use this to scale in place of agent setScale so that
-   * physics body bounds are also set.  Scale is relative
-   * to the current size.  e.g. scale=2 is twice as big.
-   * Calling it twice in a row would make the object 4x as big.
-   * This should be run after init.
-   * @param agent
-   * @param scaleX
-   * @param scaleY
+   * Checks the currently set costume sprite for its size
+   * and saves the results in `costumeWidth` and `costumeHeigh`
+   * parameters for use in scaling.
    */
-  setScale(agent: IAgent, scaleX: number, scaleY: number = scaleX) {
-    const w = this.getWidth(agent);
-    const h = this.getHeight(agent);
-    this.setSize(agent, w * scaleX, h * scaleY);
+  readCostumeSize(agent: IAgent): { width: number; height: number } {
+    if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
+    const costumeName = agent.getProp('skin').value;
+    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
+    const { w, h } = GetSpriteDimensions(costumeName, frame);
+    agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
+    agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
+    return { width: w, height: h };
   }
   /**
    * Init
@@ -177,8 +272,9 @@ class PhysicsPack extends GFeature {
    * values based on the current Costume.
    */
   init(agent: IAgent) {
+    const dim = this.readCostumeSize(agent);
+    this.setSize(agent, dim.width, dim.height); // default to sprite size
     this.setShape(agent, RECTANGLE);
-    this.setSize(agent, undefined); // default to sprite size
   }
 }
 

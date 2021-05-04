@@ -35,6 +35,10 @@ useFeature Physics
 featCall Physics init
 featCall Physics setSize 90
 
+// set Touches
+useFeature Touches
+featCall Touches monitorTouchesWith Algae
+
 // show meter immediately
 exprPush {{ agent.getProp('energyLevel').value / 100 }}
 propPop meter
@@ -60,7 +64,7 @@ onEvent Start [[
     featCall Movement setMovementType 'edgeToEdge' 1 0 180
 
     exprPush {{ agent.getProp('startDirection').value }}
-    featPropPop agent.Movement.direction
+    featPropPop agent.Movement direction
 
     exprPush {{ agent.getProp('energyLevel').value / 100 }}
     propPop meter
@@ -92,6 +96,7 @@ when Fish touches Algae [[
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
+      prop Algae.text setTo 'xx'
     ]]
 
   ]]
@@ -149,11 +154,14 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 useFeature Physics
-featProp Physics.radius setTo 16
+featCall Physics init
+//featProp Physics.radius setTo 16
 
-// show initial level (otherwise level is not shown until run)
-//exprPush {{ agent.getProp('energyLevel').value }}
-//propPop text
+useFeature Touches
+featCall Touches monitorTouchesWith 'Fish'
+featCall Touches monitorTouchesWith 'Sunbeam'
+
+// This is so that the numbers don't suddenly change at start and confusing things
 prop text setTo '##'
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
@@ -165,10 +173,12 @@ onEvent Start [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 
-  //exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
   //propPop agent.scale
+  featPropPop agent.Physics scale
 
-  featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+
+  // featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 
@@ -178,11 +188,11 @@ when Algae touches Sunbeam [[
       featCall Algae.Costume setGlow 1
       exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
       propPop energyLevel
-  ]]
 
-  // update name
-  exprPush {{ agent.getProp('energyLevel').value }}
-  propPop text
+      // update name
+      exprPush {{ agent.getProp('energyLevel').value }}
+      propPop text
+  ]]
 ]]
 every 1 [[
   prop energyLevel sub 1
@@ -193,16 +203,15 @@ every 1 [[
 ]]
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
   prop text setTo 'xx'
+  prop agent.alpha setTo 0.3
   prop isInert setTo true
 ]]
 
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+//propPop agent.scale
+featPropPop agent.Physics scale
 
-]]
-
-every 0.5 [[
- // exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
- // propPop agent.scale
- featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
+//featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 `
@@ -220,11 +229,17 @@ addProp energyRate Number 5
 addProp direction Number 1
 
 useFeature Physics
-featCall Physics setShape 'rectangle'
-featCall Physics setSize 100 500
+featCall Physics init
+featProp Physics scale setTo 0.4
+featProp Physics scaleY setTo 2.5
+
+
+useFeature Touches
 
 prop agent.skin setTo 'lightbeam.json'
 prop agent.alpha setTo 0.5
+
+
 
 # PROGRAM INIT
 // default position for moving across the top
@@ -233,8 +248,6 @@ prop y setTo -180
 
 # PROGRAM EVENT
 onEvent Tick [[
-  // featPropPush Physics.radius
-  // dbgStack
   exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
   propPop x
 
@@ -275,50 +288,14 @@ prop meterClr setTo 65280
 # PROGRAM EVENT
 
 onEvent Tick [[
-  // count of agents by type
-  // featCall Population countAgents 'Algae'
-  // exprPush {{ agent.getFeatProp('Population', 'count').value }}
-  // propPop text
 
-  // count, sum, avg of agent property
-  // featCall Population countAgentProp 'Algae' 'energyLevel'
-  // exprPush {{ "Algae: " + agent.getFeatProp('Population', 'count').value + ' ' + agent.getFeatProp('Population', 'sum').value + ' ' + agent.getFeatProp('Population', 'avg').value }}
-  // propPop text
-
-
-  // Algae meter
-  ifExpr {{ agent.getProp('reportSubject').value == 'Algae' }} [[
+    // Algae meter display
     featCall Population countAgentProp 'Algae' 'energyLevel'
     exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
     propPop meter
 
     exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
     propPop text
-
-    prop meterClr setTo 65280
-  ]]
-
-  // Fish meter
-  ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
-    featCall Population maxAgentProp 'Fish' 'energyLevel'
-    exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
-    propPop meter
-
-    exprPush {{ agent.getProp('reportSubject').value + ' max: ' + agent.getFeatProp('Population', 'max').value}}
-    propPop text
-
-    prop meterClr setTo 3120383
-  ]]
-
-  // min
-  // featCall Population minAgentProp 'Algae' 'energyLevel'
-  // exprPush {{ agent.getFeatProp('Population', 'min').value }}
-  // propPop text
-
-  // max
-  // featCall Population maxAgentProp 'Algae' 'energyLevel'
-  // exprPush {{ agent.getFeatProp('Population', 'max').value }}
-  // propPop text
 ]]
 `
     },
@@ -330,8 +307,6 @@ onEvent Tick [[
 addProp reportSubject String 'Fish'
 
 useFeature Population
-//exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
-//propPop text
 prop text setTo 'Fish max'
 
 // Make skin invisible
@@ -353,30 +328,24 @@ prop meterClr setTo 3120383
 
 onEvent Tick [[
 
-  // Algae meter
-  ifExpr {{ agent.getProp('reportSubject').value == 'Algae' }} [[
-    featCall Population countAgentProp 'Algae' 'energyLevel'
-    exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+  // setup meter for max value
+  featCall Population maxAgentProp 'Fish' 'energyLevel'
+  exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
+
+  // setup meter for avg value
+  // featCall Population countAgentProp 'Fish' 'energyLevel'
+  //   exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+
+
     propPop meter
 
-    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
-    propPop text
-
-    prop meterClr setTo 65280
-  ]]
-
-  // Fish meter
-  ifExpr {{ agent.getProp('reportSubject').value == 'Fish' }} [[
-    featCall Population maxAgentProp 'Fish' 'energyLevel'
-    exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
-    propPop meter
-
-
+    // text for max value
     exprPush {{ agent.getProp('reportSubject').value + ' max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
-    propPop text
 
-    prop meterClr setTo 3120383
-  ]]
+    // text for avg value
+    // exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+
+    propPop text
 ]]
 `
     },
@@ -456,6 +425,30 @@ prop y setTo -90`
       blueprint: 'Timer',
       initScript: `prop x setTo 0
 prop y setTo 350`
+    },
+    {
+      id: 505,
+      name: 'DecorationYellow1',
+      blueprint: 'DecorationYellow',
+      initScript: `prop x setTo -384
+prop y setTo 362
+prop zIndex setTo 200`
+    },
+    {
+      id: 506,
+      name: 'DecorationRed1',
+      blueprint: 'DecorationRed',
+      initScript: `prop x setTo -308
+prop y setTo 384
+prop zIndex setTo 220`
+    },
+    {
+      id: 507,
+      name: 'DecorationBlue1',
+      blueprint: 'DecorationBlue',
+      initScript: `prop x setTo -350
+prop y setTo 378
+prop zIndex setTo 210`
     }
   ]
 };

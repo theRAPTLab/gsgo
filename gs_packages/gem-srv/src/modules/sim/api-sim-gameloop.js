@@ -25,6 +25,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
   GLOOP_PRERUN: [
     // GLOOP_STAGED completed, monitor inputs before run
     `INPUTS`,
+    'PHYSICS', // force phyiscs update for size updates?  REVIEW: Not sure hti si sthe right thing to do
     `VIS_UPDATE`,
     'UI_UPDATE',
     'VIS_RENDER'
