@@ -3,6 +3,7 @@
 import React from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
+import ArrowIcon from '@material-ui/icons/ArrowDropDown';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -30,13 +31,27 @@ class InstanceInspector extends React.Component {
       color: '#009900',
       colorActive: '#33FF33',
       bgcolor: 'rgba(0,256,0,0.05)',
-      isHovered: false
+      isHovered: false,
+      isExpanded: false,
+      propsToHide: [
+        'zIndex',
+        'skin',
+        'scale',
+        'scaleY',
+        'alpha',
+        'isInert',
+        'text',
+        'meter',
+        'meterClr',
+        'meterLarge'
+      ]
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.GetInstanceId = this.GetInstanceId.bind(this);
     this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
     this.HandleInspectorClick = this.HandleInspectorClick.bind(this);
     this.OnInstanceClick = this.OnInstanceClick.bind(this);
+    this.OnDisclosureClick = this.OnDisclosureClick.bind(this);
     // Sim Hover
     this.HandleHoverOver = this.HandleHoverOver.bind(this);
     this.HandleHoverOut = this.HandleHoverOut.bind(this);
@@ -154,6 +169,11 @@ class InstanceInspector extends React.Component {
     }
     this.setState({ size: newsize, alreadyRegistered: registrationStatus });
   }
+  OnDisclosureClick(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.setState(state => ({ isExpanded: !state.isExpanded }));
+  }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Sim Instance Hover Events
@@ -188,11 +208,22 @@ class InstanceInspector extends React.Component {
     UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
   }
   render() {
-    const { title, size, color, colorActive, bgcolor, isHovered } = this.state;
+    const {
+      title,
+      size,
+      color,
+      colorActive,
+      bgcolor,
+      isHovered,
+      isExpanded,
+      propsToHide
+    } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
     const blueprintName = instance.blueprint.name;
     const data = this.GetInstanceProperties();
+    const visibleProps = data.filter(p => !propsToHide.includes(p.label));
+    const hiddenProps = data.filter(p => propsToHide.includes(p.label));
     return (
       <div
         style={{
@@ -214,40 +245,93 @@ class InstanceInspector extends React.Component {
         <div
           style={{
             fontFamily: 'Andale Mono, monospace',
-            fontSize: '10px',
+            fontSize: '14px',
             paddingLeft: '0.5em'
           }}
         >
-          {data.length > 0 && (
+          {visibleProps.map(property => (
             <div
               style={{
                 display: 'inline-block',
                 paddingRight: '1em'
               }}
+              key={property.label}
             >
-              <div
-                className={classes.inspectorLabel}
-                style={{ fontsize: '10px' }}
-              >
-                Character Type:
-              </div>
-              <div className={classes.inspectorData}>{blueprintName}</div>
+              <div className={classes.inspectorLabel}>{property.label}:</div>
+              <div className={classes.inspectorData}>{property.value}</div>
             </div>
-          )}
-          {data &&
-            data.map(property => (
+          ))}
+          <div>
+            {isExpanded && (
+              <div
+                style={
+                  isExpanded
+                    ? {
+                        maxHeight: '100%',
+                        transition: 'max-height 0.5s ease-in-out'
+                      }
+                    : {
+                        maxHeight: '0',
+                        transition: 'max-height 0.5s ease-in-out'
+                      }
+                }
+              >
+                {hiddenProps.map(property => (
+                  <div
+                    style={{
+                      display: 'inline-block',
+                      paddingRight: '1em'
+                    }}
+                    key={property.label}
+                  >
+                    <div className={classes.inspectorLabel}>
+                      {property.label}:
+                    </div>
+                    <div className={classes.inspectorData}>{property.value}</div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {isExpanded && data.length > 0 && (
               <div
                 style={{
                   display: 'inline-block',
                   paddingRight: '1em'
                 }}
-                key={property.label}
               >
-                <div className={classes.inspectorLabel}>{property.label}:</div>
-                <div className={classes.inspectorData}>{property.value}</div>
+                <div
+                  className={classes.inspectorLabel}
+                  style={{ fontsize: '10px' }}
+                >
+                  Character Type:
+                </div>
+                <div className={classes.inspectorData}>{blueprintName}</div>
               </div>
-            ))}
+            )}
+          </div>
         </div>
+        {size === SIZE_MAX && (
+          <button
+            type="button"
+            onClick={this.OnDisclosureClick}
+            className={classes.buttonLink}
+            style={{
+              minHeight: '20px',
+              height: '20px',
+              width: '100%',
+              margin: '5px 0 0 0'
+            }}
+          >
+            <ArrowIcon
+              size="small"
+              className={
+                isExpanded
+                  ? classes.disclosureExpanded
+                  : classes.disclosureCollapsed
+              }
+            />
+          </button>
+        )}
       </div>
     );
   }
