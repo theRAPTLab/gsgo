@@ -169,20 +169,13 @@ prop text setTo '##'
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
 featCall Movement setMovementType 'wander' 0.2
 
-# PROGRAM EVENT
-onEvent Start [[
+# PROGRAM INIT
+exprPush {{ agent.getProp('energyLevel').value }}
+propPop text
 
-  exprPush {{ agent.getProp('energyLevel').value }}
-  propPop text
-
-  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-  //propPop agent.scale
-  featPropPop agent.Physics scale
-
-
-  // featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
-
-]]
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+//propPop agent.scale
+featPropPop Physics scale
 
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
