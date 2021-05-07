@@ -170,12 +170,11 @@ prop text setTo '##'
 featCall Movement setMovementType 'wander' 0.2
 
 # PROGRAM INIT
-exprPush {{ agent.getProp('energyLevel').value }}
-propPop text
+//exprPush {{ agent.getProp('energyLevel').value }}
+//propPop text
 
-exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-//propPop agent.scale
-featPropPop Physics scale
+//exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+//featPropPop Physics scale
 
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
@@ -189,7 +188,7 @@ when Algae touches Sunbeam [[
       propPop text
   ]]
 ]]
-every 1 [[
+every 1 runAtStart [[
 
   // decrease energy each tick, using the energyUse varable to determine how much
   ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
