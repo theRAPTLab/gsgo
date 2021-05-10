@@ -8,6 +8,14 @@
   You generally want to define Costume and sprite before `init`ing Physics
   so that the size can be automatically set.
 
+  Eventually this might cover:
+  * Boundaries
+  * Intersection
+  * Laws of motion
+  * Reaction test
+  * Change laws of motion properties
+    -  acceleration (change in velocity), mass, moment of inertia, speed dx/dy
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -99,14 +107,14 @@ class PhysicsPack extends GFeature {
   //
   constructor(name) {
     super(name);
-    // add feature methods here
+    // REVIEW: Is it necessary for these to be accessible to students/scripts?
+    // should these just be private methods?
     this.featAddMethod('setShape', this.setShape);
     this.featAddMethod('setSize', this.setSize);
     this.featAddMethod('setRadius', this.setRadius);
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
     this.featAddMethod('getBounds', this.getBounds);
-    this.featAddMethod('init', this.init);
 
     UR.HookPhase('SIM/PHYSICS', m_update);
   }
@@ -280,6 +288,7 @@ class PhysicsPack extends GFeature {
       height: h
     };
   }
+  /** Used by sim-conditions for 'touches' test */
   intersectsWith(agent: IAgent, b: IAgent): boolean {
     const boundsA = this.getBounds(agent);
     const boundsB = this.getBounds(b);
