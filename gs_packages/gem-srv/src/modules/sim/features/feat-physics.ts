@@ -170,8 +170,37 @@ class PhysicsPack extends GFeature {
     prop.setMin(0);
     this.featAddProp(agent, 'scaleY', prop); // in general, set featProp directly rather than calling the method
 
+    // Init
+    this.init(agent);
+
     // REGISTER the Agent for updates
     PHYSICS_AGENTS.set(agent.id, agent.id);
+  }
+
+  /**
+   * Init
+   * Automatically initializes Physics with the default
+   * values based on the current Costume.
+   */
+  init(agent: IAgent) {
+    const dim = this.readCostumeSize(agent);
+    this.setSize(agent, dim.width, dim.height); // default to sprite size
+    this.setShape(agent, RECTANGLE);
+  }
+
+  /// PHYSICS HELPERS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Checks the currently set costume sprite for its size
+   * and saves the results in `costumeWidth` and `costumeHeigh`
+   * parameters for use in scaling.
+   */
+  readCostumeSize(agent: IAgent): { width: number; height: number } {
+    if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
+    const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
+    agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
+    agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
+    return { width: w, height: h };
   }
 
   /// PHYSICS METHODS /////////////////////////////////////////////////////////
@@ -251,28 +280,6 @@ class PhysicsPack extends GFeature {
       height: h
     };
   }
-  /**
-   * Checks the currently set costume sprite for its size
-   * and saves the results in `costumeWidth` and `costumeHeigh`
-   * parameters for use in scaling.
-   */
-  readCostumeSize(agent: IAgent): { width: number; height: number } {
-    if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
-    const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
-    agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
-    agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
-    return { width: w, height: h };
-  }
-
-  /**
-   * Init
-   * Automatically initializes Physics with the default
-   * values based on the current Costume.
-   */
-  init(agent: IAgent) {
-    const dim = this.readCostumeSize(agent);
-    this.setSize(agent, dim.width, dim.height); // default to sprite size
-    this.setShape(agent, RECTANGLE);
   }
 }
 
