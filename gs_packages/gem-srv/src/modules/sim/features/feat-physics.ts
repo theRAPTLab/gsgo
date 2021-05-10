@@ -280,6 +280,17 @@ class PhysicsPack extends GFeature {
       height: h
     };
   }
+  intersectsWith(agent: IAgent, b: IAgent): boolean {
+    const boundsA = this.getBounds(agent);
+    const boundsB = this.getBounds(b);
+    // REVIEW: This currently treats all intersections as rectangules
+    // Round objects are not specifically handled.
+    const isTouching =
+      boundsA.x < boundsB.x + boundsB.width &&
+      boundsA.x + boundsA.width > boundsB.x &&
+      boundsA.y < boundsB.y + boundsB.height &&
+      boundsA.y + boundsA.height > boundsB.y;
+    return isTouching;
   }
 }
 
