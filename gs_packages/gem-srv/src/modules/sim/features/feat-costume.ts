@@ -9,7 +9,7 @@ import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
-import { GetTextureInfo } from 'modules/datacore/dc-globals';
+import { GetSpriteDimensions, GetTextureInfo } from 'modules/datacore/dc-globals';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -97,6 +97,13 @@ class CostumePack extends GFeature {
     setTimeout(() => {
       agent.isGlowing = false;
     }, seconds * 1000);
+  }
+  // Dimensions of currently selected sprite frame's texture
+  getBounds(agent: IAgent): { w: number; h: number } {
+    const costumeName = agent.getProp('skin').value;
+    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
+    const { w, h } = GetSpriteDimensions(costumeName, frame);
+    return { w, h };
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);

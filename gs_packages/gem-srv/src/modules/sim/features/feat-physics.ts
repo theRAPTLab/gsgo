@@ -16,7 +16,6 @@ import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
-import { GetSpriteDimensions } from 'modules/datacore/dc-globals';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -259,13 +258,12 @@ class PhysicsPack extends GFeature {
    */
   readCostumeSize(agent: IAgent): { width: number; height: number } {
     if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
-    const costumeName = agent.getProp('skin').value;
-    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
-    const { w, h } = GetSpriteDimensions(costumeName, frame);
+    const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
     agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
     agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
     return { width: w, height: h };
   }
+
   /**
    * Init
    * Automatically initializes Physics with the default
