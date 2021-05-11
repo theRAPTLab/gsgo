@@ -340,7 +340,10 @@ const useStylesHOC = theme => ({
     color: CLR_HI2,
     backgroundColor: 'transparent',
     border: 'none',
-    cursor: 'pointer'
+    cursor: 'pointer',
+    '&:hover': {
+      color: CLR_ACTIVE
+    }
   },
   buttonOn: {
     ...BUTTON,
@@ -356,6 +359,14 @@ const useStylesHOC = theme => ({
     borderRightColor: BaseColorShift(-240, 0.1),
     borderBottomColor: BaseColorShift(-240, 0.1),
     cursor: 'not-allowed'
+  },
+  disclosureCollapsed: {
+    transition: 'transform 0.25s ease-in-out',
+    transform: 'rotate(0deg)'
+  },
+  disclosureExpanded: {
+    transition: 'transform 0.25s ease-in-out',
+    transform: 'rotate(180deg)'
   },
   input: {
     fontSize: '18px',

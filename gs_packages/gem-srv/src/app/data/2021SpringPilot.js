@@ -153,6 +153,8 @@ addProp energyLevel Number 100
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+addProp energyUse Number 0
+
 useFeature Physics
 featCall Physics init
 //featProp Physics.radius setTo 16
@@ -195,12 +197,20 @@ when Algae touches Sunbeam [[
   ]]
 ]]
 every 1 [[
-  prop energyLevel sub 1
-  // update name
+
+  // decrease energy each tick, using the energyUse varable to determine how much
+  ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
+  exprPush {{ agent.getProp('energyLevel').value - agent.getProp('energyUse').value}}
+  propPop agent.energyLevel
+  ]]
+
+  // update name to reflect the new energy level if it is above 0
   ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
   exprPush {{ agent.getProp('energyLevel').value }}
   propPop text
 ]]
+
+// if the energy level is 0, change name to xx
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
   prop text setTo 'xx'
   prop agent.alpha setTo 0.3
@@ -208,10 +218,8 @@ ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
 ]]
 
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-//propPop agent.scale
 featPropPop agent.Physics scale
 
-//featCall Physics setSize {{ (agent.getProp('energyLevel').value / 100)* 2}}
 
 ]]
 `

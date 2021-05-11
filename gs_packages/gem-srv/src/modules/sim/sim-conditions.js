@@ -81,6 +81,7 @@ RegisterFunction('touches', (a, b) => {
   if (a.isInert || b.isInert) return false;
   const boundsA = a.callFeatMethod('Physics', 'getBounds');
   const boundsB = b.callFeatMethod('Physics', 'getBounds');
+  // REVIEW: This is a rectangular test, not a round test.
   const res =
     boundsA.x < boundsB.x + boundsB.width &&
     boundsA.x + boundsA.width > boundsB.x &&
@@ -96,11 +97,7 @@ RegisterFunction('firstTouches', (a, b) => {
   if (a.isInert || b.isInert) return false;
   const boundsA = a.callFeatMethod('Physics', 'getBounds');
   const boundsB = b.callFeatMethod('Physics', 'getBounds');
-  const isTouching =
-    boundsA.x < boundsB.x + boundsB.width &&
-    boundsA.x + boundsA.width > boundsB.x &&
-    boundsA.y < boundsB.y + boundsB.height &&
-    boundsA.y + boundsA.height > boundsB.y;
+  const isTouching = a.callFeatMethod('Physics', 'intersectsWith', b);
 
   // HACK firstTouches by stuffing a Map into the agents
   // 1. Initialize if not set
@@ -129,13 +126,7 @@ RegisterFunction('lastTouches', (a, b) => {
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
   // if either is inert, no touches are possible
   if (a.isInert || b.isInert) return false;
-  const boundsA = a.callFeatMethod('Physics', 'getBounds');
-  const boundsB = b.callFeatMethod('Physics', 'getBounds');
-  const isTouching =
-    boundsA.x < boundsB.x + boundsB.width &&
-    boundsA.x + boundsA.width > boundsB.x &&
-    boundsA.y < boundsB.y + boundsB.height &&
-    boundsA.y + boundsA.height > boundsB.y;
+  const isTouching = a.callFeatMethod('Physics', 'intersectsWith', b);
 
   // HACK lastTouches by stuffing a Map into the agents
   // 1. Initialize if not set
