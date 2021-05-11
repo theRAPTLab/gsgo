@@ -26,7 +26,6 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 useFeature Physics
-featCall Physics init
 
 // set Touches
 useFeature Touches
@@ -113,7 +112,6 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 useFeature Physics
-featCall Physics init
 featCall Physics setSize 32 64
 // start scale at 50% to match energyLevel (scale is not set until run)
 featProp Physics scale setTo 0.5
@@ -244,7 +242,6 @@ addProp speed Number 1
 addProp energyRate Number 1
 
 useFeature Physics
-featCall Physics init
 featProp Physics scale setTo 0.5
 featProp Physics scaleY setTo 8
 

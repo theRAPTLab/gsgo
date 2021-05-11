@@ -8,6 +8,14 @@
   You generally want to define Costume and sprite before `init`ing Physics
   so that the size can be automatically set.
 
+  Eventually this might cover:
+  * Boundaries
+  * Intersection
+  * Laws of motion
+  * Reaction test
+  * Change laws of motion properties
+    -  acceleration (change in velocity), mass, moment of inertia, speed dx/dy
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
@@ -16,7 +24,6 @@ import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
-import { GetSpriteDimensions } from 'modules/datacore/dc-globals';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,14 +107,14 @@ class PhysicsPack extends GFeature {
   //
   constructor(name) {
     super(name);
-    // add feature methods here
+    // REVIEW: Is it necessary for these to be accessible to students/scripts?
+    // should these just be private methods?
     this.featAddMethod('setShape', this.setShape);
     this.featAddMethod('setSize', this.setSize);
     this.featAddMethod('setRadius', this.setRadius);
     this.featAddMethod('getWidth', this.getWidth);
     this.featAddMethod('getHeight', this.getHeight);
     this.featAddMethod('getBounds', this.getBounds);
-    this.featAddMethod('init', this.init);
 
     UR.HookPhase('SIM/PHYSICS', m_update);
   }
@@ -171,8 +178,37 @@ class PhysicsPack extends GFeature {
     prop.setMin(0);
     this.featAddProp(agent, 'scaleY', prop); // in general, set featProp directly rather than calling the method
 
+    // Init
+    this.init(agent);
+
     // REGISTER the Agent for updates
     PHYSICS_AGENTS.set(agent.id, agent.id);
+  }
+
+  /**
+   * Init
+   * Automatically initializes Physics with the default
+   * values based on the current Costume.
+   */
+  init(agent: IAgent) {
+    const dim = this.readCostumeSize(agent);
+    this.setSize(agent, dim.width, dim.height); // default to sprite size
+    this.setShape(agent, RECTANGLE);
+  }
+
+  /// PHYSICS HELPERS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Checks the currently set costume sprite for its size
+   * and saves the results in `costumeWidth` and `costumeHeigh`
+   * parameters for use in scaling.
+   */
+  readCostumeSize(agent: IAgent): { width: number; height: number } {
+    if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
+    const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
+    agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
+    agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
+    return { width: w, height: h };
   }
 
   /// PHYSICS METHODS /////////////////////////////////////////////////////////
@@ -252,29 +288,18 @@ class PhysicsPack extends GFeature {
       height: h
     };
   }
-  /**
-   * Checks the currently set costume sprite for its size
-   * and saves the results in `costumeWidth` and `costumeHeigh`
-   * parameters for use in scaling.
-   */
-  readCostumeSize(agent: IAgent): { width: number; height: number } {
-    if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
-    const costumeName = agent.getProp('skin').value;
-    const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
-    const { w, h } = GetSpriteDimensions(costumeName, frame);
-    agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
-    agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
-    return { width: w, height: h };
-  }
-  /**
-   * Init
-   * Automatically initializes Physics with the default
-   * values based on the current Costume.
-   */
-  init(agent: IAgent) {
-    const dim = this.readCostumeSize(agent);
-    this.setSize(agent, dim.width, dim.height); // default to sprite size
-    this.setShape(agent, RECTANGLE);
+  /** Used by sim-conditions for 'touches' test */
+  intersectsWith(agent: IAgent, b: IAgent): boolean {
+    const boundsA = this.getBounds(agent);
+    const boundsB = this.getBounds(b);
+    // REVIEW: This currently treats all intersections as rectangules
+    // Round objects are not specifically handled.
+    const isTouching =
+      boundsA.x < boundsB.x + boundsB.width &&
+      boundsA.x + boundsA.width > boundsB.x &&
+      boundsA.y < boundsB.y + boundsB.height &&
+      boundsA.y + boundsA.height > boundsB.y;
+    return isTouching;
   }
 }
 
