@@ -47,6 +47,7 @@ import { MODEL as SpringPilot } from './2021SpringPilot';
 import { MODEL as AquaticModel } from './aquatic';
 import { MODEL as DecompositionModel } from './decomposition';
 import { MODEL as MothsModel } from './moths';
+import { MODEL as MothsSandbox } from './moths-sandbox';
 import { MODEL as SaltModel } from './salt';
 import { MODEL as BeesModel } from './bees';
 import { ReportMemory } from '../../modules/render/api-render';
@@ -196,6 +197,9 @@ class ProjectData {
       case 'moths':
         model = MothsModel;
         break;
+      case 'moths-sandbox':
+        model = MothsSandbox;
+        break;
       case 'salt':
         model = SaltModel;
         break;
@@ -217,6 +221,7 @@ class ProjectData {
       { id: 'aquatic', label: 'Aquatic Ecosystems' },
       { id: 'decomposition', label: 'Decomposition' },
       { id: 'moths', label: 'Moths' },
+      { id: 'moths-sandbox', label: 'Moths Sandbox' },
       { id: 'salt', label: 'Salt' },
       { id: 'bees', label: 'Bees' }
     ];
