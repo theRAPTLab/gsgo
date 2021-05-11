@@ -82,12 +82,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
-    this.prop.text = new GVarString();
-    this.prop.meter = new GVarNumber();
-    this.prop.meter.setMax(1);
-    this.prop.meter.setMin(0);
-    this.prop.meterClr = new GVarNumber();
-    this.prop.meterLarge = new GVarBoolean(false); // script accessible
+    this.prop.statusText = new GVarString();
+    this.prop.statusValue = new GVarNumber();
+    this.prop.statusValue.setMax(1);
+    this.prop.statusValue.setMin(0);
+    this.prop.statusValueColor = new GVarNumber(); // color
+    this.prop.statusValueIsLarge = new GVarBoolean(false); // script accessible
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -148,29 +148,29 @@ class GAgent extends SM_Object implements IAgent, IActable {
   set isInert(bool: boolean) {
     this.prop.isInert.setTo(bool);
   }
-  get text() {
-    return this.prop.text.value;
+  get statusText() {
+    return this.prop.statusText.value;
   }
-  set text(str: string) {
-    this.prop.text.setTo(str);
+  set statusText(str: string) {
+    this.prop.statusText.setTo(str);
   }
-  get meter() {
-    return this.prop.meter.value;
+  get statusValue() {
+    return this.prop.statusValue.value;
   }
-  set meter(num: number) {
-    this.prop.meter.setTo(num);
+  set statusValue(num: number) {
+    this.prop.statusValue.setTo(num);
   }
-  get meterClr() {
-    return this.prop.meterClr.value;
+  get statusValueColor() {
+    return this.prop.statusValueColor.value;
   }
-  set meterClr(num: number) {
-    this.prop.meterClr.setTo(num);
+  set statusValueColor(num: number) {
+    this.prop.statusValueColor.setTo(num);
   }
-  get meterLarge() {
-    return this.prop.meterLarge.value;
+  get statusValueIsLarge() {
+    return this.prop.statusValueIsLarge.value;
   }
-  set meterLarge(mode: boolean) {
-    this.prop.meterLarge.setTo(mode);
+  set statusValueIsLarge(mode: boolean) {
+    this.prop.statusValueIsLarge.setTo(mode);
   }
 
   /// MOVEMENT MODES //////////////////////////////////////////////////////////
@@ -288,7 +288,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     const grouped = this.isGrouped ? FLAGS.SELECTION.GROUPED : 0;
     const captive = this.isCaptive ? FLAGS.SELECTION.CAPTIVE : 0;
     const glowing = this.isGlowing ? FLAGS.SELECTION.GLOWING : 0;
-    const largeMeter = this.prop.meterLarge.value
+    const largeMeter = this.prop.statusValueIsLarge.value
       ? FLAGS.SELECTION.LARGEMETER
       : 0;
     return selected | hovered | grouped | captive | glowing | largeMeter;
