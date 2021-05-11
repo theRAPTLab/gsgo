@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Mission Control - Teacher/Admin/Projector interface
+  Main - Teacher/Admin/Projector interface
 
   * Manage network devices
   * Control simulation playback
