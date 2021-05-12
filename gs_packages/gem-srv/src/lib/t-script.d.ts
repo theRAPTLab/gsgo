@@ -56,7 +56,8 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   isInert: boolean;
   isGlowing: boolean;
   isLargeMeter: boolean;
-  text: string;
+  statusText: string;
+  statusValue: number;
   x: number;
   y: number;
   // name, value are defined in IScopeable

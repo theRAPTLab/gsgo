@@ -58,9 +58,9 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
     if (agent.alpha) dobj.alpha = agent.alpha;
-    if (agent.text) dobj.text = agent.text;
-    if (agent.meter) dobj.meter = agent.meter;
-    if (agent.meterClr) dobj.meterClr = agent.meterClr;
+    if (agent.statusText) dobj.text = agent.statusText;
+    if (agent.statusValue) dobj.meter = agent.statusValue;
+    if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
@@ -76,9 +76,9 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
     if (agent.alpha) dobj.alpha = agent.alpha;
-    if (agent.text || dobj.text) dobj.text = agent.text; // clear old text if previously set
-    if (agent.meter || dobj.meter) dobj.meter = agent.meter; // clear old meter if previously set
-    if (agent.meterClr) dobj.meterClr = agent.meterClr;
+    if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
+    if (agent.statusValue || dobj.meter) dobj.meter = agent.statusValue; // clear old meter if previously set
+    if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags();
