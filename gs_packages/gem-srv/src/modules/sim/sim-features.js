@@ -15,3 +15,4 @@ import './features/feat-costume';
 import './features/feat-physics';
 import './features/feat-population';
 import './features/feat-touches';
+import './features/feat-agentwidget';
