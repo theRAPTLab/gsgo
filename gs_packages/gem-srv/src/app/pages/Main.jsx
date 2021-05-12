@@ -35,7 +35,8 @@ import DialogConfirm from './components/DialogConfirm';
 // import 'modules/tests/test-parser'; // test parser evaluation
 
 // HACK DATA LOADING
-import PROJ from '../data/project-data';
+// import PROJ from '../data/project-data';
+import SIMCTRL from './elements/mod-sim-control';
 
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
@@ -211,7 +212,7 @@ class MissionControl extends React.Component {
   ///
   UpdateDeviceList(devices = []) {
     if (Array.isArray(devices)) {
-      const UDID = PROJ.GetUDID();
+      const UDID = SIMCTRL.GetUDID();
       const filtered = devices.filter(d => d.udid !== UDID); // remove self
       this.setState({ devices: filtered });
       return;
@@ -223,7 +224,7 @@ class MissionControl extends React.Component {
   /// DATA UPDATE HANDLERS
   ///
   LoadModel(modelId) {
-    const model = PROJ.LoadModel(modelId);
+    const model = SIMCTRL.LoadModel(modelId);
     this.setState(
       { model },
       // Call Sim Places to compile agents after model load
@@ -275,7 +276,7 @@ class MissionControl extends React.Component {
         scriptsNeedUpdate: false
       },
       () => {
-        PROJ.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
+        SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
         this.LoadModel(this.state.modelId); // This will also call SimPlaces
       }
     );
@@ -320,7 +321,7 @@ class MissionControl extends React.Component {
       const { modelId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      PROJ.InstanceUpdatePosition({
+      SIMCTRL.InstanceUpdatePosition({
         modelId,
         instanceId: agent.id,
         updatedData: { x, y }
@@ -338,18 +339,18 @@ class MissionControl extends React.Component {
     const { panelConfiguration, modelId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      PROJ.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      SIMCTRL.InstanceRequestEdit({ modelId, agentId: data.agentId });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
     const { modelId } = this.state;
-    PROJ.InstanceHoverOver({ modelId, agentId: data.agentId });
+    SIMCTRL.InstanceHoverOver({ modelId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { modelId } = this.state;
-    PROJ.InstanceHoverOut({ modelId, agentId: data.agentId });
+    SIMCTRL.InstanceHoverOut({ modelId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -405,7 +406,7 @@ class MissionControl extends React.Component {
       openRedirectDialog
     } = this.state;
     const { classes } = this.props;
-    const { width, height, bgcolor } = PROJ.GetProjectBoundary();
+    const { width, height, bgcolor } = SIMCTRL.GetProjectBoundary();
 
     const agents =
       model && model.scripts
