@@ -394,7 +394,7 @@ function ExtractBlueprintName(script) {
 function ExtractBlueprintProperties(script) {
   // HACK in built in properties -- where should these be looked up?
   // 1. Start with built in properties
-  let properties = [
+  let properties: any[] = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
