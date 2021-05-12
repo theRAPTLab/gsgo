@@ -12,7 +12,7 @@ class PanelSelect extends React.Component {
       title: 'Select',
       options: [
         // Dummy Data
-        { id: 'missioncontrol', label: 'Main' },
+        { id: 'main', label: 'Main' },
         { id: 'viewer', label: 'Viewer' },
         { id: 'charcontrol', label: 'Character Controller' }
       ]
@@ -33,7 +33,7 @@ class PanelSelect extends React.Component {
       // HACKY
       this.setState(state => ({
         options: state.options.map(o => {
-          if (o.id === 'missioncontrol') o.disabled = true;
+          if (o.id === 'main') o.disabled = true;
           return o;
         })
       }));
