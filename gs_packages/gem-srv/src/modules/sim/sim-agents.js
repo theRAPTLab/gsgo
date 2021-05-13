@@ -55,8 +55,8 @@ AGENT_TO_DOBJ.setMapFunctions({
     dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale) dobj.scale = agent.scale;
-    if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
+    if (agent.scale !== undefined) dobj.scale = agent.scale;
+    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY; // redundant || agent.scale;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
@@ -73,8 +73,8 @@ AGENT_TO_DOBJ.setMapFunctions({
     dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale) dobj.scale = agent.scale;
-    if (agent.scaleY) dobj.scaleY = agent.scaleY || agent.scale;
+    if (agent.scale !== undefined) dobj.scale = agent.scale;
+    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY; // redundant || agent.scale;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
     if (agent.statusValue || dobj.meter) dobj.meter = agent.statusValue; // clear old meter if previously set
