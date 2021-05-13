@@ -22,8 +22,7 @@ import {
   LazyMain,
   LazyScriptEditor,
   LazyViewer,
-  LazyHome,
-  LazyXGUI
+  LazyHome
 } from './SystemRoutes';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -47,9 +46,6 @@ class SystemShell extends React.Component {
       <Switch>
         <Route exact path="/">
           <LazyHome />
-        </Route>
-        <Route path="/app/xgui">
-          <LazyXGUI />
         </Route>
         <Route path="/app/charcontrol">
           <LazyCharacterController />

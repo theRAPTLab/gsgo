@@ -4,7 +4,6 @@ import React, { Suspense } from 'react';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Home = React.lazy(() => import('../pages/Home'));
 const CharControl = React.lazy(() => import('../pages/CharControl'));
-const XGUI = React.lazy(() => import('../src-xgui/App'));
 const Login = React.lazy(() => import('../pages/Login'));
 const Model = React.lazy(() => import('../pages/Model'));
 const Main = React.lazy(() => import('../pages/Main'));
@@ -25,11 +24,6 @@ export const LazyHome = () => (
 export const LazyCharacterController = () => (
   <Suspense fallback={<div>loading</div>}>
     <CharControl />
-  </Suspense>
-);
-export const LazyXGUI = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <XGUI />
   </Suspense>
 );
 export const LazyLogin = () => (
