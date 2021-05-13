@@ -93,10 +93,10 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-// keep scale above 0.3 so it remains visible
-// prop scale setMin 0.3
+
+useFeature Movement
+featCall Movement setMovementType 'wander' 0.5
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
