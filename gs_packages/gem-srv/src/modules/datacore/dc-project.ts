@@ -21,12 +21,7 @@ const BOUNDS: any = {};
 
 /// PRIVATE METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function UpdateDCModel(model) {
-  MODEL.label = model.label;
-  MODEL.scripts = model.scripts;
-  MODEL.instances = model.instances;
-}
-export function UpdateDCBounds(bounds) {
+function m_UpdateDCBounds(bounds) {
   BOUNDS.top = bounds.top;
   BOUNDS.right = bounds.right;
   BOUNDS.bottom = bounds.bottom;
@@ -34,6 +29,18 @@ export function UpdateDCBounds(bounds) {
   BOUNDS.wrap = bounds.wrap;
   BOUNDS.bounce = bounds.bounce;
   BOUNDS.bgcolor = bounds.bgcolor;
+}
+export function UpdateDCModel(model) {
+  MODEL.label = model.label;
+  MODEL.scripts = model.scripts;
+  MODEL.instances = model.instances;
+  const bounds = model.bounds || {
+    top: -400, // default if not set
+    right: 400,
+    bottom: 400,
+    left: -400
+  };
+  m_UpdateDCBounds(bounds);
 }
 
 /// BOUNDS METHODS ////////////////////////////////////////////////////////////
@@ -47,6 +54,14 @@ export function GetBoundary() {
   const height = BOUNDS.bottom - BOUNDS.top;
   const bgcolor = BOUNDS.bgcolor;
   return { width, height, bgcolor };
+}
+export function SendBoundary() {
+  const boundary = GetBoundary();
+  UR.RaiseMessage('NET:SET_BOUNDARY', {
+    width: boundary.width,
+    height: boundary.height,
+    bgcolor: boundary.bgcolor
+  });
 }
 /**
  * Test function used by feat-movement to determine whether a wall

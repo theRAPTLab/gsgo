@@ -3,9 +3,6 @@ import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
-// HACK DATA LOADING
-import ProjectData from '../../data/project-data';
-
 import PanelChrome from './PanelChrome';
 
 class PanelSelectSimulation extends React.Component {
@@ -26,7 +23,10 @@ class PanelSelectSimulation extends React.Component {
   }
 
   componentDidMount() {
-    this.setState({ models: ProjectData.GetModels() });
+    const fnName = 'ReadProjectsList';
+    UR.CallMessage('NET:REQ_PROJDATA', { fnName }).then(rdata =>
+      this.setState({ models: rdata.result })
+    );
   }
 
   onClick(modelId) {
