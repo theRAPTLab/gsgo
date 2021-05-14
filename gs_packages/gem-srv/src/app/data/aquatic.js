@@ -93,10 +93,10 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-// keep scale above 0.3 so it remains visible
-// prop scale setMin 0.3
+
+useFeature Movement
+featCall Movement setMovementType 'wander' 0.5
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
@@ -114,6 +114,8 @@ featProp Physics scale setTo 0.5
 useFeature Touches
 featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
+
+useFeature Population
 
 # PROGRAM INIT
 prop x setTo -430
@@ -135,6 +137,17 @@ every 1 runAtStart [[
   // This only runs after "GO" is pushed
   exprPush {{ agent.getProp('energyLevel').value / 100}}
   featPropPop agent.Physics scale
+
+  // spawn
+  ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
+    featCall Population createAgent Algae [[
+      prop energyLevel setTo 40
+      featCall Costume setGlow 1
+      prop x add 25
+      prop y add 25
+    ]]
+    prop energyLevel sub 50
+  ]]
 ]]
 
 // every ... when

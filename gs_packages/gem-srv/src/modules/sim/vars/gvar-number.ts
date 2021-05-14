@@ -7,6 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import SM_Object from 'lib/class-sm-object';
 import { IScopeable } from 'lib/t-script';
 import { RegisterVarCTor } from 'modules/datacore';
@@ -18,6 +19,7 @@ const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 function u_CheckMinMax(vobj) {
   if (vobj.min === vobj.max && vobj.min === 0) return;
   if (vobj.min > vobj.max) {
@@ -37,6 +39,17 @@ function u_CheckMinMax(vobj) {
   vobj.nvalue = (vobj.value - vobj.min) / (vobj.max - vobj.min);
 }
 
+/// Supports 3 forms:
+/// 1. `u_rnd()` returns random between 0 and 1
+/// 2. `u_rnd(val)` returns random * val
+/// 3. `u_rnd(min, max)' returns random between min and max
+function u_rnd(min: number, max: number) {
+  if (min === undefined) return RNG();
+  if (max === undefined) return RNG() * min;
+  const minval = min > max ? max : min;
+  const maxval = min > max ? min : max;
+  return RNG() * (maxval - minval) + minval;
+}
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class GVarNumber extends SM_Object implements IScopeable {
@@ -82,8 +95,18 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
+  addRnd(min: number, max: number) {
+    this.value += u_rnd(min, max);
+    u_CheckMinMax(this);
+    return this;
+  }
   sub(num: number) {
     this.value -= num;
+    u_CheckMinMax(this);
+    return this;
+  }
+  subRnd(min: number, max: number) {
+    this.value -= u_rnd(min, max);
     u_CheckMinMax(this);
     return this;
   }

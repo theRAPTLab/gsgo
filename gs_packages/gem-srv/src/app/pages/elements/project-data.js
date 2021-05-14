@@ -13,6 +13,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
 import {
@@ -199,8 +200,8 @@ export function InstanceAdd(data, sendUpdate = true) {
   const blueprint = model.scripts.find(s => s.id === data.blueprintName);
   const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
   if (!hasInit && !instance.initScript) {
-    instance.initScript = `prop x setTo ${Math.trunc(Math.random() * 50 - 25)}
-prop y setTo ${Math.trunc(Math.random() * 50 - 25)}`;
+    instance.initScript = `prop x setTo ${Math.trunc(RNG() * 50 - 25)}
+prop y setTo ${Math.trunc(RNG() * 50 - 25)}`;
   }
 
   model.instances.push(instance);
