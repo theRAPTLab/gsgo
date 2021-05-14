@@ -169,7 +169,9 @@ every 1 runAtStart [[
     prop agent.energyLevel sub 50
     prop agent.matter sub 50
     featCall Population createAgent Waste [[
-      prop y add 100
+      prop x addRnd -20 20
+      prop y addRnd 50 150
+      featCall Costume setGlow 2
     ]]
     featCall agent.Costume setGlow 1
   ]]
