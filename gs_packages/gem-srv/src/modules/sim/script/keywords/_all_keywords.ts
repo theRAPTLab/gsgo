@@ -37,7 +37,7 @@ export * from './_blueprint'; // set the name of a blueprint bundle
 /// KEYWORDS BELOW THIS LINE ARE SUBJECT TO CHANGE !!!
 
 // utility keywords
-export * from './randomPos'; // randomizes position (bad use of Math.random()
+export * from './randomPos'; // randomizes position
 export * from './exprPush'; // push expr onto data stack
 
 // conditional keywords

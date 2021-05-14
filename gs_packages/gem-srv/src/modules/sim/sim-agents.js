@@ -4,6 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import InstanceDef from 'lib/class-instance-def';
 import {
@@ -257,7 +258,7 @@ export function AgentProgram(blueprint) {
   // using a unique name.
   DefineInstance({
     blueprint,
-    name: `${blueprint}${Math.trunc(Math.random() * 1000)}`,
+    name: `${blueprint}${Math.trunc(RNG() * 1000)}`,
     init: []
   });
 
