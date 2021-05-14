@@ -4,6 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import { GetAgentsByType } from './dc-agents';
 import { GetFunction } from './dc-named-methods';
 
@@ -73,7 +74,7 @@ export function DeleteAllInteractions() {
  */
 export function ShuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(RNG() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }

@@ -151,6 +151,7 @@ featCall AgentWidgets bindMeterTo energyLevel
 // Green = 0x00FF00
 featProp AgentWidgets meterColor setTo 65280
 
+useFeature Population
 
 # PROGRAM UPDATE
 when Bunny touches Plant [[
@@ -167,13 +168,11 @@ every 1 runAtStart [[
   ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
     prop agent.energyLevel sub 50
     prop agent.matter sub 50
-    //   propPush agent.x
-    //   exprPush {{ agent.y - Math.random() * 200 }}
-    // NEW create Waste [[
-    //   propPop x
-    //   propPop y
-    //   prop matter setTo 50
-    // ]]
+    featCall Population createAgent Waste [[
+      prop x addRnd -20 20
+      prop y addRnd 50 150
+      featCall Costume setGlow 2
+    ]]
     featCall agent.Costume setGlow 1
   ]]
 ]]
@@ -259,11 +258,21 @@ prop matter setMin 0
 useFeature Physics
 useFeature Touches
 featCall Touches monitorTouchesWith Worm
+featCall Touches monitorTouchesWith Soil
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo matter
 
+useFeature Population
+
 # PROGRAM UPDATE
+when Waste touches Soil [[
+  every 1 [[
+    // Bacteria decomposes waste
+    prop Waste.matter sub 1
+    prop Soil.nutrients add 1
+  ]]
+]]
 every 1 runAtStart [[
   // remove if dead
   ifExpr {{ agent.getProp('matter').value < 1 }} [[
@@ -275,63 +284,63 @@ every 1 runAtStart [[
   ],
   instances: [
     {
-      id: 101,
+      id: 1101,
       name: 'Soil01',
       blueprint: 'Soil',
       initScript: `prop x setTo -200
     prop y setTo 0`
     },
     {
-      id: 102,
+      id: 1102,
       name: 'Soil02',
       blueprint: 'Soil',
       initScript: `prop x setTo 200
     prop y setTo 0`
     },
     {
-      id: 110,
+      id: 1110,
       name: 'Sun',
       blueprint: 'Sun',
       initScript: `prop x setTo -400
     prop y setTo 0`
     },
     {
-      id: 120,
+      id: 1120,
       name: 'Rock01',
       blueprint: 'Rock',
       initScript: `prop x setTo 200
     prop y setTo -200`
     },
     {
-      id: 201,
+      id: 1201,
       name: 'Plant01',
       blueprint: 'Plant',
       initScript: `prop x setTo -200
     prop y setTo -125`
     },
     {
-      id: 301,
+      id: 1301,
       name: 'Bunny01',
       blueprint: 'Bunny',
       initScript: `prop x setTo 0
     prop y setTo -200`
     },
     {
-      id: 501,
+      id: 1501,
       name: 'Worm01',
       blueprint: 'Worm',
       initScript: `prop x setTo 0
-    prop y setTo 0`
+    prop y setTo 100`
     },
     {
-      id: 601,
+      id: 1601,
       name: 'Waste01',
       blueprint: 'Waste',
       initScript: `prop x setTo -200
     prop y setTo 0`
     },
     {
-      id: 602,
+      id: 1602,
       name: 'Waste02',
       blueprint: 'Waste',
       initScript: `prop x setTo 220

@@ -10,7 +10,13 @@ import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent } from 'lib/t-script';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import { GetAgentsByType, GetAllAgents } from 'modules/datacore/dc-agents';
+import {
+  GetAgentsByType,
+  GetAllAgents,
+  DefineInstance,
+  GetAgentById
+} from 'modules/datacore/dc-agents';
+import * as TRANSPILER from 'modules/sim/script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -18,21 +24,51 @@ import { GetAgentsByType, GetAllAgents } from 'modules/datacore/dc-agents';
 const PR = UR.PrefixUtil('PopulationPack');
 const DBG = false;
 
+let COUNT = 0;
+
+const AGENTS_TO_CREATE = []; // InstanceDef[]
+
+/// CREATE LOOP //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function m_create(frame) {
+  while (AGENTS_TO_CREATE.length > 0) {
+    const def = AGENTS_TO_CREATE.pop();
+
+    DefineInstance(def);
+    const agent = TRANSPILER.MakeAgent(def);
+
+    // by default set agent position to parent position
+    const parent = GetAgentById(def.parentId);
+    agent.x = parent.x;
+    agent.y = parent.y;
+
+    const initScript = def.initScript;
+    // run initScript
+    agent.exec(initScript, { agent });
+  }
+}
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class PopulationPack extends GFeature {
   constructor(name) {
     super(name);
+    // Population Management
+    this.featAddMethod('createAgent', this.createAgent);
+    // Statistics
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
+
+    UR.HookPhase('SIM/CREATE', m_create);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** This runs once to initialize the feature for all agents */
-  initialize(simloop) {
-    super.initialize(simloop);
-    simloop.hook('INPUT', frame => console.log(frame));
-  }
+  // /** This runs once to initialize the feature for all agents */
+  // initialize(simloop) {
+  //   super.initialize(simloop);
+  //   simloop.hook('INPUT', frame => console.log(frame));
+  // }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Add population-specific properties to the agent. The feature methods
    *  are defined inside the featurepack instance, not the agent instance
@@ -49,6 +85,24 @@ class PopulationPack extends GFeature {
 
   /// POPULATION METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /**
+   * Create agent via script
+   * @param agent
+   * @param blueprintName
+   * @param initScript
+   */
+  createAgent(agent: IAgent, blueprintName: string, initScript: string) {
+    const name = `${blueprintName}${COUNT++}`;
+    // Queue Instance Defs
+    const def = {
+      name,
+      blueprint: blueprintName,
+      initScript,
+      parentId: agent.id // save for positioning
+    };
+    AGENTS_TO_CREATE.push(def);
+  }
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Population setRadius value
    */

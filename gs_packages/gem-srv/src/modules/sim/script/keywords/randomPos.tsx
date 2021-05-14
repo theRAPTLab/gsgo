@@ -2,11 +2,9 @@
 
 implementation of keyword "randomPos" keyword object
 
-HACK: This is should not use Math.random() for generating random numbers in
-the simulation.
-
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { IScopeable, TOpcode, TScriptUnit } from 'lib/t-script';
@@ -15,7 +13,7 @@ import { RegisterKeyword } from 'modules/datacore';
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Random(min: number, max: number, floor: boolean = true) {
-  const n = Math.random() * (max - min) + min;
+  const n = RNG() * (max - min) + min;
   if (floor) return Math.floor(n);
   return n;
 }
