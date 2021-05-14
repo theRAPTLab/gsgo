@@ -396,22 +396,22 @@ function ExtractBlueprintProperties(script) {
   // 1. Start with built in properties
   let properties: any[] = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
-    { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
-    { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
-    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
-    { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
-    { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
-    { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
-    {
-      name: 'meterLarge',
-      type: 'boolean',
-      defaultValue: false,
-      isFeatProp: false
-    }
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
+    // { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
+    // { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
+    // { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
+    // { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
+    // { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
+    // { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
+    // { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
+    // { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
+    // { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
+    // {
+    //   name: 'meterLarge',
+    //   type: 'boolean',
+    //   defaultValue: false,
+    //   isFeatProp: false
+    // }
 
     // Don't allow wizard to set built-in skin property directly.
     // This should be handled via `featCall Costume setCostume` because that

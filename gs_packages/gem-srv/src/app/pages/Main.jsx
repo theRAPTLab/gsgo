@@ -1,7 +1,7 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Mission Control - Teacher/Admin/Projector interface
+  Main - Teacher/Admin/Projector interface
 
   * Manage network devices
   * Control simulation playback
@@ -10,17 +10,15 @@
 
 import React, { useState } from 'react';
 import ToggleButton from '@material-ui/lab/ToggleButton';
-import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { Link } from 'react-router-dom';
-import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import { GetAllInstances } from 'modules/datacore/dc-agents';
-import UR from '@gemstep/ursys/client';
+import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-import * as SIM from 'modules/sim/api-sim'; // needed to register keywords for Prism
-import * as GLOBAL from 'modules/datacore/dc-globals';
-import * as DATACORE from 'modules/datacore';
+import UR from '@gemstep/ursys/client';
+import { GetBoundary } from 'modules/datacore/dc-project';
+import SIMCTRL from './elements/mod-sim-control';
+import * as PROJ from './elements/project-data';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import MissionMapEditor from './MissionMapEditor';
@@ -34,17 +32,16 @@ import DialogConfirm from './components/DialogConfirm';
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
-// HACK DATA LOADING
-import PROJ from '../data/project-data';
-
+/// STYLES ////////////////////////////////////////////////////////////////////
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MISSIONCONTROL', 'TagRed');
+const PR = UR.PrefixUtil('MAIN', 'TagRed');
 const DBG = false;
+let DEVICE_UDID;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
@@ -90,6 +87,7 @@ class MissionControl extends React.Component {
     };
 
     // Initialization
+    this.GetUDID = this.GetUDID.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.FailSimAlreadyRunning = this.FailSimAlreadyRunning.bind(this);
 
@@ -101,7 +99,6 @@ class MissionControl extends React.Component {
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.HandleInstancesUpdate = this.HandleInstancesUpdate.bind(this);
-    this.CallSimPlaces = this.CallSimPlaces.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
@@ -165,6 +162,10 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
   }
 
+  GetUDID() {
+    return DEVICE_UDID;
+  }
+
   /// INITIALIZATION ////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   async Initialize() {
@@ -186,7 +187,7 @@ class MissionControl extends React.Component {
     const { udid, status, error } = await UR.RegisterDevice(dev);
     if (error) console.error(error);
     if (status) console.log(...PR(status));
-    // if (udid) DEVICE_UDID = udid;
+    if (udid) DEVICE_UDID = udid;
 
     // 4. Listen for Controllers
     const charControllerDevAPI = UR.SubscribeDeviceSpec({
@@ -211,7 +212,7 @@ class MissionControl extends React.Component {
   ///
   UpdateDeviceList(devices = []) {
     if (Array.isArray(devices)) {
-      const UDID = PROJ.GetUDID();
+      const UDID = this.GetUDID();
       const filtered = devices.filter(d => d.udid !== UDID); // remove self
       this.setState({ devices: filtered });
       return;
@@ -222,29 +223,34 @@ class MissionControl extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
-  LoadModel(modelId) {
-    const model = PROJ.LoadModel(modelId);
+  async LoadModel(modelId) {
+    const model = await PROJ.LoadProject(modelId);
     this.setState(
       { model },
       // Call Sim Places to compile agents after model load
-      () => this.CallSimPlaces()
+      () => SIMCTRL.SimPlaces(model)
     );
   }
   HandleSimDataUpdate(data) {
     if (DBG) console.log('HandleSimDataUpdate', data);
-    if (SIM.IsRunning()) {
+    if (SIMCTRL.IsRunning()) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
     }
     this.setState(
       { modelId: data.modelId, model: data.model },
       // Call Sim Places to recompile agents.
-      () => this.CallSimPlaces()
+      () => SIMCTRL.SimPlaces(data.model)
     );
   }
   HandleInstancesUpdate(data) {
     // if (DBG) console.log('HandleInstancesUpdate', data);
     const { model } = this.state;
+    // REVIEW why is model not loaded?
+    if (!model) {
+      console.error('MissionControl state is missing model?!?', this.state);
+      return;
+    }
     model.instances = data.instances;
     this.setState({ model });
   }
@@ -258,16 +264,13 @@ class MissionControl extends React.Component {
     this.PostMessage(`Received script ${firstline}`);
     // HandleSimDataUpdate will set scriptNeedsUpdate flag
   }
-  CallSimPlaces() {
-    UR.RaiseMessage('*:SIM_PLACES');
-  }
   DoSimStop() {
     // Give it extra time after the "HACK_SIM_STOP" message is raised as the sim does not stop  immediately
     setTimeout(() => this.forceUpdate(), 250);
   }
   DoSimReset() {
     this.PostMessage('Simulation Reset!');
-    if (SIM.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
+    if (SIMCTRL.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
     this.setState(
       {
         model: {},
@@ -275,7 +278,7 @@ class MissionControl extends React.Component {
         scriptsNeedUpdate: false
       },
       () => {
-        PROJ.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
+        SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
         this.LoadModel(this.state.modelId); // This will also call SimPlaces
       }
     );
@@ -405,7 +408,7 @@ class MissionControl extends React.Component {
       openRedirectDialog
     } = this.state;
     const { classes } = this.props;
-    const { width, height, bgcolor } = PROJ.GetProjectBoundary();
+    const { width, height, bgcolor } = GetBoundary();
 
     const agents =
       model && model.scripts
@@ -421,7 +424,7 @@ class MissionControl extends React.Component {
           type="button"
           className={classes.button}
           onClick={this.OnToggleRunEdit}
-          disabled={SIM.IsRunning()}
+          disabled={SIMCTRL.IsRunning()}
         >
           {panelConfiguration === 'edit' ? 'SAVE' : 'SETUP'}
         </button>
