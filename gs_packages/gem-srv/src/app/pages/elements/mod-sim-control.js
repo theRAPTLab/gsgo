@@ -12,6 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler';
 import * as SIM from 'modules/sim/api-sim';
 import * as DATACORE from 'modules/datacore';
