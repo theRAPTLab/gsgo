@@ -28,6 +28,7 @@ prop energyLevel setMin 0
 
 addProp energyUse Number 1
 
+// **** OPTIONS TO CHANGE BEHAVIOR ****
 // turns on the feature that allows the fish to grow if this is 1
 addProp grows Boolean 0
 
@@ -44,17 +45,16 @@ featCall Touches monitorTouchesWith Algae
 // show meter immediately
 featCall AgentWidgets bindMeterTo energyLevel
 
-
 // set name
 exprPush {{ agent.name }}
 featPropPop AgentWidgets text
-
 
 # PROGRAM EVENT
 onEvent Start [[
   // start at normal size unless you eat
   featCall Physics setSize 90
 
+    // **** OPTIONS TO CHANGE BEHAVIOR ****
     // ** pick a movement below:
     // this line for wandering:
     // featCall Movement setMovementType 'wander' 0.5
@@ -70,7 +70,6 @@ onEvent Start [[
     featPropPop agent.Movement direction
 
     featCall AgentWidgets bindMeterTo energyLevel
-
 
     // set name + energyLevel
     exprPush {{ agent.name }}
@@ -150,9 +149,15 @@ every 1 runAtStart [[
       isControllable: true,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
+
 useFeature Costume
 useFeature Movement
 useFeature AgentWidgets
+useFeature Population
+
+// **** OPTIONS TO CHANGE BEHAVIOR ****
+// default to 0 (false) but once turned on (1) algae will reproduce if they get to full energy from the sun (so any that start at full won't spawn)
+addProp spawns Boolean 0
 
 featCall Costume setCostume 'algae.json' 0
 
@@ -164,7 +169,6 @@ addProp energyUse Number 0
 
 useFeature Physics
 featCall Physics init
-//featProp Physics.radius setTo 16
 
 useFeature Touches
 featCall Touches monitorTouchesWith 'Fish'
@@ -178,11 +182,6 @@ featPropPop AgentWidgets text
 featCall Movement setMovementType 'wander' 0.2
 
 # PROGRAM INIT
-//exprPush {{ agent.getProp('energyLevel').value }}
-//propPop text
-
-//exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-//featPropPop Physics scale
 
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
@@ -191,9 +190,23 @@ when Algae touches Sunbeam [[
       exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
       propPop energyLevel
 
-      // update name
+    // update name
     exprPush {{ agent.getProp('energyLevel').value }}
     featPropPop AgentWidgets text
+
+    // if Spawning is active, create more algae when we hit 100
+    ifExpr {{ agent.getProp('spawns').value }} [[
+      ifExpr {{ agent.getProp('energyLevel').value == 100 }} [[
+         featCall Population createAgent Algae [[
+           prop energyLevel setTo 40
+           featCall Costume setGlow 1
+           prop x add 25
+           prop y add 25
+        ]]
+        prop energyLevel sub 50
+      ]]
+    ]] // if spawning
+
   ]]
 ]]
 every 1 runAtStart [[
@@ -241,13 +254,10 @@ featCall Physics init
 featProp Physics scale setTo 0.4
 featProp Physics scaleY setTo 2.5
 
-
 useFeature Touches
 
 prop agent.skin setTo 'lightbeam.json'
 prop agent.alpha setTo 0.5
-
-
 
 # PROGRAM INIT
 // default position for moving across the top
@@ -341,24 +351,26 @@ featProp AgentWidgets meterColor setTo 3120383
 
 onEvent Tick [[
 
+  // **** OPTIONS TO CHANGE BEHAVIOR ****
+  // uncomment avg and re-comment max here and below to make this work
+
   // setup meter for max value
   featCall Population maxAgentProp 'Fish' 'energyLevel'
   exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
 
   // setup meter for avg value
   // featCall Population countAgentProp 'Fish' 'energyLevel'
-  //   exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
-
+  //  exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
 
   featPropPop AgentWidgets meter
 
-    // text for max value
-    exprPush {{ agent.getProp('reportSubject').value + ' max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
+  // text for max value
+  exprPush {{ agent.getProp('reportSubject').value + ' max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
 
-    // text for avg value
-    // exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+  // text for avg value
+  // exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
 
-    featPropPop AgentWidgets text]]
+  featPropPop AgentWidgets text]]
 `
     },
     {
