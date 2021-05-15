@@ -376,35 +376,51 @@ onEvent Tick [[
         exprPush {{ 'Time: ' + agent.getProp('time').value }}
         featPropPop AgentWidgets text
       ]]
-      # PROGRAM UPDATE
-      // when xxx touches yyy [[ ]]
 `
     },
     {
       id: 'DecorationRed',
       label: 'Decoration Red',
       script: `# BLUEPRINT DecorationRed
+
       # PROGRAM DEFINE
       useFeature Costume
       featCall Costume setCostume 'flower.json' 1
+
+      useFeature Physics
+      featCall Physics init
+      featProp Physics scale setTo 1
+      featProp Physics scaleY setTo 1
       `
     },
     {
       id: 'DecorationYellow',
       label: 'Decoration Yellow',
       script: `# BLUEPRINT DecorationYellow
+
       # PROGRAM DEFINE
       useFeature Costume
       featCall Costume setCostume 'flower.json' 0
+
+      useFeature Physics
+      featCall Physics init
+      featProp Physics scale setTo 1
+      featProp Physics scaleY setTo 1
       `
     },
     {
       id: 'DecorationBlue',
       label: 'Decoration Blue',
       script: `# BLUEPRINT DecorationBlue
+
       # PROGRAM DEFINE
       useFeature Costume
       featCall Costume setCostume 'flower.json' 2
+
+      useFeature Physics
+      featCall Physics init
+      featProp Physics scale setTo 1
+      featProp Physics scaleY setTo 1
       `
     }
   ],
