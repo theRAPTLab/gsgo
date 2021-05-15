@@ -42,8 +42,6 @@ useFeature Touches
 featCall Touches monitorTouchesWith Algae
 
 // show meter immediately
-//// exprPush {{ agent.getProp('energyLevel').value / 100 }}
-//// propPop meter
 featCall AgentWidgets bindMeterTo energyLevel
 
 
@@ -71,8 +69,6 @@ onEvent Start [[
     exprPush {{ agent.getProp('startDirection').value }}
     featPropPop agent.Movement direction
 
-    ////exprPush {{ agent.getProp('energyLevel').value / 100 }}
-    ////propPop meter
     featCall AgentWidgets bindMeterTo energyLevel
 
 
@@ -118,19 +114,19 @@ every 1 runAtStart [[
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
     featCall Costume setPose 0
-    // Green = 0x00FF00
+    // Green
     featProp AgentWidgets meterColor setTo 65280
   ]]
   // could eat
   ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
     featCall Costume setPose 1
-    // Orange = 0xFF6600
+    // Orange
     featProp AgentWidgets meterColor setTo 16737792
   ]]
   // hungry
   ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
     featCall Costume setPose 1
-    // Red = 0xFF0000
+    // Red
     featProp AgentWidgets meterColor setTo 16711680
   ]]
   // dead
@@ -141,9 +137,7 @@ every 1 runAtStart [[
     prop agent.isInert setTo true
   ]]
 
-  // set meter
-  //// exprPush {{ agent.getProp('energyLevel').value / 100 }}
-  //// propPop meter
+  // set meter to mirror energyLevel
   featCall AgentWidgets bindMeterTo energyLevel
 
 
@@ -282,8 +276,6 @@ addProp reportSubject String 'Algae'
 useFeature Population
 useFeature AgentWidgets
 
-//exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
-//propPop text
 exprPush {{ 'Algae avg' }}
 featPropPop AgentWidgets text
 
@@ -291,9 +283,12 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-prop meterLarge setTo true
+featureProp isLargeMeter setTo true
 exprPush {{ 1 }}
 propPop meter
+
+featCall AgentWidgets bindMeterTo 1
+
 
 # PROGRAM INIT
 prop x setTo 75
@@ -333,7 +328,7 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-prop meterLarge setTo true
+featureProp isLargeMeter setTo true
 exprPush {{ 1 }}
 propPop meter
 
