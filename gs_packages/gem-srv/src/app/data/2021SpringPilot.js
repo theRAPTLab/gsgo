@@ -283,11 +283,9 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-featureProp isLargeMeter setTo true
+featProp AgentWidgets isLargeMeter setTo true
 exprPush {{ 1 }}
-propPop meter
-
-featCall AgentWidgets bindMeterTo 1
+featPropPop AgentWidgets meter
 
 
 # PROGRAM INIT
@@ -304,7 +302,7 @@ onEvent Tick [[
     // Algae meter display
     featCall Population countAgentProp 'Algae' 'energyLevel'
     exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
-    propPop meter
+    featPropPop AgentWidgets meter
 
     exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
     featPropPop AgentWidgets text
@@ -328,9 +326,9 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-featureProp isLargeMeter setTo true
-exprPush {{ 1 }}
-propPop meter
+featProp AgentWidgets isLargeMeter setTo true
+ exprPush {{ 1 }}
+ featPropPop AgentWidgets meter
 
 # PROGRAM INIT
 prop x setTo -75
@@ -352,7 +350,7 @@ onEvent Tick [[
   //   exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
 
 
-    propPop meter
+  featPropPop AgentWidgets meter
 
     // text for max value
     exprPush {{ agent.getProp('reportSubject').value + ' max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
