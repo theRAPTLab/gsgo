@@ -400,9 +400,6 @@ onEvent Tick [[
       featCall Costume setCostume 'flower.json' 1
 
       useFeature Physics
-      featCall Physics init
-      featProp Physics scale setTo 1
-      featProp Physics scaleY setTo 1
       `
     },
     {
@@ -415,9 +412,6 @@ onEvent Tick [[
       featCall Costume setCostume 'flower.json' 0
 
       useFeature Physics
-      featCall Physics init
-      featProp Physics scale setTo 1
-      featProp Physics scaleY setTo 1
       `
     },
     {
@@ -429,11 +423,7 @@ onEvent Tick [[
       useFeature Costume
       featCall Costume setCostume 'flower.json' 2
 
-      useFeature Physics
-      featCall Physics init
-      featProp Physics scale setTo 1
-      featProp Physics scaleY setTo 1
-      `
+      useFeature Physics      `
     }
   ],
   instances: [
