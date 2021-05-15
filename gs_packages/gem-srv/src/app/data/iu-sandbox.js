@@ -51,7 +51,7 @@ featProp Physics scale setTo 2
       script: `# BLUEPRINT OfficeStuff
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'hive.json' 0
+featCall Costume setCostume 'rectangle.json' 0
 
 useFeature Physics
 featCall Physics init
@@ -81,8 +81,9 @@ featCall Physics init
       id: 1103,
       name: 'Furniture',
       blueprint: 'OfficeStuff',
-      initScript: `prop x setTo 300
-    prop y setTo 300
+      initScript: `prop x setTo 270
+    prop y setTo 270
+    prop zIndex setTo -100
     `
     }
   ]
