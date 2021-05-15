@@ -10,6 +10,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import { GetAgentsByType } from 'modules/datacore';
 import { ParseExpression } from 'lib/expr-parser';
 import { ISMCBundle } from 'lib/t-script';
@@ -25,7 +26,7 @@ import { Evaluate } from 'lib/expr-evaluator';
  */
 function ShuffleArray(array) {
   for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(RNG() * (i + 1));
     [array[i], array[j]] = [array[j], array[i]];
   }
 }

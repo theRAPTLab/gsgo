@@ -4,10 +4,9 @@ import React, { Suspense } from 'react';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Home = React.lazy(() => import('../pages/Home'));
 const CharControl = React.lazy(() => import('../pages/CharControl'));
-const XGUI = React.lazy(() => import('../src-xgui/App'));
 const Login = React.lazy(() => import('../pages/Login'));
 const Model = React.lazy(() => import('../pages/Model'));
-const MissionControl = React.lazy(() => import('../pages/MissionControl'));
+const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
 const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
@@ -27,11 +26,6 @@ export const LazyCharacterController = () => (
     <CharControl />
   </Suspense>
 );
-export const LazyXGUI = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <XGUI />
-  </Suspense>
-);
 export const LazyLogin = () => (
   <Suspense fallback={<div>loading</div>}>
     <Login />
@@ -42,9 +36,9 @@ export const LazyModel = () => (
     <Model />
   </Suspense>
 );
-export const LazyMissionControl = () => (
+export const LazyMain = () => (
   <Suspense fallback={<div>loading</div>}>
-    <MissionControl />
+    <Main />
   </Suspense>
 );
 export const LazyScriptEditor = () => (

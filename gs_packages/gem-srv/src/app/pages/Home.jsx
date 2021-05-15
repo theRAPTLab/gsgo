@@ -73,9 +73,7 @@ class Home extends React.Component {
           <ul className={classes.list}>
             <NavItem route="login?model=aquatic">login</NavItem>
             <NavItem route="model?model=aquatic">model</NavItem>
-            <NavItem route="missioncontrol?model=aquatic">
-              mission control
-            </NavItem>
+            <NavItem route="main?model=aquatic">main</NavItem>
             <NavItem route="scripteditor?model=aquatic">script editor</NavItem>
             <NavItem route="viewer?model=aquatic">viewer</NavItem>
             <NavItem route="charcontrol">WIP character controller</NavItem>
@@ -91,12 +89,11 @@ class Home extends React.Component {
           </p>
           <ol>
             <li>
-              <a href="/app/missioncontrol">MISSION CONTROL</a> - Prototype of the
-              presentation laptop app. It runs the simulator module and receives
-              scripts from other devices. <b>Run this first</b> and click{' '}
-              <b>START</b> button on right after some scripts have been sent to
-              it. The title shows the address of the server that everyone else
-              should connect to.
+              <a href="/app/main">MAIN</a> - Prototype of the presentation laptop
+              app. It runs the simulator module and receives scripts from other
+              devices. <b>Run this first</b> and click <b>START</b> button on
+              right after some scripts have been sent to it. The title shows the
+              address of the server that everyone else should connect to.
             </li>
             <li>
               <a href="/app/scripteditor">SCRIPT EDITOR</a> - Prototype providing

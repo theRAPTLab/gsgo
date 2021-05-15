@@ -26,16 +26,18 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     // GLOOP_STAGED completed, monitor inputs before run
     `INPUTS`,
     'PHYSICS', // force phyiscs update for size updates?  REVIEW: Not sure hti si sthe right thing to do
-    `VIS_UPDATE`,
     'UI_UPDATE',
+    `VIS_UPDATE`,
     'VIS_RENDER'
   ],
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state
     'INPUTS',
-    'PHYSICS',
+    'DELETE',
+    'CREATE',
     'TIMERS',
+    'PHYSICS',
     // agent/groups autonomous updates
     'AGENTS_UPDATE',
     'GROUPS_UPDATE',

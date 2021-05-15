@@ -15,6 +15,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
@@ -33,8 +34,7 @@ const DBG = false;
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_random(min = 0, max = 1, round = false) {
-  // REVIEW: Replace with a seeded random number generator
-  const n = Math.random() * (max - min) + min;
+  const n = RNG() * (max - min) + min;
   if (round) return Math.round(n);
   return n;
 }

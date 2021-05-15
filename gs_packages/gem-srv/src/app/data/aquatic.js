@@ -21,7 +21,7 @@ useFeature Movement
 featCall Costume setCostume 'fish.json' 0
 featCall Movement setMovementType 'wander' 10
 
-addProp energyLevel Number 20
+addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
@@ -31,13 +31,8 @@ useFeature Physics
 useFeature Touches
 featCall Touches monitorTouchesWith Algae
 
-// show meter immediately
-exprPush {{ agent.getProp('energyLevel').value / 100 }}
-propPop meter
-
-// set name
-exprPush {{ agent.name }}
-propPop text
+useFeature AgentWidgets
+featCall AgentWidgets bindMeterTo energyLevel
 
 # PROGRAM EVENT
 # PROGRAM UPDATE
@@ -60,25 +55,25 @@ every 1 runAtStart [[
 
   // set name + energyLevel
   exprPush {{ agent.name + ' ' + agent.getProp('energyLevel').value }}
-  propPop text
+  featPropPop AgentWidgets text
 
   // sated
   ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
     featCall Costume setPose 0
     // Green = 0x00FF00
-    prop meterClr setTo 65280
+    featProp AgentWidgets meterColor setTo 65280
   ]]
   // could eat
   ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
     featCall Costume setPose 1
     // Orange = 0xFF6600
-    prop meterClr setTo 16737792
+    featProp AgentWidgets meterColor setTo 16737792
   ]]
   // hungry
   ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
     featCall Costume setPose 1
     // Red = 0xFF0000
-    prop meterClr setTo 16711680
+    featProp AgentWidgets meterColor setTo 16711680
   ]]
   // dead
   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
@@ -87,10 +82,6 @@ every 1 runAtStart [[
     prop agent.alpha setTo 0.3
     prop agent.isInert setTo true
   ]]
-
-  // set meter
-  exprPush {{ agent.getProp('energyLevel').value / 100 }}
-  propPop meter
 
 ]]
 `
@@ -102,28 +93,29 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Movement
 featCall Costume setCostume 'algae.json' 0
-// keep scale above 0.3 so it remains visible
-// prop scale setMin 0.3
+
+useFeature Movement
+featCall Movement setMovementType 'wander' 0.5
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
+
+useFeature AgentWidgets
+featCall AgentWidgets bindTextTo energyLevel
 
 useFeature Physics
 featCall Physics setSize 32 64
 // start scale at 50% to match energyLevel (scale is not set until run)
 featProp Physics scale setTo 0.5
 
-// show initial level (otherwise level is not shown until run)
-exprPush {{ agent.getProp('energyLevel').value }}
-propPop text
-
 // touches
 useFeature Touches
 featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Lightbeam'
+
+useFeature Population
 
 # PROGRAM INIT
 prop x setTo -430
@@ -137,10 +129,6 @@ when Algae touches Lightbeam [[
     featCall Algae.Costume setGlow 0.5
     prop Algae.energyLevel add 10
   ]]
-
-  // update name
-  exprPush {{ agent.getProp('energyLevel').value }}
-  propPop text
 ]]
 every 1 runAtStart [[
   prop energyLevel sub 1
@@ -150,9 +138,16 @@ every 1 runAtStart [[
   exprPush {{ agent.getProp('energyLevel').value / 100}}
   featPropPop agent.Physics scale
 
-  // update name
-  exprPush {{ agent.getProp('energyLevel').value }}
-  propPop text
+  // spawn
+  ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
+    featCall Population createAgent Algae [[
+      prop energyLevel setTo 40
+      featCall Costume setGlow 1
+      prop x add 25
+      prop y add 25
+    ]]
+    prop energyLevel sub 50
+  ]]
 ]]
 
 // every ... when
@@ -262,22 +257,19 @@ ifExpr {{ agent.x > 400 }} [[
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
 useFeature Population
+useFeature AgentWidgets
 exprPush {{ 'Algae energyLevel avg' }}
-propPop text
+featPropPop AgentWidgets text
+featProp AgentWidgets isLargeMeter setTo true
 
 // Make skin invisible
 prop skin setTo onexone
 prop scale setTo 80
 prop scaleY setTo 40
 
-// Show meter on start.
-prop meterLarge setTo true
-exprPush {{ 1 }}
-propPop meter
-
 # PROGRAM EVENT
 # PROGRAM UPDATE
-every 1 [[
+every 1 runAtStart [[
   // count of agents by type
   // featCall Population countAgents 'Algae'
   // exprPush {{ agent.getFeatProp('Population', 'count').value }}
@@ -291,11 +283,11 @@ every 1 [[
   // meter
   featCall Population countAgentProp 'Algae' 'energyLevel'
   exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
-  propPop meter
+  featPropPop AgentWidgets meter
 
   // label
   exprPush {{ 'Algae energyLevel avg: ' + agent.getFeatProp('Population', 'avg').value }}
-  propPop text
+  featPropPop AgentWidgets text
 
   // min
   // featCall Population minAgentProp 'Algae' 'energyLevel'
@@ -340,21 +332,24 @@ every 1 [[
       name: 'algae01',
       blueprint: 'Algae',
       initScript: `prop x setTo 120
-prop y setTo 120`
+prop y setTo 120
+prop energyLevel setTo 20`
     },
     {
       id: 505,
       name: 'algae02',
       blueprint: 'Algae',
       initScript: `prop x setTo -300
-        prop y setTo -300`
+        prop y setTo -300
+prop energyLevel setTo 50`
     },
     {
       id: 506,
       name: 'algae03',
       blueprint: 'Algae',
       initScript: `prop x setTo -120
-        prop y setTo -90`
+        prop y setTo -90
+prop energyLevel setTo 80`
     },
     {
       id: 507,
@@ -362,13 +357,13 @@ prop y setTo 120`
       blueprint: 'Lightbeam',
       initScript: `prop x setTo -450
     prop y setTo 0`
+    },
+    {
+      id: 510,
+      name: 'reporter',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 0
+           prop y setTo 300`
     }
-    // {
-    //   id: 510,
-    //   name: 'reporter',
-    //   blueprint: 'Reporter',
-    //   initScript: `prop x setTo 0
-    // prop y setTo 300`
-    // }
   ]
 };

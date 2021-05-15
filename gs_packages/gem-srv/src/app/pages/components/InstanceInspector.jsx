@@ -40,10 +40,10 @@ class InstanceInspector extends React.Component {
         'scaleY',
         'alpha',
         'isInert',
-        'text',
-        'meter',
-        'meterClr',
-        'meterLarge'
+        'statusText',
+        'statusValue',
+        'statusValueColor',
+        'statusValueIsLarge'
       ]
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
