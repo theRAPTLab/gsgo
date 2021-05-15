@@ -11,24 +11,19 @@ export const MODEL = {
   },
   scripts: [
     {
-      id: 'Soil',
-      label: 'Soil',
-      script: `# BLUEPRINT Soil
+      id: 'Person',
+      label: 'Person',
+      isControllable: true,
+      script: `# BLUEPRINT Person
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'lightbeam.json' 0
-prop alpha setTo 0.2
-
-addProp nutrients Number 50
-prop nutrients setMax 100
-prop nutrients setMin 0
+featCall Costume setCostume 'bunny.json' 1
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitorTouchesWith Worm
+featCall Physics init
 
-useFeature AgentWidgets
-featCall AgentWidgets bindMeterTo nutrients
+featCall Physics setSize 90
 
 # PROGRAM UPDATE
 `
@@ -37,10 +32,11 @@ featCall AgentWidgets bindMeterTo nutrients
   instances: [
     {
       id: 1101,
-      name: 'Soil01',
-      blueprint: 'Soil',
+      name: 'Person 1',
+      blueprint: 'Person',
       initScript: `prop x setTo -200
-    prop y setTo 0`
+    prop y setTo 0
+    `
     }
   ]
 };
