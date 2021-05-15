@@ -18,6 +18,8 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
+useFeature AgentWidgets
+
 featCall Costume setCostume 'fish.json' 0
 
 addProp energyLevel Number 50
@@ -40,12 +42,13 @@ useFeature Touches
 featCall Touches monitorTouchesWith Algae
 
 // show meter immediately
-exprPush {{ agent.getProp('energyLevel').value / 100 }}
-propPop meter
+//// exprPush {{ agent.getProp('energyLevel').value / 100 }}
+//// propPop meter
 
 // set name
 exprPush {{ agent.name }}
-propPop text
+featPropPop AgentWidgets text
+
 
 # PROGRAM EVENT
 onEvent Start [[
@@ -71,7 +74,7 @@ onEvent Start [[
 
     // set name + energyLevel
     exprPush {{ agent.name }}
-    propPop text
+    featPropPop AgentWidgets text
 
 ]]
 # PROGRAM UPDATE
@@ -96,7 +99,9 @@ when Fish touches Algae [[
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
-      prop Algae.text setTo 'xx'
+
+      exprPush {{ 'xx' }}
+      featPropPop AgentWidgets text
     ]]
 
   ]]
@@ -133,8 +138,8 @@ every 1 runAtStart [[
   ]]
 
   // set meter
-  exprPush {{ agent.getProp('energyLevel').value / 100 }}
-  propPop meter
+  //// exprPush {{ agent.getProp('energyLevel').value / 100 }}
+  //// propPop meter
 
 ]]
 `
@@ -147,6 +152,8 @@ every 1 runAtStart [[
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
+useFeature AgentWidgets
+
 featCall Costume setCostume 'algae.json' 0
 
 addProp energyLevel Number 100
@@ -164,7 +171,8 @@ featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Sunbeam'
 
 // This is so that the numbers don't suddenly change at start and confusing things
-prop text setTo '##'
+exprPush {{ '##' }}
+featPropPop AgentWidgets text
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
 featCall Movement setMovementType 'wander' 0.2
@@ -184,8 +192,8 @@ when Algae touches Sunbeam [[
       propPop energyLevel
 
       // update name
-      exprPush {{ agent.getProp('energyLevel').value }}
-      propPop text
+    exprPush {{ agent.getProp('energyLevel').value }}
+    featPropPop AgentWidgets text
   ]]
 ]]
 every 1 runAtStart [[
@@ -199,12 +207,12 @@ every 1 runAtStart [[
   // update name to reflect the new energy level if it is above 0
   ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
   exprPush {{ agent.getProp('energyLevel').value }}
-  propPop text
-]]
+  featPropPop AgentWidgets text]]
 
 // if the energy level is 0, change name to xx
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
-  prop text setTo 'xx'
+  exprPush {{ 'xx' }}
+  featPropPop AgentWidgets text
   prop agent.alpha setTo 0.3
   prop isInert setTo true
 ]]
@@ -266,9 +274,12 @@ onEvent Tick [[
 addProp reportSubject String 'Algae'
 
 useFeature Population
+useFeature AgentWidgets
+
 //exprPush {{ agent.getProp('reportSubject').value + ' meter'}}
 //propPop text
-prop text setTo 'Algae avg'
+exprPush {{ 'Algae avg' }}
+featPropPop AgentWidgets text
 
 // Make skin invisible
 prop skin setTo 'onexone'
@@ -295,7 +306,7 @@ onEvent Tick [[
     propPop meter
 
     exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
-    propPop text
+    featPropPop AgentWidgets text
 ]]
 `
     },
@@ -307,7 +318,10 @@ onEvent Tick [[
 addProp reportSubject String 'Fish'
 
 useFeature Population
-prop text setTo 'Fish max'
+useFeature AgentWidgets
+
+exprPush {{ 'Fish max' }}
+featPropPop AgentWidgets text
 
 // Make skin invisible
 prop skin setTo 'onexone'
@@ -345,8 +359,7 @@ onEvent Tick [[
     // text for avg value
     // exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
 
-    propPop text
-]]
+    featPropPop AgentWidgets text]]
 `
     },
     {
@@ -354,15 +367,15 @@ onEvent Tick [[
       label: 'Timer',
       script: `# BLUEPRINT Timer
       # PROGRAM DEFINE
+      useFeature AgentWidgets
       prop skin setTo 'onexone'
       addProp time Number 0
-      prop text setTo 'Time: 0'
+      //// prop text setTo 'Time: 0'
       # PROGRAM EVENT
       onEvent Tick [[
         prop time add 1
         exprPush {{ 'Time: ' + agent.getProp('time').value }}
-        propPop text
-
+        featPropPop AgentWidgets text
       ]]
       # PROGRAM UPDATE
       // when xxx touches yyy [[ ]]
