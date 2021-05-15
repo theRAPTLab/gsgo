@@ -157,7 +157,7 @@ useFeature Population
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
 // default to 0 (false) but once turned on (1) algae will reproduce if they get to full energy from the sun (so any that start at full won't spawn)
-addProp spawns Boolean 0
+addProp spawns Boolean 1
 
 featCall Costume setCostume 'algae.json' 0
 
