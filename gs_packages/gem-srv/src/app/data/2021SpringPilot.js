@@ -44,6 +44,8 @@ featCall Touches monitorTouchesWith Algae
 // show meter immediately
 //// exprPush {{ agent.getProp('energyLevel').value / 100 }}
 //// propPop meter
+featCall AgentWidgets bindMeterTo energyLevel
+
 
 // set name
 exprPush {{ agent.name }}
@@ -69,8 +71,10 @@ onEvent Start [[
     exprPush {{ agent.getProp('startDirection').value }}
     featPropPop agent.Movement direction
 
-    exprPush {{ agent.getProp('energyLevel').value / 100 }}
-    propPop meter
+    ////exprPush {{ agent.getProp('energyLevel').value / 100 }}
+    ////propPop meter
+    featCall AgentWidgets bindMeterTo energyLevel
+
 
     // set name + energyLevel
     exprPush {{ agent.name }}
@@ -115,19 +119,19 @@ every 1 runAtStart [[
   ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
     featCall Costume setPose 0
     // Green = 0x00FF00
-    prop meterClr setTo 65280
+    featProp AgentWidgets meterColor setTo 65280
   ]]
   // could eat
   ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
     featCall Costume setPose 1
     // Orange = 0xFF6600
-    prop meterClr setTo 16737792
+    featProp AgentWidgets meterColor setTo 16737792
   ]]
   // hungry
   ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
     featCall Costume setPose 1
     // Red = 0xFF0000
-    prop meterClr setTo 16711680
+    featProp AgentWidgets meterColor setTo 16711680
   ]]
   // dead
   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
@@ -140,6 +144,8 @@ every 1 runAtStart [[
   // set meter
   //// exprPush {{ agent.getProp('energyLevel').value / 100 }}
   //// propPop meter
+  featCall AgentWidgets bindMeterTo energyLevel
+
 
 ]]
 `
@@ -294,7 +300,7 @@ prop x setTo 75
 prop y setTo 320
 prop reportSubject setTo Algae
 prop alpha setTo 0.3
-prop meterClr setTo 65280
+featProp AgentWidgets meterColor setTo 65280
 
 # PROGRAM EVENT
 
@@ -336,7 +342,7 @@ prop x setTo -75
 prop y setTo 320
 prop reportSubject setTo Fish
 prop alpha setTo 0.3
-prop meterClr setTo 3120383
+featProp AgentWidgets meterColor setTo 3120383
 
 # PROGRAM EVENT
 
