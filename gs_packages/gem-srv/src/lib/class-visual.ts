@@ -9,6 +9,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
+import { AdjustmentFilter } from '@pixi/filter-adjustment';
+import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
@@ -98,6 +100,9 @@ class Visual implements IVisual, IPoolable, IActable {
   isGrouped: boolean;
   isCaptive: boolean;
   isGlowing: boolean;
+  filterColorOverlay: any;
+  filterAdjustment: any;
+  filterColor: number;
   // poolable
   id: any;
   _pool_id: any;
@@ -121,6 +126,8 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isGrouped = false; // use tertiary grouped effect
     this.isCaptive = false; // use tertiary grouped effect
     this.isGlowing = false;
+    this.filterColorOverlay = undefined;
+    this.filterAdjustment = undefined;
     this.container = new PIXI.Container();
     this.container.addChild(this.filterbox);
   }
@@ -156,9 +163,31 @@ class Visual implements IVisual, IPoolable, IActable {
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
-
   }
 
+  /**
+   * setColorize was designed around the moth activity.
+   * We want to colorize sprites, but retain their luminosity so you can still
+   * see sprite details.  Using colorOverly with adjustmentFilter's color
+   * multiply accomplishes this nicely: Blacks are rendered in the specified
+   * color, and everything else is a range in the specified color.  It is
+   * essentially a monotone image.  The 50% alpha on the color overlay
+   * helps to retain the black values.
+   * Setting color this way also helps to keep the dobj packet size down to a single number.
+   */
+  setColorize(color: number) {
+    if (this.filterColor === color) return; // color hasn't changed, skip update
+    this.filterColor = color;
+    if (color === -1) {
+      // Remove Colorize
+      this.filterColorOverlay = undefined;
+      this.filterAdjustment = undefined;
+      return;
+    }
+    const [r, g, b] = PIXI.utils.hex2rgb(color);
+    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
+    this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
+  }
   /**
    * Call this AFTER
    *  setAlpha
@@ -171,8 +200,11 @@ class Visual implements IVisual, IPoolable, IActable {
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
     if (this.isGlowing) filters.push(glow);
-    if (filters.length > 0) {
-      // override opacity so outlines will display
+    if (this.filterColorOverlay) filters.push(this.filterColorOverlay);
+    if (this.filterAdjustment) filters.push(this.filterAdjustment);
+    if (this.isSelected || this.isHovered) {
+      // HACK
+      // temporarily override opacity so outlines will display
       this.sprite.alpha = 1;
     }
     this.filterbox.filters = filters;

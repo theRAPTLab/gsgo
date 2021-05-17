@@ -79,6 +79,8 @@
     "@gemstep/ursys": "^0.1.0-alpha.0",
     "@material-ui/core": "^4.9.6",
     "@material-ui/lab": "^4.0.0-alpha.57",
+    "@pixi/filter-adjustment": "^4.1.0",
+    "@pixi/filter-color-overlay": "^4.1.0",
     "@pixi/filter-glow": "^4.0.0",
     "@pixi/filter-outline": "^4.0.0",
     "caniuse-lite": "^1.0.30001181",
