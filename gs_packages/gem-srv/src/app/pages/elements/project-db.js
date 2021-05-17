@@ -20,6 +20,7 @@ import { MODEL as AquaticModel } from '../../data/aquatic';
 import { MODEL as DecompositionModel } from '../../data/decomposition';
 import { MODEL as MothsModel } from '../../data/moths';
 import { MODEL as MothsSandbox } from '../../data/moths-sandbox';
+import { MODEL as IUSandbox } from '../../data/iu-sandbox';
 import { MODEL as SaltModel } from '../../data/salt';
 import { MODEL as BeesModel } from '../../data/bees';
 
@@ -55,6 +56,7 @@ export function ReadProjectsList() {
     { id: 'decomposition', label: 'Decomposition' },
     { id: 'moths', label: 'Moths' },
     { id: 'moths-sandbox', label: 'Moths Sandbox' },
+    { id: 'iu-sandbox', label: 'IU Sandbox' },
     { id: 'salt', label: 'Salt' },
     { id: 'bees', label: 'Bees' }
   ];
@@ -78,6 +80,9 @@ export function ReadProject(modelId) {
       break;
     case 'moths-sandbox':
       model = MothsSandbox;
+      break;
+    case 'iu-sandbox':
+      model = IUSandbox;
       break;
     case 'salt':
       model = SaltModel;
