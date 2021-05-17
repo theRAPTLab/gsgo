@@ -99,8 +99,8 @@ when Fish touches Algae [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
 
-      exprPush {{ 'xx' }}
-      featPropPop AgentWidgets text
+      //exprPush {{ 'xx' }}
+      //featPropPop AgentWidgets text
     ]]
 
   ]]
