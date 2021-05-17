@@ -235,7 +235,7 @@ export function InstanceUpdate(data) {
  * This is mostly used to support drag and drop
  * @param {Object} data -- { modelId, instanceId, updatedData: {x, y} }
  */
-function InstanceUpdatePosition(data) {
+export function InstanceUpdatePosition(data) {
   const model = ReadProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
