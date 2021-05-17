@@ -7,12 +7,12 @@ export const MODEL = {
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'toasty.json' 0
+featCall Costume setCostume 'bee.json' 0
 featCall Costume setColorize 0 1 0
 prop alpha setTo 1
 
 useFeature Physics
-featProp Physics scale setTo 0.25
+featProp Physics scale setTo 1
 
 useFeature Movement
 
