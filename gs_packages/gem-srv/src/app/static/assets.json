@@ -44,6 +44,11 @@
       "assetId": 9,
       "assetName": "lightbeam.json",
       "assetUrl": "static/sprites/lightbeam.json"
+    },
+    {
+      "assetId": 10,
+      "assetName": "rectangle.json",
+      "assetUrl": "static/sprites/rectangle.json"
     }
   ]
 }
