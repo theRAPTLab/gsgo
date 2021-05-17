@@ -115,6 +115,7 @@ function Init(element) {
       vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
+      vobj.setColorize(dobj.color);
       vobj.applyFilters();
 
       // Old Approach: Only enable drag and hover if controlMode is puppet (1)
@@ -174,6 +175,7 @@ function Init(element) {
       vobj.setGrouped(dobj.flags & FLAGS.SELECTION.GROUPED);
       vobj.setCaptive(dobj.flags & FLAGS.SELECTION.CAPTIVE);
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
+      vobj.setColorize(dobj.color);
       vobj.applyFilters();
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents

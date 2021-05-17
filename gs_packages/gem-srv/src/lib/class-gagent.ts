@@ -72,6 +72,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.y = new GVarNumber();
     this.prop.zIndex = new GVarNumber();
     this.prop.skin = new GVarString('default');
+    this.prop.color = new GVarNumber(-1); // color overlay (-1 = not set)
     this.prop.scale = new GVarNumber(1); // implicit x
     this.prop.scale.setMax(10);
     this.prop.scale.setMin(0.1);
@@ -123,6 +124,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set skin(str: string) {
     this.prop.skin.value = str;
+  }
+  get color() {
+    return this.prop.color.value;
+  }
+  set color(num: number) {
+    this.prop.color.value = num;
   }
   get scale() {
     return this.prop.scale.value;
