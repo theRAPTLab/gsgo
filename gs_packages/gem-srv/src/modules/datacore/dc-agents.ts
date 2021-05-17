@@ -14,7 +14,8 @@ export const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => 
 export const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
 export const INSTANCES: TInstanceMap = new Map();
 //
-let INSTANCE_COUNTER = 1000;
+const INSTANCE_COUNTER_START_VAL = 1000;
+let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given the creation parameters, make a new instance. The init program sets
@@ -27,7 +28,7 @@ export function DefineInstance(instanceDef: TInstance) {
   const bpi = INSTANCES.get(blueprint);
   // Use the spec'd id, otherwise auto-generate an id
   if (!instanceDef.id) {
-    instanceDef.id = INSTANCE_COUNTER++;
+    instanceDef.id = String(INSTANCE_COUNTER++);
   }
   instanceDef.id = String(instanceDef.id); // enforce string
   bpi.push(instanceDef);
@@ -77,7 +78,7 @@ export function GetInstancesType(blueprint: string) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteAllInstances() {
   INSTANCES.clear();
-  INSTANCE_COUNTER = 100;
+  INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteInstancesByBlueprint(blueprint) {
