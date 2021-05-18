@@ -11,6 +11,7 @@ import { Register } from 'modules/datacore/dc-features';
 import { IAgent } from 'lib/t-script';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import {
+  DeleteAgent,
   GetAgentsByType,
   GetAllAgents,
   DefineInstance,
@@ -26,18 +27,30 @@ const DBG = false;
 
 let COUNT = 0;
 
+const AGENTS_TO_REMOVE = []; // string[]
 const AGENTS_TO_CREATE = []; // InstanceDef[]
 
 /// CREATE LOOP //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function m_create(frame) {
+function m_Delete(frame) {
+  while (AGENTS_TO_REMOVE.length > 0) {
+    const id = AGENTS_TO_REMOVE.pop();
+    const agent = GetAgentById(id);
+    if (agent) {
+      DeleteAgent({
+        id: agent.id,
+        blueprint: agent.blueprint.name
+      });
+    }
+  }
+}
+function m_Create(frame) {
   while (AGENTS_TO_CREATE.length > 0) {
     const def = AGENTS_TO_CREATE.pop();
 
     DefineInstance(def);
     const agent = TRANSPILER.MakeAgent(def);
-
     // by default set agent position to parent position
     const parent = GetAgentById(def.parentId);
     agent.x = parent.x;
@@ -56,12 +69,14 @@ class PopulationPack extends GFeature {
     super(name);
     // Population Management
     this.featAddMethod('createAgent', this.createAgent);
+    this.featAddMethod('removeAgent', this.removeAgent);
     // Statistics
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
 
-    UR.HookPhase('SIM/CREATE', m_create);
+    UR.HookPhase('SIM/DELETE', m_Delete);
+    UR.HookPhase('SIM/CREATE', m_Create);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // /** This runs once to initialize the feature for all agents */
@@ -102,6 +117,9 @@ class PopulationPack extends GFeature {
       parentId: agent.id // save for positioning
     };
     AGENTS_TO_CREATE.push(def);
+  }
+  removeAgent(agent: IAgent) {
+    AGENTS_TO_REMOVE.push(agent.id);
   }
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Population setRadius value
