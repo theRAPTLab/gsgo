@@ -178,7 +178,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setColorize(color: number) {
     if (this.filterColor === color) return; // color hasn't changed, skip update
     this.filterColor = color;
-    if (color === -1) {
+    if (color === null) {
       // Remove Colorize
       this.filterColorOverlay = undefined;
       this.filterAdjustment = undefined;
