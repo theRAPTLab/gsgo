@@ -4,6 +4,7 @@ export const MODEL = {
     {
       id: 'Moth',
       label: 'Moth',
+      isControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
@@ -11,23 +12,46 @@ featCall Costume setCostume 'bee.json' 0
 featCall Costume setColorize 0 1 0
 prop alpha setTo 1
 
-useFeature Physics
-featProp Physics scale setTo 1
-
 useFeature Movement
+useFeature Physics
+useFeature Touches
+featCall Touches monitorTouchesWith Tree
+
+// allow removal by  Predator
+useFeature Population
 
 # PROGRAM INIT
 featCall Costume randomizeColor 0.1 0.3 0.1
 featCall Movement setRandomStart
 
 # PROGRAM UPDATE
+prop alpha setTo 1
+when Moth touches Tree [[
+  prop alpha setTo 0.2
+]]
 `
     },
     {
       id: 'Predator',
       label: 'Predator',
+      isControllable: true,
       script: `# BLUEPRINT Predator
-# PROGRAM CONDITION
+# PROGRAM DEFINE
+useFeature Costume
+featCall Costume setCostume 'bunny.json' 0
+
+useFeature Physics
+useFeature Touches
+featCall Touches monitorTouchesWith Moth
+
+# PROGRAM UPDATE
+when Predator touches Moth [[
+  featCall Moth.Costume setGlow 1
+  every 2 [[
+    featCall Moth.Population removeAgent
+  ]]
+]]
+
 `
     },
     {
@@ -41,6 +65,8 @@ featCall Costume setColorize 0 1 0
 
 useFeature Physics
 
+# PROGRAM INIT
+prop zIndex setTo -200
 `
     }
   ],
@@ -88,6 +114,14 @@ prop alpha setTo 0.02`
       name: 'Moth2',
       blueprint: 'Moth',
       initScript: `prop x setTo 0
+prop y setTo -100
+prop alpha setTo 1`
+    },
+    {
+      id: 1301,
+      name: 'Predator1',
+      blueprint: 'Predator',
+      initScript: `prop x setTo 250
 prop y setTo -100
 prop alpha setTo 1`
     }
