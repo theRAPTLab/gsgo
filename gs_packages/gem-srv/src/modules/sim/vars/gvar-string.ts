@@ -15,7 +15,7 @@ export class GVarString extends SM_Object implements IScopeable {
   constructor(initial?: string) {
     super();
     this.meta.type = Symbol.for('GVarString');
-    this.value = initial || '';
+    this.value = initial;
   }
   setTo(str: string): GVarString {
     this.value = str;
@@ -23,6 +23,9 @@ export class GVarString extends SM_Object implements IScopeable {
   }
   eq(str: string) {
     return new GVarBoolean(this.value === str);
+  }
+  clear() {
+    this.value = '';
   }
 }
 
