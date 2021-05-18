@@ -55,17 +55,17 @@ AGENT_TO_DOBJ.setMapFunctions({
     // so NPC agents (200) always appera on top of input agents (-100)
     dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
-    dobj.color = agent.color;
+    if (agent.color) dobj.color = agent.color;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale !== undefined) dobj.scale = agent.scale;
-    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY; // redundant || agent.scale;
+    if (agent.scale) dobj.scale = agent.scale;
+    if (agent.scaleY) dobj.scaleY = agent.scaleY;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
-    dobj.flags = agent.getFlags();
+    dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
@@ -74,17 +74,17 @@ AGENT_TO_DOBJ.setMapFunctions({
     // so NPC agents (200) always appera on top of input agents (-100)
     dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
-    dobj.color = agent.color;
+    if (agent.color) dobj.color = agent.color;
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale !== undefined) dobj.scale = agent.scale;
-    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY; // redundant || agent.scale;
+    if (agent.scale) dobj.scale = agent.scale;
+    if (agent.scaleY) dobj.scaleY = agent.scaleY;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
-    if (agent.statusValue || dobj.meter) dobj.meter = agent.statusValue; // clear old meter if previously set
+    if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
-    dobj.flags = agent.getFlags();
+    dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
   }
 });
 
