@@ -49,6 +49,7 @@ featCall AgentWidgets bindMeterTo energyLevel
 exprPush {{ agent.name }}
 featPropPop AgentWidgets text
 
+
 # PROGRAM EVENT
 onEvent Start [[
   // start at normal size unless you eat
@@ -175,13 +176,16 @@ featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Sunbeam'
 
 // This is so that the numbers don't suddenly change at start and confusing things
-exprPush {{ '##' }}
-featPropPop AgentWidgets text
+//exprPush {{ '##' }}
+//featPropPop AgentWidgets text
+featCall AgentWidgets bindTextTo energyLevel
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
 featCall Movement setMovementType 'wander' 0.2
 
 # PROGRAM INIT
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+featPropPop Physics scale
 
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
