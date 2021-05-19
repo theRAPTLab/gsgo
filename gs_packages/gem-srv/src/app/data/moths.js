@@ -44,6 +44,9 @@ useFeature Physics
 useFeature Touches
 featCall Touches monitorTouchesWith Moth
 
+// needed for Seek
+useFeature Movement
+
 # PROGRAM UPDATE
 when Predator touches Moth [[
   featCall Moth.Costume setGlow 1
@@ -123,6 +126,8 @@ prop alpha setTo 1`
       blueprint: 'Predator',
       initScript: `prop x setTo 250
 prop y setTo -100
+featCall Movement seekNearest Moth
+featProp Movement distance setTo 1
 prop alpha setTo 1`
     }
   ]
