@@ -67,7 +67,7 @@ function m_update(frame) {
     let text;
     const textProp = agent.getFeatProp(FEATID, 'textProp').value;
     if (textProp !== '') {
-      text = agent.getProp(textProp).value;
+      text = agent.getProp(textProp) ? agent.getProp(textProp).value : undefined;
     } else {
       text = agent.getFeatProp(FEATID, 'text').value;
     }
