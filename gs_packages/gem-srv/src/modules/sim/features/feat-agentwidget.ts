@@ -66,7 +66,7 @@ function m_update(frame) {
     //    or, text can be bound to an agent property.
     let text;
     const textProp = agent.getFeatProp(FEATID, 'textProp').value;
-    if (textProp !== '') {
+    if (textProp !== undefined) {
       text = agent.getProp(textProp) ? agent.getProp(textProp).value : undefined;
     } else {
       text = agent.getFeatProp(FEATID, 'text').value;
