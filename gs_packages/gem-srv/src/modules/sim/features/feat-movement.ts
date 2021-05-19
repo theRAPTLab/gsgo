@@ -20,6 +20,13 @@ import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
+import {
+  DeleteAgent,
+  GetAgentsByType,
+  GetAllAgents,
+  DefineInstance,
+  GetAgentById
+} from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 
@@ -28,6 +35,11 @@ import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 const FEATID = 'Movement';
 const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
+
+/// Movement Agent Manager
+const MOVING_AGENTS = new Map();
+
+const SEEK_AGENTS = new Map();
 
 /// MOVING_AGENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,6 +53,15 @@ function m_random(min = 0, max = 1, round = false) {
 }
 function m_DegreesToRadians(degree) {
   return (degree * Math.PI) / 180;
+}
+// Distance between centers for now
+function m_DistanceTo(agent, target) {
+  return Math.hypot(target.x - agent.x, target.y - agent.y);
+}
+function m_AngleBetween(agent, target) {
+  const dy = target.y - agent.y;
+  const dx = target.x - agent.x;
+  return Math.atan2(dy, dx);
 }
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
@@ -168,18 +189,58 @@ function moveFloat(agent, y: number = -300) {
   agent.prop.y.value = Math.max(y, agent.prop.y.value - 2);
 }
 
+/// SeekAgent
+function seekAgent(agent) {
+  const targetId = agent.prop.Movement.target.value;
+  if (!targetId) return; // no target, just idle
+
+  const distance = agent.prop.Movement.distance.value;
+
+  const target = GetAgentById(targetId);
+  let angle = -m_AngleBetween(agent, target); // flip y
+
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  m_setPosition(agent, x, y);
+}
+
 /// Movement Function Library
 const MOVEMENT_FUNCTIONS = new Map([
   ['static', undefined],
   ['wander', moveWander],
   ['edgeToEdge', moveEdgeToEdge],
   ['jitter', moveJitter],
-  ['float', moveFloat]
+  ['float', moveFloat],
+  ['seekAgent', seekAgent]
 ]);
 
-/// Movement Agent Manager
-const MOVING_AGENTS = new Map();
-UR.HookPhase('SIM/FEATURES_UPDATE', () => {
+/// UPDATES ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function m_FeaturesThink(frame) {
+  const targetAgents = GetAllAgents();
+  SEEK_AGENTS.forEach((targetType, id) => {
+    // REVIEW: More efficient to loop on targetAgents once, and subloop on SEEK_AGENTS?
+    // Probably not?
+    const agent = GetAgentById(id);
+    let shortestDistance: number = Infinity;
+    let nearestAgent;
+    targetAgents.forEach(t => {
+      if (t.blueprint.name !== targetType) return; // skip if wrong blueprint type
+      if (t.id === agent.id) return; // skip self
+      const d = m_DistanceTo(agent, t);
+      if (d < shortestDistance) {
+        shortestDistance = d;
+        nearestAgent = t;
+      }
+    });
+    agent
+      .getFeatProp(FEATID, 'target')
+      .setTo(nearestAgent ? nearestAgent.id : undefined);
+  });
+}
+
+function m_FeaturesExec(frame) {
   const agents = [...MOVING_AGENTS.values()];
   agents.forEach(agent => {
     // ignore AI movement if input agent
@@ -188,7 +249,13 @@ UR.HookPhase('SIM/FEATURES_UPDATE', () => {
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
     if (moveFn) moveFn(agent);
   });
-});
+}
+
+/// HOOKS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+UR.HookPhase('SIM/FEATURES_EXEC', m_FeaturesExec);
+UR.HookPhase('SIM/FEATURES_THINK', m_FeaturesThink);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -207,6 +274,7 @@ class MovementPack extends GFeature {
     this.featAddMethod('setRandomPositionY', this.setRandomPositionY);
     this.featAddMethod('setRandomStart', this.setRandomStart);
     this.featAddMethod('jitterPos', this.jitterPos);
+    this.featAddMethod('seekNearest', this.seekNearest);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -227,6 +295,7 @@ class MovementPack extends GFeature {
     this.featAddProp(agent, 'direction', prop); // degrees
     this.featAddProp(agent, 'distance', new GVarNumber(0.5));
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
+    this.featAddProp(agent, 'target', new GVarString()); // id of agent we're seeking
   }
 
   handleInput() {
@@ -264,6 +333,8 @@ class MovementPack extends GFeature {
           break;
         case 'jitter':
           // min max
+          break;
+        case 'seekAgent':
           break;
         default:
       }
@@ -307,6 +378,11 @@ class MovementPack extends GFeature {
     const x = m_random(min, max, round);
     const y = m_random(min, max, round);
     m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
+  }
+
+  seekNearest(agent: IAgent, targetType: string) {
+    SEEK_AGENTS.set(agent.id, targetType);
+    this.setMovementType(agent, 'seekAgent');
   }
 } // end of feature class
 
