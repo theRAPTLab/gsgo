@@ -176,9 +176,9 @@ featCall Touches monitorTouchesWith 'Fish'
 featCall Touches monitorTouchesWith 'Sunbeam'
 
 // This is so that the numbers don't suddenly change at start and confusing things
-//exprPush {{ '##' }}
-//featPropPop AgentWidgets text
-featCall AgentWidgets bindTextTo energyLevel
+exprPush {{ '##' }}
+featPropPop AgentWidgets text
+//featCall AgentWidgets bindTextTo energyLevel
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
 featCall Movement setMovementType 'wander' 0.2
