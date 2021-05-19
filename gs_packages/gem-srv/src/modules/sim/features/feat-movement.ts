@@ -25,6 +25,7 @@ import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const FEATID = 'Movement';
 const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
@@ -244,21 +245,21 @@ class MovementPack extends GFeature {
 
   // TYPES
   setMovementType(agent: IAgent, type: string, ...params) {
-    agent.getFeatProp(this.name, 'movementType').value = type;
+    agent.getFeatProp(FEATID, 'movementType').value = type;
     if (params.length > 0) {
       switch (type) {
         case 'wander':
           // first param is distance
-          agent.getFeatProp(this.name, 'distance').value = params[0];
+          agent.getFeatProp(FEATID, 'distance').value = params[0];
           break;
         case 'edgeToEdge':
-          agent.getFeatProp(this.name, 'distance').value = params[0];
-          agent.getFeatProp(this.name, 'direction').value = params[1];
+          agent.getFeatProp(FEATID, 'distance').value = params[0];
+          agent.getFeatProp(FEATID, 'direction').value = params[1];
 
           if (params.length > 2) {
-            agent.getFeatProp(this.name, 'bounceAngle').value = params[2];
+            agent.getFeatProp(FEATID, 'bounceAngle').value = params[2];
             if (params[3] === 'rand')
-              agent.getFeatProp(this.name, 'direction').value = m_random(0, 180);
+              agent.getFeatProp(FEATID, 'direction').value = m_random(0, 180);
           }
           break;
         case 'jitter':
@@ -311,5 +312,5 @@ class MovementPack extends GFeature {
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const INSTANCE = new MovementPack('Movement');
+const INSTANCE = new MovementPack(FEATID);
 Register(INSTANCE);
