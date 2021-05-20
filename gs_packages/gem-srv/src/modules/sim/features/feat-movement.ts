@@ -17,7 +17,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import {
@@ -36,9 +36,12 @@ const FEATID = 'Movement';
 const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
-/// Movement Agent Manager
-const MOVING_AGENTS = new Map();
+const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
+const MOVEDISTANCE = 5; // Minimum distance moved before `isMoved` is registered
+// This is necessary to account for input jitter
 
+/// Movement Agent Manager
+const TRACKED_AGENTS = new Map();
 const SEEK_AGENTS = new Map();
 
 /// MOVING_AGENTS /////////////////////////////////////////////////////////////
@@ -66,7 +69,11 @@ function m_AngleBetween(agent, target) {
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
-function m_setPosition(agent, x, y) {
+/// Processes position request
+/// * Checks bounds
+/// * Applies bounce
+/// But does not actually set the agent x/y until FEATURES_EXEC phase
+function m_QueuePosition(agent, x, y) {
   const bounds = GetBounds();
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
@@ -107,24 +114,56 @@ function m_setPosition(agent, x, y) {
     yy = bounds.bottom - hheight - pad;
     if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
   }
-  agent.prop.x.value = xx;
-  agent.prop.y.value = yy;
+
+  agent.prop.Movement._x = xx;
+  agent.prop.Movement._y = yy;
+}
+
+/// Calculate derived properties
+function m_ProcessPosition(agent, frame) {
+  const x = agent.prop.Movement._x;
+  const y = agent.prop.Movement._y;
+
+  if (!x || !y) return; // Movement not set, so ignore
+
+  // is Moving?
+  // inputs come in at a 15fps frame rate, so we need to use hysteresis
+  let didMove = false;
+  if (
+    Math.abs(agent.x - x) > MOVEDISTANCE ||
+    Math.abs(agent.y - y) > MOVEDISTANCE
+  ) {
+    agent.prop.Movement._lastMove = frame;
+    didMove = true;
+  } else if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
+    didMove = true;
+  }
+  agent.prop.Movement.isMoving.setTo(didMove);
+}
+
+function m_SetPosition(agent, frame) {
+  const x = agent.prop.Movement._x;
+  const y = agent.prop.Movement._y;
+  if (!x || !y) return; // Movement not set, so ignore
+  agent.prop.x.value = x;
+  agent.prop.y.value = y;
 }
 
 /// JITTER
 function moveJitter(
-  agent,
+  agent: IAgent,
   min: number = -5,
   max: number = 5,
-  round: boolean = true
+  round: boolean = true,
+  frame: number
 ) {
   const x = m_random(min, max, round);
   const y = m_random(min, max, round);
-  m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
+  m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
 }
 
 /// WANDER
-function moveWander(agent) {
+function moveWander(agent: IAgent, frame: number) {
   // Mostly go in the same direction
   // but really change direction once in a while
   const distance = agent.prop.Movement.distance.value;
@@ -136,13 +175,12 @@ function moveWander(agent) {
   const angle = m_DegreesToRadians(direction);
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
-  m_setPosition(agent, x, y);
+  m_QueuePosition(agent, x, y);
 }
 
 /// EDGE to EDGE (of the entire tank / system)
 // Go in the same direction most of the way across the space, then turn back and do similar
-
-function moveEdgeToEdge(agent) {
+function moveEdgeToEdge(agent: IAgent, frame: number) {
   const bounds = GetBounds();
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
@@ -179,8 +217,8 @@ function moveEdgeToEdge(agent) {
   const y = agent.prop.y.value - Math.sin(angle) * distance;
 
   // we handled our own bounce, so set x and y directly
-  agent.prop.x.value = x;
-  agent.prop.y.value = y;
+  agent.prop.Movement._x = x;
+  agent.prop.Movement._y = y;
 }
 
 /// FLOAT
@@ -190,8 +228,8 @@ function moveFloat(agent, y: number = -300) {
 }
 
 /// SeekAgent
-function seekAgent(agent) {
-  const targetId = agent.prop.Movement.target.value;
+function seekAgent(agent: IAgent, frame: number) {
+  const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
 
   const distance = agent.prop.Movement.distance.value;
@@ -199,9 +237,11 @@ function seekAgent(agent) {
   const target = GetAgentById(targetId);
   let angle = -m_AngleBetween(agent, target); // flip y
 
+  // console.log('distance, angle', distance, angle, (angle * 180) / Math.PI);
+
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
-  m_setPosition(agent, x, y);
+  m_QueuePosition(agent, x, y);
 }
 
 /// Movement Function Library
@@ -217,11 +257,11 @@ const MOVEMENT_FUNCTIONS = new Map([
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function m_FeaturesThink(frame) {
+function m_FeaturesUpdate(frame) {
+  // 1. Seek Agents
   const targetAgents = GetAllAgents();
   SEEK_AGENTS.forEach((targetType, id) => {
-    // REVIEW: More efficient to loop on targetAgents once, and subloop on SEEK_AGENTS?
-    // Probably not?
+    // REVIEW: Distance calculation should ideally only happen once and be cached
     const agent = GetAgentById(id);
     let shortestDistance: number = Infinity;
     let nearestAgent;
@@ -234,28 +274,45 @@ function m_FeaturesThink(frame) {
         nearestAgent = t;
       }
     });
-    agent
-      .getFeatProp(FEATID, 'target')
-      .setTo(nearestAgent ? nearestAgent.id : undefined);
+    agent.prop.Movement._targetId = nearestAgent ? nearestAgent.id : undefined;
   });
 }
-
-function m_FeaturesExec(frame) {
-  const agents = [...MOVING_AGENTS.values()];
+function m_FeaturesThink(frame) {
+  // 2. Process Movement
+  const agents = [...TRACKED_AGENTS.values()];
   agents.forEach(agent => {
     // ignore AI movement if input agent
     if (agent.isModePuppet()) return;
     // handle movement
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
-    if (moveFn) moveFn(agent);
+    if (moveFn) moveFn(agent, frame);
+  });
+}
+function m_FeaturesExec(frame) {
+  // Calculate derived properties (e.g. isMoving)
+  const agents = [...TRACKED_AGENTS.values()];
+  agents.forEach(agent => {
+    m_ProcessPosition(agent, frame);
+  });
+}
+function m_ApplyMovement(frame) {
+  // Apply Positions
+  const agents = [...TRACKED_AGENTS.values()];
+  agents.forEach(agent => {
+    m_SetPosition(agent, frame);
   });
 }
 
 /// HOOKS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-UR.HookPhase('SIM/FEATURES_EXEC', m_FeaturesExec);
+UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
 UR.HookPhase('SIM/FEATURES_THINK', m_FeaturesThink);
+UR.HookPhase('SIM/FEATURES_EXEC', m_FeaturesExec);
+UR.HookPhase('SIM/VIS_UPDATE', m_ApplyMovement);
+// using VIS_UPDATE instead of FEATURES_EXEC here because
+// we need to update input agents during PRE_RUN, otherwise, input controls
+// will not show up until you run the sim
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -265,7 +322,7 @@ class MovementPack extends GFeature {
     if (DBG) console.log(...PR('construct'));
     this.handleInput = this.handleInput.bind(this);
     this.featAddMethod('setController', this.setController);
-    this.featAddMethod('setPosition', this.setPosition);
+    this.featAddMethod('queuePosition', this.queuePosition);
     this.featAddMethod('setMovementType', this.setMovementType);
     this.featAddMethod('setDirection', this.setDirection);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
@@ -285,7 +342,7 @@ class MovementPack extends GFeature {
 
   decorate(agent) {
     super.decorate(agent);
-    MOVING_AGENTS.set(agent.name, agent);
+    TRACKED_AGENTS.set(agent.name, agent);
     this.featAddProp(agent, 'movementType', new GVarString('static'));
     this.featAddProp(agent, 'controller', new GVarString());
     let prop = new GVarNumber(0);
@@ -295,7 +352,16 @@ class MovementPack extends GFeature {
     this.featAddProp(agent, 'direction', prop); // degrees
     this.featAddProp(agent, 'distance', new GVarNumber(0.5));
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
-    this.featAddProp(agent, 'target', new GVarString()); // id of agent we're seeking
+    this.featAddProp(agent, 'isMoving', new GVarBoolean());
+
+    // Initialize internal properties
+    agent.prop.Movement._lastMove = 0;
+
+    // Internal Properties
+    // agent.prop.Movement._x
+    // agent.prop.Movement._y
+    // agent.prop.Movement._targetId
+    // agent.prop.Movmeent._lastMove
   }
 
   handleInput() {
@@ -308,8 +374,8 @@ class MovementPack extends GFeature {
     agent.getProp('controller').value = x;
   }
 
-  setPosition(agent, x, y) {
-    m_setPosition(agent, x, y);
+  queuePosition(agent, x, y) {
+    m_QueuePosition(agent, x, y);
   }
 
   // TYPES
@@ -354,19 +420,19 @@ class MovementPack extends GFeature {
     const bounds = GetBounds();
     const x = m_random(bounds.left, bounds.right);
     const y = m_random(bounds.top, bounds.bottom);
-    m_setPosition(agent, x, y);
+    m_QueuePosition(agent, x, y);
   }
 
   setRandomPositionX(agent: IAgent) {
     const bounds = GetBounds();
     const x = m_random(bounds.left, bounds.right);
-    m_setPosition(agent, x, agent.prop.y.value);
+    m_QueuePosition(agent, x, agent.prop.y.value);
   }
 
   setRandomPositionY(agent: IAgent) {
     const bounds = GetBounds();
     const y = m_random(bounds.top, bounds.bottom);
-    m_setPosition(agent, agent.prop.x.value, y);
+    m_QueuePosition(agent, agent.prop.x.value, y);
   }
 
   setRandomStart(agent: IAgent) {
@@ -377,7 +443,7 @@ class MovementPack extends GFeature {
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
     const x = m_random(min, max, round);
     const y = m_random(min, max, round);
-    m_setPosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
+    m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
   }
 
   seekNearest(agent: IAgent, targetType: string) {
