@@ -77,6 +77,8 @@ function Start() {
   }
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
+  // Unsubscribe from PRERUN, otherwise it'll keep running.
+  if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
