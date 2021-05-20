@@ -126,7 +126,7 @@ prop alpha setTo 1`
       blueprint: 'Predator',
       initScript: `prop x setTo 250
 prop y setTo -100
-featCall Movement seekNearest Moth
+featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 1
 prop alpha setTo 1`
     }

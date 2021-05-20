@@ -227,21 +227,32 @@ function moveFloat(agent, y: number = -300) {
   agent.prop.y.value = Math.max(y, agent.prop.y.value - 2);
 }
 
+/// Seek
+function seek(agent: IAgent, target: { x; y }, frame: number) {
+  const distance = agent.prop.Movement.distance.value;
+  let angle = -m_AngleBetween(agent, target); // flip y
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  m_QueuePosition(agent, x, y);
+}
+
 /// SeekAgent
 function seekAgent(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
   if (!targetId) return; // no target, just idle
-
-  const distance = agent.prop.Movement.distance.value;
-
   const target = GetAgentById(targetId);
-  let angle = -m_AngleBetween(agent, target); // flip y
+  seek(agent, target, frame);
+}
 
-  // console.log('distance, angle', distance, angle, (angle * 180) / Math.PI);
-
-  const x = agent.prop.x.value + Math.cos(angle) * distance;
-  const y = agent.prop.y.value - Math.sin(angle) * distance;
-  m_QueuePosition(agent, x, y);
+/// seekAgentOrWander
+function seekAgentOrWander(agent: IAgent, frame: number) {
+  const targetId = agent.prop.Movement._targetId;
+  if (!targetId) {
+    moveWander(agent, frame); // no target, wander instead
+    return;
+  }
+  const target = GetAgentById(targetId);
+  seek(agent, target, frame);
 }
 
 /// Movement Function Library
@@ -251,7 +262,8 @@ const MOVEMENT_FUNCTIONS = new Map([
   ['edgeToEdge', moveEdgeToEdge],
   ['jitter', moveJitter],
   ['float', moveFloat],
-  ['seekAgent', seekAgent]
+  ['seekAgent', seekAgent],
+  ['seekAgentOrWander', seekAgentOrWander]
 ]);
 
 /// UPDATES ////////////////////////////////////////////////////////////////////
@@ -332,6 +344,7 @@ class MovementPack extends GFeature {
     this.featAddMethod('setRandomStart', this.setRandomStart);
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('seekNearest', this.seekNearest);
+    this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -449,6 +462,11 @@ class MovementPack extends GFeature {
   seekNearest(agent: IAgent, targetType: string) {
     SEEK_AGENTS.set(agent.id, targetType);
     this.setMovementType(agent, 'seekAgent');
+  }
+
+  seekNearestVisible(agent: IAgent, targetType: string) {
+    SEEK_AGENTS.set(agent.id, targetType);
+    this.setMovementType(agent, 'seekAgentOrWander');
   }
 } // end of feature class
 
