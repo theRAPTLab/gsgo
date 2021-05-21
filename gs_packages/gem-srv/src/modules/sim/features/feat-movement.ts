@@ -57,6 +57,9 @@ function m_random(min = 0, max = 1, round = false) {
 function m_DegreesToRadians(degree) {
   return (degree * Math.PI) / 180;
 }
+function m_RadiansToDegrees(radians) {
+  return (radians * 180) / Math.PI;
+}
 // Distance between centers for now
 function m_DistanceTo(agent, target) {
   return Math.hypot(target.x - agent.x, target.y - agent.y);
@@ -66,9 +69,15 @@ function m_AngleBetween(agent, target) {
   const dx = target.x - agent.x;
   return Math.atan2(dy, dx);
 }
+function m_ProjectPoint(agent, angle, distance) {
+  const x = agent.prop.x.value + Math.cos(angle) * distance;
+  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  return { x, y };
+}
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Processes position request
 /// * Checks bounds
 /// * Applies bounce
@@ -118,7 +127,7 @@ function m_QueuePosition(agent, x, y) {
   agent.prop.Movement._x = xx;
   agent.prop.Movement._y = yy;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Calculate derived properties
 function m_ProcessPosition(agent, frame) {
   const x = agent.prop.Movement._x;
@@ -139,8 +148,15 @@ function m_ProcessPosition(agent, frame) {
     didMove = true;
   }
   agent.prop.Movement.isMoving.setTo(didMove);
-}
 
+  // Direction
+  const direction = m_AngleBetween(agent, {
+    x: agent.prop.Movement._x,
+    y: agent.prop.Movement._y
+  });
+  agent.prop.Movement._direction = direction;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetPosition(agent, frame) {
   const x = agent.prop.Movement._x;
   const y = agent.prop.Movement._y;
@@ -149,6 +165,8 @@ function m_SetPosition(agent, frame) {
   agent.prop.y.value = y;
 }
 
+/// MOVEMENT TYPES ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// JITTER
 function moveJitter(
   agent: IAgent,
@@ -161,7 +179,7 @@ function moveJitter(
   const y = m_random(min, max, round);
   m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// WANDER
 function moveWander(agent: IAgent, frame: number) {
   // Mostly go in the same direction
@@ -173,11 +191,10 @@ function moveWander(agent: IAgent, frame: number) {
     agent.prop.Movement.direction.value = direction;
   }
   const angle = m_DegreesToRadians(direction);
-  const x = agent.prop.x.value + Math.cos(angle) * distance;
-  const y = agent.prop.y.value - Math.sin(angle) * distance;
+  const { x, y } = m_ProjectPoint(agent, angle, distance);
   m_QueuePosition(agent, x, y);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE to EDGE (of the entire tank / system)
 // Go in the same direction most of the way across the space, then turn back and do similar
 function moveEdgeToEdge(agent: IAgent, frame: number) {
@@ -220,13 +237,13 @@ function moveEdgeToEdge(agent: IAgent, frame: number) {
   agent.prop.Movement._x = x;
   agent.prop.Movement._y = y;
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// FLOAT
 function moveFloat(agent, y: number = -300) {
   // Move to some designated vertical position
   agent.prop.y.value = Math.max(y, agent.prop.y.value - 2);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Seek
 function seek(agent: IAgent, target: { x; y }, frame: number) {
   const distance = agent.prop.Movement.distance.value;
@@ -235,7 +252,7 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
   const y = agent.prop.y.value - Math.sin(angle) * distance;
   m_QueuePosition(agent, x, y);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
 function seekAgent(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
@@ -243,7 +260,7 @@ function seekAgent(agent: IAgent, frame: number) {
   const target = GetAgentById(targetId);
   seek(agent, target, frame);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// seekAgentOrWander
 function seekAgentOrWander(agent: IAgent, frame: number) {
   const targetId = agent.prop.Movement._targetId;
@@ -254,7 +271,7 @@ function seekAgentOrWander(agent: IAgent, frame: number) {
   const target = GetAgentById(targetId);
   seek(agent, target, frame);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Movement Function Library
 const MOVEMENT_FUNCTIONS = new Map([
   ['static', undefined],
@@ -266,29 +283,101 @@ const MOVEMENT_FUNCTIONS = new Map([
   ['seekAgentOrWander', seekAgentOrWander]
 ]);
 
+/// SEEK ALGORITHMS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_FindNearestAgent(agent, targetType) {
+  let shortestDistance: number = Infinity;
+  let nearestAgent;
+  const targetAgents = GetAllAgents();
+  targetAgents.forEach(t => {
+    if (t.blueprint.name !== targetType) return; // skip if wrong blueprint type
+    if (t.id === agent.id) return; // skip self
+    const d = m_DistanceTo(agent, t);
+    if (d < shortestDistance) {
+      shortestDistance = d;
+      nearestAgent = t;
+    }
+  });
+  return nearestAgent;
+}
+
+// HACK
+// Check distance between center of target and vision end point
+//
+// This works, but is quite hacky.
+// The distance between the target center and the visionPoint
+// might vary widely depending on the position of the target.
+//
+// // 1. Project a point some distance ahead of the current direction
+// // 2. Calculate the distance between that visionPoint and the
+// //    nearestAgent candidate's center.
+// // 3. If the
+// // If the distance between the direcitonal vision distance
+// // point and the center of the target object is greater than
+// // n, then we can't see it.
+// const VISIBILITY_DISTANCE = 50;
+// const direction = agent.prop.Movement._direction;
+// const angle = m_DegreesToRadians(direction);
+// const visionPoint = m_Projection(agent, angle, VISIBILITY_DISTANCE);
+// const isWithinVisionCone =
+//   shortestDistance < VISIBILITY_DISTANCE
+//     ? // if the target is CLOSER than visibility distance, use agent
+//       m_DistanceTo(nearestAgent, agent) < VISIBILITY_ANGLE
+//     : m_DistanceTo(nearestAgent, visionPoint) < VISIBILITY_ANGLE;
+function m_IsTargetWithinViewDistance() {}
+
+// HACK
+// Check angle between direction and angle to target center
+//
+// This works, but does not account for the target's size.
+// This is also problematic in that there could be a slightly
+// further away agent that IS within the cone of vision.
+// Advantage: It's a relatively cheap calculation.
+// `direction` generally goes from -PI to +PI
+// `angleToTarget` also is -PI to +PI.
+//  So the wrap happens at PI.
+function m_IsTargetWithinViewAngle(agent, target) {
+  const angleToTarget = m_AngleBetween(agent, target);
+  const direction = agent.prop.Movement._direction;
+  // normallize the angles so we can safely do math
+  // on angles without worrying about negative numbers
+  // and wrapping.  Since we're just looking at differences
+  // anyway, it doesn't matter that all the angles
+  // are rotated by 90 degrees.
+  const normalizedDir = direction + Math.PI;
+  const normalizedAngle = angleToTarget + Math.PI;
+  const maxViewAngle = normalizedDir + agent.prop.Movement._viewAngle;
+  const minViewAngle = normalizedDir - agent.prop.Movement._viewAngle;
+  return normalizedAngle < maxViewAngle && normalizedAngle > minViewAngle;
+}
+
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function m_FeaturesUpdate(frame) {
   // 1. Seek Agents
-  const targetAgents = GetAllAgents();
-  SEEK_AGENTS.forEach((targetType, id) => {
+  SEEK_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
     const agent = GetAgentById(id);
-    let shortestDistance: number = Infinity;
-    let nearestAgent;
-    targetAgents.forEach(t => {
-      if (t.blueprint.name !== targetType) return; // skip if wrong blueprint type
-      if (t.id === agent.id) return; // skip self
-      const d = m_DistanceTo(agent, t);
-      if (d < shortestDistance) {
-        shortestDistance = d;
-        nearestAgent = t;
-      }
-    });
+
+    // Find nearest agent
+    let nearestAgent = m_FindNearestAgent(agent, options.targetType);
+
+    // Check if agent is within view cone
+    const isWithinVisionCone = m_IsTargetWithinViewAngle(agent, nearestAgent);
+    if (isWithinVisionCone) console.log('within CONE!', isWithinVisionCone);
+
+    if (
+      options.targetVisibleOnly &&
+      (m_DistanceTo(agent, nearestAgent) > agent.prop.Movement._viewDistance ||
+        !isWithinVisionCone)
+    ) {
+      nearestAgent = undefined;
+    }
     agent.prop.Movement._targetId = nearestAgent ? nearestAgent.id : undefined;
   });
 }
+
 function m_FeaturesThink(frame) {
   // 2. Process Movement
   const agents = [...TRACKED_AGENTS.values()];
@@ -300,6 +389,7 @@ function m_FeaturesThink(frame) {
     if (moveFn) moveFn(agent, frame);
   });
 }
+
 function m_FeaturesExec(frame) {
   // Calculate derived properties (e.g. isMoving)
   const agents = [...TRACKED_AGENTS.values()];
@@ -307,6 +397,7 @@ function m_FeaturesExec(frame) {
     m_ProcessPosition(agent, frame);
   });
 }
+
 function m_ApplyMovement(frame) {
   // Apply Positions
   const agents = [...TRACKED_AGENTS.values()];
@@ -369,12 +460,20 @@ class MovementPack extends GFeature {
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
+    agent.prop.Movement._viewDistance = 150;
+    agent.prop.Movement._viewAngle = (45 * Math.PI) / 180; // in radians
+    // 45 degrees to the left and right of center for a total 90 degree
+    // field of vision = 0.785398
 
     // Internal Properties
     // agent.prop.Movement._x
     // agent.prop.Movement._y
-    // agent.prop.Movement._targetId
+    // agent.prop.Movement._currentDirection // not `direction` which is externally set
+    // agent.prop.Movement._currentSpeed
     // agent.prop.Movmeent._lastMove
+    // agent.prop.Movement._targetId
+    // agent.prop.Movement._targetVisibleOnly // Only target what agent can see
+    // agent.prop.Movement._viewDistance
   }
 
   handleInput() {
@@ -460,12 +559,12 @@ class MovementPack extends GFeature {
   }
 
   seekNearest(agent: IAgent, targetType: string) {
-    SEEK_AGENTS.set(agent.id, targetType);
+    SEEK_AGENTS.set(agent.id, { targetType, targetVisibleOnly: false });
     this.setMovementType(agent, 'seekAgent');
   }
 
   seekNearestVisible(agent: IAgent, targetType: string) {
-    SEEK_AGENTS.set(agent.id, targetType);
+    SEEK_AGENTS.set(agent.id, { targetType, targetVisibleOnly: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
 } // end of feature class
