@@ -97,6 +97,7 @@ function Init(element) {
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
+      vobj.setRotation(dobj.rotation);
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
@@ -156,6 +157,7 @@ function Init(element) {
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
+      vobj.setRotation(dobj.rotation);
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);

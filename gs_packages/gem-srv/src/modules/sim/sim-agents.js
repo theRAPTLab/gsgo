@@ -59,6 +59,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
+    if (agent.orientation) dobj.rotation = agent.orientation;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
@@ -78,6 +79,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
+    if (agent.orientation) dobj.rotation = agent.orientation;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
     if (agent.statusValue) dobj.meter = agent.statusValue;

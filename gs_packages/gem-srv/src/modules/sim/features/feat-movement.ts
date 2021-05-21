@@ -169,6 +169,8 @@ function m_ProcessPosition(agent, frame) {
     x: agent.prop.Movement._x,
     y: agent.prop.Movement._y
   });
+  agent.prop.Movement._orientation = orientation;
+  agent.prop.orientation.setTo(orientation);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetPosition(agent, frame) {

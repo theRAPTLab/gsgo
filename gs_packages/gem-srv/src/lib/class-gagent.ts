@@ -79,6 +79,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.scaleY = new GVarNumber();
     this.prop.scaleY.setMax(10);
     this.prop.scaleY.setMin(0);
+    this.prop.orientation = new GVarNumber();
     this.prop.alpha = new GVarNumber();
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
@@ -142,6 +143,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   set scaleY(num: number) {
     this.prop.scaleY.setTo(num);
+  }
+  set orientation(rad: number) {
+    this.prop.orientation.setTo(rad);
+  }
+  get orientation() {
+    return this.prop.orientation.value;
   }
   get alpha() {
     return this.prop.alpha.value;

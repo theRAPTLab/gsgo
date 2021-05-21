@@ -332,7 +332,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.sprite.angle = angle;
   }
 
-  setRotation(rad: number) {
+  setRotation(rad: number = 0) {
     this.sprite.rotation = rad;
   }
 
