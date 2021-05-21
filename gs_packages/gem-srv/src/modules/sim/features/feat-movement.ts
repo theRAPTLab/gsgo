@@ -1,9 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The Feature Class!
-
-  This is the "FeaturePack" base class, which you can extend to implement
-  your own features.
+  The Movement Class!
 
   Always use m_Random to generate random values.
 
@@ -29,6 +26,7 @@ import {
 } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
+import { intersect } from 'lib/vendor/js-intersect';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,6 +75,23 @@ function m_ProjectPoint(agent, angle, distance) {
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
+function m_GetAgentBoundingRect(agent) {
+  // Based on costume
+  if (!agent.hasFeature('Costume'))
+    throw new Error(
+      ...PR('tried to use vision on an agent with no costume', agent)
+    ); // no costume
+  const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
+  const halfw = w / 2;
+  const halfh = h / 2;
+  return [
+    { x: agent.x - halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y - halfh },
+    { x: agent.x + halfw, y: agent.y + halfh },
+    { x: agent.x - halfw, y: agent.y + halfh }
+  ];
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Processes position request
 /// * Checks bounds
@@ -150,11 +165,10 @@ function m_ProcessPosition(agent, frame) {
   agent.prop.Movement.isMoving.setTo(didMove);
 
   // Direction
-  const direction = m_AngleBetween(agent, {
+  const orientation = m_AngleBetween(agent, {
     x: agent.prop.Movement._x,
     y: agent.prop.Movement._y
   });
-  agent.prop.Movement._direction = direction;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetPosition(agent, frame) {
@@ -316,7 +330,7 @@ function m_FindNearestAgent(agent, targetType) {
 // // point and the center of the target object is greater than
 // // n, then we can't see it.
 // const VISIBILITY_DISTANCE = 50;
-// const direction = agent.prop.Movement._direction;
+// const direction = agent.prop.Movement._orientation;
 // const angle = m_DegreesToRadians(direction);
 // const visionPoint = m_Projection(agent, angle, VISIBILITY_DISTANCE);
 // const isWithinVisionCone =
@@ -338,7 +352,7 @@ function m_IsTargetWithinViewDistance() {}
 //  So the wrap happens at PI.
 function m_IsTargetWithinViewAngle(agent, target) {
   const angleToTarget = m_AngleBetween(agent, target);
-  const direction = agent.prop.Movement._direction;
+  const direction = agent.prop.Movement._orientation;
   // normallize the angles so we can safely do math
   // on angles without worrying about negative numbers
   // and wrapping.  Since we're just looking at differences
@@ -351,24 +365,60 @@ function m_IsTargetWithinViewAngle(agent, target) {
   return normalizedAngle < maxViewAngle && normalizedAngle > minViewAngle;
 }
 
+// REVIEW: Consider using https://github.com/davidfig/pixi-intersects
+function m_IsTargetWithinVisionCone(agent, target): boolean {
+  const distance = agent.prop.Movement._viewDistance;
+  const orientation = agent.prop.Movement._orientation; // orientation isn't set until agent moves
+  const viewAngleLeft = orientation - agent.prop.Movement._viewAngle;
+  const viewAngleRight = orientation + agent.prop.Movement._viewAngle;
+  const viewPointLeft = m_ProjectPoint(agent, viewAngleLeft, distance);
+  const viewPointRight = m_ProjectPoint(agent, viewAngleRight, distance);
+  // console.log(
+  //   'viewPOint',
+  //   distance,
+  //   orientation,
+  //   agent.prop.Movement._viewAngle,
+  //   viewPointLeft,
+  //   viewPointRight
+  // );
+  const visionPoly = [
+    { x: agent.x, y: agent.y },
+    { x: viewPointLeft.x, y: viewPointLeft.y },
+    { x: viewPointRight.x, y: viewPointRight.y }
+  ];
+  const targetPoly = m_GetAgentBoundingRect(target);
+  // console.error('targetPoly', targetPoly, visionPoly);
+  return intersect(visionPoly, targetPoly);
+}
+
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function m_FeaturesUpdate(frame) {
-  // 1. Seek Agents
+  // 1. Find target Agent
   SEEK_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
+
+    // REVIEW: We should be finding all agents within the visibility distance
+    // not just the nearest one.
+
     const agent = GetAgentById(id);
 
     // Find nearest agent
     let nearestAgent = m_FindNearestAgent(agent, options.targetType);
 
+    // Check if agent is within view angle
+    // const isWithinVisionCone = m_IsTargetWithinViewAngle(agent, nearestAgent);
+    // if (isWithinVisionCone) console.log('within CONE!', isWithinVisionCone);
+
     // Check if agent is within view cone
-    const isWithinVisionCone = m_IsTargetWithinViewAngle(agent, nearestAgent);
-    if (isWithinVisionCone) console.log('within CONE!', isWithinVisionCone);
+    const isWithinVisionCone = nearestAgent
+      ? m_IsTargetWithinVisionCone(agent, nearestAgent)
+      : false;
 
     if (
-      options.targetVisibleOnly &&
+      nearestAgent &&
+      options.useVisionCone &&
       (m_DistanceTo(agent, nearestAgent) > agent.prop.Movement._viewDistance ||
         !isWithinVisionCone)
     ) {
@@ -391,7 +441,7 @@ function m_FeaturesThink(frame) {
 }
 
 function m_FeaturesExec(frame) {
-  // Calculate derived properties (e.g. isMoving)
+  // 3. Calculate derived properties (e.g. isMoving)
   const agents = [...TRACKED_AGENTS.values()];
   agents.forEach(agent => {
     m_ProcessPosition(agent, frame);
@@ -399,7 +449,7 @@ function m_FeaturesExec(frame) {
 }
 
 function m_ApplyMovement(frame) {
-  // Apply Positions
+  // 4. Apply Positions
   const agents = [...TRACKED_AGENTS.values()];
   agents.forEach(agent => {
     m_SetPosition(agent, frame);
@@ -460,6 +510,7 @@ class MovementPack extends GFeature {
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
+    agent.prop.Movement._orientation = 0;
     agent.prop.Movement._viewDistance = 150;
     agent.prop.Movement._viewAngle = (45 * Math.PI) / 180; // in radians
     // 45 degrees to the left and right of center for a total 90 degree
@@ -468,11 +519,10 @@ class MovementPack extends GFeature {
     // Internal Properties
     // agent.prop.Movement._x
     // agent.prop.Movement._y
-    // agent.prop.Movement._currentDirection // not `direction` which is externally set
+    // agent.prop.Movement._orientation // in radians. not `direction` which is externally set
     // agent.prop.Movement._currentSpeed
     // agent.prop.Movmeent._lastMove
     // agent.prop.Movement._targetId
-    // agent.prop.Movement._targetVisibleOnly // Only target what agent can see
     // agent.prop.Movement._viewDistance
   }
 
@@ -559,12 +609,12 @@ class MovementPack extends GFeature {
   }
 
   seekNearest(agent: IAgent, targetType: string) {
-    SEEK_AGENTS.set(agent.id, { targetType, targetVisibleOnly: false });
+    SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: false });
     this.setMovementType(agent, 'seekAgent');
   }
 
   seekNearestVisible(agent: IAgent, targetType: string) {
-    SEEK_AGENTS.set(agent.id, { targetType, targetVisibleOnly: true });
+    SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
 } // end of feature class
