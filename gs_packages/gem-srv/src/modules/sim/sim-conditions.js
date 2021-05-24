@@ -155,6 +155,18 @@ RegisterFunction('isCloseTo', (a, b, distance = 30) => {
   }
   return false; // doesn't touch
 });
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('sees', (a, b) => {
+  // checks if b is within vision cone of a
+  if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
+  return a.canSee ? a.canSee.get(b.id) : false;
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('doesNotSee', (a, b) => {
+  // checks if b is NOT within vision cone of a
+  if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
+  return a.canSee ? !a.canSee.get(b.id) : true;
+});
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
