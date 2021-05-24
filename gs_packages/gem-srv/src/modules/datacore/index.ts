@@ -40,6 +40,13 @@ addProp foodLevel Number 50
 featCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 prop agent.skin setTo 'bunny.json'
+when Bee touches Bee [[
+  ifExpr {{ true }} [[
+    dbgOut 'true'
+  ]] [[
+    dbgOut 'false'
+  ]]
+]]
 `;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

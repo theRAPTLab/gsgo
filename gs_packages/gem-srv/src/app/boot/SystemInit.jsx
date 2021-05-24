@@ -29,6 +29,8 @@ import {
 import SETTINGS from '../../../config/app.settings';
 import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
+/// TESTS THAT HATE REACT /////////////////////////////////////////////////////
+import '../../modules/tests/test-script-parser';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

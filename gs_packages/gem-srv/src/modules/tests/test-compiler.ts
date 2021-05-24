@@ -53,6 +53,18 @@ function TestCompiler(index?: number) {
 //     setProp 'y'  0
 //   ]]  `.trim()
 // ]);
+TT.push([
+  'when nested blocks',
+  `
+  when Bee touches Bee [[
+    ifExpr {{ true }} [[
+      dbgOut 'true'
+    ]] [[
+      dbgOut 'false'
+    ]]
+  ]]
+  `
+]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
   'onEvent Tick then block w/ nested if',
