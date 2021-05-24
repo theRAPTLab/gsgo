@@ -20,10 +20,11 @@ const tokenizer = new ScriptTokenizer({ show: true });
  *  js primitizes that would be fed to TRANSPILER
  */
 function TokenizeTest(testName, test) {
-  const css = 'color:white;padding:2px 4px;background-color:red';
+  const cssFail = 'color:white;padding:2px 4px;background-color:Red';
+  const cssOK = 'padding:2px 4px;background-color:PaleGreen';
   const nameCSS =
     'color:DarkBlue;font-weight:bold;padding:2px 4px;background-color:LightSkyBlue';
-  const { text, tokens } = test;
+  const { text, expect } = test;
   const lines = text.split('\n');
   console.group(`%cTEST: '${testName}'`, nameCSS);
   console.group('source');
@@ -36,18 +37,12 @@ function TokenizeTest(testName, test) {
   console.group('parse');
   const script = tokenizer.tokenize(lines, 'show');
   console.groupEnd();
-  console.group('tokens');
-  if (JSON.stringify(tokens) === JSON.stringify(script)) {
-    console.log('PASSED');
+  if (JSON.stringify(expect) === JSON.stringify(script)) {
+    console.log('%cPASSED script===expected', cssOK, script, expect);
   } else {
-    console.log('%cFAILED script!==expected tokens', css, script, tokens);
+    console.log('%cFAILED script!==expected', cssFail, script, expect);
   }
   console.groupEnd();
-
-  console.groupEnd();
-  // console.group(...PR('ScriptUnits Decompiled from Nodes'));
-  // TRANSPILER.ScriptToConsole(script, lines);
-  // console.groupEnd();
 }
 
 const TESTS = {
@@ -56,7 +51,7 @@ const TESTS = {
     if [[
       X
     ]]`,
-    tokens: [[{ token: 'if' }, { block: ['[[', 'X', ']]'] }]]
+    expect: [[{ token: 'if' }, { block: ['X'] }]]
   },
   // test:
   'if-then-else': {
@@ -67,7 +62,7 @@ const TESTS = {
       Z
     ]]
     `,
-    tokens: [[{ token: 'if' }, { block: ['[[', 'Y', ']] [[', 'Z', ']]'] }]]
+    expect: [[{ token: 'if' }, { block: ['Y'] }, { block: ['Z'] }]]
   },
   // test:
   'when[[if-then]]': {
@@ -78,7 +73,7 @@ const TESTS = {
       ]]
     ]]
   `,
-    tokens: [{ token: 'when' }, { block: ['if [[', 'if [[', 'A', ']]'] }]
+    expect: [[{ token: 'when' }, { block: ['if [[', 'A', ']]'] }]]
   },
   // test:
   'when[[if-then-else]]': {
@@ -91,7 +86,7 @@ const TESTS = {
       ]]
     ]]
   `,
-    tokens: [[{ token: 'when' }, { block: ['if [[', 'B', ']] [[', 'C', ']]'] }]]
+    expect: [[{ token: 'when' }, { block: ['if [[', 'B', ']] [[', 'C', ']]'] }]]
   }
 };
 
