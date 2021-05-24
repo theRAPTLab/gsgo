@@ -24,7 +24,7 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import { Register } from 'modules/datacore/dc-features';
+import { Register, ProjectPoint } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 import { intersect } from 'lib/vendor/js-intersect';
 
@@ -67,29 +67,8 @@ function m_AngleBetween(agent, target) {
   const dx = target.x - agent.x;
   return Math.atan2(dy, dx);
 }
-function m_ProjectPoint(agent, angle, distance) {
-  const x = agent.prop.x.value + Math.cos(angle) * distance;
-  const y = agent.prop.y.value - Math.sin(angle) * distance;
-  return { x, y };
-}
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
-}
-function m_GetAgentBoundingRect(agent) {
-  // Based on costume
-  if (!agent.hasFeature('Costume'))
-    throw new Error(
-      ...PR('tried to use vision on an agent with no costume', agent)
-    ); // no costume
-  const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
-  const halfw = w / 2;
-  const halfh = h / 2;
-  return [
-    { x: agent.x - halfw, y: agent.y - halfh },
-    { x: agent.x + halfw, y: agent.y - halfh },
-    { x: agent.x + halfw, y: agent.y + halfh },
-    { x: agent.x - halfw, y: agent.y + halfh }
-  ];
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
