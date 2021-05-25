@@ -97,8 +97,8 @@ class CostumePack extends GFeature {
   }
   /**
    * If Physics are being used, it's better to use Physics' setSize()
-   * @param agent
-   * @param scale
+   * This sets the agent scale property directly, but costume does
+   * not otherwise process scale
    */
   setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked

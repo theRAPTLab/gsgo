@@ -201,7 +201,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   setModeAuto = () => this.pushMode(ControlMode.auto);
   isModeStatic = () => this.controlMode === ControlMode.static;
   isModeDrag = () => this.controlMode === ControlMode.drag;
-  isModePuppet = () => this.controlMode === ControlMode.puppet;
+  isModePuppet = () => this.controlMode === ControlMode.puppet; // is input Agent
   isModeAuto = () => this.controlMode === ControlMode.auto;
 
   /// AGENT INTERACTION STATES ////////////////////////////////////////////////

@@ -24,7 +24,7 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import { Register, ProjectPoint } from 'modules/datacore/dc-features';
+import { Register, DistanceTo, ProjectPoint } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
