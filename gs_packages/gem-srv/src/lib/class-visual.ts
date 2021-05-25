@@ -178,7 +178,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setColorize(color: number) {
     if (this.filterColor === color) return; // color hasn't changed, skip update
     this.filterColor = color;
-    if (color === -1) {
+    if (color === null) {
       // Remove Colorize
       this.filterColorOverlay = undefined;
       this.filterAdjustment = undefined;
@@ -325,7 +325,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.sprite.angle += deltaA;
   }
 
-  setAlpha(o: number) {
+  setAlpha(o: number = 1) {
     this.sprite.alpha = o;
   }
   setAngle(angle: number) {
@@ -343,7 +343,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setSizeValues(w, h) {}
 
   /** set the scale factor of sprite, which affects width/height */
-  setScale(x: number, y: number = x) {
+  setScale(x: number = 1, y: number = x) {
     this.sprite.scale.set(x, y);
   }
 

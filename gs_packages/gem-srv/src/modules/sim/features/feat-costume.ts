@@ -130,7 +130,7 @@ class CostumePack extends GFeature {
   }
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {
-    agent.getProp('color').setTo(-1);
+    agent.getProp('color').clear();
   }
   // Dimensions of currently selected sprite frame's texture
   getBounds(agent: IAgent): { w: number; h: number } {

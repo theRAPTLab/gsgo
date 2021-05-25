@@ -57,7 +57,7 @@ export class GVarNumber extends SM_Object implements IScopeable {
   min: number;
   max: number;
   wrap: boolean;
-  constructor(initial = 0) {
+  constructor(initial = undefined) {
     super(initial);
     this.meta.type = Symbol.for('GVarNumber');
     this.value = initial;
@@ -134,6 +134,9 @@ export class GVarNumber extends SM_Object implements IScopeable {
   }
   lte(num: number) {
     return new GVarBoolean(this.value <= num);
+  }
+  clear() {
+    this.value = null;
   }
   serialize() {
     const values = super.serialize();
