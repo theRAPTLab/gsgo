@@ -40,18 +40,43 @@ function TokenizeTest(testName, test) {
   if (JSON.stringify(expect) === JSON.stringify(script)) {
     console.log('%cPASSED script===expected', cssOK, script, expect);
   } else {
-    console.log('%cFAILED script!==expected', cssFail, script, expect);
+    console.log('%cFAILED script!==expected', cssFail);
+    console.log('  parsed as:', JSON.stringify(script));
+    console.log('  expected :', JSON.stringify(expect));
   }
   console.groupEnd();
 }
 
+/** format of these tests:
+ *  'text': is literal scripttext
+ *  'expect': is an array of scriptunits, which are themselves arrays
+ */
 const TESTS = {
+  'multiLine': {
+    text: `
+    K A B C
+    if [[
+      D
+    ]]`,
+    expect: [
+      [{ 'token': 'K' }, { 'token': 'A' }, { 'token': 'B' }, { 'token': 'C' }],
+      [{ 'token': 'if' }, { 'block': ['[[', 'D', ']]'] }]
+    ]
+  },
+  'block': {
+    text: `
+    [[
+      K A B C
+      K D E F
+    ]]`,
+    expect: [[{ block: ['[[', 'K A B C', 'K D E F', ']]'] }]]
+  },
   'if-then': {
     text: `
     if [[
       X
     ]]`,
-    expect: [[{ token: 'if' }, { block: ['X'] }]]
+    expect: [[{ token: 'if' }, { block: ['[[', 'X', ']]'] }]]
   },
   // test:
   'if-then-else': {
@@ -60,9 +85,8 @@ const TESTS = {
       Y
     ]] [[
       Z
-    ]]
-    `,
-    expect: [[{ token: 'if' }, { block: ['Y'] }, { block: ['Z'] }]]
+    ]]`,
+    expect: [[{ token: 'if' }, { block: ['[[', 'Y', ']] [[', 'Z', ']]'] }]]
   },
   // test:
   'when[[if-then]]': {
@@ -71,9 +95,8 @@ const TESTS = {
       if [[
         A
       ]]
-    ]]
-  `,
-    expect: [[{ token: 'when' }, { block: ['if [[', 'A', ']]'] }]]
+    ]]`,
+    expect: [[{ token: 'when' }, { block: ['[[', 'if [[', 'A', ']]', ']]'] }]]
   },
   // test:
   'when[[if-then-else]]': {
@@ -84,9 +107,42 @@ const TESTS = {
       ]] [[
         C
       ]]
-    ]]
-  `,
-    expect: [[{ token: 'when' }, { block: ['if [[', 'B', ']] [[', 'C', ']]'] }]]
+    ]]`,
+    expect: [
+      [
+        { token: 'when' },
+        { block: ['[[', 'if [[', 'B', ']] [[', 'C', ']]', ']]'] }
+      ]
+    ]
+  },
+  'beeWhen': {
+    text: `
+    when Bee touches Bee [[
+      ifExpr {{ true }} [[
+        dbgOut 'true'
+      ]] [[
+        dbgOut 'false'
+      ]]
+    ]]`,
+    expect: [
+      [
+        { 'token': 'when' },
+        { 'token': 'Bee' },
+        { 'token': 'touches' },
+        { 'token': 'Bee' },
+        {
+          'block': [
+            '[[',
+            'ifExpr {{ true }} [[',
+            "dbgOut 'true'",
+            ']] [[',
+            "dbgOut 'false'",
+            ']]',
+            ']]'
+          ]
+        }
+      ]
+    ]
   }
 };
 

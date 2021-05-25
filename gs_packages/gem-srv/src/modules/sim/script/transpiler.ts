@@ -157,7 +157,9 @@ function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
     // 4. program block
     if (Array.isArray(arg.block)) {
       // compile program block recursively, returning object code
-      const script = scriptifier.tokenize(arg.block);
+      // all blocks have '[[' and ']]' wrappers, so unpack them
+      const sliced = arg.block.slice(1, arg.block.length - 1);
+      const script = scriptifier.tokenize(sliced, 'show');
       if (DBG) console.group('recursive compile', idx, unit);
       const objcode = r_CompileBlock(script);
       if (DBG) console.groupEnd();
