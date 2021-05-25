@@ -72,11 +72,15 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   const viewAngleRight = ANGLES.normalizeHalf(
     orientation + agent.prop.Movement._viewAngle
   );
+  // We project the middle point too, so that upon first detection, a pivot
+  // towards the agent will not result in the target moving out of the vision cone
   const viewPointLeft = ProjectPoint(agent, viewAngleLeft, distance);
+  const viewPointMiddle = ProjectPoint(agent, orientation, distance);
   const viewPointRight = ProjectPoint(agent, viewAngleRight, distance);
   const visionPoly = [
     { x: agent.x, y: agent.y },
     { x: viewPointLeft.x, y: viewPointLeft.y },
+    { x: viewPointMiddle.x, y: viewPointMiddle.y },
     { x: viewPointRight.x, y: viewPointRight.y }
   ];
 
@@ -86,6 +90,8 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     agent.y,
     viewPointLeft.x,
     viewPointLeft.y,
+    viewPointMiddle.x,
+    viewPointMiddle.y,
     viewPointRight.x,
     viewPointRight.y
   ];
