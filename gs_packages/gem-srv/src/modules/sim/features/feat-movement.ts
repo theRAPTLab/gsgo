@@ -262,7 +262,8 @@ function moveFloat(agent, y: number = -300) {
 /// Seek
 function seek(agent: IAgent, target: { x; y }, frame: number) {
   // stop seeking if target was removed
-  if (!target) return;
+  // For input agents, target might be defined, but x and y are not
+  if (!target || !target.x || !target.y) return;
 
   // stop seeking if we're close, otherwise agent flips orientation wildly
   if (m_DistanceTo(agent, target) < 5) return;
