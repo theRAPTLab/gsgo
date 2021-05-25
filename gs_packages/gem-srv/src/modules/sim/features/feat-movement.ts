@@ -27,6 +27,9 @@ import {
 import { Register, ProjectPoint } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 import { intersect } from 'lib/vendor/js-intersect';
+import { ANGLES } from 'lib/vendor/angles';
+
+ANGLES.SCALE = Math.PI * 2; // radians
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,11 +130,18 @@ function m_ProcessPosition(agent, frame) {
   const x = agent.prop.Movement._x;
   const y = agent.prop.Movement._y;
 
-  if (!x || !y) return; // Movement not set, so ignore
+  if (
+    agent.x === undefined ||
+    agent.y === undefined ||
+    x === undefined ||
+    y === undefined
+  )
+    return; // Agent position or Movement not set, so ignore
 
   // is Moving?
   // inputs come in at a 15fps frame rate, so we need to use hysteresis
   let didMove = false;
+  let didMoveWithinWindow = false;
   if (
     Math.abs(agent.x - x) > MOVEDISTANCE ||
     Math.abs(agent.y - y) > MOVEDISTANCE
@@ -139,15 +149,25 @@ function m_ProcessPosition(agent, frame) {
     agent.prop.Movement._lastMove = frame;
     didMove = true;
   } else if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
-    didMove = true;
+    didMoveWithinWindow = true;
   }
-  agent.prop.Movement.isMoving.setTo(didMove);
+  agent.prop.Movement.isMoving.setTo(didMove || didMoveWithinWindow);
 
-  // Direction
-  const orientation = m_AngleBetween(agent, {
+  // Direction agent is facing
+
+  // Only set orientation if the agent did move, otherwise,
+  // input characters will always revert to orientation 0
+  // This way the last direction is maintained]
+  if (agent.isModePuppet() && !didMove) return;
+
+  let targetAngle = m_AngleBetween(agent, {
     x: agent.prop.Movement._x,
     y: agent.prop.Movement._y
   });
+  // ease into the turn
+  const currAngle = agent.prop.Movement._orientation;
+  const turnDirection = ANGLES.shortestDirection(currAngle, targetAngle);
+  const orientation = ANGLES.lerp(currAngle, targetAngle, 0.25, turnDirection);
   agent.prop.Movement._orientation = orientation;
   agent.prop.orientation.setTo(orientation);
 }
@@ -186,7 +206,7 @@ function moveWander(agent: IAgent, frame: number) {
     agent.prop.Movement.direction.value = direction;
   }
   const angle = m_DegreesToRadians(direction);
-  const { x, y } = m_ProjectPoint(agent, angle, distance);
+  const { x, y } = ProjectPoint(agent, angle, distance);
   m_QueuePosition(agent, x, y);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -241,11 +261,20 @@ function moveFloat(agent, y: number = -300) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Seek
 function seek(agent: IAgent, target: { x; y }, frame: number) {
+  // stop seeking if target was removed
+  if (!target) return;
+
+  // stop seeking if we're close, otherwise agent flips orientation wildly
+  if (m_DistanceTo(agent, target) < 5) return;
+
   const distance = agent.prop.Movement.distance.value;
   let angle = -m_AngleBetween(agent, target); // flip y
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
   m_QueuePosition(agent, x, y);
+  // also set direction or agent will revert to wandering
+  // towards the old direction
+  m_setDirection(agent, m_DegreesToRadians(angle));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
@@ -295,117 +324,76 @@ function m_FindNearestAgent(agent, targetType) {
   });
   return nearestAgent;
 }
-
-// HACK
-// Check distance between center of target and vision end point
-//
-// This works, but is quite hacky.
-// The distance between the target center and the visionPoint
-// might vary widely depending on the position of the target.
-//
-// // 1. Project a point some distance ahead of the current direction
-// // 2. Calculate the distance between that visionPoint and the
-// //    nearestAgent candidate's center.
-// // 3. If the
-// // If the distance between the direcitonal vision distance
-// // point and the center of the target object is greater than
-// // n, then we can't see it.
-// const VISIBILITY_DISTANCE = 50;
-// const direction = agent.prop.Movement._orientation;
-// const angle = m_DegreesToRadians(direction);
-// const visionPoint = m_Projection(agent, angle, VISIBILITY_DISTANCE);
-// const isWithinVisionCone =
-//   shortestDistance < VISIBILITY_DISTANCE
-//     ? // if the target is CLOSER than visibility distance, use agent
-//       m_DistanceTo(nearestAgent, agent) < VISIBILITY_ANGLE
-//     : m_DistanceTo(nearestAgent, visionPoint) < VISIBILITY_ANGLE;
-function m_IsTargetWithinViewDistance() {}
-
-// HACK
-// Check angle between direction and angle to target center
-//
-// This works, but does not account for the target's size.
-// This is also problematic in that there could be a slightly
-// further away agent that IS within the cone of vision.
-// Advantage: It's a relatively cheap calculation.
-// `direction` generally goes from -PI to +PI
-// `angleToTarget` also is -PI to +PI.
-//  So the wrap happens at PI.
-function m_IsTargetWithinViewAngle(agent, target) {
-  const angleToTarget = m_AngleBetween(agent, target);
-  const direction = agent.prop.Movement._orientation;
-  // normallize the angles so we can safely do math
-  // on angles without worrying about negative numbers
-  // and wrapping.  Since we're just looking at differences
-  // anyway, it doesn't matter that all the angles
-  // are rotated by 90 degrees.
-  const normalizedDir = direction + Math.PI;
-  const normalizedAngle = angleToTarget + Math.PI;
-  const maxViewAngle = normalizedDir + agent.prop.Movement._viewAngle;
-  const minViewAngle = normalizedDir - agent.prop.Movement._viewAngle;
-  return normalizedAngle < maxViewAngle && normalizedAngle > minViewAngle;
-}
-
-// REVIEW: Consider using https://github.com/davidfig/pixi-intersects
-function m_IsTargetWithinVisionCone(agent, target): boolean {
-  const distance = agent.prop.Movement._viewDistance;
-  const orientation = agent.prop.Movement._orientation; // orientation isn't set until agent moves
-  const viewAngleLeft = orientation - agent.prop.Movement._viewAngle;
-  const viewAngleRight = orientation + agent.prop.Movement._viewAngle;
-  const viewPointLeft = m_ProjectPoint(agent, viewAngleLeft, distance);
-  const viewPointRight = m_ProjectPoint(agent, viewAngleRight, distance);
-  // console.log(
-  //   'viewPOint',
-  //   distance,
-  //   orientation,
-  //   agent.prop.Movement._viewAngle,
-  //   viewPointLeft,
-  //   viewPointRight
-  // );
-  const visionPoly = [
-    { x: agent.x, y: agent.y },
-    { x: viewPointLeft.x, y: viewPointLeft.y },
-    { x: viewPointRight.x, y: viewPointRight.y }
-  ];
-  const targetPoly = m_GetAgentBoundingRect(target);
-  // console.error('targetPoly', targetPoly, visionPoly);
-  return intersect(visionPoly, targetPoly);
+/// Returns array of all agents of targetType that are within the vision distance
+/// NOTE This is a pre-filter before using the more expensive vision cone processing
+function m_FindNearbyAgents(agent, targetType) {
+  // Only run this after m_FeaturesUpdate sets distances
+  if (!agent.distanceTo)
+    throw new Error('Set distance before finding nearby agents');
+  const nearby = [];
+  const targets = GetAgentsByType(targetType);
+  targets.forEach(t => {
+    const distance = agent.distanceTo.get(t.id);
+    if (distance < agent.prop.Movement._viewDistance)
+      nearby.push({ agent: t, distance });
+  });
+  nearby.sort((a, b) => a.distance - b.distance);
+  return nearby.map(n => n.agent);
 }
 
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function m_FeaturesUpdate(frame) {
-  // 1. Find target Agent
+  // 1. Cache Distances
+  SEEK_AGENTS.forEach((options, id) => {
+    const agent = GetAgentById(id);
+    const targets = GetAgentsByType(options.targetType);
+    if (!agent.distanceTo) agent.distanceTo = new Map();
+    targets.forEach(t => {
+      agent.distanceTo.set(t.id, m_DistanceTo(agent, t));
+    });
+  });
+
+  // 2. Find target Agent
   SEEK_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
+
+    const agent = GetAgentById(id);
 
     // REVIEW: We should be finding all agents within the visibility distance
     // not just the nearest one.
 
-    const agent = GetAgentById(id);
-
     // Find nearest agent
-    let nearestAgent = m_FindNearestAgent(agent, options.targetType);
+    // 1. Start with agents within vision distance
+    //    Sorted by distance
+    const nearAgents = m_FindNearbyAgents(agent, options.targetType);
+    const target = nearAgents.find(near => {
+      // 2. Find first agent within the cone
+      if (near) {
+        if (options.useVisionCone) {
+          // console.log('...canSee', near.id, agent.canSee.get(near.id));
+          return agent.canSee.get(near.id);
+        }
+        // not using vision, so target it if found
+        return true;
+      }
+      return false; // stop searching
+    });
 
-    // Check if agent is within view angle
-    // const isWithinVisionCone = m_IsTargetWithinViewAngle(agent, nearestAgent);
-    // if (isWithinVisionCone) console.log('within CONE!', isWithinVisionCone);
-
-    // Check if agent is within view cone
-    const isWithinVisionCone = nearestAgent
-      ? m_IsTargetWithinVisionCone(agent, nearestAgent)
-      : false;
-
-    if (
-      nearestAgent &&
-      options.useVisionCone &&
-      (m_DistanceTo(agent, nearestAgent) > agent.prop.Movement._viewDistance ||
-        !isWithinVisionCone)
-    ) {
-      nearestAgent = undefined;
+    // decay untargetting, otherwise, you can flicker between
+    // finding and losing a target when pivoting towards the target?
+    if (target) {
+      // console.log('....setting to', target.id);
+      agent.prop.Movement._targetId = target.id;
+      agent.prop.Movement._lastTargetFrame = frame;
+    } else if (frame - agent.prop.Movement._lastTargetFrame > 10) {
+      // delay setting to undefined for 5 frames
+      // console.log('....clearing targetId');
+      agent.prop.Movement._targetId = undefined;
+    } else {
+      // console.log('....skipping, no target');
     }
-    agent.prop.Movement._targetId = nearestAgent ? nearestAgent.id : undefined;
   });
 }
 
@@ -491,20 +479,16 @@ class MovementPack extends GFeature {
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
-    agent.prop.Movement._orientation = 0;
-    agent.prop.Movement._viewDistance = 150;
+    agent.prop.Movement._orientation = 0; // in radians. not `direction` which is externally set
+    agent.prop.Movement._viewDistance = 250;
     agent.prop.Movement._viewAngle = (45 * Math.PI) / 180; // in radians
     // 45 degrees to the left and right of center for a total 90 degree
     // field of vision = 0.785398
 
-    // Internal Properties
+    // Other Internal Properties
     // agent.prop.Movement._x
     // agent.prop.Movement._y
-    // agent.prop.Movement._orientation // in radians. not `direction` which is externally set
-    // agent.prop.Movement._currentSpeed
-    // agent.prop.Movmeent._lastMove
-    // agent.prop.Movement._targetId
-    // agent.prop.Movement._viewDistance
+    // agent.prop.Movement._targetId // id of seek target
   }
 
   handleInput() {
@@ -550,9 +534,8 @@ class MovementPack extends GFeature {
     }
   }
 
-  setDirection(agent: IAgent, direction: number) {
-    console.log('setting direction to', direction);
-    m_setDirection(agent, direction);
+  setDirection(agent: IAgent, degrees: number) {
+    m_setDirection(agent, degrees);
   }
 
   setRandomDirection(agent: IAgent) {

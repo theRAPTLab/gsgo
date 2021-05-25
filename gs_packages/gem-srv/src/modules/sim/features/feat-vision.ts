@@ -19,10 +19,14 @@ import { IAgent } from 'lib/t-script';
 import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
 import {
   Register,
+  DistanceTo,
   ProjectPoint,
   GetAgentBoundingRect
 } from 'modules/datacore/dc-features';
 import { intersect } from 'lib/vendor/js-intersect';
+import { ANGLES } from 'lib/vendor/angles';
+
+ANGLES.SCALE = Math.PI * 2;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,6 +57,7 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   if (
     agent.x === undefined ||
     agent.y === undefined ||
+    target === undefined ||
     target.x === undefined ||
     target.y === undefined ||
     agent.prop.Movement._orientation === undefined // orientation isn't set until agent moves
@@ -60,9 +65,13 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     return false;
 
   const distance = agent.prop.Movement._viewDistance;
-  const orientation = agent.prop.Movement._orientation;
-  const viewAngleLeft = orientation - agent.prop.Movement._viewAngle;
-  const viewAngleRight = orientation + agent.prop.Movement._viewAngle;
+  const orientation = -agent.prop.Movement._orientation; // flip y
+  const viewAngleLeft = ANGLES.normalizeHalf(
+    orientation - agent.prop.Movement._viewAngle
+  );
+  const viewAngleRight = ANGLES.normalizeHalf(
+    orientation + agent.prop.Movement._viewAngle
+  );
   const viewPointLeft = ProjectPoint(agent, viewAngleLeft, distance);
   const viewPointRight = ProjectPoint(agent, viewAngleRight, distance);
   const visionPoly = [
@@ -106,7 +115,9 @@ class VisionPack extends GFeature {
     super(name);
     this.featAddMethod('monitor', this.monitor);
     this.featAddMethod('canSee', this.canSee);
-    UR.HookPhase('SIM/FEATURES_UPDATE', m_update);
+    UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
+    // use AGENTS_UPDATE so the vision calculations are in place for use during
+    // movmeent's FEATURES_UPDATE
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {

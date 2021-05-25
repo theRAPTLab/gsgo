@@ -139,6 +139,12 @@ class CostumePack extends GFeature {
     const { w, h } = GetSpriteDimensions(costumeName, frame);
     return { w, h };
   }
+  getScaledBounds(agent: IAgent): { w: number; h: number } {
+    const { w, h } = this.getBounds(agent);
+    const scale = agent.scale;
+    const scaleY = agent.scaleY || scale;
+    return { w: scale * w, h: scaleY * h };
+  }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);
   }
