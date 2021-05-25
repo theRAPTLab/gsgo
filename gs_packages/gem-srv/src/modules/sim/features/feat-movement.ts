@@ -351,8 +351,10 @@ function m_FeaturesUpdate(frame) {
       agent.distanceTo.set(t.id, DistanceTo(agent, t));
     });
   });
+}
 
-  // 2. Find target Agent
+function m_FeaturesThink(frame) {
+  // 1. Find target Agent
   SEEK_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
 
@@ -392,10 +394,8 @@ function m_FeaturesUpdate(frame) {
       // console.log('....skipping, no target');
     }
   });
-}
 
-function m_FeaturesThink(frame) {
-  // 2. Process Movement
+  // 2. Decide on Movement
   const agents = [...TRACKED_AGENTS.values()];
   agents.forEach(agent => {
     // ignore AI movement if input agent
