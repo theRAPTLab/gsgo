@@ -119,6 +119,8 @@ function Init(element) {
       vobj.setColorize(dobj.color);
       vobj.applyFilters();
 
+      if (dobj.debug) vobj.setDebug(dobj.debug);
+
       // Old Approach: Only enable drag and hover if controlMode is puppet (1)
       // But this doesn't work for two reasons:
       // 1. Input controlled agents (controlMode 3) need to be hoverable and selectable
@@ -182,6 +184,8 @@ function Init(element) {
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
+
+      if (dobj.debug) vobj.setDebug(dobj.debug);
     },
     shouldRemove: () => true,
     onRemove: () => {}

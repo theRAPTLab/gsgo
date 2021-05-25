@@ -79,6 +79,18 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     { x: viewPointLeft.x, y: viewPointLeft.y },
     { x: viewPointRight.x, y: viewPointRight.y }
   ];
+
+  // debug
+  const visionPath = [
+    agent.x,
+    agent.y,
+    viewPointLeft.x,
+    viewPointLeft.y,
+    viewPointRight.x,
+    viewPointRight.y
+  ];
+  agent.debug = visionPath;
+
   const targetPoly = GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
   const result = intersect(visionPoly, targetPoly);
