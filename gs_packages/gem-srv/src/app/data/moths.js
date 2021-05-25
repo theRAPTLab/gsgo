@@ -1,5 +1,14 @@
 export const MODEL = {
   label: 'Moths',
+  bounds: {
+    top: -400,
+    right: 400,
+    bottom: 400,
+    left: -400,
+    wrap: [false, false],
+    bounce: true,
+    bgcolor: 0x000066
+  },
   scripts: [
     {
       id: 'Moth',
@@ -28,20 +37,30 @@ featCall Costume randomizeColor 0.1 0.3 0.1
 featCall Movement setRandomStart
 
 # PROGRAM UPDATE
+ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
+  prop alpha add 0.25
+]]
+every 0.25 [[
+  prop alpha sub 0.1
+]]
 when Moth touches TreeTrunk [[
   ifExpr {{ !Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setTo 0.1
+    prop alpha setMin 0.1
+    featCall Moth.Costume setPose 4
   ]]
   ifExpr {{ Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setTo 1
+    prop alpha setMin 1
+    featCall Moth.Costume setPose 0
   ]]
 ]]
 when Moth touches TreeFoliage [[
   ifExpr {{ !Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setTo 0.1
+    prop alpha setMin 0.1
+    featCall Moth.Costume setPose 4
   ]]
   ifExpr {{ Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setTo 1
+    prop alpha setMin 1
+    featCall Moth.Costume setPose 0
   ]]
 ]]
 `
@@ -62,11 +81,22 @@ featCall Touches monitorTouchesWith Moth
 // needed for Seek
 useFeature Movement
 
+useFeature Vision
+featCall Vision monitor Moth
+
 # PROGRAM UPDATE
+when Predator sees Moth [[
+  prop Moth.alpha setMin 1
+  featCall Moth.Costume setGlow 0.1
+]]
+when Predator doesNotSee Moth [[
+  prop Moth.alpha setMin 0.1
+]]
 when Predator touches Moth [[
   featCall Moth.Costume setGlow 1
-  every 2 [[
+  every 4 [[
     featCall Moth.Population removeAgent
+    featCall Predator.Costume setGlow 1
   ]]
 ]]
 
@@ -110,7 +140,7 @@ prop zIndex setTo -200
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo -200
 prop y setTo 200
-featCall Costume setColorize 0.2 0.1 0
+featCall Costume setColorize 0.3 0.2 0
 featProp Physics scale setTo 0.3
 featProp Physics scaleY setTo 2`
     },
