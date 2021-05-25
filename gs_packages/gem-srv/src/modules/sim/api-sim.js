@@ -39,7 +39,7 @@ function m_Step(frameCount) {
   /* insert game logic here */
 }
 // Timer PRERUN loop
-function monitor_STEP(frameCount) {
+function m_PreRunStep(frameCount) {
   GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
 }
 
@@ -57,7 +57,7 @@ function Stage() {
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
     console.log(...PR('Pre-run Loop Starting'));
-    RX_SUB = SIM_FRAME_MS.subscribe(monitor_STEP);
+    RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
     console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
   })();
 }
@@ -102,6 +102,9 @@ function End() {
   console.log(...PR('End'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
+  console.log(...PR('Pre-run Loop Starting'));
+  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
 
 /// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////
@@ -114,7 +117,12 @@ function Reset() {
   // return simulation to starting state, ready to run
   (async () => {
     console.log(...PR('Reset'));
-    await GAME_LOOP.executePhase('GLOOP_LOAD');
+    // Orig Code
+    // await GAME_LOOP.executePhase('GLOOP_LOAD');
+    // Run Stage() so we get GLOOP_LOAD, then GLOOP_STAGED
+    // and most importantly GLOOP_PRERUN to process instance additions
+    // and input agents.
+    Stage();
   })();
 }
 
