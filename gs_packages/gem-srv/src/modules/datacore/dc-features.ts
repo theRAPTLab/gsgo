@@ -36,6 +36,12 @@ export function Register(fpack) {
 /// REVIEW: Move these to a general vector math module?
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Distance between centers for now
+export function DistanceTo(agent, target) {
+  return Math.hypot(target.x - agent.x, target.y - agent.y);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// project a point out in space based on angle and distance
 export function ProjectPoint(agent, angle, distance) {
   const x = agent.prop.x.value + Math.cos(angle) * distance;

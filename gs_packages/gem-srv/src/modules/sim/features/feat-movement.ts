@@ -61,10 +61,6 @@ function m_DegreesToRadians(degree) {
 function m_RadiansToDegrees(radians) {
   return (radians * 180) / Math.PI;
 }
-// Distance between centers for now
-function m_DistanceTo(agent, target) {
-  return Math.hypot(target.x - agent.x, target.y - agent.y);
-}
 function m_AngleBetween(agent, target) {
   const dy = target.y - agent.y;
   const dx = target.x - agent.x;
@@ -266,7 +262,7 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
   if (!target || !target.x || !target.y) return;
 
   // stop seeking if we're close, otherwise agent flips orientation wildly
-  if (m_DistanceTo(agent, target) < 5) return;
+  if (DistanceTo(agent, target) < 5) return;
 
   const distance = agent.prop.Movement.distance.value;
   let angle = -m_AngleBetween(agent, target); // flip y
@@ -317,7 +313,7 @@ function m_FindNearestAgent(agent, targetType) {
   targetAgents.forEach(t => {
     if (t.blueprint.name !== targetType) return; // skip if wrong blueprint type
     if (t.id === agent.id) return; // skip self
-    const d = m_DistanceTo(agent, t);
+    const d = DistanceTo(agent, t);
     if (d < shortestDistance) {
       shortestDistance = d;
       nearestAgent = t;
@@ -352,7 +348,7 @@ function m_FeaturesUpdate(frame) {
     const targets = GetAgentsByType(options.targetType);
     if (!agent.distanceTo) agent.distanceTo = new Map();
     targets.forEach(t => {
-      agent.distanceTo.set(t.id, m_DistanceTo(agent, t));
+      agent.distanceTo.set(t.id, DistanceTo(agent, t));
     });
   });
 
