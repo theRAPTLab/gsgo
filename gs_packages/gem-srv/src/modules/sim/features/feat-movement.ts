@@ -331,7 +331,7 @@ function m_FindNearbyAgents(agent, targetType) {
   const targets = GetAgentsByType(targetType);
   targets.forEach(t => {
     const distance = agent.distanceTo.get(t.id);
-    if (distance < agent.prop.Movement._viewDistance)
+    if (distance < agent.prop.Vision._viewDistance)
       nearby.push({ agent: t, distance });
   });
   nearby.sort((a, b) => a.distance - b.distance);
@@ -477,8 +477,6 @@ class MovementPack extends GFeature {
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
     agent.prop.Movement._orientation = 0; // in radians. not `direction` which is externally set
-    agent.prop.Movement._viewDistance = 250;
-    agent.prop.Movement._viewAngle = (45 * Math.PI) / 180; // in radians
     // 45 degrees to the left and right of center for a total 90 degree
     // field of vision = 0.785398
 

@@ -64,13 +64,13 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   )
     return false;
 
-  const distance = agent.prop.Movement._viewDistance;
+  const distance = agent.prop.Vision._viewDistance;
   const orientation = -agent.prop.Movement._orientation; // flip y
   const viewAngleLeft = ANGLES.normalizeHalf(
-    orientation - agent.prop.Movement._viewAngle
+    orientation - agent.prop.Vision._viewAngle
   );
   const viewAngleRight = ANGLES.normalizeHalf(
-    orientation + agent.prop.Movement._viewAngle
+    orientation + agent.prop.Vision._viewAngle
   );
   // We project the middle point too, so that upon first detection, a pivot
   // towards the agent will not result in the target moving out of the vision cone
@@ -141,6 +141,11 @@ class VisionPack extends GFeature {
   decorate(agent) {
     super.decorate(agent);
     this.featAddProp(agent, 'text', new GVarString(agent.name)); // default to agent name
+
+    agent.prop.Vision._viewDistance = 250;
+    agent.prop.Vision._viewAngle = (45 * Math.PI) / 180; // in radians
+    // 45 degrees to the left and right of center for a total 90 degree
+    // field of vision = 0.785398
   }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
