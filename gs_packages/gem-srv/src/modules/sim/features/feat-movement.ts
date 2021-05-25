@@ -443,7 +443,6 @@ class MovementPack extends GFeature {
     this.featAddMethod('setController', this.setController);
     this.featAddMethod('queuePosition', this.queuePosition);
     this.featAddMethod('setMovementType', this.setMovementType);
-    this.featAddMethod('setDirection', this.setDirection);
     this.featAddMethod('setRandomDirection', this.setRandomDirection);
     this.featAddMethod('setRandomPosition', this.setRandomPosition);
     this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
@@ -465,11 +464,7 @@ class MovementPack extends GFeature {
     TRACKED_AGENTS.set(agent.name, agent);
     this.featAddProp(agent, 'movementType', new GVarString('static'));
     this.featAddProp(agent, 'controller', new GVarString());
-    let prop = new GVarNumber(0);
-    prop.setMax(Math.PI * 2);
-    prop.setMin(0);
-    prop.setWrap();
-    this.featAddProp(agent, 'direction', prop); // degrees
+    this.featAddProp(agent, 'direction', new GVarNumber(0)); // degrees
     this.featAddProp(agent, 'distance', new GVarNumber(0.5));
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
     this.featAddProp(agent, 'isMoving', new GVarBoolean());
@@ -527,10 +522,6 @@ class MovementPack extends GFeature {
         default:
       }
     }
-  }
-
-  setDirection(agent: IAgent, degrees: number) {
-    m_setDirection(agent, degrees);
   }
 
   setRandomDirection(agent: IAgent) {
