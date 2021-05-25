@@ -154,16 +154,24 @@ function m_ProcessPosition(agent, frame) {
   // Only set orientation if the agent did move, otherwise,
   // input characters will always revert to orientation 0
   // This way the last direction is maintained]
-  if (agent.isModePuppet() && !didMove) return;
-
-  let targetAngle = m_AngleBetween(agent, {
-    x: agent.prop.Movement._x,
-    y: agent.prop.Movement._y
-  });
+  let targetAngle;
+  let lerpPct = 0.25;
+  if (agent.isModePuppet() && !didMove) {
+    // keep turning towards the old direction
+    targetAngle = agent.prop.Movement._targetAngle;
+    lerpPct = 0.8; // force quicker turn for input agents so it feels more responsive
+    if (!targetAngle) return; // skip if it hasn't been set
+  } else {
+    targetAngle = m_AngleBetween(agent, {
+      x: agent.prop.Movement._x,
+      y: agent.prop.Movement._y
+    });
+  }
   // ease into the turn
   const currAngle = agent.prop.Movement._orientation;
   const turnDirection = ANGLES.shortestDirection(currAngle, targetAngle);
-  const orientation = ANGLES.lerp(currAngle, targetAngle, 0.25, turnDirection);
+  const orientation = ANGLES.lerp(currAngle, targetAngle, lerpPct, turnDirection);
+  agent.prop.Movement._targetAngle = targetAngle; // save for future lerp
   agent.prop.Movement._orientation = orientation;
   agent.prop.orientation.setTo(orientation);
 }
@@ -479,6 +487,7 @@ class MovementPack extends GFeature {
     // agent.prop.Movement._x
     // agent.prop.Movement._y
     // agent.prop.Movement._targetId // id of seek target
+    // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
   }
 
   handleInput() {
