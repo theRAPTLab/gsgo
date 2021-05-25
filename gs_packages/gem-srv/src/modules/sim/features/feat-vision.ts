@@ -132,7 +132,7 @@ class VisionPack extends GFeature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
-    this.featAddMethod('canSee', this.canSee);
+    // this.featAddMethod('canSee', this.canSee);
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
     // movmeent's FEATURES_UPDATE
@@ -156,9 +156,14 @@ class VisionPack extends GFeature {
   monitor(agent: IAgent, targetBlueprintName: string) {
     VISION_AGENTS.set(agent.id, targetBlueprintName);
   }
-  canSee(agent: IAgent, target: IAgent) {
-    return m_IsTargetWithinVisionCone(agent, target);
-  }
+  /** This doesn't really do anything, since:
+   *  a. you can't easily call featCall with a specific target agent parameter
+   *     outside of a when
+   *  b. you can't do anything with the return value without using a stack operation
+   */
+  // canSee(agent: IAgent, target: IAgent) {
+  //   return m_IsTargetWithinVisionCone(agent, target);
+  // }
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
