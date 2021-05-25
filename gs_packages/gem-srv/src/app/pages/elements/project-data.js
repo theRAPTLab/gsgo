@@ -48,9 +48,9 @@ const MONITORED_INSTANCES = [];
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-let SEED = 100;
+let SEED = 100; // ids for newly created instances
 function m_GetUID() {
-  return SEED++;
+  return String(SEED++);
 }
 
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
