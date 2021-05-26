@@ -79,15 +79,21 @@ RegisterFunction('touches', (a, b) => {
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
   // if either is inert, no touches are possible
   if (a.isInert || b.isInert) return false;
-  const boundsA = a.callFeatMethod('Physics', 'getBounds');
-  const boundsB = b.callFeatMethod('Physics', 'getBounds');
-  // REVIEW: This is a rectangular test, not a round test.
-  const res =
-    boundsA.x < boundsB.x + boundsB.width &&
-    boundsA.x + boundsA.width > boundsB.x &&
-    boundsA.y < boundsB.y + boundsB.height &&
-    boundsA.y + boundsA.height > boundsB.y;
-  return res;
+  return a.callFeatMethod('Physics', 'intersectsWith', b);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('touchesCenterOf', (a, b) => {
+  // checks if a touches the center of b
+  const distance = 5;
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics')) return false;
+  const boundsB = {
+    x: b.prop.x.value,
+    y: b.prop.y.value,
+    width: distance / 2,
+    height: distance / 2
+  };
+  return a.callFeatMethod('Physics', 'intersectsWithBounds', boundsB);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('firstTouches', (a, b) => {

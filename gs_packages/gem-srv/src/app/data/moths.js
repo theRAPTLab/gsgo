@@ -93,9 +93,9 @@ when Predator sees Moth [[
 when Predator doesNotSee Moth [[
   prop Moth.alpha setMin 0.1
 ]]
-when Predator touches Moth [[
+when Predator touchesCenterOf Moth [[
   featCall Moth.Costume setGlow 1
-  every 4 [[
+  every 3 [[
     featCall Moth.Population removeAgent
     featCall Predator.Costume setGlow 1
   ]]
