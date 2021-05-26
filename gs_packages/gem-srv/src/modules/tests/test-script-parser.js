@@ -4,13 +4,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import UR from '@gemstep/ursys/client';
 import ScriptTokenizer from '../../lib/class-gscript-tokenizer';
 // import * as TRANSPILER from '../sim/script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TOKENIZE TEST', 'TagTest');
 const tokenizer = new ScriptTokenizer({ show: true });
 
 /// TOKENIZER TRIALS //////////////////////////////////////////////////////////
@@ -22,28 +20,29 @@ const tokenizer = new ScriptTokenizer({ show: true });
 function TokenizeTest(testName, test) {
   const cssFail = 'color:white;padding:2px 4px;background-color:Red';
   const cssOK = 'padding:2px 4px;background-color:PaleGreen';
-  const nameCSS =
-    'color:DarkBlue;font-weight:bold;padding:2px 4px;background-color:LightSkyBlue';
   const { text, expect } = test;
   const lines = text.split('\n');
-  console.group(`%cTEST: '${testName}'`, nameCSS);
-  console.group('source');
 
+  const script = tokenizer.tokenize(lines);
+  const passed = JSON.stringify(expect) === JSON.stringify(script);
+  if (passed) console.groupCollapsed(`%cTEST PASSED: '${testName}'`, cssOK);
+  else console.group(`%cTEST FAILED: '${testName}'`, cssFail);
+
+  if (passed) console.log('PASSED script===expected', script, expect);
+  else {
+    console.log('%cFAILED script!==expected', cssFail);
+    console.log('  parsed as:', JSON.stringify(script));
+    console.log('  expected :', JSON.stringify(expect));
+  }
+  console.groupCollapsed('script source');
   lines.forEach((line, idx) => {
     const lnum = `${idx + 1}`.padStart(3, '0');
     if (line.trim().length > 0) console.log(`${lnum}: ${line}`);
   });
   console.groupEnd();
-  console.group('parse');
-  const script = tokenizer.tokenize(lines, 'show');
+  console.group('script tokenize');
+  tokenizer.tokenize(lines, 'show');
   console.groupEnd();
-  if (JSON.stringify(expect) === JSON.stringify(script)) {
-    console.log('%cPASSED script===expected', cssOK, script, expect);
-  } else {
-    console.log('%cFAILED script!==expected', cssFail);
-    console.log('  parsed as:', JSON.stringify(script));
-    console.log('  expected :', JSON.stringify(expect));
-  }
   console.groupEnd();
 }
 
