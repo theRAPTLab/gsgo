@@ -22,6 +22,8 @@ featCall Costume setColorize 0 1 0
 prop alpha setTo 1
 
 useFeature Movement
+featProp Movement useAutoOrientation setTo true
+
 useFeature Physics
 featProp Physics scale setTo 0.5
 
@@ -95,6 +97,7 @@ when Predator doesNotSee Moth [[
 ]]
 when Predator touchesCenterOf Moth [[
   featCall Moth.Costume setGlow 1
+  featCall Moth.Movement jitterRotate
   every 3 [[
     featCall Moth.Population removeAgent
     featCall Predator.Costume setGlow 1

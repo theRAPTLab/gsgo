@@ -135,7 +135,7 @@ function m_ProcessPosition(agent, frame) {
   )
     return; // Agent position or Movement not set, so ignore
 
-  // is Moving?
+  // 1. Is Moving?
   // inputs come in at a 15fps frame rate, so we need to use hysteresis
   let didMove = false;
   let didMoveWithinWindow = false;
@@ -150,8 +150,13 @@ function m_ProcessPosition(agent, frame) {
   }
   agent.prop.Movement.isMoving.setTo(didMove || didMoveWithinWindow);
 
-  // Direction agent is facing
-
+  // 2. Set Orientation
+  //    If jitterRotate is triggered, jitter and skip orientation
+  if (agent.prop.Movement._jitterRotate) {
+    agent.prop.orientation.setTo(RNG() * Math.PI * 2);
+    agent.prop.Movement._jitterRotate = false;
+    return;
+  }
   // Only set orientation if the agent did move, otherwise,
   // input characters will always revert to orientation 0
   // This way the last direction is maintained]
@@ -464,6 +469,7 @@ class MovementPack extends GFeature {
     this.featAddMethod('setRandomPositionY', this.setRandomPositionY);
     this.featAddMethod('setRandomStart', this.setRandomStart);
     this.featAddMethod('jitterPos', this.jitterPos);
+    this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
     this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
   }
@@ -497,6 +503,7 @@ class MovementPack extends GFeature {
     // agent.prop.Movement._y
     // agent.prop.Movement._targetId // id of seek target
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
+    // agent.prop.Movement._jitterRotate
   }
 
   handleInput() {
@@ -574,6 +581,14 @@ class MovementPack extends GFeature {
     const x = m_random(min, max, round);
     const y = m_random(min, max, round);
     m_QueuePosition(agent, agent.prop.x.value + x, agent.prop.y.value + y);
+  }
+
+  // A single trigger that will clear itself after being run
+  // The advantage of setting this as a method is that the script
+  // doesn't have to clear the flag afterwards.  This makes it
+  // easy to use in a conditional.
+  jitterRotate(agent) {
+    agent.prop.Movement._jitterRotate = true;
   }
 
   seekNearest(agent: IAgent, targetType: string) {
