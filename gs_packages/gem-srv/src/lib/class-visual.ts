@@ -197,18 +197,20 @@ class Visual implements IVisual, IPoolable, IActable {
    */
   applyFilters() {
     // selected?
-    const filters = [];
+    const filters = []; // filters for the whole visual object
+    const spriteFilters = []; // filters for the sprite texture only
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
     if (this.isGlowing) filters.push(glow);
-    if (this.filterColorOverlay) filters.push(this.filterColorOverlay);
-    if (this.filterAdjustment) filters.push(this.filterAdjustment);
+    if (this.filterColorOverlay) spriteFilters.push(this.filterColorOverlay);
+    if (this.filterAdjustment) spriteFilters.push(this.filterAdjustment);
     if (this.isSelected || this.isHovered) {
       // HACK
       // temporarily override opacity so outlines will display
       this.sprite.alpha = 1;
     }
     this.filterbox.filters = filters;
+    this.sprite.filters = spriteFilters;
   }
 
   setFrame(frameKey: string | number) {
