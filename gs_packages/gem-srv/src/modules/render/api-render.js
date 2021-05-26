@@ -186,6 +186,7 @@ function Init(element) {
       // TestRenderParameters(dobj, vobj);
 
       if (dobj.debug) vobj.setDebug(dobj.debug);
+      else vobj.removeDebug();
     },
     shouldRemove: () => true,
     onRemove: () => {}
