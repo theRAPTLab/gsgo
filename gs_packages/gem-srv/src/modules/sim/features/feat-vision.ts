@@ -116,6 +116,7 @@ function m_update(frame) {
     if (!agent) return;
 
     const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
+    if (targets.length < 1) agent.debug = []; // clear vision cone
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
       const canSee = m_IsTargetWithinVisionCone(agent, t);
