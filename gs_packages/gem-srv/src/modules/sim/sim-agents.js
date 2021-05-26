@@ -283,6 +283,10 @@ export function AgentProgram(blueprint) {
   UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
 }
 
+export function ClearDOBJ() {
+  AGENT_TO_DOBJ.clearMappedObjects();
+}
+
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AgentsUpdate(frameTime) {
