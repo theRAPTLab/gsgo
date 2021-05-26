@@ -30,6 +30,7 @@ import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 
 ANGLES.SCALE = Math.PI * 2; // radians
+ANGLES.DIRECTIONS = ['E', 'W'];
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -175,6 +176,11 @@ function m_ProcessPosition(agent, frame) {
   agent.prop.Movement._orientation = orientation;
   if (agent.prop.Movement.useAutoOrientation.value)
     agent.prop.orientation.setTo(orientation);
+  agent.prop.Movement.compassDirection.setTo(
+    // For N/E/S/W Use `orientation + Math.PI / 2`
+    // For E/W Use `orientation + Math.PI / 4`
+    ANGLES.compass(orientation + Math.PI / 4)
+  );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetPosition(agent, frame) {
@@ -474,6 +480,7 @@ class MovementPack extends GFeature {
     this.featAddProp(agent, 'movementType', new GVarString('static'));
     this.featAddProp(agent, 'controller', new GVarString());
     this.featAddProp(agent, 'direction', new GVarNumber(0)); // degrees
+    this.featAddProp(agent, 'compassDirection', new GVarString()); // readonly
     this.featAddProp(agent, 'distance', new GVarNumber(0.5));
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
     this.featAddProp(agent, 'isMoving', new GVarBoolean());

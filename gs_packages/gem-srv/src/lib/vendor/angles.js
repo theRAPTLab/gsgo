@@ -13,9 +13,13 @@
 const TAU = 2 * Math.PI;
 const EPS = 1e-15;
 
-// const DIRECTIONS = ["N", "E", "S", "W"];
-const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+// ORIG CODE
+// const DIRECTIONS = ['E', 'W'];
+// const DIRECTIONS = ['N', 'E', 'S', 'W'];
+// const DIRECTIONS = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
 // const DIRECTIONS = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+//
+// BL Allow DIRECTIONS to be overriden
 
 /**
  * Mathematical modulo
@@ -36,6 +40,7 @@ function mod(x, m) {
 // export ANGLES object
 export const ANGLES = {
   'SCALE': 360,
+  'DIRECTIONS': ['N', 'E', 'S', 'W'],
   /**
    * Normalize an arbitrary angle to the interval [-180, 180)
    *
@@ -238,12 +243,12 @@ export const ANGLES = {
     // 270° = W
 
     var s = this['SCALE'];
-    var k = DIRECTIONS.length;
+    var k = this['DIRECTIONS'].length;
 
     // floor((2ck + s) / (2s)) = round((c / s) * k)
     var dir = Math.round((course / s) * k);
 
-    return DIRECTIONS[mod(dir, k)];
+    return this['DIRECTIONS'][mod(dir, k)];
   },
   /**
    * Calculates the linear interpolation of two angles
