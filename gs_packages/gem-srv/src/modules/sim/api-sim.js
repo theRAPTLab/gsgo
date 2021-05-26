@@ -117,12 +117,7 @@ function Reset() {
   // return simulation to starting state, ready to run
   (async () => {
     console.log(...PR('Reset'));
-    // Orig Code
-    // await GAME_LOOP.executePhase('GLOOP_LOAD');
-    // Run Stage() so we get GLOOP_LOAD, then GLOOP_STAGED
-    // and most importantly GLOOP_PRERUN to process instance additions
-    // and input agents.
-    Stage();
+    await GAME_LOOP.executePhase('GLOOP_LOAD');
   })();
 }
 
