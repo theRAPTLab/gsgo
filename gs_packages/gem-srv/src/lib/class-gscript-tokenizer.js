@@ -194,58 +194,6 @@ class ScriptTokenizer {
   /** END TOKENIZER **********************************************************/
   /////////////////////////////////////////////////////////////////////////////
 
-  /** A multiblock seeks to PRESERVE the lines inside a block without
-   *  processing them, so we try to preserve exactly how they were formatted
-   *  in the source
-   */
-  gobbleMultiBlock() {
-    // we are here because of an unbalanced [[ so we must scan for closing ]]
-    let level = 1; // starting from level 1, inside the block
-    let str = ''; // line buffer
-    const block = ['[[']; // add the '[[' because it's always part of this
-    // PROCESS LINE by LINE
-
-    while (level > 0 && this.linesIndex < this.linesCount + 1) {
-      this.nextLine();
-      this.gobbleSpaces();
-      str = ''; // clear line buffer for this pass
-
-      // scan line character-by-character
-      while (this.index < this.length) {
-        let ch = this.exprICode(this.index++);
-        let chn = this.exprICode(this.index);
-        if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
-          // CASE: new [[ should increase level
-          level++;
-          this.index++; // now pointing to char after [[
-          str += '['; // save line
-        } else if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
-          // CASE: new ]] might be terminal, but it ALSO might be a ]] [[
-          level--;
-          str += ']';
-          this.index++; // now pointing to char after ]]
-        }
-        // CASE 3: neither ]] or [[, so just add the current character
-        // to string
-        // no special chars, so add to the string for this line
-        str += String.fromCharCode(ch);
-      } // while level > 0 && there are characters left in line
-
-      // at the end of this line, push the lines from inside
-      if (level > 0 && str.length > 0) {
-        block.push(str);
-      }
-      // capture the untokenized string for subblock processing
-    } // while level > 0 && there are still lines to process...
-
-    // either we're out of lines or level is 0
-    if (level === 0) {
-      block.push(']]');
-      return { block }; // return block;
-    }
-    return this.throwError('GobbleMultiBlock: unclosed [[ in text');
-  }
-
   gobbleLine() {
     let nodes = [];
     let node;
@@ -593,6 +541,58 @@ class ScriptTokenizer {
     // have an unclosed block [[ delimiter, so we need to parse the
     // subsequent lines for a { block: line[] } until the end of block
     return this.gobbleMultiBlock();
+  }
+
+  /** A multiblock seeks to PRESERVE the lines inside a block without
+   *  processing them, so we try to preserve exactly how they were formatted
+   *  in the source
+   */
+  gobbleMultiBlock() {
+    // we are here because of an unbalanced [[ so we must scan for closing ]]
+    let level = 1; // starting from level 1, inside the block
+    let str = ''; // line buffer
+    const block = ['[[']; // add the '[[' because it's always part of this
+    // PROCESS LINE by LINE
+
+    while (level > 0 && this.linesIndex < this.linesCount + 1) {
+      this.nextLine();
+      this.gobbleSpaces();
+      str = ''; // clear line buffer for this pass
+
+      // scan line character-by-character
+      while (this.index < this.length) {
+        let ch = this.exprICode(this.index++);
+        let chn = this.exprICode(this.index);
+        if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
+          // CASE: new [[ should increase level
+          level++;
+          this.index++; // now pointing to char after [[
+          str += '['; // save line
+        } else if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
+          // CASE: new ]] might be terminal, but it ALSO might be a ]] [[
+          level--;
+          str += ']';
+          this.index++; // now pointing to char after ]]
+        }
+        // CASE 3: neither ]] or [[, so just add the current character
+        // to string
+        // no special chars, so add to the string for this line
+        str += String.fromCharCode(ch);
+      } // while level > 0 && there are characters left in line
+
+      // at the end of this line, push the lines from inside
+      if (level > 0 && str.length > 0) {
+        block.push(str);
+      }
+      // capture the untokenized string for subblock processing
+    } // while level > 0 && there are still lines to process...
+
+    // either we're out of lines or level is 0
+    if (level === 0) {
+      block.push(']]');
+      return { block }; // return block;
+    }
+    return this.throwError('GobbleMultiBlock: unclosed [[ in text');
   }
 
   /* HACK ADDITION for text script comments // and -- */
