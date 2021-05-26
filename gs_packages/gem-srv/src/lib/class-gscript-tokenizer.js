@@ -185,6 +185,7 @@ class ScriptTokenizer {
 
     while (this.linesIndex < this.linesCount) {
       const nodes = this.gobbleLine();
+      // make sure we don't push empty nodes
       if (nodes.length > 0) units.push(nodes);
     } // end while lines<lines.length
 
@@ -527,7 +528,7 @@ class ScriptTokenizer {
       if (ch === CBRACK_CODE && cch === CBRACK_CODE) {
         this.index++; // point to char after ]]
         level--;
-        if (level === 0) return { program: str }; // return token
+        if (level === 0) return { program: str.trim() }; // return token
         str += ']]'; // otherwise, save the string
       } else if (ch === OBRACK_CODE && cch === OBRACK_CODE) {
         this.index++; // point to char after [[
@@ -548,10 +549,11 @@ class ScriptTokenizer {
    *  in the source
    */
   gobbleMultiBlock() {
+    const WRAP = false; // whether to return the block wrapped in [[ ]]
     // we are here because of an unbalanced [[ so we must scan for closing ]]
     let level = 1; // starting from level 1, inside the block
     let str = ''; // line buffer
-    const block = ['[[']; // add the '[[' because it's always part of this
+    const block = WRAP ? ['[['] : [];
     // PROCESS LINE by LINE
 
     while (level > 0 && this.linesIndex < this.linesCount + 1) {
@@ -567,11 +569,11 @@ class ScriptTokenizer {
           // CASE: new [[ should increase level
           level++;
           this.index++; // now pointing to char after [[
-          str += '['; // save line
+          str += '['; // save second [
         } else if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
           // CASE: new ]] might be terminal, but it ALSO might be a ]] [[
           level--;
-          str += ']';
+          str += ']'; // save second ]
           this.index++; // now pointing to char after ]]
         }
         // CASE 3: neither ]] or [[, so just add the current character
@@ -589,7 +591,7 @@ class ScriptTokenizer {
 
     // either we're out of lines or level is 0
     if (level === 0) {
-      block.push(']]');
+      if (WRAP) block.push(']]');
       return { block }; // return block;
     }
     return this.throwError('GobbleMultiBlock: unclosed [[ in text');
