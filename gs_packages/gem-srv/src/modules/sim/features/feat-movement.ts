@@ -173,7 +173,8 @@ function m_ProcessPosition(agent, frame) {
   const orientation = ANGLES.lerp(currAngle, targetAngle, lerpPct, turnDirection);
   agent.prop.Movement._targetAngle = targetAngle; // save for future lerp
   agent.prop.Movement._orientation = orientation;
-  agent.prop.orientation.setTo(orientation);
+  if (agent.prop.Movement.useAutoOrientation.value)
+    agent.prop.orientation.setTo(orientation);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetPosition(agent, frame) {
@@ -476,6 +477,7 @@ class MovementPack extends GFeature {
     this.featAddProp(agent, 'distance', new GVarNumber(0.5));
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
     this.featAddProp(agent, 'isMoving', new GVarBoolean());
+    this.featAddProp(agent, 'useAutoOrientation', new GVarBoolean(false));
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;

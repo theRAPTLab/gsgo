@@ -80,6 +80,7 @@ featCall Touches monitorTouchesWith Moth
 
 // needed for Seek
 useFeature Movement
+featProp Movement useAutoOrientation setTo true
 
 useFeature Vision
 featCall Vision monitor Moth
