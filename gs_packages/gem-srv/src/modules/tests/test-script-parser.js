@@ -20,22 +20,25 @@ const tokenizer = new ScriptTokenizer({ show: true });
 function TokenizeTest(testName, test) {
   const cssFail = 'color:white;padding:2px 4px;background-color:Red';
   const cssOK = 'padding:2px 4px;background-color:PaleGreen';
+  const cssExpect =
+    'color:DarkBlue;font-weight:bold;padding:2px 4px;background-color:LightSkyBlue';
+
   const { text, expect } = test;
   const lines = text.split('\n');
 
   const script = tokenizer.tokenize(lines);
   const passed = JSON.stringify(expect) === JSON.stringify(script);
   if (passed) console.groupCollapsed(`%cTEST PASSED: '${testName}'`, cssOK);
-  else console.group(`%cTEST FAILED: '${testName}'`, cssFail);
+  else console.groupCollapsed(`%cTEST FAILED: '${testName}'`, cssFail);
 
   if (passed) {
     console.log('PASSED script===expected');
     console.log('output', JSON.stringify(script, null, 2));
-    console.log('match?', JSON.stringify(expect, null, 2));
+    console.log('expect', JSON.stringify(expect, null, 2));
   } else {
     console.log('FAILED script!==expected', cssFail);
-    console.log('output', JSON.stringify(script, null, 2));
-    console.log('match?', JSON.stringify(expect, null, 2));
+    console.log('%coutput', cssFail, JSON.stringify(script, null, 2));
+    console.log('%cexpect', cssExpect, JSON.stringify(expect, null, 2));
   }
   console.groupCollapsed('script source');
   lines.forEach((line, idx) => {
@@ -95,7 +98,7 @@ const TESTS = {
     ]] [[
       Z
     ]]`,
-    expect: [[{ token: 'if' }, { block: ['[[', 'Y', ']] [[', 'Z', ']]'] }]]
+    expect: [[{ token: 'if' }, { block: ['Y'] }, { block: ['Z'] }]]
   },
   // test:
   'when[[if-then]]': {
@@ -117,12 +120,7 @@ const TESTS = {
         C
       ]]
     ]]`,
-    expect: [
-      [
-        { token: 'when' },
-        { block: ['[[', 'if [[', 'B', ']] [[', 'C', ']]', ']]'] }
-      ]
-    ]
+    expect: [[{ token: 'when' }, { block: ['if [[', 'B', ']] [[', 'C', ']]'] }]]
   },
   'bee-when-ifexpr': {
     text: `
@@ -155,10 +153,14 @@ const TESTS = {
 
 /// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// RUN ALL TESTS
 Object.keys(TESTS).forEach(testName => {
   const test = TESTS[testName];
   TokenizeTest(testName, test);
 });
+/// RUN ONE TEST
+// const testName = 'if-then-else';
+// TokenizeTest(testName, TESTS[testName]);
 
 /// CONSOLE TESTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -227,3 +227,15 @@ should be converted to (I think):
 
 Will have to confirm this tomorrow.
 
+## MAY 25-27 - Part II Bug Fix
+
+The main issue was that the multiblock parser has to behave differently when parsing the nested `[[ ]]` than it does with the containing `[[ ]]`.  
+
+HOW DO WE DETECT THIS WITHIN MULTIBOCK?
+
+* when we are processing multiblock, we start at LEVEL 1 and exist when all lines are processed, at which point we expect LEVEL to be 0
+* in the case where there are no nested blocks, the level never rises above 1
+* when level is > 0 and we get a `[[`, we want to just capture the block line-by-line
+
+Everytime we have an **inter-transition** to level 0, we want to push the current block out and create a new one. These transitions are the "top level block chains". 
+

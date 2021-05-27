@@ -33,13 +33,12 @@ const string = 'class-script-tokenizer-2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-let DBG = false;
-let DBG_SHOW = true;
+let DBG_SHOW = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PERIOD_CODE = 46; // '.'
-const COMMA_CODE = 44; // ','
+// const COMMA_CODE = 44; // ','
 const SQUOTE_CODE = 39; // single quote
 const DQUOTE_CODE = 34; // double quotes
 const OPAREN_CODE = 40; // (
@@ -208,7 +207,8 @@ class ScriptTokenizer {
     while (this.index < this.length) {
       this.gobbleSpaces();
       node = this.gobbleToken();
-      nodes.push(node);
+      if (Array.isArray(node)) nodes.push(...node);
+      else nodes.push(node);
     }
 
     return nodes;
@@ -553,46 +553,47 @@ class ScriptTokenizer {
     // we are here because of an unbalanced [[ so we must scan for closing ]]
     let level = 1; // starting from level 1, inside the block
     let str = ''; // line buffer
-    const block = WRAP ? ['[['] : [];
+    let block = WRAP ? ['[['] : [];
+    const nodes = [];
     // PROCESS LINE by LINE
 
     while (level > 0 && this.linesIndex < this.linesCount + 1) {
       this.nextLine();
-      this.gobbleSpaces();
       str = ''; // clear line buffer for this pass
+      this.gobbleSpaces();
 
       // scan line character-by-character
       while (this.index < this.length) {
-        let ch = this.exprICode(this.index++);
-        let chn = this.exprICode(this.index);
+        let ch = this.exprICode(this.index);
+        let chn = this.exprICode(this.index + 1);
         if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
-          // CASE: new [[ should increase level
+          // CASE 1: [[ increase level
           level++;
-          this.index++; // now pointing to char after [[
-          str += '['; // save second [
+          this.index += 2; // now pointing to char after [[
+          if (level > 1) str += '[['; // when gobbling nested block lines
         } else if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
-          // CASE: new ]] might be terminal, but it ALSO might be a ]] [[
+          // CASE 2: new ]] might be terminal, but it ALSO might be a ]] [[
           level--;
-          str += ']'; // save second ]
-          this.index++; // now pointing to char after ]]
+          if (level === 0 && this.index < this.length) {
+            if (str.trim().length > 0) block.push(str);
+            nodes.push({ block });
+            block = WRAP ? ['[['] : [];
+          }
+          this.index += 2; // now pointing to char after ]]
+          if (level > 0) str += ']]'; // when gobbling nested block lines
+        } else {
+          str += String.fromCharCode(ch);
+          this.index++;
         }
-        // CASE 3: neither ]] or [[, so just add the current character
-        // to string
-        // no special chars, so add to the string for this line
-        str += String.fromCharCode(ch);
-      } // while level > 0 && there are characters left in line
-
-      // at the end of this line, push the lines from inside
-      if (level > 0 && str.length > 0) {
-        block.push(str);
-      }
-      // capture the untokenized string for subblock processing
-    } // while level > 0 && there are still lines to process...
+      } // characters in line
+      if (str.trim().length > 0) block.push(str);
+      str = '';
+    } // lines of text
 
     // either we're out of lines or level is 0
     if (level === 0) {
       if (WRAP) block.push(']]');
-      return { block }; // return block;
+      return nodes;
     }
     return this.throwError('GobbleMultiBlock: unclosed [[ in text');
   }
