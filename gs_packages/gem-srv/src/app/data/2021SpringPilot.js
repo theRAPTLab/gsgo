@@ -26,20 +26,17 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
-prop agent.scale setMin -2
-
 addProp energyUse Number 1
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
 // turns on the feature that allows the fish to grow if this is 1
-addProp grows Boolean 0
+addProp grows Boolean 1
 
 addProp startDirection Number 0
 
 useFeature Physics
 featCall Physics init
-// featCall Physics setSize 90
-prop agent.scale setTo 1
+featProp Physics scale setTo 1
 
 
 // set Touches
@@ -57,8 +54,7 @@ featPropPop AgentWidgets text
 # PROGRAM EVENT
 onEvent Start [[
   // start at normal size unless you eat
-  // featCall Physics setSize 90
-  prop agent.scale setTo 1
+  featProp Physics scale setTo 1
 
     // **** OPTIONS TO CHANGE BEHAVIOR ****
     // ** pick a movement below:
@@ -83,6 +79,14 @@ onEvent Start [[
 
 ]]
 # PROGRAM UPDATE
+
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
+  featProp Costume flipX setTo false
+]]
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
+  featProp Costume flipX setTo true
+]]
+
 when Fish touches Algae [[
   every 1 runAtStart [[
     // always glow to show the interaction
@@ -96,7 +100,7 @@ when Fish touches Algae [[
 
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
-      // featCall Physics setSize 150
+      featProp Physics scale setTo 2
       prop Fish.energyUse setTo 2
 
     ]]
@@ -144,13 +148,6 @@ every 1 runAtStart [[
 
   // set meter to mirror energyLevel
   featCall AgentWidgets bindMeterTo energyLevel
-
-  ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
-    prop agent.scale setTo 1
-  ]]
-  ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
-    prop agent.scale setTo -1
-  ]]
 
 ]]
 `
