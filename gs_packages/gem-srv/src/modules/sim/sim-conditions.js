@@ -83,15 +83,14 @@ RegisterFunction('touches', (a, b) => {
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('touchesCenterOf', (a, b) => {
-  // checks if a touches the center of b
-  const distance = 5;
-  // make sure both objects have the Physics feature
+  // checks if 'a' bounds touches the center of 'b'
   if (!a.hasFeature('Physics')) return false;
-  const boundsB = {
-    x: b.prop.x.value,
-    y: b.prop.y.value,
-    width: distance / 2,
-    height: distance / 2
+  const size = 10; // size of the center box.
+  const bb = {
+    x: b.prop.x.value - size / 2,
+    y: b.prop.y.value - size / 2,
+    width: size,
+    height: size
   };
   return a.callFeatMethod('Physics', 'intersectsWithBounds', boundsB);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
