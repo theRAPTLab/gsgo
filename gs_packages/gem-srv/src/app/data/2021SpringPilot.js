@@ -30,7 +30,7 @@ addProp energyUse Number 1
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
 // turns on the feature that allows the fish to grow if this is 1
-addProp grows Boolean 1
+addProp grows Boolean 0
 
 addProp startDirection Number 0
 
