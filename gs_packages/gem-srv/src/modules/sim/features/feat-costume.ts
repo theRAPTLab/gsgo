@@ -97,8 +97,8 @@ class CostumePack extends GFeature {
   }
   /**
    * If Physics are being used, it's better to use Physics' setSize()
-   * @param agent
-   * @param scale
+   * This sets the agent scale property directly, but costume does
+   * not otherwise process scale
    */
   setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked
@@ -138,6 +138,12 @@ class CostumePack extends GFeature {
     const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
     const { w, h } = GetSpriteDimensions(costumeName, frame);
     return { w, h };
+  }
+  getScaledBounds(agent: IAgent): { w: number; h: number } {
+    const { w, h } = this.getBounds(agent);
+    const scale = agent.scale;
+    const scaleY = agent.scaleY || scale;
+    return { w: scale * w, h: scaleY * h };
   }
   test(agent: IAgent) {
     console.log('GOT AGENT', agent.name, 'from FEATURE', this.name);
