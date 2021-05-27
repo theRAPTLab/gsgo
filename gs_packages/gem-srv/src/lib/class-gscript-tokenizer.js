@@ -544,9 +544,10 @@ class ScriptTokenizer {
     return this.gobbleMultiBlock();
   }
 
-  /** A multiblock seeks to PRESERVE the lines inside a block without
-   *  processing them, so we try to preserve exactly how they were formatted
-   *  in the source
+  /** A multiblock is a multi-line block expression. The contents of the block
+   *  is processed line-by-line after an unclosed opening [[ triggers this code,
+   *  and returns a { block:string[] } token for each block found. This block of
+   *  strings will be tokenized later during compilation.
    */
   gobbleMultiBlock() {
     const WRAP = false; // whether to return the block wrapped in [[ ]]
