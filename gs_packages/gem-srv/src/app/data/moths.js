@@ -84,6 +84,8 @@ featProp Movement useAutoOrientation setTo true
 
 useFeature Vision
 featCall Vision monitor Moth
+featCall Vision setViewDistance 500
+featCall Vision setViewAngle 45
 
 # PROGRAM UPDATE
 when Predator sees Moth [[
