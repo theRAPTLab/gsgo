@@ -26,6 +26,8 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+prop agent.scale setMin -2
+
 addProp energyUse Number 1
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
@@ -36,7 +38,9 @@ addProp startDirection Number 0
 
 useFeature Physics
 featCall Physics init
-featCall Physics setSize 90
+// featCall Physics setSize 90
+prop agent.scale setTo 1
+
 
 // set Touches
 useFeature Touches
@@ -53,7 +57,8 @@ featPropPop AgentWidgets text
 # PROGRAM EVENT
 onEvent Start [[
   // start at normal size unless you eat
-  featCall Physics setSize 90
+  // featCall Physics setSize 90
+  prop agent.scale setTo 1
 
     // **** OPTIONS TO CHANGE BEHAVIOR ****
     // ** pick a movement below:
@@ -91,7 +96,7 @@ when Fish touches Algae [[
 
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
-      featCall Physics setSize 150
+      // featCall Physics setSize 150
       prop Fish.energyUse setTo 2
 
     ]]
@@ -140,6 +145,12 @@ every 1 runAtStart [[
   // set meter to mirror energyLevel
   featCall AgentWidgets bindMeterTo energyLevel
 
+  ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
+    prop agent.scale setTo 1
+  ]]
+  ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
+    prop agent.scale setTo -1
+  ]]
 
 ]]
 `
@@ -188,6 +199,8 @@ exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop Physics scale
 
 # PROGRAM UPDATE
+
+
 when Algae touches Sunbeam [[
   every 1 [[
       featCall Algae.Costume setGlow 1
@@ -236,7 +249,6 @@ ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
 
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop agent.Physics scale
-
 
 ]]
 `
