@@ -92,7 +92,36 @@ RegisterFunction('touchesCenterOf', (a, b) => {
     width: size,
     height: size
   };
-  return a.callFeatMethod('Physics', 'intersectsWithBounds', boundsB);
+
+  // // debug
+  // // HACK This is EXPENSIVE!!!
+  // // Show bounding box
+  // const ab = a.callFeatMethod('Physics', 'getBounds');
+  // const apath = [
+  //   ab.x,
+  //   ab.y,
+  //   ab.x + ab.width,
+  //   ab.y,
+  //   ab.x + ab.width,
+  //   ab.y + ab.height,
+  //   ab.x,
+  //   ab.y + ab.height
+  // ];
+  // a.debug = apath;
+  // const bpath = [
+  //   bb.x,
+  //   bb.y,
+  //   bb.x + bb.width,
+  //   bb.y,
+  //   bb.x + bb.width,
+  //   bb.y + bb.height,
+  //   bb.x,
+  //   bb.y + bb.height
+  // ];
+  // b.debug = bpath;
+
+  return a.callFeatMethod('Physics', 'intersectsWithBounds', bb);
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
