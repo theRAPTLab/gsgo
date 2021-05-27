@@ -7,7 +7,7 @@
 import RNG from 'modules/sim/sequencer';
 import * as PIXI from 'pixi.js';
 import UR from '@gemstep/ursys/client';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
@@ -75,6 +75,15 @@ class CostumePack extends GFeature {
     prop.setMin(0);
     prop.setMax(0);
     this.featAddProp(agent, 'currentFrame', prop);
+    // NOTE setting `flip` will not change the costume if Physics
+    // is not being used.  This merely sets a flag.
+    // If only Costume is being used, you need do a direct Costume.setScale
+    // to trigger the flip.  We wanted to keep `flip` property
+    // that could be easily set rather than a method.
+    // REVIEW: Implement FEATURES_UPDATE phase processing for Costume
+    //         to enable applicaiton of flip?
+    this.featAddProp(agent, 'flipX', new GVarBoolean(false));
+    this.featAddProp(agent, 'flipY', new GVarBoolean(false));
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
@@ -98,11 +107,12 @@ class CostumePack extends GFeature {
   /**
    * If Physics are being used, it's better to use Physics' setSize()
    * This sets the agent scale property directly, but costume does
-   * not otherwise process scale
+   * not otherwise process scale.
    */
   setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked
-    agent.getProp('scale').setTo(scale); // use the minmaxed number
+    const newScale = agent.prop.Costume.flipX.value ? -scale : scale;
+    agent.getProp('scale').setTo(newScale); // use the minmaxed number
   }
   setGlow(agent: IAgent, seconds: number) {
     agent.isGlowing = true;
