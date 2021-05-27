@@ -46,23 +46,21 @@ every 0.25 [[
   prop alpha sub 0.1
 ]]
 when Moth isCenteredOn TreeTrunk [[
-  ifExpr {{ !Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setMin 0.1
-    featCall Moth.Costume setPose 4
-  ]]
   ifExpr {{ Moth.getFeatProp('Movement', 'isMoving').value }} [[
     prop alpha setMin 1
     featCall Moth.Costume setPose 0
+  ]] [[
+    prop alpha setMin 0.1
+    featCall Moth.Costume setPose 4
   ]]
 ]]
 when Moth isCenteredOn TreeFoliage [[
-  ifExpr {{ !Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setMin 0.1
-    featCall Moth.Costume setPose 4
-  ]]
   ifExpr {{ Moth.getFeatProp('Movement', 'isMoving').value }} [[
     prop alpha setMin 1
     featCall Moth.Costume setPose 0
+  ]] [[
+    prop alpha setMin 0.1
+    featCall Moth.Costume setPose 4
   ]]
 ]]
 `
