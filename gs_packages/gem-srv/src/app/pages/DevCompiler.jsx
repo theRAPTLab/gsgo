@@ -20,14 +20,16 @@ import * as Prism from '../../lib/vendor/prism';
 import { CodeJar } from '../../lib/vendor/codejar';
 import '../../lib/vendor/prism.css';
 
-/// UNCOMMENT TO RUN TESTS ////////////////////////////////////////////////////
-// import 'modules/tests/test-expr-parser'; // test parser evaluation
-// import 'modules/tests/test-script-parser'; // test script parser
-// import 'modules/tests/test-compiler'; // test compiler
-// import 'modules/tests/test-script-runtime'; // test runtime keyword functions
-
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-styles';
+
+/// RUN TESTS THAT ARE BROKEN BECAUSE OF BAD KEYWORDS /////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** these should be able to run clean in SystemInit without any dependencies
+ *  as unit tests, but there is fishy code using URSYS in some keywords
+ */
+// import '../../modules/tests/test-compiler'; // test compiler
+// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
