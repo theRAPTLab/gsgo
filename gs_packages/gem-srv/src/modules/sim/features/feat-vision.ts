@@ -67,10 +67,10 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   const distance = agent.prop.Vision._viewDistance;
   const orientation = -agent.prop.Movement._orientation; // flip y
   const viewAngleLeft = ANGLES.normalizeHalf(
-    orientation - agent.prop.Vision._viewAngle
+    orientation - agent.prop.Vision._viewAngle / 2
   );
   const viewAngleRight = ANGLES.normalizeHalf(
-    orientation + agent.prop.Vision._viewAngle
+    orientation + agent.prop.Vision._viewAngle / 2
   );
   // We project the middle point too, so that upon first detection, a pivot
   // towards the agent will not result in the target moving out of the vision cone
@@ -133,6 +133,8 @@ class VisionPack extends GFeature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
+    this.featAddMethod('setViewDistance', this.setViewDistance);
+    this.featAddMethod('setViewAngle', this.setViewAngle);
     // this.featAddMethod('canSee', this.canSee);
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
@@ -156,6 +158,12 @@ class VisionPack extends GFeature {
    */
   monitor(agent: IAgent, targetBlueprintName: string) {
     VISION_AGENTS.set(agent.id, targetBlueprintName);
+  }
+  setViewDistance(agent: IAgent, distance: number) {
+    agent.prop.Vision._viewDistance = distance;
+  }
+  setViewAngle(agent: IAgent, degrees: number) {
+    agent.prop.Vision._viewAngle = ((degrees / 2) * Math.PI) / 180;
   }
   /** This doesn't really do anything, since:
    *  a. you can't easily call featCall with a specific target agent parameter

@@ -40,10 +40,12 @@ featCall AgentWidgets bindMeterTo energyLevel
 # PROGRAM EVENT
 # PROGRAM UPDATE
 ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
-  prop agent.scale setTo 1
+  // prop agent.scale setTo 1
+  featProp Costume flipX setTo false
 ]]
 ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
-  prop agent.scale setTo -1
+  // prop agent.scale setTo -1
+  featProp Costume flipX setTo true
 ]]
 when Fish touches Algae [[
   every 1 runAtStart [[
