@@ -94,6 +94,15 @@ RegisterFunction('touchesCenterOf', (a, b) => {
     height: distance / 2
   };
   return a.callFeatMethod('Physics', 'intersectsWithBounds', boundsB);
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
+  // checks if distance between agents is less than distance
+  let xs = a.prop.x.value - b.prop.x.value;
+  let ys = a.prop.y.value - b.prop.y.value;
+  if (Math.hypot(xs, ys) < distance) {
+    return true; // touches!
+  }
+  return false; // doesn't touch
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('firstTouches', (a, b) => {

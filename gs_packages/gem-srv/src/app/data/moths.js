@@ -45,7 +45,7 @@ ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
 every 0.25 [[
   prop alpha sub 0.1
 ]]
-when Moth touches TreeTrunk [[
+when Moth isCenteredOn TreeTrunk [[
   ifExpr {{ !Moth.getFeatProp('Movement', 'isMoving').value }} [[
     prop alpha setMin 0.1
     featCall Moth.Costume setPose 4
@@ -55,7 +55,7 @@ when Moth touches TreeTrunk [[
     featCall Moth.Costume setPose 0
   ]]
 ]]
-when Moth touches TreeFoliage [[
+when Moth isCenteredOn TreeFoliage [[
   ifExpr {{ !Moth.getFeatProp('Movement', 'isMoving').value }} [[
     prop alpha setMin 0.1
     featCall Moth.Costume setPose 4
@@ -95,10 +95,10 @@ when Predator sees Moth [[
 when Predator doesNotSee Moth [[
   prop Moth.alpha setMin 0.1
 ]]
-when Predator touchesCenterOf Moth [[
+when Predator isCenteredOn Moth [[
   featCall Moth.Costume setGlow 1
   featCall Moth.Movement jitterRotate
-  every 3 [[
+  every 2 [[
     featCall Moth.Population removeAgent
     featCall Predator.Costume setGlow 1
   ]]
