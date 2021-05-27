@@ -29,14 +29,18 @@ import {
 import SETTINGS from '../../../config/app.settings';
 import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
-/// TESTS THAT HATE REACT /////////////////////////////////////////////////////
-import '../../modules/tests/test-script-parser';
+
+/// RUN UNIT TESTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// import '../../modules/tests/test-expr-parser'; // test parser evaluation
+// import '../../modules/tests/test-script-parser'; // test script parser
+// import '../../modules/tests/test-compiler'; // test compiler
+// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM', 'TagSystem');
-const NPR = UR.PrefixUtil('URSYS ', 'TagUR');
 const AR = UR.PrefixUtil('URSYS ', 'TagUR3');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
