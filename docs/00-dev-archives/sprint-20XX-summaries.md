@@ -155,3 +155,12 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 * W1: CharControl, DeviceSub, Directory, Data Structure documentation
 * W2: Device Define/Publish, Subscribe/Read Complete DR01!
 
+**SUMMARY S2108 APR 19 - MAY 02**
+
+* W1: GetInput API, DiffCache Buffer Mode
+* W2: Notification, start break.
+
+**SUMMARY S2109 MAY 03 - MAY 16**
+
+* W1: Break cont'd. CodeReview of May Pilot. Meeting with Researchers
+* W2: Meeting followup. Discussions on Feature and Phases.

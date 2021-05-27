@@ -12,6 +12,13 @@ import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
 import { useStylesHOC } from './elements/page-styles';
 
+/// RUN UNIT TESTS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// import '../../modules/tests/test-expr-parser'; // test parser evaluation
+// import '../../modules/tests/test-script-parser'; // test script parser
+// import '../../modules/tests/test-compiler'; // test compiler
+// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('HOME');
@@ -114,7 +121,7 @@ class Home extends React.Component {
           <h4>DevTools</h4>
           <ol>
             <li>
-              <a href="/app/dev-tracker">TRACKER</a> - Test Device 'CharControl',
+              <a href="/app/dev-tracker">TRACKER</a> - For testing CharControl,
               PTrack, and Renderer Module entities.
             </li>
             <li>

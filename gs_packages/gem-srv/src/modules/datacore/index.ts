@@ -40,6 +40,13 @@ addProp foodLevel Number 50
 featCall Costume setCostume 'bunny.json' 1
 # PROGRAM UPDATE
 prop agent.skin setTo 'bunny.json'
+ifExpr {{true}} [[
+  ifExpr {{ false }} [[
+    dbgOut 'true'
+  ]] [[
+    dbgOut 'chained blocks work'
+  ]]
+]]
 `;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
