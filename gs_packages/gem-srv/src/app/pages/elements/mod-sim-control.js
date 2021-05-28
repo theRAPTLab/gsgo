@@ -15,6 +15,7 @@ import UR from '@gemstep/ursys/client';
 import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler';
 import * as SIM from 'modules/sim/api-sim';
+import { ClearDOBJ } from 'modules/sim/sim-agents';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
@@ -102,6 +103,9 @@ class SimControl {
     DATACORE.DeleteAllBlueprints();
     DATACORE.DeleteAllAgents();
     DATACORE.DeleteAllInstances();
+
+    ClearDOBJ();
+
     SIM.Reset();
     // MissionControl will take care of reloading and calling SimPlaces
   }

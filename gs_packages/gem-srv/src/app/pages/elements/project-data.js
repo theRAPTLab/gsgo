@@ -48,7 +48,7 @@ const MONITORED_INSTANCES = [];
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-let SEED = 100; // ids for newly created instances
+let SEED = 100; // ids for instances created via SETUP
 function m_GetUID() {
   return String(SEED++);
 }

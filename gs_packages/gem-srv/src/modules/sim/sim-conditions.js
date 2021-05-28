@@ -79,15 +79,58 @@ RegisterFunction('touches', (a, b) => {
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
   // if either is inert, no touches are possible
   if (a.isInert || b.isInert) return false;
-  const boundsA = a.callFeatMethod('Physics', 'getBounds');
-  const boundsB = b.callFeatMethod('Physics', 'getBounds');
-  // REVIEW: This is a rectangular test, not a round test.
-  const res =
-    boundsA.x < boundsB.x + boundsB.width &&
-    boundsA.x + boundsA.width > boundsB.x &&
-    boundsA.y < boundsB.y + boundsB.height &&
-    boundsA.y + boundsA.height > boundsB.y;
-  return res;
+  return a.callFeatMethod('Physics', 'intersectsWith', b);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('touchesCenterOf', (a, b) => {
+  // checks if 'a' bounds touches the center of 'b'
+  if (!a.hasFeature('Physics')) return false;
+  const size = 10; // size of the center box.
+  const bb = {
+    x: b.prop.x.value - size / 2,
+    y: b.prop.y.value - size / 2,
+    width: size,
+    height: size
+  };
+
+  // // debug
+  // // HACK This is EXPENSIVE!!!
+  // // Show bounding box
+  // const ab = a.callFeatMethod('Physics', 'getBounds');
+  // const apath = [
+  //   ab.x,
+  //   ab.y,
+  //   ab.x + ab.width,
+  //   ab.y,
+  //   ab.x + ab.width,
+  //   ab.y + ab.height,
+  //   ab.x,
+  //   ab.y + ab.height
+  // ];
+  // a.debug = apath;
+  // const bpath = [
+  //   bb.x,
+  //   bb.y,
+  //   bb.x + bb.width,
+  //   bb.y,
+  //   bb.x + bb.width,
+  //   bb.y + bb.height,
+  //   bb.x,
+  //   bb.y + bb.height
+  // ];
+  // b.debug = bpath;
+
+  return a.callFeatMethod('Physics', 'intersectsWithBounds', bb);
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
+  // checks if distance between agents is less than distance
+  let xs = a.prop.x.value - b.prop.x.value;
+  let ys = a.prop.y.value - b.prop.y.value;
+  if (Math.hypot(xs, ys) < distance) {
+    return true; // touches!
+  }
+  return false; // doesn't touch
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('firstTouches', (a, b) => {
@@ -154,6 +197,18 @@ RegisterFunction('isCloseTo', (a, b, distance = 30) => {
     return true; // touches!
   }
   return false; // doesn't touch
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('sees', (a, b) => {
+  // checks if b is within vision cone of a
+  if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
+  return a.canSee ? a.canSee.get(b.id) : false;
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('doesNotSee', (a, b) => {
+  // checks if b is NOT within vision cone of a
+  if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
+  return a.canSee ? !a.canSee.get(b.id) : true;
 });
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////

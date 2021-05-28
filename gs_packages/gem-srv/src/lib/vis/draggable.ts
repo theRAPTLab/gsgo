@@ -81,8 +81,16 @@ export function MakeDraggable(vobj: Visual) {
         // don't move if agent is user input
         this.x = newx;
         this.y = newy;
-        agent.prop.x.value = newx;
-        agent.prop.y.setTo(newy); // alt way of setting
+
+        // NEW METHOD with Movement
+        if (agent.hasFeature('Movement')) {
+          // If Movement, use queuePosition so that `isMoving` is calcuated
+          agent.callFeatMethod('Movement', 'queuePosition', newx, newy);
+        } else {
+          // If no movement, then set directly
+          agent.x = newx;
+          agent.y = newy;
+        }
       }
     }
   }

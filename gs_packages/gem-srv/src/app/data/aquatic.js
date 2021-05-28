@@ -25,6 +25,9 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+// scale override
+prop agent.scale setMin -1
+
 useFeature Physics
 
 // set Touches
@@ -36,6 +39,14 @@ featCall AgentWidgets bindMeterTo energyLevel
 
 # PROGRAM EVENT
 # PROGRAM UPDATE
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
+  // prop agent.scale setTo 1
+  featProp Costume flipX setTo false
+]]
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
+  // prop agent.scale setTo -1
+  featProp Costume flipX setTo true
+]]
 when Fish touches Algae [[
   every 1 runAtStart [[
     prop Fish.energyLevel add 10
