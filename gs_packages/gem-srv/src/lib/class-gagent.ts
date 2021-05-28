@@ -75,10 +75,10 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.color = new GVarNumber();
     this.prop.scale = new GVarNumber();
     this.prop.scale.setMax(10);
-    this.prop.scale.setMin(0.1);
+    this.prop.scale.setMin(-10);
     this.prop.scaleY = new GVarNumber();
     this.prop.scaleY.setMax(10);
-    this.prop.scaleY.setMin(0);
+    this.prop.scaleY.setMin(-10);
     this.prop.orientation = new GVarNumber();
     this.prop.alpha = new GVarNumber();
     this.prop.alpha.setMax(1);
