@@ -67,7 +67,7 @@ export async function LoadProject(modelId) {
 }
 /// Retrieves cached model or reads from db
 function GetProject(modelId = CURRENT_MODEL_ID) {
-  if (!modelId) throw new Error('Tried to GetModel before setting modelId');
+  if (!modelId) throw new Error('Tried to GetProject before setting modelId');
   if (modelId === CURRENT_MODEL_ID) return CURRENT_MODEL;
   return ReadProject(modelId);
 }
@@ -497,7 +497,7 @@ export function InstanceHoverOut(data) {
 /// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
 const API_PROJDATA = [
   'ReadProjectsList',
-  'GetModel',
+  'GetProject',
   'GetCurrentModelData',
   'GetProjectBoundary',
   'GetInputBPNames',
@@ -506,7 +506,7 @@ const API_PROJDATA = [
 /// Map mod.<functionName> so they can be called by HandleREquestProjData
 const mod = {};
 mod.ReadProjectsList = ReadProjectsList;
-mod.GetModel = GetProject;
+mod.GetProject = GetProject;
 mod.GetCurrentModelData = GetCurrentModelData;
 mod.GetProjectBoundary = GetBoundary; // Mapping clarifies target
 mod.GetInputBPNames = GetInputBPNames;
@@ -559,7 +559,7 @@ UR.HandleMessage('INSTANCE_HOVEROVER', InstanceHoverOver);
 UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
 
 export {
-  GetProject as GetModel,
+  GetProject,
   GetCurrentModelData,
   GetBlueprintPropertiesTypeMap,
   GetInputBPNames,
