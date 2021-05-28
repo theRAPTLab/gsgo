@@ -26,8 +26,6 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
-prop scale setMin -2
-
 addProp energyUse Number 1
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
