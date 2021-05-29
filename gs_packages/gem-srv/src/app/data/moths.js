@@ -40,7 +40,7 @@ featCall Costume randomizeColor 0.1 0.3 0.1
 featCall Movement setRandomStart
 
 # PROGRAM UPDATE
-ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
+ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value && !agent.getProp('isInert').value }} [[
   prop alpha add 0.25
 ]]
 every 0.25 [[
