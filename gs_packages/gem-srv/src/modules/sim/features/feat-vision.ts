@@ -58,6 +58,7 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     agent.x === undefined ||
     agent.y === undefined ||
     target === undefined ||
+    target.isInert || // inert = dead
     target.x === undefined ||
     target.y === undefined ||
     agent.prop.Movement._orientation === undefined // orientation isn't set until agent moves
@@ -115,14 +116,22 @@ function m_update(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
+    let hasActiveTargets = false;
     const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
-    if (targets.length < 1) agent.debug = []; // clear vision cone
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
       const canSee = m_IsTargetWithinVisionCone(agent, t);
       if (!agent.canSee) agent.canSee = new Map();
       agent.canSee.set(t.id, canSee);
+      // pozyx targets might still be present, but inert
+      if (!t.isInert) hasActiveTargets = true;
     });
+    // Clear cone if no more non-inert targets.
+    // We can't simply check for 0 targets because
+    // pozyx targets might still be around but inert
+    // and the cone is only drawn during the m_IsTargetWithinVisionCone call,
+    // but the call will skip drawing if the target is inert.
+    if (!hasActiveTargets) agent.debug = [];
   });
 }
 
