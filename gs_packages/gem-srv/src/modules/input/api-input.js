@@ -33,6 +33,13 @@ export function ConnectTracker() {
   PTRACK.Connect(document.domain);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function TrackerSetupIsOnline() {
+  const devices = UR.GetDeviceDirectory();
+  return devices.find(d => {
+    return d.meta.uclass === 'TrackerSetup';
+  });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
   const POZYX_TO_COBJ = GetTrackerMap();
   setInterval(() => {
@@ -41,11 +48,9 @@ export function StartTrackerVisuals() {
     POZYX_TO_COBJ.syncFromArray(entities);
     POZYX_TO_COBJ.mapObjects();
 
-    // REVIEW: Use Device tester to see if TrackerSetup is active?
     // This sends entity data to PanelTracker so entity locations
     // can be monitored for setting up transforms.
-    const trackerSetupIsActive = true;
-    if (trackerSetupIsActive) {
+    if (TrackerSetupIsOnline()) {
       UR.RaiseMessage('NET:ENTITY_UPDATE', {
         entities,
         tentities: POZYX_TO_COBJ.getMappedObjects()

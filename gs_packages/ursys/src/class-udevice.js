@@ -65,10 +65,20 @@ const DEVICE_CLASS_TEMPLATES = {
     }
   },
   'PTrack': {}, // ptrack generator
-  'Sim': {
+  'TrackerSetup': {
+    // REVIEW:  must be defined, or results in error
+    /* T0193 ERROR IN PROMISE TypeError: Cannot convert undefined or null to object
+      at Function.keys (<anonymous>)
+      at UDevice.getInputControlNames (webpack-internal:///./src/class-udevice.js:226:19)
+    */
     // fake inputs and outputs for now to see if we can get device to show up
     inputs: { 'foo': { x: 'axis', y: 'axis' } },
     outputs: { 'bar': { groups: 'array' } }
+  },
+  'Sim': {
+    // fake inputs and outputs for now to see if we can get device to show up
+    // inputs: { 'foo': { x: 'axis', y: 'axis' } },
+    // outputs: { 'bar': { groups: 'array' } }
   }, // simulation engine
   'VidServer': {}, // video server
   'URBroker': {} // URNET broker endpoint

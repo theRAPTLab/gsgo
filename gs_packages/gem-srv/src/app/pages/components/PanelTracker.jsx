@@ -58,7 +58,6 @@ class PanelTracker extends React.Component {
   }
 
   updateTransform(data) {
-    console.error('updateTransform', data);
     this.setState({ transform: data.transform });
   }
 

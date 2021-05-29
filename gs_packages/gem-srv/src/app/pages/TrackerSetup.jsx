@@ -40,9 +40,11 @@ class TrackerSetup extends React.Component {
     super();
     this.state = {
       noMain: true,
+      isInitialized: false,
       panelConfiguration: 'default'
     };
     this.OnPanelClick = this.OnPanelClick.bind(this);
+    this.Initialize = this.Initialize.bind(this);
   }
 
   componentDidMount() {
@@ -60,9 +62,8 @@ class TrackerSetup extends React.Component {
           const { selected, quantified, valid } = deviceLists;
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
+            this.Initialize();
             this.setState({ noMain: false });
-            UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
-            UR.RaiseMessage('INIT_TRACKER');
           } else {
             this.setState({ noMain: true });
           }
@@ -81,6 +82,22 @@ class TrackerSetup extends React.Component {
     if (DBG) console.log('click', id); // e, e.target, e.target.value);
     this.setState({
       panelConfiguration: id
+    });
+  }
+
+  async Initialize() {
+    if (this.state.isInitialized) return;
+    this.setState({ isInitialized: true }, async () => {
+      // Register as 'TrackerSetup' Device
+      // devices templates are defined in class-udevice.js
+      const dev = UR.NewDevice('TrackerSetup');
+      const { udid, status, error } = await UR.RegisterDevice(dev);
+      if (error) console.error(error);
+      if (status) console.error('status', ...PR(status));
+      // if (udid) DEVICE_UDID = udid;
+
+      UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
+      UR.RaiseMessage('INIT_TRACKER');
     });
   }
 
