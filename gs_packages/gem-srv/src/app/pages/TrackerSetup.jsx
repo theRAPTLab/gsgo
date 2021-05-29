@@ -87,13 +87,13 @@ class TrackerSetup extends React.Component {
 
   async Initialize() {
     if (this.state.isInitialized) return;
+    // Register as 'TrackerSetup' Device
+    // devices templates are defined in class-udevice.js
+    const dev = UR.NewDevice('TrackerSetup');
+    const { udid, status, error } = await UR.RegisterDevice(dev);
     this.setState({ isInitialized: true }, async () => {
-      // Register as 'TrackerSetup' Device
-      // devices templates are defined in class-udevice.js
-      const dev = UR.NewDevice('TrackerSetup');
-      const { udid, status, error } = await UR.RegisterDevice(dev);
       if (error) console.error(error);
-      if (status) console.error('status', ...PR(status));
+      if (status) console.log(...PR(status));
       // if (udid) DEVICE_UDID = udid;
 
       UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries

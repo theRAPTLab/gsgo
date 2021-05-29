@@ -77,8 +77,8 @@ const DEVICE_CLASS_TEMPLATES = {
   },
   'Sim': {
     // fake inputs and outputs for now to see if we can get device to show up
-    // inputs: { 'foo': { x: 'axis', y: 'axis' } },
-    // outputs: { 'bar': { groups: 'array' } }
+    inputs: { 'foo': { x: 'axis', y: 'axis' } },
+    outputs: { 'bar': { groups: 'array' } }
   }, // simulation engine
   'VidServer': {}, // video server
   'URBroker': {} // URNET broker endpoint
