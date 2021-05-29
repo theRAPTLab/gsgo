@@ -22,6 +22,7 @@ let STAGE_WIDTH = 100; // default
 let STAGE_HEIGHT = 100; // default
 
 let BPNAMES = []; // names of user-controllable blueprints
+let POZYX_BPNAMES = [];
 
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
@@ -137,6 +138,91 @@ function UpdateActiveDevices(changes) {
   ACTIVE_DEVICES.clear();
   inputDevices.forEach(d => ACTIVE_DEVICES.set(UDIDtoID(d.udid), true));
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export const POZYX_TRANSFORM = {
+  scaleX: -0.0001, // -0.0001
+  scaleY: 0.0001, // 0.001
+  translateX: 0,
+  translateY: 0,
+  rotate: -190 // -190
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_PozyxTransform(position: {
+  x: number;
+  y: number;
+}): { x: number; y: number } {
+  let tx = Number(position.x);
+  let ty = Number(position.y);
+
+  // 1. Translate
+  tx += POZYX_TRANSFORM.translateX;
+  ty += POZYX_TRANSFORM.translateY;
+
+  // 2. Rotate
+  const rad = (POZYX_TRANSFORM.rotate * Math.PI) / 180;
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  tx = tx * c - ty * s;
+  ty = tx * s + ty * c;
+
+  // 3. Scale
+  tx *= POZYX_TRANSFORM.scaleX;
+  ty *= POZYX_TRANSFORM.scaleY;
+
+  return { x: tx, y: ty };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Return the first pozyx controllable blueprint for now
+ * Eventually we'll add a more sophisticated map
+ */
+function GetDefaultPozyxBPName() {
+  if (POZYX_BPNAMES.length < 1)
+    throw new Error('No pozyx controllable blueprints defined!');
+  return POZYX_BPNAMES[0];
+}
+export function SetPozyxBPNames(bpnames: string[]) {
+  POZYX_BPNAMES = [...bpnames];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const POZYX_TO_COBJ = new SyncMap({
+  Constructor: InputDef,
+  autoGrow: true,
+  name: 'TrackedEntityToCObj'
+});
+POZYX_TO_COBJ.setMapFunctions({
+  onAdd: (entity: any, cobj: InputDef) => {
+    const { x, y } = m_PozyxTransform({ x: entity.x, y: entity.y });
+    cobj.x = x;
+    cobj.y = y;
+    // HACK Blueprints into cobj
+    cobj.bpname = GetDefaultPozyxBPName();
+    cobj.name = entity.id;
+  },
+  onUpdate: (entity: any, cobj: InputDef) => {
+    const { x, y } = m_PozyxTransform({ x: entity.x, y: entity.y });
+    cobj.x = x;
+    cobj.y = y;
+    cobj.bpname = GetDefaultPozyxBPName();
+    cobj.name = entity.id;
+  },
+  shouldRemove: (cobj, map) => {
+    // Inputs do not necessarily come in with every INPUTS phase fire
+    // so we should NOT be removing them on every update.
+    // HACK: Remove agent if no update for 4 seconds
+    // inputDef.framesSinceLastUpdate++;
+    // if (inputDef.framesSinceLastUpdate > 120) {
+    //   return true;
+    // }
+  }
+});
+export function GetTrackerMap() {
+  return POZYX_TO_COBJ;
+}
+
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SetInputStageBounds(width, height) {
@@ -154,6 +240,7 @@ export function SetInputBPnames(bpnames: string[]) {
 export function GetInputBPnames() {
   return BPNAMES;
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export async function InputInit(bpname: string) {
   // STEP 1 is to get a "deviceAPI" from a Device Subscription
@@ -198,11 +285,23 @@ function InputUpdate(devAPI, bpname) {
   COBJ_TO_INPUTDEF.mapObjects();
 }
 export function InputsUpdate() {
+  // The basic pipeline is:
+  // inputs => INPUTDEFS => AGENTS
+  //
+  // Inputs from all sources (charcontrol, PTrack, Pozyx, faketrack)
+  // are all converted to INPUTDEFS here.
+
+  // 1. Process Char Control inputs
   const blueprintNames = Array.from(INPUT_GROUPS.keys());
   INPUTDEFS.length = 0; // Clear INPUTDEFS with each update
   blueprintNames.forEach(bpname => {
     InputUpdate(INPUT_GROUPS.get(bpname), bpname);
   });
+  // 2. Process PTrack, Pozyx, FakeTrack Inputs
+  //    PTRACK_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
+  COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
+  COBJ_TO_INPUTDEF.mapObjects();
+  // 3. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

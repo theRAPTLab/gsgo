@@ -7,6 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import * as PTRACK from 'modules/step/in-ptrack';
 import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
+import { GetTrackerMap } from 'modules/datacore/dc-inputs';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,16 +34,36 @@ export function ConnectTracker() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
-  const RP = GetTrackerRP();
-  // start test timer
+  const POZYX_TO_COBJ = GetTrackerMap();
   setInterval(() => {
-    const m_entities = PTRACK.GetInputs(500);
-    let out = [];
-    /** CHEESE TESTING HERE **/
-    out.push(...OutSyncResults(RP.syncFromArray(m_entities)));
-    RP.mapObjects(); // note that this has to be disabled in api-render
-    if (DBG) console.log(...out);
+    const entities = PTRACK.GetInputs(500);
+    if (DBG) console.log(entities);
+    POZYX_TO_COBJ.syncFromArray(entities);
+    POZYX_TO_COBJ.mapObjects();
+
+    // REVIEW: Use Device tester to see if TrackerSetup is active?
+    // This sends entity data to PanelTracker so entity locations
+    // can be monitored for setting up transforms.
+    const trackerSetupIsActive = true;
+    if (trackerSetupIsActive) {
+      UR.RaiseMessage('NET:ENTITY_UPDATE', {
+        entities,
+        tentities: POZYX_TO_COBJ.getMappedObjects()
+      });
+    }
   }, INTERVAL);
+
+  // ORIG CODE
+  // const RP = GetTrackerRP();
+  // // start test timer
+  // setInterval(() => {
+  //   const m_entities = PTRACK.GetInputs(500);
+  //   let out = [];
+  //   /** CHEESE TESTING HERE **/
+  //   out.push(...OutSyncResults(RP.syncFromArray(m_entities)));
+  //   RP.mapObjects(); // note that this has to be disabled in api-render
+  //   if (DBG) console.log(...out);
+  // }, INTERVAL);
 }
 
 /// PHASE MACHINE INTERFACES //////////////////////////////////////////////////

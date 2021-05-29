@@ -84,6 +84,7 @@ class Home extends React.Component {
             <NavItem route="scripteditor?model=aquatic">script editor</NavItem>
             <NavItem route="viewer?model=aquatic">viewer</NavItem>
             <NavItem route="charcontrol">WIP character controller</NavItem>
+            <NavItem route="tracker">tracker sEtup</NavItem>
           </ul>
         </div>
         <div id="instructions" className={classes.main}>
@@ -116,6 +117,11 @@ class Home extends React.Component {
             <li>
               <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
               earlier versions FAKETRACK with the new device interface WIP.
+            </li>
+            <li>
+              <a href="/app/tracker">TRACKER SETUP</a> - Prototype app showing the
+              raw PTrack and Pozxy input data. Used to set up transforms and
+              debug.
             </li>
           </ol>
           <h4>DevTools</h4>

@@ -13,7 +13,8 @@ export const MODEL = {
     {
       id: 'Moth',
       label: 'Moth',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
@@ -68,7 +69,8 @@ when Moth isCenteredOn TreeFoliage [[
     {
       id: 'Predator',
       label: 'Predator',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: false,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
@@ -99,7 +101,8 @@ when Predator isCenteredOn Moth [[
   featCall Moth.Costume setGlow 1
   featCall Moth.Movement jitterRotate
   every 2 [[
-    featCall Moth.Population removeAgent
+    // featCall Moth.Population removeAgent
+    prop Moth.isInert setTo true
     featCall Predator.Costume setGlow 1
   ]]
 ]]

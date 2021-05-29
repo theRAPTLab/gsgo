@@ -23,10 +23,9 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
-import { InputsReset } from 'modules/datacore/dc-inputs';
+import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
 import {
   UpdateDCModel,
-  GetBounds,
   GetBoundary,
   GetBlueprintProperties
 } from 'modules/datacore/dc-project';
@@ -79,6 +78,21 @@ function GetCurrentModelData() {
   };
 }
 
+/// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HandlePozyxTransformSet(data) {
+  if (data.scaleX !== undefined) POZYX_TRANSFORM.scaleX = Number(data.scaleX);
+  if (data.scaleY !== undefined) POZYX_TRANSFORM.scaleY = Number(data.scaleY);
+  if (data.translateX !== undefined)
+    POZYX_TRANSFORM.translateX = Number(data.translateX);
+  if (data.translateY !== undefined)
+    POZYX_TRANSFORM.translateY = Number(data.translateY);
+  if (data.rotate !== undefined) POZYX_TRANSFORM.rotate = Number(data.rotate);
+  UR.RaiseMessage('NET:POZYX_TRANSFORM_UPDATE', { transform: POZYX_TRANSFORM });
+}
+function HandlePozyxTransformReq() {
+  return { transform: POZYX_TRANSFORM };
+}
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RaiseModelsUpdate() {
@@ -127,7 +141,16 @@ function GetInputBPNames(modelId = CURRENT_MODEL_ID) {
   if (!model)
     console.error(...PR('GetInputBPNames could not load model', modelId));
   const scripts = model.scripts;
-  const res = scripts.filter(s => s.isControllable).map(s => s.id);
+  const res = scripts.filter(s => s.isCharControllable).map(s => s.id);
+  return res;
+}
+function GetPozyxBPNames(modelId = CURRENT_MODEL_ID) {
+  if (DBG) console.log(...PR('GetPozyxBPNames called with', modelId));
+  const model = GetProject(modelId);
+  if (!model)
+    console.error(...PR('GetPozyxBPNames could not load model', modelId));
+  const scripts = model.scripts;
+  const res = scripts.filter(s => s.isPozyxControllable).map(s => s.id);
   return res;
 }
 /**
@@ -538,6 +561,9 @@ function HandleRequestProjData(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
 
+/// TRANSFORM UTILS -----------------------------------------------------------
+UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
+UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
@@ -563,5 +589,6 @@ export {
   GetCurrentModelData,
   GetBlueprintPropertiesTypeMap,
   GetInputBPNames,
+  GetPozyxBPNames,
   BlueprintDelete
 };
