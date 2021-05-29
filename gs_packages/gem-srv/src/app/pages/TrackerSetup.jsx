@@ -61,6 +61,7 @@ class TrackerSetup extends React.Component {
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
             this.setState({ noMain: false });
+            UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
             UR.RaiseMessage('INIT_TRACKER');
           } else {
             this.setState({ noMain: true });
