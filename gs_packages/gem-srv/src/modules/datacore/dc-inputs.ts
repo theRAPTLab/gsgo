@@ -143,13 +143,23 @@ function UpdateActiveDevices(changes) {
 /// POZYX DATA UPDATE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const POZYX_TRANSFORM = {
-  scaleX: -0.0001, // -0.0001
-  scaleY: 0.0001, // 0.001
+  scaleX: -0.0002, // -0.0002
+  scaleY: 0.0003, // 0.0003
   translateX: 0,
   translateY: 0,
-  rotate: -190 // -190
+  rotate: -160 // -160
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_Rotate(position: { x: number; y: number }): { x: number; y: number } {
+  let tx = Number(position.x);
+  let ty = Number(position.y);
+  const rad = (POZYX_TRANSFORM.rotate * Math.PI) / 180;
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  tx = tx * c - ty * s;
+  ty = tx * s + ty * c;
+  return { x: tx, y: ty };
+}
 function m_PozyxTransform(position: {
   x: number;
   y: number;
@@ -174,6 +184,37 @@ function m_PozyxTransform(position: {
 
   return { x: tx, y: ty };
 }
+function m_GetAccelerationMultiplier(n: number): number {
+  // acceleration units in g
+  if (n > 1000) return 0.8; // fast
+  if (n > 500) return 0.5; // medium
+  if (n > 250) return 0.15; // deliberate move
+  if (n > 50) return 0.05; // standing still mostly allow a little movement
+  return 0; // n <= 50, resting on a hard surface
+}
+function m_PozyxDampen(
+  lastPosition: { x: number; y: number },
+  rawEntityPosition: { x: number; y: number },
+  acc: { x: number; y: number; z: number }
+): { x: number; y: number } {
+  // lastPosition is already transformed
+  const newPosition = m_PozyxTransform(rawEntityPosition);
+  const dx = newPosition.x - lastPosition.x;
+  const dy = newPosition.y - lastPosition.y;
+
+  // If accelerometer movement is high, allow large movement
+  // If acceleromoter movement is low, allow only small movmeent
+  const limiter = m_Rotate(acc); // rotate accelerometer readings to match stage
+  limiter.x = Math.abs(limiter.x); // we just want magnitude
+  limiter.y = Math.abs(limiter.y);
+  let xm = m_GetAccelerationMultiplier(limiter.x); // x multiplier
+  let ym = m_GetAccelerationMultiplier(limiter.y);
+
+  const x = lastPosition.x + xm * dx;
+  const y = lastPosition.y + ym * dy;
+  return { x, y };
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Return the first pozyx controllable blueprint for now
@@ -203,9 +244,17 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.name = entity.id;
   },
   onUpdate: (entity: any, cobj: InputDef) => {
-    const { x, y } = m_PozyxTransform({ x: entity.x, y: entity.y });
-    cobj.x = x;
-    cobj.y = y;
+    let pos = { x: entity.x, y: entity.y };
+
+    if (entity.acc) {
+      // has accelerometer data
+      pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
+    } else {
+      pos = m_PozyxTransform(pos);
+    }
+
+    cobj.x = pos.x;
+    cobj.y = pos.y;
     cobj.bpname = GetDefaultPozyxBPName();
     cobj.name = entity.id;
   },

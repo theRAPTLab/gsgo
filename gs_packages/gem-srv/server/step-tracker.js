@@ -230,6 +230,15 @@ function ConvertMQTTtoTrackerData(message) {
   // message is a node Buffer object -- https://nodejs.org/api/buffer.html
   let json = JSON.parse(message.toString())[0];
 
+  // console.log(json);
+
+  // Wearable Tag Accelerometer Data
+  // console.log(json.data.tagData.accelerometer);
+
+  // Developer Tag data
+  // const customSensors = json.data.tagData.customSensors;
+  // if (customSensors) console.log(customSensors);
+
   // `alive` is no longer in message as of 2021-05-26 (new Enterprise system)
   // if (!json.alive) return;
   if (!json.success) {
@@ -255,7 +264,6 @@ function ConvertMQTTtoTrackerData(message) {
   const id = json.tagId;
   const px = json.data.coordinates.x;
   const py = json.data.coordinates.y;
-
   let framedata = {
     id,
     x: px,
@@ -264,6 +272,25 @@ function ConvertMQTTtoTrackerData(message) {
     height: 1.4,
     isPozyx: true // mark the entity as Pozyx in case we need it later
   };
+
+  // get accelerometer data if present
+  // currently only available for wearable tags
+  // might be possible for developer tag with custom payload
+  if (json.data.tagData.accelerometer) {
+    // only grab the first acceleration frame -- we don't need more
+    const aframe = json.data.tagData.accelerometer[0];
+    if (aframe && aframe.length > 0) {
+      const ax = aframe[0];
+      const ay = aframe[1];
+      const az = aframe[2];
+      framedata.acc = {
+        x: ax,
+        y: ay,
+        z: az
+      };
+      // console.log(framedata.acc);
+    }
+  }
 
   // update current time
   // FIXME: Should we use tag time?  Or should we inject current time here?
