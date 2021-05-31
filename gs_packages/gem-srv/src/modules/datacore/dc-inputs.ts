@@ -167,16 +167,16 @@ function m_PozyxTransform(position: {
   let tx = Number(position.x);
   let ty = Number(position.y);
 
-  // 1. Translate
-  tx += POZYX_TRANSFORM.translateX;
-  ty += POZYX_TRANSFORM.translateY;
-
-  // 2. Rotate
+  // 1. Rotate
   const rad = (POZYX_TRANSFORM.rotate * Math.PI) / 180;
   const c = Math.cos(rad);
   const s = Math.sin(rad);
   tx = tx * c - ty * s;
   ty = tx * s + ty * c;
+
+  // 2. Translate
+  tx += POZYX_TRANSFORM.translateX;
+  ty += POZYX_TRANSFORM.translateY;
 
   // 3. Scale
   tx *= POZYX_TRANSFORM.scaleX;

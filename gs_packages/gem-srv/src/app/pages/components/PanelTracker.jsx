@@ -174,6 +174,14 @@ class PanelTracker extends React.Component {
             onChange={this.onFormInputUpdate}
           />
           <i />
+          <div className={classes.inspectorLabel}>Rotate (deg): </div>
+          <input
+            id="rotate"
+            value={transform.rotate}
+            type="number"
+            onChange={this.onFormInputUpdate}
+          />
+          <i>Counterclockwise</i>
           <div className={classes.inspectorLabel}>TranslateX (mm): </div>
           <input
             id="translateX"
@@ -190,14 +198,6 @@ class PanelTracker extends React.Component {
             onChange={this.onFormInputUpdate}
           />
           <i />
-          <div className={classes.inspectorLabel}>Rotate (deg): </div>
-          <input
-            id="rotate"
-            value={transform.rotate}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Counterclockwise</i>
         </div>
       </div>
     );
