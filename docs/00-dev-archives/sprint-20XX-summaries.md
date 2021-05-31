@@ -164,3 +164,8 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 
 * W1: Break cont'd. CodeReview of May Pilot. Meeting with Researchers
 * W2: Meeting followup. Discussions on Feature and Phases.
+
+**SUMMARY S2110 MAY 17 - MAY 30**
+
+* W1: ifExpr bug
+* W2:Fix underlying "block chaining" bug in script-parser
