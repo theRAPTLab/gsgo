@@ -88,6 +88,8 @@ function HandlePozyxTransformSet(data) {
   if (data.translateY !== undefined)
     POZYX_TRANSFORM.translateY = Number(data.translateY);
   if (data.rotate !== undefined) POZYX_TRANSFORM.rotate = Number(data.rotate);
+  if (data.useAccelerometer !== undefined)
+    POZYX_TRANSFORM.useAccelerometer = Boolean(data.useAccelerometer);
   UR.RaiseMessage('NET:POZYX_TRANSFORM_UPDATE', { transform: POZYX_TRANSFORM });
 }
 function HandlePozyxTransformReq() {

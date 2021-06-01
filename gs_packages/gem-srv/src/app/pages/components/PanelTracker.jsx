@@ -21,7 +21,8 @@ class PanelTracker extends React.Component {
         scaleY: 1,
         translateX: 0,
         translateY: 0,
-        rotate: 0
+        rotate: 0,
+        useAccelerometer: true
       }
     };
 
@@ -46,8 +47,11 @@ class PanelTracker extends React.Component {
   onFormInputUpdate(e) {
     console.log('typed', e.target.value, e.target.id);
     const data = {};
-    data[e.target.id] = e.target.value;
-    this.setState({});
+    if (e.target.type === 'checkbox') {
+      data[e.target.id] = e.target.checked;
+    } else {
+      data[e.target.id] = e.target.value;
+    }
     UR.RaiseMessage('NET:POZYX_TRANSFORM_SET', data);
   }
 
@@ -198,6 +202,14 @@ class PanelTracker extends React.Component {
             onChange={this.onFormInputUpdate}
           />
           <i />
+          <div className={classes.inspectorLabel}>Accelerometer: </div>
+          <input
+            id="useAccelerometer"
+            checked={transform.useAccelerometer}
+            type="checkbox"
+            onChange={this.onFormInputUpdate}
+          />
+          <i>Only for wearable tags</i>
         </div>
       </div>
     );

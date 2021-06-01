@@ -147,7 +147,8 @@ export const POZYX_TRANSFORM = {
   scaleY: 0.0003, // 0.0003
   translateX: 0,
   translateY: 0,
-  rotate: -160 // -160
+  rotate: -160, // -160
+  useAccelerometer: true
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Rotate(position: { x: number; y: number }): { x: number; y: number } {
@@ -246,7 +247,7 @@ POZYX_TO_COBJ.setMapFunctions({
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
 
-    if (entity.acc) {
+    if (entity.acc && POZYX_TRANSFORM.useAccelerometer) {
       // has accelerometer data
       pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
     } else {
