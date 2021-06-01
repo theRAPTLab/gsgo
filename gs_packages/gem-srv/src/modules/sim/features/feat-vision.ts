@@ -17,14 +17,10 @@ import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars'
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
-import {
-  Register,
-  DistanceTo,
-  ProjectPoint,
-  GetAgentBoundingRect
-} from 'modules/datacore/dc-features';
+import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
+import { ProjectPoint } from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2;
 

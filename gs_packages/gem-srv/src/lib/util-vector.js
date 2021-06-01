@@ -1,3 +1,9 @@
+export function Deg2Rad(degree) {
+  return (degree * Math.PI) / 180;
+}
+export function Rad2Deg(radians) {
+  return (radians * 180) / Math.PI;
+}
 /**
  * @param {number} start
  * @param {number} end
