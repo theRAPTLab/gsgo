@@ -84,8 +84,8 @@ function m_QueuePosition(agent, x, y) {
   // If agent uses physics, we can get height/width, otherwise default
   // to small padding.
   if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+    hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
   }
   let xx = x;
   let yy = y;
