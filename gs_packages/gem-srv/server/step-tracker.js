@@ -276,7 +276,10 @@ function ConvertMQTTtoTrackerData(message) {
   // get accelerometer data if present
   // currently only available for wearable tags
   // might be possible for developer tag with custom payload
-  if (json.data.tagData.accelerometer) {
+  if (
+    json.data.tagData.accelerometer &&
+    json.data.tagData.accelerometer.length > 0
+  ) {
     // only grab the first acceleration frame -- we don't need more
     const aframe = json.data.tagData.accelerometer[0];
     if (aframe && aframe.length > 0) {
@@ -288,7 +291,7 @@ function ConvertMQTTtoTrackerData(message) {
         y: ay,
         z: az
       };
-      // console.log(framedata.acc);
+      // console.log(id, framedata.acc);
     }
   }
 

@@ -11,6 +11,7 @@ import UR from '@gemstep/ursys/client';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
 import { DeleteAgent } from './dc-agents';
+import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,16 +152,6 @@ export const POZYX_TRANSFORM = {
   useAccelerometer: true
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_Rotate(position: { x: number; y: number }): { x: number; y: number } {
-  let tx = Number(position.x);
-  let ty = Number(position.y);
-  const rad = (POZYX_TRANSFORM.rotate * Math.PI) / 180;
-  const c = Math.cos(rad);
-  const s = Math.sin(rad);
-  tx = tx * c - ty * s;
-  ty = tx * s + ty * c;
-  return { x: tx, y: ty };
-}
 function m_PozyxTransform(position: {
   x: number;
   y: number;
@@ -185,34 +176,64 @@ function m_PozyxTransform(position: {
 
   return { x: tx, y: ty };
 }
+/// Returns a value between 0 and 1 to use for lerps
 function m_GetAccelerationMultiplier(n: number): number {
-  // acceleration units in g
+  // acceleration units in mg (gravity)
+  // Adjust thresholds and values to smooth behavior
   if (n > 1000) return 0.8; // fast
   if (n > 500) return 0.5; // medium
-  if (n > 250) return 0.15; // deliberate move
-  if (n > 50) return 0.05; // standing still mostly allow a little movement
-  return 0; // n <= 50, resting on a hard surface
+  if (n > 250) return 0.1; // deliberate move
+  if (n > 50) return 0.05; // sleep threshold / standing still
+  return 0; // n <= 50, resting on a hard surface, don't move at all
 }
+/// Use accelerometer data to reduce jitter
 function m_PozyxDampen(
   lastPosition: { x: number; y: number },
   rawEntityPosition: { x: number; y: number },
   acc: { x: number; y: number; z: number }
 ): { x: number; y: number } {
+  //  api-input retrieves entity data at 30fps.
+  //  but Pozyx only sends updates at 15fps.
+  //  So every other frame is repeated with the same values.
+  //  To smooth this out, we only move toward the entity position
+  //  rather than jumping straight to the entity position.
+
   // lastPosition is already transformed
   const newPosition = m_PozyxTransform(rawEntityPosition);
-  const dx = newPosition.x - lastPosition.x;
-  const dy = newPosition.y - lastPosition.y;
 
   // If accelerometer movement is high, allow large movement
   // If acceleromoter movement is low, allow only small movmeent
-  const limiter = m_Rotate(acc); // rotate accelerometer readings to match stage
-  limiter.x = Math.abs(limiter.x); // we just want magnitude
-  limiter.y = Math.abs(limiter.y);
-  let xm = m_GetAccelerationMultiplier(limiter.x); // x multiplier
-  let ym = m_GetAccelerationMultiplier(limiter.y);
+  const gforce = Rotate(acc, POZYX_TRANSFORM.rotate); // rotate accelerometer readings to match stage
+  gforce.x = Math.abs(gforce.x); // we just want magnitude
+  gforce.y = Math.abs(gforce.y);
+  let xm = m_GetAccelerationMultiplier(gforce.x); // x multiplier
+  let ym = m_GetAccelerationMultiplier(gforce.y);
 
-  const x = lastPosition.x + xm * dx;
-  const y = lastPosition.y + ym * dy;
+  // protect against sleep jump
+  // While wearables sleep, they have a tendency to emit bad positions
+  if (
+    gforce.x < 250 &&
+    gforce.y < 250 &&
+    DistanceTo(lastPosition, newPosition) > 0.25
+  )
+    return lastPosition;
+
+  // lerp
+  // => still hitchy
+  const x = Lerp(lastPosition.x, newPosition.x, xm);
+  const y = Lerp(lastPosition.y, newPosition.y, ym);
+
+  // console.log(
+  //   // acc.x,
+  //   // limiter.x,
+  //   Number(xm).toFixed(2),
+  //   // Number(dx).toFixed(4),
+  //   // acc.y,
+  //   // limiter.y,
+  //   Number(ym).toFixed(2)
+  //   // Number(dy).toFixed(4)
+  // );
+
   return { x, y };
 }
 
