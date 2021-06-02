@@ -90,11 +90,29 @@ Review this list on Monday with Ben to make sure this is on the right track...th
 
 ## MAY 31 - Sprint 2111 Ramp up
 
-* add a SRI label for project stuff initially to show what I'm looking at/interested in.
+* **add a SRI label for project stuff** initially to show what I'm looking at/interested in.
 * make sure issues I'm working on are part of the upcoming milestone (use filtering on the board to set this)
 * bill exploring "what is new in the code" to the appropriate Sri Task issue; there's a catch-all Refactor/Dehackifying/Cleanup issue
 * make my own dev continuity and store it somewhere,
 * try to figure out a way of capturig information that is immune to underling code changes/renaming (intent?)
 * instead of using issues as something to be compelted, but saying where to direct my attention and let curiousity touch whatever needs touching. 
 * Ping Ben when I start looking at code he's written. I might start with an intent.
+
+## JUN 02 - Ben's Recent Additions
+
+Merge #100 (Foraging) - what can agents see
+
+* Vision Feature
+* Movement Feature Updates
+* Costume Feature Updates
+
+Curious how the vision stuff is implemented.
+
+**Most immediate need** is the locale system. Current stuff is in `dc-input`, also in `step-tracker` , model data structures are stand-alone, there is some stage bounds. Normalization system. Also having some kind of dictionary to have text for specific things.
+
+Overall application database stuff (where to store strings). 
+
+Asset manager, access models. 
+
+* make a simple locale system. 
 
