@@ -296,7 +296,7 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
   m_QueuePosition(agent, x, y);
   // also set direction or agent will revert to wandering
   // towards the old direction
-  m_setDirection(agent, Deg2Rad(angle));
+  m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
