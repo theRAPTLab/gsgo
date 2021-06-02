@@ -1,3 +1,6 @@
+export function Clamp(val, min, max) {
+  return Math.min(max, Math.max(min, val));
+}
 export function Deg2Rad(degree) {
   return (degree * Math.PI) / 180;
 }
