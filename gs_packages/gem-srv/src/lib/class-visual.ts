@@ -175,6 +175,12 @@ class Visual implements IVisual, IPoolable, IActable {
    * essentially a monotone image.  The 50% alpha on the color overlay
    * helps to retain the black values.
    * Setting color this way also helps to keep the dobj packet size down to a single number.
+   *
+   * To blow out the color: ColorOverlay alpha = 1, + AdjustmentFilter
+   * Either setting by itself will not quite change the color.
+   *
+   * ColorOverlayFilter alpha = 1 by itself will blow out the color.
+   * AdjustmentFIlter by itself will tint but not change values.
    */
   setColorize(color: number) {
     if (this.filterColor === color) return; // color hasn't changed, skip update
