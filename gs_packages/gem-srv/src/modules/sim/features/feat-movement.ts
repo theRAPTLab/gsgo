@@ -75,15 +75,23 @@ function m_setDirection(agent, degrees) {
 /// But does not actually set the agent x/y until FEATURES_EXEC phase
 function m_QueuePosition(agent, x, y) {
   const bounds = GetBounds();
-  const pad = 5;
+  const pad = 1; // default 5, 10 was too big and too far, try one to get close to edge?
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
-  // If agent uses physics, we can get height/width, otherwise default
-  // to small padding.
-  if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
-  }
+
+  // Edge Testing
+  // Don't bother with physics body because some conditions, e.g. isCenteredOn
+  // requires a predator agent to have a center all the way to the edge
+  // of the stage to match (and eat moths).  This means agents will
+  // extend beyond the edge of the stage, but that's better than not being
+  // able to reach an agent on the edge.
+  //
+  // // If agent uses physics, we can get height/width, otherwise default
+  // // to small padding.
+  // if (agent.hasFeature('Physics')) {
+  //   hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
+  //   hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
+  // }
   let xx = x;
   let yy = y;
   if (Wraps('left')) {
