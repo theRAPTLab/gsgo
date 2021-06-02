@@ -13,7 +13,7 @@ import * as PIXI from 'pixi.js';
  * @param   Number  b       The blue color value
  * @return  Array           The HSL representation
  */
-export function RGB2HSL(r, g, b) {
+export function HSLfromRGB(r, g, b) {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -70,7 +70,7 @@ function hue2rgb(p, q, t) {
  * @param   Number  l       The lightness
  * @return  Array           The RGB representation
  */
-export function HSL2RGB(h, s, l) {
+export function RGBfromHSL(h, s, l) {
   let r;
   let g;
   let b;
@@ -102,7 +102,7 @@ export function HSL2RGB(h, s, l) {
  * @param   Number  b       The blue color value
  * @return  Array           The HSV representation
  */
-export function RGB2HSV(r, g, b) {
+export function HSVfromRGB(r, g, b) {
   r /= 255;
   g /= 255;
   b /= 255;
@@ -149,7 +149,7 @@ export function RGB2HSV(r, g, b) {
  * @param   Number  v       The value
  * @return  Array           The RGB representation
  */
-export function HSV2RGB(h, s, v) {
+export function RGBfromHSV(h, s, v) {
   let r;
   let g;
   let b;
@@ -203,12 +203,12 @@ export function HSV2RGB(h, s, v) {
  * @param {Number} hex hexadecimal color
  * @return {Number[]} hue sat val Normalized 0 - 1
  */
-export function HEX2HSV(hex) {
+export function HSVfromHEX(hex) {
   const [r1, g1, b1] = PIXI.utils.hex2rgb(hex); // normalized to 0-1
   const r255 = r1 * 255;
   const g255 = g1 * 255;
   const b255 = b1 * 255;
-  const [h, s, v] = RGB2HSV(r255, g255, b255);
+  const [h, s, v] = HSVfromRGB(r255, g255, b255);
   return [h, s, v];
 }
 /**
@@ -218,8 +218,8 @@ export function HEX2HSV(hex) {
  * @param {*} v
  * @return {Number[]} r g b Normalized 0 - 1
  */
-export function HSV2NormalizedRGB(h, s, v) {
-  const [nr255, ng255, nb255] = HSV2RGB(h, s, v);
+export function NormalizedRGBfromHSV(h, s, v) {
+  const [nr255, ng255, nb255] = RGBfromHSV(h, s, v);
   const r = nr255 / 255;
   const g = ng255 / 255;
   const b = nb255 / 255;
