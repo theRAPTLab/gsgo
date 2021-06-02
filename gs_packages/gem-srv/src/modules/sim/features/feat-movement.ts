@@ -102,6 +102,9 @@ function m_QueuePosition(agent, x, y) {
   } else if (x - hwidth < bounds.left) {
     // wall
     xx = bounds.left + hwidth + pad;
+    // REVIEW: Technically this is not a bounce.
+    // The walls are "solid", so the agent changes direction.
+    // It is not a real physics collision.
     if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
   }
   if (Wraps('right')) {
@@ -151,7 +154,7 @@ function m_ProcessPosition(agent, frame) {
     agent.prop.Movement._lastMove = frame;
     didMove = true;
   } else if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
-    didMoveWithinWindow = true;
+    didMoveWithinWindow = true; // moved within a period of time
   }
   agent.prop.Movement.isMoving.setTo(didMove || didMoveWithinWindow);
 
@@ -412,7 +415,7 @@ function m_FeaturesThink(frame) {
       agent.prop.Movement._targetId = target.id;
       agent.prop.Movement._lastTargetFrame = frame;
     } else if (frame - agent.prop.Movement._lastTargetFrame > 10) {
-      // delay setting to undefined for 5 frames
+      // delay setting to undefined for 10 frames
       // console.log('....clearing targetId');
       agent.prop.Movement._targetId = undefined;
     } else {
