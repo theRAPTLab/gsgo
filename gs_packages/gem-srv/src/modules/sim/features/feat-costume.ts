@@ -54,7 +54,7 @@ class CostumePack extends GFeature {
     this.featAddMethod('setColorizeHSV', this.setColorizeHSV);
     this.featAddMethod('randomizeColor', this.randomizeColor);
     this.featAddMethod('randomizeColorHSV', this.randomizeColorHSV);
-    this.featAddMethod('colorHSVWithinRagne', this.colorHSVWithinRange);
+    this.featAddMethod('colorHSVWithinRange', this.colorHSVWithinRange);
     this.featAddMethod('resetColorize', this.resetColorize);
     this.featAddMethod('test', this.test);
     this.featAddMethod('thinkHook', agent => {
