@@ -56,8 +56,19 @@ function UpdateAgent(newInputDef, oldInputDef) {
   oldInputDef.bpname = newInputDef.bpname;
   oldInputDef.x = newInputDef.x;
   oldInputDef.y = newInputDef.y;
-  agent.x = newInputDef.x;
-  agent.y = newInputDef.y;
+  if (agent.hasFeature('Movement')) {
+    // If Movement, use queuePosition so that `isMoving` is calcuated
+    agent.callFeatMethod(
+      'Movement',
+      'queuePosition',
+      newInputDef.x,
+      newInputDef.y
+    );
+  } else {
+    // If no movement, then set directly
+    agent.x = newInputDef.x;
+    agent.y = newInputDef.y;
+  }
   agent.zIndex = -100; // Force all inputs behind NPCs so NPCs can get clicks
   agent.setModePuppet();
 }

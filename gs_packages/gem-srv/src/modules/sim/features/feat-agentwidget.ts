@@ -29,9 +29,6 @@ const FEATID = 'AgentWidgets';
 const PR = UR.PrefixUtil(FEATID);
 const DBG = false;
 
-const CIRCLE = 'circle';
-const RECTANGLE = 'rectangle';
-
 const WIDGET_AGENTS = new Map();
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////

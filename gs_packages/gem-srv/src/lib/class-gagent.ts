@@ -75,10 +75,11 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.color = new GVarNumber();
     this.prop.scale = new GVarNumber();
     this.prop.scale.setMax(10);
-    this.prop.scale.setMin(0.1);
+    this.prop.scale.setMin(-10);
     this.prop.scaleY = new GVarNumber();
     this.prop.scaleY.setMax(10);
-    this.prop.scaleY.setMin(0);
+    this.prop.scaleY.setMin(-10);
+    this.prop.orientation = new GVarNumber();
     this.prop.alpha = new GVarNumber();
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
@@ -143,6 +144,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
   set scaleY(num: number) {
     this.prop.scaleY.setTo(num);
   }
+  set orientation(rad: number) {
+    this.prop.orientation.setTo(rad);
+  }
+  get orientation() {
+    return this.prop.orientation.value;
+  }
   get alpha() {
     return this.prop.alpha.value;
   }
@@ -194,7 +201,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   setModeAuto = () => this.pushMode(ControlMode.auto);
   isModeStatic = () => this.controlMode === ControlMode.static;
   isModeDrag = () => this.controlMode === ControlMode.drag;
-  isModePuppet = () => this.controlMode === ControlMode.puppet;
+  isModePuppet = () => this.controlMode === ControlMode.puppet; // is input Agent
   isModeAuto = () => this.controlMode === ControlMode.auto;
 
   /// AGENT INTERACTION STATES ////////////////////////////////////////////////

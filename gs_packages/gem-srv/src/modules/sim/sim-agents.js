@@ -59,6 +59,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
+    if (agent.orientation) dobj.rotation = agent.orientation;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
@@ -66,6 +67,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
+    if (agent.debug) dobj.debug = agent.debug;
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
@@ -78,6 +80,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
+    if (agent.orientation) dobj.rotation = agent.orientation;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
     if (agent.statusValue) dobj.meter = agent.statusValue;
@@ -85,6 +88,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
+    if (agent.debug) dobj.debug = agent.debug;
   }
 });
 
@@ -277,6 +281,10 @@ export function AgentProgram(blueprint) {
   // Announce instance defs so UI can register instance names for inspector monitoring
   // Mostly used by PanelInstances and Inspectors
   UR.RaiseMessage('NET:INSTANCES_UPDATE', { instances });
+}
+
+export function ClearDOBJ() {
+  AGENT_TO_DOBJ.clearMappedObjects();
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////

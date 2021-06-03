@@ -2,16 +2,8 @@
 
   implementation of keyword "every" command object
 
-  IMPORTANT: DO NOT USE THIS in a 'when' BLOCK!
-             It will not do what you expect!
-             The prog code will run for EVERY agent of that blueprint type
-             regardless of whether they match the when condition.
-
   This should be used in an UPDATE loop, e.g. in `# PROGRAM UPDATE` or `when`.
   (It will not run in a `# PROGRAM EVENT` block.)
-
-  The global timer will start when HACK_SIM_START is raised.
-  Timers are reset on HACK_SIM_STOP or HACK_SIM_RESET.
 
   The code block will run every n seconds according to the period.
 
@@ -25,7 +17,6 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { interval } from 'rxjs';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
@@ -40,41 +31,16 @@ const DBG = false;
 export class every extends Keyword {
   // base properties defined in KeywordDef
   EVERY_STATEMENT_ID: number;
-  TIMER: any;
-  COUNTER: number;
+  COUNTERS: any;
   LAST_FIRED: any;
 
   constructor() {
     super('every');
     this.args = ['period:number', ',,,args'];
 
-    this.startTimer = this.startTimer.bind(this);
-    this.stopTimer = this.stopTimer.bind(this);
-
     this.EVERY_STATEMENT_ID = 0;
-    this.TIMER = undefined;
-    this.COUNTER = 0;
+    this.COUNTERS = new Map();
     this.LAST_FIRED = new Map();
-
-    UR.HandleMessage('NET:HACK_SIM_START', this.startTimer);
-    UR.HandleMessage('NET:HACK_SIM_STOP', this.stopTimer);
-  }
-
-  startTimer() {
-    if (DBG) console.log(...PR('Start Timer'));
-    // Reset Data
-    this.COUNTER = 0;
-    this.LAST_FIRED.clear();
-    // Start Timer
-    const size = 33; // Interval size matches sim rate
-    this.TIMER = interval(size).subscribe(count => {
-      this.COUNTER = count;
-    });
-  }
-
-  stopTimer() {
-    if (DBG) console.log(...PR('Stop Timer'));
-    if (this.TIMER) this.TIMER.unsubscribe();
   }
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
@@ -106,6 +72,9 @@ export class every extends Keyword {
     const prog = [];
     const uid = this.EVERY_STATEMENT_ID;
     prog.push((agent, state) => {
+      // AS OF 5/27/21 WHEN HAS A PROPOSED FIX THAT ADDRESSES THIS
+      //    The program should only run if the conditional is passed
+      //
       // Inside a 'when' loop, the prog is run whether or not
       // the when condition is met.
       // Example: Algae touches Lightbeam
@@ -123,13 +92,15 @@ export class every extends Keyword {
       // agent is every single agent regardless of when condition
       // state.ctx contains Algae, Lightbeam, and agent (parent script agent)
       const key = `${agent.id}:${uid}`; // `${agent.id}:${this.UID}`;
+      const counter = this.COUNTERS.get(key) || 0;
       const firstFire = this.LAST_FIRED.get(key) === undefined;
       const lastFired = this.LAST_FIRED.get(key) || 0;
-      const elapsed = this.COUNTER - lastFired;
+      const elapsed = counter - lastFired;
       if (elapsed > frames || (options === 'runAtStart' && firstFire)) {
         agent.exec(consq, state.ctx);
-        this.LAST_FIRED.set(key, this.COUNTER);
+        this.LAST_FIRED.set(key, counter);
       }
+      this.COUNTERS.set(key, counter + 1);
     });
     return prog;
   }
