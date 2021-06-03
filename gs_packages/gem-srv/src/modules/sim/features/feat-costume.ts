@@ -189,9 +189,9 @@ class CostumePack extends GFeature {
     const [c1h, c1s, c1v] = HSVfromHEX(col1);
     const [c2h, c2s, c2v] = HSVfromHEX(col2);
     const res =
-      Math.abs(c1h - c2h) < dHue &&
-      Math.abs(c1s - c2s) < dSat &&
-      Math.abs(c1v - c2v) < dVal;
+      Math.abs(c1h - c2h) <= dHue &&
+      Math.abs(c1s - c2s) <= dSat &&
+      Math.abs(c1v - c2v) <= dVal;
     // console.log(
     //   'reviewing',
     //   col1,
