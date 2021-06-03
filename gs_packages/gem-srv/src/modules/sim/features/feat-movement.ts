@@ -487,6 +487,7 @@ class MovementPack extends GFeature {
     this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
     this.featAddMethod('setRandomPositionY', this.setRandomPositionY);
     this.featAddMethod('setRandomStart', this.setRandomStart);
+    this.featAddMethod('setRandomStartPosition', this.setRandomStartPosition);
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
@@ -572,11 +573,18 @@ class MovementPack extends GFeature {
     m_setDirection(agent, m_random(0, 360));
   }
 
-  setRandomPosition(agent: IAgent) {
-    const bounds = GetBounds();
+  setRandomBoundedPosition(
+    agent: IAgent,
+    bounds: { left: number; right: number; top: number; bottom: number }
+  ) {
     const x = m_random(bounds.left, bounds.right);
     const y = m_random(bounds.top, bounds.bottom);
     m_QueuePosition(agent, x, y);
+  }
+
+  setRandomPosition(agent: IAgent) {
+    const bounds = GetBounds();
+    this.setRandomBoundedPosition(agent, bounds);
   }
 
   setRandomPositionX(agent: IAgent) {
@@ -594,6 +602,17 @@ class MovementPack extends GFeature {
   setRandomStart(agent: IAgent) {
     this.setRandomDirection(agent);
     this.setRandomPosition(agent);
+  }
+
+  setRandomStartPosition(agent: IAgent, width: number, height: number) {
+    const hwidth = width / 2;
+    const hheight = height / 2;
+    this.setRandomBoundedPosition(agent, {
+      left: -hwidth,
+      right: hwidth,
+      top: -hheight,
+      bottom: hheight
+    });
   }
 
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {

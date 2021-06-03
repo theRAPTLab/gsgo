@@ -194,6 +194,7 @@ featCall Movement setMovementType 'wander' 0.2
 # PROGRAM INIT
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop Physics scale
+featCall Movement setRandomStartPosition 300 300
 
 # PROGRAM UPDATE
 
@@ -443,24 +444,25 @@ onEvent Tick [[
     {
       id: 501,
       name: 'Algae 1',
-      blueprint: 'Algae',
-      initScript: `prop x setTo 120
-prop y setTo 120`
+      blueprint: 'Algae'
+      //       initScript: `prop x setTo 120
+      // prop y setTo 120`
     },
     {
       id: 502,
       name: 'Algae 2',
       blueprint: 'Algae',
-      initScript: `prop x setTo -150
-prop y setTo -120
-prop energyLevel setTo 50`
+      initScript: `prop energyLevel setTo 50
+// prop x setTo -150
+// prop y setTo -120
+`
     },
     {
       id: 503,
       name: 'Algae 3',
-      blueprint: 'Algae',
-      initScript: `prop x setTo -120
-prop y setTo -90`
+      blueprint: 'Algae'
+      //       initScript: `prop x setTo -120
+      // prop y setTo -90`
     },
     {
       id: 504,
