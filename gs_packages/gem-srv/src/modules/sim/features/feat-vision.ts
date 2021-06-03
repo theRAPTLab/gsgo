@@ -124,7 +124,7 @@ function m_update(frame) {
       if (!agent.canSee) agent.canSee = new Map();
       agent.canSee.set(t.id, canSee);
       // pozyx targets might still be present, but inert
-      if (!t.isInert) hasActiveTargets = true;
+      if (!t.isInert && canSee) hasActiveTargets = true;
     });
     // Clear cone if no more non-inert targets.
     // We can't simply check for 0 targets because
