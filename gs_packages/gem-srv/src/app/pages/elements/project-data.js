@@ -224,9 +224,10 @@ export function InstanceAdd(data, sendUpdate = true) {
   // otherwise we auto-place the agent around the center of the screen
   const blueprint = model.scripts.find(s => s.id === data.blueprintName);
   const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
+  const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
-    instance.initScript = `prop x setTo ${Math.trunc(RNG() * 50 - 25)}
-prop y setTo ${Math.trunc(RNG() * 50 - 25)}`;
+    instance.initScript = `prop x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
+prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 
   model.instances.push(instance);
