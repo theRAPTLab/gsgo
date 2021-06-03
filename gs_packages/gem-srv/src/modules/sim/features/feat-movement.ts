@@ -181,6 +181,11 @@ function m_ProcessPosition(agent, frame) {
       y: agent.prop.Movement._y
     });
   }
+
+  // don't turn if we're already on target, otherwise, NPCs end up turning
+  // to 0 orientation
+  if (Math.abs(agent.x - x) < 1 && Math.abs(agent.y - y) < 1) return;
+
   // ease into the turn
   const currAngle = agent.prop.Movement._orientation;
   const turnDirection = ANGLES.shortestDirection(currAngle, targetAngle);
