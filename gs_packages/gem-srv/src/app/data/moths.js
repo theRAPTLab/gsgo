@@ -13,13 +13,16 @@ export const MODEL = {
     {
       id: 'Moth',
       label: 'Moth',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'bee.json' 0
-featCall Costume setColorize 0 1 0
+featCall Costume setColorize 0.2 1 0
+// featCall Costume setColorizeHSV 0.5 1 1
 prop alpha setTo 1
+prop alpha setMin 1
 
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
@@ -34,41 +37,57 @@ featCall Touches monitorTouchesWith TreeFoliage
 // allow removal by  Predator
 useFeature Population
 
+// allow Predator to see us
+useFeature Vision
+
+
 # PROGRAM INIT
-featCall Costume randomizeColor 0.1 0.3 0.1
+featCall Costume randomizeColorHSV 0.1 0 0.2
 featCall Movement setRandomStart
 
 # PROGRAM UPDATE
-ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
+ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value && !agent.getProp('isInert').value }} [[
   prop alpha add 0.25
 ]]
 every 0.25 [[
   prop alpha sub 0.1
 ]]
-when Moth isCenteredOn TreeTrunk [[
-  ifExpr {{ Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setMin 1
-    featCall Moth.Costume setPose 0
-  ]] [[
-    prop alpha setMin 0.1
-    featCall Moth.Costume setPose 4
+every 1 [[
+  // Blink every second if invisible
+  ifExpr {{ !agent.prop.Vision.visionable.value }} [[
+    featCall Costume setGlow 0.05
   ]]
 ]]
-when Moth isCenteredOn TreeFoliage [[
-  ifExpr {{ Moth.getFeatProp('Movement', 'isMoving').value }} [[
-    prop alpha setMin 1
-    featCall Moth.Costume setPose 0
-  ]] [[
+when TreeTrunk touchesCenterOf Moth  [[
+  featCall Moth.Costume setPose 4
+  ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 0.2, 1, 0.2)}} [[
     prop alpha setMin 0.1
-    featCall Moth.Costume setPose 4
+    featProp Vision visionable setTo false
   ]]
+]]
+when TreeFoliage touchesCenterOf Moth [[
+  featCall Moth.Costume setPose 4
+  ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeFoliage.prop.color.value, 0.2, 1, 0.2)}} [[
+    prop alpha setMin 0.1
+    featProp Vision visionable setTo false
+  ]]
+]]
+// overide all
+ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
+  prop alpha setMin 1
+  featProp Vision visionable setTo true
+  featCall Costume setPose 0
+]]
+ifExpr {{ agent.getProp('isInert').value }} [[
+  prop alpha setMin 0.1
 ]]
 `
     },
     {
       id: 'Predator',
       label: 'Predator',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: false,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
@@ -93,13 +112,16 @@ when Predator sees Moth [[
   featCall Moth.Costume setGlow 0.1
 ]]
 when Predator doesNotSee Moth [[
-  prop Moth.alpha setMin 0.1
+  // Moth should naturally go back to 0.1
+  // prop Moth.alpha setMin 0.1
 ]]
 when Predator isCenteredOn Moth [[
   featCall Moth.Costume setGlow 1
   featCall Moth.Movement jitterRotate
   every 2 [[
-    featCall Moth.Population removeAgent
+    // featCall Moth.Population removeAgent
+    prop Moth.isInert setTo true
+    featCall Moth.Costume setCostume 'flower.json' 0
     featCall Predator.Costume setGlow 1
   ]]
 ]]

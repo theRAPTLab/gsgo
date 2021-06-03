@@ -12,6 +12,13 @@ import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { Register } from 'modules/datacore/dc-features';
 import { GetSpriteDimensions, GetTextureInfo } from 'modules/datacore/dc-globals';
+import { Clamp } from 'lib/util-vector';
+import {
+  HSVfromRGB,
+  RGBfromHSV,
+  HSVfromHEX,
+  NormalizedRGBfromHSV
+} from 'lib/util-color';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -23,7 +30,13 @@ let COUNTER = 0;
 
 /// Keep between 0 and 1
 function m_RGBMinMax(val) {
-  return Math.min(1, Math.max(0, val));
+  return Clamp(val, 0, 1);
+}
+function m_Clamp1(val) {
+  return Clamp(val, 0, 1);
+}
+function m_Clamp255(val) {
+  return Clamp(val, 0, 255);
 }
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
@@ -38,7 +51,10 @@ class CostumePack extends GFeature {
     this.featAddMethod('setScale', this.setScale);
     this.featAddMethod('setGlow', this.setGlow);
     this.featAddMethod('setColorize', this.setColorize);
+    this.featAddMethod('setColorizeHSV', this.setColorizeHSV);
     this.featAddMethod('randomizeColor', this.randomizeColor);
+    this.featAddMethod('randomizeColorHSV', this.randomizeColorHSV);
+    this.featAddMethod('colorHSVWithinRange', this.colorHSVWithinRange);
     this.featAddMethod('resetColorize', this.resetColorize);
     this.featAddMethod('test', this.test);
     this.featAddMethod('thinkHook', agent => {
@@ -109,6 +125,7 @@ class CostumePack extends GFeature {
    * This sets the agent scale property directly, but costume does
    * not otherwise process scale.
    */
+  // REVIEW: Is this method necessary?
   setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked
     const newScale = agent.prop.Costume.flipX.value ? -scale : scale;
@@ -125,18 +142,69 @@ class CostumePack extends GFeature {
     const color = PIXI.utils.rgb2hex([red, green, blue]);
     agent.getProp('color').setTo(color);
   }
+  // Applies a colorOverlay and adjustmentFilter color multiply
+  setColorizeHSV(agent: IAgent, hue: number, sat: number, val: number) {
+    const rgb255 = RGBfromHSV(hue, sat, val);
+    const color = PIXI.utils.rgb2hex([
+      rgb255[0] / 255,
+      rgb255[1] / 255,
+      rgb255[2] / 255
+    ]);
+    agent.getProp('color').setTo(color);
+  }
   // Randomizes the existing color
   // `dRed`, `dGreen`, and `dBlue` are the max change values
   // They are essentially +/-, e.g. if dRed is 0.2, then the random value
   // will change the existing value by +/- 0.2.
   randomizeColor(agent: IAgent, dRed: number, dGreen: number, dBlue: number) {
-    const color = agent.getProp('color').value;
-    const [r, g, b] = PIXI.utils.hex2rgb(color);
+    const color = agent.getProp('color').value; // color is hex
+    const [r, g, b] = PIXI.utils.hex2rgb(color); // rgb is normalized 0-1
     const newR = m_RGBMinMax(r + RNG() * 2 * dRed - dRed);
     const newG = m_RGBMinMax(g + RNG() * 2 * dGreen - dGreen);
     const newB = m_RGBMinMax(b + RNG() * 2 * dBlue - dBlue);
     if (DBG) console.log('randomized new color', newR, newG, newB);
     this.setColorize(agent, newR, newG, newB);
+  }
+  // Randomizes the existing color using HSL (Hue, Saturation, Lightness)
+  // `dRed`, `dGreen`, and `dBlue` are the max change values
+  // They are essentially +/-, e.g. if dRed is 0.2, then the random value
+  // will change the existing value by +/- 0.2.
+  randomizeColorHSV(agent: IAgent, dHue: number, dSat: number, dVal: number) {
+    const color = agent.getProp('color').value; // color is hex
+    const [h, s, v] = HSVfromHEX(color);
+    const newH = m_Clamp1(h + RNG() * 2 * dHue - dHue);
+    const newS = m_Clamp1(s + RNG() * 2 * dSat - dSat);
+    const newV = m_Clamp1(v + RNG() * 2 * dVal - dVal);
+    const [r, g, b] = NormalizedRGBfromHSV(newH, newS, newV);
+    this.setColorize(agent, r, g, b);
+  }
+  colorHSVWithinRange(
+    agent: IAgent,
+    col1: number,
+    col2: number,
+    dHue: number,
+    dSat: number,
+    dVal: number
+  ) {
+    const [c1h, c1s, c1v] = HSVfromHEX(col1);
+    const [c2h, c2s, c2v] = HSVfromHEX(col2);
+    const res =
+      Math.abs(c1h - c2h) < dHue &&
+      Math.abs(c1s - c2s) < dSat &&
+      Math.abs(c1v - c2v) < dVal;
+    // console.log(
+    //   'reviewing',
+    //   col1,
+    //   col2,
+    //   dHue,
+    //   dSat,
+    //   dVal,
+    //   HSVfromHEX(col1),
+    //   HSVfromHEX(col2),
+    //   res
+    // );
+
+    return res;
   }
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {

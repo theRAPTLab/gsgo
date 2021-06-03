@@ -2,6 +2,7 @@ import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import { ReadProjectsList } from '../elements/project-db';
 
 import PanelChrome from './PanelChrome';
 
@@ -23,10 +24,8 @@ class PanelSelectSimulation extends React.Component {
   }
 
   componentDidMount() {
-    const fnName = 'ReadProjectsList';
-    UR.CallMessage('NET:REQ_PROJDATA', { fnName }).then(rdata =>
-      this.setState({ models: rdata.result })
-    );
+    const models = ReadProjectsList();
+    this.setState({ models });
   }
 
   onClick(modelId) {

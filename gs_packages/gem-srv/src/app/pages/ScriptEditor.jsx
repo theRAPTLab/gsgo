@@ -154,7 +154,7 @@ class ScriptEditor extends React.Component {
    */
   RequestModel(modelId) {
     if (DBG) console.log(...PR('RequestModel...', modelId));
-    const fnName = 'GetModel';
+    const fnName = 'GetProject';
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName,
       parms: [modelId]

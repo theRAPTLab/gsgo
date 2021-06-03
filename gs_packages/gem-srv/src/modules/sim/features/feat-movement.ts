@@ -24,10 +24,18 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import { Register, DistanceTo, ProjectPoint } from 'modules/datacore/dc-features';
+import { Register } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
+import {
+  AngleTo,
+  Deg2Rad,
+  DistanceTo,
+  Lerp,
+  ProjectPoint,
+  Rotate
+} from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2; // radians
 ANGLES.DIRECTIONS = ['E', 'W'];
@@ -56,17 +64,6 @@ function m_random(min = 0, max = 1, round = false) {
   if (round) return Math.round(n);
   return n;
 }
-function m_DegreesToRadians(degree) {
-  return (degree * Math.PI) / 180;
-}
-function m_RadiansToDegrees(radians) {
-  return (radians * 180) / Math.PI;
-}
-function m_AngleBetween(agent, target) {
-  const dy = target.y - agent.y;
-  const dx = target.x - agent.x;
-  return Math.atan2(dy, dx);
-}
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
@@ -78,44 +75,59 @@ function m_setDirection(agent, degrees) {
 /// But does not actually set the agent x/y until FEATURES_EXEC phase
 function m_QueuePosition(agent, x, y) {
   const bounds = GetBounds();
-  const pad = 5;
+  const pad = 1; // default 5, 10 was too big and too far, try one to get close to edge?
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
-  // If agent uses physics, we can get height/width, otherwise default
-  // to small padding.
-  if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
-  }
+
+  // Edge Testing
+  // Don't bother with physics body because some conditions, e.g. isCenteredOn
+  // requires a predator agent to have a center all the way to the edge
+  // of the stage to match (and eat moths).  This means agents will
+  // extend beyond the edge of the stage, but that's better than not being
+  // able to reach an agent on the edge.
+  //
+  // // If agent uses physics, we can get height/width, otherwise default
+  // // to small padding.
+  // if (agent.hasFeature('Physics')) {
+  //   hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
+  //   hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
+  // }
   let xx = x;
   let yy = y;
-  if (Wraps('left')) {
-    // This lets the agent poke its nose out before wrapping
-    // to the other side.  Otherwise, the agent will suddenly
-    // pop to other side.
-    xx = x <= bounds.left ? bounds.right - pad : xx;
-  } else if (x - hwidth < bounds.left) {
-    // wall
-    xx = bounds.left + hwidth + pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
-  }
-  if (Wraps('right')) {
-    xx = x >= bounds.right ? bounds.left + pad : xx;
-  } else if (x + hwidth >= bounds.right) {
-    xx = bounds.right - hwidth - pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
-  }
-  if (Wraps('top')) {
-    yy = y <= bounds.top ? bounds.bottom - pad : yy;
-  } else if (y - hheight <= bounds.top) {
-    yy = bounds.top + hheight + pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
-  }
-  if (Wraps('bottom')) {
-    yy = y >= bounds.bottom ? bounds.top + pad : yy;
-  } else if (y + hheight > bounds.bottom) {
-    yy = bounds.bottom - hheight - pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+
+  if (!agent.isCaptive) {
+    // only bounds check if not being dragged
+    if (Wraps('left')) {
+      // This lets the agent poke its nose out before wrapping
+      // to the other side.  Otherwise, the agent will suddenly
+      // pop to other side.
+      xx = x <= bounds.left ? bounds.right - pad : xx;
+    } else if (x - hwidth < bounds.left) {
+      // wall
+      xx = bounds.left + hwidth + pad;
+      // REVIEW: Technically this is not a bounce.
+      // The walls are "solid", so the agent changes direction.
+      // It is not a real physics collision.
+      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+    }
+    if (Wraps('right')) {
+      xx = x >= bounds.right ? bounds.left + pad : xx;
+    } else if (x + hwidth >= bounds.right) {
+      xx = bounds.right - hwidth - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+    }
+    if (Wraps('top')) {
+      yy = y <= bounds.top ? bounds.bottom - pad : yy;
+    } else if (y - hheight <= bounds.top) {
+      yy = bounds.top + hheight + pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+    }
+    if (Wraps('bottom')) {
+      yy = y >= bounds.bottom ? bounds.top + pad : yy;
+    } else if (y + hheight > bounds.bottom) {
+      yy = bounds.bottom - hheight - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+    }
   }
 
   agent.prop.Movement._x = xx;
@@ -146,7 +158,7 @@ function m_ProcessPosition(agent, frame) {
     agent.prop.Movement._lastMove = frame;
     didMove = true;
   } else if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
-    didMoveWithinWindow = true;
+    didMoveWithinWindow = true; // moved within a period of time
   }
   agent.prop.Movement.isMoving.setTo(didMove || didMoveWithinWindow);
 
@@ -168,11 +180,16 @@ function m_ProcessPosition(agent, frame) {
     lerpPct = 0.8; // force quicker turn for input agents so it feels more responsive
     if (!targetAngle) return; // skip if it hasn't been set
   } else {
-    targetAngle = m_AngleBetween(agent, {
+    targetAngle = AngleTo(agent, {
       x: agent.prop.Movement._x,
       y: agent.prop.Movement._y
     });
   }
+
+  // don't turn if we're already on target, otherwise, NPCs end up turning
+  // to 0 orientation
+  if (Math.abs(agent.x - x) < 1 && Math.abs(agent.y - y) < 1) return;
+
   // ease into the turn
   const currAngle = agent.prop.Movement._orientation;
   const turnDirection = ANGLES.shortestDirection(currAngle, targetAngle);
@@ -221,7 +238,7 @@ function moveWander(agent: IAgent, frame: number) {
     direction += m_random(-90, 90);
     agent.prop.Movement.direction.value = direction;
   }
-  const angle = m_DegreesToRadians(direction);
+  const angle = Deg2Rad(direction);
   const { x, y } = ProjectPoint(agent, angle, distance);
   m_QueuePosition(agent, x, y);
 }
@@ -260,7 +277,7 @@ function moveEdgeToEdge(agent: IAgent, frame: number) {
   agent.prop.Movement.direction.value = direction;
   const distance = agent.prop.Movement.distance.value;
 
-  const angle = m_DegreesToRadians(direction);
+  const angle = Deg2Rad(direction);
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
 
@@ -285,13 +302,13 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
   if (DistanceTo(agent, target) < 5) return;
 
   const distance = agent.prop.Movement.distance.value;
-  let angle = -m_AngleBetween(agent, target); // flip y
+  let angle = -AngleTo(agent, target); // flip y
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
   m_QueuePosition(agent, x, y);
   // also set direction or agent will revert to wandering
   // towards the old direction
-  m_setDirection(agent, m_DegreesToRadians(angle));
+  m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
@@ -407,7 +424,7 @@ function m_FeaturesThink(frame) {
       agent.prop.Movement._targetId = target.id;
       agent.prop.Movement._lastTargetFrame = frame;
     } else if (frame - agent.prop.Movement._lastTargetFrame > 10) {
-      // delay setting to undefined for 5 frames
+      // delay setting to undefined for 10 frames
       // console.log('....clearing targetId');
       agent.prop.Movement._targetId = undefined;
     } else {

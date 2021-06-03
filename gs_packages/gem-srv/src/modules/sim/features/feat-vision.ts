@@ -17,14 +17,10 @@ import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars'
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
-import {
-  Register,
-  DistanceTo,
-  ProjectPoint,
-  GetAgentBoundingRect
-} from 'modules/datacore/dc-features';
+import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
+import { ProjectPoint } from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2;
 
@@ -58,6 +54,7 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     agent.x === undefined ||
     agent.y === undefined ||
     target === undefined ||
+    target.isInert || // inert = dead
     target.x === undefined ||
     target.y === undefined ||
     agent.prop.Movement._orientation === undefined // orientation isn't set until agent moves
@@ -115,14 +112,26 @@ function m_update(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
+    let hasActiveTargets = false;
     const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
-    if (targets.length < 1) agent.debug = []; // clear vision cone
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
-      const canSee = m_IsTargetWithinVisionCone(agent, t);
+      let canSee = false;
+      if (!t.isInert && t.prop.Vision.visionable.value) {
+        // don't check vision if inert or not visible
+        canSee = m_IsTargetWithinVisionCone(agent, t);
+      }
       if (!agent.canSee) agent.canSee = new Map();
       agent.canSee.set(t.id, canSee);
+      // pozyx targets might still be present, but inert
+      if (!t.isInert && canSee) hasActiveTargets = true;
     });
+    // Clear cone if no more non-inert targets.
+    // We can't simply check for 0 targets because
+    // pozyx targets might still be around but inert
+    // and the cone is only drawn during the m_IsTargetWithinVisionCone call,
+    // but the call will skip drawing if the target is inert.
+    if (!hasActiveTargets) agent.debug = [];
   });
 }
 
@@ -143,7 +152,7 @@ class VisionPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'text', new GVarString(agent.name)); // default to agent name
+    this.featAddProp(agent, 'visionable', new GVarBoolean(true)); // can be seen by Vision feature
 
     agent.prop.Vision._viewDistance = 250;
     agent.prop.Vision._viewAngle = (45 * Math.PI) / 180; // in radians

@@ -219,6 +219,11 @@ const useStylesHOC = theme => ({
     // width: '80px',
     textAlign: 'right'
   },
+  inspectorLabelLeft: {
+    display: 'inline-block',
+    color: CLR_DATA,
+    textAlign: 'left'
+  },
   inspectorData: {
     display: 'inline-block',
     color: CLR_ACTIVE // more visible
