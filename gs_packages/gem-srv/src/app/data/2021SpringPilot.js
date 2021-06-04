@@ -13,7 +13,7 @@ export const MODEL = {
     {
       id: 'Fish',
       label: 'Fish',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
@@ -155,7 +155,7 @@ every 1 runAtStart [[
     {
       id: 'Algae',
       label: 'Algae',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 

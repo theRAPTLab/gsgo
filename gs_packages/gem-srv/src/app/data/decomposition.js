@@ -74,7 +74,7 @@ useFeature AgentWidgets
     {
       id: 'Worm',
       label: 'Worm',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Worm
 # PROGRAM DEFINE
 useFeature Costume
@@ -128,7 +128,7 @@ every 1 runAtStart [[
     {
       id: 'Bunny',
       label: 'Bunny',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Bunny
 # PROGRAM DEFINE
 useFeature Costume
