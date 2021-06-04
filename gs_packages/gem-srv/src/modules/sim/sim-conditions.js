@@ -36,12 +36,11 @@ RegisterFunction('dies', a => {
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+ *  DEPRECATED -- This needs to be rewritten
+ *                Design issue: How to designate the period?
+ *
  *  wasTouchedWithin provides touch testing over time periods
  *  in contrast with the instantaneous touch tests of "touches"
- *
- *  This uses the `didTouchDict` set by the Touches feature for the touch
- *  test.  It requires both Physics and Touches features.
- *  Call touchedWithin to update didTouchDIct before using wasTouchedWithin
  *
  *  Example:
  *     # PROGRAM UPDATE
@@ -52,28 +51,31 @@ RegisterFunction('dies', a => {
  *       ]]
  *     ]]
  */
-RegisterFunction('wasTouchedWithin', (a, b) => {
-  // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
-    console.error('wasTouchedWithin requires Physics');
-  // make sure both objects have the Touches feature
-  if (!a.hasFeature('Touches') || !b.hasFeature('Touches'))
-    console.error('wasTouchedWithin requires Touches');
-  // if either is inert, no touches are possible
-  if (a.isInert || b.isInert) return false;
-  // Look at touch table
-  let wasTouched = false;
+// RegisterFunction('wasTouchedWithin', (a, b) => {
+//   // make sure both objects have the Physics feature
+//   if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
+//     console.error('wasTouchedWithin requires Physics');
+//   // make sure both objects have the Touches feature
+//   if (!a.hasFeature('Touches') || !b.hasFeature('Touches'))
+//     console.error('wasTouchedWithin requires Touches');
+//   // if either is inert, no touches are possible
+//   if (a.isInert || b.isInert) return false;
+//   // Look at touch table
+//   let wasTouched = false;
 
-  const atouch = a
-    .getFeatProp('Touches', 'didTouchDict')
-    .getItem(b.blueprint.name);
-  if (atouch && atouch.value) wasTouched = true;
-  const btouch = b
-    .getFeatProp('Touches', 'didTouchDict')
-    .getItem(a.blueprint.name);
-  if (btouch && btouch.value) wasTouched = true;
-  return wasTouched;
-});
+//   // REVIEW: This is testing whether a touched ANY agent
+//   // of blueprint type b.  Is that really waht we want?
+//   // Don't we want to compare specific agents?
+//   const atouch = a
+//     .getFeatProp('Touches', 'didTouchDict')
+//     .getItem(b.blueprint.name);
+//   if (atouch && atouch.value) wasTouched = true;
+//   const btouch = b
+//     .getFeatProp('Touches', 'didTouchDict')
+//     .getItem(a.blueprint.name);
+//   if (btouch && btouch.value) wasTouched = true;
+//   return wasTouched;
+// });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Show Bounding Box
