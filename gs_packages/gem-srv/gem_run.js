@@ -4,7 +4,7 @@
   This is the URSYS Development Utility, which is built to be called from
   package.json scripts or the command line.
 
-  To run from the command line: ./gem_srcv<cmd> or node gem_run <cmd>
+  To run from the command line: ./gem_run <cmd> or node gem_run <cmd>
 
   DEV TIP: To pass a parameter via npm run script, you have to use -- as in
   npm run myscript -- --myoptions=something
