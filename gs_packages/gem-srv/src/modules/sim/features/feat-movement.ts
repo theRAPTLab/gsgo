@@ -24,10 +24,18 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import { Register, DistanceTo, ProjectPoint } from 'modules/datacore/dc-features';
+import { Register } from 'modules/datacore/dc-features';
 import { GetBounds, Wraps } from 'modules/datacore/dc-project';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
+import {
+  AngleTo,
+  Deg2Rad,
+  DistanceTo,
+  Lerp,
+  ProjectPoint,
+  Rotate
+} from 'lib/util-vector';
 
 ANGLES.SCALE = Math.PI * 2; // radians
 ANGLES.DIRECTIONS = ['E', 'W'];
@@ -56,17 +64,6 @@ function m_random(min = 0, max = 1, round = false) {
   if (round) return Math.round(n);
   return n;
 }
-function m_DegreesToRadians(degree) {
-  return (degree * Math.PI) / 180;
-}
-function m_RadiansToDegrees(radians) {
-  return (radians * 180) / Math.PI;
-}
-function m_AngleBetween(agent, target) {
-  const dy = target.y - agent.y;
-  const dx = target.x - agent.x;
-  return Math.atan2(dy, dx);
-}
 function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
@@ -84,8 +81,8 @@ function m_QueuePosition(agent, x, y) {
   // If agent uses physics, we can get height/width, otherwise default
   // to small padding.
   if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getHeight') / 2;
+    hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
+    hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
   }
   let xx = x;
   let yy = y;
@@ -168,7 +165,7 @@ function m_ProcessPosition(agent, frame) {
     lerpPct = 0.8; // force quicker turn for input agents so it feels more responsive
     if (!targetAngle) return; // skip if it hasn't been set
   } else {
-    targetAngle = m_AngleBetween(agent, {
+    targetAngle = AngleTo(agent, {
       x: agent.prop.Movement._x,
       y: agent.prop.Movement._y
     });
@@ -221,7 +218,7 @@ function moveWander(agent: IAgent, frame: number) {
     direction += m_random(-90, 90);
     agent.prop.Movement.direction.value = direction;
   }
-  const angle = m_DegreesToRadians(direction);
+  const angle = Deg2Rad(direction);
   const { x, y } = ProjectPoint(agent, angle, distance);
   m_QueuePosition(agent, x, y);
 }
@@ -260,7 +257,7 @@ function moveEdgeToEdge(agent: IAgent, frame: number) {
   agent.prop.Movement.direction.value = direction;
   const distance = agent.prop.Movement.distance.value;
 
-  const angle = m_DegreesToRadians(direction);
+  const angle = Deg2Rad(direction);
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
 
@@ -285,13 +282,13 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
   if (DistanceTo(agent, target) < 5) return;
 
   const distance = agent.prop.Movement.distance.value;
-  let angle = -m_AngleBetween(agent, target); // flip y
+  let angle = -AngleTo(agent, target); // flip y
   const x = agent.prop.x.value + Math.cos(angle) * distance;
   const y = agent.prop.y.value - Math.sin(angle) * distance;
   m_QueuePosition(agent, x, y);
   // also set direction or agent will revert to wandering
   // towards the old direction
-  m_setDirection(agent, m_DegreesToRadians(angle));
+  m_setDirection(agent, Deg2Rad(angle));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent

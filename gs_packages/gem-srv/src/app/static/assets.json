@@ -54,16 +54,6 @@
       "assetId": 11,
       "assetName": "rectangle.json",
       "assetUrl": "static/sprites/rectangle.json"
-    },
-    {
-      "assetId": 12,
-      "assetName": "toasty.json",
-      "assetUrl": "static/sprites/toasty.json"
-    },
-    {
-      "assetId": 13,
-      "assetName": "toastyglow",
-      "assetUrl": "static/sprites/toasty_glow.png"
     }
   ]
 }
