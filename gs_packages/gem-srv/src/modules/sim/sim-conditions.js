@@ -14,6 +14,7 @@ import {
 import { GetScriptEventHandlers } from 'modules/datacore/dc-script-engine';
 import { GetAgentsByType } from 'modules/datacore/dc-agents';
 import { GetGlobalAgent } from 'lib/class-gagent';
+import { DistanceTo } from 'lib/util-vector';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,7 +37,7 @@ RegisterFunction('dies', a => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  *  wasTouchedWithin provides touch testing over time periods
- *  in contrast with the instantaneous touch tests of "touhces"
+ *  in contrast with the instantaneous touch tests of "touches"
  *
  *  This uses the `didTouchDict` set by the Touches feature for the touch
  *  test.  It requires both Physics and Touches features.
@@ -74,129 +75,117 @@ RegisterFunction('wasTouchedWithin', (a, b) => {
   return wasTouched;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('touches', (a, b) => {
-  // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  // if either is inert, no touches are possible
-  if (a.isInert || b.isInert) return false;
-  return a.callFeatMethod('Physics', 'intersectsWith', b);
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('touchesCenterOf', (a, b) => {
-  // checks if 'a' bounds touches the center of 'b'
-  if (!a.hasFeature('Physics')) return false;
-  const size = 10; // size of the center box.
-  const bb = {
-    x: b.prop.x.value - size / 2,
-    y: b.prop.y.value - size / 2,
-    width: size,
-    height: size
-  };
 
-  // // debug
-  // // HACK This is EXPENSIVE!!!
-  // // Show bounding box
-  // const ab = a.callFeatMethod('Physics', 'getBounds');
-  // const apath = [
-  //   ab.x,
-  //   ab.y,
-  //   ab.x + ab.width,
-  //   ab.y,
-  //   ab.x + ab.width,
-  //   ab.y + ab.height,
-  //   ab.x,
-  //   ab.y + ab.height
-  // ];
-  // a.debug = apath;
-  // const bpath = [
-  //   bb.x,
-  //   bb.y,
-  //   bb.x + bb.width,
-  //   bb.y,
-  //   bb.x + bb.width,
-  //   bb.y + bb.height,
-  //   bb.x,
-  //   bb.y + bb.height
-  // ];
-  // b.debug = bpath;
+// Show Bounding Box
+// Bounds debugging ala vision cone agent.debug
+//
+// // debug
+// // HACK This is EXPENSIVE!!!
+// // Show bounding box
+// const ab = a.callFeatMethod('Physics', 'getBounds');
+// const apath = [
+//   ab.x,
+//   ab.y,
+//   ab.x + ab.width,
+//   ab.y,
+//   ab.x + ab.width,
+//   ab.y + ab.height,
+//   ab.x,
+//   ab.y + ab.height
+// ];
+// a.debug = apath;
+// const bpath = [
+//   bb.x,
+//   bb.y,
+//   bb.x + bb.width,
+//   bb.y,
+//   bb.x + bb.width,
+//   bb.y + bb.height,
+//   bb.x,
+//   bb.y + bb.height
+// ];
+// b.debug = bpath;
 
-  return a.callFeatMethod('Physics', 'intersectsWithBounds', bb);
-});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Two centers are within `distance` of each other
+/// NOTE: This can be used without Physics or Touches
+///       This is functionally equivalent to 'centerTouchesCenter'
 RegisterFunction('isCenteredOn', (a, b, distance = 5) => {
   // checks if distance between agents is less than distance
-  let xs = a.prop.x.value - b.prop.x.value;
-  let ys = a.prop.y.value - b.prop.y.value;
-  if (Math.hypot(xs, ys) < distance) {
-    return true; // touches!
-  }
-  return false; // doesn't touch
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('firstTouches', (a, b) => {
-  // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  // if either is inert, no touches are possible
-  if (a.isInert || b.isInert) return false;
-  const boundsA = a.callFeatMethod('Physics', 'getBounds');
-  const boundsB = b.callFeatMethod('Physics', 'getBounds');
-  const isTouching = a.callFeatMethod('Physics', 'intersectsWith', b);
-
-  // HACK firstTouches by stuffing a Map into the agents
-  // 1. Initialize if not set
-  a.wasFirstTouching = a.wasFirstTouching || new Map();
-  b.wasFirstTouching = b.wasFirstTouching || new Map();
-  // 2. Is this a firstTouch?
-  let res = false;
-  if (
-    isTouching &&
-    !a.wasFirstTouching.get(b.id) &&
-    !b.wasFirstTouching.get(a.id)
-  ) {
-    // they were not touching, so this is thefirst touch
-    if (DBG) console.log(...PR('first touch!', a.id, b.id));
-    res = true;
-  }
-  // 3. Save touch status
-  a.wasFirstTouching.set(b.id, isTouching);
-  b.wasFirstTouching.set(a.id, isTouching);
-
-  return res;
-});
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-RegisterFunction('lastTouches', (a, b) => {
-  // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  // if either is inert, no touches are possible
-  if (a.isInert || b.isInert) return false;
-  const isTouching = a.callFeatMethod('Physics', 'intersectsWith', b);
-
-  // HACK lastTouches by stuffing a Map into the agents
-  // 1. Initialize if not set
-  a.wasLastTouching = a.wasLastTouching || new Map();
-  b.wasLastTouching = b.wasLastTouching || new Map();
-  // 2. Is this a firstTouch?
-  let res = false;
-  if (!isTouching && a.wasLastTouching.get(b.id) && b.wasLastTouching.get(a.id)) {
-    // they are not touching now, but were touching before, so this is last touch
-    if (DBG) console.log(...PR('last touch!', a.id, b.id));
-    res = true;
-  }
-  // 3. Save touch status
-  a.wasLastTouching.set(b.id, isTouching);
-  b.wasLastTouching.set(a.id, isTouching);
-
-  return res;
+  return DistanceTo(a, b) <= distance;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('isCloseTo', (a, b, distance = 30) => {
   // checks if distance between agents is less than distance
-  let xs = a.prop.x.value - b.prop.x.value;
-  let ys = a.prop.y.value - b.prop.y.value;
-  if (Math.hypot(xs, ys) < distance) {
-    return true; // touches!
-  }
-  return false; // doesn't touch
+  // Doesn't need Physics or Touch
+  return DistanceTo(a, b) <= distance;
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_TouchTest(a, b, touchType) {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  const isTouching = a.isTouching.get(b.id);
+  // They were not touching, but now they are, so this is first touch
+  return isTouching && isTouching[touchType];
+}
+/// a center touches b center
+/// This is the Physics equivalent of `isCenteredOn`
+RegisterFunction('centerTouchesCenter', (a, b) => {
+  return m_TouchTest(a, b, 'c2c');
+});
+/// a center touches b bounds
+RegisterFunction('centerTouches', (a, b) => {
+  return m_TouchTest(a, b, 'c2b');
+});
+/// a bounds touches b bounds
+RegisterFunction('touches', (a, b) => {
+  return m_TouchTest(a, b, 'b2b');
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_FirstTouchTest(a, b, touchType) {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  const isTouching = a.isTouching.get(b.id);
+  const wasTouching = a.lastTouched.get(b.id);
+  // They were not touching, but now they are, so this is first touch
+  return (
+    isTouching && wasTouching && isTouching[touchType] && !wasTouching[touchType]
+  );
+}
+/// a center first touches b center
+RegisterFunction('centerFirstTouchesCenter', (a, b) => {
+  return m_FirstTouchTest(a, b, 'c2c');
+});
+/// a center first touches b bounds
+RegisterFunction('centerFirstTouches', (a, b) => {
+  return m_FirstTouchTest(a, b, 'c2b');
+});
+/// a bounds first touches b bounds
+RegisterFunction('firstTouches', (a, b) => {
+  return m_FirstTouchTest(a, b, 'b2b');
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_LastTouchTest(a, b, touchType) {
+  // make sure both objects have the Physics feature
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  const isTouching = a.isTouching.get(b.id);
+  const wasTouching = a.lastTouched.get(b.id);
+  // They were touching, but now they are not, so this is last touch
+  return (
+    isTouching && wasTouching && wasTouching[touchType] && !isTouching[touchType]
+  );
+}
+/// a center last touches b center
+RegisterFunction('centerLastTouchesCenter', (a, b) => {
+  return m_LastTouchTest(a, b, 'c2c');
+});
+/// a center last touches b bounds
+RegisterFunction('centerLastTouches', (a, b) => {
+  return m_LastTouchTest(a, b, 'c2b');
+});
+/// a bounds last touches b bounds
+RegisterFunction('lastTouches', (a, b) => {
+  return m_LastTouchTest(a, b, 'b2b');
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('sees', (a, b) => {
