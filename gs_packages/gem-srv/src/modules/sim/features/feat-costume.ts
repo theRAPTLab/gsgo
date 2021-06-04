@@ -166,8 +166,8 @@ class CostumePack extends GFeature {
     this.setColorize(agent, newR, newG, newB);
   }
   // Randomizes the existing color using HSL (Hue, Saturation, Lightness)
-  // `dRed`, `dGreen`, and `dBlue` are the max change values
-  // They are essentially +/-, e.g. if dRed is 0.2, then the random value
+  // `dHue`, `dSat`, and `dVal` are the max change values
+  // They are essentially +/-, e.g. if dHue is 0.2, then the random value
   // will change the existing value by +/- 0.2.
   randomizeColorHSV(agent: IAgent, dHue: number, dSat: number, dVal: number) {
     const color = agent.getProp('color').value; // color is hex
