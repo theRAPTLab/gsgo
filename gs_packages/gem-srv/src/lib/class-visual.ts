@@ -103,6 +103,7 @@ class Visual implements IVisual, IPoolable, IActable {
   filterColorOverlay: any;
   filterAdjustment: any;
   filterColor: number;
+  cone: PIXI.Graphics;
   // poolable
   id: any;
   _pool_id: any;
@@ -196,18 +197,20 @@ class Visual implements IVisual, IPoolable, IActable {
    */
   applyFilters() {
     // selected?
-    const filters = [];
+    const filters = []; // filters for the whole visual object
+    const spriteFilters = []; // filters for the sprite texture only
     if (this.isSelected) filters.push(outlineSelected);
     if (this.isHovered) filters.push(outlineHover);
     if (this.isGlowing) filters.push(glow);
-    if (this.filterColorOverlay) filters.push(this.filterColorOverlay);
-    if (this.filterAdjustment) filters.push(this.filterAdjustment);
+    if (this.filterColorOverlay) spriteFilters.push(this.filterColorOverlay);
+    if (this.filterAdjustment) spriteFilters.push(this.filterAdjustment);
     if (this.isSelected || this.isHovered) {
       // HACK
       // temporarily override opacity so outlines will display
       this.sprite.alpha = 1;
     }
     this.filterbox.filters = filters;
+    this.sprite.filters = spriteFilters;
   }
 
   setFrame(frameKey: string | number) {
@@ -243,6 +246,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.removeText();
     this.removeMeter();
     this.root.removeChild(this.container); // needed or vobj is not removed
+    if (this.cone) this.root.removeChild(this.cone);
     this.root = undefined;
   }
 
@@ -332,7 +336,7 @@ class Visual implements IVisual, IPoolable, IActable {
     this.sprite.angle = angle;
   }
 
-  setRotation(rad: number) {
+  setRotation(rad: number = 0) {
     this.sprite.rotation = rad;
   }
 
@@ -419,6 +423,34 @@ class Visual implements IVisual, IPoolable, IActable {
       this.meter.destroy();
       this.meter = undefined;
     }
+  }
+
+  // General Debugging property to test sending data.
+  setDebug(data: object) {
+    // hacked to draw vision cone
+    this.drawVisionCone(data);
+  }
+
+  removeDebug() {
+    // hacked to remove vision cone
+    if (this.cone) {
+      this.cone.destroy();
+      this.cone = undefined;
+    }
+  }
+
+  // Hack a vision cone for debugging purposes.
+  // This draws a polygon using the values passed via setDebug.
+  // The polygon is attached to root, not the sprite, so that we
+  // can test absolute values.
+  drawVisionCone(path: number[] = []) {
+    // const path = [0, 0, -100, -100, 100, -100];
+    if (!this.cone) this.cone = new PIXI.Graphics();
+    this.cone.clear();
+    this.cone.beginFill(0x6666ff, 0.2);
+    this.cone.drawPolygon(path);
+    this.cone.endFill();
+    if (this.root) this.root.addChild(this.cone);
   }
 } // end class Sprite
 

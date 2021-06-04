@@ -97,6 +97,7 @@ function Init(element) {
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
+      vobj.setRotation(dobj.rotation);
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
@@ -117,6 +118,8 @@ function Init(element) {
       vobj.setGlowing(dobj.flags & FLAGS.SELECTION.GLOWING);
       vobj.setColorize(dobj.color);
       vobj.applyFilters();
+
+      if (dobj.debug) vobj.setDebug(dobj.debug);
 
       // Old Approach: Only enable drag and hover if controlMode is puppet (1)
       // But this doesn't work for two reasons:
@@ -156,6 +159,7 @@ function Init(element) {
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
+      vobj.setRotation(dobj.rotation);
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
@@ -180,6 +184,9 @@ function Init(element) {
       // force vobj rotation, scale, alpha for PIXI testing
       // see sim-agents.js for TestJitterAgents
       // TestRenderParameters(dobj, vobj);
+
+      if (dobj.debug) vobj.setDebug(dobj.debug);
+      else vobj.removeDebug();
     },
     shouldRemove: () => true,
     onRemove: () => {}

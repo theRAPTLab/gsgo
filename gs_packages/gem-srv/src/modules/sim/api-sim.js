@@ -39,7 +39,7 @@ function m_Step(frameCount) {
   /* insert game logic here */
 }
 // Timer PRERUN loop
-function monitor_STEP(frameCount) {
+function m_PreRunStep(frameCount) {
   GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
 }
 
@@ -57,7 +57,7 @@ function Stage() {
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
     console.log(...PR('Pre-run Loop Starting'));
-    RX_SUB = SIM_FRAME_MS.subscribe(monitor_STEP);
+    RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
     console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
   })();
 }
@@ -77,6 +77,8 @@ function Start() {
   }
   console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
+  // Unsubscribe from PRERUN, otherwise it'll keep running.
+  if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
@@ -100,6 +102,9 @@ function End() {
   console.log(...PR('End'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
+  console.log(...PR('Pre-run Loop Starting'));
+  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
 
 /// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////

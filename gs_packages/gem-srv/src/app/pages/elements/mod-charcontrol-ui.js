@@ -258,6 +258,7 @@ function HandleStateChange(name, value) {
           m_data_object_name_changed = true;
           break;
         case 'tag':
+          m_data_object_name_changed = true;
           m_MakeDevice(); // Only make a new device for blueprint, don't re-initialize UI
           break;
       }
