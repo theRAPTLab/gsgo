@@ -5,11 +5,7 @@
     }
   ],
   "settings": {
-    "files.exclude": {
-      "**/admin-srv": true,
-      "**/globals": true,
-      "**/test-data": true,
-      "**/x-playground": true
-    }
+    "search.exclude": {},
+    "files.exclude": {}
   }
 }
