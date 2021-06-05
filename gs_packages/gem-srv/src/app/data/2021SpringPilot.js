@@ -256,7 +256,10 @@ featPropPop agent.Physics scale
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-featCall Costume setCostume 'lightbeam.json' 0
+featCall Costume setCostume 'circle.json' 0
+featCall Costume setColorize 1 1 0
+prop agent.alpha setTo 0.5
+
 addProp speed Number 10
 addProp energyRate Number 5
 addProp direction Number 1
@@ -268,8 +271,6 @@ featProp Physics scaleY setTo 2.5
 
 useFeature Touches
 
-prop agent.skin setTo 'lightbeam.json'
-prop agent.alpha setTo 0.5
 
 # PROGRAM INIT
 // default position for moving across the top
