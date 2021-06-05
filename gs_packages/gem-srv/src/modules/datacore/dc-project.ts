@@ -45,6 +45,10 @@ export function UpdateDCModel(model) {
 
 /// BOUNDS METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// REVIEW: Can we handle all this with the REQ_PROJDATA calls?
+//         so we don't even need this class?
+
 export function SetInputStageBounds(width, height) {}
 export function GetBounds() {
   return BOUNDS;
