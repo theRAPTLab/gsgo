@@ -132,6 +132,7 @@ function m_Update(frame) {
         let c2c;
         let c2b;
         let b2b;
+        // if target is inert, we still need to clear c2c/c2b/b2b
         if (!t.isInert) {
           if (touchTypes.includes('c2c')) {
             c2c = m_TouchesC2C(agent, t) ? frame : undefined;
