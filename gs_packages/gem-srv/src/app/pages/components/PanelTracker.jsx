@@ -155,6 +155,21 @@ class PanelTracker extends React.Component {
       <div>
         TRANSFORMS
         <br />
+        <p>
+          <i>
+            In general, it's easiest to 1. set scale (so you can see the inputs),
+            2. set rotation (so you can see screen orientation), then 3. set
+            translation (so you can center the world).
+          </i>
+        </p>
+        <p>
+          <i>
+            The algorithm is applied in this order: 1. rotate, 2. translate, 3.
+            scale. "Translate" is applied to the already-rotated but pre-scaled
+            input values in the original Pozyx mm units.
+          </i>
+        </p>
+        are
         <div
           style={{
             display: 'grid',
@@ -193,7 +208,7 @@ class PanelTracker extends React.Component {
             type="number"
             onChange={this.onFormInputUpdate}
           />
-          <i>Relative to pozyx units</i>
+          <i>Relative to rotated pozyx units</i>
           <div className={classes.inspectorLabel}>TranslateY (mm): </div>
           <input
             id="translateY"
@@ -217,6 +232,12 @@ class PanelTracker extends React.Component {
     const entjsx = (
       <div>
         ENTITIES -- raw | transformed
+        <p>
+          <i>
+            The goal is to get the "transformed" units in the range of -0.5 to
+            +0.5.
+          </i>
+        </p>
         <div
           style={{
             display: 'grid',
