@@ -10,10 +10,10 @@ class PanelTracker extends React.Component {
     super();
     this.state = {
       title: 'Setup',
-      xmin: 0,
-      xmax: 0,
-      ymin: 0,
-      ymax: 0,
+      xmin: Infinity,
+      xmax: -Infinity,
+      ymin: Infinity,
+      ymax: -Infinity,
       entities: [],
       tentities: [],
       transform: {
