@@ -136,16 +136,23 @@ function m_QueuePosition(agent, x, y) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Calculate derived properties
 function m_ProcessPosition(agent, frame) {
-  const x = agent.prop.Movement._x;
-  const y = agent.prop.Movement._y;
+  // REVIEW
+  // If the agent uses Movement, then we MUST derive isMoving and set orientation
+  // But if the agent has no movement methods defined AND/OR the agent position
+  // was set directly, we still have to fall back to that position.  In other
+  // words, we don't want to skip the update!
 
-  if (
-    agent.x === undefined ||
-    agent.y === undefined ||
-    x === undefined ||
-    y === undefined
-  )
-    return; // Agent position or Movement not set, so ignore
+  let x = agent.prop.Movement._x;
+  let y = agent.prop.Movement._y;
+
+  // Fallback Code
+  // Movement._x might not be defined if position was set directly
+  // via setting agent.x/agent.y in an initScript.
+  if (x === undefined || y === undefined) {
+    // agent.prop.Movement._x/y was not defined, so fall back to default
+    x = agent.x || 0; // if agent.x is undefined, ball back to 0
+    y = agent.y || 0;
+  }
 
   // 1. Is Moving?
   // inputs come in at a 15fps frame rate, so we need to use hysteresis
@@ -180,10 +187,7 @@ function m_ProcessPosition(agent, frame) {
     lerpPct = 0.8; // force quicker turn for input agents so it feels more responsive
     if (!targetAngle) return; // skip if it hasn't been set
   } else {
-    targetAngle = AngleTo(agent, {
-      x: agent.prop.Movement._x,
-      y: agent.prop.Movement._y
-    });
+    targetAngle = AngleTo(agent, { x, y });
   }
 
   // don't turn if we're already on target, otherwise, NPCs end up turning
@@ -296,7 +300,7 @@ function moveFloat(agent, y: number = -300) {
 function seek(agent: IAgent, target: { x; y }, frame: number) {
   // stop seeking if target was removed
   // For input agents, target might be defined, but x and y are not
-  if (!target || !target.x || !target.y) return;
+  if (!target || target.x === undefined || target.y === undefined) return;
 
   // stop seeking if we're close, otherwise agent flips orientation wildly
   if (DistanceTo(agent, target) < 5) return;
@@ -519,7 +523,11 @@ class MovementPack extends GFeature {
     // field of vision = 0.785398
 
     // Other Internal Properties
-    // agent.prop.Movement._x
+    // Set default values
+    agent.prop.Movement._x = agent.x;
+    agent.prop.Movement._y = agent.y;
+
+    // agent.prop.Movement._x // the next x postion.  Call it `_nextX`?
     // agent.prop.Movement._y
     // agent.prop.Movement._targetId // id of seek target
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
