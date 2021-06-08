@@ -150,8 +150,8 @@ function m_ProcessPosition(agent, frame) {
   // via setting agent.x/agent.y in an initScript.
   if (x === undefined || y === undefined) {
     // agent.prop.Movement._x/y was not defined, so fall back to default
-    x = agent.x || 0; // if agent.x is undefined, ball back to 0
-    y = agent.y || 0;
+    x = agent.x === undefined ? 0 : agent.x; // if agent.x is undefined, ball back to 0
+    y = agent.y === undefined ? 0 : agent.y;
   }
 
   // 1. Is Moving?
@@ -212,7 +212,7 @@ function m_ProcessPosition(agent, frame) {
 function m_SetPosition(agent, frame) {
   const x = agent.prop.Movement._x;
   const y = agent.prop.Movement._y;
-  if (!x || !y) return; // Movement not set, so ignore
+  if (x === undefined || y === undefined) return; // Movement not set, so ignore
   agent.prop.x.value = x;
   agent.prop.y.value = y;
 }
@@ -248,7 +248,7 @@ function moveWander(agent: IAgent, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE to EDGE (of the entire tank / system)
-// Go in the same direction most of the way across the space, then turn back and do similar
+/// Go in the same direction most of the way across the space, then turn back and do similar
 function moveEdgeToEdge(agent: IAgent, frame: number) {
   const bounds = GetBounds();
   const pad = 5;
