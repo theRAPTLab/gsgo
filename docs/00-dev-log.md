@@ -316,3 +316,15 @@ On AppServer launch, it pulls the locale data and serves it up, based on the
 
 ```
 
+## JUN 09 WED - Making the Locale Thingy
+
+We want the locale thingy to work for current versions ahead of the database backer. So we need to be able to **write** the config from Tracker Utility. And we need to have an optional authentication as a stub.
+
+* [x] gem-app-srv uses UR, so let's expose something in index-server that refers to a new module.
+* [x] wedge-in example code into new `server-db` module that implements the graphql interface
+* [x] update lokijs version to 1.5.12
+* [x] add graphql, express-graphql libraries
+* [x] remove annoying eslint error requiring short object notation for functions
+* [x] fix unrelated type error in class-visual
+
+ 

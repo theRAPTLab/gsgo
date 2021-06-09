@@ -22,7 +22,7 @@ const GEMAPP = require('./server/gem-app-srv');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = 'GEM-RUN';
+const PR = 'GEMRUN';
 const TOUT = UR.TermOut(PR);
 const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 
