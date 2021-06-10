@@ -5,7 +5,7 @@ import * as PIXI from 'pixi.js';
 /**
  * Converts an RGB color value to HSL. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
- * Assumes r, g, and b are contained in the set [0, 255] and
+ * Assumes r, g, and b are contained in the set [0, 1] and
  * returns h, s, and l in the set [0, 1].
  *
  * @param   Number  r       The red color value
@@ -14,10 +14,6 @@ import * as PIXI from 'pixi.js';
  * @return  Array           The HSL representation
  */
 export function HSLfromRGB(r, g, b) {
-  r /= 255;
-  g /= 255;
-  b /= 255;
-
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h;
@@ -63,7 +59,7 @@ function hue2rgb(p, q, t) {
  * Converts an HSL color value to RGB. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
  * Assumes h, s, and l are contained in the set [0, 1] and
- * returns r, g, and b in the set [0, 255].
+ * returns r, g, and b in the set [0, 1].
  *
  * @param   Number  h       The hue
  * @param   Number  s       The saturation
@@ -88,13 +84,13 @@ export function RGBfromHSL(h, s, l) {
     b = hue2rgb(p, q, h - 1 / 3);
   }
 
-  return [r * 255, g * 255, b * 255];
+  return [r, g, b];
 }
 
 /**
  * Converts an RGB color value to HSV. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
- * Assumes r, g, and b are contained in the set [0, 255] and
+ * Assumes r, g, and b are contained in the set [0, 1] and
  * returns h, s, and v in the set [0, 1].
  *
  * @param   Number  r       The red color value
@@ -103,10 +99,6 @@ export function RGBfromHSL(h, s, l) {
  * @return  Array           The HSV representation
  */
 export function HSVfromRGB(r, g, b) {
-  r /= 255;
-  g /= 255;
-  b /= 255;
-
   const max = Math.max(r, g, b);
   const min = Math.min(r, g, b);
   let h;
@@ -142,7 +134,7 @@ export function HSVfromRGB(r, g, b) {
  * Converts an HSV color value to RGB. Conversion formula
  * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
  * Assumes h, s, and v are contained in the set [0, 1] and
- * returns r, g, and b in the set [0, 255].
+ * returns r, g, and b in the set [0, 1].
  *
  * @param   Number  h       The hue
  * @param   Number  s       The saturation
@@ -194,7 +186,7 @@ export function RGBfromHSV(h, s, v) {
     default:
   }
 
-  return [r * 255, g * 255, b * 255];
+  return [r, g, b];
 }
 
 /// ---------------------------------------------------------------------------
@@ -204,24 +196,11 @@ export function RGBfromHSV(h, s, v) {
  * @return {Number[]} hue sat val Normalized 0 - 1
  */
 export function HSVfromHEX(hex) {
-  const [r1, g1, b1] = PIXI.utils.hex2rgb(hex); // normalized to 0-1
-  const r255 = r1 * 255;
-  const g255 = g1 * 255;
-  const b255 = b1 * 255;
-  const [h, s, v] = HSVfromRGB(r255, g255, b255);
+  const [r, g, b] = PIXI.utils.hex2rgb(hex); // normalized to 0-1
+  const [h, s, v] = HSVfromRGB(r, g, b);
   return [h, s, v];
 }
-/**
- *
- * @param {*} h
- * @param {*} s
- * @param {*} v
- * @return {Number[]} r g b Normalized 0 - 1
- */
-export function NormalizedRGBfromHSV(h, s, v) {
-  const [nr255, ng255, nb255] = RGBfromHSV(h, s, v);
-  const r = nr255 / 255;
-  const g = ng255 / 255;
-  const b = nb255 / 255;
-  return [r, g, b];
+export function HEXfromHSV(h, s, v) {
+  const [r, g, b] = RGBfromHSV(h, s, v);
+  return PIXI.utils.rgb2hex([r, g, b]);
 }
