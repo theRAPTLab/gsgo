@@ -10,21 +10,19 @@ import UR from '@gemstep/ursys/client';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
+import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetSpriteDimensions, GetTextureInfo } from 'modules/datacore/dc-globals';
 import { Clamp } from 'lib/util-vector';
-import {
-  HSVfromRGB,
-  RGBfromHSV,
-  HSVfromHEX,
-  NormalizedRGBfromHSV
-} from 'lib/util-color';
+import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FeatCostume');
 const DBG = false;
 let COUNTER = 0;
+
+const COSTUME_AGENTS = new Map();
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 
@@ -39,6 +37,40 @@ function m_Clamp255(val) {
   return Clamp(val, 0, 255);
 }
 
+/**
+ * Returns agent if it exists.
+ * If it doesn't exist anymore (e.g. CharControl has dropped), remove it from
+ * PHYSICS_AGENTS
+ * @param agentId
+ */
+function m_getAgent(agentId): IAgent {
+  const a = GetAgentById(agentId);
+  if (!a) COSTUME_AGENTS.delete(agentId);
+  return a;
+}
+
+/// UPDATES ////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_Update() {
+  const agentIds = Array.from(COSTUME_AGENTS.keys());
+  agentIds.forEach(id => {
+    const agent = m_getAgent(id);
+    const h = agent.prop.Costume.colorHue.value;
+    const s = agent.prop.Costume.colorSaturation.value;
+    const v = agent.prop.Costume.colorValue.value;
+    const color = HEXfromHSV(h, s, v);
+    if (!Number.isNaN(color)) {
+      agent.prop.color.setTo(color);
+    }
+  });
+}
+
+/// HOOKS /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// REVIEW: Use PHYSIC for now to set agent before VIS_UPDATE
+UR.HookPhase('SIM/VIS_UPDATE', m_Update);
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class CostumePack extends GFeature {
@@ -52,6 +84,7 @@ class CostumePack extends GFeature {
     this.featAddMethod('setGlow', this.setGlow);
     this.featAddMethod('setColorize', this.setColorize);
     this.featAddMethod('setColorizeHSV', this.setColorizeHSV);
+    this.featAddMethod('setColorizeValue', this.setColorizeValue);
     this.featAddMethod('randomizeColor', this.randomizeColor);
     this.featAddMethod('randomizeColorHSV', this.randomizeColorHSV);
     this.featAddMethod('colorHSVWithinRange', this.colorHSVWithinRange);
@@ -100,6 +133,21 @@ class CostumePack extends GFeature {
     //         to enable applicaiton of flip?
     this.featAddProp(agent, 'flipX', new GVarBoolean(false));
     this.featAddProp(agent, 'flipY', new GVarBoolean(false));
+    // Costume color will override agent color during m_Update
+    prop = new GVarNumber();
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorHue', prop);
+    prop = new GVarNumber();
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorSaturation', prop);
+    prop = new GVarNumber();
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorValue', prop);
+
+    COSTUME_AGENTS.set(agent.id, agent.id);
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
@@ -137,20 +185,25 @@ class CostumePack extends GFeature {
       agent.isGlowing = false;
     }, seconds * 1000);
   }
+  getColorHSV(agent: IAgent) {
+    return [
+      agent.prop.Costume.colorHue.value,
+      agent.prop.Costume.colorSaturation.value,
+      agent.prop.Costume.colorValue.value
+    ];
+  }
   // Applies a colorOverlay and adjustmentFilter color multiply
   setColorize(agent: IAgent, red: number, green: number, blue: number) {
-    const color = PIXI.utils.rgb2hex([red, green, blue]);
-    agent.getProp('color').setTo(color);
+    const [h, s, v] = HSVfromRGB(red, green, blue);
+    agent.prop.Costume.colorHue.setTo(h);
+    agent.prop.Costume.colorSaturation.setTo(s);
+    agent.prop.Costume.colorValue.setTo(v);
   }
   // Applies a colorOverlay and adjustmentFilter color multiply
   setColorizeHSV(agent: IAgent, hue: number, sat: number, val: number) {
-    const rgb255 = RGBfromHSV(hue, sat, val);
-    const color = PIXI.utils.rgb2hex([
-      rgb255[0] / 255,
-      rgb255[1] / 255,
-      rgb255[2] / 255
-    ]);
-    agent.getProp('color').setTo(color);
+    agent.prop.Costume.colorHue.setTo(hue);
+    agent.prop.Costume.colorSaturation.setTo(sat);
+    agent.prop.Costume.colorValue.setTo(val);
   }
   // Randomizes the existing color
   // `dRed`, `dGreen`, and `dBlue` are the max change values
@@ -170,13 +223,11 @@ class CostumePack extends GFeature {
   // They are essentially +/-, e.g. if dHue is 0.2, then the random value
   // will change the existing value by +/- 0.2.
   randomizeColorHSV(agent: IAgent, dHue: number, dSat: number, dVal: number) {
-    const color = agent.getProp('color').value; // color is hex
-    const [h, s, v] = HSVfromHEX(color);
+    const [h, s, v] = this.getColorHSV(agent);
     const newH = m_Clamp1(h + RNG() * 2 * dHue - dHue);
     const newS = m_Clamp1(s + RNG() * 2 * dSat - dSat);
     const newV = m_Clamp1(v + RNG() * 2 * dVal - dVal);
-    const [r, g, b] = NormalizedRGBfromHSV(newH, newS, newV);
-    this.setColorize(agent, r, g, b);
+    this.setColorizeHSV(agent, newH, newS, newV);
   }
   colorHSVWithinRange(
     agent: IAgent,
