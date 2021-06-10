@@ -10,6 +10,7 @@
 const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
+const DB = require('./server-db');
 const DBG = require('./ur-dbg-settings');
 const COMMON = require('./ur-common');
 //
@@ -94,6 +95,7 @@ module.exports = {
   Shutdown,
   URNET_Start,
   URNET_NetInfo: NETINFO.GetNetInfo,
+  URNET_GraphQL: DB.URNET_GraphQL,
   NextJS_NetInfoResponder: NETINFO.NextJS_Responder,
   Express_NetInfoResponder: NETINFO.Express_Responder,
   // SERVICES API

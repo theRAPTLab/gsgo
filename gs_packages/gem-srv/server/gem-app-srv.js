@@ -17,7 +17,11 @@ const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
-const { Express_NetInfoResponder, PrefixUtil } = require('@gemstep/ursys/server');
+const {
+  Express_NetInfoResponder,
+  PrefixUtil,
+  URNET_GraphQL
+} = require('@gemstep/ursys/server');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -155,6 +159,7 @@ function StartAppServer(opt = {}) {
 
   // handle urnet
   app.use(Express_NetInfoResponder);
+  app.use('/graphql', URNET_GraphQL());
 
   // for everything else...
   app.use('/', Express.static(DIR_OUT));
