@@ -19,7 +19,7 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'bee.json' 0
-featCall Costume setColorize 0.2 1 0
+featCall Costume setColorize 0 1 0
 // featCall Costume setColorizeHSV 0.5 1 1
 prop alpha setTo 1
 prop alpha setMin 1
@@ -50,7 +50,7 @@ featCall AgentWidgets bindMeterTo energyLevel
 // hide text
 featProp AgentWidgets text setTo ''
 
-featCall Costume randomizeColorHSV 1 0 1
+featCall Costume randomizeColorHSV 0.1 0 0.2
 
 # PROGRAM INIT
 // Don't randomize here or we'll keep getting new colorsl
@@ -67,8 +67,6 @@ every 1 [[
   ifExpr {{ !agent.prop.Vision.visionable.value }} [[
     featCall Costume setGlow 0.05
   ]]
-  // darken every second
-  featProp Costume colorValue sub 0.1
 ]]
 when Moth centerFirstTouches TreeTrunk [[
   featCall Moth.Costume setGlow 2
@@ -89,11 +87,11 @@ when Moth centerTouches TreeTrunk [[
     ifExpr {{ agent.getProp('energyLevel').value > 99 && !agent.isInert }} [[
       dbgOut 'SPAWN!'
       featCall Population spawnChild [[
-        // init script
-        // only spawn yellow moths
-        featCall Costume setColorize 1 1 0
-        prop x add 10
-        prop y add 10
+        // new spawn init script (not current agent)
+        // spawn randomly darker
+        featProp Costume colorValue subRnd 0.5
+        prop x addRnd -50 50
+        prop y addRnd -50 50
       ]]
       prop energyLevel sub 50
     ]]
