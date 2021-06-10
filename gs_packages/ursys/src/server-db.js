@@ -211,17 +211,14 @@ const querySchema = new GraphQLSchema({ query: queryType });
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function URNET_GraphQL() {
-  TERM('GraphQL initialized');
-  return graphqlHTTP({
-    schema: querySchema,
-    context: { db },
-    graphiql: true
-  });
-}
+const GraphQL_Middleware = graphqlHTTP({
+  schema: querySchema,
+  context: { db },
+  graphiql: true
+});
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  URNET_GraphQL
+  GraphQL_Middleware
 };

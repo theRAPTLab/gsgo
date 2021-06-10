@@ -95,9 +95,9 @@ module.exports = {
   Shutdown,
   URNET_Start,
   URNET_NetInfo: NETINFO.GetNetInfo,
-  URNET_GraphQL: DB.URNET_GraphQL,
-  NextJS_NetInfoResponder: NETINFO.NextJS_Responder,
-  Express_NetInfoResponder: NETINFO.Express_Responder,
+  GraphQL_Endpoint: DB.GraphQL_Middleware,
+  NetInfo_Endpoint: NETINFO.Express_Middleware,
+  NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
   // SERVICES API
   STORE,
   EXPRESS,

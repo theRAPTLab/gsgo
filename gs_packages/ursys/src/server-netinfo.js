@@ -56,7 +56,7 @@ function m_NetInfoRespond(req, res) {
  *  The listener listens for a request for URNetBroker information.
  *  the NextJS and other frameworks.
  */
-function NextJS_Responder(req, res) {
+function NextJS_Middleware(req, res) {
   // Be sure to pass `true` as the second argument to `url.parse`.
   // This tells it to parse the query portion of the URL.
   const parsedUrl = parse(req.url, true);
@@ -73,7 +73,7 @@ function NextJS_Responder(req, res) {
 /** Called from custom Express server, this sets up the URNetBroker link
  *  that returns host, port, urnet_version, uaddr
  */
-function Express_Responder(req, res, next) {
+function Express_Middleware(req, res, next) {
   const parsedUrl = parse(req.url, true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
@@ -96,8 +96,8 @@ function SaveNetInfo(opt) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   SaveNetInfo,
-  NextJS_Responder,
-  Express_Responder,
+  NextJS_Middleware,
+  Express_Middleware,
   GetNetInfo,
   NetInfoRoute
 };

@@ -112,104 +112,9 @@ the device declaration looks like
 ```
 
 **Q. Will GraphQL be helpful? What the hell is it?**
+A. See [notes](02-concepts/graphql.md)
 
-```
-REST
-/url/location over http, authenticate from path, return data to client
-fetch tables of data, and get everything that's in them, then process on client
-- overfetching data
-- 1-N underfetching
-- REST requires awareness of endpoints for every possibility...zillions of them, and client has to know the shape
 
-GRAPHQL
-* fetch from any endpoint, typed data, stateless, cacheable
-* clients request SHAPE of response it wants
-
-GraphQL defines a 'schema' that describes what the server will accept. These are typed simply as 'String, Float, Int, [Int]' being a list type. 
-The schema is connected to 'resolvers' that are an object that implement functions that handle the various things defined in the schema.
-
-The Expression version will use middleware to initialize the server and just start listening. There's an intereactive query interface (graphiql) that can be used to inspect it.
-
-Arguments are passed as named properties with a type. 
-type Query { rollThreeDice: [Int] }
-verus
-type Query { rollDice: Int!, numSides: Int) : [Int] }
-the resolver receives an 'args' object that can be destructured by name
-
-when client requests data, it passes the arguments into the query string.
-var query = `query RollDice($dice: Int!, $sides: Int) {
-  rollDice(numDice: $dice, numSides: $sides)
-}`
-const dice = 3;
-const sides = 6;
-fetch('/graphql', {
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-  },
-  body: JSON.stringify({
-    query,
-    variables: { dice, sides },
-  })
-})
-  .then(r => r.json())
-  .then(data => console.log('data returned:', data));
-  
- FANCINESS
- You can specify a CLASS to resolve your queries.
-schema: type RandomDie { methods }
-				type Query { getDie(numSides:Int) : RandomDie }
-				
-class RandomDie
-	constructor(), methods
-	
-root: {
-	getDie: ({numSides}) => new RandomDie(numSides||6)
-}
-
-We've defined the schema to have a getDie methods that returns a RandomDie object
-The root is bound to our Randomdie implementation by creating a new class instance and invoking the method on it.
-
-To fetch this in the client, the query is:
-{
-  getDie($numsides) {
-    rollOnce
-    roll($numRolls)
-  }
-}
-
-to ALTER data, use the Mutation Type
-type Mutation { setMessage():String }
-type Query ( getMessage: String ) 
-also we have input types like: 
-
-input MessageInput {
-  content: String
-  author: String
-}
-
-can only be sclaras
-
-schema language:
-type: defines an object with fields
-type Query and Mutation are special names: entry points inot the schema, but are otherwise the same 
-enums!
-special types defined: e.g. scalar Date
-enums e.g. enum Episode { NEWHOP, EMPIRE, JEDI }
-interfaces! similar to typescript
-inputs: defining a bunch of allowed input objects with properties
-subscriptions: re
-
-The Apollo Server docs do a better job of describing this:
-https://www.apollographql.com/docs/apollo-server/schema/schema/
-
-Example LokiJS example:
-https://github.com/t-fitz/GraphQL-Node-Example a basic one to study
-
-check errors or data to determine success
-  
-```
 
 ## JUN 03 - GraphQL Integration
 
@@ -227,7 +132,7 @@ Reviewing our server architecture:
      add cookies middleware
      enables cors
      handles path /, /app, /app/* to point to index.html which is the web app entry
-     setup Express_NetInfo webserver responder
+     setup NetInfo_Endpoint webserver responder
      serve static files using Express.static
 
   2. UR.Initialize([Tracker.StartTrackerSystem])
