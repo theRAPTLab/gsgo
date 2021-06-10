@@ -84,7 +84,6 @@ class CostumePack extends GFeature {
     this.featAddMethod('setGlow', this.setGlow);
     this.featAddMethod('setColorize', this.setColorize);
     this.featAddMethod('setColorizeHSV', this.setColorizeHSV);
-    this.featAddMethod('setColorizeValue', this.setColorizeValue);
     this.featAddMethod('randomizeColor', this.randomizeColor);
     this.featAddMethod('randomizeColorHSV', this.randomizeColorHSV);
     this.featAddMethod('colorHSVWithinRange', this.colorHSVWithinRange);
@@ -177,7 +176,7 @@ class CostumePack extends GFeature {
   setScale(agent: IAgent, scale: number) {
     // Use `setTo` so that min an max are checked
     const newScale = agent.prop.Costume.flipX.value ? -scale : scale;
-    agent.getProp('scale').setTo(newScale); // use the minmaxed number
+    agent.prop.scale.setTo(newScale); // use the minmaxed number
   }
   setGlow(agent: IAgent, seconds: number) {
     agent.isGlowing = true;
@@ -259,7 +258,7 @@ class CostumePack extends GFeature {
   }
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {
-    agent.getProp('color').clear();
+    agent.prop.color.clear();
   }
   // Dimensions of currently selected sprite frame's texture
   getBounds(agent: IAgent): { w: number; h: number } {
