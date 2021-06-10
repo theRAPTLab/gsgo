@@ -88,8 +88,8 @@ function m_update(frame) {
     }
 
     // 2. Update Physics Body
-    agent.getFeatProp('Physics', 'bodyWidth').setTo(newW);
-    agent.getFeatProp('Physics', 'bodyHeight').setTo(newH);
+    agent.prop.Physics.bodyWidth.setTo(newW);
+    agent.prop.Physics.bodyHeight.setTo(newH);
 
     // 3. Calculate New Scale
     let newScale = newW / cw;
@@ -214,8 +214,8 @@ class PhysicsPack extends GFeature {
   readCostumeSize(agent: IAgent): { width: number; height: number } {
     if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
     const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
-    agent.getFeatProp(this.name, 'costumeWidth').setTo(w);
-    agent.getFeatProp(this.name, 'costumeHeight').setTo(h);
+    agent.prop.Physics.costumeWidth.setTo(w);
+    agent.prop.Physics.costumeHeight.setTo(h);
     return { width: w, height: h };
   }
 
@@ -225,7 +225,7 @@ class PhysicsPack extends GFeature {
    *  featCall Physics setRadius value
    */
   setShape(agent: IAgent, shape: string) {
-    agent.getFeatProp(this.name, 'shape').setTo(shape);
+    agent.prop.Physics.shape.setTo(shape);
   }
   /**
    * Convenience function for setting width/height variables.
@@ -238,47 +238,47 @@ class PhysicsPack extends GFeature {
     this.setHeight(agent, height);
   }
   setRadius(agent: IAgent, radius: number) {
-    agent.getFeatProp(this.name, 'radius').setTo(radius);
+    agent.prop.Physics.radius.setTo(radius);
   }
   /**
    * NOTE: This only saves a local value.  The physics body and agent visual
    * are updated during m_update.
    */
   setWidth(agent: IAgent, num: number) {
-    agent.getFeatProp(this.name, 'width').setTo(num);
+    agent.prop.Physics.width.setTo(num);
   }
   /**
    * NOTE: This only saves a local value.  The physics body and agent visual
    * are updated during m_update.
    */
   setHeight(agent: IAgent, num: number) {
-    agent.getFeatProp(this.name, 'height').setTo(num);
+    agent.prop.Physics.height.setTo(num);
   }
   getRadius(agent: IAgent): number {
-    return agent.getFeatProp(this.name, 'radius').value;
+    return agent.prop.Physics.radius.value;
   }
   getWidth(agent: IAgent): number {
-    return agent.getFeatProp(this.name, 'width').value;
+    return agent.prop.Physics.width.value;
   }
   getHeight(agent: IAgent): number {
-    return agent.getFeatProp(this.name, 'height').value;
+    return agent.prop.Physics.height.value;
   }
   getBodyWidth(agent: IAgent): number {
-    switch (agent.getFeatProp(this.name, 'shape').value) {
+    switch (agent.prop.Physics.shape.value) {
       case RECTANGLE:
-        return agent.getFeatProp(this.name, 'bodyWidth').value;
+        return agent.prop.Physics.bodyWidth.value;
       case CIRCLE:
       default:
-        return agent.getFeatProp(this.name, 'bodyRadius').value * 2;
+        return agent.prop.Physics.bodyRadius.value * 2;
     }
   }
   getBodyHeight(agent: IAgent): number {
-    switch (agent.getFeatProp(this.name, 'shape').value) {
+    switch (agent.prop.Physics.shape.value) {
       case RECTANGLE:
-        return agent.getFeatProp(this.name, 'bodyHeight').value;
+        return agent.prop.Physics.bodyHeight.value;
       case CIRCLE:
       default:
-        return agent.getFeatProp(this.name, 'bodyRadius').value * 2;
+        return agent.prop.Physics.bodyRadius.value * 2;
     }
   }
   /**
