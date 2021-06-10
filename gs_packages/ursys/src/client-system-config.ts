@@ -39,12 +39,19 @@ const PR = PROMPTS.makeStyleFormatter('CONFIG', 'TagDkRed');
 const LOCALE_DATA = new Map<string, ILocale>(); // this will be backed by DB
 const LOCALE_CONFIG: LocaleSetting = { currentLocale: 'none' };
 
+/// SUPPORT METHODS ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_LoadLocaleDatabase() {}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_UpdateDatabase() {}
+
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetLocale(key: string) {
   if (!ValidLocaleSettings.includes(key)) return;
   console.log(`retrieve locale:${key}`);
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SelectLocale(key: string) {}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function UpdateLocale(key: string, obj: ILocale) {}

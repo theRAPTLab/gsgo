@@ -232,4 +232,6 @@ We want the locale thingy to work for current versions ahead of the database bac
 * [x] remove annoying eslint error requiring short object notation for functions
 * [x] fix unrelated type error in class-visual
 
- 
+ ## JUN 10 THU - Solidifying the GraphQL DB Connection
+
+I'm working in `ursys/server-db` today. 
