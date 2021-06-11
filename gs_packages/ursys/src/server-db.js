@@ -121,67 +121,6 @@ function GetGraphQL_Middleware(opt) {
   });
 }
 
-/// TEST STUFF ////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let TEST_DB;
-let TEST_SCHEMA;
-let TEST_ROOT;
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestCreateDB() {
-  /// make a cheese db
-  TEST_DB = new LOKI('loki.json');
-  const countries = TEST_DB.addCollection('country', { unique: ['id'] });
-  countries.insert({ id: 'gb', name: 'United Kingdon' });
-  countries.insert({ id: 'tw', name: 'Taiwan' });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TestDefineGraph() {
-  /// make a cheese schema using GraphQL Type Language
-  TEST_SCHEMA = buildSchema(`
-  type Query {
-    hello: String
-    countries: [String]
-  }
-  `);
-  /// make cheese resolver
-  TEST_ROOT = {
-    hello: () => 'Hello World',
-    countries: () => {
-      const countries = TEST_DB.getCollection('country');
-      const names = countries
-        .chain() // return full ResultSet
-        .data({ removeMeta: true }) // return documents in ResultSet as Array
-        .map(i => i.name); // map documents to values
-      return names;
-    }
-  };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function TestQuery() {
-  /// make cheese query
-  const query = '{ hello countries }';
-  const response = await graphql(TEST_SCHEMA, query, TEST_ROOT);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-TestCreateDB();
-TestDefineGraph();
-TestQuery();
-
-/// API METHODS ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// MIDDLEWARE ////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Define the express-graphql handler for a graphql endpoint. To use,
- *  app.use('/path/to/graphql',GraphQL_Middleware)
- */
-const TestGraphQL_Middleware = graphqlHTTP({
-  schema: TEST_SCHEMA,
-  rootValue: TEST_ROOT,
-  context: { DB: TEST_DB },
-  graphiql: true
-});
-
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
