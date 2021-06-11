@@ -1,6 +1,8 @@
-## Elements of LokiDB
+## Elements of LokiJS
 
 A memory resident document store based on collections. Can persist data to disk through various adapters. Works in Node and also Browser. 
+
+Note: Techfort LokiJS is the apparent real version. There is a fake-looking one called LokiDB that claims to be the official successor, but the maintainers don't seem to have much in their repos.
 
 ### Basic Usage
 
@@ -14,6 +16,33 @@ There are two means of searching:
 
 * where - these let you define a filter function for result sets
 * find - these use MongoDB-style operators 
+
+### Loki
+
+```
+addCollection
+getCollection
+listCollections
+loadDatabase
+saveDatabase
+loadJSON
+loadJSONObject
+removeCollection
+renameCollection
+clearChanges
+close
+configureOptions
+copy
+deleteDatabase
+deserializeCollection
+deserializeDestructured
+deserializeDestructured
+serialize
+serializeChanges
+serializeCollection
+serializeDestructured
+throttledSaveDrain
+```
 
 
 

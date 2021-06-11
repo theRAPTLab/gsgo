@@ -1,0 +1,38 @@
+{
+  "locales": [
+    {
+      "locale": "default",
+      "ptrack": {
+        "memo": "default for faketrack",
+        "width": 1,
+        "depth": 1,
+        "offx": 0,
+        "offy": 0,
+        "xscale": 1,
+        "yscale": 1,
+        "xrot": 0,
+        "yrot": 0,
+        "zrot": 0
+      },
+      "poyxz": {},
+      "urnet": {}
+    },
+    {
+      "locale": "vanderbilt",
+      "ptrack": {
+        "memo": "VU tracking room",
+        "width": 1,
+        "depth": 1,
+        "offx": 0,
+        "offy": 0,
+        "xscale": 1,
+        "yscale": 1,
+        "xrot": 0,
+        "yrot": 0,
+        "zrot": 0
+      },
+      "poyxz": {},
+      "urnet": {}
+    }
+  ]
+}

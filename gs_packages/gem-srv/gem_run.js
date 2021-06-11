@@ -57,10 +57,6 @@ function GEMSRV_Start(opt) {
   (async () => {
     await GEMAPP.StartAppServer(opt);
     await UR.Initialize([TRACKER.StartTrackerSystem]);
-    await UR.GraphQL_Init({
-      dbPath: 'runtime/loki/testloki.loki',
-      importPath: 'config/testdata.json'
-    });
     await UR.URNET_Start({
       port: URNET_PORT,
       serverName: 'GEM_SRV',

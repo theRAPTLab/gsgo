@@ -234,4 +234,21 @@ We want the locale thingy to work for current versions ahead of the database bac
 
  ## JUN 10 THU - Solidifying the GraphQL DB Connection
 
-I'm working in `ursys/server-db` today. 
+I'm working in `ursys/server-db` today. Cleaned up the code to use GraphQL Type Languge instead of programmatically making it like in that example code.
+
+* [x] add loki routines to `server-db` in URSYS
+* [x] ensure dir to loki file in directory of app in GEMSRV
+* [x] initialize Loki with path to loki file, set autosave in `server-db`
+* [x] load JSON into LOKI to initialize database...but **where is the data loaded from?**
+  in this case, it's server-side just for testing LOKI, because the client will be using GraphQL directly, not Loki commands
+* [x] moved the db init into a new call `GetGraphQL_Middleware` in `server-db`, which is exported by `index-server` which is them loaded by the child package `gs_packages/gem_srv` in its `gem-app-srv` AppServer that's invoked by the startup script `gem_run.js`; this makes the UR-level service usable across different child packages with different configurations for the dbinit and graphql endpoint declarations.
+* [x] write schema into server-db, root for locale, locales
+
+SEEMS TO WORK :O
+
+
+
+
+
+
+

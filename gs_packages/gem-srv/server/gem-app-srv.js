@@ -19,7 +19,7 @@ const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
 const {
   NetInfo_Endpoint,
-  GraphQL_Endpoint,
+  GetGraphQL_Middleware,
   PrefixUtil
 } = require('@gemstep/ursys/server');
 
@@ -159,7 +159,14 @@ function StartAppServer(opt = {}) {
 
   // handle urnet
   app.use(NetInfo_Endpoint);
-  app.use('/graphql', GraphQL_Endpoint);
+  // app.use('/graphql', GraphQL_Endpoint);
+  app.use(
+    '/graphql',
+    GetGraphQL_Middleware({
+      dbPath: 'runtime/graphql/db.loki',
+      importPath: 'config/dbinit.json'
+    })
+  );
 
   // for everything else...
   app.use('/', Express.static(DIR_OUT));
