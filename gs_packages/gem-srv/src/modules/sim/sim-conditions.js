@@ -143,6 +143,10 @@ RegisterFunction('centerTouches', (a, b) => {
 RegisterFunction('touches', (a, b) => {
   return m_TouchTest(a, b, 'b2b');
 });
+/// a bounds touches b bounds
+RegisterFunction('isInside', (a, b) => {
+  return m_TouchTest(a, b, 'binb');
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FirstTouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
