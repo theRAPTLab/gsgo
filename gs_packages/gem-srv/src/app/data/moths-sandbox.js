@@ -52,7 +52,12 @@ featCall AgentWidgets bindMeterTo energyLevel
 // hide text
 featProp AgentWidgets text setTo ''
 
+// random color
 featCall Costume randomizeColorHSV 0.1 0 0.2
+
+// random start position
+featCall Movement setRandomStart
+
 
 # PROGRAM INIT
 // Don't randomize here or we'll keep getting new colorsl
