@@ -96,6 +96,7 @@ module.exports = {
   URNET_Start,
   URNET_NetInfo: NETINFO.GetNetInfo,
   GraphQL_Endpoint: DB.GraphQL_Middleware,
+  GraphQL_Init: DB.Initialize,
   NetInfo_Endpoint: NETINFO.Express_Middleware,
   NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
   // SERVICES API
