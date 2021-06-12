@@ -51,6 +51,8 @@ useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
 // hide text
 featProp AgentWidgets text setTo ''
+// Plot energy level
+featCall AgentWidgets bindGraphTo energyLevel 30
 
 // random color
 featCall Costume randomizeColorHSV 0.1 0 0.2
@@ -105,6 +107,7 @@ when Moth centerTouches TreeTrunk [[
   ]]
 ]]
 when Moth centerFirstTouches TreeFoliage [[
+  featProp TreeFoliage.AgentWidgets graphValue add 1
   featCall Moth.Costume setGlow 2
   prop Moth.energyLevel add 100
   ifExpr {{ !Moth.prop.isInert.value }} [[
@@ -220,9 +223,23 @@ featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 0 1 0
 
 useFeature Physics
+useFeature AgentWidgets
 
 # PROGRAM INIT
 prop zIndex setTo -200
+`
+    },
+    {
+      id: 'Reporter',
+      label: 'Reporter',
+      script: `# BLUEPRINT Reporter
+# PROGRAM DEFINE
+prop skin setTo 'onexone'
+useFeature Population
+useFeature AgentWidgets
+featProp AgentWidgets text setTo 'Num Dark Moths'
+
+
 `
     }
   ],
@@ -295,7 +312,7 @@ featProp Physics scaleY setTo 1`
 //    prop y setTo -400
 featCall Movement queuePosition 100 0
 prop alpha setTo 0.02`
-    }
+    },
     //     {
     //       id: 1202,
     //       name: 'Moth2',
@@ -313,5 +330,12 @@ prop alpha setTo 0.02`
     // prop y setTo -100
     // prop alpha setTo 1`
     //     }
+    {
+      id: 1401,
+      name: 'Reporter1',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 450
+prop y setTo 300`
+    }
   ]
 };
