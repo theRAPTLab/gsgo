@@ -24,24 +24,20 @@ let ROOT;
 function GetGraphQL_Middleware(opt) {
   TERM('Initialize called with', JSON.stringify(opt));
   const { dbPath, importPath } = opt;
-
+  const resetDB = false;
   // if dbPath is a string, then use it to initialize a Loki instance
   // with autosaving enabled
   if (typeof dbPath === 'string' && dbPath.length > 0) {
     TERM('loading', dbPath);
     fse.ensureDirSync(path.dirname(dbPath));
     DB = new LOKI(dbPath, { autosave: true, autoload: true });
-    DB.saveDatabase(err => {
-      if (err) TERM(err);
-      else TERM('saved');
-    });
   }
 
   // if importPath provided, load it and then clear the existing db,
   // then import the new data by inserting it document by document
   // back into the database so it is fresh on every run (this is
   // for debugging purposes)
-  if (typeof importPath === 'string' && importPath.length > 0) {
+  if (resetDB && typeof importPath === 'string' && importPath.length > 0) {
     const data = fse.readJsonSync(importPath);
     const { locales } = data;
     if (Array.isArray(locales)) {
@@ -50,7 +46,7 @@ function GetGraphQL_Middleware(opt) {
         TERM('deleting old locales from db');
         DB.removeCollection('locales');
       }
-      const col = DB.addCollection('locales');
+      const col = DB.addCollection('locales', { unique: ['id'] });
       locales.forEach(locale => {
         TERM(`writing '${locale.locale}'`);
         col.insert(locale);
@@ -60,22 +56,45 @@ function GetGraphQL_Middleware(opt) {
   } else {
     // if we got here, then there was no valid importPath specified
     // and the db can't be iniitalized!
-    TERM('no importPath provided in options object');
+    TERM('skipping DB reset. Loading last db set.');
   }
 
   // create graphql schema
   TERM('specifying schema....');
   SCHEMA = buildSchema(`
+
   type Query {
-    locale (name:String): LocaleData
+    locale (name:String): Locale
     locales: [String!]
   }
 
-  type LocaleData {
+  type Mutation {
+    updatePTrack (localeId:Int, input:PTrackInput): PTrackData
+  }
+
+  type Locale {
+    id: Int
     ptrack: PTrackData
   }
 
   type PTrackData {
+    memo: String
+    width: Float
+    depth: Float
+    offx: Float
+    offy: Float
+    xscale: Float
+    yscale: Float
+    xrot: Float
+    yrot: Float
+    zrot: Float
+  }
+
+  input LocaleInput {
+    ptrack: PTrackInput
+  }
+
+  input PTrackInput {
     memo: String
     width: Float
     depth: Float
@@ -109,6 +128,15 @@ function GetGraphQL_Middleware(opt) {
         .data({ removeMeta: true }) // return documents in ResultSet as Array
         .map(i => i.locale); // map documents to values
       return locales;
+    },
+    updatePTrack(args) {
+      const { localeId, input } = args;
+      console.log(`localeId:${localeId}, input:${JSON.stringify(input)}`);
+      const coll = DB.getCollection('locales');
+      const locale = coll.findOne({ id: localeId });
+      Object.assign(locale.ptrack, input);
+      coll.update(locale);
+      return locale.ptrack;
     }
   };
 

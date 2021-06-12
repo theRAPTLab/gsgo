@@ -1,6 +1,7 @@
 {
   "locales": [
     {
+      "id": 0,
       "locale": "default",
       "ptrack": {
         "memo": "default for faketrack",
@@ -18,6 +19,7 @@
       "urnet": {}
     },
     {
+      "id": 1,
       "locale": "vanderbilt",
       "ptrack": {
         "memo": "VU tracking room",
