@@ -6,6 +6,24 @@
 
   Extends SMObject, which is our common stackmachine- compatible object.
 
+  Container hierarchy
+
+    root -- parent container
+    + cone -- vision cone directly attached to root w absolute positions
+    + container
+      + text
+      + graph
+      + filterbox
+        + sprite -- rotations and scales are applied only to the sprite
+          + filters -- filters only applied to sprite
+              filterColorOverlay
+              filterAdjustment
+        + meter
+        + filters -- filters applied to all filterBox objects
+            outlineSelected
+            outlineHOver
+            glow
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
@@ -21,6 +39,7 @@ import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
+import { DrawGraph } from './class-visual-graph';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -32,7 +51,7 @@ let REF_ID_COUNTER = 0;
 /// outline filters
 const outlineHover = new OutlineFilter(3, 0xffff0088);
 const outlineSelected = new OutlineFilter(6, 0xffff00);
-const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0x00ff00 });
+const glow = new GlowFilter({ distance: 50, outerStrength: 3, color: 0xffff00 });
 // text styles
 const style = new PIXI.TextStyle({
   fontFamily: 'Arial',
@@ -92,6 +111,8 @@ class Visual implements IVisual, IPoolable, IActable {
   sprite: PIXI.Sprite;
   text: PIXI.Text;
   meter: PIXI.Graphics;
+  graph: PIXI.Graphics;
+  cone: PIXI.Graphics;
   textContent: string; // cache value to avoid unecessary updates
   meterValue: number;
   assetId: number;
@@ -103,7 +124,6 @@ class Visual implements IVisual, IPoolable, IActable {
   filterColorOverlay: any;
   filterAdjustment: any;
   filterColor: number;
-  cone: PIXI.Graphics;
   // poolable
   id: any;
   _pool_id: any;
@@ -120,6 +140,8 @@ class Visual implements IVisual, IPoolable, IActable {
     filterbox.filters = []; // init for hover and select outlines
     filterbox.addChild(this.sprite);
     this.filterbox = filterbox;
+    this.container = new PIXI.Container();
+    this.container.addChild(this.filterbox);
     this.assetId = 0;
     this.refId = REF_ID_COUNTER++;
     this.isSelected = false; // use primary selection effect
@@ -129,8 +151,6 @@ class Visual implements IVisual, IPoolable, IActable {
     this.isGlowing = false;
     this.filterColorOverlay = undefined;
     this.filterAdjustment = undefined;
-    this.container = new PIXI.Container();
-    this.container.addChild(this.filterbox);
   }
 
   setSelected = (mode = this.isSelected) => (this.isSelected = mode);
@@ -248,9 +268,11 @@ class Visual implements IVisual, IPoolable, IActable {
           vobj will remain on screen.
     */
     this.filterbox.removeChild(this.meter);
+    this.container.removeChild(this.graph);
     this.container.removeChild(this.text);
     this.removeText();
     this.removeMeter();
+    this.removeGraph();
     this.root.removeChild(this.container); // needed or vobj is not removed
     if (this.cone) this.root.removeChild(this.cone);
     this.root = undefined;
@@ -399,6 +421,7 @@ class Visual implements IVisual, IPoolable, IActable {
     if (percent === this.meterValue) return; // no update necessary
     if (!this.meter) {
       this.meter = new PIXI.Graphics();
+      this.filterbox.addChild(this.meter);
     }
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
@@ -421,13 +444,31 @@ class Visual implements IVisual, IPoolable, IActable {
     this.meter.endFill();
 
     this.meterValue = percent;
-    this.filterbox.addChild(this.meter);
   }
-
   removeMeter() {
     if (this.meter) {
       this.meter.destroy();
       this.meter = undefined;
+    }
+  }
+
+  setGraph(data: number[]) {
+    if (!this.graph) {
+      this.graph = new PIXI.Graphics();
+      this.container.addChild(this.graph);
+    }
+    const [w, h] = this.getSizeValues();
+    DrawGraph(this.graph, data, {
+      scale: 1, // scale 1 = 100 pixels
+      scaleY: 1,
+      color: 0xffff00
+      // offsetY: h / 2
+    });
+  }
+  removeGraph() {
+    if (this.graph) {
+      this.graph.destroy();
+      this.graph = undefined;
     }
   }
 
@@ -451,12 +492,14 @@ class Visual implements IVisual, IPoolable, IActable {
   // can test absolute values.
   drawVisionCone(path: number[] = []) {
     // const path = [0, 0, -100, -100, 100, -100];
-    if (!this.cone) this.cone = new PIXI.Graphics();
+    if (!this.cone) {
+      this.cone = new PIXI.Graphics();
+      if (this.root) this.root.addChild(this.cone);
+    }
     this.cone.clear();
     this.cone.beginFill(0x6666ff, 0.2);
     this.cone.drawPolygon(path);
     this.cone.endFill();
-    if (this.root) this.root.addChild(this.cone);
   }
 } // end class Sprite
 

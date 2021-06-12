@@ -49,10 +49,35 @@ function m_getAgent(agentId): IAgent {
 /// PHYSICS LOOP ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+function m_FeaturesUpdate(frame) {
+  const agentIds = Array.from(WIDGET_AGENTS.keys());
+  agentIds.forEach(agentId => {
+    const agent = m_getAgent(agentId);
+    if (!agent) return;
+
+    // Update Graph
+    // This won't update if _graphFreq is 0
+    if (frame % agent.prop.AgentWidgets._graphFreq === 0) {
+      const graphProp = agent.prop.AgentWidgets._graphProp;
+      const value = agent.getProp(graphProp).value;
+      agent.prop.AgentWidgets._graph.push(frame, value);
+    } else {
+      // using graphValue?
+      const value = agent.prop.AgentWidgets.graphValue.value;
+      if (value !== agent.prop.AgentWidgets._graphValueOld) {
+        // graphValue changed!
+        const counter = agent.prop.AgentWidgets._graphCounter++;
+        agent.prop.AgentWidgets._graph.push(counter, value);
+        agent.prop.AgentWidgets._graphValueOld = value;
+      }
+    }
+  });
+}
+
 /**
  * Widgets Update Loop -- Runs once per gameloop
  */
-function m_update(frame) {
+function m_UIUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
@@ -87,6 +112,15 @@ function m_update(frame) {
     }
     if (meterColor) agent.prop.statusValueColor.setTo(meterColor);
     if (isLargeMeter) agent.prop.statusValueIsLarge.setTo(isLargeMeter);
+
+    // 3. Update Graph
+    // Only pass up to 50 points
+    // The graph is 100 px wide, so this gives you at least a gap
+    const max = 100 * 2;
+    const l = agent.prop.AgentWidgets._graph.length;
+    agent.prop.statusHistory = agent.prop.AgentWidgets._graph.slice(
+      Math.max(l - max, 0)
+    );
   });
 }
 
@@ -97,7 +131,8 @@ class WidgetPack extends GFeature {
   constructor(name) {
     super(name);
     // this.featAddMethod('setShape', this.setShape);
-    UR.HookPhase('SIM/UI_UPDATE', m_update);
+    UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
+    UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
@@ -112,10 +147,18 @@ class WidgetPack extends GFeature {
     prop = new GVarNumber();
     this.featAddProp(agent, 'meterColor', prop);
     this.featAddProp(agent, 'isLargeMeter', new GVarBoolean(false));
+    prop = new GVarNumber(0);
+    this.featAddProp(agent, 'graphValue', prop);
 
     // Private Props
     this.featAddProp(agent, 'textProp', new GVarString()); // agent prop name that text is bound to
     this.featAddProp(agent, 'meterProp', new GVarString());
+
+    agent.prop.AgentWidgets._graph = [0, 0];
+    agent.prop.AgentWidgets._graphProp = undefined;
+    agent.prop.AgentWidgets._graphFreq = 0;
+    agent.prop.AgentWidgets._graphCounter = 0;
+    agent.prop.AgentWidgets._graphValueOld = 0;
 
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
@@ -131,6 +174,10 @@ class WidgetPack extends GFeature {
   }
   bindMeterTo(agent: IAgent, propname: string) {
     agent.prop.AgentWidgets.meterProp.setTo(propname);
+  }
+  bindGraphTo(agent: IAgent, propname: string, frequency: number) {
+    agent.prop.AgentWidgets._graphProp = propname;
+    agent.prop.AgentWidgets._graphFreq = frequency;
   }
 }
 

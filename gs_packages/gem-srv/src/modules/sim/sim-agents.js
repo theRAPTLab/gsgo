@@ -64,6 +64,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
+    if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
@@ -85,6 +86,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
     if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
+    if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
