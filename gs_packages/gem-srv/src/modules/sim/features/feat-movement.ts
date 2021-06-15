@@ -466,6 +466,8 @@ function m_FeaturesThink(frame) {
     if (agent.isModePuppet()) return;
     // ignore AI movement if being dragged
     if (agent.isCaptive) return;
+    // ignore AI movement if inert
+    if (agent.isInert) return;
     // handle movement
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
     if (moveFn) moveFn(agent, frame);
