@@ -407,6 +407,7 @@ function m_FeaturesUpdate(frame) {
   // 1. Cache Distances
   SEEK_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
+    if (!agent) return;
     const targets = GetAgentsByType(options.targetType);
     if (!agent.distanceTo) agent.distanceTo = new Map();
     targets.forEach(t => {
@@ -420,6 +421,7 @@ function m_FeaturesThinkSeek(frame) {
     // REVIEW: Distance calculation should ideally only happen once and be cached
 
     const agent = GetAgentById(id);
+    if (!agent) return;
 
     // REVIEW: We should be finding all agents within the visibility distance
     // not just the nearest one.
@@ -462,6 +464,7 @@ function m_FeaturesThink(frame) {
   // 2. Decide on Movement
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     // ignore AI movement if input agent
     if (agent.isModePuppet()) return;
     // ignore AI movement if being dragged
@@ -478,6 +481,7 @@ function m_FeaturesExec(frame) {
   // 3. Calculate derived properties (e.g. isMoving)
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     m_ProcessPosition(agent, frame);
   });
 }
@@ -486,6 +490,7 @@ function m_ApplyMovement(frame) {
   // 4. Apply Positions
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     m_SetPosition(agent, frame);
   });
 }
