@@ -417,7 +417,7 @@ class Visual implements IVisual, IPoolable, IActable {
     }
   }
 
-  setMeter(percent: number, color: number, isLargeMeter: boolean) {
+  setMeter(percent: number, color: number, isLargeGraphic: boolean) {
     if (percent === this.meterValue) return; // no update necessary
     if (!this.meter) {
       this.meter = new PIXI.Graphics();
@@ -425,10 +425,10 @@ class Visual implements IVisual, IPoolable, IActable {
     }
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
-    const w = isLargeMeter ? 40 : 10;
-    const h = isLargeMeter ? 80 : 40;
+    const w = isLargeGraphic ? 40 : 10;
+    const h = isLargeGraphic ? 80 : 40;
     const spacer = w + 5;
-    const x = isLargeMeter ? -w / 2 : -this.sprite.width / 2 - spacer;
+    const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 - spacer;
     const y = this.sprite.height / 2 - h; // flush with bottom of sprite
 
     this.meter.clear();

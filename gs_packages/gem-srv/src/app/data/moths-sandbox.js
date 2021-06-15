@@ -240,7 +240,7 @@ useFeature AgentWidgets
 featProp AgentWidgets text setTo 'Num Dark Moths'
 
 
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
 `
     }
   ],

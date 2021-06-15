@@ -101,7 +101,7 @@ function m_UIUpdate(frame) {
     const meterProp = agent.getFeatProp(FEATID, 'meterProp').value;
     const meter = agent.getFeatProp(FEATID, 'meter').value;
     const meterColor = agent.getFeatProp(FEATID, 'meterColor').value;
-    const isLargeMeter = agent.getFeatProp(FEATID, 'isLargeMeter').value;
+    const isLargeGraphic = agent.getFeatProp(FEATID, 'isLargeGraphic').value;
     if (meterProp) {
       // Calculate meter value based on property max value
       const { max, min } = agent.prop[meterProp];
@@ -111,7 +111,7 @@ function m_UIUpdate(frame) {
       agent.prop.statusValue.setTo(meter);
     }
     if (meterColor) agent.prop.statusValueColor.setTo(meterColor);
-    if (isLargeMeter) agent.prop.statusValueIsLarge.setTo(isLargeMeter);
+    if (isLargeGraphic) agent.prop.statusValueIsLarge.setTo(isLargeGraphic);
 
     // 3. Update Graph
     // Only pass up to 50 points
@@ -146,7 +146,7 @@ class WidgetPack extends GFeature {
     this.featAddProp(agent, 'meter', prop);
     prop = new GVarNumber();
     this.featAddProp(agent, 'meterColor', prop);
-    this.featAddProp(agent, 'isLargeMeter', new GVarBoolean(false));
+    this.featAddProp(agent, 'isLargeGraphic', new GVarBoolean(false));
     prop = new GVarNumber(0);
     this.featAddProp(agent, 'graphValue', prop);
 
