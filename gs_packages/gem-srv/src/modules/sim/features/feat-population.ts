@@ -9,7 +9,7 @@ import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent } from 'lib/t-script';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import {
   CopyAgentProps,
   DeleteAgent,

@@ -109,25 +109,37 @@ function m_QueuePosition(agent, x, y) {
       // REVIEW: Technically this is not a bounce.
       // The walls are "solid", so the agent changes direction.
       // It is not a real physics collision.
-      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(-89, 89));
+        if (DBG) console.log('bounce left');
+      }
     }
     if (Wraps('right')) {
       xx = x >= bounds.right ? bounds.left + pad : xx;
     } else if (x + hwidth >= bounds.right) {
       xx = bounds.right - hwidth - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(91, 269));
+        if (DBG) console.log('bounce right');
+      }
     }
     if (Wraps('top')) {
       yy = y <= bounds.top ? bounds.bottom - pad : yy;
     } else if (y - hheight <= bounds.top) {
       yy = bounds.top + hheight + pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(181, 359));
+        if (DBG) console.log('bounce top');
+      }
     }
     if (Wraps('bottom')) {
       yy = y >= bounds.bottom ? bounds.top + pad : yy;
     } else if (y + hheight > bounds.bottom) {
       yy = bounds.bottom - hheight - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(1, 179));
+        if (DBG) console.log('bounce bottom');
+      }
     }
   }
 
