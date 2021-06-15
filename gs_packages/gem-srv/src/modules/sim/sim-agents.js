@@ -34,6 +34,7 @@ import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
 import * as TRANSPILER from './script/transpiler';
 import SyncMap from '../../lib/class-syncmap';
+import { ClearGlobalAgent } from '../../lib/class-gagent';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -227,9 +228,13 @@ export function AllAgentsProgram(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
-  // I. Remove Unused Blueprints and Agents
+  // 1. Reset Global Agent First
+  ClearGlobalAgent();
+
+  // 2. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
+  // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {

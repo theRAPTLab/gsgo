@@ -515,14 +515,18 @@ class GAgent extends SM_Object implements IAgent, IActable {
 /// The global agent is our "World Agent" that contains shared properties for
 /// a running simulation
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const GLOBAL_AGENT = new GAgent('GlobalAgent');
+let GLOBAL_AGENT = new GAgent('GlobalAgent');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetGlobalAgent() {
   return GLOBAL_AGENT;
+}
+function ClearGlobalAgent() {
+  // REVIEW: Is there a more proper way to remove an agent?
+  GLOBAL_AGENT = new GAgent('GlobalAgent');
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
 export default GAgent;
-export { GetGlobalAgent };
+export { GetGlobalAgent, ClearGlobalAgent };
