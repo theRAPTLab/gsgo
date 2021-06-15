@@ -22,6 +22,7 @@ import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
+import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,13 +57,23 @@ function m_FeaturesUpdate(frame) {
     if (!agent) return;
 
     // Update Graph
-    // This won't update if _graphFreq is 0
     if (frame % agent.prop.AgentWidgets._graphFreq === 0) {
-      const graphProp = agent.prop.AgentWidgets._graphProp;
-      const value = agent.getProp(graphProp).value;
+      // Time-based Graphs
+      // New plot point based every _graphFreq per second
+      // This won't update if _graphFreq is 0
+      let value;
+      if (agent.prop.AgentWidgets._graphProp) {
+        const graphProp = agent.prop.AgentWidgets._graphProp;
+        value = agent.getProp(graphProp).value;
+      } else if (agent.prop.AgentWidgets._graphGlobalProp) {
+        const graphProp = agent.prop.AgentWidgets._graphGlobalProp;
+        const global = GetGlobalAgent();
+        value = global.prop[graphProp].value;
+      }
       agent.prop.AgentWidgets._graph.push(frame, value);
     } else {
-      // using graphValue?
+      // Trigger-based Graph
+      // New plot point on change in _graphValue
       const value = agent.prop.AgentWidgets.graphValue.value;
       if (value !== agent.prop.AgentWidgets._graphValueOld) {
         // graphValue changed!
@@ -159,6 +170,7 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets._graphFreq = 0;
     agent.prop.AgentWidgets._graphCounter = 0;
     agent.prop.AgentWidgets._graphValueOld = 0;
+    agent.prop.AgentWidgets._graphGlobalProp = undefined;
 
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
@@ -177,6 +189,10 @@ class WidgetPack extends GFeature {
   }
   bindGraphTo(agent: IAgent, propname: string, frequency: number) {
     agent.prop.AgentWidgets._graphProp = propname;
+    agent.prop.AgentWidgets._graphFreq = frequency;
+  }
+  bindGraphToGlobalProp(agent: IAgent, propname: string, frequency: number) {
+    agent.prop.AgentWidgets._graphGlobalProp = propname;
     agent.prop.AgentWidgets._graphFreq = frequency;
   }
 }
