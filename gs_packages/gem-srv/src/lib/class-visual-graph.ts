@@ -109,7 +109,7 @@ export function DrawGraph(
 
   // draw axis
   if (!options.skipAxis) {
-    graph.lineStyle(2, BGCOLOR, 0.2);
+    graph.lineStyle(1, BGCOLOR, 0.2);
     graph.lineTo(0, 100);
     if (HAS_NEGATIVE_Y) {
       graph.moveTo(0, 50);

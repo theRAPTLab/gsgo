@@ -107,7 +107,8 @@ function Init(element) {
           dobj.meterClr,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
-      if (dobj.graph) vobj.setGraph(dobj.graph);
+      if (dobj.graph)
+        vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
@@ -171,7 +172,8 @@ function Init(element) {
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
       else vobj.removeMeter();
-      if (dobj.graph) vobj.setGraph(dobj.graph);
+      if (dobj.graph)
+        vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
       else vobj.removeGraph();
 
       // Set selection state from flags.

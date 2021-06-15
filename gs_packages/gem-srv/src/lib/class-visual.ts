@@ -452,17 +452,17 @@ class Visual implements IVisual, IPoolable, IActable {
     }
   }
 
-  setGraph(data: number[]) {
+  setGraph(data: number[], isLargeGraph: boolean) {
     if (!this.graph) {
       this.graph = new PIXI.Graphics();
       this.container.addChild(this.graph);
     }
     const [w, h] = this.getSizeValues();
     DrawGraph(this.graph, data, {
-      scale: 1, // scale 1 = 100 pixels
-      scaleY: 1,
-      color: 0xffff00
-      // offsetY: h / 2
+      scale: isLargeGraph ? 1 : 0.25, // scale 1 = 100 pixels
+      scaleY: isLargeGraph ? 1 : 0.25,
+      color: 0xffff00,
+      offsetY: isLargeGraph ? 0 : h
     });
   }
   removeGraph() {
