@@ -19,8 +19,10 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'bee.json' 0
+// Green
 featCall Costume setColorize 0 1 0
-// featCall Costume setColorizeHSV 0.5 1 1
+
+// Fully visible
 prop alpha setTo 1
 prop alpha setMin 1
 
@@ -54,15 +56,18 @@ featProp AgentWidgets text setTo ''
 // Plot energy level
 featCall AgentWidgets bindGraphTo energyLevel 30
 
-// random color
-featCall Costume randomizeColorHSV 0.1 0 0.2
+// random color: shift hue and value
+featCall Costume randomizeColorHSV 0.1 0 1
 
 // random start position
 featCall Movement setRandomStart
 
+// allow access to global darkMoths/lightMoths values
+useFeature Global
 
 # PROGRAM INIT
-// Don't randomize here or we'll keep getting new colorsl
+// Don't randomize here or we'll keep getting new colors
+// Set randomize in # PROGRAM DEFINE
 // featCall Costume randomizeColorHSV 0.1 0 0.2
 // featCall Movement setRandomStart
 
@@ -79,11 +84,11 @@ every 1 [[
 ]]
 when Moth centerFirstTouches TreeTrunk [[
   featCall Moth.Costume setGlow 2
-  prop Moth.energyLevel add 100
+  prop Moth.energyLevel add 50
 ]]
 when Moth centerTouches TreeTrunk [[
   ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 0.2, 1, 0.2)}} [[
-    // color matches, fade away and set un-visionable
+    // color matches trunk, fade away and set un-visionable
     prop alpha setMin 0.1
     featProp Vision visionable setTo false
   ]]
@@ -92,24 +97,31 @@ when Moth centerTouches TreeTrunk [[
     featCall Moth.Costume setPose 4
   ]]
   every 1 [[
-    prop agent.energyLevel add 10
-    ifExpr {{ agent.getProp('energyLevel').value > 99 && !agent.isInert }} [[
-      dbgOut 'SPAWN!'
+    ifExpr {{ agent.getProp('energyLevel').value > 90 && !agent.isInert }} [[
+      // dbgOut 'SPAWN!'
       featCall Population spawnChild [[
         // new spawn init script (not current agent)
         // spawn randomly darker
         featProp Costume colorValue subRnd 0.5
         prop x addRnd -50 50
         prop y addRnd -50 50
+
+        // add point to global graphs
+        ifExpr {{ agent.prop.Costume.colorValue.value < 0.5 }} [[
+          featCall Global globalProp lightMoths add 0
+          featCall Global globalProp darkMoths add 1
+        ]] [[
+          featCall Global globalProp lightMoths add 1
+          featCall Global globalProp darkMoths add 0
+        ]]
       ]]
       prop energyLevel sub 50
     ]]
   ]]
 ]]
 when Moth centerFirstTouches TreeFoliage [[
-  featProp TreeFoliage.AgentWidgets graphValue add 1
   featCall Moth.Costume setGlow 2
-  prop Moth.energyLevel add 100
+  prop Moth.energyLevel add 80
   ifExpr {{ !Moth.prop.isInert.value }} [[
     // show wings folded pose
     featCall Moth.Costume setPose 4
@@ -125,12 +137,13 @@ when Moth centerTouches TreeFoliage [[
     // show wings folded pose (when not inert)
     featCall Moth.Costume setPose 4
   ]]
-  ifExpr {{ Moth.prop.energyLevel.value < 50 }} [[
+  ifExpr {{ Moth.prop.energyLevel.value < 60 }} [[
     // go search for new tree if energyLevel is low
     featCall Moth.Movement setMovementType wander
   ]]
 ]]
 when Moth lastTouches TreeFoliage [[
+  // seek foliage again after you wander off the old foliage
   featCall Moth.Movement wanderUntilInside TreeFoliage
 ]]
 // overide all
@@ -171,13 +184,16 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-// featCall Movement seekNearestVisible Moth
+featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
+// To update graphs
+useFeature Global
+
 # PROGRAM UPDATE
-when Predator isInside TreeFoliage [[
-  featCall Predator.Costume setGlow 1
-]]
+// when Predator isInside TreeFoliage [[
+//   featCall Predator.Costume setGlow 1
+// ]]
 when Predator sees Moth [[
   prop Moth.alpha setMin 1
   featCall Moth.Costume setGlow 0.1
@@ -194,6 +210,15 @@ when Predator centerTouchesCenter Moth [[
     prop Moth.isInert setTo true
     featCall Moth.Costume setCostume 'flower.json' 0
     featCall Predator.Costume setGlow 1
+    ifExpr {{ Moth.prop.Costume.colorValue.value < 0.5 }} [[
+      dbgOut 'Eaten...dark!'
+      featCall Global globalProp lightMoths sub 0
+      featCall Global globalProp darkMoths sub 1
+    ]] [[
+      dbgOut 'Eaten...light!'
+      featCall Global globalProp lightMoths sub 1
+      featCall Global globalProp darkMoths sub 0
+    ]]
   ]]
 ]]
 `
@@ -223,7 +248,7 @@ featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 0 1 0
 
 useFeature Physics
-useFeature AgentWidgets
+// useFeature AgentWidgets
 
 # PROGRAM INIT
 prop zIndex setTo -200
@@ -235,75 +260,76 @@ prop zIndex setTo -200
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
 prop skin setTo 'onexone'
+
 useFeature Population
+useFeature Global
 useFeature AgentWidgets
-featProp AgentWidgets text setTo 'Num Dark Moths'
-
-
 featProp AgentWidgets isLargeGraphic setTo true
 `
     }
   ],
   instances: [
-    //     {
-    //       id: 1101,
-    //       name: 'Tree1',
-    //       blueprint: 'TreeTrunk',
-    //       initScript: `prop x setTo -200
-    // prop y setTo 200
-    // featCall Costume setColorize 0.3 0.2 0
-    // featProp Physics scale setTo 0.3
-    // featProp Physics scaleY setTo 2`
-    //     },
+    {
+      id: 1101,
+      name: 'Tree1',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo -200
+prop y setTo 200
+featCall Costume setColorize 0.3 0.2 0
+featProp Physics scale setTo 0.3
+featProp Physics scaleY setTo 2`
+    },
     {
       id: 1102,
       name: 'TreeFoliage1',
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo -200
 prop y setTo -150
-featCall Costume setColorize 0.1 0.3 0
-featProp Physics scale setTo 1
-featProp Physics scaleY setTo 1.2`
+featCall Costume setColorize 0.08 0.28 0
+featProp Physics scale setTo 2
+featProp Physics scaleY setTo 1.5`
     },
-    //     {
-    //       id: 1105,
-    //       name: 'Tree3',
-    //       blueprint: 'TreeTrunk',
-    //       initScript: `prop x setTo 250
-    // prop y setTo 200
-    // featCall Costume setColorize 0.4 0.3 0
-    // featProp Physics scale setTo 0.4
-    // featProp Physics scaleY setTo 2`
-    //     },
+    {
+      id: 1105,
+      name: 'Tree3',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo 250
+prop y setTo 200
+featCall Costume setColorize 0.4 0.3 0
+featProp Physics scale setTo 0.4
+featProp Physics scaleY setTo 2`
+    },
     {
       id: 1106,
       name: 'TreeFoliage3',
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 250
-  prop y setTo -150
-  featCall Costume setColorize 0.8 0.7 0
-  featProp Physics scale setTo 0.8
-  featProp Physics scaleY setTo 1.4`
+prop y setTo -150
+featCall Costume setColorize 0.1 0.25 0
+//  featCall Costume setColorize 0.8 0.7 0
+featProp Physics scale setTo 1.2
+featProp Physics scaleY setTo 2`
     },
-    //     {
-    //       id: 1103,
-    //       name: 'Tree2',
-    //       blueprint: 'TreeTrunk',
-    //       initScript: `prop x setTo 0
-    // prop y setTo 200
-    // featCall Costume setColorize 0.2 0.2 0
-    // featProp Physics scale setTo 0.6
-    // featProp Physics scaleY setTo 2`
-    //     },
+    {
+      id: 1103,
+      name: 'Tree2',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo 0
+prop y setTo 200
+featCall Costume setColorize 0.2 0.2 0
+featProp Physics scale setTo 0.6
+featProp Physics scaleY setTo 2`
+    },
     {
       id: 1104,
       name: 'TreeFoliage2',
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 0
 prop y setTo -150
-featCall Costume setColorize 0.2 0.7 0
-featProp Physics scale setTo 1
-featProp Physics scaleY setTo 1`
+featCall Costume setColorize 0.1 0.3 0
+// featCall Costume setColorize 0.2 0.7 0
+featProp Physics scale setTo 1.5
+featProp Physics scaleY setTo 2`
     },
     {
       id: 1201,
@@ -314,29 +340,54 @@ featProp Physics scaleY setTo 1`
 featCall Movement queuePosition 100 0
 prop alpha setTo 0.02`
     },
-    //     {
-    //       id: 1202,
-    //       name: 'Moth2',
-    //       blueprint: 'Moth',
-    //       initScript: `//prop x setTo 0
-    // //    prop y setTo -100
-    // featCall Movement queuePosition -200 -400
-    // prop alpha setTo 1`
-    //     },
-    //     {
-    //       id: 1301,
-    //       name: 'Predator1',
-    //       blueprint: 'Predator',
-    //       initScript: `prop x setTo 250
-    // prop y setTo -100
-    // prop alpha setTo 1`
-    //     }
+    {
+      id: 1202,
+      name: 'Moth2',
+      blueprint: 'Moth',
+      initScript: `//prop x setTo 0
+//    prop y setTo -100
+featCall Movement queuePosition -200 -400
+prop alpha setTo 1`
+    },
+    {
+      id: 1203,
+      name: 'Moth3',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -150 200
+prop alpha setTo 1
+prop energyLevel setTo 90`
+    },
+    {
+      id: 1301,
+      name: 'Predator1',
+      blueprint: 'Predator',
+      initScript: `prop x setTo 250
+prop y setTo -100
+prop alpha setTo 1`
+    },
     {
       id: 1401,
-      name: 'Reporter1',
+      name: 'Dark Moths',
       blueprint: 'Reporter',
-      initScript: `prop x setTo 450
-prop y setTo 300`
+      initScript: `prop x setTo 460
+prop y setTo 300
+dbgOut "init 1401 dark moths"
+featCall Global addGlobalProp darkMoths Number 0
+featCall Global globalProp darkMoths setMin 0
+featCall AgentWidgets bindGraphToGlobalProp darkMoths 30
+`
+    },
+    {
+      id: 1402,
+      name: 'Light Moths',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 460
+prop y setTo 100
+dbgOut "init 1402 light moths"
+featCall Global addGlobalProp lightMoths Number 0
+featCall Global globalProp lightMoths setMin 0
+featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
+`
     }
   ]
 };
