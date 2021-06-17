@@ -129,9 +129,13 @@ function m_UIUpdate(frame) {
     // The graph is 100 px wide, so this gives you at least a gap
     const max = 100 * 2;
     const l = agent.prop.AgentWidgets._graph.length;
-    agent.prop.statusHistory = agent.prop.AgentWidgets._graph.slice(
-      Math.max(l - max, 0)
-    );
+    if (l > 2) {
+      // l > 2 to ignore first default value of [0,0]
+      // only draw graph if there is data
+      agent.prop.statusHistory = agent.prop.AgentWidgets._graph.slice(
+        Math.max(l - max, 0)
+      );
+    }
   });
 }
 
