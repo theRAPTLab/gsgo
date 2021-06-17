@@ -11,37 +11,6 @@ export const MODEL = {
   },
   scripts: [
     {
-      id: 'Cursor',
-      label: 'Cursor',
-      isCharControllable: true,
-      isPozyxControllable: true,
-      script: `# BLUEPRINT Cursor
-# PROGRAM DEFINE
-useFeature Costume
-featCall Costume setCostume 'circle.json' 0
-featCall Costume setColorizeHSV 1 1 1
-featCall Costume randomizeColorHSV 1 0 0
-
-useFeature Physics
-featProp Physics scale setTo 0.05
-useFeature Movement
-
-useFeature Touches
-featCall Touches monitor Moth c2c
-
-useFeature AgentWidgets
-
-# PROGRAM UPDATE
-when Cursor centerFirstTouchesCenter Moth [[
-  ifExpr {{ !Cursor.prop.isInhabitingTarget.value }} [[
-    exprPush {{ Moth.id }}
-    featPropPop Cursor.Movement cursorTargetId
-    featCall Cursor.Movement bindCursor
-    prop Cursor.isInhabitingTarget setTo true
-  ]]
-]]
-`
-    },
     {
       id: 'Moth',
       label: 'Moth',
@@ -95,6 +64,9 @@ featCall Movement setRandomStart
 
 // allow access to global darkMoths/lightMoths values
 useFeature Global
+
+useFeature Cursor
+featCall Cursor allowControl Moth
 
 # PROGRAM INIT
 // Don't randomize here or we'll keep getting new colors

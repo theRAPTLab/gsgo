@@ -701,10 +701,10 @@ class MovementPack extends GFeature {
     this.setMovementType(agent, 'wanderUntilAgent');
   }
 
-  // 1. Set `cursorTargetId` first
+  // 1. First set `cursorTargetId`
   //    We need to do it this way because we can't pass an agent or agent.id
   //    as parameter values.
-  // 2. Call `bindCursor`
+  // 2. Then call `bindCursor`
   bindCursor(agent: IAgent) {
     const targetAgent = GetAgentById(agent.prop.Movement.cursorTargetId.value);
     targetAgent.cursor = agent;

@@ -23,7 +23,11 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
-import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
+import {
+  POZYX_TRANSFORM,
+  InputsReset,
+  SetPozyxBPNames
+} from 'modules/datacore/dc-inputs';
 import {
   UpdateDCModel,
   GetBoundary,
@@ -76,6 +80,19 @@ function GetCurrentModelData() {
     modelId: CURRENT_MODEL_ID,
     model: CURRENT_MODEL
   };
+}
+/// Used to inject the Cursor blueprint
+export function InjectBlueprint(blueprint) {
+  // Skip if already defined
+  if (CURRENT_MODEL.scripts.find(s => s.id === blueprint.id)) return;
+
+  CURRENT_MODEL.scripts.push(blueprint);
+  const source = TRANSPILER.ScriptifyText(blueprint.script);
+  const bundle = TRANSPILER.CompileBlueprint(source);
+  TRANSPILER.RegisterBlueprint(bundle);
+  // Update PozyxBPNames
+  SetPozyxBPNames(GetPozyxBPNames());
+  // RaiseModelUpdate();
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
