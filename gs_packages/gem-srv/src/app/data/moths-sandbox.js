@@ -11,10 +11,41 @@ export const MODEL = {
   },
   scripts: [
     {
+      id: 'Cursor',
+      label: 'Cursor',
+      isCharControllable: true,
+      isPozyxControllable: true,
+      script: `# BLUEPRINT Cursor
+# PROGRAM DEFINE
+useFeature Costume
+featCall Costume setCostume 'circle.json' 0
+featCall Costume setColorizeHSV 1 1 1
+featCall Costume randomizeColorHSV 1 0 0
+
+useFeature Physics
+featProp Physics scale setTo 0.05
+useFeature Movement
+
+useFeature Touches
+featCall Touches monitor Moth c2c
+
+useFeature AgentWidgets
+
+# PROGRAM UPDATE
+when Cursor centerFirstTouchesCenter Moth [[
+  ifExpr {{ !Cursor.prop.isInhabitingTarget.value }} [[
+    exprPush {{ Moth.id }}
+    featPropPop Cursor.Movement cursorTargetId
+    featCall Cursor.Movement bindCursor
+    prop Cursor.isInhabitingTarget setTo true
+  ]]
+]]
+`
+    },
+    {
       id: 'Moth',
       label: 'Moth',
       isCharControllable: true,
-      isPozyxControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
@@ -29,7 +60,7 @@ prop alpha setMin 1
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
 featProp Movement distance setTo 3
-featCall Movement wanderUntilInside TreeFoliage
+// featCall Movement wanderUntilInside TreeFoliage
 
 useFeature Physics
 featProp Physics scale setTo 0.5
@@ -103,8 +134,8 @@ when Moth centerTouches TreeTrunk [[
         // new spawn init script (not current agent)
         // spawn randomly darker
         featProp Costume colorValue subRnd 0.5
-        prop x addRnd -50 50
-        prop y addRnd -50 50
+        prop x addRnd -20 20
+        prop y addRnd -20 20
 
         // add point to global graphs
         ifExpr {{ agent.prop.Costume.colorValue.value < 0.5 }} [[
@@ -139,12 +170,12 @@ when Moth centerTouches TreeFoliage [[
   ]]
   ifExpr {{ Moth.prop.energyLevel.value < 60 }} [[
     // go search for new tree if energyLevel is low
-    featCall Moth.Movement setMovementType wander
+    // featCall Moth.Movement setMovementType wander
   ]]
 ]]
 when Moth lastTouches TreeFoliage [[
   // seek foliage again after you wander off the old foliage
-  featCall Moth.Movement wanderUntilInside TreeFoliage
+  // featCall Moth.Movement wanderUntilInside TreeFoliage
 ]]
 // overide all
 ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[

@@ -32,6 +32,7 @@ export interface IScopeable {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Agents have additional properties on top of IScopeable */
 export interface IAgent extends IScopeable, IActable, IMovementMode {
+  blueprint: any;
   featureMap: Map<string, IFeature>;
   execMethod: (name: string, ...args: any) => any;
   addFeature: (name: string) => void;
@@ -55,13 +56,14 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   alpha: number;
   isInert: boolean;
   isGlowing: boolean;
-  isLargeMeter: boolean;
+  isLargeGraphic: boolean;
   statusText: string;
   statusValue: number;
   x: number;
   y: number;
   // feature helpers
   canSee: any; // used by Vision
+  cursor: IAgent; // used by Movement
   distanceTo: any; // used by Movement
   touchTable: Map<any, any>; // used by feat-touches to keep track of other agents
   lastTouched: any; // used by Touches
