@@ -227,7 +227,7 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
  */
 export function InstanceAdd(data, sendUpdate = true) {
   console.log('...InstanceAdd', data);
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   console.log('....model is ', model);
   const instance = {
     id: m_GetUID(),
@@ -261,7 +261,7 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
  *                 if they're not being set.
  */
 export function InstanceUpdate(data) {
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
   instance.name = data.instanceName || instance.name;
@@ -278,7 +278,7 @@ export function InstanceUpdate(data) {
  * @param {Object} data -- { modelId, instanceId, updatedData: {x, y} }
  */
 export function InstanceUpdatePosition(data) {
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
   if (!instance) return; // Pozyx/PTrack instances are not in model.instances, so ignore
@@ -324,7 +324,7 @@ export function InstanceRequestEdit(data) {
  */
 export function InstanceDelete(data) {
   // Remove from Blueprint
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(
     i => i.id === data.instanceDef.id
   );
