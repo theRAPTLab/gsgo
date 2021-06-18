@@ -185,7 +185,7 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-// featCall Movement seekNearestVisible Moth
+featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 // To update graphs
@@ -222,6 +222,8 @@ when Predator centerTouchesCenter Moth [[
       featCall Global globalProp lightMoths sub 1
       featCall Global globalProp darkMoths sub 0
     ]]
+    // release cursor
+    featCall Moth.Cursor releaseCursor
   ]]
 ]]
 `
@@ -389,6 +391,7 @@ prop y setTo 100
 dbgOut "init 1402 light moths"
 featCall Global addGlobalProp lightMoths Number 0
 featCall Global globalProp lightMoths setMin 0
+featCall Global globalProp lightMoths setMax Infinity
 featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
 `
     }

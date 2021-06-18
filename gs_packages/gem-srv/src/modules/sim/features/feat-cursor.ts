@@ -84,6 +84,8 @@ ${whenscripts}
 class CursorPack extends GFeature {
   constructor(name) {
     super(name);
+    this.featAddMethod('bindCursor', this.bindCursor);
+    this.featAddMethod('releaseCursor', this.releaseCursor);
     UR.HandleMessage('COMPILE_CURSORS', m_CompileCursors);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -100,6 +102,11 @@ class CursorPack extends GFeature {
     CURSOR_BLUEPRINTS.set(agent.blueprint.name, agent.blueprint.name);
   }
 
+  // `agent` in this case is usually the `Cursor` agent.
+  //
+  // This method is generally only used by the Cursor Feature class itself.
+  // Students should not need to use this method.
+  //
   // 1. First set `cursorTargetId`
   //    We need to do it this way because we can't pass an agent or agent.id
   //    as parameter values.
@@ -107,6 +114,18 @@ class CursorPack extends GFeature {
   bindCursor(agent: IAgent) {
     const targetAgent = GetAgentById(agent.prop.Cursor.cursorTargetId.value);
     targetAgent.cursor = agent;
+  }
+
+  // `agent` in this case is the character being bound to, rather than
+  // the Cursor agent. e.g. to release a Moth, you would call
+  // `featCall Moth.Cursor releaseCursor`
+  releaseCursor(agent: IAgent) {
+    // clear the cursor state
+    if (agent.cursor) {
+      agent.cursor.prop.Cursor.cursorTargetId.setTo(undefined);
+      agent.cursor.prop.isInhabitingTarget.setTo(false);
+      agent.cursor = undefined;
+    }
   }
 }
 
