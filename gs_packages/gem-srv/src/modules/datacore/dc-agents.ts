@@ -165,7 +165,7 @@ export function DeleteAgent(instancedef) {
 export function DeleteAgentByBlueprint(blueprintName) {
   const agents = AGENTS.get(blueprintName);
   AGENTS.delete(blueprintName);
-  agents.forEach(a => AGENT_DICT.delete(a.id));
+  if (agents) agents.forEach(a => AGENT_DICT.delete(a.id));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return GAgent array by type */
