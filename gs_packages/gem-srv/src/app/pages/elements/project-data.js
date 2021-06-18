@@ -92,7 +92,6 @@ export function InjectBlueprint(blueprint) {
   TRANSPILER.RegisterBlueprint(bundle);
   // Update PozyxBPNames
   SetPozyxBPNames(GetPozyxBPNames());
-  // RaiseModelUpdate();
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////

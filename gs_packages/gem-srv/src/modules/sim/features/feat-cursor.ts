@@ -76,7 +76,6 @@ ${whenscripts}
 `
   };
 
-  console.error(CURSOR_SCRIPT);
   InjectBlueprint(CURSOR_SCRIPT);
 }
 
