@@ -14,6 +14,7 @@ export const MODEL = {
       id: 'Fish',
       label: 'Fish',
       isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
