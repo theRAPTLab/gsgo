@@ -93,6 +93,11 @@ class SimControl {
       instancesSpec
     });
 
+    // 3. Update Cursor System
+    //    This needs to happen AFTER instances are created
+    //    since that is when
+    UR.RaiseMessage('COMPILE_CURSORS');
+
     // 6. Update Agent Display
     //    Agent displays are automatically updated during SIM/VIS_UPDATE
     // 7. Update Inspectors

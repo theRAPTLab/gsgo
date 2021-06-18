@@ -66,7 +66,6 @@ featCall Movement setRandomStart
 useFeature Global
 
 useFeature Cursor
-featCall Cursor allowControl Moth
 
 # PROGRAM INIT
 // Don't randomize here or we'll keep getting new colors
@@ -167,7 +166,7 @@ ifExpr {{ agent.getProp('isInert').value }} [[
       id: 'Predator',
       label: 'Predator',
       isCharControllable: true,
-      isPozyxControllable: false,
+      // isPozyxControllable: false,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
@@ -187,11 +186,13 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-featCall Movement seekNearestVisible Moth
+// featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 // To update graphs
 useFeature Global
+
+useFeature Cursor
 
 # PROGRAM UPDATE
 // when Predator isInside TreeFoliage [[
