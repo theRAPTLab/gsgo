@@ -11,7 +11,6 @@ export const MODEL = {
   },
   scripts: [
     {
-    {
       id: 'Moth',
       label: 'Moth',
       isCharControllable: true,
