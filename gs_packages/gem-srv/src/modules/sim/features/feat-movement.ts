@@ -543,7 +543,6 @@ class MovementPack extends GFeature {
     this.featAddMethod('seekNearest', this.seekNearest);
     this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
     this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
-    this.featAddMethod('bindCursor', this.bindCursor);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -563,7 +562,6 @@ class MovementPack extends GFeature {
     this.featAddProp(agent, 'bounceAngle', new GVarNumber(180));
     this.featAddProp(agent, 'isMoving', new GVarBoolean());
     this.featAddProp(agent, 'useAutoOrientation', new GVarBoolean(false));
-    this.featAddProp(agent, 'cursorTargetId', new GVarString());
 
     // Initialize internal properties
     agent.prop.Movement._lastMove = 0;
@@ -699,15 +697,6 @@ class MovementPack extends GFeature {
   wanderUntilInside(agent: IAgent, targetType: string) {
     INSIDE_AGENTS.set(agent.id, { targetType });
     this.setMovementType(agent, 'wanderUntilAgent');
-  }
-
-  // 1. First set `cursorTargetId`
-  //    We need to do it this way because we can't pass an agent or agent.id
-  //    as parameter values.
-  // 2. Then call `bindCursor`
-  bindCursor(agent: IAgent) {
-    const targetAgent = GetAgentById(agent.prop.Movement.cursorTargetId.value);
-    targetAgent.cursor = agent;
   }
 } // end of feature class
 
