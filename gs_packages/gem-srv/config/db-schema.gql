@@ -1,0 +1,43 @@
+type Query {
+  locale(name: String): Locale
+  locales: [String!]
+}
+
+type Mutation {
+  updatePTrack(localeId: Int, input: PTrackInput): PTrackData
+}
+
+type Locale {
+  id: Int
+  ptrack: PTrackData
+}
+
+type PTrackData {
+  memo: String
+  width: Float
+  depth: Float
+  offx: Float
+  offy: Float
+  xscale: Float
+  yscale: Float
+  xrot: Float
+  yrot: Float
+  zrot: Float
+}
+
+input LocaleInput {
+  ptrack: PTrackInput
+}
+
+input PTrackInput {
+  memo: String
+  width: Float
+  depth: Float
+  offx: Float
+  offy: Float
+  xscale: Float
+  yscale: Float
+  xrot: Float
+  yrot: Float
+  zrot: Float
+}

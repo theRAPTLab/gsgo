@@ -248,7 +248,56 @@ SEEMS TO WORK :O
 
 
 
+## JUN16 WED - Discussing Mini Rounds
 
+Researchers want to be able to do mini rounds. Notes are in [issue 195](https://gitlab.com/stepsys/gem-step/gsgo/-/issues/195)
 
+**Q. What Simulation = What's stored in Ben's Datastructure for "Model" (e.g. acquatic)**
+A. It's a single set of blueprints as well as locale information in "bounds"
 
+* Rounds object is part of model
+  * maybe an array of "round" objects with properties that a round interpreter knows to handle
+  * the round interpreter has built-ins like "counter", "round event watcher" 
+* List of Blueprints:
+  * each script is an object `{id, label, isCharControllable, isPozyxControllable, scriptText }`
+  * `label`  is the  `blueprint` `# BLUEPRINT Predator`
+  * `id` and `label` might be the same thing???
+  * the `isCharControllable` is used by 
+* Instance Lists
+  * array of init scripts for each defined instance of blueprint
+  * the literal source code
+* bounds: "sets up the simulation space"
+* label: "defacto name of the project" - there will have to be a project for each day's activities
 
+**Q. Where are the tracker bounds?**
+A. According to Ben, POZYX_TRANSFORM is in `dc-inputs`, because this is where the pozyx data is being transformed. It's used directly by `PanelTrackerUI`
+
+### Locale Manager
+
+The locale manager will be an URSYS module that makes use of a new **URSYS DB**, which contains all the global variables shared across the application. For now, each AppServer will create an URSYS DB, though in the future we'll want to split them out into different servers.
+
+```
+GetLocale(id)
+GetLocaleList() => Locale   // plain object with certain props
+SetLocale(id,LocaleObj)
+Locale.getTransform()
+Locale.getTransformAxisToScreen()
+```
+
+### URSYS DB
+
+* URSYS DB will be using GraphQL. 
+* URSYS DB is accessed through a client query system that accepts query objects and returns a Promise. Under the hood this is a `fetch` operation returning a promise, and we'll hide away the various header things.
+
+The URSYS DB is still using LokiJS, so how are different **system properties** organized?
+
+* Each data type is stored in its own **loki collection**. Collections are similar to tables in SQL, but the "documents" stored in them can be anything. 
+
+**Q. How do individual apps persist their data?**
+A. Probably some kind of loader, though "app" probably has to be some kind of "app category", not a specific app instance. There are also some apps like **main** that can only run one at a time.
+
+## JUN 19 SAT - Finalize the stupid Locale DB
+
+When the URDB is initialized, it needs to have some runtime files that are "owned" by someone. They can't be owned by URSYS. In this case, gem_srv will own them.
+
+However, to be able to read/write the database, it needs access to it to write access for the **root** resolver to the **loki** instance

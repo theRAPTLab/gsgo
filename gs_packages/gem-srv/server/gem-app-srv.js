@@ -19,13 +19,14 @@ const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
 const {
   NetInfo_Endpoint,
-  GetGraphQL_Middleware,
+  UseURDB,
   PrefixUtil
 } = require('@gemstep/ursys/server');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const wpconf_packager = require('../config/wp.pack.webapp');
+const db_resolver = require('../config/db-resolver');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -159,14 +160,13 @@ function StartAppServer(opt = {}) {
 
   // handle urnet
   app.use(NetInfo_Endpoint);
-  // app.use('/graphql', GraphQL_Endpoint);
-  app.use(
-    '/graphql',
-    GetGraphQL_Middleware({
-      dbPath: 'runtime/graphql/db.loki',
-      importPath: 'config/dbinit.json'
-    })
-  );
+  // hook URDB endpoint
+  UseURDB(app, {
+    dbPath: 'runtime/db.loki',
+    importPath: 'config/db-default-data.json',
+    schemaPath: 'config/db-schema.gql',
+    root: db_resolver
+  });
 
   // for everything else...
   app.use('/', Express.static(DIR_OUT));

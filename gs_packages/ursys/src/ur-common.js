@@ -8,11 +8,16 @@ const CFG_URNET_VERSION = 3;
 
 /// URNET DEFAULT VALUES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// URNET ROOT ACCESS
 const CFG_URNET_SERVICE = '/urnet/netinfo'; // route to urnet connection info
 const CFG_URNET_PORT = 2929;
 const PRE_UADDR_ID = 'UADDR_'; // client addresses all start with this string
 const CFG_SVR_UADDR = 'SVR_01'; // the main server UADDR is this
 const PRE_UDEVICE_ID = 'UDEV_';
+/// URNET WIDE DB ACCESS
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const CFG_URDB_GQL = '/urnet/urdb'; // route to graphql instance
+
 /// URNET CONSTANTS & MESSAGES ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PRE_SYS_MESG = 'NET:SYSTEM'; // system messages begin with this (deprecated?)
@@ -77,6 +82,7 @@ module.exports = {
   CFG_URNET_VERSION,
   CFG_URNET_PORT,
   CFG_SVR_UADDR,
+  CFG_URDB_GQL,
   PRE_SYS_MESG,
   PRE_UADDR_ID,
   PRE_UDEVICE_ID,
