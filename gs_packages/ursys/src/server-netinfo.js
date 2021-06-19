@@ -6,9 +6,9 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { parse } = require('url');
+const { URL } = require('url');
 const requestIp = require('request-ip');
-const { CFG_URNET_SERVICE } = require('./ur-common');
+const { CFG_URNET_SERVICE, CFG_URDB_GQL } = require('./ur-common');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -43,6 +43,10 @@ function m_NetInfoRespond(req, res) {
       urnet_version,
       uaddr
     },
+    urdb: {
+      host,
+      endpoint: CFG_URDB_GQL
+    },
     client: {
       ip: client_ip
     }
@@ -59,7 +63,8 @@ function m_NetInfoRespond(req, res) {
 function NextJS_Middleware(req, res) {
   // Be sure to pass `true` as the second argument to `url.parse`.
   // This tells it to parse the query portion of the URL.
-  const parsedUrl = parse(req.url, true);
+  const baseUrl = `${req.protocol}://${req.headers.host}/`;
+  const parsedUrl = new URL(req.url, baseUrl);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   // Do our route interception here
@@ -74,7 +79,8 @@ function NextJS_Middleware(req, res) {
  *  that returns host, port, urnet_version, uaddr
  */
 function Express_Middleware(req, res, next) {
-  const parsedUrl = parse(req.url, true);
+  const baseUrl = `${req.protocol}://${req.headers.host}/`;
+  const parsedUrl = new URL(req.url, baseUrl);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   if (pathname === CFG_URNET_SERVICE) {
