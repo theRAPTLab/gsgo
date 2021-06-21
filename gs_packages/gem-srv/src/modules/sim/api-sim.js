@@ -42,6 +42,14 @@ function m_Step(frameCount) {
 function m_PreRunStep(frameCount) {
   GAME_LOOP.executePhase('GLOOP_PRERUN', frameCount);
 }
+// Timer PLACES loop
+function m_CostumesStep(frameCount) {
+  GAME_LOOP.executePhase('GLOOP_COSTUMES', frameCount);
+}
+// Timer POSTRUN loop
+function m_PostRunStep(frameCount) {
+  GAME_LOOP.executePhase('GLOOP_POSTRUN', frameCount);
+}
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,6 +71,13 @@ function Stage() {
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
+function Costumes() {
+  console.log(...PR('Costumes!'));
+  // Unsubscribe from PRERUN, otherwise it'll keep running.
+  if (RX_SUB) RX_SUB.unsubscribe();
+  RX_SUB = SIM_FRAME_MS.subscribe(m_CostumesStep);
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' });
+}
 function Run() {
   // prepare to run simulation and do first-time setup
   // compiles happen after Run()
@@ -95,6 +110,16 @@ function Pause() {
   // set the playback rate from 0 to 10
   // can we support backing up in the buffer?
   // can we offer forward simulation from the playback buffer
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function Stop() {
+  // stop simulation
+  console.log(...PR('Stop'));
+  RX_SUB.unsubscribe();
+  SIM_RATE = 0;
+  console.log(...PR('Post-run Loop Starting'));
+  RX_SUB = SIM_FRAME_MS.subscribe(m_PostRunStep);
+  console.log(...PR('Post-run Loop Running...Monitoring Inputs'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function End() {
@@ -136,4 +161,4 @@ UR.HookPhase('UR/APP_RESTAGE', Restage);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Stage, Start, Pause, End, Export, Reset, IsRunning };
+export { Stage, Costumes, Start, Pause, Stop, End, Export, Reset, IsRunning };

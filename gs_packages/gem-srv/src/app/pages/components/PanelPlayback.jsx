@@ -15,6 +15,8 @@ class PanelPlayback extends React.Component {
       isRunning: false
     };
     this.OnResetClick = this.OnResetClick.bind(this);
+    this.OnCostumesClick = this.OnCostumesClick.bind(this);
+    this.OnNextRoundClick = this.OnNextRoundClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
   }
 
@@ -23,6 +25,16 @@ class PanelPlayback extends React.Component {
   OnResetClick() {
     this.setState({ isRunning: false });
     UR.RaiseMessage('NET:HACK_SIM_RESET');
+  }
+
+  OnCostumesClick() {
+    this.setState({ isRunning: false });
+    UR.RaiseMessage('NET:HACK_SIM_COSTUMES');
+  }
+
+  OnNextRoundClick() {
+    this.setState({ isRunning: false });
+    UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
   OnStartClick() {
@@ -75,10 +87,27 @@ class PanelPlayback extends React.Component {
                   type="button"
                   className={needsUpdate ? classes.buttonHi : classes.button}
                   onClick={this.OnResetClick}
+                  style={{ width: '100%' }}
                 >
                   RESET STAGE
                 </button>
+                <button
+                  type="button"
+                  className={needsUpdate ? classes.buttonHi : classes.button}
+                  onClick={this.OnCostumesClick}
+                  style={{ width: '100%' }}
+                >
+                  PREP COSTUMES
+                </button>
                 <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
+                <button
+                  type="button"
+                  className={needsUpdate ? classes.buttonHi : classes.button}
+                  onClick={this.OnNextRoundClick}
+                  style={{ width: '100%' }}
+                >
+                  PREP NEXT ROUND
+                </button>
               </>
             )}
 
