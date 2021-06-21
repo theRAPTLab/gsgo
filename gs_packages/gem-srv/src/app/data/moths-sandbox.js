@@ -185,7 +185,7 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-featCall Movement seekNearestVisible Moth
+// featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 // To update graphs
