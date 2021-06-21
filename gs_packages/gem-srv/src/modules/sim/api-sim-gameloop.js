@@ -41,6 +41,7 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',
     // agent/groups autonomous updates
+    'INPUTS_EXEC', // attach cursor to agent
     'AGENTS_UPDATE',
     'GROUPS_UPDATE',
     'FEATURES_UPDATE',
