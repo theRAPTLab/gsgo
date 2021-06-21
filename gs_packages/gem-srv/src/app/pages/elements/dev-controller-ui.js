@@ -400,7 +400,7 @@ function BurstStop() {
  *  Utility to return a Marker ControlDataObject { id, x, y }
  */
 function u_MakeControlDataObject(div) {
-  if (m_isHidden(div)) return;
+  if (m_isHidden(div)) return undefined;
 
   // if data_object_name has changed, we update the entity id so that
   // fake track sends a new object, otherwise the old object is retained

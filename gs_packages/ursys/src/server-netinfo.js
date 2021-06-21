@@ -36,6 +36,10 @@ function m_NetInfoRespond(req, res) {
   // prevent socket connection refusal due to mismatch of localhost
   // with use of numeric IP when connecting to server
   if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
+  if (client_ip.includes('::1')) client_ip = 'localhost';
+  // try to work around CORS request from localhost to non-localhost block by
+  // chrome
+  let dbhost = client_ip === 'localhost' ? 'localhost' : host;
   const netInfo = {
     broker: {
       host,
@@ -43,12 +47,13 @@ function m_NetInfoRespond(req, res) {
       urnet_version,
       uaddr
     },
-    urdb: {
-      host,
-      endpoint: CFG_URDB_GQL
-    },
     client: {
       ip: client_ip
+    },
+    urdb: {
+      protocol: 'http',
+      host: dbhost,
+      endpoint: CFG_URDB_GQL
     }
   };
   res.end(JSON.stringify(netInfo));
@@ -96,6 +101,7 @@ function GetNetInfo() {
 /** called from index-server during URNET_Start to save network options */
 function SaveNetInfo(opt) {
   m_network_options = opt;
+  console.log('save netinfo', opt);
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

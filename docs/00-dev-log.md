@@ -301,3 +301,12 @@ A. Probably some kind of loader, though "app" probably has to be some kind of "a
 When the URDB is initialized, it needs to have some runtime files that are "owned" by someone. They can't be owned by URSYS. In this case, gem_srv will own them.
 
 However, to be able to read/write the database, it needs access to it to write access for the **root** resolver to the **loki** instance
+
+## JUN 20 SUN - Read/Write values to URDB from DevController
+
+DevController shows the output transformations. `dev-controller-ui` handles the backend of `DevController.jsx` 
+
+* [x] dev-controller read URDB endpoint and initiate fetch (test)
+* [x] client-urdb added: will handle graphql fetches for us (stub)
+* [ ] client-datacore now handles extended netinfo with `urdb` field
+

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-state */
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -65,6 +66,18 @@ class CharController extends React.Component {
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
     Initialize(this, { sampleRate: SENDING_FPS });
     HookResize(window);
+    const gql = UR.GetDatabaseEndpoint();
+
+    fetch(gql, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({ query: '{ locales }' })
+    })
+      .then(r => r.json())
+      .then(data => console.log('data returned:', data));
   }
 
   componentWillUnmount() {
@@ -115,7 +128,7 @@ class CharController extends React.Component {
             minWidth: '280px'
           }}
         >
-          <div id="charctrl_id"></div>
+          <div id="charctrl_id" />
           <p style={{ marginTop: 0 }}>Output Rate = {this.state.rate}/sec </p>
           <div id="charctrl_tests">
             <input

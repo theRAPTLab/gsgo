@@ -13,6 +13,7 @@ const DBG = require('./ur-dbg-settings');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let BROKER_UINFO = {};
 let CLIENT_UINFO = {};
+let URDB_UINFO = {};
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** saved from client-netinfo { host, port, uaddr, urnet_version } */
 function SaveBrokerInfo(info) {
@@ -22,6 +23,18 @@ function SaveBrokerInfo(info) {
     BROKER_UINFO[prop] = info[prop];
   });
   return BROKER_UINFO;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** saved from client-netinfo { urdb }
+ */
+function SaveDBInfo(urdb) {
+  if (urdb === undefined) throw Error('SaveDBInfo got undefined parameter');
+  Object.keys(urdb).forEach(prop => {
+    if (URDB_UINFO[prop]) console.log('overwriting urdb info', prop);
+    URDB_UINFO[prop] = urdb[prop];
+  });
+  console.log('saving urdb', URDB_UINFO);
+  return URDB_UINFO;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** saved from client-netinfo { ip }
@@ -71,6 +84,11 @@ function ConnectionString() {
   let str = `${MyUADDR()} ⇆ ${host}`;
   if (port) str += `:${port}`;
   return str;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function URDB_GraphQL() {
+  const { protocol, host, endpoint } = URDB_UINFO;
+  return `${protocol}://${host}${endpoint}`;
 }
 
 /// ENDPOINT DATA STRUCTURES //////////////////////////////////////////////////
@@ -200,12 +218,14 @@ module.exports = {
   // NETWORK PARAMETERS
   SaveBrokerInfo,
   SaveClientInfo,
+  SaveDBInfo,
   MyUADDR,
   MyAppPath,
   MyAppServerHostname,
   MyAppServerPort,
   MyNetBrokerInfo,
   MyNetBroker,
+  URDB_GraphQL,
   ConnectionString,
   // URNET
   SetSharedEndPoints,

@@ -9,6 +9,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NETWORK = require('./client-urnet');
 const DEVICES = require('./client-netdevices');
+const DB = require('./client-urdb');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
@@ -168,6 +169,7 @@ const UR = {
   ConnectionString: DATACORE.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
   GetUAddressNumber: DATACORE.GetUAddressNumber,
+  GetDatabaseEndpoint: DATACORE.URDB_GraphQL,
   // FORWARDED SYSTEM CONTROL API
   SystemNetBoot: EXEC.SystemNetBoot,
   SystemAppConfig: EXEC.SystemAppConfig,
