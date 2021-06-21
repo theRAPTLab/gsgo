@@ -22,6 +22,7 @@ import { InjectBlueprint } from '../../../app/pages/elements/project-data';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+// blueprint types that can be inhabited by a cursor
 const CURSOR_BLUEPRINTS = new Map(); // key = agent id, value = agent id
 
 /// UPDATE LOOPS //////////////////////////////////////////////////////////////
@@ -36,15 +37,20 @@ function m_CompileCursors() {
   const bpNames = Array.from(CURSOR_BLUEPRINTS.keys());
   bpNames.forEach(bpName => {
     touchscripts += `featCall Touches monitor ${bpName} c2c\n`;
-    whenscripts += `when Cursor centerFirstTouchesCenter ${bpName} [[
-  ifExpr {{ !Cursor.prop.isInhabitingTarget.value && ${bpName}.cursor === undefined }} [[
-    exprPush {{ ${bpName}.id }}
-    featPropPop Cursor.Cursor cursorTargetId
-    featCall Cursor.Cursor bindCursor
-    prop Cursor.isInhabitingTarget setTo true
-  ]]
-]]
-`;
+    // m_UpdateInhabitAgent now handles what this 'when' script used to handle
+    // Using m_UpdateInhabitAgent allows us to tie inhabiting to
+    // a specific phase, eliminating the need for a 'when' script
+    // that would only run for some loops and not others.
+    //
+    //     whenscripts += `when Cursor centerFirstTouchesCenter ${bpName} [[
+    //   ifExpr {{ !Cursor.prop.isInhabitingTarget.value && ${bpName}.cursor === undefined }} [[
+    //     exprPush {{ ${bpName}.id }}
+    //     featPropPop Cursor.Cursor cursorTargetId
+    //     featCall Cursor.Cursor bindCursor
+    //     prop Cursor.isInhabitingTarget setTo true
+    //   ]]
+    // ]]
+    // `;
   });
 
   const CURSOR_SCRIPT = {
@@ -70,10 +76,11 @@ useFeature Touches
 ${touchscripts}
 
 useFeature AgentWidgets
-
-# PROGRAM UPDATE
-${whenscripts}
 `
+    // No longer used.  See not above
+    // # PROGRAM UPDATE
+    // ${whenscripts}
+    // `
   };
 
   InjectBlueprint(CURSOR_SCRIPT);
