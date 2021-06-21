@@ -20,7 +20,7 @@ const DBG = require('./ur-dbg-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PROMPTS.makeStyleFormatter('DEVICE', 'TagDkRed');
+const PR = PROMPTS.makeStyleFormatter('DEVICE');
 let LocalNode;
 let NetNode;
 

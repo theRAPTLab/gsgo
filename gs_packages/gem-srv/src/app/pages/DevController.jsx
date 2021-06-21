@@ -15,25 +15,26 @@ import clsx from 'clsx';
 /// URSYS STUFF ///////////////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/dev-controller-ui';
+import * as MOD from './elements/dev-controller-ui';
 import { useStylesHOC } from './elements/page-styles';
 import '../../lib/css/charcontrol.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
+const PR = UR.PrefixUtil('CHARCTRL', 'TagInput');
 const MATRIX_INPUT_WIDTH = 50;
 const SENDING_FPS = 15;
+const log = console.log;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class CharController extends React.Component {
   constructor(props) {
     super(props);
-    // save instance of mod_charctrl
+    // save instance of mod_charctrl if one is passed
     if (typeof props.controller === 'object') {
       this.controller = props.controller;
-      console.log('CharController.jsx assigned controller', this.controller);
+      log(...PR('CharController.jsx assigned controller', this.controller));
     }
     // establish state here
     // which is changed through setState() call of React.Component
@@ -64,10 +65,9 @@ class CharController extends React.Component {
   componentDidMount() {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-    Initialize(this, { sampleRate: SENDING_FPS });
+    MOD.Initialize(this, { sampleRate: SENDING_FPS });
     HookResize(window);
     const gql = UR.GetDatabaseEndpoint();
-
     fetch(gql, {
       method: 'POST',
       headers: {
@@ -77,11 +77,11 @@ class CharController extends React.Component {
       body: JSON.stringify({ query: '{ locales }' })
     })
       .then(r => r.json())
-      .then(data => console.log('data returned:', data));
+      .then(data => log('data returned:', data));
   }
 
   componentWillUnmount() {
-    console.log('componentWillUnmount');
+    log('componentWillUnmount');
   }
 
   // FORM CHANGE METHOD
@@ -90,7 +90,7 @@ class CharController extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    HandleStateChange(name, value);
+    MOD.HandleStateChange(name, value);
   }
 
   render() {
