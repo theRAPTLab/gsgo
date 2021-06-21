@@ -33,7 +33,8 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state
-    'INPUTS',
+    'INPUTS_READ',
+    'INPUTS_UPDATE',
     'DELETE',
     'CREATE',
     'TIMERS',

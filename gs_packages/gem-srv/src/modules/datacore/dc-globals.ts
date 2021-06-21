@@ -39,7 +39,7 @@ export const _frame = () => FRAME_TIME;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// for erasing data structures
 UR.HookPhase('SIM/RESET', () => {});
-UR.HookPhase('SIM/INPUTS', frameTime => {
+UR.HookPhase('SIM/INPUTS_READ', frameTime => {
   FRAME_TIME = frameTime;
 });
 
