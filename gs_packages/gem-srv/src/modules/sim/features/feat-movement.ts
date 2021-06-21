@@ -415,7 +415,7 @@ function m_FindNearbyAgents(agent, targetType) {
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function m_FeaturesUpdate(frame) {
+function m_PhysicsUpdate(frame) {
   // 1. Cache Distances
   SEEK_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
@@ -519,7 +519,7 @@ function m_ApplyMovement(frame) {
 /// HOOKS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
+UR.HookPhase('SIM/PHYSICS_UPDATE', m_PhysicsUpdate);
 UR.HookPhase('SIM/INPUTS_UPDATE', m_InputsUpdate);
 UR.HookPhase('SIM/FEATURES_THINK', m_FeaturesThink);
 UR.HookPhase('SIM/FEATURES_EXEC', m_FeaturesExec);

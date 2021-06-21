@@ -176,8 +176,7 @@ class TouchPack extends GFeature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
-    // UR.HookPhase('SIM/PHYSICS', m_update);
-    UR.HookPhase('SIM/AGENTS_UPDATE', m_Update); // REVUEW: use AGENTS_UPDATE for now so this won't run during PRERUN
+    UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
