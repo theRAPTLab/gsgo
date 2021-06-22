@@ -47,12 +47,13 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
-const MOVEDISTANCE = 5; // Minimum distance moved before `isMoved` is registered
+const MOVEDISTANCE = 1; // Minimum distance moved before `isMoved` is registered
 // This is necessary to account for input jitter
 
 /// Movement Agent Manager
-const TRACKED_AGENTS = new Map();
+const MOVEMENT_AGENTS = new Map();
 const SEEK_AGENTS = new Map();
+const INSIDE_AGENTS = new Map();
 
 /// MOVING_AGENTS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -108,25 +109,37 @@ function m_QueuePosition(agent, x, y) {
       // REVIEW: Technically this is not a bounce.
       // The walls are "solid", so the agent changes direction.
       // It is not a real physics collision.
-      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(-89, 89));
+        if (DBG) console.log('bounce left');
+      }
     }
     if (Wraps('right')) {
       xx = x >= bounds.right ? bounds.left + pad : xx;
     } else if (x + hwidth >= bounds.right) {
       xx = bounds.right - hwidth - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(91, 269));
+        if (DBG) console.log('bounce right');
+      }
     }
     if (Wraps('top')) {
       yy = y <= bounds.top ? bounds.bottom - pad : yy;
     } else if (y - hheight <= bounds.top) {
       yy = bounds.top + hheight + pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(181, 359));
+        if (DBG) console.log('bounce top');
+      }
     }
     if (Wraps('bottom')) {
       yy = y >= bounds.bottom ? bounds.top + pad : yy;
     } else if (y + hheight > bounds.bottom) {
       yy = bounds.bottom - hheight - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(1, 179));
+        if (DBG) console.log('bounce bottom');
+      }
     }
   }
 
@@ -136,16 +149,23 @@ function m_QueuePosition(agent, x, y) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Calculate derived properties
 function m_ProcessPosition(agent, frame) {
-  const x = agent.prop.Movement._x;
-  const y = agent.prop.Movement._y;
+  // REVIEW
+  // If the agent uses Movement, then we MUST derive isMoving and set orientation
+  // But if the agent has no movement methods defined AND/OR the agent position
+  // was set directly, we still have to fall back to that position.  In other
+  // words, we don't want to skip the update!
 
-  if (
-    agent.x === undefined ||
-    agent.y === undefined ||
-    x === undefined ||
-    y === undefined
-  )
-    return; // Agent position or Movement not set, so ignore
+  let x = agent.prop.Movement._x;
+  let y = agent.prop.Movement._y;
+
+  // Fallback Code
+  // Movement._x might not be defined if position was set directly
+  // via setting agent.x/agent.y in an initScript.
+  if (x === undefined || y === undefined) {
+    // agent.prop.Movement._x/y was not defined, so fall back to default
+    x = agent.x === undefined ? 0 : agent.x; // if agent.x is undefined, ball back to 0
+    y = agent.y === undefined ? 0 : agent.y;
+  }
 
   // 1. Is Moving?
   // inputs come in at a 15fps frame rate, so we need to use hysteresis
@@ -180,10 +200,7 @@ function m_ProcessPosition(agent, frame) {
     lerpPct = 0.8; // force quicker turn for input agents so it feels more responsive
     if (!targetAngle) return; // skip if it hasn't been set
   } else {
-    targetAngle = AngleTo(agent, {
-      x: agent.prop.Movement._x,
-      y: agent.prop.Movement._y
-    });
+    targetAngle = AngleTo(agent, { x, y });
   }
 
   // don't turn if we're already on target, otherwise, NPCs end up turning
@@ -208,7 +225,7 @@ function m_ProcessPosition(agent, frame) {
 function m_SetPosition(agent, frame) {
   const x = agent.prop.Movement._x;
   const y = agent.prop.Movement._y;
-  if (!x || !y) return; // Movement not set, so ignore
+  if (x === undefined || y === undefined) return; // Movement not set, so ignore
   agent.prop.x.value = x;
   agent.prop.y.value = y;
 }
@@ -244,7 +261,7 @@ function moveWander(agent: IAgent, frame: number) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// EDGE to EDGE (of the entire tank / system)
-// Go in the same direction most of the way across the space, then turn back and do similar
+/// Go in the same direction most of the way across the space, then turn back and do similar
 function moveEdgeToEdge(agent: IAgent, frame: number) {
   const bounds = GetBounds();
   const pad = 5;
@@ -296,7 +313,7 @@ function moveFloat(agent, y: number = -300) {
 function seek(agent: IAgent, target: { x; y }, frame: number) {
   // stop seeking if target was removed
   // For input agents, target might be defined, but x and y are not
-  if (!target || !target.x || !target.y) return;
+  if (!target || target.x === undefined || target.y === undefined) return;
 
   // stop seeking if we're close, otherwise agent flips orientation wildly
   if (DistanceTo(agent, target) < 5) return;
@@ -330,6 +347,25 @@ function seekAgentOrWander(agent: IAgent, frame: number) {
   seek(agent, target, frame);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// wanderUntilAgent
+function wanderUntilAgent(agent: IAgent, frame: number) {
+  // if bounds
+  const targetType = INSIDE_AGENTS.get(agent.id).targetType;
+  const targets = GetAgentsByType(targetType);
+  let isInside = false;
+  targets.forEach(target => {
+    if (
+      agent.isTouching &&
+      agent.isTouching.get(target.id) &&
+      agent.isTouching.get(target.id).binb
+    ) {
+      isInside = true;
+    }
+  });
+  if (!isInside) moveWander(agent, frame); // no target, wander instead
+  // else just sit
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Movement Function Library
 const MOVEMENT_FUNCTIONS = new Map([
   ['static', undefined],
@@ -338,7 +374,8 @@ const MOVEMENT_FUNCTIONS = new Map([
   ['jitter', moveJitter],
   ['float', moveFloat],
   ['seekAgent', seekAgent],
-  ['seekAgentOrWander', seekAgentOrWander]
+  ['seekAgentOrWander', seekAgentOrWander],
+  ['wanderUntilAgent', wanderUntilAgent]
 ]);
 
 /// SEEK ALGORITHMS ///////////////////////////////////////////////////////////
@@ -382,6 +419,7 @@ function m_FeaturesUpdate(frame) {
   // 1. Cache Distances
   SEEK_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
+    if (!agent) return;
     const targets = GetAgentsByType(options.targetType);
     if (!agent.distanceTo) agent.distanceTo = new Map();
     targets.forEach(t => {
@@ -390,12 +428,12 @@ function m_FeaturesUpdate(frame) {
   });
 }
 
-function m_FeaturesThink(frame) {
-  // 1. Find target Agent
+function m_FeaturesThinkSeek(frame) {
   SEEK_AGENTS.forEach((options, id) => {
     // REVIEW: Distance calculation should ideally only happen once and be cached
 
     const agent = GetAgentById(id);
+    if (!agent) return;
 
     // REVIEW: We should be finding all agents within the visibility distance
     // not just the nearest one.
@@ -431,14 +469,24 @@ function m_FeaturesThink(frame) {
       // console.log('....skipping, no target');
     }
   });
-
+}
+function m_FeaturesThink(frame) {
+  // 1. Process Seek agents: Find target Agent
+  m_FeaturesThinkSeek(frame);
   // 2. Decide on Movement
-  const agents = [...TRACKED_AGENTS.values()];
+  const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     // ignore AI movement if input agent
     if (agent.isModePuppet()) return;
     // ignore AI movement if being dragged
     if (agent.isCaptive) return;
+    // ignore AI movement if inert
+    if (agent.isInert) return;
+    // being controlled by a cursor
+    if (agent.cursor) {
+      m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
+    }
     // handle movement
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
     if (moveFn) moveFn(agent, frame);
@@ -447,16 +495,18 @@ function m_FeaturesThink(frame) {
 
 function m_FeaturesExec(frame) {
   // 3. Calculate derived properties (e.g. isMoving)
-  const agents = [...TRACKED_AGENTS.values()];
+  const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     m_ProcessPosition(agent, frame);
   });
 }
 
 function m_ApplyMovement(frame) {
   // 4. Apply Positions
-  const agents = [...TRACKED_AGENTS.values()];
+  const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     m_SetPosition(agent, frame);
   });
 }
@@ -492,6 +542,7 @@ class MovementPack extends GFeature {
     this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
     this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
+    this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
   }
 
   /** This runs once to initialize the feature for all agents */
@@ -502,7 +553,7 @@ class MovementPack extends GFeature {
 
   decorate(agent) {
     super.decorate(agent);
-    TRACKED_AGENTS.set(agent.name, agent);
+    MOVEMENT_AGENTS.set(agent.id, agent);
     this.featAddProp(agent, 'movementType', new GVarString('static'));
     this.featAddProp(agent, 'controller', new GVarString());
     this.featAddProp(agent, 'direction', new GVarNumber(0)); // degrees
@@ -519,7 +570,11 @@ class MovementPack extends GFeature {
     // field of vision = 0.785398
 
     // Other Internal Properties
-    // agent.prop.Movement._x
+    // Set default values
+    agent.prop.Movement._x = agent.x;
+    agent.prop.Movement._y = agent.y;
+
+    // agent.prop.Movement._x // the next x postion.  Call it `_nextX`?
     // agent.prop.Movement._y
     // agent.prop.Movement._targetId // id of seek target
     // agent.prop.Movement._targetAngle // cached value so input agents can keep turning between updates
@@ -637,6 +692,11 @@ class MovementPack extends GFeature {
   seekNearestVisible(agent: IAgent, targetType: string) {
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
     this.setMovementType(agent, 'seekAgentOrWander');
+  }
+
+  wanderUntilInside(agent: IAgent, targetType: string) {
+    INSIDE_AGENTS.set(agent.id, { targetType });
+    this.setMovementType(agent, 'wanderUntilAgent');
   }
 } // end of feature class
 

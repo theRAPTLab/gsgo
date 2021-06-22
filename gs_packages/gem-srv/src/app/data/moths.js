@@ -36,6 +36,7 @@ featCall Touches monitor TreeTrunk c2b
 featCall Touches monitor TreeFoliage c2c c2b b2b
 
 // allow removal by  Predator
+// allow spawning
 useFeature Population
 
 // allow Predator to see us
@@ -50,14 +51,14 @@ featCall AgentWidgets bindMeterTo energyLevel
 // hide text
 featProp AgentWidgets text setTo ''
 
+featCall Costume randomizeColorHSV 1 0 1
+
 # PROGRAM INIT
-featCall Costume randomizeColorHSV 0.1 0 0.2
-featCall Movement setRandomStart
+// Don't randomize here or we'll keep getting new colorsl
+// featCall Costume randomizeColorHSV 0.1 0 0.2
+// featCall Movement setRandomStart
 
 # PROGRAM UPDATE
-ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value && !agent.getProp('isInert').value }} [[
-  prop alpha add 0.25
-]]
 every 0.25 [[
   prop alpha sub 0.1
   prop energyLevel sub 1
@@ -71,16 +72,30 @@ every 1 [[
 when Moth centerFirstTouches TreeTrunk [[
   featCall Moth.Costume setGlow 2
   prop Moth.energyLevel add 100
-  ifExpr {{ !Moth.prop.isInert.value }} [[
-    // show wings folded pose
-    featCall Moth.Costume setPose 4
-  ]]
 ]]
 when Moth centerTouches TreeTrunk [[
   ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 0.2, 1, 0.2)}} [[
     // color matches, fade away and set un-visionable
     prop alpha setMin 0.1
     featProp Vision visionable setTo false
+  ]]
+  ifExpr {{ !Moth.prop.isInert.value }} [[
+    // show wings folded pose
+    featCall Moth.Costume setPose 4
+  ]]
+  every 1 [[
+    prop agent.energyLevel add 10
+    ifExpr {{ agent.getProp('energyLevel').value > 99 && !agent.isInert }} [[
+      dbgOut 'SPAWN!'
+      featCall Population spawnChild [[
+        // init script
+        // only spawn yellow moths
+        featCall Costume setColorize 1 1 0
+        prop x add 10
+        prop y add 10
+      ]]
+      prop energyLevel sub 50
+    ]]
   ]]
 ]]
 when Moth centerFirstTouches TreeFoliage [[
@@ -97,11 +112,16 @@ when Moth centerTouches TreeFoliage [[
     prop alpha setMin 0.1
     featProp Vision visionable setTo false
   ]]
+  ifExpr {{ !Moth.prop.isInert.value }} [[
+    // show wings folded pose
+    featCall Moth.Costume setPose 4
+  ]]
 ]]
 // overide all
 ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
   // visible when moving
   prop alpha setMin 1
+  prop alpha add 0.25
   featProp Vision visionable setTo true
   featCall Costume setPose 0
 ]]
@@ -133,6 +153,9 @@ useFeature Vision
 featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
+
+featCall Movement seekNearestVisible Moth
+featProp Movement distance setTo 4
 
 # PROGRAM UPDATE
 when Predator sees Moth [[
@@ -204,7 +227,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo -200
 prop y setTo -150
-featCall Costume setColorize 0.2 0.8 0
+featCall Costume setColorize 0.1 0.3 0
 featProp Physics scale setTo 1.8
 featProp Physics scaleY setTo 1.7`
     },
@@ -214,7 +237,7 @@ featProp Physics scaleY setTo 1.7`
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 250
 prop y setTo 200
-featCall Costume setColorize 0.4 0.2 0
+featCall Costume setColorize 0.4 0.3 0
 featProp Physics scale setTo 0.4
 featProp Physics scaleY setTo 2`
     },
@@ -224,7 +247,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 250
 prop y setTo -150
-featCall Costume setColorize 0.3 0.7 0
+featCall Costume setColorize 0.8 0.7 0
 featProp Physics scale setTo 1.4
 featProp Physics scaleY setTo 1.8`
     },
@@ -252,16 +275,18 @@ featProp Physics scaleY setTo 2`
       id: 1201,
       name: 'Moth1',
       blueprint: 'Moth',
-      initScript: `prop x setTo 0
-prop y setTo 0
+      initScript: `//prop x setTo 0
+//    prop y setTo -400
+featCall Movement queuePosition 100 -400
 prop alpha setTo 0.02`
     },
     {
       id: 1202,
       name: 'Moth2',
       blueprint: 'Moth',
-      initScript: `prop x setTo 0
-prop y setTo -100
+      initScript: `//prop x setTo 0
+//    prop y setTo -100
+featCall Movement queuePosition -200 -400
 prop alpha setTo 1`
     },
     {
@@ -270,8 +295,6 @@ prop alpha setTo 1`
       blueprint: 'Predator',
       initScript: `prop x setTo 250
 prop y setTo -100
-featCall Movement seekNearestVisible Moth
-featProp Movement distance setTo 1
 prop alpha setTo 1`
     }
   ]

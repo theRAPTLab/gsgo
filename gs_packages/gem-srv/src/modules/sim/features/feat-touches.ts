@@ -12,15 +12,17 @@
   This is a simpler and more efficient version of Touches that adds support
   for different types of touches.
 
-  * There are three types of touches:
+  * There are four types of touches:
     1. c2c -- Center to Center
-    2. c2b -- Center to Bounds
-    3. b2b -- Bounds to Bounds
+    2. c2b -- Center to Bounds -- center touches edges of bouds
+    3. b2b -- Bounds to Bounds -- edges of bounds touch
+    4. binb -- Bounds1 inside Bound2
 
   * These correspond to new conditions tests:
     1. c2c --> centerTouchesCenter
     2. c2b --> centerTouches
     3. b2b --> touches
+    4. binb --> isInside
 
   * Each condition test also has a 'firstTouches' and 'lastTouches' variant.
 
@@ -40,7 +42,8 @@
         agent.lastTouched[501] = {
           c2c: 1534920,
           c2b: undefined,
-          b2b: undefined
+          b2b: undefined,
+          binb: undefined
         }
 
   * There no feature properties.  The data is stored in agent.
@@ -95,13 +98,13 @@ function m_GetAgent(agentId): IAgent {
 }
 
 function m_Clear(agent: IAgent) {
-  agent.lastTouches = undefined;
+  agent.lastTouched = undefined;
   agent.isTouching = undefined;
 }
 
 /// Center to Center
 function m_TouchesC2C(a: IAgent, b: IAgent) {
-  return DistanceTo(a, b) < 5;
+  return DistanceTo(a, b) < 10;
 }
 /// Center to Bounds
 function m_TouchesC2B(a: IAgent, b: IAgent) {
@@ -110,6 +113,10 @@ function m_TouchesC2B(a: IAgent, b: IAgent) {
 /// Bounds to Bounds
 function m_TouchesB2B(a: IAgent, b: IAgent) {
   return a.callFeatMethod('Physics', 'intersectsWith', b);
+}
+/// Bounds1 inside Bounds2
+function m_TouchesBinB(a: IAgent, b: IAgent) {
+  return a.callFeatMethod('Physics', 'isBoundedBy', b);
 }
 
 /// TOUCH LOOP ////////////////////////////////////////////////////////////
@@ -132,6 +139,8 @@ function m_Update(frame) {
         let c2c;
         let c2b;
         let b2b;
+        let binb;
+        // if target is inert, we still need to clear c2c/c2b/b2b
         if (!t.isInert) {
           if (touchTypes.includes('c2c')) {
             c2c = m_TouchesC2C(agent, t) ? frame : undefined;
@@ -146,11 +155,15 @@ function m_Update(frame) {
             b2b = m_TouchesB2B(agent, t) ? frame : undefined;
             if (DBG && b2b) console.log('touches b2b', frame);
           }
+          if (touchTypes.includes('binb')) {
+            binb = m_TouchesBinB(agent, t) ? frame : undefined;
+            if (DBG && binb) console.log('touches binb', frame);
+          }
         }
         if (!agent.lastTouched) agent.lastTouched = new Map();
         if (!agent.isTouching) agent.isTouching = new Map();
         agent.lastTouched.set(t.id, agent.isTouching.get(t.id));
-        agent.isTouching.set(t.id, { c2c, c2b, b2b });
+        agent.isTouching.set(t.id, { c2c, c2b, b2b, binb });
       });
     });
   });

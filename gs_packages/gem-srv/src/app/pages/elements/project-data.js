@@ -23,7 +23,11 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
-import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
+import {
+  POZYX_TRANSFORM,
+  InputsReset,
+  SetPozyxBPNames
+} from 'modules/datacore/dc-inputs';
 import {
   UpdateDCModel,
   GetBoundary,
@@ -76,6 +80,18 @@ function GetCurrentModelData() {
     modelId: CURRENT_MODEL_ID,
     model: CURRENT_MODEL
   };
+}
+/// Used to inject the Cursor blueprint
+export function InjectBlueprint(blueprint) {
+  // Skip if already defined
+  if (CURRENT_MODEL.scripts.find(s => s.id === blueprint.id)) return;
+
+  CURRENT_MODEL.scripts.push(blueprint);
+  const source = TRANSPILER.ScriptifyText(blueprint.script);
+  const bundle = TRANSPILER.CompileBlueprint(source);
+  TRANSPILER.RegisterBlueprint(bundle);
+  // Update PozyxBPNames
+  SetPozyxBPNames(GetPozyxBPNames());
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
@@ -211,7 +227,7 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
  */
 export function InstanceAdd(data, sendUpdate = true) {
   console.log('...InstanceAdd', data);
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   console.log('....model is ', model);
   const instance = {
     id: m_GetUID(),
@@ -245,7 +261,7 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
  *                 if they're not being set.
  */
 export function InstanceUpdate(data) {
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
   instance.name = data.instanceName || instance.name;
@@ -262,7 +278,7 @@ export function InstanceUpdate(data) {
  * @param {Object} data -- { modelId, instanceId, updatedData: {x, y} }
  */
 export function InstanceUpdatePosition(data) {
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
   if (!instance) return; // Pozyx/PTrack instances are not in model.instances, so ignore
@@ -308,7 +324,7 @@ export function InstanceRequestEdit(data) {
  */
 export function InstanceDelete(data) {
   // Remove from Blueprint
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(
     i => i.id === data.instanceDef.id
   );

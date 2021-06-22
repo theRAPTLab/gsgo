@@ -272,7 +272,7 @@ useFeature Population
 useFeature AgentWidgets
 exprPush {{ 'Algae energyLevel avg' }}
 featPropPop AgentWidgets text
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
 
 // Make skin invisible
 prop skin setTo onexone

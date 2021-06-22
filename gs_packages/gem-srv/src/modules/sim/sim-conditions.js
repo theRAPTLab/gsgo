@@ -126,7 +126,7 @@ RegisterFunction('isCloseTo', (a, b, distance = 30) => {
 function m_TouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  const isTouching = a.isTouching.get(b.id);
+  const isTouching = a.isTouching ? a.isTouching.get(b.id) : false;
   // They were not touching, but now they are, so this is first touch
   return isTouching && isTouching[touchType];
 }
@@ -143,12 +143,16 @@ RegisterFunction('centerTouches', (a, b) => {
 RegisterFunction('touches', (a, b) => {
   return m_TouchTest(a, b, 'b2b');
 });
+/// a bounds touches b bounds
+RegisterFunction('isInside', (a, b) => {
+  return m_TouchTest(a, b, 'binb');
+});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FirstTouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  const isTouching = a.isTouching.get(b.id);
-  const wasTouching = a.lastTouched.get(b.id);
+  const isTouching = a.isTouching ? a.isTouching.get(b.id) : false;
+  const wasTouching = a.lastTouched ? a.lastTouched.get(b.id) : false;
   // They were not touching, but now they are, so this is first touch
   return (
     isTouching && wasTouching && isTouching[touchType] && !wasTouching[touchType]
@@ -170,8 +174,8 @@ RegisterFunction('firstTouches', (a, b) => {
 function m_LastTouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
   if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
-  const isTouching = a.isTouching.get(b.id);
-  const wasTouching = a.lastTouched.get(b.id);
+  const isTouching = a.isTouching ? a.isTouching.get(b.id) : false;
+  const wasTouching = a.lastTouched ? a.lastTouched.get(b.id) : false;
   // They were touching, but now they are not, so this is last touch
   return (
     isTouching && wasTouching && wasTouching[touchType] && !isTouching[touchType]

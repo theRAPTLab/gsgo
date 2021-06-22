@@ -30,6 +30,10 @@ export function GetFeatureMethod(fName: string, mName: string) {
 export function Register(fpack) {
   FEATURES.set(fpack.name, fpack);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllFeatures() {
+  FEATURES.clear();
+}
 
 /// COMMON UTILITIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

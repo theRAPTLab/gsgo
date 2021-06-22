@@ -307,7 +307,7 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
 exprPush {{ 1 }}
 featPropPop AgentWidgets meter
 
@@ -350,7 +350,7 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
  exprPush {{ 1 }}
  featPropPop AgentWidgets meter
 
