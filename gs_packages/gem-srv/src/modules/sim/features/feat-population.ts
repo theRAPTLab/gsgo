@@ -69,6 +69,10 @@ class PopulationPack extends GFeature {
     this.featAddMethod('createAgent', this.createAgent);
     this.featAddMethod('spawnChild', this.spawnChild);
     this.featAddMethod('removeAgent', this.removeAgent);
+    // Global Population Management
+    this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
+    this.featAddMethod('hideInertAgents', this.hideInertAgents);
+    this.featAddMethod('agentsReproduce', this.agentsReproduce);
     // Statistics
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
@@ -142,6 +146,44 @@ class PopulationPack extends GFeature {
   removeAgent(agent: IAgent) {
     AGENTS_TO_REMOVE.push(agent.id);
   }
+
+  /// GLOBAL METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Release cursors for ALL inert agents globally
+   */
+  releaseInertAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.isInert && a.hasFeature('Cursor'))
+        a.callFeatMethod('Cursor', 'releaseCursor');
+    });
+  }
+  /**
+   * Release cursors for ALL inert agents globally
+   */
+  hideInertAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.isInert) {
+        console.error('hiding', a.id);
+        a.visible = false;
+      }
+    });
+  }
+  /**
+   * For all agents of type bpname, call SpawnChild if not inert
+   */
+  agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    const agents = GetAgentsByType(bpname);
+    agents.forEach(a => {
+      if (!a.isInert) a.callFeatMethod('Population', 'spawnChild', spawnScript);
+    });
+  }
+
+  /// STATISTICS METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Population setRadius value
    */

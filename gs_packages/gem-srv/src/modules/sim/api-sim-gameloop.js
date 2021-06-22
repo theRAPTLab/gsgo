@@ -27,6 +27,11 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     // GLOOP_STAGED completed, monitor inputs before run
     'INPUTS_READ',
     'INPUTS_UPDATE',
+
+    // allow creation of new objects???????
+    'DELETE',
+    'CREATE',
+
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',
     // 'INPUTS_EXEC', // Don't allow cursor attachment during PRERUN!

@@ -18,6 +18,7 @@ import './sim-agents';
 import './sim-referee';
 import './sim-features';
 import './sim-render';
+import './sim-rounds';
 
 // import submodules
 import { GAME_LOOP } from './api-sim-gameloop';
@@ -65,6 +66,7 @@ function Stage() {
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
     console.log(...PR('Pre-run Loop Starting'));
+    UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
     RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
     console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
   })();
@@ -113,17 +115,29 @@ function Pause() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Stop() {
-  // stop simulation
+  // stop simulation (pause, allow resume)
   console.log(...PR('Stop'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
   console.log(...PR('Post-run Loop Starting'));
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundStop' });
   RX_SUB = SIM_FRAME_MS.subscribe(m_PostRunStep);
   console.log(...PR('Post-run Loop Running...Monitoring Inputs'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function End() {
+function NextRound() {
   // stop simulation
+  console.log(...PR('NextRound'));
+  RX_SUB.unsubscribe();
+  SIM_RATE = 0;
+  console.log(...PR('Pre-run Loop Starting'));
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
+  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function End() {
+  // end simulation
   console.log(...PR('End'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
@@ -161,4 +175,15 @@ UR.HookPhase('UR/APP_RESTAGE', Restage);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { Stage, Costumes, Start, Pause, Stop, End, Export, Reset, IsRunning };
+export {
+  Stage,
+  Costumes,
+  Start,
+  Pause,
+  Stop,
+  NextRound,
+  End,
+  Export,
+  Reset,
+  IsRunning
+};

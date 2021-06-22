@@ -32,6 +32,7 @@ function m_UpdateDCBounds(bounds) {
 }
 export function UpdateDCModel(model) {
   MODEL.label = model.label;
+  MODEL.rounds = model.rounds;
   MODEL.scripts = model.scripts;
   MODEL.instances = model.instances;
   const bounds = model.bounds || {
@@ -100,6 +101,18 @@ export function Wraps(wall = 'any') {
       // Generally you should only call this if there is a single wrap setting
       return wallWrap[0];
   }
+}
+
+/// ROUNDS METHODS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetRoundDef(index: number) {
+  if (
+    MODEL.rounds &&
+    MODEL.rounds.roundDefs &&
+    index < MODEL.rounds.roundDefs.length
+  )
+    return MODEL.rounds.roundDefs[index];
+  return undefined;
 }
 
 /// BLUEPRINT METHODS /////////////////////////////////////////////////////////

@@ -9,6 +9,37 @@ export const MODEL = {
     bounce: true,
     bgcolor: 0x000066
   },
+  rounds: {
+    options: {
+      allowResetStage: false,
+      loop: false // go back to round 1 after last round
+    },
+    roundDefs: [
+      {
+        intro: 'Round 1',
+        initScript: `dbgOut 'Round1!'`,
+        outtro: 'End Round 1.  What happened?',
+        endScript: `dbgOut 'END Round1!'`
+      },
+      {
+        intro: 'Round 2',
+        initScript: `dbgOut 'Round2'
+// Release Cursors from Dead Moths
+featCall Population releaseInertAgents
+// Remove Dead Moths
+featCall Population hideInertAgents
+// Spawn New Moths
+featCall Population reproduce Moth [[
+  prop x addRnd -64 64
+  prop y addRnd -64 64
+  featCall Costume randomizeColorHSV 1 1 1
+]]
+`,
+        outtro: 'End Round 1.  What happened?',
+        endScript: `dbgOut 'END Round2!'`
+      }
+    ]
+  },
   scripts: [
     {
       id: 'Moth',
@@ -59,7 +90,7 @@ featCall AgentWidgets bindGraphTo energyLevel 30
 featCall Costume randomizeColorHSV 0.1 0 1
 
 // random start position
-featCall Movement setRandomStart
+// featCall Movement setRandomStart
 
 // allow access to global darkMoths/lightMoths values
 useFeature Global
@@ -185,7 +216,7 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-// featCall Movement seekNearestVisible Moth
+featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 // To update graphs

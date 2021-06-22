@@ -46,6 +46,7 @@ class SimControl {
     UR.HandleMessage('NET:HACK_SIM_COSTUMES', this.DoSimCostumes);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.HandleMessage('NET:HACK_SIM_NEXTROUND', this.DoSimNextRound);
     UR.HandleMessage('NET:HACK_SIM_END', this.DoSimEnd);
 
     // SYSTEM HOOKS ///////////////////////////////////////////////////////////
@@ -137,6 +138,10 @@ class SimControl {
 
   DoSimStop() {
     SIM.Stop(); // Stop Round
+  }
+
+  DoSimNextRound() {
+    SIM.NextRound();
   }
 
   DoSimEnd() {
