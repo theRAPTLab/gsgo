@@ -507,7 +507,7 @@ function m_FeaturesExec(frame) {
   });
 }
 
-function m_ApplyMovement(frame) {
+function m_VizUpdate(frame) {
   // 4. Apply Positions
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
@@ -523,7 +523,7 @@ UR.HookPhase('SIM/PHYSICS_UPDATE', m_PhysicsUpdate);
 UR.HookPhase('SIM/INPUTS_UPDATE', m_InputsUpdate);
 UR.HookPhase('SIM/FEATURES_THINK', m_FeaturesThink);
 UR.HookPhase('SIM/FEATURES_EXEC', m_FeaturesExec);
-UR.HookPhase('SIM/VIS_UPDATE', m_ApplyMovement);
+UR.HookPhase('SIM/VIS_UPDATE', m_VizUpdate);
 // using VIS_UPDATE instead of FEATURES_EXEC here because
 // we need to update input agents during PRE_RUN, otherwise, input controls
 // will not show up until you run the sim

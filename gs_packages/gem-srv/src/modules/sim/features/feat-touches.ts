@@ -8,6 +8,7 @@
 
   Dependencies:
   * feat-physics
+  * feat-movement -- to set distanceTo before we do our touch tests during m_Update
 
   This is a simpler and more efficient version of Touches that adds support
   for different types of touches.
@@ -124,6 +125,7 @@ function m_TouchesBinB(a: IAgent, b: IAgent) {
 
 /**
  * TOUCH Update Loop -- Runs once per gameloop
+ * Depends on feat-movmeent first setting distances during PHYSICS_UPDATE
  */
 /// Stores the frametime of the last touch of each type
 /// agent.lastTouched[501] = { c2c: 1534920, c2b: undefined, b2b: undefined }
@@ -145,7 +147,7 @@ function m_Update(frame) {
           if (touchTypes.includes('c2c')) {
             c2c = m_TouchesC2C(agent, t) ? frame : undefined;
             if (DBG && c2c) console.log('touches c2c', frame);
-            // console.log('touch c2c', agent.id, t.id, c2c);
+            // if (c2c) console.log('touch c2c', agent.id, t.id, c2c);
           }
           if (touchTypes.includes('c2b')) {
             c2b = m_TouchesC2B(agent, t) ? frame : undefined;

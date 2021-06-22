@@ -29,7 +29,7 @@ featCall Population releaseInertAgents
 // Remove Dead Moths
 featCall Population hideInertAgents
 // Spawn New Moths
-featCall Population reproduce Moth [[
+featCall Population agentsReproduce Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
   featCall Costume randomizeColorHSV 1 1 1
