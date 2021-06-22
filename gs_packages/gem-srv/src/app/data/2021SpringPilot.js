@@ -157,6 +157,7 @@ every 1 runAtStart [[
       id: 'Algae',
       label: 'Algae',
       isCharControllable: true,
+      isPozyxControllable: false,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 
@@ -460,9 +461,9 @@ onEvent Tick [[
     {
       id: 503,
       name: 'Algae 3',
-      blueprint: 'Algae'
-      //       initScript: `prop x setTo -120
-      // prop y setTo -90`
+      blueprint: 'Algae',
+      initScript: `prop x setTo -120
+prop y setTo -90`
     },
     {
       id: 504,
