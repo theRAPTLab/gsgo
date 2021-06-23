@@ -116,11 +116,15 @@ function m_update(frame) {
     const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
-      const canSee = m_IsTargetWithinVisionCone(agent, t);
+      let canSee = false;
+      if (!t.isInert && t.prop.Vision.visionable.value) {
+        // don't check vision if inert or not visible
+        canSee = m_IsTargetWithinVisionCone(agent, t);
+      }
       if (!agent.canSee) agent.canSee = new Map();
       agent.canSee.set(t.id, canSee);
       // pozyx targets might still be present, but inert
-      if (!t.isInert) hasActiveTargets = true;
+      if (!t.isInert && canSee) hasActiveTargets = true;
     });
     // Clear cone if no more non-inert targets.
     // We can't simply check for 0 targets because
@@ -148,7 +152,7 @@ class VisionPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
     super.decorate(agent);
-    this.featAddProp(agent, 'text', new GVarString(agent.name)); // default to agent name
+    this.featAddProp(agent, 'visionable', new GVarBoolean(true)); // can be seen by Vision feature
 
     agent.prop.Vision._viewDistance = 250;
     agent.prop.Vision._viewAngle = (45 * Math.PI) / 180; // in radians
