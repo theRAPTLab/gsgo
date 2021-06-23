@@ -75,44 +75,59 @@ function m_setDirection(agent, degrees) {
 /// But does not actually set the agent x/y until FEATURES_EXEC phase
 function m_QueuePosition(agent, x, y) {
   const bounds = GetBounds();
-  const pad = 5;
+  const pad = 1; // default 5, 10 was too big and too far, try one to get close to edge?
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
-  // If agent uses physics, we can get height/width, otherwise default
-  // to small padding.
-  if (agent.hasFeature('Physics')) {
-    hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
-    hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
-  }
+
+  // Edge Testing
+  // Don't bother with physics body because some conditions, e.g. isCenteredOn
+  // requires a predator agent to have a center all the way to the edge
+  // of the stage to match (and eat moths).  This means agents will
+  // extend beyond the edge of the stage, but that's better than not being
+  // able to reach an agent on the edge.
+  //
+  // // If agent uses physics, we can get height/width, otherwise default
+  // // to small padding.
+  // if (agent.hasFeature('Physics')) {
+  //   hwidth = agent.callFeatMethod('Physics', 'getBodyWidth') / 2;
+  //   hheight = agent.callFeatMethod('Physics', 'getBodyHeight') / 2;
+  // }
   let xx = x;
   let yy = y;
-  if (Wraps('left')) {
-    // This lets the agent poke its nose out before wrapping
-    // to the other side.  Otherwise, the agent will suddenly
-    // pop to other side.
-    xx = x <= bounds.left ? bounds.right - pad : xx;
-  } else if (x - hwidth < bounds.left) {
-    // wall
-    xx = bounds.left + hwidth + pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
-  }
-  if (Wraps('right')) {
-    xx = x >= bounds.right ? bounds.left + pad : xx;
-  } else if (x + hwidth >= bounds.right) {
-    xx = bounds.right - hwidth - pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
-  }
-  if (Wraps('top')) {
-    yy = y <= bounds.top ? bounds.bottom - pad : yy;
-  } else if (y - hheight <= bounds.top) {
-    yy = bounds.top + hheight + pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
-  }
-  if (Wraps('bottom')) {
-    yy = y >= bounds.bottom ? bounds.top + pad : yy;
-  } else if (y + hheight > bounds.bottom) {
-    yy = bounds.bottom - hheight - pad;
-    if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+
+  if (!agent.isCaptive) {
+    // only bounds check if not being dragged
+    if (Wraps('left')) {
+      // This lets the agent poke its nose out before wrapping
+      // to the other side.  Otherwise, the agent will suddenly
+      // pop to other side.
+      xx = x <= bounds.left ? bounds.right - pad : xx;
+    } else if (x - hwidth < bounds.left) {
+      // wall
+      xx = bounds.left + hwidth + pad;
+      // REVIEW: Technically this is not a bounce.
+      // The walls are "solid", so the agent changes direction.
+      // It is not a real physics collision.
+      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+    }
+    if (Wraps('right')) {
+      xx = x >= bounds.right ? bounds.left + pad : xx;
+    } else if (x + hwidth >= bounds.right) {
+      xx = bounds.right - hwidth - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+    }
+    if (Wraps('top')) {
+      yy = y <= bounds.top ? bounds.bottom - pad : yy;
+    } else if (y - hheight <= bounds.top) {
+      yy = bounds.top + hheight + pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+    }
+    if (Wraps('bottom')) {
+      yy = y >= bounds.bottom ? bounds.top + pad : yy;
+    } else if (y + hheight > bounds.bottom) {
+      yy = bounds.bottom - hheight - pad;
+      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+    }
   }
 
   agent.prop.Movement._x = xx;
@@ -143,7 +158,7 @@ function m_ProcessPosition(agent, frame) {
     agent.prop.Movement._lastMove = frame;
     didMove = true;
   } else if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
-    didMoveWithinWindow = true;
+    didMoveWithinWindow = true; // moved within a period of time
   }
   agent.prop.Movement.isMoving.setTo(didMove || didMoveWithinWindow);
 
@@ -170,6 +185,11 @@ function m_ProcessPosition(agent, frame) {
       y: agent.prop.Movement._y
     });
   }
+
+  // don't turn if we're already on target, otherwise, NPCs end up turning
+  // to 0 orientation
+  if (Math.abs(agent.x - x) < 1 && Math.abs(agent.y - y) < 1) return;
+
   // ease into the turn
   const currAngle = agent.prop.Movement._orientation;
   const turnDirection = ANGLES.shortestDirection(currAngle, targetAngle);
@@ -288,7 +308,7 @@ function seek(agent: IAgent, target: { x; y }, frame: number) {
   m_QueuePosition(agent, x, y);
   // also set direction or agent will revert to wandering
   // towards the old direction
-  m_setDirection(agent, Deg2Rad(angle));
+  m_setDirection(agent, angle);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// SeekAgent
@@ -404,7 +424,7 @@ function m_FeaturesThink(frame) {
       agent.prop.Movement._targetId = target.id;
       agent.prop.Movement._lastTargetFrame = frame;
     } else if (frame - agent.prop.Movement._lastTargetFrame > 10) {
-      // delay setting to undefined for 5 frames
+      // delay setting to undefined for 10 frames
       // console.log('....clearing targetId');
       agent.prop.Movement._targetId = undefined;
     } else {
@@ -467,6 +487,7 @@ class MovementPack extends GFeature {
     this.featAddMethod('setRandomPositionX', this.setRandomPositionX);
     this.featAddMethod('setRandomPositionY', this.setRandomPositionY);
     this.featAddMethod('setRandomStart', this.setRandomStart);
+    this.featAddMethod('setRandomStartPosition', this.setRandomStartPosition);
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
@@ -552,11 +573,18 @@ class MovementPack extends GFeature {
     m_setDirection(agent, m_random(0, 360));
   }
 
-  setRandomPosition(agent: IAgent) {
-    const bounds = GetBounds();
+  setRandomBoundedPosition(
+    agent: IAgent,
+    bounds: { left: number; right: number; top: number; bottom: number }
+  ) {
     const x = m_random(bounds.left, bounds.right);
     const y = m_random(bounds.top, bounds.bottom);
     m_QueuePosition(agent, x, y);
+  }
+
+  setRandomPosition(agent: IAgent) {
+    const bounds = GetBounds();
+    this.setRandomBoundedPosition(agent, bounds);
   }
 
   setRandomPositionX(agent: IAgent) {
@@ -574,6 +602,17 @@ class MovementPack extends GFeature {
   setRandomStart(agent: IAgent) {
     this.setRandomDirection(agent);
     this.setRandomPosition(agent);
+  }
+
+  setRandomStartPosition(agent: IAgent, width: number, height: number) {
+    const hwidth = width / 2;
+    const hheight = height / 2;
+    this.setRandomBoundedPosition(agent, {
+      left: -hwidth,
+      right: hwidth,
+      top: -hheight,
+      bottom: hheight
+    });
   }
 
   jitterPos(agent, min: number = -5, max: number = 5, round: boolean = true) {
