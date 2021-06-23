@@ -14,7 +14,7 @@ export const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => 
 export const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
 export const INSTANCES: TInstanceMap = new Map();
 //
-const INSTANCE_COUNTER_START_VAL = 1000;
+const INSTANCE_COUNTER_START_VAL = 9000; // reserve ids < 9000 for User Defined instances?
 let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,6 +87,40 @@ export function DeleteInstancesByBlueprint(blueprint) {
 
 /// AGENT UTILITIES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Copies all `agent.prop` GVars.  Does not copy Feature GVars
+ *  Used by CopyAgentProps.
+ */
+function m_CopyProps(props: object, targetProps: object) {
+  for (const [key, value] of Object.entries(props)) {
+    if (targetProps[key].setTo) {
+      targetProps[key].setTo(value.value);
+    } else {
+      // Features
+      // Maybe we don't want to copy feature properties?
+      //
+      // const features = value;
+      // if (Object.entries(features).length > 0) {
+      //   m_CloneProps(features, cloneProps[key]);
+      // }
+    }
+  }
+}
+/**
+ * This will copy the feature Map and all 'prop' properties from orig to target
+ * @param orig
+ * @param target a freshly minted agent with no settings
+ */
+export function CopyAgentProps(orig: IAgent, target: IAgent) {
+  // blueprint is already copied by MakeAgent
+  // flags are temporary states that should not be copied?
+
+  // REVIEW: Is this cloning all feature properties too?!?
+  target.featureMap = new Map(orig.featureMap);
+
+  m_CopyProps(orig.prop, target.prop);
+  return target;
+}
+
 /** save agent by type into agent map, which contains weaksets of types
  *  AGENTS has instances by blueprint name, which is a Map of agents
  *  AGENT_DICT has instances by id
