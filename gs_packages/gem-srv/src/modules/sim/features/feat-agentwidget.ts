@@ -68,7 +68,7 @@ function m_update(frame) {
     } else {
       text = agent.getFeatProp(FEATID, 'text').value;
     }
-    agent.getProp('statusText').setTo(text);
+    agent.prop.statusText.setTo(text);
 
     // 2. Update Meter
     //    Meters can be set directly via 'meter' featProp,
@@ -79,14 +79,14 @@ function m_update(frame) {
     const isLargeMeter = agent.getFeatProp(FEATID, 'isLargeMeter').value;
     if (meterProp) {
       // Calculate meter value based on property max value
-      const { max, min } = agent.getProp(meterProp);
+      const { max, min } = agent.prop[meterProp];
       const val = (agent.getProp(meterProp).value - min) / (max - min);
-      agent.getProp('statusValue').setTo(val);
+      agent.prop.statusValue.setTo(val);
     } else if (meter) {
-      agent.getProp('statusValue').setTo(meter);
+      agent.prop.statusValue.setTo(meter);
     }
-    if (meterColor) agent.getProp('statusValueColor').setTo(meterColor);
-    if (isLargeMeter) agent.getProp('statusValueIsLarge').setTo(isLargeMeter);
+    if (meterColor) agent.prop.statusValueColor.setTo(meterColor);
+    if (isLargeMeter) agent.prop.statusValueIsLarge.setTo(isLargeMeter);
   });
 }
 
@@ -127,10 +127,10 @@ class WidgetPack extends GFeature {
    *  featCall Physics setRadius value
    */
   bindTextTo(agent: IAgent, propname: string) {
-    agent.getFeatProp(FEATID, 'textProp').setTo(propname);
+    agent.prop.AgentWidgets.textProp.setTo(propname);
   }
   bindMeterTo(agent: IAgent, propname: string) {
-    agent.getFeatProp(FEATID, 'meterProp').setTo(propname);
+    agent.prop.AgentWidgets.meterProp.setTo(propname);
   }
 }
 
