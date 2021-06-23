@@ -483,6 +483,10 @@ function m_FeaturesThink(frame) {
     if (agent.isCaptive) return;
     // ignore AI movement if inert
     if (agent.isInert) return;
+    // being controlled by a cursor
+    if (agent.cursor) {
+      m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
+    }
     // handle movement
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
     if (moveFn) moveFn(agent, frame);

@@ -79,7 +79,7 @@ class SimControl {
 
     UR.RaiseMessage('NET:SET_INPUT_BPNAMES', { bpnames: inputBPnames });
 
-    // 4. Compile All Agents
+    // 4. Compile All Blueprints
     const scripts = model.scripts;
     const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
     const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
@@ -93,9 +93,15 @@ class SimControl {
       instancesSpec
     });
 
-    // 6. Update Agent Display
+    // 6. Update Cursor System
+    //    This needs to happen AFTER instances are created
+    //    since that is when the Cursor Feature is loaded
+    //    which in turn injects the Cursor blueprint.
+    UR.RaiseMessage('COMPILE_CURSORS');
+
+    // 7. Update Agent Display
     //    Agent displays are automatically updated during SIM/VIS_UPDATE
-    // 7. Update Inspectors
+    // 8. Update Inspectors
     //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
   }
 
