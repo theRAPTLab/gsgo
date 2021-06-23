@@ -243,7 +243,8 @@ every 1 runAtStart [[
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-featCall Costume setCostume 'lightbeam.json' 0
+featCall Costume setCostume 'square.json' 0
+featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
 addProp speed Number 1
 addProp energyRate Number 1
