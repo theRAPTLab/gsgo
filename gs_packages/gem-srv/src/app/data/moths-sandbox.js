@@ -32,7 +32,8 @@ featCall Population hideInertAgents
 featCall Population agentsReproduce Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  featCall Costume randomizeColorHSV 1 1 1
+  featProp Costume colorScaleIndex addRnd -2 2 true
+  // featCall Costume randomizeColorHSV 1 1 1
 ]]
 `,
         outtro: 'End Round 1.  What happened?',
@@ -49,8 +50,10 @@ featCall Population agentsReproduce Moth [[
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'bee.json' 0
-// Green
-featCall Costume setColorize 0 1 0
+
+// COLOR
+featCall Costume initHSVColorScale 0 0 1 'value' 11
+featProp Costume colorScaleIndex setTo 9
 
 // Fully visible
 prop alpha setTo 1
@@ -86,8 +89,8 @@ featProp AgentWidgets text setTo ''
 // Plot energy level
 featCall AgentWidgets bindGraphTo energyLevel 30
 
-// random color: shift hue and value
-featCall Costume randomizeColorHSV 0.1 0 1
+// // random color: shift hue and value
+// featCall Costume randomizeColorHSV 0.1 0 0.2
 
 // random start position
 // featCall Movement setRandomStart
