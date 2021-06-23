@@ -30,25 +30,12 @@ export function GetFeatureMethod(fName: string, mName: string) {
 export function Register(fpack) {
   FEATURES.set(fpack.name, fpack);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function DeleteAllFeatures() {
+  FEATURES.clear();
+}
 
 /// COMMON UTILITIES //////////////////////////////////////////////////////////
-///
-/// REVIEW: Move these to a general vector math module?
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Distance between centers for now
-export function DistanceTo(agent, target) {
-  return Math.hypot(target.x - agent.x, target.y - agent.y);
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// project a point out in space based on angle and distance
-export function ProjectPoint(agent, angle, distance) {
-  const x = agent.prop.x.value + Math.cos(angle) * distance;
-  const y = agent.prop.y.value - Math.sin(angle) * distance;
-  return { x, y };
-}
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Returns the SCALED bounding rect of the agent
 export function GetAgentBoundingRect(agent) {

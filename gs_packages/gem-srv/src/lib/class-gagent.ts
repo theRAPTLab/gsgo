@@ -44,10 +44,16 @@ class GAgent extends SM_Object implements IAgent, IActable {
   isHovered: boolean;
   isGrouped: boolean;
   isGlowing: boolean;
-  isLargeMeter: boolean;
+  isLargeGraphic: boolean;
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
+  canSee: any;
+  cursor: IAgent;
+  distanceTo: any;
+  touchTable: Map<any, any>;
+  lastTouched: any;
+  isTouching: any;
   //
   constructor(agentName = '<anon>', id?: string | number) {
     super(agentName); // sets value to agentName, which is only for debugging
@@ -84,6 +90,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
+    this.prop.isInhabitingTarget = new GVarBoolean(false); // is available to pick up agent
     this.prop.statusText = new GVarString();
     this.prop.statusValue = new GVarNumber();
     this.prop.statusValue.setMax(1);
@@ -515,14 +522,18 @@ class GAgent extends SM_Object implements IAgent, IActable {
 /// The global agent is our "World Agent" that contains shared properties for
 /// a running simulation
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const GLOBAL_AGENT = new GAgent('GlobalAgent');
+let GLOBAL_AGENT = new GAgent('GlobalAgent');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GetGlobalAgent() {
   return GLOBAL_AGENT;
+}
+function ClearGlobalAgent() {
+  // REVIEW: Is there a more proper way to remove an agent?
+  GLOBAL_AGENT = new GAgent('GlobalAgent');
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// export main Agent
 export default GAgent;
-export { GetGlobalAgent };
+export { GetGlobalAgent, ClearGlobalAgent };

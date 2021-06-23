@@ -13,7 +13,8 @@ export const MODEL = {
     {
       id: 'Fish',
       label: 'Fish',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
@@ -32,7 +33,7 @@ useFeature Physics
 
 // set Touches
 useFeature Touches
-featCall Touches monitorTouchesWith Algae
+featCall Touches monitor Algae b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
@@ -100,7 +101,7 @@ every 1 runAtStart [[
     {
       id: 'Algae',
       label: 'Algae',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 useFeature Costume
@@ -123,8 +124,8 @@ featProp Physics scale setTo 0.5
 
 // touches
 useFeature Touches
-featCall Touches monitorTouchesWith 'Fish'
-featCall Touches monitorTouchesWith 'Lightbeam'
+featCall Touches monitor Fish c2c
+featCall Touches monitor Lightbeam b2b
 
 useFeature Population
 
@@ -271,7 +272,7 @@ useFeature Population
 useFeature AgentWidgets
 exprPush {{ 'Algae energyLevel avg' }}
 featPropPop AgentWidgets text
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
 
 // Make skin invisible
 prop skin setTo onexone
@@ -292,12 +293,12 @@ every 1 runAtStart [[
   // propPop text
 
   // meter
-  featCall Population countAgentProp 'Algae' 'energyLevel'
-  exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+  featCall Population maxAgentProp 'Fish' 'energyLevel'
+  exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
   featPropPop AgentWidgets meter
 
   // label
-  exprPush {{ 'Algae energyLevel avg: ' + agent.getFeatProp('Population', 'avg').value }}
+  exprPush {{ 'max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
   featPropPop AgentWidgets text
 
   // min

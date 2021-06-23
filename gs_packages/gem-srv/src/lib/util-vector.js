@@ -46,7 +46,7 @@ export function DistanceTo(pos1, pos2) {
  *
  * @param {x: number, y: number} pos1
  * @param {x: number, y: number} pos2
- * @returns radians/
+ * @returns radians
  */
 export function AngleTo(pos1, pos2) {
   const dy = pos2.y - pos1.y;

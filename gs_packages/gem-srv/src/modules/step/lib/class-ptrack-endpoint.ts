@@ -72,6 +72,8 @@ export default class PTrackEndpoint {
       onUpdate: (raw: EntityObject, eo: EntityObject) => {
         eo.x = raw.x;
         eo.y = raw.y;
+        eo.acc = raw.acc;
+        // REVIEW: We might need to explicitly copy PTrack data here
         eo.age = 0;
       },
       // this is called if an id disappears
@@ -320,7 +322,6 @@ export default class PTrackEndpoint {
       raw.type = pf_type;
       raw.name = raw.object_name;
       raw.pose = raw.predicted_pose_name;
-
       // SAVE RAW ENTITY TO LIST
       entities.push(raw);
 

@@ -23,10 +23,13 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
-import { InputsReset } from 'modules/datacore/dc-inputs';
+import {
+  POZYX_TRANSFORM,
+  InputsReset,
+  SetPozyxBPNames
+} from 'modules/datacore/dc-inputs';
 import {
   UpdateDCModel,
-  GetBounds,
   GetBoundary,
   GetBlueprintProperties
 } from 'modules/datacore/dc-project';
@@ -67,7 +70,7 @@ export async function LoadProject(modelId) {
 }
 /// Retrieves cached model or reads from db
 function GetProject(modelId = CURRENT_MODEL_ID) {
-  if (!modelId) throw new Error('Tried to GetModel before setting modelId');
+  if (!modelId) throw new Error('Tried to GetProject before setting modelId');
   if (modelId === CURRENT_MODEL_ID) return CURRENT_MODEL;
   return ReadProject(modelId);
 }
@@ -78,7 +81,36 @@ function GetCurrentModelData() {
     model: CURRENT_MODEL
   };
 }
+/// Used to inject the Cursor blueprint
+export function InjectBlueprint(blueprint) {
+  // Skip if already defined
+  if (CURRENT_MODEL.scripts.find(s => s.id === blueprint.id)) return;
 
+  CURRENT_MODEL.scripts.push(blueprint);
+  const source = TRANSPILER.ScriptifyText(blueprint.script);
+  const bundle = TRANSPILER.CompileBlueprint(source);
+  TRANSPILER.RegisterBlueprint(bundle);
+  // Update PozyxBPNames
+  SetPozyxBPNames(GetPozyxBPNames());
+}
+
+/// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HandlePozyxTransformSet(data) {
+  if (data.scaleX !== undefined) POZYX_TRANSFORM.scaleX = Number(data.scaleX);
+  if (data.scaleY !== undefined) POZYX_TRANSFORM.scaleY = Number(data.scaleY);
+  if (data.translateX !== undefined)
+    POZYX_TRANSFORM.translateX = Number(data.translateX);
+  if (data.translateY !== undefined)
+    POZYX_TRANSFORM.translateY = Number(data.translateY);
+  if (data.rotate !== undefined) POZYX_TRANSFORM.rotate = Number(data.rotate);
+  if (data.useAccelerometer !== undefined)
+    POZYX_TRANSFORM.useAccelerometer = Boolean(data.useAccelerometer);
+  UR.RaiseMessage('NET:POZYX_TRANSFORM_UPDATE', { transform: POZYX_TRANSFORM });
+}
+function HandlePozyxTransformReq() {
+  return { transform: POZYX_TRANSFORM };
+}
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RaiseModelsUpdate() {
@@ -127,7 +159,16 @@ function GetInputBPNames(modelId = CURRENT_MODEL_ID) {
   if (!model)
     console.error(...PR('GetInputBPNames could not load model', modelId));
   const scripts = model.scripts;
-  const res = scripts.filter(s => s.isControllable).map(s => s.id);
+  const res = scripts.filter(s => s.isCharControllable).map(s => s.id);
+  return res;
+}
+function GetPozyxBPNames(modelId = CURRENT_MODEL_ID) {
+  if (DBG) console.log(...PR('GetPozyxBPNames called with', modelId));
+  const model = GetProject(modelId);
+  if (!model)
+    console.error(...PR('GetPozyxBPNames could not load model', modelId));
+  const scripts = model.scripts;
+  const res = scripts.filter(s => s.isPozyxControllable).map(s => s.id);
   return res;
 }
 /**
@@ -186,7 +227,7 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
  */
 export function InstanceAdd(data, sendUpdate = true) {
   console.log('...InstanceAdd', data);
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   console.log('....model is ', model);
   const instance = {
     id: m_GetUID(),
@@ -199,9 +240,10 @@ export function InstanceAdd(data, sendUpdate = true) {
   // otherwise we auto-place the agent around the center of the screen
   const blueprint = model.scripts.find(s => s.id === data.blueprintName);
   const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
+  const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
-    instance.initScript = `prop x setTo ${Math.trunc(RNG() * 50 - 25)}
-prop y setTo ${Math.trunc(RNG() * 50 - 25)}`;
+    instance.initScript = `prop x setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}
+prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 
   model.instances.push(instance);
@@ -219,7 +261,7 @@ prop y setTo ${Math.trunc(RNG() * 50 - 25)}`;
  *                 if they're not being set.
  */
 export function InstanceUpdate(data) {
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
   instance.name = data.instanceName || instance.name;
@@ -236,9 +278,10 @@ export function InstanceUpdate(data) {
  * @param {Object} data -- { modelId, instanceId, updatedData: {x, y} }
  */
 export function InstanceUpdatePosition(data) {
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
+  if (!instance) return; // Pozyx/PTrack instances are not in model.instances, so ignore
   let scriptTextLines = instance.initScript
     ? instance.initScript.split('\n')
     : [];
@@ -281,7 +324,7 @@ export function InstanceRequestEdit(data) {
  */
 export function InstanceDelete(data) {
   // Remove from Blueprint
-  const model = ReadProject(data.modelId);
+  const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(
     i => i.id === data.instanceDef.id
   );
@@ -497,7 +540,7 @@ export function InstanceHoverOut(data) {
 /// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
 const API_PROJDATA = [
   'ReadProjectsList',
-  'GetModel',
+  'GetProject',
   'GetCurrentModelData',
   'GetProjectBoundary',
   'GetInputBPNames',
@@ -506,7 +549,7 @@ const API_PROJDATA = [
 /// Map mod.<functionName> so they can be called by HandleREquestProjData
 const mod = {};
 mod.ReadProjectsList = ReadProjectsList;
-mod.GetModel = GetProject;
+mod.GetProject = GetProject;
 mod.GetCurrentModelData = GetCurrentModelData;
 mod.GetProjectBoundary = GetBoundary; // Mapping clarifies target
 mod.GetInputBPNames = GetInputBPNames;
@@ -538,6 +581,9 @@ function HandleRequestProjData(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
 
+/// TRANSFORM UTILS -----------------------------------------------------------
+UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
+UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
@@ -559,9 +605,10 @@ UR.HandleMessage('INSTANCE_HOVEROVER', InstanceHoverOver);
 UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
 
 export {
-  GetProject as GetModel,
+  GetProject,
   GetCurrentModelData,
   GetBlueprintPropertiesTypeMap,
   GetInputBPNames,
+  GetPozyxBPNames,
   BlueprintDelete
 };

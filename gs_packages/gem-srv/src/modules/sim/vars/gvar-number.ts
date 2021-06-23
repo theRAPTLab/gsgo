@@ -90,6 +90,11 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
+  setToRnd(min: number, max: number) {
+    this.value = u_rnd(min, max);
+    u_CheckMinMax(this);
+    return this;
+  }
   add(num: number) {
     this.value += num;
     u_CheckMinMax(this);

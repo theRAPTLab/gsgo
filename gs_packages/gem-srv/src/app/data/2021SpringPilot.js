@@ -36,11 +36,12 @@ addProp startDirection Number 0
 
 useFeature Physics
 featCall Physics init
-featCall Physics setSize 90
+featProp Physics scale setTo 1
+
 
 // set Touches
 useFeature Touches
-featCall Touches monitorTouchesWith Algae
+featCall Touches monitor Algae b2b
 
 // show meter immediately
 featCall AgentWidgets bindMeterTo energyLevel
@@ -49,10 +50,11 @@ featCall AgentWidgets bindMeterTo energyLevel
 exprPush {{ agent.name }}
 featPropPop AgentWidgets text
 
+
 # PROGRAM EVENT
 onEvent Start [[
   // start at normal size unless you eat
-  featCall Physics setSize 90
+  featProp Physics scale setTo 1
 
     // **** OPTIONS TO CHANGE BEHAVIOR ****
     // ** pick a movement below:
@@ -77,6 +79,14 @@ onEvent Start [[
 
 ]]
 # PROGRAM UPDATE
+
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
+  featProp Costume flipX setTo false
+]]
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
+  featProp Costume flipX setTo true
+]]
+
 when Fish touches Algae [[
   every 1 runAtStart [[
     // always glow to show the interaction
@@ -90,7 +100,7 @@ when Fish touches Algae [[
 
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
-      featCall Physics setSize 150
+      featProp Physics scale setTo 2
       prop Fish.energyUse setTo 2
 
     ]]
@@ -99,8 +109,8 @@ when Fish touches Algae [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
 
-      exprPush {{ 'xx' }}
-      featPropPop AgentWidgets text
+      //exprPush {{ 'xx' }}
+      //featPropPop AgentWidgets text
     ]]
 
   ]]
@@ -139,7 +149,6 @@ every 1 runAtStart [[
   // set meter to mirror energyLevel
   featCall AgentWidgets bindMeterTo energyLevel
 
-
 ]]
 `
     },
@@ -157,7 +166,7 @@ useFeature Population
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
 // default to 0 (false) but once turned on (1) algae will reproduce if they get to full energy from the sun (so any that start at full won't spawn)
-addProp spawns Boolean 1
+addProp spawns Boolean 0
 
 featCall Costume setCostume 'algae.json' 0
 
@@ -171,19 +180,25 @@ useFeature Physics
 featCall Physics init
 
 useFeature Touches
-featCall Touches monitorTouchesWith 'Fish'
-featCall Touches monitorTouchesWith 'Sunbeam'
+featCall Touches monitor Fish b2b
+featCall Touches monitor Sunbeam b2b
 
 // This is so that the numbers don't suddenly change at start and confusing things
 exprPush {{ '##' }}
 featPropPop AgentWidgets text
+//featCall AgentWidgets bindTextTo energyLevel
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
 featCall Movement setMovementType 'wander' 0.2
 
 # PROGRAM INIT
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+featPropPop Physics scale
+featCall Movement setRandomStartPosition 300 300
 
 # PROGRAM UPDATE
+
+
 when Algae touches Sunbeam [[
   every 1 [[
       featCall Algae.Costume setGlow 1
@@ -232,7 +247,6 @@ ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
 
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop agent.Physics scale
-
 
 ]]
 `
@@ -293,7 +307,7 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
 exprPush {{ 1 }}
 featPropPop AgentWidgets meter
 
@@ -336,7 +350,7 @@ featPropPop AgentWidgets text
 prop skin setTo 'onexone'
 
 // Show meter on start.
-featProp AgentWidgets isLargeMeter setTo true
+featProp AgentWidgets isLargeGraphic setTo true
  exprPush {{ 1 }}
  featPropPop AgentWidgets meter
 
@@ -430,24 +444,25 @@ onEvent Tick [[
     {
       id: 501,
       name: 'Algae 1',
-      blueprint: 'Algae',
-      initScript: `prop x setTo 120
-prop y setTo 120`
+      blueprint: 'Algae'
+      //       initScript: `prop x setTo 120
+      // prop y setTo 120`
     },
     {
       id: 502,
       name: 'Algae 2',
       blueprint: 'Algae',
-      initScript: `prop x setTo -150
-prop y setTo -120
-prop energyLevel setTo 50`
+      initScript: `prop energyLevel setTo 50
+// prop x setTo -150
+// prop y setTo -120
+`
     },
     {
       id: 503,
       name: 'Algae 3',
-      blueprint: 'Algae',
-      initScript: `prop x setTo -120
-prop y setTo -90`
+      blueprint: 'Algae'
+      //       initScript: `prop x setTo -120
+      // prop y setTo -90`
     },
     {
       id: 504,
