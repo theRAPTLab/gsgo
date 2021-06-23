@@ -15,7 +15,6 @@ import { Register } from 'modules/datacore/dc-features';
 import { GetSpriteDimensions, GetTextureInfo } from 'modules/datacore/dc-globals';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
-import { agentFeatureToScope } from 'script/ops/stack-ops';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
