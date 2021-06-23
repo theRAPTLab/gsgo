@@ -268,8 +268,7 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeTrunk
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'lightbeam.json' 0
-featCall Costume setColorize 0.2 0.3 0
+featCall Costume setCostume 'circle.json' 0
 
 useFeature Physics
 
@@ -284,7 +283,7 @@ prop zIndex setTo -200
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
-featCall Costume setColorize 0 1 0
+featCall Costume setColorize 0 0.1 0.9
 
 useFeature Physics
 // useFeature AgentWidgets
@@ -314,7 +313,7 @@ featProp AgentWidgets isLargeGraphic setTo true
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo -200
 prop y setTo 200
-featCall Costume setColorize 0.3 0.2 0
+featCall Costume setColorizeHSV 0.3 0 0.9
 featProp Physics scale setTo 0.3
 featProp Physics scaleY setTo 2`
     },
@@ -324,7 +323,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo -200
 prop y setTo -150
-featCall Costume setColorize 0.08 0.28 0
+featCall Costume setColorizeHSV 0 0 0.6
 featProp Physics scale setTo 2
 featProp Physics scaleY setTo 1.5`
     },
@@ -334,7 +333,7 @@ featProp Physics scaleY setTo 1.5`
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 250
 prop y setTo 200
-featCall Costume setColorize 0.4 0.3 0
+featCall Costume setColorizeHSV 0 0 0.8
 featProp Physics scale setTo 0.4
 featProp Physics scaleY setTo 2`
     },
@@ -344,7 +343,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 250
 prop y setTo -150
-featCall Costume setColorize 0.1 0.25 0
+featCall Costume setColorizeHSV 0 0 0.75
 //  featCall Costume setColorize 0.8 0.7 0
 featProp Physics scale setTo 1.2
 featProp Physics scaleY setTo 2`
@@ -355,7 +354,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 0
 prop y setTo 200
-featCall Costume setColorize 0.2 0.2 0
+featCall Costume setColorizeHSV 0 0 1
 featProp Physics scale setTo 0.6
 featProp Physics scaleY setTo 2`
     },
@@ -365,8 +364,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 0
 prop y setTo -150
-featCall Costume setColorize 0.1 0.3 0
-// featCall Costume setColorize 0.2 0.7 0
+featCall Costume setColorizeHSV 0 0 0.7
 featProp Physics scale setTo 1.5
 featProp Physics scaleY setTo 2`
     },
