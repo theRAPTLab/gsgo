@@ -109,25 +109,37 @@ function m_QueuePosition(agent, x, y) {
       // REVIEW: Technically this is not a bounce.
       // The walls are "solid", so the agent changes direction.
       // It is not a real physics collision.
-      if (bounds.bounce) m_setDirection(agent, m_random(-89, 89));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(-89, 89));
+        if (DBG) console.log('bounce left');
+      }
     }
     if (Wraps('right')) {
       xx = x >= bounds.right ? bounds.left + pad : xx;
     } else if (x + hwidth >= bounds.right) {
       xx = bounds.right - hwidth - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(91, 269));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(91, 269));
+        if (DBG) console.log('bounce right');
+      }
     }
     if (Wraps('top')) {
       yy = y <= bounds.top ? bounds.bottom - pad : yy;
     } else if (y - hheight <= bounds.top) {
       yy = bounds.top + hheight + pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(181, 359));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(181, 359));
+        if (DBG) console.log('bounce top');
+      }
     }
     if (Wraps('bottom')) {
       yy = y >= bounds.bottom ? bounds.top + pad : yy;
     } else if (y + hheight > bounds.bottom) {
       yy = bounds.bottom - hheight - pad;
-      if (bounds.bounce) m_setDirection(agent, m_random(1, 179));
+      if (bounds.bounce) {
+        m_setDirection(agent, m_random(1, 179));
+        if (DBG) console.log('bounce bottom');
+      }
     }
   }
 
@@ -407,6 +419,7 @@ function m_FeaturesUpdate(frame) {
   // 1. Cache Distances
   SEEK_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
+    if (!agent) return;
     const targets = GetAgentsByType(options.targetType);
     if (!agent.distanceTo) agent.distanceTo = new Map();
     targets.forEach(t => {
@@ -420,6 +433,7 @@ function m_FeaturesThinkSeek(frame) {
     // REVIEW: Distance calculation should ideally only happen once and be cached
 
     const agent = GetAgentById(id);
+    if (!agent) return;
 
     // REVIEW: We should be finding all agents within the visibility distance
     // not just the nearest one.
@@ -462,10 +476,13 @@ function m_FeaturesThink(frame) {
   // 2. Decide on Movement
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     // ignore AI movement if input agent
     if (agent.isModePuppet()) return;
     // ignore AI movement if being dragged
     if (agent.isCaptive) return;
+    // ignore AI movement if inert
+    if (agent.isInert) return;
     // handle movement
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
     if (moveFn) moveFn(agent, frame);
@@ -476,6 +493,7 @@ function m_FeaturesExec(frame) {
   // 3. Calculate derived properties (e.g. isMoving)
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     m_ProcessPosition(agent, frame);
   });
 }
@@ -484,6 +502,7 @@ function m_ApplyMovement(frame) {
   // 4. Apply Positions
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
+    if (!agent) return;
     m_SetPosition(agent, frame);
   });
 }

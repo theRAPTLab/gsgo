@@ -24,6 +24,7 @@ import {
 } from 'modules/datacore/dc-inputs';
 import { GetBoundary, SendBoundary } from 'modules/datacore/dc-project';
 import { GetInputBPNames, GetPozyxBPNames } from './project-data';
+import { ClearGlobalAgent } from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,6 +107,7 @@ class SimControl {
   DoSimReset() {
     DATACORE.DeleteAllTests();
     // DATACORE.DeleteAllGlobalConditions(); // removed in script-xp branch
+    ClearGlobalAgent();
     DATACORE.DeleteAllScriptEvents();
     DATACORE.DeleteAllBlueprints();
     DATACORE.DeleteAllAgents();

@@ -92,7 +92,8 @@ export function DeleteInstancesByBlueprint(blueprint) {
  */
 function m_CopyProps(props: object, targetProps: object) {
   for (const [key, value] of Object.entries(props)) {
-    if (targetProps[key].setTo) {
+    // Test for targetProps[key] b/c non-GVar properties (like `statusHistory`) do not have a setTo
+    if (targetProps[key] && targetProps[key].setTo) {
       targetProps[key].setTo(value.value);
     } else {
       // Features

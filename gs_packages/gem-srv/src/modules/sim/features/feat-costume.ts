@@ -55,6 +55,7 @@ function m_Update() {
   const agentIds = Array.from(COSTUME_AGENTS.keys());
   agentIds.forEach(id => {
     const agent = m_getAgent(id);
+    if (!agent) return;
     const h = agent.prop.Costume.colorHue.value;
     const s = agent.prop.Costume.colorSaturation.value;
     const v = agent.prop.Costume.colorValue.value;
