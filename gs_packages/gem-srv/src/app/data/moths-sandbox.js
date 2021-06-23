@@ -26,13 +26,15 @@ prop alpha setMin 1
 
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
+featProp Movement distance setTo 3
+featCall Movement wanderUntilInside TreeFoliage
 
 useFeature Physics
 featProp Physics scale setTo 0.5
 
 useFeature Touches
 featCall Touches monitor TreeTrunk c2b
-featCall Touches monitor TreeFoliage c2c c2b b2b
+featCall Touches monitor TreeFoliage c2c c2b b2b binb
 
 // allow removal by  Predator
 // allow spawning
@@ -50,7 +52,12 @@ featCall AgentWidgets bindMeterTo energyLevel
 // hide text
 featProp AgentWidgets text setTo ''
 
+// random color
 featCall Costume randomizeColorHSV 0.1 0 0.2
+
+// random start position
+featCall Movement setRandomStart
+
 
 # PROGRAM INIT
 // Don't randomize here or we'll keep getting new colorsl
@@ -60,7 +67,7 @@ featCall Costume randomizeColorHSV 0.1 0 0.2
 # PROGRAM UPDATE
 every 0.25 [[
   prop alpha sub 0.1
-  prop energyLevel sub 1
+  prop energyLevel sub 2
 ]]
 every 1 [[
   // Blink every second if invisible
@@ -109,12 +116,19 @@ when Moth centerTouches TreeFoliage [[
   ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeFoliage.prop.color.value, 0.2, 1, 0.2)}} [[
     // color matches, fade away and set un-visionable
     prop alpha setMin 0.1
-    featProp Vision visionable setTo false
+    featProp Moth.Vision visionable setTo false
   ]]
   ifExpr {{ !Moth.prop.isInert.value }} [[
-    // show wings folded pose
+    // show wings folded pose (when not inert)
     featCall Moth.Costume setPose 4
   ]]
+  ifExpr {{ Moth.prop.energyLevel.value < 50 }} [[
+    // go search for new tree if energyLevel is low
+    featCall Moth.Movement setMovementType wander
+  ]]
+]]
+when Moth lastTouches TreeFoliage [[
+  featCall Moth.Movement wanderUntilInside TreeFoliage
 ]]
 // overide all
 ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
@@ -143,6 +157,7 @@ featCall Costume setCostume 'bee.json' 0
 useFeature Physics
 useFeature Touches
 featCall Touches monitor Moth c2c
+featCall Touches monitor TreeFoliage binb
 
 // needed for Seek
 useFeature Movement
@@ -153,10 +168,13 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-featCall Movement seekNearestVisible Moth
+// featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 # PROGRAM UPDATE
+when Predator isInside TreeFoliage [[
+  featCall Predator.Costume setGlow 1
+]]
 when Predator sees Moth [[
   prop Moth.alpha setMin 1
   featCall Moth.Costume setGlow 0.1
@@ -209,16 +227,16 @@ prop zIndex setTo -200
     }
   ],
   instances: [
-    {
-      id: 1101,
-      name: 'Tree1',
-      blueprint: 'TreeTrunk',
-      initScript: `prop x setTo -200
-prop y setTo 200
-featCall Costume setColorize 0.3 0.2 0
-featProp Physics scale setTo 0.3
-featProp Physics scaleY setTo 2`
-    },
+    //     {
+    //       id: 1101,
+    //       name: 'Tree1',
+    //       blueprint: 'TreeTrunk',
+    //       initScript: `prop x setTo -200
+    // prop y setTo 200
+    // featCall Costume setColorize 0.3 0.2 0
+    // featProp Physics scale setTo 0.3
+    // featProp Physics scaleY setTo 2`
+    //     },
     {
       id: 1102,
       name: 'TreeFoliage1',
@@ -226,39 +244,39 @@ featProp Physics scaleY setTo 2`
       initScript: `prop x setTo -200
 prop y setTo -150
 featCall Costume setColorize 0.1 0.3 0
-featProp Physics scale setTo 1.8
-featProp Physics scaleY setTo 1.7`
+featProp Physics scale setTo 1
+featProp Physics scaleY setTo 1.2`
     },
-    {
-      id: 1105,
-      name: 'Tree3',
-      blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 250
-prop y setTo 200
-featCall Costume setColorize 0.4 0.3 0
-featProp Physics scale setTo 0.4
-featProp Physics scaleY setTo 2`
-    },
+    //     {
+    //       id: 1105,
+    //       name: 'Tree3',
+    //       blueprint: 'TreeTrunk',
+    //       initScript: `prop x setTo 250
+    // prop y setTo 200
+    // featCall Costume setColorize 0.4 0.3 0
+    // featProp Physics scale setTo 0.4
+    // featProp Physics scaleY setTo 2`
+    //     },
     {
       id: 1106,
       name: 'TreeFoliage3',
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 250
-prop y setTo -150
-featCall Costume setColorize 0.8 0.7 0
-featProp Physics scale setTo 1.4
-featProp Physics scaleY setTo 1.8`
+  prop y setTo -150
+  featCall Costume setColorize 0.8 0.7 0
+  featProp Physics scale setTo 0.8
+  featProp Physics scaleY setTo 1.4`
     },
-    {
-      id: 1103,
-      name: 'Tree2',
-      blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 0
-prop y setTo 200
-featCall Costume setColorize 0.2 0.2 0
-featProp Physics scale setTo 0.6
-featProp Physics scaleY setTo 2`
-    },
+    //     {
+    //       id: 1103,
+    //       name: 'Tree2',
+    //       blueprint: 'TreeTrunk',
+    //       initScript: `prop x setTo 0
+    // prop y setTo 200
+    // featCall Costume setColorize 0.2 0.2 0
+    // featProp Physics scale setTo 0.6
+    // featProp Physics scaleY setTo 2`
+    //     },
     {
       id: 1104,
       name: 'TreeFoliage2',
@@ -266,8 +284,8 @@ featProp Physics scaleY setTo 2`
       initScript: `prop x setTo 0
 prop y setTo -150
 featCall Costume setColorize 0.2 0.7 0
-featProp Physics scale setTo 2
-featProp Physics scaleY setTo 2`
+featProp Physics scale setTo 1
+featProp Physics scaleY setTo 1`
     },
     {
       id: 1201,
@@ -275,25 +293,25 @@ featProp Physics scaleY setTo 2`
       blueprint: 'Moth',
       initScript: `//prop x setTo 0
 //    prop y setTo -400
-featCall Movement queuePosition 100 -400
+featCall Movement queuePosition 100 0
 prop alpha setTo 0.02`
-    },
-    {
-      id: 1202,
-      name: 'Moth2',
-      blueprint: 'Moth',
-      initScript: `//prop x setTo 0
-//    prop y setTo -100
-featCall Movement queuePosition -200 -400
-prop alpha setTo 1`
-    },
-    {
-      id: 1301,
-      name: 'Predator1',
-      blueprint: 'Predator',
-      initScript: `prop x setTo 250
-prop y setTo -100
-prop alpha setTo 1`
     }
+    //     {
+    //       id: 1202,
+    //       name: 'Moth2',
+    //       blueprint: 'Moth',
+    //       initScript: `//prop x setTo 0
+    // //    prop y setTo -100
+    // featCall Movement queuePosition -200 -400
+    // prop alpha setTo 1`
+    //     },
+    //     {
+    //       id: 1301,
+    //       name: 'Predator1',
+    //       blueprint: 'Predator',
+    //       initScript: `prop x setTo 250
+    // prop y setTo -100
+    // prop alpha setTo 1`
+    //     }
   ]
 };
