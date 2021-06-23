@@ -9,8 +9,9 @@ import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent } from 'lib/t-script';
-import { GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import {
+  CopyAgentProps,
   DeleteAgent,
   GetAgentsByType,
   GetAllAgents,
@@ -50,15 +51,12 @@ function m_Create(frame) {
     const def = AGENTS_TO_CREATE.pop();
 
     DefineInstance(def);
-    const agent = TRANSPILER.MakeAgent(def);
-    // by default set agent position to parent position
+    let agent = TRANSPILER.MakeAgent(def);
     const parent = GetAgentById(def.parentId);
-    agent.x = parent.x;
-    agent.y = parent.y;
+    if (parent) CopyAgentProps(parent, agent);
 
-    const initScript = def.initScript;
-    // run initScript
-    agent.exec(initScript, { agent });
+    const initScript = def.initScript; // spawnscript
+    agent.exec(initScript, { agent }); // run spawnscript
   }
 }
 
@@ -69,6 +67,7 @@ class PopulationPack extends GFeature {
     super(name);
     // Population Management
     this.featAddMethod('createAgent', this.createAgent);
+    this.featAddMethod('spawnChild', this.spawnChild);
     this.featAddMethod('removeAgent', this.removeAgent);
     // Statistics
     this.featAddMethod('countAgents', this.countAgents);
@@ -102,7 +101,7 @@ class PopulationPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   /**
-   * Create agent via script
+   * Create agent of arbitrary blueprintName type via script
    * @param agent
    * @param blueprintName
    * @param initScript
@@ -118,6 +117,28 @@ class PopulationPack extends GFeature {
     };
     AGENTS_TO_CREATE.push(def);
   }
+  /**
+   * Create child agent via script, duplicating properties of parent
+   * and running special spawn script
+   * @param agent
+   * @param blueprintName
+   * @param initScript
+   */
+  spawnChild(agent: IAgent, spawnScript: string) {
+    const bpname = agent.blueprint.name;
+    const name = `${bpname}${COUNT++}`;
+    // Queue Instance Defs
+    const def = {
+      name,
+      blueprint: bpname,
+      initScript: spawnScript,
+      parentId: agent.id // save for positioning
+    };
+    AGENTS_TO_CREATE.push(def);
+  }
+  /**
+   * Removes self
+   */
   removeAgent(agent: IAgent) {
     AGENTS_TO_REMOVE.push(agent.id);
   }

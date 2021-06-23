@@ -17,6 +17,7 @@ class InputDef implements IPoolable {
   valid: boolean;
   x: number;
   y: number;
+  framesSinceLastUpdate: number;
 
   constructor(id?: string) {
     this.init(id);

@@ -22,6 +22,7 @@ import {
   LazyMain,
   LazyScriptEditor,
   LazyViewer,
+  LazyTrackerSetup,
   LazyHome
 } from './SystemRoutes';
 
@@ -64,6 +65,9 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/viewer">
           <LazyViewer />
+        </Route>
+        <Route path="/app/tracker">
+          <LazyTrackerSetup />
         </Route>
         {/* Developer Routes */}
         <Route path="/app/dev-tracker">
