@@ -11,6 +11,7 @@
 // ACTIVATE FEATURES (SELF-INSTALLING ON IMPORT)
 import './features/feat-agentwidget';
 import './features/feat-costume';
+import './features/feat-cursor';
 import './features/feat-global';
 import './features/feat-movement';
 import './features/feat-physics';

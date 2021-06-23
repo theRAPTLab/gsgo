@@ -14,7 +14,6 @@ export const MODEL = {
       id: 'Moth',
       label: 'Moth',
       isCharControllable: true,
-      isPozyxControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
@@ -29,7 +28,7 @@ prop alpha setMin 1
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
 featProp Movement distance setTo 3
-featCall Movement wanderUntilInside TreeFoliage
+// featCall Movement wanderUntilInside TreeFoliage
 
 useFeature Physics
 featProp Physics scale setTo 0.5
@@ -64,6 +63,8 @@ featCall Movement setRandomStart
 
 // allow access to global darkMoths/lightMoths values
 useFeature Global
+
+useFeature Cursor
 
 # PROGRAM INIT
 // Don't randomize here or we'll keep getting new colors
@@ -103,8 +104,8 @@ when Moth centerTouches TreeTrunk [[
         // new spawn init script (not current agent)
         // spawn randomly darker
         featProp Costume colorValue subRnd 0.5
-        prop x addRnd -50 50
-        prop y addRnd -50 50
+        prop x addRnd -20 20
+        prop y addRnd -20 20
 
         // add point to global graphs
         ifExpr {{ agent.prop.Costume.colorValue.value < 0.5 }} [[
@@ -139,12 +140,12 @@ when Moth centerTouches TreeFoliage [[
   ]]
   ifExpr {{ Moth.prop.energyLevel.value < 60 }} [[
     // go search for new tree if energyLevel is low
-    featCall Moth.Movement setMovementType wander
+    // featCall Moth.Movement setMovementType wander
   ]]
 ]]
 when Moth lastTouches TreeFoliage [[
   // seek foliage again after you wander off the old foliage
-  featCall Moth.Movement wanderUntilInside TreeFoliage
+  // featCall Moth.Movement wanderUntilInside TreeFoliage
 ]]
 // overide all
 ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
@@ -164,7 +165,7 @@ ifExpr {{ agent.getProp('isInert').value }} [[
       id: 'Predator',
       label: 'Predator',
       isCharControllable: true,
-      isPozyxControllable: false,
+      // isPozyxControllable: false,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
@@ -184,11 +185,13 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-featCall Movement seekNearestVisible Moth
+// featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 // To update graphs
 useFeature Global
+
+useFeature Cursor
 
 # PROGRAM UPDATE
 // when Predator isInside TreeFoliage [[
@@ -219,6 +222,8 @@ when Predator centerTouchesCenter Moth [[
       featCall Global globalProp lightMoths sub 1
       featCall Global globalProp darkMoths sub 0
     ]]
+    // release cursor
+    featCall Moth.Cursor releaseCursor
   ]]
 ]]
 `
@@ -386,6 +391,7 @@ prop y setTo 100
 dbgOut "init 1402 light moths"
 featCall Global addGlobalProp lightMoths Number 0
 featCall Global globalProp lightMoths setMin 0
+featCall Global globalProp lightMoths setMax Infinity
 featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
 `
     }
