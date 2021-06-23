@@ -265,6 +265,7 @@ export function InstanceUpdatePosition(data) {
   const model = ReadProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
+  if (!instance) return; // Pozyx/PTrack instances are not in model.instances, so ignore
   let scriptTextLines = instance.initScript
     ? instance.initScript.split('\n')
     : [];

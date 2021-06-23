@@ -99,6 +99,7 @@ export class featProp extends Keyword {
   }
 
   /** return rendered component representation */
+  // REVIEW: probalby ned to pull out featPropName separately
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, ref, methodName, ...arg] = unit;
     return super.jsx(

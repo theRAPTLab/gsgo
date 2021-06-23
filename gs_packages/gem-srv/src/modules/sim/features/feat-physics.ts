@@ -313,6 +313,32 @@ class PhysicsPack extends GFeature {
     // Round objects are not specifically handled.
     return this.intersects(boundsA, b);
   }
+  intersectsCenterWithBounds(
+    agent: IAgent,
+    b: { x: number; y: number; width: number; height: number }
+  ): boolean {
+    const boundsA = this.getBounds(agent);
+    const size = 10; // size of the center box.
+    const boundsB = {
+      x: b.x - size / 2,
+      y: b.y - size / 2,
+      width: size,
+      height: size
+    };
+    return this.intersects(boundsA, boundsB);
+  }
+  // center of A within bounds of B
+  intersectsCenterWithAgentBounds(agent: IAgent, b: IAgent): boolean {
+    const size = 10; // size of the center box.
+    const centerA = {
+      x: agent.x - size / 2,
+      y: agent.y - size / 2,
+      width: size,
+      height: size
+    };
+    const boundsB = this.getBounds(b);
+    return this.intersects(centerA, boundsB);
+  }
   intersects(
     a: { x: number; y: number; width: number; height: number },
     b: { x: number; y: number; width: number; height: number }

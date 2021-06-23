@@ -7,7 +7,7 @@
 import UR from '@gemstep/ursys/client';
 import * as PTRACK from 'modules/step/in-ptrack';
 import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
-import { GetTrackerMap } from 'modules/datacore/dc-inputs';
+import { GetTrackerMap, GetDefaultPozyxBPName } from 'modules/datacore/dc-inputs';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,6 +41,12 @@ function TrackerSetupIsOnline() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
+  // REVIEW: Skip starting tracker if there are no pozyx mappings.
+  //         Otherwise, dc-inputs will try to create instances with
+  //         no blueprint names.
+  const defaultPozyxBPName = GetDefaultPozyxBPName();
+  if (!defaultPozyxBPName) return;
+
   const POZYX_TO_COBJ = GetTrackerMap();
   setInterval(() => {
     const entities = PTRACK.GetInputs(500);
@@ -79,10 +85,15 @@ UR.HookPhase('UR/LOAD_CONFIG', () => {
   ConnectTracker(addr);
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_CONFIGURE', () => {
+// Orig Call
+// UR.HookPhase('UR/APP_CONFIGURE', () => {
+//   Probably too early b/c DefaultPozyxBPNames are not loaded yet
+//   so we don't know whether or not we can start StartTrackerVisuals
+//
+// Try SIM/STAGED instead
+UR.HookPhase('SIM/STAGED', () => {
   // this fires after UR/LOAD_ASSETS, so sprites are loaded
   const addr = document.domain;
-  console.log(...PR('Starting Tracker Visuals', addr));
   StartTrackerVisuals();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

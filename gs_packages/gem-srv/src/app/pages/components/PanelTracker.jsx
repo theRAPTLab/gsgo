@@ -10,10 +10,10 @@ class PanelTracker extends React.Component {
     super();
     this.state = {
       title: 'Setup',
-      xmin: 0,
-      xmax: 0,
-      ymin: 0,
-      ymax: 0,
+      xmin: Infinity,
+      xmax: -Infinity,
+      ymin: Infinity,
+      ymax: -Infinity,
       entities: [],
       tentities: [],
       transform: {
@@ -105,6 +105,12 @@ class PanelTracker extends React.Component {
       return Number(num).toFixed(2);
     }
 
+    const suggestedScaleX = Number(1 / (xmax - xmin)).toFixed(4);
+    const suggestedScaleY = Number(1 / (ymax - ymin)).toFixed(4);
+
+    const suggestedTranslateX = -((xmax - xmin) / 2 + xmin);
+    const suggestedTranslateY = -((ymax - ymin) / 2 + xmin);
+
     const boundsjsx = (
       <div>
         BOUNDS:
@@ -128,25 +134,31 @@ class PanelTracker extends React.Component {
           <div className={classes.inspectorData}>{ymax}</div>
           <div className={classes.inspectorData}>{ymax - ymin}</div>
         </div>
-        <br />
+        <p>
+          <i>
+            Use these suggested values only as a starting place for exploring the
+            right transforms. They are not meant to be definitive due to the
+            jittery nature of the input data.
+          </i>
+        </p>
         <div>
-          Suggested scale:
+          Suggested settings:
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: '100px 1fr',
-              gridTemplateRows: 'repeat(2, 1fr)'
+              gridTemplateColumns: '100px 1fr 100px 1fr'
             }}
           >
-            <div className={classes.inspectorLabel}>X:&nbsp;</div>
-            <div className={classes.inspectorData}>
-              {Number(1 / (xmax - xmin)).toFixed(4)}
-            </div>
-            <div className={classes.inspectorLabel}>Y:&nbsp;</div>
-            <div className={classes.inspectorData}>
-              {Number(1 / (ymax - ymin)).toFixed(4)}
-            </div>
+            <div className={classes.inspectorLabel}>ScaleX:&nbsp;</div>
+            <div className={classes.inspectorData}>{suggestedScaleX}</div>
+            <div className={classes.inspectorLabel}>TranslateX:&nbsp;</div>
+            <div className={classes.inspectorData}>{suggestedTranslateX}</div>
+            <div className={classes.inspectorLabel}>ScaleY:&nbsp;</div>
+            <div className={classes.inspectorData}>{suggestedScaleY}</div>
+            <div className={classes.inspectorLabel}>TranslateY:&nbsp;</div>
+            <div className={classes.inspectorData}>{suggestedTranslateY}</div>
           </div>
+          <br />
         </div>
       </div>
     );
@@ -155,6 +167,20 @@ class PanelTracker extends React.Component {
       <div>
         TRANSFORMS
         <br />
+        <p>
+          <i>
+            In general, it's easiest to 1. set scale (so you can see the inputs),
+            2. set rotation (so you can see screen orientation), then 3. set
+            translation (so you can center the world).
+          </i>
+        </p>
+        <p>
+          <i>
+            The algorithm is applied in this order: 1. rotate, 2. translate, 3.
+            scale. Translate is applied to the already-rotated but pre-scaled
+            input values in the original Pozyx mm units.
+          </i>
+        </p>
         <div
           style={{
             display: 'grid',
@@ -193,7 +219,7 @@ class PanelTracker extends React.Component {
             type="number"
             onChange={this.onFormInputUpdate}
           />
-          <i>Relative to pozyx units</i>
+          <i>Relative to rotated pozyx units</i>
           <div className={classes.inspectorLabel}>TranslateY (mm): </div>
           <input
             id="translateY"
@@ -211,12 +237,18 @@ class PanelTracker extends React.Component {
           />
           <i>Only for wearable tags</i>
         </div>
+        <br />
       </div>
     );
 
     const entjsx = (
       <div>
         ENTITIES -- raw | transformed
+        <p>
+          <i>
+            The goal is to get the transformed units in the range of -0.5 to +0.5.
+          </i>
+        </p>
         <div
           style={{
             display: 'grid',
@@ -270,13 +302,7 @@ class PanelTracker extends React.Component {
           }}
         >
           {boundsjsx}
-          <br />
-          <hr />
-          <br />
           {transformsjsx}
-          <br />
-          <hr />
-          <br />
           {entjsx}
         </div>
       </PanelChrome>
