@@ -24,6 +24,8 @@ export default class EntityObject implements IPoolable, ITrackerData {
   joints?: object;
   orientation?: number;
   isFaketrack?: boolean; // set by faketrack only
+  isPozyx?: boolean; // set by pozyx only
+  acc?: number[]; // accelerometer on wearable pozyx
 
   // added by entity aging algorithm
   nop?: number; // how many frames this id NOT updated
@@ -49,6 +51,8 @@ export default class EntityObject implements IPoolable, ITrackerData {
     this.joints = obj.joints;
     this.orientation = obj.orientation;
     this.isFaketrack = obj.isFaketrack;
+    this.isPozyx = obj.isPozyx;
+    this.acc = obj.acc;
     // don't touch these
     // this.age = obj.age;
   }

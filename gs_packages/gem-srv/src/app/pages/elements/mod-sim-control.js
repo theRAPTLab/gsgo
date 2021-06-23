@@ -12,15 +12,18 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import RNG from 'modules/sim/sequencer';
 import * as TRANSPILER from 'script/transpiler';
 import * as SIM from 'modules/sim/api-sim';
 import { ClearDOBJ } from 'modules/sim/sim-agents';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
-import { SetInputStageBounds, SetInputBPnames } from 'modules/datacore/dc-inputs';
+import {
+  SetInputStageBounds,
+  SetInputBPnames,
+  SetPozyxBPNames
+} from 'modules/datacore/dc-inputs';
 import { GetBoundary, SendBoundary } from 'modules/datacore/dc-project';
-import { GetInputBPNames } from './project-data';
+import { GetInputBPNames, GetPozyxBPNames } from './project-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -69,6 +72,10 @@ class SimControl {
     //    Set Input controlled agents
     const inputBPnames = GetInputBPNames();
     SetInputBPnames(inputBPnames); // dc-inputs
+    //    Set Pozyx controlled agents
+    const pozyxBPnames = GetPozyxBPNames();
+    SetPozyxBPNames(pozyxBPnames);
+
     UR.RaiseMessage('NET:SET_INPUT_BPNAMES', { bpnames: inputBPnames });
 
     // 4. Compile All Agents
