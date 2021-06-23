@@ -41,7 +41,7 @@ featProp Physics scale setTo 1
 
 // set Touches
 useFeature Touches
-featCall Touches monitorTouchesWith Algae
+featCall Touches monitor Algae b2b
 
 // show meter immediately
 featCall AgentWidgets bindMeterTo energyLevel
@@ -180,8 +180,8 @@ useFeature Physics
 featCall Physics init
 
 useFeature Touches
-featCall Touches monitorTouchesWith 'Fish'
-featCall Touches monitorTouchesWith 'Sunbeam'
+featCall Touches monitor Fish b2b
+featCall Touches monitor Sunbeam b2b
 
 // This is so that the numbers don't suddenly change at start and confusing things
 exprPush {{ '##' }}

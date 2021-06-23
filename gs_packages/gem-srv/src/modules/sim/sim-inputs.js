@@ -41,6 +41,8 @@ const INPUTDEF_TO_AGENT = new SyncMap({
  */
 function UpdateAgent(newInputDef, oldInputDef) {
   // HACK WORKAROUND
+  // REVIEW: instanceDef should refer to 'bpname' not 'blueprint'
+  //         because GAGent 'blueprint' is an object not string
   oldInputDef.blueprint = oldInputDef.bpname;
   newInputDef.blueprint = newInputDef.bpname;
 
@@ -49,6 +51,9 @@ function UpdateAgent(newInputDef, oldInputDef) {
     agent = TRANSPILER.MakeAgent(newInputDef);
   } else if (agent.blueprint.name !== newInputDef.bpname) {
     // char control changed blueprints
+    // ISSUE: Since we re-use the agentID, certain parameters set by the
+    //        old agent might not be reset with the new agent.
+    //        We have to clear these manually.
     DeleteAgent(oldInputDef);
     agent = TRANSPILER.MakeAgent(newInputDef);
   }

@@ -242,9 +242,11 @@ function m_PozyxDampen(
  * Return the first pozyx controllable blueprint for now
  * Eventually we'll add a more sophisticated map
  */
-function GetDefaultPozyxBPName() {
-  if (POZYX_BPNAMES.length < 1)
-    throw new Error('No pozyx controllable blueprints defined!');
+export function GetDefaultPozyxBPName() {
+  if (POZYX_BPNAMES.length < 1) {
+    console.warn('No pozyx controllable blueprints defined!');
+    return undefined;
+  }
   return POZYX_BPNAMES[0];
 }
 export function SetPozyxBPNames(bpnames: string[]) {
