@@ -339,6 +339,21 @@ class PhysicsPack extends GFeature {
     const boundsB = this.getBounds(b);
     return this.intersects(centerA, boundsB);
   }
+  // bounds of A is inside bounds of B
+  isBoundedBy(agentA: IAgent, agentB: IAgent): boolean {
+    const a = this.getBounds(agentA);
+    const b = this.getBounds(agentB);
+    const ahw = a.width / 2;
+    const ahh = a.height / 2;
+    const bhw = b.width / 2;
+    const bhh = b.height / 2;
+    return (
+      a.x > b.x &&
+      a.x + a.width < b.x + b.width &&
+      a.y > b.y &&
+      a.y + a.height < b.y + b.height
+    );
+  }
   intersects(
     a: { x: number; y: number; width: number; height: number },
     b: { x: number; y: number; width: number; height: number }
