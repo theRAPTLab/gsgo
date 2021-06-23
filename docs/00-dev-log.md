@@ -345,4 +345,47 @@ A. The module `step/in-ptrack` manages the raw stream, and exports a `GetInputs(
 A. No but it might have to be.
 
 **Q. Where is the transform applied in PTRACK?**
-A. `input/api-input` has the method `StartTrackerVisuals()` 
+A. `input/api-input` has the method `StartTrackerVisuals()` , which is called from `UR/APP_CONFIGURE`
+
+The current app is reading the entities from PTRACK's endpoint, but just using them to sync the renderpass. There is no input processing going on at all.
+
+```
+RAW NOTES
+
+DC-INPUTS
+  SetInputStageBounds
+  SetInputBPNames
+  SetPozyxBPNames
+  
+DC-PROJECT
+	GetBoundary
+	SendBoundary - 'NET:SET_BOUNDARY' (width, height, bgcolor)
+	
+PROJECT-DATA
+	GetInputPNames
+	GetPoyzxBPNames
+	
+HOW BEN'S CODE WORKS
+
+In ProjectData, the bounds object can hold:
+* top, right, bottom, left
+* wrap
+* bounce
+* bgcolor
+
+Bounds is a Playfield Definition.
+Boundary is the dimensional (width, height) and color (bgcolor) definition.
+
+## WHO USES GET BOUNDARY???
+
+USES - mod-sim-control uses it to set a RENDERER boundary
+STUB - PanelSimulation.jsx uses the boundary information
+
+## 
+
+
+
+
+
+```
+
