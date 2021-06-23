@@ -34,6 +34,7 @@ import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
 import * as TRANSPILER from './script/transpiler';
 import SyncMap from '../../lib/class-syncmap';
+import { ClearGlobalAgent } from '../../lib/class-gagent';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,6 +65,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
+    if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
@@ -85,6 +87,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
     if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
+    if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
@@ -225,9 +228,13 @@ export function AllAgentsProgram(data) {
   const { blueprintNames, instancesSpec } = data;
   if (!blueprintNames) return console.warn(...PR('no blueprint'));
 
-  // I. Remove Unused Blueprints and Agents
+  // 1. Reset Global Agent First
+  ClearGlobalAgent();
+
+  // 2. Remove Unused Blueprints and Agents
   FilterBlueprints(blueprintNames);
 
+  // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {

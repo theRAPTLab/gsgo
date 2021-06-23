@@ -60,6 +60,12 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   statusValue: number;
   x: number;
   y: number;
+  // feature helpers
+  canSee: any; // used by Vision
+  distanceTo: any; // used by Movement
+  touchTable: Map<any, any>; // used by feat-touches to keep track of other agents
+  lastTouched: any; // used by Touches
+  isTouching: any; // used by Touches
   // name, value are defined in IScopeable
 }
 
