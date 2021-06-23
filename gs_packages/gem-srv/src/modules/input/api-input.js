@@ -6,7 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as PTRACK from 'modules/step/in-ptrack';
-import { GetTrackerRP, OutSyncResults } from 'modules/datacore/dc-render';
+import { GetTrackerRP } from 'modules/datacore/dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -17,7 +17,6 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// this should stuff the changes into datacore
 /// and api-render needs to move its data to datacore as well
-let CHEESE_COUNT = 0;
 const FRAMERATE = 30;
 const INTERVAL = (1 / FRAMERATE) * 1000;
 
@@ -37,11 +36,10 @@ export function StartTrackerVisuals() {
   // start test timer
   setInterval(() => {
     const m_entities = PTRACK.GetInputs(500);
-    let out = [];
-    /** CHEESE TESTING HERE **/
-    out.push(...OutSyncResults(RP.syncFromArray(m_entities)));
+    RP.syncFromArray(m_entities);
     RP.mapObjects(); // note that this has to be disabled in api-render
-    if (DBG) console.log(...out);
+    /** CHEESE TESTING HERE **/
+    if (DBG) console.log(RP.getSyncStatus());
   }, INTERVAL);
 }
 

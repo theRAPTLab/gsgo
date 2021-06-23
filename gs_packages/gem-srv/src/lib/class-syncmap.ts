@@ -58,7 +58,6 @@ const f_NullRemove = (remObj: IPoolable) => {};
 export default class SyncMap implements ISyncMap {
   pool: Pool;
   map: MappedPool;
-  deltas: ISyncResults;
 
   constructor(poolOptions: IPoolOptions) {
     if (typeof poolOptions !== 'object') throw Error('arg2 must be config obj');
@@ -116,8 +115,7 @@ export default class SyncMap implements ISyncMap {
    *  and object (e.g. AGENTS). In those cases, use syncFromArray() instead
    */
   syncFromMap(srcMap: PoolableMap) {
-    this.deltas = this.map.syncFromMap(srcMap);
-    return this.deltas;
+    return this.map.syncFromMap(srcMap);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Updates derived objects from an array of source objects
@@ -125,12 +123,11 @@ export default class SyncMap implements ISyncMap {
    *  return: { added,updated,removed } arrays
    */
   syncFromArray(sobjs: PoolableArray) {
-    this.deltas = this.map.syncFromArray(sobjs);
-    return this.deltas;
+    return this.map.syncFromArray(sobjs);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Execute add, update, remove functions for the objects that were
-   *  differenced through syncFromMap() or syncFromArray()
+   *  differenced through syncFromMap() or syncFromArray(). Returns
    */
   mapObjects() {
     return this.map.mapObjects();
@@ -139,7 +136,7 @@ export default class SyncMap implements ISyncMap {
   /** return delta arrays that are computed by syncFrom* methods
    */
   getDeltaArrays() {
-    return this.deltas;
+    return this.map.deltas;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Return all the objects that are in use, which are stored in pool
@@ -163,6 +160,18 @@ export default class SyncMap implements ISyncMap {
   }
   hasMappedId(objId: number): boolean {
     return this.pool.has(objId);
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** debug utility */
+  getSyncStatus(res?: ISyncResults): string[] {
+    if (res === undefined) res = this.getDeltaArrays();
+    const { added, updated, removed } = res;
+    let out = [];
+    if (added && added.length > 0) out.push(`added(${added.length})`);
+    if (updated && updated.length > 0) out.push(`updated(${updated.length})`);
+    if (removed && removed.length > 0) out.push(`removed(${removed.length})`);
+    return out;
   }
 }
 

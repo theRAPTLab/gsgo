@@ -308,5 +308,41 @@ DevController shows the output transformations. `dev-controller-ui` handles the 
 
 * [x] dev-controller read URDB endpoint and initiate fetch (test)
 * [x] client-urdb added: will handle graphql fetches for us (stub)
-* [ ] client-datacore now handles extended netinfo with `urdb` field
+* [x] client-datacore now handles extended netinfo with `urdb` field
 
+## JUN 21 MON - GL Matrix and Transform Review
+
+* [x] how does DevController work?
+* [x] where are matrixes injected? 
+* [x] what matric library to use?
+* [x] what is the right order of operation?
+
+#### Synopsis: DevController
+
+* The module `dev-controller-ui` has the logic and is referred to as **`MOD`**; 
+* `DevController` just has the React definitions and event-related handlers. 
+* When `DevController` mounts, it sends itself to `MOD.Initialize()`
+* There are **three** ways that MOD connects to the ReactUI:
+  * React `DevController` is responsible for calling `MOD.HandleStateChange(name,value)` whenever there is a state change detecting in `handleInputChange(event)` in the UI
+  * `MOD` can read `state` directly via the instance
+  * `MOD` can call `setState()` also to trigger the async update
+
+#### Synopsis: Matrices
+
+Our original transforms in PLAE were applied only to the entities coming from PTRACK. Now, we also apply transforms to POZYX as well.
+
+
+The goal of the input transform is to convert the device coordinates into normalized coordinates ranging from -1 to 1. It is then up to the client to map these numbers to the simulation coordinate system, which right now is based on pixels. 
+
+> see `docs/02-concepts/gl-matrix` for more dscussion.
+
+## JUN 23 - Merging Transforms with URDB
+
+**Q. What happens with PTRACK data?**
+A. The module `step/in-ptrack` manages the raw stream, and exports a `GetInputs(ms)` function that uses a SyncMap to `GetEntities()` from.
+
+**Q. Is `class-ptrack-endpoint` registered as a `UDevice` **
+A. No but it might have to be.
+
+**Q. Where is the transform applied in PTRACK?**
+A. `input/api-input` has the method `StartTrackerVisuals()` 
