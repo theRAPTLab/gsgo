@@ -35,6 +35,9 @@ featCall Population agentsReproduce Moth [[
   featProp Costume colorScaleIndex addRnd -2 2 true
   // featCall Costume randomizeColorHSV 1 1 1
 ]]
+featCall Population agentsForEach TreeFoliage [[
+  featProp Costume colorValue sub 0.1
+]]
 `,
         outtro: 'End Round 1.  What happened?',
         endScript: `dbgOut 'END Round2!'`

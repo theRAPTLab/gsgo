@@ -8,7 +8,7 @@
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
-import { IAgent } from 'lib/t-script';
+import { IAgent, TSMCProgram } from 'lib/t-script';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import {
   CopyAgentProps,
@@ -178,6 +178,15 @@ class PopulationPack extends GFeature {
     const agents = GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) a.callFeatMethod('Population', 'spawnChild', spawnScript);
+    });
+  }
+  /**
+   * For all agents of type bpname, call program if not inert
+   */
+  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+    const agents = GetAgentsByType(bpname);
+    agents.forEach(a => {
+      if (!a.isInert) a.exec(program, { agent: a });
     });
   }
 
