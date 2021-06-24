@@ -5,7 +5,7 @@ export const MODEL = {
     right: 400,
     bottom: 400,
     left: -400,
-    wrap: [true, true],
+    wrap: [false, false],
     bounce: false,
     bgcolor: 0x000066
   },
