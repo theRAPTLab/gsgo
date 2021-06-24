@@ -74,6 +74,7 @@ class PopulationPack extends GFeature {
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
     this.featAddMethod('agentsReproduce', this.agentsReproduce);
     // Statistics
+    this.featAddMethod('getActiveAgentsCount', this.getActiveAgentsCount);
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
@@ -196,6 +197,16 @@ class PopulationPack extends GFeature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Population setRadius value
    */
+
+  getActiveAgentsCount(agent: IAgent, blueprintName: string) {
+    const agents = GetAgentsByType(blueprintName);
+    let count = 0;
+    agents.forEach(a => {
+      if (!a.isInert) count++;
+    });
+    return count;
+  }
+
   countAgents(agent: IAgent, blueprintName: string) {
     const agents = GetAgentsByType(blueprintName);
     agent.getFeatProp(this.name, 'count').setTo(agents.length);
