@@ -16,9 +16,13 @@ export const MODEL = {
     },
     roundDefs: [
       {
-        intro: 'Round 1',
-        initScript: `dbgOut 'Round1!'`,
-        outtro: 'End Round 1.  What happened?',
+        intro: 'First generation',
+        initScript: `dbgOut 'Round1!'
+useFeature AgentWidgets
+featCall AgentWidgets showMessage '1. Press "PREP COSTUMES" to put on costumes.'
+featCall AgentWidgets showMessage '2. Press "START ROUND" when ready!'
+`,
+        outtro: 'What happened?',
         endScript: `dbgOut 'END Round1!'`
       },
       {
