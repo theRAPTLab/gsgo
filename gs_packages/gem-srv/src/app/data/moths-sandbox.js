@@ -12,10 +12,11 @@ export const MODEL = {
   rounds: {
     options: {
       allowResetStage: false,
-      loop: false // go back to round 1 after last round
+      noloop: true // stop after last round
     },
     roundDefs: [
       {
+        time: 3,
         intro: 'First generation',
         initScript: `dbgOut 'Round1!'
 useFeature AgentWidgets
@@ -26,7 +27,8 @@ featCall AgentWidgets showMessage '2. Press "START ROUND" when ready!'
         endScript: `dbgOut 'END Round1!'`
       },
       {
-        intro: 'Round 2',
+        time: 60,
+        intro: 'Spawned and mutated!',
         initScript: `dbgOut 'Round2'
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
@@ -43,7 +45,7 @@ featCall Population agentsForEach TreeFoliage [[
   featProp Costume colorValue sub 0.1
 ]]
 `,
-        outtro: 'End Round 1.  What happened?',
+        outtro: 'What happened to spawn?',
         endScript: `dbgOut 'END Round2!'`
       }
     ]

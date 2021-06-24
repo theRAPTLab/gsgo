@@ -105,6 +105,11 @@ export function Wraps(wall = 'any') {
 
 /// ROUNDS METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetRoundCount() {
+  if (MODEL.rounds && MODEL.rounds.roundDefs)
+    return MODEL.rounds.roundDefs.length;
+  return undefined;
+}
 export function GetRoundDef(index: number) {
   if (
     MODEL.rounds &&
@@ -113,6 +118,11 @@ export function GetRoundDef(index: number) {
   )
     return MODEL.rounds.roundDefs[index];
   return undefined;
+}
+/// Rounds loop by default
+export function RoundsShouldLoop() {
+  if (MODEL.rounds && MODEL.rounds.options) return !MODEL.rounds.options.noloop;
+  return true;
 }
 
 /// BLUEPRINT METHODS /////////////////////////////////////////////////////////

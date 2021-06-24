@@ -18,7 +18,7 @@ import './sim-agents';
 import './sim-referee';
 import './sim-features';
 import './sim-render';
-import './sim-rounds';
+import { RoundInit, RoundStart, RoundStop } from './sim-rounds';
 
 // import submodules
 import { GAME_LOOP } from './api-sim-gameloop';
@@ -26,6 +26,22 @@ import { GAME_LOOP } from './api-sim-gameloop';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM');
+
+const LOOP = {
+  LOAD: 'load',
+  PRERUN: 'prerun',
+  COSTUMES: 'costumes',
+  RUN: 'run',
+  POSTRUN: 'postrun'
+};
+
+// used by PanelPlayback to determine which buttons to display
+// updated directly by sim-round
+export const SIMSTATUS = {
+  currentLoop: LOOP.LOAD,
+  completed: false,
+  timer: undefined
+};
 
 /// RXJS STREAM COMPUTER //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,19 +81,30 @@ function Stage() {
     console.log(...PR('Staging Simulation'));
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
-    console.log(...PR('Pre-run Loop Starting'));
-    UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
-    RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
-    console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
+    NextRound();
   })();
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function NextRound() {
+  // stop simulation
+  console.log(...PR('NextRound'));
+  if (RX_SUB) RX_SUB.unsubscribe();
+  SIM_RATE = 0;
+  console.log(...PR('Pre-run Loop Starting'));
+  SIMSTATUS.currentLoop = LOOP.PRERUN;
+  RoundInit(SIMSTATUS);
+  UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
+  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
+}
 function Costumes() {
   console.log(...PR('Costumes!'));
   // Unsubscribe from PRERUN, otherwise it'll keep running.
   if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_CostumesStep);
+  SIMSTATUS.currentLoop = LOOP.COSTUMES;
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' });
 }
 function Run() {
@@ -97,6 +124,8 @@ function Start() {
   // Unsubscribe from PRERUN, otherwise it'll keep running.
   if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
+  SIMSTATUS.currentLoop = LOOP.RUN;
+  RoundStart(Stop);
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
 
@@ -120,20 +149,11 @@ function Stop() {
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
   console.log(...PR('Post-run Loop Starting'));
+  SIMSTATUS.currentLoop = LOOP.POSTRUN;
+  SIMSTATUS.completed = RoundStop();
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundStop' });
   RX_SUB = SIM_FRAME_MS.subscribe(m_PostRunStep);
   console.log(...PR('Post-run Loop Running...Monitoring Inputs'));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function NextRound() {
-  // stop simulation
-  console.log(...PR('NextRound'));
-  RX_SUB.unsubscribe();
-  SIM_RATE = 0;
-  console.log(...PR('Pre-run Loop Starting'));
-  UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
-  RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
-  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function End() {
@@ -142,6 +162,7 @@ function End() {
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
   console.log(...PR('Pre-run Loop Starting'));
+  SIMSTATUS.currentLoop = LOOP.PRERUN;
   RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
