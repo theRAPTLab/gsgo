@@ -234,6 +234,9 @@ useFeature Global
 
 useFeature Cursor
 
+// Allow Predator to stop round
+useFeature Timer
+
 # PROGRAM UPDATE
 // when Predator isInside TreeFoliage [[
 //   featCall Predator.Costume setGlow 1
@@ -265,6 +268,14 @@ when Predator centerTouchesCenter Moth [[
     ]]
     // release cursor
     featCall Moth.Cursor releaseCursor
+
+    // Stop sim if no more agents
+    ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 1 }} [[
+      featCall Predator.Timer stopRound
+
+      // This will be added to the end of round message
+      featCall Moth.AgentWidgets showMessage 'No more moths!'
+    ]]
   ]]
 ]]
 `
