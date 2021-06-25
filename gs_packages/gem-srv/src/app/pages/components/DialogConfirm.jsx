@@ -24,9 +24,9 @@ function DialogConfirm(props) {
     <Dialog onClose={onClose} open={open}>
       <DialogTitle>{title}</DialogTitle>
       <DialogContent>
-        <DialogContentText>
-          {Array.isArray(message) ? message.map(m => <div>{m}</div>) : message}
-        </DialogContentText>
+        {Array.isArray(message)
+          ? message.map(m => <div key={m}>{m}</div>)
+          : message}
       </DialogContent>
       <DialogActions>
         <Button type="button" onClick={() => onClose(false)}>
