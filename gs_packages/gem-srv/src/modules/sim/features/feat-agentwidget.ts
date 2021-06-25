@@ -70,7 +70,8 @@ function m_FeaturesUpdate(frame) {
         const global = GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
-      agent.prop.AgentWidgets._graph.push(frame, value);
+      const counter = agent.prop.AgentWidgets._graphCounter++;
+      agent.prop.AgentWidgets._graph.push(counter, value);
     } else {
       // Trigger-based Graph
       // New plot point on change in _graphValue
