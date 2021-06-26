@@ -20,7 +20,6 @@ import * as TRANSPILER from './script/transpiler';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM_ROUNDS');
 const DBG = false;
-const GLOBAL_AGENT = GetGlobalAgent();
 
 let ROUNDS_INDEX = -1; // index of roundDef
 let ROUNDS_COUNTER = -1; // number of rounds run
@@ -71,20 +70,26 @@ function StopRoundTimer() {
 }
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** invoked via UR/APP_CONFIGURE */
-function ModuleInit(/* gloop */) {
+export function StageInit() {
+  const GLOBAL_AGENT = GetGlobalAgent();
   GLOBAL_AGENT.addFeature('Population');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunScript(scriptUnits) {
   if (scriptUnits) {
     const program = TRANSPILER.CompileText(scriptUnits);
+    const GLOBAL_AGENT = GetGlobalAgent();
     GLOBAL_AGENT.exec(program, { agent: GLOBAL_AGENT });
 
     // ALTERNATIVE METHOD using exec_smc, but this has context problems.
     // const ctx = { agent: GLOBAL_AGENT, global: GLOBAL_AGENT };
     // if (program) exec_smc(program, ctx);
   }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function RoundsReset() {
+  ROUNDS_INDEX = -1;
+  ROUNDS_COUNTER = -1;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RoundInit(SIMSTATUS) {
@@ -138,7 +143,7 @@ export function RoundStop() {
 
 /// SYNCHRONOUS LIFECYCLE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_CONFIGURE', ModuleInit);
+// UR.HookPhase('UR/APP_CONFIGURE', ModuleInit);
 
 /// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

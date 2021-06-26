@@ -18,7 +18,13 @@ import './sim-agents';
 import './sim-referee';
 import './sim-features';
 import './sim-render';
-import { RoundInit, RoundStart, RoundStop } from './sim-rounds';
+import {
+  RoundsReset,
+  RoundInit,
+  RoundStart,
+  RoundStop,
+  StageInit
+} from './sim-rounds';
 
 // import submodules
 import { GAME_LOOP } from './api-sim-gameloop';
@@ -81,6 +87,7 @@ function Stage() {
     console.log(...PR('Staging Simulation'));
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
+    StageInit();
     NextRound();
   })();
 }
@@ -176,8 +183,15 @@ function Export() {
 function Reset() {
   // return simulation to starting state, ready to run
   (async () => {
-    console.log(...PR('Reset'));
-    await GAME_LOOP.executePhase('GLOOP_LOAD');
+    // Orig Code
+    // await GAME_LOOP.executePhase('GLOOP_LOAD');
+
+    // Reset Rounds
+    RoundsReset();
+
+    // Re-Stage
+    Stage(); // results in agentWidgets already in blueprint
+
   })();
 }
 
