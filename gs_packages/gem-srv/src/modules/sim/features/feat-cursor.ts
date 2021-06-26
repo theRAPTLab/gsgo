@@ -17,7 +17,6 @@ import { IAgent } from 'lib/t-script';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
 import { GetGlobalAgent } from 'lib/class-gagent';
-import { InjectBlueprint } from '../../../app/pages/elements/project-data';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,7 +82,7 @@ useFeature AgentWidgets
     // `
   };
 
-  InjectBlueprint(CURSOR_SCRIPT);
+  UR.RaiseMessage('INJECT_BLUEPRINT', { script: CURSOR_SCRIPT });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// This replaces the `when` script
