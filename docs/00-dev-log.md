@@ -1,4 +1,4 @@
-PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
+88PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY  S2107 APR 05 - APR 18**
 
@@ -381,11 +381,16 @@ Boundary is the dimensional (width, height) and color (bgcolor) definition.
 USES - mod-sim-control uses it to set a RENDERER boundary
 STUB - PanelSimulation.jsx uses the boundary information
 
-## 
-
-
-
-
-
+According to Ben: 
 ```
+
+## JUN 24-25 (THU-FRI): Diagram Data Structures for Renderer
+
+See diagram [Coordinate System Reference](https://whimsical.com/coordinate-system-reference-LqUQT5oVLdN2BJjR7izZJw) for a diagram. 
+
+**So what questions can I ask to get myself moving today?**
+A. outlined the contents of the LOCAL object, so I think I can actually write the code for this. A starting point would be to load the locale with a bunch of files. Let's look into **reading files from a directory** and automatically processing them into a manifest.
+
+* [x] **do libraries already exist?** yes, but there are short routines to do this.
+* [x] **where should this go?** In URSYS there is a `util` directory, we will add a `fs-helpers.js` module to read files
 

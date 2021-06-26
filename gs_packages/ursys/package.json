@@ -21,7 +21,19 @@
     "..bootstrap": "cd ../.. && npm run bootstrap",
     "dev:ursys": "webpack -w",
     "build": "npm run build:ursys",
-    "build:ursys": "webpack"
+    "build:ursys": "webpack",
+    "test": "nodemon ursys-test.js"
+  },
+  "nodemonConfig": {
+    "verbose": true,
+    "ignore": [
+      "node_modules"
+    ],
+    "watch": [
+      "./src",
+      "./server-node-test.js"
+    ],
+    "ext": "js json"
   },
   "dependencies": {
     "express-graphql": "^0.12.0",
@@ -30,6 +42,7 @@
     "hashids": "^2.2.1",
     "ip": "^1.1.5",
     "lokijs": "^1.5.12",
+    "node-dir": "^0.1.17",
     "request-ip": "^2.1.3",
     "tracer": "^1.0.3",
     "uuid": "^8.0.0",
@@ -40,6 +53,7 @@
     "@babel/preset-env": "^7.12.0",
     "babel-loader": "^8.1.0",
     "eslint": "^6.8.0",
+    "nodemon": "^2.0.7",
     "ts-loader": "^8.0.3",
     "typescript": "^4.0.3",
     "webpack": "^4.44.2",

@@ -11,8 +11,10 @@ const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
 const DB = require('./server-urdb');
+const FILES = require('./server-urfiles');
 const DBG = require('./ur-dbg-settings');
 const COMMON = require('./ur-common');
+
 //
 const {
   IsBrowser,
