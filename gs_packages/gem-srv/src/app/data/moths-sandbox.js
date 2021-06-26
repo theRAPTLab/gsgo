@@ -16,7 +16,7 @@ export const MODEL = {
     },
     roundDefs: [
       {
-        time: 3,
+        time: 10,
         intro: 'First generation',
         initScript: `dbgOut 'Round1!'
 useFeature AgentWidgets
