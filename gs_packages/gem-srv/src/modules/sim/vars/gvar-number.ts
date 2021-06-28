@@ -43,12 +43,16 @@ function u_CheckMinMax(vobj) {
 /// 1. `u_rnd()` returns random between 0 and 1
 /// 2. `u_rnd(val)` returns random * val
 /// 3. `u_rnd(min, max)' returns random between min and max
-function u_rnd(min: number, max: number) {
+function u_rnd(min: number, max: number): number {
   if (min === undefined) return RNG();
   if (max === undefined) return RNG() * min;
   const minval = min > max ? max : min;
   const maxval = min > max ? min : max;
   return RNG() * (maxval - minval) + minval;
+}
+function u_RND(min: number, max: number, integer: boolean): number {
+  const val = u_rnd(min, max);
+  return integer ? Math.round(val) : val;
 }
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -90,8 +94,8 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
-  setToRnd(min: number, max: number) {
-    this.value = u_rnd(min, max);
+  setToRnd(min: number, max: number, integer: boolean) {
+    this.value = u_RND(min, max, integer);
     u_CheckMinMax(this);
     return this;
   }
@@ -100,8 +104,8 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
-  addRnd(min: number, max: number) {
-    this.value += u_rnd(min, max);
+  addRnd(min: number, max: number, integer: boolean) {
+    this.value += u_RND(min, max, integer);
     u_CheckMinMax(this);
     return this;
   }
@@ -110,8 +114,8 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
-  subRnd(min: number, max: number) {
-    this.value -= u_rnd(min, max);
+  subRnd(min: number, max: number, integer: boolean) {
+    this.value -= u_RND(min, max, integer);
     u_CheckMinMax(this);
     return this;
   }

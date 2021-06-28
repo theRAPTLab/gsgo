@@ -82,7 +82,8 @@ function GetCurrentModelData() {
   };
 }
 /// Used to inject the Cursor blueprint
-export function InjectBlueprint(blueprint) {
+export function InjectBlueprint(data) {
+  const blueprint = data.script;
   // Skip if already defined
   if (CURRENT_MODEL.scripts.find(s => s.id === blueprint.id)) return;
 
@@ -589,6 +590,7 @@ UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
+UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
 UR.HandleMessage('NET:INSTANCE_UPDATE', InstanceUpdate);

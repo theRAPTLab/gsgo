@@ -39,7 +39,23 @@ const DBG = false;
 class TimerPack extends GFeature {
   constructor(name) {
     super(name);
+    this.featAddMethod('setRoundTimer', this.setRoundTimer);
+    this.featAddMethod('stopRound', this.stopRound);
     if (DBG) console.log(...PR('construct'));
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  decorate(agent) {
+    super.decorate(agent);
+  }
+
+  /// TIMER METHODS ///////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  ///
+  setRoundTimer(agent: IAgent) {
+    console.error('setRoundTimer not implemented yet.');
+  }
+  stopRound(agent: IAgent) {
+    UR.RaiseMessage('NET:HACK_SIM_STOP');
   }
 }
 

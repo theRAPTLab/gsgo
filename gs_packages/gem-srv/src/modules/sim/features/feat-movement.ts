@@ -415,7 +415,7 @@ function m_FindNearbyAgents(agent, targetType) {
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-function m_FeaturesUpdate(frame) {
+function m_PhysicsUpdate(frame) {
   // 1. Cache Distances
   SEEK_AGENTS.forEach((options, id) => {
     const agent = GetAgentById(id);
@@ -470,6 +470,15 @@ function m_FeaturesThinkSeek(frame) {
     }
   });
 }
+function m_InputsUpdate(frame) {
+  // 2. Decide on Movement
+  const agents = [...MOVEMENT_AGENTS.values()];
+  agents.forEach(agent => {
+    if (!agent) return;
+    // being controlled by a cursor
+    if (agent.cursor) m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
+  });
+}
 function m_FeaturesThink(frame) {
   // 1. Process Seek agents: Find target Agent
   m_FeaturesThinkSeek(frame);
@@ -483,10 +492,6 @@ function m_FeaturesThink(frame) {
     if (agent.isCaptive) return;
     // ignore AI movement if inert
     if (agent.isInert) return;
-    // being controlled by a cursor
-    if (agent.cursor) {
-      m_QueuePosition(agent, agent.cursor.x, agent.cursor.y);
-    }
     // handle movement
     const moveFn = MOVEMENT_FUNCTIONS.get(agent.prop.Movement.movementType.value);
     if (moveFn) moveFn(agent, frame);
@@ -502,7 +507,7 @@ function m_FeaturesExec(frame) {
   });
 }
 
-function m_ApplyMovement(frame) {
+function m_VizUpdate(frame) {
   // 4. Apply Positions
   const agents = [...MOVEMENT_AGENTS.values()];
   agents.forEach(agent => {
@@ -514,10 +519,11 @@ function m_ApplyMovement(frame) {
 /// HOOKS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
+UR.HookPhase('SIM/PHYSICS_UPDATE', m_PhysicsUpdate);
+UR.HookPhase('SIM/INPUTS_UPDATE', m_InputsUpdate);
 UR.HookPhase('SIM/FEATURES_THINK', m_FeaturesThink);
 UR.HookPhase('SIM/FEATURES_EXEC', m_FeaturesExec);
-UR.HookPhase('SIM/VIS_UPDATE', m_ApplyMovement);
+UR.HookPhase('SIM/VIS_UPDATE', m_VizUpdate);
 // using VIS_UPDATE instead of FEATURES_EXEC here because
 // we need to update input agents during PRE_RUN, otherwise, input controls
 // will not show up until you run the sim

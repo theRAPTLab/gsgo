@@ -1,6 +1,6 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import clsx from 'clsx';
+import { SIMSTATUS } from 'modules/sim/api-sim';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -15,6 +15,8 @@ class PanelPlayback extends React.Component {
       isRunning: false
     };
     this.OnResetClick = this.OnResetClick.bind(this);
+    this.OnCostumesClick = this.OnCostumesClick.bind(this);
+    this.OnNextRoundClick = this.OnNextRoundClick.bind(this);
     this.OnStartClick = this.OnStartClick.bind(this);
   }
 
@@ -23,6 +25,16 @@ class PanelPlayback extends React.Component {
   OnResetClick() {
     this.setState({ isRunning: false });
     UR.RaiseMessage('NET:HACK_SIM_RESET');
+  }
+
+  OnCostumesClick() {
+    this.setState({ isRunning: false });
+    UR.RaiseMessage('NET:HACK_SIM_COSTUMES');
+  }
+
+  OnNextRoundClick() {
+    this.setState({ isRunning: false });
+    UR.RaiseMessage('NET:HACK_SIM_NEXTROUND');
   }
 
   OnStartClick() {
@@ -46,6 +58,17 @@ class PanelPlayback extends React.Component {
 
     const isDisabled = model === undefined;
 
+    const showCostumes =
+      SIMSTATUS.currentLoop === 'prerun' && !SIMSTATUS.completed;
+    const showRun =
+      (SIMSTATUS.currentLoop === 'prerun' ||
+        SIMSTATUS.currentLoop === 'costumes' ||
+        SIMSTATUS.currentLoop === 'run') &&
+      !SIMSTATUS.completed;
+    const showNextRun =
+      SIMSTATUS.currentLoop === 'postrun' && !SIMSTATUS.completed;
+    const timer = SIMSTATUS.timer;
+
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
         <div
@@ -56,6 +79,19 @@ class PanelPlayback extends React.Component {
             fontSize: '12px'
           }}
         >
+          {timer !== undefined && (
+            <div
+              style={{
+                width: '100%',
+                textAlign: 'center',
+                fontSize: '48px',
+                fontWeight: 'bold',
+                color: 'white'
+              }}
+            >
+              {timer}
+            </div>
+          )}
           {needsUpdate && (
             <div
               className={classes.infoHighlightColor}
@@ -75,10 +111,33 @@ class PanelPlayback extends React.Component {
                   type="button"
                   className={needsUpdate ? classes.buttonHi : classes.button}
                   onClick={this.OnResetClick}
+                  style={{ width: '100%' }}
                 >
                   RESET STAGE
                 </button>
-                <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
+                {showCostumes && (
+                  <button
+                    type="button"
+                    className={needsUpdate ? classes.buttonHi : classes.button}
+                    onClick={this.OnCostumesClick}
+                    style={{ width: '100%' }}
+                  >
+                    PREP COSTUMES
+                  </button>
+                )}
+                {showRun && (
+                  <PlayButton isRunning={isRunning} onClick={this.OnStartClick} />
+                )}
+                {showNextRun && (
+                  <button
+                    type="button"
+                    className={needsUpdate ? classes.buttonHi : classes.button}
+                    onClick={this.OnNextRoundClick}
+                    style={{ width: '100%' }}
+                  >
+                    PREP NEXT ROUND
+                  </button>
+                )}
               </>
             )}
 

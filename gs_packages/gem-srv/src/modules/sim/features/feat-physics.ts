@@ -58,7 +58,7 @@ function m_getAgent(agentId): IAgent {
  * Sets physics body and agent scale based on an application of
  * user-defined scale to user-defined width / height
  */
-function m_update(frame) {
+function m_Update(frame) {
   const agentIds = Array.from(PHYSICS_AGENTS.keys());
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
@@ -124,7 +124,7 @@ class PhysicsPack extends GFeature {
     this.featAddMethod('getHeight', this.getHeight);
     this.featAddMethod('getBounds', this.getBounds);
 
-    UR.HookPhase('SIM/PHYSICS', m_update);
+    UR.HookPhase('SIM/PHYSICS_UPDATE', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** This runs once to initialize the feature for all agents */

@@ -3,6 +3,8 @@
   Global is a special-case feature that is accessible to ALL agents in
   the simulation
 
+  This can be used by scripts to add and update global variables.
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import GFeature from 'lib/class-gfeature';

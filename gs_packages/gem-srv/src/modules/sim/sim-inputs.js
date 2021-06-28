@@ -107,7 +107,7 @@ function ProcessInputs(frameTime) {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('SIM/INPUTS', ProcessInputs);
+UR.HookPhase('SIM/INPUTS_READ', ProcessInputs);
 
 /// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
