@@ -122,7 +122,7 @@ class PanelPlayback extends React.Component {
                     onClick={this.OnCostumesClick}
                     style={{ width: '100%' }}
                   >
-                    PREP COSTUMES
+                    PICK CHARACTERS
                   </button>
                 )}
                 {showRun && (
@@ -135,7 +135,7 @@ class PanelPlayback extends React.Component {
                     onClick={this.OnNextRoundClick}
                     style={{ width: '100%' }}
                   >
-                    PREP NEXT ROUND
+                    RESTART ROUND
                   </button>
                 )}
               </>
