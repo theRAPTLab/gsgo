@@ -17,18 +17,13 @@ export const MODEL = {
     roundDefs: [
       {
         time: 10,
+        initScript: `dbgOut 'Round1!'`,
         intro: 'First generation',
-        initScript: `dbgOut 'Round1!'
-useFeature AgentWidgets
-featCall AgentWidgets showMessage '1. Press "PREP COSTUMES" to put on costumes.'
-featCall AgentWidgets showMessage '2. Press "START ROUND" when ready!'
-`,
         outtro: 'What happened?',
         endScript: `dbgOut 'END Round1!'`
       },
       {
         time: 60,
-        intro: 'Spawned and mutated!',
         initScript: `dbgOut 'Round2'
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
