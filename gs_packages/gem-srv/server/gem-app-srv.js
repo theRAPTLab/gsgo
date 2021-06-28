@@ -164,7 +164,7 @@ function StartAppServer(opt = {}) {
   UseURDB(app, {
     dbPath: 'runtime/db.loki',
     importPath: 'config/init/db-test.json',
-    schemaPath: 'config/graphql/locale-schema.gql',
+    schemaPath: 'config/graphql/locale-schema.graphql',
     root: db_resolver
   });
 

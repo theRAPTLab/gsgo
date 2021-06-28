@@ -25,14 +25,16 @@ function PKT_ExamplePacketCommand(pkt) {
 
 /// TEST METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const dir = path.resolve(__dirname);
-(async () => {
-  TERM('listing dir:', dir);
-  const files = await ndir.promiseFiles(dir);
-  files.forEach(file => {
-    TERM(path.basename(file));
-  });
-})();
+function TestFileList() {
+  const dir = path.resolve(__dirname);
+  (async () => {
+    TERM('listing dir:', dir);
+    const files = await ndir.promiseFiles(dir);
+    files.forEach(file => {
+      TERM(path.basename(file));
+    });
+  })();
+}
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

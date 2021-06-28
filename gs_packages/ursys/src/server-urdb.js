@@ -35,22 +35,27 @@ function m_InitializeLoki(dbPath = '../runtime/urdb.loki') {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_InitializeData(importPath) {
+  // import only if setting reset, or no collections in db
   if (SETTING_RESET_DB || DB.getCollections().length === 0) {
+    if (importPath === undefined) {
+      TERM('error: importPath is undefined');
+      return;
+    }
     TERM('importing data', importPath);
     const data = fse.readJsonSync(importPath);
-    const { locales } = data;
-    if (Array.isArray(locales)) {
-      TERM(`importing ${locales.length} locale(s)`);
-      if (DB.getCollection('locales')) {
-        TERM('... deleting old locales from db');
-        DB.removeCollection('locales');
+    const collections = Object.keys(data);
+    collections.forEach(col => {
+      const records = data[col];
+      if (!Array.isArray(records)) return;
+      // looks good so import
+      if (DB.getCollection(col)) {
+        TERM(`... deleting old ${col}s from db`);
+        DB.removeCollection(col);
       }
-      const col = DB.addCollection('locales', { unique: ['id'] });
-      locales.forEach(locale => {
-        TERM(`... writing '${locale.locale}'`);
-        col.insert(locale);
-      });
-    }
+      TERM(`... importing ${records.length} records from '${col}'`);
+      const ncol = DB.addCollection(col, { unique: ['id'] });
+      records.forEach(r => ncol.insert(r));
+    });
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,9 +90,18 @@ function UseURDB(app, options) {
     })
   );
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Load schema and resolver files, then bind with optional database init */
+function URDB_Middleware(app, options) {
+  const { dbPath, importPath, schemaPath, root } = options;
+  // initialize database location, also initialize data
+  m_InitializeLoki(dbPath);
+  m_InitializeData(importPath);
+}
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  UseURDB
+  UseURDB,
+  URDB_Middleware
 };

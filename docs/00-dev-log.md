@@ -543,5 +543,10 @@ Naming conventions:
 
 ### Ok let's try to make this work
 
-* [ ] 
+* [x] add dynamic collection loading from init/db.json
+* [ ] add `gqlPath` to `gem-app-srv.UseURDB()` setup
+* [ ] rewrite `UseURDB()` to use graphql-tools to load globs
+* [ ] confirm it still works as expected by going to graphql endpoint
+* [ ] Try adding another typedef and resolverfile structureasdasd
+* [ ] remove `schemaPath`
 
