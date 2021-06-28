@@ -26,7 +26,7 @@ const {
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const wpconf_packager = require('../config/wp.pack.webapp');
-const db_resolver = require('../config/db-resolver');
+const db_resolver = require('../config/graphql/locale-resolver');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -163,8 +163,8 @@ function StartAppServer(opt = {}) {
   // hook URDB endpoint
   UseURDB(app, {
     dbPath: 'runtime/db.loki',
-    importPath: 'config/db-default-data.json',
-    schemaPath: 'config/db-schema.gql',
+    importPath: 'config/init/db-test.json',
+    schemaPath: 'config/graphql/locale-schema.gql',
     root: db_resolver
   });
 

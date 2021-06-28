@@ -36,6 +36,9 @@
     "ext": "js json"
   },
   "dependencies": {
+    "@graphql-tools/load-files": "^6.3.2",
+    "@graphql-tools/merge": "^6.2.14",
+    "@graphql-tools/schema": "^7.1.5",
     "express-graphql": "^0.12.0",
     "fs-extra": "^8.1.0",
     "graphql": "^15.5.0",

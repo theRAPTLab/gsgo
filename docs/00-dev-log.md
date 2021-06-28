@@ -394,3 +394,154 @@ A. outlined the contents of the LOCAL object, so I think I can actually write th
 * [x] **do libraries already exist?** yes, but there are short routines to do this.
 * [x] **where should this go?** In URSYS there is a `util` directory, we will add a `fs-helpers.js` module to read files
 
+**Q. Given Coordinate System Reference, where should I put all these new objects?**
+
+A. The essential data stucture object is LOCAL, and we have a GRAPQL for it. We need to make the query design to match our diagram.
+
+```
+type Query {
+	locale(name:String): Locale
+	locales: [String!]
+ }
+ 
+ type Locale {
+   id: Int!
+   stage: StageProps
+   gemstep: StepProps
+   ptrack: PTrackProps
+   pozyx: PozyxProps
+   ursys: URSYSProps
+ }
+
+type Vec2 {
+	x: Float!
+	y: Float!
+}
+
+type Bound {
+  range: [Float]
+  shape: [Vec2]
+  rect: [
+}
+
+ type StageProps {
+   mainDisplay: MainDisplayProps
+   playfield: Bound
+ }
+ 
+type PTrackProps {
+	memo: String
+	xRange: [Float]
+	yRange: [Float]
+	xOff: Float
+	yOff: Float
+	xScale: Float
+	xRot: Float
+	yRot: Float
+	zRot: Float
+}
+
+type PozyxProps {
+	memo: String
+}
+
+type StepProps {
+	memo: String
+}
+
+type URSYSProps {
+	memo: String
+} 
+```
+
+## JUN 26-27 WEEKEND
+
+Things To Do
+
+* [ ] Q. How to server-side database should read all gql files, then concatenate them into one long string, then run that through buildSchema
+  A: _See [graphql-tools loadFiles and mergeSchema](https://www.graphql-tools.com/docs/schema-merging)_
+
+  
+
+THe `m_LoadSchema()` function in `server-urdb` is where we can insert loadFiles. The [code example](https://www.graphql-tools.com/docs/server-setup) shows how to use it with express-graphql
+
+## JUN 28 MON - Gathering Thoughts
+
+* [x] add graphql-tools: schema, merge, load-files
+* [ ] decide how to organize schema files
+
+in GEM-APP, there is a config directory where we can put our graphql-related schema things. Here's how it looks now:
+
+```js
+  UseURDB(app, {
+    dbPath: 'runtime/db.loki',
+    importPath: 'config/gql/db-default-data.json',
+    schemaPath: 'config/gql/db-schema.gql',
+    root: db_resolver
+  });  
+```
+
+With `graphql-tools`, we have `schema` to create an "executable schema". 
+
+``` js
+import { makeExecutableSchema } from '@graphql-tools/schema';
+
+const typeDefs = `
+type Query {}
+type Mutation {}
+type Post {}
+`;
+
+const resolvers = {
+  Query: {},
+  Mutation: {},
+  Post: {}
+};
+
+export const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers,
+});
+```
+
+We can use this to create modules that handle specific bits of the schema. The `loadFilesSync` method will merge scehm
+
+``` js
+const path = require('path');
+const { loadFilesSync } = require('@graphql-tools/load-files');
+const { mergeTypeDefs, mergeResolvers } = require('@graphql-tools/merge');
+
+const loadedDefs = loadFilesSync(
+  path.join(__dirname, './types'), 
+  { 
+    recursive:true, 
+    ignoreIndex:true
+  });
+});
+const loadedResolvers = loadFilesSync(
+  path.join(__dirname, './resolvers'),
+  {
+  	recursive:true,
+    ignoreIndex:true
+  });
+)};
+const typeDefs = mergeTypeDefs(loadedDefs);
+const resolvers = mergeResolvers(loadedResolvers);
+const schema = makeExecutableSchema({
+  typeDefs,
+  resolvers
+});
+module.exports = schema;
+```
+
+I think we will have separate files for schema and resolver. 
+
+Naming conventions:
+
+* `[label]-resolver.js`
+* `[label]-schema.graphql`
+
+### Ok let's try to make this work
+
+* [ ] 
+
