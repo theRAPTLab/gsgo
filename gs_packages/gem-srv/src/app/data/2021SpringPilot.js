@@ -9,6 +9,12 @@ export const MODEL = {
     bounce: false,
     bgcolor: 0x000066
   },
+  rounds: {
+    options: {
+      allowResetStage: true,
+      noloop: true // stop after last round
+    }
+  },
   scripts: [
     {
       id: 'Fish',
