@@ -35,6 +35,7 @@ const PR = UR.PrefixUtil('SIM');
 
 const LOOP = {
   LOAD: 'load',
+  STAGED: 'staged',
   PRERUN: 'prerun',
   COSTUMES: 'costumes',
   RUN: 'run',
@@ -88,7 +89,9 @@ function Stage() {
     await GAME_LOOP.executePhase('GLOOP_STAGED');
     console.log(...PR('Simulation Staged'));
     StageInit();
-    NextRound();
+    SIMSTATUS.currentLoop = LOOP.STAGED;
+    SIMSTATUS.completed = false;
+    // NextRound();
   })();
 }
 

@@ -102,6 +102,9 @@ export function RoundInit(SIMSTATUS) {
     if (round.time !== undefined) {
       ROUND_TIMER_START_VALUE = round.time;
       RSIMSTATUS.timer = ROUND_TIMER_START_VALUE;
+      const intro = round.intro || '';
+      const message = `Round ${ROUNDS_COUNTER + 1}: ${intro}`;
+      UR.RaiseMessage('SHOW_MESSAGE', { message });
     }
     RunScript(round.initScript);
   }
@@ -109,11 +112,6 @@ export function RoundInit(SIMSTATUS) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// 'stopfn' will be called when the timer runs out
 export function RoundStart(stopfn) {
-  const round = GetRoundDef(ROUNDS_INDEX);
-  if (round) {
-    const message = `Round ${ROUNDS_COUNTER + 1}: ${round.intro}`;
-    UR.RaiseMessage('SHOW_MESSAGE', { message });
-  }
   StartRoundTimer(stopfn);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,7 +121,8 @@ export function RoundStop() {
   StopRoundTimer();
   const round = GetRoundDef(ROUNDS_INDEX);
   if (round) {
-    const message = `End Round ${ROUNDS_COUNTER + 1}: ${round.outtro}`;
+    const outtro = round.outtro || '';
+    const message = `End Round ${ROUNDS_COUNTER + 1}: ${outtro}`;
     UR.RaiseMessage('SHOW_MESSAGE', { message });
     RunScript(round.endScript);
   }
