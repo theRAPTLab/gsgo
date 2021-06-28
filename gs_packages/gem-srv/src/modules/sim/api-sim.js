@@ -92,6 +92,10 @@ function Stage() {
     SIMSTATUS.currentLoop = LOOP.STAGED;
     SIMSTATUS.completed = false;
     // NextRound();
+
+    // On first staging, do prerun WITHOUT RoundInit
+    // so that characters get drawn on screen.
+    RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   })();
 }
 
