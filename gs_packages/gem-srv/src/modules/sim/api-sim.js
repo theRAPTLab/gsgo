@@ -188,10 +188,10 @@ function Reset() {
 
     // Reset Rounds
     RoundsReset();
+    SIMSTATUS.completed = false;
 
     // Re-Stage
     Stage(); // results in agentWidgets already in blueprint
-
   })();
 }
 
