@@ -10,14 +10,14 @@ const fse = require('fs-extra');
 const path = require('path');
 const LOKI = require('lokijs');
 const { graphqlHTTP } = require('express-graphql');
-const { graphql, buildSchema } = require('graphql');
+const { buildSchema } = require('graphql');
 const { CFG_URDB_GQL } = require('./ur-common');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DB;
 let SCHEMA;
-const SETTING_RESET_DB = true;
+const SETTING_RESET_DB = false;
 const TERM = require('./util/prompts').makeTerminalOut('  URDB', 'TagRed');
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -33,10 +33,11 @@ function m_InitializeLoki(dbPath = '../runtime/urdb.loki') {
     TERM('InitializeLoki: dbPath must be string');
   }
 }
+/// HELPER METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_InitializeData(importPath) {
+function m_PrepareDatabase(importPath) {
   // import only if setting reset, or no collections in db
-  if (SETTING_RESET_DB || DB.getCollections().length === 0) {
+  if (DB.listCollections().length === 0 && SETTING_RESET_DB) {
     if (importPath === undefined) {
       TERM('error: importPath is undefined');
       return;
@@ -46,7 +47,10 @@ function m_InitializeData(importPath) {
     const collections = Object.keys(data);
     collections.forEach(col => {
       const records = data[col];
-      if (!Array.isArray(records)) return;
+      if (!Array.isArray(records)) {
+        TERM(`... SKIPPING non-array prop '${col}'`);
+        return;
+      }
       // looks good so import
       if (DB.getCollection(col)) {
         TERM(`... deleting old ${col}s from db`);
@@ -55,12 +59,15 @@ function m_InitializeData(importPath) {
       TERM(`... importing ${records.length} records from '${col}'`);
       const ncol = DB.addCollection(col, { unique: ['id'] });
       records.forEach(r => ncol.insert(r));
+      DB.saveDatabase(); // force save
     });
+  } else {
+    TERM('... skipping DB reset');
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_LoadSchema(schemaPath) {
-  TERM('loading schema', schemaPath);
+  TERM('LOADING schema', schemaPath);
   try {
     const data = fse.readFileSync(schemaPath, 'utf8');
     SCHEMA = buildSchema(data);
@@ -68,18 +75,19 @@ function m_LoadSchema(schemaPath) {
     console.error(err);
   }
 }
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Assign URDB middleware to passed app
+ *  dbFile: 'runtime/db.loki',
+ *  dbImportFile: 'config/init/db-test.json',
+ *  schemaFile: 'config/graphql'
  *  @param {Express} app - express app instance
  */
-function UseURDB(app, options) {
-  const { dbPath, importPath, schemaPath, root } = options;
-  m_InitializeLoki(dbPath);
-  m_InitializeData(importPath);
-  m_LoadSchema(schemaPath);
-  // hook up graphql
-  TERM('enabling graphql endpoint:', CFG_URDB_GQL);
+function UseLokiGQL_Middleware(app, options) {
+  const { dbFile, dbImportFile, schemaFile, root } = options;
+  m_InitializeLoki(dbFile);
+  m_PrepareDatabase(dbImportFile);
+  m_LoadSchema(schemaFile);
+  TERM(`BINDING GraphQL Endpoint ${CFG_URDB_GQL}`);
   app.use(
     CFG_URDB_GQL,
     graphqlHTTP({
@@ -90,18 +98,9 @@ function UseURDB(app, options) {
     })
   );
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Load schema and resolver files, then bind with optional database init */
-function URDB_Middleware(app, options) {
-  const { dbPath, importPath, schemaPath, root } = options;
-  // initialize database location, also initialize data
-  m_InitializeLoki(dbPath);
-  m_InitializeData(importPath);
-}
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  UseURDB,
-  URDB_Middleware
+  UseLokiGQL_Middleware
 };

@@ -97,8 +97,8 @@ module.exports = {
   Shutdown,
   URNET_Start,
   URNET_NetInfo: NETINFO.GetNetInfo,
-  UseURDB: DB.UseURDB,
-  NetInfo_Endpoint: NETINFO.Express_Middleware,
+  UseLokiGQL_Middleware: DB.UseLokiGQL_Middleware,
+  NetInfo_Middleware: NETINFO.Express_Middleware,
   URNET_Use: NETINFO.UseURNET,
   NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
   // SERVICES API

@@ -30,7 +30,7 @@ const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return an ANSI COLOR CODED string for logging to terminal
 function m_WrapErrorText(str) {
-  return `\x1b[30;41m\x1b[37m ${str} \x1b[0m\n`;
+  return `\x1b[30;41m\x1b[37m ${str} \x1b[0m`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start up GEMSTEP SERVER (at end of this file) */
@@ -49,7 +49,9 @@ function GEMSRV_Start(opt) {
   process.on('uncaughtException', err => {
     if (err.errno === 'EADDRINUSE')
       TOUT(m_WrapErrorText(`port ${URNET_PORT} is already in use. Aborting`));
-    else TOUT(err);
+    else {
+      TOUT(m_WrapErrorText('UNCAUGHT EXCEPTION'), err);
+    }
     PROCESS.exit(0);
   });
 
@@ -71,7 +73,7 @@ function GEMSRV_Start(opt) {
 
 /// CHECK NPM CI WAS RUN //////////////////////////////////////////////////////
 if (!FS.existsSync('./node_modules')) {
-  console.log(m_WrapErrorText(`${PR} STARTUP ERROR`));
+  console.log(m_WrapErrorText(`${PR} STARTUP ERROR\n`));
   let out = '';
   out += 'MISSING CRITICAL MODULE\n';
   out += `is this the \x1b[33mfirst time running ${PR}\x1b[0m `;

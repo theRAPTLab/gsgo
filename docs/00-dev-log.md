@@ -541,12 +541,24 @@ Naming conventions:
 * `[label]-resolver.js`
 * `[label]-schema.graphql`
 
-### Ok let's try to make this work
+### Ok let's try to make this multi-load work
 
 * [x] add dynamic collection loading from init/db.json
-* [ ] add `gqlPath` to `gem-app-srv.UseURDB()` setup
+* [x] add `gqlPath` to `gem-app-srv.UseURDB()` setup
 * [ ] rewrite `UseURDB()` to use graphql-tools to load globs
-* [ ] confirm it still works as expected by going to graphql endpoint
-* [ ] Try adding another typedef and resolverfile structureasdasd
-* [ ] remove `schemaPath`
 
+**FAIL**
+
+Stuck loading resolvers. It appears that there is a critical error when loading `@graphql-tools/load-files`... webpack is trying to find the module and it is failing. But why is webpack trying to do this at all??? It's because URSYS is using webpack to compile its stuff...**it can't find the files** at runtime within the library itself. So this might have to get moved to `gem-srv`
+
+`Critical dependency: require function is used in a way in which dependencies cannot be statically extracted` is the error that webpack is throwing, because we're trying to do a dynamic load through `graphql-tools/load-files` `loadFilesSync()`, and webpack has rewritten `require` to look for modules that are defined in URSYS, not in GEMAPP that's calling it.
+
+After farting around with it for a while, dropped the feature until NEXT TIME. It would be difficult to refactor this now and risk breaking things.
+
+### Jumping Forward: Adding the New Schema for Complete Locale Info
+
+I have that code above (which needed modifcation):
+
+* [ ] add new `config/graphql/schema.graphql`
+* [ ] add new `config/graphql/resolvers.js`
+* [ ] update `config/init/db-test.json` to initialize database
