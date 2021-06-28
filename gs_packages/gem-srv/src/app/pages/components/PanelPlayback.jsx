@@ -66,7 +66,9 @@ class PanelPlayback extends React.Component {
         SIMSTATUS.currentLoop === 'run') &&
       !SIMSTATUS.completed;
     const showNextRun =
-      SIMSTATUS.currentLoop === 'postrun' && !SIMSTATUS.completed;
+      (SIMSTATUS.currentLoop === 'staged' ||
+        SIMSTATUS.currentLoop === 'postrun') &&
+      !SIMSTATUS.completed;
     const timer = SIMSTATUS.timer;
 
     return (
@@ -135,7 +137,7 @@ class PanelPlayback extends React.Component {
                     onClick={this.OnNextRoundClick}
                     style={{ width: '100%' }}
                   >
-                    RESTART ROUND
+                    PREP ROUND
                   </button>
                 )}
               </>
