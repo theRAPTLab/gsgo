@@ -5,15 +5,18 @@
       "locale": "default",
       "ptrack": {
         "memo": "default for faketrack",
-        "width": 1,
-        "depth": 1,
-        "offx": 0,
-        "offy": 0,
-        "xscale": 1,
-        "yscale": 1,
-        "xrot": 0,
-        "yrot": 0,
-        "zrot": 0
+        "xRange": [-1, 1],
+        "yRange": [-1, 1],
+        "offX": 0,
+        "offY": 0,
+        "xXcale": 1,
+        "yXcale": 1,
+        "xRot": 0,
+        "yRot": 0,
+        "zRot": 0
+      },
+      "stage": {
+        "memo": "stage for faketrack"
       },
       "poyxz": {},
       "urnet": {}
@@ -23,15 +26,18 @@
       "locale": "vanderbilt",
       "ptrack": {
         "memo": "VU tracking room",
-        "width": 1,
-        "depth": 1,
-        "offx": 0,
-        "offy": 0,
-        "xscale": 1,
-        "yscale": 1,
-        "xrot": 0,
-        "yrot": 0,
-        "zrot": 0
+        "xRange": [-10, 10],
+        "yRange": [-10, 10],
+        "offX": 0,
+        "offY": 0,
+        "xXcale": 1,
+        "yXcale": 1,
+        "xRot": 0,
+        "yRot": 0,
+        "zRot": 0
+      },
+      "stage": {
+        "memo": "stage for vanderbilt"
       },
       "poyxz": {},
       "urnet": {}

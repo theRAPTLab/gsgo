@@ -4,25 +4,60 @@ type Query {
 }
 
 type Mutation {
-  updatePTrack(localeId: Int, input: PTrackInput): PTrackData
+  updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
 }
 
 type Locale {
-  id: Int
-  ptrack: PTrackData
+  id: Int!
+  stage: StageProps
+  gemstep: StepProps
+  ptrack: PTrackProps
+  pozyx: PozyxProps
+  ursys: URSYSProps
 }
 
-type PTrackData {
+type Vec2 {
+  x: Float!
+  y: Float!
+}
+
+type Bound {
+  range: [Float]
+  shape: [Vec2]
+  rect: [Vec2]
+}
+
+type MainDisplayProps {
   memo: String
-  width: Float
-  depth: Float
-  offx: Float
-  offy: Float
-  xscale: Float
-  yscale: Float
-  xrot: Float
-  yrot: Float
-  zrot: Float
+}
+
+type StageProps {
+  memo: String
+  mainDisplay: MainDisplayProps
+  playfield: Bound
+}
+
+type PTrackProps {
+  memo: String
+  xRange: [Float]
+  yRange: [Float]
+  xOff: Float
+  yOff: Float
+  xScale: Float
+  yScale: Float
+  xRot: Float
+  yRot: Float
+  zRot: Float
+}
+type PozyxProps {
+  memo: String
+}
+type StepProps {
+  memo: String
+}
+
+type URSYSProps {
+  memo: String
 }
 
 input LocaleInput {
@@ -31,13 +66,13 @@ input LocaleInput {
 
 input PTrackInput {
   memo: String
-  width: Float
-  depth: Float
-  offx: Float
-  offy: Float
-  xscale: Float
-  yscale: Float
-  xrot: Float
-  yrot: Float
-  zrot: Float
+  xRange: [Float]
+  yRange: [Float]
+  xOff: Float
+  yOff: Float
+  xScale: Float
+  yScale: Float
+  xRot: Float
+  yRot: Float
+  zRot: Float
 }
