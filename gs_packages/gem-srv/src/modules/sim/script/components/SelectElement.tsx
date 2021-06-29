@@ -51,11 +51,12 @@ class SelectElement extends React.Component<any, any> {
     return (
       <select value={value} onChange={this.handleChange} onClick={this.stopEvent}>
         <option value="">{selectMessage}</option>
-        {options.map(p => (
-          <option value={p} key={p}>
-            {p}
-          </option>
-        ))}
+        {options &&
+          options.map(p => (
+            <option value={p} key={p}>
+              {p}
+            </option>
+          ))}
       </select>
     );
   }
