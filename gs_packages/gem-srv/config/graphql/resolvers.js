@@ -4,6 +4,7 @@
 // args is a key-value dict, context is what contains our DB, info is field-specific schema stuff
 // obj is the "parent object" of the query (it could be in another object)
 // see stackoverflow.com/questions/55854430
+const DBG = false;
 
 module.exports = {
   locale: (args, context) => {
@@ -11,7 +12,8 @@ module.exports = {
     const { DB } = context;
     const coll = DB.getCollection('locales');
     const result = coll.findOne({ locale: name });
-    console.log(`looking for '${name}', found ${JSON.stringify(result)}`);
+    if (DBG)
+      console.log(`looking for '${name}', found ${JSON.stringify(result)}`);
     return result;
   },
   locales: (args, context) => {
@@ -26,7 +28,7 @@ module.exports = {
   updatePTrack(args, context) {
     const { localeId, input } = args;
     const { DB } = context;
-    console.log(`localeId:${localeId}, input:${JSON.stringify(input)}`);
+    if (DBG) console.log(`localeId:${localeId}, input:${JSON.stringify(input)}`);
     const coll = DB.getCollection('locales');
     const locale = coll.findOne({ id: localeId });
     Object.assign(locale.ptrack, input);

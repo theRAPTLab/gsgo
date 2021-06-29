@@ -37,7 +37,7 @@ function m_InitializeLoki(dbPath = '../runtime/urdb.loki') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PrepareDatabase(importPath) {
   // import only if setting reset, or no collections in db
-  if (DB.listCollections().length === 0 && SETTING_RESET_DB) {
+  if (DB.listCollections().length === 0 || SETTING_RESET_DB) {
     if (importPath === undefined) {
       TERM('error: importPath is undefined');
       return;

@@ -23,7 +23,7 @@
       "./server",
       "./config"
     ],
-    "ext": "js json"
+    "ext": "js json graphql"
   },
   "keywords": [],
   "author": "",
