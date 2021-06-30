@@ -549,7 +549,17 @@ class PanelScript extends React.Component {
     );
 
     // WIZARD -----------------------------------------------------------------
-    const Wizard = <>Wizard{jsx}</>;
+    const Wizard = (
+      <div
+        style={{
+          display: `${viewMode === 'wizard' ? 'flex' : 'none'}`,
+          flexDirection: 'column',
+          width: '100%'
+        }}
+      >
+        {jsx}
+      </div>
+    );
 
     // RETURN -----------------------------------------------------------------
     return (
