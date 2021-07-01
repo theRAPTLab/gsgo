@@ -31,12 +31,19 @@ class SelectElement extends React.Component<any, any> {
     const { index, state } = props;
     this.index = index;
     this.state = { ...state }; // copy state prop
+    this.stopEvent = this.stopEvent.bind(this);
     this.handleChange = this.handleChange.bind(this);
     this.saveData = this.saveData.bind(this);
   }
   componentWillUnmount() {
     const { isEditable } = this.props;
     if (isEditable) this.saveData();
+  }
+  stopEvent(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    // Stop click here when user clicks inside form to edit.
+    // Otherwise clicks will propagage to InstanceEditor where it will exit edit mode
   }
   handleChange(e) {
     const { onChange } = this.props;
