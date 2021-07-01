@@ -14,8 +14,12 @@ import clsx from 'clsx';
 import * as INPUT from '../../modules/input/api-input';
 import * as RENDERER from '../../modules/render/api-render';
 import * as GLOBAL from '../../modules/datacore/dc-globals';
+import * as MOD from './elements/dev-tracker-ui';
 //
+import FormTransform from './components/FormTransform';
 import { useStylesHOC } from './elements/page-styles';
+//
+import '../../lib/css/tracker.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -78,6 +82,7 @@ class Tracker extends React.Component {
       entities: 'pre string'
     };
     this.updateDeviceList = this.updateDeviceList.bind(this);
+    this.handleInputChange = this.handleInputChange.bind(this);
   }
 
   componentDidMount() {
@@ -88,7 +93,7 @@ class Tracker extends React.Component {
     RENDERER.Init(renderRoot);
     RENDERER.HookResize(window);
     document.title = 'TRACKER';
-
+    INPUT.StartTrackerVisuals();
     UR.HookPhase('UR/APP_START', async () => {
       // STEP 1 is to get a "deviceAPI" from a Device Subscription
       const devAPI = UR.SubscribeDeviceSpec({
@@ -102,7 +107,8 @@ class Tracker extends React.Component {
       // interfaces
       const { getController, deviceNum, unsubscribe } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
-      // there is no STEP 3!!!
+      // STEP 3 is to register the root app with the associated logic module
+      MOD.Initialize(this);
 
       // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
       // these are all the device API calls for testing. Since Tracker does
@@ -110,6 +116,7 @@ class Tracker extends React.Component {
       // for testing.
       if (FRAME_TIMER === undefined) {
         FRAME_TIMER = setInterval(() => {
+          // (1) DEVICE INTERFACE
           UR.GetDeviceDirectory();
           // get all the current inputs
           const objs = getInputs().slice();
@@ -130,6 +137,7 @@ class Tracker extends React.Component {
             })
             .join('\n');
           this.setState({ entities });
+          // (2) PTRACK INTERFACE
         }, INTERVAL);
       }
     }); // end HookPhase
@@ -155,14 +163,25 @@ class Tracker extends React.Component {
     }
   }
 
+  handleInputChange(event) {
+    const target = event.target;
+    const value = target.type === 'checkbox' ? target.checked : target.value;
+    const name = target.name;
+    MOD.HandleStateChange(this, 'select', name, value);
+  }
+
   render() {
     const { classes } = this.props;
+    const trackTypes = [
+      { id: 0, label: 'alpha0' },
+      { id: 1, label: 'beta1' }
+    ];
 
     return (
       <div
         className={classes.root}
         style={{
-          gridTemplateColumns: '280px auto',
+          gridTemplateColumns: '280px 720px auto',
           gridTemplateRows: '50px 720px auto',
           boxSizing: 'border-box'
         }}
@@ -170,7 +189,7 @@ class Tracker extends React.Component {
         <div
           id="console-top"
           className={clsx(classes.cell, classes.top, classes.devBG)}
-          style={{ gridColumnEnd: 'span 2' }}
+          style={{ gridColumnEnd: 'span 3' }}
         >
           <span style={{ fontSize: '32px' }}>DEV/TRACKER</span>{' '}
           {UR.ConnectionString()}
@@ -206,9 +225,31 @@ class Tracker extends React.Component {
           style={{ width: '720px', height: '720px', gridColumnEnd: 'span 1' }}
         />
         <div
+          id="console-right"
+          className={clsx(classes.cell, classes.right)}
+          style={{ gridColumnEnd: 'span 1' }}
+        >
+          <div className="io-track-controls">
+            <select
+              name="data_track"
+              value={this.state.data_track}
+              onChange={this.handleInputChange}
+              className={clsx('form-control', 'data-track')}
+            >
+              {trackTypes.map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+            <label className="control-label">&nbsp;Data Track</label>
+          </div>
+          <FormTransform title="Input Transform" />
+        </div>
+        <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
-          style={{ gridColumnEnd: 'span 2' }}
+          style={{ gridColumnEnd: 'span 3' }}
         >
           console-bottom
         </div>

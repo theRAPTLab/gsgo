@@ -1,10 +1,15 @@
 type Query {
   locale(name: String): Locale
-  locales: [String!]
+  locales: [LocalesType]
 }
 
 type Mutation {
   updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
+}
+
+type LocalesType {
+  id: Int!
+  name: String!
 }
 
 type Locale {

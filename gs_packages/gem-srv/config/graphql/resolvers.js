@@ -22,7 +22,8 @@ module.exports = {
     const locales = coll
       .chain() // return full ResultSet
       .data({ removeMeta: true }) // return documents in ResultSet as Array
-      .map(i => i.locale); // map documents to values
+      .map(i => ({ name: i.name, id: i.id })); // map documents to values
+    console.log(locales);
     return locales;
   },
   updatePTrack(args, context) {

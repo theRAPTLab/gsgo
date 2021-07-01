@@ -2,7 +2,7 @@
   "locales": [
     {
       "id": 0,
-      "locale": "default",
+      "name": "default",
       "ptrack": {
         "memo": "default for faketrack",
         "xRange": [-1, 1],
@@ -23,7 +23,7 @@
     },
     {
       "id": 1,
-      "locale": "vanderbilt",
+      "name": "vanderbilt",
       "ptrack": {
         "memo": "VU tracking room",
         "xRange": [-10, 10],

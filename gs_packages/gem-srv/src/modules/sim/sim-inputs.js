@@ -92,24 +92,22 @@ INPUTDEF_TO_AGENT.setMapFunctions({
   }
 });
 
-/// UR/PHASE METHODS //////////////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InputsInit(frameTime) {
-  const BPNAMES = GetInputBPnames();
-  BPNAMES.forEach(b => InputInit(b));
-}
 function ProcessInputs(frameTime) {
   InputsUpdate();
   const inputDefs = GetInputDefs();
   INPUTDEF_TO_AGENT.syncFromArray(inputDefs);
   INPUTDEF_TO_AGENT.mapObjects();
 }
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/INPUTS', ProcessInputs);
 
 /// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function InputsInit(frameTime) {
+  const BPNAMES = GetInputBPnames();
+  BPNAMES.forEach(b => InputInit(b));
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // REVIEW
 // We can't init input until we get the blueprint names after loading the model

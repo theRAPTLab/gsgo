@@ -86,6 +86,10 @@ function GetClientInfo() {
 function GetDBInfo() {
   return URDB_ENDPOINT;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDBEndpoint() {
+  return URDB_ENDPOINT;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

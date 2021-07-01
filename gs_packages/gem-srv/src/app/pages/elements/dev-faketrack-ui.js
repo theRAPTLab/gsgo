@@ -27,13 +27,15 @@
 /// http://math.hws.edu/graphicsbook/c7/s1.html
 import { vec3 } from 'gl-matrix';
 import UR from '@gemstep/ursys/client';
+import * as UI from './ui-handlers';
+import * as XFORM from './ui-state';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 
 // React user interface (the "view")
-let m_FAKEVIEW = null;
+let m_approot = null;
 // dimensions
 let m_canvaswidth;
 let m_canvasheight;
@@ -73,58 +75,8 @@ let m_fakeaddress = `ws://${document.domain}:${m_fakeport}`;
 // flags
 let m_data_object_name_changed = false;
 
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_SetupContainer(id = 'container') {
-  // grab pre-defined dom elements:
-  // a m_container with a number of m_entities in it
-  let container = document.getElementById(id);
-  while (container.firstChild) {
-    //The list is LIVE so it will re-index each call
-    container.removeChild(container.firstChild);
-  }
-  return container;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** ADD TOUCHSUPPORT
- *  http://stackoverflow.com/questions/5186441/javascript-drag-and-drop-for-touch-devices
- */
-function m_TouchHandler(event) {
-  let touch = event.changedTouches[0];
-  let simulatedEvent = document.createEvent('MouseEvent');
-  simulatedEvent.initMouseEvent(
-    {
-      touchstart: 'mousedown',
-      touchmove: 'mousemove',
-      touchend: 'mouseup'
-    }[event.type],
-    true,
-    true,
-    window,
-    1,
-    touch.screenX,
-    touch.screenY,
-    touch.clientX,
-    touch.clientY,
-    false,
-    false,
-    false,
-    false,
-    0,
-    null
-  );
-  touch.target.dispatchEvent(simulatedEvent);
-  event.preventDefault();
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_AddTouchEvents(touchContainer) {
-  touchContainer.addEventListener('touchstart', m_TouchHandler, true);
-  touchContainer.addEventListener('touchmove', m_TouchHandler, true);
-  touchContainer.addEventListener('touchend', m_TouchHandler, true);
-  touchContainer.addEventListener('touchcancel', m_TouchHandler, true);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_CreateEntities(container, num = m_FAKEVIEW.state.num_entities) {
+function m_CreateEntities(container, num = m_approot.state.num_entities) {
   for (let i = 0; i < num; i++) {
     const child = document.createElement('div');
     child.classList.add('entity');
@@ -141,84 +93,6 @@ function m_CreateEntities(container, num = m_FAKEVIEW.state.num_entities) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Translate(block, x, y) {
   block.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_AddMouseEvents(container) {
-  // store the beginning of a click-drag
-  // used to calculate deltas to apply to object group
-  const o_clickHandler = e => {
-    const id = e.target.getAttribute('entity-id');
-    if (id) console.log(`clicked entity-id ${id}`);
-  };
-
-  let ox1;
-  let oy1;
-  let ox2;
-  let oy2;
-  let cx;
-  let cy;
-  let dragActive = false;
-  let dragElement;
-
-  const o_dragStart = e => {
-    const { target } = e;
-    // target is clicked element, currentTarget is owner of listener: container
-    // if the target isn't container, meaning an element was clicked...
-    if (target !== container) {
-      dragElement = target;
-      dragActive = true;
-      // offset to center of draggable element
-      cx = dragElement.offsetWidth / 2;
-      cy = dragElement.offsetHeight / 2;
-      // bounding box for container
-      ox1 = container.offsetLeft - window.scrollX;
-      oy1 = container.offsetTop - window.scrollY;
-      ox2 = ox1 + container.offsetWidth;
-      oy2 = oy1 + container.offsetHeight;
-      // offset drag point inside dragElement
-      const dragRect = dragElement.getBoundingClientRect();
-      cx += e.clientX - dragRect.left - cx;
-      cy += e.clientY - dragRect.top - cy;
-    }
-  };
-
-  const o_drag = e => {
-    if (!dragActive) return;
-    const mx = e.clientX;
-    const my = e.clientY;
-    if (mx < ox1 || mx > ox2 || my < oy1 || my > oy2) return;
-    e.preventDefault();
-    let x = mx - ox1 - cx; // relative to container
-    let y = my - oy1 - cy;
-    dragElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-
-    // handle group dragging
-    if (m_FAKEVIEW.state.grouped) {
-      for (let i = 0; i < m_entities.length; i++) {
-        const fdiv = m_entities[i];
-        if (fdiv !== dragElement) {
-          const divRect = fdiv.getBoundingClientRect();
-          // e is the element being dragged
-          // x is the starting point in coord relative to container
-          // divRect.left is the coordinate of the fdiv
-          let dx = divRect.left - e.clientX; // distance between drag and fdiv
-          // console.log('fdiv', divRect.x, 'dx', dx);
-          // not sure why this isn't working
-          //  fdiv.style.transform = `translate3d(${cx}px, ${0}px, 0)`;
-        }
-      }
-    }
-  };
-
-  const o_dragend = () => {
-    dragElement = null;
-    dragActive = false;
-  };
-
-  container.addEventListener('mousedown', o_dragStart);
-  container.addEventListener('mousemove', o_drag);
-  document.addEventListener('mouseup', o_dragend); // catch mouseup anywhere
-  container.addEventListener('click', o_clickHandler);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // replacement candidate for is(':visible');
@@ -241,13 +115,13 @@ function m_isHidden(el) {
  *  state. The name is the property name of the form element, and the value
  *  is the new value.
  *
- *  NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
+ *  NOTE: m_approot is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
  */
 function HandleStateChange(name, value) {
   if (name !== 'status') console.log('NAME', name, 'VALUE', value);
-  // handle the m_FAKEVIEW state
-  m_FAKEVIEW.setState(
+  // handle the m_approot state
+  m_approot.setState(
     {
       [name]: value
     },
@@ -258,7 +132,7 @@ function HandleStateChange(name, value) {
           DoBurstTest(value);
           break;
         case 'num_entities':
-          Initialize(m_FAKEVIEW);
+          Initialize(m_approot);
           break;
         case 'data_object_name':
           m_data_object_name_changed = true;
@@ -270,19 +144,20 @@ function HandleStateChange(name, value) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This is called by the FakeTrack component once it's completely rendered,
  *  at which time this module can start adding its own objects. This code
- *  relies on m_FAKEVIEW (the FakeTrack view)
+ *  relies on m_approot (the FakeTrack view) and assumes that it is never
+ *  unmounted (i.e. it's the root view for the application)
  *
- *  NOTE: m_FAKEVIEW is using a hacked-together REACT workaround instead of
+ *  NOTE: m_approot is using a hacked-together REACT workaround instead of
  *  the UISTATE module to manage state propagation
 /*/
 function Initialize(componentInstance) {
   // save React component to grab state from and setstate
-  m_FAKEVIEW = componentInstance;
+  m_approot = componentInstance;
 
   // setup container, entity listsm
-  m_container = m_SetupContainer('container');
-  m_AddTouchEvents(m_container);
-  m_AddMouseEvents(m_container);
+  m_container = UI.EmptyContainer('container');
+  UI.AddTouchEvents(m_container);
+  UI.AddMouseEvents(m_container);
   m_entities = m_CreateEntities(m_container);
 
   // test m_entities for bursting
@@ -336,7 +211,7 @@ function SendFrame() {
 
   // create empty PTRACK data object
   // (this might have to be less than 4K)
-  switch (m_FAKEVIEW.state.data_track) {
+  switch (m_approot.state.data_track) {
     case 'people_tracks':
       m_frame = {
         header: {},
@@ -361,6 +236,8 @@ function SendFrame() {
         fake_tracks: []
       };
       break;
+    default:
+      console.log('no match', m_approot.state.data_track);
   }
 
   // allocation storage for status string calculation
@@ -396,14 +273,14 @@ function SendFrame() {
       'nsec': nsec
     };
     m_frame.header.frame_id = 'faketrack';
-    m_frame.fake_id = m_FAKEVIEW.state.prefix;
+    m_frame.fake_id = m_approot.state.prefix;
     m_frame.header.seq = m_seq++;
     m_fakesock.send(JSON.stringify(m_frame));
   }
 
   // OPTIONAL: emit a fake object frame (as oppoed to people frame)
   // if checkbox dragActive in UI
-  if (m_FAKEVIEW.state.mprop === true) {
+  if (m_approot.state.mprop === true) {
     // hack in an object
     m_frame = {
       header: {
@@ -482,7 +359,7 @@ function u_AddEntityToFrame(div) {
   if (m_data_object_name_changed) {
     div.setAttribute('entity-id', parseInt(Math.random() * 1000, 10));
   }
-  let id = m_FAKEVIEW.state.prefix + div.getAttribute('entity-id').toString();
+  let id = m_approot.state.prefix + div.getAttribute('entity-id').toString();
   // getBoundingClientRect return DOMRect
   // { x, y, width, height, top, right, bottom, left }
   const rect = div.getBoundingClientRect();
@@ -493,14 +370,14 @@ function u_AddEntityToFrame(div) {
   };
   let offX = rect.width / 2;
   let offY = rect.height / 2;
-  let speedX = m_FAKEVIEW.state.jitter * Math.random();
-  let speedY = m_FAKEVIEW.state.jitter * Math.random();
+  let speedX = m_approot.state.jitter * Math.random();
+  let speedY = m_approot.state.jitter * Math.random();
   // xx & yy are normalized -1 to 1
   let xx = (pos.left + offX + speedX) / m_canvaswidth - 0.5;
   let yy = (pos.top + offY + speedY) / m_canvasheight - 0.5;
   // expanded position
-  let x = xx * (m_FAKEVIEW.state.width / 2) + parseFloat(m_FAKEVIEW.state.offx);
-  let y = yy * (m_FAKEVIEW.state.depth / 2) + parseFloat(m_FAKEVIEW.state.offy);
+  let x = xx * (m_approot.state.xRange / 2) + parseFloat(m_approot.state.xOff);
+  let y = yy * (m_approot.state.yRange / 2) + parseFloat(m_approot.state.yOff);
 
   // Align faketrack to match the PTrack coordinate system, which may be
   // rotated and offset from the origin
@@ -538,18 +415,18 @@ function u_AddEntityToFrame(div) {
     // during transforms
   };
 
-  switch (m_FAKEVIEW.state.data_track) {
+  switch (m_approot.state.data_track) {
     case 'people_tracks':
       m_frame.people_tracks.push(framedata);
       break;
     case 'object_tracks':
       // insert form-defined name of object
-      framedata.object_name = m_FAKEVIEW.state.data_object_name;
+      framedata.object_name = m_approot.state.data_object_name;
       m_frame.object_tracks.push(framedata);
       break;
     case 'pose_tracks':
       // insert form-defined name of pose
-      framedata.predicted_pose_name = m_FAKEVIEW.state.data_object_name;
+      framedata.predicted_pose_name = m_approot.state.data_object_name;
       // Fake data
       framedata.orientation = 1;
       framedata.joints = {

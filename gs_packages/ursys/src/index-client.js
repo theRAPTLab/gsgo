@@ -10,6 +10,7 @@
 const NETWORK = require('./client-urnet');
 const DEVICES = require('./client-netdevices');
 const DB = require('./client-urdb');
+const NETINFO = require('./client-netinfo');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
@@ -157,6 +158,8 @@ const UR = {
   IsElectron,
   IsElectronRenderer,
   IsElectronMain,
+  // DATABASE
+  Query: DB.Query,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
@@ -201,4 +204,9 @@ const UR = {
     DBGTEST.addConsoleToolHandlers(ur);
   }
 };
-module.exports = UR;
+if (typeof window === 'undefined')
+  throw Error(`
+    @gemstep/client: Unexpected UR-client access from non-browser environment.
+    Are you using NextJS SSR? URSYS is currently incompatible with SSR.
+  `);
+else module.exports = UR;

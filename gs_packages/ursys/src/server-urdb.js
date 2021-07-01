@@ -17,7 +17,6 @@ const { CFG_URDB_GQL } = require('./ur-common');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let DB;
 let SCHEMA;
-const SETTING_RESET_DB = false;
 const TERM = require('./util/prompts').makeTerminalOut('  URDB', 'TagRed');
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -37,32 +36,34 @@ function m_InitializeLoki(dbPath = '../runtime/urdb.loki') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PrepareDatabase(importPath) {
   // import only if setting reset, or no collections in db
-  if (DB.listCollections().length === 0 || SETTING_RESET_DB) {
-    if (importPath === undefined) {
-      TERM('error: importPath is undefined');
-      return;
+  if (DB.listCollections().length === 0 || importPath !== undefined) {
+    if (importPath !== undefined) {
+      TERM(`importing data from '${importPath}'`);
+      const data = fse.readJsonSync(importPath);
+      const collections = Object.keys(data);
+      collections.forEach(col => {
+        const records = data[col];
+        if (!Array.isArray(records)) {
+          TERM(`... SKIPPING non-array prop '${col}'`);
+          return;
+        }
+        // looks good so import
+        if (DB.getCollection(col)) {
+          TERM(`... deleting old ${col}s from db`);
+          DB.removeCollection(col);
+        }
+        TERM(`... importing collection '${col}' (${records.length} records)`);
+        const ncol = DB.addCollection(col, { unique: ['id'] });
+        records.forEach(r => ncol.insert(r));
+        DB.saveDatabase(); // force save
+      });
+    } else {
+      // importPath undefined
+      TERM('... WARNING: DB has no collections, but importPath===undefined');
     }
-    TERM('importing data', importPath);
-    const data = fse.readJsonSync(importPath);
-    const collections = Object.keys(data);
-    collections.forEach(col => {
-      const records = data[col];
-      if (!Array.isArray(records)) {
-        TERM(`... SKIPPING non-array prop '${col}'`);
-        return;
-      }
-      // looks good so import
-      if (DB.getCollection(col)) {
-        TERM(`... deleting old ${col}s from db`);
-        DB.removeCollection(col);
-      }
-      TERM(`... importing ${records.length} records from '${col}'`);
-      const ncol = DB.addCollection(col, { unique: ['id'] });
-      records.forEach(r => ncol.insert(r));
-      DB.saveDatabase(); // force save
-    });
   } else {
-    TERM('... skipping DB reset');
+    //
+    TERM('... DB reloaded');
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

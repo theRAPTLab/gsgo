@@ -282,15 +282,14 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.bpname = GetDefaultPozyxBPName();
     cobj.name = entity.id;
   },
-  shouldRemove: (cobj, map) => {
-    // Inputs do not necessarily come in with every INPUTS phase fire
-    // so we should NOT be removing them on every update.
-    // HACK: Remove agent if no update for 4 seconds
-    // inputDef.framesSinceLastUpdate++;
-    // if (inputDef.framesSinceLastUpdate > 120) {
-    //   return true;
-    // }
-  }
+  shouldRemove: cobj => false
+  // Inputs do not necessarily come in with every INPUTS phase fire
+  // so we should NOT be removing them on every update.
+  // HACK: Remove agent if no update for 4 seconds
+  // inputDef.framesSinceLastUpdate++;
+  // if (inputDef.framesSinceLastUpdate > 120) {
+  //   return true;
+  // }
 });
 export function GetTrackerMap() {
   return POZYX_TO_COBJ;
@@ -357,6 +356,7 @@ function InputUpdate(devAPI, bpname) {
   COBJ_TO_INPUTDEF.syncFromArray(overriden_cobjs);
   COBJ_TO_INPUTDEF.mapObjects();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function InputsUpdate() {
   // The basic pipeline is:
   // inputs => INPUTDEFS => AGENTS
@@ -381,6 +381,7 @@ export function InputsUpdate() {
 export function GetInputGroups(): any {
   return INPUT_GROUPS;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetInputDefs(): object[] {
   return INPUTDEFS;
 }
