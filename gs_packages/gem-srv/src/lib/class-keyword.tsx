@@ -137,6 +137,7 @@ class Keyword implements IKeyword {
       'lte'
     ]);
     map.set('string', ['setTo', 'eq']);
+    map.set('dictionary', ['addItem', 'updateItem', 'getItem', 'has', 'getKeys']);
     return map;
   }
 } // end of Keyword Class
