@@ -22,6 +22,13 @@ import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
 import * as DATACORE from 'modules/datacore';
+import {
+  GVarBoolean,
+  GVarDictionary,
+  GVarNumber,
+  GVarString
+} from 'modules/sim/vars/_all_vars';
+
 // critical imports
 import 'script/keywords/_all_keywords';
 
@@ -468,6 +475,76 @@ function ExtractBlueprintPropertiesTypeMap(script) {
   return map;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving a list of features used in a script
+ */
+function ExtractFeaturesUsed(script: string): string[] {
+  // Brute force deconstruct added properties
+  // by walking down script and looking for `addProp`
+  if (!script) return []; // During update script can be undefined
+  const featureNames = [];
+  const scriptUnits = ScriptifyText(script);
+  scriptUnits.forEach(unit => {
+    if (unit[0] && unit[0].token === 'useFeature') {
+      featureNames.push(unit[1].token);
+    }
+  });
+  return featureNames;
+}
+/**
+ * featPropMap is a map of ALL properties of ALL features
+ * for a given script (could be blueprint, or script snippet)
+ */
+function ExtractFeatPropMapFromScript(script: string): Map<string, any[]> {
+  // Get list of features used in blueprint
+  const featureNames = this.ExtractFeaturesUsed(script);
+  return ExtractFeatPropMap(featureNames);
+}
+/**
+ * featPropMap is a map of ALL properties of the all the features
+ * in the featureNames array.
+ */
+function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
+  const featPropMap = new Map();
+  featureNames.forEach(fName => {
+    // HACK
+    // featProps are not even defined until
+    // feature.decorate is called.  So we use a dummy
+    // agent to instantiate the properties so that
+    // we can inspect them
+
+    // Skip 'Cursor' because it's not a proper feature
+    // and adding it to the dummy agent is problematic
+    if (fName === 'Cursor') return;
+
+    const dummy = new GAgent();
+    dummy.addFeature(fName);
+    const propMap = new Map();
+    Object.keys(dummy.prop[fName]).forEach(key => {
+      const featProp = dummy.prop[fName][key];
+      // ignore private props
+      if (key.startsWith('_')) return;
+      // deconstruct GVarType
+      let type;
+      if (featProp instanceof GVarBoolean) type = 'boolean';
+      if (featProp instanceof GVarDictionary) type = 'dictionary';
+      if (featProp instanceof GVarNumber) type = 'number';
+      if (featProp instanceof GVarString) type = 'string';
+      propMap.set(key, {
+        name: key,
+        type,
+        defaultValue: featProp.value,
+        isFeatProp: true
+      });
+    });
+    featPropMap.set(fName, propMap);
+  });
+  return featPropMap;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /**
  * A brute force method of checking to see if the script has a directive
  * Used by project-data.InstanceAdd to check for the presence of
@@ -599,5 +676,8 @@ export {
   ExtractBlueprintProperties,
   ExtractBlueprintPropertiesMap,
   ExtractBlueprintPropertiesTypeMap,
+  ExtractFeaturesUsed,
+  ExtractFeatPropMapFromScript,
+  ExtractFeatPropMap,
   HasDirective
 };
