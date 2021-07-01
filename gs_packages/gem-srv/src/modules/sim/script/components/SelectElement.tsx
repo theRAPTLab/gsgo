@@ -50,7 +50,9 @@ class SelectElement extends React.Component<any, any> {
     const { index, value, options, selectMessage, type, classes } = this.props;
     return (
       <select value={value} onChange={this.handleChange} onClick={this.stopEvent}>
-        <option value="">{selectMessage}</option>
+        <option value="" disabled>
+          {selectMessage}
+        </option>
         {options &&
           options.map(p => (
             <option value={p} key={p}>
