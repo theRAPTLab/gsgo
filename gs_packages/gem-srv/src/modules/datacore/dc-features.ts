@@ -19,6 +19,10 @@ export function GetFeature(fName) {
   return FEATURES.get(fName);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetAllFeatures() {
+  return FEATURES;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** retrieve a method from a feature instance
  */
 export function GetFeatureMethod(fName: string, mName: string) {

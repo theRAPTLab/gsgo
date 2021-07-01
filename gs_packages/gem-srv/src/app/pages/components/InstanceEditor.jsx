@@ -21,6 +21,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
+import { GetAllFeatures } from 'modules/datacore/dc-features';
 import { GetBlueprintProperties } from 'modules/datacore/dc-project';
 import * as TRANSPILER from 'script/transpiler';
 import { withStyles } from '@material-ui/core/styles';
@@ -379,11 +380,35 @@ class InstanceEditor extends React.Component {
       const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(
         instance.initScript
       );
+
+      // Construct list of featProps for script UI menu
+      // This is complicated.
+      // In order to get a list of feature properties, we have to
+      // get the featProps from existing features
+      // AND compile initscript to retrieve any features added there.
+      // And then combine the two featPropMaps.
+
+      // 1. Get featPropMap from current features
+      const features = GetAllFeatures();
+      const featNames = [...features.keys()];
+      const bpFeatPropMap = TRANSPILER.ExtractFeatPropMap(featNames);
+
+      // 2. Get featPropMap from initScript
+      const initFeatPropMap = TRANSPILER.ExtractFeatPropMapFromScript(
+        instance.initScript
+      );
+
+      // 3. Combine the two maps
+      //    We can do this because initScript should not be defining
+      //    new features, so the two sets of feature keys are unique.
+      const featPropMap = new Map([...bpFeatPropMap], [initFeatPropMap]);
+
       jsx = TRANSPILER.RenderScript(source, {
         isEditable,
         isDeletable: isDeletingProperty,
         isInstanceEditor: true,
-        propMap
+        propMap,
+        featPropMap
       });
     }
 
