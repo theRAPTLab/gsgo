@@ -77,10 +77,7 @@ function m_GetDeviceArray(pattern = {}) {
 class Tracker extends React.Component {
   constructor() {
     super();
-    this.state = {
-      devices: 'pre string',
-      entities: 'pre string'
-    };
+    this.state = MOD.GetInitialStateFor('app');
     this.updateDeviceList = this.updateDeviceList.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
   }
@@ -167,15 +164,15 @@ class Tracker extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    MOD.HandleStateChange(this, 'select', name, value);
+    // For now, the root of DevTracker (this component) only tracks selections
+    // for other fields ('select'), they are handled in their own component
+    // using a similar call to HandleStateChange()
+    MOD.HandleStateChange(this, 'app', name, value);
   }
 
   render() {
     const { classes } = this.props;
-    const trackTypes = [
-      { id: 0, label: 'alpha0' },
-      { id: 1, label: 'beta1' }
-    ];
+    const localeList = this.state.locales || [];
 
     return (
       <div
@@ -231,14 +228,27 @@ class Tracker extends React.Component {
         >
           <div className="io-track-controls">
             <select
-              name="data_track"
-              value={this.state.data_track}
+              name="controlGroup"
+              value={this.state.controlGroup}
               onChange={this.handleInputChange}
               className={clsx('form-control', 'data-track')}
             >
-              {trackTypes.map(option => (
+              <option key={0} value="controlgroup">
+                Not Implemented
+              </option>
+            </select>
+            <label className="control-label">&nbsp;Control Group</label>
+          </div>
+          <div className="io-track-controls">
+            <select
+              name="localeId"
+              value={this.state.localeId}
+              onChange={this.handleInputChange}
+              className={clsx('form-control', 'data-track')}
+            >
+              {localeList.map(option => (
                 <option key={option.id} value={option.id}>
-                  {option.label}
+                  {option.name}
                 </option>
               ))}
             </select>

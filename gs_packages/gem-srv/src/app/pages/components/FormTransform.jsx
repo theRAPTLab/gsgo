@@ -2,19 +2,11 @@
 import React from 'react';
 import * as MOD from '../elements/dev-tracker-ui';
 
-export default class TransformPanel extends React.Component {
+export default class FormTransform extends React.Component {
   constructor() {
     super();
-    this.state = {
-      xScale: 1,
-      yScale: 1,
-      zRot: 0,
-      xOff: 0,
-      yOff: 0,
-      xRange: 1,
-      yRange: 1
-    };
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.state = MOD.GetInitialStateFor('transform');
   }
 
   componentDidMount() {
@@ -28,7 +20,7 @@ export default class TransformPanel extends React.Component {
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
     console.log(value);
-    MOD.HandleStateChange(this, name, value);
+    MOD.HandleStateChange(this, 'transform', name, value);
   }
 
   render() {

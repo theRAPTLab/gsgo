@@ -559,6 +559,86 @@ After farting around with it for a while, dropped the feature until NEXT TIME. I
 
 I have that code above (which needed modifcation):
 
-* [ ] add new `config/graphql/schema.graphql`
-* [ ] add new `config/graphql/resolvers.js`
-* [ ] update `config/init/db-test.json` to initialize database
+* [x] add new `config/graphql/schema.graphql`
+* [x] add new `config/graphql/resolvers.js`
+* [x] update `config/init/db-test.json` to initialize database
+
+## JUN 29 TUE - Tracker UI
+
+* [x] is PTrack subsystem working? YES, right up to `m_ForwardTrackerData()` in `step-tracker.js`
+* [x] so we just need to plot the coordinates on the screen itself within my Tracker utility
+
+Aside: The challenge of nested components is:
+
+* subcomponent can handle its own state changes
+* subcomponent can send changes to a central dispatching logic thing
+* changes to central dispatching logic are also reflected in the subcomponent
+
+This suggest that there is a single source of truth for state, which is what Redux is useful for once it's connected to React via React-Redux. But it is a somewhat awkward mechanism because of the amount of indirection.
+
+In the FakeTrack code, the **single source of truth** is `elements/dev-faketrack-ui`, which
+
+*  exports `Initialize( rootComponent )`, assuming that the rootComponent is never unmounted. 
+* exports `HandleStateChange(name, value)` so this module can maintain its state. It expected to receive UI element state, NOT application logic. This module just holds UI state
+
+It also adds **non-react events** to the base canvas in `container`, and 
+
+* [ ] want the UI from CharController moved to Tracker
+* [ ] add the dropdowns for locale and system (ptrack or pozyx)
+* [ ] write change handlers
+
+DETOUR...have to deal with POZYX code and new CONTROLLER code which seems to have gotten mixed-up in `api-input`. POZYX code is not following the conventions for PTRACK as a module template.
+
+```
+NOTES on dc-inputs
+
+POZYX_TRANSFORM is in dc-inputs
+POZYX_TO_COBJ creates InputDef COBJs from entity
+GetTrackerMap() returns POZYX_TO_COBJ
+
+NOTES on api-input
+* in StartTrackerVisuals(), the entities are being pulled from PTRACK.GetInputs() and then synced to control objects.
+
+WHY IS THIS IN PTRACK?
+* PTRACK has been hacked to also send pozyx data??? I guess this is similar to FakeTrack
+
+NOTES on step-tracker.js
+* This has new mtrack_ss which is "mtqq", which is pozyx
+* The MTQQ address is handled by library connecting to a particular port in `m_BindPozyListener()`
+* The key routine is `ConvertMQTTtoTrackerData()`
+
+```
+
+I've documented the issues with the weirdnesses of pozyx in a [Gitlab issue](https://gitlab.com/stepsys/gem-step/gsgo/-/issues/230)
+
+---
+
+Ok, what do I need to fix in this pile of stuff? Argh. 
+
+**Q. Is FakeTrack data even coming through?**
+A. It should come in through in-ptrack, which provides `GetInputs()` to return all the entities. However, `api-input` is actively blocking anything that isn't pozyx by seeing if the blueprint is attached to the input. **I do see it coming**/
+
+**Q. How do I fix this POZYX mess?**
+A: Decouple the pozyx stuff from ptrack. 
+
+**Q. Why are blueprint names coupled to control objects? How is `bpname` used?**
+A. Control Objects are converted into 'InputDef' as they come in from the tracker. 
+
+
+
+## INPUT SYSTEM SYNOPSIS (WIP)
+
+The INPUT system should be independent of SIM and RENDER, as one of the three major function tpes in the GEMSTEP system. Currently, it has hacked-in SIM data. The pattern I'm seeing is that control objects have SIM-related logic injected data at the INPUT stage, rather than INPUT groups being tagged by SIM, which is what is creating the coupling problem.
+
+The injected SIM data is primarily **blueprint name**, which is assigned by an originating Character Controller that presumably is setting the blueprint name itself. The list of valid blueprint names is created by scanning the `model.scripts` entries for a `isPozyxControllable` property flag. 
+
+### REDIRECT to TRACKER
+
+Let's just get the UI to update state, and then I'll talk to Ben about using this thing. 
+
+* [x] hook state change module into dev-tracker-ui module
+* [x] read locale from graphql
+* [x] add ui-state as single source of truth
+* [x] hook ui-state into constructors of state-based form elements
+* [x] hook HandleStateChange into form element change handlers
+

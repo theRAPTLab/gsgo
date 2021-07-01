@@ -2,9 +2,9 @@
   "locales": [
     {
       "id": 0,
-      "name": "default",
+      "name": "Default Locale",
       "ptrack": {
-        "memo": "default for faketrack",
+        "memo": "These are the default for FakeTrack",
         "xRange": [-1, 1],
         "yRange": [-1, 1],
         "offX": 0,
@@ -16,7 +16,7 @@
         "zRot": 0
       },
       "stage": {
-        "memo": "stage for faketrack"
+        "memo": "These are the stage dimensions (world)"
       },
       "poyxz": {},
       "urnet": {}
@@ -41,6 +41,13 @@
       },
       "poyxz": {},
       "urnet": {}
+    },
+    {
+      "id": 2,
+      "name": "Sri's Locale",
+      "stage": {
+        "memo": "stage for sri"
+      }
     }
   ]
 }

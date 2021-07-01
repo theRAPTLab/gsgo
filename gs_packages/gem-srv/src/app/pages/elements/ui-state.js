@@ -8,8 +8,10 @@
 /// REACT STATE COMPATIBLE FLAT OBJECTS ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const STATE = {
-  select: {
-    localeId: ''
+  app: {
+    devices: 'pre string',
+    entities: 'pre string',
+    localeId: 0
   },
   transform: {
     xRange: 1,
@@ -40,7 +42,7 @@ export function SetStateSection(sec, prop, value) {
   const syntaxError = 'args are (sec,{}) or (sec,key,value)';
   if (sec === undefined) throw Error(syntaxError);
   if (!u_StateHas(sec)) {
-    console.error(`invalid state[section] ${sec}`);
+    console.error(`invalid state[${sec}] (value to set:${value})`);
     return undefined;
   }
   if (typeof prop === 'string' && value !== undefined) {
@@ -50,16 +52,25 @@ export function SetStateSection(sec, prop, value) {
       return undefined;
     }
     STATE[sec][prop] = value;
+    console.log(`state change: ${sec}.${prop} = ${value}`);
   } else if (typeof prop === 'object') {
     // write entire object to section
     STATE[sec] = prop;
+    console.log(`state change: ${sec} = ${JSON.stringify(prop)}`);
   } else throw Error(syntaxError);
-  console.log('stage changed', sec, prop);
   return STATE[sec];
 }
 
 /// API METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetInitialStateFor(...args) {
+  const returnState = {};
+  [...args].forEach(sname => {
+    if (u_StateHas(sname)) Object.assign(returnState, STATE[sname]);
+  });
+  return returnState;
+}
+/// - - - - - - - - - ß- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SetXForm(obj) {
   const keys = Object.keys(obj);
   keys.forEach(key => {

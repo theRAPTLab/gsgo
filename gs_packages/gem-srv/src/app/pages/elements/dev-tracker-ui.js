@@ -45,7 +45,6 @@ const SUBSCRIBERS = new Set();
 /** Invoke React-style 'setState()' method with change object
  */
 export function NotifySubscribers(change) {
-  console.log(...PR('subsetstate', change));
   if (ROOT_APP) ROOT_APP.setState(change);
   SUBSCRIBERS.forEach(comp => comp.setState(change));
 }
@@ -65,13 +64,17 @@ export function Initialize(rootComponent) {
       d.errors.forEach();
     } else {
       LOCALES = d.data.locales;
-      log(...PR('got locales', LOCALES));
       NotifySubscribers(d.data);
     }
   });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the initial state as defined in UISTATE, the source of truth for
+ *  state
+ */
+export const { GetInitialStateFor } = STATE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** React components can receive notification of state changes here.
  *  Make sure that the setStateMethod is actually bound to 'this' in the
@@ -102,8 +105,7 @@ export function Unsubscribe(component) {
  *  in the component constructor otherwise 'this' will be undefined.
  */
 export function HandleStateChange(component, section, name, value) {
-  // handle the m_approot state
-  const change = { [name]: value };
+  const change = { [name]: value }; // name is defined in the form element
   STATE.SetStateSection(section, change);
   component.setState(change, () => {});
 }
