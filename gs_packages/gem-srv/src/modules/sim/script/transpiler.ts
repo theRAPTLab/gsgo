@@ -577,16 +577,38 @@ function RenderScript(units: TScriptUnit[], options: any[]): any[] {
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
   if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
+
   units.forEach((rawUnit, index) => {
     let unit = r_ExpandArgs(rawUnit);
-    if (unit.length === 0) return;
-    let keyword = unit[0];
-    // comment processing
-    if (keyword === '//') {
-      sourceJSX.push(undefined); // no jsx to render for comments
-      if (DBG) console.groupEnd();
+
+    // ORIG: Skip blank lines
+    // if (unit.length === 0) return;
+
+    // NEW: Keep blank lines, otherwise
+    // index gets screwed up when updating text lines.
+    // Treat the blank lines as a comment.
+    if (unit.length === 0) {
+      sourceJSX.push('//'); // no jsx to render for comments
       return;
     }
+
+    let keyword = unit[0];
+
+    // ORIG
+    // comment processing
+    // if (keyword === '//') {
+    // sourceJSX.push(undefined); // no jsx to render for comments
+    // if (DBG) console.groupEnd();
+    // return;
+    // }
+    //
+    // HACK
+    // Process comments as a keyword so they are displayed with line numbers
+    if (keyword === '//') {
+      keyword = '_comment';
+      unit[1] = rawUnit[0] ? rawUnit[0].comment : '';
+    }
+
     if (keyword === '#') keyword = '_pragma';
     let kwProcessor = GetKeyword(keyword);
     if (!kwProcessor) {
