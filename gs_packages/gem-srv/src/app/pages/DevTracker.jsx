@@ -78,7 +78,7 @@ function m_GetDeviceArray(pattern = {}) {
 class DevTracker extends React.Component {
   constructor() {
     super();
-    const { app, locales } = MOD.GetStateSections('app', 'locales');
+    const { app, locales } = MOD.ReadState('app', 'locales');
     const state = { ...app, locales };
     this.state = state;
 
@@ -110,8 +110,8 @@ class DevTracker extends React.Component {
       const { getController, deviceNum, unsubscribe } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
       // STEP 3 is to register the root app with the associated logic module
-      MOD.Initialize();
-      MOD.Subscribe(this.handleStateUpdate);
+      MOD.InitializeState();
+      MOD.SubscribeState(this.handleStateUpdate);
       // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
       // these are all the device API calls for testing. Since Tracker does
       // not have a simulation loop to get getInputs(), we just use a timer
@@ -148,7 +148,7 @@ class DevTracker extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    MOD.Unsubscribe(this);
+    MOD.UnsubscribeState(this.handleStateUpdate);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
   }
 
@@ -172,8 +172,8 @@ class DevTracker extends React.Component {
     const name = target.name;
     // For now, the root of DevTracker (this component) only tracks selections
     // for other fields ('select'), they are handled in their own component
-    // using a similar call to HandleStateChange()
-    MOD.HandleStateChange('app', name, value);
+    // using a similar call to WriteStateChange()
+    MOD.WriteState('app', name, value);
   }
 
   handleStateUpdate(change, cb) {

@@ -42,7 +42,7 @@ const SUBSCRIBERS = new Set(); // StateHandlers
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Invoke React-style 'setState()' method with change object
  */
-export function NotifySubscribers(change) {
+export function PublishState(change) {
   if (typeof change !== 'object') throw Error('arg1 must be setState object');
   const subs = [...SUBSCRIBERS.values()];
   subs.forEach(sub => sub(change, () => {}));
@@ -50,7 +50,7 @@ export function NotifySubscribers(change) {
 
 /// MODULE INITIALIZE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export async function Initialize() {
+export async function InitializeState() {
   // do some initial data queries
   // (1) retrieve the list of locales
   let data;
@@ -79,9 +79,9 @@ export async function Initialize() {
   console.log(...PR('LOAD query localeNames,locales:', response));
   if (!response.errors) {
     data = response.data;
-    STATE.SetStateSection('localeNames', data.localeNames);
-    STATE.SetStateSection('locales', data.locales);
-    NotifySubscribers(data);
+    STATE.SetState('localeNames', data.localeNames);
+    STATE.SetState('locales', data.locales);
+    PublishState(data);
   }
   // (2) next request localeId 1, using variable to pick which one
   response = await UR.Query(
@@ -111,9 +111,9 @@ export async function Initialize() {
   // them into UISTATE
   console.log(...PR('LOAD query locale(id)', response));
   const { id, ptrack } = response.data.locale;
-  STATE.SetStateSection('app', 'localeId', id);
-  STATE.SetStateSection('transform', ptrack);
-  NotifySubscribers({ transform: ptrack, app: { localeId: id } });
+  STATE.SetState('app', 'localeId', id);
+  STATE.SetState('transform', ptrack);
+  PublishState({ transform: ptrack, app: { localeId: id } });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -121,13 +121,13 @@ export async function Initialize() {
 /** return the initial state as defined in UISTATE, the source of truth for
  *  state
  */
-export const { GetStateSections } = STATE;
+export const { ReadState } = STATE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** React components can receive notification of state changes here.
  *  Make sure that the setStateMethod is actually bound to 'this' in the
  *  constructor of the component!
  */
-export function Subscribe(stateHandler) {
+export function SubscribeState(stateHandler) {
   if (typeof stateHandler !== 'function')
     throw Error(
       'arg1 must be a method in a Component that receives change, section'
@@ -139,7 +139,7 @@ export function Subscribe(stateHandler) {
  *  to avoid memory leaks. For classes use componentWillUnmoun().
  *  unmounts
  */
-export function Unsubscribe(stateHandler) {
+export function UnsubscribeState(stateHandler) {
   if (typeof stateHandler !== 'function')
     throw Error(
       'arg1 must be a method in a Component that receives change, section'
@@ -158,7 +158,7 @@ export function Unsubscribe(stateHandler) {
  *  NOTE: make sure the component binds 'this' to handleStateChange()
  *  in the component constructor otherwise 'this' will be undefined.
  */
-export function HandleStateChange(section, name, value) {
-  STATE.SetStateSection(section, { [name]: value });
-  NotifySubscribers({ [section]: { [name]: value } });
+export function WriteState(section, name, value) {
+  STATE.SetState(section, { [name]: value });
+  PublishState({ [section]: { [name]: value } });
 }

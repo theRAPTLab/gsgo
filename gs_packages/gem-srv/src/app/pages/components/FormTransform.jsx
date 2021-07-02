@@ -8,7 +8,7 @@ const DBG = true;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
-    const { transform } = MOD.GetStateSections('transform');
+    const { transform } = MOD.ReadState('transform');
     this.state = { ...transform };
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -16,11 +16,11 @@ export default class FormTransform extends React.Component {
   }
 
   componentDidMount() {
-    MOD.Subscribe(this.handleStateUpdate);
+    MOD.SubscribeState(this.handleStateUpdate);
   }
 
   componentWillUnmount() {
-    MOD.Unsubscribe(this.handleStateUpdate);
+    MOD.UnsubscribeState(this.handleStateUpdate);
   }
 
   handleInputChange(event) {
@@ -28,14 +28,14 @@ export default class FormTransform extends React.Component {
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
     if (DBG) console.log(value);
-    MOD.HandleStateChange('transform', name, value);
+    MOD.WriteState('transform', name, value);
   }
 
   handleStateUpdate(change, cb) {
     if (change.app) {
       const { localeId } = change.app;
       console.log(...PR('UPDATE localeId', localeId));
-      const { locales } = MOD.GetStateSections('locales');
+      const { locales } = MOD.ReadState('locales');
       console.log('scanning locales', locales);
       const locale = locales.find(l => l.id === Number(localeId));
       if (locale) {

@@ -54,7 +54,7 @@ function u_StateHas(sec, prop) {
  *  passing a list of string arguments of sections to include.
  *  Returns { [arg1]: sectionData, [arg2]: sectionData, ... }
  */
-export function GetStateSections(...sections) {
+export function ReadState(...sections) {
   const returnState = {};
   sections.forEach(section => {
     if (!u_StateHas(section))
@@ -73,7 +73,7 @@ export function GetStateSections(...sections) {
  *  change the property names in the section, the next time you make a call here
  *  using (option 1) you can only change existing properties.
  */
-export function SetStateSection(sec, prop, value) {
+export function SetState(sec, prop, value) {
   const syntaxError = 'args are (sec,{}) or (sec,key,value)';
   if (sec === undefined) throw Error(syntaxError);
   if (!u_StateHas(sec)) {

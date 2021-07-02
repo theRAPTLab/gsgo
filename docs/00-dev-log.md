@@ -644,11 +644,31 @@ Let's just get the UI to update state, and then I'll talk to Ben about using thi
 
 ### Reading Transform from Selected Locale
 
-Given the Selected Locale, we want to 
+* [x] Given the Selected Locale, we want to 
+  * get the locale list
+  * read the transform data for that locale
+  * write to the UI
+* [x] When using dropdown, do the above!
 
-* get the locale list
-* read the transform data for that locale
-* write to the UI
+> We need to make some changes for how to handle state and state rewriting. It's a bit convoluted right now but the list is updating now; clean it up tomorrow.
 
-We need to make some changes for how to handle state and state rewriting. It's a bit convoluted right now but the list is updating now; clean it up tomorrow.
+### Writing Transform on Edit
 
+Right now what happens? We loop our own state manager into React.
+
+* when you type into a text field, the event is routed to our state handler to update its state. 
+* The state manager then notifies any subscribers of that state change, and another handler in the component translates that to local state (the ui state)
+* React components whose `render()` function refers to its internal state then update based on its state
+
+We might have better luck intercepting through:
+
+```js
+// Happens before the component update
+componentWillUpdate(object nextProps, object nextState)
+// Happens after the component update
+componentDidUpdate(object prevProps, object prevState)
+```
+
+To **write the transform**, we want to check for changes to the transform, and autowrite it back if there are no changes.
+
+* [ ] in dev-tracker-ui, `HandleStateChange(section,name,value)` might be the trigger. This is the state write. 
