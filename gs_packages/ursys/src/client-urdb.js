@@ -43,5 +43,5 @@ export async function Query(query, variables) {
     });
     console.error(...PR(err));
   }
-  return down.data;
+  return down;
 }

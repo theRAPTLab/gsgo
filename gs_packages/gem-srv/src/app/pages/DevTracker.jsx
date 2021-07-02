@@ -78,9 +78,13 @@ function m_GetDeviceArray(pattern = {}) {
 class DevTracker extends React.Component {
   constructor() {
     super();
-    this.state = MOD.GetInitialStateFor('app');
+    const { app, locales } = MOD.GetStateSections('app', 'locales');
+    const state = { ...app, locales };
+    this.state = state;
+
     this.updateDeviceList = this.updateDeviceList.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
+    this.handleStateUpdate = this.handleStateUpdate.bind(this);
   }
 
   componentDidMount() {
@@ -106,8 +110,8 @@ class DevTracker extends React.Component {
       const { getController, deviceNum, unsubscribe } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
       // STEP 3 is to register the root app with the associated logic module
-      MOD.Initialize(this);
-
+      MOD.Initialize();
+      MOD.Subscribe(this.handleStateUpdate);
       // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
       // these are all the device API calls for testing. Since Tracker does
       // not have a simulation loop to get getInputs(), we just use a timer
@@ -144,6 +148,7 @@ class DevTracker extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
+    MOD.Unsubscribe(this);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
   }
 
@@ -168,12 +173,26 @@ class DevTracker extends React.Component {
     // For now, the root of DevTracker (this component) only tracks selections
     // for other fields ('select'), they are handled in their own component
     // using a similar call to HandleStateChange()
-    MOD.HandleStateChange(this, 'app', name, value);
+    MOD.HandleStateChange('app', name, value);
+  }
+
+  handleStateUpdate(change, cb) {
+    if (change.localeNames) {
+      console.log(...PR('UPDATE localeNames', change));
+      this.setState(change);
+    }
+    if (change.app) {
+      const { id, localeId } = change.app;
+      if (id) this.setState({ localeId: id });
+      if (localeId) this.setState({ localeId });
+      console.log(...PR('UPDATE app', change.app));
+    }
+    if (typeof cb === 'function') cb();
   }
 
   render() {
     const { classes } = this.props;
-    const localeList = this.state.locales || [];
+    const localeList = this.state.localeNames || [];
 
     return (
       <div

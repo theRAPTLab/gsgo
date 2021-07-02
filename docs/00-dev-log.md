@@ -649,3 +649,6 @@ Given the Selected Locale, we want to
 * get the locale list
 * read the transform data for that locale
 * write to the UI
+
+We need to make some changes for how to handle state and state rewriting. It's a bit convoluted right now but the list is updating now; clean it up tomorrow.
+

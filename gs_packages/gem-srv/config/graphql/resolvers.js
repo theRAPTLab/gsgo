@@ -22,12 +22,19 @@ module.exports = {
   locales: (args, context) => {
     const { DB } = context;
     const coll = DB.getCollection('locales');
-    const locales = coll
+    const objs = coll.chain().data({ removeMeta: true });
+    if (DBG) TERM(`return locales: ${JSON.stringify(objs)}`);
+    return objs;
+  },
+  localeNames: (args, context) => {
+    const { DB } = context;
+    const coll = DB.getCollection('locales');
+    const objs = coll
       .chain() // return full ResultSet
       .data({ removeMeta: true }) // return documents in ResultSet as Array
-      .map(i => ({ name: i.name, id: i.id })); // map documents to values
-    if (DBG) TERM(`return locales: ${JSON.stringify(locales)}`);
-    return locales;
+      .map(i => ({ name: i.name, id: i.id, ptrack: i.track })); // map documents to values
+    if (DBG) TERM(`return localeNames: ${JSON.stringify(objs)}`);
+    return objs;
   },
   updatePTrack(args, context) {
     const { localeId, input } = args;

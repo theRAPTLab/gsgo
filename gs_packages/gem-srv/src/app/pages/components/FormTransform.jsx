@@ -1,21 +1,26 @@
 /* eslint-disable react/destructuring-assignment */
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import * as MOD from '../elements/dev-tracker-ui';
 
+const PR = UR.PrefixUtil('FormTransform', 'TagApp');
 const DBG = true;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
+    const { transform } = MOD.GetStateSections('transform');
+    this.state = { ...transform };
+
     this.handleInputChange = this.handleInputChange.bind(this);
-    this.state = MOD.GetInitialStateFor('transform');
+    this.handleStateUpdate = this.handleStateUpdate.bind(this);
   }
 
   componentDidMount() {
-    MOD.Subscribe(this);
+    MOD.Subscribe(this.handleStateUpdate);
   }
 
   componentWillUnmount() {
-    MOD.Unsubscribe(this);
+    MOD.Unsubscribe(this.handleStateUpdate);
   }
 
   handleInputChange(event) {
@@ -23,7 +28,27 @@ export default class FormTransform extends React.Component {
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
     if (DBG) console.log(value);
-    MOD.HandleStateChange(this, 'transform', name, value);
+    MOD.HandleStateChange('transform', name, value);
+  }
+
+  handleStateUpdate(change, cb) {
+    if (change.app) {
+      const { localeId } = change.app;
+      console.log(...PR('UPDATE localeId', localeId));
+      const { locales } = MOD.GetStateSections('locales');
+      console.log('scanning locales', locales);
+      const locale = locales.find(l => l.id === Number(localeId));
+      if (locale) {
+        const newState = { ...locale.ptrack };
+        console.log('found locale', locale, 'writing', newState);
+        this.setState(newState);
+      }
+    }
+    if (change.transform) {
+      console.log(...PR('UPDATE transform', change));
+      this.setState(change.transform);
+    }
+    if (typeof cb === 'function') cb();
   }
 
   render() {

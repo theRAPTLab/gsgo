@@ -14,9 +14,10 @@ const PR = UR.PrefixUtil('UI-STATE', 'TagDkOrange');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const STATE = {
   locales: [],
+  localeNames: [],
   app: {
-    devices: 'pre string',
-    entities: 'pre string',
+    devices: '',
+    entities: '',
     localeId: 0
   },
   transform: {
@@ -49,14 +50,20 @@ function u_StateHas(sec, prop) {
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** call in the constructor of a component that is using this UISTATE module,
- *  passing a list of string arguments of sections to include
+/** Call in the constructor of a component that is using this UISTATE module,
+ *  passing a list of string arguments of sections to include.
+ *  Returns { [arg1]: sectionData, [arg2]: sectionData, ... }
  */
-export function GetInitialStateFor(...sections) {
+export function GetStateSections(...sections) {
   const returnState = {};
-  [...sections].forEach(sname => {
-    if (u_StateHas(sname)) Object.assign(returnState, STATE[sname]);
+  sections.forEach(section => {
+    if (!u_StateHas(section))
+      console.warn(...PR(`section '${section}' not in STATE`));
+    else Object.assign(returnState, { [section]: STATE[section] });
   });
+  console.log(
+    ...PR(`... GetStateSections() returning ${JSON.stringify(returnState)}`)
+  );
   return returnState;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -70,21 +77,27 @@ export function SetStateSection(sec, prop, value) {
   const syntaxError = 'args are (sec,{}) or (sec,key,value)';
   if (sec === undefined) throw Error(syntaxError);
   if (!u_StateHas(sec)) {
-    console.error(`invalid state[${sec}] (value to set:${value})`);
+    console.error(
+      `SetStateSection() invalid state[${sec}] (value to set:${value})`
+    );
     return undefined;
   }
   if (typeof prop === 'string' && value !== undefined) {
     // write section prop with value
     if (!u_StateHas(sec, prop)) {
-      console.error(`invalid state.${sec} ${prop}`);
+      console.error(`SetStateSection() invalid state.${sec} ${prop}`);
       return undefined;
     }
     STATE[sec][prop] = value;
-    if (DBG) console.log(...PR(`state change: ${sec}.${prop} = ${value}`));
+    if (DBG)
+      console.log(...PR(`SetStateSection() change: ${sec}.${prop} = ${value}`));
   } else if (typeof prop === 'object') {
     // write entire object to section
     STATE[sec] = prop;
-    if (DBG) console.log(...PR(`state change: ${sec} = ${JSON.stringify(prop)}`));
+    if (DBG)
+      console.log(
+        ...PR(`SetStateSection() change: ${sec} = ${JSON.stringify(prop)}`)
+      );
   } else throw Error(syntaxError);
   return STATE[sec];
 }

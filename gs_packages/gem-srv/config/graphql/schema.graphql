@@ -8,7 +8,8 @@ NOTES:
 """
 type Query {
   locale(id: Int!): Locale
-  locales: [LocalesType]!
+  localeNames: [LocalesType]!
+  locales: [Locale]!
 }
 """
 Additional type declarations describe the shape of object fields

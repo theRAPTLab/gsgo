@@ -47,6 +47,18 @@
       "name": "Sri's Locale",
       "stage": {
         "memo": "stage for sri"
+      },
+      "ptrack": {
+        "memo": "Sri Tracking",
+        "xRange": 100,
+        "yRange": 100,
+        "xOff": 0,
+        "yOff": 0,
+        "xScale": 1,
+        "yScale": 1,
+        "xRot": 0,
+        "yRot": 0,
+        "zRot": 0
       }
     }
   ]
