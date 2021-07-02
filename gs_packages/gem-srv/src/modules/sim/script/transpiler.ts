@@ -400,6 +400,7 @@ function ExtractBlueprintName(script) {
 /**
  * A brute force method of retrieving the blueprint properties from a script
  * Compiles raw scriptText to determine the blueprint properties
+ * Only includes `prop` properties, not `featProps`
  * @param {string} script
  * @return {Object[]} [...{name, type, defaultValue, isFeatProp}]
  */
