@@ -36,6 +36,7 @@ const INPUTDEF_TO_AGENT = new SyncMap({
 
 /**
  * Make or update agent.
+ * SRI: Why is agent/sim stuff in INPUT?
  * @param {InputDef} newInputDef
  * @param {InputDef} oldInputDef
  */
@@ -80,6 +81,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
 
 // REVIEW: This is probably an abuse of syncMap
 //         Maybe just use a Pool object?
+// SRI: Is an "input def" the same as a "control object"?
 INPUTDEF_TO_AGENT.setMapFunctions({
   onAdd: (newInputDef, oldInputDef) => {
     UpdateAgent(newInputDef, oldInputDef);

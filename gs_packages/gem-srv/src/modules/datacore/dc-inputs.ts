@@ -241,10 +241,14 @@ function m_PozyxDampen(
 /**
  * Return the first pozyx controllable blueprint for now
  * Eventually we'll add a more sophisticated map
+ * SRI: this borks up every non-pozyx system and makes INPUT dependent
+ * on SIM. INPUT, SIM, and RENDER are supposed to be completely independent.
  */
 export function GetDefaultPozyxBPName() {
   if (POZYX_BPNAMES.length < 1) {
-    console.warn('No pozyx controllable blueprints defined!');
+    // console.warn('No pozyx controllable blueprints defined!');
+    // SRI: disable this because it isn't necessarily pozyx
+    // console.warn('No pozyx controllable blueprints defined!');
     return undefined;
   }
   return POZYX_BPNAMES[0];
@@ -269,7 +273,6 @@ POZYX_TO_COBJ.setMapFunctions({
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
-
     if (entity.acc && POZYX_TRANSFORM.useAccelerometer) {
       // has accelerometer data
       pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
@@ -372,6 +375,8 @@ export function InputsUpdate() {
   });
   // 2. Process PTrack, Pozyx, FakeTrack Inputs
   //    PTRACK_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
+  // SRI: it would have been much clearer if you coded a parallel structure
+  // for the above to show COBJ_TO_INPUTDEF was used by both methods
   COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
   COBJ_TO_INPUTDEF.mapObjects();
   // 3. Combine them all

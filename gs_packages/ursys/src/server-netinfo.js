@@ -101,7 +101,7 @@ function GetNetInfo() {
 /** called from index-server during URNET_Start to save network options */
 function SaveNetInfo(opt) {
   m_network_options = opt;
-  console.log('save netinfo', opt);
+  if (DBG) console.log('save netinfo', opt);
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////

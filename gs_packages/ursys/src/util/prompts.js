@@ -165,7 +165,10 @@ function m_SetPromptColors(match, color = DEFAULT_COLOR) {
   let colorTable = IS_NODE ? TERM_COLORS : CSS_COLORS;
   let validColor = false;
   validColor = colorTable[color] !== undefined;
-  if (!validColor) throw Error(`prompt color ${color} is not defined`);
+  if (!validColor) colorTable = IS_NODE ? CSS_COLORS : TERM_COLORS;
+  validColor = colorTable[color] !== undefined;
+  if (!validColor)
+    throw Error(`prompt color ${color} is not defined in either table`);
   // turn on color prompt
   PROMPT_DICT[match] = [true, color];
   return colorTable;
