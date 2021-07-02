@@ -197,37 +197,28 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
       );
     } else if (isInstanceEditor) {
       // InstanceEditor
-      const prop = featProps.get(featPropName);
-      let type;
-      if (prop && prop.type) {
-        type = prop.type;
-      }
-      const argsjsx = (
-        <>
-          {args.map((arg, i) => (
-            <InputElement
-              state={this.state}
-              type={type}
-              onChange={this.onValueChange}
-              onSave={this.saveData}
-              index={index}
-              argindex={i}
-              key={i}
-            />
-          ))}
-        </>
-      );
       jsx = (
         <div
           style={{
             display: 'grid',
-            gridTemplateColumns: '80px auto 15px'
+            gridTemplateColumns: '80px auto 15px',
+            gridAutoRows: '1fr'
           }}
         >
-          <div className={classes.instanceEditorLabel}>
-            {featName}:{featPropName}
-          </div>
-          {argsjsx}
+          {featName}
+          <GVarElement
+            state={this.state}
+            propName={featPropName}
+            propNameOptions={propNameOptions}
+            propMethod={methodName}
+            propMethodsMap={methodsMap}
+            args={args}
+            onSelectProp={this.onSelectPropName}
+            onSelectMethod={this.onSelectMethod}
+            onValueChange={this.onValueChange}
+            onSaveData={this.saveData}
+            index={index}
+          />
           {deletablejsx}
         </div>
       );
@@ -237,9 +228,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
         <div style={{ display: 'grid', gridTemplateColumns: 'auto 15px' }}>
           <div
             style={{
-              display: 'grid',
-              gridAutoColumns: '1fr',
-              gridAutoFlow: 'column'
+              display: 'grid'
             }}
           >
             featProp {context}.
