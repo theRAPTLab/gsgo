@@ -72,7 +72,12 @@ class GVarElement extends React.Component<MyProps, MyState> {
     const propMethodOptions = gVarType ? propMethodsMap.get(gVarType) : undefined;
 
     return (
-      <>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, minmax(60px, auto)'
+        }}
+      >
         <SelectElement
           state={this.state}
           value={propName}
@@ -100,7 +105,7 @@ class GVarElement extends React.Component<MyProps, MyState> {
             key={i}
           />
         ))}
-      </>
+      </div>
     );
   }
 }
