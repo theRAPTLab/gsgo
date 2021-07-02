@@ -61,14 +61,11 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   )
     return false;
 
-  const distance = agent.prop.Vision._viewDistance;
+  const distance = agent.prop.Vision.viewDistance.value;
+  const viewAngleRad = (agent.prop.Vision.viewAngle.value * Math.PI) / 180;
   const orientation = -agent.prop.Movement._orientation; // flip y
-  const viewAngleLeft = ANGLES.normalizeHalf(
-    orientation - agent.prop.Vision._viewAngle / 2
-  );
-  const viewAngleRight = ANGLES.normalizeHalf(
-    orientation + agent.prop.Vision._viewAngle / 2
-  );
+  const viewAngleLeft = ANGLES.normalizeHalf(orientation - viewAngleRad / 2);
+  const viewAngleRight = ANGLES.normalizeHalf(orientation + viewAngleRad / 2);
   // We project the middle point too, so that upon first detection, a pivot
   // towards the agent will not result in the target moving out of the vision cone
   const viewPointLeft = ProjectPoint(agent, viewAngleLeft, distance);
@@ -142,8 +139,6 @@ class VisionPack extends GFeature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
-    this.featAddMethod('setViewDistance', this.setViewDistance);
-    this.featAddMethod('setViewAngle', this.setViewAngle);
     // this.featAddMethod('canSee', this.canSee);
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
@@ -154,10 +149,20 @@ class VisionPack extends GFeature {
     super.decorate(agent);
     this.featAddProp(agent, 'visionable', new GVarBoolean(true)); // can be seen by Vision feature
 
-    agent.prop.Vision._viewDistance = 250;
-    agent.prop.Vision._viewAngle = (45 * Math.PI) / 180; // in radians
-    // 45 degrees to the left and right of center for a total 90 degree
-    // field of vision = 0.785398
+    let prop = new GVarNumber(250);
+    prop.setMax(1000);
+    prop.setMin(0);
+    this.featAddProp(agent, 'viewDistance', prop);
+
+    // If we want to allow view angles > 180, then the vision
+    // cone needs to be re-implemented with more spokes, otherwise
+    // the cone collapses.
+    // 'viewAngle' is the measured as 1/2 of viewAngle to the right
+    // and left of the orientation.
+    prop = new GVarNumber(45);
+    prop.setMax(180);
+    prop.setMin(0);
+    this.featAddProp(agent, 'viewAngle', prop);
   }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
@@ -167,12 +172,6 @@ class VisionPack extends GFeature {
    */
   monitor(agent: IAgent, targetBlueprintName: string) {
     VISION_AGENTS.set(agent.id, targetBlueprintName);
-  }
-  setViewDistance(agent: IAgent, distance: number) {
-    agent.prop.Vision._viewDistance = distance;
-  }
-  setViewAngle(agent: IAgent, degrees: number) {
-    agent.prop.Vision._viewAngle = ((degrees / 2) * Math.PI) / 180;
   }
   /** This doesn't really do anything, since:
    *  a. you can't easily call featCall with a specific target agent parameter
