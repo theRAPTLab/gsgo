@@ -5,9 +5,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
+import UR from '@gemstep/ursys/client';
+
+const DBG = true;
+const PR = UR.PrefixUtil('UI-STATE', 'TagDkOrange');
+
 /// REACT STATE COMPATIBLE FLAT OBJECTS ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const STATE = {
+  locales: [],
   app: {
     devices: 'pre string',
     entities: 'pre string',
@@ -29,15 +35,37 @@ const STATE = {
     burst: false
   }
 };
+
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Check if STATE contains a "section" with a particular property
+ */
 function u_StateHas(sec, prop) {
   const sections = Object.keys(STATE);
   if (prop === undefined) return sections.includes(sec);
   const props = Object.keys(STATE[sec]);
   return props.includes(prop);
 }
+
+/// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** call in the constructor of a component that is using this UISTATE module,
+ *  passing a list of string arguments of sections to include
+ */
+export function GetInitialStateFor(...sections) {
+  const returnState = {};
+  [...sections].forEach(sname => {
+    if (u_StateHas(sname)) Object.assign(returnState, STATE[sname]);
+  });
+  return returnState;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Set a property within a section to a value. You can change one property in
+ *  the section by (option 1) providing three parameters sec, prop, value. or
+ *  you can (option 2) overwrite the entire section with sec, {}. NOTE: if you
+ *  change the property names in the section, the next time you make a call here
+ *  using (option 1) you can only change existing properties.
+ */
 export function SetStateSection(sec, prop, value) {
   const syntaxError = 'args are (sec,{}) or (sec,key,value)';
   if (sec === undefined) throw Error(syntaxError);
@@ -52,36 +80,11 @@ export function SetStateSection(sec, prop, value) {
       return undefined;
     }
     STATE[sec][prop] = value;
-    console.log(`state change: ${sec}.${prop} = ${value}`);
+    if (DBG) console.log(...PR(`state change: ${sec}.${prop} = ${value}`));
   } else if (typeof prop === 'object') {
     // write entire object to section
     STATE[sec] = prop;
-    console.log(`state change: ${sec} = ${JSON.stringify(prop)}`);
+    if (DBG) console.log(...PR(`state change: ${sec} = ${JSON.stringify(prop)}`));
   } else throw Error(syntaxError);
   return STATE[sec];
-}
-
-/// API METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetInitialStateFor(...args) {
-  const returnState = {};
-  [...args].forEach(sname => {
-    if (u_StateHas(sname)) Object.assign(returnState, STATE[sname]);
-  });
-  return returnState;
-}
-/// - - - - - - - - - ß- - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function SetXForm(obj) {
-  const keys = Object.keys(obj);
-  keys.forEach(key => {
-    SetStateSection('transform', key, obj[key]);
-  });
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function XFormState() {
-  return STATE.transform;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function FaketrackControlState() {
-  return STATE.faketrack;
 }

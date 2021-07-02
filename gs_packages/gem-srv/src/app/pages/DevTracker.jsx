@@ -30,6 +30,7 @@ let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
 let FRAME_TIMER;
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
+const DBG = true;
 const PR = UR.PrefixUtil('TRACKER', 'TagApp');
 const FCON = UR.HTMLConsoleUtil('console-bottom');
 
@@ -74,7 +75,7 @@ function m_GetDeviceArray(pattern = {}) {
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-class Tracker extends React.Component {
+class DevTracker extends React.Component {
   constructor() {
     super();
     this.state = MOD.GetInitialStateFor('app');
@@ -138,7 +139,7 @@ class Tracker extends React.Component {
         }, INTERVAL);
       }
     }); // end HookPhase
-    console.log(...PR('mounted'));
+    if (DBG) console.log(...PR('mounted'));
   }
 
   componentWillUnmount() {
@@ -278,4 +279,4 @@ UR.HandleMessage('NET:GEM_TRACKERAPP', data => {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(Tracker);
+export default withStyles(useStylesHOC)(DevTracker);

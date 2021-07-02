@@ -2,6 +2,7 @@
 import React from 'react';
 import * as MOD from '../elements/dev-tracker-ui';
 
+const DBG = true;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
@@ -12,19 +13,22 @@ export default class FormTransform extends React.Component {
   componentDidMount() {
     MOD.Subscribe(this);
   }
+
   componentWillUnmount() {
     MOD.Unsubscribe(this);
   }
+
   handleInputChange(event) {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    console.log(value);
+    if (DBG) console.log(value);
     MOD.HandleStateChange(this, 'transform', name, value);
   }
 
   render() {
     const { title = 'Transform' } = this.props;
+    const { xScale, yScale, zRot, xOff, yOff, xRange, yRange } = this.state;
     return (
       <div className="io-transform" style={{ clear: 'both' }}>
         <label style={{ width: 'auto', fontSize: 'larger', fontWeight: 'bold' }}>
@@ -35,7 +39,7 @@ export default class FormTransform extends React.Component {
           <input
             name="xScale"
             type="number"
-            value={this.state.xScale}
+            value={xScale}
             onChange={this.handleInputChange}
           />{' '}
           X-SCALE
@@ -44,7 +48,7 @@ export default class FormTransform extends React.Component {
           <input
             name="yScale"
             type="number"
-            value={this.state.yScale}
+            value={yScale}
             onChange={this.handleInputChange}
           />{' '}
           Y-SCALE
@@ -55,7 +59,7 @@ export default class FormTransform extends React.Component {
           <input
             name="zRot"
             type="number"
-            value={this.state.zRot}
+            value={zRot}
             onChange={this.handleInputChange}
           />{' '}
           Z ROT
@@ -65,7 +69,7 @@ export default class FormTransform extends React.Component {
           <input
             name="xOff"
             type="number"
-            value={this.state.xOff}
+            value={xOff}
             onChange={this.handleInputChange}
           />{' '}
           X-OFF{' '}
@@ -74,7 +78,7 @@ export default class FormTransform extends React.Component {
           <input
             name="yOff"
             type="number"
-            value={this.state.yOff}
+            value={yOff}
             onChange={this.handleInputChange}
           />{' '}
           Y-OFF
@@ -84,7 +88,7 @@ export default class FormTransform extends React.Component {
           <input
             name="xRange"
             type="number"
-            value={this.state.xRange || 5}
+            value={xRange || 5}
             onChange={this.handleInputChange}
           />{' '}
           X-RANGE
@@ -93,7 +97,7 @@ export default class FormTransform extends React.Component {
           <input
             name="yRange"
             type="number"
-            value={this.state.yRange || 5}
+            value={yRange || 5}
             onChange={this.handleInputChange}
           />{' '}
           Y-RANGE

@@ -1,12 +1,18 @@
+"""
+The Query type is a special, defining the GraphQL endpoints for reading data. The code
+that actually returns data are defined in resolvers.js.
+
+NOTES:
+* GraphQL requires you to list every property you want; you can not retrieve a whole object
+* See the Mutation type below for how to create/update
+"""
 type Query {
-  locale(name: String): Locale
-  locales: [LocalesType]
+  locale(id: Int!): Locale
+  locales: [LocalesType]!
 }
-
-type Mutation {
-  updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
-}
-
+"""
+Additional type declarations describe the shape of object fields
+"""
 type LocalesType {
   id: Int!
   name: String!
@@ -14,6 +20,7 @@ type LocalesType {
 
 type Locale {
   id: Int!
+  name: String
   stage: StageProps
   gemstep: StepProps
   ptrack: PTrackProps
@@ -44,8 +51,8 @@ type StageProps {
 
 type PTrackProps {
   memo: String
-  xRange: [Float]
-  yRange: [Float]
+  xRange: Float
+  yRange: Float
   xOff: Float
   yOff: Float
   xScale: Float
@@ -54,6 +61,7 @@ type PTrackProps {
   yRot: Float
   zRot: Float
 }
+
 type PozyxProps {
   memo: String
 }
@@ -65,14 +73,30 @@ type URSYSProps {
   memo: String
 }
 
+"""
+The Mutation type defines the API for sending data to GraphQL.
+The code that handles the update is in resolvers.js
+"""
+type Mutation {
+  updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
+}
+
+"""
+Input declarations are similar to Type declarations, but are specific to using
+Mutations.
+
+NOTES:
+* You cannot define the shape of a shared data type between Query and Mutation
+  declarations. GraphQL requires you to be explicit.
+"""
 input LocaleInput {
   ptrack: PTrackInput
 }
 
 input PTrackInput {
   memo: String
-  xRange: [Float]
-  yRange: [Float]
+  xRange: Float
+  yRange: Float
   xOff: Float
   yOff: Float
   xScale: Float

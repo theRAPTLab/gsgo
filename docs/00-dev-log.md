@@ -642,3 +642,10 @@ Let's just get the UI to update state, and then I'll talk to Ben about using thi
 * [x] hook ui-state into constructors of state-based form elements
 * [x] hook HandleStateChange into form element change handlers
 
+### Reading Transform from Selected Locale
+
+Given the Selected Locale, we want to 
+
+* get the locale list
+* read the transform data for that locale
+* write to the UI

@@ -27,15 +27,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as HANDLERS from './ui-handlers';
 import * as STATE from './ui-state';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('TRACKERUI', 'TagDkRed');
-let LOCALES = [];
+const PR = UR.PrefixUtil('TRACK-UI', 'TagDkRed');
 let ROOT_APP; // root component
-const log = console.log;
+const DBG = true;
 
 /// HELPER: SUBSCRIBERS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -46,27 +44,64 @@ const SUBSCRIBERS = new Set();
  */
 export function NotifySubscribers(change) {
   if (ROOT_APP) ROOT_APP.setState(change);
-  SUBSCRIBERS.forEach(comp => comp.setState(change));
+  SUBSCRIBERS.forEach(comp => {
+    comp.setState(change, data => {
+      if (DBG)
+        console.log(...PR(`${comp.constructor.name} setState:`, comp.state));
+    });
+  });
 }
 
 /// MODULE INITIALIZE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function Initialize(rootComponent) {
+export async function Initialize(rootComponent) {
   if (typeof rootComponent !== 'object') {
     const err = 'rootComponent should be a React.Component instance';
-    log(...PR(err));
+    console.log(...PR(err));
     throw Error(err);
   }
   ROOT_APP = rootComponent;
-  const qs = 'query getLocales { locales { id name } }';
-  UR.Query(qs).then(d => {
-    if (d.errors) {
-      d.errors.forEach();
-    } else {
-      LOCALES = d.data.locales;
-      NotifySubscribers(d.data);
+
+  // do some initial data queries
+  // (1) retrieve the list of locales
+  let data = await UR.Query('query { locales { id name } }');
+  if (data.errors) {
+    data.errors.forEach();
+  } else {
+    STATE.SetStateSection('locales', data.locales);
+    // send the entire data packet which will have the
+    // properties that have been updated ('locales' in this case)
+    NotifySubscribers(data);
+  }
+  // (2) next request localeId 1, using variable to pick which one
+  data = await UR.Query(
+    `
+    query GetPtrackTransform($id:Int!) {
+      locale(id:$id) {
+        id
+        name
+        ptrack {
+          ...TransformParts
+        }
+      }
     }
-  });
+    fragment TransformParts on PTrackProps {
+      xRange
+      yRange
+      xOff
+      yOff
+      xScale
+      yScale
+      zRot
+    }
+  `,
+    { id: 1 }
+  );
+  // (3) now that we have the locale, we can yoink the ptrack properties and shove
+  // them into UISTATE
+  const readID = data.locale.id;
+  console.log(...PR(`reading locale ${readID}`, JSON.stringify(data)));
+  STATE.SetStateSection('app', 'localeId', readID);
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -86,6 +121,7 @@ export function Subscribe(component) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** For components that mount/unmount, you should make sure you unsubscribe
  *  to avoid memory leaks. For classes use componentWillUnmoun().
+ *  unmounts
  */
 export function Unsubscribe(component) {
   if (!SUBSCRIBERS.has(component))
