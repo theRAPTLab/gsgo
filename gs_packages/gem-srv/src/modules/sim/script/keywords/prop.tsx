@@ -11,6 +11,22 @@
   FORM 2: prop agent.x methodName args
           prop Bee.x methodName args
 
+  In addition, it renders three views:
+
+  1. Static Minimized View -- Just text.
+
+        energyLevel: 5
+
+  2. Instance Editor View -- A simplified view that only allows setting a
+     parameter value via an input field.
+
+        energyLevel [ 5 ] [ delete ]
+
+  3. Script Wizard View -- A full edit view that allows different property
+     selection as well as different method and value selection.
+
+        prop [ energyLevel ] [ setTo ] [ 5 ]
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
@@ -26,8 +42,7 @@ import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
-import InputElement from '../components/InputElement';
-import SelectElement from '../components/SelectElement';
+import GVarElement from '../components/GVarElement';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,8 +63,8 @@ type MyState = {
   propName: string;
   methodName: string;
   args: string[];
-  type: string;
-  propMethods: string[];
+  // type: string;
+  // propMethods: string[];
 };
 type MyProps = {
   index: number;
@@ -74,20 +89,20 @@ class PropElement extends React.Component<MyProps, MyState> {
     this.state = { ...state }; // copy state prop
     this.serialize = serialize;
     this.onDeleteLine = this.onDeleteLine.bind(this);
-    this.onInputElementChange = this.onInputElementChange.bind(this);
+    this.onValueChange = this.onValueChange.bind(this);
     this.onSelectPropName = this.onSelectPropName.bind(this);
     this.onSelectMethod = this.onSelectMethod.bind(this);
-    this.getType = this.getType.bind(this);
+    // this.getType = this.getType.bind(this);
     this.saveData = this.saveData.bind(this);
   }
   componentDidMount() {
-    const { methodsMap } = this.props;
-    const { propName } = this.state;
-    const type = this.getType(propName);
-    this.setState({
-      type,
-      propMethods: methodsMap.get(type)
-    });
+    // const { methodsMap } = this.props;
+    // const { propName } = this.state;
+    // // const type = this.getType(propName);
+    // this.setState({
+    //   // type,
+    //   propMethods: methodsMap.get(type)
+    // });
   }
   onDeleteLine(e) {
     e.preventDefault(); // prevent click from deselecting instance
@@ -95,17 +110,17 @@ class PropElement extends React.Component<MyProps, MyState> {
     const updata = { index: this.index };
     UR.RaiseMessage('SCRIPT_LINE_DELETE', updata);
   }
-  onInputElementChange() {
+  onValueChange() {
     UR.RaiseMessage('SCRIPT_IS_DIRTY');
   }
   onSelectPropName(value) {
     const { methodsMap } = this.props;
-    const type = this.getType(value);
+    // const type = this.getType(value);
     this.setState(
       {
-        propName: value,
-        type,
-        propMethods: methodsMap.get(type)
+        propName: value
+        // type,
+        // propMethods: methodsMap.get(type)
       },
       () => this.saveData()
     );
@@ -113,14 +128,26 @@ class PropElement extends React.Component<MyProps, MyState> {
   onSelectMethod(value) {
     this.setState({ methodName: value }, () => this.saveData());
   }
-  getType(propName) {
-    // type should be dynamically calculated with each render
-    // in case propName changes to a different type
-    const { propMap } = this.props;
-    const prop = propMap.get(propName);
-    const type = prop ? prop.type : undefined;
-    return type;
-  }
+  // getType(propName) {
+  //   // type should be dynamically calculated with each render
+  //   // in case propName changes to a different type
+  //   const { propMap } = this.props;
+  //   const prop = propMap.get(propName);
+
+  //   // console.error('getType', propName, propMap, prop);
+  //   // const type = prop ? prop.type : undefined;
+
+  //   // graceful fallback if type is not either
+  //   // a. a defined prop
+  //   // b. a pre-defined prop (x,y) in TRANSPILIER.ExtractBlueprintProperties
+  //   let type;
+  //   if (prop && prop.type) {
+  //     type = prop.type;
+  //   } else {
+  //     // Try to determine the prop directly?
+  //   }
+  //   return type;
+  // }
   /**
    *
    * @param {boolean} exitEdit Tell InstanceEditor to exit edit mode.
@@ -138,31 +165,46 @@ class PropElement extends React.Component<MyProps, MyState> {
     const {
       index,
       propMap,
+      methodsMap,
       isEditable,
       isDeletable,
       isInstanceEditor,
       classes
     } = this.props;
-    const { propName, methodName, args, type, propMethods } = this.state;
+    // const { propName, methodName, args, type, propMethods } = this.state;
+    const { propName, methodName, args } = this.state;
 
     let propNames = [...propMap.values()];
-    propNames = propNames.map(p => p.name);
 
-    const argsjsx = (
-      <>
-        {args.map((arg, i) => (
-          <InputElement
-            state={this.state}
-            type={type}
-            onChange={this.onInputElementChange}
-            onSave={this.saveData}
-            index={index}
-            argindex={i}
-            key={i}
-          />
-        ))}
-      </>
+    // GVarElement takes care of this mapping so no need to do it here
+    // propNames = propNames.map(p => p.name);
+
+    console.log(
+      'propName',
+      propName,
+      'propNames',
+      propNames,
+      'propMethod/methodName',
+      methodName,
+      'propMethodMap',
+      methodsMap
     );
+
+    // const argsjsx = (
+    //   <>
+    //     {args.map((arg, i) => (
+    //       <InputElement
+    //         state={this.state}
+    //         type={type}
+    //         onChange={this.onInputElementChange}
+    //         onSave={this.saveData}
+    //         index={index}
+    //         argindex={i}
+    //         key={i}
+    //       />
+    //     ))}
+    //   </>
+    // );
 
     const deletablejsx = (
       <>
@@ -192,8 +234,21 @@ class PropElement extends React.Component<MyProps, MyState> {
       // InstanceEditor
       jsx = (
         <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
-          <div className={classes.instanceEditorLabel}>{propName}</div>
-          {argsjsx}
+          <GVarElement
+            state={this.state}
+            propName={propName}
+            propNameOptions={propNames}
+            propMethod={methodName}
+            propMethodsMap={methodsMap}
+            args={args}
+            onSelectProp={this.onSelectPropName}
+            onSelectMethod={this.onSelectMethod}
+            onValueChange={this.onValueChange}
+            onSaveData={this.saveData}
+            index={index}
+          />
+          {/* <div className={classes.instanceEditorLabel}>{propName}</div>
+          {argsjsx} */}
           {deletablejsx}
         </div>
       );
@@ -209,7 +264,20 @@ class PropElement extends React.Component<MyProps, MyState> {
             }}
           >
             prop
-            <SelectElement
+            <GVarElement
+              state={this.state}
+              propName={propName}
+              propNameOptions={propNames}
+              propMethod={methodName}
+              propMethodsMap={methodsMap}
+              args={args}
+              onSelectProp={this.onSelectPropName}
+              onSelectMethod={this.onSelectMethod}
+              onValueChange={this.onValueChange}
+              onSaveData={this.saveData}
+              index={index}
+            />
+            {/* <SelectElement
               state={this.state}
               value={propName}
               options={propNames}
@@ -225,7 +293,7 @@ class PropElement extends React.Component<MyProps, MyState> {
               onChange={this.onSelectMethod}
               index={index}
             />
-            {argsjsx}
+            {argsjsx} */}
           </div>
           {deletablejsx}
         </div>
