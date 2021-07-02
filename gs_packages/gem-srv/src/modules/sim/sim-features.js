@@ -7,7 +7,6 @@
   Features are instantiated once.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
-
 // ACTIVATE FEATURES (SELF-INSTALLING ON IMPORT)
 import './features/feat-agentwidget';
 import './features/feat-costume';

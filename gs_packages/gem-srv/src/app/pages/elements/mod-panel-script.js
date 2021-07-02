@@ -8,7 +8,6 @@
 
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
-import GAgent from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
