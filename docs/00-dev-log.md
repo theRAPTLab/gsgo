@@ -671,4 +671,16 @@ componentDidUpdate(object prevProps, object prevState)
 
 To **write the transform**, we want to check for changes to the transform, and autowrite it back if there are no changes.
 
-* [ ] in dev-tracker-ui, `HandleStateChange(section,name,value)` might be the trigger. This is the state write. 
+* [x] in dev-tracker-ui, `HandleStateChange(section,name,value)` might be the trigger. This is the state write, so now it's called **`WriteState(`**`section, name, value`**`)`**
+* [ ] It both does `STATE.SetState()` and `PublishState()` 
+
+We need the concept of a STATE BACKING STORE?
+
+## JUL 3 SAT - Taking a Step Back
+
+I have a rudimentary setup working, but I need to consider the **difference** between "transient state" and "persistent data" once and for all. 
+
+* document [modularity.md](02-concepts/modularity.md) complete
+
+### Resuming State Design
+
