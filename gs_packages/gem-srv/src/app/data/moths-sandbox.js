@@ -50,6 +50,7 @@ featCall Population agentsForEach TreeFoliage [[
       id: 'Moth',
       label: 'Moth',
       isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
