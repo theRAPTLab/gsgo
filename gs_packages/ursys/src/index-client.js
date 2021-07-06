@@ -11,6 +11,7 @@ const NETWORK = require('./client-urnet');
 const DEVICES = require('./client-netdevices');
 const DB = require('./client-urdb');
 const NETINFO = require('./client-netinfo');
+const APPSTATE = require('./client-appstate');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
@@ -188,6 +189,8 @@ const UR = {
   SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
+  // FORWARDED APPSTATE API:
+  ...APPSTATE, // temporary forward-all; replace with method names later
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,

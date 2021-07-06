@@ -684,3 +684,12 @@ I have a rudimentary setup working, but I need to consider the **difference** be
 
 ### Resuming State Design
 
+I've moved a lot of stuff in dev-tracker-ui into `client-appstate` in URSYS. 
+
+* [x] update `InitializeState()` to accept either a query or an object, and then return the state
+* [x] New UR `client-appstate` implements the state stuff that was in `mod-devtracker-ui` but the logic for updating is still a little convoluted to follow.
+* [x] commit current refactoring of DevTracker
+
+There's a convention to follow:
+
+* each component inspects incoming URState changes and converts to its flat object hierarchy. 

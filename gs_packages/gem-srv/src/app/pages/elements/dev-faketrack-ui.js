@@ -28,7 +28,6 @@
 import { vec3 } from 'gl-matrix';
 import UR from '@gemstep/ursys/client';
 import * as UI from './ui-handlers';
-import * as XFORM from './ui-state';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

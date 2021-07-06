@@ -11,8 +11,6 @@
         "yOff": 0,
         "xScale": 1,
         "yScale": 1,
-        "xRot": 0,
-        "yRot": 0,
         "zRot": 0
       },
       "stage": {
@@ -32,8 +30,6 @@
         "yOff": 2,
         "xScale": 1,
         "yScale": 1,
-        "xRot": 0,
-        "yRot": 0,
         "zRot": 31.5
       },
       "stage": {
@@ -56,8 +52,6 @@
         "yOff": 0,
         "xScale": 1,
         "yScale": 1,
-        "xRot": 0,
-        "yRot": 0,
         "zRot": 0
       }
     }

@@ -28,7 +28,7 @@ const INTERVAL = (1 / SAMPLE_FPS) * 1000;
 /// RUNTIME VARS //////////////////////////////////////////////////////////////
 let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
-let FRAME_TIMER;
+let FRAME_TIMER = 'make this undefined to start entity updates';
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 const DBG = true;
 const PR = UR.PrefixUtil('TRACKER', 'TagApp');
@@ -78,13 +78,12 @@ function m_GetDeviceArray(pattern = {}) {
 class DevTracker extends React.Component {
   constructor() {
     super();
-    const { app, locales } = MOD.ReadState('app', 'locales');
-    const state = { ...app, locales };
-    this.state = state;
-
+    this.state = UR.ReadState();
     this.updateDeviceList = this.updateDeviceList.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
     this.handleStateUpdate = this.handleStateUpdate.bind(this);
+
+    UR.SubscribeState(this.handleStateUpdate);
   }
 
   componentDidMount() {
@@ -110,8 +109,8 @@ class DevTracker extends React.Component {
       const { getController, deviceNum, unsubscribe } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
       // STEP 3 is to register the root app with the associated logic module
-      MOD.InitializeState();
-      MOD.SubscribeState(this.handleStateUpdate);
+      MOD.InitializeLocale();
+
       // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
       // these are all the device API calls for testing. Since Tracker does
       // not have a simulation loop to get getInputs(), we just use a timer
@@ -148,7 +147,7 @@ class DevTracker extends React.Component {
 
   componentWillUnmount() {
     console.log('componentWillUnmount');
-    MOD.UnsubscribeState(this.handleStateUpdate);
+    UR.UnsubscribeState(this.handleStateUpdate);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.updateDeviceList);
   }
 
@@ -173,7 +172,8 @@ class DevTracker extends React.Component {
     // For now, the root of DevTracker (this component) only tracks selections
     // for other fields ('select'), they are handled in their own component
     // using a similar call to WriteStateChange()
-    MOD.WriteState('app', name, value);
+    console.log('updating', name, value);
+    UR.HandleStateChange('app', name, value);
   }
 
   handleStateUpdate(change, cb) {
@@ -181,18 +181,11 @@ class DevTracker extends React.Component {
       console.log(...PR('UPDATE localeNames', change));
       this.setState(change);
     }
-    if (change.app) {
-      const { id, localeId } = change.app;
-      if (id) this.setState({ localeId: id });
-      if (localeId) this.setState({ localeId });
-      console.log(...PR('UPDATE app', change.app));
-    }
     if (typeof cb === 'function') cb();
   }
 
   render() {
     const { classes } = this.props;
-    const localeList = this.state.localeNames || [];
 
     return (
       <div
@@ -258,21 +251,6 @@ class DevTracker extends React.Component {
               </option>
             </select>
             <label className="control-label">&nbsp;Control Group</label>
-          </div>
-          <div className="io-track-controls">
-            <select
-              name="localeId"
-              value={this.state.localeId}
-              onChange={this.handleInputChange}
-              className={clsx('form-control', 'data-track')}
-            >
-              {localeList.map(option => (
-                <option key={option.id} value={option.id}>
-                  {option.name}
-                </option>
-              ))}
-            </select>
-            <label className="control-label">&nbsp;Data Track</label>
           </div>
           <FormTransform title="Input Transform" />
         </div>
