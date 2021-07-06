@@ -32,7 +32,7 @@ export default class FormTransform extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    if (DBG) console.log(name, value);
+    if (DBG) console.log(...PR(name, value));
     if (name === 'localeId') UR.HandleStateChange('app', name, value);
     else UR.HandleStateChange('transform', name, value);
   }
@@ -46,17 +46,14 @@ export default class FormTransform extends React.Component {
       const { id, localeId } = app;
       if (id) this.setState({ localeId: id });
       if (localeId) this.setState({ localeId });
-      console.log(...PR('UPDATE localeId', localeId));
       const { locales } = UR.ReadStateSection('locales');
       const locale = locales.find(l => l.id === Number(localeId));
       if (locale) {
         const newState = { ...locale.ptrack };
-        console.log('found locale', locale, 'writing', newState);
         this.setState(newState);
       }
     }
     if (transform) {
-      console.log(...PR('UPDATE transform', transform));
       this.setState({ ...transform });
     }
     if (typeof cb === 'function') cb();
@@ -65,9 +62,7 @@ export default class FormTransform extends React.Component {
   render() {
     const { title = 'Transform' } = this.props;
     const localeList = this.state.localeNames || [];
-    console.log('this.localeNames', this.state.localeNames);
-    console.log(...PR('render', this.state));
-    const { xScale, yScale, zRot, xOff, yOff, xRange, yRange } = this.state;
+    const { xScale, yScale, zRot, xOff, yOff, xRange, yRange, memo } = this.state;
     return (
       <>
         <div className="io-track-controls">
@@ -160,6 +155,7 @@ export default class FormTransform extends React.Component {
             Y-RANGE
           </label>
         </div>
+        <div>{memo}</div>
       </>
     );
   }

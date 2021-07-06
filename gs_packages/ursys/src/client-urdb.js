@@ -39,7 +39,8 @@ export async function Query(query, variables) {
   if (!response.ok && DBG) {
     let err = 'GraphQL Error!!!';
     down.errors.forEach((e, i) => {
-      err += `\n[${i}] - ${e.message}`;
+      const { line, column } = e.locations[0];
+      err += `\n[${i}] - ${e.message} (line:${line} col:${column})`;
     });
     console.error(...PR(err));
   }

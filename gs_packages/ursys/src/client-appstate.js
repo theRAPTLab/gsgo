@@ -21,6 +21,10 @@ const PR = PROMPT.makeStyleFormatter('APPSTATE', 'TagDkOrange');
  */
 let STATE = {};
 
+/// a Set of React-style 'setState( {change} )' methods
+const SUBSCRIBERS = new Set(); // StateHandlers
+const CHANGEHOOKS = new Set(); // methods to intercept changes before we get
+
 /// HELPER: STATE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Check if STATE contains a "section" with a particular property */
@@ -115,14 +119,31 @@ function ReadStateSection(...sections) {
 
 /// HELPER: SUBSCRIBERS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// a Set of React-style 'setState( {change} )' methods
-const SUBSCRIBERS = new Set(); // StateHandlers
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** This is called from the component's handleChangeState() handler, which
  *  handles the state change call on its behalf after getting a chance to
- *  update this modules state.
+ *  update this modules state. If any hooks return a truthy value, it is
+ *  considered handled and the normal UpdateStateProp()/PublishState() isn't
+ *  invoked automatically
  */
 function HandleStateChange(section, name, value) {
+  // if there are any hooks, call each one to give it opportunity
+  // to change values if an array is returned in section, name, value order
+  // This is done for EACH returned array.
+  // if a boolean is returned
+  const hooks = [...CHANGEHOOKS.values()];
+  const results = hooks.map(hook => hook(section, name, value));
+  let handledCount = 0;
+  results.forEach(res => {
+    if (!Array.isArray(res)) return;
+    handledCount++;
+    const [s, n, v] = res;
+    UpdateStateProp(s, n, v);
+    PublishState({ [s]: { [n]: v } });
+  });
+  if (handledCount) return;
+  // if there are no state changes intercepted, the normal Update/Publish
+  // is run.
+  console.log('updating state', section, name, value);
   UpdateStateProp(section, name, value);
   PublishState({ [section]: { [name]: value } });
 }
@@ -135,7 +156,6 @@ function PublishState(change) {
   if (typeof change !== 'object') throw Error('if arg provided, must be object');
   else data = change;
   const subs = [...SUBSCRIBERS.values()];
-  console.log('publishing', data);
   subs.forEach(sub => sub(data, () => {}));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -161,6 +181,14 @@ function UnsubscribeState(stateHandler) {
     );
   SUBSCRIBERS.delete(stateHandler);
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function InterceptStateChange(hook) {
+  if (typeof hook !== 'function')
+    throw Error(
+      'arg1 must be a method to receive section,name,value and return true=handled '
+    );
+  CHANGEHOOKS.add(hook);
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -173,5 +201,6 @@ module.exports = {
   ReadStateSection,
   UpdateStateSection,
   UpdateStateProp,
-  HandleStateChange
+  HandleStateChange,
+  InterceptStateChange
 };

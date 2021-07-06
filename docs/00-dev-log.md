@@ -693,3 +693,16 @@ I've moved a lot of stuff in dev-tracker-ui into `client-appstate` in URSYS.
 There's a convention to follow:
 
 * each component inspects incoming URState changes and converts to its flat object hierarchy. 
+
+## JUL 5 MON - Working UI, Now Write Transform to DB
+
+The transform is updating, but can we **write changes**?
+
+* [x] write a hook intercepter
+* [x] write mutation code through `UR.Query`
+* [x] update logic for updates to React
+
+This is a bit terrible because updating state is so finicky and there is a lot of "keeping in sync". I should update the SetState functions so the mapping is a bit better 1:1 with React and My own state.
+
+However **the database round trip** works at least. Next step: *REFINEMENT* and *SIMPLIFICATION*
+
