@@ -1,4 +1,4 @@
-[PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
+[ ] write GHDR 7/7 post (kits?)[PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY S21-01 JAN 11 - JAN 24**
 

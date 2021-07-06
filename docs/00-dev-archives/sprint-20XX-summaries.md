@@ -169,3 +169,13 @@ SUMMARY [S11 MAY 25-JUN 07](sprint-11.md)
 
 * W1: ifExpr bug
 * W2:Fix underlying "block chaining" bug in script-parser
+
+**SUMMARY S2111 MAY 31 - JUN 13**
+
+* W1: Ponder GraphQL with overall server needs.
+* W2: Locale system design
+
+**SUMMARY S2112 JUN 14 - JUN 27**
+
+* W1: Mini Rounds Discussion. URDB+GraphQL+Loki design
+* W2: Matrix Math Review. Data structures for Locale.
