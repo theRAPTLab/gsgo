@@ -50,7 +50,7 @@ featCall Population agentsForEach TreeFoliage [[
       id: 'Moth',
       label: 'Moth',
       isCharControllable: true,
-      isPozyxControllable: true,
+      //isPozyxControllable: true,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
@@ -204,7 +204,7 @@ ifExpr {{ agent.getProp('isInert').value }} [[
       id: 'Predator',
       label: 'Predator',
       isCharControllable: true,
-      isPozyxControllable: true,
+      // isPozyxControllable: true,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
