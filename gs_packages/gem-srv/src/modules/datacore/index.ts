@@ -3,6 +3,10 @@
   Simulation Data is a pure data module that can be included anywhere
   to access global data.
 
+  DATACORE modules also manage "derived data" that uses only the modeled
+  data. For data that couples this data with an implementation-specific
+  need, put that code into APPCORE modules.
+
   IMPORTANT:
   Do not import other modules into here unless you are absolutely
   sure it will not create a circular dependency!
@@ -27,7 +31,7 @@ export * from './dc-render';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const PR = UR.PrefixUtil('DCORE', 'TagRed');
+/// const PR = UR.PrefixUtil('DATCORE', 'TagRed');
 
 /// DEFAULT TEXT FOR SCRIPT TESTING ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,5 +60,5 @@ export function GetDefaultText() {
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// for erasing data structures
-UR.HookPhase('SIM/RESET', () => {});
+/// for loading data structures
+UR.HookPhase('UR/LOAD_ASSETS', () => new Promise(resolve => resolve('loaded')));
