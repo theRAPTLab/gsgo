@@ -34,32 +34,45 @@ function m_InitializeLoki(dbPath = '../runtime/urdb.loki') {
 }
 /// HELPER METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PrepareDatabase(importPath) {
+/** imports a database if an importPath is provided and the existing database
+ *  has no collections. If option.doReset is true, then all the collections
+ *  are removed and if the import file exists it's imported
+ */
+function m_PrepareDatabase(importPath, opt = { doReset: false }) {
   // import only if setting reset, or no collections in db
-  if (DB.listCollections().length === 0 || importPath !== undefined) {
+  const { doReset } = opt;
+  if (doReset) {
+    const cnames = DB.listCollections().map(o => o.name);
+    TERM(`resetting DB by removing ${cnames.length} collections`);
+    cnames.forEach(col => DB.removeCollection(col));
+  }
+  if (DB.listCollections().length === 0) {
     if (importPath !== undefined) {
       TERM(`importing data from '${importPath}'`);
       const data = fse.readJsonSync(importPath);
-      const collections = Object.keys(data);
-      collections.forEach(col => {
+      const datakeys = Object.keys(data);
+      // if json file has a key that's in an existing collection, rewrite that
+      // collection with its contents (must be an array of doc objs)
+      datakeys.forEach(col => {
         const records = data[col];
         if (!Array.isArray(records)) {
           TERM(`... SKIPPING non-array prop '${col}'`);
           return;
         }
-        // looks good so import
+        // if this an existing collection already? then delete it
         if (DB.getCollection(col)) {
           TERM(`... deleting old ${col}s from db`);
           DB.removeCollection(col);
         }
+        // create new collection and insert imported collection
         TERM(`... importing collection '${col}' (${records.length} records)`);
         const ncol = DB.addCollection(col, { unique: ['id'] });
         records.forEach(r => ncol.insert(r));
-        DB.saveDatabase(); // force save
       });
+      DB.saveDatabase(); // force save
     } else {
       // importPath undefined
-      TERM('... WARNING: DB has no collections, but importPath===undefined');
+      TERM('... WARNING: DB cleared');
     }
   } else {
     //
@@ -84,9 +97,9 @@ function m_LoadSchema(schemaPath) {
  *  @param {Express} app - express app instance
  */
 function UseLokiGQL_Middleware(app, options) {
-  const { dbFile, dbImportFile, schemaFile, root } = options;
+  const { dbFile, dbImportFile, schemaFile, root, doReset } = options;
   m_InitializeLoki(dbFile);
-  m_PrepareDatabase(dbImportFile);
+  m_PrepareDatabase(dbImportFile, { doReset });
   m_LoadSchema(schemaFile);
   TERM(`BINDING GraphQL Endpoint ${CFG_URDB_GQL}`);
   app.use(
