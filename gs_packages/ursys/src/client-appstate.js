@@ -27,11 +27,11 @@ const CHANGEHOOKS = new Set(); // methods to intercept changes before we get
 
 /// HELPER: STATE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Check if STATE contains a "section" with a particular property */
-function u_StateHas(sec, prop) {
-  const sections = Object.keys(STATE);
-  if (prop === undefined) return sections.includes(sec);
-  const props = Object.keys(STATE[sec]);
+/** Check if STATE contains a "group" with a particular property */
+function u_StateHas(group, prop) {
+  const groups = Object.keys(STATE);
+  if (prop === undefined) return groups.includes(group);
+  const props = Object.keys(STATE[group]);
   return props.includes(prop);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -75,25 +75,25 @@ async function InitializeState(qs_or_obj) {
 
 /// STATE MANIPULATION ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** set a STATE section if it exists and optionally publish */
-function UpdateStateSection(sec, secObj) {
-  if (typeof sec !== 'string') throw Error('arg1 must be string');
-  if (!u_StateHas(sec)) throw Error(`section '${sec}' does not exist`);
+/** set a STATE group if it exists and optionally publish */
+function UpdateStateGroup(group, secObj) {
+  if (typeof group !== 'string') throw Error('arg1 must be string');
+  if (!u_StateHas(group)) throw Error(`group '${group}' does not exist`);
   if (secObj === undefined) throw Error('arg3 must be defined');
-  STATE[sec] = secObj;
-  const update = { [sec]: STATE[sec] };
+  STATE[group] = secObj;
+  const update = { [group]: STATE[group] };
   return update;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function UpdateStateProp(sec, prop, value) {
-  if (typeof sec !== 'string') throw Error('arg1 must be string');
+function UpdateStateGroupProp(group, prop, value) {
+  if (typeof group !== 'string') throw Error('arg1 must be string');
   if (typeof prop !== 'string') throw Error('arg2 must be string');
   if (value === undefined) throw Error('arg3 must be defined');
-  if (!u_StateHas(sec)) throw Error(`section '${sec}' does not exist`);
-  if (!u_StateHas(sec, prop))
-    throw Error(`no such prop '${prop}' in section '${sec}'`);
-  STATE[sec][prop] = value;
-  const update = { [sec]: { [prop]: value } };
+  if (!u_StateHas(group)) throw Error(`group '${group}' does not exist`);
+  if (!u_StateHas(group, prop))
+    throw Error(`no such prop '${prop}' in group '${group}'`);
+  STATE[group][prop] = value;
+  const update = { [group]: { [prop]: value } };
   return update;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -104,15 +104,14 @@ function ReadState() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Call in the constructor of a component that is using this UISTATE module,
- *  passing a list of string arguments of sections to include.
+ *  passing a list of string arguments of groups to include.
  *  Returns { [arg1]: sectionData, [arg2]: sectionData, ... }
  */
-function ReadStateSection(...sections) {
+function ReadStateGroup(...groups) {
   const returnState = {};
-  sections.forEach(section => {
-    if (!u_StateHas(section))
-      console.warn(...PR(`section '${section}' not in STATE`));
-    else Object.assign(returnState, { [section]: STATE[section] });
+  groups.forEach(group => {
+    if (!u_StateHas(group)) console.warn(...PR(`group '${group}' not in STATE`));
+    else Object.assign(returnState, { [group]: STATE[group] });
   });
   return returnState;
 }
@@ -122,39 +121,50 @@ function ReadStateSection(...sections) {
 /** This is called from the component's handleChangeState() handler, which
  *  handles the state change call on its behalf after getting a chance to
  *  update this modules state. If any hooks return a truthy value, it is
- *  considered handled and the normal UpdateStateProp()/PublishState() isn't
+ *  considered handled and the normal UpdateStateGroupProp()/PublishState() isn't
  *  invoked automatically
  */
-function HandleStateChange(section, name, value) {
+function HandleStateChange(group, prop, value) {
   // if there are any hooks, call each one to give it opportunity
-  // to change values if an array is returned in section, name, value order
+  // to change values if an array is returned in group, name, value order
   // This is done for EACH returned array.
   // if a boolean is returned
   const hooks = [...CHANGEHOOKS.values()];
-  const results = hooks.map(hook => hook(section, name, value));
+  const results = hooks.map(hook => hook(group, prop, value));
   let handledCount = 0;
   results.forEach(res => {
     if (!Array.isArray(res)) return;
     handledCount++;
-    const [s, n, v] = res;
-    UpdateStateProp(s, n, v);
-    PublishState({ [s]: { [n]: v } });
+    const [g, n, v] = res;
+    UpdateStateGroupProp(g, n, v);
+    PublishState({ [g]: { [n]: v } });
   });
   if (handledCount) return;
   // if there are no state changes intercepted, the normal Update/Publish
   // is run.
-  console.log('updating state', section, name, value);
-  UpdateStateProp(section, name, value);
-  PublishState({ [section]: { [name]: value } });
+  UpdateStateGroupProp(group, prop, value);
+  PublishState({ [group]: { [prop]: value } });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Invoke React-style 'setState()' method with change object
+/** Invoke React-style 'setState()' method with change object. If no object
+ *  is provided, all state groups are sent in a new object. Otherwise,
+ *  the changeObject is
  */
-function PublishState(change) {
+function PublishState(changeObj) {
   let data;
-  if (change === undefined) data = { ...STATE };
-  if (typeof change !== 'object') throw Error('if arg provided, must be object');
-  else data = change;
+  if (changeObj === undefined) data = { ...STATE };
+  if (typeof changeObj !== 'object')
+    throw Error('if arg provided, must be object');
+  else {
+    const groups = Object.keys(changeObj);
+    if (!groups.every(g => u_StateHas(g))) {
+      const json = JSON.stringify(changeObj);
+      const err = `changeObj does not align with STATE groups ${json}`;
+      console.error(...PR(err));
+      throw Error(err);
+    }
+    data = changeObj;
+  }
   const subs = [...SUBSCRIBERS.values()];
   subs.forEach(sub => sub(data, () => {}));
 }
@@ -166,7 +176,7 @@ function PublishState(change) {
 function SubscribeState(stateHandler) {
   if (typeof stateHandler !== 'function')
     throw Error(
-      'arg1 must be a method in a Component that receives change, section'
+      'arg1 must be a method in a Component that receives change, group'
     );
   SUBSCRIBERS.add(stateHandler);
 }
@@ -177,17 +187,31 @@ function SubscribeState(stateHandler) {
 function UnsubscribeState(stateHandler) {
   if (typeof stateHandler !== 'function')
     throw Error(
-      'arg1 must be a method in a Component that receives change, section'
+      'arg1 must be a method in a Component that receives change, group'
     );
   SUBSCRIBERS.delete(stateHandler);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InterceptStateChange(hook) {
-  if (typeof hook !== 'function')
+/** Intercept state changer logic, allowing the intercepting function to alter
+ *  by returning an optional [group,prop,value] array. Returning undefined
+ *  will tell the state changer to process as normal
+ */
+function HookStateChange(hookFunction) {
+  if (typeof hookFunction !== 'function')
     throw Error(
-      'arg1 must be a method to receive section,name,value and return true=handled '
+      'arg1 must be a function to receive group,name,value, returning opt array'
     );
-  CHANGEHOOKS.add(hook);
+  CHANGEHOOKS.add(hookFunction);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Remove the hookFunction from the hook interceptors, if it's part of the set
+ */
+function UnhookStateChange(hookFunction) {
+  if (typeof hookFunction !== 'function')
+    throw Error(
+      'arg1 must be function  method to receive group,name,value and return true=handled '
+    );
+  CHANGEHOOKS.delete(hookFunction);
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -198,9 +222,10 @@ module.exports = {
   UnsubscribeState,
   InitializeState,
   ReadState,
-  ReadStateSection,
-  UpdateStateSection,
-  UpdateStateProp,
+  ReadStateGroup,
+  UpdateStateGroup,
+  UpdateStateGroupProp,
   HandleStateChange,
-  InterceptStateChange
+  HookStateChange,
+  UnhookStateChange
 };

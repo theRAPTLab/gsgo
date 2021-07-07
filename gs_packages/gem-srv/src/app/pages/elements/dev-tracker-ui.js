@@ -44,11 +44,11 @@ let LOCALE_ID = 0;
 let LOCALES = [];
 let LOCALE_NAMES = [];
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.InterceptStateChange((section, name, value) => {
-  if (section === 'app') {
+UR.HookStateChange((group, name, value) => {
+  if (group === 'app') {
     if (name === 'localeId') LOCALE_ID = Number(value);
   }
-  if (section === 'transform') {
+  if (group === 'transform') {
     console.log('transform', name, '=', value);
     if (MASTER_STATE.transform[name] !== undefined) {
       MASTER_STATE.transform[name] = Number(value);
@@ -76,7 +76,7 @@ UR.InterceptStateChange((section, name, value) => {
         LOCALES[LOCALE_ID].ptrack = MASTER_STATE.transform;
         UR.PublishState({ locales: LOCALES });
       }, 1000);
-      return [section, name, Number(value)]; // make sure UI updates with current vars
+      return [group, name, Number(value)]; // make sure UI updates with current vars
     }
   }
   // if nothing returned, the handler operates normally
@@ -113,8 +113,8 @@ export async function InitializeLocale() {
     const { localeNames, locales } = response.data;
     LOCALE_NAMES = localeNames;
     LOCALES = locales;
-    UR.UpdateStateSection('localeNames', localeNames);
-    UR.UpdateStateSection('locales', locales);
+    UR.UpdateStateGroup('localeNames', localeNames);
+    UR.UpdateStateGroup('locales', locales);
     UR.PublishState({ locales, localeNames });
   }
   // (2) next request localeId 1, using variable to pick which one
@@ -147,7 +147,7 @@ export async function InitializeLocale() {
   // them into UISTATE
   const { id, ptrack } = response.data.locale;
   console.log(...PR('(3) SET LOCALEID TO', id));
-  UR.UpdateStateProp('app', 'localeId', id);
-  UR.UpdateStateSection('transform', ptrack);
+  UR.UpdateStateGroupProp('app', 'localeId', id);
+  UR.UpdateStateGroup('transform', ptrack);
   UR.PublishState({ transform: ptrack, app: { localeId: id } });
 }

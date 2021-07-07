@@ -8,7 +8,7 @@ const DBG = true;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
-    const { transform, localeNames } = UR.ReadStateSection(
+    const { transform, localeNames } = UR.ReadStateGroup(
       'transform',
       'localeNames'
     );
@@ -46,7 +46,7 @@ export default class FormTransform extends React.Component {
       const { id, localeId } = app;
       if (id) this.setState({ localeId: id });
       if (localeId) this.setState({ localeId });
-      const { locales } = UR.ReadStateSection('locales');
+      const { locales } = UR.ReadStateGroup('locales');
       const locale = locales.find(l => l.id === Number(localeId));
       if (locale) {
         const newState = { ...locale.ptrack };
