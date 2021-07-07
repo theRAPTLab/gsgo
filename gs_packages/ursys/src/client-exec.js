@@ -45,6 +45,7 @@ const PHASES = {
     'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
+    'LOAD_DB', // load database stuff from wherever
     'LOAD_CONFIG', // app modules can request asynchronous loads
     'LOAD_ASSETS' // can use loaded configs to load assets
   ],

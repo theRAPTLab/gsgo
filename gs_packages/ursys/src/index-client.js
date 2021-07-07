@@ -10,7 +10,7 @@
 const NETWORK = require('./client-urnet');
 const DEVICES = require('./client-netdevices');
 const DB = require('./client-urdb');
-const NETINFO = require('./client-netinfo');
+// const NETINFO = require('./client-netinfo');
 const APPSTATE = require('./client-appstate');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
@@ -20,6 +20,7 @@ const COMMON = require('./ur-common');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
+const StateGroup = require('./class-state-group');
 //
 const {
   IsBrowser,
@@ -189,16 +190,16 @@ const UR = {
   SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
-  // FORWARDED APPSTATE API:
-  ...APPSTATE, // temporary forward-all; replace with method names later
   // FORWARDED PROMPT UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
   ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
   HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   PrintTagColors: PROMPTS.printTagColors,
+  // FORWARDED APPSTATE (TEMP)
+  ...APPSTATE,
   // FORWARDED CLASSES
-  class: { PhaseMachine },
+  class: { PhaseMachine, StateGroup },
   // FORWARDED CONSOLE DEBUG UTILITIES
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);

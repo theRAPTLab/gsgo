@@ -21,15 +21,12 @@
 
 import UR from '@gemstep/ursys/client';
 
-/// FORWARDED EXPORTS /////////////////////////////////////////////////////////
+/// APPCORE MODULES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export * from './ac-locales';
-
-/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// const PR = UR.PrefixUtil('APPCORE', 'TagRed');
+export * as Locales from './ac-locales';
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// for loading data structures
-UR.HookPhase('UR/LOAD_ASSETS', () => new Promise(resolve => resolve()));
+/// For loading data structures. AppCore modules could use this for loading
+/// async data from a database
+/// UR.HookPhase('UR/LOAD_ASSETS', () => new Promise(resolve => resolve()));
