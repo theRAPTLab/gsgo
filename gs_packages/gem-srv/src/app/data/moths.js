@@ -185,7 +185,7 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeTrunk
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'lightbeam.json' 0
+featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 0.2 0.3 0
 
 useFeature Physics
