@@ -20,7 +20,7 @@ const COMMON = require('./ur-common');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
-const StateGroup = require('./class-state-group');
+const StateGroupMgr = require('./class-state-group-mgr');
 //
 const {
   IsBrowser,
@@ -199,7 +199,7 @@ const UR = {
   // FORWARDED APPSTATE (TEMP)
   ...APPSTATE,
   // FORWARDED CLASSES
-  class: { PhaseMachine, StateGroup },
+  class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);

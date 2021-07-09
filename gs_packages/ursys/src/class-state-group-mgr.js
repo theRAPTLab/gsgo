@@ -36,27 +36,37 @@ const PR = PROMPT.makeStyleFormatter('STPKT', 'TagDkOrange');
  */
 const STATE = {};
 
-/// HELPER: STATE /////////////////////////////////////////////////////////////
+/// HELPER: GLOBAL STATE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Check if STATE contains a "group" with a particular property */
-function u_StateHas(group, prop) {
-  const groups = Object.keys(STATE);
-  if (prop === undefined) return groups.includes(group);
-  const props = Object.keys(STATE[group]);
+/** internal:
+ *  Check if STATE contains a "key group" with a particular property. You can
+ *  check just that the key exists, or a key.prop.
+ */
+function u_StateHas(key, prop) {
+  const keys = Object.keys(STATE);
+  if (prop === undefined) return keys.includes(key);
+  const props = Object.keys(STATE[key]);
   return props.includes(prop);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** For initial setup of the global STATE object. The keys in the STATE object
- *  determine what groups exist and what can be changed.
+/** internal:
+ *  For initial setup of the global STATE object. The keys in the STATE object
+ *  determine what groups exist and what can be changed. It does not check
+ *  whether the calling StateGroupMgr instance has permission to change it,
+ *  so it's used only during instance initialization inside an appcore module,
+ *  which configures its managed state keys to detect errors.
+ *  This is called by every instance of StateGroupMgr on init, and it makes
+ *  sure that a key is not being overwritten because all state group keys
+ *  must be unique.
  *  @param {object} stateObj - an object literal with group keys and values
  *  @return {Array<string>} - list of groupnames found in
  */
 function u_SetStateKeys(stateObj) {
   if (typeof stateObj !== 'object')
     throw Error('u_SetStateKeys requires an object with group keys');
-  const groups = Object.keys(stateObj);
-  if (DBG) console.log(...PR(`Writing ${groups.length} groups into STATE`));
-  groups.forEach(grp => {
+  const initGroups = Object.keys(stateObj);
+  if (DBG) console.log(...PR(`Writing ${initGroups.length} groups into STATE`));
+  initGroups.forEach(grp => {
     const ng = stateObj[grp];
     if (STATE[grp]) {
       const og = STATE[grp];
@@ -66,13 +76,13 @@ function u_SetStateKeys(stateObj) {
     }
     STATE[grp] = stateObj[grp];
   });
-  return groups; // the list of group names found
+  return initGroups; // the list of group names found
 }
 
 /// CLASS STATEPACKET  ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Check if STATE contains a "group" with a particular property */
-class StateGroup {
+class StateGroupMgr {
   constructor(qs_or_obj) {
     this.subs = new Set();
     this.hooks = new Set();
@@ -110,12 +120,13 @@ class StateGroup {
       );
     }
   }
-
   /** return true if this state packet has the specified groupName */
   hasKey(stateKey) {
     return this.validKeys.has(stateKey);
   }
 
+  /// MAIN STATE ACCESS METHODS ///////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** main method to update a key */
   updateKey(arg, secObj) {
     let retObj = {};
@@ -138,7 +149,6 @@ class StateGroup {
     retObj = { [arg]: STATE[arg] };
     return retObj;
   }
-
   /** main method to update a prop inside a key item */
   updateKeyProp(key, prop, value) {
     if (typeof key !== 'string') throw Error('arg1 must be string');
@@ -152,7 +162,6 @@ class StateGroup {
     const update = { [key]: { [prop]: value } };
     return update;
   }
-
   /** returns an object literal containing all managed state of this instance */
   stateObject(...args) {
     // if no args, return all the groups associate with this state
@@ -166,10 +175,36 @@ class StateGroup {
     return returnState;
   }
 
+  /// STATE CHANGE SUBSCRIPTIONS //////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** React components can receive notification of state changes here.
+   *  Make sure that the setStateMethod is actually bound to 'this' in the
+   *  constructor of the component!
+   */
+  subscribe(stateHandler) {
+    if (typeof stateHandler !== 'function')
+      throw Error(
+        'arg1 must be a method in a Component that receives change, keyname'
+      );
+    this.subs.add(stateHandler);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** For components that mount/unmount, you should make sure you unsubscribe
+   *  to avoid memory leaks. For classes use componentWillUnmoun().
+   */
+  unsubscribe(stateHandler) {
+    if (typeof stateHandler !== 'function')
+      throw Error(
+        'arg1 must be a method in a Component that receives change, keyname'
+      );
+    this.subs.delete(stateHandler);
+  }
+
+  /// INCOMING STATE CHANGES & SUB NOTIFICATION ///////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handles the state change call after getting a chance to update this
    *  modules state. If any hooks return a truthy value, it is considered
-   *  handled and the normal UpdateStateGroupProp()/PublishState() isn't invoked
-   *  automatically
+   *  handled and the normal update/pbulish cycle isn't automatically invoked
    */
   handleChange(key, prop, value) {
     const hooks = [...this.hooks.values()];
@@ -188,25 +223,24 @@ class StateGroup {
     this.updateKeyProp(key, prop, value);
     this.publishState({ [key]: { [prop]: value } });
   }
-
   /** Invoke React-style 'setState()' method with change object. If no object
    *  is provided, all state groups are sent in a new object. Otherwise,
-   *  the changeObject is
+   *  the stateObject is passed as is. It should
    */
-  publishState(changeObj) {
+  publishState(stateObj) {
     let data;
-    if (changeObj === undefined) data = this.stateObject();
-    if (typeof changeObj !== 'object')
+    if (stateObj === undefined) data = this.stateObject();
+    if (typeof stateObj !== 'object')
       throw Error('if arg provided, must be object');
     else {
-      const keys = Object.keys(changeObj);
+      const keys = Object.keys(stateObj);
       if (!keys.every(g => u_StateHas(g))) {
-        const json = JSON.stringify(changeObj);
-        const err = `changeObj does not align with STATE key: ${json}`;
+        const json = JSON.stringify(stateObj);
+        const err = `stateObj does not align with STATE key: ${json}`;
         console.error(...PR(err));
         throw Error(err);
       }
-      data = changeObj;
+      data = stateObj;
     }
     const subs = [...this.subs.values()];
     subs.forEach(sub =>
@@ -216,31 +250,7 @@ class StateGroup {
     );
   }
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** React components can receive notification of state changes here.
-   *  Make sure that the setStateMethod is actually bound to 'this' in the
-   *  constructor of the component!
-   */
-  subscribe(stateHandler) {
-    if (typeof stateHandler !== 'function')
-      throw Error(
-        'arg1 must be a method in a Component that receives change, keyname'
-      );
-    this.subs.add(stateHandler);
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** For components that mount/unmount, you should make sure you unsubscribe
-   *  to avoid memory leaks. For classes use componentWillUnmoun().
-   */
-  unsubscribe(stateHandler) {
-    if (typeof stateHandler !== 'function')
-      throw Error(
-        'arg1 must be a method in a Component that receives change, keyname'
-      );
-    this.subs.delete(stateHandler);
-  }
-
+  /// STATE REWRITING ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Intercept state changer logic, allowing the intercepting function to alter
    *  by returning an optional [key,prop,value] array. Returning undefined
@@ -253,7 +263,6 @@ class StateGroup {
       );
     this.hooks.add(filterFunc);
   }
-
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Remove the hookFunction from the hook interceptors, if it's part of the set
    */
@@ -268,4 +277,4 @@ class StateGroup {
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = StateGroup;
+module.exports = StateGroupMgr;
