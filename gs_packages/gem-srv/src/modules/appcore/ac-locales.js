@@ -32,6 +32,58 @@ STATE.initializeState({
     zRot: 0
   }
 });
+
+/** intercept this state handler */
+STATE.addChangeHook((key, propOrValue, propValue) => {
+  // handle specific keys to clean up for database
+  if (key === 'transform') {
+    console.log(`transform ${propOrValue}=${propValue}`);
+    propValue = Number(propValue);
+  }
+  if (key === 'localeID') {
+    console.log(`localeID=${propOrValue}`);
+    propOrValue = Number(propOrValue);
+  }
+  // start autosave
+  if (AUTOTIMER) clearInterval(AUTOTIMER);
+  AUTOTIMER = setInterval(() => {});
+
+  // allows state to update
+  return [key, propOrValue, propValue];
+  /*
+    if (key === 'localeID') value = Number(value);
+    if (key === 'transform') value = Number(value);
+        AUTOTIMER = setInterval(() => {
+          console.log(...PR('autosaving transform', MASTER_STATE.transform));
+          UR.Query(
+            `
+            mutation LocalePTrack($id:Int $input:PTrackInput) {
+              updatePTrack(localeId:$id,input:$input) {
+                memo
+              }
+            }
+          `,
+            {
+              input: MASTER_STATE.transform,
+              id: LOCALE_ID
+            }
+          ).then(response => {
+            console.log('response', response);
+          });
+          clearInterval(AUTOTIMER);
+          AUTOTIMER = 0;
+          // update locale
+          LOCALES[LOCALE_ID].ptrack = MASTER_STATE.transform;
+          UR.PublishState({ locales: LOCALES });
+        }, 1000);
+        return [group, name, Number(value)]; // make sure UI updates with current vars
+          }
+    // if nothing returned, the handler operates normally
+    return undefined;
+  });
+  */
+});
+
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
 const { stateObject, flatStateObject, updateKey } = STATE;
@@ -120,48 +172,6 @@ export async function LoadCurrentPTrack() {
   );
   return response.data.locale;
 }
-/*
-export async function HandleChange() {
-  UR.HookStateChange((group, name, value) => {
-    if (group === 'app') {
-      if (name === 'localeId') LOCALE_ID = Number(value);
-    }
-    if (group === 'transform') {
-      console.log('transform', name, '=', value);
-      if (MASTER_STATE.transform[name] !== undefined) {
-        MASTER_STATE.transform[name] = Number(value);
-        if (AUTOTIMER) clearInterval(AUTOTIMER);
-        AUTOTIMER = setInterval(() => {
-          console.log(...PR('autosaving transform', MASTER_STATE.transform));
-          UR.Query(
-            `
-            mutation LocalePTrack($id:Int $input:PTrackInput) {
-              updatePTrack(localeId:$id,input:$input) {
-                memo
-              }
-            }
-          `,
-            {
-              input: MASTER_STATE.transform,
-              id: LOCALE_ID
-            }
-          ).then(response => {
-            console.log('response', response);
-          });
-          clearInterval(AUTOTIMER);
-          AUTOTIMER = 0;
-          // update locale
-          LOCALES[LOCALE_ID].ptrack = MASTER_STATE.transform;
-          UR.PublishState({ locales: LOCALES });
-        }, 1000);
-        return [group, name, Number(value)]; // make sure UI updates with current vars
-      }
-    }
-    // if nothing returned, the handler operates normally
-    return undefined;
-  });
-}
-*/
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

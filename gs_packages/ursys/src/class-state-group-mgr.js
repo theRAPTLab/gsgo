@@ -195,6 +195,13 @@ class StateGroupMgr {
     return returnState;
   }
 
+  /** return a { [group]:{ [key]: value }} object consistently */
+  newStateObject(a, b, c) {
+    const group = this.name;
+    if (c === undefined) return { [group]: { [a]: b } };
+    return { [group]: { [a]: { [b]: c } } };
+  }
+
   /** return an object literal with all keys in the group(s) hoisted to root */
   flatStateObject(...args) {
     // if no args, return all the groups associate with this state
@@ -245,23 +252,26 @@ class StateGroupMgr {
     console.warn(...PR(`WriteState: statemgr[${smgrName}].${key} doesn't exit`));
     return {};
   }*/
-  _handleChange(key, prop, value) {
+  _handleChange(key, propOrValue, value) {
     const hooks = [...this.hooks.values()];
-    const results = hooks.map(hook => hook(key, prop, value));
+    const results = hooks.map(hook => hook(key, propOrValue, value));
     let handledCount = 0;
     results.forEach(res => {
       if (!Array.isArray(res)) return;
       handledCount++;
       const [k, n, v] = res;
-      this._updateKeyPropValue(k, n, v);
+      this._smartUpdate(k, n, v);
     });
     if (handledCount) return;
     // if there are no state changes intercepted, the normal Update/Publish
     // is run.
-    this._updateKeyPropValue(key, prop, value);
+    this._smartUpdate(key, propOrValue, value);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  _updateKeyPropValue(key, a, b) {
+  /** we can either handle 'key, { [prop]:value }' or 'key, prop, value' so have to
+   *  detect what we're getting
+   */
+  _smartUpdate(key, a, b) {
     if (b === undefined) {
       this.updateKey(key, a);
       this._publishState({ [key]: a });
