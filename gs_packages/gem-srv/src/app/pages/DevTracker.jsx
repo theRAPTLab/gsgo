@@ -28,8 +28,10 @@ const INTERVAL = (1 / SAMPLE_FPS) * 1000;
 let ASSETS_LOADED = false;
 let bad_keyer = 0; // use to generate unique keys
 let FRAME_TIMER = 'make this undefined to start entity updates';
+
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
-const DBG = true;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const DBG = false;
 const PR = UR.PrefixUtil('TRACKER', 'TagApp');
 
 /// UTILITIES /////////////////////////////////////////////////////////////////
@@ -45,7 +47,7 @@ class DevTracker extends React.Component {
   constructor() {
     super();
     this.state = UR.GetState('locales', 'devices');
-    console.log('DevTracker loaded state', this.state);
+    // console.log('DevTracker loaded state', this.state);
     this.updateDeviceList = this.updateDeviceList.bind(this);
     this.handleControlGroupChange = this.handleControlGroupChange.bind(this);
   }
@@ -116,7 +118,8 @@ class DevTracker extends React.Component {
   updateDeviceList(deviceLists) {
     const { selected, quantified, valid } = deviceLists;
     if (Array.isArray(quantified)) {
-      console.log(...PR(`notify got ${quantified.length} qualified devices`));
+      if (DBG)
+        console.log(...PR(`notify got ${quantified.length} qualified devices`));
       let devices = '';
       quantified.forEach(d => {
         const { udid, inputs, outputs } = d;
@@ -134,7 +137,7 @@ class DevTracker extends React.Component {
     // For now, the root of DevTracker (this component) only tracks selections
     // for other fields ('select'), they are handled in their own component
     // using a similar call to WriteStateChange()
-    console.log('updating', name, value);
+    console.log(...PR('ui update:', name, value));
     UR.SetState('devices', name, value);
   }
 
@@ -232,10 +235,10 @@ UR.HookPhase(
   'UR/LOAD_ASSETS',
   () =>
     new Promise((resolve, reject) => {
-      console.log(...PR('LOADING ASSET MANIFEST...'));
+      // console.log(...PR('LOADING ASSET MANIFEST...'));
       (async () => {
         await GLOBAL.LoadAssetsSync('static/assets.json');
-        console.log(...PR('ASSETS LOADED'));
+        // console.log(...PR('ASSETS LOADED'));
         ASSETS_LOADED = true;
         resolve();
       })();

@@ -33,7 +33,7 @@ function SaveDBInfo(urdb) {
     if (URDB_UINFO[prop]) console.log('overwriting urdb info', prop);
     URDB_UINFO[prop] = urdb[prop];
   });
-  console.log('saving urdb', URDB_UINFO);
+  // console.log('saving urdb', URDB_UINFO);
   return URDB_UINFO;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

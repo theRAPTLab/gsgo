@@ -4,12 +4,12 @@ import UR from '@gemstep/ursys/client';
 import clsx from 'clsx';
 
 const PR = UR.PrefixUtil('FormTransform', 'TagRed');
-const DBG = true;
+const DBG = false;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
     const state = UR.GetState('locales');
-    console.log(...PR('init state', state));
+    if (DBG) console.log(...PR('init state', state));
     this.state = state;
 
     this.handleInputChange = this.handleInputChange.bind(this);
@@ -28,13 +28,12 @@ export default class FormTransform extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    if (DBG) console.log(...PR('inputChange:', name, value));
+    if (DBG) console.log(...PR('ui update:', name, value));
     if (name === 'localeID') UR.SetState('locales', name, value);
     else UR.SetState('locales.transform', name, value);
   }
 
   urStateUpdated(smgrName, stateObj, cb) {
-    console.log('urStateUpdated:', stateObj);
     const { localeNames, localeID, transform } = stateObj;
     if (localeNames) {
       this.setState({ localeNames });
@@ -43,13 +42,14 @@ export default class FormTransform extends React.Component {
       this.setState({ localeID });
       const { locales } = UR.GetState('locales');
       const locale = locales.find(l => l.id === Number(localeID));
-      console.log('locale', locale);
+      console.log(...PR('ur update: locale', locale));
       if (locale) {
         const newState = { transform: locale.ptrack };
         this.setState(newState);
       }
     }
     if (transform) {
+      console.log(...PR('ur update: transform', transform));
       this.setState({ ...transform });
     }
     if (typeof cb === 'function') cb();
@@ -146,7 +146,7 @@ export default class FormTransform extends React.Component {
             <input
               name="xRange"
               type="number"
-              value={xRange || 5}
+              value={xRange}
               onChange={this.handleInputChange}
             />{' '}
             X-RANGE
@@ -155,7 +155,7 @@ export default class FormTransform extends React.Component {
             <input
               name="yRange"
               type="number"
-              value={yRange || 5}
+              value={yRange}
               onChange={this.handleInputChange}
             />{' '}
             Y-RANGE

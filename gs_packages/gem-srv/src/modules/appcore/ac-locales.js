@@ -10,6 +10,7 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-LOCALES', 'TagCyan');
+const DBG = false;
 
 /// INITIALIZE STATE MANAGED BY THIS MODULE ///////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +61,7 @@ export const SetLocaleID = id => {
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function m_LoadLocaleInfo() {
-  console.log(...PR('(1) GET LOCALE DATA'));
+  if (DBG) console.log(...PR('(1) GET LOCALE DATA'));
   const response = await UR.Query(`
     query {
       localeNames { id name }
@@ -89,7 +90,7 @@ async function m_LoadLocaleInfo() {
 /** this needs to be made dynamic */
 export async function LoadCurrentPTrack() {
   const localeID = stateObj('localeId');
-  console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeID));
+  if (DBG) console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeID));
   const response = await UR.Query(
     `
     query GetPtrackTransform($id:Int!) {
