@@ -14,7 +14,6 @@ import clsx from 'clsx';
 import * as INPUT from '../../modules/input/api-input';
 import * as RENDERER from '../../modules/render/api-render';
 import * as GLOBAL from '../../modules/datacore/dc-globals';
-import * as MOD from './elements/dev-tracker-ui';
 //
 import FormTransform from './components/FormTransform';
 import { useStylesHOC } from './elements/page-styles';
@@ -33,42 +32,6 @@ let FRAME_TIMER = 'make this undefined to start entity updates';
 const DBG = true;
 const PR = UR.PrefixUtil('TRACKER', 'TagApp');
 
-/// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase(
-  'UR/LOAD_ASSETS',
-  () =>
-    new Promise((resolve, reject) => {
-      console.log(...PR('LOADING ASSET MANIFEST...'));
-      (async () => {
-        await GLOBAL.LoadAssetsSync('static/assets.json');
-        console.log(...PR('ASSETS LOADED'));
-        ASSETS_LOADED = true;
-        resolve();
-      })();
-    })
-);
-
-/// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let updateCount = 0;
-let FCON;
-UR.HookPhase('UR/APP_RUN', () => {
-  FCON = UR.HTMLConsoleUtil('console-bottom');
-  UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
-    if (ASSETS_LOADED) {
-      FCON.plot(
-        `${updateCount++} NET:DISPLAY_LIST received ${
-          remoteList.length
-        } DOBJs by TRACKER`,
-        0
-      );
-      RENDERER.UpdateDisplayList(remoteList);
-      RENDERER.Render();
-    }
-  });
-});
-
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetDeviceArray(pattern = {}) {
@@ -81,12 +44,10 @@ function m_GetDeviceArray(pattern = {}) {
 class DevTracker extends React.Component {
   constructor() {
     super();
-    this.state = UR.ReadState();
+    this.state = UR.GetState('locales', 'devices');
+    console.log('DevTracker loaded state', this.state);
     this.updateDeviceList = this.updateDeviceList.bind(this);
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleStateUpdate = this.handleStateUpdate.bind(this);
-
-    UR.SubscribeState(this.handleStateUpdate);
+    this.handleControlGroupChange = this.handleControlGroupChange.bind(this);
   }
 
   componentDidMount() {
@@ -111,8 +72,6 @@ class DevTracker extends React.Component {
       // interfaces
       const { getController, deviceNum, unsubscribe } = devAPI;
       const { getInputs, getChanges, putOutputs } = getController('markers');
-      // STEP 3 is to register the root app with the associated logic module
-      MOD.InitializeLocale();
 
       // PROTOTYPE INPUT TESTER ///////////////////////////////////////////////
       // these are all the device API calls for testing. Since Tracker does
@@ -168,7 +127,7 @@ class DevTracker extends React.Component {
     }
   }
 
-  handleInputChange(event) {
+  handleControlGroupChange(event) {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
@@ -176,19 +135,12 @@ class DevTracker extends React.Component {
     // for other fields ('select'), they are handled in their own component
     // using a similar call to WriteStateChange()
     console.log('updating', name, value);
-    UR.HandleStateChange('app', name, value);
-  }
-
-  handleStateUpdate(change, cb) {
-    if (change.localeNames) {
-      console.log(...PR('UPDATE localeNames', change));
-      this.setState(change);
-    }
-    if (typeof cb === 'function') cb();
+    UR.SetState('devices', name, value);
   }
 
   render() {
     const { classes } = this.props;
+    const { currentControlGroup, controlGroupSelect } = this.state;
 
     return (
       <div
@@ -245,13 +197,15 @@ class DevTracker extends React.Component {
           <div className="io-track-controls">
             <select
               name="controlGroup"
-              value={this.state.controlGroup}
-              onChange={this.handleInputChange}
+              value={currentControlGroup}
+              onChange={this.handleControlGroupChange}
               className={clsx('form-control', 'data-track')}
             >
-              <option key={0} value="controlgroup">
-                Not Implemented
-              </option>
+              {controlGroupSelect.map(option => (
+                <option key={option.id} value={option.id}>
+                  {option.name}
+                </option>
+              ))}
             </select>
             <label className="control-label">&nbsp;Control Group</label>
           </div>
@@ -269,11 +223,41 @@ class DevTracker extends React.Component {
   }
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// PHASE MACHINE INTERFACES //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HandleMessage('NET:GEM_TRACKERAPP', data => {
-  console.log('got data', data);
-  return data || { nodata: true };
+let updateCount = 0;
+let FCON;
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HookPhase(
+  'UR/LOAD_ASSETS',
+  () =>
+    new Promise((resolve, reject) => {
+      console.log(...PR('LOADING ASSET MANIFEST...'));
+      (async () => {
+        await GLOBAL.LoadAssetsSync('static/assets.json');
+        console.log(...PR('ASSETS LOADED'));
+        ASSETS_LOADED = true;
+        resolve();
+      })();
+    })
+);
+
+/// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HookPhase('UR/APP_RUN', () => {
+  FCON = UR.HTMLConsoleUtil('console-bottom');
+  UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
+    if (ASSETS_LOADED) {
+      FCON.plot(
+        `${updateCount++} NET:DISPLAY_LIST received ${
+          remoteList.length
+        } DOBJs by TRACKER`,
+        0
+      );
+      RENDERER.UpdateDisplayList(remoteList);
+      RENDERER.Render();
+    }
+  });
 });
 
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////

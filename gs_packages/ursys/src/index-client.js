@@ -190,14 +190,18 @@ const UR = {
   SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
-  // FORWARDED PROMPT UTILITY
+  // FORWARDED CONSOLE UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
+  DPR: PROMPTS.dbgPrint,
   ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
   HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED APPSTATE (TEMP)
-  ...APPSTATE,
+  // ...APPSTATE,
+  GetState: StateGroupMgr.GetState,
+  SetState: StateGroupMgr.SetState,
+  SubscribeState: StateGroupMgr.SubscribeState,
   // FORWARDED CLASSES
   class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES

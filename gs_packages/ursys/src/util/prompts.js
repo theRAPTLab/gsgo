@@ -333,6 +333,15 @@ function makeStyleFormatter(prompt, tagColor) {
   return (str, ...args) => [...outArray, str, ...args];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** use like console.log(...debugFormatter('prompt'), 'la la la'); */
+function dbgPrint(pr, bg = 'MediumVioletRed') {
+  return [
+    `%c${pr}%c`,
+    `color:#fff;background-color:${bg};padding:3px 10px;border-radius:10px;`,
+    'color:auto;background-color:auto'
+  ];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function colorTagString(str, tagColor) {
   return m_MakeColorArray(str, tagColor);
 }
@@ -415,6 +424,7 @@ module.exports = {
   CSS: CSS_COLORS,
   padString,
   makeStyleFormatter,
+  dbgPrint,
   makeTerminalOut,
   makeHTMLConsole,
   printTagColors,

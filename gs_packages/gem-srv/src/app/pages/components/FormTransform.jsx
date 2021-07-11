@@ -8,48 +8,44 @@ const DBG = true;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
-    const { transform, localeNames } = UR.ReadStateGroup(
-      'transform',
-      'localeNames'
-    );
-    const state = { ...transform, localeNames };
+    const state = UR.GetState('locales');
     console.log(...PR('init state', state));
     this.state = state;
 
     this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleStateUpdate = this.handleStateUpdate.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
   componentDidMount() {
-    UR.SubscribeState(this.handleStateUpdate);
+    UR.SubscribeState('locales', this.urStateUpdated);
   }
 
   componentWillUnmount() {
-    UR.UnsubscribeState(this.handleStateUpdate);
+    UR.UnsubscribeState('locales', this.urStateUpdated);
   }
 
   handleInputChange(event) {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    if (DBG) console.log(...PR(name, value));
-    if (name === 'localeId') UR.HandleStateChange('app', name, value);
-    else UR.HandleStateChange('transform', name, value);
+    if (DBG) console.log(...PR('inputChange:', name, value));
+    if (name === 'localeID') UR.SetState('locales', name, value);
+    else UR.SetState('locales.transform', name, value);
   }
 
-  handleStateUpdate(change, cb) {
-    const { localeNames, app, transform } = change;
+  urStateUpdated(smgrName, stateObj, cb) {
+    console.log('urStateUpdated:', stateObj);
+    const { localeNames, localeID, transform } = stateObj;
     if (localeNames) {
       this.setState({ localeNames });
     }
-    if (app) {
-      const { id, localeId } = app;
-      if (id) this.setState({ localeId: id });
-      if (localeId) this.setState({ localeId });
-      const { locales } = UR.ReadStateGroup('locales');
-      const locale = locales.find(l => l.id === Number(localeId));
+    if (localeID) {
+      this.setState({ localeID });
+      const { locales } = UR.GetState('locales');
+      const locale = locales.find(l => l.id === Number(localeID));
+      console.log('locale', locale);
       if (locale) {
-        const newState = { ...locale.ptrack };
+        const newState = { transform: locale.ptrack };
         this.setState(newState);
       }
     }
@@ -62,13 +58,30 @@ export default class FormTransform extends React.Component {
   render() {
     const { title = 'Transform' } = this.props;
     const localeList = this.state.localeNames || [];
-    const { xScale, yScale, zRot, xOff, yOff, xRange, yRange, memo } = this.state;
+    const {
+      xScale,
+      yScale,
+      zRot,
+      xOff,
+      yOff,
+      xRange,
+      yRange,
+      memo
+    } = this.state.transform;
     return (
       <>
-        <div className="io-track-controls">
+        <div className="io-transform" style={{ clear: 'both' }}>
+          <label
+            style={{ width: 'auto', fontSize: 'larger', fontWeight: 'bold' }}
+          >
+            {title}
+          </label>
+        </div>
+
+        <div className={clsx('io-track-controls', 'io-transform')}>
           <select
-            name="localeId"
-            value={this.state.localeId}
+            name="localeID"
+            value={this.state.localeID}
             onChange={this.handleInputChange}
             className={clsx('form-control', 'data-track')}
           >
@@ -79,13 +92,6 @@ export default class FormTransform extends React.Component {
             ))}
           </select>
           <label className="control-label">&nbsp;Data Track</label>
-        </div>
-        <div className="io-transform" style={{ clear: 'both' }}>
-          <label
-            style={{ width: 'auto', fontSize: 'larger', fontWeight: 'bold' }}
-          >
-            {title}
-          </label>
           <br />
           <label>
             <input
@@ -154,8 +160,8 @@ export default class FormTransform extends React.Component {
             />{' '}
             Y-RANGE
           </label>
+          <div>{memo}</div>
         </div>
-        <div>{memo}</div>
       </>
     );
   }

@@ -20,7 +20,7 @@
   STATE CHANGE NOTIFICATIONS
 
   * subscribe( stateHandler ) - handler receives stateObj, optional callback
-  * publishState( stateObj ) - outgoing send stateObj to subscribers
+  * _publishState( stateObj ) - outgoing send stateObj to subscribers
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -35,8 +35,9 @@ const PR = PROMPT.makeStyleFormatter('STATEGROUP', 'TagDkOrange');
 /** this STATE object is shared across all instances of StatePacket
  */
 const STATE = {};
+const SMGRS = new Map(); // modulename -> class instance
 
-/// HELPER: GLOBAL STATE //////////////////////////////////////////////////////
+/// HELPERS: GLOBAL STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** internal:
  *  Check if STATE contains a "key group" with a particular property. You can
@@ -83,13 +84,16 @@ function u_SetStateKeys(stateObj) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Check if STATE contains a "group" with a particular property */
 class StateGroupMgr {
-  constructor(qs_or_obj) {
+  constructor(moduleName) {
     this.subs = new Set();
     this.hooks = new Set();
+    if (SMGRS.has(moduleName))
+      throw Error(`modulename already exists: ${moduleName}`);
+    this.name = moduleName;
+    SMGRS.set(moduleName, this);
     this.validKeys = new Set();
     // bind methods that will be called by async events
     this.updateKey = this.updateKey.bind(this);
-    if (qs_or_obj !== undefined) this.initializeState(qs_or_obj);
   }
 
   /** Called once during app bootstrap. If you have any subscribers that need to
@@ -107,6 +111,7 @@ class StateGroupMgr {
       const query = qs_or_obj;
       response = await URDB.Query(query);
       if (response.errors) throw Error(`GraphQL error: ${response.errors}`);
+      // graphQL interfaces should match the state group/key/prop format
       u_SetStateKeys(response.data).forEach(name => {
         this.validKeys.add(name);
       });
@@ -144,9 +149,12 @@ class StateGroupMgr {
       throw Error('arg must be string or object literal');
     if (secObj === undefined) throw Error('arg2 must be object literal');
     if (!this.hasKey(arg))
-      throw Error(`group '${arg}' not managed by this state`);
+      console.warn(
+        ...PR(`key '${arg}' not in validKeys for '${this.name}'`, this.validKeys)
+      );
     STATE[arg] = secObj;
     retObj = { [arg]: STATE[arg] };
+    this._publishState(retObj);
     return retObj;
   }
   /** main method to update a prop inside a key item */
@@ -154,23 +162,34 @@ class StateGroupMgr {
     if (typeof key !== 'string') throw Error('arg1 must be string');
     if (typeof prop !== 'string') throw Error('arg2 must be string');
     if (value === undefined) throw Error('arg3 must be object literal');
-    if (!this.hasKey(key))
-      throw Error(`group '${key}' not managed by this state`);
-    if (!u_StateHas(key, prop))
-      throw Error(`no such prop '${prop}' in group '${key}'`);
+    if (!this.hasKey(key)) {
+      console.warn(
+        ...PR(`updateKeyProp: group '${key}' not managed by this state`)
+      );
+      return {};
+    }
+    if (!u_StateHas(key, prop)) {
+      console.warn(
+        ...PR(`updateKeyProp: ${key}.${prop} doesn't exist in smgr ${this.name}`)
+      );
+      return {};
+    }
     STATE[key][prop] = value;
     const update = { [key]: { [prop]: value } };
+    this._publishState(update);
     return update;
   }
   /** returns an object literal containing all managed state of this instance */
   stateObject(...args) {
     // if no args, return all the groups associate with this state
-    let keys = args.length > 0 ? args : [...this.validKeys.values()];
+    let groups = args.length > 0 ? args : [...this.validKeys.values()];
     const returnState = {};
-    keys.forEach(key => {
-      if (!this.hasKey(key))
-        console.warn(...PR(`group '${key}' not managed by this state`));
-      else Object.assign(returnState, { [key]: STATE[key] });
+    groups.forEach(group => {
+      if (!this.hasKey(group)) {
+        console.warn(
+          ...PR(`stateObject: prop '${group}' not managed by this smgr`)
+        );
+      } else Object.assign(returnState, { [group]: STATE[group] });
     });
     return returnState;
   }
@@ -215,19 +234,19 @@ class StateGroupMgr {
       handledCount++;
       const [g, n, v] = res;
       this.updateKeyProp(g, n, v);
-      this.publishState({ [g]: { [n]: v } });
+      this._publishState({ [g]: { [n]: v } });
     });
     if (handledCount) return;
     // if there are no state changes intercepted, the normal Update/Publish
     // is run.
     this.updateKeyProp(key, prop, value);
-    this.publishState({ [key]: { [prop]: value } });
+    this._publishState({ [key]: { [prop]: value } });
   }
   /** Invoke React-style 'setState()' method with change object. If no object
    *  is provided, all state groups are sent in a new object. Otherwise,
    *  the stateObject is passed as is. It should
    */
-  publishState(stateObj) {
+  _publishState(stateObj) {
     let data;
     if (stateObj === undefined) data = this.stateObject();
     if (typeof stateObj !== 'object')
@@ -244,7 +263,7 @@ class StateGroupMgr {
     }
     const subs = [...this.subs.values()];
     subs.forEach(sub =>
-      sub(data, () => {
+      sub(this.name, data, () => {
         /* unused callback */
       })
     );
@@ -274,6 +293,53 @@ class StateGroupMgr {
     this.hooks.delete(filterFunc);
   }
 } // end class StatePacket
+
+/// STATIC METHODS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** returns the state groups provided. If no args provided, the entire
+ *  state object (copy) is provided. The primary keys will be the contents
+ *  of each state group's keys
+ */
+StateGroupMgr.GetState = (...smgrNames) => {
+  const retObj = {};
+  if (smgrNames.length === 0) smgrNames = Object.keys(STATE);
+  if (smgrNames.length === 0) {
+    console.warn(...PR('GetState() found no state. Called too early?'));
+    return {};
+  }
+  smgrNames.forEach(name => {
+    const smgr = SMGRS.get(name);
+    if (smgr === undefined) {
+      console.warn(...PR(`GetState: SMGR[${name}] doesn't exist`));
+      return;
+    }
+    const groupObj = smgr.stateObject();
+    Object.assign(retObj, groupObj);
+  });
+  return retObj;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+StateGroupMgr.SetState = (selector, ...args) => {
+  const arr = selector.split('.');
+  if (arr.length < 1 || arr.length > 2) throw Error(`bad selector '${selector}'`);
+  const [smgrName, key] = arr;
+  const smgr = SMGRS.get(smgrName);
+  if (smgr === undefined) {
+    console.warn(...PR(`SetState: statemgr[${smgrName}] doesn't exist`));
+    return {};
+  }
+  if (key === undefined) return smgr.updateKey(...args);
+  return smgr.updateKeyProp(key, ...args);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+StateGroupMgr.SubscribeState = (smgrName, handler) => {
+  const smgr = SMGRS.get(smgrName);
+  if (smgr === undefined) {
+    console.warn(...PR(`SubscribeState: statemgr[${smgrName}] doesn't exist`));
+    return;
+  }
+  smgr.subscribe(handler);
+};
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

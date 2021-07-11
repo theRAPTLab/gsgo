@@ -20,13 +20,24 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as Locales from './ac-locales';
+import * as Devices from './ac-devices';
 
 /// APPCORE MODULES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export * as Locales from './ac-locales';
+/// If you just want state, use UR.GetStateMgr('group') instead
+export { Locales, Devices };
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// For loading data structures. AppCore modules could use this for loading
 /// async data from a database
-/// UR.HookPhase('UR/LOAD_ASSETS', () => new Promise(resolve => resolve()));
+UR.HookPhase('UR/LOAD_ASSETS', () => {});
+
+/// DEBUG /////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+if (typeof window !== 'undefined')
+  window.appcore = {
+    Locales,
+    Devices
+  };

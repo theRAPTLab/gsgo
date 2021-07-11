@@ -11,12 +11,39 @@ import UR from '@gemstep/ursys/client';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-LOCALES', 'TagCyan');
 
-const STATE = new UR.class.StateGroup({
+/// INITIALIZE STATE MANAGED BY THIS MODULE ///////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// The module name will be used as args for UR.GetState
+const STATE = new UR.class.StateGroupMgr('locales');
+/// StateGroup keys must be unique across the entire app
+STATE.initializeState({
   locales: [],
   localeNames: [],
-  localeID: 0
+  localeID: 0,
+  transform: {
+    xRange: 1,
+    yRange: 1,
+    xOff: 0,
+    yOff: 0,
+    xScale: 1,
+    yScale: 1,
+    zRot: 0
+  }
 });
+/// These are the primary methods you'll need to use to read and write
+/// state on the behalf of code using APPCORE.
 const { stateObj, updateKey } = STATE;
+/// For handling state change subscribers, export these functions
+const { subscribe, unsubcribe } = STATE;
+/// For React components to send state changes, export this function
+const { handleChange } = STATE;
+/// For publishing state change, this can be used inside this module
+/// DO NOT CALL THIS FROM OUTSIDE
+const { _publishState } = STATE;
+/// To allow outside code to modify state change requests on-the-fly,
+/// export these functions
+const { addChangeHook, deleteChangeHook } = STATE;
 
 /// ACCESSORS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -59,6 +86,7 @@ async function m_LoadLocaleInfo() {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** this needs to be made dynamic */
 export async function LoadCurrentPTrack() {
   const localeID = stateObj('localeId');
   console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeID));
