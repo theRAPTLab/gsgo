@@ -20,13 +20,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as Locales from './ac-locales';
-import * as Devices from './ac-devices';
+import * as ACLocales from './ac-locales';
+import * as ACDevices from './ac-devices';
 
 /// APPCORE MODULES ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// If you just want state, use UR.GetStateMgr('group') instead
-export { Locales, Devices };
+export { ACLocales, ACDevices };
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -38,6 +38,6 @@ UR.HookPhase('UR/LOAD_ASSETS', () => {});
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 if (typeof window !== 'undefined')
   window.appcore = {
-    Locales,
-    Devices
+    ACLocales,
+    ACDevices
   };

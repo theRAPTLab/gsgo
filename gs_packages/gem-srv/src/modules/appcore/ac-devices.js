@@ -25,7 +25,7 @@ STATE.initializeState({
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
-const { stateObj, updateKey } = STATE;
+const { stateObject, updateKey } = STATE;
 /// For handling state change subscribers, export these functions
 const { subscribe, unsubcribe } = STATE;
 /// For React components to send state changes, export this function
@@ -41,7 +41,8 @@ const { addChangeHook, deleteChangeHook } = STATE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
 export const Devices = () => UR.GetDeviceDirectory();
-export const controlGroupSelect = () => STATE.stateObj('controlGroupSelect');
+export const controlGroupSelect = () =>
+  STATE.flatStateObject('controlGroupSelect');
 
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -10,8 +10,6 @@
 const NETWORK = require('./client-urnet');
 const DEVICES = require('./client-netdevices');
 const DB = require('./client-urdb');
-// const NETINFO = require('./client-netinfo');
-const APPSTATE = require('./client-appstate');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
@@ -202,6 +200,8 @@ const UR = {
   GetState: StateGroupMgr.GetState,
   SetState: StateGroupMgr.SetState,
   SubscribeState: StateGroupMgr.SubscribeState,
+  AddStateChangeHook: StateGroupMgr.AddStateChangeHook,
+  DeleteStateChangeHook: StateGroupMgr.DeleteStateChangeHook,
   // FORWARDED CLASSES
   class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES

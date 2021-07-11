@@ -92,8 +92,10 @@ class StateGroupMgr {
     this.name = moduleName;
     SMGRS.set(moduleName, this);
     this.validKeys = new Set();
-    // bind methods that will be called by async events
+    // bind methods that will be called by an initial async event (e.g. ui handlers)
     this.updateKey = this.updateKey.bind(this);
+    this.stateObject = this.stateObject.bind(this);
+    this.flatStateObject = this.flatStateObject.bind(this);
   }
 
   /** Called once during app bootstrap. If you have any subscribers that need to
@@ -190,6 +192,21 @@ class StateGroupMgr {
           ...PR(`stateObject: prop '${group}' not managed by this smgr`)
         );
       } else Object.assign(returnState, { [group]: STATE[group] });
+    });
+    return returnState;
+  }
+
+  /** return an object literal with all keys in the group(s) hoisted to root */
+  flatStateObject(...args) {
+    // if no args, return all the groups associate with this state
+    let groups = args.length > 0 ? args : [...this.validKeys.values()];
+    const returnState = {};
+    groups.forEach(group => {
+      if (!this.hasKey(group)) {
+        console.warn(
+          ...PR(`flatStateObject: prop '${group}' not managed by this smgr`)
+        );
+      } else Object.assign(returnState, { ...STATE[group] });
     });
     return returnState;
   }
@@ -339,6 +356,24 @@ StateGroupMgr.SubscribeState = (smgrName, handler) => {
     return;
   }
   smgr.subscribe(handler);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+StateGroupMgr.AddStateChangeHook = (smgrName, filterFunc) => {
+  const smgr = SMGRS.get(smgrName);
+  if (smgr === undefined) {
+    console.warn(...PR(`AddHookChange: statemgr[${smgrName}] doesn't exist`));
+    return;
+  }
+  smgr.addChangeHook(filterFunc);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+StateGroupMgr.DeleteStateChangeHook = (smgrName, filterFunc) => {
+  const smgr = SMGRS.get(smgrName);
+  if (smgr === undefined) {
+    console.warn(...PR(`DeleteHookChange: statemgr[${smgrName}] doesn't exist`));
+    return;
+  }
+  smgr.deleteChangeHook(filterFunc);
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

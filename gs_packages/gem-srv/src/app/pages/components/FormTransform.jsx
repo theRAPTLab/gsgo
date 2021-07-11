@@ -2,6 +2,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import clsx from 'clsx';
+import { ACLocales } from '../../../modules/appcore';
 
 const PR = UR.PrefixUtil('FormTransform', 'TagRed');
 const DBG = false;
@@ -40,8 +41,7 @@ export default class FormTransform extends React.Component {
     }
     if (localeID) {
       this.setState({ localeID });
-      const { locales } = UR.GetState('locales');
-      const locale = locales.find(l => l.id === Number(localeID));
+      const locale = ACLocales.GetLocale(localeID);
       console.log(...PR('ur update: locale', locale));
       if (locale) {
         const newState = { transform: locale.ptrack };
@@ -50,7 +50,7 @@ export default class FormTransform extends React.Component {
     }
     if (transform) {
       console.log(...PR('ur update: transform', transform));
-      this.setState({ ...transform });
+      this.setState(transform); // { transform: { ... } }
     }
     if (typeof cb === 'function') cb();
   }

@@ -34,7 +34,7 @@ STATE.initializeState({
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
-const { stateObj, updateKey } = STATE;
+const { stateObject, flatStateObject, updateKey } = STATE;
 /// For handling state change subscribers, export these functions
 const { subscribe, unsubcribe } = STATE;
 /// For React components to send state changes, export this function
@@ -49,10 +49,14 @@ const { addChangeHook, deleteChangeHook } = STATE;
 /// ACCESSORS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
-export const LocaleNames = () => stateObj('localeNames');
-export const Locales = () => stateObj('locales');
-export const CurrentLocaleID = () => stateObj('localeID');
-export const CurrentLocale = () => stateObj('locales')[CurrentLocaleID()];
+export const LocaleNames = () => stateObject('localeNames');
+export const Locales = () => stateObject('locales');
+export const CurrentLocaleID = () => stateObject('localeID');
+export const GetLocale = id => {
+  // stateobj always returns entities as { [group]:{[ keys]:value } }
+  const locales = flatStateObject('locales'); // group:locales, key:locales
+  return locales[id];
+};
 /// update
 export const SetLocaleID = id => {
   updateKey('localeID', id);
@@ -89,7 +93,7 @@ async function m_LoadLocaleInfo() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this needs to be made dynamic */
 export async function LoadCurrentPTrack() {
-  const localeID = stateObj('localeId');
+  const localeID = stateObject('localeId');
   if (DBG) console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeID));
   const response = await UR.Query(
     `
@@ -116,6 +120,56 @@ export async function LoadCurrentPTrack() {
   );
   return response.data.locale;
 }
+/*
+export async function HandleChange() {
+  UR.HookStateChange((group, name, value) => {
+    if (group === 'app') {
+      if (name === 'localeId') LOCALE_ID = Number(value);
+    }
+    if (group === 'transform') {
+      console.log('transform', name, '=', value);
+      if (MASTER_STATE.transform[name] !== undefined) {
+        MASTER_STATE.transform[name] = Number(value);
+        if (AUTOTIMER) clearInterval(AUTOTIMER);
+        AUTOTIMER = setInterval(() => {
+          console.log(...PR('autosaving transform', MASTER_STATE.transform));
+          UR.Query(
+            `
+            mutation LocalePTrack($id:Int $input:PTrackInput) {
+              updatePTrack(localeId:$id,input:$input) {
+                memo
+              }
+            }
+          `,
+            {
+              input: MASTER_STATE.transform,
+              id: LOCALE_ID
+            }
+          ).then(response => {
+            console.log('response', response);
+          });
+          clearInterval(AUTOTIMER);
+          AUTOTIMER = 0;
+          // update locale
+          LOCALES[LOCALE_ID].ptrack = MASTER_STATE.transform;
+          UR.PublishState({ locales: LOCALES });
+        }, 1000);
+        return [group, name, Number(value)]; // make sure UI updates with current vars
+      }
+    }
+    // if nothing returned, the handler operates normally
+    return undefined;
+  });
+}
+*/
+
+/// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+let AUTOTIMER;
+let LOCALE_ID = 0;
+let LOCALES = [];
+let LOCALE_NAMES = [];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

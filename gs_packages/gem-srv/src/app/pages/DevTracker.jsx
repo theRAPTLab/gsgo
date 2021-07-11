@@ -14,6 +14,7 @@ import clsx from 'clsx';
 import * as INPUT from '../../modules/input/api-input';
 import * as RENDERER from '../../modules/render/api-render';
 import * as GLOBAL from '../../modules/datacore/dc-globals';
+import * as APPCORE from '../../modules/appcore';
 //
 import FormTransform from './components/FormTransform';
 import { useStylesHOC } from './elements/page-styles';
