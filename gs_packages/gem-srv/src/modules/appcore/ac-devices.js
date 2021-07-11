@@ -10,7 +10,7 @@ import UR from '@gemstep/ursys/client';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-DEVICES', 'TagCyan');
 
-/// The module name will be used as args for UR.GetState
+/// The module name will be used as args for UR.ReadState
 const STATE = new UR.class.StateGroupMgr('devices');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({

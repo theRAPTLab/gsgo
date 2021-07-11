@@ -9,7 +9,7 @@ const DBG = false;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
-    const state = UR.GetState('locales');
+    const state = UR.ReadState('locales');
     if (DBG) console.log(...PR('init state', state));
     this.state = state;
 
@@ -30,8 +30,8 @@ export default class FormTransform extends React.Component {
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
     if (DBG) console.log(...PR('ui update:', name, value));
-    if (name === 'localeID') UR.SetState('locales', name, value);
-    else UR.SetState('locales.transform', name, value);
+    if (name === 'localeID') UR.WriteState('locales', name, value);
+    else UR.WriteState('locales.transform', name, value);
   }
 
   urStateUpdated(smgrName, stateObj, cb) {

@@ -36,11 +36,13 @@ h2 {
 #data_track,
 .data-track {
   display: inline-block;
-  width: 160px;
+  width: 198px;
+  margin-bottom: 4px;
 }
 #faketrack_xform input,
 .io-transform input {
   width: 50px;
+  margin-bottom: 4px;
 }
 #faketrack_xform label,
 .io-transform label {

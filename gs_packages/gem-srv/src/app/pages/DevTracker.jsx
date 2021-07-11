@@ -47,7 +47,7 @@ function m_GetDeviceArray(pattern = {}) {
 class DevTracker extends React.Component {
   constructor() {
     super();
-    this.state = UR.GetState('locales', 'devices');
+    this.state = UR.ReadState('locales', 'devices');
     // console.log('DevTracker loaded state', this.state);
     this.updateDeviceList = this.updateDeviceList.bind(this);
     this.handleControlGroupChange = this.handleControlGroupChange.bind(this);
@@ -139,7 +139,7 @@ class DevTracker extends React.Component {
     // for other fields ('select'), they are handled in their own component
     // using a similar call to WriteStateChange()
     console.log(...PR('ui update:', name, value));
-    UR.SetState('devices', name, value);
+    UR.WriteState('devices', name, value);
   }
 
   render() {

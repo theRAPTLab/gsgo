@@ -317,17 +317,17 @@ class StateGroupMgr {
  *  state object (copy) is provided. The primary keys will be the contents
  *  of each state group's keys
  */
-StateGroupMgr.GetState = (...smgrNames) => {
+StateGroupMgr.ReadState = (...smgrNames) => {
   const retObj = {};
   if (smgrNames.length === 0) smgrNames = Object.keys(STATE);
   if (smgrNames.length === 0) {
-    console.warn(...PR('GetState() found no state. Called too early?'));
+    console.warn(...PR('ReadState() found no state. Called too early?'));
     return {};
   }
   smgrNames.forEach(name => {
     const smgr = SMGRS.get(name);
     if (smgr === undefined) {
-      console.warn(...PR(`GetState: SMGR[${name}] doesn't exist`));
+      console.warn(...PR(`ReadState: SMGR[${name}] doesn't exist`));
       return;
     }
     const groupObj = smgr.stateObject();
@@ -336,13 +336,13 @@ StateGroupMgr.GetState = (...smgrNames) => {
   return retObj;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-StateGroupMgr.SetState = (selector, ...args) => {
+StateGroupMgr.WriteState = (selector, ...args) => {
   const arr = selector.split('.');
   if (arr.length < 1 || arr.length > 2) throw Error(`bad selector '${selector}'`);
   const [smgrName, key] = arr;
   const smgr = SMGRS.get(smgrName);
   if (smgr === undefined) {
-    console.warn(...PR(`SetState: statemgr[${smgrName}] doesn't exist`));
+    console.warn(...PR(`WriteState: statemgr[${smgrName}] doesn't exist`));
     return {};
   }
   if (key === undefined) return smgr.updateKey(...args);
