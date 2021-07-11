@@ -18,8 +18,7 @@ const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
-const RPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR3');
+const NPR = PROMPTS.makeStyleFormatter('URSYS');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -150,7 +149,7 @@ async function SystemAppRun(options = {}) {
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  console.log(...RPR('APP STARTED [RUN] PHASE'));
+  console.log(...NPR('APP STARTED [RUN] PHASE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();

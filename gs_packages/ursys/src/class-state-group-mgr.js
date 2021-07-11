@@ -28,7 +28,7 @@ const PROMPT = require('./util/prompts');
 const URDB = require('./client-urdb');
 
 const DBG = true;
-const PR = PROMPT.makeStyleFormatter('STPKT', 'TagDkOrange');
+const PR = PROMPT.makeStyleFormatter('STATEGROUP', 'TagDkOrange');
 
 /// REACT STATE COMPATIBLE FLAT OBJECTS ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

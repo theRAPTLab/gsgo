@@ -32,7 +32,6 @@ let FRAME_TIMER = 'make this undefined to start entity updates';
 /// DEBUG UTILS ///////////////////////////////////////////////////////////////
 const DBG = true;
 const PR = UR.PrefixUtil('TRACKER', 'TagApp');
-const FCON = UR.HTMLConsoleUtil('console-bottom');
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,17 +52,21 @@ UR.HookPhase(
 /// DISPLAY LIST TESTS ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let updateCount = 0;
-UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
-  if (ASSETS_LOADED) {
-    FCON.plot(
-      `${updateCount++} NET:DISPLAY_LIST received ${
-        remoteList.length
-      } DOBJs by TRACKER`,
-      0
-    );
-    RENDERER.UpdateDisplayList(remoteList);
-    RENDERER.Render();
-  }
+let FCON;
+UR.HookPhase('UR/APP_RUN', () => {
+  FCON = UR.HTMLConsoleUtil('console-bottom');
+  UR.HandleMessage('NET:DISPLAY_LIST', remoteList => {
+    if (ASSETS_LOADED) {
+      FCON.plot(
+        `${updateCount++} NET:DISPLAY_LIST received ${
+          remoteList.length
+        } DOBJs by TRACKER`,
+        0
+      );
+      RENDERER.UpdateDisplayList(remoteList);
+      RENDERER.Render();
+    }
+  });
 });
 
 /// UTILITIES /////////////////////////////////////////////////////////////////

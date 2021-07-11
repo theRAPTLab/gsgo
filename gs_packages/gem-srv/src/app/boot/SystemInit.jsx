@@ -40,8 +40,8 @@ import SystemShell from './SystemShell';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { PROJECT_NAME } = SETTINGS;
-const PR = UR.PrefixUtil('SYSTEM', 'TagSystem');
-const AR = UR.PrefixUtil('URSYS ', 'TagUR3');
+const PR = UR.PrefixUtil('SYSTEM');
+const AR = UR.PrefixUtil('URSYS');
 
 /// EXTRA: ADD EXTRA JSS PLUGINS //////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
