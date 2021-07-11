@@ -397,6 +397,7 @@ function m_FindNearestAgent(agent, targetType) {
 }
 /// Returns array of all agents of targetType that are within the vision distance
 /// NOTE This is a pre-filter before using the more expensive vision cone processing
+/// NOTE This assumes Vision
 function m_FindNearbyAgents(agent, targetType) {
   // Only run this after m_FeaturesUpdate sets distances
   if (!agent.distanceTo)
@@ -405,7 +406,7 @@ function m_FindNearbyAgents(agent, targetType) {
   const targets = GetAgentsByType(targetType);
   targets.forEach(t => {
     const distance = agent.distanceTo.get(t.id);
-    if (distance < agent.prop.Vision._viewDistance)
+    if (distance < agent.prop.Vision.viewDistance.value)
       nearby.push({ agent: t, distance });
   });
   nearby.sort((a, b) => a.distance - b.distance);
