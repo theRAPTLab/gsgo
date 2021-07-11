@@ -96,6 +96,7 @@ class StateGroupMgr {
     this.updateKey = this.updateKey.bind(this);
     this.stateObject = this.stateObject.bind(this);
     this.flatStateObject = this.flatStateObject.bind(this);
+    this._handleChange = this._handleChange.bind(this);
   }
 
   /** Called once during app bootstrap. If you have any subscribers that need to
@@ -156,7 +157,6 @@ class StateGroupMgr {
       );
     STATE[arg] = secObj;
     retObj = { [arg]: STATE[arg] };
-    this._publishState(retObj);
     return retObj;
   }
   /** main method to update a prop inside a key item */
@@ -178,7 +178,6 @@ class StateGroupMgr {
     }
     STATE[key][prop] = value;
     const update = { [key]: { [prop]: value } };
-    this._publishState(update);
     return update;
   }
   /** returns an object literal containing all managed state of this instance */
@@ -242,22 +241,34 @@ class StateGroupMgr {
    *  modules state. If any hooks return a truthy value, it is considered
    *  handled and the normal update/pbulish cycle isn't automatically invoked
    */
-  handleChange(key, prop, value) {
+  /*   if (key === undefined) {
+    console.warn(...PR(`WriteState: statemgr[${smgrName}].${key} doesn't exit`));
+    return {};
+  }*/
+  _handleChange(key, prop, value) {
     const hooks = [...this.hooks.values()];
     const results = hooks.map(hook => hook(key, prop, value));
     let handledCount = 0;
     results.forEach(res => {
       if (!Array.isArray(res)) return;
       handledCount++;
-      const [g, n, v] = res;
-      this.updateKeyProp(g, n, v);
-      this._publishState({ [g]: { [n]: v } });
+      const [k, n, v] = res;
+      this._updateKeyPropValue(k, n, v);
     });
     if (handledCount) return;
     // if there are no state changes intercepted, the normal Update/Publish
     // is run.
-    this.updateKeyProp(key, prop, value);
-    this._publishState({ [key]: { [prop]: value } });
+    this._updateKeyPropValue(key, prop, value);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  _updateKeyPropValue(key, a, b) {
+    if (b === undefined) {
+      this.updateKey(key, a);
+      this._publishState({ [key]: a });
+    } else {
+      this.updateKeyProp(key, a, b);
+      this._publishState({ [key]: { [a]: b } });
+    }
   }
   /** Invoke React-style 'setState()' method with change object. If no object
    *  is provided, all state groups are sent in a new object. Otherwise,
@@ -293,7 +304,7 @@ class StateGroupMgr {
    *  will tell the state changer to process as normal
    */
   addChangeHook(filterFunc) {
-    if (typeof hookFunction !== 'function')
+    if (typeof filterFunc !== 'function')
       throw Error(
         'arg1 must be a function to receive key,name,value, returning opt array'
       );
@@ -303,7 +314,7 @@ class StateGroupMgr {
   /** Remove the hookFunction from the hook interceptors, if it's part of the set
    */
   deleteChangeHook(filterFunc) {
-    if (typeof hookFunction !== 'function')
+    if (typeof filterFunc !== 'function')
       throw Error(
         'arg1 must be function  method to receive key,name,value and return true=handled '
       );
@@ -345,8 +356,8 @@ StateGroupMgr.WriteState = (selector, ...args) => {
     console.warn(...PR(`WriteState: statemgr[${smgrName}] doesn't exist`));
     return {};
   }
-  if (key === undefined) return smgr.updateKey(...args);
-  return smgr.updateKeyProp(key, ...args);
+  if (key === undefined) return smgr._handleChange(...args); // key, prop, value
+  return smgr._handleChange(key, ...args); // key, prop, value
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StateGroupMgr.SubscribeState = (smgrName, handler) => {

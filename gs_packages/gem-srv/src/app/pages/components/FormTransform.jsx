@@ -29,28 +29,27 @@ export default class FormTransform extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    if (DBG) console.log(...PR('ui update:', name, value));
     if (name === 'localeID') UR.WriteState('locales', name, value);
     else UR.WriteState('locales.transform', name, value);
   }
 
   urStateUpdated(smgrName, stateObj, cb) {
-    const { localeNames, localeID, transform } = stateObj;
-    if (localeNames) {
-      this.setState({ localeNames });
-    }
-    if (localeID) {
-      this.setState({ localeID });
-      const locale = ACLocales.GetLocale(localeID);
-      console.log(...PR('ur update: locale', locale));
-      if (locale) {
-        const newState = { transform: locale.ptrack };
-        this.setState(newState);
+    if (smgrName === 'locales') {
+      const { localeNames, localeID, transform } = stateObj;
+      if (localeNames) {
+        this.setState({ localeNames });
       }
-    }
-    if (transform) {
-      console.log(...PR('ur update: transform', transform));
-      this.setState(transform); // { transform: { ... } }
+      if (localeID) {
+        console.log(...PR('ur update: localeID', localeID));
+        const locale = ACLocales.GetLocale(localeID);
+        if (locale) {
+          this.setState({ localeID, transform: locale.ptrack });
+        }
+      }
+      if (transform) {
+        console.log(...PR('ur update: transform', transform));
+        this.setState(transform); // { transform: { ... } }
+      }
     }
     if (typeof cb === 'function') cb();
   }
