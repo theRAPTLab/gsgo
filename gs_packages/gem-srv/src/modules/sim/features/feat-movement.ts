@@ -488,6 +488,8 @@ function m_FeaturesThink(frame) {
     if (!agent) return;
     // ignore AI movement if input agent
     if (agent.isModePuppet()) return;
+    // ignore AI movement if under cursor control
+    if (agent.cursor) return;
     // ignore AI movement if being dragged
     if (agent.isCaptive) return;
     // ignore AI movement if inert
