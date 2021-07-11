@@ -47,7 +47,8 @@ function m_GetDeviceArray(pattern = {}) {
 class DevTracker extends React.Component {
   constructor() {
     super();
-    this.state = UR.ReadState('locales', 'devices');
+    this.state = { ...UR.ReadFlatStateGroups('locales', 'devices') };
+    if (DBG) console.log(...PR('construct', this.state));
     // console.log('DevTracker loaded state', this.state);
     this.updateDeviceList = this.updateDeviceList.bind(this);
     this.handleControlGroupChange = this.handleControlGroupChange.bind(this);
@@ -144,7 +145,8 @@ class DevTracker extends React.Component {
 
   render() {
     const { classes } = this.props;
-    const { currentControlGroup, controlGroupSelect } = this.state;
+    if (DBG) console.log(...PR('DevTracker state', this.state));
+    const { controlGroup, controlGroupSelect } = this.state;
 
     return (
       <div
@@ -201,7 +203,7 @@ class DevTracker extends React.Component {
           <div className="io-track-controls">
             <select
               name="controlGroup"
-              value={currentControlGroup}
+              value={controlGroup}
               onChange={this.handleControlGroupChange}
               className={clsx('form-control', 'data-track')}
             >

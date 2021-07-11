@@ -10,7 +10,7 @@ import UR from '@gemstep/ursys/client';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-DEVICES', 'TagCyan');
 
-/// The module name will be used as args for UR.ReadState
+/// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('devices');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
@@ -25,7 +25,7 @@ STATE.initializeState({
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
-const { stateObject, updateKey } = STATE;
+const { stateObj, updateKey } = STATE;
 /// For handling state change subscribers, export these functions
 const { subscribe, unsubcribe } = STATE;
 /// For React components to send state changes, export this function

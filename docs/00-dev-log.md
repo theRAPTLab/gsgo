@@ -1,4 +1,4 @@
-[PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
+PREVIOUS SPRINT SUMMARIES](00-dev-archives/sprint-summaries.md)
 
 **SUMMARY  S2107 APR 05 - APR 18**
 
@@ -236,4 +236,172 @@ The transform is updating, but can we **write changes**?
 This is a bit terrible because updating state is so finicky and there is a lot of "keeping in sync". I should update the SetState functions so the mapping is a bit better 1:1 with React and My own state.
 
 However **the database round trip** works at least. Next step: *REFINEMENT* and *SIMPLIFICATION*
+
+## JUL 6 TUE - Reviewing Store->Database->React
+
+Let's start by writing documentation
+
+#### CLIENT-APPSTATE
+
+```
+Part of URSYS
+
+The APPSTATE is divided into "state groups" that are intended to be used by multiple components. APPSTATE is a form of "intermediate data" that's used to feed the GUI with either derived data sources or switches that affect how the GUI is rendered (e.g. "modes")
+
+Before the root React component loads, you should call InitializeState() with either a GraphQL query string or a state object with the various "state groups" in it. The initial set of state groups determines what is allowed to be changed later as a naive error checking feature. There is no error checking within the state groups themselves.
+
+If any of these state groups are updated, components that have registered interest with that group through SubscribeState() will receive those group changes with a { [group]:data } format, which gives the component(s) an opportunity to translate it into local React state to effect a refresh through React.Component.setState()
+
+Likewise, to synchronize intermediate data from React to APPSTATE, the HandleStateChange() receives group, prop, value. This also has the effect of Publishing the state back out, after it hs been saved to APPSTATE. 
+
+IMPORTANT: If a component is the SOURCE of changing data through its UI (i.e. it's handling UI events through a change handler), your changeHandler should set up the UI element as CONTROLLED and NOT call setState directly. Instead, shoot it to HandleState() from your change handler, which will then call to the Subscriber handler you registered which will invoke setState();
+
+If you need to updated multiple groups, called HandleStateChange() multiple times. If you need to provide specific logic to rewrite the data before it goes out (perhaps you have some local implementation of state that is not shared) then use HookStateChange() in your Component to provide a function that reads the [group,prop,value] signature and returns modified values.
+
+* InitializeState( queryString | obj )
+* HookStateChange( hookFunction )
+* UnhookStateChange( hookFunction )
+
+* UpdateStateGroup( group, data ) 
+* UpdateStateGroupProp( group, prop, data )
+ 
+* ReadState()
+* ReadStateGroup( group )
+
+* HandleStateChange( group, name, value )
+
+* PublishState( change=undefined )
+* SubscribeState( handlerFunction )
+* UnsubscribeState( handlerFunction )
+
+```
+
+#### CLIENT-URDB
+
+```
+part of URSYS
+
+Implements the GraphQL client interface. The query is in GraphQL Schema Definition Language (SDL), and can refer to $vars that are defined a variables object. If an error occurs, the module attempts to emit them to the console, otherwise it returns a response object of the form { data: {...} }
+
+* Query( query, variables )
+```
+
+#### SERVER-URDB
+
+````
+part of URSYS server
+
+To enable GraphQL services, your Express server can use our "LokiGQL Middleware" with the following call
+​``` js
+// app is an Express app
+// UR is @gemstep/ursys/server
+UR.UseLokiGQL_Middleware( app, {
+  dbFile,
+  dbImportFile,
+  doReset,
+  schemaFile,
+  root
+});
+​```
+* dbFile - path to loki file to use for persistance (e.g. runtime/dn.loki)
+* dbImportFile - path to a json collection to initialize an empty database
+* doReset - if set, the DB is erased and importFile is loaded if specified
+* schemaFile - path to GraphQL Schema Definition file
+* root - a resolver object (see ExpressGraphQL docs)
+
+NOTE: the GraphQL endpoint is defined in ur-common and defaults to domain://urnet/urdb
+NOTE: the live query interface is enabled; browse to GraphQL endpoint to use it
+````
+
+#### Model Data Format Reference
+
+```
+MODEL: {
+  label: 'string'
+  bounds: {
+    top: right: bottom: left: 
+    wrap:[bool,bool]
+    bounce: bool
+    bgcolor: 24-bit integer
+  }
+  scripts: [
+    {
+      id: 
+      label:
+      isControllable: bool
+      script: 'ScriptText'
+    }
+  ]
+}
+```
+
+### NEW APPROACH: AppCore Modules and StateGroup manager
+
+I've made a new `appcore` directory in the same level of `datacore`, which contains various `ac-name.js` modules that are loaded by `appcore/index.js` 
+
+#### Anatomy of an Appcore Module
+
+Like datacore modules, appcore modules provide an **Access API** for key information that is relevant to an application. Appcore modules can make use of datacore modules AND provide glue between different modules; it's a way of providing a certain kind of implementation-specific operation that can be shared across multiple apps. The intent is to replace the cloned `dev-tracker-ui` modules which wer handling everything. 
+
+Appcore modules are scoped to perform a particular kind of operation to keep code size small. In addition to creating derived data from DATACORE and synthesizing other data between modules, Appcore can include **StateGroup** objects to maintain "state information" that might be of interest to other apps or components using this module. 
+
+**StateGroup Manager Class**
+
+```
+STATE VALUES
+
+* new StateGroup( queryOrStateObj )
+* async initializeState( queryOrStateObj )
+* updateKey( name,groupObj | stateObj ) - sets entire groups by key
+* updateKeyProp( name, prop, value ) - sets specific prop within group
+* stateObj(...args) - return a stateObj with specified keys, or entire state
+
+STATE CHANGE REQUESTS
+
+* handleChange( key,prop,value ) - incoming changes written to state and published
+* addChangeHook( filterFunc ) - func receives key,prop,value
+
+STATE CHANGE NOTIFICATIONS
+
+* subscribe( stateHandler ) - handler receives stateObj, optional callback
+* publishState( stateObj ) - outgoing send stateObj to subscribers
+
+```
+
+
+
+## JUL 9-10 SAT - Consolidating Continued
+
+The general pattern for **creating** appcore modules, which are comprised of (1) State Management and (2) Data Manipulation / Mixing API methods for the specific module. 
+
+### Using Appcore Modules Documentation (Draft)
+
+#### create new ac-module
+
+* create an `ac-function` module and import into `appcore/index.js`
+* *NOTE: appcore modules are factored so they completely manage a particular application data+operation need. They are our ViewModel and Controller in one.*
+* in new `ac-function` module: create a new `StateGroupMgr` instance initialized with the data this instance will manage in the global STATE object.  
+* *NOTE: the STATE instance should be initialized BEFORE React renders, so it is available to draw the UI.* 
+  * currently the root appcore module is imported in `SystemInit`, which should make hooking any phase possible in individual appcore modules 
+* use `{ initializeState, stateObj, updateKey }` to access state. It will check that you are only modifying keys 
+* Provide **additional API methods** you need. They do not need to use state, but can maintain other data structures based on any accessible module. If you are consolidating or joining data from multiple modules, you can put them in here instead of DATACORE and violating our separation of concerns.
+* import the module in `appcore/index.js` 
+
+The general pattern for **using** appcore modules with **React**:
+
+* If you need to share any kind of state between components and non-React modules
+  * in each Component, import the appcore module that has the information you need. It will initialize the state for you if it's written correctly.
+  * in the constructor, set `this.state = UR.GetState('group1','group2',...)`which will return  an object with the contents of each stateGroup as **top level** properties (i.e. the props for group1 aren't in an object prop named group1). You can retrieve ALL the state if you don't pass arguments
+  
+  
+
+### Updating
+
+Got it generally working for:
+
+* AUTOSAVE writes to Transform
+* changes to localeID
+* more consistent state management
+
+
 

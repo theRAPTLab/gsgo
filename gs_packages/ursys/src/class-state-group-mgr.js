@@ -32,27 +32,27 @@ const PR = PROMPT.makeStyleFormatter('STATEGROUP', 'TagDkOrange');
 
 /// REACT STATE COMPATIBLE FLAT OBJECTS ///////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** this STATE object is shared across all instances of StatePacket
+/** this GSTATE object is shared across all instances of StatePacket
  */
-const STATE = {};
+const GSTATE = {};
 const SMGRS = new Map(); // modulename -> class instance
 
 /// HELPERS: GLOBAL STATE /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** internal:
- *  Check if STATE contains a "key group" with a particular property. You can
+ *  Check if GSTATE contains a "key group" with a particular property. You can
  *  check just that the key exists, or a key.prop.
  */
 function u_StateHas(key, prop) {
-  const keys = Object.keys(STATE);
+  const keys = Object.keys(GSTATE);
   if (prop === undefined) return keys.includes(key);
-  const props = Object.keys(STATE[key]);
+  const props = Object.keys(GSTATE[key]);
   return props.includes(prop);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** internal:
- *  For initial setup of the global STATE object. The keys in the STATE object
- *  determine what groups exist and what can be changed. It does not check
+ *  For initial setup of the global GSTATE object. The keys in the GSTATE object
+ *  determine what keys exist and what can be changed. It does not check
  *  whether the calling StateGroupMgr instance has permission to change it,
  *  so it's used only during instance initialization inside an appcore module,
  *  which configures its managed state keys to detect errors.
@@ -60,29 +60,29 @@ function u_StateHas(key, prop) {
  *  sure that a key is not being overwritten because all state group keys
  *  must be unique.
  *  @param {object} stateObj - an object literal with group keys and values
- *  @return {Array<string>} - list of groupnames found in
+ *  @return {Array<string>} - list of keys
  */
 function u_SetStateKeys(stateObj) {
   if (typeof stateObj !== 'object')
     throw Error('u_SetStateKeys requires an object with group keys');
-  const initGroups = Object.keys(stateObj);
-  if (DBG) console.log(...PR(`Writing ${initGroups.length} groups into STATE`));
-  initGroups.forEach(grp => {
-    const ng = stateObj[grp];
-    if (STATE[grp]) {
-      const og = STATE[grp];
-      console.error(...PR(`STATE[${grp}] collision`));
+  const initKeys = Object.keys(stateObj);
+  if (DBG) console.log(...PR(`Writing ${initKeys.length} groups into GSTATE`));
+  initKeys.forEach(key => {
+    const ng = stateObj[key];
+    if (GSTATE[key]) {
+      const og = GSTATE[key];
+      console.error(...PR(`GSTATE[${key}] collision`));
       console.log(...PR('existing state:', og));
       console.log(...PR('conflict state:', ng));
     }
-    STATE[grp] = stateObj[grp];
+    GSTATE[key] = stateObj[key];
   });
-  return initGroups; // the list of group names found
+  return initKeys; // the list of group names found
 }
 
 /// CLASS STATEPACKET  ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Check if STATE contains a "group" with a particular property */
+/** Check if GSTATE contains a "group" with a particular property */
 class StateGroupMgr {
   constructor(moduleName) {
     this.subs = new Set();
@@ -94,8 +94,8 @@ class StateGroupMgr {
     this.validKeys = new Set();
     // bind methods that will be called by an initial async event (e.g. ui handlers)
     this.updateKey = this.updateKey.bind(this);
-    this.stateObject = this.stateObject.bind(this);
-    this.flatStateObject = this.flatStateObject.bind(this);
+    this.stateObj = this.stateObj.bind(this);
+    this.getKey = this.getKey.bind(this);
     this._handleChange = this._handleChange.bind(this);
   }
 
@@ -133,7 +133,7 @@ class StateGroupMgr {
     return this.validKeys.has(stateKey);
   }
 
-  /// MAIN STATE ACCESS METHODS ///////////////////////////////////////////////
+  /// MAIN GSTATE ACCESS METHODS ///////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** main method to update a key */
   updateKey(arg, secObj) {
@@ -155,8 +155,8 @@ class StateGroupMgr {
       console.warn(
         ...PR(`key '${arg}' not in validKeys for '${this.name}'`, this.validKeys)
       );
-    STATE[arg] = secObj;
-    retObj = { [arg]: STATE[arg] };
+    GSTATE[arg] = secObj;
+    retObj = { [arg]: GSTATE[arg] };
     return retObj;
   }
   /** main method to update a prop inside a key item */
@@ -176,48 +176,46 @@ class StateGroupMgr {
       );
       return {};
     }
-    STATE[key][prop] = value;
+    GSTATE[key][prop] = value;
     const update = { [key]: { [prop]: value } };
     return update;
   }
-  /** returns an object literal containing all managed state of this instance */
-  stateObject(...args) {
-    // if no args, return all the groups associate with this state
-    let groups = args.length > 0 ? args : [...this.validKeys.values()];
-    const returnState = {};
-    groups.forEach(group => {
-      if (!this.hasKey(group)) {
-        console.warn(
-          ...PR(`stateObject: prop '${group}' not managed by this smgr`)
-        );
-      } else Object.assign(returnState, { [group]: STATE[group] });
-    });
-    return returnState;
-  }
 
   /** return a { [group]:{ [key]: value }} object consistently */
-  newStateObject(a, b, c) {
+  newStateObj(a, b, c) {
     const group = this.name;
     if (c === undefined) return { [group]: { [a]: b } };
     return { [group]: { [a]: { [b]: c } } };
   }
 
-  /** return an object literal with all keys in the group(s) hoisted to root */
-  flatStateObject(...args) {
-    // if no args, return all the groups associate with this state
-    let groups = args.length > 0 ? args : [...this.validKeys.values()];
+  /** returns an object literal containing the keys of this instance,
+   *  but only if the keys are actually managed by this group.
+   *  Returns { [group] : { [key] : valueObj } }
+   */
+  stateObj(...keys) {
+    // if no args, return all the keys associated with this state mgr
+    keys = keys.length > 0 ? keys : [...this.validKeys.values()];
     const returnState = {};
-    groups.forEach(group => {
-      if (!this.hasKey(group)) {
-        console.warn(
-          ...PR(`flatStateObject: prop '${group}' not managed by this smgr`)
-        );
-      } else Object.assign(returnState, { ...STATE[group] });
+    keys.forEach(key => {
+      if (!this.hasKey(key)) {
+        console.warn(...PR(`stateObj: prop '${key}' not managed by this smgr`));
+      } else Object.assign(returnState, { [key]: GSTATE[key] });
     });
-    return returnState;
+    // console.log('stateObj returning', returnState);
+    return { [this.name]: returnState };
   }
 
-  /// STATE CHANGE SUBSCRIPTIONS //////////////////////////////////////////////
+  /** return an obj with specified keys hoisted to top without group wrapper */
+  getKey(key) {
+    // if no args, return all the groups associate with this state
+    if (typeof key !== 'string') {
+      console.warn(...PR('getKey: bad arg', key));
+      return undefined;
+    }
+    return GSTATE[key]; // remember, GSTATE is flat!
+  }
+
+  /// GSTATE CHANGE SUBSCRIPTIONS //////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** React components can receive notification of state changes here.
    *  Make sure that the setStateMethod is actually bound to 'this' in the
@@ -242,7 +240,7 @@ class StateGroupMgr {
     this.subs.delete(stateHandler);
   }
 
-  /// INCOMING STATE CHANGES & SUB NOTIFICATION ///////////////////////////////
+  /// INCOMING GSTATE CHANGES & SUB NOTIFICATION ///////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** handles the state change call after getting a chance to update this
    *  modules state. If any hooks return a truthy value, it is considered
@@ -282,32 +280,31 @@ class StateGroupMgr {
   }
   /** Invoke React-style 'setState()' method with change object. If no object
    *  is provided, all state groups are sent in a new object. Otherwise,
-   *  the stateObject is passed as is. It should
+   *  the stateObj is passed as is. It should
    */
   _publishState(stateObj) {
     let data;
-    if (stateObj === undefined) data = this.stateObject();
+    if (stateObj === undefined) data = this.stateObj();
     if (typeof stateObj !== 'object')
       throw Error('if arg provided, must be object');
     else {
       const keys = Object.keys(stateObj);
       if (!keys.every(g => u_StateHas(g))) {
         const json = JSON.stringify(stateObj);
-        const err = `stateObj does not align with STATE key: ${json}`;
+        const err = `stateObj does not align with GSTATE key: ${json}`;
         console.error(...PR(err));
         throw Error(err);
       }
-      data = stateObj;
     }
     const subs = [...this.subs.values()];
     subs.forEach(sub =>
-      sub(this.name, data, () => {
+      sub(this.name, stateObj, () => {
         /* unused callback */
       })
     );
   }
 
-  /// STATE REWRITING ///////////////////////////////////////////////////////////
+  /// GSTATE REWRITING ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Intercept state changer logic, allowing the intercepting function to alter
    *  by returning an optional [key,prop,value] array. Returning undefined
@@ -338,23 +335,37 @@ class StateGroupMgr {
  *  state object (copy) is provided. The primary keys will be the contents
  *  of each state group's keys
  */
-StateGroupMgr.ReadState = (...smgrNames) => {
+StateGroupMgr.ReadStateGroups = (...smgrNames) => {
   const retObj = {};
-  if (smgrNames.length === 0) smgrNames = Object.keys(STATE);
+  if (smgrNames.length === 0) smgrNames = Object.keys(GSTATE);
   if (smgrNames.length === 0) {
-    console.warn(...PR('ReadState() found no state. Called too early?'));
+    console.warn(...PR('ReadStateGroups() found no state. Called too early?'));
     return {};
   }
   smgrNames.forEach(name => {
     const smgr = SMGRS.get(name);
     if (smgr === undefined) {
-      console.warn(...PR(`ReadState: SMGR[${name}] doesn't exist`));
+      console.warn(...PR(`ReadStateGroups: SMGR[${name}] doesn't exist`));
       return;
     }
-    const groupObj = smgr.stateObject();
-    Object.assign(retObj, groupObj);
+    const keys = smgr.stateObj(); // returns { [group]:{ [key]: value } }
+    Object.assign(retObj, keys); // return group
   });
   return retObj;
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return a flattened version of ReadStateGroups(). Useful for setting
+ *  initial state of component with everything at root level
+ */
+StateGroupMgr.ReadFlatStateGroups = (...smgrNames) => {
+  const sgroups = StateGroupMgr.ReadStateGroups(...smgrNames);
+  const gnames = Object.keys(sgroups);
+  const flatState = {};
+  gnames.forEach(gn => {
+    const keyObj = sgroups[gn];
+    Object.assign(flatState, keyObj);
+  });
+  return flatState;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StateGroupMgr.WriteState = (selector, ...args) => {

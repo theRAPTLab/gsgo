@@ -197,7 +197,8 @@ const UR = {
   PrintTagColors: PROMPTS.printTagColors,
   // FORWARDED APPSTATE (TEMP)
   // ...APPSTATE,
-  ReadState: StateGroupMgr.ReadState,
+  ReadStateGroups: StateGroupMgr.ReadStateGroups,
+  ReadFlatStateGroups: StateGroupMgr.ReadFlatStateGroups,
   WriteState: StateGroupMgr.WriteState,
   SubscribeState: StateGroupMgr.SubscribeState,
   AddStateChangeHook: StateGroupMgr.AddStateChangeHook,

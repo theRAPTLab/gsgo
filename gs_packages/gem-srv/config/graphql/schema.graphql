@@ -79,7 +79,7 @@ The Mutation type defines the API for sending data to GraphQL.
 The code that handles the update is in resolvers.js
 """
 type Mutation {
-  updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
+  updatePTrack(localeID: Int, input: PTrackInput): PTrackProps
 }
 
 """

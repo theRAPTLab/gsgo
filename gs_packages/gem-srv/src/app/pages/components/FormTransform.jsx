@@ -9,7 +9,7 @@ const DBG = false;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
-    const state = UR.ReadState('locales');
+    const state = UR.ReadFlatStateGroups('locales');
     if (DBG) console.log(...PR('init state', state));
     this.state = state;
 
@@ -29,27 +29,24 @@ export default class FormTransform extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    if (name === 'localeID') UR.WriteState('locales', name, value);
-    else UR.WriteState('locales.transform', name, value);
+    if (name === 'localeID') {
+      UR.WriteState('locales', name, value);
+    } else UR.WriteState('locales.transform', name, value);
   }
 
   urStateUpdated(smgrName, stateObj, cb) {
-    if (smgrName === 'locales') {
-      const { localeNames, localeID, transform } = stateObj;
-      if (localeNames) {
-        this.setState({ localeNames });
+    const { localeNames, localeID, transform } = stateObj;
+    if (localeNames) {
+      this.setState({ localeNames });
+    }
+    if (localeID !== undefined) {
+      const locale = ACLocales.GetLocale(localeID);
+      if (locale) {
+        this.setState({ localeID, transform: locale.ptrack });
       }
-      if (localeID) {
-        console.log(...PR('ur update: localeID', localeID));
-        const locale = ACLocales.GetLocale(localeID);
-        if (locale) {
-          this.setState({ localeID, transform: locale.ptrack });
-        }
-      }
-      if (transform) {
-        console.log(...PR('ur update: transform', transform));
-        this.setState(transform); // { transform: { ... } }
-      }
+    }
+    if (transform) {
+      this.setState({ transform }); // { transform: { ... } }
     }
     if (typeof cb === 'function') cb();
   }
