@@ -34,7 +34,7 @@ export default class FormTransform extends React.Component {
     } else UR.WriteState('locales.transform', name, value);
   }
 
-  urStateUpdated(smgrName, stateObj, cb) {
+  urStateUpdated(stateObj, cb) {
     const { localeNames, localeID, transform } = stateObj;
     if (localeNames) {
       this.setState({ localeNames });

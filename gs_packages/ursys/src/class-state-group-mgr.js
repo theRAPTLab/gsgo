@@ -298,7 +298,7 @@ class StateGroupMgr {
     }
     const subs = [...this.subs.values()];
     subs.forEach(sub =>
-      sub(this.name, stateObj, () => {
+      sub(stateObj, () => {
         /* unused callback */
       })
     );
