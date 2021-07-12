@@ -246,13 +246,9 @@ class StateGroupMgr {
    *  modules state. If any hooks return a truthy value, it is considered
    *  handled and the normal update/pbulish cycle isn't automatically invoked
    */
-  /*   if (key === undefined) {
-    console.warn(...PR(`WriteState: statemgr[${smgrName}].${key} doesn't exit`));
-    return {};
-  }*/
-  _handleChange(key, propOrValue, value) {
+  _handleChange(key, propOrValue, propValue) {
     const hooks = [...this.hooks.values()];
-    const results = hooks.map(hook => hook(key, propOrValue, value));
+    const results = hooks.map(hook => hook(key, propOrValue, propValue));
     let handledCount = 0;
     results.forEach(res => {
       if (!Array.isArray(res)) return;
@@ -263,7 +259,7 @@ class StateGroupMgr {
     if (handledCount) return;
     // if there are no state changes intercepted, the normal Update/Publish
     // is run.
-    this._smartUpdate(key, propOrValue, value);
+    this._smartUpdate(key, propOrValue, propValue);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** we can either handle 'key, { [prop]:value }' or 'key, prop, value' so have to
@@ -388,6 +384,15 @@ StateGroupMgr.SubscribeState = (smgrName, handler) => {
     return;
   }
   smgr.subscribe(handler);
+};
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+StateGroupMgr.UnsubscribeState = (smgrName, handler) => {
+  const smgr = SMGRS.get(smgrName);
+  if (smgr === undefined) {
+    console.warn(...PR(`UnsubscribeState: statemgr[${smgrName}] doesn't exist`));
+    return;
+  }
+  smgr.unsubscribe(handler);
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 StateGroupMgr.AddStateChangeHook = (smgrName, filterFunc) => {
