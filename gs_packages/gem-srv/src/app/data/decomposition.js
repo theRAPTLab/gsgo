@@ -16,7 +16,7 @@ export const MODEL = {
       script: `# BLUEPRINT Soil
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'circle.json' 0
+featCall Costume setCostume 'dirt.json' 0
 prop alpha setTo 0.2
 
 addProp nutrients Number 50
@@ -64,7 +64,7 @@ ifExpr {{ agent.x > 400 }} [[
       script: `# BLUEPRINT Rock
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'hive.json' 0
+featCall Costume setCostume 'boulder.json' 0
 
 useFeature Physics
 useFeature AgentWidgets
@@ -78,7 +78,7 @@ useFeature AgentWidgets
       script: `# BLUEPRINT Worm
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'algae.json' 0
+featCall Costume setCostume 'worm.json' 0
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
@@ -184,7 +184,7 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Plant
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'flower.json' 0
+featCall Costume setCostume 'plant.json' 0
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
