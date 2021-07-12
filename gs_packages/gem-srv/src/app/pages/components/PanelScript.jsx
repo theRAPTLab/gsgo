@@ -16,6 +16,11 @@ import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
 import { GetAllKeywords } from 'modules/datacore';
+import { CompileToJSX } from '../elements/mod-panel-script';
+
+// Force load sim-features so that Features will be registered
+// And we can read their properties
+import 'modules/sim/sim-features';
 
 /// CODE EDIT + HIGHLIGHTING //////////////////////////////////////////////////
 import * as Prism from '../../../lib/vendor/prism_extended';
@@ -189,7 +194,6 @@ class PanelScript extends React.Component {
     this.HandleScriptIsDirty = this.HandleScriptIsDirty.bind(this);
     this.UpdateBlueprintName = this.UpdateBlueprintName.bind(this);
     this.GetTitle = this.GetTitle.bind(this);
-    this.CompileToJSX = this.CompileToJSX.bind(this);
     this.HandleScriptUIChanged = this.HandleScriptUIChanged.bind(this);
     this.SendText = this.SendText.bind(this);
     this.OnSelectScriptClick = this.OnSelectScriptClick.bind(this);
@@ -256,22 +260,6 @@ class PanelScript extends React.Component {
 
   GetTitle(blueprintName) {
     return `Script: ${blueprintName}`;
-  }
-
-  // compile source to jsx
-  CompileToJSX() {
-    if (DBG) console.group(...PR('toReact'));
-    const currentScript = this.jar.toString();
-    const source = TRANSPILER.ScriptifyText(currentScript);
-    const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(currentScript);
-    const jsx = TRANSPILER.RenderScript(source, {
-      isEditable: true,
-      isDeletable: false,
-      isInstanceEditor: false,
-      propMap
-    });
-    this.setState({ jsx });
-    if (DBG) console.groupEnd();
   }
 
   /**
@@ -396,8 +384,10 @@ class PanelScript extends React.Component {
 
   OnToggleWizard(e, value) {
     console.log('clicked', value);
-    this.CompileToJSX();
-    this.setState({ viewMode: value });
+    if (value === null) return; // skip repeated clicks
+    const currentScript = this.jar.toString();
+    const jsx = CompileToJSX(currentScript);
+    this.setState({ jsx, viewMode: value });
   }
 
   render() {
@@ -549,7 +539,17 @@ class PanelScript extends React.Component {
     );
 
     // WIZARD -----------------------------------------------------------------
-    const Wizard = <>Wizard{jsx}</>;
+    const Wizard = (
+      <div
+        style={{
+          display: `${viewMode === 'wizard' ? 'flex' : 'none'}`,
+          flexDirection: 'column',
+          width: '100%'
+        }}
+      >
+        {jsx}
+      </div>
+    );
 
     // RETURN -----------------------------------------------------------------
     return (

@@ -345,6 +345,7 @@ export function InstanceDelete(data) {
 /**
  * Scrubs the init script and removes any invalid props
  * Used by ScriptUpdate in case edit removed props that are no longer valid
+ * Should ignore featProps and other calls
  * @param {object} instance instanceDef from models.instances
  * @param {string[]} validPropNames e.g. ['x', 'y']
  * @return {object} InstanceDef with init scrubbed
@@ -352,10 +353,10 @@ export function InstanceDelete(data) {
 function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
   const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
   const scrubbedScriptUnits = scriptUnits.filter(unit => {
-    if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
+    if (unit[0] && unit[0].token === 'prop') {
       return validPropNames.includes(unit[1].token);
     }
-    return false;
+    return true; // ignore other methods
   });
   instance.initScript = TRANSPILER.TextifyScript(scrubbedScriptUnits);
   return instance;

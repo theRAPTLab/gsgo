@@ -22,6 +22,13 @@ import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
 import * as DATACORE from 'modules/datacore';
+import {
+  GVarBoolean,
+  GVarDictionary,
+  GVarNumber,
+  GVarString
+} from 'modules/sim/vars/_all_vars';
+
 // critical imports
 import 'script/keywords/_all_keywords';
 
@@ -393,6 +400,7 @@ function ExtractBlueprintName(script) {
 /**
  * A brute force method of retrieving the blueprint properties from a script
  * Compiles raw scriptText to determine the blueprint properties
+ * Only includes `prop` properties, not `featProps`
  * @param {string} script
  * @return {Object[]} [...{name, type, defaultValue, isFeatProp}]
  */
@@ -401,12 +409,12 @@ function ExtractBlueprintProperties(script) {
   // 1. Start with built in properties
   let properties: any[] = [
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false }
-    // { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
     // { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
     // { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
     // { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
-    // { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false }
     // { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
     // { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
     // { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
@@ -468,6 +476,76 @@ function ExtractBlueprintPropertiesTypeMap(script) {
   return map;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * A brute force method of retrieving a list of features used in a script
+ */
+function ExtractFeaturesUsed(script: string): string[] {
+  // Brute force deconstruct added properties
+  // by walking down script and looking for `addProp`
+  if (!script) return []; // During update script can be undefined
+  const featureNames = [];
+  const scriptUnits = ScriptifyText(script);
+  scriptUnits.forEach(unit => {
+    if (unit[0] && unit[0].token === 'useFeature') {
+      featureNames.push(unit[1].token);
+    }
+  });
+  return featureNames;
+}
+/**
+ * featPropMap is a map of ALL properties of ALL features
+ * for a given script (could be blueprint, or script snippet)
+ */
+function ExtractFeatPropMapFromScript(script: string): Map<string, any[]> {
+  // Get list of features used in blueprint
+  const featureNames = this.ExtractFeaturesUsed(script);
+  return ExtractFeatPropMap(featureNames);
+}
+/**
+ * featPropMap is a map of ALL properties of the all the features
+ * in the featureNames array.
+ */
+function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
+  const featPropMap = new Map();
+  featureNames.forEach(fName => {
+    // HACK
+    // featProps are not even defined until
+    // feature.decorate is called.  So we use a dummy
+    // agent to instantiate the properties so that
+    // we can inspect them
+
+    // Skip 'Cursor' because it's not a proper feature
+    // and adding it to the dummy agent is problematic
+    if (fName === 'Cursor') return;
+
+    const dummy = new GAgent();
+    dummy.addFeature(fName);
+    const propMap = new Map();
+    Object.keys(dummy.prop[fName]).forEach(key => {
+      const featProp = dummy.prop[fName][key];
+      // ignore private props
+      if (key.startsWith('_')) return;
+      // deconstruct GVarType
+      let type;
+      if (featProp instanceof GVarBoolean) type = 'boolean';
+      if (featProp instanceof GVarDictionary) type = 'dictionary';
+      if (featProp instanceof GVarNumber) type = 'number';
+      if (featProp instanceof GVarString) type = 'string';
+      propMap.set(key, {
+        name: key,
+        type,
+        defaultValue: featProp.value,
+        isFeatProp: true
+      });
+    });
+    featPropMap.set(fName, propMap);
+  });
+  return featPropMap;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /**
  * A brute force method of checking to see if the script has a directive
  * Used by project-data.InstanceAdd to check for the presence of
@@ -500,16 +578,38 @@ function RenderScript(units: TScriptUnit[], options: any[]): any[] {
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
   if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
+
   units.forEach((rawUnit, index) => {
     let unit = r_ExpandArgs(rawUnit);
-    if (unit.length === 0) return;
-    let keyword = unit[0];
-    // comment processing
-    if (keyword === '//') {
-      sourceJSX.push(undefined); // no jsx to render for comments
-      if (DBG) console.groupEnd();
+
+    // ORIG: Skip blank lines
+    // if (unit.length === 0) return;
+
+    // NEW: Keep blank lines, otherwise
+    // index gets screwed up when updating text lines.
+    // Treat the blank lines as a comment.
+    if (unit.length === 0) {
+      sourceJSX.push('//'); // no jsx to render for comments
       return;
     }
+
+    let keyword = unit[0];
+
+    // ORIG
+    // comment processing
+    // if (keyword === '//') {
+    // sourceJSX.push(undefined); // no jsx to render for comments
+    // if (DBG) console.groupEnd();
+    // return;
+    // }
+    //
+    // HACK
+    // Process comments as a keyword so they are displayed with line numbers
+    if (keyword === '//') {
+      keyword = '_comment';
+      unit[1] = rawUnit[0] ? rawUnit[0].comment : '';
+    }
+
     if (keyword === '#') keyword = '_pragma';
     let kwProcessor = GetKeyword(keyword);
     if (!kwProcessor) {
@@ -599,5 +699,8 @@ export {
   ExtractBlueprintProperties,
   ExtractBlueprintPropertiesMap,
   ExtractBlueprintPropertiesTypeMap,
+  ExtractFeaturesUsed,
+  ExtractFeatPropMapFromScript,
+  ExtractFeatPropMap,
   HasDirective
 };

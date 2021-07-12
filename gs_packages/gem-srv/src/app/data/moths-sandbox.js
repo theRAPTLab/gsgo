@@ -221,8 +221,8 @@ featProp Movement useAutoOrientation setTo true
 
 useFeature Vision
 featCall Vision monitor Moth
-featCall Vision setViewDistance 500
-featCall Vision setViewAngle 45
+featProp Vision viewDistance setTo 250
+featProp Vision viewAngle setTo 90
 
 featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
