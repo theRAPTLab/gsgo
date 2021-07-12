@@ -70,7 +70,7 @@ featProp Movement distance setTo 3
 // featCall Movement wanderUntilInside TreeFoliage
 
 useFeature Physics
-featProp Physics scale setTo 0.5
+featProp Physics scale setTo 0.3
 
 useFeature Touches
 featCall Touches monitor TreeTrunk c2b
@@ -208,9 +208,12 @@ ifExpr {{ agent.getProp('isInert').value }} [[
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'predator.json' 0
+featCall Costume setCostume 'predator.json' 2
 
 useFeature Physics
+featProp Physics scale setTo 0.5
+
+
 useFeature Touches
 featCall Touches monitor Moth c2c
 featCall Touches monitor TreeFoliage binb
@@ -348,10 +351,10 @@ featProp Physics scaleY setTo 1`
       name: 'Tree3',
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 280
-prop y setTo 200
+prop y setTo 160
 featCall Costume setColorizeHSV 0 0 0.8
 featProp Physics scale setTo 0.4
-featProp Physics scaleY setTo 0.8`
+featProp Physics scaleY setTo 0.6`
     },
     {
       id: 1106,
@@ -362,14 +365,14 @@ prop y setTo -150
 featCall Costume setColorizeHSV 0 0 0.75
 //  featCall Costume setColorize 0.8 0.7 0
 featProp Physics scale setTo 0.5
-featProp Physics scaleY setTo 0.5`
+featProp Physics scaleY setTo 0.8`
     },
     {
       id: 1103,
       name: 'Tree2',
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 0
-prop y setTo 200
+prop y setTo 150
 featCall Costume setColorizeHSV 0 0 1
 featProp Physics scale setTo 0.5
 featProp Physics scaleY setTo 0.6`
