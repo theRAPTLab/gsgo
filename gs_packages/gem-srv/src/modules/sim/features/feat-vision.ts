@@ -2,7 +2,7 @@
 
   The Vision Class
 
-  Adds a `canSee` map to agents, a lookup table for target agent ids
+  Adds a `canSeeCone` map to agents, a lookup table for target agent ids
   that the agent can see within a projected vision cone based on the orientation
   of the agent.
 
@@ -62,6 +62,7 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     return false;
 
   const distance = agent.prop.Vision.viewDistance.value;
+  // convert degrees viewAngle to radians
   const viewAngleRad = (agent.prop.Vision.viewAngle.value * Math.PI) / 180;
   const orientation = -agent.prop.Movement._orientation; // flip y
   const viewAngleLeft = ANGLES.normalizeHalf(orientation - viewAngleRad / 2);
@@ -97,6 +98,46 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   return result.length > 0;
 }
 
+function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
+  if (
+    !agent.hasFeature('Vision') ||
+    !target.hasFeature('Vision') ||
+    !target.hasFeature('Costume') ||
+    !target.hasFeature('Touches')
+  ) {
+    console.error(
+      'Agents missing Vision, Costume, or Touches Feature.  m_IsTargetColorVisible not possible.'
+    );
+    return false;
+  }
+
+  if (agent.canSeeCone.get(target.id)) {
+    // hsvRange is the predator (viewer's) range settings
+    // In other words: Can the predator see the prey against it's background?
+    const hRange = agent.prop.Vision.colorHueDetectionThreshold.value;
+    const sRange = agent.prop.Vision.colorSaturationDetectionThreshold.value;
+    const vRange = agent.prop.Vision.colorValueDetectionThreshold.value;
+    const backgroundAgent = target.callFeatMethod(
+      'Touches',
+      'getTouchingAgent',
+      'binb'
+    ); // the target is touching a background agent
+    if (DBG) console.log(target.id, 'backgroundAgent', backgroundAgent);
+    if (!backgroundAgent) return true; // b not touching an agent so b is visible
+    const backgroundColor = backgroundAgent.prop.color.value;
+    // color is visible if it is NOT camouflaged
+    return !target.callFeatMethod(
+      'Vision',
+      'isCamouflaged',
+      backgroundColor,
+      hRange,
+      sRange,
+      vRange
+    );
+  }
+  return false;
+}
+
 /// PHYSICS LOOP ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -109,19 +150,29 @@ function m_update(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
+    // vision cone will show if hasActiveTargets
     let hasActiveTargets = false;
+
     const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
-      let canSee = false;
+
+      // vision cone
+      let canSeeCone = false;
       if (!t.isInert && t.prop.Vision.visionable.value) {
         // don't check vision if inert or not visible
-        canSee = m_IsTargetWithinVisionCone(agent, t);
+        canSeeCone = m_IsTargetWithinVisionCone(agent, t);
       }
-      if (!agent.canSee) agent.canSee = new Map();
-      agent.canSee.set(t.id, canSee);
+      if (!agent.canSeeCone) agent.canSeeCone = new Map();
+      agent.canSeeCone.set(t.id, canSeeCone);
+
+      // vision color
+      let canSeeColor = m_IsTargetColorVisible(agent, t);
+      if (!agent.canSeeColor) agent.canSeeColor = new Map();
+      agent.canSeeColor.set(t.id, canSeeColor);
+
       // pozyx targets might still be present, but inert
-      if (!t.isInert && canSee) hasActiveTargets = true;
+      if (!t.isInert && (canSeeCone || canSeeColor)) hasActiveTargets = true;
     });
     // Clear cone if no more non-inert targets.
     // We can't simply check for 0 targets because
@@ -139,7 +190,7 @@ class VisionPack extends GFeature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
-    // this.featAddMethod('canSee', this.canSee);
+    this.featAddMethod('isCamouflaged', this.isCamouflaged);
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
     // movmeent's FEATURES_UPDATE
@@ -163,6 +214,30 @@ class VisionPack extends GFeature {
     prop.setMax(180);
     prop.setMin(0);
     this.featAddProp(agent, 'viewAngle', prop);
+
+    // `color*DetectionThreshold` defines the range of HSV
+    // values outside of which color can be detected
+    // Used by `seesCamouflaged` condition
+    // colors are detectable if they are OUTISDE the threshold value
+    // e.g. if colorHueDetectionThreshold is 0.2
+    //      and agent color hue is 0.5
+    //      and background color hue is 0.6
+    //      then `seesCamouflaged` would return false
+    //      because the difference is 0.1, which is not outside
+    //      the detectable range of 0.2
+    // Set to 0 to always detect.
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorHueDetectionThreshold', prop);
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorSaturationDetectionThreshold', prop);
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorValueDetectionThreshold', prop);
   }
 
   /// VISION METHODS /////////////////////////////////////////////////////////
@@ -173,12 +248,32 @@ class VisionPack extends GFeature {
   monitor(agent: IAgent, targetBlueprintName: string) {
     VISION_AGENTS.set(agent.id, targetBlueprintName);
   }
+  // isCamouflaged if agent colorHSV is within range of backgroundColor
+  isCamouflaged(
+    agent: IAgent,
+    backgroundColor: number,
+    hRange: number,
+    sRange: number,
+    vRange: number
+  ) {
+    if (!agent.hasFeature('Costume'))
+      throw new Error('isCamouflaged requires Costume Feature!');
+    return agent.callFeatMethod(
+      'Costume',
+      'colorHSVWithinRange',
+      agent.prop.color.value,
+      backgroundColor,
+      hRange,
+      sRange,
+      vRange
+    );
+  }
   /** This doesn't really do anything, since:
    *  a. you can't easily call featCall with a specific target agent parameter
    *     outside of a when
    *  b. you can't do anything with the return value without using a stack operation
    */
-  // canSee(agent: IAgent, target: IAgent) {
+  // canSeeCone(agent: IAgent, target: IAgent) {
   //   return m_IsTargetWithinVisionCone(agent, target);
   // }
 }
