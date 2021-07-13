@@ -197,13 +197,19 @@ RegisterFunction('lastTouches', (a, b) => {
 RegisterFunction('sees', (a, b) => {
   // checks if b is within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
-  return a.canSee ? a.canSee.get(b.id) : false;
+  return a.canSeeCone ? a.canSeeCone.get(b.id) : false;
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 RegisterFunction('doesNotSee', (a, b) => {
   // checks if b is NOT within vision cone of a
   if (!a.hasFeature('Vision') || !b.hasFeature('Costume')) return false;
-  return a.canSee ? !a.canSee.get(b.id) : true;
+  return a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
+});
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+RegisterFunction('seesCamouflaged', (a, b) => {
+  // checks if b's color relative to its background is visible to a
+  // AND the color range is outside of the detectableRange
+  return a.canSeeColor ? a.canSeeColor.get(b.id) : false;
 });
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////
