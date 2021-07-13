@@ -1,4 +1,4 @@
-## SUMMARY
+## Modular Thinking in URSYS Apps
 
 These are the underlying rules about data encapsulation and code modularity that we should make explicit! There is a **hierarchy** and **dataflow**  of what kinds of data/code can connect to.
 
@@ -27,19 +27,30 @@ These are the underlying rules about data encapsulation and code modularity that
 
 ### The Message Hierarchy
 
-TBD
+We have two kinds of message invocations that can be sent to either `LOCAL` message handlers or `NET` remote message handlers.
+
+One-way messages like Signal and Send do not return data. Signal sends to everyone, but Send does not reflect back to the calling module. 
+NOTE: we should probably **deprecate** Send because the use case it's designed for (message handler that calls other message handlers to synchronize) is generally not used. Maybe **rename** it Sync)
+
+* [Signal | Send] LOCAL:MESSAGE, data -> local message handlers -> void
+* [Signal | Send] NET:MESSAGE, data -> remote message handlers -> void
+
+Round-trip messages like Call:
+
+* async [Call] LOCAL:MESSAGE, data -> local message handlers -> each returns data to caller in an array
+* async [Call] NET:MESSAGE, data -> remote message handlers -> each returns data to caller in an array
 
 ### The Event Hierarchy
 
-TBD
+GUI events are asynchronous and can be fired at any time. The GUI event code has to interpret changes and call the correct module methods or issues the right message.
+
+* GUI Events -> GUI Event Handlers -> Data Update -> GUI Render Update
 
 
 
 ---
 
-
-
-## RAW NOTES
+## Kinds of State and Data
 
 I need to describe the **difference** between "transient state" and "persistent data" once and for all. 
 

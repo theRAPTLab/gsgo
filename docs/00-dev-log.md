@@ -393,7 +393,6 @@ The general pattern for **using** appcore modules with **React**:
   * in each Component, import the appcore module that has the information you need. It will initialize the state for you if it's written correctly.
   * in the constructor, set `this.state = UR.GetState('group1','group2',...)`which will return  an object with the contents of each stateGroup as **top level** properties (i.e. the props for group1 aren't in an object prop named group1). You can retrieve ALL the state if you don't pass arguments
   
-  
 
 ### Updating
 
@@ -403,5 +402,15 @@ Got it generally working for:
 * changes to localeID
 * more consistent state management
 
+## JUL 12 MON - Review With Ben
 
+* color modulation for #157
+* script editor needs to handle blocks
+* how to formalize how to handle image assets #236
+* the date: 
+  * **August 2nd** (Vanderbilt, IU) - (MOTHS)
+  * full pilot for IU **August 9** , soft pilot: IU **September** (FISH, ALGAE)
+* make a module import document for Ben
+* look at merge requests since 113 to get an idea
+* Vanderbilt: candidate script is moths-sandbox branch
 
