@@ -446,9 +446,13 @@ function m_FeaturesThinkSeek(frame) {
     const target = nearAgents.find(near => {
       // 2. Find first agent within the cone
       if (near) {
+        if (options.useVisionColor) {
+          // console.log('...canSeeColor', near.id, agent.canSeeColor.get(near.id));
+          return agent.canSeeColor.get(near.id);
+        }
         if (options.useVisionCone) {
-          // console.log('...canSee', near.id, agent.canSee.get(near.id));
-          return agent.canSee.get(near.id);
+          // console.log('...canSeeCone', near.id, agent.canSeeCone.get(near.id));
+          return agent.canSeeCone.get(near.id);
         }
         // not using vision, so target it if found
         return true;
@@ -459,7 +463,7 @@ function m_FeaturesThinkSeek(frame) {
     // decay untargetting, otherwise, you can flicker between
     // finding and losing a target when pivoting towards the target?
     if (target) {
-      // console.log('....setting to', target.id);
+      // console.error('....setting target to', target.id);
       agent.prop.Movement._targetId = target.id;
       agent.prop.Movement._lastTargetFrame = frame;
     } else if (frame - agent.prop.Movement._lastTargetFrame > 10) {
@@ -698,8 +702,15 @@ class MovementPack extends GFeature {
     this.setMovementType(agent, 'seekAgent');
   }
 
-  seekNearestVisible(agent: IAgent, targetType: string) {
+  // vision cone visible
+  seekNearestVisibleCone(agent: IAgent, targetType: string) {
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
+    this.setMovementType(agent, 'seekAgentOrWander');
+  }
+
+  // color visible
+  seekNearestVisibleColor(agent: IAgent, targetType: string) {
+    SEEK_AGENTS.set(agent.id, { targetType, useVisionColor: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
 
