@@ -41,6 +41,7 @@ class SimControl {
     this.DoSimStart = this.DoSimStart.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.IsRunning = this.IsRunning.bind(this);
+    this.RoundsCompleted = this.RoundsCompleted.bind(this);
     // Let MissionControl handle NET:HACK_SIM_RESET, then call this.DoSimReset directly.
     // UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:HACK_SIM_COSTUMES', this.DoSimCostumes);
@@ -150,6 +151,10 @@ class SimControl {
 
   IsRunning() {
     return SIM.IsRunning();
+  }
+
+  RoundsCompleted() {
+    return SIM.RoundsCompleted();
   }
 }
 

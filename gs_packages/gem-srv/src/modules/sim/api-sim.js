@@ -207,6 +207,9 @@ function Reset() {
 function IsRunning() {
   return SIM_RATE > 0;
 }
+function RoundsCompleted() {
+  return SIMSTATUS.completed;
+}
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -227,5 +230,6 @@ export {
   End,
   Export,
   Reset,
-  IsRunning
+  IsRunning,
+  RoundsCompleted
 };
