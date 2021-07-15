@@ -79,14 +79,14 @@ query getLocale2 {
 """
 Mutations send data. In this 'update' mutation, the API method 'updatePTrack' is
 being invoked; it's defined in schema.graphql.
-A list of key-value parameters is being sent: 'localeID' and 'input'
+A list of key-value parameters is being sent: 'localeId' and 'input'
 
 NOTES:
 * after you submit the data, you can automatically get data returned. Here,
   the 'memo' field is being returned. This is a property of the Locale type.
 """
 mutation update {
-  updatePTrack(localeID: 1, input: { memo: "20 Nuggets" }) {
+  updatePTrack(localeId: 1, input: { memo: "20 Nuggets" }) {
     memo
   }
 }
@@ -95,10 +95,10 @@ mutation update {
 This mutation 'updatePTrack' shows how you use the same method 'updatePTrack' to
 change DIFFERENT properties of the input. It is up to the code in resolvers.js to
 figure out how to merge that data into the specified record (in this case, locale with
-localeID 1)
+localeId 1)
 """
 mutation update2 {
-  updatePTrack(localeID: 1, input: { xScale: 250, yScale: 250 }) {
+  updatePTrack(localeId: 1, input: { xScale: 250, yScale: 250 }) {
     xScale
     yScale
   }

@@ -65,17 +65,17 @@ STATE.addChangeHook((key, propOrValue, propValue) => {
     // start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
-      const id = getKey('localeID');
+      const id = getKey('localeId');
       if (DBG)
         console.log(...PR('autosaving transform', XFORM_CACHE, 'to id', id));
       UR.Query(
         `
-        mutation LocalePTrack($id:Int $input:PTrackInput) {
-          updatePTrack(localeID:$id,input:$input) {
-            memo
-          }
-        }
-      `,
+            mutation LocalePTrack($id:Int $input:PTrackInput) {
+              updatePTrack(localeId:$id,input:$input) {
+                memo
+              }
+            }
+          `,
         {
           input: XFORM_CACHE,
           id

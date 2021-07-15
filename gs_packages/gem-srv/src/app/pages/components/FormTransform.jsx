@@ -29,23 +29,27 @@ export default class FormTransform extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    if (name === 'localeID') {
-      UR.WriteState('locales', name, value);
-    } else UR.WriteState('locales.transform', name, value);
+    if (name === 'localeId') {
+      UR.WriteState('locales', name, Number(value));
+    } else {
+      UR.WriteState('locales.transform', name, value);
+    }
   }
 
   urStateUpdated(stateObj, cb) {
-    const { localeNames, localeID, transform } = stateObj;
+    const { localeNames, localeId, transform } = stateObj;
     if (localeNames) {
       this.setState({ localeNames });
     }
-    if (localeID !== undefined) {
-      const locale = ACLocales.GetLocale(localeID);
+    if (localeId !== undefined) {
+      const locale = ACLocales.GetLocale(localeId);
+      console.log('...updating locale', localeId, 'from', locale);
       if (locale) {
-        this.setState({ localeID, transform: locale.ptrack });
+        this.setState({ localeId, transform: locale.ptrack });
       }
     }
     if (transform) {
+      console.log(...PR('update transform'), transform);
       this.setState({ transform }); // { transform: { ... } }
     }
     if (typeof cb === 'function') cb();
@@ -64,6 +68,7 @@ export default class FormTransform extends React.Component {
       yRange,
       memo
     } = this.state.transform;
+
     return (
       <>
         <div className="io-transform" style={{ clear: 'both' }}>
@@ -76,8 +81,8 @@ export default class FormTransform extends React.Component {
 
         <div className={clsx('io-track-controls', 'io-transform')}>
           <select
-            name="localeID"
-            value={this.state.localeID}
+            name="localeId"
+            value={this.state.localeId}
             onChange={this.handleInputChange}
             className={clsx('form-control', 'data-track')}
           >

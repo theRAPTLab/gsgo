@@ -37,11 +37,11 @@ module.exports = {
     return objs;
   },
   updatePTrack(args, context) {
-    const { localeID, input } = args;
+    const { localeId, input } = args;
     const { DB } = context;
-    if (DBG) TERM(`update localeID:${localeID}, input:${JSON.stringify(input)}`);
+    if (DBG) TERM(`update localeId:${localeId}, input:${JSON.stringify(input)}`);
     const coll = DB.getCollection('locales');
-    const locale = coll.findOne({ id: localeID });
+    const locale = coll.findOne({ id: localeId });
     Object.assign(locale.ptrack, input);
     coll.update(locale);
     return locale.ptrack;
