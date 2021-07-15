@@ -23,13 +23,13 @@ STATE.initializeState({
   localeNames: [],
   localeId: 0,
   transform: {
-    xRange: 1,
-    yRange: 1,
-    xOff: 0,
-    yOff: 0,
-    xScale: 1,
-    yScale: 1,
-    zRot: 0
+    xRange: -99,
+    yRange: -99,
+    xOff: -99,
+    yOff: -99,
+    xScale: -99,
+    yScale: -99,
+    zRot: -99
   }
 });
 
@@ -64,7 +64,9 @@ export const CurrentLocaleId = () => flatStateValue('localeId');
 export const GetLocale = id => {
   // stateobj always returns entities as { [group]:{[ keys]:value } }
   const locales = _getKey('locales'); // group:locales, key:locales
-  return { ...locales[id] }; // return copy
+  const locale = locales.find(l => l.id === id);
+  if (locale) return locale;
+  return { error: `localeId ${id} not found` };
 };
 /// update
 export const SetLocaleID = id => {
@@ -198,13 +200,14 @@ async function m_LoadLocaleInfo() {
     }
   `);
   if (!response.errors) {
-    const { localeNames, locales } = response.data;
-    if (DBG)
-      console.log(...PR('should load locales, responses'), localeNames, locales);
-    updateKey({ localeNames, locales });
-    // update transform
-    if (DBG)
-      console.log(...PR('locale state should be set', STATE.stateObj('locales')));
+    // update state data
+    const { locales, localeNames } = response.data;
+    const localeId = CurrentLocaleId();
+    updateKey({ locales, localeNames, localeId });
+    // set default transform
+    const locale = GetLocale(localeId);
+    const { ptrack } = locale;
+    _publishState({ transform: ptrack });
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -246,6 +249,7 @@ UR.HookPhase(
   () =>
     new Promise((resolve, reject) => {
       m_LoadLocaleInfo();
+      console.log(...PR('resolved LOAD_DB'));
       resolve();
     })
 );

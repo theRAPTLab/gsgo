@@ -55,9 +55,9 @@ export default class FormTransform extends React.Component {
         console.log(
           ...PR(
             'update transform [',
-            ...Object.entries(transform).map(
-              ([key, value]) => `${key}:${value} `
-            ),
+            ...Object.entries(transform)
+              .filter(([key]) => key !== 'memo')
+              .map(([key, value]) => `${key}:${value} `),
             ']'
           )
         );

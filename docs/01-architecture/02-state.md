@@ -35,51 +35,38 @@ const STATE = new StateGroupMgr('locales');
 STATE.InitializeState({
   locales: [],      // key is named locales with value array
   localeNames: [],  // key is named localeNames with value array
-  localeID: 0,      // key is named localeID with value number
+  localeId: 0,      // key is named localeId with value number
   transform: {      // key is named transform and has object with props
-    xRange: 1,      // prop xRange with value number
-    yRange: 1,
-    xOff: 0,
-    yOff: 0,
-    xScale: 1,
-    yScale: 1,
-    zRot: 0
+    xRange: -99,    // prop xRange with value number
+    yRange: -99,
+    xOff: -99,
+    yOff: -99,
+    xScale: -99,
+    yScale: -99,
+    zRot: -99
 });
 ```
 
-The `InitializeState()` call not only creates initiate state, but also defines **what keys are considered valid**; the StateGroupMgr will not allow you to modify keys that doesn't already exist, displaying a warning in the console.
+The `InitializeState()` call not only creates initiate state, but also defines **what keys are considered valid**; the StateGroupMgr will not allow you to modify keys that doesn't already exist, and will display a warning in the console.
 
 ### Accessing State in a StateGroup
 
 To access state from anywhere, there are some new UR methods available from the root client library `@gemstep/ursys/client`:
 
 #### read
-
 * `UR.ReadStateGroups(...groupNames) -> stateObj`
 * `UR.ReadFlatStateGroups(...groupNames) -> flatStateObj`
-
 #### write
-
 * `UR.WriteState(selector, key, propOrObj, propValue)`
-
-#### intercept writes for side effects
-
-* `UR.AddStateChangeHook(groupName, filterFunction)`
-* `UR.DeleteStateChangeHook(groupName, filterFunction)`
-
 #### notification by group change
-
 * `UR.SubscribeState(groupName, stateChangeHandler)`
 * `UR.UnsubscribeState(groupName, stateChangeHandler)`
 
-_note: the StateGroupMgr class has additional methods for manipulating state, but these are only accessible from within a module that creates its class instance_
-
-
 #### types
-
 note: these are not actually implemented in typescript
-
 ```
+STATE GROUP TYPE DEFINITIONS
+
 stateObj            = { [groupName]: { [key]: value } }
 flatStateObj        = { [key]: value }
 changeObj           = { [key]: value }
@@ -89,8 +76,12 @@ stateChangeHandler  = (changeObj) => void
 filterFunction      = (key,propOrObj,propValue) => [...modified args] _or_
                                                 => `undefined`
 ```
-
 In general, any module can access state by group name using the UR methods. You just need to know the group name, and know the format of the returned object. If you want to know what the different keys for a group are, you can refer to the `appcore` module that defines it, and be assured that the system will catch misnamed keys AND prevent you from reusing key names across different groups. 
+
+NOTE: The StateGroupMgr class has additional methods for manipulating state, but these are only accessible from within a module that creates its class instance (e.g. an appcore module). For example:
+
+* **change hooks** are a filter function that can be provided to ensure data conforms to expectations, like converting strings from the UI to numbers for the database
+* **effect hooks** are run after a change to state is successfully updated. These are similar to notifications but for the managing module as a direct callback.
 
 #### react init
 
@@ -153,8 +144,8 @@ class MyComponent {
     if (localeNames) {
       console.log('got localeNames',localeNames);
     }
-    if (localeID!==undefined)
-      this.setState({localeID}); /* cause rerender */
+    if (localeId!==undefined)
+      this.setState({localeId}); // causes re-render
     }
   }
 
@@ -178,7 +169,7 @@ When your React components receive a user input event that should update the UI,
 3. ---                    UR.WriteState() publishes state change to all subscriber
 
 4. urStateChanged:        called when groupName state has changed, which should this.setState()
-5. render:                call to setState() makes UI render with new state.localeID value
+5. render:                call to setState() makes UI render with new state.localeId value
 ```
 
 Example of send state, assuming the `localeID` is the value that the UI might change in a dropdown (this is non-functional pseudocode):
@@ -207,11 +198,11 @@ class MyComponent {
       console.log("got localeNames", localeNames);
     }
     if (localeID !== undefined) {
-      this.setState({ localeID }); /* cause re-render */
+      this.setState({ localeID }); // causes re-render
     }
   }
-
 */
+  
   handleChange(event) {
     const target = event.target;
     const key = target.name;
@@ -224,8 +215,8 @@ class MyComponent {
   render() {
     return (
       <select
-        name="localeID"
-        value={this.state.localeID}
+        name="localeId"
+        value={this.state.localeId}
         onChange={this.handleChange}
       >
         <option key value>
@@ -238,29 +229,10 @@ class MyComponent {
 
 ```
 
-The `UR.WriteState()` function will lookup the 'locales' group and attempt to write key 'localeID' with the value passed in the UI event. It also **does not use React.Component.setState()** to update the UI, because our use of `UR.WriteState()` will take care of that in your `urLocalesChanged()` class method which DOES have `setState()`. This method is called if you have used `UR.Subscribe('locales',this.urLocalesChanged)`. 
+The `UR.WriteState()` function will lookup the 'locales' group and attempt to write key 'localeId' with the value passed in the UI event. It also **does not use React.Component.setState()** to update the UI, because our use of `UR.WriteState()` will take care of that in your `urLocalesChanged()` class method which DOES have `setState()`. This method is called if you have used `UR.Subscribe('locales',this.urLocalesChanged)`. 
 
 The advantage to doing this in this roundabout way is that this automatically notifies other subscribed modules and React components, so they will update too. 
 
-## Handling Application-specific Logic
+---
 
-*This is an **EVOLVING SPECIFICATION** as we make sure the pattern makes sense to everyone*
-
-Originally our major modules **SIM**, **RENDER**, and **INPUT** were designed to run completely independently of each other so they could be moved easily to the server. Unfortunately this is no longer the case, as there was no clear pattern established for doing this cleanly without polluting DATACORE with cross-module dependencies.
-
-This is what APPCORE helps with. In addition to providing a home for groups of application state, an APPCORE module can also hold derivative cross-module logic and data structures because they are *SPECIFIC TO AN IMPLEMENTATION* (the application with its required features). An APPCORE module can freely import a DATACORE module that follows the strict "no dependency" criteria. 
-
-APPCORE modules can only be imported by the application itself, not by other modules. This can either be a `jsx` component file or an application helper module that has the program logic that is unrelated to GUI event and update handling.
-
-An example of use of an APPCORE module beyond just initializing state is `appcore/ac-locales.js`. It does stuff like:
-
-* does the initial database query on load to populate its state
-* handles asynchronous mirroring of UI changes to the server database
-* returns localedata by ID
-
-Again it is important to remember that **GUI state** is not the same as **application state** which is not the same as **model data**. These are all very distinct kinds of data, and assuming they are equivalent can result in weird data corruption. 
-
-* When using the UR StateGroupMgr, this data is _converted_ into React.Component.state. It is not _the same_ data, and relying on GUI state to "cache" data is a good way to make your data unreliable due to how React handles state asynchronously.
-* In general be aware of when you are passing objects by reference or value. The current best practice for this is to **clone** using object spread notation like `const clone = { ...oldObj }` (in the past, we would use `const clone = Object.assign({},oldObj)`). 
-* Be aware that these clone techniques only make **shallow copies**. React state objects are intended to also be shallow. Deeply nested state objects are a bad idea. At most we allow one object deep that may contain ONLY regular scalar non-object non-array properties.
-
+see [02-modularity](./02-modularity.md) for additional discussion of application state in the APPCORE conventions

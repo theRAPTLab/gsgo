@@ -392,7 +392,6 @@ The general pattern for **using** appcore modules with **React**:
 * If you need to share any kind of state between components and non-React modules
   * in each Component, import the appcore module that has the information you need. It will initialize the state for you if it's written correctly.
   * in the constructor, set `this.state = UR.GetState('group1','group2',...)`which will return  an object with the contents of each stateGroup as **top level** properties (i.e. the props for group1 aren't in an object prop named group1). You can retrieve ALL the state if you don't pass arguments
-  
 
 ### Updating
 
@@ -414,3 +413,36 @@ Got it generally working for:
 * look at merge requests since 113 to get an idea
 * Vanderbilt: candidate script is moths-sandbox branch
 
+## JUL 13 TUE - Bug Fixes
+
+* [ ] make sure that database is loading correct data on start
+
+The issue is that when the localeID changes, we need to do several things:
+
+1. set state.localeID
+2. load ptrack data into state.transfor
+
+```
+agents
+features
+globals
+inputs
+interactions
+named-methods
+project
+render
+script-bundle
+script-engine
+sim
+varprops
+```
+
+## JUL 14-15 - Bug Fixes Continued
+
+The StateGroupMgr needed some refinements and best practices refined, but it appears to work now.
+
+* appcore modules are allowed to mutate its state directly, but it is then responsible for sending the correct updates
+* updateKey does **NOT** automatically use the change and effect hooks, nor does it notify. That functionality is provided only as part of the static class methods; it's up to the module to implementing the behind-the-scenes state management related to database loads and inter-related data.
+* updated section in [modularity docs](01-architecture/02-modularity.md)
+
+Everything SEEMS to work. Let's give it a try.

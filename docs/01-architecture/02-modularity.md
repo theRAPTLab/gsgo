@@ -98,3 +98,69 @@ What is **Working Data**?
 * If it's not persistent data or transient state, it is probably **localized data**. Examples are temporary variables and **derived data structures** that are built from the persistant  that is either temporary variablesused inside a function or module to keep track of stuff. They are not saved as part of persistent data because they can be regenerated on next load.
 * One form of derived data that *CAN* be thought of as persistent is the **application state** 
 
+---
+
+## Handling Application-specific Logic
+
+*This is an **EVOLVING SPECIFICATION** as we make sure the pattern makes sense to everyone*
+
+Components and modules access state through the limited  `UR` interface for reading, writing, and subscribing to state changes. Appcore module authors can access additional methods to do the behind-the-scenes data manipulation that needs doing, and provide application-specific methods to do the work of a controller/viewmodel.
+
+### Background
+
+Originally our major modules **SIM**, **RENDER**, and **INPUT** were designed to run completely independently of each other so they could be moved easily to the server. Unfortunately this is no longer the case, as there was no clear pattern established for doing this cleanly without polluting DATACORE with cross-module dependencies.
+
+This is what APPCORE helps with. In addition to providing a home for groups of application state, an APPCORE module can also hold derivative cross-module logic and data structures because they are *SPECIFIC TO AN IMPLEMENTATION* (the application with its required features). 
+
+**Rules of Thumb:**
+
+* An APPCORE module can freely import a DATACORE module that follows the strict "no dependency" criteria. 
+
+* APPCORE modules can only be imported by the application itself, not by other modules. This can either be a `jsx` component file or an application helper module that has the program logic that is unrelated to GUI event and update handling.
+
+* APPCORE modules can make full use of UR PHASES and MESSAGING. It can also leverage the StateGroupMgr class to manage application-wide state that can be accessed from any other module in the system.
+
+### Managing State
+
+The `StateGroupMgr` class maintains a global `GSTATE` objects with a number of **keys** in it. When you create an instance of the class, you specify which keys you will be managing under a **group**. For example, the `ac-locales` appcore module manages a group called `locales` that contains keys like `localeId` and `locales`. 
+
+The StateGroupMgr class can be used to maintain both **GUI state** (intended for direct mapping to your GUI framework) and **Application state** (intended to affect the operation of code, enabling features, etc). 
+
+> It is important to remember that **data is not state** so **don't use state as a source of data truth** just because it seems handy. Use the `DATACORE` modules as the source of data truth; you will be *EXPLICITLY* converting GUI state TO data truth in your input processing routines and vice versa, but don't conflate them. You will confuse other developers and likely introduce dependencies that are difficult to debug. 
+
+### Appcore Methods
+
+In addition to **state**, you can add methods related to **application logic**, **data transformation** and other **operations** that are specific to your application. 
+
+You can safely import **major modules** such as **SIM**, **INPUT**, and **RENDER** as well as relevant **DATACORE** modules to create **derived data structures** that link these operations in whatever way needs doing. APPCORE is the _ONLY PLACE_  you should be be putting your module dependencies; if you add such dependencies to the DATACORE and MAJOR modules, you are making it difficult to cleanly port our code to the server. 
+
+### Change Hooks
+
+Your appcore module can add a **data filter** function to inspect pending state changes coming through the UR public API. This is used to ensure that incoming data is in the right format before saving it. They are executed from the `UR.WriteState()` public method before data is written to state. A change hook is used to convert "string numbers" received from React to regular numbers in `ac-locales`.
+
+### Effect Hooks
+
+Your appcore module can add a **side effect** function to perform something after the state has been written. For example, you might need to update related state keys. An effect hook is used to handle autosaving to the database in `ac-locales`.
+
+### StateGroupMgr Methods
+
+These are for exclusive use by modules that create the instances of StateGroupMgr. The public interface is in `UR`. 
+
+* `constructor( groupName )`
+* `initializeState( gql | obj )`
+* `hasKey( keyName )`
+* `updateKey( objOrKey, value )`
+* `  updateKeyProp(key, prop, value)` 
+* `newStateObj( a, b, c )` - util to create a stateObj from passed values
+* `stateObj( ...keys )` return stateObj with specified group keys
+* `flatStateValue(key)` - return the value of a key (not wrapped in a stateObj)
+* `subscribe(stateHandler)`
+* `addChangeHook(filterFunc)`
+* `addEffectHook(effectFunc)`
+
+### Private StateGroupMgr Methods
+
+* `_getKey( key )`  - return the specified **raw** state key for *direct mutation* 
+* `_handleChange(key, propOrValue, propValue)` - called from `UR.WriteState()` 
+* `_smartUpdate(key, a, b)` - Main state update method. figures out which `updateKey` or `updateKeyProp` to use, also applies changeHooks
+* `_publishState(stateObj)` - send the stateObj to subscribers. This isn't automatically done by `_smartUpdate()` but it is when using `UR.WriteState()` 
