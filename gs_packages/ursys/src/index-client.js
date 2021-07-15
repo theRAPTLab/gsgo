@@ -160,6 +160,7 @@ const UR = {
   IsElectronMain,
   // DATABASE
   Query: DB.Query,
+  Mutate: DB.Mutate,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
@@ -201,8 +202,6 @@ const UR = {
   ReadFlatStateGroups: StateGroupMgr.ReadFlatStateGroups,
   WriteState: StateGroupMgr.WriteState,
   SubscribeState: StateGroupMgr.SubscribeState,
-  AddStateChangeHook: StateGroupMgr.AddStateChangeHook,
-  DeleteStateChangeHook: StateGroupMgr.DeleteStateChangeHook,
   // FORWARDED CLASSES
   class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES

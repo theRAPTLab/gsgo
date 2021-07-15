@@ -21,7 +21,7 @@ const STATE = new UR.class.StateGroupMgr('locales');
 STATE.initializeState({
   locales: [],
   localeNames: [],
-  localeID: 0,
+  localeId: 3,
   transform: {
     xRange: 1,
     yRange: 1,
@@ -52,23 +52,33 @@ const { addChangeHook, deleteChangeHook } = STATE;
 let AUTOTIMER;
 let XFORM_CACHE = getKey('transform'); // initialize
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** intercept changes to locale.transform so we can cache the changes
+/** Intercept changes to locale.transform so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
  *  values, if any, for subsequent update to GSTATE and publishState
  */
-STATE.addChangeHook((key, propOrValue, propValue) => {
+function hook_Filter(key, propOrValue, propValue) {
+  if (key === 'transform') return [key, propOrValue, Number(propValue)];
+  if (key === 'localeId') return [key, Number(propOrValue)];
+  return undefined;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Optionally fire once all state change hooks have been processed.
+ *  This is provided as the second arg of addChangeHook()
+ */
+function hook_Effect(key, propOrValue, propValue) {
   /** handle transforms **/
   if (key === 'transform') {
+    XFORM_CACHE = getKey('transform');
     propValue = Number(propValue);
     XFORM_CACHE[propOrValue] = propValue;
-    if (DBG) console.log(...PR('updated XFORM CACHE', XFORM_CACHE));
+    if (DBG) console.log(...PR(`XFORM_CACHE[${propOrValue}]`, XFORM_CACHE));
     // start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
       const id = getKey('localeId');
       if (DBG)
         console.log(...PR('autosaving transform', XFORM_CACHE, 'to id', id));
-      UR.Query(
+      UR.Mutate(
         `
             mutation LocalePTrack($id:Int $input:PTrackInput) {
               updatePTrack(localeId:$id,input:$input) {
@@ -90,27 +100,32 @@ STATE.addChangeHook((key, propOrValue, propValue) => {
     // return array if we have handled/modified this
     // this will automatically update local state immediately
     // return the entire transform to update React state properly
+    console.log(...PR('transform', key, XFORM_CACHE));
     return [key, XFORM_CACHE];
   }
 
-  /** handle localeID **/
-  if (key === 'localeID') {
-    if (DBG) console.log(...PR(`updating localeID=${propOrValue}`));
+  /** handle localeId **/
+  if (key === 'localeId') {
+    if (DBG) console.log(...PR(`updating localeId=${propOrValue}`));
     propOrValue = Number(propOrValue);
+    const { ptrack } = GetLocale(propOrValue);
+    updateKey('transform', ptrack);
     // return array to rewrite strings to numbers
     return [key, propOrValue, propValue];
   }
 
   // otherwise return nothing to handle procesing normally
   return undefined;
-});
+}
+STATE.addChangeHook(hook_Filter);
+STATE.addEffectHook(hook_Effect);
 
 /// ACCESSORS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
 export const LocaleNames = () => stateObj('localeNames');
 export const Locales = () => stateObj('locales');
-export const CurrentLocaleID = () => stateObj('localeID');
+export const CurrentLocaleID = () => stateObj('localeId');
 export const GetLocale = id => {
   // stateobj always returns entities as { [group]:{[ keys]:value } }
   const locales = getKey('locales'); // group:locales, key:locales
@@ -118,7 +133,10 @@ export const GetLocale = id => {
 };
 /// update
 export const SetLocaleID = id => {
-  updateKey('localeID', id);
+  console.log(...PR('setting locale id', id));
+  updateKey('localeId', id);
+  const locale = GetLocale(id);
+  updateKey('transform', locale.ptrack);
 };
 
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
@@ -146,14 +164,18 @@ async function m_LoadLocaleInfo() {
   `);
   if (!response.errors) {
     const { localeNames, locales } = response.data;
+    console.log(...PR('should load locales, responses'), localeNames, locales);
     updateKey({ localeNames, locales });
+    // update transform
+
+    console.log(...PR('locale state should be set', STATE.stateObj('locales')));
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this needs to be made dynamic */
 export async function LoadCurrentPTrack() {
-  const localeID = stateObj('localeID');
-  if (DBG) console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeID));
+  const localeId = stateObj('localeId');
+  if (DBG) console.log(...PR('(2) GET LOCALE DATA FOR DEFAULT ID', localeId));
   const response = await UR.Query(
     `
     query GetPtrackTransform($id:Int!) {
@@ -175,7 +197,7 @@ export async function LoadCurrentPTrack() {
       zRot
     }
   `,
-    { id: localeID }
+    { id: localeId }
   );
   return response.data.locale;
 }

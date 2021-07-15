@@ -49,8 +49,13 @@ export default class FormTransform extends React.Component {
       }
     }
     if (transform) {
-      console.log(...PR('update transform'), transform);
-      this.setState({ transform }); // { transform: { ... } }
+      if (DBG) console.log(...PR('update transform'), transform);
+      // because transform is an object and setState only does shallow
+      // merges, we have to reconstruct the entire transform otherise
+      // uncontrolled component error occurs
+      this.setState(state => ({
+        transform: { ...state.transform, ...transform }
+      }));
     }
     if (typeof cb === 'function') cb();
   }

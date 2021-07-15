@@ -1,26 +1,24 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  The StateGroup class managed collection of "state groups" that are stored in
-  a single master STATE object.
+  The StateGroupMgr class managed collection of "state groups" that are stored
+  in a single master STATE object. The static methods of StateGroup are the
+  external API to find a particular StateGroupMgr.
 
-  STATE VALUES
+  StateGroupMgr instances are created by APPCORE modules, which each handle a
+  particular application-specific set of operations. State is considered as
+  "transient data" that is useful for remembering (1) what "mode" the app is in
+  and (2) providing datastructures that can be rendered directly by the user
+  interface as is. APPCORE is the bridge between pure data models, user
+  interface, and controller/viewmodel logic.
 
-  * new StateGroup( queryOrStateObj )
-  * async initializeState( queryOrStateObj )
-  * updateKey( name,groupObj | stateObj ) - sets entire groups by key
-  * updateKeyProp( name, prop, value ) - sets specific prop within group
-  * stateObj(...args) - return a stateObj with specified keys, or entire state
+  METHODS: see docs/02-arch/02-state.md for operations
 
-  STATE CHANGE REQUESTS
+  NOTES:
 
-  * handleChange( key,prop,value ) - incoming changes written to state and published
-  * addChangeHook( filterFunc ) - func receives key,prop,value
-
-  STATE CHANGE NOTIFICATIONS
-
-  * subscribe( stateHandler ) - handler receives stateObj, optional callback
-  * _publishState( stateObj ) - outgoing send stateObj to subscribers
+  This implementation of StateGroupMgr does not maintain "queues" of action
+  calls which would help control overlapping asynchronous operations. When the
+  base version is stable, we'll add that.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -38,6 +36,15 @@ const GSTATE = {};
 const SMGRS = new Map(); // modulename -> class instance
 
 /// HELPERS: GLOBAL STATE /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** internal
+ *  return shallow clone objects and array values
+ */
+function u_DerefValue(value) {
+  if (Array.isArray(value)) return [...value];
+  if (typeof value === 'object') return { ...value };
+  return value;
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** internal:
  *  Check if GSTATE contains a "key group" with a particular property. You can
@@ -86,7 +93,8 @@ function u_SetStateKeys(stateObj) {
 class StateGroupMgr {
   constructor(moduleName) {
     this.subs = new Set();
-    this.hooks = new Set();
+    this.changeHooks = new Set();
+    this.effectHooks = new Set();
     if (SMGRS.has(moduleName))
       throw Error(`modulename already exists: ${moduleName}`);
     this.name = moduleName;
@@ -96,6 +104,9 @@ class StateGroupMgr {
     this.updateKey = this.updateKey.bind(this);
     this.stateObj = this.stateObj.bind(this);
     this.getKey = this.getKey.bind(this);
+    // these might not need to be bound because they are invoked by one of the
+    // above bound methods
+    this._smartUpdate = this._smartUpdate.bind(this);
     this._handleChange = this._handleChange.bind(this);
   }
 
@@ -135,31 +146,39 @@ class StateGroupMgr {
 
   /// MAIN GSTATE ACCESS METHODS ///////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** main method to update a key */
-  updateKey(arg, secObj) {
+  /** main method to update a key.
+   *  arg can be stateObj to update multiple key/values
+   *  arg can be strKey, plus value
+   */
+  updateKey(objOrKey, value) {
     let retObj = {};
 
     // signature 1: arg is an object literal
-    if (typeof arg === 'object') {
-      if (secObj !== undefined) throw Error('unexpected parameter types');
-      Object.keys(arg).forEach(key =>
-        Object.assign(retObj, this.updateKey(key, arg[key]))
-      );
+    if (typeof objOrKey === 'object') {
+      if (value !== undefined) throw Error('unexpected parameter types');
+      Object.keys(objOrKey).forEach(key => {
+        // note recursive call to self returning change object
+        const change = this.updateKey(key, objOrKey[key]);
+        Object.assign(retObj, change);
+      });
       return retObj;
     }
-    // signature 2: arg is string, secObj is value
-    if (typeof arg !== 'string')
-      throw Error('arg must be string or object literal');
-    if (secObj === undefined) throw Error('arg2 must be object literal');
-    if (!this.hasKey(arg))
+    // signature 2: args are prop + valueObj
+    if (typeof objOrKey !== 'string')
+      throw Error('arg must be keystring or object literal with keys');
+    if (value === undefined) throw Error('arg2 must be object literal');
+    if (!this.hasKey(objOrKey))
       console.warn(
-        ...PR(`key '${arg}' not in validKeys for '${this.name}'`, this.validKeys)
+        ...PR(
+          `key '${objOrKey}' not in validKeys for '${this.name}'`,
+          this.validKeys
+        )
       );
-    GSTATE[arg] = secObj;
-    retObj = { [arg]: GSTATE[arg] };
-    return retObj;
+    GSTATE[objOrKey] = u_DerefValue(value);
+    return { [objOrKey]: GSTATE[objOrKey] };
   }
-  /** main method to update a prop inside a key item */
+
+  /** strict method to update a prop inside a key item */
   updateKeyProp(key, prop, value) {
     if (typeof key !== 'string') throw Error('arg1 must be string');
     if (typeof prop !== 'string') throw Error('arg2 must be string');
@@ -205,7 +224,7 @@ class StateGroupMgr {
     return { [this.name]: returnState };
   }
 
-  /** return an obj with specified keys hoisted to top without group wrapper */
+  /** return value of a given key */
   getKey(key) {
     // if no args, return all the groups associate with this state
     if (typeof key !== 'string') {
@@ -237,29 +256,33 @@ class StateGroupMgr {
       throw Error(
         'arg1 must be a method in a Component that receives change, keyname'
       );
-    this.subs.delete(stateHandler);
+    if (!this.subs.delete(stateHandler))
+      console.warn(...PR('func was not in subscription set'));
   }
 
   /// INCOMING GSTATE CHANGES & SUB NOTIFICATION ///////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** handles the state change call after getting a chance to update this
-   *  modules state. If any hooks return a truthy value, it is considered
-   *  handled and the normal update/pbulish cycle isn't automatically invoked
+  /** Before state is written, changeHooks get a chance to modify the key,
+   *  prop, value. These changeHooks can also be used to fire side effects
+   *  though maybe that is not a good pattern.
+   *  If a hook function returns an array, those become the new k p v for the
+   *  next hook.
    */
   _handleChange(key, propOrValue, propValue) {
-    const hooks = [...this.hooks.values()];
-    const results = hooks.map(hook => hook(key, propOrValue, propValue));
-    let handledCount = 0;
-    results.forEach(res => {
-      if (!Array.isArray(res)) return;
-      handledCount++;
-      const [k, n, v] = res;
-      this._smartUpdate(k, n, v);
+    const hooks = [...this.changeHooks.values()];
+    let k = key;
+    let p = propOrValue;
+    let v = propValue;
+    // process kpv through each hook, which will return array [kpv]
+    hooks.forEach(hook => {
+      const result = hook(key, propOrValue, propValue);
+      if (Array.isArray(result)) {
+        k = result[0];
+        p = result[1];
+        v = result[2];
+      }
     });
-    if (handledCount) return;
-    // if there are no state changes intercepted, the normal Update/Publish
-    // is run.
-    this._smartUpdate(key, propOrValue, propValue);
+    this._smartUpdate(k, p, v);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** we can either handle 'key, { [prop]:value }' or 'key, prop, value' so have to
@@ -273,6 +296,8 @@ class StateGroupMgr {
       this.updateKeyProp(key, a, b);
       this._publishState({ [key]: { [a]: b } });
     }
+    // after update is complete, issue registered callbacks
+    Object.keys(this.effectHooks).forEach(fx => fx(key, a, b));
   }
   /** Invoke React-style 'setState()' method with change object. If no object
    *  is provided, all state groups are sent in a new object. Otherwise,
@@ -311,7 +336,7 @@ class StateGroupMgr {
       throw Error(
         'arg1 must be a function to receive key,name,value, returning opt array'
       );
-    this.hooks.add(filterFunc);
+    this.changeHooks.add(filterFunc);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Remove the hookFunction from the hook interceptors, if it's part of the set
@@ -321,7 +346,32 @@ class StateGroupMgr {
       throw Error(
         'arg1 must be function  method to receive key,name,value and return true=handled '
       );
-    this.hooks.delete(filterFunc);
+    if (!this.changeHooks.delete(filterFunc))
+      console.warn(...PR('func was not in changeHooks set'));
+  }
+
+  /// GSTATE UPDATE SIDE EFFECTS ////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Side effect hooks are run after all the changeHooks are processed for a
+   *  given state update initiated by updateKey() or updateKeyProp()
+   */
+  addEffectHook(effectFunc) {
+    if (typeof effectFunc !== 'function')
+      throw Error(
+        'arg1 must be function method to receive key,name,value side effect'
+      );
+    this.effectHooks.add(effectFunc);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** Remove Side effect hook
+   */
+  deleteEffectHook(effectFunc) {
+    if (typeof effectFunc !== 'function')
+      throw Error(
+        'arg1 must be a function previously-registered with addEffectHook()'
+      );
+    if (!this.effectHooks.delete(effectFunc))
+      console.warn(...PR('func was not in effectHook set'));
   }
 } // end class StatePacket
 
@@ -364,6 +414,10 @@ StateGroupMgr.ReadFlatStateGroups = (...smgrNames) => {
   return flatState;
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** selector variations are:
+ *  selector = group, key, propOrValue, value
+ *  selector = group.key, propOrValue, value
+ */
 StateGroupMgr.WriteState = (selector, ...args) => {
   const arr = selector.split('.');
   if (arr.length < 1 || arr.length > 2) throw Error(`bad selector '${selector}'`);

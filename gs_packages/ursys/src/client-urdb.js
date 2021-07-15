@@ -21,10 +21,11 @@ const DBG = true;
  *  @param {object} variables - lookup obj for $propname in query string
  *  @returns {Promise} - Promise resolving to { data }
  */
-export async function Query(query, variables) {
+export async function Request(query, variables) {
   const controller = new AbortController();
   const up = { query, variables };
   const body = JSON.stringify(up);
+  console.log(...PR(body));
   // POST { "query": "...", "variables": { "myVariable": "someValue", ... } }
   const response = await fetch(CFG_URDB_GQL, {
     method: 'POST',
@@ -45,4 +46,20 @@ export async function Query(query, variables) {
     console.error(...PR(err));
   }
   return down;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function Query(query, vars, cmp = 'query') {
+  if (typeof query !== 'string')
+    console.warn(...PR('query must be string', query));
+  else if (typeof variables !== 'object')
+    console.warn(...PR('vars  must be obj literal'));
+  return Request(query, vars);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function Mutate(query, vars, cmp = 'mutation') {
+  if (typeof query !== 'string')
+    console.warn(...PR('mutate must be string', query));
+  else if (typeof variables !== 'object')
+    console.warn(...PR('vars must be obj literal'));
+  return Request(query, vars);
 }
