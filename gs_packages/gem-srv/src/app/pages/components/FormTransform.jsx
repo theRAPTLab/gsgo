@@ -5,7 +5,7 @@ import clsx from 'clsx';
 import { ACLocales } from '../../../modules/appcore';
 
 const PR = UR.PrefixUtil('FormTransform', 'TagRed');
-const DBG = false;
+const DBG = true;
 export default class FormTransform extends React.Component {
   constructor() {
     super();
@@ -38,18 +38,29 @@ export default class FormTransform extends React.Component {
 
   urStateUpdated(stateObj, cb) {
     const { localeNames, localeId, transform } = stateObj;
+
+    // (1) localeName has changed
     if (localeNames) {
       this.setState({ localeNames });
     }
+
+    // (2) localeId has changed
     if (localeId !== undefined) {
-      const locale = ACLocales.GetLocale(localeId);
-      console.log('...updating locale', localeId, 'from', locale);
-      if (locale) {
-        this.setState({ localeId, transform: locale.ptrack });
-      }
+      console.log(...PR('localeId changed to', localeId));
+      this.setState({ localeId });
     }
+    // (3) transform key has changed
     if (transform) {
-      if (DBG) console.log(...PR('update transform'), transform);
+      if (DBG)
+        console.log(
+          ...PR(
+            'update transform [',
+            ...Object.entries(transform).map(
+              ([key, value]) => `${key}:${value} `
+            ),
+            ']'
+          )
+        );
       // because transform is an object and setState only does shallow
       // merges, we have to reconstruct the entire transform otherise
       // uncontrolled component error occurs

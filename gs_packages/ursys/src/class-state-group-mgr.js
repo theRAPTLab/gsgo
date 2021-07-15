@@ -100,14 +100,24 @@ class StateGroupMgr {
     this.name = moduleName;
     SMGRS.set(moduleName, this);
     this.validKeys = new Set();
+
     // bind methods that will be called by an initial async event (e.g. ui handlers)
     this.updateKey = this.updateKey.bind(this);
     this.stateObj = this.stateObj.bind(this);
-    this.getKey = this.getKey.bind(this);
-    // these might not need to be bound because they are invoked by one of the
-    // above bound methods
+    this.flatStateValue = this.flatStateValue.bind(this);
+
+    // these need to be bound when dereferenced from an appcore module running
+    // during module init
+    this.addChangeHook = this.addChangeHook.bind(this);
+    this.addEffectHook = this.addEffectHook.bind(this);
+    this.deleteChangeHook = this.deleteChangeHook.bind(this);
+    this.deleteEffectHook = this.deleteEffectHook.bind(this);
+
+    // these are internal state for appcore use that might be invoked async
+    this._getKey = this._getKey.bind(this);
     this._smartUpdate = this._smartUpdate.bind(this);
     this._handleChange = this._handleChange.bind(this);
+    this._publishState = this._publishState.bind(this);
   }
 
   /** Called once during app bootstrap. If you have any subscribers that need to
@@ -147,8 +157,7 @@ class StateGroupMgr {
   /// MAIN GSTATE ACCESS METHODS ///////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** main method to update a key.
-   *  arg can be stateObj to update multiple key/values
-   *  arg can be strKey, plus value
+   *  this does NOT fire publish or change handlers
    */
   updateKey(objOrKey, value) {
     let retObj = {};
@@ -177,8 +186,10 @@ class StateGroupMgr {
     GSTATE[objOrKey] = u_DerefValue(value);
     return { [objOrKey]: GSTATE[objOrKey] };
   }
-
-  /** strict method to update a prop inside a key item */
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** strict method to update a prop inside a key item
+   *  this does NOT fire publish or change handlers
+   */
   updateKeyProp(key, prop, value) {
     if (typeof key !== 'string') throw Error('arg1 must be string');
     if (typeof prop !== 'string') throw Error('arg2 must be string');
@@ -199,14 +210,14 @@ class StateGroupMgr {
     const update = { [key]: { [prop]: value } };
     return update;
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** return a { [group]:{ [key]: value }} object consistently */
   newStateObj(a, b, c) {
     const group = this.name;
     if (c === undefined) return { [group]: { [a]: b } };
     return { [group]: { [a]: { [b]: c } } };
   }
-
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** returns an object literal containing the keys of this instance,
    *  but only if the keys are actually managed by this group.
    *  Returns { [group] : { [key] : valueObj } }
@@ -217,18 +228,35 @@ class StateGroupMgr {
     const returnState = {};
     keys.forEach(key => {
       if (!this.hasKey(key)) {
-        console.warn(...PR(`stateObj: prop '${key}' not managed by this smgr`));
+        console.warn(...PR(`stateObj: key '${key}' not managed by this smgr`));
       } else Object.assign(returnState, { [key]: GSTATE[key] });
     });
     // console.log('stateObj returning', returnState);
     return { [this.name]: returnState };
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return the actual mutate-safe value
+   */
+  flatStateValue(key) {
+    if (!this.hasKey(key)) {
+      console.warn(...PR(`stateObj: key '${key}' not managed by this smgr`));
+      return undefined;
+    }
+    const val = GSTATE[key];
+    if (Array.isArray(val)) return val.slice();
+    if (typeof val === 'object') return { ...val };
+    return val;
+  }
 
-  /** return value of a given key */
-  getKey(key) {
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** return value of a given key
+   *  unlike stateObj(), this returns the actual reference object for direct
+   *  mutation
+   */
+  _getKey(key) {
     // if no args, return all the groups associate with this state
     if (typeof key !== 'string') {
-      console.warn(...PR('getKey: bad arg', key));
+      console.warn(...PR('_getKey: bad arg', key));
       return undefined;
     }
     return GSTATE[key]; // remember, GSTATE is flat!
@@ -275,7 +303,7 @@ class StateGroupMgr {
     let v = propValue;
     // process kpv through each hook, which will return array [kpv]
     hooks.forEach(hook => {
-      const result = hook(key, propOrValue, propValue);
+      const result = hook(k, p, v);
       if (Array.isArray(result)) {
         k = result[0];
         p = result[1];
@@ -284,6 +312,7 @@ class StateGroupMgr {
     });
     this._smartUpdate(k, p, v);
   }
+  /// UPDATE GSTATE ///////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** we can either handle 'key, { [prop]:value }' or 'key, prop, value' so have to
    *  detect what we're getting
@@ -297,8 +326,11 @@ class StateGroupMgr {
       this._publishState({ [key]: { [a]: b } });
     }
     // after update is complete, issue registered callbacks
-    Object.keys(this.effectHooks).forEach(fx => fx(key, a, b));
+    const effects = [...this.effectHooks.values()];
+    effects.forEach(fx => fx(key, a, b));
   }
+  /// PUBLISH GSTATE //////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** Invoke React-style 'setState()' method with change object. If no object
    *  is provided, all state groups are sent in a new object. Otherwise,
    *  the stateObj is passed as is. It should
@@ -465,6 +497,18 @@ StateGroupMgr.DeleteStateChangeHook = (smgrName, filterFunc) => {
     return;
   }
   smgr.deleteChangeHook(filterFunc);
+};
+
+/// DEBUG HACK ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+window.state = group => {
+  if (typeof group !== 'string') return GSTATE;
+  const state = GSTATE[group];
+  if (state) return state;
+  const validGroups = Object.keys(GSTATE)
+    .map(n => n)
+    .join(' ');
+  return `error: ${group} doesn't exist in [${validGroups}]`;
 };
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////

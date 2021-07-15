@@ -15,9 +15,12 @@ const { CFG_URDB_GQL } = require('./ur-common');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TERM = require('./util/prompts').makeTerminalOut('  URDB', 'TagRed');
+
 let DB;
 let SCHEMA;
-const TERM = require('./util/prompts').makeTerminalOut('  URDB', 'TagRed');
+const DBG = true;
+const AS_INTERVAL = 5000;
 
 /// HELPER METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -41,7 +44,7 @@ function m_PrepareDatabase(importPath, opt = { doReset: false }) {
   // actually import data if doReset is set or there are no collections
   if (doReset || DB.listCollections().length === 0) {
     TERM('doReset:', doReset);
-    TERM('existing collections:', DB.listCollections.length);
+    if (doReset) TERM('existing collections:', DB.listCollections.length);
     TERM('Initializing database from default data');
     // erase collections
     const cnames = DB.listCollections().map(o => o.name);
@@ -94,6 +97,11 @@ function UseLokiGQL_Middleware(app, options) {
     fse.ensureDirSync(path.dirname(dbFile));
     DB = new LOKI(dbFile, {
       autosave: true,
+      autosaveInterval: 5000,
+      autosaveCallback: () => {
+        const int = (AS_INTERVAL / 1000).toFixed(1);
+        TERM(`Autosaved database (interval is ${int}s)`);
+      },
       autoload: true,
       autoloadCallback: () => {
         m_PrepareDatabase(dbImportFile, { doReset });

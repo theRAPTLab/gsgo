@@ -8,7 +8,7 @@
 const UR = require('@gemstep/ursys/server');
 
 const TERM = UR.TermOut('RESOLVER', 'TagRed');
-const DBG = true;
+const DBG = false;
 
 module.exports = {
   locale: (args, context) => {
@@ -42,7 +42,7 @@ module.exports = {
     if (DBG) TERM(`update localeId:${localeId}, input:${JSON.stringify(input)}`);
     const coll = DB.getCollection('locales');
     const locale = coll.findOne({ id: localeId });
-    Object.assign(locale.ptrack, input);
+    locale.ptrack = { ...locale.ptrack, ...input };
     coll.update(locale);
     return locale.ptrack;
   }

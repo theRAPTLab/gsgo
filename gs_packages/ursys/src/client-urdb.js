@@ -25,7 +25,6 @@ export async function Request(query, variables) {
   const controller = new AbortController();
   const up = { query, variables };
   const body = JSON.stringify(up);
-  console.log(...PR(body));
   // POST { "query": "...", "variables": { "myVariable": "someValue", ... } }
   const response = await fetch(CFG_URDB_GQL, {
     method: 'POST',
@@ -37,7 +36,7 @@ export async function Request(query, variables) {
     signal: controller.signal // not currently used to cancel the fetch
   });
   const down = await response.json();
-  if (!response.ok && DBG) {
+  if (!response.ok) {
     let err = 'GraphQL Error!!!';
     down.errors.forEach((e, i) => {
       const { line, column } = e.locations[0];
@@ -48,18 +47,18 @@ export async function Request(query, variables) {
   return down;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function Query(query, vars, cmp = 'query') {
+export function Query(query, vars = {}, cmp = 'query') {
   if (typeof query !== 'string')
     console.warn(...PR('query must be string', query));
-  else if (typeof variables !== 'object')
+  else if (typeof vars !== 'object')
     console.warn(...PR('vars  must be obj literal'));
   return Request(query, vars);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function Mutate(query, vars, cmp = 'mutation') {
-  if (typeof query !== 'string')
-    console.warn(...PR('mutate must be string', query));
-  else if (typeof variables !== 'object')
-    console.warn(...PR('vars must be obj literal'));
-  return Request(query, vars);
+export function Mutate(mutation, vars = {}, cmp = 'mutation') {
+  if (typeof mutation !== 'string')
+    console.warn(...PR('arg1 must be string not', mutation));
+  else if (typeof vars !== 'object')
+    console.warn(...PR('arg2 must be obj literal not', vars));
+  return Request(mutation, vars);
 }
