@@ -35,7 +35,7 @@ import {
 } from 'modules/datacore/dc-project';
 import * as INPUT from 'modules/input/api-input';
 import { ReportMemory } from 'modules/render/api-render';
-import { IsRunning } from 'modules/sim/api-sim';
+import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
 
 import { ReadProjectsList, ReadProject } from './project-db';
 
@@ -417,7 +417,7 @@ function ScriptUpdate(data) {
   //    the new script.
   //    If the sim IS running, we want to leave the instance
   //    running with the old blueprint code.
-  if (!IsRunning()) {
+  if (!IsRunning() && RoundsCompleted()) {
     GetInstancesType(blueprintName).forEach(a => DeleteAgent(a));
     // Also delete input agents
     InputsReset();
