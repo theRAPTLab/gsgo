@@ -5,12 +5,12 @@
       "name": "Default Locale",
       "ptrack": {
         "memo": "These are the default for FakeTrack",
-        "xRange": 1,
-        "yRange": 1,
+        "xRange": 0,
+        "yRange": 0,
         "xOff": 0,
         "yOff": 0,
-        "xScale": 1,
-        "yScale": 1,
+        "xScale": 0,
+        "yScale": 0,
         "zRot": 0
       },
       "stage": {
@@ -24,13 +24,13 @@
       "name": "vanderbilt",
       "ptrack": {
         "memo": "VU tracking room",
-        "xRange": 20,
-        "yRange": 10,
-        "xOff": -2,
-        "yOff": 2,
+        "xRange": 1,
+        "yRange": 1,
+        "xOff": 1,
+        "yOff": 1,
         "xScale": 1,
         "yScale": 1,
-        "zRot": 31.5
+        "zRot": 1
       },
       "stage": {
         "memo": "stage for vanderbilt"
@@ -46,13 +46,13 @@
       },
       "ptrack": {
         "memo": "Sri Tracking",
-        "xRange": 100,
-        "yRange": 100,
-        "xOff": 0,
-        "yOff": 0,
-        "xScale": 1,
-        "yScale": 1,
-        "zRot": 0
+        "xRange": 2,
+        "yRange": 2,
+        "xOff": 2,
+        "yOff": 2,
+        "xScale": 2,
+        "yScale": 2,
+        "zRot": 2
       }
     }
   ]
