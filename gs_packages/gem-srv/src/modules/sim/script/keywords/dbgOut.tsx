@@ -57,8 +57,8 @@ export class dbgOut extends Keyword {
 
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw] = unit;
-    return super.jsx(index, unit, <>unknown keyword: {`'${kw}'`}</>);
+    const [kw, ...args] = unit;
+    return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
   }
 } // end of UseFeature
 
