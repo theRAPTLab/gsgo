@@ -23,6 +23,7 @@ UR.HandleMessage('AGENT_PROGRAM', () => {
   console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
   COUNTER = MAX_OUT;
 });
+const PR = UR.PrefixUtil('DBGOUT', 'TagGreen');
 
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,8 +41,7 @@ export class dbgOut extends Keyword {
     progout.push((agent, state) => {
       if (COUNTER-- > 0) {
         console.log(
-          'DBGOUT:',
-          ...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx })
+          ...PR(...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
         );
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
