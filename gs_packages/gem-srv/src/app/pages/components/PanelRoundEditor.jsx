@@ -109,11 +109,11 @@ class PanelRoundEditor extends React.Component {
               onChange={this.onFormInputUpdate}
             />
           </div>
-          <div className={classes.inspectorLabel}>outro:</div>
+          <div className={classes.inspectorLabel}>outtro:</div>
           <div className={classes.inspectorData}>
             <input
-              id="outro"
-              defaultValue={round.outro}
+              id="outtro"
+              defaultValue={round.outtro}
               type="string"
               onChange={this.onFormInputUpdate}
             />
