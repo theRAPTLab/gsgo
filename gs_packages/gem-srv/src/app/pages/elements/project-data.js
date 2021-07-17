@@ -441,6 +441,15 @@ function ScriptUpdate(data) {
 
   RaiseModelUpdate();
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function RoundUpdate(data) {
+  const model = GetProject();
+  const round = data.round;
+  model.rounds.roundDefs = model.rounds.roundDefs.map(r => {
+    return r.id === round.id ? round : r;
+  });
+  RaiseModelUpdate();
+}
 
 /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -590,6 +599,7 @@ UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
+UR.HandleMessage('NET:ROUND_UPDATE', RoundUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
