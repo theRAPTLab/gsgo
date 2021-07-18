@@ -46,13 +46,29 @@ export class ifExpr extends Keyword {
     const [kw, testName, consequent, alternate] = unit;
     const cc = consequent ? 'TRUE:[consequent]' : '';
     const aa = alternate ? 'FALSE:[alternate]' : '';
+
+    const expr =
+      testName && testName.expr && testName.expr.raw
+        ? testName.expr.raw
+        : 'testExpression';
+
     return super.jsx(
       index,
       unit,
       <>
-        ifExpr {testName} {cc} {aa}
+        ifExpr ( {expr} ) {cc} {aa}
       </>
     );
+
+    // ORIG CODE
+    // Results in Uncaught Error: Objects are not valid as a React child (found: object with keys {expr}). If you meant to render a collection of children, use an array instead.
+    // return super.jsx(
+    //   index,
+    //   unit,
+    //   <>
+    //     ifExpr {testName} {cc} {aa}
+    //   </>
+    // );
   }
 } // end of DefProp
 

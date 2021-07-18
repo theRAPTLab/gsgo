@@ -47,7 +47,7 @@ let DEVICE_UDID;
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('edit', '15% auto 150px'); // columns
+PANEL_CONFIG.set('edit', '25% auto 0px'); // columns
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
@@ -237,7 +237,10 @@ class MissionControl extends React.Component {
   }
   HandleSimDataUpdate(data) {
     if (DBG) console.log('HandleSimDataUpdate', data);
-    if (SIMCTRL.IsRunning()) {
+    if (
+      SIMCTRL.IsRunning() ||
+      (!SIMCTRL.IsRunning() && !SIMCTRL.RoundsCompleted())
+    ) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
     }
@@ -260,7 +263,7 @@ class MissionControl extends React.Component {
   }
   /**
    * User has submitted a new script, just update message
-   * PanelSimulation handles instance creation
+   * project-data handles script editing and instance creation
    * @param {object} data { script }
    */
   DoScriptUpdate(data) {

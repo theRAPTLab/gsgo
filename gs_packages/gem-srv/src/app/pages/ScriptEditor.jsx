@@ -42,9 +42,9 @@ const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
 const PANEL_CONFIG = new Map();
-PANEL_CONFIG.set('select', '50% auto 0px'); // columns
-PANEL_CONFIG.set('script', '50% auto 0px'); // columns
-PANEL_CONFIG.set('sim', '50% auto 0px'); // columns
+PANEL_CONFIG.set('select', '60% auto 0px'); // columns
+PANEL_CONFIG.set('script', '60% auto 0px'); // columns
+PANEL_CONFIG.set('sim', '60% auto 0px'); // columns
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -201,7 +201,7 @@ class ScriptEditor extends React.Component {
    *                       where 'instances' are instanceSpecs: {name, blueprint, init}
    */
   OnInstanceUpdate(data) {
-    // if (DBG) console.log(...PR('OnInstanceUpdate'));
+    if (DBG) console.log(...PR('OnInstanceUpdate'));
     const { scriptId, monitoredInstances } = this.state;
     // Only show instances for the current blueprint
     const instances = data.instances.filter(i => {
@@ -226,7 +226,7 @@ class ScriptEditor extends React.Component {
    *                 wHere `agents` are gagents
    */
   OnInspectorUpdate(data) {
-    // if (DBG) console.log(...PR('OnInspectorUpdate'));
+    if (DBG) console.log(...PR('OnInspectorUpdate'));
     // Only show instances for the current blueprint
     const { scriptId } = this.state;
     if (!data || data.agents === undefined) {
@@ -310,7 +310,7 @@ class ScriptEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    // if (DBG) console.log(...PR('render'));
+    if (DBG) console.log(...PR('render'));
     const {
       noMain,
       panelConfiguration,
