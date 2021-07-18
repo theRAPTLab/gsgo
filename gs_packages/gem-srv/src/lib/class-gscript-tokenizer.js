@@ -163,7 +163,13 @@ class ScriptTokenizer {
     while (this.linesIndex < this.linesCount) {
       this.line = this.lines[this.linesIndex++].trim();
       this.length = this.line.length;
-      if (this.length > 0) return;
+
+      // ORIG
+      // if (this.length > 0) return;
+
+      // NEW
+      // Allow blank lines!
+      return;
     }
     this.line = '';
     this.length = 0;
@@ -184,8 +190,19 @@ class ScriptTokenizer {
 
     while (this.linesIndex < this.linesCount) {
       const nodes = this.gobbleLine();
+
+      // ORIG
       // make sure we don't push empty nodes
-      if (nodes.length > 0) units.push(nodes);
+      // if (nodes.length > 0) units.push(nodes);
+
+      // HACK
+      // Insert a comment for blank lines
+      if (nodes.length > 0) {
+        units.push(nodes);
+      } else {
+        // blank line
+        units.push([{ comment: 'blank' }]);
+      }
     } // end while lines<lines.length
 
     // return a Script array of ScriptUnit arrays
