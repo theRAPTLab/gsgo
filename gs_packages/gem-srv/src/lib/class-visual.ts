@@ -478,7 +478,7 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   // General Debugging property to test sending data.
-  setDebug(data: object) {
+  setDebug(data: any) {
     // hacked to draw vision cone
     this.drawVisionCone(data);
   }

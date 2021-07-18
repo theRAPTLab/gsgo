@@ -9,6 +9,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NETWORK = require('./client-urnet');
 const DEVICES = require('./client-netdevices');
+const DB = require('./client-urdb');
 const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
@@ -17,6 +18,7 @@ const COMMON = require('./ur-common');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
+const StateGroupMgr = require('./class-state-group-mgr');
 //
 const {
   IsBrowser,
@@ -156,6 +158,9 @@ const UR = {
   IsElectron,
   IsElectronRenderer,
   IsElectronMain,
+  // DATABASE
+  Query: DB.Query,
+  Mutate: DB.Mutate,
   // SYSTEM STARTUP
   SystemStart,
   SystemStop,
@@ -168,6 +173,7 @@ const UR = {
   ConnectionString: DATACORE.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
   GetUAddressNumber: DATACORE.GetUAddressNumber,
+  GetDatabaseEndpoint: DATACORE.URDB_GraphQL,
   // FORWARDED SYSTEM CONTROL API
   SystemNetBoot: EXEC.SystemNetBoot,
   SystemAppConfig: EXEC.SystemAppConfig,
@@ -183,14 +189,21 @@ const UR = {
   SubscribeDeviceSpec: DEVICES.SubscribeDeviceSpec,
   SendControlFrame: DEVICES.SendControlFrame,
   LinkSubsToDevices: DEVICES.LinkSubsToDevices,
-  // FORWARDED PROMPT UTILITY
+  // FORWARDED CONSOLE UTILITY
   PrefixUtil: PROMPTS.makeStyleFormatter,
+  DPR: PROMPTS.dbgPrint,
   ColorTagUtil: PROMPTS.colorTagString,
   SetPromptColor: PROMPTS.setPromptColor,
   HTMLConsoleUtil: PROMPTS.makeHTMLConsole,
   PrintTagColors: PROMPTS.printTagColors,
+  // FORWARDED APPSTATE (TEMP)
+  // ...APPSTATE,
+  ReadStateGroups: StateGroupMgr.ReadStateGroups,
+  ReadFlatStateGroups: StateGroupMgr.ReadFlatStateGroups,
+  WriteState: StateGroupMgr.WriteState,
+  SubscribeState: StateGroupMgr.SubscribeState,
   // FORWARDED CLASSES
-  class: { PhaseMachine },
+  class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES
   addConsoleTools: (ur = UR) => {
     DBGTEST.addConsoleTools(ur);
@@ -199,4 +212,9 @@ const UR = {
     DBGTEST.addConsoleToolHandlers(ur);
   }
 };
-module.exports = UR;
+if (typeof window === 'undefined')
+  throw Error(`
+    @gemstep/client: Unexpected UR-client access from non-browser environment.
+    Are you using NextJS SSR? URSYS is currently incompatible with SSR.
+  `);
+else module.exports = UR;

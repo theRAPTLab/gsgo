@@ -1,13 +1,11 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Global instances are maintained here is a pure data module that can be included anywhere
-  to access global data.
+  Global instances are maintained here is a pure data module that can be
+  included anywhere to access global data.
 
-  IMPORTANT:
-  Do not import other modules into here unless you are absolutely
-  sure it will not create a circular dependency!
-  This module is intended to be "pure" so any module can import
-  it and access its
+  IMPORTANT: Do not import other modules into here unless you are absolutely
+  sure it will not create a circular dependency! This module is intended to be
+  "pure" so any module can import it and access its
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

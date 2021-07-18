@@ -121,8 +121,26 @@ export interface IMessage {
  *  either compiled output (a TSMCProgram stored in a TSMCBundle) or to
  *  renderable JSX for a UI.
  */
-export type TScriptUnit = [...any[]];
-export type TScript = TScriptUnit[]; // not generally used\
+export interface IArgToken {
+  // special types
+  expr?: string; // gobbleExpression()
+  program?: string; // gobbleBlock()
+  block?: string[]; // gobbleBlock(), gobbleMultiBlock()
+  objref?: string[]; // gobbleParts()
+}
+export interface IToken extends IArgToken {
+  token?: string; // gobbleParts() - why does this exist?
+  identifier?: string; // gobbleIdentifier()
+  string?: string; // gobbleStringLiteral()
+  value?: number; // gobbleNumericLiteral()
+  // meta
+  directive?: string; // gobbleDirective()
+  comment?: string; // gobbleComment()
+}
+export type TScriptUnit = [...IToken[]]; // variable length array of token objs
+export type TArg = number | string | IArgToken;
+export type TArguments = [...TArg[]];
+export type TScript = TScriptUnit[]; // We use TScriptUnit[] in cod
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
