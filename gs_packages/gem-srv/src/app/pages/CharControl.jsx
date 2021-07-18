@@ -32,7 +32,7 @@ import DialogConfirm from './components/DialogConfirm';
 const PR = UR.PrefixUtil('CHARCTRL' /*'TagInput'*/);
 const DBG = false;
 const MATRIX_INPUT_WIDTH = 50;
-const SENDING_FPS = 5;
+const SENDING_FPS = 25; // Match pozyx rate
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

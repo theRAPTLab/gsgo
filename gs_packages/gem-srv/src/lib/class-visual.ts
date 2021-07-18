@@ -357,9 +357,14 @@ class Visual implements IVisual, IPoolable, IActable {
     this.sprite.angle += deltaA;
   }
 
+  setVisible(visible: boolean) {
+    this.container.visible = visible;
+  }
+
   setAlpha(o: number = 1) {
     this.sprite.alpha = o;
   }
+
   setAngle(angle: number) {
     this.sprite.angle = angle;
   }

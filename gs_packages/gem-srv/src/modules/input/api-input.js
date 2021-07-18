@@ -90,6 +90,6 @@ UR.HookPhase('SIM/STAGED', () => {
   StartTrackerVisuals();
 });
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('SIM/INPUTS', () => {
+UR.HookPhase('SIM/INPUTS_READ', () => {
   // console.log('sim/input');
 });

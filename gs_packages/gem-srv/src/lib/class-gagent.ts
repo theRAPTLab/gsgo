@@ -86,11 +86,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.scaleY.setMax(10);
     this.prop.scaleY.setMin(-10);
     this.prop.orientation = new GVarNumber();
+    this.prop.visible = new GVarBoolean(true);
     this.prop.alpha = new GVarNumber();
     this.prop.alpha.setMax(1);
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
-    this.prop.isInhabitingTarget = new GVarBoolean(false); // is available to pick up agent
+    this.prop.isInhabitingTarget = new GVarBoolean(false); // is not available to pick up agent
     this.prop.statusText = new GVarString();
     this.prop.statusValue = new GVarNumber();
     this.prop.statusValue.setMax(1);
@@ -156,6 +157,13 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   get orientation() {
     return this.prop.orientation.value;
+  }
+  set visible(bool: boolean) {
+    console.error('set visible ', bool);
+    this.prop.visible.setTo(bool);
+  }
+  get visible() {
+    return this.prop.visible.value;
   }
   get alpha() {
     return this.prop.alpha.value;

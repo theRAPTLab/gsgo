@@ -8,7 +8,7 @@
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
-import { IAgent } from 'lib/t-script';
+import { IAgent, TSMCProgram } from 'lib/t-script';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
 import {
   CopyAgentProps,
@@ -69,7 +69,12 @@ class PopulationPack extends GFeature {
     this.featAddMethod('createAgent', this.createAgent);
     this.featAddMethod('spawnChild', this.spawnChild);
     this.featAddMethod('removeAgent', this.removeAgent);
+    // Global Population Management
+    this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
+    this.featAddMethod('hideInertAgents', this.hideInertAgents);
+    this.featAddMethod('agentsReproduce', this.agentsReproduce);
     // Statistics
+    this.featAddMethod('getActiveAgentsCount', this.getActiveAgentsCount);
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
@@ -142,9 +147,66 @@ class PopulationPack extends GFeature {
   removeAgent(agent: IAgent) {
     AGENTS_TO_REMOVE.push(agent.id);
   }
+
+  /// GLOBAL METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /**
+   * Release cursors for ALL inert agents globally
+   */
+  releaseInertAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.isInert && a.hasFeature('Cursor'))
+        a.callFeatMethod('Cursor', 'releaseCursor');
+    });
+  }
+  /**
+   * Release cursors for ALL inert agents globally
+   */
+  hideInertAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.isInert) {
+        console.error('hiding', a.id);
+        a.visible = false;
+      }
+    });
+  }
+  /**
+   * For all agents of type bpname, call SpawnChild if not inert
+   */
+  agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    const agents = GetAgentsByType(bpname);
+    agents.forEach(a => {
+      if (!a.isInert) a.callFeatMethod('Population', 'spawnChild', spawnScript);
+    });
+  }
+  /**
+   * For all agents of type bpname, call program if not inert
+   */
+  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+    const agents = GetAgentsByType(bpname);
+    agents.forEach(a => {
+      if (!a.isInert) a.exec(program, { agent: a });
+    });
+  }
+
+  /// STATISTICS METHODS /////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Population setRadius value
    */
+
+  getActiveAgentsCount(agent: IAgent, blueprintName: string) {
+    const agents = GetAgentsByType(blueprintName);
+    let count = 0;
+    agents.forEach(a => {
+      if (!a.isInert) count++;
+    });
+    return count;
+  }
+
   countAgents(agent: IAgent, blueprintName: string) {
     const agents = GetAgentsByType(blueprintName);
     agent.getFeatProp(this.name, 'count').setTo(agents.length);

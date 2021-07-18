@@ -94,6 +94,7 @@ function Init(element) {
       vobj.setZIndex(dobj.zIndex);
       vobj.setPosition(dobj.x, dobj.y);
       if (!dobj.skin) throw Error('missing skin property');
+      vobj.setVisible(dobj.visible);
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);
@@ -158,6 +159,7 @@ function Init(element) {
       }
 
       // inefficient texture update
+      vobj.setVisible(dobj.visible);
       vobj.setAlpha(dobj.alpha);
       vobj.setTexture(dobj.skin, dobj.frame);
       vobj.setScale(dobj.scale, dobj.scaleY);

@@ -83,7 +83,8 @@ class MissionControl extends React.Component {
       inspectorInstances: [],
       runIsMinimized: true,
       scriptsNeedUpdate: false,
-      openRedirectDialog: false
+      openRedirectDialog: false,
+      dialogMessage: undefined
     };
 
     // Initialization
@@ -103,6 +104,7 @@ class MissionControl extends React.Component {
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
+    this.DoShowMessage = this.DoShowMessage.bind(this);
     UR.HandleMessage('LOAD_MODEL', this.LoadModel); // re from project-data
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
@@ -110,6 +112,7 @@ class MissionControl extends React.Component {
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
+    UR.HandleMessage('SHOW_MESSAGE', this.DoShowMessage);
 
     // Instance Interaction Handlers
     this.HandleDragEnd = this.HandleDragEnd.bind(this);
@@ -160,6 +163,7 @@ class MissionControl extends React.Component {
     UR.UnhandleMessage('SIM_INSTANCE_CLICK', this.HandleSimInstanceClick);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleSimInstanceHoverOut);
+    UR.UnhandleMessage('SHOW_MESSAGE', this.DoShowMessage);
   }
 
   GetUDID() {
@@ -312,6 +316,15 @@ class MissionControl extends React.Component {
     }));
   }
 
+  /// Displays GEM-SCRIPT scripted message on dialog
+  DoShowMessage(data) {
+    this.setState(state => {
+      const messages = state.dialogMessage || [];
+      messages.push(data.message);
+      return { dialogMessage: messages };
+    });
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// INSTANCE INTERACTION HANDLERS
   ///
@@ -405,7 +418,8 @@ class MissionControl extends React.Component {
       inspectorInstances,
       runIsMinimized,
       scriptsNeedUpdate,
-      openRedirectDialog
+      openRedirectDialog,
+      dialogMessage
     } = this.state;
     const { classes } = this.props;
     const { width, height, bgcolor } = GetBoundary();
@@ -459,13 +473,28 @@ class MissionControl extends React.Component {
         />
       );
 
-    const DialogMainRedirect = (
+    const DialogMainRedirect = openRedirectDialog ? (
       <DialogConfirm
         open={openRedirectDialog}
         message={'A "Main" window is already open.  Redirecting...'}
         yesMessage=""
         noMessage=""
       />
+    ) : (
+      ''
+    );
+
+    // set zindex to show script message on top of system message
+    const DialogMessage = dialogMessage ? (
+      <DialogConfirm
+        open={dialogMessage !== undefined}
+        message={dialogMessage}
+        onClose={() => this.setState({ dialogMessage: undefined })}
+        yesMessage="OK"
+        noMessage=""
+      />
+    ) : (
+      ''
     );
 
     return (
@@ -550,6 +579,7 @@ class MissionControl extends React.Component {
         >
           <PanelMessage message={message} />
           {DialogMainRedirect}
+          {DialogMessage}
         </div>
       </div>
     );

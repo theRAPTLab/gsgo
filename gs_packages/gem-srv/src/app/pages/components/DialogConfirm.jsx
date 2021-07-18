@@ -12,15 +12,22 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 function DialogConfirm(props) {
   const {
     open,
+    title,
     message,
     yesMessage,
     noMessage = 'Cancel',
     onClose,
     classes
   } = props;
+
   return (
     <Dialog onClose={onClose} open={open}>
-      <DialogTitle>{message}</DialogTitle>
+      <DialogTitle>{title}</DialogTitle>
+      <DialogContent>
+        {Array.isArray(message)
+          ? message.map(m => <div key={m}>{m}</div>)
+          : message}
+      </DialogContent>
       <DialogActions>
         <Button type="button" onClick={() => onClose(false)}>
           {noMessage}

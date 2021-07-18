@@ -61,6 +61,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
     if (agent.orientation) dobj.rotation = agent.orientation;
+    dobj.visible = agent.visible;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText) dobj.text = agent.statusText;
     if (agent.statusValue) dobj.meter = agent.statusValue;
@@ -83,6 +84,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
     if (agent.orientation) dobj.rotation = agent.orientation;
+    dobj.visible = agent.visible;
     if (agent.alpha) dobj.alpha = agent.alpha;
     if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
     if (agent.statusValue) dobj.meter = agent.statusValue;

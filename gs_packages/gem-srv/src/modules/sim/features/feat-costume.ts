@@ -56,10 +56,25 @@ function m_Update() {
   agentIds.forEach(id => {
     const agent = m_getAgent(id);
     if (!agent) return;
-    const h = agent.prop.Costume.colorHue.value;
-    const s = agent.prop.Costume.colorSaturation.value;
-    const v = agent.prop.Costume.colorValue.value;
-    const color = HEXfromHSV(h, s, v);
+    let h;
+    let s;
+    let v;
+    let color;
+
+    // COLOR can be set two different ways: colorScale or HSV
+    // NOTE: color scale will override any hsv settings
+    if (agent.prop.Costume.colorScaleIndex.value !== undefined) {
+      // color scale?
+      color = agent.prop.Costume._colorScale.get(
+        agent.prop.Costume.colorScaleIndex.value
+      );
+    } else {
+      // hsv?
+      h = agent.prop.Costume.colorHue.value;
+      s = agent.prop.Costume.colorSaturation.value;
+      v = agent.prop.Costume.colorValue.value;
+      color = HEXfromHSV(h, s, v);
+    }
     if (!Number.isNaN(color)) {
       agent.prop.color.setTo(color);
     }
@@ -146,8 +161,13 @@ class CostumePack extends GFeature {
     prop.setMax(1);
     prop.setMin(0);
     this.featAddProp(agent, 'colorValue', prop);
+    prop = new GVarNumber();
+    this.featAddProp(agent, 'colorScaleIndex', prop);
 
     COSTUME_AGENTS.set(agent.id, agent.id);
+
+    // Private Variables
+    // agent.prop.Costume._colorScale
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
@@ -260,6 +280,32 @@ class CostumePack extends GFeature {
   // Removes the color overlay, reverting the sprite back to it's original colors
   resetColorize(agent: IAgent) {
     agent.prop.color.clear();
+  }
+  initHSVColorScale(
+    agent: IAgent,
+    hue: number,
+    sat: number,
+    val: number,
+    type: string,
+    steps: number
+  ) {
+    agent.prop.Costume._colorScale = new Map();
+    for (let i = 1; i <= steps; i++) {
+      let color;
+      if (type === 'hue') color = HEXfromHSV((i * 1) / steps, sat, val);
+      if (type === 'saturation') color = HEXfromHSV(hue, (i * 1) / steps, val);
+      if (type === 'value') color = HEXfromHSV(hue, sat, (i * 1) / steps);
+      if (color === undefined)
+        console.error('initHSVColorScale with bad "type".');
+      agent.prop.Costume._colorScale.set(i, color);
+    }
+    agent.prop.Costume.colorScaleIndex.setMax(steps);
+    agent.prop.Costume.colorScaleIndex.setMin(1);
+  }
+  getHSVColorScaleColor(agent: IAgent, index: number) {
+    if (agent.prop.Costume._colorScale)
+      return agent.prop.Costume._colorScale.get(index);
+    return 0; // black by default?
   }
   // Dimensions of currently selected sprite frame's texture
   getBounds(agent: IAgent): { w: number; h: number } {
