@@ -1,3 +1,21 @@
+/*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
+
+  This module provides our vector and matrix utilities. It was first mocked
+  using a number of functions under "ORIGINAL METHODS", which are currently
+  in-use.
+
+  New: imported gl-matrix to provide the full range of vector and matrix
+  operations; it is a broadly-used library.
+
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
+
+import * as GLM from 'gl-matrix';
+
+/// EXTENSIONS ////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// ORIGINAL METHODS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function Clamp(val, min, max) {
   return Math.min(max, Math.max(min, val));
 }

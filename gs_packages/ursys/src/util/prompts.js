@@ -18,7 +18,7 @@ else console.log('PROMPTS       DETECTED NODE');
 
 const DEFAULT_PADDING = IS_NODE
   ? 10 // nodejs
-  : 0; // not nodejs
+  : 8; // not nodejs
 const DEFAULT_COLOR = 'TagNull';
 
 const TERM_COLORS = {
@@ -100,7 +100,8 @@ TERM_COLORS.TagData = TERM_COLORS.TagGreen;
 TERM_COLORS.TagInput = TERM_COLORS.TagBlue;
 
 CSS_COLORS.TagSystem = CSS_COLORS.TagGray;
-CSS_COLORS.TagUR = `color:#fff;background-color:CornflowerBlue;${CSS_COMMON}`;
+// CSS_COLORS.TagUR = `color:#fff;background-color:CornflowerBlue;${CSS_COMMON}`;
+CSS_COLORS.TagUR = `color:CornflowerBlue;border:1px solid CornflowerBlue;${CSS_COMMON}`;
 CSS_COLORS.TagUR2 = `color:#fff;background-color:Navy;${CSS_COMMON}`;
 CSS_COLORS.TagNetwork = CSS_COLORS.TagCyan;
 CSS_COLORS.TagApp = CSS_COLORS.TagPink;
@@ -148,12 +149,13 @@ const PROMPT_DICT = {
  */
 function padString(str, padding = DEFAULT_PADDING) {
   let len = str.length;
+  const nbsp = String.fromCharCode(0x00a0); // unicode non-break space
   if (IS_NODE) return `${str.padEnd(padding, ' ')}`;
   // must be non-node environment, so do dynamic string adjust
   if (padding === 0) return `${str}`;
   // if this far, then we're truncating
-  if (len >= padding) str = str.substr(0, padding - 1);
-  else str.padEnd(padding, ' ');
+  if (len >= padding) str = str.substr(0, padding);
+  else str = str.padEnd(padding, nbsp);
   return `${str}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -165,7 +167,10 @@ function m_SetPromptColors(match, color = DEFAULT_COLOR) {
   let colorTable = IS_NODE ? TERM_COLORS : CSS_COLORS;
   let validColor = false;
   validColor = colorTable[color] !== undefined;
-  if (!validColor) throw Error(`prompt color ${color} is not defined`);
+  if (!validColor) colorTable = IS_NODE ? CSS_COLORS : TERM_COLORS;
+  validColor = colorTable[color] !== undefined;
+  if (!validColor)
+    throw Error(`prompt color ${color} is not defined in either table`);
   // turn on color prompt
   PROMPT_DICT[match] = [true, color];
   return colorTable;
@@ -300,7 +305,8 @@ function m_HTMLTextPlot(str = '', lineBuffer, id, row = 0, col = 0) {
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a function that will prompt strings for you. The function will
- *  returns an array to destructure into console.log().
+ *  returns an array to destructure into console.log(). This is supported
+ *  in Chrome and Safari (somewhat), but not in Firefox as of last testing.
  *
  *  To create the function, provide a short PROMPT. This will be color coded
  *  according to the PROMPTS_DICT table, or gray otherwise. You can turn off the
@@ -320,10 +326,20 @@ function m_HTMLTextPlot(str = '', lineBuffer, id, row = 0, col = 0) {
 /** allow modification of the PROMPT_DICT
  */
 function makeStyleFormatter(prompt, tagColor) {
+  if (prompt.startsWith('UR') && tagColor === undefined) tagColor = 'TagUR';
   let outArray = m_MakeColorArray(prompt, tagColor);
   if (outArray.length === 0) return () => [];
   if (IS_MOBILE) outArray = [`${prompt}:`];
   return (str, ...args) => [...outArray, str, ...args];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** use like console.log(...debugFormatter('prompt'), 'la la la'); */
+function dbgPrint(pr, bg = 'MediumVioletRed') {
+  return [
+    `%c${pr}%c`,
+    `color:#fff;background-color:${bg};padding:3px 10px;border-radius:10px;`,
+    'color:auto;background-color:auto'
+  ];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function colorTagString(str, tagColor) {
@@ -348,7 +364,7 @@ function makeHTMLConsole(divId, row = 0, col = 0) {
   let buffer = [];
   if (typeof divId !== 'string') throw Error('bad id');
   if (!document.getElementById(divId)) {
-    console.log(...ERP(`id '${divId}' doesn't exist`));
+    console.warn(...ERP(`id '${divId}' doesn't exist`));
     return {
       print: () => {},
       plot: () => {},
@@ -408,6 +424,7 @@ module.exports = {
   CSS: CSS_COLORS,
   padString,
   makeStyleFormatter,
+  dbgPrint,
   makeTerminalOut,
   makeHTMLConsole,
   printTagColors,

@@ -17,11 +17,16 @@ const CookieP = require('cookie-parser');
 const Webpack = require('webpack');
 const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
-const { Express_NetInfoResponder, PrefixUtil } = require('@gemstep/ursys/server');
+const {
+  NetInfo_Middleware,
+  UseLokiGQL_Middleware,
+  PrefixUtil
+} = require('@gemstep/ursys/server');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const wpconf_packager = require('../config/wp.pack.webapp');
+const resolvers = require('../config/graphql/resolvers');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -154,7 +159,22 @@ function StartAppServer(opt = {}) {
   });
 
   // handle urnet
-  app.use(Express_NetInfoResponder);
+  app.use(NetInfo_Middleware);
+  // hook URDB endpoint
+  // UseURDB_Middleware(app, {
+  //   dbPath: 'runtime/db.loki',
+  //   importPath: 'config/init/db-test.json',
+  //   schemaPath: 'config/graphql/locale-schema.graphql',
+  //   root: db_resolver
+  // });
+
+  UseLokiGQL_Middleware(app, {
+    dbFile: 'runtime/db.loki',
+    dbImportFile: 'config/graphql/dbinit-loki.json',
+    doReset: false,
+    schemaFile: 'config/graphql/schema.graphql',
+    root: resolvers
+  });
 
   // for everything else...
   app.use('/', Express.static(DIR_OUT));

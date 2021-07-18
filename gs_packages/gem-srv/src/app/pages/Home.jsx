@@ -135,7 +135,7 @@ class Home extends React.Component {
               control systems testing.
             </li>
             <li>
-              <a href="/app/dev-tracker">FAKETRACK</a> - For PTrack protocol
+              <a href="/app/dev-faketrack">FAKETRACK</a> - For PTrack protocol
               testing. Non-devs should use Character Controller instead.
             </li>
             <li>

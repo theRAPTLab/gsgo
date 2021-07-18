@@ -1,0 +1,129 @@
+"""
+SRI'S GRAPHQL EXAMPLES
+
+You send one query at a time. Each of these examples would be sent in an independent
+query action e.g. UR.Query(queryString, variables).
+The returned data will match the shape of your query. The general idea is to explicitly
+specify which properties of a type to retrieve. If a prop is defined as a custom type
+(not one of the primitive String, Float, Int, ID, or [] types), you need to further specify
+the props to "drill into" the type
+
+Hopefully these examples will help
+"""
+
+"""
+This query is labeled 'getLocales', but this label has no use in data fetching.
+It IS used in GraphIQL (access via 'http://localhost/urnet/urdb') to run a selected
+query or mutation.
+
+"locales" is one of the defined Query methods defined in schema.graphql. It will
+return an array of { id, name } objects, as "locales" is defined in the schema.graphql
+file as returning an array of Locale types. This can be used to populate a dropdown
+menu!
+
+We also see a single line comment
+"""
+query getLocales {
+  locales {
+    id
+    name
+  }
+}
+
+"""
+'getLocale' takes a single variable, id.  It will return an object with id, stage, gemstep
+ptrack, pozyx and ursys fields, all which are defined in the 'Locale' type defined in the
+schema. We are only requesting some of the information. Each of the fields is defined
+as returning its on type (e.g. StageProps, StepProps, etc.)
+"""
+query getLocale {
+  locale(id: 1) {
+    id
+    stage {
+      memo
+    }
+    gemstep {
+      memo
+    }
+    ptrack {
+      memo
+    }
+    pozyx {
+      memo
+    }
+    ursys {
+      memo
+    }
+  }
+}
+
+"""
+'getLocale2' shows how using the same method 'locale' can be used to retrieve a different
+shaped object. 
+"""
+query getLocale2 {
+  locale(id: 2) {
+    id
+    ptrack {
+      xRange
+      yRange
+      xScale
+      yScale
+    }
+  }
+  locales {
+    id
+  }
+}
+
+"""
+Mutations send data. In this 'update' mutation, the API method 'updatePTrack' is
+being invoked; it's defined in schema.graphql.
+A list of key-value parameters is being sent: 'localeId' and 'input'
+
+NOTES:
+* after you submit the data, you can automatically get data returned. Here,
+  the 'memo' field is being returned. This is a property of the Locale type.
+"""
+mutation update {
+  updatePTrack(localeId: 1, input: { memo: "20 Nuggets" }) {
+    memo
+  }
+}
+
+"""
+This mutation 'updatePTrack' shows how you use the same method 'updatePTrack' to
+change DIFFERENT properties of the input. It is up to the code in resolvers.js to
+figure out how to merge that data into the specified record (in this case, locale with
+localeId 1)
+"""
+mutation update2 {
+  updatePTrack(localeId: 1, input: { xScale: 250, yScale: 250 }) {
+    xScale
+    yScale
+  }
+}
+
+
+"""
+This query makes use of GraphQL "fragments", which can specify a subset of
+fields you want to retrieve. You must sent the fragment declaration in the
+query itself, which is useful when requesting multiple queries at a time
+"""
+query getPtrackTransform($id: Int!) {
+  locale(id: $id) {
+    id
+    ptrack {
+      ...TransformParts
+    }
+  }
+}
+fragment TransformParts on PTrackProps {
+  xRange
+  yRange
+  xOff
+  yOff
+  xScale
+  yScale
+  zRot
+}

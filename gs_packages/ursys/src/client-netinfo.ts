@@ -17,6 +17,7 @@ const DATACORE = require('./client-datacore');
 interface NetProps {
   broker: MessageBroker;
   client?: { ip: string };
+  urdb?: NetDB;
 }
 interface MessageBroker {
   host: string;
@@ -28,14 +29,22 @@ interface ConnectionInfo {
   ip: string;
 }
 
+interface NetDB {
+  protocol: string; // http or https
+  host: string;
+  endpoint: string;
+}
+
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let NET_BROKER: MessageBroker;
 let CLIENT_INFO: ConnectionInfo;
+let URDB_ENDPOINT: NetDB;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** UTILITY: check options passed to SystemNetBoot */
 function m_CheckNetOptions(netOpt) {
-  const { broker, client, ...other } = netOpt;
+  const { broker, client, urdb, ...other } = netOpt;
   const unknown = Object.keys(other);
   if (unknown.length) {
     console.log(...PR(`warn - L1_OPTION unknown param: ${unknown.join(', ')}`));
@@ -50,9 +59,10 @@ function m_CheckNetOptions(netOpt) {
 /** props is coming from */
 function SaveNetInfo(netInfo: NetProps) {
   if (DBG) console.log(...PR('saving netInfo for broker'), netInfo);
-  const { broker, client } = netInfo;
+  const { broker, client, urdb } = netInfo;
   NET_BROKER = DATACORE.SaveBrokerInfo(broker); // make accessible
   CLIENT_INFO = DATACORE.SaveClientInfo(client);
+  URDB_ENDPOINT = DATACORE.SaveDBInfo(urdb);
   if (DBG)
     console.log(...PR('session broker', NET_BROKER, 'client info', CLIENT_INFO));
 }
@@ -72,7 +82,15 @@ function GetNetInfo() {
 function GetClientInfo() {
   return CLIENT_INFO;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDBInfo() {
+  return URDB_ENDPOINT;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetDBEndpoint() {
+  return URDB_ENDPOINT;
+}
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { FetchNetInfo, SaveNetInfo, GetNetInfo, GetClientInfo };
+export { FetchNetInfo, SaveNetInfo, GetNetInfo, GetClientInfo, GetDBInfo };

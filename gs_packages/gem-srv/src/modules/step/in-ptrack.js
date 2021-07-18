@@ -12,7 +12,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import SyncMap from 'lib/class-syncmap';
 import PTrackEndPoint from './lib/class-ptrack-endpoint';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
