@@ -102,9 +102,9 @@ function ProcessInputs(frameTime) {
   INPUTDEF_TO_AGENT.syncFromArray(inputDefs);
   INPUTDEF_TO_AGENT.mapObjects();
 }
-UR.HookPhase('SIM/INPUTS', ProcessInputs);
-
+UR.HookPhase('SIM/INPUTS_READ', ProcessInputs);
 /// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InputsInit(frameTime) {
   const BPNAMES = GetInputBPnames();

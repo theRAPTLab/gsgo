@@ -43,8 +43,11 @@ class SimControl {
     this.IsRunning = this.IsRunning.bind(this);
     // Let MissionControl handle NET:HACK_SIM_RESET, then call this.DoSimReset directly.
     // UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
+    UR.HandleMessage('NET:HACK_SIM_COSTUMES', this.DoSimCostumes);
     UR.HandleMessage('NET:HACK_SIM_START', this.DoSimStart);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
+    UR.HandleMessage('NET:HACK_SIM_NEXTROUND', this.DoSimNextRound);
+    UR.HandleMessage('NET:HACK_SIM_END', this.DoSimEnd);
 
     // SYSTEM HOOKS ///////////////////////////////////////////////////////////
     // SendInspectorUpdate see LoadModel
@@ -105,6 +108,10 @@ class SimControl {
     //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
   }
 
+  DoSimCostumes() {
+    SIM.Costumes();
+  }
+
   /**
    * WARNINGS:
    * * Do not call this before the simulation has loaded.
@@ -130,6 +137,14 @@ class SimControl {
   }
 
   DoSimStop() {
+    SIM.Stop(); // Stop Round
+  }
+
+  DoSimNextRound() {
+    SIM.NextRound();
+  }
+
+  DoSimEnd() {
     SIM.End();
   }
 

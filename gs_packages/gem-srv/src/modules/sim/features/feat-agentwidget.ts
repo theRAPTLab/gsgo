@@ -70,7 +70,8 @@ function m_FeaturesUpdate(frame) {
         const global = GetGlobalAgent();
         value = global.prop[graphProp].value;
       }
-      agent.prop.AgentWidgets._graph.push(frame, value);
+      const counter = agent.prop.AgentWidgets._graphCounter++;
+      agent.prop.AgentWidgets._graph.push(counter, value);
     } else {
       // Trigger-based Graph
       // New plot point on change in _graphValue
@@ -145,7 +146,11 @@ class WidgetPack extends GFeature {
   //
   constructor(name) {
     super(name);
-    // this.featAddMethod('setShape', this.setShape);
+    this.featAddMethod('showMessage', this.showMessage);
+    this.featAddMethod('bindTextTo', this.bindTextTo);
+    this.featAddMethod('bindMeterTo', this.bindMeterTo);
+    this.featAddMethod('bindGraphTo', this.bindGraphTo);
+    this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
     UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
     UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
   }
@@ -185,6 +190,9 @@ class WidgetPack extends GFeature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featCall Physics setRadius value
    */
+  showMessage(agent: IAgent, message: string) {
+    UR.RaiseMessage('SHOW_MESSAGE', { message });
+  }
   bindTextTo(agent: IAgent, propname: string) {
     agent.prop.AgentWidgets.textProp.setTo(propname);
   }

@@ -26,7 +26,7 @@ const PR = UR.PrefixUtil('FAKETK' /* 'TagInput' */);
 const DBG = false;
 
 // constants for packet update rate
-let SENDING_FPS = 15;
+let SENDING_FPS = 0; // Set the rate in CharControl.  This is overritten.
 let INTERVAL = (1 / SENDING_FPS) * 1000;
 let m_current_time = 0;
 

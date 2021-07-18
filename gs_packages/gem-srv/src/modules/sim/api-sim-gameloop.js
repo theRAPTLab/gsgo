@@ -23,9 +23,41 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
   ],
   GLOOP_STAGED: ['STAGED'], // GLOOP_LOAD completed, ready to load model
   GLOOP_PRERUN: [
+    // Set up thet stage
     // GLOOP_STAGED completed, monitor inputs before run
-    'INPUTS',
-    'PHYSICS', // force physics update for size updates?  REVIEW: Not sure hti si sthe right thing to do
+    'INPUTS_READ',
+    'INPUTS_UPDATE',
+
+    // allow creation of new objects???????
+    'DELETE',
+    'CREATE',
+
+    'PHYSICS_UPDATE',
+    'PHYSICS_THINK',
+    // 'INPUTS_EXEC', // Don't allow cursor attachment during PRERUN!
+    'UI_UPDATE',
+    'VIS_UPDATE',
+    'VIS_RENDER'
+  ],
+  GLOOP_COSTUMES: [
+    // Attach cursors to agents
+    'INPUTS_READ',
+    'INPUTS_UPDATE',
+    'PHYSICS_UPDATE',
+    'PHYSICS_THINK',
+    // process conditions and collection
+    'CONDITIONS_UPDATE', // for agent pickup
+    // attach cursor to agent
+    'INPUTS_EXEC',
+    // display output
+    'UI_UPDATE',
+    'VIS_UPDATE',
+    'VIS_RENDER'
+  ],
+  GLOOP_POSTRUN: [
+    // After a run, keep objects around for inspection
+    // No INPUTS -- so Pozyx/PTrack objects stop moving?
+    //              AND how do we keep them from getting removed?
     'UI_UPDATE',
     'VIS_UPDATE',
     'VIS_RENDER'
@@ -33,11 +65,15 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
   GLOOP_CONTROL: ['SYSEX'], // system change before start of GLOOP
   GLOOP: [
     // get state and queue derived state
-    'INPUTS',
+    'INPUTS_READ',
+    'INPUTS_UPDATE',
     'DELETE',
     'CREATE',
     'TIMERS',
-    'PHYSICS',
+    'PHYSICS_UPDATE',
+    'PHYSICS_THINK',
+    // attach cursor to agent
+    'INPUTS_EXEC',
     // agent/groups autonomous updates
     'AGENTS_UPDATE',
     'GROUPS_UPDATE',

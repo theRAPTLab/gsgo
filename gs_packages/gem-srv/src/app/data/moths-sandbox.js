@@ -9,6 +9,42 @@ export const MODEL = {
     bounce: true,
     bgcolor: 0x000066
   },
+  rounds: {
+    options: {
+      allowResetStage: false,
+      noloop: true // stop after last round
+    },
+    roundDefs: [
+      {
+        time: 10,
+        initScript: `dbgOut 'Round1!'`,
+        intro: 'First generation',
+        outtro: 'What happened?',
+        endScript: `dbgOut 'END Round1!'`
+      },
+      {
+        time: 60,
+        initScript: `dbgOut 'Round2'
+// Release Cursors from Dead Moths
+featCall Population releaseInertAgents
+// Remove Dead Moths
+featCall Population hideInertAgents
+// Spawn New Moths
+featCall Population agentsReproduce Moth [[
+  prop x addRnd -64 64
+  prop y addRnd -64 64
+  featProp Costume colorScaleIndex addRnd -2 2 true
+  // featCall Costume randomizeColorHSV 1 1 1
+]]
+featCall Population agentsForEach TreeFoliage [[
+  featProp Costume colorValue sub 0.1
+]]
+`,
+        outtro: 'What happened to spawn?',
+        endScript: `dbgOut 'END Round2!'`
+      }
+    ]
+  },
   scripts: [
     {
       id: 'Moth',
@@ -18,8 +54,10 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'bee.json' 0
-// Green
-featCall Costume setColorize 0 1 0
+
+// COLOR
+featCall Costume initHSVColorScale 0 0 1 'value' 11
+featProp Costume colorScaleIndex setTo 9
 
 // Fully visible
 prop alpha setTo 1
@@ -55,11 +93,11 @@ featProp AgentWidgets text setTo ''
 // Plot energy level
 featCall AgentWidgets bindGraphTo energyLevel 30
 
-// random color: shift hue and value
-featCall Costume randomizeColorHSV 0.1 0 1
+// // random color: shift hue and value
+// featCall Costume randomizeColorHSV 0.1 0 0.2
 
 // random start position
-featCall Movement setRandomStart
+// featCall Movement setRandomStart
 
 // allow access to global darkMoths/lightMoths values
 useFeature Global
@@ -185,13 +223,16 @@ featCall Vision monitor Moth
 featCall Vision setViewDistance 500
 featCall Vision setViewAngle 45
 
-// featCall Movement seekNearestVisible Moth
+featCall Movement seekNearestVisible Moth
 featProp Movement distance setTo 4
 
 // To update graphs
 useFeature Global
 
 useFeature Cursor
+
+// Allow Predator to stop round
+useFeature Timer
 
 # PROGRAM UPDATE
 // when Predator isInside TreeFoliage [[
@@ -224,6 +265,14 @@ when Predator centerTouchesCenter Moth [[
     ]]
     // release cursor
     featCall Moth.Cursor releaseCursor
+
+    // Stop sim if no more agents
+    ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 1 }} [[
+      featCall Predator.Timer stopRound
+
+      // This will be added to the end of round message
+      featCall Moth.AgentWidgets showMessage 'No more moths!'
+    ]]
   ]]
 ]]
 `
@@ -234,8 +283,7 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeTrunk
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'lightbeam.json' 0
-featCall Costume setColorize 0.2 0.3 0
+featCall Costume setCostume 'circle.json' 0
 
 useFeature Physics
 
@@ -250,7 +298,7 @@ prop zIndex setTo -200
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
-featCall Costume setColorize 0 1 0
+featCall Costume setColorize 0 0.1 0.9
 
 useFeature Physics
 // useFeature AgentWidgets
@@ -280,7 +328,7 @@ featProp AgentWidgets isLargeGraphic setTo true
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo -200
 prop y setTo 200
-featCall Costume setColorize 0.3 0.2 0
+featCall Costume setColorizeHSV 0.3 0 0.9
 featProp Physics scale setTo 0.3
 featProp Physics scaleY setTo 2`
     },
@@ -290,7 +338,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo -200
 prop y setTo -150
-featCall Costume setColorize 0.08 0.28 0
+featCall Costume setColorizeHSV 0 0 0.6
 featProp Physics scale setTo 2
 featProp Physics scaleY setTo 1.5`
     },
@@ -300,7 +348,7 @@ featProp Physics scaleY setTo 1.5`
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 250
 prop y setTo 200
-featCall Costume setColorize 0.4 0.3 0
+featCall Costume setColorizeHSV 0 0 0.8
 featProp Physics scale setTo 0.4
 featProp Physics scaleY setTo 2`
     },
@@ -310,7 +358,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 250
 prop y setTo -150
-featCall Costume setColorize 0.1 0.25 0
+featCall Costume setColorizeHSV 0 0 0.75
 //  featCall Costume setColorize 0.8 0.7 0
 featProp Physics scale setTo 1.2
 featProp Physics scaleY setTo 2`
@@ -321,7 +369,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo 0
 prop y setTo 200
-featCall Costume setColorize 0.2 0.2 0
+featCall Costume setColorizeHSV 0 0 1
 featProp Physics scale setTo 0.6
 featProp Physics scaleY setTo 2`
     },
@@ -331,8 +379,7 @@ featProp Physics scaleY setTo 2`
       blueprint: 'TreeFoliage',
       initScript: `prop x setTo 0
 prop y setTo -150
-featCall Costume setColorize 0.1 0.3 0
-// featCall Costume setColorize 0.2 0.7 0
+featCall Costume setColorizeHSV 0 0 0.7
 featProp Physics scale setTo 1.5
 featProp Physics scaleY setTo 2`
     },
