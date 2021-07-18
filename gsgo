@@ -111,8 +111,7 @@ function CloneLerna(args) {
     '.nvmrc',
     '.prettierrc.js',
     'gsgo',
-    'tsconfig.json',
-    'tsconfig.build.json'
+    'tsconfig.json'
   ]);
 
   RenameFiles(DEST, [['gsgo', 'repoutil']]);

@@ -98,6 +98,7 @@ module.exports = {
     '@typescript-eslint/lines-between-class-members': 'off',
     'import/prefer-default-export': 'off',
     '@typescript-eslint/naming-convention': 'off',
+    'object-shorthand': 'off',
     /* check for dependencies */
     'import/no-extraneous-dependencies': [
       'error',

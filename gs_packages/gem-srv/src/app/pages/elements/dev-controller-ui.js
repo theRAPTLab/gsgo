@@ -59,7 +59,7 @@ let m_data_object_name_changed = false;
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_SetupContainer(id = 'container') {
+function m_GetContainer(id = 'container') {
   // grab pre-defined dom elements:
   // a m_container with a number of m_entities in it
   let container = document.getElementById(id);
@@ -284,7 +284,7 @@ async function Initialize(componentInstance, opt = {}) {
   m_CHARVIEW = componentInstance;
 
   // setup container, entity listsm
-  m_container = m_SetupContainer('container');
+  m_container = m_GetContainer('container');
   m_AddTouchEvents(m_container);
   m_AddMouseEvents(m_container);
   m_entities = m_CreateEntities(m_container);
@@ -400,7 +400,7 @@ function BurstStop() {
  *  Utility to return a Marker ControlDataObject { id, x, y }
  */
 function u_MakeControlDataObject(div) {
-  if (m_isHidden(div)) return;
+  if (m_isHidden(div)) return undefined;
 
   // if data_object_name has changed, we update the entity id so that
   // fake track sends a new object, otherwise the old object is retained

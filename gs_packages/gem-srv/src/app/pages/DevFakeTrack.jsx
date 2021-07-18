@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unused-state */
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
@@ -8,12 +9,12 @@
 import React from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-
 import UR from '@gemstep/ursys/client';
 import { Init, HookResize } from '../../modules/render/api-render';
-import { Initialize, HandleStateChange } from './elements/dev-faketrack-ui';
+import FormTransform from './components/FormTransform';
+import * as MOD from './elements/dev-faketrack-ui';
 import { useStylesHOC } from './elements/page-styles';
-import '../../lib/css/faketrack.css';
+import '../../lib/css/tracker.css';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 /// import '../modules/sim/runtime';
@@ -35,22 +36,22 @@ class FakeTrack extends React.Component {
     // establish state here
     // which is changed through setState() call of React.Component
     this.state = {
+      // ui controls
       num_entities: 2,
       prefix: 'f',
       jitter: 1,
       burst: false,
+      // entity list
       status: 'entity status',
-      width: 2,
-      depth: 2,
-      offx: 0,
-      offy: 0,
-      // offz: 0,
-      xscale: 1,
-      yscale: 1,
-      // zscale: 1,
-      xrot: 0,
-      yrot: 0,
-      zrot: 0,
+      // transform data
+      xRange: 2,
+      yRange: 2,
+      xOff: 0,
+      yOff: 0,
+      xScale: 1,
+      yScale: 1,
+      zRot: 0,
+      // frame information
       mprop: false,
       data_track: 'fake_tracks',
       data_object_name: 'bb_g'
@@ -60,7 +61,7 @@ class FakeTrack extends React.Component {
   componentDidMount() {
     // start URSYS
     UR.SystemAppConfig({ autoRun: true }); // initialize renderer
-    Initialize(this);
+    MOD.Initialize(this);
     HookResize(window);
   }
 
@@ -74,7 +75,7 @@ class FakeTrack extends React.Component {
     const target = event.target;
     const value = target.type === 'checkbox' ? target.checked : target.value;
     const name = target.name;
-    HandleStateChange(name, value);
+    MOD.HandleStateChange(name, value);
   }
 
   render() {
@@ -111,7 +112,7 @@ class FakeTrack extends React.Component {
           <div id="faketrack_tests">
             <input
               name="num_entities"
-              style={{ width: '40px' }}
+              style={{ xRange: '40px' }}
               type="number"
               min="1"
               max="100"
@@ -122,7 +123,7 @@ class FakeTrack extends React.Component {
             <label>
               <input
                 name="prefix"
-                style={{ width: '60px' }}
+                style={{ xRange: '60px' }}
                 type="text"
                 value={this.state.prefix}
                 onChange={this.handleInputChange}
@@ -132,7 +133,7 @@ class FakeTrack extends React.Component {
             <label>
               <input
                 name="jitter"
-                style={{ width: '40px' }}
+                style={{ xRange: '40px' }}
                 type="number"
                 min="0"
                 max="10"
@@ -164,7 +165,7 @@ class FakeTrack extends React.Component {
         <div
           className={classes.main}
           id="container"
-          style={{ width: '720px', height: '720px' }}
+          style={{ xRange: '720px', height: '720px' }}
         />
         <div
           id="console-right"
@@ -203,94 +204,7 @@ class FakeTrack extends React.Component {
           <div id="faketrack_entities">
             <pre>{this.state.status}</pre>
           </div>
-          <div id="faketrack_xform" style={{ clear: 'both' }}>
-            <label style={{ width: 'auto' }}>Output Transformations</label>
-            <br />
-            <label>
-              <input
-                name="xscale"
-                type="number"
-                value={this.state.xscale}
-                onChange={this.handleInputChange}
-              />{' '}
-              XSCALE
-            </label>
-            <label>
-              <input
-                name="yscale"
-                type="number"
-                value={this.state.yscale}
-                onChange={this.handleInputChange}
-              />{' '}
-              YSCALE
-            </label>
-            <br />
-            <label>
-              <input
-                name="xrot"
-                type="number"
-                value={this.state.xrot}
-                onChange={this.handleInputChange}
-              />{' '}
-              X ROT
-            </label>
-            <label>
-              <input
-                name="yrot"
-                type="number"
-                value={this.state.yrot}
-                onChange={this.handleInputChange}
-              />{' '}
-              Y ROT
-            </label>
-            <label>
-              <input
-                name="zrot"
-                type="number"
-                value={this.state.zrot}
-                onChange={this.handleInputChange}
-              />{' '}
-              Z ROT
-            </label>
-            <br />
-            <label>
-              <input
-                name="offx"
-                type="number"
-                value={this.state.offx}
-                onChange={this.handleInputChange}
-              />{' '}
-              OFF-X{' '}
-            </label>
-            <label>
-              <input
-                name="offy"
-                type="number"
-                value={this.state.offy}
-                onChange={this.handleInputChange}
-              />{' '}
-              OFF-Y
-            </label>
-            <br />
-            <label>
-              <input
-                name="width"
-                type="number"
-                value={this.state.width || 5}
-                onChange={this.handleInputChange}
-              />{' '}
-              WIDTH-X
-            </label>
-            <label>
-              <input
-                name="depth"
-                type="number"
-                value={this.state.depth || 5}
-                onChange={this.handleInputChange}
-              />{' '}
-              DEPTH-Y
-            </label>
-          </div>
+          <FormTransform />
         </div>
         <div
           id="console-bottom"

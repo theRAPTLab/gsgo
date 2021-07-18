@@ -18,8 +18,8 @@ const {
   CLI_UADDR
 } = require('./ur-common');
 
-const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
+const PR = PROMPTS.makeStyleFormatter('SYSTEM');
+const NPR = PROMPTS.makeStyleFormatter('URSYS ');
 
 /// DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
