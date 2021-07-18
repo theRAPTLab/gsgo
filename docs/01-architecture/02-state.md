@@ -32,6 +32,8 @@ To create these state groups, you create a new instance of the StateGroupMgr it 
 // imported by appcore/index.js
 
 const STATE = new StateGroupMgr('locales');
+
+// the transform should be overridden by a database load
 STATE.InitializeState({
   locales: [],      // key is named locales with value array
   localeNames: [],  // key is named localeNames with value array
@@ -48,6 +50,8 @@ STATE.InitializeState({
 ```
 
 The `InitializeState()` call not only creates initiate state, but also defines **what keys are considered valid**; the StateGroupMgr will not allow you to modify keys that doesn't already exist, and will display a warning in the console.
+
+NOTE: You can also pass a **graphql query string** instead of an object to load initial state from the database.
 
 ### Accessing State in a StateGroup
 
