@@ -48,7 +48,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
   updateQueue: TMethod[];
   thinkQueue: TMethod[];
   execQueue: TMethod[];
-  canSee: any;
+  canSeeCone: any;
+  canSeeColor: any;
   cursor: IAgent;
   distanceTo: any;
   touchTable: Map<any, any>;
