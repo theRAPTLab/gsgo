@@ -36,6 +36,7 @@ const INPUTDEF_TO_AGENT = new SyncMap({
 
 /**
  * Make or update agent.
+ * SRI: Why is agent/sim stuff in INPUT?
  * @param {InputDef} newInputDef
  * @param {InputDef} oldInputDef
  */
@@ -80,6 +81,7 @@ function UpdateAgent(newInputDef, oldInputDef) {
 
 // REVIEW: This is probably an abuse of syncMap
 //         Maybe just use a Pool object?
+// SRI: Is an "input def" the same as a "control object"?
 INPUTDEF_TO_AGENT.setMapFunctions({
   onAdd: (newInputDef, oldInputDef) => {
     UpdateAgent(newInputDef, oldInputDef);
@@ -92,24 +94,22 @@ INPUTDEF_TO_AGENT.setMapFunctions({
   }
 });
 
-/// UR/PHASE METHODS //////////////////////////////////////////////////////////
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InputsInit(frameTime) {
-  const BPNAMES = GetInputBPnames();
-  BPNAMES.forEach(b => InputInit(b));
-}
 function ProcessInputs(frameTime) {
   InputsUpdate();
   const inputDefs = GetInputDefs();
   INPUTDEF_TO_AGENT.syncFromArray(inputDefs);
   INPUTDEF_TO_AGENT.mapObjects();
 }
-
-/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 UR.HookPhase('SIM/INPUTS', ProcessInputs);
 
 /// ASYNCH MESSAGE ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function InputsInit(frameTime) {
+  const BPNAMES = GetInputBPnames();
+  BPNAMES.forEach(b => InputInit(b));
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // REVIEW
 // We can't init input until we get the blueprint names after loading the model

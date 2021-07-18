@@ -10,8 +10,11 @@
 const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
+const DB = require('./server-urdb');
+const FILES = require('./server-urfiles');
 const DBG = require('./ur-dbg-settings');
 const COMMON = require('./ur-common');
+
 //
 const {
   IsBrowser,
@@ -94,8 +97,10 @@ module.exports = {
   Shutdown,
   URNET_Start,
   URNET_NetInfo: NETINFO.GetNetInfo,
-  NextJS_NetInfoResponder: NETINFO.NextJS_Responder,
-  Express_NetInfoResponder: NETINFO.Express_Responder,
+  UseLokiGQL_Middleware: DB.UseLokiGQL_Middleware,
+  NetInfo_Middleware: NETINFO.Express_Middleware,
+  URNET_Use: NETINFO.UseURNET,
+  NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
   // SERVICES API
   STORE,
   EXPRESS,

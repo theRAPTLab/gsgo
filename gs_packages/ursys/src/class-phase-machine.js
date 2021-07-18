@@ -92,6 +92,8 @@ class PhaseMachine {
     this.NAME = shortName;
     this.OP_HOOKS = new Map();
     this.PHASES = phases;
+    this.currentOp = ''; // current operation
+    this.opTimer = 0; // for catching lingering execution
     Object.keys(phases).forEach(phaseKey => {
       this.OP_HOOKS.set(phaseKey, []); // add the phase name to ophooks map as special case
       this.PHASES[phaseKey].forEach(opKey => {
@@ -179,12 +181,19 @@ class PhaseMachine {
       console.log(...PR(`[${op}] AWAITING ${icount} PROMISES TO COMPLETE...`));
 
     // wait for all promises to execute
+    if (this.opTimer) clearTimeout(this.opTimer);
+    this.opTimer = setTimeout(() => {
+      console.log(...PR('*** PHASEMACHINE WARNING ***'));
+      this.consolePhaseInfo('Slow Phase Resolution > 7 sec', 'red');
+      console.log(...PR('check phase hooks for lack of promised resolve()'));
+    }, 7000);
     return Promise.all(promises)
       .then(values => {
         if (DBG.ops && values.length)
           console.log(
             ...PR(`[${op}] PROMISES RETVALS  : ${values.length}`, values)
           );
+        if (this.opTimer) clearTimeout(this.opTimer);
         return values;
       })
       .catch(err => {
@@ -255,10 +264,10 @@ class PhaseMachine {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** UTILITY: print current phase information to console
    */
-  consolePhaseInfo(pr = 'PhaseInfo') {
+  consolePhaseInfo(pr = 'PhaseInfo', bg = 'MediumVioletRed') {
     console.log(
       `%c${pr}%c ${this.NAME}/${this.currentPhase}:${this.currentOp}`,
-      'color:#fff;background-color:MediumVioletRed;padding:3px 10px;border-radius:10px;',
+      `color:#fff;background-color:${bg};padding:3px 10px;border-radius:10px;`,
       'color:auto;background-color:auto'
     );
   }

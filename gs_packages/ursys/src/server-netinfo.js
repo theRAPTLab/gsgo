@@ -6,9 +6,9 @@
 
 ///	LOAD LIBRARIES ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { parse } = require('url');
+const { URL } = require('url');
 const requestIp = require('request-ip');
-const { CFG_URNET_SERVICE } = require('./ur-common');
+const { CFG_URNET_SERVICE, CFG_URDB_GQL } = require('./ur-common');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -36,6 +36,10 @@ function m_NetInfoRespond(req, res) {
   // prevent socket connection refusal due to mismatch of localhost
   // with use of numeric IP when connecting to server
   if (client_ip.includes('127.0.0.1')) client_ip = 'localhost';
+  if (client_ip.includes('::1')) client_ip = 'localhost';
+  // try to work around CORS request from localhost to non-localhost block by
+  // chrome
+  let dbhost = client_ip === 'localhost' ? 'localhost' : host;
   const netInfo = {
     broker: {
       host,
@@ -45,6 +49,11 @@ function m_NetInfoRespond(req, res) {
     },
     client: {
       ip: client_ip
+    },
+    urdb: {
+      protocol: 'http',
+      host: dbhost,
+      endpoint: CFG_URDB_GQL
     }
   };
   res.end(JSON.stringify(netInfo));
@@ -56,10 +65,11 @@ function m_NetInfoRespond(req, res) {
  *  The listener listens for a request for URNetBroker information.
  *  the NextJS and other frameworks.
  */
-function NextJS_Responder(req, res) {
+function NextJS_Middleware(req, res) {
   // Be sure to pass `true` as the second argument to `url.parse`.
   // This tells it to parse the query portion of the URL.
-  const parsedUrl = parse(req.url, true);
+  const baseUrl = `${req.protocol}://${req.headers.host}/`;
+  const parsedUrl = new URL(req.url, baseUrl);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   // Do our route interception here
@@ -73,8 +83,9 @@ function NextJS_Responder(req, res) {
 /** Called from custom Express server, this sets up the URNetBroker link
  *  that returns host, port, urnet_version, uaddr
  */
-function Express_Responder(req, res, next) {
-  const parsedUrl = parse(req.url, true);
+function Express_Middleware(req, res, next) {
+  const baseUrl = `${req.protocol}://${req.headers.host}/`;
+  const parsedUrl = new URL(req.url, baseUrl);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { pathname, query } = parsedUrl;
   if (pathname === CFG_URNET_SERVICE) {
@@ -90,14 +101,15 @@ function GetNetInfo() {
 /** called from index-server during URNET_Start to save network options */
 function SaveNetInfo(opt) {
   m_network_options = opt;
+  if (DBG) console.log('save netinfo', opt);
 }
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
   SaveNetInfo,
-  NextJS_Responder,
-  Express_Responder,
+  NextJS_Middleware,
+  Express_Middleware,
   GetNetInfo,
   NetInfoRoute
 };

@@ -1,5 +1,9 @@
 {
-  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es6",
+    "sourceMap": true
+  },
   "exclude": ["node_modules", "admin-srv", "gem-srv"],
   "include": ["src/**/*"]
 }

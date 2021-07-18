@@ -18,8 +18,7 @@ const PhaseMachine = require('./class-phase-machine');
 const PROMPTS = require('./util/prompts');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM', 'TagSystem');
-const NPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
-const RPR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR3');
+const NPR = PROMPTS.makeStyleFormatter('URSYS');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,6 +44,7 @@ const PHASES = {
     'TEST_NET' // run tests that require network readiness
   ],
   PHASE_LOAD: [
+    'LOAD_DB', // load database stuff from wherever
     'LOAD_CONFIG', // app modules can request asynchronous loads
     'LOAD_ASSETS' // can use loaded configs to load assets
   ],
@@ -109,6 +109,7 @@ async function SystemNetBoot() {
   const netInfo = await NETINFO.FetchNetInfo();
   console.info(...NPR('URNET got connect info:', netInfo));
   await executePhase('PHASE_CONNECT'); // NET_CONNECT, NET_REGISTER, NET_READY
+  await executePhase('PHASE_LOAD'); // LOAD_DB, LOAD_CONFIG, LOAD_ASSETS
   //
   if (DBG) console.groupEnd();
 }
@@ -149,7 +150,7 @@ async function SystemAppRun(options = {}) {
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  console.log(...RPR('APP STARTED [RUN] PHASE'));
+  console.log(...NPR('APP STARTED [RUN] PHASE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();
