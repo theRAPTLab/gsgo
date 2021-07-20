@@ -84,5 +84,29 @@ There is an issue with the SCRIPT WIZARD being **unable to render block scriptun
 
 ## JUL 20 TUE - Script Engine Point-by-Point
 
-Q. Does TextifyScript produce an all-scriptUnit output?
-A. 
+**Q. Does TextifyScript produce an all-scriptUnit output?**
+A. The actual conversion code is in `class-gscript-tokenizer` which only tokenizes the top level.
+
+**Q. How to change gscript-tokenizer to fully recurse?**
+
+```
+tokenize is the top level, calls gobbleLine, which returns an array of "nodes" which are our token data type.
+
+gobbleLine starts with gobbleToken
+it checks first for our GEMSCRIPT additions:
+[[ as the opening for a BLOCK
+{{ as the opening for expressions
+
+gobbleBlock tests for inline [[ ]] and returns { program } token
+However, if the line ends without seeing ]], gobbleMultiBlock runs.
+
+gobbleMultiBlock keeps track of levels to ultimately returns everything between the top [[ ]], and leaves the expansion to transpiler.r_ExpandArgs, which recursively calls itself through r_CompileUnit.
+```
+
+The contents of a block token are lines of text; the processing of these lines is deferred to `TRANSPILER.CompileScript()` via `r__CompileUnit` which calls `r_ExpandArgs` which calls `r_CompileUnit` for each line a `{ block }` token.
+
+**Q. How do we change gScriptTokenizer to fully tokenize?**
+
+* [ ] first modify the tokenizer to call gobbleLine after the complete block is captured.
+* [ ] 
+

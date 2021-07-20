@@ -15,7 +15,7 @@ import * as SIM from '../../modules/sim/api-sim';
 import * as GLOBAL from '../../modules/datacore/dc-globals';
 import * as DATACORE from '../../modules/datacore';
 import * as RENDERER from '../../modules/render/api-render';
-import * as TRANSPILER from '../../modules/sim/script/transpiler';
+import * as TRANSPILER from '../../modules/sim/script/transpiler2';
 import * as Prism from '../../lib/vendor/prism';
 import { CodeJar } from '../../lib/vendor/codejar';
 import '../../lib/vendor/prism.css';
