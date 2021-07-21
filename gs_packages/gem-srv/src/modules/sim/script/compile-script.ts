@@ -76,8 +76,10 @@ export function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
   if (!Array.isArray(unit)) console.warn(...PR('unit is not array', unit));
   const modUnit: TScriptUnit = unit.map((item, idx) => {
     // internal checks
-    if (Array.isArray(item))
+    if (Array.isArray(item)) {
+      console.warn('r_ExpandArgs: err caused by', item);
       throw Error('unexpected array argument; should be obj');
+    }
     if (typeof item !== 'object')
       throw Error('all units should be an argument node');
     // arg is an array of elements in the ScriptUnit.
@@ -183,6 +185,7 @@ export function CompileScript(units: TScriptUnit[]): TSMCProgram {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestCompiler(tests) {
+  console.group(...PR('TEST: CompileScript'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArray] = kv;
     // const [text, expect] = testArray; // ts parser too old to handle spread
@@ -191,9 +194,10 @@ function TestCompiler(tests) {
     console.log(text);
     const sourceStrings = text.split('\n');
     const script = Scriptifier.tokenize(sourceStrings);
+    const program = CompileScript(script);
     console.groupEnd();
-    // const program = CompileScript(script);
   });
+  console.groupEnd();
 }
 UR.HookPhase('UR/APP_RUN', () => {
   // TestCompiler(Blocks);

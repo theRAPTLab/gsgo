@@ -6,21 +6,21 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TScriptUnit } from 'lib/t-script.d';
 import GScriptTokenizerDBG from 'lib/class-gscript-tokenizer-dbg';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import { Blocks } from './test-blockscripts';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
+const PR = UR.PrefixUtil('TOKENIZE', 'TagDebug');
 const gstDBG = new GScriptTokenizerDBG();
+const gst = new GScriptTokenizer();
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the test format is { testName: [ scripttext, jsonscriptunits ] }
 function TestTokenizeScripts(tests) {
-  console.groupCollapsed(...PR('TEST: TokenizeScripts'));
+  console.group(...PR('TEST: TokenizeScripts'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArray] = kv;
     // const [text, expect] = testArray; // ts parser too old to handle spread
@@ -36,6 +36,8 @@ function TestTokenizeScripts(tests) {
       console.log('%cexpect%c', 'color:red', 'color:inherit', expect);
       console.log('%cgotted%c', 'color:red', 'color:inherit', result);
     } else console.log(...PR(status));
+    // const oldstr = JSON.stringify(gst.tokenize(sourceStrings));
+    // console.log('%coldscr%c', 'color:brown', 'color:inherit', oldstr);
   });
   console.groupEnd();
 }

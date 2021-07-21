@@ -11,17 +11,18 @@ let oldscript;
 /// test simple block
 const block = [
   `
-A touch A [[
+when A touches A [[
   prop A set 10
   prop B set 20
 ]]
 `,
-  '[[{"token":"A"},{"token":"touch"},{"token":"A"},[[{"token":"prop"},{"token":"A"},{"token":"set"},{"value":10}],[{"token":"prop"},{"token":"B"},{"token":"set"},{"value":20}]]]]'
+  '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"A"},[{"token":"prop"},{"token":"A"},{"token":"set"},{"value":10}],[{"token":"prop"},{"token":"B"},{"token":"set"},{"value":20}]]]'
 ];
 script = [
   [
+    { 'token': 'when' },
     { 'token': 'A' },
-    { 'token': 'touch' },
+    { 'token': 'touches' },
     { 'token': 'A' },
     [
       [
@@ -36,8 +37,9 @@ script = [
 ];
 oldscript = [
   [
+    { 'token': 'when' },
     { 'token': 'A' },
-    { 'token': 'touch' },
+    { 'token': 'touches' },
     { 'token': 'A' },
     { 'block': ['prop A set 10', 'prop B set 20'] }
   ]
@@ -47,7 +49,7 @@ oldscript = [
 /// test block chaining
 const blockblock = [
   `
-A then [[
+when A touches B [[
   prop A set 30
   prop B set 40
 ]] [[
@@ -55,38 +57,26 @@ A then [[
   prop B sub 20
 ]]
 `,
-  '[[{"token":"A"},{"token":"then"},[[{"token":"prop"},{"token":"A"},{"token":"set"},{"value":30}],[{"token":"prop"},{"token":"B"},{"token":"set"},{"value":40}]],[[{"token":"prop"},{"token":"A"},{"token":"sub"},{"value":10}],[{"token":"prop"},{"token":"B"},{"token":"sub"},{"value":20}]]]]'
+  '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},[{"token":"prop"},{"token":"A"},{"token":"set"},{"value":30}],[{"token":"prop"},{"token":"B"},{"token":"set"},{"value":40}],[{"token":"prop"},{"token":"A"},{"token":"sub"},{"value":10}],[{"token":"prop"},{"token":"B"},{"token":"sub"},{"value":20}]]]'
 ];
 script = [
-  [{ 'comment': 'blank' }],
   [
+    { 'token': 'when' },
     { 'token': 'A' },
-    { 'token': 'then' },
-    [
-      [
-        { 'token': 'prop' },
-        { 'token': 'A' },
-        { 'token': 'set' },
-        { 'value': 30 }
-      ],
-      [{ 'token': 'prop' }, { 'token': 'B' }, { 'token': 'set' }, { 'value': 40 }]
-    ],
-    [
-      [
-        { 'token': 'prop' },
-        { 'token': 'A' },
-        { 'token': 'sub' },
-        { 'value': 10 }
-      ],
-      [{ 'token': 'prop' }, { 'token': 'B' }, { 'token': 'sub' }, { 'value': 20 }]
-    ]
-  ],
-  [{ 'comment': 'blank' }]
+    { 'token': 'touches' },
+    { 'token': 'B' },
+    [{ 'token': 'prop' }, { 'token': 'A' }, { 'token': 'set' }, { 'value': 30 }],
+    [{ 'token': 'prop' }, { 'token': 'B' }, { 'token': 'set' }, { 'value': 40 }],
+    [{ 'token': 'prop' }, { 'token': 'A' }, { 'token': 'sub' }, { 'value': 10 }],
+    [{ 'token': 'prop' }, { 'token': 'B' }, { 'token': 'sub' }, { 'value': 20 }]
+  ]
 ];
 oldscript = [
   [
+    { 'token': 'when' },
     { 'token': 'A' },
-    { 'token': 'then' },
+    { 'token': 'touches' },
+    { 'token': 'B' },
     { 'block': ['prop A set 30', 'prop B set 40'] },
     { 'block': ['prop A sub 10', 'prop B sub 20'] }
   ]
@@ -95,41 +85,33 @@ oldscript = [
 /// test nested block
 const nblock = [
   `
-B touch B [[
+when A touches B [[
   prop C set 10
-  if C gt 0 [[
+  ifExpr {{ C }}  gt 0 [[
     prop D add 1
   ]]
 ]]
 `,
-  '[[{"token":"B"},{"token":"touch"},{"token":"B"},[[{"token":"prop"},{"token":"C"},{"token":"set"},{"value":10}],[{"token":"if"},{"token":"C"},{"token":"gt"},{"value":0},[[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]]]]]]]'
+  '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},[{"token":"prop"},{"token":"C"},{"token":"set"},{"value":10}],[{"token":"ifExpr"},{"expr":" C "},{"token":"gt"},{"value":0},[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]]]]]'
 ];
 script = [
   [
+    { 'token': 'when' },
+    { 'token': 'A' },
+    { 'token': 'touches' },
     { 'token': 'B' },
-    { 'token': 'touch' },
-    { 'token': 'B' },
+    [{ 'token': 'prop' }, { 'token': 'C' }, { 'token': 'set' }, { 'value': 10 }],
     [
+      { 'token': 'ifExpr' },
+      { 'expr': ' C ' },
+      { 'token': 'gt' },
+      { 'value': 0 },
       [
-        { 'token': 'prop' },
-        { 'token': 'C' },
-        { 'token': 'set' },
-        { 'value': 10 }
-      ],
-      [
-        { 'token': 'if' },
-        { 'token': 'C' },
-        { 'token': 'gt' },
-        { 'value': 0 },
         [
-          [
-            [
-              { 'token': 'prop' },
-              { 'token': 'D' },
-              { 'token': 'add' },
-              { 'value': 1 }
-            ]
-          ]
+          { 'token': 'prop' },
+          { 'token': 'D' },
+          { 'token': 'add' },
+          { 'value': 1 }
         ]
       ]
     ]
@@ -137,10 +119,78 @@ script = [
 ];
 oldscript = [
   [
+    { 'token': 'when' },
+    { 'token': 'A' },
+    { 'token': 'touches' },
     { 'token': 'B' },
-    { 'token': 'touch' },
-    { 'token': 'B' },
-    { 'block': ['prop C set 10', 'if C gt 0 [[', 'prop D add 1', ']]'] }
+    {
+      'block': ['prop C set 10', 'ifExpr {{ C }}  gt 0 [[', 'prop D add 1', ']]']
+    }
+  ]
+];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// test tripple nesting
+const tnblock = [
+  `
+ifExpr {{ A }} [[
+  ifExpr {{ BB }} [[
+    ifExpr {{ CCC }} [[
+      prop DDD add 1
+    ]]
+  ]]
+  prop EEE set 0
+]]
+`,
+  '[[{"token":"ifExpr"},{"expr":" A "},[{"token":"ifExpr"},{"expr":" BB "},[[{"token":"ifExpr"},{"expr":" CCC "},[[{"token":"prop"},{"token":"DDD"},{"token":"add"},{"value":1}]]]]],[{"token":"prop"},{"token":"EEE"},{"token":"set"},{"value":0}]]]'
+];
+script = [
+  [
+    { 'token': 'ifExpr' },
+    { 'expr': ' A ' },
+    [
+      { 'token': 'ifExpr' },
+      { 'expr': ' BB ' },
+      [
+        [
+          { 'token': 'ifExpr' },
+          { 'expr': ' CCC ' },
+          [
+            [
+              { 'token': 'prop' },
+              { 'token': 'DDD' },
+              { 'token': 'add' },
+              { 'value': 1 }
+            ]
+          ]
+        ]
+      ]
+    ],
+    [{ 'token': 'prop' }, { 'token': 'EEE' }, { 'token': 'set' }, { 'value': 0 }]
+  ]
+];
+script = [
+  [
+    { 'token': 'ifExpr' },
+    { 'expr': ' A ' },
+    [
+      { 'token': 'ifExpr' },
+      { 'expr': ' BB ' },
+      [
+        [
+          { 'token': 'ifExpr' },
+          { 'expr': ' CCC ' },
+          [
+            [
+              { 'token': 'prop' },
+              { 'token': 'DDD' },
+              { 'token': 'add' },
+              { 'value': 1 }
+            ]
+          ]
+        ]
+      ]
+    ],
+    [{ 'token': 'prop' }, { 'token': 'EEE' }, { 'token': 'set' }, { 'value': 0 }]
   ]
 ];
 
@@ -148,58 +198,51 @@ oldscript = [
 /// test nested block chaining
 const nblockblock = [
   `
-N test N [[
+when A touches B [[
   prop X set 10
-  if X gt 0 [[
+  ifExpr {{ X }} gt 0 [[
     prop D add 1
   ]] [[
     prop D delete
   ]]
 ]]
 `,
-  '[[{"token":"N"},{"token":"test"},{"token":"N"},[[{"token":"prop"},{"token":"X"},{"token":"set"},{"value":10}],[{"token":"if"},{"token":"X"},{"token":"gt"},{"value":0},[[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]]],[[[{"token":"prop"},{"token":"D"},{"token":"delete"}]]]]]]]'
+  '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},[{"token":"prop"},{"token":"X"},{"token":"set"},{"value":10}],[{"token":"ifExpr"},{"expr":" X "},{"token":"gt"},{"value":0},[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]],[[{"token":"prop"},{"token":"D"},{"token":"delete"}]]]]]'
 ];
 script = [
   [
-    { 'token': 'N' },
-    { 'token': 'test' },
-    { 'token': 'N' },
+    { 'token': 'when' },
+    { 'token': 'A' },
+    { 'token': 'touches' },
+    { 'token': 'B' },
+    [{ 'token': 'prop' }, { 'token': 'X' }, { 'token': 'set' }, { 'value': 10 }],
     [
+      { 'token': 'ifExpr' },
+      { 'expr': ' X ' },
+      { 'token': 'gt' },
+      { 'value': 0 },
       [
-        { 'token': 'prop' },
-        { 'token': 'X' },
-        { 'token': 'set' },
-        { 'value': 10 }
-      ],
-      [
-        { 'token': 'if' },
-        { 'token': 'X' },
-        { 'token': 'gt' },
-        { 'value': 0 },
         [
-          [
-            [
-              { 'token': 'prop' },
-              { 'token': 'D' },
-              { 'token': 'add' },
-              { 'value': 1 }
-            ]
-          ]
-        ],
-        [[[{ 'token': 'prop' }, { 'token': 'D' }, { 'token': 'delete' }]]]
-      ]
+          { 'token': 'prop' },
+          { 'token': 'D' },
+          { 'token': 'add' },
+          { 'value': 1 }
+        ]
+      ],
+      [[{ 'token': 'prop' }, { 'token': 'D' }, { 'token': 'delete' }]]
     ]
   ]
 ];
 oldscript = [
   [
-    { 'token': 'N' },
-    { 'token': 'test' },
-    { 'token': 'N' },
+    { 'token': 'when' },
+    { 'token': 'A' },
+    { 'token': 'touches' },
+    { 'token': 'B' },
     {
       'block': [
         'prop X set 10',
-        'if X gt 0 [[',
+        'ifExpr {{ X }} gt 0 [[',
         'prop D add 1',
         ']] [[',
         'prop D delete',
@@ -212,5 +255,6 @@ export const Blocks = {
   block,
   blockblock,
   nblock,
+  tnblock,
   nblockblock
 };
