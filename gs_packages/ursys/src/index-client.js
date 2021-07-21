@@ -205,12 +205,7 @@ const UR = {
   // FORWARDED CLASSES
   class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES
-  addConsoleTools: (ur = UR) => {
-    DBGTEST.addConsoleTools(ur);
-  },
-  addConsoleToolHandlers: (ur = UR) => {
-    DBGTEST.addConsoleToolHandlers(ur);
-  }
+  addConsoleTool: DBGTEST.addConsoleTool
 };
 if (typeof window === 'undefined')
   throw Error(`

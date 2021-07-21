@@ -8,16 +8,51 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let TOOLS;
 const HFUNCS = []; // stack of hfuncs in ur_handle, which
+const PR = s => [
+  `%cCDEBUG%c ${s}`,
+  'color:#000;background-color:#f66;padding:3px 5px;border-radius:2px;',
+  'color:auto;background-color:auto;'
+];
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function addConsoleTools(UR) {
-  const PR = UR.PrefixUtil('DEBUG', 'TagSystem');
-  const { CallMessage, RaiseMessage, SendMessage } = UR;
+/** add obj keys to window object, testing to make sure that it doesn't already
+ *  exist in the window.UR object
+ */
+function addConsoleTool(obj) {
+  if (typeof window === 'undefined') {
+    console.warn(
+      ...PR('addConsoleTool: non-browser environment detected...aborted.')
+    );
+    return;
+  }
+  if (window.UR === undefined) window.UR = {};
+  //---
+  console.groupCollapsed('monkeypatching props(s) into window global');
+  Object.entries(obj).forEach(kv => {
+    const [key, f] = kv;
+    if (typeof window[key] !== 'undefined') {
+      console.warn(...PR(`addConsoleTool: window[${key}] already set`));
+      return;
+    }
+    console.log(`• ${key}()`);
+    window[key] = f;
+  });
+  console.groupEnd();
+}
 
+/// MESSAGE TESTS /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// legacy messager tests accessible from console...should move to own test
+/// module
+function addMessageHandlerTests(UR) {
+  if (!UR.HandleMessage) {
+    console.error(...PR('addConsoleToolHandlers: bad UR reference'));
+    return;
+  }
+  const { CallMessage, RaiseMessage, SendMessage } = UR;
   TOOLS = {
     // subscribe
-
     ur_handle: (mesg, hfunc) => {
       if (mesg === undefined) return 'arg1 must be a message string';
       if (typeof hfunc !== 'function') return 'arg2 must be a function';
@@ -96,32 +131,9 @@ function addConsoleTools(UR) {
       });
       return 'services() is calling NET:SRV_SERVICE_LIST...';
     },
-
     // client device directory (should be up-to-date automatically)
     ur_devicedir: () => UR.GetDeviceDirectory()
   };
-
-  // add ur_* utilities to console
-  console.groupCollapsed(...PR('adding UR console debug functions'));
-  Object.entries(TOOLS).forEach(kv => {
-    const [key, f] = kv;
-    if (typeof window[key] !== 'undefined') return;
-    console.log(`• ${key}()`);
-    window[key] = f;
-  });
-  console.groupEnd();
-}
-
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// invoked from SystemInit
-function addConsoleToolHandlers(UR) {
-  const PR = UR.PrefixUtil('UR_DBG', 'TagRed');
-  if (!UR.HandleMessage) {
-    console.error(...PR('addConsoleToolHandlers: bad UR reference'));
-    return;
-  }
-
   function f_process_message(data) {
     const { testData } = data;
     if (testData === undefined) {
@@ -160,4 +172,4 @@ function addConsoleToolHandlers(UR) {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { addConsoleTools, addConsoleToolHandlers };
+module.exports = { addConsoleTool };
