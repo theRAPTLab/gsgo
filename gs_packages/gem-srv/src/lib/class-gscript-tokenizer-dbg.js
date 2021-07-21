@@ -177,6 +177,12 @@ class ScriptTokenizer {
   /////////////////////////////////////////////////////////////////////////////
   /** TOKENIZER **************************************************************/
   tokenize(lines, flag) {
+    if (!Array.isArray(lines)) {
+      const err =
+        'tokenize(arg) should get ARRAY of string. Did you split your source string into an array of strings?';
+      console.warn(err);
+      throw Error(err);
+    }
     this.lines = lines; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;

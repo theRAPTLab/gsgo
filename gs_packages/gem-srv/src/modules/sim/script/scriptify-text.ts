@@ -15,13 +15,12 @@ import { Blocks } from './test-blockscripts';
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
 const gstDBG = new GScriptTokenizerDBG();
-const gst = new GScriptTokenizer();
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the test format is { testName: [ scripttext, jsonscriptunits ] }
 function TestTokenizeScripts(tests) {
-  console.group(...PR('TEST: TokenizeScripts'));
+  console.groupCollapsed(...PR('TEST: TokenizeScripts'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArray] = kv;
     // const [text, expect] = testArray; // ts parser too old to handle spread
@@ -31,14 +30,12 @@ function TestTokenizeScripts(tests) {
     const su = gstDBG.tokenize(sourceStrings);
     const result = JSON.stringify(su);
     const pass = expect === result;
-    const oldsu = gst.tokenize(sourceStrings);
     const status = `test ${testName}: ${pass ? 'pass' : 'fail'}`;
     if (!pass) {
       console.log(...PR(status!));
       console.log('%cexpect%c', 'color:red', 'color:inherit', expect);
       console.log('%cgotted%c', 'color:red', 'color:inherit', result);
     } else console.log(...PR(status));
-    console.log(JSON.stringify(oldsu));
   });
   console.groupEnd();
 }
