@@ -186,10 +186,11 @@ function TestCompiler(tests) {
   Object.entries(tests).forEach(kv => {
     const [testName, testArray] = kv;
     // const [text, expect] = testArray; // ts parser too old to handle spread
-    const text = testArray[0];
+    const text = testArray[0].trim();
     console.group(...PR('compile tests'));
-    console.log(...PR(text));
-    const script = Scriptifier.tokenize(text);
+    console.log(text);
+    const sourceStrings = text.split('\n');
+    const script = Scriptifier.tokenize(sourceStrings);
     console.groupEnd();
     // const program = CompileScript(script);
   });
