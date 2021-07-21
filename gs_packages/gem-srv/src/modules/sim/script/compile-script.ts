@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Convert text to Script Units Tokens. It does not test the validity of then
@@ -12,7 +13,9 @@ import { GetKeyword } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
 import { ParseExpression } from 'lib/expr-parser';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer-dbg';
-import { Blocks } from './test-blockscripts';
+import SM_State from 'lib/class-sm-state';
+import GAgent from 'lib/class-gagent';
+import { Script } from './gsrc-script-compile';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -40,17 +43,8 @@ function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetTokenValue(arg) {
-  const {
-    token,
-    objref,
-    directive,
-    value,
-    string,
-    comment,
-    program,
-    block,
-    expr
-  } = arg;
+  const { token, objref, directive, value, string, comment, program, expr } = arg;
+  if (Array.isArray(arg)) return [...arg];
   if (token !== undefined) {
     if (token === '#') return '_pragma';
     return token;
@@ -62,7 +56,6 @@ function m_GetTokenValue(arg) {
   // special cases
   if (program) return arg; // { program = string name of stored program }
   if (objref) return arg; // { objref = array of string parts }
-  if (block) return arg; // { block = array of ScriptUnits }
   if (expr) return arg; // { expr = string }
   console.warn('unknown argument type:', arg);
   throw Error('unknown argument type');
@@ -75,11 +68,6 @@ function m_GetTokenValue(arg) {
 export function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
   if (!Array.isArray(unit)) console.warn(...PR('unit is not array', unit));
   const modUnit: TScriptUnit = unit.map((item, idx) => {
-    // internal checks
-    if (Array.isArray(item)) {
-      console.warn('r_ExpandArgs: err caused by', item);
-      throw Error('unexpected array argument; should be obj');
-    }
     if (typeof item !== 'object')
       throw Error('all units should be an argument node');
     // arg is an array of elements in the ScriptUnit.
@@ -115,32 +103,17 @@ export function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
       arg.program = GetProgram(arg.program);
       return arg;
     }
-    // 4. program block is an array of scriptUnits
-    if (Array.isArray(arg.block)) {
-      return r_CompileBlock(arg.block);
-      // do nothing here because Compiler will handle the block
+    // 4. block program is array of scriptunit array and has to be compiled
+    if (Array.isArray(arg)) {
+      const smc = CompileScript(arg); // recursive compile
+      return smc;
     }
-    // 5. otherwise this is a plain argment OR an array of ScriptUnits
+    // 5. otherwise this is a plain argument
     return arg;
   });
   return modUnit;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Compile a script block, returning objcode */
-function r_CompileBlock(units: TScriptUnit[]): TSMCProgram {
-  const objcode = []; // holder for compiled code
-  let code; // holder for compiled unit
-  units.forEach((unit, idx) => {
-    // skip all pragmas
-    if (unit[0].directive) return; // skip directives, which are never in blocks
-    if (unit[0].comment) return; // skip comments
-    // recursive compile through r_r_ExpandArgs()
-    code = r_CompileUnit(unit, idx); // recursive!
-    code = m_CheckForError(code, unit);
-    objcode.push(...code);
-  });
-  return objcode;
-}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a single unit of nodes of different types, run everything through
  *  the keyword compiler cycle
@@ -175,7 +148,6 @@ export function CompileScript(units: TScriptUnit[]): TSMCProgram {
     if (unit[0] === '#') return;
     objcode = r_CompileUnit(unit, idx);
     objcode = m_CheckForError(objcode, unit);
-    console.log(...PR(idx, objcode));
     program.push(...objcode);
   });
   // an array of TOpcode functions aka SMC
@@ -185,20 +157,34 @@ export function CompileScript(units: TScriptUnit[]): TSMCProgram {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestCompiler(tests) {
-  console.group(...PR('TEST: CompileScript'));
+  console.groupCollapsed(...PR('TEST: CompileScript'));
   Object.entries(tests).forEach(kv => {
-    const [testName, testArray] = kv;
-    // const [text, expect] = testArray; // ts parser too old to handle spread
-    const text = testArray[0].trim();
-    console.group(...PR('compile tests'));
-    console.log(text);
-    const sourceStrings = text.split('\n');
+    const [testName, testArgs] = kv;
+    // workaround out-of-date typescript compiler that doesn't recognize spread
+    const text = testArgs['text'];
+    const ctx = testArgs['ctx'];
+    const stack = testArgs['stack'];
+    // const { text, ctx, stack } = testArgs;
+    console.group(...PR(testName));
+    console.log(text.trim());
+    const sourceStrings = text.trim().split('\n');
     const script = Scriptifier.tokenize(sourceStrings);
     const program = CompileScript(script);
+    console.log('%cinit: stack', 'color:brown', stack, 'context', ctx);
+    console.group('executing program');
+    const state = new SM_State(stack, ctx);
+    const agent = new GAgent('CompilerTest');
+    program.forEach((op, idx) => {
+      if (typeof op !== 'function')
+        console.warn(`op ${idx} is not a function, got ${typeof op}`, op);
+      op(agent, state);
+    });
+    console.groupEnd();
+    console.log('%cexit: stack', 'color:brown', state.stack, 'context', ctx);
     console.groupEnd();
   });
   console.groupEnd();
 }
 UR.HookPhase('UR/APP_RUN', () => {
-  // TestCompiler(Blocks);
+  TestCompiler(Script);
 });

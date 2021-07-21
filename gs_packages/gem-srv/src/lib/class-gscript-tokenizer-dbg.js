@@ -579,7 +579,7 @@ class ScriptTokenizer {
         // EXIT CONDITION: closing ]] return
         if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
           this.index += 2;
-          return scriptunits;
+          return [scriptunits];
         }
         // handle the line (will call gobbleBlock() recursively)
         unit.push(this.gobbleToken());

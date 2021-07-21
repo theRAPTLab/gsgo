@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/dot-notation */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Convert text to Script Units Tokens. It does not test the validity of then
@@ -8,7 +9,7 @@
 import UR from '@gemstep/ursys/client';
 import GScriptTokenizerDBG from 'lib/class-gscript-tokenizer-dbg';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
-import { Blocks } from './test-blockscripts';
+import { Blocks } from './gsrc-block-tokenize';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,13 +21,15 @@ const gst = new GScriptTokenizer();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the test format is { testName: [ scripttext, jsonscriptunits ] }
 function TestTokenizeScripts(tests) {
-  console.group(...PR('TEST: TokenizeScripts'));
+  console.groupCollapsed(...PR('TEST: TokenizeScripts'));
   Object.entries(tests).forEach(kv => {
-    const [testName, testArray] = kv;
-    // const [text, expect] = testArray; // ts parser too old to handle spread
-    const text = testArray[0].trim();
-    const expect = testArray[1];
-    const sourceStrings = text.split('\n');
+    const [testName, testArgs] = kv;
+    // workaround out-of-date typescript compiler that doesn't recognize spread
+    const text = testArgs['text'];
+    const expect = testArgs['expect'];
+    // const { text, expect } = testArgs;
+    //
+    const sourceStrings = text.trim().split('\n');
     const su = gstDBG.tokenize(sourceStrings);
     const result = JSON.stringify(su);
     const pass = expect === result;
