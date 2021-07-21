@@ -23,13 +23,9 @@ import '../../lib/vendor/prism.css';
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-styles';
 
-/// RUN TESTS THAT ARE BROKEN BECAUSE OF BAD KEYWORDS /////////////////////////
+/// RUN TESTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** these should be able to run clean in SystemInit without any dependencies
- *  as unit tests, but there is fishy code using URSYS in some keywords
- */
-// import '../../modules/tests/test-compiler'; // test compiler
-// import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
+/// see SystemInit.jsx for the test loader
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

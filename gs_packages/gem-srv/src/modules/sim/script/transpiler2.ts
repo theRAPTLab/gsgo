@@ -18,7 +18,7 @@ import {
 } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
 import { ParseExpression } from 'lib/expr-parser';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer2';
+import GScriptTokenizer from 'lib/class-gscript-tokenizer';
 import SM_Bundle from 'lib/class-sm-bundle';
 import SM_State from 'lib/class-sm-state';
 import * as DATACORE from 'modules/datacore';
@@ -32,6 +32,7 @@ import {
 // critical imports
 import 'script/keywords/_all_keywords';
 import './scriptify-text';
+import './compile-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

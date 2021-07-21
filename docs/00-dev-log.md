@@ -107,6 +107,63 @@ The contents of a block token are lines of text; the processing of these lines i
 
 **Q. How do we change gScriptTokenizer to fully tokenize?**
 
-* [ ] first modify the tokenizer to call gobbleLine after the complete block is captured.
-* [ ] 
+* [x] first modify the tokenizer to call gobbleLine after the complete block is captured?
+* [x] it actually is not re-entrant because of the way the class instance handles the character and line indicator. Rather than rewrite it, it was easier to do a recursive pass on the resulting scriptunit array
+
+**Q. Now that the script is completely tokenizing, what changes in the compiler?**
+
+```
+r_CompileUnit() processing a single scriptunit array, and returns a TSMCProgram aka TOpcode[]
+
+the unit is first "expanded"
+```
+
+## JUL 21 WEDNESDAY - Debugging Recursive Compile
+
+There's a problem with **nblock** test:
+
+```
+B touch B [[
+  prop C set 10
+  if C gt 0 [[
+    prop D add 1
+  ]]
+]]
+```
+
+Line 4, nested block of nested block, is **not tokenized**. This also affects **nblockblock** test.
+
+This means there's a bug in my recursion logic. Let's pseudocode this
+
+```
+lines = text.split(`n`);
+lines forEach line
+	tokens = tokenizeLine
+	
+tokenizeLine is GScriptTokenizer...so this is the broken thing
+```
+
+The **key issues** is there are **TWO PARTS** to fix at the same time:
+
+* either the tokenizer has to recursively tokenize OR
+* the scriptifier has to do the recursion pass
+
+The correct way to do this would be to fix the parser so 'block' is never returned anymore. 
+
+So let's look at the tokenizer again to assess it for **recursion**
+
+```
+A [[  gobbleLine() - 
+ B [[
+   C
+ ]]
+ D
+]]
+```
+
+
+
+```
+[ A, [ B, [ C ], D ]
+```
 
