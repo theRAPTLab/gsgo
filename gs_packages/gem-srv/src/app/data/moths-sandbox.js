@@ -294,7 +294,8 @@ when Predator centerTouchesCenter Moth [[
   every 2 [[
     // featCall Moth.Population removeAgent
     prop Moth.isInert setTo true
-    featCall Moth.Costume setCostume 'flower.json' 0
+    featCall Moth.Costume setCostume 'square.json' 0
+    featProp Moth.Physics scale setTo 0.1
     featCall Predator.Costume setGlow 1
     ifExpr {{ Moth.prop.Costume.colorValue.value < 0.5 }} [[
       dbgOut 'Eaten...dark!'
