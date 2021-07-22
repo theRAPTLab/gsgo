@@ -195,11 +195,18 @@ class PopulationPack extends GFeature {
   /**
    * For all agents of type bpname, call program if not inert
    */
-  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+  agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) a.exec(program, { agent: a });
     });
+  }
+  /**
+   * For all agents of type bpname, call program regardless of inert state
+   */
+  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+    const agents = GetAgentsByType(bpname);
+    agents.forEach(a => a.exec(program, { agent: a }));
   }
 
   /// STATISTICS METHODS /////////////////////////////////////////////////////////
