@@ -112,6 +112,10 @@ class PopulationPack extends GFeature {
     this.featAddProp(agent, 'min', new GVarString());
     this.featAddProp(agent, 'max', new GVarString());
 
+    // Used by populateBySpawning to set target population levels
+    this.featAddProp(agent, 'targetPopulationSize', new GVarNumber(1));
+    this.featAddProp(agent, 'deleteAfterSpawning', new GVarBoolean(true));
+
     agent.prop.Population._countsByProp = new Map();
   }
 
@@ -200,22 +204,53 @@ class PopulationPack extends GFeature {
    * @param agent
    * @param bpname
    * @param spawnScript
-   * @param makeInertAfterSpawning If true, agent will be removed after spawning
    */
-  agentsReproduce(
-    agent: IAgent,
-    bpname: string,
-    makeInertAfterSpawning: boolean,
-    spawnScript: string
-  ) {
+  agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     const agents = GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) {
         a.callFeatMethod('Population', 'spawnChild', spawnScript);
-        if (makeInertAfterSpawning) a.prop.isInert.setTo(true);
+        if (deleteAfterSpawning) a.prop.isInert.setTo(true);
       }
     });
   }
+  /**
+   * For all agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
+   */
+  populateBySpawning(agent: IAgent, bpname: string, spawnScript: string) {
+    const targetPopulationSize = agent.prop.Population.targetPopulationSize.value;
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
+    let count = AGENTS_TO_CREATE.length;
+    let agentIndex = 0;
+    const agents = GetAgentsByType(bpname);
+
+    while (count < targetPopulationSize) {
+      const a = agents[agentIndex];
+      if (!a.isInert) {
+        this.spawnChild(a, spawnScript);
+        count++;
+        if (count >= targetPopulationSize) break;
+      }
+      agentIndex++;
+      if (agentIndex >= agents.length) agentIndex = 0;
+    }
+
+    // force immediate creation so that population can be set
+    // during PREP ROUND, otherwise population isn't created until
+    // after START ROUND
+    m_Create(0);
+
+    if (deleteAfterSpawning) {
+      agents.forEach(a => this.removeAgent(a));
+      // force immediate delete otherwise deletion happens only after START ROUND
+      m_Delete(0);
+    }
+  }
+
   /**
    * For all agents of type bpname, call program if not inert
    */

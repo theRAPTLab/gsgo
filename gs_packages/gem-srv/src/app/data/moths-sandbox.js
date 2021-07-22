@@ -40,9 +40,8 @@ featCall Population removeInertAgents
 
 // Spawn New Moths
 
-// -- set to true to remove inert
-//    but doing so will BREAK HISTOGRAMS!
-featCall Population agentsReproduce Moth false [[
+featProp Population targetPopulationSize setTo 10
+featCall Population populateBySpawning Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
   featProp Costume colorScaleIndex addRnd -3 3 true
