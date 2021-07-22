@@ -64,17 +64,23 @@ function m_Update() {
     // COLOR can be set two different ways: colorScale or HSV
     // NOTE: color scale will override any hsv settings
     if (agent.prop.Costume.colorScaleIndex.value !== undefined) {
-      // color scale?
+      // retrieve color from color scale
       color = agent.prop.Costume._colorScale.get(
         agent.prop.Costume.colorScaleIndex.value
       );
-    } else {
-      // hsv?
-      h = agent.prop.Costume.colorHue.value;
-      s = agent.prop.Costume.colorSaturation.value;
-      v = agent.prop.Costume.colorValue.value;
-      color = HEXfromHSV(h, s, v);
+      // set hsv
+      [h, s, v] = HSVfromHEX(color);
+      agent.prop.Costume.colorHue.setTo(h);
+      agent.prop.Costume.colorSaturation.setTo(s);
+      agent.prop.Costume.colorValue.setTo(v);
     }
+
+    // convert feature color data to hex for agent
+    h = agent.prop.Costume.colorHue.value;
+    s = agent.prop.Costume.colorSaturation.value;
+    v = agent.prop.Costume.colorValue.value;
+    color = HEXfromHSV(h, s, v);
+
     if (!Number.isNaN(color)) {
       agent.prop.color.setTo(color);
     }
