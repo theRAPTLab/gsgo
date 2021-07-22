@@ -55,7 +55,14 @@ featCall Population agentsForEach TreeFoliage [[
 ]]
 `,
         outtro: 'What happened to spawn?',
-        endScript: `dbgOut 'END Round2!'`
+        endScript: `dbgOut 'END Round2!'
+// Update Graph
+featCall Population countExistingAgentsByFeatPropType Moth Costume colorScaleIndex true
+// Reshow Moth Labels
+featCall Population agentsForEach Moth [[
+  featPropPush Costume colorScaleIndex
+  featPropPop AgentWidgets text
+]]`
       }
     ]
   },
@@ -118,11 +125,14 @@ useFeature Global
 
 useFeature Cursor
 
-# PROGRAM INIT
-// Don't randomize here or we'll keep getting new colors
-// Set randomize in # PROGRAM DEFINE
-// featCall Costume randomizeColorHSV 0.1 0 0.2
-// featCall Movement setRandomStart
+# PROGRAM EVENT
+onEvent Start [[
+  // hide label once sim starts
+  featProp AgentWidgets text setTo ''
+]]
+// label is restored by round endScript
+// because 'onEvent RoundStop' will not run after
+// the sim stops
 
 # PROGRAM UPDATE
 every 0.25 [[
