@@ -47,7 +47,7 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
-const MOVEDISTANCE = 1; // Minimum distance moved before `isMoved` is registered
+const MOVEDISTANCE = 5; // Minimum distance moved before `isMoved` is registered
 // This is necessary to account for input jitter
 
 /// Movement Agent Manager
