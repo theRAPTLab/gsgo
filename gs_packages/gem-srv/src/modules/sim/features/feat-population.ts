@@ -197,11 +197,23 @@ class PopulationPack extends GFeature {
 
   /**
    * For all agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
+   * @param makeInertAfterSpawning If true, agent will be removed after spawning
    */
-  agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+  agentsReproduce(
+    agent: IAgent,
+    bpname: string,
+    makeInertAfterSpawning: boolean,
+    spawnScript: string
+  ) {
     const agents = GetAgentsByType(bpname);
     agents.forEach(a => {
-      if (!a.isInert) a.callFeatMethod('Population', 'spawnChild', spawnScript);
+      if (!a.isInert) {
+        a.callFeatMethod('Population', 'spawnChild', spawnScript);
+        if (makeInertAfterSpawning) a.prop.isInert.setTo(true);
+      }
     });
   }
   /**
