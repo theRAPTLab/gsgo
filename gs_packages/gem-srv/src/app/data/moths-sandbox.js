@@ -41,6 +41,7 @@ featCall Population removeInertAgents
 // Spawn New Moths
 
 // -- set to true to remove inert
+//    but doing so will BREAK HISTOGRAMS!
 featCall Population agentsReproduce Moth false [[
   prop x addRnd -64 64
   prop y addRnd -64 64
@@ -339,6 +340,9 @@ when Predator seesCamouflaged Moth [[
 // ]]
 
 when Predator centerTouchesCenter Moth [[
+
+  // Only if Moth is not camouflaged
+
   featCall Moth.Costume setGlow 1
   featCall Moth.Movement jitterRotate
 
@@ -395,6 +399,11 @@ useFeature AgentWidgets
 
 # PROGRAM INIT
 prop zIndex setTo -200
+
+# PROGRAM UPDATE
+exprPush {{ agent.name }}
+dbgStack
+
 `
     },
     {
@@ -411,8 +420,48 @@ useFeature AgentWidgets
 featProp AgentWidgets isLargeGraphic setTo true
 `
     },
+    {
+      id: 'ColorGraph',
+      label: 'ColorGraph',
+      script: `# BLUEPRINT ColorGraph
+# PROGRAM DEFINE
+useFeature Population
+// for setting GlobalProp
+useFeature Global
+useFeature AgentWidgets
+featProp AgentWidgets isLargeGraphic setTo true
+
+# PROGRAM EVENT
+onEvent Start [[
+  dbgOut 'Round Start'
+]]
+onEvent RoundStop [[
+  dbgOut 'Round Stop'
+]]
 `
     }
+    //     {
+    //       id: 'Counter',
+    //       label: 'Counter',
+    //       script: `# BLUEPRINT Counter
+    // # PROGRAM DEFINE
+    // prop skin setTo 'onexone'
+    // useFeature Population
+    // useFeature Global
+    // useFeature AgentWidgets
+    // featProp AgentWidgets isLargeGraphic setTo true
+
+    // # PROGRAM UPDATE
+    // // every 1 runAtStart [[
+    // //   featCall Population countAgents Moth
+    // //   featPropPush Population count
+    // //   featPropPop AgentWidgets meter
+
+    // //   featPropPush Population count
+    // //   featPropPop AgentWidgets text
+    // // ]]
+    // `
+    //     }
   ],
   instances: [
     //     {
@@ -559,32 +608,45 @@ prop y setTo -100`
 prop y setTo -300
 featCall AgentWidgets bindHistogramToFeatProp Population _countsByProp`
     },
+    //     {
+    //       id: 1401,
+    //       name: 'Counter',
+    //       blueprint: 'Counter',
+    //       initScript: `prop x setTo 460
+    // prop y setTo 300`
+    //     }
     {
       id: 1401,
       name: 'Dark Moths',
-      blueprint: 'Reporter',
+      blueprint: 'ColorGraph',
       initScript: `prop x setTo 460
-prop y setTo 300
-dbgOut "init 1401 dark moths"
-featCall Global addGlobalProp darkMoths Number 0
-featCall Global globalProp darkMoths setMin 0
-featCall AgentWidgets bindGraphToGlobalProp darkMoths 30
-`
+prop y setTo 300`
     },
     {
       id: 1402,
-      name: 'Light Moths',
-      blueprint: 'Reporter',
+      name: 'Medium Moths',
+      blueprint: 'ColorGraph',
       initScript: `prop x setTo 460
 prop y setTo 100
+dbgOut "init 1402 medium moths"
+featCall Global addGlobalProp medMoths Number 0
+featCall Global globalProp medMoths setMin 0
+featCall AgentWidgets bindGraphToGlobalProp medMoths 30
+`
+    },
+    {
+      id: 1403,
+      name: 'Light Moths',
+      blueprint: 'ColorGraph',
+      initScript: `prop x setTo 460
+prop y setTo -100
 dbgOut "init 1402 light moths"
 featCall Global addGlobalProp lightMoths Number 0
 featCall Global globalProp lightMoths setMin 0
 featCall Global globalProp lightMoths setMax Infinity
 featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
 // demo featProp in instance editor
-featProp AgentWidgets text setTo 'Light Moths Graph'
-// where's the last line?
+// featProp AgentWidgets text setTo 'Light Moths Graph'
 `
     }
   ]
