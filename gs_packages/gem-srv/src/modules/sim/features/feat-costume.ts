@@ -291,17 +291,19 @@ class CostumePack extends GFeature {
     steps: number
   ) {
     agent.prop.Costume._colorScale = new Map();
-    for (let i = 1; i <= steps; i++) {
+    // index is 0-based
+    const max = steps - 1;
+    for (let i = 0; i <= max; i++) {
       let color;
-      if (type === 'hue') color = HEXfromHSV((i * 1) / steps, sat, val);
-      if (type === 'saturation') color = HEXfromHSV(hue, (i * 1) / steps, val);
-      if (type === 'value') color = HEXfromHSV(hue, sat, (i * 1) / steps);
+      if (type === 'hue') color = HEXfromHSV(i / max, sat, val);
+      if (type === 'saturation') color = HEXfromHSV(hue, i / max, val);
+      if (type === 'value') color = HEXfromHSV(hue, sat, i / max);
       if (color === undefined)
         console.error('initHSVColorScale with bad "type".');
       agent.prop.Costume._colorScale.set(i, color);
     }
-    agent.prop.Costume.colorScaleIndex.setMax(steps);
-    agent.prop.Costume.colorScaleIndex.setMin(1);
+    agent.prop.Costume.colorScaleIndex.setMax(steps - 1);
+    agent.prop.Costume.colorScaleIndex.setMin(0);
   }
   getHSVColorScaleColor(agent: IAgent, index: number) {
     if (agent.prop.Costume._colorScale)
