@@ -12,20 +12,20 @@ export const MODEL = {
   rounds: {
     options: {
       allowResetStage: false,
-      noloop: true // stop after last round
+      noloop: false // if true, stop after last round
     },
     roundDefs: [
-      {
-        id: 'r1',
-        label: 'Round 1: First Gen',
-        time: 10,
-        intro: 'First generation',
-        outtro: 'What happened?',
-        initScript: `dbgOut 'roundDef: Round1!'
-prop x setTo 100`,
-        endScript: `dbgOut 'END Round1!'
-prop y setTo 100`
-      },
+      //       {
+      //         id: 'r1',
+      //         label: 'Round 1: First Gen',
+      //         time: 10,
+      //         intro: 'First generation',
+      //         outtro: 'What happened?',
+      //         initScript: `dbgOut 'roundDef: Round1!'
+      // prop x setTo 100`,
+      //         endScript: `dbgOut 'END Round1!'
+      // prop y setTo 100`
+      //       },
       {
         id: 'r2',
         label: 'Round 2: Mutated',
