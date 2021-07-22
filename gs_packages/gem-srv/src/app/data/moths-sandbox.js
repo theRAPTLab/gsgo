@@ -421,6 +421,47 @@ featProp AgentWidgets isLargeGraphic setTo true
 `
     },
     {
+      id: 'CountAgent', // does nothing but count numbers for graph
+      label: 'CountAgent',
+      script: `# BLUEPRINT CountAgent
+# PROGRAM DEFINE
+useFeature Global
+useFeature Population
+
+// Define graphs
+featCall Global addGlobalProp darkMoths Number 0
+featCall Global globalProp darkMoths setMin 0
+
+featCall Global addGlobalProp medMoths Number 0
+featCall Global globalProp medMoths setMin 0
+
+featCall Global addGlobalProp lightMoths Number 0
+featCall Global globalProp lightMoths setMin 0
+featCall Global globalProp lightMoths setMax Infinity
+
+# PROGRAM UPDATE
+every 1 [[
+  // RESET Count
+  featCall Global globalProp lightMoths setTo 0
+  featCall Global globalProp medMoths setTo 0
+  featCall Global globalProp darkMoths setTo 0
+
+  // HACKY COUNTING LOOP -- count number of light/med/dark moths for graphs
+  featCall Population agentsForEachActive Moth [[
+    ifExpr {{ agent.prop.Costume.colorValue.value > 0.6 }} [[
+      featCall Global globalProp lightMoths add 1
+    ]]
+    ifExpr {{ agent.prop.Costume.colorValue.value > 0.3 && agent.prop.Costume.colorValue.value <= 0.6 }} [[
+      featCall Global globalProp medMoths add 1
+    ]]
+    ifExpr {{ agent.prop.Costume.colorValue.value <= 0.3 }} [[
+      featCall Global globalProp darkMoths add 1
+    ]]
+  ]]
+]]
+`
+    },
+    {
       id: 'ColorGraph',
       label: 'ColorGraph',
       script: `# BLUEPRINT ColorGraph
@@ -617,36 +658,35 @@ featCall AgentWidgets bindHistogramToFeatProp Population _countsByProp`
     //     }
     {
       id: 1401,
-      name: 'Dark Moths',
-      blueprint: 'ColorGraph',
-      initScript: `prop x setTo 460
-prop y setTo 300`
+      name: 'Count Agent',
+      blueprint: 'CountAgent',
+      initScript: ``
     },
     {
       id: 1402,
-      name: 'Medium Moths',
+      name: 'Dark Moths',
       blueprint: 'ColorGraph',
       initScript: `prop x setTo 460
-prop y setTo 100
-dbgOut "init 1402 medium moths"
-featCall Global addGlobalProp medMoths Number 0
-featCall Global globalProp medMoths setMin 0
-featCall AgentWidgets bindGraphToGlobalProp medMoths 30
+prop y setTo 300
+featCall AgentWidgets bindGraphToGlobalProp darkMoths 30
 `
     },
     {
       id: 1403,
+      name: 'Medium Moths',
+      blueprint: 'ColorGraph',
+      initScript: `prop x setTo 460
+prop y setTo 100
+featCall AgentWidgets bindGraphToGlobalProp medMoths 30
+`
+    },
+    {
+      id: 1404,
       name: 'Light Moths',
       blueprint: 'ColorGraph',
       initScript: `prop x setTo 460
 prop y setTo -100
-dbgOut "init 1402 light moths"
-featCall Global addGlobalProp lightMoths Number 0
-featCall Global globalProp lightMoths setMin 0
-featCall Global globalProp lightMoths setMax Infinity
 featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
-// demo featProp in instance editor
-// featProp AgentWidgets text setTo 'Light Moths Graph'
 `
     }
   ]
