@@ -118,7 +118,7 @@ r_CompileUnit() processing a single scriptunit array, and returns a TSMCProgram 
 the unit is first "expanded"
 ```
 
-## JUL 21 WEDNESDAY - Debugging Recursive Compile
+## JUL 21 WED - Debugging Recursive Compile
 
 There's a problem with **nblock** test:
 
@@ -151,19 +151,256 @@ The **key issues** is there are **TWO PARTS** to fix at the same time:
 The correct way to do this would be to fix the parser so 'block' is never returned anymore. 
 
 So let's look at the tokenizer again to assess it for **recursion**
+* [x] gscript-tokenizer updated to return fully tokenized text
+
+* [ ] there is a problem with NESTED SCRIPT BLOCKS being textified
+
+## JUL 22 THU - Debugging ScriptifyText
 
 ```
-A [[  gobbleLine() - 
- B [[
-   C
- ]]
- D
+script = [
+  [ // statement 00
+    { 'token': 'when' },
+    { 'token': 'A' },
+    { 'token': 'touches' },
+    { 'token': 'B' },
+    [ // conseq1
+      [ // statement 1a
+        { 'token': 'prop' },
+        { 'token': 'C' },
+        { 'token': 'set' },
+        { 'value': 10 }
+      ], 
+      [ // statement 1b
+        { 'token': 'ifExpr' },
+        { 'expr': 'C' },
+        [ // conseq2
+          [ /** ERROR extra open ************************/
+            [ // statement 2a
+              { 'token': 'prop' },
+              { 'token': 'D' },
+              { 'token': 'add' },
+              { 'value': 1 }
+            ], // end 2a
+            [ // statement 2b
+              { 'token': 'ifExpr' },
+              { 'expr': 'Z' }, 
+              [ // conseq3
+                [ /** ERROR extra open ******************/
+                  [ // statement 3a
+                    { 'token': 'prop' }, 
+                    { 'expr': 'Z' }
+                  ] // end 3a
+                ] /** ERROR extra close *****************/
+              ] // end conseq3
+            ] // end 2b
+          ] /** ERROR extra close ***********************/
+        ] // end conseq2
+      ] // end 1b
+    ] // end conseq1
+  ] // end 00
+];
+```
+
+It looks like the code that produces the **consequent** in the block read is doing an extra wrap around the block.
+
+in `gobbleMultiblock()` I removed the array wrap from`return [ scriptunits ];`
+
+```
+[ // program
+  [ // statement1
+    { 'token': 'when' },
+    { 'token': 'A' },
+    { 'token': 'touches' },
+    { 'token': 'B' },
+    [ // conseq is arr of statements
+    /** missing statement [ ***************************/
+    	{ 'token': 'prop' }, 
+    	{ 'token': 'C' }, 
+    	{ 'token': 'set' }, 
+    	{ 'value': 10 }
+    /** missing statement ] ***************************/
+    ], /** premature end conseq ***********************/
+    [ 
+      { 'token': 'ifExpr' },
+      { 'expr': 'C' },
+      [
+        [
+          { 'token': 'prop' },
+          { 'token': 'D' },
+          { 'token': 'add' },
+          { 'value': 1 }
+        ],
+        [
+          { 'token': 'ifExpr' },
+          { 'expr': 'Z' },
+          [
+          	[
+          		{ 'token': 'prop' }, 
+          		{ 'expr': 'Z' }
+          	]
+          ]
+        ]
+      ]
+    ]
+  ]
+];
+```
+
+So that wasn't it.
+
+I think the issue is that the **multiline parse is breaking across line boundaries**, so the statements are nested incorrectly. That's because it goes LINE-BY-LINE.
+
+```
+when A touches B [[
+  prop C set 10       <---
+  ifExpr {{ C }} [[
+    prop D add 1
+    ifExpr {{ Z }} [[
+      prop {{ Z }}
+    ]]
+  ]]
 ]]
+---------------------
+process block line 1: 'prop C set 10'
+	unit = [{prop}{C}{set}{10}]
+	statements.push(unit);
+process block line 2: 'ifExpr {{ C }} [['
+	gobbleToken {ifExpr}{C} [[
+		gobbleBlock() EOL ... so 
+			gobbleMultiBlock()
+		  	process block line 3: 'prop {{ D }} add 1`
+					unit = [{prop}{D}{add}{1}]
+					statements.push(unit)
+				process block line 4: 'ifExpr {{ Z }} [[`
+					gobbleToken {ifExpr}{Z} [[
+						gobbleBlock() EOL ... so 
+							gobbleMultiBlock()
+								process block line 5: 'prop {{ Z }}'
+									gobbleToken {prop}{Z}
+							-return [[{prop}{Z}]]
+						-[[{prop}{Z}]]
+					- return {ifExpr}{Z}[[{prop}{Z}]]
+				- return [{ifExpr}{Z}[[{prop}{Z}]]]
+			- return [ [prop D add 1], [[{ifExpr}{Z}[[{prop}{Z}]]] ]
+I WONDER if this is the issue...when returning the nesting it is one extra				
+```
+
+There is something **wrapping** the consequent?
+
+Simpler version:
+
+```
+when [[
+  prop A
+  ifExpr [[
+    prop D
+  ]]
+]]
+
+script = [
+  [ // statement
+    { 'token': 'when' },
+    [ // block
+      [ // block statement
+        { 'token': 'prop' }, 
+        { 'token': 'A' }
+      ],
+      [ // block statement
+        { 'token': 'ifExpr' },
+        [ // block
+          [ // block statement
+            [ /*** ERROR *** spurious [ ***/
+              { 'token': 'prop' }, 
+              { 'token': 'D' }
+            ] /*** ERROR *** spurious ] ***/
+          ]
+        ]
+      ]
+    ]
+  ]
+]
+
+
+```
+
+Maybe we have to spread the statement
+
+```
+
+script = [
+  [ // statement
+    { 'token': 'when' },
+    [ // block
+    /** missing [ **/
+      { 'token': 'prop' },
+      { 'token': 'A' }
+    /** missing ] **/
+    ],
+    [ //
+      { 'token': 'ifExpr' }, 
+      [
+        [
+          { 'token': 'prop' }, 
+          { 'token': 'D' }
+        ]
+      ]
+    ]
+  ]
+];
+```
+
+So it seems to hinge around `statement`
+
+### There is still a bug
+
+```
+fail nblock variations, pass block + ifExpr
+WRAPPED nblockFail = 
+[
+  [
+    { 'token': 'when' },
+OK  [
+OK    [ { 'token': 'prop' }, { 'token': 'A' } ],
+OK    [
+        { 'token': 'ifExpr' },
+        [
+          [  **** ERROR EXTRA WRAP
+            [ { 'token': 'prop' }, { 'token': 'D' } ]
+          ]  **** ERROR EXTRA WRAP
+        ]
+      ]
+    ]
+  ]
+];
+
+fail everything
+NOWRAPPED const nblockFail = 
+[
+  [
+    *** MISSING [
+    { 'token': 'when' },
+    [
+      *** MISSING WRAP
+      { 'token': 'prop' }, { 'token': 'A' }
+    ] *** MISSING WRAP
+    [
+      *** MISSING WRAP
+      { 'token': 'ifExpr' },
+OK    [ 
+        [ { 'token': 'prop' }, { 'token': 'D' } ]
+      ]
+      *** MISSING WRAP
+    ]
+    *** MISSING ]
+  ]
+];
 ```
 
 
 
 ```
-[ A, [ B, [ C ], D ]
+statements = [[ u ]]
+if (sl === 1 && Array.isArray(tarr) && typeof u === 'object')
 ```
 

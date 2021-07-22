@@ -8,7 +8,7 @@
 
 import UR from '@gemstep/ursys/client';
 
-import { TScriptUnit, TSMCProgram } from 'lib/t-script.d';
+import { TScriptUnit, TSMCProgram, IToken } from 'lib/t-script.d';
 import { GetKeyword } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
 import { ParseExpression } from 'lib/expr-parser';
@@ -62,75 +62,65 @@ function m_GetTokenValue(arg) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Scan argument list and process different types of arguments
- *  before they are passed to a keyword compiler.
+/** return 'expanded' version of argument, suitable for passing to a keyword
+ *  compiler
  */
-export function r_ExpandArgs(unit: TScriptUnit): TScriptUnit {
-  if (!Array.isArray(unit)) console.warn(...PR('unit is not array', unit));
-  const modUnit: TScriptUnit = unit.map((item, idx) => {
-    if (typeof item !== 'object')
-      throw Error('all units should be an argument node');
-    // arg is an array of elements in the ScriptUnit.
-    // r_DecodeArg converts the node into plain types and
-    // special types that require their own processing
-    if (item.comment !== undefined) return '//'; // signal compiler to skip
-    const arg = m_GetTokenValue(item); // convert
-    // special case first keyword
-    if (idx === 0) {
-      if (arg === '#') return '_pragma';
-      return arg;
-    }
-    // check special types
-    // 1. an expression
-    if (typeof arg.expr === 'string') {
-      const ast = ParseExpression(arg.expr);
-      // replace expression string with AST
-      arg.expr = ast;
-      return arg;
-    }
-    // 2. a dotted object reference
-    if (Array.isArray(arg.objref)) {
-      // assume it is a valid context reference
-      // context needs to be generated at runtime and swizzled to match
-      // the syntax! e.g. agent.prop['x'] swizzled into agent.x somehow
-      // so just return the arg as-is and assume runtime expander will
-      // handle it
-      return arg;
-    }
-    // 3. program name
-    if (typeof arg.program === 'string') {
-      // named programs are resolved, replace with actual program
-      arg.program = GetProgram(arg.program);
-      return arg;
-    }
-    // 4. block program is array of scriptunit array and has to be compiled
-    if (Array.isArray(arg)) {
-      const smc = CompileScript(arg); // recursive compile
-      return smc;
-    }
-    // 5. otherwise this is a plain argument
+export function r_ExpandArg(tok: IToken): any {
+  if (tok.comment !== undefined) return '//'; // signal compiler to skip
+  const arg = m_GetTokenValue(tok); // convert
+  // check special types
+  // 1. an expression
+  if (typeof arg.expr === 'string') {
+    const ast = ParseExpression(arg.expr);
+    // replace expression string with AST
+    arg.expr = ast;
     return arg;
-  });
-  return modUnit;
+  }
+  // 2. a dotted object reference
+  if (Array.isArray(arg.objref)) {
+    // assume it is a valid context reference
+    // context needs to be generated at runtime and swizzled to match
+    // the syntax! e.g. agent.prop['x'] swizzled into agent.x somehow
+    // so just return the arg as-is and assume runtime expander will
+    // handle it
+    return arg;
+  }
+  // 3. program name
+  if (typeof arg.program === 'string') {
+    // named programs are resolved, replace with actual program
+    arg.program = GetProgram(arg.program);
+    return arg;
+  }
+  // 4. block program is array of scriptunit array and has to be compiled
+  if (Array.isArray(arg)) {
+    const smc = CompileScript(arg); // recursive compile
+    return smc;
+  }
+  // 5. otherwise this is a plain argument
+  return arg;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a single unit of nodes of different types, run everything through
  *  the keyword compiler cycle
  */
-function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TSMCProgram {
-  // extract keyword first unit, assume that . means Feature
+function r_CompileStatement(units: TScriptUnit, idx?: number): TSMCProgram {
   let kwProcessor;
-  let unit = r_ExpandArgs(rawUnit); // recursive!
-  // after this, units contains normal js strings, numbers, or bools as well
+  // expand arguments
+  const kwArgs = units.map((tok, ii) => {
+    let arg = r_ExpandArg(tok);
+    if (ii === 0 && arg === '#') arg = '_pragma';
+    return arg;
+  });
+  // kwArgs contains normal js strings, numbers, or bools as well
   // as our special object types for expressions, blocks, objref...
-  let kw = unit[0];
+  let kw = kwArgs[0];
   // let's compile!
   if (typeof kw !== 'string') return [];
   if (kw === '//') return [];
   kwProcessor = GetKeyword(kw);
   if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
-  const compiledStatement = kwProcessor.compile(unit, idx); // qbits is the subsequent parameters
+  const compiledStatement = kwProcessor.compile(kwArgs, idx); // qbits is the subsequent parameters
   return compiledStatement;
 }
 
@@ -138,16 +128,16 @@ function r_CompileUnit(rawUnit: TScriptUnit, idx?: number): TSMCProgram {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile ScriptUnits into a single SMCProgram (TOpcode[])
  */
-export function CompileScript(units: TScriptUnit[]): TSMCProgram {
+export function CompileScript(script: TScriptUnit[]): TSMCProgram {
   const program: TSMCProgram = [];
   // null program
-  if (units.length === 0) return [];
+  if (script.length === 0) return [];
   // compile unit-by-unit
   let objcode: TSMCProgram;
-  units.forEach((unit, idx) => {
-    if (unit[0] === '#') return;
-    objcode = r_CompileUnit(unit, idx);
-    objcode = m_CheckForError(objcode, unit);
+  script.forEach((statement, ii) => {
+    if (statement[0] === '#') return;
+    objcode = r_CompileStatement(statement, ii);
+    objcode = m_CheckForError(objcode, statement);
     program.push(...objcode);
   });
   // an array of TOpcode functions aka SMC
@@ -157,7 +147,7 @@ export function CompileScript(units: TScriptUnit[]): TSMCProgram {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestCompiler(tests) {
-  console.groupCollapsed(...PR('TEST: CompileScript'));
+  console.group(...PR('TEST: CompileScript'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
@@ -170,21 +160,27 @@ function TestCompiler(tests) {
     const sourceStrings = text.trim().split('\n');
     const script = Scriptifier.tokenize(sourceStrings);
     const program = CompileScript(script);
-    console.log('%cinit: stack', 'color:brown', stack, 'context', ctx);
-    console.group('executing program');
     const state = new SM_State(stack, ctx);
     const agent = new GAgent('CompilerTest');
+    console.log('%cprogram:', 'color:brown', program);
+    console.group(`executing '${testName}' in test context`);
+    console.log('IN  stack:', state.stack, 'ctx:', state.ctx);
     program.forEach((op, idx) => {
       if (typeof op !== 'function')
         console.warn(`op ${idx} is not a function, got ${typeof op}`, op);
       op(agent, state);
     });
+    console.log('OUT stack:', state.stack, 'ctx:', state.ctx);
     console.groupEnd();
-    console.log('%cexit: stack', 'color:brown', state.stack, 'context', ctx);
     console.groupEnd();
   });
   console.groupEnd();
 }
-UR.HookPhase('UR/APP_RUN', () => {
-  TestCompiler(Script);
-});
+
+/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TEST = true;
+if (TEST)
+  UR.HookPhase('UR/APP_RUN', () => {
+    TestCompiler(Script);
+  });

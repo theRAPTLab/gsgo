@@ -39,6 +39,7 @@ let DBG_SHOW = true;
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PERIOD_CODE = 46; // '.'
+const BSLASH_CODE = 47; // slash /
 // const COMMA_CODE = 44; // ','
 const SQUOTE_CODE = 39; // single quote
 const DQUOTE_CODE = 34; // double quotes
@@ -217,8 +218,7 @@ class ScriptTokenizer {
     while (this.index < this.length) {
       this.gobbleSpaces();
       node = this.gobbleToken();
-      if (Array.isArray(node)) nodes.push(...node);
-      else nodes.push(node);
+      nodes.push(node);
     }
     // HACK: Ben added 'blank line' support so the number of returned script units
     // in the array matches the number of lines in the text, which simplifies
@@ -255,6 +255,10 @@ class ScriptTokenizer {
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
+    /* GEMSCRIPT ADDITION FOR // */
+    if (ch === BSLASH_CODE && chn === BSLASH_CODE) {
+      return this.gobbleComment();
+    }
     /* GEMSCRIPT ADDITION FOR [[ ]] */
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
@@ -513,7 +517,7 @@ class ScriptTokenizer {
       if (ch === CCURLY_CODE && cch === CCURLY_CODE) {
         this.index += 2;
         this.gobbleSpaces();
-        return { expr: str }; // was: return `{{${str}}}`;
+        return { expr: str.trim() }; // was: return `{{${str}}}`;
       }
       str += String.fromCharCode(ch);
     }
@@ -530,10 +534,11 @@ class ScriptTokenizer {
   gobbleBlock() {
     let ch;
     let cch;
-    let str = '';
+    let str = ''; // this
     let level = 1;
-    // when called by gobbleParts, already pointing at the second [ of [[
-    this.index++; // so increment to point to next char
+    // when called by gobbleParts or gobbleToken, already pointing at the
+    // second [ of [[ so increment to point to next char
+    this.index++;
 
     // start reading inside [[
     while (this.index < this.length) {
@@ -553,7 +558,7 @@ class ScriptTokenizer {
         str += String.fromCharCode(ch);
       }
     }
-    // if got this far, the form [[ programname ]] was not found, and we
+    // if got this far, the form [[ program ]] was not found, and we
     // have an unclosed block [[ delimiter, so we need to parse the
     // subsequent lines for a { block: line[] } until the end of block
     return this.gobbleMultiBlock();
@@ -567,25 +572,27 @@ class ScriptTokenizer {
   gobbleMultiBlock() {
     // we are here because of an unbalanced [[ so we must scan for closing ]]
     let unit = []; // an array of nodes
-    const scriptunits = []; // an array of arrays of nodes
+    const statements = []; // an array of arrays of nodes
     // PROCESS LINE by LINE
     while (this.linesIndex < this.linesCount + 1) {
       this.nextLine();
       unit = [];
-      // scan line character-by-character
+      // scan line character-by-character for the line
       while (this.index < this.length) {
         let ch = this.exprICode(this.index);
         let chn = this.exprICode(this.index + 1);
         // EXIT CONDITION: closing ]] return
         if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
           this.index += 2;
-          return [scriptunits];
+          // return statements; // BUG...fails everything
+          return statements; // BUG...fails nblock, passes block+ifExpr
         }
-        // handle the line (will call gobbleBlock() recursively)
-        unit.push(this.gobbleToken());
+        // collect tokens
+        const tok = this.gobbleToken();
+        unit.push(tok);
       }
-      // the entire line is processed, so push unit on scriptunits
-      scriptunits.push(unit);
+      // the entire line is processed, so push unit as a statement
+      statements.push(unit);
     } // while line...
     // if got this far, then there was no closing bracket
     // that was triggered by EXIT CONDITION above

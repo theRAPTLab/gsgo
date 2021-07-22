@@ -32,6 +32,7 @@ import {
 // critical imports
 import 'script/keywords/_all_keywords';
 import './scriptify-text';
+import './textify-script';
 import './compile-script';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////

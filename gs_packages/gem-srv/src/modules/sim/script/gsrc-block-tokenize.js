@@ -63,27 +63,27 @@ when A touches B [[
 };
 script = [
   [
+    // statement
     { 'token': 'when' },
-    { 'token': 'A' },
-    { 'token': 'touches' },
-    { 'token': 'B' },
     [
+      // block
       [
+        // block statement
         { 'token': 'prop' },
-        { 'token': 'A' },
-        { 'token': 'set' },
-        { 'value': 30 }
+        { 'token': 'A' }
       ],
-      [{ 'token': 'prop' }, { 'token': 'B' }, { 'token': 'set' }, { 'value': 40 }]
-    ],
-    [
       [
-        { 'token': 'prop' },
-        { 'token': 'A' },
-        { 'token': 'sub' },
-        { 'value': 10 }
-      ],
-      [{ 'token': 'prop' }, { 'token': 'B' }, { 'token': 'sub' }, { 'value': 20 }]
+        // block statement
+        { 'token': 'ifExpr' },
+        [
+          // block
+          [
+            // block statement
+            { 'token': 'prop' },
+            { 'token': 'D' }
+          ]
+        ]
+      ]
     ]
   ]
 ];
@@ -101,45 +101,22 @@ oldscript = [
 /// test nested block
 const nblock = {
   text: `
-when A touches B [[
-  prop C set 10
-  ifExpr {{ C }}  gt 0 [[
-    prop D add 1
+when [[
+  prop A
+  ifExpr [[
+    prop D
   ]]
 ]]
 `,
   expect:
-    '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},[[{"token":"prop"},{"token":"C"},{"token":"set"},{"value":10}],[{"token":"ifExpr"},{"expr":" C "},{"token":"gt"},{"value":0},[[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]]]]]]]'
+    '[[{"token":"when"},[[{"token":"prop"},{"token":"A"}],[{"token":"ifExpr"},[[{"token":"prop"},{"token":"D"}]]]]]]'
 };
 script = [
   [
     { 'token': 'when' },
-    { 'token': 'A' },
-    { 'token': 'touches' },
-    { 'token': 'B' },
     [
-      [
-        { 'token': 'prop' },
-        { 'token': 'C' },
-        { 'token': 'set' },
-        { 'value': 10 }
-      ],
-      [
-        { 'token': 'ifExpr' },
-        { 'expr': ' C ' },
-        { 'token': 'gt' },
-        { 'value': 0 },
-        [
-          [
-            [
-              { 'token': 'prop' },
-              { 'token': 'D' },
-              { 'token': 'add' },
-              { 'value': 1 }
-            ]
-          ]
-        ]
-      ]
+      [{ 'token': 'prop' }, { 'token': 'A' }],
+      [{ 'token': 'ifExpr' }, [[{ 'token': 'prop' }, { 'token': 'D' }]]]
     ]
   ]
 ];
@@ -168,30 +145,26 @@ ifExpr {{ A }} [[
 ]]
 `,
   expect:
-    '[[{"token":"ifExpr"},{"expr":" A "},[[{"token":"ifExpr"},{"expr":" BB "},[[[{"token":"ifExpr"},{"expr":" CCC "},[[[{"token":"prop"},{"token":"DDD"},{"token":"add"},{"value":1}]]]]]]],[{"token":"prop"},{"token":"EEE"},{"token":"set"},{"value":0}]]]]'
+    '[[{"token":"ifExpr"},{"expr":"A"},[[{"token":"ifExpr"},{"expr":"BB"},[[{"token":"ifExpr"},{"expr":"CCC"},[[{"token":"prop"},{"token":"DDD"},{"token":"add"},{"value":1}]]]]],[{"token":"prop"},{"token":"EEE"},{"token":"set"},{"value":0}]]]]'
 };
 script = [
   [
     { 'token': 'ifExpr' },
-    { 'expr': ' A ' },
+    { 'expr': 'A' },
     [
       [
         { 'token': 'ifExpr' },
-        { 'expr': ' BB ' },
+        { 'expr': 'BB' },
         [
           [
+            { 'token': 'ifExpr' },
+            { 'expr': 'CCC' },
             [
-              { 'token': 'ifExpr' },
-              { 'expr': ' CCC ' },
               [
-                [
-                  [
-                    { 'token': 'prop' },
-                    { 'token': 'DDD' },
-                    { 'token': 'add' },
-                    { 'value': 1 }
-                  ]
-                ]
+                { 'token': 'prop' },
+                { 'token': 'DDD' },
+                { 'token': 'add' },
+                { 'value': 1 }
               ]
             ]
           ]
@@ -206,29 +179,20 @@ script = [
     ]
   ]
 ];
-script = [
+oldscript = [
   [
     { 'token': 'ifExpr' },
-    { 'expr': ' A ' },
-    [
-      { 'token': 'ifExpr' },
-      { 'expr': ' BB ' },
-      [
-        [
-          { 'token': 'ifExpr' },
-          { 'expr': ' CCC ' },
-          [
-            [
-              { 'token': 'prop' },
-              { 'token': 'DDD' },
-              { 'token': 'add' },
-              { 'value': 1 }
-            ]
-          ]
-        ]
+    { 'expr': 'A' },
+    {
+      'block': [
+        'ifExpr {{ BB }} [[',
+        'ifExpr {{ CCC }} [[',
+        'prop DDD add 1',
+        ']]',
+        ']]',
+        'prop EEE set 0'
       ]
-    ],
-    [{ 'token': 'prop' }, { 'token': 'EEE' }, { 'token': 'set' }, { 'value': 0 }]
+    }
   ]
 ];
 
@@ -238,7 +202,7 @@ const nblockblock = {
   text: `
 when A touches B [[
   prop X set 10
-  ifExpr {{ X }} gt 0 [[
+  ifExpr {{ X }} [[
     prop D add 1
   ]] [[
     prop D delete
@@ -246,7 +210,7 @@ when A touches B [[
 ]]
 `,
   expect:
-    '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},[[{"token":"prop"},{"token":"X"},{"token":"set"},{"value":10}],[{"token":"ifExpr"},{"expr":" X "},{"token":"gt"},{"value":0},[[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]]],[[[{"token":"prop"},{"token":"D"},{"token":"delete"}]]]]]]]'
+    '[[{"token":"when"},{"token":"A"},{"token":"touches"},{"token":"B"},[[{"token":"prop"},{"token":"X"},{"token":"set"},{"value":10}],[{"token":"ifExpr"},{"expr":"X"},[[{"token":"prop"},{"token":"D"},{"token":"add"},{"value":1}]],[[{"token":"prop"},{"token":"D"},{"token":"delete"}]]]]]]'
 };
 script = [
   [
@@ -263,20 +227,16 @@ script = [
       ],
       [
         { 'token': 'ifExpr' },
-        { 'expr': ' X ' },
-        { 'token': 'gt' },
-        { 'value': 0 },
+        { 'expr': 'X' },
         [
           [
-            [
-              { 'token': 'prop' },
-              { 'token': 'D' },
-              { 'token': 'add' },
-              { 'value': 1 }
-            ]
+            { 'token': 'prop' },
+            { 'token': 'D' },
+            { 'token': 'add' },
+            { 'value': 1 }
           ]
         ],
-        [[[{ 'token': 'prop' }, { 'token': 'D' }, { 'token': 'delete' }]]]
+        [[{ 'token': 'prop' }, { 'token': 'D' }, { 'token': 'delete' }]]
       ]
     ]
   ]
@@ -290,7 +250,7 @@ oldscript = [
     {
       'block': [
         'prop X set 10',
-        'ifExpr {{ X }} gt 0 [[',
+        'ifExpr {{ X }}',
         'prop D add 1',
         ']] [[',
         'prop D delete',
@@ -299,10 +259,91 @@ oldscript = [
     }
   ]
 ];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const ifExpr = {
+  text: `
+ifExpr {{ A }} [[
+  dbgOut "true that"
+]]
+  `,
+  expect:
+    '[[{"token":"ifExpr"},{"expr":"A"},[[{"token":"dbgOut"},{"string":"true that"}]]]]'
+};
+script = [
+  [
+    { 'token': 'ifExpr' },
+    { 'expr': 'A' },
+    [{ 'token': 'dbgOut' }, { 'string': 'true that' }]
+  ]
+];
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const bee = {
+  text: `
+# BLUEPRINT Bee
+# PROGRAM DEFINE
+useFeature Costume
+useFeature Movement
+addProp foodLevel Number 50
+featCall Costume setCostume "bunny.json" 1
+# PROGRAM UPDATE
+prop agent.skin setTo "bunny.json"
+ifExpr {{true}} [[
+  ifExpr {{ false }} [[
+    dbgOut "true"
+  ]] [[
+    dbgOut 'chained blocks work'
+  ]]
+]]
+  `,
+  expect:
+    '[[{"directive":"#"},{"token":"BLUEPRINT"},{"token":"Bee"}],[{"directive":"#"},{"token":"PROGRAM"},{"token":"DEFINE"}],[{"token":"useFeature"},{"token":"Costume"}],[{"token":"useFeature"},{"token":"Movement"}],[{"token":"addProp"},{"token":"foodLevel"},{"token":"Number"},{"value":50}],[{"token":"featCall"},{"token":"Costume"},{"token":"setCostume"},{"string":"bunny.json"},{"value":1}],[{"directive":"#"},{"token":"PROGRAM"},{"token":"UPDATE"}],[{"token":"prop"},{"objref":["agent","skin"]},{"token":"setTo"},{"string":"bunny.json"}],[{"token":"ifExpr"},{"expr":"true"},[[{"token":"ifExpr"},{"expr":"false"},[[{"token":"dbgOut"},{"string":"true"}]],[[{"token":"dbgOut"},{"string":"chained blocks work"}]]]]]]'
+};
+script = [
+  [{ 'directive': '#' }, { 'token': 'BLUEPRINT' }, { 'token': 'Bee' }],
+  [{ 'directive': '#' }, { 'token': 'PROGRAM' }, { 'token': 'DEFINE' }],
+  [{ 'token': 'useFeature' }, { 'token': 'Costume' }],
+  [{ 'token': 'useFeature' }, { 'token': 'Movement' }],
+  [
+    { 'token': 'addProp' },
+    { 'token': 'foodLevel' },
+    { 'token': 'Number' },
+    { 'value': 50 }
+  ],
+  [
+    { 'token': 'featCall' },
+    { 'token': 'Costume' },
+    { 'token': 'setCostume' },
+    { 'string': 'bunny.json' },
+    { 'value': 1 }
+  ],
+  [{ 'directive': '#' }, { 'token': 'PROGRAM' }, { 'token': 'UPDATE' }],
+  [
+    { 'token': 'prop' },
+    { 'objref': ['agent', 'skin'] },
+    { 'token': 'setTo' },
+    { 'string': 'bunny.json' }
+  ],
+  [
+    { 'token': 'ifExpr' },
+    { 'expr': 'true' },
+    [
+      [
+        { 'token': 'ifExpr' },
+        { 'expr': 'false' },
+        [[{ 'token': 'dbgOut' }, { 'string': 'true' }]],
+        [[{ 'token': 'dbgOut' }, { 'string': 'chained blocks work' }]]
+      ]
+    ]
+  ]
+];
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const Blocks = {
   block,
   blockblock,
   nblock,
   tnblock,
-  nblockblock
+  nblockblock,
+  ifExpr,
+  bee
 };
