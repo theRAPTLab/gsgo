@@ -28,27 +28,29 @@ export const MODEL = {
       //       },
       {
         id: 'r2',
-        label: 'Round 2: Mutated',
+        label: 'Mutation Round',
         time: 60,
-        intro: 'Mutate second generation',
+        intro: 'Moths are mutated at the beginning of the round',
         outtro: 'What happened to spawn?',
         initScript: `dbgOut 'roundDef: Round2'
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
 // Remove Dead Moths
 featCall Population removeInertAgents
+
 // Spawn New Moths
-featCall Population agentsReproduce Moth [[
+
+// -- set to true to remove inert
+featCall Population agentsReproduce Moth false [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  featProp Costume colorScaleIndex addRnd -2 2 true
-  // featCall Costume randomizeColorHSV 1 1 1
+  featProp Costume colorScaleIndex addRnd -3 3 true
   // update color index label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
 ]]
 
-featCall Population agentsForEach TreeFoliage [[
+featCall Population agentsForEachActive TreeFoliage [[
   // Darken Trees each round
   featProp Costume colorValue subFloat2 0.025
   // update color index label
@@ -61,14 +63,16 @@ featCall Population agentsForEach TreeFoliage [[
 featCall Population setAgentsByFeatPropTypeKeys 0 1 2 3 4 5 6 7 8 9 10 11
 featCall Population countExistingAgentsByFeatPropType Moth Costume colorScaleIndex true
 `,
-        outtro: 'What happened to spawn?',
         endScript: `dbgOut 'END Round2!'
 // Update Graph
 featCall Population countExistingAgentsByFeatPropType Moth Costume colorScaleIndex true
-// Reshow Moth Labels
+// Update Moths
 featCall Population agentsForEach Moth [[
+  // Reshow Moth Label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
+  // Make visible
+  prop alpha setTo 1
 ]]`
       }
     ]
