@@ -43,6 +43,9 @@ featCall Population agentsReproduce Moth [[
   prop y addRnd -64 64
   featProp Costume colorScaleIndex addRnd -2 2 true
   // featCall Costume randomizeColorHSV 1 1 1
+  // update color index label
+  featPropPush Costume colorScaleIndex
+  featPropPop AgentWidgets text
 ]]
 
 featCall Population agentsForEach TreeFoliage [[
@@ -109,6 +112,9 @@ prop energyLevel setMin 0
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
+// Show Color Index
+featPropPush Costume colorScaleIndex
+featPropPop AgentWidgets text
 // hide text
 featProp AgentWidgets text setTo ''
 // Plot energy level
