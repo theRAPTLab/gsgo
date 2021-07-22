@@ -9,7 +9,12 @@ import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent, TSMCProgram } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import {
+  GVarBoolean,
+  GVarDictionary,
+  GVarNumber,
+  GVarString
+} from 'modules/sim/vars/_all_vars';
 import {
   CopyAgentProps,
   DeleteAgent,
@@ -82,6 +87,8 @@ class PopulationPack extends GFeature {
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
+    // Histogram
+    this.featAddMethod('countAgentsByPropType', this.countAgentsByPropType);
 
     UR.HookPhase('SIM/DELETE', m_Delete);
     UR.HookPhase('SIM/CREATE', m_Create);
@@ -104,6 +111,8 @@ class PopulationPack extends GFeature {
     this.featAddProp(agent, 'avg', new GVarString());
     this.featAddProp(agent, 'min', new GVarString());
     this.featAddProp(agent, 'max', new GVarString());
+
+    agent.prop.Population._countsByProp = new Map();
   }
 
   /// POPULATION METHODS /////////////////////////////////////////////////////////
@@ -165,13 +174,13 @@ class PopulationPack extends GFeature {
     });
   }
   /**
-   * Release cursors for ALL inert agents globally
+   * Turn off visible property for ALL inert agents globally
    */
   hideInertAgents(agent: IAgent) {
     const agents = GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) {
-        console.error('hiding', a.id);
+        // console.error('hiding', a.id);
         a.visible = false;
       }
     });
@@ -219,6 +228,9 @@ class PopulationPack extends GFeature {
    *  featCall Population setRadius value
    */
 
+  /**
+   * Returns the number of active (non-inert) agents of a particular blueprint type
+   */
   getActiveAgentsCount(agent: IAgent, blueprintName: string) {
     const agents = GetAgentsByType(blueprintName);
     let count = 0;
@@ -233,7 +245,10 @@ class PopulationPack extends GFeature {
     agent.getFeatProp(this.name, 'count').setTo(agents.length);
   }
   /**
-   *
+   * Updates three featProp statistics:
+   *   count -- number of agents
+   *   sum -- total of the agent's prop values (e.g. sum of algae energylevels)
+   *   avg -- average of agent's prop values (e.g. avg of algae energylevel)
    * @param agent
    * @param blueprintName
    * @param prop
@@ -269,6 +284,154 @@ class PopulationPack extends GFeature {
       .reduce(maximizer, -Infinity);
     agent.getFeatProp(this.name, 'max').setTo(max);
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// HISTOGRAM
+
+  /**
+   * Counts the number of agents that match a particular prop value
+   * - This is generally used for a histogram with a prop that uses
+   *   discrete categories or indices.
+   * - It saves the count in the `countByProp` dictionary where the
+   *   keys corresponnd to the prop's values.
+   * - Use this for instance to count the number of agents using a
+   *   particular colorscale color.
+   * - Each call starts from a fresh count.
+   *
+   * e.g.:
+   *    countByProp = [
+   *      ['0', 11],
+   *      ['1', 53],
+   *      ['2', 22],
+   *    ]
+   * @param agent
+   * @param blueprintName
+   * @param prop
+   */
+  countAgentsByPropType(
+    agent: IAgent,
+    blueprintName: string,
+    prop: string,
+    clear: boolean
+  ) {
+    const agents = GetAgentsByType(blueprintName);
+    const countsByProp = agent.prop.Population._countsByProp;
+
+    // reset count first?
+    if (clear) countsByProp.clear();
+
+    agents.forEach(a => {
+      // skip count if inert
+      if (a.isInert) return;
+
+      const key = a.getProp(prop).value;
+      const count = countsByProp.get(key) + 1 || 1;
+      countsByProp.set(key, count);
+    });
+    console.error('countByProp', countsByProp);
+  }
+
+  /// Prepopulate the countsByProp map with keys
+  /// This is necessary so all bars in the histogram will have values
+  /// otherwise, bars without values are not plotted.
+  setAgentsByFeatPropTypeKeys(agent: IAgent, ...keys: string[]) {
+    agent.prop.Population._countsByPropKeys = keys;
+  }
+
+  /// Clear counts for each key
+  m_CountAgentsByFeatPropTypeReset(agent: IAgent) {
+    agent.prop.Population._countsByPropKeys.forEach(k => {
+      agent.prop.Population._countsByProp.set(k, 0);
+    });
+  }
+  /**
+   * Counts number of agents matching a featProp
+   * e.g. Moth Costume colorScaleIndex, usually a dict?
+   *
+   * This assumes we only have a single countAgentsByFeatPropType
+   * property.
+   * @param agent
+   * @param blueprintName
+   * @param feature
+   * @param featprop
+   * @param clear reset counts to 0 with every invocation
+   *              otherwise, the count is cumulative across invocations
+   */
+  m_CountAgentsByFeatPropType(
+    agent: IAgent,
+    agents: IAgent[],
+    blueprintName: string,
+    feature: string,
+    featprop: string,
+    clear: boolean
+  ) {
+    const countsByProp = agent.prop.Population._countsByProp;
+
+    // reset count first?
+    if (clear) {
+      if (agent.prop.Population._countsByPropKeys.length > 0) {
+        this.m_CountAgentsByFeatPropTypeReset(agent);
+      } else {
+        countsByProp.clear();
+      }
+    }
+
+    agents.forEach(a => {
+      // skip count if inert
+      if (a.isInert) return;
+      if (!a.prop[feature] || !a.prop[feature][featprop]) return;
+      const key = a.prop[feature][featprop].value;
+      const count = countsByProp.get(key) + 1 || 1;
+      countsByProp.set(key, count);
+    });
+    console.error('countByProp', countsByProp);
+  }
+  /// Counts currently active (non-inert) agents
+  /// NOTE this does not include newly spawned agents
+  /// in the AGENTS_TO_CREATE array.  Use countSpawnedAgentsByFeatPropType
+  /// to count AGENTS_TO_CREATE.
+  countExistingAgentsByFeatPropType(
+    agent: IAgent,
+    blueprintName: string,
+    feature: string,
+    featprop: string,
+    clear: boolean
+  ) {
+    const agents = GetAgentsByType(blueprintName);
+    this.m_CountAgentsByFeatPropType(
+      agent,
+      agents,
+      blueprintName,
+      feature,
+      featprop,
+      clear
+    );
+  }
+
+  /// THIS DOESN"T WORK!
+  /// AGENTS_TO_CREATE Is an array of isntanceDefs, not actual agents.
+  /// so we can't inspect its featprops.
+  ///
+  /// Counts agents newly spawned by agentsReproduce that have yet to be
+  /// created. AGENTS_TO_CREATE
+  // countSpawnedAgentsByFeatPropType(
+  //   agent: IAgent,
+  //   blueprintName: string,
+  //   feature: string,
+  //   featprop: string,
+  //   clear: boolean
+  // ) {
+  //   const agents = AGENTS_TO_CREATE.filter(a => a.blueprint === blueprintName);
+  //   console.error('Agents-to-create', AGENTS_TO_CREATE, agents);
+  //   this.countAgentsByFeatPropType(
+  //     agent,
+  //     agents,
+  //     blueprintName,
+  //     feature,
+  //     featprop,
+  //     clear
+  //   );
+  // }
 } // end of feature class
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////

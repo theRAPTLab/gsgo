@@ -56,6 +56,10 @@ featCall Population agentsForEach TreeFoliage [[
   exprPush {{ agent.prop.Costume.colorValue.value * 10 }}
   featPropPop AgentWidgets text
 ]]
+
+// Update Graph
+featCall Population setAgentsByFeatPropTypeKeys 0 1 2 3 4 5 6 7 8 9 10 11
+featCall Population countExistingAgentsByFeatPropType Moth Costume colorScaleIndex true
 `,
         outtro: 'What happened to spawn?',
         endScript: `dbgOut 'END Round2!'
@@ -357,18 +361,19 @@ prop zIndex setTo -200
 `
     },
     {
-      id: 'Reporter',
-      label: 'Reporter',
-      script: `# BLUEPRINT Reporter
+      id: 'Histogram', // used by Histogra
+      label: 'Histogram',
+      script: `# BLUEPRINT Histogram
 # PROGRAM DEFINE
 // prop skin setTo 'onexone'
 // intentionally left blank for testing
 
 useFeature Population
-
 useFeature Global
 useFeature AgentWidgets
 featProp AgentWidgets isLargeGraphic setTo true
+`
+    },
 `
     }
   ],
@@ -467,6 +472,14 @@ prop energyLevel setTo 90`
       initScript: `prop x setTo 250
 prop y setTo -100
 prop alpha setTo 1`
+    },
+    {
+      id: 1400,
+      name: 'Histogram',
+      blueprint: 'Histogram',
+      initScript: `prop x setTo 460
+prop y setTo -300
+featCall AgentWidgets bindHistogramToFeatProp Population _countsByProp`
     },
     {
       id: 1401,
