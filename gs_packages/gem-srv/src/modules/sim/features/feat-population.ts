@@ -72,6 +72,7 @@ class PopulationPack extends GFeature {
     // Global Population Management
     this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
+    this.featAddMethod('removeInertAgents', this.removeInertAgents);
     this.featAddMethod('agentsReproduce', this.agentsReproduce);
     // Statistics
     this.featAddMethod('getActiveAgentsCount', this.getActiveAgentsCount);
@@ -172,6 +173,16 @@ class PopulationPack extends GFeature {
       }
     });
   }
+  /**
+   * Remove ALL inert agents globally
+   */
+  removeInertAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.isInert) this.removeAgent(a);
+    });
+  }
+
   /**
    * For all agents of type bpname, call SpawnChild if not inert
    */

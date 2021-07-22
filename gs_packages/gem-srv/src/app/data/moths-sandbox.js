@@ -36,7 +36,7 @@ prop y setTo 100`
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
 // Remove Dead Moths
-featCall Population hideInertAgents
+featCall Population removeInertAgents
 // Spawn New Moths
 featCall Population agentsReproduce Moth [[
   prop x addRnd -64 64
