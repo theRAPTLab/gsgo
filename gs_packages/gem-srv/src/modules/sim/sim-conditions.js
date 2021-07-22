@@ -209,7 +209,9 @@ RegisterFunction('doesNotSee', (a, b) => {
 RegisterFunction('seesCamouflaged', (a, b) => {
   // checks if b's color relative to its background is visible to a
   // AND the color range is outside of the detectableRange
-  return a.canSeeColor ? a.canSeeColor.get(b.id) : false;
+  const canSeeCone = a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
+  const canSeeColor = a.canSeeColor ? a.canSeeColor.get(b.id) : false;
+  return canSeeCone && canSeeColor;
 });
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////

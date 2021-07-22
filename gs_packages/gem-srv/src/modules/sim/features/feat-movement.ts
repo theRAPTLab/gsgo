@@ -446,8 +446,8 @@ function m_FeaturesThinkSeek(frame) {
     //    Sorted by distance
     const nearAgents = m_FindNearbyAgents(agent, options.targetType);
     const target = nearAgents.find(near => {
-      // 2. Find first agent within the cone
-      if (near) {
+      // 2. Find first active (non-inert) agent within the cone
+      if (near && !near.isInert) {
         if (options.useVisionColor) {
           // console.log('...canSeeColor', near.id, agent.canSeeColor.get(near.id));
           return agent.canSeeColor.get(near.id);
@@ -556,7 +556,8 @@ class MovementPack extends GFeature {
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
-    this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
+    this.featAddMethod('seekNearestVisibleCone', this.seekNearestVisibleCone);
+    this.featAddMethod('seekNearestVisibleColor', this.seekNearestVisibleColor);
     this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
   }
 

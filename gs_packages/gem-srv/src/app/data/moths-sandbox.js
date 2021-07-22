@@ -342,32 +342,33 @@ when Predator seesCamouflaged Moth [[
 when Predator centerTouchesCenter Moth [[
 
   // Only if Moth is not camouflaged
+  ifExpr {{ Predator.callFeatMethod('Vision', 'canSeeColorOfAgent', Moth) }} [[
+    featCall Moth.Costume setGlow 1
+    featCall Moth.Movement jitterRotate
 
-  featCall Moth.Costume setGlow 1
-  featCall Moth.Movement jitterRotate
+    // EAT RIGHT AWAY
+    // every 2 [[
+      // featCall Moth.Population removeAgent
+      prop Moth.isInert setTo true
+      featCall Moth.Costume setCostume 'square.json' 0
+      featProp Moth.Physics scale setTo 0.1
+      featCall Predator.Costume setGlow 1
 
-  // EAT RIGHT AWAY
-  // every 2 [[
-    // featCall Moth.Population removeAgent
-    prop Moth.isInert setTo true
-    featCall Moth.Costume setCostume 'square.json' 0
-    featProp Moth.Physics scale setTo 0.1
-    featCall Predator.Costume setGlow 1
-
-    // release cursor of eaten Moth
-    featCall Moth.Cursor releaseCursor
+      // release cursor of eaten Moth
+      featCall Moth.Cursor releaseCursor
 
 
-    // Stop sim if no more agents
-    ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 1 }} [[
-      featCall Predator.Timer stopRound
+      // Stop sim if no more agents
+      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 1 }} [[
+        featCall Predator.Timer stopRound
 
-      // This will be added to the end of round message
-      featCall Moth.AgentWidgets showMessage 'No more moths!'
-    ]]
+        // This will be added to the end of round message
+        featCall Moth.AgentWidgets showMessage 'No more moths!'
+      ]]
 
-  // EAT RIGHT AWAY
-  // ]]
+    // EAT RIGHT AWAY
+    // ]]
+  ]]
 ]]
 `
     },

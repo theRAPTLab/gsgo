@@ -98,6 +98,21 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
   return result.length > 0;
 }
 
+/**
+ * Checks target color against target's background agent color
+ * using agent's Vision detection thresholds to determine if the
+ * target is visible against its background.
+ *
+ * Checks that target's color is visible regardless of whether or not
+ * the target is within the vision one
+ * Check both visionCone and color if you need both to be true.
+ * The vision-cone-less check is necessary because checking for
+ * camouflage when the agent is on top of target (e.g. during eating)
+ * means the target is not visible in the visionCone.
+ * @param agent
+ * @param target
+ * @returns
+ */
 function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
   if (
     !agent.hasFeature('Vision') ||
@@ -111,30 +126,30 @@ function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
     return false;
   }
 
-  if (agent.canSeeCone.get(target.id)) {
-    // hsvRange is the predator (viewer's) range settings
-    // In other words: Can the predator see the prey against it's background?
-    const hRange = agent.prop.Vision.colorHueDetectionThreshold.value;
-    const sRange = agent.prop.Vision.colorSaturationDetectionThreshold.value;
-    const vRange = agent.prop.Vision.colorValueDetectionThreshold.value;
-    const backgroundAgent = target.callFeatMethod(
-      'Touches',
-      'getTouchingAgent',
-      'binb'
-    ); // the target is touching a background agent
-    if (DBG) console.log(target.id, 'backgroundAgent', backgroundAgent);
-    if (!backgroundAgent) return true; // b not touching an agent so b is visible
-    const backgroundColor = backgroundAgent.prop.color.value;
-    // color is visible if it is NOT camouflaged
-    return !target.callFeatMethod(
-      'Vision',
-      'isCamouflaged',
-      backgroundColor,
-      hRange,
-      sRange,
-      vRange
-    );
-  }
+  // hsvRange is the predator (viewer's) range settings
+  // In other words: Can the predator see the prey against it's background?
+  const hRange = agent.prop.Vision.colorHueDetectionThreshold.value;
+  const sRange = agent.prop.Vision.colorSaturationDetectionThreshold.value;
+  const vRange = agent.prop.Vision.colorValueDetectionThreshold.value;
+  const backgroundAgent = target.callFeatMethod(
+    'Touches',
+    'getTouchingAgent',
+    'binb'
+  ); // the target is touching a background agent
+  if (DBG) console.log(target.id, 'backgroundAgent', backgroundAgent);
+  if (!backgroundAgent) return true; // b not touching an agent so b is visible
+  const backgroundColor = backgroundAgent.prop.color.value;
+  // color is visible if it is NOT camouflaged
+  return !target.callFeatMethod(
+    'Vision',
+    'isCamouflaged',
+    backgroundColor,
+    hRange,
+    sRange,
+    vRange
+  );
+
+  // }
   return false;
 }
 
@@ -191,6 +206,7 @@ class VisionPack extends GFeature {
     super(name);
     this.featAddMethod('monitor', this.monitor);
     this.featAddMethod('isCamouflaged', this.isCamouflaged);
+    this.featAddMethod('canSeeColorOfAgent', this.canSeeColorOfAgent);
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
     // movmeent's FEATURES_UPDATE
@@ -251,6 +267,7 @@ class VisionPack extends GFeature {
   /** isCamouflaged if agent colorHSV is within range of backgroundColor
    *  This is generally invoked by the viewer agent (e.g. predator)
    *  because their vision determines the range of visibility
+   *  Used in m_IsTargetColorVisible
    */
   isCamouflaged(
     agent: IAgent,
@@ -271,6 +288,12 @@ class VisionPack extends GFeature {
       vRange
     );
   }
+
+  /** agent can see the color of the target against its background agent */
+  canSeeColorOfAgent(agent: IAgent, target: IAgent) {
+    return m_IsTargetColorVisible(agent, target);
+  }
+
   /** This doesn't really do anything, since:
    *  a. you can't easily call featCall with a specific target agent parameter
    *     outside of a when
