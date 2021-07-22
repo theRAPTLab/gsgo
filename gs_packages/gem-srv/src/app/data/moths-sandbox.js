@@ -439,6 +439,14 @@ featCall Global addGlobalProp lightMoths Number 0
 featCall Global globalProp lightMoths setMin 0
 featCall Global globalProp lightMoths setMax Infinity
 
+# PROGRAM EVENT
+onEvent Start [[
+  // Set Max Count to even graphs
+  featCall Global globalProp lightMoths setTo 10
+  featCall Global globalProp medMoths setTo 10
+  featCall Global globalProp darkMoths setTo 10
+]]
+
 # PROGRAM UPDATE
 every 1 [[
   // RESET Count
