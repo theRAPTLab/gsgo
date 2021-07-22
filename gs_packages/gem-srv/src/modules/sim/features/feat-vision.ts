@@ -248,7 +248,10 @@ class VisionPack extends GFeature {
   monitor(agent: IAgent, targetBlueprintName: string) {
     VISION_AGENTS.set(agent.id, targetBlueprintName);
   }
-  // isCamouflaged if agent colorHSV is within range of backgroundColor
+  /** isCamouflaged if agent colorHSV is within range of backgroundColor
+   *  This is generally invoked by the viewer agent (e.g. predator)
+   *  because their vision determines the range of visibility
+   */
   isCamouflaged(
     agent: IAgent,
     backgroundColor: number,

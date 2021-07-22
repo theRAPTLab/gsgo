@@ -155,6 +155,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
     // skip if not defined yet
     if (!featPropMap) {
       // REVIEW: This shouldn't happen anymore?  Remove?
+      // -> Actually this catches bad calls
       console.error('undefined featPropMap...skipping featProp render');
       return '';
     }
