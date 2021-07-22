@@ -136,7 +136,7 @@ export class GVarNumber extends SM_Object implements IScopeable {
   // To work around stupid IEEE 754 floating point numbers.
   // otherwise 0.6 - 0.05 = 0.59999999
   subFloat2(num: number) {
-    this.value = Number((100 * (this.value - num)) / 100).toFixed(2);
+    this.value = Number((1000 * (this.value - num)) / 1000).toFixed(3);
     u_CheckMinMax(this);
     return this;
   }

@@ -45,11 +45,14 @@ featCall Population agentsReproduce Moth [[
   // featCall Costume randomizeColorHSV 1 1 1
 ]]
 
-// Don't darken while testing
-// featCall Population agentsForEach TreeFoliage [[
-//   // Darken Trees each round
-//   featProp Costume colorValue sub 0.1
-// ]]
+featCall Population agentsForEach TreeFoliage [[
+  // Darken Trees each round
+  featProp Costume colorValue subFloat2 0.025
+  // update color index label
+  // featPropPush Costume colorValue
+  exprPush {{ agent.prop.Costume.colorValue.value * 10 }}
+  featPropPop AgentWidgets text
+]]
 `,
         outtro: 'What happened to spawn?',
         endScript: `dbgOut 'END Round2!'`
