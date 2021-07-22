@@ -305,23 +305,18 @@ when Predator seesCamouflaged Moth [[
 when Predator centerTouchesCenter Moth [[
   featCall Moth.Costume setGlow 1
   featCall Moth.Movement jitterRotate
-  every 2 [[
+
+  // EAT RIGHT AWAY
+  // every 2 [[
     // featCall Moth.Population removeAgent
     prop Moth.isInert setTo true
     featCall Moth.Costume setCostume 'square.json' 0
     featProp Moth.Physics scale setTo 0.1
     featCall Predator.Costume setGlow 1
-    ifExpr {{ Moth.prop.Costume.colorValue.value < 0.5 }} [[
-      dbgOut 'Eaten...dark!'
-      featCall Global globalProp lightMoths sub 0
-      featCall Global globalProp darkMoths sub 1
-    ]] [[
-      dbgOut 'Eaten...light!'
-      featCall Global globalProp lightMoths sub 1
-      featCall Global globalProp darkMoths sub 0
-    ]]
-    // release cursor
+
+    // release cursor of eaten Moth
     featCall Moth.Cursor releaseCursor
+
 
     // Stop sim if no more agents
     ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 1 }} [[
@@ -330,7 +325,9 @@ when Predator centerTouchesCenter Moth [[
       // This will be added to the end of round message
       featCall Moth.AgentWidgets showMessage 'No more moths!'
     ]]
-  ]]
+
+  // EAT RIGHT AWAY
+  // ]]
 ]]
 `
     },
@@ -509,8 +506,14 @@ featProp Costume colorScaleIndex setTo 6`
       name: 'Predator1',
       blueprint: 'Predator',
       initScript: `prop x setTo 250
-prop y setTo -100
-prop alpha setTo 1`
+prop y setTo -100`
+    },
+    {
+      id: 1302,
+      name: 'Predator2',
+      blueprint: 'Predator',
+      initScript: `prop x setTo -250
+prop y setTo -100`
     },
     {
       id: 1400,
