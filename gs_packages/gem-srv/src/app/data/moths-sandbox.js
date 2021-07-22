@@ -447,27 +447,62 @@ featProp Physics scaleY setTo 2`
       id: 1201,
       name: 'Moth1',
       blueprint: 'Moth',
-      initScript: `//prop x setTo 0
-//    prop y setTo -400
-featCall Movement queuePosition 100 0
-prop alpha setTo 0.02`
+      initScript: `featCall Movement queuePosition 100 0
+featProp Costume colorScaleIndex setTo 6`
     },
     {
       id: 1202,
       name: 'Moth2',
       blueprint: 'Moth',
-      initScript: `//prop x setTo 0
-//    prop y setTo -100
-featCall Movement queuePosition -200 -400
-prop alpha setTo 1`
+      initScript: `featCall Movement queuePosition -50 -100`
     },
     {
       id: 1203,
       name: 'Moth3',
       blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -150 200
-prop alpha setTo 1
-prop energyLevel setTo 90`
+      initScript: `featCall Movement queuePosition -150 200`
+    },
+    {
+      id: 1204,
+      name: 'Moth4',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -300 -225`
+    },
+    {
+      id: 1205,
+      name: 'Moth5',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -275 -120`
+    },
+    {
+      id: 1206,
+      name: 'Moth6',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -100 140`
+    },
+    {
+      id: 1207,
+      name: 'Moth7',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 50 225`
+    },
+    {
+      id: 1208,
+      name: 'Moth8',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 150 100`
+    },
+    {
+      id: 1209,
+      name: 'Moth9',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 250 40`
+    },
+    {
+      id: 1210,
+      name: 'Moth10',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 350 200`
     },
     {
       id: 1301,
