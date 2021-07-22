@@ -21,7 +21,22 @@ const DBG = false;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function u_CheckMinMax(vobj) {
-  if (vobj.min === vobj.max && vobj.min === 0) return;
+  // REVIEW: Algorithm is problematic
+  // If min is 0, but max is not set,
+  // then this will skip the min check
+  // because max by default is 0.
+  //
+  // Default values should probably be `undefined`?
+  // So first line would be:
+  //   if (vobj.min === undefined || vobj.max === undefined) return;
+  // And both min and max must always be defined for any checking to occur
+  // otherwise, the nvalue calculation would err?
+  //
+  if (vobj.min === undefined || vobj.max === undefined) return;
+
+  // Orig Code
+  // if (vobj.min === vobj.max && vobj.min === 0) return;
+
   if (vobj.min > vobj.max) {
     if (DBG) console.log('swap min<-->max');
     const min = vobj.min;
@@ -66,8 +81,11 @@ export class GVarNumber extends SM_Object implements IScopeable {
     this.meta.type = Symbol.for('GVarNumber');
     this.value = initial;
     this.nvalue = undefined;
-    this.min = 0;
-    this.max = 0;
+    // Orig Code
+    // this.min = 0;
+    // this.max = 0;
+    this.min = undefined;
+    this.max = undefined;
     this.wrap = false;
   }
   setWrap(flag: boolean = true) {
