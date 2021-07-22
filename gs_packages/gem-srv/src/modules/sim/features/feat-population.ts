@@ -55,6 +55,9 @@ function m_Create(frame) {
     const parent = GetAgentById(def.parentId);
     if (parent) CopyAgentProps(parent, agent);
 
+    // but reset inert!
+    agent.prop.isInert.setTo(false);
+
     const initScript = def.initScript; // spawnscript
     agent.exec(initScript, { agent }); // run spawnscript
   }
