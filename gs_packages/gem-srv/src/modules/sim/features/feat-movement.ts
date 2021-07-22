@@ -47,8 +47,10 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
-const MOVEDISTANCE = 5; // Minimum distance moved before `isMoved` is registered
+const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
 // This is necessary to account for input jitter
+// 1 is too quirky
+// 5 seems too high for predator bees
 
 /// Movement Agent Manager
 const MOVEMENT_AGENTS = new Map();
