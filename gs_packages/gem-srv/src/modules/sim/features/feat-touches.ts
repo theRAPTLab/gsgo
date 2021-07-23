@@ -202,6 +202,7 @@ class TouchPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Returns the first agent that matches the touchtype
   getTouchingAgent(agent: IAgent, touchType: string) {
+    if (!agent.isTouching) return undefined;
     const targetIds = [...agent.isTouching.keys()];
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
