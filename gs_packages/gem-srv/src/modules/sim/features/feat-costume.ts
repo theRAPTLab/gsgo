@@ -79,11 +79,10 @@ function m_Update() {
     h = agent.prop.Costume.colorHue.value;
     s = agent.prop.Costume.colorSaturation.value;
     v = agent.prop.Costume.colorValue.value;
-    color = HEXfromHSV(h, s, v);
-
-    if (!Number.isNaN(color)) {
-      agent.prop.color.setTo(color);
+    if (h !== undefined && s !== undefined && v !== undefined) {
+      color = HEXfromHSV(h, s, v);
     }
+    agent.prop.color.setTo(color);
   });
 }
 
