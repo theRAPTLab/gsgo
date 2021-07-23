@@ -240,6 +240,11 @@ class PopulationPack extends GFeature {
     let agentIndex = 0;
     const agents = GetAgentsByType(bpname);
 
+    if (agents.length < 1)
+      throw Error(
+        `populateBySpwaning can't spawn because there are no ${bpname} agents left!`
+      );
+
     while (count < targetPopulationSize) {
       const a = agents[agentIndex];
       if (!a.isInert) {
