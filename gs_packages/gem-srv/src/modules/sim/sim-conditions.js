@@ -150,7 +150,8 @@ RegisterFunction('isInside', (a, b) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FirstTouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
+    throw new Error('First Touches test needs both agents to have Physics!');
   const isTouching = a.isTouching ? a.isTouching.get(b.id) : false;
   const wasTouching = a.lastTouched ? a.lastTouched.get(b.id) : false;
   // They were not touching, but now they are, so this is first touch
