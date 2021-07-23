@@ -404,3 +404,10 @@ statements = [[ u ]]
 if (sl === 1 && Array.isArray(tarr) && typeof u === 'object')
 ```
 
+## JUL 23 FRI - CompileScript
+
+* The `moth` script doesn't run, but maybe that is OK because **blueprint** isn't set
+* **comment** tokens are mysteriously not delivered as statements. Maybe build the line debugger in
+  * the bug 
+* convert arrays back to program blocks
+* 
