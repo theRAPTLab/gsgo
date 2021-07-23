@@ -120,20 +120,20 @@ useFeature Population
 // allow Predator to see us
 useFeature Vision
 
-// No energy level modeling for now
-// addProp energyLevel Number 50
-// prop energyLevel setMax 100
-// prop energyLevel setMin 0
+addProp energyLevel Number 50
+prop energyLevel setMax 100
+prop energyLevel setMin 0
 
 useFeature AgentWidgets
 // Show Color Index
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
 
-// featCall AgentWidgets bindMeterTo energyLevel
 // hide text
 // featProp AgentWidgets text setTo ''
+
 // Plot energy level
+featCall AgentWidgets bindMeterTo energyLevel
 // featCall AgentWidgets bindGraphTo energyLevel 30
 
 // // random color: shift hue and value
@@ -149,16 +149,17 @@ useFeature Cursor
 onEvent Start [[
   // hide label once sim starts
   featProp AgentWidgets text setTo ''
+
+  // label is restored by round endScript
+  // because 'onEvent RoundStop' will not run after
+  // the sim stops
 ]]
-// label is restored by round endScript
-// because 'onEvent RoundStop' will not run after
-// the sim stops
 
 # PROGRAM UPDATE
 every 0.1 [[
   // fade to minimal alpha value (will "disappear" when camouflaged on tree)
   prop alpha sub 0.1
-  // prop energyLevel sub 2
+  prop energyLevel sub 2
 ]]
 every 1 [[
   // *** HACK: THIS DOES NOT PROPERLY USE PREDATOR VISION TO DETERMINE BLINKING
@@ -168,23 +169,16 @@ every 1 [[
   ifExpr {{ agent.getProp('alpha').value < 1 && !agent.prop.isInert.value}} [[
     featCall Costume setGlow 0.05
   ]]
-
-  // update graphs
-      // Graph Predation
-    // ifExpr {{ Moth.prop.Costume.colorValue.value < 0.5 }} [[
-    //   featCall Global globalProp lightMoths sub 0
-    //   featCall Global globalProp darkMoths sub 1
-    // ]] [[
-    //   featCall Global globalProp lightMoths sub 1
-    //   featCall Global globalProp darkMoths sub 0
-    // ]]
-
 ]]
+
+
+// TREE FOLIAGE
 when Moth centerFirstTouches TreeTrunk [[
   // Show vfx when moth gets energy from treetrunk
-  // featCall Moth.Costume setGlow 2
-  // prop Moth.energyLevel add 50
+  featCall Moth.Costume setGlow 2
+  prop Moth.energyLevel add 50
 ]]
+
 when Moth centerTouches TreeTrunk [[
   // show wings folded pose
   ifExpr {{ !Moth.prop.isInert.value }} [[
@@ -202,34 +196,18 @@ when Moth centerTouches TreeTrunk [[
     // featProp Vision visionable setTo false
   ]]
 
-  // Spawn new moth if energyLevel is high enough
-  // every 1 [[
-  //   ifExpr {{ agent.getProp('energyLevel').value > 90 && !agent.isInert }} [[
-  //     // dbgOut 'SPAWN!'
-  //     featCall Population spawnChild [[
-  //       // new spawn init script (not current agent)
-  //       // spawn randomly darker
-  //       featProp Costume colorValue subRnd 0.5
-  //       prop x addRnd -20 20
-  //       prop y addRnd -20 20
-  //       // add point to global graphs
-  //       ifExpr {{ agent.prop.Costume.colorValue.value < 0.5 }} [[
-  //         featCall Global globalProp lightMoths add 0
-  //         featCall Global globalProp darkMoths add 1
-  //       ]] [[
-  //         featCall Global globalProp lightMoths add 1
-  //         featCall Global globalProp darkMoths add 0
-  //       ]]
-  //     ]]
-  //     prop energyLevel sub 50
-  //   ]]
-  // ]]
 ]]
+when Moth lastTouches TreeTrunk [[
+  // seek foliage again after you wander off the old foliage
+  featCall Moth.Movement wanderUntilInside TreeFoliage
+]]
+
+
+// TREE TRUNK
 when Moth centerFirstTouches TreeFoliage [[
   // Show vfx when moth gets energy from treetrunk
-  // featCall Moth.Costume setGlow 2
-  // prop Moth.energyLevel add 80
-
+  featCall Moth.Costume setGlow 2
+  prop Moth.energyLevel add 80
 ]]
 when Moth centerTouches TreeFoliage [[
   // show wings folded pose
@@ -249,13 +227,13 @@ when Moth centerTouches TreeFoliage [[
   ]]
 
   // go search for new tree if energyLevel is low
-  // ifExpr {{ Moth.prop.energyLevel.value < 60 }} [[
-  //   // featCall Moth.Movement setMovementType wander
-  // ]]
+  ifExpr {{ Moth.prop.energyLevel.value < 60 }} [[
+    featCall Moth.Movement setMovementType wander
+  ]]
 ]]
 when Moth lastTouches TreeFoliage [[
   // seek foliage again after you wander off the old foliage
-  // featCall Moth.Movement wanderUntilInside TreeFoliage
+  featCall Moth.Movement wanderUntilInside TreeFoliage
 ]]
 // Costume overide all
 ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
@@ -513,16 +491,16 @@ onEvent RoundStop [[
     //     }
   ],
   instances: [
-    //     {
-    //       id: 1101,
-    //       name: 'Tree1',
-    //       blueprint: 'TreeTrunk',
-    //       initScript: `prop x setTo -200
+    // {
+    //   id: 1101,
+    //   name: 'Tree1',
+    //   blueprint: 'TreeTrunk',
+    //   initScript: `prop x setTo -200
     // prop y setTo 200
     // featCall Costume setColorizeHSV 0.3 0 0.9
     // featProp Physics scale setTo 0.3
     // featProp Physics scaleY setTo 2`
-    //     },
+    // },
     //     {
     //       id: 1102,
     //       name: 'TreeFoliage1',
@@ -554,16 +532,16 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 1.2
     // featProp Physics scaleY setTo 2`
     //     },
-    //     {
-    //       id: 1103,
-    //       name: 'Tree2',
-    //       blueprint: 'TreeTrunk',
-    //       initScript: `prop x setTo 0
-    // prop y setTo 200
-    // featCall Costume setColorizeHSV 0 0 1
-    // featProp Physics scale setTo 0.6
-    // featProp Physics scaleY setTo 2`
-    //     },
+    {
+      id: 1103,
+      name: 'Tree2',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo 0
+prop y setTo 200
+featCall Costume setColorizeHSV 0 0 1
+featProp Physics scale setTo 0.6
+featProp Physics scaleY setTo 2`
+    },
     {
       id: 1104,
       name: 'TreeFoliage',
@@ -579,76 +557,79 @@ featProp Physics scaleY setTo 2`
       name: 'Moth1',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition 100 0
-featProp Costume colorScaleIndex setTo 6`
+featProp Costume colorScaleIndex setTo 6
+featPropPush Costume colorScaleIndex
+featPropPop AgentWidgets text
+`
     },
-    {
-      id: 1202,
-      name: 'Moth2',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -50 -100`
-    },
-    {
-      id: 1203,
-      name: 'Moth3',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -150 200`
-    },
-    {
-      id: 1204,
-      name: 'Moth4',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -300 -225`
-    },
-    {
-      id: 1205,
-      name: 'Moth5',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -275 -120`
-    },
-    {
-      id: 1206,
-      name: 'Moth6',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -100 140`
-    },
-    {
-      id: 1207,
-      name: 'Moth7',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition 50 225`
-    },
-    {
-      id: 1208,
-      name: 'Moth8',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition 150 100`
-    },
-    {
-      id: 1209,
-      name: 'Moth9',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition 250 40`
-    },
-    {
-      id: 1210,
-      name: 'Moth10',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition 350 200`
-    },
-    {
-      id: 1301,
-      name: 'Predator1',
-      blueprint: 'Predator',
-      initScript: `prop x setTo 250
-prop y setTo -100`
-    },
-    {
-      id: 1302,
-      name: 'Predator2',
-      blueprint: 'Predator',
-      initScript: `prop x setTo -250
-prop y setTo -100`
-    },
+    //     {
+    //       id: 1202,
+    //       name: 'Moth2',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -50 -100`
+    //     },
+    //     {
+    //       id: 1203,
+    //       name: 'Moth3',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -150 200`
+    //     },
+    //     {
+    //       id: 1204,
+    //       name: 'Moth4',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -300 -225`
+    //     },
+    //     {
+    //       id: 1205,
+    //       name: 'Moth5',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -275 -120`
+    //     },
+    //     {
+    //       id: 1206,
+    //       name: 'Moth6',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -100 140`
+    //     },
+    //     {
+    //       id: 1207,
+    //       name: 'Moth7',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition 50 225`
+    //     },
+    //     {
+    //       id: 1208,
+    //       name: 'Moth8',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition 150 100`
+    //     },
+    //     {
+    //       id: 1209,
+    //       name: 'Moth9',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition 250 40`
+    //     },
+    //     {
+    //       id: 1210,
+    //       name: 'Moth10',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition 350 200`
+    //     },
+    //     {
+    //       id: 1301,
+    //       name: 'Predator1',
+    //       blueprint: 'Predator',
+    //       initScript: `prop x setTo 250
+    // prop y setTo -100`
+    //     },
+    //     {
+    //       id: 1302,
+    //       name: 'Predator2',
+    //       blueprint: 'Predator',
+    //       initScript: `prop x setTo -250
+    // prop y setTo -100`
+    //     },
     {
       id: 1400,
       name: 'Histogram',
