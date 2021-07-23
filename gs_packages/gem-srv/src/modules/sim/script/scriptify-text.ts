@@ -57,10 +57,12 @@ function TestTokenizeScripts(tests: { [key: string]: any }) {
   console.groupEnd();
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TEST = true;
-if (TEST)
-  UR.HookPhase('UR/APP_RUN', () => {
+UR.AddConsoleTool({
+  'scriptify_test': () => {
+    console.clear();
     TestTokenizeScripts(Blocks);
-  });
+  }
+});
+// UR.HookPhase('UR/APP_START', () => TestTokenizeScripts(Blocks));

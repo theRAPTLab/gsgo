@@ -194,6 +194,6 @@ const moth = {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const Script = {
   simpleIfExpr,
-  bee
-  // moth
+  bee,
+  moth
 };

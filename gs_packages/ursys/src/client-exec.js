@@ -121,11 +121,11 @@ async function SystemAppConfig(options = {}) {
   if (DBG) console.groupCollapsed('EXEC: LOAD CONFIG READY');
   m_CheckConfigOptions(options);
   //
-  console.log(...NPR('APP: EXECUTING [LOAD, CONFIG] PHASES'));
+  if (DBG) console.log(...NPR('APP: EXECUTING [LOAD, CONFIG] PHASES'));
   await executePhase('PHASE_LOAD');
   await executePhase('PHASE_CONFIG');
   //
-  console.log(...NPR('APP: EXECUTING [READY] PHASE'));
+  if (DBG) console.log(...NPR('APP: EXECUTING [READY] PHASE'));
   await executePhase('PHASE_READY');
 
   //
@@ -146,11 +146,11 @@ async function SystemAppRun(options = {}) {
   m_CheckConfigOptions(options);
   //
   if (DBG) console.groupCollapsed(...PR('EXEC: STAGE START RUN'));
-  console.log(...NPR('APP: EXECUTING [STAGE, START, RUN] PHASES'));
+  if (DBG) console.log(...NPR('APP: EXECUTING [STAGE, START, RUN] PHASES'));
   await execute('APP_STAGE');
   await execute('APP_START');
   await execute('APP_RUN');
-  console.log(...NPR('APP STARTED [RUN] PHASE'));
+  if (DBG) console.log(...NPR('APP STARTED [RUN] PHASE'));
   // PART 2 - after the run has started, there are no periodic updates
   //          unless you add them yourself
   if (DBG) console.groupEnd();

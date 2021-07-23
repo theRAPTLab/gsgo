@@ -9,10 +9,11 @@
 let TOOLS;
 const HFUNCS = []; // stack of hfuncs in ur_handle, which
 const PR = s => [
-  `%cCDEBUG%c ${s}`,
-  'color:#000;background-color:#f66;padding:3px 5px;border-radius:2px;',
+  `%c[DBGTOOL] ${s}%c`,
+  'color:#000;background-color:yellow;padding:3px 5px;border-radius:2px;',
   'color:auto;background-color:auto;'
 ];
+const DBG = false;
 
 /// UTILITY METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -20,25 +21,44 @@ const PR = s => [
  *  exist in the window.UR object
  */
 function addConsoleTool(obj) {
+  if (typeof obj !== 'object')
+    console.warn(...PR('addConsoleTool: invalid argument', obj));
   if (typeof window === 'undefined') {
     console.warn(
       ...PR('addConsoleTool: non-browser environment detected...aborted.')
     );
     return;
   }
-  if (window.UR === undefined) window.UR = {};
   //---
-  console.groupCollapsed('monkeypatching props(s) into window global');
   Object.entries(obj).forEach(kv => {
     const [key, f] = kv;
-    if (typeof window[key] !== 'undefined') {
-      console.warn(...PR(`addConsoleTool: window[${key}] already set`));
-      return;
+    if (typeof f !== 'function')
+      console.warn(...PR('addConsoleTool: key value must be function'));
+    try {
+      let parts = key.split('.');
+      let prop = window;
+      let info = '';
+      parts.forEach((p, ii) => {
+        // feedback
+        const isLast = ii === parts.length - 1;
+        info += `.${p}`;
+        // assignment to next
+        if (DBG) console.log(p, prop[p]);
+        if (prop[p] === undefined) {
+          if (!isLast) {
+            prop[p] = {};
+            if (DBG) console.log('adding', info);
+          }
+        } else if (isLast) throw Error(`window${info} not empty.`);
+
+        if (isLast) prop[p] = f;
+        prop = prop[p];
+      });
+      console.log(...PR(`installed window${info}()`));
+    } catch (e) {
+      console.warn(...PR(`addConsoleTool: ${e}`));
     }
-    console.log(`• ${key}()`);
-    window[key] = f;
   });
-  console.groupEnd();
 }
 
 /// MESSAGE TESTS /////////////////////////////////////////////////////////////

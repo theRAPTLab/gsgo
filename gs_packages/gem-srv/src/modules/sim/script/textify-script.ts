@@ -90,7 +90,7 @@ export function TextifyScript(units: TScriptUnit[]): string {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestTextifyScript(tests: { [key: string]: any }) {
-  console.groupCollapsed(...PR('TEST: TextifyScript'));
+  console.group(...PR('TEST: TextifyScript'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
@@ -103,10 +103,12 @@ function TestTextifyScript(tests: { [key: string]: any }) {
   console.groupEnd();
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TEST = true;
-if (TEST)
-  UR.HookPhase('UR/APP_RUN', () => {
+UR.AddConsoleTool({
+  'textify_test': () => {
+    console.clear();
     TestTextifyScript(Blocks);
-  });
+  }
+});
+// UR.HookPhase('UR/APP_START', () => TestTextifyScript(Blocks));

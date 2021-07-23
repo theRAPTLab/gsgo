@@ -1,36 +1,41 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ScriptTokenizer takes a text input and produces a TScriptUnit, which is
-  an array of form ['keyword', ...args]. Arrays of TScriptUnits form our
-  "script object code"
+  ScriptTokenizer takes a text input, breaks it into lines, and processes each
+  line character by character.
 
-  The main entry point of the class instance is:
-  tokenize(expr:string)
+  The main entry point is tokenize(text), and resulting output is an array of
+  TScriptUnit (array of token objects):
 
-  All this version of the tokenizer needs to do is detect {{ }}, [[ ]],
-  and [[ ... lines ]]. It returns the tokenized values in raw string or array
-  format. It also detected comments // and directives #
+    program:TScript = [
+      [ {token}, {token}, ... ],    // TScriptUnit
+      [ {token}, {token}, ... ],    // TScriptUnit
+      ...
+    ]
 
-  KNOWN BUGS
-  * Inline blocks inside of a multiblock cause the tokenizer to lockup.
-    The problem is in gobbleMultiBlock not handling inline blocks.
-    onEvent Tick [[
-      [[ ]]  <---- scanner breaks on this
-    ]]
+  This code is a refactored version of jsep, modified to process the GEM-SCRIPT
+  ScriptText format of [keyword, ...args]. The original is a stand-alone module
+  written in ES5; this was converted and modified to do the following:
 
-  This code is a refactored version of jsep, hacked to produce
-  our script unit format of [ { token } ...]
-  NOTE: jsep is also used in class-expr-parser
-  -
-  JSEP project, under MIT License.
-  Copyright (c) 2013 Stephen Oney, http://jsep.from.so/
-  see: https://ericsmekens.github.io/jsep/
+  * process an entire block of text, not just a single line
+  * produce {comment} tokens from leading //
+  * produce {directive} tokens (like a pragma)
+  * process blocks with [[ ]] wrappers into {block} token
+  * process program names in an inline use of [[ ]] into {program} token
+  * process dotted identifiers (foo.bar.bar) into {objref} token
+  * process inline expressions between {{ }} wrappers into {expr} token
+  * add showCursor() that will highlight the current position of the character
+    index for debugging
+
+  LICENSES
+
+    JSEP project, under MIT License. Copyright (c) 2013 Stephen Oney,
+    http://jsep.from.so/ see: https://ericsmekens.github.io/jsep/
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string = 'class-script-tokenizer-2';
+const string = 'class-script-tokenizer-v3';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
@@ -66,10 +71,9 @@ const binary_ops = {
   '>': 7,
   '<=': 7,
   '>=': 7,
-  /* HACK disable because we use << >> for block delimiters */
-  // '<<': 8,
-  // '>>': 8,
-  // '>>>': 8,
+  '<<': 8,
+  '>>': 8,
+  '>>>': 8,
   '+': 9,
   '-': 9,
   '*': 10,
@@ -160,7 +164,7 @@ class ScriptTokenizer {
   exprICode(i) {
     return charCodeAtFunc.call(this.line, i);
   }
-  nextLine() {
+  loadLine() {
     // ben hacked this in a weird way before to allow blank lines to be
     // processed, obscuring what this function actually did: setup the line and
     // length props. It's been rewritten to reflect that operation more clearly
@@ -210,7 +214,7 @@ class ScriptTokenizer {
     let nodes = [];
     let node;
 
-    this.nextLine();
+    this.loadLine();
     /* special cases for gemscript */
     if (this.line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
     if (this.line.substring(0, 1) === DIRECTIVE) return this.gobbleDirective();
@@ -222,7 +226,7 @@ class ScriptTokenizer {
     }
     // HACK: Ben added 'blank line' support so the number of returned script units
     // in the array matches the number of lines in the text, which simplifies
-    // his UI work with the JSX renderer. The `nextLine()` method is also
+    // his UI work with the JSX renderer. The `loadLine()` method is also
     // modified to not skip blank text lines.
     if (nodes.length === 0) return [{ comment: 'blank' }];
     return nodes;
@@ -575,7 +579,7 @@ class ScriptTokenizer {
     const statements = []; // an array of arrays of nodes
     // PROCESS LINE by LINE
     while (this.linesIndex < this.linesCount + 1) {
-      this.nextLine();
+      this.loadLine();
       unit = [];
       // scan line character-by-character for the line
       while (this.index < this.length) {
@@ -584,8 +588,8 @@ class ScriptTokenizer {
         // EXIT CONDITION: closing ]] return
         if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
           this.index += 2;
-          // return statements; // BUG...fails everything
-          return statements; // BUG...fails nblock, passes block+ifExpr
+          // return statement in block token
+          return { block: statements };
         }
         // collect tokens
         const tok = this.gobbleToken();

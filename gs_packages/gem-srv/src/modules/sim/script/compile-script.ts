@@ -43,8 +43,17 @@ function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_GetTokenValue(arg) {
-  const { token, objref, directive, value, string, comment, program, expr } = arg;
-  if (Array.isArray(arg)) return [...arg];
+  const {
+    comment,
+    token,
+    objref,
+    directive,
+    value,
+    string,
+    program,
+    block,
+    expr
+  } = arg;
   if (token !== undefined) {
     if (token === '#') return '_pragma';
     return token;
@@ -53,8 +62,9 @@ function m_GetTokenValue(arg) {
   if (value !== undefined) return value;
   if (string !== undefined) return string;
   if (comment) return comment;
-  // special cases
+  // special cases return as-is for later processing in art expander
   if (program) return arg; // { program = string name of stored program }
+  if (Array.isArray(block)) return arg; // { block = array of arrays of tok }
   if (objref) return arg; // { objref = array of string parts }
   if (expr) return arg; // { expr = string }
   console.warn('unknown argument type:', arg);
@@ -92,8 +102,8 @@ export function r_ExpandArg(tok: IToken): any {
     return arg;
   }
   // 4. block program is array of scriptunit array and has to be compiled
-  if (Array.isArray(arg)) {
-    const smc = CompileScript(arg); // recursive compile
+  if (arg.block) {
+    const smc = CompileScript(arg.block); // recursive compile
     return smc;
   }
   // 5. otherwise this is a plain argument
@@ -177,10 +187,12 @@ function TestCompiler(tests) {
   console.groupEnd();
 }
 
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
+/// CONSOLE TOOL INSTALL //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TEST = true;
-if (TEST)
-  UR.HookPhase('UR/APP_RUN', () => {
+UR.AddConsoleTool({
+  'compile_test': () => {
+    console.clear();
     TestCompiler(Script);
-  });
+  }
+});
+// UR.HookPhase('UR/APP_START', () => TestCompiler(Script));
