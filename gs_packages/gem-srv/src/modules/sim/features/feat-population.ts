@@ -82,13 +82,25 @@ class PopulationPack extends GFeature {
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
     this.featAddMethod('removeInertAgents', this.removeInertAgents);
     this.featAddMethod('agentsReproduce', this.agentsReproduce);
+    this.featAddMethod('populateBySpawning', this.populateBySpawning);
+    this.featAddMethod('agentsForEachActive', this.agentsForEachActive);
+    this.featAddMethod('agentsForEach', this.agentsForEach);
     // Statistics
     this.featAddMethod('getActiveAgentsCount', this.getActiveAgentsCount);
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
+    this.featAddMethod('maxAgentProp', this.maxAgentProp);
     // Histogram
     this.featAddMethod('countAgentsByPropType', this.countAgentsByPropType);
+    this.featAddMethod(
+      'setAgentsByFeatPropTypeKeys',
+      this.setAgentsByFeatPropTypeKeys
+    );
+    this.featAddMethod(
+      'countExistingAgentsByFeatPropType',
+      this.countExistingAgentsByFeatPropType
+    );
 
     UR.HookPhase('SIM/DELETE', m_Delete);
     UR.HookPhase('SIM/CREATE', m_Create);
@@ -375,7 +387,6 @@ class PopulationPack extends GFeature {
       const count = countsByProp.get(key) + 1 || 1;
       countsByProp.set(key, count);
     });
-    console.error('countByProp', countsByProp);
   }
 
   /// Prepopulate the countsByProp map with keys
@@ -431,7 +442,6 @@ class PopulationPack extends GFeature {
       const count = countsByProp.get(key) + 1 || 1;
       countsByProp.set(key, count);
     });
-    console.error('countByProp', countsByProp);
   }
   /// Counts currently active (non-inert) agents
   /// NOTE this does not include newly spawned agents
