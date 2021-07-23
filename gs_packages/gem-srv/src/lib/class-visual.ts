@@ -203,16 +203,17 @@ class Visual implements IVisual, IPoolable, IActable {
    * AdjustmentFIlter by itself will tint but not change values.
    */
   setColorize(color: number) {
-    if (this.filterColor === color) return; // color hasn't changed, skip update
-    this.filterColor = color;
-    if (color === null) {
+    if (color === null || color === undefined) {
       // Remove Colorize
       this.filterColorOverlay = undefined;
       this.filterAdjustment = undefined;
       return;
     }
+    if (this.filterColor === color) return; // color hasn't changed, skip update
+    this.filterColor = color;
     const [r, g, b] = PIXI.utils.hex2rgb(color);
-    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
+    // this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
+    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 1.0);
     this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
   }
   /**

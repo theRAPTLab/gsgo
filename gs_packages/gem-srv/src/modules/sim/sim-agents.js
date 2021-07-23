@@ -56,7 +56,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     // so NPC agents (200) always appera on top of input agents (-100)
     dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
-    if (agent.color) dobj.color = agent.color;
+    dobj.color = agent.color; // always copy color, set color = undefined to clear filters
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
@@ -79,7 +79,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     // so NPC agents (200) always appera on top of input agents (-100)
     dobj.zIndex = agent.zIndex || 200;
     if (agent.skin) dobj.skin = agent.skin;
-    if (agent.color) dobj.color = agent.color;
+    dobj.color = agent.color; // always copy color, set color = undefined to clear filters
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
     if (agent.scale) dobj.scale = agent.scale;
     if (agent.scaleY) dobj.scaleY = agent.scaleY;
