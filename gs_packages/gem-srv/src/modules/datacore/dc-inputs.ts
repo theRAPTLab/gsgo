@@ -141,6 +141,17 @@ function UpdateActiveDevices(changes) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// POZYX DATA UPDATE  FOR VU/////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* export const POZYX_TRANSFORM = {
+  scaleX: -0.0002, // -0.0002
+  scaleY: 0.00016, // 0.0003
+  translateX: -4200, //0
+  translateY: -6000, //0
+  rotate: 0, // -160
+  useAccelerometer: true
+}; */
+
 /// POZYX DATA UPDATE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const POZYX_TRANSFORM = {
