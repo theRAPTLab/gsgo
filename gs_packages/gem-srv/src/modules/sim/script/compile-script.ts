@@ -52,7 +52,8 @@ function m_GetTokenValue(arg) {
     string,
     program,
     block,
-    expr
+    expr,
+    line
   } = arg;
   if (token !== undefined) {
     if (token === '#') return '_pragma';
@@ -63,6 +64,7 @@ function m_GetTokenValue(arg) {
   if (string !== undefined) return string;
   if (comment) return comment;
   // special cases return as-is for later processing in art expander
+  if (line !== undefined) return `// line:${line}`; // don't compile these!
   if (program) return arg; // { program = string name of stored program }
   if (Array.isArray(block)) return arg; // { block = array of arrays of tok }
   if (objref) return arg; // { objref = array of string parts }
@@ -93,20 +95,24 @@ export function r_ExpandArg(tok: IToken): any {
     // the syntax! e.g. agent.prop['x'] swizzled into agent.x somehow
     // so just return the arg as-is and assume runtime expander will
     // handle it
-    return arg;
+    return arg; // runtime processing required
   }
   // 3. program name
   if (typeof arg.program === 'string') {
     // named programs are resolved, replace with actual program
     arg.program = GetProgram(arg.program);
-    return arg;
+    return arg; // runtime processing required
   }
   // 4. block program is array of scriptunit array and has to be compiled
   if (arg.block) {
     const smc = CompileScript(arg.block); // recursive compile
     return smc;
   }
-  // 5. otherwise this is a plain argument
+  // 5. it's a line (whitespace) and should be ignored
+  if (arg.line !== undefined) {
+    return `// line: ${arg.line}`;
+  }
+  // 6. otherwise this is a plain argument
   return arg;
 }
 
@@ -127,7 +133,7 @@ function r_CompileStatement(units: TScriptUnit, idx?: number): TSMCProgram {
   let kw = kwArgs[0];
   // let's compile!
   if (typeof kw !== 'string') return [];
-  if (kw === '//') return [];
+  if (kw.startsWith('//')) return [];
   kwProcessor = GetKeyword(kw);
   if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
   const compiledStatement = kwProcessor.compile(kwArgs, idx); // qbits is the subsequent parameters
@@ -157,23 +163,25 @@ export function CompileScript(script: TScriptUnit[]): TSMCProgram {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestCompiler(tests) {
-  console.group(...PR('TEST: CompileScript'));
-  Object.entries(tests).forEach(kv => {
+  const entries = Object.entries(tests);
+  console.group(...PR(`TEST: CompileScript (${entries.length} tests)`));
+  entries.forEach((kv, ii) => {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
-    const text = testArgs['text'];
+    const text = testArgs['text'].trim();
     const ctx = testArgs['ctx'];
     const stack = testArgs['stack'];
     // const { text, ctx, stack } = testArgs;
-    console.group(...PR(testName));
-    console.log(text.trim());
-    const sourceStrings = text.trim().split('\n');
-    const script = Scriptifier.tokenize(sourceStrings);
+    console.group(...PR(`T${ii + 1} '${testName}'`));
+    console.groupCollapsed('SOURCE TEXT');
+    console.log(`%c${text}`, 'padding:4px 6px;background-color:LightYellow');
+    console.groupEnd();
+    const script = Scriptifier.tokenize(text);
     const program = CompileScript(script);
     const state = new SM_State(stack, ctx);
     const agent = new GAgent('CompilerTest');
     console.log('%cprogram:', 'color:brown', program);
-    console.group(`executing '${testName}' in test context`);
+    console.group(`EXEC '${testName}' (test agent+context)`);
     console.log('IN  stack:', state.stack, 'ctx:', state.ctx);
     program.forEach((op, idx) => {
       if (typeof op !== 'function')

@@ -31,6 +31,7 @@ function addConsoleTool(obj) {
   }
   //---
   Object.entries(obj).forEach(kv => {
+    let args;
     const [key, f] = kv;
     if (typeof f !== 'function')
       console.warn(...PR('addConsoleTool: key value must be function'));
@@ -59,6 +60,62 @@ function addConsoleTool(obj) {
       console.warn(...PR(`addConsoleTool: ${e}`));
     }
   });
+}
+
+/// TEXT COMPARATOR ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** if fail, return a function to call to print results. if success,
+ *  return value is undefined
+ */
+function consoleCompareTexts(text, ref) {
+  let index = 0;
+  let length = Math.max(text.length, ref.length);
+  let comparison = '';
+  // scan letter by letter
+  while (index < length) {
+    if (text.charAt(index) !== ref.charAt(index)) break;
+    comparison += text.charAt(index++);
+  }
+
+  const pass = comparison.length === text.length;
+  if (pass)
+    return [
+      pass,
+      (testName = '') => {
+        console.log(testName, 'passed');
+      }
+    ];
+
+  // failed, close group from failed letter scan
+  console.groupEnd();
+  return [
+    pass,
+    (testName = '') => {
+      console.warn(testName, `match FAILED at index ${index}`);
+      console.warn(
+        `generated: %c${text.charAt(index)}`,
+        'padding:4px;background-color:Yellow'
+      );
+      console.warn(
+        `expected:  %c${ref.charAt(index)}`,
+        'padding:4px;background-color:Cyan'
+      );
+      console.groupCollapsed(testName, 'mismatch visualization');
+      const endG = text.substring(comparison.length);
+      const endE = ref.substring(comparison.length);
+      console.log(
+        `SOURCE TEXT\n%c${comparison}%c${endG}`,
+        'background-color:LightYellow',
+        'background-color:Yellow'
+      );
+      console.log(
+        `REFERENCE TEXT\n%c${comparison}%c${endE}`,
+        'background-color:LightCyan',
+        'background-color:Cyan'
+      );
+      console.groupEnd();
+    }
+  ];
 }
 
 /// MESSAGE TESTS /////////////////////////////////////////////////////////////
@@ -192,4 +249,4 @@ function addMessageHandlerTests(UR) {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { addConsoleTool };
+module.exports = { addConsoleTool, consoleCompareTexts };

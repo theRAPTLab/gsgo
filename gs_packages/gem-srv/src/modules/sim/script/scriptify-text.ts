@@ -29,8 +29,8 @@ export function ScriptifyText(text: string): TScriptUnit[] {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the test format is { testName: [ scripttext, jsonscriptunits ] }
-function TestTokenizeScripts(tests: { [key: string]: any }) {
-  console.group(...PR('TEST: TokenizeScripts'));
+function TestScriptifyText(tests: { [key: string]: any }) {
+  console.group(...PR('TEST: ScriptifyText'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
@@ -41,18 +41,8 @@ function TestTokenizeScripts(tests: { [key: string]: any }) {
     const sourceStrings = text.trim().split('\n');
     const su = gstDBG.tokenize(sourceStrings);
     const result = JSON.stringify(su);
-    const pass = expect === result;
-    const status = `test ${testName}: ${pass ? 'pass' : 'fail'}`;
-    if (!pass) {
-      console.log(...PR(status!));
-      console.log('%cexpect%c', 'color:red', 'color:inherit', expect);
-      console.log('%cgotted%c', 'color:red', 'color:inherit', result);
-    } else {
-      console.log(...PR(status));
-      // console.log('%cgotted%c', 'color:red', 'color:inherit', result);
-    }
-    // const oldstr = JSON.stringify(gst.tokenize(sourceStrings));
-    // console.log('%coldscr%c', 'color:brown', 'color:inherit', oldstr);
+    const [pass, printInfo] = UR.ConsoleCompareTexts(result, expect);
+    printInfo(`'${testName}'`);
   });
   console.groupEnd();
 }
@@ -62,7 +52,12 @@ function TestTokenizeScripts(tests: { [key: string]: any }) {
 UR.AddConsoleTool({
   'scriptify_test': () => {
     console.clear();
-    TestTokenizeScripts(Blocks);
+    TestScriptifyText(Blocks);
+  },
+  'tokenize': (text, spc = 0) => {
+    const script = gstDBG.tokenize(text);
+    console.log(JSON.stringify(script, null, spc));
+    return script;
   }
 });
 // UR.HookPhase('UR/APP_START', () => TestTokenizeScripts(Blocks));

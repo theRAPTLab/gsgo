@@ -17,27 +17,40 @@ const PR = UR.PrefixUtil('TEXTIFY', 'TagDebug');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a token, return the text representation of it */
 function r_TextifyToken(tok: IToken, indent: number) {
-  if (Array.isArray(tok)) {
-    // start with
-    let text;
-    tok.forEach(su => {
-      text += r_UnpackStatement(su, indent);
-    });
-    return text;
-  }
-  const { token, objref, directive, value, string, comment, program, expr } = tok;
+  const {
+    token,
+    objref,
+    block,
+    directive,
+    value,
+    string,
+    comment,
+    program,
+    expr,
+    line
+  } = tok;
+  // special case
   if (token !== undefined) {
     if (token === '#') return '_pragma';
     return token;
   }
-  if (directive) return `${directive}`;
+  // regular tokens
   if (value !== undefined) return value;
   if (string !== undefined) return `"${string}"`;
-  if (comment) return `// ${comment}`;
-  // special cases
-  if (program) return `[[ ${program} ]]`; // { program = string name of stored program }
   if (objref) return objref.join('.');
+  if (comment) return `// ${comment}`;
+  if (block) {
+    let lines = '';
+    block.forEach((su, ii) => {
+      lines += r_UnpackStatement(su, indent + 2);
+      if (ii < block.length) lines += '\n';
+    });
+    return `[[\n${lines}${''.padStart(indent, ' ')}]]`;
+  }
   if (expr) return `{{ ${expr} }}`; // { expr = string }
+  if (program) return `[[ ${program} ]]`; // { program = string name of stored program }
+  if (directive) return `${directive}`;
+  if (line !== undefined) return `${line}`;
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');
 }
@@ -47,31 +60,18 @@ function r_TextifyToken(tok: IToken, indent: number) {
  */
 function r_UnpackStatement(statement: TScriptUnit, indent: number): string {
   // process tokens from left to right, concat to make a line
-  const spc = ''.padStart(indent, ' ');
-  const nl = `\n${spc}`;
   let line = ''.padStart(indent, ' ');
   if (!Array.isArray(statement)) {
     console.warn('not a statement:', statement);
     return JSON.stringify(statement).padStart(indent, ' ');
   }
   statement.forEach((tok, ii) => {
-    // handle nested blocks
-    if (Array.isArray(tok)) {
-      let block = '';
-      tok.forEach((su, jj) => {
-        block += r_UnpackStatement(su, indent + 2);
-        if (jj < tok.length - 1) block += '\n';
-      });
-      // put the block with proper indent
-      line += `[[\n${block}${nl}]] `;
-      return;
-    }
-    // normal token
     const txt = r_TextifyToken(tok, indent);
     line += txt;
     if (ii !== statement.length - 1) line += ' ';
   });
-  return line;
+  if (line.trim() !== '') return line;
+  return '';
 }
 
 /// API ///////////////////////////////////////////////////////////////////////
@@ -95,10 +95,16 @@ function TestTextifyScript(tests: { [key: string]: any }) {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
     const units = JSON.parse(testArgs['expect']);
-    const text = TextifyScript(units);
+    const text = TextifyScript(units).trim();
     const expect = testArgs['text'].trim();
-    console.log(`%c${text}`, 'padding:4px 6px;background-color:LightYellow');
-    console.log(`%c${expect}`, 'padding:4px 6px;background-color:LightCyan');
+    const [pass, printInfo] = UR.ConsoleCompareTexts(text, expect);
+    if (!pass) {
+      console.group(...PR(`${testName} comparison failed`));
+      printInfo(testName);
+      console.groupEnd();
+    } else {
+      printInfo(testName);
+    }
   });
   console.groupEnd();
 }

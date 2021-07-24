@@ -25,6 +25,7 @@
   * process inline expressions between {{ }} wrappers into {expr} token
   * add showCursor() that will highlight the current position of the character
     index for debugging
+  * added tokenizer error display in console
 
   LICENSES
 
@@ -39,7 +40,8 @@ const string = 'class-script-tokenizer-v3';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;
-let DBG_SHOW = true;
+let DBG = true;
+const DBG_MB = false;
 
 /// CHAR CODES ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -54,7 +56,6 @@ const OBRACK_CODE = 91; // [
 const CBRACK_CODE = 93; // ]
 const OCURLY_CODE = 123; // {
 const CCURLY_CODE = 125; // }
-const COMMENT_1 = '//';
 const DIRECTIVE = '#';
 const unary_ops = { '-': t, '!': t, '~': t, '+': t };
 const binary_ops = {
@@ -130,13 +131,16 @@ class ScriptTokenizer {
     if (doFlags)
       console.log('ScriptTokenizer initialized with showCursor tracing');
     doFlags = doFlags || {
-      show: DBG_SHOW // show progress
+      show: DBG // show progress
     };
     this.do = doFlags;
+    this.linesIndex = 0; // line index
     this.line = '';
-    this.index = 0;
+    this.index = 0; // char index
     this.lastIndex = this.index;
-    this.length = 0;
+    this.length = 0; // line length
+    // debug
+    this.blockDepth = 0;
   }
 
   showCursor(prompt) {
@@ -155,7 +159,19 @@ class ScriptTokenizer {
   }
 
   throwError(err) {
-    // this.showCursor('ERROR');
+    let range = 5;
+    let start = Math.max(this.linesIndex - range, 0);
+    for (let ii = start; ii < this.linesIndex - 1; ii++) {
+      const lnum = `${ii + 1}`.padStart(3, '0');
+      console.warn(`${lnum}: %c${this.lines[ii]}`, 'color:#C0C0C0;');
+    }
+    this.showCursor('TOKEN ERROR');
+    start = Math.min(this.linesIndex + 1, this.linesIndex);
+    let end = Math.min(this.linesIndex + range - 1, this.linesCount);
+    for (let ii = start; ii < end; ii++) {
+      const lnum = `${ii + 1}`.padStart(3, '0');
+      console.warn(`${lnum}: %c${this.lines[ii]}`, 'color:#C0C0C0;');
+    }
     throw Error(err);
   }
   exprI(i) {
@@ -172,6 +188,7 @@ class ScriptTokenizer {
     if (this.linesIndex < this.linesCount) {
       this.line = this.lines[this.linesIndex++].trim();
       this.length = this.line.length;
+      if (DBG_MB) console.log('load', this.line);
       return;
     }
     // end of lines
@@ -181,30 +198,34 @@ class ScriptTokenizer {
 
   /////////////////////////////////////////////////////////////////////////////
   /** TOKENIZER **************************************************************/
-  tokenize(lines, flag) {
-    if (!Array.isArray(lines)) {
+  tokenize(src, flag) {
+    if (typeof src === 'string') src = src.split('\n');
+    if (!Array.isArray(src)) {
       const err =
-        'tokenize(arg) should get ARRAY of string. Did you split your source string into an array of strings?';
+        'tokenize() receives either a linefeed-delimited text or an ARRAY of string';
       console.warn(err);
       throw Error(err);
     }
-    this.lines = lines; // an array of strings
+    this.lines = src; // an array of strings
     this.linesCount = this.lines.length;
     this.linesIndex = 0;
     this.line = '';
     this.index = 0;
     this.length = this.line.length;
-    DBG_SHOW = flag === 'show';
+    DBG = flag === 'show'; // override DBG status if pass 'show'
+    this.blockDepth = 0;
 
     let units = [];
-
     // parse line-by-line, pushing token arrays
     while (this.linesIndex < this.linesCount) {
       const nodes = this.gobbleLine();
       if (nodes.length > 0) units.push(nodes);
+      else units.push([{ comment: 'blank' }]);
     } // end while lines<lines.length
 
     // return a Script array of ScriptUnit arrays
+    if (this.blockDepth > 0)
+      this.throwError(`EOF without ${this.blockDepth} unclosed blocks`);
     return units;
   }
   /** END TOKENIZER **********************************************************/
@@ -216,7 +237,6 @@ class ScriptTokenizer {
 
     this.loadLine();
     /* special cases for gemscript */
-    if (this.line.substring(0, 2) === COMMENT_1) return this.gobbleComment();
     if (this.line.substring(0, 1) === DIRECTIVE) return this.gobbleDirective();
 
     while (this.index < this.length) {
@@ -228,7 +248,7 @@ class ScriptTokenizer {
     // in the array matches the number of lines in the text, which simplifies
     // his UI work with the JSX renderer. The `loadLine()` method is also
     // modified to not skip blank text lines.
-    if (nodes.length === 0) return [{ comment: 'blank' }];
+    if (nodes.length === 0) return [{ line: '' }];
     return nodes;
   }
 
@@ -254,15 +274,11 @@ class ScriptTokenizer {
   // Return the next token (eq to gobbleExpression)
   gobbleToken() {
     this.gobbleSpaces();
-    if (DBG_SHOW) this.showCursor();
+    if (DBG) this.showCursor();
     let ch = this.exprICode(this.index);
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
-    /* GEMSCRIPT ADDITION FOR // */
-    if (ch === BSLASH_CODE && chn === BSLASH_CODE) {
-      return this.gobbleComment();
-    }
     /* GEMSCRIPT ADDITION FOR [[ ]] */
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
@@ -272,6 +288,11 @@ class ScriptTokenizer {
     if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
       this.index++;
       return this.gobbleExpressionString();
+    }
+    /* GEMSCRIPT ADDITION FOR // */
+    if (ch === BSLASH_CODE && chn === BSLASH_CODE) {
+      this.index += 2;
+      return this.gobbleComment();
     }
 
     if (isDecimalDigit(ch) || ch === PERIOD_CODE) {
@@ -324,7 +345,7 @@ class ScriptTokenizer {
       number += this.exprI(this.index++);
 
       while (isDecimalDigit(this.exprICode(this.index))) {
-        if (DBG_SHOW) this.showCursor();
+        if (DBG) this.showCursor();
         number += this.exprI(this.index++);
       }
     }
@@ -427,13 +448,10 @@ class ScriptTokenizer {
     if (isIdentifierStart(ch)) {
       this.index++;
     } else {
-      console.warn('error on line', this.line);
-      this.showCursor();
       this.throwError(
         `GobbleIdentifier: Unexpected ${this.exprI(this.index)} at ${this.index}`
       );
     }
-
     while (this.index < this.length) {
       ch = this.exprICode(this.index);
       if (isIdentifierPart(ch)) {
@@ -474,7 +492,7 @@ class ScriptTokenizer {
     // allow dotted variables. removed checks for OPAREN_CODE and OBRACK_CODE
     while (ch_i === PERIOD_CODE) {
       this.index++;
-      if (DBG_SHOW) this.showCursor();
+      if (DBG) this.showCursor();
       // handle conversion of initial identifier object into string
       node[0] = node[0].identifier ? node[0].identifier : node[0];
       if (ch_i === PERIOD_CODE) {
@@ -575,13 +593,16 @@ class ScriptTokenizer {
    */
   gobbleMultiBlock() {
     // we are here because of an unbalanced [[ so we must scan for closing ]]
+    this.blockDepth++; // debug nesting levels
+
     let unit = []; // an array of nodes
     const statements = []; // an array of arrays of nodes
     // PROCESS LINE by LINE
-    while (this.linesIndex < this.linesCount + 1) {
+    while (this.linesIndex < this.linesCount) {
       this.loadLine();
+      if (this.line.substring(0, 1) === DIRECTIVE) return this.gobbleDirective();
       unit = [];
-      // scan line character-by-character for the line
+      // scan line character-by-character to end-of-line
       while (this.index < this.length) {
         let ch = this.exprICode(this.index);
         let chn = this.exprICode(this.index + 1);
@@ -589,13 +610,18 @@ class ScriptTokenizer {
         if (ch === CBRACK_CODE && chn === CBRACK_CODE) {
           this.index += 2;
           // return statement in block token
+          if (DBG_MB)
+            console.warn(`GM[${this.blockDepth}] statement rtn`, statements);
+          this.blockDepth--;
           return { block: statements };
         }
         // collect tokens
         const tok = this.gobbleToken();
+        if (DBG_MB) console.warn(`GM[${this.blockDepth}] unit addtok`, tok);
         unit.push(tok);
       }
       // the entire line is processed, so push unit as a statement
+      if (DBG_MB) console.warn(`GM[${this.blockDepth}] statement add`, unit);
       statements.push(unit);
     } // while line...
     // if got this far, then there was no closing bracket
@@ -603,14 +629,13 @@ class ScriptTokenizer {
     return this.throwError('GobbleMultiBlock: unclosed [[ in text');
   }
 
-  /* HACK ADDITION for text script comments // and -- */
+  // HACK ADDITION for COMMENTS
   // skip the first two // and output the entire rest of the line
   gobbleComment() {
     const eol = this.line.length;
-    const comment = this.line.substring(2, eol).trim();
+    const comment = this.line.substring(this.index, eol).trim();
     this.index = eol;
-
-    return [{ comment }]; // comments comment keyword
+    return { comment }; // comments comment keyword
   }
   /* END OF HACK HACKS */
 }

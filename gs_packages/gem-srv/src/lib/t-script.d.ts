@@ -124,7 +124,7 @@ export interface IToken {
   // special types
   expr?: string; // gobbleExpression()
   program?: string; // gobbleBlock()
-  block?: [...IToken[]]; // gobbleMultiBlock()
+  block?: TScriptUnit[]; // gobbleMultiBlock()
   objref?: string[]; // gobbleParts()
   // standard types
   token?: string; // gobbleParts() - why does this exist?
@@ -134,6 +134,7 @@ export interface IToken {
   // meta
   directive?: string; // gobbleDirective()
   comment?: string; // gobbleComment()
+  line?: string; // as-is line insertion
 }
 export type TScriptUnit = [...IToken[]]; // variable length array of token objs
 export type TArg = number | string | IToken;
