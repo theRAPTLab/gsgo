@@ -22,319 +22,335 @@ const SIZE_MAX = 'max'; // all
  *
  */
 class InstanceInspector extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      title: 'INSPECTOR',
-      size: SIZE_MIN,
-      alreadyRegistered: false,
-      color: '#009900',
-      colorActive: '#33FF33',
-      bgcolor: 'rgba(0,256,0,0.05)',
-      isHovered: false,
-      isExpanded: false,
-      propsToHide: [
-        'zIndex',
-        'skin',
-        'scale',
-        'scaleY',
-        'alpha',
-        'isInert',
-        'statusText',
-        'statusValue',
-        'statusValueColor',
-        'statusValueIsLarge'
-      ]
-    };
-    this.GetInstanceName = this.GetInstanceName.bind(this);
-    this.GetInstanceId = this.GetInstanceId.bind(this);
-    this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
-    this.HandleInspectorClick = this.HandleInspectorClick.bind(this);
-    this.OnInstanceClick = this.OnInstanceClick.bind(this);
-    this.OnDisclosureClick = this.OnDisclosureClick.bind(this);
-    // Sim Hover
-    this.HandleHoverOver = this.HandleHoverOver.bind(this);
-    this.HandleHoverOut = this.HandleHoverOut.bind(this);
-    // Local Inspector Hover
-    this.OnHoverOver = this.OnHoverOver.bind(this);
-    this.OnHoverOut = this.OnHoverOut.bind(this);
+    constructor() {
+        super();
+        this.state = {
+            title: 'INSPECTOR',
+            size: SIZE_MIN,
+            alreadyRegistered: false,
+            color: '#009900',
+            colorActive: '#33FF33',
+            bgcolor: 'rgba(0,256,0,0.05)',
+            isHovered: false,
+            isExpanded: false,
+            propsToHide: [
+                'zIndex',
+                'skin',
+                'scale',
+                'scaleY',
+                'alpha',
+                'isInert',
+                'statusText',
+                'statusValue',
+                'statusValueColor',
+                'statusValueIsLarge'
+            ]
+        };
+        this.GetInstanceName = this.GetInstanceName.bind(this);
+        this.GetInstanceId = this.GetInstanceId.bind(this);
+        this.GetInstanceProperties = this.GetInstanceProperties.bind(this);
+        this.HandleInspectorClick = this.HandleInspectorClick.bind(this);
+        this.OnInstanceClick = this.OnInstanceClick.bind(this);
+        this.OnDisclosureClick = this.OnDisclosureClick.bind(this);
+        // Sim Hover
+        this.HandleHoverOver = this.HandleHoverOver.bind(this);
+        this.HandleHoverOut = this.HandleHoverOut.bind(this);
+        // Local Inspector Hover
+        this.OnHoverOver = this.OnHoverOver.bind(this);
+        this.OnHoverOut = this.OnHoverOut.bind(this);
 
-    UR.HandleMessage('INSPECTOR_CLICK', this.HandleInspectorClick);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
-    UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
-  }
-
-  componentDidMount() {
-    const { instance } = this.props;
-    // If the instance has prop data, then it has been registered
-    // and should automatically be set to SIZE_MAX
-    if (instance && instance.prop) {
-      this.setState({
-        size: SIZE_MAX,
-        alreadyRegistered: true
-      });
+        UR.HandleMessage('INSPECTOR_CLICK', this.HandleInspectorClick);
+        UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+        UR.HandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
     }
-  }
 
-  componentWillUnmount() {
-    UR.UnhandleMessage('INSPECTOR_CLICK', this.HandleInspectorClick);
-    UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
-    UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
-    // Don't unregister here because changing size can cause unmount?
-    // so the agent ends up unregistered when really it should stay registered
-  }
-
-  GetInstanceName() {
-    // Is `instance` a `GAgent` or an `instanceSpec`
-    // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
-    // -- else instance is an instanceDef so get name via instance.name
-    const { instance } = this.props;
-    if (!instance) return '';
-    return instance.meta ? instance.meta.name : instance.name;
-  }
-
-  GetInstanceId() {
-    const { instance } = this.props;
-    if (!instance) return '';
-    return instance.id;
-  }
-
-  /**
-   * Walks down the instance properties array instance.prop
-   * and generates a spec data for rendering the 'label': 'value'
-   * Called by render()
-   */
-  GetInstanceProperties() {
-    const { size } = this.state;
-    const { instance } = this.props;
-    const data = [];
-    if (size === SIZE_MIN) return data; // Don't show any properties if minimized
-    if (instance && instance.prop) {
-      Object.keys(instance.prop).map(p => {
-        // REVIEW: Why does `._value` work, but not `.value`?
-        let val = instance.prop[p]._value;
-        switch (typeof val) {
-          case 'number':
-            val = instance.prop[p]._value.toFixed(2);
-            break;
-          case 'string':
-            val = instance.prop[p]._value;
-            break;
-          default:
-            return;
+    componentDidMount() {
+        const { instance } = this.props;
+        // If the instance has prop data, then it has been registered
+        // and should automatically be set to SIZE_MAX
+        if (instance && instance.prop) {
+            this.setState({
+                size: SIZE_MAX,
+                alreadyRegistered: true
+            });
         }
-        data.push({ label: p, value: val });
-      });
     }
-    // show id too -- useful for debugging
-    // data.push({ label: 'id', value: instance.id });
-    return data;
-  }
 
-  HandleInspectorClick(data) {
-    const { id, instance } = this.props;
-    if (data.id === instance.id) this.OnInstanceClick();
-  }
-
-  /**
-   * Clicking the instance name will toggle the Inspector object between
-   * showing:
-   * 1. SIZE_MIN = Name only
-   * 3. SIZE_MAX = All properties
-   */
-  OnInstanceClick() {
-    // Toggle between different sizes to show/hide data
-    const { size, alreadyRegistered } = this.state;
-    const { instance, disallowDeRegister } = this.props;
-    const id = instance.id;
-    let registrationStatus = alreadyRegistered;
-    let newsize;
-    switch (size) {
-      case SIZE_MIN:
-        newsize = SIZE_MAX;
-        if (!alreadyRegistered) {
-          UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
-          // Inspectors will be automatically updated during SIM/UI_UPDATE phase
-          registrationStatus = true;
-        }
-        break;
-      default:
-      case SIZE_MAX:
-        newsize = SIZE_MIN;
-        if (alreadyRegistered && !disallowDeRegister) {
-          UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
-          registrationStatus = false;
-        }
-        break;
+    componentWillUnmount() {
+        UR.UnhandleMessage('INSPECTOR_CLICK', this.HandleInspectorClick);
+        UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
+        UR.UnhandleMessage('SIM_INSTANCE_HOVEROUT', this.HandleHoverOut);
+        // Don't unregister here because changing size can cause unmount?
+        // so the agent ends up unregistered when really it should stay registered
     }
-    this.setState({ size: newsize, alreadyRegistered: registrationStatus });
-  }
-  OnDisclosureClick(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    this.setState(state => ({ isExpanded: !state.isExpanded }));
-  }
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// Sim Instance Hover Events
-  /// User has hovered over an agent on the stage.
-  ///
-  HandleHoverOver(data) {
-    const agentId = this.GetInstanceId();
-    if (data.agentId === agentId) {
-      this.setState({ isHovered: true });
-    } else {
-      // Only one hover allowed, so if someone else is
-      // hovering, we unhover
-      this.setState({ isHovered: false });
+    GetInstanceName() {
+        // Is `instance` a `GAgent` or an `instanceSpec`
+        // -- if instance.meta then instance is a GAgent, so get name via instance.meta.name
+        // -- else instance is an instanceDef so get name via instance.name
+        const { instance } = this.props;
+        if (!instance) return '';
+        return instance.meta ? instance.meta.name : instance.name;
     }
-  }
-  HandleHoverOut(data) {
-    const agentId = this.GetInstanceId();
-    if (data.agentId === agentId) {
-      this.setState({ isHovered: false });
-    }
-  }
 
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// Local Events (on InstanceEditor container)
-  ///
-  OnHoverOver(e) {
-    const agentId = this.GetInstanceId();
-    UR.RaiseMessage('SIM_INSTANCE_HOVEROVER', { agentId });
-  }
-  OnHoverOut(e) {
-    const agentId = this.GetInstanceId();
-    UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
-  }
-  render() {
-    const {
-      title,
-      size,
-      color,
-      colorActive,
-      bgcolor,
-      isHovered,
-      isExpanded,
-      propsToHide
-    } = this.state;
-    const { id, instance, isActive, disallowDeRegister, classes } = this.props;
-    const agentName = this.GetInstanceName();
-    const blueprintName = instance.blueprint.name;
-    const data = this.GetInstanceProperties();
-    const visibleProps = data.filter(p => !propsToHide.includes(p.label));
-    const hiddenProps = data.filter(p => propsToHide.includes(p.label));
-    return (
-      <div
-        style={{
-          backgroundColor: '#000',
-          margin: '0.5em 0 0.5em 0.5em',
-          cursor: 'pointer'
-        }}
-        className={clsx(classes.instanceSpec, {
-          [classes.instanceSpecHovered]: isHovered
-          // [classes.instanceSpecSelected]: isSelected
-        })}
-        onClick={this.OnInstanceClick}
-        onPointerEnter={this.OnHoverOver}
-        onPointerLeave={this.OnHoverOut}
-      >
-        <div>
-          <div className={classes.inspectorData}>{agentName}</div>
-        </div>
-        <div
-          style={{
-            fontFamily: 'Andale Mono, monospace',
-            fontSize: '14px',
-            paddingLeft: '0.5em'
-          }}
-        >
-          {visibleProps.map(property => (
-            <div
-              style={{
-                display: 'inline-block',
-                paddingRight: '1em'
-              }}
-              key={property.label}
-            >
-              <div className={classes.inspectorLabel}>{property.label}:</div>
-              <div className={classes.inspectorData}>{property.value}</div>
-            </div>
-          ))}
-          <div>
-            {isExpanded && (
-              <div
-                style={
-                  isExpanded
-                    ? {
-                        maxHeight: '100%',
-                        transition: 'max-height 0.5s ease-in-out'
-                      }
-                    : {
-                        maxHeight: '0',
-                        transition: 'max-height 0.5s ease-in-out'
-                      }
+    GetInstanceId() {
+        const { instance } = this.props;
+        if (!instance) return '';
+        return instance.id;
+    }
+
+    /**
+     * Walks down the instance properties array instance.prop
+     * and generates a spec data for rendering the 'label': 'value'
+     * Called by render()
+     */
+    GetInstanceProperties() {
+        const { size } = this.state;
+        const { instance } = this.props;
+        const data = [];
+        if (size === SIZE_MIN) return data; // Don't show any properties if minimized
+        if (instance && instance.prop) {
+            Object.keys(instance.prop).map(p => {
+                // REVIEW: Why does `._value` work, but not `.value`?
+                let val = instance.prop[p]._value;
+                switch (typeof val) {
+                    case 'number':
+                        if (p.startsWith('color')) {
+                            val = Math.floor(instance.prop[p]._value).toString(16);
+                        } else {
+                            val = instance.prop[p]._value.toFixed(2);
+                        }
+                        break;
+                    case 'string':
+                        val = instance.prop[p]._value;
+                        break;
+                    default:
+                        return;
                 }
-              >
-                {hiddenProps.map(property => (
-                  <div
-                    style={{
-                      display: 'inline-block',
-                      paddingRight: '1em'
-                    }}
-                    key={property.label}
-                  >
-                    <div className={classes.inspectorLabel}>
-                      {property.label}:
-                    </div>
-                    <div className={classes.inspectorData}>{property.value}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-            {isExpanded && data.length > 0 && (
-              <div
-                style={{
-                  display: 'inline-block',
-                  paddingRight: '1em'
-                }}
-              >
-                <div
-                  className={classes.inspectorLabel}
-                  style={{ fontsize: '10px' }}
-                >
-                  Character Type:
-                </div>
-                <div className={classes.inspectorData}>{blueprintName}</div>
-              </div>
-            )}
-          </div>
-        </div>
-        {size === SIZE_MAX && (
-          <button
-            type="button"
-            onClick={this.OnDisclosureClick}
-            className={classes.buttonLink}
-            style={{
-              minHeight: '20px',
-              height: '20px',
-              width: '100%',
-              margin: '5px 0 0 0'
-            }}
-          >
-            <ArrowIcon
-              size="small"
-              className={
-                isExpanded
-                  ? classes.disclosureExpanded
-                  : classes.disclosureCollapsed
-              }
-            />
-          </button>
-        )}
-      </div>
-    );
-  }
+                data.push({ label: p, value: val });
+            });
+        }
+        // show id too -- useful for debugging
+        // data.push({ label: 'id', value: instance.id });
+        return data;
+    }
+
+    HandleInspectorClick(data) {
+        const { id, instance } = this.props;
+        if (data.id === instance.id) this.OnInstanceClick();
+    }
+
+    /**
+     * Clicking the instance name will toggle the Inspector object between
+     * showing:
+     * 1. SIZE_MIN = Name only
+     * 3. SIZE_MAX = All properties
+     */
+    OnInstanceClick() {
+        // Toggle between different sizes to show/hide data
+        const { size, alreadyRegistered } = this.state;
+        const { instance, disallowDeRegister } = this.props;
+        const id = instance.id;
+        let registrationStatus = alreadyRegistered;
+        let newsize;
+        switch (size) {
+            case SIZE_MIN:
+                newsize = SIZE_MAX;
+                if (!alreadyRegistered) {
+                    UR.RaiseMessage('NET:INSPECTOR_REGISTER', { id });
+                    // Inspectors will be automatically updated during SIM/UI_UPDATE phase
+                    registrationStatus = true;
+                }
+                break;
+            default:
+            case SIZE_MAX:
+                newsize = SIZE_MIN;
+                if (alreadyRegistered && !disallowDeRegister) {
+                    UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id });
+                    registrationStatus = false;
+                }
+                break;
+        }
+        this.setState({ size: newsize, alreadyRegistered: registrationStatus });
+    }
+    OnDisclosureClick(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        this.setState(state => ({ isExpanded: !state.isExpanded }));
+    }
+
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    /// Sim Instance Hover Events
+    /// User has hovered over an agent on the stage.
+    ///
+    HandleHoverOver(data) {
+        const agentId = this.GetInstanceId();
+        if (data.agentId === agentId) {
+            this.setState({ isHovered: true });
+        } else {
+            // Only one hover allowed, so if someone else is
+            // hovering, we unhover
+            this.setState({ isHovered: false });
+        }
+    }
+    HandleHoverOut(data) {
+        const agentId = this.GetInstanceId();
+        if (data.agentId === agentId) {
+            this.setState({ isHovered: false });
+        }
+    }
+
+    /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    /// Local Events (on InstanceEditor container)
+    ///
+    OnHoverOver(e) {
+        const agentId = this.GetInstanceId();
+        UR.RaiseMessage('SIM_INSTANCE_HOVEROVER', { agentId });
+    }
+    OnHoverOut(e) {
+        const agentId = this.GetInstanceId();
+        UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId });
+    }
+    render() {
+        const {
+            title,
+            size,
+            color,
+            colorActive,
+            bgcolor,
+            isHovered,
+            isExpanded,
+            propsToHide
+        } = this.state;
+        const { id, instance, isActive, disallowDeRegister, classes } = this.props;
+        const agentName = this.GetInstanceName();
+        const blueprintName = instance.blueprint.name;
+        const data = this.GetInstanceProperties();
+        const visibleProps = data.filter(p => !propsToHide.includes(p.label));
+        const hiddenProps = data.filter(p => propsToHide.includes(p.label));
+        return ( <
+            div style = {
+                {
+                    backgroundColor: '#000',
+                    margin: '0.5em 0 0.5em 0.5em',
+                    cursor: 'pointer'
+                }
+            }
+            className = {
+                clsx(classes.instanceSpec, {
+                    [classes.instanceSpecHovered]: isHovered
+                        // [classes.instanceSpecSelected]: isSelected
+                })
+            }
+            onClick = { this.OnInstanceClick }
+            onPointerEnter = { this.OnHoverOver }
+            onPointerLeave = { this.OnHoverOut } >
+            <
+            div >
+            <
+            div className = { classes.inspectorData } > { agentName } < /div> <
+            /div> <
+            div style = {
+                {
+                    fontFamily: 'Andale Mono, monospace',
+                    fontSize: '14px',
+                    paddingLeft: '0.5em'
+                }
+            } >
+            {
+                visibleProps.map(property => ( <
+                    div style = {
+                        {
+                            display: 'inline-block',
+                            paddingRight: '1em'
+                        }
+                    }
+                    key = { property.label } >
+                    <
+                    div className = { classes.inspectorLabel } > { property.label }: < /div> <
+                    div className = { classes.inspectorData } > { property.value } < /div> <
+                    /div>
+                ))
+            } <
+            div > {
+                isExpanded && ( <
+                    div style = {
+                        isExpanded ?
+                        {
+                            maxHeight: '100%',
+                            transition: 'max-height 0.5s ease-in-out'
+                        } :
+                        {
+                            maxHeight: '0',
+                            transition: 'max-height 0.5s ease-in-out'
+                        }
+                    } >
+                    {
+                        hiddenProps.map(property => ( <
+                            div style = {
+                                {
+                                    display: 'inline-block',
+                                    paddingRight: '1em'
+                                }
+                            }
+                            key = { property.label } >
+                            <
+                            div className = { classes.inspectorLabel } > { property.label }:
+                            <
+                            /div> <
+                            div className = { classes.inspectorData } > { property.value } < /div> <
+                            /div>
+                        ))
+                    } <
+                    /div>
+                )
+            } {
+                isExpanded && data.length > 0 && ( <
+                    div style = {
+                        {
+                            display: 'inline-block',
+                            paddingRight: '1em'
+                        }
+                    } >
+                    <
+                    div className = { classes.inspectorLabel }
+                    style = {
+                        { fontsize: '10px' } } >
+                    Character Type:
+                    <
+                    /div> <
+                    div className = { classes.inspectorData } > { blueprintName } < /div> <
+                    /div>
+                )
+            } <
+            /div> <
+            /div> {
+                size === SIZE_MAX && ( <
+                    button type = "button"
+                    onClick = { this.OnDisclosureClick }
+                    className = { classes.buttonLink }
+                    style = {
+                        {
+                            minHeight: '20px',
+                            height: '20px',
+                            width: '100%',
+                            margin: '5px 0 0 0'
+                        }
+                    } >
+                    <
+                    ArrowIcon size = "small"
+                    className = {
+                        isExpanded ?
+                        classes.disclosureExpanded :
+                            classes.disclosureCollapsed
+                    }
+                    /> <
+                    /button>
+                )
+            } <
+            /div>
+        );
+    }
 }
 
 export default withStyles(useStylesHOC)(InstanceInspector);
