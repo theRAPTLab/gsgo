@@ -1,5 +1,5 @@
 export const MODEL = {
-    label: 'Moths Test Act',
+    label: 'Moths Test Act B',
     bounds: {
         top: -400,
         right: 400,
