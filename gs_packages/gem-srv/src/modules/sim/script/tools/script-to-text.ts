@@ -7,7 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit, IToken } from 'lib/t-script.d';
-import { Blocks } from './gsrc-block-tokenize';
+import { Blocks } from './test-data/td-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -77,7 +77,7 @@ function r_UnpackStatement(statement: TScriptUnit, indent: number): string {
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a TScriptUnit[], return text version */
-export function TextifyScript(units: TScriptUnit[]): string {
+function ScriptToText(units: TScriptUnit[]): string {
   const text = [];
   let indent = 0;
   units.forEach((unit: TScriptUnit, idx: number) => {
@@ -90,12 +90,12 @@ export function TextifyScript(units: TScriptUnit[]): string {
 /// TESTS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function TestTextifyScript(tests: { [key: string]: any }) {
-  console.group(...PR('TEST: TextifyScript'));
+  console.group(...PR('TEST: ScriptToText'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
     const units = JSON.parse(testArgs['expect']);
-    const text = TextifyScript(units).trim();
+    const text = ScriptToText(units).trim();
     const expect = testArgs['text'].trim();
     const [pass, printInfo] = UR.ConsoleCompareTexts(text, expect);
     if (!pass) {
@@ -118,3 +118,7 @@ UR.AddConsoleTool({
   }
 });
 // UR.HookPhase('UR/APP_START', () => TestTextifyScript(Blocks));
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { ScriptToText };

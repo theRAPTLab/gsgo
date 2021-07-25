@@ -642,4 +642,4 @@ class ScriptTokenizer {
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default ScriptTokenizer;
+export { ScriptTokenizer };

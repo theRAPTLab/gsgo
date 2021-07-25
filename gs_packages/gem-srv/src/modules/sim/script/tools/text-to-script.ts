@@ -8,9 +8,9 @@
 
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script.d';
-import GScriptTokenizerDBG from 'lib/class-gscript-tokenizer-dbg';
+import GScriptTokenizerDBG from 'script/tools/class-gscript-tokenizer-v2';
 import GScriptTokenizer from 'lib/class-gscript-tokenizer';
-import { Blocks } from './gsrc-block-tokenize';
+import { Blocks } from './test-data/td-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,7 +21,7 @@ const gst = new GScriptTokenizer();
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** giving a text, return the parsed ScriptUnit[] representation */
-export function ScriptifyText(text: string): TScriptUnit[] {
+function TextToScript(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
   return gstDBG.tokenize(sourceStrings);
 }
@@ -30,7 +30,7 @@ export function ScriptifyText(text: string): TScriptUnit[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// the test format is { testName: [ scripttext, jsonscriptunits ] }
 function TestScriptifyText(tests: { [key: string]: any }) {
-  console.group(...PR('TEST: ScriptifyText'));
+  console.group(...PR('TEST: TextToScript'));
   Object.entries(tests).forEach(kv => {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
@@ -61,3 +61,7 @@ UR.AddConsoleTool({
   }
 });
 // UR.HookPhase('UR/APP_START', () => TestTokenizeScripts(Blocks));
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { TextToScript };

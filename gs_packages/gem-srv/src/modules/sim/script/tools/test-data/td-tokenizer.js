@@ -4,8 +4,8 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import Bee from './gsrc-blueprint-bee';
-import Moth from './gsrc-blueprint-moth';
+import Bee from './td-blueprint-bee';
+import Moth from './td-blueprint-moth';
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// test simple block

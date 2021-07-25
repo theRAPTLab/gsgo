@@ -12,21 +12,20 @@ import { TScriptUnit, TSMCProgram, IToken } from 'lib/t-script.d';
 import { GetKeyword } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
 import { ParseExpression } from 'lib/expr-parser';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer-dbg';
+import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 import SM_State from 'lib/class-sm-state';
 import GAgent from 'lib/class-gagent';
-import { Script } from './gsrc-script-compile';
+import { Script } from './test-data/td-compiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('COMPILE', 'TagDebug');
 const Scriptifier = new GScriptTokenizer();
-const DBG = true;
 
 /// COMPILER SUPPORT FUNCTIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** parse-out strings in the code array, which are errors */
-function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args) {
+function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
   const out = code.filter(f => {
     if (typeof f === 'function') return true;
     if (Array.isArray(f)) {
@@ -105,6 +104,7 @@ export function r_ExpandArg(tok: IToken): any {
   }
   // 4. block program is array of scriptunit array and has to be compiled
   if (arg.block) {
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
     const smc = CompileScript(arg.block); // recursive compile
     return smc;
   }
@@ -144,14 +144,19 @@ function r_CompileStatement(units: TScriptUnit, idx?: number): TSMCProgram {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Compile ScriptUnits into a single SMCProgram (TOpcode[])
  */
-export function CompileScript(script: TScriptUnit[]): TSMCProgram {
+function CompileScript(script: TScriptUnit[]): TSMCProgram {
   const program: TSMCProgram = [];
   // null program
   if (script.length === 0) return [];
   // compile unit-by-unit
   let objcode: TSMCProgram;
   script.forEach((statement, ii) => {
-    if (statement[0] === '#') return;
+    if (statement[0] === '#') {
+      console.error(
+        ...PR('CompileScript: skipping # directive; use CompileBlueprint instead')
+      );
+      return;
+    }
     objcode = r_CompileStatement(statement, ii);
     objcode = m_CheckForError(objcode, statement);
     program.push(...objcode);
@@ -204,3 +209,7 @@ UR.AddConsoleTool({
   }
 });
 // UR.HookPhase('UR/APP_START', () => TestCompiler(Script));
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export { CompileScript };
