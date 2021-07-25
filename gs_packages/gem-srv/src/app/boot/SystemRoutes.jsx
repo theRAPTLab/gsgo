@@ -10,7 +10,7 @@ const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
 const TrackerSetup = React.lazy(() => import('../pages/TrackerSetup'));
-const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
+const DevCompiler = React.lazy(() => import('../pages/DevCompiler-v2'));
 const DevTracker = React.lazy(() => import('../pages/DevTracker'));
 const DevFakeTrack = React.lazy(() => import('../pages/DevFakeTrack'));
 const DevController = React.lazy(() => import('../pages/DevController'));

@@ -640,6 +640,15 @@ class ScriptTokenizer {
   /* END OF HACK HACKS */
 }
 
+/// STATIC METHODS  //////////////////////////////////////////////////////////'
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const scriptifier = new ScriptTokenizer();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function Tokenize(text) {
+  return scriptifier.tokenize(text);
+}
+
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export { ScriptTokenizer };
+export default ScriptTokenizer;
+export { Tokenize };

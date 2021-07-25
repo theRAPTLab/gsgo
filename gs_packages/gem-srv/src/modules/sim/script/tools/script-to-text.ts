@@ -17,21 +17,11 @@ const PR = UR.PrefixUtil('TEXTIFY', 'TagDebug');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a token, return the text representation of it */
 function r_TextifyToken(tok: IToken, indent: number) {
-  const {
-    token,
-    objref,
-    block,
-    directive,
-    value,
-    string,
-    comment,
-    program,
-    expr,
-    line
-  } = tok;
+  const { directive, comment, line } = tok; // meta information
+  const { token, value, string } = tok; // primitive values
+  const { objref, program, block, expr } = tok; // req runtime eval
   // special case
   if (token !== undefined) {
-    if (token === '#') return '_pragma';
     return token;
   }
   // regular tokens
@@ -49,7 +39,7 @@ function r_TextifyToken(tok: IToken, indent: number) {
   }
   if (expr) return `{{ ${expr} }}`; // { expr = string }
   if (program) return `[[ ${program} ]]`; // { program = string name of stored program }
-  if (directive) return `${directive}`;
+  if (directive) return '#';
   if (line !== undefined) return `${line}`;
   console.warn('unknown argument type:', tok);
   throw Error('unknown argument type');

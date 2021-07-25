@@ -20,7 +20,7 @@ const gst = new GScriptTokenizer();
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** giving a text, return the parsed ScriptUnit[] representation */
+/** given a text, return the parsed ScriptUnit[] representation */
 function TextToScript(text: string): TScriptUnit[] {
   const sourceStrings = text.split('\n');
   return gstDBG.tokenize(sourceStrings);

@@ -29,8 +29,12 @@ const bee = {
   stack: []
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const Script = {
+export const ScriptTest = {
   simpleIfExpr,
   bee,
   moth // doesn't run because CursorPack is not clean
+};
+export const BlueprintTest = {
+  bee,
+  moth
 };
