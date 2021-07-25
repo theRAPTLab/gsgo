@@ -76,40 +76,55 @@ function consoleCompareTexts(text, ref) {
     if (text.charAt(index) !== ref.charAt(index)) break;
     comparison += text.charAt(index++);
   }
-
+  const endG = text.substring(comparison.length);
+  const endE = ref.substring(comparison.length);
   const pass = comparison.length === text.length;
-  if (pass)
+  if (pass) {
     return [
       pass,
       (testName = '') => {
-        console.log(testName, 'passed');
+        console.groupCollapsed(
+          `%c${testName} passed`,
+          'color:green;font-weight:100;background-color:HoneyDew;padding:4px;'
+        );
+        console.log(
+          `OUTPUT\n%c${comparison}%c${endG}`,
+          'background-color:LightYellow',
+          'background-color:Yellow'
+        );
+        console.groupEnd();
       }
     ];
-
-  // failed, close group from failed letter scan
-  console.groupEnd();
+  }
+  // didn't pass!
   return [
     pass,
     (testName = '') => {
-      console.warn(testName, `match FAILED at index ${index}`);
-      console.warn(
-        `generated: %c${text.charAt(index)}`,
+      console.log(
+        `%c${testName} match FAILED at index ${index}`,
+        'color:red;padding:4px;background-color:MistyRose;font-weight:bold'
+      );
+      console.log(
+        `%cOUTPUT: %c${text.charAt(index)}`,
+        'color:red;padding:4px;',
         'padding:4px;background-color:Yellow'
       );
-      console.warn(
-        `expected:  %c${ref.charAt(index)}`,
+      console.log(
+        `%cEXPECT: %c${ref.charAt(index)}`,
+        'color:red;padding:4px;',
         'padding:4px;background-color:Cyan'
       );
-      console.groupCollapsed(testName, 'mismatch visualization');
-      const endG = text.substring(comparison.length);
-      const endE = ref.substring(comparison.length);
+      console.groupCollapsed(
+        '%c[click to view]',
+        'color:red;padding:4px;background-color:MistyRose;font-weight:100'
+      );
       console.log(
-        `SOURCE TEXT\n%c${comparison}%c${endG}`,
+        `OUTPUT\n%c${comparison}%c${endG}`,
         'background-color:LightYellow',
         'background-color:Yellow'
       );
       console.log(
-        `REFERENCE TEXT\n%c${comparison}%c${endE}`,
+        `REFERENCE\n%c${comparison}%c${endE}`,
         'background-color:LightCyan',
         'background-color:Cyan'
       );
