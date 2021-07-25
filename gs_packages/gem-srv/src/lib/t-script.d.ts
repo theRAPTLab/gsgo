@@ -138,7 +138,7 @@ export interface IToken {
 }
 export type TScriptUnit = [...IToken[]]; // variable length array of token objs
 export type TArg = number | string | IToken;
-export type TArguments = [...TArg[]];
+export type TArguments = TArg[];
 export type TScript = TScriptUnit[]; // We use TScriptUnit[] in cod
 
 /// COMPILER OUPUT ////////////////////////////////////////////////////////////

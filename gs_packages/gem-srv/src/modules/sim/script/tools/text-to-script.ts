@@ -21,9 +21,8 @@ const gst = new GScriptTokenizer();
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a text, return the parsed ScriptUnit[] representation */
-function TextToScript(text: string): TScriptUnit[] {
-  const sourceStrings = text.split('\n');
-  return gstDBG.tokenize(sourceStrings);
+function TextToScript(text: string = ''): TScriptUnit[] {
+  return gstDBG.tokenize(text);
 }
 
 /// TESTS /////////////////////////////////////////////////////////////////////
