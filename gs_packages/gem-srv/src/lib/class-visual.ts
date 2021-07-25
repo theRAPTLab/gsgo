@@ -209,7 +209,10 @@ class Visual implements IVisual, IPoolable, IActable {
       this.filterAdjustment = undefined;
       return;
     }
-    if (this.filterColor === color) return; // color hasn't changed, skip update
+
+    // Don't cache color.  Always update color because vobjs are not reset during RESET Stage
+    // if (this.filterColor === color) return; // color hasn't changed, skip update
+
     this.filterColor = color;
     const [r, g, b] = PIXI.utils.hex2rgb(color);
     // this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
