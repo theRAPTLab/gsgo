@@ -280,7 +280,10 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.y = y;
     // HACK Blueprints into cobj
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = entity.id.substring(entity.id.length - 4);
+    //cobj.name = entity.id.substring(entity.id.length - 4);
+    //last two digits of the pozyx id.
+    let len = entity.id.length;
+    cobj.name = entity.id.substring(len - 2, len);
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
