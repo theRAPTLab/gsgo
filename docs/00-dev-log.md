@@ -457,4 +457,10 @@ if (stm[0] === '#') {
       objcode = CompileStatement([{ directive: '#' }, ...stm.slice(1)]);
 ```
 
-The first unit of a TScriptUnit, ad
+The way that PRAGMA works is interesting.
+
+* When a pragma is executed, it looks up a particular SMC function that will be returned depending on the kind of directive. The SMC function is used to initalize stuff in the compiler at compile time. It's not used f
+
+## JUL 25 SUN - Checking Nested When Blocks
+
+> Issue is that nested blocks in WHEN are not renderable as JSX because  the SCriptUNits of the block are not accessible as scriptunits, but as  already-compiled code functions. We want the WIZARD view to show those as  editable blocks that are also nested appropriately.
