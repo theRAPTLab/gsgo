@@ -24,25 +24,11 @@ export const MODEL = {
             //  },
             {
                 time: 60,
-                intro: 'blablah',
+                intro: 'round 1+',
                 initScript: `
-  // Release Cursors from Dead Moths
-featCall Population releaseInertAgents
-  // Remove Dead Moths
-featCall Population hideInertAgents
-  // Spawn New Moths
-featCall Population agentsReproduce Moth [[
-prop x addRnd -45 45
-prop y addRnd -45 45
-featProp Costume colorScaleIndex addRnd -2 2 true
-]]
-featCall Population agentsForEach TreeTrunk [[
-featProp Costume colorValue setTo 1
-featProp Costume colorValue subRnd 0.2
-]]
 `,
-                outtro: 'What happened to spawn?',
-                endScript: `dbgOut 'END Round2!'`
+                outtro: 'What happened as they moved?',
+                endScript: `dbgOut 'END Round!'`
             }
         ]
     },
@@ -76,7 +62,6 @@ featProp Physics scale setTo 0.4
 
 useFeature Touches
 featCall Touches monitor TreeTrunk c2c c2b b2b binb
-//featCall Touches monitor TreeFoliage c2c  c2b b2b binb
 
 // allow removal by  Predator
 // allow spawning
@@ -89,23 +74,15 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
-
-addProp Brightness Number 128
-prop Brightness setMax 255
-prop Brightness setMin 0
-prop Brightness setTo 17
-
 addProp colorTest Number 128
 prop colorTest setMax 255
-prop colorTest setMin 0
-prop colorTest setTo 245
-
+prop colorTest setMin -255
+prop colorTest setTo 255
 
 addProp vulnerable Number 1
 prop vulnerable setMin 0
 prop vulnerable setMax 1
 prop vulnerable setTo 1
-
 
 // allow access to global darkMoths/lightMoths values
 useFeature Global
@@ -122,35 +99,40 @@ useFeature Cursor
 
 # PROGRAM UPDATE
 every 0.25 [[
-prop energyLevel sub 2
+  prop energyLevel sub 2
 ]]
 
 every 1 [[
-ifExpr {{ !agent.prop.Vision.visionable.value }} [[
-featCall Costume setGlow 0.05
-]]
+  ifExpr {{ !agent.prop.Vision.visionable.value }} [[
+    featCall Costume setGlow 0.05
+  ]]
 ]]
 
 when Moth centerFirstTouches TreeTrunk [[
-dbgOut "!!!!"
-featCall Moth.Costume setGlow 2
-prop Moth.energyLevel add 50
-prop vulnerable setTo 1
+  ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 1, 1, .35)}} [[
+    dbgOut {{ Moth.name + " will be hidden " }}
+    dbgOut {{  ( Moth.prop.color.value )  }}
+  ]] [[
+    dbgOut {{ Moth.name + " will be visible " }}
+  ]]
+  dbgOut {{  ( (( Moth.prop.color.value ) % 256) - ((TreeTrunk.prop.color.value) % 256 )).toString(16) }}
+  exprPush {{  ( ( Moth.prop.color.value ) % 256) - ((TreeTrunk.prop.color.value) % 256 ) }}
+  propPop colorTest
+  featCall Moth.Costume setGlow 2
+  prop Moth.energyLevel add 50
+  prop vulnerable setTo 1
 ]]
 
 
 when Moth centerTouches TreeTrunk [[
-ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 1, 1, .5)}} [[
-// color matches trunk, fade away and set un-visionable
-//dbgOut {{  (Moth.prop.color.value % 256) + " >>Hidden: " + (TreeTrunk.prop.color.value % 256) }}
-prop alpha setMin 0.1
-prop alpha sub 0.1
-featProp Vision visionable setTo false
-prop vulnerable setTo 0
+  ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 1, 1, .35)}} [[
+    // color matches trunk, fade away and set un-visionable
+    prop alpha setMin 0.1
+    prop alpha sub 0.1
+    featProp Vision visionable setTo false
+    prop vulnerable setTo 0
+  ]]
 ]]
-]]
-
-
 
 `
         },
@@ -158,93 +140,89 @@ prop vulnerable setTo 0
             id: 'Predator',
             label: 'Predator',
             isCharControllable: true,
-            //isPozyxControllable: true,
+            isPozyxControllable: true,
             script: `# BLUEPRINT Predator
-# PROGRAM DEFINE
-useFeature Costume
-featCall Costume setCostume 'bee.json' 0
+            # PROGRAM DEFINE
+            useFeature Costume
+            featCall Costume setCostume 'bee.json' 0
 
-useFeature Physics
-useFeature Touches
-featCall Touches monitor Moth c2c
+            useFeature Physics
+            useFeature Touches
+            featCall Touches monitor Moth c2c
 
-// needed for Seek
-useFeature Movement
-//featProp Movement useAutoOrientation setTo true
+            // needed for Seek
+            useFeature Movement
+            //featProp Movement useAutoOrientation setTo true
 
-useFeature Vision
-//featCall Vision monitor Moth
-//featCall Vision setViewDistance 500
-//featCall Vision setViewAngle 45
+            useFeature Vision
+            //featCall Vision monitor Moth
+            //featCall Vision setViewDistance 500
+            //featCall Vision setViewAngle 45
 
-//featCall Movement seekNearestVisible Moth
-//featProp Movement distance setTo 4
+            //featCall Movement seekNearestVisible Moth
+            //featProp Movement distance setTo 4
 
-featCall Movement setMovementType 'wander' 0.5
+            featCall Movement setMovementType 'wander' 0.5
 
-// To update graphs
-useFeature Global
+            // To update graphs
+            useFeature Global
 
-useFeature Cursor
+            useFeature Cursor
 
-// Allow Predator to stop round
-useFeature Timer
+            // Allow Predator to stop round
+            useFeature Timer
 
-# PROGRAM UPDATE
+            # PROGRAM UPDATE
 
-//when Predator sees Moth [[
-//prop Moth.alpha setMin 1
-//featCall Moth.Costume setGlow 0.1
-//]]
+            //when Predator sees Moth [[
+              //prop Moth.alpha setMin 1
+              //featCall Moth.Costume setGlow 0.1
+            //]]
 
-when Predator centerTouchesCenter Moth [[
-ifExpr {{ Moth.prop.vulnerable.value > 0 }} [[
-featCall Moth.Costume setGlow 1
-featCall Moth.Movement jitterRotate
-//  every 1 [[
-featCall Moth.Population removeAgent
-featCall Predator.Costume setGlow 1
-dbgOut {{ (Moth.prop.color.value % 256)  /  255}}
-ifExpr {{ (Moth.prop.color.value % 256)  /  255 < 0.5 }} [[
-  dbgOut 'Eaten...dark!'
-  featCall Global globalProp lightMoths sub 0
-  featCall Global globalProp darkMoths sub 1
-  featCall Global globalProp totalMoths sub 1
-]] [[
-  dbgOut 'Eaten...light!'
-  featCall Global globalProp lightMoths sub 1
-  featCall Global globalProp darkMoths sub 0
-  featCall Global globalProp totalMoths sub 1
-]]
-// release cursor
-featCall Moth.Cursor releaseCursor
-//]]
+            when Predator centerTouchesCenter Moth [[
+              ifExpr {{ Moth.prop.vulnerable.value > 0 }} [[
+              featCall Moth.Costume setGlow 1
+              featCall Moth.Movement jitterRotate
+            // every 1 [[
+                featCall Moth.Population removeAgent
+                featCall Predator.Costume setGlow 1
+                ifExpr {{ (Moth.prop.color.value % 256)  /  255 < 0.5 }} [[
+                  dbgOut 'Eaten...dark!'
+                  featCall Global globalProp lightMoths sub 0
+                  featCall Global globalProp darkMoths sub 1
+                  featCall Global globalProp totalMoths sub 1
+                ]] [[
+                  dbgOut 'Eaten...light!'
+                  featCall Global globalProp lightMoths sub 1
+                  featCall Global globalProp darkMoths sub 0
+                  featCall Global globalProp totalMoths sub 1
+                ]]
+                // release cursor
+                featCall Moth.Cursor releaseCursor
+            //]]
 
-  ]]
-
-]]
-`
+                ]] //ifexpr
+            ]] //when
+          `
         },
         {
             id: 'TreeTrunk',
             label: 'TreeTrunk',
             script: `# BLUEPRINT TreeTrunk
-# PROGRAM DEFINE
-useFeature Costume
-featCall Costume setCostume 'square.json' 0
+            # PROGRAM DEFINE
+            useFeature Costume
+            featCall Costume setCostume 'square.json' 0
 
-useFeature Physics
+            useFeature Physics
 
-# PROGRAM INIT
-prop zIndex setTo -200
-featProp Costume colorValue setTo 1
+            # PROGRAM INIT
+            prop zIndex setTo -200
 
-# PROGRAM UPDATE
-//every 1 [[
-//featProp Costume colorValue sub 0.01
-//]]
-
-`
+            # PROGRAM UPDATE
+            //every 1 [[
+              //featProp Costume colorValue sub 0.01
+            //]]
+          `
         },
         //         {
         //             id: 'TreeFoliage',
@@ -266,14 +244,14 @@ featProp Costume colorValue setTo 1
             id: 'Reporter',
             label: 'Reporter',
             script: `# BLUEPRINT Reporter
-# PROGRAM DEFINE
-prop skin setTo 'onexone'
+            # PROGRAM DEFINE
+            prop skin setTo 'onexone'
 
-useFeature Population
-useFeature Global
-useFeature AgentWidgets
-featProp AgentWidgets isLargeGraphic setTo true
-`
+            useFeature Population
+            useFeature Global
+            useFeature AgentWidgets
+            featProp AgentWidgets isLargeGraphic setTo true
+          `
         }
     ],
     instances: [{
@@ -282,7 +260,7 @@ featProp AgentWidgets isLargeGraphic setTo true
             blueprint: 'TreeTrunk',
             initScript: `prop x setTo -200
 prop y setTo 200
-featCall Costume setColorizeHSV 0.3 0 0.9
+featCall Costume setColorizeHSV 0 0 0.67
 featProp Physics scale setTo 0.3
 featProp Physics scaleY setTo 2`
         },
@@ -338,7 +316,7 @@ featProp Physics scaleY setTo 2`
         // featProp Physics scaleY setTo 2
         // `
         //         },
-        {
+        /*  {
             id: 1301,
             name: 'Predator1',
             blueprint: 'Predator',
@@ -351,155 +329,87 @@ prop y setTo -100`
             blueprint: 'Predator',
             initScript: `prop x setTo -250
 prop y setTo -100`
-        },
+        }, */
 
         {
             id: 1201,
             name: 'Moth1',
             blueprint: 'Moth',
-            initScript: `//prop x setTo 0
-//    prop y setTo -400
-featCall Movement queuePosition 100 0
-prop alpha setTo 0.02`
+            initScript: `
+            featCall Movement queuePosition -300 200
+            `
         },
         {
             id: 1202,
             name: 'Moth2',
             blueprint: 'Moth',
             initScript: `
-prop alpha setTo 1`
+            featCall Movement queuePosition -300 180
+            `
         },
         {
             id: 1203,
             name: 'Moth3',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -50 200
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 160
+            `
         },
         {
             id: 1204,
             name: 'Moth4',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -50 70
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 140
+            `
         },
         {
             id: 1205,
             name: 'Moth5',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -350 -150
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 120
+            `
         },
         {
             id: 1206,
             name: 'Moth6',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 200 140
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 100
+            `
         },
         {
             id: 1207,
             name: 'Moth7',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 50 250
-prop alpha setTo 1
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 80
+            `
         },
         {
             id: 1208,
             name: 'Moth8',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 50 100
-prop alpha setTo 1
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 60
+            `
         },
         {
             id: 1209,
             name: 'Moth9',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -200 200
-prop alpha setTo 1
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 40
+            `
         },
-
         {
             id: 1210,
             name: 'Moth10',
             blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 350 -250
-prop alpha setTo 1
-prop energyLevel setTo 90`
-        },
-
-        {
-            id: 1211,
-            name: 'Moth11',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 250 -350
-        prop alpha setTo 1
-    prop energyLevel setTo 90`
-        },
-        {
-            id: 1212,
-            name: 'Moth12',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -150 -350
-        prop alpha setTo 1
-    prop energyLevel setTo 90`
-        },
-        {
-            id: 1213,
-            name: 'Moth13',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 50 -300
-        featCall Costume randomizeColorHSV
-        prop alpha setTo 1
-prop energyLevel setTo 90`
-        },
-        {
-            id: 1214,
-            name: 'Moth14',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -350 -170
-prop alpha setTo 1
-prop energyLevel setTo 90`
-        },
-        {
-            id: 1215,
-            name: 'Moth15',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -250 -250
-        prop alpha setTo 1
-prop energyLevel setTo 90`
-        },
-        {
-            id: 1216,
-            name: 'Moth16',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 20 340
-        prop alpha setTo 1
-prop energyLevel setTo 90`
-        },
-        {
-            id: 1217,
-            name: 'Moth17',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition -370 150
-prop energyLevel setTo 90`
-        },
-        {
-            id: 1218,
-            name: 'Moth18',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 350 -200
-prop energyLevel setTo 90`
-        },
-        {
-            id: 1219,
-            name: 'Moth19',
-            blueprint: 'Moth',
-            initScript: `featCall Movement queuePosition 100 200
-prop energyLevel setTo 90`
+            initScript: `
+            featCall Movement queuePosition -300 20
+            `
         },
         {
             id: 1401,
