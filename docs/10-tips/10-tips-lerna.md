@@ -119,23 +119,17 @@ This is due to npm not liking symlinked files :( The workaround is to use the `n
 
 
 # Lerna Repo Management
-
 ## Version Releases: What is the best way to commit from dev to master?
 
 Our Lerna config allows version management **only** in the master branch. We update our tagged releases in two steps: (1) make an integration branch and test it (2) merge the tested integration branch onto `master` and run the `lerna version prerelease` command.
 
-PRE-STEP:
+PRE-STEP: 
 
-Note: In the initial stages of development, we just use `dev` instead of formal integration branches. Follow steps 1-3, then in steps 7-9 substitute `dev` for `release-candidates`. 
+First submit merge request to the integration branch. See [10-repo-workflow][10-repo-workflow.md] for details. 
 
-1. merge all branches to `dev` for integration
-2. fix any errors in `dev` using `fix-` branches
-3. when `dev` looks good, glance through the `README` and `docs` folders to ensure they are in good shape.
-4. create a `merge request` from `dev` to  `releasecandidates` branch, using our template (TBD)
-5. have someone test the `release-candidates` merge request branch
-6. accept the merge request
+VERSION: 
 
-VERSION: to apply version updates you need to do this from your **local** machine:
+to apply version updates you need to do this from your **local** machine:
 
 7. fetch the repo
 8. merge `release-candidates` onto `master` (but **don't** commit yet...make sure option is unchecked in merge dialog)
