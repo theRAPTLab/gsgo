@@ -82,6 +82,8 @@ function Stage() {
   // load agents and assets
   // prep recording buffer
   (async () => {
+    // Unsubscribe if previously run, otherwise it'll keep running.
+    if (RX_SUB) RX_SUB.unsubscribe();
     console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
     console.log(...PR('Simulation Loaded'));
