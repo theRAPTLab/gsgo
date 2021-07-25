@@ -1,5 +1,5 @@
 export const MODEL = {
-    label: 'Moths Act 2',
+    label: 'Moths Test Act A',
     bounds: {
         top: -400,
         right: 400,
@@ -12,7 +12,7 @@ export const MODEL = {
     rounds: {
         options: {
             allowResetStage: false,
-            noloop: false // DON'T stop after last round
+            noloop: true // DON'T stop after last round
         },
         roundDefs: [
             //{
@@ -23,11 +23,11 @@ export const MODEL = {
             //      endScript: `dbgOut 'END Round1!'`
             //  },
             {
-                time: 60,
-                intro: 'round 1+',
+                time: 500,
+                intro: 'Activity goal - eating non-camouflaged moths with Finger or Pozyx controlled predators',
                 initScript: `
 `,
-                outtro: 'What happened as they moved?',
+                outtro: 'Could you eat vulnerable / visible moths?',
                 endScript: `dbgOut 'END Round!'`
             }
         ]
@@ -131,6 +131,11 @@ when Moth centerTouches TreeTrunk [[
     prop alpha sub 0.1
     featProp Vision visionable setTo false
     prop vulnerable setTo 0
+  ]] [[
+    prop alpha setMin 1
+    prop alpha setTo 1
+    featProp Vision visionable setTo true
+    prop vulnerable setTo 1
   ]]
 ]]
 
@@ -224,22 +229,63 @@ when Moth centerTouches TreeTrunk [[
             //]]
           `
         },
-        //         {
-        //             id: 'TreeFoliage',
-        //             label: 'TreeFoliage',
-        //             script: `# BLUEPRINT TreeFoliage
-        // # PROGRAM DEFINE
-        // useFeature Costume
-        // featCall Costume setCostume 'circle.json' 0
-        // featCall Costume setColorize 0 0.1 0.9
+        {
+            id: 'WhiteWand',
+            label: 'WhiteWand',
+            script: `# BLUEPRINT WhiteWand
+            # PROGRAM DEFINE
+            useFeature Costume
+            featCall Costume setCostume 'square.json' 0
 
-        // useFeature Physics
-        // // useFeature AgentWidgets
+            useFeature Physics
+            featCall Costume setColorize 1 1 1
+            featProp Physics scale setTo 0.2
+            useFeature Touches
+            featCall Touches monitor TreeTrunk c2b
 
-        // # PROGRAM INIT
-        // prop zIndex setTo -400
-        // `
-        //         },
+            useFeature Population
+            useFeature Global
+
+
+            # PROGRAM INIT
+            prop zIndex setTo 100
+
+            # PROGRAM UPDATE
+            when WhiteWand centerTouches TreeTrunk [[
+              every 1 [[
+              featProp TreeTrunk.Costume colorValue add 0.1
+              featCall TreeTrunk.Costume setGlow 0.3
+              ]]
+            ]]
+        `
+        },
+        {
+            id: 'BlackWand',
+            label: 'BlackWand',
+            script: `# BLUEPRINT BlackWand
+          # PROGRAM DEFINE
+          useFeature Costume
+          featCall Costume setCostume 'square.json' 0
+
+          useFeature Physics
+          featCall Costume setColorize 0 0 0
+          featProp Physics scale setTo 0.2
+          useFeature Touches
+          featCall Touches monitor TreeTrunk c2b
+
+          # PROGRAM INIT
+          prop zIndex setTo 100
+
+          # PROGRAM UPDATE
+          when BlackWand centerTouches TreeTrunk [[
+            every 1 [[
+            featProp TreeTrunk.Costume colorValue sub 0.1
+            featCall TreeTrunk.Costume setGlow 0.3
+          ]]
+
+      ]]
+      `
+        },
         {
             id: 'Reporter',
             label: 'Reporter',
@@ -305,17 +351,25 @@ featCall Costume setColorizeHSV 0 0 1
 featProp Physics scale setTo 0.6
 featProp Physics scaleY setTo 2`
         },
-        //         {
-        //             id: 1104,
-        //             name: 'TreeFoliage2',
-        //             blueprint: 'TreeFoliage',
-        //             initScript: `prop x setTo 0
-        // prop y setTo -150
-        // featCall Costume setColorize 0.2 0.8 0.2
-        // featProp Physics scale setTo 1.5
-        // featProp Physics scaleY setTo 2
-        // `
-        //         },
+        {
+            id: 2201,
+            name: 'WhiteWand1',
+            blueprint: 'WhiteWand',
+            initScript: `prop x setTo 300
+                            prop y setTo -300
+
+                            `
+        },
+        {
+            id: 2202,
+            name: 'BlackWand1',
+            blueprint: 'BlackWand',
+            initScript: `prop x setTo 200
+                          prop y setTo -300
+
+                          `
+        },
+
         /*  {
             id: 1301,
             name: 'Predator1',
@@ -336,7 +390,7 @@ prop y setTo -100`
             name: 'Moth1',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 200
+            featCall Movement queuePosition -300 320
             `
         },
         {
@@ -344,7 +398,7 @@ prop y setTo -100`
             name: 'Moth2',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 180
+            featCall Movement queuePosition -300 280
             `
         },
         {
@@ -352,7 +406,7 @@ prop y setTo -100`
             name: 'Moth3',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 160
+            featCall Movement queuePosition -300 240
             `
         },
         {
@@ -360,7 +414,7 @@ prop y setTo -100`
             name: 'Moth4',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 140
+            featCall Movement queuePosition -300 200
             `
         },
         {
@@ -368,7 +422,7 @@ prop y setTo -100`
             name: 'Moth5',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 120
+            featCall Movement queuePosition -300 160
             `
         },
         {
@@ -376,7 +430,7 @@ prop y setTo -100`
             name: 'Moth6',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 100
+            featCall Movement queuePosition -300 120
             `
         },
         {
@@ -392,7 +446,7 @@ prop y setTo -100`
             name: 'Moth8',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 60
+            featCall Movement queuePosition -300 40
             `
         },
         {
@@ -400,7 +454,7 @@ prop y setTo -100`
             name: 'Moth9',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 40
+            featCall Movement queuePosition -300 00
             `
         },
         {
@@ -408,7 +462,7 @@ prop y setTo -100`
             name: 'Moth10',
             blueprint: 'Moth',
             initScript: `
-            featCall Movement queuePosition -300 20
+            featCall Movement queuePosition -300 -40
             `
         },
         {
