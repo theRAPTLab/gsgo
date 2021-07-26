@@ -165,8 +165,8 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
       throw Error(`${fn}: # BLUEPRINT must be first line in script`);
     }
     // special case 2: run pragma compile-time scripts
+    // ??? this does not seem to run snymore...maybe not necesary
     if (stm[0] === '#') {
-      console.log('???', stm[0]);
       objcode = CompileStatement([{ directive: '#' }, ...stm.slice(1)]);
       r_Execute(objcode, compilerAgent, compilerState);
       const result = compilerState.stack.pop();
@@ -193,8 +193,8 @@ function TestCompile(tests) {
     const [testName, testArgs] = kv;
     // workaround out-of-date typescript compiler that doesn't recognize spread
     const text = testArgs['text'].trim();
-    const ctx = testArgs['ctx'];
-    const stack = testArgs['stack'];
+    const ctx = { ...testArgs['ctx'] }; // shallow copy object
+    const stack = testArgs['stack'].slice(); // copy stack by value!!!
     // const { text, ctx, stack } = testArgs;
     console.group(...PR(`T${ii + 1} '${testName}'`));
     console.groupCollapsed('SOURCE TEXT');
