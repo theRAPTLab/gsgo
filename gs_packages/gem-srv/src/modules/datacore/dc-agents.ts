@@ -46,6 +46,7 @@ export function UpdateInstance(instanceDef: TInstance) {
 export function DeleteInstance(instanceDef: TInstance) {
   const { blueprint, id } = instanceDef;
   const bpi = INSTANCES.get(blueprint);
+  if (!bpi) return; // already deleted
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
     console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
