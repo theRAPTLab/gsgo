@@ -40,11 +40,11 @@ featCall Population removeInertAgents
 
 // Spawn New Moths
 
-featProp Population targetPopulationSize setTo 10
+featProp Population targetPopulationSize setTo 30
 featCall Population populateBySpawning Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  featProp Costume colorScaleIndex addRnd -3 3 true
+  featProp Costume colorScaleIndex addRnd -2 2 true
   // update color index label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
@@ -52,7 +52,7 @@ featCall Population populateBySpawning Moth [[
 
 featCall Population agentsForEachActive TreeFoliage [[
   // Darken Trees each round
-  featProp Costume colorValue subFloat2 0.025
+  //featProp Costume colorValue subFloat2 0.025
   // update color index label
   // featPropPush Costume colorValue
   exprPush {{ agent.prop.Costume.colorValue.value * 10 }}
@@ -176,7 +176,7 @@ every 1 [[
 when Moth centerFirstTouches TreeTrunk [[
   // Show vfx when moth gets energy from treetrunk
   featCall Moth.Costume setGlow 2
-  prop Moth.energyLevel add 50
+  prop Moth.energyLevel add 100
 ]]
 
 when Moth centerTouches TreeTrunk [[
@@ -207,7 +207,7 @@ when Moth lastTouches TreeTrunk [[
 when Moth centerFirstTouches TreeFoliage [[
   // Show vfx when moth gets energy from treetrunk
   featCall Moth.Costume setGlow 2
-  prop Moth.energyLevel add 80
+  prop Moth.energyLevel add 100
 ]]
 when Moth centerTouches TreeFoliage [[
   // show wings folded pose
@@ -227,8 +227,8 @@ when Moth centerTouches TreeFoliage [[
   ]]
 
   // go search for new tree if energyLevel is low
-  ifExpr {{ Moth.prop.energyLevel.value < 60 }} [[
-    featCall Moth.Movement setMovementType wander
+  ifExpr {{ Moth.prop.energyLevel.value < 10 }} [[
+    featCall Moth.Movement setMovementType wander 5
   ]]
 ]]
 when Moth lastTouches TreeFoliage [[
@@ -369,7 +369,7 @@ prop zIndex setTo -200
       script: `# BLUEPRINT TreeFoliage
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'circle.json' 0
+featCall Costume setCostume 'square.json' 0
 featCall Costume setColorize 0 0 0.9
 
 useFeature Physics
@@ -501,16 +501,16 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 0.3
     // featProp Physics scaleY setTo 2`
     // },
-    //     {
-    //       id: 1102,
-    //       name: 'TreeFoliage1',
-    //       blueprint: 'TreeFoliage',
-    //       initScript: `prop x setTo -200
-    // prop y setTo -150
-    // featCall Costume setColorizeHSV 0 0 0.6
-    // featProp Physics scale setTo 2
-    // featProp Physics scaleY setTo 1.5`
-    //     },
+         {
+           id: 1102,
+           name: 'TreeFoliage1',
+           blueprint: 'TreeFoliage',
+           initScript: `prop x setTo -200
+     prop y setTo -150
+     featCall Costume setColorizeHSV 0 0 0.6
+     featProp Physics scale setTo 0.5
+     featProp Physics scaleY setTo 3`
+         },
     //     {
     //       id: 1105,
     //       name: 'Tree3',
@@ -521,36 +521,36 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 0.4
     // featProp Physics scaleY setTo 2`
     //     },
-    //     {
-    //       id: 1106,
-    //       name: 'TreeFoliage3',
-    //       blueprint: 'TreeFoliage',
-    //       initScript: `prop x setTo 250
-    // prop y setTo -150
-    // featCall Costume setColorizeHSV 0 0 0.75
-    // //  featCall Costume setColorize 0.8 0.7 0
-    // featProp Physics scale setTo 1.2
-    // featProp Physics scaleY setTo 2`
-    //     },
-    {
-      id: 1103,
-      name: 'Tree2',
-      blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 0
-prop y setTo 200
-featCall Costume setColorizeHSV 0 0 1
-featProp Physics scale setTo 0.6
-featProp Physics scaleY setTo 2`
-    },
+         {
+           id: 1106,
+           name: 'TreeFoliage3',
+           blueprint: 'TreeFoliage',
+           initScript: `prop x setTo 250
+     prop y setTo -150
+     featCall Costume setColorizeHSV 0 0 0.6
+     //  featCall Costume setColorize 0.8 0.7 0
+     featProp Physics scale setTo 0.5
+     featProp Physics scaleY setTo 3`
+         },
+//    {
+//      id: 1103,
+//      name: 'Tree2',
+//      blueprint: 'TreeTrunk',
+//      initScript: `prop x setTo 0
+//prop y setTo 200
+//featCall Costume setColorizeHSV 0 0 1
+//featProp Physics scale setTo 0.6
+//featProp Physics scaleY setTo 2`
+//    },
     {
       id: 1104,
       name: 'TreeFoliage',
       blueprint: 'TreeFoliage',
-      initScript: `prop x setTo 0
+      initScript: `prop x setTo 100
 prop y setTo -150
-featCall Costume setColorizeHSV 0 0 0.65
-featProp Physics scale setTo 2.5
-featProp Physics scaleY setTo 2`
+featCall Costume setColorizeHSV 0 0 0.6
+featProp Physics scale setTo 0.5
+featProp Physics scaleY setTo 3`
     },
     {
       id: 1201,
