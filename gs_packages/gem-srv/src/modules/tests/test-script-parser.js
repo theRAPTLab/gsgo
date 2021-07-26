@@ -4,7 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import ScriptTokenizer from '../../lib/class-gscript-tokenizer';
+import ScriptTokenizer from '../../lib/class-gscript-tokenizer-dbg';
 // import * as TRANSPILER from '../sim/script/transpiler';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -36,7 +36,11 @@ function TokenizeTest(testName, test) {
     console.log('output', JSON.stringify(script, null, 2));
     console.log('expect', JSON.stringify(expect, null, 2));
   } else {
-    console.log('FAILED script!==expected', cssFail);
+    lines.forEach((line, idx) => {
+      const lnum = `${idx + 1}`.padStart(3, '0');
+      if (line.trim().length > 0) console.log(`${lnum}: ${line}`);
+    });
+    console.log('%cFAILED script!==expected', cssFail);
     console.log('%coutput', cssFail, JSON.stringify(script, null, 2));
     console.log('%cexpect', cssExpect, JSON.stringify(expect, null, 2));
   }
