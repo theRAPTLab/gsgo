@@ -38,13 +38,13 @@ const DBG = true;
 // InstanceDef Ids should be strings, but hand-editing project files can
 // result in numeric ids.  This will cause problems with AGENT_DICT lookups.
 function m_FixInstanceIds(model) {
-    if (!model) return {}; // not loaded yet
-    const cleaned = model;
-    cleaned.instances = cleaned.instances.map(i => {
-        i.id = String(i.id);
-        return i;
-    });
-    return cleaned;
+  if (!model) return {}; // not loaded yet
+  const cleaned = model;
+  cleaned.instances = cleaned.instances.map(i => {
+    i.id = String(i.id);
+    return i;
+  });
+  return cleaned;
 }
 
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
@@ -53,63 +53,63 @@ function m_FixInstanceIds(model) {
 /// List of projects and ids for selection
 /// Read and return list of projects from db.
 export function ReadProjectsList() {
-    return [
-        { id: 'pilot', label: 'Spring 2021 Pilot' },
-        { id: 'aquatic', label: 'Aquatic Ecosystems' },
-        { id: 'decomposition', label: 'Decomposition' },
-        { id: 'moths', label: 'Moths' },
-        { id: 'mothstwo', label: 'Moths Test Act A' },
-        { id: 'mothstest', label: 'Moths Test Act B' },
-        { id: 'mothstestc', label: 'Moths Test Act C' },
-        { id: 'moths-sandbox', label: 'Moths Sandbox' },
-        { id: 'iu-sandbox', label: 'IU Sandbox' },
-        { id: 'salt', label: 'Salt' },
-        { id: 'bees', label: 'Bees' }
-    ];
+  return [
+    { id: 'pilot', label: 'Spring 2021 Pilot' },
+    { id: 'aquatic', label: 'Aquatic Ecosystems' },
+    { id: 'decomposition', label: 'Decomposition' },
+    { id: 'moths', label: 'Moths' },
+    { id: 'mothstwo', label: 'Moths Test Act A' },
+    { id: 'mothstest', label: 'Moths Test Act B' },
+    { id: 'mothstestc', label: 'Moths Test Act C' },
+    { id: 'moths-sandbox', label: 'Moths Sandbox' },
+    { id: 'iu-sandbox', label: 'IU Sandbox' },
+    { id: 'salt', label: 'Salt' },
+    { id: 'bees', label: 'Bees' }
+  ];
 }
 
 /// This fakes a db call to read a specific model's data
 export function ReadProject(modelId) {
-    let model;
-    switch (modelId) {
-        case 'pilot':
-            model = SpringPilot;
-            break;
-        case 'aquatic':
-            model = AquaticModel;
-            break;
-        case 'decomposition':
-            model = DecompositionModel;
-            break;
-        case 'moths':
-            model = MothsModel;
-            break;
-        case 'mothstwo':
-            model = MothsTwoModel;
-            break;
-        case 'mothstest':
-            model = MothsTestModel;
-            break;
-        case 'mothstestc':
-            model = MothsTestCModel;
-            break;
-        case 'moths-sandbox':
-            model = MothsSandbox;
-            break;
-        case 'iu-sandbox':
-            model = IUSandbox;
-            break;
-        case 'salt':
-            model = SaltModel;
-            break;
-        case 'bees':
-            model = BeesModel;
-            break;
-        default:
-            break;
-    }
-    const res = m_FixInstanceIds(model);
-    return res;
+  let model;
+  switch (modelId) {
+    case 'pilot':
+      model = SpringPilot;
+      break;
+    case 'aquatic':
+      model = AquaticModel;
+      break;
+    case 'decomposition':
+      model = DecompositionModel;
+      break;
+    case 'moths':
+      model = MothsModel;
+      break;
+    case 'mothstwo':
+      model = MothsTwoModel;
+      break;
+    case 'mothstest':
+      model = MothsTestModel;
+      break;
+    case 'mothstestc':
+      model = MothsTestCModel;
+      break;
+    case 'moths-sandbox':
+      model = MothsSandbox;
+      break;
+    case 'iu-sandbox':
+      model = IUSandbox;
+      break;
+    case 'salt':
+      model = SaltModel;
+      break;
+    case 'bees':
+      model = BeesModel;
+      break;
+    default:
+      break;
+  }
+  const res = m_FixInstanceIds(model);
+  return res;
 }
 
 export function WriteProject(modelId, model) {}

@@ -1,39 +1,40 @@
 export const MODEL = {
-    label: 'Moths Test Act B',
-    bounds: {
-        top: -400,
-        right: 400,
-        bottom: 400,
-        left: -400,
-        wrap: [false, false],
-        bounce: true,
-        bgcolor: 0x2222ee
+  label: 'Moths Test Act B',
+  bounds: {
+    top: -400,
+    right: 400,
+    bottom: 400,
+    left: -400,
+    wrap: [false, false],
+    bounce: true,
+    bgcolor: 0x2222ee
+  },
+  rounds: {
+    options: {
+      allowResetStage: false,
+      noloop: true // DON'T stop after last round
     },
-    rounds: {
-        options: {
-            allowResetStage: false,
-            noloop: true // DON'T stop after last round
-        },
-        roundDefs: [
-            //{
-            //      time: 60,
-            //      initScript: `dbgOut 'Round1!'`,
-            //      intro: 'First generation - test',
-            //      outtro: 'What happened?',
-            //      endScript: `dbgOut 'END Round1!'`
-            //  },
-            {
-                time: 1,
-                intro: 'Try to pick up moths, and then find camouflage',
-                initScript: ' ',
-                outtro: 'Could you pick up a moth?  In next round, you will make them a distribution representation?',
-                endScript: `
+    roundDefs: [
+      //{
+      //      time: 60,
+      //      initScript: `dbgOut 'Round1!'`,
+      //      intro: 'First generation - test',
+      //      outtro: 'What happened?',
+      //      endScript: `dbgOut 'END Round1!'`
+      //  },
+      {
+        time: 1,
+        intro: 'Try to pick up moths, and then find camouflage',
+        initScript: ' ',
+        outtro:
+          'Could you pick up a moth?  In next round, you will make them a distribution representation?',
+        endScript: `
                 `
-            },
-            {
-                time: 500,
-                intro: 'Move moth-squares into a color representation',
-                initScript: `
+      },
+      {
+        time: 500,
+        intro: 'Move moth-squares into a color representation',
+        initScript: `
 
                 featCall Population agentsForEachActive Moth [[
                   featCall Costume setCostume 'square.json'
@@ -50,17 +51,18 @@ export const MODEL = {
                 ]]
 
                 `,
-                outtro: 'Were you able to make a representation?',
-                endScript: ` `
-            }
-        ]
-    },
-    scripts: [{
-            id: 'Moth',
-            label: 'Moth',
-            //isCharControllable: true,
-            //isPozyxControllable: true,
-            script: `# BLUEPRINT Moth
+        outtro: 'Were you able to make a representation?',
+        endScript: ` `
+      }
+    ]
+  },
+  scripts: [
+    {
+      id: 'Moth',
+      label: 'Moth',
+      //isCharControllable: true,
+      //isPozyxControllable: true,
+      script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'moth.json' 0
@@ -155,12 +157,12 @@ ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.
 ]]
 ]]
 `
-        },
+    },
 
-        {
-            id: 'TreeTrunk',
-            label: 'TreeTrunk',
-            script: `# BLUEPRINT TreeTrunk
+    {
+      id: 'TreeTrunk',
+      label: 'TreeTrunk',
+      script: `# BLUEPRINT TreeTrunk
           # PROGRAM DEFINE
           useFeature Costume
           featCall Costume setCostume 'square.json' 0
@@ -176,12 +178,12 @@ ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.
             featCall Population removeInertAgents
           ]]
         `
-        },
+    },
 
-        {
-            id: 'Reporter',
-            label: 'Reporter',
-            script: `# BLUEPRINT Reporter
+    {
+      id: 'Reporter',
+      label: 'Reporter',
+      script: `# BLUEPRINT Reporter
           # PROGRAM DEFINE
           prop skin setTo 'onexone'
 
@@ -190,156 +192,157 @@ ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.
           useFeature AgentWidgets
           featProp AgentWidgets isLargeGraphic setTo true
         `
-        }
-    ],
-    instances: [{
-            id: 1101,
-            name: 'Tree1',
-            blueprint: 'TreeTrunk',
-            initScript: `prop x setTo -200
+    }
+  ],
+  instances: [
+    {
+      id: 1101,
+      name: 'Tree1',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo -200
 prop y setTo 170
 featCall Costume setColorizeHSV 0 0 0.67
 featProp Physics scale setTo 0.3
 featProp Physics scaleY setTo 1.8`
-        },
+    },
 
-        {
-            id: 1105,
-            name: 'Tree3',
-            blueprint: 'TreeTrunk',
-            initScript: `prop x setTo 250
+    {
+      id: 1105,
+      name: 'Tree3',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo 250
 prop y setTo 170
 featCall Costume setColorizeHSV 0 0 0.5
 featProp Physics scale setTo 0.4
 featProp Physics scaleY setTo 1.8`
-        },
+    },
 
-        {
-            id: 1103,
-            name: 'Tree2',
-            blueprint: 'TreeTrunk',
-            initScript: `prop x setTo 0
+    {
+      id: 1103,
+      name: 'Tree2',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo 0
 prop y setTo 170
 featCall Costume setColorizeHSV 0 0 0.9
 featProp Physics scale setTo 0.6
 featProp Physics scaleY setTo 1.8`
-        },
-        {
-            id: 1201,
-            name: 'Moth1',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1201,
+      name: 'Moth1',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  200 -200
           `
-        },
-        {
-            id: 1202,
-            name: 'Moth2',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1202,
+      name: 'Moth2',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  150 -200
           `
-        },
-        {
-            id: 1203,
-            name: 'Moth3',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1203,
+      name: 'Moth3',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  100 -200
           `
-        },
-        {
-            id: 1204,
-            name: 'Moth4',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1204,
+      name: 'Moth4',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  50 -200
           `
-        },
-        {
-            id: 1205,
-            name: 'Moth5',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1205,
+      name: 'Moth5',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  0 -200
           `
-        },
-        {
-            id: 1206,
-            name: 'Moth6',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1206,
+      name: 'Moth6',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  -50 -200
           `
-        },
-        {
-            id: 1207,
-            name: 'Moth7',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1207,
+      name: 'Moth7',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  -100 -200
           `
-        },
-        {
-            id: 1208,
-            name: 'Moth8',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1208,
+      name: 'Moth8',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  -150 -200
           `
-        },
-        {
-            id: 1209,
-            name: 'Moth9',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1209,
+      name: 'Moth9',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition  -200 -200
           `
-        },
-        {
-            id: 1210,
-            name: 'Moth10',
-            blueprint: 'Moth',
-            initScript: `
+    },
+    {
+      id: 1210,
+      name: 'Moth10',
+      blueprint: 'Moth',
+      initScript: `
           featCall Movement queuePosition -250 -200
           `
-        },
-        {
-            id: 1401,
-            name: 'Dark Moths',
-            blueprint: 'Reporter',
-            initScript: `prop x setTo 460
+    },
+    {
+      id: 1401,
+      name: 'Dark Moths',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 460
 prop y setTo 300
 featCall Global addGlobalProp darkMoths Number 20
 featCall Global globalProp darkMoths setMin 0
 featCall Global globalProp darkMoths setMax 50
 featCall AgentWidgets bindGraphToGlobalProp darkMoths 50
 `
-        },
-        {
-            id: 1402,
-            name: 'Light Moths',
-            blueprint: 'Reporter',
-            initScript: `prop x setTo 460
+    },
+    {
+      id: 1402,
+      name: 'Light Moths',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 460
 prop y setTo 100
 featCall Global addGlobalProp lightMoths Number 10
 featCall Global globalProp lightMoths setMin 0
 featCall Global globalProp lightMoths setMax 50
 featCall AgentWidgets bindGraphToGlobalProp lightMoths 50
 `
-        },
+    },
 
-        {
-            id: 1403,
-            name: 'Total Moths',
-            blueprint: 'Reporter',
-            initScript: `prop x setTo 460
+    {
+      id: 1403,
+      name: 'Total Moths',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 460
 prop y setTo -200
 featCall Global addGlobalProp totalMoths Number 30
 featCall Global globalProp totalMoths setMin 0
 featCall Global globalProp totalMoths setMax Infinity
 featCall AgentWidgets bindGraphToGlobalProp totalMoths 50
 `
-        }
-    ]
+    }
+  ]
 };
