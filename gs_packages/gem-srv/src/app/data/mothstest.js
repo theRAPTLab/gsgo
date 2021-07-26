@@ -23,7 +23,7 @@ export const MODEL = {
       //      endScript: `dbgOut 'END Round1!'`
       //  },
       {
-        time: 1,
+        time: 25,
         intro: 'Try to pick up moths, and then find camouflage',
         initScript: ' ',
         outtro:
