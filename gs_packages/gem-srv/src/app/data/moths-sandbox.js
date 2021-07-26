@@ -73,6 +73,8 @@ featCall Population agentsForEach Moth [[
   featPropPop AgentWidgets text
   // Make visible
   prop alpha setTo 1
+  // Rotate
+  prop orientation setTo 0
 ]]`
       }
     ]
