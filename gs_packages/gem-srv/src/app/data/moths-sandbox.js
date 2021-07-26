@@ -44,7 +44,7 @@ featProp Population targetPopulationSize setTo 10
 featCall Population populateBySpawning Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  featProp Costume colorScaleIndex addRnd -3 3 true
+  featProp Costume colorScaleIndex addRnd -1 1 true
   // update color index label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
