@@ -423,7 +423,6 @@ class PopulationPack extends GFeature {
   m_CountAgentsByFeatPropType(
     agent: IAgent,
     agents: IAgent[],
-    blueprintName: string,
     feature: string,
     featprop: string,
     clear: boolean
@@ -460,14 +459,7 @@ class PopulationPack extends GFeature {
     clear: boolean
   ) {
     const agents = GetAgentsByType(blueprintName);
-    this.m_CountAgentsByFeatPropType(
-      agent,
-      agents,
-      blueprintName,
-      feature,
-      featprop,
-      clear
-    );
+    this.m_CountAgentsByFeatPropType(agent, agents, feature, featprop, clear);
   }
 
   /// THIS DOESN"T WORK!

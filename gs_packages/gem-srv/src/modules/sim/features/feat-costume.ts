@@ -82,6 +82,8 @@ function m_Update() {
     if (h !== undefined && s !== undefined && v !== undefined) {
       color = HEXfromHSV(h, s, v);
     }
+
+    // always set color, esp if it's undefined (to clear filters)
     agent.prop.color.setTo(color);
   });
 }
