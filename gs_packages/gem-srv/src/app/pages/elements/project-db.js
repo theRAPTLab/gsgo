@@ -91,7 +91,7 @@ export function ReadProject(modelId) {
             model = MothsTestModel;
             break;
         case 'mothstestc':
-            model = MothsTestModel;
+            model = MothsTestCModel;
             break;
         case 'moths-sandbox':
             model = MothsSandbox;

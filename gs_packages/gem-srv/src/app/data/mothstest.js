@@ -81,7 +81,7 @@ featProp Movement distance setTo 3
 featCall Movement wanderUntilInside TreeTrunk
 
 useFeature Physics
-featProp Physics scale setTo 0.4
+featProp Physics scale setTo 0.25
 
 useFeature Touches
 featCall Touches monitor TreeTrunk c2c c2b b2b binb

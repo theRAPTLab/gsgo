@@ -81,7 +81,7 @@ featProp Movement distance setTo 3
 featCall Movement wanderUntilInside TreeTrunk
 
 useFeature Physics
-featProp Physics scale setTo 0.4
+featProp Physics scale setTo 0.25
 
 useFeature Touches
 featCall Touches monitor TreeTrunk c2c c2b b2b binb
@@ -200,7 +200,7 @@ ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.
 prop y setTo 170
 featCall Costume setColorizeHSV 0 0 0.67
 featProp Physics scale setTo 0.3
-featProp Physics scaleY setTo 1.8`
+featProp Physics scaleY setTo 1.2`
         },
 
         {
@@ -211,7 +211,7 @@ featProp Physics scaleY setTo 1.8`
 prop y setTo 170
 featCall Costume setColorizeHSV 0 0 0.5
 featProp Physics scale setTo 0.4
-featProp Physics scaleY setTo 1.8`
+featProp Physics scaleY setTo 1.2`
         },
 
         {
@@ -222,14 +222,14 @@ featProp Physics scaleY setTo 1.8`
 prop y setTo 170
 featCall Costume setColorizeHSV 0 0 0.9
 featProp Physics scale setTo 0.6
-featProp Physics scaleY setTo 1.8`
+featProp Physics scaleY setTo 1.2`
         },
         {
             id: 1201,
             name: 'Moth1',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  200 -200
+          featCall Movement queuePosition  200 -300
           `
         },
         {
@@ -237,7 +237,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth2',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  150 -200
+          featCall Movement queuePosition  150 -300
           `
         },
         {
@@ -245,7 +245,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth3',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  100 -200
+          featCall Movement queuePosition  100 -300
           `
         },
         {
@@ -253,7 +253,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth4',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  50 -200
+          featCall Movement queuePosition  50 -300
           `
         },
         {
@@ -261,7 +261,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth5',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  0 -200
+          featCall Movement queuePosition  0 -300
           `
         },
         {
@@ -269,7 +269,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth6',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  -50 -200
+          featCall Movement queuePosition  -50 -300
           `
         },
         {
@@ -277,7 +277,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth7',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  -100 -200
+          featCall Movement queuePosition  -100 -300
           `
         },
         {
@@ -285,7 +285,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth8',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  -150 -200
+          featCall Movement queuePosition  -150 -300
           `
         },
         {
@@ -293,7 +293,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth9',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition  -200 -200
+          featCall Movement queuePosition  -200 -300
           `
         },
         {
@@ -301,7 +301,7 @@ featProp Physics scaleY setTo 1.8`
             name: 'Moth10',
             blueprint: 'Moth',
             initScript: `
-          featCall Movement queuePosition -250 -200
+          featCall Movement queuePosition -250 -300
           `
         },
         {
