@@ -16,7 +16,7 @@ export const MODEL = {
       script: `# BLUEPRINT Soil
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'lightbeam.json' 0
+featCall Costume setCostume 'dirt.json' 0
 prop alpha setTo 0.2
 
 addProp nutrients Number 50
@@ -25,7 +25,7 @@ prop nutrients setMin 0
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitorTouchesWith Worm
+featCall Touches monitor Worm b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo nutrients
@@ -39,7 +39,7 @@ featCall AgentWidgets bindMeterTo nutrients
       script: `# BLUEPRINT Sun
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'lightbeam.json' 0
+featCall Costume setCostume 'circle.json' 0
 prop agent.alpha setTo 0.3
 
 useFeature Movement
@@ -64,7 +64,7 @@ ifExpr {{ agent.x > 400 }} [[
       script: `# BLUEPRINT Rock
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'hive.json' 0
+featCall Costume setCostume 'boulder.json' 0
 
 useFeature Physics
 useFeature AgentWidgets
@@ -74,11 +74,11 @@ useFeature AgentWidgets
     {
       id: 'Worm',
       label: 'Worm',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Worm
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'bee.json' 0
+featCall Costume setCostume 'worm.json' 0
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
@@ -90,8 +90,8 @@ prop matter setMin 0
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitorTouchesWith Waste
-featCall Touches monitorTouchesWith Soil
+featCall Touches monitor Waste b2b
+featCall Touches monitor Soil b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
@@ -128,7 +128,7 @@ every 1 runAtStart [[
     {
       id: 'Bunny',
       label: 'Bunny',
-      isControllable: true,
+      isCharControllable: true,
       script: `# BLUEPRINT Bunny
 # PROGRAM DEFINE
 useFeature Costume
@@ -144,7 +144,7 @@ prop matter setMin 0
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitorTouchesWith Plant
+featCall Touches monitor Plant b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
@@ -184,7 +184,7 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Plant
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'flower.json' 0
+featCall Costume setCostume 'plant.json' 0
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
@@ -198,9 +198,9 @@ addProp label String 'Plant'
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitorTouchesWith Sun
-featCall Touches monitorTouchesWith Soil
-featCall Touches monitorTouchesWith Bunny
+featCall Touches monitor Sun b2b
+featCall Touches monitor Soil b2b
+featCall Touches monitor Bunny b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
@@ -249,7 +249,7 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Waste
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'algae.json' 0
+featCall Costume setCostume 'organic_matter.json' 0
 
 addProp matter Number 100
 prop matter setMax 100
@@ -257,8 +257,8 @@ prop matter setMin 0
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitorTouchesWith Worm
-featCall Touches monitorTouchesWith Soil
+featCall Touches monitor Worm b2b
+featCall Touches monitor Soil b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo matter

@@ -16,6 +16,7 @@ import UR from '@gemstep/ursys/client';
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 
 /// PANELS ////////////////////////////////////////////////////////////////////
+import PanelRounds from './components/PanelRounds';
 import PanelBlueprints from './components/PanelBlueprints';
 import PanelMapInstances from './components/PanelMapInstances';
 
@@ -60,6 +61,7 @@ class MapEditor extends React.Component {
       model && model.scripts
         ? model.scripts.map(s => ({ id: s.id, label: s.label }))
         : [];
+    const rounds = model && model.rounds ? model.rounds : [];
 
     return (
       <div
@@ -70,6 +72,7 @@ class MapEditor extends React.Component {
           overflow: 'hidden'
         }}
       >
+        <PanelRounds id="rounds" modelId={modelId} rounds={rounds} />
         <PanelBlueprints
           id="blueprints"
           modelId={modelId}
