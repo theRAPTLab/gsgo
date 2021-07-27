@@ -260,7 +260,7 @@ ifExpr {{ agent.getProp('isInert').value }} [[
     {
       id: 'Predator',
       label: 'Predator',
-      isCharControllable: true,
+      isCharControllable: false,
       isPozyxControllable: true,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
