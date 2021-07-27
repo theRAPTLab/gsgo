@@ -264,7 +264,8 @@ class CostumePack extends GFeature {
       Math.abs(c1s - c2s) <= dSat &&
       Math.abs(c1v - c2v) <= dVal;
     // console.log(
-    //   'reviewing',
+    //   agent.id,
+    //   'colorhSVWithinRange reviewing',
     //   col1,
     //   col2,
     //   dHue,
