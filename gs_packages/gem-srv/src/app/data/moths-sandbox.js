@@ -16,15 +16,23 @@ export const MODEL = {
     },
     roundDefs: [
       {
+        id: 'r1',
+        label: 'Round 1: First Gen',
         time: 10,
-        initScript: `dbgOut 'Round1!'`,
         intro: 'First generation',
         outtro: 'What happened?',
-        endScript: `dbgOut 'END Round1!'`
+        initScript: `dbgOut 'roundDef: Round1!'
+prop x setTo 100`,
+        endScript: `dbgOut 'END Round1!'
+prop y setTo 100`
       },
       {
+        id: 'r2',
+        label: 'Round 2: Mutated',
         time: 60,
-        initScript: `dbgOut 'Round2'
+        intro: 'Mutate second generation',
+        outtro: 'What happened to spawn?',
+        initScript: `dbgOut 'roundDef: Round2'
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
 // Remove Dead Moths
