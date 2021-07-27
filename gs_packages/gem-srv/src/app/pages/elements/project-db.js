@@ -19,6 +19,7 @@ import { MODEL as SpringPilot } from '../../data/2021SpringPilot';
 import { MODEL as AquaticModel } from '../../data/aquatic';
 import { MODEL as DecompositionModel } from '../../data/decomposition';
 import { MODEL as MothsModel } from '../../data/moths';
+import { MODEL as MothsOneModel } from '../../data/moths-one';
 import { MODEL as MothsSandbox } from '../../data/moths-sandbox';
 import { MODEL as IUSandbox } from '../../data/iu-sandbox';
 import { MODEL as SaltModel } from '../../data/salt';
@@ -55,6 +56,7 @@ export function ReadProjectsList() {
     { id: 'aquatic', label: 'Aquatic Ecosystems' },
     { id: 'decomposition', label: 'Decomposition' },
     { id: 'moths', label: 'Moths' },
+    { id: 'moths-one', label: 'Moths Act One' },
     { id: 'moths-sandbox', label: 'Moths Sandbox' },
     { id: 'iu-sandbox', label: 'IU Sandbox' },
     { id: 'salt', label: 'Salt' },
@@ -77,6 +79,9 @@ export function ReadProject(modelId) {
       break;
     case 'moths':
       model = MothsModel;
+      break;
+    case 'moths-one':
+      model = MothsOneModel;
       break;
     case 'moths-sandbox':
       model = MothsSandbox;
