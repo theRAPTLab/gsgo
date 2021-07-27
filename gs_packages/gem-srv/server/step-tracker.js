@@ -328,10 +328,10 @@ function m_BindPozyxListener() {
   // });
 
   //UNCOMMENT THIS TO ALLOW LOCALHOST for the mqtt broker to run locallly (replay of pozyx streams)
-  //mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 }); // Enterprise server "via uplink network" works
+  mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 }); // Enterprise server "via uplink network" works
 
   //UNCOMMENT THIS FOR VU LAB
-  mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
+  //mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
 
   // FIXME: Allow different hosts if Pozyx tracker is running on different machine.
   //        This is currently Ben's Campbell Enterprise server's "uplink network" IP
