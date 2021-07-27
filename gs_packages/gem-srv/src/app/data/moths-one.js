@@ -27,18 +27,23 @@ export const MODEL = {
       // prop y setTo 100`
       //       },
       {
-        id: 'r2',
-        label: 'Mutation Round',
+        id: 'r1',
+        label: 'Start Round',
         time: 60,
         intro: 'Each surviving moth is going to give birth to a next generation',
         outtro: 'Did moths of some colors survive better?',
-        initScript: `dbgOut 'roundDef: Round2'
+        initScript: `dbgOut 'roundDef: Round1'
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
 // Remove Dead Moths
 featCall Population removeInertAgents
 
 // Spawn New Moths
+
+featCall Population agentsForEach Moth [[
+  propPush colorIndx
+  featPropPop Costume colorScaleIndex
+]]
 
 featProp Population targetPopulationSize setTo 32
 featCall Population populateBySpawning Moth [[
@@ -71,6 +76,12 @@ featCall Population agentsForEach Moth [[
   // Reshow Moth Label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
+  dbgOut {{ agent.name }}
+  dbgOut {{ agent.getFeatProp('Costume', 'colorScaleIndex').value  }}
+  dbgOut {{ ((agent.getFeatProp('Costume', 'colorScaleIndex').value)  * 70) - 350 }}
+  exprPush {{ ((agent.getFeatProp('Costume', 'colorScaleIndex').value)  * 70) - 350 }}
+  propPop x
+  prop y setTo 0
   // Make visible
   prop alpha setTo 1
 ]]`
@@ -91,7 +102,9 @@ featCall Costume setCostume 'bee.json' 0
 // COLOR
 featCall Costume initHSVColorScale 0 0 1 'value' 11
 // starting color is 2 steps away from tree color
-featProp Costume colorScaleIndex setTo 8
+//propPush colorIndx
+//featPropPop Costume colorScaleIndex
+//featProp Costume colorScaleIndex setTo 8
 
 // Start out mostly invisible
 // prop alpha setTo 0.1
@@ -119,6 +132,10 @@ useFeature Population
 
 // allow Predator to see us
 useFeature Vision
+
+addProp colorIndx Number 5
+prop colorIndx setMax 11
+prop colorIndx setMin 0
 
 addProp energyLevel Number 30
 prop energyLevel addRnd 10 30
@@ -148,6 +165,8 @@ useFeature Cursor
 
 # PROGRAM EVENT
 onEvent Start [[
+  propPush colorIndx
+  featPropPop Costume colorScaleIndex
   // hide label once sim starts
   //featProp AgentWidgets text setTo ''
 
@@ -167,42 +186,13 @@ every 1 [[
   //     FIX: SHould only blink if predator can see.  Might need to hack the difference.
   // Blink every second if invisible
 
-  // ifExpr {{ agent.getProp('alpha').value < 1 && !agent.prop.isInert.value}} [[
-  //   featCall Costume setGlow 0.05
-  // ]]
+   ifExpr {{ agent.getProp('energyLevel').value < 1 }} [[
+    featCall Movement setMovementType 'wander' 3
+   ]]
 ]]
 
 
-// TREE FOLIAGE
-when Moth centerFirstTouches TreeTrunk [[
-  // Show vfx when moth gets energy from treetrunk
-  dbgOut "!!!"
-  featCall Moth.Costume setGlow 2
-  prop Moth.energyLevel add 100
-]]
 
-when Moth centerTouches TreeTrunk [[
-  // show wings folded pose
-  ifExpr {{ !Moth.prop.isInert.value }} [[
-    featCall Moth.Costume setPose 4
-  ]]
-
-  // Fade Moth if it's camouflaged
-  // HACKISH
-  // This needs to use the same values as Predator detection
-  ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 0.2, 1, 0.2)}} [[
-    // color matches trunk, fade away and set un-visionable
-    prop alpha setMin 0.1
-
-    // don't set visionable -- use isCamouflaged instead
-    // featProp Vision visionable setTo false
-  ]]
-
-]]
-when Moth lastTouches TreeTrunk [[
-  // seek foliage again after you wander off the old foliage
-  featCall Moth.Movement wanderUntilInside TreeFoliage
-]]
 
 
 // TREE TRUNK
@@ -572,6 +562,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 2
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 2
 `
     },
     {
@@ -582,6 +573,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 3
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 3
 `
     },
     {
@@ -592,6 +584,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 4
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 4
 `
     },
     {
@@ -602,6 +595,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 5
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 5
 `
     },
     {
@@ -612,6 +606,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 6
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 6
 `
     },
     {
@@ -622,6 +617,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 7
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 7
 `
     },
     {
@@ -632,6 +628,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 8
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 8
 `
     },
     {
@@ -642,6 +639,7 @@ featPropPop AgentWidgets text
 featProp Costume colorScaleIndex setTo 9
 featPropPush Costume colorScaleIndex
 featPropPop AgentWidgets text
+prop colorIndx setTo 9
 `
     },
     //     {

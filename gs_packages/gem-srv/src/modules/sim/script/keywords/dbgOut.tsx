@@ -13,7 +13,7 @@ import { RegisterKeyword } from 'modules/datacore';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MAX_OUT = 100;
+let MAX_OUT = 10000;
 let COUNTER = MAX_OUT;
 UR.HandleMessage('ALL_AGENTS_PROGRAM', () => {
   console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
