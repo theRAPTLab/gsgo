@@ -72,7 +72,9 @@ export default class SM_Bundle implements ISMCBundle {
     this.type = type;
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /** return an object with non-empty program arrays */
+  /** return an object with non-empty program arrays
+   *  note this is returning the actual program arrays, not a copy
+   */
   getPrograms(): ISMCPrograms {
     let progs: ISMCPrograms = {};
     if (this.define.length) progs.define = this.define;
