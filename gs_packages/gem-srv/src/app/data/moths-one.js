@@ -25,7 +25,7 @@ export const MODEL = {
         initScript: `dbgOut 'roundDef: Round1'
 `,
 
-        endScript: `dbgOut 'END Round2!'
+        endScript: `dbgOut 'END Round!'
 
         featCall Population agentsForEach Moth [[
           prop alpha setTo 1
@@ -34,8 +34,15 @@ export const MODEL = {
           exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
           propPop x
           prop y setTo 0
-          prop y addRnd -64 64
+          prop y addRnd -300 300
           featCall Movement jitterPos -2 2
+        ]]
+
+        featCall Population agentsForEachActive Moth [[
+          featCall Movement setMovementType 'static'
+          prop orientation setTo 3.14
+          featProp Movement useAutoOrientation setTo false
+          prop alpha setTo 1
         ]]
 
         featCall Population agentsForEach TreeTrunk [[
@@ -60,14 +67,7 @@ featCall Costume setCostume 'bee.json' 0
 
 // COLOR
 featCall Costume initHSVColorScale 0 0 1 'value' 11
-// starting color is 2 steps away from tree color
-//propPush colorIndx
-//featPropPop Costume colorScaleIndex
-//featProp Costume colorScaleIndex setTo 8
 
-// Start out mostly invisible
-// prop alpha setTo 0.1
-// prop alpha setMin 0.1
 
 // Start out visible so costumes can be picked up
 prop alpha setTo 1
@@ -118,6 +118,7 @@ useFeature Global
 onEvent Start [[
   propPush colorIndx
   featPropPop Costume colorScaleIndex
+  featCall Movement setRandomDirection
   featCall Movement wanderUntilInside TreeTrunk
   prop vulnerable setTo 1
   prop moving setTo 1
@@ -188,7 +189,8 @@ ifExpr {{ agent.getProp('isInert').value }} [[
   prop alpha setMin 0.1
   prop alpha sub 1
   prop orientation setTo 3.14
-  featProp AgentWidgets text setTo 'eaten'
+  featProp AgentWidgets text setTo ''
+  featProp Physics scale setTo 0.1
 ]]
 `
     },
@@ -228,7 +230,8 @@ when Predator centerTouchesCenter Moth [[
   // Only if Moth is not camouflaged
   ifExpr {{ Moth.getProp('vulnerable').value  > 0 }} [[
     featCall Moth.Costume setGlow 1
-    featCall Moth.Movement jitterRotate
+    prop Moth.orientation setTo 3.14
+    //featCall Moth.Movement jitterRotate
     every 0.2 [[
       prop Moth.isInert setTo true
       featProp Moth.Physics scale setTo 0.1
@@ -236,10 +239,10 @@ when Predator centerTouchesCenter Moth [[
       prop Moth.alpha setMin 0.1
       prop Moth.alpha sub 1
       prop Moth.orientation setTo 3.14
-      featProp Moth.AgentWidgets text setTo 'eaten'
+      featProp Moth.AgentWidgets text setTo ''
 
       // Stop sim if half eaten
-      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 6 }} [[
+      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 16 }} [[
 
 
         featCall Predator.Timer stopRound
@@ -308,7 +311,7 @@ when Predator centerTouchesCenter Moth [[
 
     {
       id: 1202,
-      name: 'Moth2',
+      name: 'Moth2a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition -280 0
       featProp Costume colorScaleIndex setTo 2
@@ -319,7 +322,7 @@ when Predator centerTouchesCenter Moth [[
     },
     {
       id: 1203,
-      name: 'Moth3',
+      name: 'Moth3a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition -210 0
       featProp Costume colorScaleIndex setTo 3
@@ -330,7 +333,7 @@ when Predator centerTouchesCenter Moth [[
     },
     {
       id: 1204,
-      name: 'Moth4',
+      name: 'Moth4a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition -140 0
       featProp Costume colorScaleIndex setTo 4
@@ -341,7 +344,7 @@ when Predator centerTouchesCenter Moth [[
     },
     {
       id: 1205,
-      name: 'Moth5',
+      name: 'Moth5a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition -70 0
       featProp Costume colorScaleIndex setTo 5
@@ -352,7 +355,7 @@ when Predator centerTouchesCenter Moth [[
     },
     {
       id: 1206,
-      name: 'Moth6',
+      name: 'Moth6a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition 0 0
       featProp Costume colorScaleIndex setTo 6
@@ -363,7 +366,7 @@ when Predator centerTouchesCenter Moth [[
     },
     {
       id: 1207,
-      name: 'Moth7',
+      name: 'Moth7a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition 70 0
       featProp Costume colorScaleIndex setTo 7
@@ -385,9 +388,273 @@ when Predator centerTouchesCenter Moth [[
     },
     {
       id: 1209,
-      name: 'Moth9',
+      name: 'Moth9a',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition 210 0
+      featProp Costume colorScaleIndex setTo 9
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 9
+`
+    },
+    {
+      id: 12021,
+      name: 'Moth2b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -280 -100
+      featProp Costume colorScaleIndex setTo 2
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 2
+`
+    },
+    {
+      id: 12031,
+      name: 'Moth3b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -210 -100
+      featProp Costume colorScaleIndex setTo 3
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 3
+`
+    },
+    {
+      id: 12041,
+      name: 'Moth4b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -140 -100
+      featProp Costume colorScaleIndex setTo 4
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 4
+`
+    },
+    {
+      id: 12051,
+      name: 'Moth5b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -70 -100
+      featProp Costume colorScaleIndex setTo 5
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 5
+`
+    },
+    {
+      id: 12061,
+      name: 'Moth6b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 0 -100
+      featProp Costume colorScaleIndex setTo 6
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 6
+`
+    },
+    {
+      id: 12071,
+      name: 'Moth7b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 70 -100
+      featProp Costume colorScaleIndex setTo 7
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 7
+`
+    },
+    {
+      id: 12081,
+      name: 'Moth8b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 140 -100
+      featProp Costume colorScaleIndex setTo 8
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 8
+`
+    },
+    {
+      id: 12091,
+      name: 'Moth9b',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 210 -100
+      featProp Costume colorScaleIndex setTo 9
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 9
+`
+    },
+    {
+      id: 12022,
+      name: 'Moth2c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -280 100
+      featProp Costume colorScaleIndex setTo 2
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 2
+`
+    },
+    {
+      id: 12032,
+      name: 'Moth3c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -210 100
+      featProp Costume colorScaleIndex setTo 3
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 3
+`
+    },
+    {
+      id: 12042,
+      name: 'Moth4c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -140 100
+      featProp Costume colorScaleIndex setTo 4
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 4
+`
+    },
+    {
+      id: 12052,
+      name: 'Moth5c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -70 100
+      featProp Costume colorScaleIndex setTo 5
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 5
+`
+    },
+    {
+      id: 12062,
+      name: 'Moth6c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 0 100
+      featProp Costume colorScaleIndex setTo 6
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 6
+`
+    },
+    {
+      id: 12072,
+      name: 'Moth7c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 70 100
+      featProp Costume colorScaleIndex setTo 7
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 7
+`
+    },
+    {
+      id: 12082,
+      name: 'Moth8c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 140 100
+      featProp Costume colorScaleIndex setTo 8
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 8
+`
+    },
+    {
+      id: 12092,
+      name: 'Moth9c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 210 100
+      featProp Costume colorScaleIndex setTo 9
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 9
+`
+    },
+    {
+      id: 12023,
+      name: 'Moth2d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -280 200
+      featProp Costume colorScaleIndex setTo 2
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 2
+`
+    },
+    {
+      id: 12033,
+      name: 'Moth3d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -210 200
+      featProp Costume colorScaleIndex setTo 3
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 3
+`
+    },
+    {
+      id: 12043,
+      name: 'Moth4d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -140 200
+      featProp Costume colorScaleIndex setTo 4
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 4
+`
+    },
+    {
+      id: 12053,
+      name: 'Moth5d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -70 200
+      featProp Costume colorScaleIndex setTo 5
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 5
+`
+    },
+    {
+      id: 12063,
+      name: 'Moth6d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 0 200
+      featProp Costume colorScaleIndex setTo 6
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 6
+`
+    },
+    {
+      id: 12073,
+      name: 'Moth7d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 70 200
+      featProp Costume colorScaleIndex setTo 7
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 7
+`
+    },
+    {
+      id: 12083,
+      name: 'Moth8d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 140 200
+      featProp Costume colorScaleIndex setTo 8
+      featPropPush Costume colorScaleIndex
+      featPropPop AgentWidgets text
+      prop colorIndx setTo 8
+`
+    },
+    {
+      id: 12093,
+      name: 'Moth9d',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 210 200
       featProp Costume colorScaleIndex setTo 9
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
