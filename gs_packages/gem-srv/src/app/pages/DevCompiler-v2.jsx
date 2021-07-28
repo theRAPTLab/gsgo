@@ -15,7 +15,7 @@ import * as SIM from '../../modules/sim/api-sim';
 import * as GLOBAL from '../../modules/datacore/dc-globals';
 import * as DATACORE from '../../modules/datacore';
 import * as RENDERER from '../../modules/render/api-render';
-import * as TRANSPILER from '../../modules/sim/script/transpiler';
+import * as TRANSPILER from '../../modules/sim/script/transpiler-v2';
 import * as Prism from '../../lib/vendor/prism';
 import { CodeJar } from '../../lib/vendor/codejar';
 import '../../lib/vendor/prism.css';
@@ -29,7 +29,7 @@ import { useStylesHOC } from './elements/page-styles';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('APP');
+const PR = UR.PrefixUtil('COMP-V2');
 const DBG = false;
 
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
@@ -156,7 +156,7 @@ class Compiler extends React.Component {
   // compile jsx back to source
   userUpdateText() {
     if (DBG) console.group(...PR('toSource'));
-    const text = TRANSPILER.TextifyScript(this.source);
+    const text = TRANSPILER.TextToScript(this.source);
     this.setState({ text });
     this.text = text;
     if (DBG) console.groupEnd();
@@ -165,7 +165,7 @@ class Compiler extends React.Component {
   // compile text to source
   userCompileText() {
     DATACORE.DeleteAllTests();
-    const source = TRANSPILER.ScriptifyText(this.text);
+    const source = TRANSPILER.TextToScript(this.text);
     this.source = source;
     console.groupCollapsed('parsed text');
     TRANSPILER.ScriptToConsole(source);
@@ -254,7 +254,7 @@ class Compiler extends React.Component {
           className={clsx(classes.cell, classes.top, classes.devBG)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>DEV/COMPILER</span>{' '}
+          <span style={{ fontSize: '32px' }}>DEV/COMPILER V2</span>{' '}
           {UR.ConnectionString()}
         </div>
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
