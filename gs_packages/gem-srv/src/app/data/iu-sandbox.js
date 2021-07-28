@@ -51,7 +51,7 @@ featProp Physics scale setTo 2
       script: `# BLUEPRINT OfficeStuff
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'rectangle.json' 0
+featCall Costume setCostume 'square.json' 0
 
 useFeature Physics
 featCall Physics init

@@ -62,7 +62,8 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   x: number;
   y: number;
   // feature helpers
-  canSee: any; // used by Vision
+  canSeeCone: any; // used by Vision
+  canSeeColor: any; // used by Vision
   cursor: IAgent; // used by Movement
   distanceTo: any; // used by Movement
   touchTable: Map<any, any>; // used by feat-touches to keep track of other agents

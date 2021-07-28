@@ -16,15 +16,23 @@ export const MODEL = {
     },
     roundDefs: [
       {
+        id: 'r1',
+        label: 'Round 1: First Gen',
         time: 10,
-        initScript: `dbgOut 'Round1!'`,
         intro: 'First generation',
         outtro: 'What happened?',
-        endScript: `dbgOut 'END Round1!'`
+        initScript: `dbgOut 'roundDef: Round1!'
+prop x setTo 100`,
+        endScript: `dbgOut 'END Round1!'
+prop y setTo 100`
       },
       {
+        id: 'r2',
+        label: 'Round 2: Mutated',
         time: 60,
-        initScript: `dbgOut 'Round2'
+        intro: 'Mutate second generation',
+        outtro: 'What happened to spawn?',
+        initScript: `dbgOut 'roundDef: Round2'
 // Release Cursors from Dead Moths
 featCall Population releaseInertAgents
 // Remove Dead Moths
@@ -36,9 +44,12 @@ featCall Population agentsReproduce Moth [[
   featProp Costume colorScaleIndex addRnd -2 2 true
   // featCall Costume randomizeColorHSV 1 1 1
 ]]
-featCall Population agentsForEach TreeFoliage [[
-  featProp Costume colorValue sub 0.1
-]]
+
+// Don't darken while testing
+// featCall Population agentsForEach TreeFoliage [[
+//   // Darken Trees each round
+//   featProp Costume colorValue sub 0.1
+// ]]
 `,
         outtro: 'What happened to spawn?',
         endScript: `dbgOut 'END Round2!'`
@@ -126,10 +137,14 @@ when Moth centerFirstTouches TreeTrunk [[
   prop Moth.energyLevel add 50
 ]]
 when Moth centerTouches TreeTrunk [[
+  // HACKISH
+  // This needs to use the same values as Predator detection
   ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 0.2, 1, 0.2)}} [[
     // color matches trunk, fade away and set un-visionable
     prop alpha setMin 0.1
-    featProp Vision visionable setTo false
+
+    // don't set visionable -- use isCamouflaged instead
+    // featProp Vision visionable setTo false
   ]]
   ifExpr {{ !Moth.prop.isInert.value }} [[
     // show wings folded pose
@@ -170,7 +185,9 @@ when Moth centerTouches TreeFoliage [[
   ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeFoliage.prop.color.value, 0.2, 1, 0.2)}} [[
     // color matches, fade away and set un-visionable
     prop alpha setMin 0.1
-    featProp Moth.Vision visionable setTo false
+
+    // don't set visionalbe, use camouflage instead
+    // featProp Moth.Vision visionable setTo false
   ]]
   ifExpr {{ !Moth.prop.isInert.value }} [[
     // show wings folded pose (when not inert)
@@ -190,7 +207,7 @@ ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
   // visible when moving
   prop alpha setMin 1
   prop alpha add 0.25
-  featProp Vision visionable setTo true
+  // featProp Vision visionable setTo true
   featCall Costume setPose 0
 ]]
 ifExpr {{ agent.getProp('isInert').value }} [[
@@ -203,7 +220,7 @@ ifExpr {{ agent.getProp('isInert').value }} [[
       id: 'Predator',
       label: 'Predator',
       isCharControllable: true,
-      // isPozyxControllable: false,
+      // isPozyxControllable: true,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
@@ -222,8 +239,11 @@ useFeature Vision
 featCall Vision monitor Moth
 featProp Vision viewDistance setTo 250
 featProp Vision viewAngle setTo 90
+featProp Vision colorHueDetectionThreshold setTo 0.2
+featProp Vision colorValueDetectionThreshold setTo 0.2
 
-featCall Movement seekNearestVisible Moth
+// featCall Movement seekNearestVisibleCone Moth
+featCall Movement seekNearestVisibleColor Moth
 featProp Movement distance setTo 4
 
 // To update graphs
@@ -238,14 +258,23 @@ useFeature Timer
 // when Predator isInside TreeFoliage [[
 //   featCall Predator.Costume setGlow 1
 // ]]
-when Predator sees Moth [[
+
+when Predator seesCamouflaged Moth [[
+  dbgOut 'Spotted!'
   prop Moth.alpha setMin 1
-  featCall Moth.Costume setGlow 0.1
+  featCall Moth.Costume setGlow 1
 ]]
-when Predator doesNotSee Moth [[
-  // Moth should naturally go back to 0.1 no need for this call
-  // prop Moth.alpha setMin 0.1
-]]
+
+// Old 'sees'
+// when Predator sees Moth [[
+//   prop Moth.alpha setMin 1
+//   featCall Moth.Costume setGlow 0.1
+// ]]
+// when Predator doesNotSee Moth [[
+//   // Moth should naturally go back to 0.1 no need for this call
+//   // prop Moth.alpha setMin 0.1
+// ]]
+
 when Predator centerTouchesCenter Moth [[
   featCall Moth.Costume setGlow 1
   featCall Moth.Movement jitterRotate
@@ -312,9 +341,11 @@ prop zIndex setTo -200
       label: 'Reporter',
       script: `# BLUEPRINT Reporter
 # PROGRAM DEFINE
-prop skin setTo 'onexone'
+// prop skin setTo 'onexone'
+// intentionally left blank for testing
 
 useFeature Population
+
 useFeature Global
 useFeature AgentWidgets
 featProp AgentWidgets isLargeGraphic setTo true
@@ -440,6 +471,9 @@ featCall Global addGlobalProp lightMoths Number 0
 featCall Global globalProp lightMoths setMin 0
 featCall Global globalProp lightMoths setMax Infinity
 featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
+// demo featProp in instance editor
+featProp AgentWidgets text setTo 'Light Moths Graph'
+// where's the last line?
 `
     }
   ]

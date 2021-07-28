@@ -115,7 +115,7 @@ function m_TouchesC2B(a: IAgent, b: IAgent) {
 function m_TouchesB2B(a: IAgent, b: IAgent) {
   return a.callFeatMethod('Physics', 'intersectsWith', b);
 }
-/// Bounds1 inside Bounds2
+/// Bounds a inside Bounds b
 function m_TouchesBinB(a: IAgent, b: IAgent) {
   return a.callFeatMethod('Physics', 'isBoundedBy', b);
 }
@@ -178,6 +178,7 @@ class TouchPack extends GFeature {
   constructor(name) {
     super(name);
     this.featAddMethod('monitor', this.monitor);
+    this.featAddMethod('getTouchingAgent', this.getTouchingAgent);
     UR.HookPhase('SIM/PHYSICS_THINK', m_Update);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -197,6 +198,17 @@ class TouchPack extends GFeature {
     const d_TouchTypes = AGENT_TOUCHTYPES.get(agent.id) || new Map();
     d_TouchTypes.set(targetBlueprintName, touchTypes);
     AGENT_TOUCHTYPES.set(agent.id, d_TouchTypes);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Returns the first agent that matches the touchtype
+  getTouchingAgent(agent: IAgent, touchType: string) {
+    const targetIds = [...agent.isTouching.keys()];
+    const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
+    if (touchingId) {
+      // console.log(agent.id, 'isTouching', touchingId);
+      return GetAgentById(touchingId);
+    }
+    return undefined;
   }
 }
 

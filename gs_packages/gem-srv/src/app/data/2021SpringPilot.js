@@ -5,15 +5,22 @@ export const MODEL = {
     right: 400,
     bottom: 400,
     left: -400,
-    wrap: [true, true],
+    wrap: [false, false],
     bounce: false,
     bgcolor: 0x000066
+  },
+  rounds: {
+    options: {
+      allowResetStage: true,
+      noloop: true // stop after last round
+    }
   },
   scripts: [
     {
       id: 'Fish',
       label: 'Fish',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Fish
 # PROGRAM DEFINE
 useFeature Costume
@@ -155,7 +162,8 @@ every 1 runAtStart [[
     {
       id: 'Algae',
       label: 'Algae',
-      isControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: false,
       script: `# BLUEPRINT Algae
 # PROGRAM DEFINE
 
@@ -191,10 +199,8 @@ featPropPop AgentWidgets text
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
 featCall Movement setMovementType 'wander' 0.2
 
-# PROGRAM INIT
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop Physics scale
-featCall Movement setRandomStartPosition 300 300
 
 # PROGRAM UPDATE
 
@@ -258,7 +264,10 @@ featPropPop agent.Physics scale
 # PROGRAM DEFINE
 useFeature Costume
 useFeature Movement
-featCall Costume setCostume 'lightbeam.json' 0
+featCall Costume setCostume 'circle.json' 0
+featCall Costume setColorize 1 1 0
+prop agent.alpha setTo 0.5
+
 addProp speed Number 10
 addProp energyRate Number 5
 addProp direction Number 1
@@ -270,8 +279,6 @@ featProp Physics scaleY setTo 2.5
 
 useFeature Touches
 
-prop agent.skin setTo 'lightbeam.json'
-prop agent.alpha setTo 0.5
 
 # PROGRAM INIT
 // default position for moving across the top
@@ -444,25 +451,25 @@ onEvent Tick [[
     {
       id: 501,
       name: 'Algae 1',
-      blueprint: 'Algae'
-      //       initScript: `prop x setTo 120
-      // prop y setTo 120`
+      blueprint: 'Algae',
+      initScript: `prop x setTo 120
+       prop y setTo 120`
     },
     {
       id: 502,
       name: 'Algae 2',
       blueprint: 'Algae',
       initScript: `prop energyLevel setTo 50
-// prop x setTo -150
-// prop y setTo -120
+ prop x setTo -150
+ prop y setTo -120
 `
     },
     {
       id: 503,
       name: 'Algae 3',
-      blueprint: 'Algae'
-      //       initScript: `prop x setTo -120
-      // prop y setTo -90`
+      blueprint: 'Algae',
+      initScript: `prop x setTo -120
+prop y setTo -90`
     },
     {
       id: 504,
