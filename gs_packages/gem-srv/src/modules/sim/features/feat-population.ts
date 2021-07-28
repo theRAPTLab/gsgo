@@ -179,6 +179,19 @@ class PopulationPack extends GFeature {
 
   /// GLOBAL METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /**
+   * Release cursors for ALL agents globally
+   */
+  releaseAllAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor') {
+        a.callFeatMethod('Cursor', 'releaseCursor');
+      }
+    });
+  }
+
   /**
    * Release cursors for ALL inert agents globally
    */

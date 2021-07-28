@@ -33,8 +33,8 @@ export const MODEL = {
         intro: 'Moths are mutated at the beginning of the round',
         outtro: 'What happened to spawn?',
         initScript: `dbgOut 'roundDef: Round2'
-// Release Cursors from Dead Moths
-featCall Population releaseInertAgents
+// Release Cursors from All Moths
+featCall Population releaseAllAgents
 // Remove Dead Moths
 featCall Population removeInertAgents
 
