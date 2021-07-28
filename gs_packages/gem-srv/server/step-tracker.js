@@ -329,7 +329,9 @@ function m_BindPozyxListener() {
 
   // FIXME: Allow different hosts if Pozyx tracker is running on different machine.
   //        This is currently Ben's Campbell Enterprise server's "uplink network" IP
-  mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
+  //mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
+
+  mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 }); // Enterprise server "via uplink network" works
   // port 1883 is tcp (not udp)
 
   mtrack_ss.on('connect', () => {

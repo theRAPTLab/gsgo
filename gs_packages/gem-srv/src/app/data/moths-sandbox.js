@@ -460,10 +460,10 @@ featProp AgentWidgets isLargeGraphic setTo true
 
 # PROGRAM EVENT
 onEvent Start [[
-  dbgOut 'Round Start'
+  dbgOut '!!!!!Round Start'
 ]]
 onEvent RoundStop [[
-  dbgOut 'Round Stop'
+  dbgOut '!!!!!Round Stop'
 ]]
 `
     }
@@ -501,16 +501,16 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 0.3
     // featProp Physics scaleY setTo 2`
     // },
-         {
-           id: 1102,
-           name: 'TreeFoliage1',
-           blueprint: 'TreeFoliage',
-           initScript: `prop x setTo -200
+    {
+      id: 1102,
+      name: 'TreeFoliage1',
+      blueprint: 'TreeFoliage',
+      initScript: `prop x setTo -200
      prop y setTo -150
      featCall Costume setColorizeHSV 0 0 0.6
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 3`
-         },
+    },
     //     {
     //       id: 1105,
     //       name: 'Tree3',
@@ -521,27 +521,27 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 0.4
     // featProp Physics scaleY setTo 2`
     //     },
-         {
-           id: 1106,
-           name: 'TreeFoliage3',
-           blueprint: 'TreeFoliage',
-           initScript: `prop x setTo 250
+    {
+      id: 1106,
+      name: 'TreeFoliage3',
+      blueprint: 'TreeFoliage',
+      initScript: `prop x setTo 250
      prop y setTo -150
      featCall Costume setColorizeHSV 0 0 0.6
      //  featCall Costume setColorize 0.8 0.7 0
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 3`
-         },
-//    {
-//      id: 1103,
-//      name: 'Tree2',
-//      blueprint: 'TreeTrunk',
-//      initScript: `prop x setTo 0
-//prop y setTo 200
-//featCall Costume setColorizeHSV 0 0 1
-//featProp Physics scale setTo 0.6
-//featProp Physics scaleY setTo 2`
-//    },
+    },
+    //    {
+    //      id: 1103,
+    //      name: 'Tree2',
+    //      blueprint: 'TreeTrunk',
+    //      initScript: `prop x setTo 0
+    //prop y setTo 200
+    //featCall Costume setColorizeHSV 0 0 1
+    //featProp Physics scale setTo 0.6
+    //featProp Physics scaleY setTo 2`
+    //    },
     {
       id: 1104,
       name: 'TreeFoliage',
