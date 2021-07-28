@@ -100,7 +100,7 @@ module.exports = {
   }
 };
 
-  ```
+```
 ### .eslintrc magic naming bullshit
 
 There are various shortcut rules that make figuring out your ESLint configuration needlessly opaque. ESLint supports external modules with sets of rules that can be loaded as npm modules. They can be packages of rules, configurations (sets of rules), or plugins. 

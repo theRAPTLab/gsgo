@@ -1,20 +1,20 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ScriptTokenizer takes a text input, breaks it into lines, and processes each
-  line character by character.
+  The ScriptTokenizer class takes a text input, breaks it into lines, and
+  processes each line character by character.
 
   The main entry point is tokenize(text), and resulting output is an array of
   TScriptUnit (array of token objects):
 
-    program:TScript = [
-      [ {token}, {token}, ... ],    // TScriptUnit
-      [ {token}, {token}, ... ],    // TScriptUnit
+    program:TScript = [[ {token}, {token}, ... ],    // TScriptUnit [ {token},
+      {token}, ... ],    // TScriptUnit
       ...
     ]
 
   This code is a refactored version of jsep, modified to process the GEM-SCRIPT
   ScriptText format of [keyword, ...args]. The original is a stand-alone module
-  written in ES5; this was converted and modified to do the following:
+  written in ES5; this was converted it into a class and modified it to add
+  GEMSCRIPT script conventions:
 
   * process an entire block of text, not just a single line
   * produce {comment} tokens from leading //
@@ -26,6 +26,8 @@
   * add showCursor() that will highlight the current position of the character
     index for debugging
   * added tokenizer error display in console
+
+  The additions we've made to JSEP are marked with  ** GEMSCRIPT HACK **
 
   LICENSES
 
@@ -86,6 +88,7 @@ const literals = {
   'false': false,
   'null': null
 };
+
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Get return the longest key length of any object
@@ -98,11 +101,15 @@ const getMaxKeyLen = obj => {
   });
   return max_len;
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const max_unop_len = getMaxKeyLen(unary_ops);
-/** `ch` is a character code in the next three functions */
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// `ch` is a character code in the next three functions
 const isDecimalDigit = ch => {
   return ch >= 48 && ch <= 57; // 0...9
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const isIdentifierStart = ch => {
   return (
     ch === 36 ||
@@ -112,6 +119,7 @@ const isIdentifierStart = ch => {
     (ch >= 128 && !binary_ops[String.fromCharCode(ch)])
   ); // any non-ASCII that is not an operator
 };
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const isIdentifierPart = ch => {
   return (
     ch === 36 ||
@@ -143,6 +151,22 @@ class ScriptTokenizer {
     this.blockDepth = 0;
   }
 
+  /** SRI NOTE: return literal character string */
+  exprI(i) {
+    return charAtFunc.call(this.line, i);
+  }
+
+  /** SRI NOTE: return numeric character code */
+  exprICode(i) {
+    return charCodeAtFunc.call(this.line, i);
+  }
+
+  /** GEMSCRIPT HACK ** Utility to highlight the current position of the
+   *  character gobbler for the current line. Insert this call whenever you are
+   *  trying to see where the tokenizer is. On Chrome console.warn will also
+   *  give you a stack trace so you can see how deeply nested you are into the
+   *  gobbler
+   */
   showCursor(prompt) {
     const lnum = `${this.linesIndex}`.padStart(3, '0');
     const s1 = `${lnum}: ${this.line.substring(0, this.index)}`;
@@ -158,6 +182,10 @@ class ScriptTokenizer {
     );
   }
 
+  /** GEMSCRIPT HACK ** Modified to also show the current character position
+   *  with +/- 5 surrounding lines for context. Used to show where a parse error
+   *  has occurred.
+   */
   throwError(err) {
     let range = 5;
     let start = Math.max(this.linesIndex - range, 0);
@@ -174,12 +202,10 @@ class ScriptTokenizer {
     }
     throw Error(err);
   }
-  exprI(i) {
-    return charAtFunc.call(this.line, i);
-  }
-  exprICode(i) {
-    return charCodeAtFunc.call(this.line, i);
-  }
+
+  /** GEMSCRIPT HACK ** jsep is an expression parser that works on lines.
+   *  We've extended it to also load line-after-line to process full texts
+   */
   loadLine() {
     // ben hacked this in a weird way before to allow blank lines to be
     // processed, obscuring what this function actually did: setup the line and
@@ -196,8 +222,11 @@ class ScriptTokenizer {
     this.length = 0;
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-  /** TOKENIZER **************************************************************/
+  /// MAIN INSTANCE ENTRY POINT /////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** GEMSCRIPT HACK ** this is significantly modified from jsep to do line-by-
+   *  line parsing.
+   */
   tokenize(src, flag) {
     if (typeof src === 'string') src = src.split('\n');
     if (!Array.isArray(src)) {
@@ -228,9 +257,10 @@ class ScriptTokenizer {
       this.throwError(`EOF without ${this.blockDepth} unclosed blocks`);
     return units;
   }
-  /** END TOKENIZER **********************************************************/
-  /////////////////////////////////////////////////////////////////////////////
 
+  /// TOKEN METHODS /////////////////////////////////////////////////////////////
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /** GEMSCRIPT HACK ** Added this to handle line-by-line parsing */
   gobbleLine() {
     let nodes = [];
     let node;
@@ -252,17 +282,8 @@ class ScriptTokenizer {
     return nodes;
   }
 
-  // grab a compiler directive
-  gobbleDirective() {
-    const nodes = [{ directive: '#' }];
-    this.index++;
-    while (this.index < this.length) {
-      nodes.push(this.gobbleToken());
-    }
-    return nodes;
-  }
-
-  // Push `this.index` up to the next non-space character
+  // SRI NOTE: used to skip whitespace characters, setting the line cursor
+  // point to the first non-whitespace character to parse
   gobbleSpaces() {
     let ch = this.exprICode(this.index);
     // space or tab
@@ -271,7 +292,10 @@ class ScriptTokenizer {
     }
   }
 
-  // Return the next token (eq to gobbleExpression)
+  /** GEMSCRIPT HACK ** Return the next token. This is a modification of jsep's
+   *  gobbleExpression() main entry point to intercept our GEMSCRIPT additions
+   *  before jsep's own tokenizers attempt to scan them.
+   */
   gobbleToken() {
     this.gobbleSpaces();
     if (DBG) this.showCursor();
@@ -279,17 +303,17 @@ class ScriptTokenizer {
     let chn = this.exprICode(this.index + 1);
     let to_check;
     let tc_len;
-    /* GEMSCRIPT ADDITION FOR [[ ]] */
+    /** GEMSCRIPT HACK ** look for blocks [[ ]] */
     if (ch === OBRACK_CODE && chn === OBRACK_CODE) {
       this.index++;
       return this.gobbleBlock(); // in gobbleParts() also
     }
-    /* GEMSCRIPT ADDITION FOR {{ expr }} */
+    /** GEMSCRIPT HACK ** look for expressions {{ expr }} */
     if (ch === OCURLY_CODE && chn === OCURLY_CODE) {
       this.index++;
       return this.gobbleExpressionString();
     }
-    /* GEMSCRIPT ADDITION FOR // */
+    /** GEMSCRIPT HACK ** look for comment lines // */
     if (ch === BSLASH_CODE && chn === BSLASH_CODE) {
       this.index += 2;
       return this.gobbleComment();
@@ -299,18 +323,18 @@ class ScriptTokenizer {
       // Char code 46 is a dot `.` which can start off a numeric literal
       return this.gobbleNumericLiteral();
     }
-
     if (ch === SQUOTE_CODE || ch === DQUOTE_CODE) {
       // Single or double quotes
       return this.gobbleStringLiteral();
     }
 
+    // SRI NOTE: if we've gotten this far, the possibilities remaining are
+    // identifier or a unary operation. Works with gobbleParts() to check
+    // for function invocations and dotted object references
     to_check = this.line.substr(this.index, max_unop_len);
     tc_len = to_check.length;
     while (tc_len > 0) {
-      // Don't accept an unary op when it is an identifier.
-      // Unary ops that start with a identifier-valid character must be followed
-      // by a non identifier-part valid character
+      // SRI NOTE: Don't accept an unary op when it precedes an identifier.
       if (
         Object.prototype.hasOwnProperty.call(unary_ops, to_check) &&
         (!isIdentifierStart(this.exprICode(this.index)) ||
@@ -331,8 +355,9 @@ class ScriptTokenizer {
     return this.gobbleParts();
   }
 
-  // Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by using a string to
-  // keep track of everything in the numeric literal and then calling `parseFloat` on that string
+  // SRI NOTE: Parse simple numeric literals: `12`, `3.4`, `.5`. Do this by
+  // using a string to keep track of everything in the numeric literal and then
+  // calling `parseFloat` on that string
   gobbleNumericLiteral() {
     let number = '';
     let ch;
@@ -349,7 +374,6 @@ class ScriptTokenizer {
         number += this.exprI(this.index++);
       }
     }
-
     ch = this.exprI(this.index);
     if (ch === 'e' || ch === 'E') {
       // exponent marker
@@ -371,7 +395,6 @@ class ScriptTokenizer {
         );
       }
     }
-
     chCode = this.exprICode(this.index);
     // Check to make sure this isn't a variable name that start with a number (123abc)
     if (isIdentifierStart(chCode)) {
@@ -383,12 +406,11 @@ class ScriptTokenizer {
     } else if (chCode === PERIOD_CODE) {
       this.throwError(`GobbleNumericLiteral: Unexpected period at ${this.index}`);
     }
-
     return { value: parseFloat(number) }; // was: return parseFloat(number);
   }
 
-  // Parses a string literal, staring with single or double quotes with basic support for escape codes
-  // e.g. `"hello world"`, `'this is\nJSEP'`
+  // SRI NOTE: Parses a string literal, staring with single or double quotes
+  // with basic support for escape codes e.g. `"hello world"`, `'this is\nJSEP'`
   gobbleStringLiteral() {
     let str = '';
     let quote = this.exprI(this.index++);
@@ -429,14 +451,14 @@ class ScriptTokenizer {
         str += ch;
       }
     }
-
     if (!closed)
       this.throwError(
         `GobbleStringLiteral: Unclosed quote after "${str}" at ${this.index}`
       );
     return { string: str }; // was: return str;
   }
-  // Gobbles only identifiers
+
+  // SRI NOTE: Gobbles only identifiers
   // e.g.: `foo`, `value`, `$x1`
   // Also, this function checks if that identifier is a literal:
   // (e.g. `true`, `false`, `null`) or `this`
@@ -470,10 +492,8 @@ class ScriptTokenizer {
     return { identifier }; // was: return identifier;
   }
 
-  // Gobble a non-literal variable name. This variable name may include properties
-  // e.g. `foo`, `bar.baz`, `foo['bar'].baz`
-  // It also gobbles function calls:
-  // e.g. `Math.acos(obj.angle)`
+  // SRI NOTE: When an identifier ends with a non-identifier character, check for
+  // the case it's a dotted object ref, an array expression, or a function invocation.
   gobbleParts() {
     let ch_i;
     let node = []; // let node;
@@ -487,7 +507,6 @@ class ScriptTokenizer {
     // note: check for subsequent identifier variations
     // note: identifier check for dot property, array
     this.gobbleSpaces();
-
     ch_i = this.exprICode(this.index);
     // allow dotted variables. removed checks for OPAREN_CODE and OBRACK_CODE
     while (ch_i === PERIOD_CODE) {
@@ -504,16 +523,23 @@ class ScriptTokenizer {
       this.gobbleSpaces();
       ch_i = this.exprICode(this.index);
     }
-    // node is the collection of variable props (dotted)
+    /** GEMSCRIPT HACK ** In GEMSCRIPT an objref is something like 'foo.bar',
+     *  and we want to return the parts so keyword compilers can invoke those
+     *  objects at runtime. This requires a new token { objref } which is an
+     *  array of { string } tokens that are converted into a plain array of
+     *  strings. E.g. foo.bar. is parsed into { objref: [ {string:'foo'},
+     *  {string:'bar'}]. At compile time this is converted to an argument {
+     *  objref: ['foo','bar'])
+     */
     if (node.length === 1) return { token: node[0].identifier };
     return { objref: node }; // was: return node;
   }
 
-  // Responsible for parsing a group of things within parentheses `()`
-  // This function assumes that it needs to gobble the opening parenthesis
-  // and then tries to gobble everything within that parenthesis, assuming
-  // that the next thing it should see is the close parenthesis. If not,
-  // then the expression probably doesn't have a `)`
+  // SRI NOTE: Responsible for parsing a group of things within parentheses `()`
+  // This function assumes that it needs to gobble the opening parenthesis and
+  // then tries to gobble everything within that parenthesis, assuming that the
+  // next thing it should see is the close parenthesis. If not, then the
+  // expression probably doesn't have a `)`
   gobbleGroup() {
     this.index++;
     let node = this.gobbleToken();
@@ -525,9 +551,11 @@ class ScriptTokenizer {
     return this.throwError(`GobbleGroup: Unclosed ( at ${this.index}`);
   }
 
-  /* HACK ADDITION for text script expressions */
-  // in GEMscript text, a {{ }} indicates an expression, and should
-  // be captured as one long string including the {{ }}
+  /** GEMSCRIPT HACK ** In GEMSCRIPT, a {{ }} designates an expression, and the
+   *  contents will be captured as a string. At compile time, the string is
+   *  parsed through jsep to create the parse tree that is stored in code
+   *  so it can be evaluated at runtime
+   */
   gobbleExpressionString() {
     let ch;
     let cch;
@@ -548,11 +576,13 @@ class ScriptTokenizer {
     );
   }
 
-  /* HACK ADDITION for text script tmethod names */
-  // in GEMSCRIPT text, a [[ ]] on a single line designates a
-  // named TMethod. There are several possible locations of the
-  // TMethod such as TESTS or PROGRAMS map; it's up to the keyword
-  // implementor to know which one it is
+  /** GEMSCRIPT HACK ** In GEMSCRIPT text, a [[ ]] on a single line designates a
+   *  'named TMethod' which is invoked like a co-routine. The name is used to
+   *  look-up a TMethod (either an SMC program or regular Javascript function)
+   *  from a Map<string,TMethod>. It is up to the keyword implementor that is
+   *  using inline blocks to know which dictionary to grab the method (e.g.
+   *  the TESTS dictionary or PROGRAMS dictionary)
+   */
   gobbleBlock() {
     let ch;
     let cch;
@@ -586,10 +616,10 @@ class ScriptTokenizer {
     return this.gobbleMultiBlock();
   }
 
-  /** A multiblock is a multi-line block expression. The contents of the block
-   *  is processed line-by-line after an unclosed opening [[ triggers this code,
-   *  and returns a { block:string[] } token for each block found. This block of
-   *  strings will be tokenized later during compilation.
+  /** GEMSCRIPT HACK ** A multiblock spans several lines, but is part of
+   *  a single statement. Usually each line compiles into a single statement
+   *  of type TScriptUnit, but in the case of a multiblock we have to
+   *  recursively tokenize its content into a single { block: } token
    */
   gobbleMultiBlock() {
     // we are here because of an unbalanced [[ so we must scan for closing ]]
@@ -629,21 +659,32 @@ class ScriptTokenizer {
     return this.throwError('GobbleMultiBlock: unclosed [[ in text');
   }
 
-  // HACK ADDITION for COMMENTS
-  // skip the first two // and output the entire rest of the line
+  /** GEMSCRIPT HACK ** A directive is a line that starts with #. We use it for
+   *  our 'pragma' system (e.g. # BLUEPRINT AgentName ParentAgent, # PROGRAM DEFINE)
+   */
+  gobbleDirective() {
+    const nodes = [{ directive: '#' }];
+    this.index++;
+    while (this.index < this.length) {
+      nodes.push(this.gobbleToken());
+    }
+    return nodes;
+  }
+
+  /** GEMSCRIPT HACK ** comments begin with // */
   gobbleComment() {
     const eol = this.line.length;
     const comment = this.line.substring(this.index, eol).trim();
     this.index = eol;
     return { comment }; // comments comment keyword
   }
-  /* END OF HACK HACKS */
 }
 
 /// STATIC METHODS  //////////////////////////////////////////////////////////'
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const scriptifier = new ScriptTokenizer();
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// public instance
 function Tokenize(text) {
   return scriptifier.tokenize(text);
 }
