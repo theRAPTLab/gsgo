@@ -15,7 +15,11 @@ import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent } from 'lib/t-script';
 import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
-import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
+import {
+  GetAgentById,
+  GetAgentsByType,
+  GetAllAgents
+} from 'modules/datacore/dc-agents';
 import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -85,30 +89,51 @@ useFeature AgentWidgets
   UR.RaiseMessage('INJECT_BLUEPRINT', { script: CURSOR_SCRIPT });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// This replaces the `when` script
+
+/**
+ * On every SIM/INPUTS_EXEC
+ * for every Cursor agent, if it hasn't picked up a target already,
+ * and it's touching an agent, then pick it up.
+ */
 function m_UpdateInhabitAgent(frametime) {
   // Handle the inhabiting programmatically
   const cursors = GetAgentsByType('Cursor');
   cursors.find(c => {
     if (c.prop.isInhabitingTarget.value) return false; // cursor already mapped
-    // see if we're touching anyone's center
-    if (c.isTouching) {
-      const targetIds = [...c.isTouching.keys()];
-      const targetId = targetIds.find(id => {
-        // find a target that is touching...
-        if (!c.isTouching.get(id).c2c) return false;
-        // ... AND is not already inhabited
-        const target = GetAgentById(id);
-        if (target.cursor) return false; // already inhabited
-        return true;
-      });
-      if (!targetId) return false;
-      const target = GetAgentById(targetId);
-      target.cursor = c;
-      c.prop.isInhabitingTarget.setTo(true);
+
+    // isTouching is not set yet
+    if (!c.isTouching) return false;
+
+    // who might we be touching?
+    const targetIds = [...c.isTouching.keys()];
+
+    // find a target that cursor is touching...
+    const targetId = targetIds.find(id => {
+      if (!c.isTouching.get(id).c2c) return false; // not touching this target
+
+      // is touching target
+      const target = GetAgentById(id);
+
+      // if target is missing then it was probably removed even though it's still touching
+      if (!target) return false;
+
+      // if target already has cursor, it's already inhabited, so skip it
+      if (target.cursor) return false;
+
+      // found eligible target!
       return true;
+    });
+
+    // not touching anything
+    if (!targetId) return false;
+
+    // found target, set target as inhabitingTarget
+    const target = GetAgentById(targetId);
     }
-    return false;
+
+    target.cursor = c;
+    c.prop.isInhabitingTarget.setTo(true);
+    return true;
   });
 }
 
