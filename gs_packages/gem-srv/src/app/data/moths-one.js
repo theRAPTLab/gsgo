@@ -63,7 +63,7 @@ export const MODEL = {
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'bee.json' 0
+featCall Costume setCostume 'moth.json' 0
 
 // COLOR
 featCall Costume initHSVColorScale 0 0 1 'value' 11
@@ -190,7 +190,6 @@ ifExpr {{ agent.getProp('isInert').value }} [[
   prop alpha sub 1
   prop orientation setTo 3.14
   featProp AgentWidgets text setTo ''
-  featProp Physics scale setTo 0.1
 ]]
 `
     },
@@ -234,8 +233,7 @@ when Predator centerTouchesCenter Moth [[
     //featCall Moth.Movement jitterRotate
     every 0.2 [[
       prop Moth.isInert setTo true
-      featProp Moth.Physics scale setTo 0.1
-      featCall Moth.Costume setCostume 'square.json' 0
+      featCall Moth.Costume setCostume 'smallsquare.json' 0
       prop Moth.alpha setMin 0.1
       prop Moth.alpha sub 1
       prop Moth.orientation setTo 3.14
