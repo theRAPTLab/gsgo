@@ -106,7 +106,7 @@ prop alpha setMin 1
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
 featProp Movement distance setTo 3
-// featCall Movement wanderUntilInside TreeFoliage
+featCall Movement wanderUntilInside TreeFoliage
 
 useFeature Physics
 featProp Physics scale setTo 0.4
