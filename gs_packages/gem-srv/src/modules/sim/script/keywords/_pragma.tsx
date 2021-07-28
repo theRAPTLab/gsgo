@@ -10,7 +10,7 @@
 
 import React from 'react';
 import Keyword from 'lib/class-keyword';
-import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
+import { IAgent, IState, TArguments, TOpcode, TScriptUnit } from 'lib/t-script';
 import { SetBundleOut } from 'modules/datacore/dc-script-bundle';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
 
@@ -43,9 +43,9 @@ export class _pragma extends Keyword {
   }
 
   /** create smc blueprint code objects */
-  compile(unit: TScriptUnit): TOpcode[] {
-    const [kw, pragmaName, ...args] = unit;
-    const pragmatizer = PRAGMA[pragmaName.toUpperCase()];
+  compile(params: TArguments): TOpcode[] {
+    const [kw, pragmaName, ...args] = params;
+    const pragmatizer = PRAGMA[(pragmaName as string).toUpperCase()];
     const program = pragmatizer(...args);
     // the output of the pragmatizer is either a TOpcode,
     // a TOpcode[], boolean, or void.
