@@ -28,6 +28,7 @@ export const MODEL = {
         endScript: `dbgOut 'END Round!'
 
         featCall Population agentsForEach Moth [[
+          featCall agent.Costume setPose 0
           prop alpha setTo 1
           dbgOut {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
           featCall Movement queuePosition 0 0
@@ -78,7 +79,7 @@ featProp Movement useAutoOrientation setTo true
 featProp Movement distance setTo 3
 
 useFeature Physics
-featProp Physics scale setTo 0.4
+featProp Physics scale setTo 0.3
 
 useFeature Touches
 featCall Touches monitor TreeTrunk c2c c2b b2b binb
@@ -139,6 +140,7 @@ every 1 [[
 
 when Moth centerFirstTouches TreeTrunk [[
   featCall Moth.Costume setGlow 2
+  featCall Moth.Costume setPose 2
   prop Moth.energyLevel setTo 50
   prop Moth.energyLevel addRnd 0 20
   prop Moth.moving setTo 0
@@ -146,7 +148,7 @@ when Moth centerFirstTouches TreeTrunk [[
 
 when Moth centerTouches TreeTrunk [[
   ifExpr {{ !Moth.prop.isInert.value }} [[
-    featCall Moth.Costume setPose 4
+    featCall Moth.Costume setPose 2
   ]]
 
   ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.value, TreeTrunk.prop.color.value, 0.2, 1, 0.2)}} [[
@@ -164,6 +166,7 @@ when Moth centerTouches TreeTrunk [[
 
   ifExpr {{ Moth.prop.energyLevel.value < 1 }} [[
     prop moving setTo 1
+    featCall Moth.Costume setPose 0
     featCall Movement setMovementType 'wander' 3
     prop alpha setMin 1
     prop alpha add 1
@@ -173,6 +176,7 @@ when Moth centerTouches TreeTrunk [[
 when Moth lastTouches TreeTrunk [[
   featCall Moth.Movement wanderUntilInside TreeTrunk
   prop Moth.vulnerable setTo 1
+  featCall Moth.Costume setPose 0
   prop Moth.moving setTo 1
 ]]
 
@@ -186,6 +190,7 @@ ifExpr {{ agent.getFeatProp('Movement', 'isMoving').value }} [[
 ]]
 
 ifExpr {{ agent.getProp('isInert').value }} [[
+  featCall Costume setPose 0
   prop alpha setMin 0.1
   prop alpha sub 1
   prop orientation setTo 3.14
@@ -267,9 +272,33 @@ when Predator centerTouchesCenter Moth [[
       useFeature AgentWidgets
       useFeature Movement
 
+      featProp AgentWidgets text setTo ''
+
 
       # PROGRAM INIT
       prop zIndex setTo -200
+
+      # PROGRAM UPDATE
+`
+    },
+    {
+      id: 'TreeFoliage',
+      label: 'TreeFoliage',
+      script: `# BLUEPRINT TreeFoliage
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'circle.json' 0
+      featCall Costume setColorizeHSV 0 .8 0.5
+
+      useFeature Physics
+      useFeature AgentWidgets
+      useFeature Movement
+
+      featProp AgentWidgets text setTo ''
+
+
+      # PROGRAM INIT
+      prop zIndex setTo -500
 
       # PROGRAM UPDATE
 `
@@ -280,31 +309,41 @@ when Predator centerTouchesCenter Moth [[
       id: 1102,
       name: 'TreeTrunk1',
       blueprint: 'TreeTrunk',
-      initScript: `prop x setTo -200
+      initScript: `prop x setTo -250
      prop y setTo -150
-     featCall Costume setColorizeHSV 0 0 0.7
-     featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 3`
-    },
-    {
-      id: 1106,
-      name: 'TreeTrunk2',
-      blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 250
-     prop y setTo -150
-     featCall Costume setColorizeHSV 0 0 0.6
+     featCall Costume setColorizeHSV 0 0 0.75
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 3`
     },
     {
       id: 1104,
-      name: 'TreeTrunk3',
+      name: 'TreeTrunk2',
       blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 100
+      initScript: `prop x setTo 50
       prop y setTo -150
       featCall Costume setColorizeHSV 0 0 0.8
       featProp Physics scale setTo 0.5
       featProp Physics scaleY setTo 3`
+    },
+    {
+      id: 1106,
+      name: 'TreeTrunk3',
+      blueprint: 'TreeTrunk',
+      initScript: `prop x setTo 250
+     prop y setTo -150
+     featCall Costume setColorizeHSV 0 0 0.7
+     featProp Physics scale setTo 0.5
+     featProp Physics scaleY setTo 3`
+    },
+
+    {
+      id: 1107,
+      name: 'TreeFoliage3',
+      blueprint: 'TreeFoliage',
+      initScript: `prop x setTo 0
+     prop y setTo 0
+     featProp Physics scale setTo 0.5
+     `
     },
 
     {
