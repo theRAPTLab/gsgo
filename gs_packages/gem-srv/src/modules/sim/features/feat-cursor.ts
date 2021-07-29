@@ -109,7 +109,8 @@ function m_UpdateInhabitAgent(frametime) {
 
     // find a target that cursor is touching...
     const targetId = targetIds.find(id => {
-      if (!c.isTouching.get(id).c2c) return false; // not touching this target
+      const isTouching = c.isTouching.get(id);
+      if (isTouching && !isTouching.c2c) return false; // not touching this target
 
       // is touching target
       const target = GetAgentById(id);
@@ -129,6 +130,13 @@ function m_UpdateInhabitAgent(frametime) {
 
     // found target, set target as inhabitingTarget
     const target = GetAgentById(targetId);
+
+    if (!target) {
+      console.error(
+        'Cursor: Missing target agent from uncleared isTouching condition.  This should not happen!'
+      );
+      return false; // probably a removed surviving moth
+    }
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
