@@ -54,6 +54,8 @@ function UADDRtoID(uaddr) {
 }
 // "CC340_0" to "340"
 function COBJIDtoID(cobjid) {
+  // pozyx
+  if (cobjid.startsWith('ft-pozyx')) return String(cobjid).substring(8);
   // CharControl
   const re = /([0-9])+/;
   const result = re.exec(cobjid);
