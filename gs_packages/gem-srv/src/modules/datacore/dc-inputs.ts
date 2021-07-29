@@ -144,11 +144,11 @@ function UpdateActiveDevices(changes) {
 /// POZYX DATA UPDATE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const POZYX_TRANSFORM = {
-  scaleX: -0.0002, // -0.0002
-  scaleY: 0.00016, // 0.0003
-  translateX: -4200,
-  translateY: -6000,
-  rotate: 0, // -160
+  scaleX: 0.0003, // -0.0002
+  scaleY: -0.0002, // 0.0003
+  translateX: 1500,
+  translateY: 2250,
+  rotate: 180, // -160
   useAccelerometer: true
 };
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
