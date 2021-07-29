@@ -27,6 +27,13 @@ export const MODEL = {
 
         endScript: `dbgOut 'END Round!'
 
+
+        featCall Population agentsForEach Predator [[
+
+          prop Predator.isInert setTo true
+
+        ]]
+
         featCall Population agentsForEach Moth [[
           featCall agent.Costume setPose 0
           prop alpha setTo 1
@@ -48,7 +55,13 @@ export const MODEL = {
 
         featCall Population agentsForEach TreeTrunk [[
           featProp Physics scale setTo 0.01
-          prop alpha setTo 0
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+        featCall Population agentsForEach TreeFoliage [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
           featCall Movement queuePosition -400 400
         ]]
 `
@@ -139,7 +152,7 @@ every 1 [[
 
 
 when Moth centerFirstTouches TreeTrunk [[
-  featCall Moth.Costume setGlow 2
+  //featCall Moth.Costume setGlow 2
   featCall Moth.Costume setPose 2
   prop Moth.energyLevel setTo 50
   prop Moth.energyLevel addRnd 0 20
@@ -176,6 +189,8 @@ when Moth centerTouches TreeTrunk [[
 when Moth lastTouches TreeTrunk [[
   featCall Moth.Movement wanderUntilInside TreeTrunk
   prop Moth.vulnerable setTo 1
+  prop Moth.alpha setMin 1
+  prop Moth.alpha setTo 1
   featCall Moth.Costume setPose 0
   prop Moth.moving setTo 1
 ]]
@@ -224,6 +239,7 @@ featProp Vision viewAngle setTo 90
 featProp Vision colorHueDetectionThreshold setTo 0.2
 featProp Vision colorValueDetectionThreshold setTo 0.2
 
+useFeature Population
 useFeature Global
 useFeature Timer
 
@@ -298,7 +314,7 @@ when Predator centerTouchesCenter Moth [[
 
 
       # PROGRAM INIT
-      prop zIndex setTo -500
+      prop zIndex setTo 0
 
       # PROGRAM UPDATE
 `
@@ -309,40 +325,64 @@ when Predator centerTouchesCenter Moth [[
       id: 1102,
       name: 'TreeTrunk1',
       blueprint: 'TreeTrunk',
-      initScript: `prop x setTo -250
-     prop y setTo -150
+      initScript: `
+      featCall Movement queuePosition -250 50
      featCall Costume setColorizeHSV 0 0 0.75
      featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 3`
+     featProp Physics scaleY setTo 2.7`
+    },
+    {
+      id: 1103,
+      name: 'TreeFoliage1',
+      blueprint: 'TreeFoliage',
+      initScript: `
+     featCall Movement queuePosition -250 -342
+     featCall Costume setColorize 0.3 0.9 0.2
+     featProp Physics scale setTo 1.1
+     featProp Physics scaleY setTo 0.4
+     `
     },
     {
       id: 1104,
       name: 'TreeTrunk2',
       blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 50
-      prop y setTo -150
+      initScript: `
+      featCall Movement queuePosition 50 50
       featCall Costume setColorizeHSV 0 0 0.8
       featProp Physics scale setTo 0.5
-      featProp Physics scaleY setTo 3`
+      featProp Physics scaleY setTo 2.7`
+    },
+    {
+      id: 1105,
+      name: 'TreeFoliage2',
+      blueprint: 'TreeFoliage',
+      initScript: `
+     featCall Movement queuePosition 50 -342
+     featCall Costume setColorize 0.3 0.9 0.2
+     featProp Physics scale setTo 1.1
+     featProp Physics scaleY setTo 0.4
+     `
     },
     {
       id: 1106,
       name: 'TreeTrunk3',
       blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 250
-     prop y setTo -150
+      initScript: `
+    featCall Movement queuePosition 250 50
      featCall Costume setColorizeHSV 0 0 0.7
      featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 3`
+     featProp Physics scaleY setTo 2.7`
     },
 
     {
       id: 1107,
       name: 'TreeFoliage3',
       blueprint: 'TreeFoliage',
-      initScript: `prop x setTo 0
-     prop y setTo 0
-     featProp Physics scale setTo 0.5
+      initScript: `
+     featCall Movement queuePosition 250 -342
+     featCall Costume setColorize 0.3 0.9 0.2
+     featProp Physics scale setTo 1.1
+     featProp Physics scaleY setTo 0.4
      `
     },
 
