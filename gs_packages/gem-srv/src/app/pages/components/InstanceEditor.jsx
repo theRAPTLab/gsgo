@@ -98,8 +98,8 @@ class InstanceEditor extends React.Component {
     let { agentId } = this.state;
     if (!agentId) {
       const { instance } = this.props;
-      const agent = GetAgentByName(instance.name);
-      agentId = agent.id;
+      if (!instance) throw new Error('InstanceEditor instance not defined yet');
+      agentId = instance.id; // instance id should match agent id
       this.setState({ agentId });
     }
     return agentId;
