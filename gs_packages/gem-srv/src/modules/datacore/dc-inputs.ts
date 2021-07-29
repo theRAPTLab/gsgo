@@ -54,8 +54,11 @@ function UADDRtoID(uaddr) {
 }
 // "CC340_0" to "340"
 function COBJIDtoID(cobjid) {
-  const re = /([0-9])+\B/;
-  // console.log(re.exec(cobjid));
+  // CharControl
+  const re = /([0-9])+/;
+  const result = re.exec(cobjid);
+  if (result === null)
+    throw new Error(`dc-inputs: Unable to retrieve id of ${cobjid}`);
   return re.exec(cobjid)[0];
 }
 // "CC340_0" to "340_0"
