@@ -109,7 +109,7 @@ function m_Clear(agent: IAgent) {
 
 /// Center to Center
 function m_TouchesC2C(a: IAgent, b: IAgent) {
-  return DistanceTo(a, b) < 10;
+  return DistanceTo(a, b) < 15;
 }
 /// Center to Bounds
 function m_TouchesC2B(a: IAgent, b: IAgent) {
