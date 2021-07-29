@@ -283,7 +283,9 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.y = y;
     // HACK Blueprints into cobj
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = entity.id.substring(entity.id.length - 4);
+    cobj.name = String(entity.id).startsWith('ft-pozyx')
+      ? entity.id.substring(8)
+      : entity.id;
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
@@ -297,7 +299,9 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.x = pos.x;
     cobj.y = pos.y;
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = entity.id.substring(entity.id.length - 4);
+    cobj.name = String(entity.id).startsWith('ft-pozyx')
+      ? entity.id.substring(8)
+      : entity.id;
   },
   shouldRemove: cobj => false
   // Inputs do not necessarily come in with every INPUTS phase fire
