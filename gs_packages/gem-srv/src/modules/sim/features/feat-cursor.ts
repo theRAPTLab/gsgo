@@ -129,7 +129,6 @@ function m_UpdateInhabitAgent(frametime) {
 
     // found target, set target as inhabitingTarget
     const target = GetAgentById(targetId);
-    }
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
