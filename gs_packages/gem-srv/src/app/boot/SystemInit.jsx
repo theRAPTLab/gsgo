@@ -83,7 +83,6 @@ function Init() {
           // at this time, the shell should be completely renderered
           // but componentDidMount() happens AFTER the first render
           // to guarantees that the DOM is stable
-          UR.addConsoleTools();
           console.log(...AR('APP: <SystemShell> React+UR lifecycles starting'));
         }
       );
@@ -96,12 +95,6 @@ function Init() {
     document.location.reload();
   });
 }
-/// PHASE MACHINE INTERFACE ///////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/NET_READY', () => {
-  /// console debugger message listeners
-  UR.addConsoleToolHandlers();
-});
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
