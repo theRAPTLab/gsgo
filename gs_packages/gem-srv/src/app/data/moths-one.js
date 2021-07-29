@@ -30,8 +30,8 @@ export const MODEL = {
 
         featCall Population agentsForEach Predator [[
 
-          prop Predator.isInert setTo true
-
+          prop agent.isInert setTo true
+          featCall Movement queuePosition -400 -400
         ]]
 
         featCall Population agentsForEach Moth [[
@@ -153,6 +153,7 @@ every 1 [[
 
 when Moth centerFirstTouches TreeTrunk [[
   //featCall Moth.Costume setGlow 2
+  //featCall Movement setMovementType 'static'  //this works, but the moths don't get fully inside
   featCall Moth.Costume setPose 2
   prop Moth.energyLevel setTo 50
   prop Moth.energyLevel addRnd 0 20
