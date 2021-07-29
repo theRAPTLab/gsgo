@@ -58,7 +58,8 @@ const style = new PIXI.TextStyle({
   fontSize: 18,
   fontWeight: 'bold',
   fill: ['#ffffffcc'],
-  stroke: '#ffffff'
+  stroke: '#333333cc',
+  strokeThickness: 3
 });
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
