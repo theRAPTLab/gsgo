@@ -117,11 +117,11 @@ function m_ForwardTrackerData(json) {
  */
 function m_BindPTrackListener() {
   /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
-    host  - tracker computer, originating host of group traffic (optional?)
-            BL: leave host commented-out so node will listen to all addresses
-    group - special ip address for LAN multicast for all multicasters
-            (may not need to join it explicitly)
-  :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
+            host  - tracker computer, originating host of group traffic (optional?)
+                    BL: leave host commented-out so node will listen to all addresses
+            group - special ip address for LAN multicast for all multicasters
+                    (may not need to join it explicitly)
+          :*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*/
   let mc = {
     // host: '127.0.0.1',
     port: PT_UPORT,
@@ -327,9 +327,13 @@ function m_BindPozyxListener() {
   // 	port: 1883,
   // });
 
+  //UNCOMMENT THIS TO ALLOW LOCALHOST for the mqtt broker to run locallly (replay of pozyx streams)
+  mtrack_ss = mqtt.connect('mqtt://10.0.0.254', { port: 1883 }); // Enterprise server "via uplink network" works
+
   // FIXME: Allow different hosts if Pozyx tracker is running on different machine.
   //        This is currently Ben's Campbell Enterprise server's "uplink network" IP
-  mtrack_ss = mqtt.connect('mqtt://10.0.0.254', { port: 1883 }); // Enterprise server "via uplink network" works
+  //mtrack_ss = mqtt.connect('mqtt://10.1.10.185', { port: 1883 }); // Enterprise server "via uplink network" works
+  // port 1883 is tcp (not udp)
 
   mtrack_ss.on('connect', () => {
     console.log(...PR('1883 MQTT Connect'));
