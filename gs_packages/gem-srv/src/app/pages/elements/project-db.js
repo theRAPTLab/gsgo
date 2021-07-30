@@ -21,7 +21,7 @@ import { MODEL as DecompositionModel } from '../../data/decomposition';
 import { MODEL as MothsModel } from '../../data/moths';
 import { MODEL as MothsTwoModel } from '../../data/mothstwo';
 import { MODEL as MothsTestModel } from '../../data/mothstest';
-import { MODEL as MothsTestCModel } from '../../data/mothstestc';
+import { MODEL as MothsActTwo } from '../../data/moths-two';
 import { MODEL as MothsSandbox } from '../../data/moths-sandbox';
 import { MODEL as IUSandbox } from '../../data/iu-sandbox';
 import { MODEL as SaltModel } from '../../data/salt';
@@ -60,7 +60,7 @@ export function ReadProjectsList() {
     { id: 'moths', label: 'Moths' },
     { id: 'mothstwo', label: 'Moths Test Act A' },
     { id: 'mothstest', label: 'Moths Test Act B' },
-    { id: 'mothstestc', label: 'Moths Test Act C' },
+    { id: 'moths-two', label: 'Moths Act Two' },
     { id: 'moths-sandbox', label: 'Moths Sandbox' },
     { id: 'iu-sandbox', label: 'IU Sandbox' },
     { id: 'salt', label: 'Salt' },
@@ -90,8 +90,8 @@ export function ReadProject(modelId) {
     case 'mothstest':
       model = MothsTestModel;
       break;
-    case 'mothstestc':
-      model = MothsTestCModel;
+    case 'moths-two':
+      model = MothsActTwo;
       break;
     case 'moths-sandbox':
       model = MothsSandbox;

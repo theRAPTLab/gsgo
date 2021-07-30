@@ -109,6 +109,11 @@
       "assetId": 211,
       "assetName": "worm.json",
       "assetUrl": "static/sprites/local/worm.json"
+    },
+    {
+      "assetId": 212,
+      "assetName": "smallsquare.json",
+      "assetUrl": "static/sprites/local/smallsquare.json"
     }
   ],
   "READ_ME": [
