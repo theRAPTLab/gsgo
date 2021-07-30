@@ -546,7 +546,6 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'Predator',
       initScript: `
       featCall Movement queuePosition -300 -300
-      prop orientation setTo 7.28
       `
     },
     {
@@ -555,7 +554,6 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'Predator',
       initScript: `
       featCall Movement queuePosition 300 -300
-      prop orientation setTo 2.14
       `
     }
   ]
