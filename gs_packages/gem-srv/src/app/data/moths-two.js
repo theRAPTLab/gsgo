@@ -306,7 +306,7 @@ when Predator centerTouchesCenter Moth [[
       name: 'Grass',
       blueprint: 'Grass',
       initScript: `
-    featCall Movement queuePosition 0 250
+    featCall Movement queuePosition 0 251
      featCall Costume setColorize 0.1 0.8 0
      featProp Physics scale setTo 3.1
      featProp Physics scaleY setTo 2`
