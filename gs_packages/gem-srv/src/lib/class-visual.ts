@@ -209,7 +209,11 @@ class Visual implements IVisual, IPoolable, IActable {
       this.filterAdjustment = undefined;
       return;
     }
+<<<<<<< HEAD
 
+=======
+    //if (this.filterColor === color) return; // color hasn't changed, skip update
+>>>>>>> coreyacttwo
     // Don't cache color.  Always update color because vobjs are not reset during RESET Stage
     // if (this.filterColor === color) return; // color hasn't changed, skip update
 

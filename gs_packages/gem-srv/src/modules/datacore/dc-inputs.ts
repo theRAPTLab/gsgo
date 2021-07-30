@@ -141,16 +141,33 @@ function UpdateActiveDevices(changes) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
+/// POZYX DATA UPDATE  FOR VU/////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const POZYX_TRANSFORM = {
   scaleX: -0.0002, // -0.0002
   scaleY: 0.00016, // 0.0003
+<<<<<<< HEAD
   translateX: -4200,
   translateY: -6000,
   rotate: 0, // -160
+=======
+  translateX: -4200, //0
+  translateY: -6000, //0
+  rotate: 0, // -160
   useAccelerometer: true
 };
+
+/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* export const POZYX_TRANSFORM = {
+  scaleX: -0.0002, // -0.0002
+  scaleY: 0.0003, // 0.0003
+  translateX: 0,
+  translateY: 0,
+  rotate: -160, // -160
+>>>>>>> coreyacttwo
+  useAccelerometer: true
+}; */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PozyxTransform(position: {
   x: number;
@@ -269,7 +286,10 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.y = y;
     // HACK Blueprints into cobj
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = entity.id.substring(entity.id.length - 4);
+    //cobj.name = entity.id.substring(entity.id.length - 4);
+    //last two digits of the pozyx id.
+    let len = entity.id.length;
+    cobj.name = entity.id.substring(len - 2, len);
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
