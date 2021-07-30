@@ -150,7 +150,8 @@ RegisterFunction('isInside', (a, b) => {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_FirstTouchTest(a, b, touchType) {
   // make sure both objects have the Physics feature
-  if (!a.hasFeature('Physics') || !b.hasFeature('Physics')) return false;
+  if (!a.hasFeature('Physics') || !b.hasFeature('Physics'))
+    throw new Error('First Touches test needs both agents to have Physics!');
   const isTouching = a.isTouching ? a.isTouching.get(b.id) : false;
   const wasTouching = a.lastTouched ? a.lastTouched.get(b.id) : false;
   // They were not touching, but now they are, so this is first touch
@@ -209,7 +210,9 @@ RegisterFunction('doesNotSee', (a, b) => {
 RegisterFunction('seesCamouflaged', (a, b) => {
   // checks if b's color relative to its background is visible to a
   // AND the color range is outside of the detectableRange
-  return a.canSeeColor ? a.canSeeColor.get(b.id) : false;
+  const canSeeCone = a.canSeeCone ? !a.canSeeCone.get(b.id) : true;
+  const canSeeColor = a.canSeeColor ? a.canSeeColor.get(b.id) : false;
+  return canSeeCone && canSeeColor;
 });
 
 /// LIFECYCLE METHODS /////////////////////////////////////////////////////////

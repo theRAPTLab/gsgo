@@ -160,7 +160,6 @@ class GAgent extends SM_Object implements IAgent, IActable {
     return this.prop.orientation.value;
   }
   set visible(bool: boolean) {
-    console.error('set visible ', bool);
     this.prop.visible.setTo(bool);
   }
   get visible() {

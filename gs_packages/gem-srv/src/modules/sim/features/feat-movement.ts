@@ -47,8 +47,10 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
-const MOVEDISTANCE = 1; // Minimum distance moved before `isMoved` is registered
+const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
 // This is necessary to account for input jitter
+// 1 is too quirky
+// 5 seems too high for predator bees
 
 /// Movement Agent Manager
 const MOVEMENT_AGENTS = new Map();
@@ -444,8 +446,8 @@ function m_FeaturesThinkSeek(frame) {
     //    Sorted by distance
     const nearAgents = m_FindNearbyAgents(agent, options.targetType);
     const target = nearAgents.find(near => {
-      // 2. Find first agent within the cone
-      if (near) {
+      // 2. Find first active (non-inert) agent within the cone
+      if (near && !near.isInert) {
         if (options.useVisionColor) {
           // console.log('...canSeeColor', near.id, agent.canSeeColor.get(near.id));
           return agent.canSeeColor.get(near.id);
@@ -554,7 +556,8 @@ class MovementPack extends GFeature {
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
-    this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
+    this.featAddMethod('seekNearestVisibleCone', this.seekNearestVisibleCone);
+    this.featAddMethod('seekNearestVisibleColor', this.seekNearestVisibleColor);
     this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
   }
 
