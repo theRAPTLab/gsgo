@@ -316,7 +316,7 @@ when Predator centerTouchesCenter Moth [[
       name: 'TreeTrunk1',
       blueprint: 'TreeTrunk',
       initScript: `
-      featCall Movement queuePosition -250 -140
+      featCall Movement queuePosition -250 -145
      featCall Costume setColorizeHSV 0 0 0.75
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 2`
@@ -326,7 +326,7 @@ when Predator centerTouchesCenter Moth [[
       name: 'TreeTrunk2',
       blueprint: 'TreeTrunk',
       initScript: `
-      featCall Movement queuePosition 50 -140
+      featCall Movement queuePosition 50 -145
       featCall Costume setColorizeHSV 0 0 0.8
       featProp Physics scale setTo 0.5
       featProp Physics scaleY setTo 2`
@@ -336,7 +336,7 @@ when Predator centerTouchesCenter Moth [[
       name: 'TreeTrunk3',
       blueprint: 'TreeTrunk',
       initScript: `
-    featCall Movement queuePosition 250 -140
+    featCall Movement queuePosition 250 -145
      featCall Costume setColorizeHSV 0 0 0.7
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 2`
