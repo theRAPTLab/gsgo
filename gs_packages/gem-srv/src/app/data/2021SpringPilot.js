@@ -113,7 +113,7 @@ when Fish touches Algae [[
     ]]
 
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
-      prop Algae.alpha setTo 0.3
+      prop Algae.alpha setTo 0.2
       prop Algae.isInert setTo true
 
       //exprPush {{ 'xx' }}
@@ -195,8 +195,8 @@ featCall Touches monitor Fish b2b
 featCall Touches monitor Sunbeam b2b
 
 // This is so that the numbers don't suddenly change at start and confusing things
-// exprPush {{ '##' }}
-// featPropPop AgentWidgets text
+exprPush {{ '' }}
+featPropPop AgentWidgets text
 //featCall AgentWidgets bindTextTo energyLevel
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
