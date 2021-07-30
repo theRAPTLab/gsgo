@@ -142,7 +142,10 @@ class PixiAssetManager {
           const [assetName, rsrc] = kv;
           const assetId = this._tex_dict.get(assetName);
           if (assetId === undefined) {
-            if (DBG) console.log(...PR(`[${i}] '${assetName}' aux asset`));
+            if (DBG)
+              console.log(
+                ...PR(`[${i}] '${assetName}' aux asset (part of main asset)`)
+              );
             return;
           }
           this._textures.set(assetId, rsrc);

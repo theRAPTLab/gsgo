@@ -12,14 +12,13 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from '../../modules/sim/api-sim';
-import * as GLOBAL from '../../modules/datacore/dc-globals';
+import * as ASSETS from '../../modules/asset_core';
 import * as DATACORE from '../../modules/datacore';
 import * as RENDERER from '../../modules/render/api-render';
 import * as TRANSPILER from '../../modules/sim/script/transpiler';
 import * as Prism from '../../lib/vendor/prism';
 import { CodeJar } from '../../lib/vendor/codejar';
 import '../../lib/vendor/prism.css';
-
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-styles';
 
@@ -30,7 +29,7 @@ import { useStylesHOC } from './elements/page-styles';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('APP');
-const DBG = false;
+const DBG = true;
 
 /// HARDCODED SCRIPT TEXT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,11 +43,12 @@ UR.HookPhase(
     new Promise((resolve, reject) => {
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
-        let map = await GLOBAL.LoadAssetsSync('static/assets.json');
+        // (1) The old asset manager routine
+        // let map = await GLOBAL.LoadAssetsSync('static/assets.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         console.log(...PR('Waiting for user input'));
-        // SIM.Start();
-        // if (DBG) console.log(...PR('SIMULATION STARTED'));
+        // (2) the new asset manager routine
+        ASSETS.PromiseLoadManifest('static/assets.json');
         resolve();
       })();
     })

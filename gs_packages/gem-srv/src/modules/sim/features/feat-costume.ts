@@ -12,10 +12,11 @@ import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
-import { GetSpriteDimensions, GetTextureInfo } from 'modules/datacore/dc-globals';
+import { GetAssetManager } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
 
+///
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('FeatCostume');
@@ -23,6 +24,7 @@ const DBG = false;
 let COUNTER = 0;
 
 const COSTUME_AGENTS = new Map();
+const SPRITE = GetAssetManager('sprites');
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 
@@ -177,7 +179,8 @@ class CostumePack extends GFeature {
    */
   setCostume(agent: IAgent, costumeName: string, poseName: string | Number) {
     agent.getFeatProp(this.name, 'costumeName').value = costumeName;
-    const { frameCount } = GetTextureInfo(costumeName);
+    console.log('SET COSTUME', costumeName);
+    const { frameCount } = SPRITE.getTextureInfo(costumeName);
     if (poseName !== undefined) {
       const cf = agent.getFeatProp(this.name, 'currentFrame') as GVarNumber;
       cf.value = poseName;
@@ -312,7 +315,7 @@ class CostumePack extends GFeature {
   getBounds(agent: IAgent): { w: number; h: number } {
     const costumeName = agent.getProp('skin').value;
     const frame = agent.getFeatProp('Costume', 'currentFrame').value || 0;
-    const { w, h } = GetSpriteDimensions(costumeName, frame);
+    const { w, h } = SPRITE.getSpriteDimensions(costumeName, frame);
     return { w, h };
   }
   getScaledBounds(agent: IAgent): { w: number; h: number } {

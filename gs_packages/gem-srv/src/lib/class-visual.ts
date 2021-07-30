@@ -32,7 +32,8 @@ import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
-import * as GLOBAL from 'modules/datacore/dc-globals';
+// import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as ASSETS from 'modules/asset_core';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-script';
@@ -60,6 +61,8 @@ const style = new PIXI.TextStyle({
   fill: ['#ffffffcc'],
   stroke: '#ffffff'
 });
+// replacement for GLOBAL sprite
+const SPRITES = ASSETS.GetAssetManager('sprites');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -162,7 +165,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = GLOBAL.GetAssetById(assetId);
+    const rsrc = SPRITES.getAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
     this.assetId = assetId;
@@ -170,17 +173,11 @@ class Visual implements IVisual, IPoolable, IActable {
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const rsrc: PIXI.LoaderResource = GLOBAL.GetAsset(name);
-    if (rsrc === undefined) {
-      console.log(`ERR: couldn't find resource '${name}'`);
-      (window as any).DC = DATACORE;
-      (window as any).GLOB = GLOBAL;
-      return;
-    }
+    const { rsrc } = SPRITES.getAsset(name);
     // is this a spritesheet?
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
-    this.assetId = GLOBAL.LookupAssetId(name);
+    this.assetId = SPRITES.lookupAssetId(name);
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
