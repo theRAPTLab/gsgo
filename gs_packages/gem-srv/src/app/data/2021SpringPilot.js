@@ -178,6 +178,9 @@ addProp spawns Boolean 0
 
 featCall Costume setCostume 'algae.json' 0
 
+// show meter immediately
+featCall AgentWidgets bindMeterTo energyLevel
+
 addProp energyLevel Number 100
 prop energyLevel setMax 100
 prop energyLevel setMin 0
@@ -192,8 +195,8 @@ featCall Touches monitor Fish b2b
 featCall Touches monitor Sunbeam b2b
 
 // This is so that the numbers don't suddenly change at start and confusing things
-exprPush {{ '##' }}
-featPropPop AgentWidgets text
+// exprPush {{ '##' }}
+// featPropPop AgentWidgets text
 //featCall AgentWidgets bindTextTo energyLevel
 
 // disabled algae wander because the hack of putting algae off to the side is wonky with it
@@ -212,8 +215,8 @@ when Algae touches Sunbeam [[
       propPop energyLevel
 
     // update name
-    exprPush {{ agent.getProp('energyLevel').value }}
-    featPropPop AgentWidgets text
+    // exprPush {{ agent.getProp('energyLevel').value }}
+   // featPropPop AgentWidgets text
 
     // if Spawning is active, create more algae when we hit 100
     ifExpr {{ agent.getProp('spawns').value }} [[
@@ -239,14 +242,14 @@ every 1 runAtStart [[
   ]]
 
   // update name to reflect the new energy level if it is above 0
-  ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
-  exprPush {{ agent.getProp('energyLevel').value }}
-  featPropPop AgentWidgets text]]
+ // ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
+ // exprPush {{ agent.getProp('energyLevel').value }}
+ // featPropPop AgentWidgets text]]
 
 // if the energy level is 0, change name to xx
 ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
-  exprPush {{ 'xx' }}
-  featPropPop AgentWidgets text
+  // exprPush {{ 'xx' }}
+  // eatPropPop AgentWidgets text
   prop agent.alpha setTo 0.3
   prop isInert setTo true
 ]]
@@ -268,7 +271,7 @@ featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.5
 
-addProp speed Number 10
+addProp speed Number 20
 addProp energyRate Number 5
 addProp direction Number 1
 
