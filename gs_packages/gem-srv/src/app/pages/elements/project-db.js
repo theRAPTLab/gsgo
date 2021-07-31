@@ -19,13 +19,10 @@ import { MODEL as SpringPilot } from '../../data/2021SpringPilot';
 import { MODEL as AquaticModel } from '../../data/aquatic';
 import { MODEL as DecompositionModel } from '../../data/decomposition';
 import { MODEL as MothsModel } from '../../data/moths';
-<<<<<<< HEAD
 import { MODEL as MothsOneModel } from '../../data/moths-one';
-=======
 import { MODEL as MothsTwoModel } from '../../data/mothstwo';
 import { MODEL as MothsTestModel } from '../../data/mothstest';
 import { MODEL as MothsActTwo } from '../../data/moths-two';
->>>>>>> coreyacttwo
 import { MODEL as MothsSandbox } from '../../data/moths-sandbox';
 import { MODEL as IUSandbox } from '../../data/iu-sandbox';
 import { MODEL as SaltModel } from '../../data/salt';
@@ -62,13 +59,10 @@ export function ReadProjectsList() {
     { id: 'aquatic', label: 'Aquatic Ecosystems' },
     { id: 'decomposition', label: 'Decomposition' },
     { id: 'moths', label: 'Moths' },
-<<<<<<< HEAD
     { id: 'moths-one', label: 'Moths Act One' },
-=======
     { id: 'mothstwo', label: 'Moths Test Act A' },
     { id: 'mothstest', label: 'Moths Test Act B' },
     { id: 'moths-two', label: 'Moths Act Two' },
->>>>>>> coreyacttwo
     { id: 'moths-sandbox', label: 'Moths Sandbox' },
     { id: 'iu-sandbox', label: 'IU Sandbox' },
     { id: 'salt', label: 'Salt' },
@@ -92,10 +86,9 @@ export function ReadProject(modelId) {
     case 'moths':
       model = MothsModel;
       break;
-<<<<<<< HEAD
     case 'moths-one':
       model = MothsOneModel;
-=======
+      break;
     case 'mothstwo':
       model = MothsTwoModel;
       break;
@@ -104,7 +97,6 @@ export function ReadProject(modelId) {
       break;
     case 'moths-two':
       model = MothsActTwo;
->>>>>>> coreyacttwo
       break;
     case 'moths-sandbox':
       model = MothsSandbox;

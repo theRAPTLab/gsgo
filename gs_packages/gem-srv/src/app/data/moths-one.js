@@ -104,8 +104,8 @@ addProp colorIndx Number 5
 prop colorIndx setMax 11
 prop colorIndx setMin 0
 
-addProp energyLevel Number 30
-prop energyLevel addRnd 10 30
+addProp energyLevel Number 0
+prop energyLevel addRnd 0 10
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 

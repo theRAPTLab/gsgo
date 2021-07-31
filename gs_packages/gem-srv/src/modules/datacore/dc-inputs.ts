@@ -146,11 +146,9 @@ function UpdateActiveDevices(changes) {
 export const POZYX_TRANSFORM = {
   scaleX: -0.0002, // -0.0002
   scaleY: 0.00016, // 0.0003
-<<<<<<< HEAD
   translateX: -4200,
   translateY: -6000,
   rotate: 0, // -160
-=======
   translateX: -4200, //0
   translateY: -6000, //0
   rotate: 0, // -160
@@ -165,7 +163,6 @@ export const POZYX_TRANSFORM = {
   translateX: 0,
   translateY: 0,
   rotate: -160, // -160
->>>>>>> coreyacttwo
   useAccelerometer: true
 }; */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
