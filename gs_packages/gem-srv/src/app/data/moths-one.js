@@ -51,9 +51,9 @@ export const MODEL = {
             featCall agent.Costume setPose 0
             prop alpha setTo 1
             featCall Movement queuePosition 0 0
-            exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
+            exprPush {{ -420 + ( agent.getProp('colorIndx').value  * 70 ) }}
             propPop x
-            prop y setTo -185
+            prop y setTo -200
             prop y addRnd -150 150
             featCall Movement jitterPos -2 2
           ]]
@@ -64,9 +64,9 @@ export const MODEL = {
             featCall agent.Costume setPose 0
             prop alpha setTo 1
             featCall Movement queuePosition 0 0
-            exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
+            exprPush {{ -420 + ( agent.getProp('colorIndx').value  * 70 ) }}
             propPop x
-            prop y setTo 175
+            prop y setTo 200
             prop y addRnd -150 150
             featCall Movement jitterPos -2 2
           ]]
@@ -369,7 +369,7 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition -250 50
-     featCall Costume setColorizeHSV 0 0 0.75
+     featCall Costume setColorizeHSV 0 0 0.66
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 2.7`
     },
@@ -390,7 +390,7 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition 50 50
-      featCall Costume setColorizeHSV 0 0 0.8
+      featCall Costume setColorizeHSV 0 0 0.68
       featProp Physics scale setTo 0.5
       featProp Physics scaleY setTo 2.7`
     },
@@ -411,7 +411,7 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
     featCall Movement queuePosition 250 50
-     featCall Costume setColorizeHSV 0 0 0.7
+     featCall Costume setColorizeHSV 0 0 0.67
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 2.7`
     },
@@ -428,17 +428,17 @@ when Predator centerTouchesCenter Moth [[
      `
     },
 
-    {
-      id: 1202,
-      name: 'Moth2a',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -280 0
-      featProp Costume colorScaleIndex setTo 2
-      featPropPush Costume colorScaleIndex
-      featPropPop AgentWidgets text
-      prop colorIndx setTo 2
-`
-    },
+    //     {
+    //       id: 1202,
+    //       name: 'Moth2a',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -280 0
+    //       featProp Costume colorScaleIndex setTo 2
+    //       featPropPush Costume colorScaleIndex
+    //       featPropPop AgentWidgets text
+    //       prop colorIndx setTo 2
+    // `
+    //     },
     {
       id: 1203,
       name: 'Moth3a',
@@ -516,17 +516,17 @@ when Predator centerTouchesCenter Moth [[
       prop colorIndx setTo 9
 `
     },
-    {
-      id: 12021,
-      name: 'Moth2b',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -280 -100
-      featProp Costume colorScaleIndex setTo 2
-      featPropPush Costume colorScaleIndex
-      featPropPop AgentWidgets text
-      prop colorIndx setTo 2
-`
-    },
+    //     {
+    //       id: 12021,
+    //       name: 'Moth2b',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -280 -100
+    //       featProp Costume colorScaleIndex setTo 2
+    //       featPropPush Costume colorScaleIndex
+    //       featPropPop AgentWidgets text
+    //       prop colorIndx setTo 2
+    // `
+    //     },
     {
       id: 12031,
       name: 'Moth3b',
@@ -604,17 +604,17 @@ when Predator centerTouchesCenter Moth [[
       prop colorIndx setTo 9
 `
     },
-    {
-      id: 12022,
-      name: 'Moth2c',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -280 100
-      featProp Costume colorScaleIndex setTo 2
-      featPropPush Costume colorScaleIndex
-      featPropPop AgentWidgets text
-      prop colorIndx setTo 2
-`
-    },
+    //     {
+    //       id: 12022,
+    //       name: 'Moth2c',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -280 100
+    //       featProp Costume colorScaleIndex setTo 2
+    //       featPropPush Costume colorScaleIndex
+    //       featPropPop AgentWidgets text
+    //       prop colorIndx setTo 2
+    // `
+    //     },
     {
       id: 12032,
       name: 'Moth3c',
@@ -692,17 +692,17 @@ when Predator centerTouchesCenter Moth [[
       prop colorIndx setTo 9
 `
     },
-    {
-      id: 12023,
-      name: 'Moth2d',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition -280 200
-      featProp Costume colorScaleIndex setTo 2
-      featPropPush Costume colorScaleIndex
-      featPropPop AgentWidgets text
-      prop colorIndx setTo 2
-`
-    },
+    //     {
+    //       id: 12023,
+    //       name: 'Moth2d',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition -280 200
+    //       featProp Costume colorScaleIndex setTo 2
+    //       featPropPush Costume colorScaleIndex
+    //       featPropPop AgentWidgets text
+    //       prop colorIndx setTo 2
+    // `
+    //     },
     {
       id: 12033,
       name: 'Moth3d',

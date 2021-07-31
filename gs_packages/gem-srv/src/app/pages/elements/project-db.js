@@ -55,17 +55,16 @@ function m_FixInstanceIds(model) {
 /// Read and return list of projects from db.
 export function ReadProjectsList() {
   return [
-    { id: 'pilot', label: 'Spring 2021 Pilot' },
-    { id: 'aquatic', label: 'Aquatic Ecosystems' },
-    { id: 'decomposition', label: 'Decomposition' },
-    { id: 'moths', label: 'Moths' },
+    //{ id: 'pilot', label: 'Spring 2021 Pilot' },
+    //{ id: 'aquatic', label: 'Aquatic Ecosystems' },
+    //{ id: 'decomposition', label: 'Decomposition' },
+    //{ id: 'moths', label: 'Moths' },
     { id: 'moths-one', label: 'Moths Act One' },
+    { id: 'moths-two', label: 'Moths Act Two' },
     { id: 'mothstwo', label: 'Moths Test Act A' },
     { id: 'mothstest', label: 'Moths Test Act B' },
-    { id: 'moths-two', label: 'Moths Act Two' },
-    { id: 'moths-sandbox', label: 'Moths Sandbox' },
-    { id: 'iu-sandbox', label: 'IU Sandbox' },
-    { id: 'salt', label: 'Salt' },
+    //{ id: 'iu-sandbox', label: 'IU Sandbox' },
+    //{ id: 'salt', label: 'Salt' },
     { id: 'bees', label: 'Bees' }
   ];
 }
