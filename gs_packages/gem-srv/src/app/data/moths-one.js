@@ -34,17 +34,45 @@ export const MODEL = {
           featCall Movement queuePosition -400 -400
         ]]
 
+        // featCall Population agentsForEach Moth [[
+        //   featCall agent.Costume setPose 0
+        //   prop alpha setTo 1
+        //   dbgOut {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
+        //   featCall Movement queuePosition 0 0
+        //   exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
+        //   propPop x
+        //   prop y setTo 0
+        //   prop y addRnd -300 300
+        //   featCall Movement jitterPos -2 2
+        // ]]
+
         featCall Population agentsForEach Moth [[
-          featCall agent.Costume setPose 0
-          prop alpha setTo 1
-          dbgOut {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
-          featCall Movement queuePosition 0 0
-          exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
-          propPop x
-          prop y setTo 0
-          prop y addRnd -300 300
-          featCall Movement jitterPos -2 2
+          ifExpr {{ !agent.getProp('isInert').value }} [[
+            featCall agent.Costume setPose 0
+            prop alpha setTo 1
+            featCall Movement queuePosition 0 0
+            exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
+            propPop x
+            prop y setTo -185
+            prop y addRnd -150 150
+            featCall Movement jitterPos -2 2
+          ]]
         ]]
+
+        featCall Population agentsForEach Moth [[
+          ifExpr {{ agent.getProp('isInert').value }} [[
+            featCall agent.Costume setPose 0
+            prop alpha setTo 1
+            featCall Movement queuePosition 0 0
+            exprPush {{ -350 + ( agent.getProp('colorIndx').value  * 70 ) }}
+            propPop x
+            prop y setTo 175
+            prop y addRnd -150 150
+            featCall Movement jitterPos -2 2
+          ]]
+        ]]
+
+
 
         featCall Population agentsForEachActive Moth [[
           featCall Movement setMovementType 'static'
@@ -123,8 +151,8 @@ prop moving setMin 0
 
 
 useFeature AgentWidgets
-featPropPush Costume colorScaleIndex
-featPropPop AgentWidgets text
+//featPropPush Costume colorScaleIndex
+//featPropPop AgentWidgets text
 
 useFeature Global
 
@@ -136,6 +164,7 @@ onEvent Start [[
   featCall Movement wanderUntilInside TreeTrunk
   prop vulnerable setTo 1
   prop moving setTo 1
+  featProp AgentWidgets text setTo ''
 ]]
 
 
@@ -223,7 +252,7 @@ ifExpr {{ agent.getProp('isInert').value }} [[
 
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'bee.json' 0
+featCall Costume setCostume 'predator.json' 0
 
 useFeature Physics
 useFeature Touches
@@ -239,6 +268,16 @@ featProp Vision viewDistance setTo 250
 featProp Vision viewAngle setTo 90
 featProp Vision colorHueDetectionThreshold setTo 0.2
 featProp Vision colorValueDetectionThreshold setTo 0.2
+
+featProp Physics scale setTo 0.75
+
+
+addProp kills Number 0
+prop kills setMax 100
+prop kills setMin 0
+
+useFeature AgentWidgets
+featProp AgentWidgets text setTo '0'
 
 useFeature Population
 useFeature Global
@@ -260,7 +299,9 @@ when Predator centerTouchesCenter Moth [[
       prop Moth.alpha sub 1
       prop Moth.orientation setTo 3.14
       featProp Moth.AgentWidgets text setTo ''
-
+      prop Predator.kills add 1
+      propPush Predator.kills
+      featPropPop Predator.AgentWidgets text setTo 'hello'
       // Stop sim if half eaten
       ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 16 }} [[
 
@@ -315,7 +356,7 @@ when Predator centerTouchesCenter Moth [[
 
 
       # PROGRAM INIT
-      prop zIndex setTo 0
+      prop zIndex setTo -199
 
       # PROGRAM UPDATE
 `
