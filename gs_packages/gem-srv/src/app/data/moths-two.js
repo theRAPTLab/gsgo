@@ -797,6 +797,12 @@ addProp inity Number 0
 prop inity setMax 400
 prop inity setMin -400
 
+addProp frame Number 0
+prop frame setMax 1000
+prop frame setMin 0
+
+
+
 
 // AI Movement
 featProp Movement distance setTo 4
@@ -813,6 +819,14 @@ every 60 [[
   featCall Movement seekNearestVisibleCone Moth
 ]]
 
+every 0.1 [[
+  prop frame add 1
+  ifExpr {{agent.getProp('frame').value > 3}} [[
+    prop frame setTo 0
+  ]]
+  propPush frame
+  featPropPop Costume currentFrame
+]]
 
 when Predator centerTouchesCenter Moth [[
 
@@ -1188,6 +1202,7 @@ when Predator centerTouchesCenter Moth [[
       featCall Movement queuePosition -300 -300
       prop initx setTo -300
       prop inity setTo -300
+      prop frame setTo 0
       `
     },
     {
@@ -1198,6 +1213,7 @@ when Predator centerTouchesCenter Moth [[
       featCall Movement queuePosition 300 -300
       prop initx setTo 300
       prop inity setTo -300
+      prop frame setTo 1
       `
     }
   ]

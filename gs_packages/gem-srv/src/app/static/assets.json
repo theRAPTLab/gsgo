@@ -114,6 +114,11 @@
       "assetId": 212,
       "assetName": "smallsquare.json",
       "assetUrl": "static/sprites/local/smallsquare.json"
+    },
+    {
+      "assetId": 213,
+      "assetName": "star.json",
+      "assetUrl": "static/sprites/local/star.json"
     }
   ],
   "READ_ME": [

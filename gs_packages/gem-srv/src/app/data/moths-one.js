@@ -303,7 +303,7 @@ when Predator centerTouchesCenter Moth [[
       propPush Predator.kills
       featPropPop Predator.AgentWidgets text setTo 'hello'
       // Stop sim if half eaten
-      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 16 }} [[
+      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 15 }} [[
 
 
         featCall Predator.Timer stopRound
