@@ -119,6 +119,11 @@
       "assetId": 213,
       "assetName": "star.json",
       "assetUrl": "static/sprites/local/star.json"
+    },
+    {
+      "assetId": 214,
+      "assetName": "qtest.json",
+      "assetUrl": "static/sprites/local/qtest.json"
     }
   ],
   "READ_ME": [

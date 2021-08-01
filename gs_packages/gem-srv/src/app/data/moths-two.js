@@ -615,7 +615,21 @@ addProp carrying Number 0
 prop carrying setMin 0
 prop carrying setMax 10
 
+addProp frame Number 0
+prop frame setMax 1000
+prop frame setMin 0
+
 # PROGRAM UPDATE
+
+
+every 0.1 [[
+  prop frame add 1
+  ifExpr {{agent.getProp('frame').value > 3}} [[
+    prop frame setTo 0
+  ]]
+  propPush frame
+  featPropPop Costume currentFrame
+]]
 
 when Myth centerTouchesCenter Moth [[
   ifExpr {{ Myth.prop.carrying.value < 1 }} [[
