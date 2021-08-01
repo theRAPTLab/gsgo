@@ -39,6 +39,7 @@ class PanelRoundEditor extends React.Component {
     });
   }
 
+  /// Round Editor Direct Input Field Updates (not script wizard UI)
   onFormInputUpdate(e) {
     // console.log('typed', e.target.value, e.target.id);
     const { round } = this.state;
