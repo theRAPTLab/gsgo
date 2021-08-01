@@ -79,7 +79,7 @@ export const MODEL = {
       id: 'Moth',
       label: 'Moth',
       isCharControllable: false,
-      isPozyxControllable: false, // use Cursor instead
+      isPozyxControllable: false,
       script: `# BLUEPRINT Moth
 # PROGRAM DEFINE
 useFeature Costume
@@ -154,13 +154,13 @@ onEvent Start [[
 
 every 0.1 [[
   prop frame add 1
-  ifExpr {{ agent.getProp('frame').value > 3 }} [[
+  ifExpr {{ agent.getProp('frame').value > 2 }} [[
     prop frame setTo 0
   ]]
-  ifExpr {{ agent.getProp('moving').value > 3}} [[
+  //ifExpr {{ agent.getProp('moving').value > 2}} [[
     propPush frame
     featPropPop Costume currentFrame
-  ]]
+  //]]
 ]]
 
 every 1 [[
@@ -171,6 +171,7 @@ every 1 [[
     prop alpha add 1
    ]]
 ]]
+
 
 
 when Moth centerFirstTouches TreeTrunk [[
@@ -271,14 +272,43 @@ addProp kills Number 0
 prop kills setMax 100
 prop kills setMin 0
 
+addProp initx Number 0
+prop initx setMax 400
+prop initx setMin -400
+
+addProp inity Number 0
+prop inity setMax 400
+prop inity setMin -400
+
+addProp frame Number 0
+prop frame setMax 1000
+prop frame setMin 0
+
+
 useFeature AgentWidgets
 featProp AgentWidgets text setTo '0'
 
 useFeature Population
 useFeature Global
 useFeature Timer
+// AI Movement
+featProp Movement distance setTo 4
 
 # PROGRAM UPDATE
+
+every 10 [[
+  featProp Movement distance setTo 4
+  featCall Movement seekNearestVisibleCone Moth
+]]
+
+every 0.1 [[
+  prop frame add 1
+  ifExpr {{agent.getProp('frame').value > 3}} [[
+    prop frame setTo 0
+  ]]
+  propPush frame
+  featPropPop Costume currentFrame
+]]
 
 when Predator centerTouchesCenter Moth [[
 
@@ -288,26 +318,27 @@ when Predator centerTouchesCenter Moth [[
     prop Moth.orientation setTo 3.14
     //featCall Moth.Movement jitterRotate
     every 0.2 [[
-      prop Moth.isInert setTo true
-      featCall Moth.Costume setCostume 'smallsquare.json' 0
-      prop Moth.alpha setMin 0.1
-      prop Moth.alpha sub 1
-      prop Moth.orientation setTo 3.14
-      featProp Moth.AgentWidgets text setTo ''
+      featCall Moth.Population removeAgent
       prop Predator.kills add 1
       propPush Predator.kills
-      featPropPop Predator.AgentWidgets text setTo 'hello'
-      // Stop sim if half eaten
-      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 15 }} [[
+      featPropPop Predator.AgentWidgets text
 
-
-        featCall Predator.Timer stopRound
-
-        // This will be added to the end of round message
-        featCall Moth.AgentWidgets showMessage 'You have eaten half of the Moth population!'
+      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 28 }} [[
+        //dbgOut "EATEN and SPAWNING"
+        featProp Population deleteAfterSpawning setTo false
+        featCall Population oneAgentReproduce Moth [[
+          prop colorIndx addRnd -1 1 true
+          dbgOut {{ agent.getProp('colorIndx').value  }}
+          propPush colorIndx
+          featPropPop Costume colorScaleIndex
+          prop frame setTo 0
+          prop vulnerable setTo 1
+          propPush colorIndx
+          featPropPop AgentWidgets text
+        ]]
+      ]]
     ]]
   ]]
-]]
 ]]
 
 `
@@ -332,8 +363,8 @@ when Predator centerTouchesCenter Moth [[
       prop zIndex setTo -200
 
       # PROGRAM UPDATE
-      every 2 [[
-          featProp Costume colorValue sub 0.01
+      every 5 [[
+          //featProp Costume colorValue sub 0.01
       ]]
 `
     },
@@ -367,7 +398,7 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition -250 50
-     //featCall Costume setColorizeHSV 0 0 0.66
+     featCall Costume setColorizeHSV 0 0 0.9
      featProp Physics scale setTo 0.5
      featProp Physics scaleY setTo 2.7`
     },
@@ -388,7 +419,7 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition 50 50
-      //featCall Costume setColorizeHSV 0 0 0.68
+      featCall Costume setColorizeHSV 0 0 0.85
       featProp Physics scale setTo 0.5
       featProp Physics scaleY setTo 2.7`
     },
@@ -409,7 +440,7 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition 250 50
-      //featCall Costume setColorizeHSV 0 0 0.67
+      featCall Costume setColorizeHSV 0 0 0.9
       featProp Physics scale setTo 0.5
       featProp Physics scaleY setTo 2.7`
     },
@@ -777,6 +808,39 @@ when Predator centerTouchesCenter Moth [[
       featPropPop AgentWidgets text
       prop colorIndx setTo 9
 `
+    },
+    {
+      id: 1301,
+      name: 'Predator1',
+      blueprint: 'Predator',
+      initScript: `
+      featCall Movement queuePosition -300 -300
+      prop initx setTo -300
+      prop inity setTo -300
+      prop frame setTo 0
+      `
+    },
+    {
+      id: 1302,
+      name: 'Predator2',
+      blueprint: 'Predator',
+      initScript: `
+      featCall Movement queuePosition 300 -300
+      prop initx setTo 300
+      prop inity setTo -300
+      prop frame setTo 1
+      `
+    },
+    {
+      id: 1303,
+      name: 'Predator3',
+      blueprint: 'Predator',
+      initScript: `
+      featCall Movement queuePosition 0 300
+      prop initx setTo 0
+      prop inity setTo 300
+      prop frame setTo 1
+      `
     }
   ]
 };

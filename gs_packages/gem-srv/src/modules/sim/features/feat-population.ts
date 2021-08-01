@@ -82,6 +82,7 @@ class PopulationPack extends GFeature {
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
     this.featAddMethod('removeInertAgents', this.removeInertAgents);
     this.featAddMethod('agentsReproduce', this.agentsReproduce);
+    this.featAddMethod('oneAgentReproduce', this.oneAgentReproduce);
     this.featAddMethod('populateBySpawning', this.populateBySpawning);
     this.featAddMethod('agentsForEachActive', this.agentsForEachActive);
     this.featAddMethod('agentsForEach', this.agentsForEach);
@@ -227,6 +228,24 @@ class PopulationPack extends GFeature {
       }
     });
   }
+
+  /**
+   * For ONE agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
+   */
+  oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
+    const agents = GetAgentsByType(bpname);
+    const randomindex = Math.floor(Math.random() * agents.length);
+    const a = agents[randomindex];
+    if (!a.isInert) {
+      a.callFeatMethod('Population', 'spawnChild', spawnScript);
+      if (deleteAfterSpawning) a.prop.isInert.setTo(true);
+    }
+  }
+
   /**
    * For all agents of type bpname, call SpawnChild if not inert
    * @param agent
