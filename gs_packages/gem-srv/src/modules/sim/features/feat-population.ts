@@ -5,6 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /*/ required libraries /*/
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
@@ -238,7 +239,7 @@ class PopulationPack extends GFeature {
   oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     const agents = GetAgentsByType(bpname);
-    const randomindex = Math.floor(Math.random() * agents.length);
+    const randomindex = Math.floor(RNG() * agents.length);
     const a = agents[randomindex];
     if (!a.isInert) {
       a.callFeatMethod('Population', 'spawnChild', spawnScript);
