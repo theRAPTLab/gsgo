@@ -81,6 +81,51 @@ featCall Population agentsForEach Moth [[
   },
   scripts: [
     {
+      id: 'Test',
+      label: 'Test',
+      isCharControllable: false,
+      isPozyxControllable: false, // use Cursor instead
+      script: `# BLUEPRINT Test
+# PROGRAM DEFINE
+useFeature Population
+useFeature Movement
+
+// top level prop update test
+prop alpha setTo 1
+
+// Testing nested scriptifying
+ifExpr {{ agent.prop.alpha.value < 1 }} [[
+  prop alpha setTo 1
+  prop alpha setTo 2
+]] [[
+  // alternate
+  prop alpha setTo 3
+]]
+
+// Testing implicit/explicit agent reference
+featCall Population agentsForEach Moth [[
+  featProp Movement direction setTo 88
+  featProp Moth.Movement direction setTo 99
+]]
+
+when Test dies [[
+  prop alpha setTo 4
+  prop Test.alpha setTo 99
+  featProp Movement direction setTo 91
+  featProp Test.Movement direction setTo 92
+  // double nest
+  ifExpr {{ agent.prop.alpha.value < 1 }} [[
+    prop alpha setTo 99
+    // triple nest
+    ifExpr {{ agent.prop.alpha.value < 1 }} [[
+      prop alpha setTo 11
+    ]]
+  ]]
+]]
+
+`
+    },
+    {
       id: 'Moth',
       label: 'Moth',
       isCharControllable: false,
