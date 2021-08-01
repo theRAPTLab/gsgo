@@ -18,7 +18,7 @@ import { UpdateDCModel, UpdateDCBounds } from 'modules/datacore/dc-project';
 import { MODEL as SpringPilot } from '../../data/2021SpringPilot';
 import { MODEL as AquaticModel } from '../../data/aquatic';
 import { MODEL as DecompositionModel } from '../../data/decomposition';
-import { MODEL as MothsModel } from '../../data/moths';
+import { MODEL as MothsThreeModel } from '../../data/moths-three';
 import { MODEL as MothsOneModel } from '../../data/moths-one';
 import { MODEL as MothsTwoModel } from '../../data/mothstwo';
 import { MODEL as MothsTestModel } from '../../data/mothstest';
@@ -58,9 +58,9 @@ export function ReadProjectsList() {
     //{ id: 'pilot', label: 'Spring 2021 Pilot' },
     //{ id: 'aquatic', label: 'Aquatic Ecosystems' },
     //{ id: 'decomposition', label: 'Decomposition' },
-    //{ id: 'moths', label: 'Moths' },
     { id: 'moths-one', label: 'Moths Act One' },
     { id: 'moths-two', label: 'Moths Act Two' },
+    { id: 'moths-three', label: 'Moths Act Three' },
     { id: 'mothstwo', label: 'Moths Test Act A' },
     { id: 'mothstest', label: 'Moths Test Act B' },
     //{ id: 'iu-sandbox', label: 'IU Sandbox' },
@@ -82,8 +82,8 @@ export function ReadProject(modelId) {
     case 'decomposition':
       model = DecompositionModel;
       break;
-    case 'moths':
-      model = MothsModel;
+    case 'moths-three':
+      model = MothsThreeModel;
       break;
     case 'moths-one':
       model = MothsOneModel;
