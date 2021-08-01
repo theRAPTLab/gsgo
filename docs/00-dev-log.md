@@ -475,5 +475,34 @@ The essential function is to load an asset manifest from a directory. So the ini
 
 * [ ] look at the asset manager right now and outline it a bit. It's in `class-pixi-asset-mgr.ts`
 
+Typescript Updates:
 
+* [ ] `typescript` 4.0.3 --> 4.3.5
+* [ ] `@typescript-eslint/eslint-plugin` 4.4.1 --> 4.28.5
+* [ ] `@typescript-eslint/parser 4.4.1` --> 4.28.5
+* [ ] `eslint-config-airbnb-typescript` 11.0.0 --> 12.3.1
+
+## JUL 30 FRI - Asset PIXI Manager
+
+We now have `mediacore` available. This is where the new `asset-mgr` module lives
+
+The old system worked like this:
+
+1. root view (e.g. `DevCompiler`) calls `loadAssetsSync(jsonfile)` during `UR/LOAD_ASSETS`
+2. Sprites are implemented with `class-visual`  which uses `PIXI` . The asset manager for class visual stores `PIXI.Resource` things like textures that can be retrieved. `setTexture()` is called from `api-render` as dobj is converted to vobj
+
+The new system should hopefully be a drop-in replacement for the GLOBALS pixi asset mgr.
+
+* [x] can I get asset manager to load in DevCompiler? YES
+* [x] class Visual: GetAssetById(id)
+* [x] class Visual: GetAsset(name)
+* [x] class Visual: LookupAssetId(name)
+
+## JUL 31 SAT - Asset PIXI Manager Replacement
+
+Took a while to clean up the asset loader independent class, but we have the system in place now. 
+
+Need to make sure AssetLoader saves responsibly by updating the assetRecord instead of completely overwriting it
+
+### Next: Autogenerate the Manifest
 

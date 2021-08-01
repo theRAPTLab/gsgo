@@ -4,13 +4,11 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import * as PIXI from 'pixi.js';
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export type TAssetDef = { assetId: number; assetName: string; assetUrl?: string };
-export type TResource = TAssetDef | { rsrc?: any; error?: string };
+export type TResource = TAssetDef & { rsrc?: any; error?: string };
 
 export type TAssetId = number;
 export type TAssetName = string;

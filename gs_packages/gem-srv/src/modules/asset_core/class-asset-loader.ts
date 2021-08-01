@@ -1,6 +1,18 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Base class for implementing Asset Loaders for use by AssetManager
+  ASSET LOADER BASE CLASS
+
+  Asset loaders handle the fetching and initialization of 'resources' that are
+  stored in an Asset dictionary.
+
+  The base AssetLoader class provides a standard set of methods for managing an
+  Asset dictionary, including managing a queue of Assets to load.
+
+  For assetType-specific code, you should override the promiseLoadAssets()
+  method as necessary.
+
+  See as-load-sprites.ts for an example implementation that extends the
+  AssetLoader base class.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -20,6 +32,9 @@ const DBG = true;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_NewAssetRecord() {
+  return { assetUrl: '', assetId: undefined, assetName: undefined };
+}
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +42,7 @@ class AssetLoader extends TAssetLoader {
   _queue: TAssetDef[]; // the queue of assets to load
   _type: TAssetType; // the kind of asset this instance will manage
   _loadCount: number;
-  _assetDict: Map<TAssetId, any>;
+  _assetDict: Map<TAssetId, TResource>;
   _nameLookup: Map<TAssetName, TAssetId>;
 
   /** please initialize queue mechanism through super(type) */
@@ -74,7 +89,8 @@ class AssetLoader extends TAssetLoader {
    */
   protected _saveAsset(def: TAssetDef, rsrc?: any, error?: string) {
     const { assetId, assetName, assetUrl } = def;
-    if (!this.hasAssetId(assetId)) this._assetDict.set(assetId, {});
+    if (!this.hasAssetId(assetId))
+      this._assetDict.set(assetId, m_NewAssetRecord());
     const recRef = this._assetDict.get(assetId);
     // update stored record carefully instead of overwriting it
     if (assetUrl) recRef.assetUrl = assetUrl;
@@ -149,7 +165,7 @@ class AssetLoader extends TAssetLoader {
   }
 
   /** given an assetId, return the saved resource */
-  getAssetById(id: TAssetId): any {
+  getAssetById(id: TAssetId): TResource {
     if (this._nameLookup.size === 0)
       throw Error(this._err('getAssetById() called before assets were loaded'));
     const rsrc = this._assetDict.get(id);
@@ -157,7 +173,7 @@ class AssetLoader extends TAssetLoader {
   }
 
   /** given an assetName, return the saved resource */
-  getAsset(name: TAssetName): any {
+  getAsset(name: TAssetName): TResource {
     if (this._nameLookup.size === 0)
       throw Error(this._err('getAsset() called before assets were loaded'));
     const id = this.lookupAssetId(name);

@@ -2,31 +2,35 @@
 
   ASSET MANAGER
 
-  An asset
+  Manages 'AssetLoader classes' that manage assetTypes such as 'sprites',
+  'sounds', etc.
+
+  The main API is just two calls:
+
+  * PromiseLoadManifest(url) - returns promise to load the manifest and
+    tell each loader to load its portion.
+  * GetLoader(assetType) - returns the loader instance for given type.
+
+  See `class-asset-loader` for an example of host
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-
-/// TYPE DECLARATIONS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 import {
   TAssetDef,
   TAssetType,
-  TAssetId,
-  TAssetName,
-  TAssetURL,
   TAssetLoader,
   TManifest
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
 
+/// TYPE DECLARATIONS /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('ASSETCORE', 'TagRed');
+const PR = UR.PrefixUtil('ASSETS', 'TagRed');
 const DBG = true;
-
-console.log(...PR('I am alive'));
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -58,7 +62,10 @@ export async function PromiseLoadManifest(manifestUrl: string) {
   const json: TManifest = await res.json();
   const promises = [];
   const assets = Object.entries(json).filter(m_IsSupportedType);
-  if (DBG) console.group(...PR('loading', assets.length, 'supported assetTypes'));
+  if (DBG)
+    console.groupCollapsed(
+      ...PR('loading', assets.length, 'supported assetTypes')
+    );
   assets.forEach(([asType, asList]) => {
     const loader = m_GetLoaderByType(asType as TAssetType);
     if (loader) {
@@ -80,14 +87,7 @@ export function GetLoader(asType: TAssetType): any {
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// subscribe to system messages here to maintain asset dictionary
 m_RegisterLoader(new SpriteLoader('sprites'));
 
 /// TEST INTERFACE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// UR.HookPhase('UR/LOAD_ASSETS', () => {
-//   console.log('fetching manifest file');
-//   console.log('loading assets');
-//   const loadedManifest = {};
-//   PromiseLoadManifest(loadedManifest);
-// });

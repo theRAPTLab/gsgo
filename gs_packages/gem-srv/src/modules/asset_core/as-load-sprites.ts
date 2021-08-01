@@ -1,14 +1,24 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  MEDIACORE LOADER for SPRITE ASSETS
-  uses PixiJS
+  SPRITE ASSET_CORE LOADER for ASSET MANAGER
+
+  Extends AssetLoader with additional Sprite-related information
+
+  * getSpriteDimensions(idOrName)
+  * getTextureInfo(idOrName)
+z
+  Provides custom PIXIJS loader tool in the override of promiseLoadAssets().
+  Overrides queueAssetList() to add additional parameter validation (this
+  probably isn't necessary.
+
+  See `class-asset-loader` to see the underlying utility methods.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 import AssetLoader from './class-asset-loader';
-import { TAssetDef, TAssetType, TResource } from '../../lib/t-assets';
+import { TAssetDef, TAssetType } from '../../lib/t-assets';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -158,13 +168,13 @@ class SpriteLoader extends AssetLoader {
   getSpriteDimensions(idOrName: number | string, frame: number) {
     let assetId = idOrName;
     if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
-    const rsrc: any = this.getAssetById(assetId as number);
-    if (rsrc.texture)
+    const { rsrc: sprite } = this.getAssetById(assetId as number);
+    if (sprite.texture)
       console.error('getSpriteDimensions: Unexpected texture, not spritesheet.');
-    if (rsrc.spritesheet) {
-      const key = rsrc.spritesheet._frameKeys[frame];
+    if (sprite.spritesheet) {
+      const key = sprite.spritesheet._frameKeys[frame];
       return {
-        ...rsrc.spritesheet._frames[key].sourceSize
+        ...sprite.spritesheet._frames[key].sourceSize
       };
     }
     return { err: 'not a texture or spritesheet' };
