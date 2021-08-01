@@ -156,6 +156,10 @@ class SimControl {
   RoundsCompleted() {
     return SIM.RoundsCompleted();
   }
+
+  RoundHasBeenStarted() {
+    return SIM.RoundHasBeenStarted();
+  }
 }
 
 const SIMCTRL = new SimControl();

@@ -58,7 +58,8 @@ const style = new PIXI.TextStyle({
   fontSize: 18,
   fontWeight: 'bold',
   fill: ['#ffffffcc'],
-  stroke: '#ffffff'
+  stroke: '#333333cc',
+  strokeThickness: 3
 });
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
@@ -396,7 +397,7 @@ class Visual implements IVisual, IPoolable, IActable {
    * the bounds of the sprite for placing the text
    */
   setText(str: string) {
-    if (this.textContent === str) return; // no update necessary
+    if (this.text && this.textContent === str) return; // no update necessary
 
     // Remove any old text
     // We have to remove the child and reset it to update the text?

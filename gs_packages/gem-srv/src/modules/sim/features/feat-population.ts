@@ -45,6 +45,10 @@ function m_Delete(frame) {
     const id = AGENTS_TO_REMOVE.pop();
     const agent = GetAgentById(id);
     if (agent) {
+      // Clear isTouching and lastTouched values here
+      // because agent will be removed and touch update
+      // will no longer update touch state with this agent
+      agent.callFeatMethod('Touches', 'clearTouches', agent.id);
       DeleteAgent({
         id: agent.id,
         blueprint: agent.blueprint.name
@@ -181,6 +185,19 @@ class PopulationPack extends GFeature {
 
   /// GLOBAL METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /**
+   * Release cursors for ALL agents globally
+   */
+  releaseAllAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor') {
+        a.callFeatMethod('Cursor', 'releaseCursor');
+      }
+    });
+  }
+
   /**
    * Release cursors for ALL inert agents globally
    */

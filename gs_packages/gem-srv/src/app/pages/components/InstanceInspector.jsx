@@ -244,8 +244,8 @@ class InstanceInspector extends React.Component {
         onPointerLeave={this.OnHoverOut}
       >
         <div>
-          <div className={classes.inspectorData}> {agentName} </div>{' '}
-        </div>{' '}
+          <div className={classes.inspectorData}>{agentName}</div>
+        </div>
         <div
           style={{
             fontFamily: 'Andale Mono, monospace',
@@ -261,12 +261,11 @@ class InstanceInspector extends React.Component {
               }}
               key={property.label}
             >
-              <div className={classes.inspectorLabel}> {property.label}: </div>{' '}
-              <div className={classes.inspectorData}> {property.value} </div>{' '}
+              <div className={classes.inspectorLabel}>{property.label}:</div>
+              <div className={classes.inspectorData}>{property.value}</div>
             </div>
-          ))}{' '}
+          ))}
           <div>
-            {' '}
             {isExpanded && (
               <div
                 style={
@@ -290,17 +289,13 @@ class InstanceInspector extends React.Component {
                     key={property.label}
                   >
                     <div className={classes.inspectorLabel}>
-                      {' '}
                       {property.label}:
-                    </div>{' '}
-                    <div className={classes.inspectorData}>
-                      {' '}
-                      {property.value}{' '}
-                    </div>{' '}
+                    </div>
+                    <div className={classes.inspectorData}>{property.value}</div>
                   </div>
-                ))}{' '}
+                ))}
               </div>
-            )}{' '}
+            )}
             {isExpanded && data.length > 0 && (
               <div
                 style={{
@@ -313,12 +308,12 @@ class InstanceInspector extends React.Component {
                   style={{ fontsize: '10px' }}
                 >
                   Character Type:
-                </div>{' '}
-                <div className={classes.inspectorData}> {blueprintName} </div>{' '}
+                </div>
+                <div className={classes.inspectorData}>{blueprintName}</div>
               </div>
-            )}{' '}
-          </div>{' '}
-        </div>{' '}
+            )}
+          </div>
+        </div>
         {size === SIZE_MAX && (
           <button
             type="button"
@@ -338,9 +333,9 @@ class InstanceInspector extends React.Component {
                   ? classes.disclosureExpanded
                   : classes.disclosureCollapsed
               }
-            />{' '}
+            />
           </button>
-        )}{' '}
+        )}
       </div>
     );
   }
