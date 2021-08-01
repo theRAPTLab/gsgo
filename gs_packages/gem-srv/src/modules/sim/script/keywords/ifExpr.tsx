@@ -9,6 +9,7 @@ import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
+import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,10 +43,38 @@ export class ifExpr extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
+  jsx(index: number, unit: TScriptUnit, options: any, children?: any): any {
     const [kw, testName, consequent, alternate] = unit;
-    const cc = consequent ? 'TRUE:[consequent]' : '';
-    const aa = alternate ? 'FALSE:[alternate]' : '';
+    let cc = '';
+    if (consequent && Array.isArray(consequent)) {
+      const blockIndex = 2; // the position in the unit array to replace <ifExpr> <expr> <conseq>
+      // already nested?
+      if (options.parentLineIndices !== undefined) {
+        // nested parentIndices!
+        options.parentLineIndices = [
+          ...options.parentLineIndices,
+          { index, blockIndex }
+        ];
+      } else {
+        options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+      }
+      cc = ScriptToJSX(consequent, options);
+    }
+    let aa = '';
+    if (alternate && Array.isArray(alternate)) {
+      const blockIndex = 3; // the position in the unit array to replace <ifExpr> <expr> <conseq>
+      // already nested?
+      if (options.parentLineIndices !== undefined) {
+        // nested parentIndices!
+        options.parentLineIndices = [
+          ...options.parentLineIndices,
+          { index, blockIndex }
+        ];
+      } else {
+        options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+      }
+      aa = ScriptToJSX(alternate, options);
+    }
 
     const expr =
       testName && testName.expr && testName.expr.raw
@@ -59,16 +88,6 @@ export class ifExpr extends Keyword {
         ifExpr ( {expr} ) {cc} {aa}
       </>
     );
-
-    // ORIG CODE
-    // Results in Uncaught Error: Objects are not valid as a React child (found: object with keys {expr}). If you meant to render a collection of children, use an array instead.
-    // return super.jsx(
-    //   index,
-    //   unit,
-    //   <>
-    //     ifExpr {testName} {cc} {aa}
-    //   </>
-    // );
   }
 } // end of DefProp
 

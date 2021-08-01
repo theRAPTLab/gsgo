@@ -15,6 +15,7 @@ import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
+import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,15 +75,62 @@ export class featCall extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
-    const [kw, ref, methodName, ...arg] = unit;
+  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
+    const [kw, refArg, methodName, ...arg] = unit;
+
+    // Dereference Ref ("Costume" or "Moth.Costume")
+    const ref = refArg.objref || [refArg];
+    const len = ref.length;
+    let refDisplay = '';
+    if (len === 1) {
+      /** IMPLICIT REF *******************************************************/
+      /// e.g. 'Costume' is interpreted as 'agent.Costume'
+      refDisplay = `${ref[0]}`;
+    } else if (len === 2) {
+      /** EXPLICIT REF *******************************************************/
+      /// e.g. 'agent.Costume' or 'Bee.Costume'
+      refDisplay = `${ref[0]}.${ref[1]}`;
+    }
+
+    // look for blocks in arg
+    // clean up args
+    // The actual blockIndex will be argIndex + 3
+    // since we have to count <kw> <refArg> <methodName>
+    const SYNTAX_OFFSET = 3;
+    const args = arg.map((a, argIndex) => {
+      if (Array.isArray(a)) {
+        const blockIndex = argIndex + SYNTAX_OFFSET; // the position in the unit array to replace <ifExpr> <expr> <conseq>
+        // already nested?
+        if (options.parentLineIndices !== undefined) {
+          // nested parentIndices!
+          options.parentLineIndices = [
+            ...options.parentLineIndices,
+            { index, blockIndex }
+          ];
+        } else {
+          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+        }
+        return <div>{ScriptToJSX(a, options)}</div>;
+      }
+      return a;
+    });
+
     return super.jsx(
       index,
       unit,
       <>
-        featCall {ref}.{methodName}({arg.join(' ')})
+        featCall {refDisplay}.{methodName} {[...args]}
       </>
     );
+
+    // ORIG
+    // return super.jsx(
+    //   index,
+    //   unit,
+    //   <>
+    //     featCall {ref}.{methodName}({args.join(' ')})
+    //   </>
+    // );
   }
 } // end of UseFeature
 

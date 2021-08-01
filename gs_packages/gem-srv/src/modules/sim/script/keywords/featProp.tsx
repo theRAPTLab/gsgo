@@ -69,6 +69,8 @@ type MyState = {
   methodName: string;
   args: string[];
   featPropMethods: string[];
+  parentLineIndices: number;
+  blockIndex: number;
 };
 type MyProps = {
   index: number;
@@ -125,8 +127,10 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
    *                           Used to handle exiting edit on "Enter"
    */
   saveData(exitEdit = false) {
+    const { parentLineIndices } = this.state;
     const updata = {
       index: this.index,
+      parentLineIndices,
       scriptUnit: this.serialize(this.state),
       exitEdit
     };
@@ -168,7 +172,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
 
     const featNames = [...featPropMap.keys()];
     const featProps = featPropMap.get(featName);
-    const propNameOptions = [...featProps.values()];
+    const propNameOptions = featProps ? [...featProps.values()] : ['none found'];
 
     // Delete Button
     const deletablejsx = (
@@ -378,7 +382,9 @@ export class featProp extends Keyword {
       featPropName, // feature prop name
       methodName,
       args,
-      featPropMethods: [] // set by PropElement
+      featPropMethods: [], // set by PropElement
+      parentLineIndices: children ? children.parentLineIndices : undefined,
+      blockIndex: children ? children.blockIndex : undefined
     };
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
