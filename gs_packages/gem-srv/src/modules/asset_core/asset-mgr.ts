@@ -74,7 +74,7 @@ export async function PromiseLoadManifest(manifestUrl: string) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return the loader class for the given asset type */
-export function GetAssetManager(asType: TAssetType): any {
+export function GetLoader(asType: TAssetType): any {
   return LOADER_DICT.get(asType);
 }
 

@@ -12,7 +12,6 @@ import UR from '@gemstep/ursys/client';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as SIM from '../../modules/sim/api-sim';
-import * as GLOBAL from '../../modules/datacore/dc-globals';
 import * as DATACORE from '../../modules/datacore';
 import * as ASSETS from '../../modules/asset_core';
 import * as RENDERER from '../../modules/render/api-render';
@@ -50,7 +49,7 @@ UR.HookPhase(
         if (DBG) console.log(...PR('ASSETS LOADED'));
         console.log(...PR('Waiting for user input'));
         // (2) the new asset manager routine
-        ASSETS.PromiseLoadManifest('static/assets.json');
+        await ASSETS.PromiseLoadManifest('static/assets.json');
         resolve();
       })();
     })

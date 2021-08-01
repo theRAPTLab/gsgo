@@ -78,11 +78,13 @@ class AssetLoader extends TAssetLoader {
     const recRef = this._assetDict.get(assetId);
     // update stored record carefully instead of overwriting it
     if (assetUrl) recRef.assetUrl = assetUrl;
-    if (assetName) recRef.assetName = assetName;
+    if (assetName) {
+      recRef.assetName = assetName;
+      // also update reverse lookup
+      this._nameLookup.set(assetName, assetId);
+    }
     if (rsrc) recRef.rsrc = rsrc;
     if (error) recRef.error = error;
-    // also update reverse lookup
-    this._nameLookup.set(assetName, assetId);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** given an assetName, release it from dictionary */
@@ -140,17 +142,24 @@ class AssetLoader extends TAssetLoader {
    *  the assetType category
    */
   lookupAssetId(name: TAssetName): TAssetId {
-    return this._nameLookup.get(name);
+    const lookup = this._nameLookup.get(name);
+    if (this._nameLookup.size === 0)
+      throw Error(this._err('lookupAssetId() called before assets were loaded'));
+    return lookup;
   }
 
   /** given an assetId, return the saved resource */
   getAssetById(id: TAssetId): any {
+    if (this._nameLookup.size === 0)
+      throw Error(this._err('getAssetById() called before assets were loaded'));
     const rsrc = this._assetDict.get(id);
     return rsrc;
   }
 
   /** given an assetName, return the saved resource */
   getAsset(name: TAssetName): any {
+    if (this._nameLookup.size === 0)
+      throw Error(this._err('getAsset() called before assets were loaded'));
     const id = this.lookupAssetId(name);
     return this.getAssetById(id);
   }

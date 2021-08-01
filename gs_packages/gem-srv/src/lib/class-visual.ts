@@ -62,7 +62,7 @@ const style = new PIXI.TextStyle({
   stroke: '#ffffff'
 });
 // replacement for GLOBAL sprite
-const SPRITES = ASSETS.GetAssetManager('sprites');
+const SPRITES = ASSETS.GetLoader('sprites');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

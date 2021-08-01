@@ -12,7 +12,7 @@ import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
-import { GetAssetManager } from 'modules/asset_core/asset-mgr';
+import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
 
@@ -24,7 +24,7 @@ const DBG = false;
 let COUNTER = 0;
 
 const COSTUME_AGENTS = new Map();
-const SPRITE = GetAssetManager('sprites');
+const SPRITE = GetLoader('sprites');
 
 /// HELPERS ///////////////////////////////////////////////////////////////////
 
@@ -179,7 +179,6 @@ class CostumePack extends GFeature {
    */
   setCostume(agent: IAgent, costumeName: string, poseName: string | Number) {
     agent.getFeatProp(this.name, 'costumeName').value = costumeName;
-    console.log('SET COSTUME', costumeName);
     const { frameCount } = SPRITE.getTextureInfo(costumeName);
     if (poseName !== undefined) {
       const cf = agent.getFeatProp(this.name, 'currentFrame') as GVarNumber;

@@ -8,7 +8,7 @@
 import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 import AssetLoader from './class-asset-loader';
-import { TAssetDef, TAssetType } from '../../lib/t-assets';
+import { TAssetDef, TAssetType, TResource } from '../../lib/t-assets';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -174,7 +174,7 @@ class SpriteLoader extends AssetLoader {
   getTextureInfo(idOrName: number | string) {
     let assetId = idOrName;
     if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
-    const rsrc: any = this.getAssetById(assetId as number);
+    const { rsrc } = this.getAssetById(assetId as number);
     if (rsrc.texture) return { frameCount: 1 };
     if (rsrc.spritesheet)
       return {
