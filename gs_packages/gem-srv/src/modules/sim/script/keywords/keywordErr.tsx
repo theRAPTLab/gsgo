@@ -12,6 +12,8 @@ import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
+const PR = UR.PrefixUtil('KW_ERROR', 'TagYellow');
+
 /// CLASS DEFINITION 1 ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export class keywordErr extends Keyword {
@@ -23,8 +25,7 @@ export class keywordErr extends Keyword {
 
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
-    const err = UR.ColorTagUtil(unit[0], 'TagYellow');
-    console.log(...err, 'is not a valid keyword');
+    console.log(...PR(`'${unit[0]}' is not a valid keyword`));
     return [];
   }
 
