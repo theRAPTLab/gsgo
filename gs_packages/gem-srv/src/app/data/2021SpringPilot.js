@@ -165,10 +165,11 @@ every 1 runAtStart [[
 
 useFeature Costume
 useFeature Movement
-useFeature AgentWidgets
 useFeature Population
+useFeature AgentWidgets
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
+// STUDENTS_MAY_CHANGE - if we want to see what happens when algae reproduce
 // default to 0 (false) but once turned on (1) algae will reproduce if they get to full energy from the sun (so any that start at full won't spawn)
 addProp spawns Boolean 0
 
@@ -190,12 +191,12 @@ useFeature Touches
 featCall Touches monitor Fish b2b
 featCall Touches monitor Sunbeam b2b
 
-// This is so that the numbers don't suddenly change at start and confusing things
+// This is so that the numbers don't suddenly change at start and confuse things
 exprPush {{ '' }}
 featPropPop AgentWidgets text
-//featCall AgentWidgets bindTextTo energyLevel
+featCall AgentWidgets bindTextTo energyLevel
 
-//STUDENTS_MAY_CHANGE - to set the type of movement and / or the amount it will wander
+// STUDENTS_MAY_CHANGE - to set the type of movement and / or the amount it will wander
 featCall Movement setMovementType 'wander' 0.2
 
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
@@ -207,10 +208,6 @@ when Algae touches Sunbeam [[
       featCall Algae.Costume setGlow 1
       exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
       propPop energyLevel
-
-    // update name
-    // exprPush {{ agent.getProp('energyLevel').value }}
-   // featPropPop AgentWidgets text
 
     // if Spawning is active, create more algae when we hit 100
     ifExpr {{ agent.getProp('spawns').value }} [[
@@ -238,6 +235,25 @@ every 1 runAtStart [[
   // re-scale the algae based on its energy level
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop agent.Physics scale
+
+  // set algae energy meter color
+  // doing great
+  ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
+    // Green
+    featProp AgentWidgets meterColor setTo 65280
+  ]]
+  // needs some energy
+  ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
+    // Orange
+    featProp AgentWidgets meterColor setTo 16737792
+  ]]
+  // in trouble
+  ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
+    // Red
+    featProp AgentWidgets meterColor setTo 16711680
+  ]]
+
+
 ]]
 `
     },
@@ -253,22 +269,21 @@ featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
 prop zIndex setTo 100
 
-//STUDENTS_MAY_CHANGE - to set the speed of the sunbeam
+// STUDENTS_MAY_CHANGE - to set the speed of the sunbeam
 addProp speed Number 20
-//STUDENTS_MAY_CHANGE - to set the amount of energy the sunbeam gives to algae
+// STUDENTS_MAY_CHANGE - to set the amount of energy the sunbeam gives to algae
 addProp energyRate Number 5
-//STUDENTS_MAY_CHANGE - to set which direction the sunbeam moves (right: 1, left: -1)
+// STUDENTS_MAY_CHANGE - to set which direction the sunbeam moves (right: 1, left: -1)
 addProp direction Number 1
 
 useFeature Physics
 featCall Physics init
-//STUDENTS_MAY_CHANGE - how wide the sunbeam is
+// STUDENTS_MAY_CHANGE - how wide the sunbeam is
 featProp Physics scale setTo 0.4
-//STUDENTS_MAY_CHANGE - how tall the sunbeam is
+// STUDENTS_MAY_CHANGE - how tall the sunbeam is
 featProp Physics scaleY setTo 2.5
 
 useFeature Touches
-
 
 # PROGRAM INIT
 // default position for moving across the top
@@ -307,7 +322,6 @@ prop skin setTo 'onexone'
 featProp AgentWidgets isLargeGraphic setTo true
 exprPush {{ 1 }}
 featPropPop AgentWidgets meter
-
 
 # PROGRAM INIT
 prop x setTo 75
