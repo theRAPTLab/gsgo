@@ -101,6 +101,26 @@ function Stage() {
     // so that characters get drawn on screen.
     RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   })();
+  // load agents and assets
+  // prep recording buffer
+  (async () => {
+    // Unsubscribe if previously run, otherwise it'll keep running.
+    if (RX_SUB) RX_SUB.unsubscribe();
+    console.log(...PR('Loading Simulation'));
+    await GAME_LOOP.executePhase('GLOOP_LOAD');
+    console.log(...PR('Simulation Loaded'));
+    console.log(...PR('Staging Simulation'));
+    await GAME_LOOP.executePhase('GLOOP_STAGED');
+    console.log(...PR('Simulation Staged'));
+    StageInit();
+    SIMSTATUS.currentLoop = LOOP.STAGED;
+    SIMSTATUS.completed = false;
+    // NextRound();
+
+    // On first staging, do prerun WITHOUT RoundInit
+    // so that characters get drawn on screen.
+    RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
+  })();
 }
 
 /// RUNTIME CONTROL ///////////////////////////////////////////////////////////
@@ -117,6 +137,7 @@ function NextRound() {
   RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
   console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
+
 function Costumes() {
   console.log(...PR('Costumes!'));
   // Unsubscribe from PRERUN, otherwise it'll keep running.
@@ -125,6 +146,7 @@ function Costumes() {
   SIMSTATUS.currentLoop = LOOP.COSTUMES;
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Costumes' });
 }
+
 function Run() {
   // prepare to run simulation and do first-time setup
   // compiles happen after Run()
@@ -212,6 +234,7 @@ function Reset() {
 function IsRunning() {
   return SIM_RATE > 0;
 }
+
 function RoundsCompleted() {
   return SIMSTATUS.completed;
 }

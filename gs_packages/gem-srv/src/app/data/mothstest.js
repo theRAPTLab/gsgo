@@ -165,17 +165,25 @@ ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.
       script: `# BLUEPRINT TreeTrunk
           # PROGRAM DEFINE
           useFeature Costume
-          featCall Costume setCostume 'square.json' 0
+          featCall Costume setCostume 'qtest.json' 0
 
           useFeature Physics
           useFeature Population
+          addProp frame Number 0
+          prop frame setMax 1000
+          prop frame setMin 0
 
           # PROGRAM INIT
           prop zIndex setTo -200
 
           # PROGRAM UPDATE
-          every 1 [[
-            featCall Population removeInertAgents
+          every 0.1 [[
+            prop frame add 1
+            ifExpr {{agent.getProp('frame').value > 3}} [[
+              prop frame setTo 0
+            ]]
+            propPush frame
+            featPropPop Costume currentFrame
           ]]
         `
     },
@@ -201,9 +209,10 @@ ifExpr {{ Moth.callFeatMethod('Costume', 'colorHSVWithinRange', Moth.prop.color.
       blueprint: 'TreeTrunk',
       initScript: `prop x setTo -200
 prop y setTo 170
-featCall Costume setColorizeHSV 0 0 0.67
-featProp Physics scale setTo 0.3
-featProp Physics scaleY setTo 1.8`
+//featCall Costume setColorizeHSV 0 0 0.67
+featProp Costume colorValue setTo 1
+featProp Physics scale setTo 0.5
+//featProp Physics scaleY setTo 1.8`
     },
 
     {

@@ -33,8 +33,8 @@ export const MODEL = {
         intro: 'Moths are mutated at the beginning of the round',
         outtro: 'What happened to spawn?',
         initScript: `dbgOut 'roundDef: Round2'
-// Release Cursors from Dead Moths
-featCall Population releaseInertAgents
+// Release Cursors from All Moths
+featCall Population releaseAllAgents
 // Remove Dead Moths
 featCall Population removeInertAgents
 
@@ -44,7 +44,7 @@ featProp Population targetPopulationSize setTo 30
 featCall Population populateBySpawning Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  featProp Costume colorScaleIndex addRnd -2 2 true
+  featProp Costume colorScaleIndex addRnd -1 1 true
   // update color index label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
@@ -73,6 +73,8 @@ featCall Population agentsForEach Moth [[
   featPropPop AgentWidgets text
   // Make visible
   prop alpha setTo 1
+  // Rotate
+  prop orientation setTo 0
 ]]`
       }
     ]
@@ -104,7 +106,7 @@ prop alpha setMin 1
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
 featProp Movement distance setTo 3
-// featCall Movement wanderUntilInside TreeFoliage
+featCall Movement wanderUntilInside TreeFoliage
 
 useFeature Physics
 featProp Physics scale setTo 0.4
@@ -260,8 +262,8 @@ ifExpr {{ agent.getProp('isInert').value }} [[
     {
       id: 'Predator',
       label: 'Predator',
-      isCharControllable: false,
-      isPozyxControllable: true,
+      isCharControllable: true,
+      isPozyxControllable: false,
       script: `# BLUEPRINT Predator
 # PROGRAM DEFINE
 useFeature Costume
