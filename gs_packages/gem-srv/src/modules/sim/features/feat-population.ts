@@ -82,6 +82,7 @@ class PopulationPack extends GFeature {
     this.featAddMethod('createAgent', this.createAgent);
     this.featAddMethod('spawnChild', this.spawnChild);
     this.featAddMethod('removeAgent', this.removeAgent);
+    this.featAddMethod('getRandomActiveAgent', this.getRandomActiveAgent);
     // Global Population Management
     this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
@@ -182,7 +183,26 @@ class PopulationPack extends GFeature {
   removeAgent(agent: IAgent) {
     AGENTS_TO_REMOVE.push(agent.id);
   }
-
+  /**
+   * Returns a random agent of blueprint type that is not inert.
+   * @param agent
+   * @param spawnScript
+   */
+  getRandomActiveAgent(agent: IAgent, bpname: string): IAgent {
+    const agents = GetAgentsByType(bpname);
+    if (agents.length < 1) {
+      console.error(`Population:getRandomActiveAgent: No ${bpname} agents left!`);
+      return undefined; // no agents
+    }
+    const activeAgents = agents.filter(a => !a.isInert);
+    if (activeAgents.length < 1) {
+      console.error(
+        `Population:getRandomActiveAgent: No non-inert ${bpname} agents left!`
+      );
+      return undefined; // no non-inert agents
+    }
+    return activeAgents[Math.floor(RNG()) * activeAgents.length];
+  }
   /// GLOBAL METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -255,13 +275,9 @@ class PopulationPack extends GFeature {
    */
   oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
-    const agents = GetAgentsByType(bpname);
-    const randomindex = Math.floor(RNG() * agents.length);
-    const a = agents[randomindex];
-    if (!a.isInert) {
-      a.callFeatMethod('Population', 'spawnChild', spawnScript);
-      if (deleteAfterSpawning) a.prop.isInert.setTo(true);
-    }
+    const parent = this.getRandomActiveAgent(agent, bpname);
+    parent.callFeatMethod('Population', 'spawnChild', spawnScript);
+    if (deleteAfterSpawning) parent.prop.isInert.setTo(true);
   }
 
   /**
