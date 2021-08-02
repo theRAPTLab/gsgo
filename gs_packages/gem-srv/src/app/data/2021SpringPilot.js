@@ -12,7 +12,7 @@ export const MODEL = {
   rounds: {
     options: {
       allowResetStage: true,
-      noloop: true // stop after last round
+      noloop: false // loop because why not
     }
   },
   scripts: [
@@ -199,7 +199,7 @@ exprPush {{ '' }}
 featPropPop AgentWidgets text
 //featCall AgentWidgets bindTextTo energyLevel
 
-// disabled algae wander because the hack of putting algae off to the side is wonky with it
+//STUDENTS_MAY_CHANGE - to set the type of movement and / or the amount it will wander
 featCall Movement setMovementType 'wander' 0.2
 
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
@@ -272,13 +272,18 @@ featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
 prop zIndex setTo 100
 
+//STUDENTS_MAY_CHANGE - to set the speed of the sunbeam
 addProp speed Number 20
+//STUDENTS_MAY_CHANGE - to set the amount of energy the sunbeam gives to algae
 addProp energyRate Number 5
+//STUDENTS_MAY_CHANGE - to set which direction the sunbeam moves (right: 1, left: -1)
 addProp direction Number 1
 
 useFeature Physics
 featCall Physics init
+//STUDENTS_MAY_CHANGE - how wide the sunbeam is
 featProp Physics scale setTo 0.4
+//STUDENTS_MAY_CHANGE - how tall the sunbeam is
 featProp Physics scaleY setTo 2.5
 
 useFeature Touches
