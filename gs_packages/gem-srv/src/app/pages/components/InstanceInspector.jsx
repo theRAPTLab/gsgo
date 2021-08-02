@@ -115,7 +115,11 @@ class InstanceInspector extends React.Component {
         let val = instance.prop[p]._value;
         switch (typeof val) {
           case 'number':
-            val = instance.prop[p]._value.toFixed(2);
+            if (p.startsWith('color')) {
+              val = Math.floor(instance.prop[p]._value).toString(16);
+            } else {
+              val = instance.prop[p]._value.toFixed(2);
+            }
             break;
           case 'string':
             val = instance.prop[p]._value;
