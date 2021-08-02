@@ -33,10 +33,14 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+// STUDENTS_MAY_CHANGE - set as consumer or producer
+addProp type String ''
+
+// STUDENTS_MAY_CHANGE - to change how quickly Fish use up energy and get hungry
 addProp energyUse Number 1
 
 // **** OPTIONS TO CHANGE BEHAVIOR ****
-// turns on the feature that allows the fish to grow if this is 1
+// STUDENTS_MAY_CHANGE - change to 1 (true) turns on the feature that allows the fish to grow if this is 1
 addProp grows Boolean 0
 
 addProp startDirection Number 0
@@ -105,6 +109,7 @@ when Fish touches Algae [[
       prop Algae.energyLevel sub 10
     ]]
 
+    // STUDENTS_MAY_CHANGE - this is the logic that makes large fish use more energy, so changing the energyUse in here is something we might want to do
     // grow if above 80% energy
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
       featProp Physics scale setTo 2
@@ -168,10 +173,14 @@ useFeature Movement
 useFeature Population
 useFeature AgentWidgets
 
+// STUDENTS_MAY_CHANGE - set as consumer or producer
+addProp type String ''
+
 // **** OPTIONS TO CHANGE BEHAVIOR ****
 // STUDENTS_MAY_CHANGE - if we want to see what happens when algae reproduce
 // default to 0 (false) but once turned on (1) algae will reproduce if they get to full energy from the sun (so any that start at full won't spawn)
 addProp spawns Boolean 0
+
 
 featCall Costume setCostume 'algae.json' 0
 
@@ -182,6 +191,7 @@ addProp energyLevel Number 100
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+// STUDENTS_MAY_CHANGE - this makes the algae lose energy over time
 addProp energyUse Number 0
 
 useFeature Physics
@@ -210,6 +220,7 @@ when Algae touches Sunbeam [[
       propPop energyLevel
 
     // if Spawning is active, create more algae when we hit 100
+    // STUDENTS_MAY_CHANGE - maybe change the new energy level (currently 40) or the threshold (from 100) or the new position or other things
     ifExpr {{ agent.getProp('spawns').value }} [[
       ifExpr {{ agent.getProp('energyLevel').value == 100 }} [[
          featCall Population createAgent Algae [[
@@ -224,37 +235,37 @@ when Algae touches Sunbeam [[
 
   ]]
 ]]
-every 1 runAtStart [[
+  every 1 runAtStart [[
 
-  // decrease energy each tick, using the energyUse varable to determine how much
-  ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
-  exprPush {{ agent.getProp('energyLevel').value - agent.getProp('energyUse').value}}
-  propPop agent.energyLevel
+    // decrease energy each tick, using the energyUse varable to determine how much
+    ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
+    exprPush {{ agent.getProp('energyLevel').value - agent.getProp('energyUse').value}}
+    propPop agent.energyLevel
+    ]]
+
+    // re-scale the algae based on its energy level
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  featPropPop agent.Physics scale
+
+    // set algae energy meter color
+    // doing great
+    ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
+      // Green
+      featProp AgentWidgets meterColor setTo 65280
+    ]]
+    // needs some energy
+    ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
+      // Orange
+      featProp AgentWidgets meterColor setTo 16737792
+    ]]
+    // in trouble
+    ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
+      // Red
+      featProp AgentWidgets meterColor setTo 16711680
+    ]]
+
+
   ]]
-
-  // re-scale the algae based on its energy level
-exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
-featPropPop agent.Physics scale
-
-  // set algae energy meter color
-  // doing great
-  ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
-    // Green
-    featProp AgentWidgets meterColor setTo 65280
-  ]]
-  // needs some energy
-  ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
-    // Orange
-    featProp AgentWidgets meterColor setTo 16737792
-  ]]
-  // in trouble
-  ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
-    // Red
-    featProp AgentWidgets meterColor setTo 16711680
-  ]]
-
-
-]]
 `
     },
     {
