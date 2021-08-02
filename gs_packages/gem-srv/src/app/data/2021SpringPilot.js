@@ -109,15 +109,11 @@ when Fish touches Algae [[
     ifExpr {{(Fish.getProp('grows').value) && (Fish.getProp('energyLevel').value > 90) }} [[
       featProp Physics scale setTo 2
       prop Fish.energyUse setTo 2
-
     ]]
 
     ifExpr {{Algae.getProp('energyLevel').value <= 0}} [[
       prop Algae.alpha setTo 0.3
       prop Algae.isInert setTo true
-
-      //exprPush {{ 'xx' }}
-      //featPropPop AgentWidgets text
     ]]
 
   ]]
@@ -206,8 +202,6 @@ exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop Physics scale
 
 # PROGRAM UPDATE
-
-
 when Algae touches Sunbeam [[
   every 1 [[
       featCall Algae.Costume setGlow 1
@@ -241,22 +235,9 @@ every 1 runAtStart [[
   propPop agent.energyLevel
   ]]
 
-  // update name to reflect the new energy level if it is above 0
- // ifExpr {{ agent.getProp('energyLevel').value > 0 }} [[
- // exprPush {{ agent.getProp('energyLevel').value }}
- // featPropPop AgentWidgets text]]
-
-// if the energy level is 0, change name to xx
-ifExpr {{ agent.getProp('energyLevel').value == 0 }} [[
-  // exprPush {{ 'xx' }}
-  // eatPropPop AgentWidgets text
-  prop agent.alpha setTo 0.3
-  prop isInert setTo true
-]]
-
+  // re-scale the algae based on its energy level
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop agent.Physics scale
-
 ]]
 `
     },
