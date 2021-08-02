@@ -411,8 +411,12 @@ function m_FindNearestAgent(agent, targetType) {
 /// NOTE This assumes Vision
 function m_FindNearbyAgents(agent, targetType) {
   // Only run this after m_FeaturesUpdate sets distances
-  if (!agent.distanceTo)
-    throw new Error('Set distance before finding nearby agents');
+  if (!agent.distanceTo) {
+    console.log(
+      `m_FindNearbyAgents skipping ${agent.blueprint.name} ${agent.id} because distanceTo was not yet set by SIM/PHYSICS_UPDATE.`
+    );
+    return [];
+  }
   const nearby = [];
   const targets = GetAgentsByType(targetType);
   targets.forEach(t => {
