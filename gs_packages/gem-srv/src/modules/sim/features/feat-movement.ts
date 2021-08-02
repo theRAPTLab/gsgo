@@ -413,7 +413,7 @@ function m_FindNearbyAgents(agent, targetType) {
   // Only run this after m_FeaturesUpdate sets distances
   if (!agent.distanceTo) {
     console.log(
-      `m_FindNearbyAgents skipping ${agent.blueprint.name} ${agent.id} because distanceTo was not yet set by SIM/PHYSICS_UPDATE.`
+      `m_FindNearbyAgents skipping ${agent.blueprint.name} ${agent.id} because distanceTo was not yet calculated by SIM/PHYSICS_UPDATE.`
     );
     return [];
   }
