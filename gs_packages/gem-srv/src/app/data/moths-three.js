@@ -335,6 +335,9 @@ when Predator centerTouchesCenter Moth [[
           prop vulnerable setTo 1
           propPush colorIndx
           featPropPop AgentWidgets text
+
+          // Explicitly set movement type (addresses #267)
+          featCall Movement wanderUntilInside TreeTrunk
         ]]
       ]]
     ]]
