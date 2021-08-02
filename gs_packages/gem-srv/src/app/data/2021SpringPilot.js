@@ -269,7 +269,8 @@ useFeature Costume
 useFeature Movement
 featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 1 1 0
-prop agent.alpha setTo 0.2
+prop agent.alpha setTo 0.3
+prop zIndex setTo 100
 
 addProp speed Number 20
 addProp energyRate Number 5
