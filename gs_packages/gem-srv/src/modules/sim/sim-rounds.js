@@ -72,7 +72,8 @@ function StopRoundTimer() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StageInit() {
   const GLOBAL_AGENT = GetGlobalAgent();
-  GLOBAL_AGENT.addFeature('Population');
+  if (!GLOBAL_AGENT.hasFeature('Population'))
+    GLOBAL_AGENT.addFeature('Population');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunScript(scriptUnits) {
