@@ -101,6 +101,7 @@ function m_CopyProps(props: object, targetProps: object) {
 }
 /**
  * Blindly copy all featProps.  Used by CopyAgentProps.
+ * NOTE: Ignores Dicts!!!!
  */
 function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
   const featProps = [...Object.keys(origFeatProps)];
