@@ -276,6 +276,12 @@ class PopulationPack extends GFeature {
   oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     const parent = this.getRandomActiveAgent(agent, bpname);
+    if (parent === undefined) {
+      console.error(
+        'Popuation.oneAgentReproduce was not able to find a non-inert parent agent to reproduce from!'
+      );
+      return;
+    }
     parent.callFeatMethod('Population', 'spawnChild', spawnScript);
     if (deleteAfterSpawning) parent.prop.isInert.setTo(true);
   }
