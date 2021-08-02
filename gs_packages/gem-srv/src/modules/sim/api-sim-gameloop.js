@@ -29,8 +29,8 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'INPUTS_UPDATE',
 
     // allow creation of new objects???????
-    'DELETE',
     'CREATE',
+    'DELETE',
 
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',
@@ -76,8 +76,8 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     // get state and queue derived state
     'INPUTS_READ',
     'INPUTS_UPDATE',
-    'DELETE',
     'CREATE',
+    'DELETE',
     'TIMERS',
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',

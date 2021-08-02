@@ -8,7 +8,7 @@
     {
       "assetId": 2,
       "assetName": "default",
-      "assetUrl": "static/sprites/onexone.png"
+      "assetUrl": "static/sprites/default-sprite.png"
     },
     {
       "assetId": 3,
@@ -109,6 +109,21 @@
       "assetId": 211,
       "assetName": "worm.json",
       "assetUrl": "static/sprites/local/worm.json"
+    },
+    {
+      "assetId": 212,
+      "assetName": "smallsquare.json",
+      "assetUrl": "static/sprites/local/smallsquare.json"
+    },
+    {
+      "assetId": 213,
+      "assetName": "star.json",
+      "assetUrl": "static/sprites/local/star.json"
+    },
+    {
+      "assetId": 214,
+      "assetName": "qtest.json",
+      "assetUrl": "static/sprites/local/qtest.json"
     }
   ],
   "READ_ME": [

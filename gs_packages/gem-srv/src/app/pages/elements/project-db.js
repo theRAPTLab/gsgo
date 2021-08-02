@@ -18,9 +18,11 @@ import { UpdateDCModel, UpdateDCBounds } from 'modules/datacore/dc-project';
 import { MODEL as SpringPilot } from '../../data/2021SpringPilot';
 import { MODEL as AquaticModel } from '../../data/aquatic';
 import { MODEL as DecompositionModel } from '../../data/decomposition';
-import { MODEL as MothsModel } from '../../data/moths';
+import { MODEL as MothsThreeModel } from '../../data/moths-three';
+import { MODEL as MothsOneModel } from '../../data/moths-one';
 import { MODEL as MothsTwoModel } from '../../data/mothstwo';
 import { MODEL as MothsTestModel } from '../../data/mothstest';
+import { MODEL as MothsActTwo } from '../../data/moths-two';
 import { MODEL as MothsSandbox } from '../../data/moths-sandbox';
 import { MODEL as IUSandbox } from '../../data/iu-sandbox';
 import { MODEL as SaltModel } from '../../data/salt';
@@ -53,15 +55,16 @@ function m_FixInstanceIds(model) {
 /// Read and return list of projects from db.
 export function ReadProjectsList() {
   return [
-    { id: 'pilot', label: 'Spring 2021 Pilot' },
-    { id: 'aquatic', label: 'Aquatic Ecosystems' },
-    { id: 'decomposition', label: 'Decomposition' },
-    { id: 'moths', label: 'Moths' },
-    { id: 'mothstwo', label: 'Moths Act 2' },
-    { id: 'mothstest', label: 'Moths Test Act' },
-    { id: 'moths-sandbox', label: 'Moths Sandbox' },
-    { id: 'iu-sandbox', label: 'IU Sandbox' },
-    { id: 'salt', label: 'Salt' },
+    //{ id: 'pilot', label: 'Spring 2021 Pilot' },
+    //{ id: 'aquatic', label: 'Aquatic Ecosystems' },
+    //{ id: 'decomposition', label: 'Decomposition' },
+    { id: 'moths-one', label: 'Moths Act One' },
+    { id: 'moths-two', label: 'Moths Act Two' },
+    { id: 'moths-three', label: 'Moths Act Three' },
+    { id: 'mothstwo', label: 'Moths Test Act A' },
+    { id: 'mothstest', label: 'Moths Test Act B' },
+    //{ id: 'iu-sandbox', label: 'IU Sandbox' },
+    //{ id: 'salt', label: 'Salt' },
     { id: 'bees', label: 'Bees' }
   ];
 }
@@ -79,14 +82,20 @@ export function ReadProject(modelId) {
     case 'decomposition':
       model = DecompositionModel;
       break;
-    case 'moths':
-      model = MothsModel;
+    case 'moths-three':
+      model = MothsThreeModel;
+      break;
+    case 'moths-one':
+      model = MothsOneModel;
       break;
     case 'mothstwo':
       model = MothsTwoModel;
       break;
     case 'mothstest':
       model = MothsTestModel;
+      break;
+    case 'moths-two':
+      model = MothsActTwo;
       break;
     case 'moths-sandbox':
       model = MothsSandbox;
