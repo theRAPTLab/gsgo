@@ -94,7 +94,7 @@ export class when extends Keyword {
       const [kw, A, testName, consq] = unit;
       out = `${kw} ${A} ${testName} run ${consq.length} ops`;
     } else if (unit.length === 5) {
-      const [kw, A, B, testName, consq] = unit;
+      const [kw, A, testName, B, consq] = unit;
       out = `${kw} ${A} ${testName} ${B} run ${consq.length} ops`;
     }
     return super.jsx(index, unit, <>{out}</>);

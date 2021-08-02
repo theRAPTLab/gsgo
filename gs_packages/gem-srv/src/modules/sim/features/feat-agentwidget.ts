@@ -47,16 +47,17 @@ function m_getAgent(agentId): IAgent {
   return a;
 }
 
-/// PHYSICS LOOP ////////////////////////////////////////////////////////////
+/// WIDGETS LOOP ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// SIM/FEATURES_UPDATE -- Runs once per gameloop
 function m_FeaturesUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
   agentIds.forEach(agentId => {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
-    // Update Graph
+    // Update Graph values
     if (frame % agent.prop.AgentWidgets._graphFreq === 0) {
       // Time-based Graphs
       // New plot point based every _graphFreq per second
@@ -86,9 +87,45 @@ function m_FeaturesUpdate(frame) {
   });
 }
 
-/**
- * Widgets Update Loop -- Runs once per gameloop
- */
+/// SIM/GRAPHS_UPDATE -- Runs during PreRun and Costumes as well as regular sim LOOP
+///                      Runs after FEATURES_UPDATE so histograms can override graphs
+function m_GraphsUpdate(frame) {
+  const agentIds = Array.from(WIDGET_AGENTS.keys());
+  // console.log('graphs update');
+  agentIds.forEach(agentId => {
+    const agent = m_getAgent(agentId);
+    if (!agent) return;
+
+    // HACK: Histogram
+    // If Histogram has been defined, this will override any line graphs
+    // Just hacking this in for Moths for now.  Impelmentation is really
+    // problematic
+    if (agent.prop.AgentWidgets._histogramFeature) {
+      // SUPER HACK
+      // values are stored in the GLobal Agent because they're
+      // calculated during Round INit
+      // const values =
+      //   agent.prop[agent.prop.AgentWidgets._histogramFeature][
+      //     agent.prop.AgentWidgets._histogramProp
+      //   ];
+      const GLOBAL_AGENT = GetGlobalAgent();
+      const values =
+        GLOBAL_AGENT.prop[agent.prop.AgentWidgets._histogramFeature][
+          agent.prop.AgentWidgets._histogramProp
+        ];
+      // console.error('values', values);
+      const keys = [...values.keys()]; // don't sort because numbers are strings .sort();
+      // clear
+      agent.prop.AgentWidgets._graph.splice(0);
+      keys.forEach((k, index) => {
+        agent.prop.AgentWidgets._graph.push(index, values.get(k));
+      });
+      // console.error('graph', agent.prop.AgentWidgets._graph);
+    }
+  });
+}
+
+/// SIM/UI_UPDATE Loop -- Runs once per gameloop
 function m_UIUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
   agentIds.forEach(agentId => {
@@ -151,6 +188,7 @@ class WidgetPack extends GFeature {
     this.featAddMethod('bindMeterTo', this.bindMeterTo);
     this.featAddMethod('bindGraphTo', this.bindGraphTo);
     this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
+    UR.HookPhase('SIM/GRAPHS_UPDATE', m_GraphsUpdate);
     UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
     UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
   }
@@ -199,6 +237,12 @@ class WidgetPack extends GFeature {
   bindMeterTo(agent: IAgent, propname: string) {
     agent.prop.AgentWidgets.meterProp.setTo(propname);
   }
+  /**
+   *
+   * @param agent
+   * @param propname
+   * @param frequency Number of frames between plotting another point
+   */
   bindGraphTo(agent: IAgent, propname: string, frequency: number) {
     agent.prop.AgentWidgets._graphProp = propname;
     agent.prop.AgentWidgets._graphFreq = frequency;
@@ -206,6 +250,15 @@ class WidgetPack extends GFeature {
   bindGraphToGlobalProp(agent: IAgent, propname: string, frequency: number) {
     agent.prop.AgentWidgets._graphGlobalProp = propname;
     agent.prop.AgentWidgets._graphFreq = frequency;
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// HISTOGRAMS
+
+  /// This expects the featprop to be a dictionary
+  bindHistogramToFeatProp(agent: IAgent, feature: string, propname: string) {
+    agent.prop.AgentWidgets._histogramFeature = feature;
+    agent.prop.AgentWidgets._histogramProp = propname;
   }
 }
 

@@ -71,7 +71,11 @@ import UR from '@gemstep/ursys/client';
 import { GVarNumber, GVarString, GVarBoolean } from 'modules/sim/vars/_all_vars';
 import GFeature from 'lib/class-gfeature';
 import { IAgent } from 'lib/t-script';
-import { GetAgentById, GetAgentsByType } from 'modules/datacore/dc-agents';
+import {
+  GetAgentById,
+  GetAgentsByType,
+  GetAllAgents
+} from 'modules/datacore/dc-agents';
 import { Register, GetAgentBoundingRect } from 'modules/datacore/dc-features';
 import { DistanceTo } from 'lib/util-vector';
 
@@ -202,6 +206,7 @@ class TouchPack extends GFeature {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// Returns the first agent that matches the touchtype
   getTouchingAgent(agent: IAgent, touchType: string) {
+    if (!agent.isTouching) return undefined;
     const targetIds = [...agent.isTouching.keys()];
     const touchingId = targetIds.find(id => agent.isTouching.get(id)[touchType]);
     if (touchingId) {
@@ -209,6 +214,18 @@ class TouchPack extends GFeature {
       return GetAgentById(touchingId);
     }
     return undefined;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// Clears saved isTouching and lastTouched relative to targetId for ALL agents
+  /// Use when deleting an agent otherwise isTouching and lastTouched
+  /// are never reset.  See feat-population.m_Delete
+  clearTouches(agent: IAgent, targetId: string) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      // use `delete` not clear to prevent memory leak
+      if (a.lastTouched) a.lastTouched.delete(targetId);
+      if (a.isTouching) a.isTouching.delete(targetId);
+    });
   }
 }
 

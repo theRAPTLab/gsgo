@@ -54,8 +54,13 @@ function UADDRtoID(uaddr) {
 }
 // "CC340_0" to "340"
 function COBJIDtoID(cobjid) {
-  const re = /([0-9])+\B/;
-  // console.log(re.exec(cobjid));
+  // pozyx
+  if (cobjid.startsWith('ft-pozyx')) return String(cobjid).substring(8);
+  // CharControl
+  const re = /([0-9])+/;
+  const result = re.exec(cobjid);
+  if (result === null)
+    throw new Error(`dc-inputs: Unable to retrieve id of ${cobjid}`);
   return re.exec(cobjid)[0];
 }
 // "CC340_0" to "340_0"
@@ -141,16 +146,27 @@ function UpdateActiveDevices(changes) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
+/// POZYX DATA UPDATE  FOR VU/////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export const POZYX_TRANSFORM = {
+  scaleX: -0.0002, // -0.0002
+  scaleY: 0.00016, // 0.0003
+  translateX: -4200, //0
+  translateY: -6000, //0
+  rotate: 0, // -160
+  useAccelerometer: true
+};
+
+/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/* export const POZYX_TRANSFORM = {
   scaleX: -0.0002, // -0.0002
   scaleY: 0.0003, // 0.0003
   translateX: 0,
   translateY: 0,
   rotate: -160, // -160
   useAccelerometer: true
-};
+}; */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PozyxTransform(position: {
   x: number;
@@ -269,7 +285,9 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.y = y;
     // HACK Blueprints into cobj
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = entity.id;
+    cobj.name = String(entity.id).startsWith('ft-pozyx')
+      ? entity.id.substring(8)
+      : entity.id;
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
@@ -283,7 +301,9 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.x = pos.x;
     cobj.y = pos.y;
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = entity.id;
+    cobj.name = String(entity.id).startsWith('ft-pozyx')
+      ? entity.id.substring(8)
+      : entity.id;
   },
   shouldRemove: cobj => false
   // Inputs do not necessarily come in with every INPUTS phase fire

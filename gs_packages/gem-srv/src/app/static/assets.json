@@ -8,7 +8,7 @@
     {
       "assetId": 2,
       "assetName": "default",
-      "assetUrl": "static/sprites/default-sprite.png"
+      "assetUrl": "static/sprites/onexone.png"
     },
     {
       "assetId": 3,
@@ -49,6 +49,66 @@
       "assetId": 10,
       "assetName": "algae.json",
       "assetUrl": "static/sprites/algae.json"
+    },
+    {
+      "assetId": 200,
+      "assetName": "organic_matter.json",
+      "assetUrl": "static/sprites/local/organic_matter.json"
+    },
+    {
+      "assetId": 201,
+      "assetName": "moth.json",
+      "assetUrl": "static/sprites/local/moth.json"
+    },
+    {
+      "assetId": 202,
+      "assetName": "predator.json",
+      "assetUrl": "static/sprites/local/predator.json"
+    },
+    {
+      "assetId": 203,
+      "assetName": "tree_leaves.json",
+      "assetUrl": "static/sprites/local/tree_leaves.json"
+    },
+    {
+      "assetId": 204,
+      "assetName": "tree_trunk.json",
+      "assetUrl": "static/sprites/local/tree_trunk.json"
+    },
+    {
+      "assetId": 205,
+      "assetName": "dead_moth.json",
+      "assetUrl": "static/sprites/local/dead_moth.json"
+    },
+    {
+      "assetId": 206,
+      "assetName": "dirt.json",
+      "assetUrl": "static/sprites/local/dirt.json"
+    },
+    {
+      "assetId": 207,
+      "assetName": "boulder.json",
+      "assetUrl": "static/sprites/local/boulder.json"
+    },
+    {
+      "assetId": 208,
+      "assetName": "plant.json",
+      "assetUrl": "static/sprites/local/plant.json"
+    },
+    {
+      "assetId": 209,
+      "assetName": "house.json",
+      "assetUrl": "static/sprites/local/house.json"
+    },
+    {
+      "assetId": 210,
+      "assetName": "machine.json",
+      "assetUrl": "static/sprites/local/machine.json"
+    },
+    {
+      "assetId": 211,
+      "assetName": "worm.json",
+      "assetUrl": "static/sprites/local/worm.json"
     }
   ],
   "READ_ME": [

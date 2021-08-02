@@ -3,6 +3,14 @@
 
   ScriptEditor - Edit Script Blueprints
 
+  state.script is loaded
+  1. UR/APP_START waits for Main to come online
+  2. Initialize() calls RequestModel
+  3. RequestModel requests model data via URSYS
+  4. URSYS callback calls UpdateModelData
+  5. UpdateModelData sets OnSelectScript
+  6. OnSelectScript loads the actual script
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
