@@ -428,7 +428,8 @@ class Visual implements IVisual, IPoolable, IActable {
   }
 
   setMeter(percent: number, color: number, isLargeGraphic: boolean) {
-    if (percent === this.meterValue) return; // no update necessary
+    // Don't cache meterValue because script might change only color
+    // if (percent === this.meterValue) return; // no update necessary
     if (!this.meter) {
       this.meter = new PIXI.Graphics();
       this.filterbox.addChild(this.meter);

@@ -159,7 +159,7 @@ function m_UIUpdate(frame) {
     } else if (meter) {
       agent.prop.statusValue.setTo(meter);
     }
-    if (meterColor) agent.prop.statusValueColor.setTo(meterColor);
+    if (meterColor !== undefined) agent.prop.statusValueColor.setTo(meterColor);
     if (isLargeGraphic) agent.prop.statusValueIsLarge.setTo(isLargeGraphic);
 
     // 3. Update Graph
