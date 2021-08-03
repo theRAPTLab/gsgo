@@ -34,21 +34,27 @@ featCall AgentWidgets bindMeterTo nutrients
 `
     },
     {
-      id: 'Sun',
-      label: 'Sun',
-      script: `# BLUEPRINT Sun
+      id: 'Sunbeam',
+      label: 'Sunbeam',
+      script: `# BLUEPRINT Sunbeam
 # PROGRAM DEFINE
 useFeature Costume
+useFeature Movement
 featCall Costume setCostume 'circle.json' 0
+featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
 
-useFeature Movement
-
 useFeature Physics
-featProp Physics scale setTo 0.5
-featProp Physics scaleY setTo 8
+featProp Physics scale setTo 0.4
+featProp Physics scaleY setTo 2.5
 
+// STUDENTS_MAY_CHANGE - to set the speed of the sunbeam (note, it is a different scale then aquatic)
 addProp speed Number 1
+
+# PROGRAM INIT
+// default position for moving across the top
+prop x setTo -400
+prop y setTo -180
 
 # PROGRAM UPDATE
 exprPush {{agent.x + agent.getProp('speed').value; }}
@@ -198,7 +204,7 @@ addProp label String 'Plant'
 
 useFeature Physics
 useFeature Touches
-featCall Touches monitor Sun b2b
+featCall Touches monitor Sunbeam b2b
 featCall Touches monitor Soil b2b
 featCall Touches monitor Bunny b2b
 
@@ -209,7 +215,7 @@ featProp AgentWidgets meterColor setTo 65280
 
 
 # PROGRAM UPDATE
-when Plant touches Sun [[
+when Plant touches Sunbeam [[
   every 1 runAtStart [[
     prop Plant.energyLevel add 1
     featCall Plant.Costume setGlow 0.05
@@ -297,13 +303,13 @@ every 1 runAtStart [[
       initScript: `prop x setTo 200
     prop y setTo 0`
     },
-    {
+    /*     {
       id: 1110,
-      name: 'Sun',
-      blueprint: 'Sun',
+      name: 'Sunbeam',
+      blueprint: 'Sunbeam',
       initScript: `prop x setTo -400
     prop y setTo 0`
-    },
+    }, */
     {
       id: 1120,
       name: 'Rock01',
