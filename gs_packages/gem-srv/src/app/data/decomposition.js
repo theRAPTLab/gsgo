@@ -9,6 +9,12 @@ export const MODEL = {
     bounce: true,
     bgcolor: 0x000066
   },
+  rounds: {
+    options: {
+      allowResetStage: true,
+      noloop: false // loop because why not
+    }
+  },
   scripts: [
     {
       id: 'Soil',
