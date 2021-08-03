@@ -43,24 +43,38 @@ useFeature Movement
 featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
+//prop zIndex setTo 100
+
+// STUDENTS_MAY_CHANGE - to set the speed of the sunbeam
+addProp speed Number 20
+// STUDENTS_MAY_CHANGE - to set the amount of energy the sunbeam gives to algae
+addProp energyRate Number 5
+// STUDENTS_MAY_CHANGE - to set which direction the sunbeam moves (right: 1, left: -1)
+addProp direction Number 1
 
 useFeature Physics
+featCall Physics init
+// STUDENTS_MAY_CHANGE - how wide the sunbeam is
 featProp Physics scale setTo 0.4
+// STUDENTS_MAY_CHANGE - how tall the sunbeam is
 featProp Physics scaleY setTo 2.5
 
-// STUDENTS_MAY_CHANGE - to set the speed of the sunbeam (note, it is a different scale then aquatic)
-addProp speed Number 1
+useFeature Touches
 
 # PROGRAM INIT
 // default position for moving across the top
 prop x setTo -400
 prop y setTo -180
 
-# PROGRAM UPDATE
-exprPush {{agent.x + agent.getProp('speed').value; }}
-propPop x
-ifExpr {{ agent.x > 400 }} [[
-    prop x setTo -400
+# PROGRAM EVENT
+onEvent Tick [[
+  exprPush {{agent.x + agent.getProp('direction').value * (agent.getProp('speed').value); }}
+  propPop x
+
+  ifExpr {{ ((agent.getProp('direction').value == 1) && (agent.x > 400)) || ((agent.getProp('direction').value == -1) && (agent.x < -400))}} [[
+      exprPush {{400 * agent.getProp('direction').value * -1}}
+      propPop x
+  ]]
 ]]
 `
     },
