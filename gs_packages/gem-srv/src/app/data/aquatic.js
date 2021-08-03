@@ -427,7 +427,10 @@ onEvent Tick [[
       useFeature AgentWidgets
       prop skin setTo 'onexone'
       addProp time Number 0
-      //// prop text setTo 'Time: 0'
+
+      exprPush {{ 'Time: 0'}}
+      featPropPop AgentWidgets text
+
       # PROGRAM EVENT
       onEvent Tick [[
         prop time add 1
