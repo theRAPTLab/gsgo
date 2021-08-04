@@ -112,7 +112,10 @@ useFeature AgentWidgets
       script: `# BLUEPRINT Worm
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'worm.json' 0
+featCall Costume setCostume 'worm.json' 2
+
+useFeature Movement
+featProp Movement useAutoOrientation setTo true
 
 addProp energyLevel Number 50
 prop energyLevel setMax 100
@@ -312,8 +315,14 @@ when Waste touches Soil [[
 every 1 runAtStart [[
   // remove if dead
   ifExpr {{ agent.getProp('matter').value < 1 }} [[
-    // NEW remove
+    featCall Population removeAgent
   ]]
+
+  // should be in an else - wasn't sure how
+  // scale based on amount of matter
+    exprPush {{ (agent.getProp('matter').value / 100)}}
+    featPropPop agent.Physics scale
+
 ]]
 `
     },
