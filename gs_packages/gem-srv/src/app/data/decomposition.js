@@ -110,6 +110,7 @@ useFeature AgentWidgets
       id: 'Worm',
       label: 'Worm',
       isCharControllable: true,
+      isPozyxControllable: true,
       script: `# BLUEPRINT Worm
 # PROGRAM DEFINE
 useFeature Costume
@@ -404,14 +405,14 @@ every 1 runAtStart [[
       initScript: `prop x setTo 0
     prop y setTo -200`
     }, */
-    {
+    /* {
       id: 1501,
       name: 'Worm01',
       blueprint: 'Worm',
       initScript: `prop x setTo 0
     prop y setTo 100`
-    }
-    /*   {
+    }, */
+    {
       id: 1601,
       name: 'Waste01',
       blueprint: 'Waste',
@@ -424,6 +425,6 @@ every 1 runAtStart [[
       blueprint: 'Waste',
       initScript: `prop x setTo 220
     prop y setTo 50`
-    } */
+    }
   ]
 };
