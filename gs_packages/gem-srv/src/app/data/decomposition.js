@@ -42,8 +42,7 @@ featCall Touches monitor Worm b2b
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo nutrients
 
-exprPush {{ '' }}
-featPropPop AgentWidgets text
+featProp AgentWidgets text setTo ''
 
 # PROGRAM UPDATE
 `
@@ -54,7 +53,6 @@ featPropPop AgentWidgets text
       script: `# BLUEPRINT Sunbeam
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Movement
 featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
@@ -244,8 +242,7 @@ useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
 featProp AgentWidgets meterColor setTo 65280
 
-exprPush {{ '' }}
-featPropPop AgentWidgets text
+featProp AgentWidgets text setTo ''
 
 # PROGRAM UPDATE
 when Plant touches Sunbeam [[
@@ -302,8 +299,7 @@ featCall Touches monitor Soil b2b
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo matter
 
-exprPush {{ '' }}
-featPropPop AgentWidgets text
+featProp AgentWidgets text setTo ''
 
 useFeature Population
 

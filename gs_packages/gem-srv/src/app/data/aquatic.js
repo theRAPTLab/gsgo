@@ -284,7 +284,6 @@ when Algae touches Sunbeam [[
       script: `# BLUEPRINT Sunbeam
 # PROGRAM DEFINE
 useFeature Costume
-useFeature Movement
 featCall Costume setCostume 'circle.json' 0
 featCall Costume setColorize 1 1 0
 prop agent.alpha setTo 0.3
