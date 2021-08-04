@@ -69,7 +69,7 @@ featCall Physics init
 // STUDENTS_MAY_CHANGE - how wide the sunbeam is
 featProp Physics scale setTo 0.4
 // STUDENTS_MAY_CHANGE - how tall the sunbeam is
-featProp Physics scaleY setTo 2.5
+featProp Physics scaleY setTo 2
 
 useFeature Touches
 
@@ -227,14 +227,17 @@ every 1 runAtStart [[
 useFeature Costume
 featCall Costume setCostume 'plant.json' 0
 
+// STUDENTS_MAY_CHANGE - set a different starting eneregy level, max or min?
 addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+// STUDENTS_MAY_CHANGE - sete a different starting eneregy level, max or min?  A higher max will allow a lot more time before the plant looks bad
 addProp nutrients Number 8
 prop nutrients setMax 10
 prop nutrients setMin 0
 
+// STUDENTS_MAY_CHANGE - sete a different range of matter
 addProp matter Number 50
 prop matter setMax 100
 prop matter setMin 0
@@ -280,7 +283,9 @@ every 1 runAtStart [[
   exprPush {{ agent.getProp('matter').value / 50 }}
   featPropPop Physics scale
 
+  // STUDENTS_MAY_CHANGE - Change the range of values at which the plant looks healthy / not, and maybe change what it does when sick
   // is it healthy?  Use some nutrients and then set color
+
   prop nutrients sub 1
   ifExpr {{ agent.getProp('nutrients').value > 6 }} [[
     // healthy
@@ -461,7 +466,7 @@ every 1 runAtStart [[
       name: 'Sunbeam',
       blueprint: 'Sunbeam',
       initScript: `prop x setTo -400
-    prop y setTo -200`
+    prop y setTo -240`
     },
     /* {
       id: 1120,
