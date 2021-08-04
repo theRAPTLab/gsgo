@@ -341,6 +341,30 @@ every 1 runAtStart [[
       featCall Costume setCostume 'square.json' 0
 
       useFeature Physics`
+    },
+    {
+      id: 'Timer',
+      label: 'Timer',
+      script: `# BLUEPRINT Timer
+      # PROGRAM DEFINE
+      useFeature AgentWidgets
+      prop skin setTo 'onexone'
+      addProp time Number 0
+
+      featProp AgentWidgets text setTo 'Time: 0'
+
+      # PROGRAM INIT
+
+      prop x setTo 445
+      prop y setTo -256
+
+      # PROGRAM EVENT
+      onEvent Tick [[
+        prop time add 1
+        exprPush {{ 'Time: ' + agent.getProp('time').value }}
+        featPropPop AgentWidgets text
+      ]]
+`
     }
   ],
   instances: [
