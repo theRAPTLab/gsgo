@@ -319,6 +319,25 @@ every 1 runAtStart [[
   ]]
 ]]
 `
+    },
+    {
+      id: 'TextLabel',
+      label: 'TextLabel',
+      script: `# BLUEPRINT TextLabel
+      # PROGRAM DEFINE
+      useFeature AgentWidgets
+      prop skin setTo 'onexone'
+`
+    },
+    {
+      id: 'ColorChip',
+      label: 'ColorChip',
+      script: `# BLUEPRINT ColorChip
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'square.json' 0
+
+      useFeature Physics`
     }
   ],
   instances: [
@@ -426,6 +445,55 @@ every 1 runAtStart [[
       blueprint: 'Waste',
       initScript: `prop x setTo 220
     prop y setTo 50`
+    },
+    {
+      id: 1700,
+      name: 'LegendLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 450
+    prop y setTo -400
+    featProp AgentWidgets text setTo 'Key:'
+    `
+    },
+    {
+      id: 1701,
+      name: 'EnergyLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 450
+    prop y setTo -370
+    featProp AgentWidgets text setTo 'Energy'
+    `
+    },
+    {
+      id: 1702,
+      name: 'NutrientsLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 450
+    prop y setTo -340
+    featProp AgentWidgets text setTo 'Nutrients'
+    `
+    },
+    {
+      id: 1703,
+      name: 'EnergyChip',
+      blueprint: 'ColorChip',
+      initScript: `prop x setTo 445.5
+    prop y setTo -351
+    featCall Costume setColorize 0 255 0
+    prop zIndex setTo 100
+    featCall Physics setSize 90 35
+    `
+    },
+    {
+      id: 1704,
+      name: 'NutrientsChip',
+      blueprint: 'ColorChip',
+      initScript: `prop x setTo 445.5
+    prop y setTo -320
+    featCall Costume setColorize 138 43 226
+    prop zIndex setTo 100
+    featCall Physics setSize 90 35
+    `
     }
   ]
 };
