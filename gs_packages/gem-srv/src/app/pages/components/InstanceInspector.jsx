@@ -168,6 +168,7 @@ class InstanceInspector extends React.Component {
         break;
     }
     this.setState({ size: newsize, alreadyRegistered: registrationStatus });
+    this.inspector.scrollIntoView();
   }
   OnDisclosureClick(e) {
     e.preventDefault();
@@ -226,6 +227,9 @@ class InstanceInspector extends React.Component {
     const hiddenProps = data.filter(p => propsToHide.includes(p.label));
     return (
       <div
+        ref={c => {
+          this.inspector = c;
+        }}
         style={{
           backgroundColor: '#000',
           margin: '0.5em 0 0.5em 0.5em',
