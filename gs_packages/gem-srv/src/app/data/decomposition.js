@@ -242,9 +242,10 @@ featCall Touches monitor Bunny b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
-// Green = 0x00FF00
 featProp AgentWidgets meterColor setTo 65280
 
+exprPush {{ '' }}
+featPropPop AgentWidgets text
 
 # PROGRAM UPDATE
 when Plant touches Sunbeam [[
@@ -300,6 +301,9 @@ featCall Touches monitor Soil b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo matter
+
+exprPush {{ '' }}
+featPropPop AgentWidgets text
 
 useFeature Population
 
@@ -384,19 +388,19 @@ every 1 runAtStart [[
       initScript: `prop x setTo -400
     prop y setTo 0`
     }, */
-    {
+    /* {
       id: 1120,
       name: 'Rock01',
       blueprint: 'Rock',
       initScript: `prop x setTo 200
     prop y setTo -200`
-    },
+    }, */
     {
       id: 1201,
       name: 'Plant01',
       blueprint: 'Plant',
-      initScript: `prop x setTo -200
-    prop y setTo -125`
+      initScript: `prop x setTo -300
+    prop y setTo -76`
     },
     /*  {
       id: 1301,
@@ -416,8 +420,8 @@ every 1 runAtStart [[
       id: 1601,
       name: 'Waste01',
       blueprint: 'Waste',
-      initScript: `prop x setTo -200
-    prop y setTo 0`
+      initScript: `prop x setTo -100
+    prop y setTo 100`
     },
     {
       id: 1602,
