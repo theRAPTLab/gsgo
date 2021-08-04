@@ -22,19 +22,28 @@ export const MODEL = {
       script: `# BLUEPRINT Soil
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'dirt.json' 0
-prop alpha setTo 0.2
+featCall Costume setCostume 'square.json' 0
+featCall Costume setColorize 59.8 45.4 0
+prop agent.alpha setTo 0.3
+
 
 addProp nutrients Number 50
 prop nutrients setMax 100
 prop nutrients setMin 0
 
 useFeature Physics
+
+featCall Physics setSize 200 200
+
+
 useFeature Touches
 featCall Touches monitor Worm b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo nutrients
+
+exprPush {{ '' }}
+featPropPop AgentWidgets text
 
 # PROGRAM UPDATE
 `
@@ -115,6 +124,8 @@ prop matter setMax 100
 prop matter setMin 0
 
 useFeature Physics
+featProp Physics scale setTo 0.5
+
 useFeature Touches
 featCall Touches monitor Waste b2b
 featCall Touches monitor Soil b2b
@@ -313,15 +324,57 @@ every 1 runAtStart [[
       id: 1101,
       name: 'Soil01',
       blueprint: 'Soil',
-      initScript: `prop x setTo -200
-    prop y setTo 0`
+      initScript: `prop x setTo -300
+    prop y setTo 100`
     },
     {
       id: 1102,
       name: 'Soil02',
       blueprint: 'Soil',
-      initScript: `prop x setTo 200
-    prop y setTo 0`
+      initScript: `prop x setTo -100
+    prop y setTo 100`
+    },
+    {
+      id: 1103,
+      name: 'Soil03',
+      blueprint: 'Soil',
+      initScript: `prop x setTo 100
+    prop y setTo 100`
+    },
+    {
+      id: 1104,
+      name: 'Soil04',
+      blueprint: 'Soil',
+      initScript: `prop x setTo 300
+    prop y setTo 100`
+    },
+    {
+      id: 1105,
+      name: 'Soil05',
+      blueprint: 'Soil',
+      initScript: `prop x setTo -300
+    prop y setTo 300`
+    },
+    {
+      id: 1106,
+      name: 'Soil06',
+      blueprint: 'Soil',
+      initScript: `prop x setTo -100
+    prop y setTo 300`
+    },
+    {
+      id: 1107,
+      name: 'Soil07',
+      blueprint: 'Soil',
+      initScript: `prop x setTo 100
+    prop y setTo 300`
+    },
+    {
+      id: 1108,
+      name: 'Soil08',
+      blueprint: 'Soil',
+      initScript: `prop x setTo 300
+    prop y setTo 300`
     },
     /*     {
       id: 1110,
@@ -344,21 +397,21 @@ every 1 runAtStart [[
       initScript: `prop x setTo -200
     prop y setTo -125`
     },
-    {
+    /*  {
       id: 1301,
       name: 'Bunny01',
       blueprint: 'Bunny',
       initScript: `prop x setTo 0
     prop y setTo -200`
-    },
+    }, */
     {
       id: 1501,
       name: 'Worm01',
       blueprint: 'Worm',
       initScript: `prop x setTo 0
     prop y setTo 100`
-    },
-    {
+    }
+    /*   {
       id: 1601,
       name: 'Waste01',
       blueprint: 'Waste',
@@ -371,6 +424,6 @@ every 1 runAtStart [[
       blueprint: 'Waste',
       initScript: `prop x setTo 220
     prop y setTo 50`
-    }
+    } */
   ]
 };
