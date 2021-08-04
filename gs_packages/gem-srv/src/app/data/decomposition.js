@@ -7,7 +7,7 @@ export const MODEL = {
     left: -400,
     wrap: [false, false],
     bounce: true,
-    bgcolor: 0x000066
+    bgcolor: 0x98f5ff
   },
   rounds: {
     options: {
@@ -23,9 +23,7 @@ export const MODEL = {
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'square.json' 0
-featCall Costume setColorize 59.8 45.4 0
-prop agent.alpha setTo 0.3
-
+featCall Costume setColorize 200 192 176
 
 addProp nutrients Number 50
 prop nutrients setMax 100
@@ -41,7 +39,8 @@ featCall Touches monitor Worm b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo nutrients
-
+// violet
+featProp AgentWidgets meterColor setTo 9055202
 featProp AgentWidgets text setTo ''
 
 # PROGRAM UPDATE
@@ -240,6 +239,7 @@ featCall Touches monitor Bunny b2b
 
 useFeature AgentWidgets
 featCall AgentWidgets bindMeterTo energyLevel
+// Green
 featProp AgentWidgets meterColor setTo 65280
 
 featProp AgentWidgets text setTo ''
@@ -296,10 +296,11 @@ useFeature Touches
 featCall Touches monitor Worm b2b
 featCall Touches monitor Soil b2b
 
-useFeature AgentWidgets
-featCall AgentWidgets bindMeterTo matter
-
-featProp AgentWidgets text setTo ''
+//useFeature AgentWidgets
+//featCall AgentWidgets bindMeterTo matter
+// violet
+//featProp AgentWidgets meterColor setTo 9055202
+//featProp AgentWidgets text setTo ''
 
 useFeature Population
 
