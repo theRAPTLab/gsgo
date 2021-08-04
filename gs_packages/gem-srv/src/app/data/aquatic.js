@@ -213,8 +213,7 @@ useFeature Touches
 featCall Touches monitor Fish b2b
 featCall Touches monitor Sunbeam b2b
 
-exprPush {{ '' }}
-featPropPop AgentWidgets text
+featProp AgentWidgets text setTo ''
 
 // STUDENTS_MAY_CHANGE - to set the type of movement and / or the amount it will wander
 featCall Movement setMovementType 'wander' 0.2
@@ -427,8 +426,7 @@ onEvent Tick [[
       prop skin setTo 'onexone'
       addProp time Number 0
 
-      exprPush {{ 'Time: 0'}}
-      featPropPop AgentWidgets text
+      featProp AgentWidgets text setTo 'Time: 0'
 
       # PROGRAM EVENT
       onEvent Tick [[
