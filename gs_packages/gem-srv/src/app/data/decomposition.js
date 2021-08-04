@@ -39,6 +39,7 @@ useFeature Touches
 featCall Touches monitor Worm b2b
 
 useFeature AgentWidgets
+// STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter (note, color won't change below)
 featCall AgentWidgets bindMeterTo nutrients
 // violet
 featProp AgentWidgets meterColor setTo 9055202
@@ -133,6 +134,7 @@ featCall Touches monitor Waste b2b
 featCall Touches monitor Soil b2b
 
 useFeature AgentWidgets
+// STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter (note, color won't change below)
 featCall AgentWidgets bindMeterTo energyLevel
 // Green = 0x00FF00
 featProp AgentWidgets meterColor setTo 65280
@@ -149,6 +151,7 @@ when Worm touches Waste [[
 when Worm touches Soil [[
   every 1 runAtStart [[
     // if full energy, emit nutrients
+    // note they eemit nutrients if they are in a spot where they are eating ... we might want a delay?
     ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
       prop Worm.energyLevel sub 50
       prop Worm.matter sub 50
@@ -186,6 +189,7 @@ useFeature Touches
 featCall Touches monitor Plant b2b
 
 useFeature AgentWidgets
+// STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter (note, color won't change below)
 featCall AgentWidgets bindMeterTo energyLevel
 // Green = 0x00FF00
 featProp AgentWidgets meterColor setTo 65280
@@ -207,7 +211,7 @@ every 1 runAtStart [[
   ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
     prop agent.energyLevel sub 50
     prop agent.matter sub 50
-    featCall Population createAgent Waste [[
+    featCall Population populateBySpawning Waste [[
       prop x addRnd -20 20
       prop y addRnd 50 150
       featCall Costume setGlow 2
@@ -233,8 +237,6 @@ addProp matter Number 50
 prop matter setMax 100
 prop matter setMin 0
 
-addProp label String 'Plant'
-
 useFeature Physics
 useFeature Touches
 featCall Touches monitor Sunbeam b2b
@@ -242,6 +244,7 @@ featCall Touches monitor Soil b2b
 featCall Touches monitor Bunny b2b
 
 useFeature AgentWidgets
+// STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter (note, color won't change below)
 featCall AgentWidgets bindMeterTo energyLevel
 // Green
 featProp AgentWidgets meterColor setTo 65280
@@ -268,18 +271,12 @@ when Plant touches Soil [[
 every 1 runAtStart [[
   // remove if dead
   ifExpr {{ agent.getProp('matter').value < 1 }} [[
-    // NEW remove
-    // HACK just set size
-    featProp Physics scale setTo 0.1
+    featCall Population removeAgent
   ]]
 
   // set size based on matter
   exprPush {{ agent.getProp('matter').value / 50 }}
   featPropPop Physics scale
-
-  // update matter label
-  exprPush {{ 'matter: ' + agent.getProp('matter').value }}
-  featPropPop AgentWidgets text
 ]]
 `
     },
@@ -352,7 +349,8 @@ every 1 runAtStart [[
       name: 'Soil01',
       blueprint: 'Soil',
       initScript: `prop x setTo -300
-    prop y setTo 100`
+    prop y setTo 100
+    prop nutrients setTo 0`
     },
     {
       id: 1102,
