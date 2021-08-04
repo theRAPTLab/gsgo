@@ -33,6 +33,7 @@ useFeature Physics
 
 featCall Physics setSize 200 200
 
+prop zIndex setTo -100
 
 useFeature Touches
 featCall Touches monitor Worm b2b
@@ -296,11 +297,7 @@ useFeature Touches
 featCall Touches monitor Worm b2b
 featCall Touches monitor Soil b2b
 
-//useFeature AgentWidgets
-//featCall AgentWidgets bindMeterTo matter
-// violet
-//featProp AgentWidgets meterColor setTo 9055202
-//featProp AgentWidgets text setTo ''
+prop zIndex setTo -100
 
 useFeature Population
 
