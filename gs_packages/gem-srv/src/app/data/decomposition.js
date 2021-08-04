@@ -44,8 +44,6 @@ featCall AgentWidgets bindMeterTo nutrients
 // violet
 featProp AgentWidgets meterColor setTo 9055202
 featProp AgentWidgets text setTo ''
-
-# PROGRAM UPDATE
 `
     },
     {
@@ -233,6 +231,10 @@ addProp energyLevel Number 50
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
+addProp nutrients Number 8
+prop nutrients setMax 10
+prop nutrients setMin 0
+
 addProp matter Number 50
 prop matter setMax 100
 prop matter setMin 0
@@ -255,15 +257,15 @@ featProp AgentWidgets text setTo ''
 when Plant touches Sunbeam [[
   every 1 runAtStart [[
     prop Plant.energyLevel add 1
+    prop Plant.matter add 1
     featCall Plant.Costume setGlow 0.05
   ]]
 ]]
 when Plant touches Soil [[
   every 1 [[
     ifExpr {{ Soil.getProp('nutrients').value > 0 }} [[
-      prop Plant.energyLevel add 1
-      prop Plant.matter add 1
       prop Soil.nutrients sub 1
+      prop Plant.nutrients add 1
       featCall Plant.Costume setGlow 0.05
     ]]
   ]]
@@ -277,6 +279,22 @@ every 1 runAtStart [[
   // set size based on matter
   exprPush {{ agent.getProp('matter').value / 50 }}
   featPropPop Physics scale
+
+  // is it healthy?  Use some nutrients and then set color
+  prop nutrients sub 1
+  ifExpr {{ agent.getProp('nutrients').value > 6 }} [[
+    // healthy
+    featCall Costume setColorize 0 255 0
+  ]]
+  ifExpr {{ agent.getProp('nutrients').value < 6 }} [[
+    // ok, but not great
+    featCall Costume setColorize 255 255 0
+  ]]
+  ifExpr {{ agent.getProp('nutrients').value < 2 }} [[
+    // not doing well at all, so lets also lose some matter
+    featCall Costume setColorize 165 42 42
+    prop matter sub 1
+  ]]
 ]]
 `
     },
@@ -365,6 +383,19 @@ every 1 runAtStart [[
         featPropPop AgentWidgets text
       ]]
 `
+    },
+    {
+      id: 'Reporter',
+      label: 'Reporter',
+      script: `# BLUEPRINT Reporter
+            # PROGRAM DEFINE
+            prop skin setTo 'onexone'
+
+            useFeature Population
+            useFeature Global
+            useFeature AgentWidgets
+            featProp AgentWidgets isLargeGraphic setTo true
+          `
     }
   ],
   instances: [
@@ -374,7 +405,7 @@ every 1 runAtStart [[
       blueprint: 'Soil',
       initScript: `prop x setTo -300
     prop y setTo 100
-    prop nutrients setTo 0`
+    prop nutrients setTo 10`
     },
     {
       id: 1102,
@@ -425,13 +456,13 @@ every 1 runAtStart [[
       initScript: `prop x setTo 300
     prop y setTo 300`
     },
-    /*     {
+    {
       id: 1110,
       name: 'Sunbeam',
       blueprint: 'Sunbeam',
       initScript: `prop x setTo -400
-    prop y setTo 0`
-    }, */
+    prop y setTo -200`
+    },
     /* {
       id: 1120,
       name: 'Rock01',
@@ -522,6 +553,18 @@ every 1 runAtStart [[
     prop zIndex setTo 100
     featCall Physics setSize 90 35
     `
-    }
+    } /*,
+    {
+      id: 1800,
+      name: 'Energy',
+      blueprint: 'Reporter',
+      initScript: `prop x setTo 460
+prop y setTo 300
+featCall Global addGlobalProp totalEnergy Number 20
+featCall Global globalProp totalEnergy setMin 0
+featCall Global globalProp totalEnergy setMax 50
+featCall AgentWidgets bindGraphToGlobalProp totalEnergy 50
+`
+    }*/
   ]
 };
