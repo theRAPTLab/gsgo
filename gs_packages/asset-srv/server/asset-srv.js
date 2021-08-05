@@ -15,9 +15,14 @@ const Compression = require('compression');
 const CORS = require('cors');
 const Path = require('path');
 const IP = require('ip');
+const FSE = require('fs-extra');
 const CookieP = require('cookie-parser');
+const ServeIndex = require('serve-index');
 const { UseLokiGQL_Middleware, PrefixUtil } = require('@gemstep/ursys/server');
-const { PACKAGE_NAME, ASSETS_PATH } = require('../config/asrv.settings');
+const {
+  PACKAGE_NAME,
+  PUBLIC_RESOURCES_PATH
+} = require('../config/asrv.settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,7 +32,7 @@ const resolvers = require('../config/graphql/resolvers');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PrefixUtil(PACKAGE_NAME);
 const PORT = 8080;
-const GSGO_ASSETPATH = Path.resolve(__dirname, '../../..', ASSETS_PATH);
+const GSGO_HTDOCS = Path.resolve(__dirname, '../../..', PUBLIC_RESOURCES_PATH);
 let m_server; // server instance; check if unset before launching
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
@@ -53,19 +58,19 @@ function m_AppListen(opt = {}) {
 function StartAssetServer(opt = {}) {
   console.log(...PR('Starting Asset Server [async]'));
   console.log(...PR(`... will use port ${port} at ${ip}`));
-  console.log(...PR(`... will serve from ${GSGO_ASSETPATH}`));
+  console.log(...PR(`... will serve from ${GSGO_HTDOCS}`));
+
+  // make sure asset server document path exists
+  // and write an index file there
+  FSE.ensureDirSync(Path.join(GSGO_HTDOCS, 'assets'));
+  const INDEX_TEXT = `GEMSTEP ASSET SERVER (${PACKAGE_NAME})`;
+  const INDEX_HTML = Path.join(GSGO_HTDOCS, '_serverId.txt');
+  FSE.writeFileSync(INDEX_HTML, INDEX_TEXT);
 
   // basic express middleware
   app.use(Compression());
   app.use(CookieP());
   app.use(CORS());
-
-  app.get('/', (req, res) => {
-    res.send('GEMSTEP Asset Server 0.1');
-  });
-  app.get('/assets', CORS(), (req, res) => {
-    res.json({ msg: 'CORS-enabled for /assets' });
-  });
 
   // start GraphQL server because why not
   UseLokiGQL_Middleware(app, {
@@ -76,7 +81,15 @@ function StartAssetServer(opt = {}) {
     root: resolvers
   });
 
-  // start listening
+  app.get('/', (req, res) => {
+    res.sendFile(INDEX_HTML);
+  });
+  // enable CORS for assets path
+  app.use('/assets', CORS());
+  // serve files from /assets with index
+  app.use(ServeIndex(GSGO_HTDOCS, { 'icons': false }));
+
+  // start server listening for http at port
   m_AppListen(opt);
 }
 

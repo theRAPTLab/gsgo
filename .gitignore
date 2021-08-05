@@ -20,6 +20,7 @@ npm-debug.log
 runtime/
 dist/
 built/
+public_*/
 
 # Numerous always-ignore extensions
 *~

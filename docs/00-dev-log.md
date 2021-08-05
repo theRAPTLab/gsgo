@@ -521,4 +521,9 @@ Then we want the GEMSTEP side to
   * [ ] zip file, download and uncompress into `runtime/cache` matching path
   * [ ] manifest, download everything into `runtime/cache`
 
-STREAM OF CONSCIOUSNESS
+### STREAM OF CONSCIOUSNESS
+
+made `gs_packages/asset-srv` by copying files from `gem-srv` startup.
+
+
+
