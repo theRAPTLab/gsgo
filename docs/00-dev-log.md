@@ -504,5 +504,21 @@ Took a while to clean up the asset loader independent class, but we have the sys
 
 Need to make sure AssetLoader saves responsibly by updating the assetRecord instead of completely overwriting it
 
-### Next: Autogenerate the Manifest
+## AUG 04 THU - Simple Server
 
+To **autogenerate a manifest**, we first want to add an archive server. I'm going to build this into the current server so Digital Ocean can serve as the master contoller at some point. This is the **beginning of URNET WAN** support!
+
+At the very basic, we need another express server with its own database that provides the following features:
+
+* [ ] query directory for listing or use `serve-index`
+* [ ] for the `assets/` route, drill-down into a path and return a manifest if it's a directory, a zip file if it's a file
+* [ ] For manifests, if there is no manifest generate one. If there is a manifest, then use that.
+* [ ] If there is more than one manifest, all of them will be applied additively in alphabetical order
+
+Then we want the GEMSTEP side to
+
+* [ ] request `assets/path-to-archive` and download the files there
+  * [ ] zip file, download and uncompress into `runtime/cache` matching path
+  * [ ] manifest, download everything into `runtime/cache`
+
+STREAM OF CONSCIOUSNESS

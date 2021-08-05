@@ -15,7 +15,7 @@ const { CFG_URDB_GQL } = require('./ur-common');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = require('./util/prompts').makeTerminalOut('  URDB', 'TagRed');
+const TERM = require('./util/prompts').makeTerminalOut('URDB');
 
 let DB;
 let SCHEMA;
@@ -45,7 +45,7 @@ function m_PrepareDatabase(importPath, opt = { doReset: false }) {
   if (doReset || DB.listCollections().length === 0) {
     TERM('doReset:', doReset);
     if (doReset) TERM('existing collections:', DB.listCollections.length);
-    TERM('Initializing database from default data');
+    TERM('... initializing database from default data');
     // erase collections
     const cnames = DB.listCollections().map(o => o.name);
     TERM(`... removing ${cnames.length} collections`);
@@ -68,14 +68,14 @@ function m_PrepareDatabase(importPath, opt = { doReset: false }) {
       records.forEach(r => ncol.insert(r));
     });
     DB.saveDatabase();
-    TERM('Database initialized', DB.listCollections().length, 'collections');
+    TERM('... lokidb initialized w/', DB.listCollections().length, 'collections');
   } else {
-    TERM('Database loaded with', DB.listCollections().length, 'collections');
+    TERM('... lokidb loaded w/', DB.listCollections().length, 'collections');
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_LoadSchema(schemaPath) {
-  TERM('LOADING schema', schemaPath);
+  TERM('... loaded schema', schemaPath);
   try {
     const data = fse.readFileSync(schemaPath, 'utf8');
     SCHEMA = buildSchema(data);
@@ -92,8 +92,9 @@ function m_LoadSchema(schemaPath) {
  */
 function UseLokiGQL_Middleware(app, options) {
   const { dbFile, dbImportFile, schemaFile, root, doReset } = options;
+  TERM('Starting Database Server [async]');
   if (typeof dbFile === 'string' && dbFile.length > 0) {
-    TERM('loading', dbFile);
+    TERM('... loading', dbFile);
     fse.ensureDirSync(path.dirname(dbFile));
     DB = new LOKI(dbFile, {
       autosave: true,
@@ -106,7 +107,7 @@ function UseLokiGQL_Middleware(app, options) {
       autoloadCallback: () => {
         m_PrepareDatabase(dbImportFile, { doReset });
         m_LoadSchema(schemaFile);
-        TERM(`BINDING GraphQL Endpoint ${CFG_URDB_GQL}`);
+        TERM(`... bound GraphQL Endpoint ${CFG_URDB_GQL}`);
         app.use(
           CFG_URDB_GQL,
           graphqlHTTP({
@@ -116,6 +117,7 @@ function UseLokiGQL_Middleware(app, options) {
             graphiql: true
           })
         );
+        TERM('Database Server ready');
       }
     });
   } else {

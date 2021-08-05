@@ -1,0 +1,1 @@
+The actual asset directory is located relative to the `gsgo` directory, and is defined in `config/asrv.settings.js`
