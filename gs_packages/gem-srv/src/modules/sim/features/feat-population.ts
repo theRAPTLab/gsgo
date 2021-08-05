@@ -5,6 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /*/ required libraries /*/
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
@@ -62,7 +63,14 @@ function m_Create(frame) {
     DefineInstance(def);
     let agent = TRANSPILER.MakeAgent(def);
     const parent = GetAgentById(def.parentId);
-    if (parent) CopyAgentProps(parent, agent);
+    if (parent) {
+      if (def.doClone) CopyAgentProps(parent, agent);
+      else {
+        // just copy x/y
+        agent.x = parent.x + RNG() * 8 - 4;
+        agent.y = parent.y + RNG() * 8 - 4;
+      }
+    }
 
     // but reset inert!
     agent.prop.isInert.setTo(false);
@@ -141,6 +149,7 @@ class PopulationPack extends GFeature {
 
   /**
    * Create agent of arbitrary blueprintName type via script
+   * Only copies x and y of parent
    * @param agent
    * @param blueprintName
    * @param initScript
@@ -152,6 +161,7 @@ class PopulationPack extends GFeature {
       name,
       blueprint: blueprintName,
       initScript,
+      doClone: false,
       parentId: agent.id // save for positioning
     };
     AGENTS_TO_CREATE.push(def);
@@ -171,6 +181,7 @@ class PopulationPack extends GFeature {
       name,
       blueprint: bpname,
       initScript: spawnScript,
+      doClone: true,
       parentId: agent.id // save for positioning
     };
     AGENTS_TO_CREATE.push(def);
