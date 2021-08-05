@@ -28,7 +28,7 @@ import {
 /// APPCORE STATE INITIALIZATION //////////////////////////////////////////////
 import '../../modules/appcore';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
-import SETTINGS from '../../../config/app.settings';
+import { PROJECT_NAME } from '../../../config/gem.settings';
 import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
 
@@ -41,7 +41,6 @@ import SystemShell from './SystemShell';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const { PROJECT_NAME } = SETTINGS;
 const PR = UR.PrefixUtil('SYSTEM');
 const AR = UR.PrefixUtil('URSYS');
 

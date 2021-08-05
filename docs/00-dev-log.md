@@ -523,7 +523,10 @@ Then we want the GEMSTEP side to
 
 ### STREAM OF CONSCIOUSNESS
 
-made `gs_packages/asset-srv` by copying files from `gem-srv` startup.
+* [x] made `gs_packages/asset-srv` by copying files from `gem-srv` startup.
 
+* [x] added `ASSET_PATH` and `MANIFEST_FILE` to **config/gem.settings.js**
 
+* [x] Changed `PromiseLoadManifest()` call to accept a filepath, which will be relative to the `gs_assets` directory
+* [x] Modify PromiseLoadManifest() to ge relative to gassets
 

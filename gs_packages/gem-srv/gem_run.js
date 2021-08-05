@@ -19,12 +19,12 @@ const minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
 const TRACKER = require('./server/step-tracker');
 const GEMAPP = require('./server/gem-app-srv');
+const { RUNTIME_PATH } = require('./config/gem.settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = 'GEMRUN';
 const TOUT = UR.TermOut(PR);
-const RUNTIME_PATH = PATH.join(__dirname, '/runtime');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

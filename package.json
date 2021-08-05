@@ -9,7 +9,7 @@
     "ursys": "cd gs_packages/ursys/ && npm run local",
     "gem:multi": "npm run build && lerna run dev:gem --stream --no-prefix",
     "gem": "npm run build && cd gs_packages/gem-srv/ && npm run local",
-    "asset": "npm run build && cd gs_packages/asset-srv/ && npm run local",
+    "assets": "npm run build && cd gs_packages/asset-srv/ && npm run local",
     "admin:multi": "npm run build && lerna run dev:admin --stream --no-prefix",
     "admin": "npm run build && cd gs_packages/admin-srv/ && npm run local",
     "xplay": "npm run build && lerna run dev:xplay --stream --no-prefix",

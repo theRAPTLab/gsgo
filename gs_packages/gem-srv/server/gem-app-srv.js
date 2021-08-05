@@ -22,6 +22,7 @@ const {
   UseLokiGQL_Middleware,
   PrefixUtil
 } = require('@gemstep/ursys/server');
+const { ASSETS_PATH } = require('../config/gem.settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -31,6 +32,7 @@ const resolvers = require('../config/graphql/resolvers');
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PrefixUtil('APPSRV');
+const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 const PORT = 80;
@@ -176,6 +178,14 @@ function StartAppServer(opt = {}) {
     root: resolvers
   });
 
+  app.use(
+    '/assets',
+    (req, res, next) => {
+      if (DBG) console.log(...PR(`gs_assets request: '/assets${req.url}'`));
+      next();
+    },
+    Express.static(ASSETS_PATH)
+  );
   // for everything else...
   app.use('/', Express.static(DIR_OUT));
 

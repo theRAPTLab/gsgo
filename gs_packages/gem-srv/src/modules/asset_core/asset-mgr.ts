@@ -7,7 +7,7 @@
 
   The main API is just two calls:
 
-  * PromiseLoadManifest(url) - returns promise to load the manifest and
+  * PromiseLoadAssets(url) - returns promise to load the manifest and
     tell each loader to load its portion.
   * GetLoader(assetType) - returns the loader instance for given type.
 
@@ -23,6 +23,7 @@ import {
   TManifest
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
+import { ASSETS_ROUTE, MANIFEST_FILE } from '../../../config/gem.settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -56,9 +57,15 @@ function m_RegisterLoader(loader: TAssetLoader) {
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a manifest, load all asset types */
-export async function PromiseLoadManifest(manifestUrl: string) {
-  const res = await fetch(manifestUrl);
+/** given a manifest, load all asset types. this currently loads from the
+ *  local directory in gs_assets.
+ *  @param {string} subdir if set, relative to assets/
+ */
+export async function PromiseLoadAssets(subdir: string = '') {
+  const route = !subdir ? ASSETS_ROUTE : `${ASSETS_ROUTE}/${subdir}`;
+  const url = `${route}/${MANIFEST_FILE}.json`;
+  const res = await fetch(url);
+
   const json: TManifest = await res.json();
   const promises = [];
   const assets = Object.entries(json).filter(m_IsSupportedType);

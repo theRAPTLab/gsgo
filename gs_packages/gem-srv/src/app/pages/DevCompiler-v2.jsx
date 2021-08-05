@@ -45,11 +45,11 @@ UR.HookPhase(
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
         // (1) The old asset manager routine
-        // let map = await GLOBAL.LoadAssetsSync('static/assets.json');
+        // let map = await GLOBAL.LoadAssetsSync('00-manifest.json');
         if (DBG) console.log(...PR('ASSETS LOADED'));
         console.log(...PR('Waiting for user input'));
         // (2) the new asset manager routine
-        await ASSETS.PromiseLoadManifest('static/assets.json');
+        await ASSETS.PromiseLoadAssets('00-manifest.json');
         resolve();
       })();
     })
