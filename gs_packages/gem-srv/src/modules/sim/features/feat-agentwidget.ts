@@ -72,6 +72,8 @@ function m_FeaturesUpdate(frame) {
         value = global.prop[graphProp].value;
       }
       const counter = agent.prop.AgentWidgets._graphCounter++;
+      if (Number.isNaN(value))
+        throw new Error(`${agent.name} tried to graph a NaN value.`);
       agent.prop.AgentWidgets._graph.push(counter, value);
     } else {
       // Trigger-based Graph
