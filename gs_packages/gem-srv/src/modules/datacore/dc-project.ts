@@ -142,3 +142,9 @@ export function GetBlueprintProperties(blueprintName) {
   const script = blueprint.script;
   return TRANSPILER.ExtractBlueprintProperties(script);
 }
+export function GetBlueprintPropertiesMap(blueprintName) {
+  const blueprint = MODEL.scripts.find(s => s.id === blueprintName);
+  if (!blueprint) return []; // blueprint was probably deleted
+  const script = blueprint.script;
+  return TRANSPILER.ExtractBlueprintPropertiesMap(script);
+}
