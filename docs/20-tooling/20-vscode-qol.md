@@ -7,13 +7,26 @@ When you clone the project, you automatically get several configuration files th
 * `.nvmrc` - specific the version of node as managed by **Node Version Manager**. We are building on Node v12.19.0.
 * `.editorconfig` - Specify default tab and spacing rules through **EditorConfig** (ext `editorconfig.editorconfig`)
 * `.eslintrc.js` - Specify linting toolchain through **TypeScript** parser and expected plugins. This config is used by the **ESLint** extension (ext `dbaeumer.vscode-eslint`).
-* `prettierrc.js` - Specifiy automatic code formatting through the **Prettier** extension (ext `esbenp.prettier-vscode`)
+* `.prettierrc.js` - Specifiy automatic code formatting through the **Prettier** extension (ext `esbenp.prettier-vscode`)
 * `tsconfig.json` - Specify critical **Typescript configuration** for making the tricky Typescript linting work with the ESLint extension. It 
 * `.vscode/settings.json` - Specify editor defaults not handled by `.editorconfig`, *AND* critical **ESLint extension settings** to make it work with the editor: `eslint.validate` and `eslint.workingDirectories`.
 
-The listed extensions rely on the following packages. You shouldn't have to reinstall these yourself as they are part of the root directory's `package.json` already, but if you are building your own project from scratch it's good to know: 
+These are the Visual Studio Code extensions we require to ensure code uniformity:
+
+* EditorConfig - "editorconfig.editorconfig" - defines code formatting rules in a portable way
+* ESLint - "dbaeumer.vscode-eslint" - performs 'live linting' in the editor, highlighting problems
+* Prettier - "esbenp.prettier-vscode" - opinionated prettyprint for JS, respects EditorConfig settings
+
+**Make sure your quit and restart Visual Studio Code** after you install these extensions, or they may not work. 
+# Technical Information
+
+The following sections provide some notes on figuring out how the various tool chain elements work together.
+## Extension Requirements
+
+The listed extensions rely on several packages which are automatically installed for you when you run the `npm ci` command, which refers to `package.json` to find the dependencies.
+However, if you are building your own project from scratch this is what you should do.
 ```
-npm i -D  eslint@^6.8.0" \
+npm i -D  eslint@^6.8.0 \
           typescript@^3.8.3 \
           prettier@^1.19.1 \
           @typescript-eslint/eslint-plugin@^2.24.0 \
@@ -26,7 +39,7 @@ npm i -D  eslint@^6.8.0" \
           eslint-plugin-react@^7.19.0 \
           eslint-plugin-react-hooks@^2.5.1 \
 ```
-Note 1: the ESLint, Typescript, Prettier, and AirBnb linting rules+plugins are all updated by different groups. The package versions thus should be considered as a set. If you change them, new conflicts in the rules may arise. I would not use a `npm i -D` without specifying the exact versions that you know work.
+Note 1: the ESLint, Typescript, Prettier, and AirBnb linting rules+plugins are all updated by different authors. The package versions (e.g. `@^6.8.0`) above should be considered as a set of compatible versions. If you change them, new conflicts in the rules may arise. If you use a `npm i -D` without specifying the `@version`, you will have to make sure it all works together. 
 
 Note 2: the **order of application of rules** in the `plugins` and `extends` fields in `.eslintrc.js` is critically important. In general, the `prettier`-related plugins/rules always come last and `typescript`-related plugins/rules come first. In the very last `rules` section, this is where we (1) add our own overrides and (2) remove any whitespace formatting-related rules and uncaught rule conflicts. For example, when you see TWO versions of `no-undeclared-vars` errors, I just remove the `eslint`  one.
 
@@ -50,12 +63,12 @@ To summarize how this works in our lerna monorepo with multiple `.code-workspace
 
 **`.eslintrc.js`** in root directory (critical rules only)
 
-  ```
+```
 module.exports = {
-	...
-	// note that we're not loading the prettier config or plugin because
-	// in visual studio code, we're relying on the extension to do it on save
-	// via a different mechanism
+  ...
+  // note that we're not loading the prettier config or plugin because
+  // in visual studio code, we're relying on the extension to do it on save
+  // via a different mechanism
   plugins: ['@typescript-eslint', 'react', 'import'],
   settings: {
     'import/resolver': {
@@ -78,19 +91,16 @@ module.exports = {
     'airbnb-typescript' // add airbnb typescript rules
   ],
   parserOptions: {
-  	...
+    ...
     project: './tsconfig.json', // where to look for root ts config
     tsconfigRootDir: __dirname //  monorepo hack
   },
   rules: {
-  	...
-	}
+    ...
+  }
 };
 
-  ```
-
-
-
+```
 ### .eslintrc magic naming bullshit
 
 There are various shortcut rules that make figuring out your ESLint configuration needlessly opaque. ESLint supports external modules with sets of rules that can be loaded as npm modules. They can be packages of rules, configurations (sets of rules), or plugins. 
