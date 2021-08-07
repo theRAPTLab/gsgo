@@ -126,11 +126,11 @@ function ExtractBlueprintProperties(scriptText): any[] {
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
-    // { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
-    // { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
-    // { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
-    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false }
-    // { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
+    { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
+    { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false }
     // { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
     // { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
     // { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
