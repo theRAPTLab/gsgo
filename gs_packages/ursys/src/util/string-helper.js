@@ -88,12 +88,10 @@ function strNanoTimeStamp() {
 /** return a stringified integer padded with leading zeros
  *  note: String.padStart() and padEnd() make this somewhat redundant
  */
-function numZeroPad(num, numDigits = 5) {
-  let n = Math.floor(Math.abs(num));
-  let zeros = Math.max(0, numDigits - Math.floor(n).toString().length);
-  let zeroString = (10 ** zeros).toString().substr(1);
-  if (num < 0) zeroString = `-${zeroString}`;
-  return zeroString + n;
+function fZeroPad(num, numDigits = 5) {
+  if (typeof num !== 'number') return `nan:${num}`;
+  const s = String(num);
+  return s.padStart(numDigits, '0');
 }
 
 /// STRING PARSERS ////////////////////////////////////////////////////////////
@@ -108,5 +106,5 @@ module.exports = {
   strNanoTimeStamp,
   strTimeDatedFilename,
   // numeric zero padding
-  numZeroPad
+  fZeroPad
 };

@@ -60,13 +60,11 @@ const WebpackPacker = env => {
         to: `${DIR_OUT}/index.html`,
         toType: 'file'
       },
-      // this is now served from gsgo/gs_assets
-      // so no need to copy into built
-      // {
-      //   from: 'static',
-      //   to: `${DIR_OUT}/static`,
-      //   toType: 'dir'
-      // },
+      {
+        from: 'static',
+        to: `${DIR_OUT}/static`,
+        toType: 'dir'
+      },
       {
         from: 'favicon.ico',
         to: `${DIR_OUT}/favicon.ico`,

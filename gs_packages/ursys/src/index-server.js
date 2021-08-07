@@ -14,6 +14,8 @@ const DB = require('./server-db');
 const FILES = require('./server-files');
 const DBG = require('./ur-dbg-settings');
 const COMMON = require('./ur-common');
+const UTIL_FS = require('./util/fs-helper');
+const UTIL_STRING = require('./util/string-helper');
 
 //
 const {
@@ -86,6 +88,11 @@ module.exports = {
   // META
   ...META,
   NetInfoRoute: NETINFO.NetInfoRoute,
+  // Utilities
+  UTIL: {
+    string: UTIL_STRING,
+    fs: UTIL_FS
+  },
   // SYSTEM ENVIRONMENT
   IsNode,
   IsBrowser,

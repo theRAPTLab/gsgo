@@ -504,7 +504,7 @@ Took a while to clean up the asset loader independent class, but we have the sys
 
 Need to make sure AssetLoader saves responsibly by updating the assetRecord instead of completely overwriting it
 
-## AUG 04 THU - Simple Server
+## AUG 05 THU - Simple Server
 
 To **autogenerate a manifest**, we first want to add an archive server. I'm going to build this into the current server so Digital Ocean can serve as the master contoller at some point. This is the **beginning of URNET WAN** support!
 
@@ -530,3 +530,13 @@ Then we want the GEMSTEP side to
 * [x] Changed `PromiseLoadManifest()` call to accept a filepath, which will be relative to the `gs_assets` directory
 * [x] Modify PromiseLoadManifest() to ge relative to gassets
 
+* [ ] Tried to load a default SVG sprite but PIXI is proving obtuse
+
+## AUG 06 FRI - Simple Asset Cache
+
+Picking up from yesterday: Let's **read a manifest** and compare them!
+
+* [ ] copy sprites to `dsriseah.com/public/gemstep_assets`
+* [ ] look for hash utility: using `hasha` with MD5 for file revving
+* [ ] handle detection of `?maniest` query in express
+* [ ] 

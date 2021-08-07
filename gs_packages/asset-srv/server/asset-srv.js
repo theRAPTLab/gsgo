@@ -10,19 +10,24 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * ///////////////////////////////////*/
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
+const { UTIL } = require('@gemstep/ursys/server');
 const Express = require('express'); //your original BE server
 const Compression = require('compression');
 const CORS = require('cors');
 const Path = require('path');
 const IP = require('ip');
 const FSE = require('fs-extra');
+const { URL } = require('url');
 const CookieP = require('cookie-parser');
 const ServeIndex = require('serve-index');
 const { UseLokiGQL_Middleware, PrefixUtil } = require('@gemstep/ursys/server');
 const {
   PACKAGE_NAME,
-  PUBLIC_RESOURCES_PATH
+  PUBLIC_RESOURCES_PATH,
+  MANIFEST_NAME
 } = require('../config/asrv.settings');
+
+const DBG = true;
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,8 +69,8 @@ function StartAssetServer(opt = {}) {
   // and write an index file there
   FSE.ensureDirSync(Path.join(GSGO_HTDOCS, 'assets'));
   const INDEX_TEXT = `GEMSTEP ASSET SERVER (${PACKAGE_NAME})`;
-  const INDEX_HTML = Path.join(GSGO_HTDOCS, '_serverId.txt');
-  FSE.writeFileSync(INDEX_HTML, INDEX_TEXT);
+  const INDEX_SEND = Path.join(GSGO_HTDOCS, '_serverId.txt');
+  FSE.writeFileSync(INDEX_SEND, INDEX_TEXT);
 
   // basic express middleware
   app.use(Compression());
@@ -81,13 +86,44 @@ function StartAssetServer(opt = {}) {
     root: resolvers
   });
 
+  // intercept / and always return INDEX_SEND
   app.get('/', (req, res) => {
-    res.sendFile(INDEX_HTML);
+    res.sendFile(INDEX_SEND);
   });
-  // enable CORS for assets path
-  app.use('/assets', CORS());
-  // serve files from /assets with index
-  app.use(ServeIndex(GSGO_HTDOCS, { 'icons': false }));
+
+  // handle /assets in several ways
+  // (1) detect manifest request
+  // (2) enable index serving for debugging
+  // (3) enable static file serving
+  app.use(
+    '/assets',
+    (req, res, next) => {
+      //      const baseURL = `${req.protocol}://${req.headers.host}/${req.originalUrl`;
+      const baseURL = `${req.protocol}://${req.headers.host}`;
+      const fullURL = `${baseURL}${req.originalUrl}`;
+      const urlbits = new URL(fullURL, baseURL); // warn: this is not an iterable nodejs.org/api/url.html
+      const { pathname, searchParams } = urlbits;
+      // console.log(...PR('base:', baseURL), 'full:', fullURL);
+      // for (const key of searchParams.keys()) console.log('?param:', key);
+      if (searchParams.has('manifest')) {
+        console.log(...PR(`requested manifest for: '${pathname}'`));
+        // is it a directory?
+        const dirpath = Path.resolve(GSGO_HTDOCS, req.path);
+        if (!FSE.statSync(dirpath).isDirectory()) {
+          console.log('NOT DIR:', dirpath);
+          // return { error:'manifest generator requires a dirpath, not a filepath'}
+        } else {
+          console.log('MANIFEST DIR OK:', dirpath);
+          const mfile = Path.join(dirpath, MANIFEST_NAME);
+        }
+      } else {
+        console.log(...PR(`requested asset for: '${pathname}'`));
+      }
+      next();
+    },
+    ServeIndex(GSGO_HTDOCS, { 'icons': true }),
+    Express.static(GSGO_HTDOCS)
+  );
 
   // start server listening for http at port
   m_AppListen(opt);

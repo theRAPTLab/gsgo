@@ -9,6 +9,7 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const path = require('path');
 const ndir = require('node-dir');
+const hasha = require('hasha');
 const { CFG_SVR_UADDR } = require('./ur-common');
 
 const TERM = require('./util/prompts').makeTerminalOut('  URFS', 'TagGreen');
