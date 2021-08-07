@@ -169,7 +169,8 @@ function ExtractBlueprintProperties(scriptText): any[] {
   const scriptUnits = TextToScript(scriptText);
   scriptUnits.forEach(unit => {
     if (unit[0] && unit[0].token === 'addProp') {
-      properties.push({
+      // add them to the top of the list
+      properties.unshift({
         name: unit[1].token,
         type: unit[2].token.toLowerCase(),
         defaultValue: Object.values(unit[3]), // might be a 'value' or 'string' or 'token'
