@@ -22,8 +22,11 @@ import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import { GetAllFeatures } from 'modules/datacore/dc-features';
-import { GetBlueprintProperties } from 'modules/datacore/dc-project';
-import * as TRANSPILER from 'script/transpiler';
+import {
+  GetBlueprintProperties,
+  GetBlueprintPropertiesMap
+} from 'modules/datacore/dc-project';
+import * as TRANSPILER from 'script/transpiler-v2';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 import InputField from './InputField';
@@ -377,9 +380,18 @@ class InstanceEditor extends React.Component {
     let jsx = '';
     if (instance) {
       const source = TRANSPILER.ScriptifyText(instance.initScript);
-      const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(
+
+      // initScripts really should not be defining new props
+      // (leads to 'prop already added' errors)
+      // but this code is ready for it
+      const initPropMap = TRANSPILER.ExtractBlueprintPropertiesMap(
         instance.initScript
       );
+      const blueprintName = this.GetBlueprintName();
+      const propMap = new Map([
+        ...GetBlueprintPropertiesMap(blueprintName),
+        ...initPropMap
+      ]);
 
       // Construct list of featProps for script UI menu
       // This is complicated.
