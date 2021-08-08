@@ -322,6 +322,12 @@ class GAgent extends SM_Object implements IAgent, IActable {
       : 0;
     return selected | hovered | grouped | captive | glowing | largeMeter;
   }
+  /** Returns a bitflags for various selection states */
+  getMeterFlags(): number {
+    return this.prop.AgentWidgets
+      ? this.prop.AgentWidgets._meterPosition
+      : undefined;
+  }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// To change the behavior of an instance, inject a program into either

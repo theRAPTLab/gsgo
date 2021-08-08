@@ -33,6 +33,7 @@ import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
 import * as GLOBAL from 'modules/datacore/dc-globals';
+import FLAGS from 'modules/flags';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-script';
@@ -427,7 +428,12 @@ class Visual implements IVisual, IPoolable, IActable {
     }
   }
 
-  setMeter(percent: number, color: number, isLargeGraphic: boolean) {
+  setMeter(
+    percent: number,
+    color: number,
+    position: number,
+    isLargeGraphic: boolean
+  ) {
     // Don't cache meterValue because script might change only color
     // if (percent === this.meterValue) return; // no update necessary
     if (!this.meter) {
@@ -436,10 +442,20 @@ class Visual implements IVisual, IPoolable, IActable {
     }
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
+    const pad = 5;
     const w = isLargeGraphic ? 40 : 10;
     const h = isLargeGraphic ? 80 : 40;
-    const spacer = w + 5;
-    const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 - spacer;
+
+    // meter position
+    let xoff = 0; // x-offset
+    const sw = this.sprite.width;
+    if (position === FLAGS.METER.OUTSIDE_LEFT) xoff = -(w + pad);
+    if (position === FLAGS.METER.INSIDE_LEFT) xoff = pad;
+    if (position === FLAGS.METER.MIDDLE) xoff = sw / 2 - w / 2;
+    if (position === FLAGS.METER.INSIDE_RIGHT) xoff = sw - w - pad;
+    if (position === FLAGS.METER.OUTSIDE_RIGHT) xoff = sw + pad;
+
+    const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 + xoff;
     const y = this.sprite.height / 2 - h; // flush with bottom of sprite
 
     this.meter.clear();
