@@ -49,31 +49,36 @@ export class ifExpr extends Keyword {
     if (consequent && Array.isArray(consequent)) {
       const blockIndex = 2; // the position in the unit array to replace <ifExpr> <expr> <conseq>
       // already nested?
-      if (options.parentLineIndices !== undefined) {
+      // consequents and alternates need to maintain their own options
+      // because the parentLineIndices need to be maintained separately
+      // otherwise, alternate parentLineIndices end up with consequents' inserted
+      const ccOptions = { ...options };
+      if (ccOptions.parentLineIndices !== undefined) {
         // nested parentIndices!
-        options.parentLineIndices = [
-          ...options.parentLineIndices,
+        ccOptions.parentLineIndices = [
+          ...ccOptions.parentLineIndices,
           { index, blockIndex }
         ];
       } else {
-        options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+        ccOptions.parentLineIndices = [{ index, blockIndex }]; // for nested lines
       }
-      cc = ScriptToJSX(consequent, options);
+      cc = ScriptToJSX(consequent, ccOptions);
     }
     let aa = '';
     if (alternate && Array.isArray(alternate)) {
       const blockIndex = 3; // the position in the unit array to replace <ifExpr> <expr> <conseq>
       // already nested?
-      if (options.parentLineIndices !== undefined) {
+      const aaOptions = { ...options };
+      if (aaOptions.parentLineIndices !== undefined) {
         // nested parentIndices!
-        options.parentLineIndices = [
-          ...options.parentLineIndices,
+        aaOptions.parentLineIndices = [
+          ...aaOptions.parentLineIndices,
           { index, blockIndex }
         ];
       } else {
-        options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+        aaOptions.parentLineIndices = [{ index, blockIndex }]; // for nested lines
       }
-      aa = ScriptToJSX(alternate, options);
+      aa = ScriptToJSX(alternate, aaOptions);
     }
 
     const expr =
