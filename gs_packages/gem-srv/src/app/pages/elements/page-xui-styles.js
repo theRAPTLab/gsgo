@@ -217,7 +217,8 @@ const useStylesHOC = theme => ({
     display: 'inline-block',
     color: CLR_DATA,
     // width: '80px',
-    textAlign: 'right'
+    textAlign: 'right',
+    marginRight: '3px'
   },
   inspectorLabelLeft: {
     display: 'inline-block',
@@ -267,7 +268,6 @@ const useStylesHOC = theme => ({
   },
   instanceSpecSelected: {
     border: '1px solid #ffff00',
-    width: '200px',
     padding: '10px 5px'
   },
   instanceEditorLineItem: {
