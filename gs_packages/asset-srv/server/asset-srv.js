@@ -148,7 +148,30 @@ function StartAssetServer(opt = {}) {
           );
           console.log(`${subdir} has ${mediafiles.length} valid files`);
 
-          for (const f of mediafiles) {
+          const jsonfiles = mediafiles.filter(
+            f => Path.extname(f).toLowerCase() === '.json'
+          );
+          console.log(
+            `${subdir} has ${jsonfiles.length} json files to scan for images`
+          );
+
+          /* IF JSON FILES EXIST, SCAN THEM FOR CONTAINED IMAGES */
+          const foundimages = [];
+          jsonfiles.forEach(f => {
+            const file = UR.FILE.ReadJSON(`${subdirpath}/${f}`);
+            const { meta, frames } = file;
+            if (meta && meta.image) foundimages.push(meta.image);
+            if (frames && Array.isArray(frames))
+              for (let frame of frames)
+                if (frame.filename) foundimages.push(frame.filenam);
+          });
+          console.log(
+            `jsonfiles contained ${foundimages.length} image references`
+          );
+
+          /* FINALLY PROCESS FILES */
+          const files = mediafiles.filter(f => !foundimages.includes(f));
+          for (const f of files) {
             const path = Path.join(subdirpath, f);
             promises.push(UR.FILE.PromiseFileHash(path));
           }

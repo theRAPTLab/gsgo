@@ -539,4 +539,16 @@ Picking up from yesterday: Let's **read a manifest** and compare them!
 * [ ] copy sprites to `dsriseah.com/public/gemstep_assets`
 * [ ] look for hash utility: using `hasha` with MD5 for file revving
 * [ ] handle detection of `?maniest` query in express
-* [ ] 
+
+## AUG 7 SAT - Asset Manager Server
+
+Asset manager is serving automatic manifests now, but for some reason automatic manifests create a problem.
+
+**TODO**
+
+* [ ] for loading corey's sprites, the use of nested folders means we have to work harder to extract a full manifest
+* [ ] pixijs json files may have several images
+* [ ] PromiseLoadAssets() has changed
+* [ ] expandable asset server can have multiple asset typed served
+* [ ] consider writing the generated manifest file to directory so it doesn't have to be generated all the time.
+
