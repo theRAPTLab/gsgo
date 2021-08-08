@@ -157,7 +157,7 @@ export class every extends Keyword {
       index,
       unit,
       <>
-        every {`'${period}'`} run {runAtStart} {cc}
+        every {`'${period}'`} {runAtStart} {cc}
       </>
     );
   }

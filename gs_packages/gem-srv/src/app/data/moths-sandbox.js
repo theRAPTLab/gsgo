@@ -133,6 +133,12 @@ every 1 runAtStart [[
   ]]
 ]]
 
+onEvent Start [[
+  prop alpha setTo 7
+  ifExpr {{ agent.prop.alpha.value < 1 }} [[
+    prop alpha setTo 77
+  ]]
+]]
 `
     },
     {
