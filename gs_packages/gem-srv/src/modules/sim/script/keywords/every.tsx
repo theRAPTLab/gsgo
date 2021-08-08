@@ -20,6 +20,7 @@ import UR from '@gemstep/ursys/client';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore/dc-script-engine';
+import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,15 +46,15 @@ export class every extends Keyword {
 
   compile(unit: TScriptUnit, idx?: number): TOpcode[] {
     let [kw, period, ...args] = unit;
-    let options = '';
+    let runAtStart = '';
     let consq;
     if (args.length > 1) {
-      options = args[0];
+      runAtStart = String(args[0]);
       consq = args[1];
     } else {
       consq = args[0];
     }
-    if (DBG) console.log(...PR('compile every', kw, period, options, consq));
+    if (DBG) console.log(...PR('compile every', kw, period, runAtStart, consq));
 
     // period is time to wait between runs
     // e.g. period = 1 is run 1 time every second
@@ -68,7 +69,7 @@ export class every extends Keyword {
     // 'every' statement, eacher timer has to be keyed to
     // both the unique agent and the 'every' instance.
     this.EVERY_STATEMENT_ID++;
-    const frames = period * 30;
+    const frames = Number(period) * 30;
     const prog = [];
     const uid = this.EVERY_STATEMENT_ID;
     prog.push((agent, state) => {
@@ -96,7 +97,7 @@ export class every extends Keyword {
       const firstFire = this.LAST_FIRED.get(key) === undefined;
       const lastFired = this.LAST_FIRED.get(key) || 0;
       const elapsed = counter - lastFired;
-      if (elapsed > frames || (options === 'runAtStart' && firstFire)) {
+      if (elapsed > frames || (runAtStart === 'runAtStart' && firstFire)) {
         agent.exec(consq, state.ctx);
         this.LAST_FIRED.set(key, counter);
       }
@@ -108,33 +109,55 @@ export class every extends Keyword {
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
     const { event, period, ...args } = state;
-    let options = false;
+    let runAtStart = '';
     let consq;
     if (args.length > 1) {
-      options = args[0];
+      runAtStart = String(args[0]);
       consq = args[1];
     } else {
       consq = args[0];
     }
-    return [this.keyword, period, options, consq];
+    return [this.keyword, period, runAtStart, consq];
   }
 
   /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
     const [kw, period, ...args] = unit;
-    let options = false;
+    let runAtStart = '';
     let consq;
+    let blockIndex;
     if (args.length > 1) {
-      options = args[0];
+      runAtStart = String(args[0]);
       consq = args[1];
+      blockIndex = 3; // the position in the unit array to replace <ifExpr> <expr> <conseq>
     } else {
       consq = args[0];
+      blockIndex = 2;
     }
+    if (options.parentLineIndices !== undefined) {
+      // nested parentIndices!
+      options.parentLineIndices = [
+        ...options.parentLineIndices,
+        {
+          index,
+          blockIndex
+        }
+      ];
+    } else {
+      options.parentLineIndices = [
+        {
+          index,
+          blockIndex
+        }
+      ]; // for nested lines
+    }
+    const cc = ScriptToJSX(consq, options);
+
     return super.jsx(
       index,
       unit,
       <>
-        every {`'${period}'`} run {options} {consq.length} ops
+        every {`'${period}'`} run {runAtStart} {cc}
       </>
     );
   }

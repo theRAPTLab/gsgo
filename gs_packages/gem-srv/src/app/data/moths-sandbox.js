@@ -123,6 +123,16 @@ when Test dies [[
   ]]
 ]]
 
+every 1 [[
+  prop alpha setTo 5
+]]
+every 1 runAtStart [[
+  prop alpha setTo 6
+  ifExpr {{ agent.prop.alpha.value < 1 }} [[
+    prop alpha setTo 99
+  ]]
+]]
+
 `
     },
     {
