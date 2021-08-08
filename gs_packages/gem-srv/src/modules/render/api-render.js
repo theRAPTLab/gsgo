@@ -108,7 +108,7 @@ function Init(element) {
           dobj.meterClr,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
-      if (dobj.graph)
+      if (dobj.graph !== undefined)
         vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
 
       // Set selection state from flags.
@@ -174,7 +174,7 @@ function Init(element) {
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
       else vobj.removeMeter();
-      if (dobj.graph)
+      if (dobj.graph !== undefined)
         vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
       else vobj.removeGraph();
 
