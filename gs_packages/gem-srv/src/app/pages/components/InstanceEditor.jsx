@@ -22,7 +22,10 @@ import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import { GetAllFeatures } from 'modules/datacore/dc-features';
-import { GetBlueprintProperties } from 'modules/datacore/dc-project';
+import {
+  GetBlueprintProperties,
+  GetBlueprintPropertiesMap
+} from 'modules/datacore/dc-project';
 import * as TRANSPILER from 'script/transpiler-v2';
 import {
   ScriptToJSX,
@@ -173,10 +176,10 @@ class InstanceEditor extends React.Component {
       // console.log('updated script text', updatedScript);
 
       // ORIG
-      // // 1. Convert init script text to array
-      // const scriptTextLines = instance.initScript.split('\n');
-      // // 2. Convert the updated line to text
-      // const updatedLineText = TRANSPILER.ScriptToText(data.scriptUnit);
+      // 1. Convert init script text to array
+      const scriptTextLines = instance.initScript.split('\n');
+      // 2. Convert the updated line to text
+      const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
       // console.log('script text', scriptTextLines);
       // // 3. Replace the updated line in the script array
       // scriptTextLines[data.index] = updatedLineText;
@@ -435,9 +438,18 @@ class InstanceEditor extends React.Component {
     let jsx = '';
     if (instance) {
       const source = TRANSPILER.TextToScript(instance.initScript);
-      const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(
+
+      // initScripts really should not be defining new props
+      // (leads to 'prop already added' errors)
+      // but this code is ready for it
+      const initPropMap = TRANSPILER.ExtractBlueprintPropertiesMap(
         instance.initScript
       );
+      const blueprintName = this.GetBlueprintName();
+      const propMap = new Map([
+        ...GetBlueprintPropertiesMap(blueprintName),
+        ...initPropMap
+      ]);
 
       // Construct list of featProps for script UI menu
       // This is complicated.

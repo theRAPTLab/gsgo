@@ -458,6 +458,7 @@ function m_FeaturesThinkSeek(frame) {
     // 1. Start with agents within vision distance
     //    Sorted by distance
     const nearAgents = m_FindNearbyAgents(agent, options.targetType);
+    if (nearAgents === undefined) return; // no agents
     const target = nearAgents.find(near => {
       // 2. Find first active (non-inert) agent within the cone
       if (near && !near.isInert) {
