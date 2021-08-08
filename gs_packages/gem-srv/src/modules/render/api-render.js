@@ -106,6 +106,7 @@ function Init(element) {
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
+          dobj.meterPosition,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
       if (dobj.graph)
@@ -171,6 +172,7 @@ function Init(element) {
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
+          dobj.meterPosition,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
       else vobj.removeMeter();

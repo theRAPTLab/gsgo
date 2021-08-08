@@ -67,6 +67,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusValue !== undefined) dobj.meter = agent.statusValue;
     if (agent.statusValueColor !== undefined)
       dobj.meterClr = agent.statusValueColor;
+    dobj.meterPosition = agent.getMeterFlags();
     if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
@@ -91,6 +92,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.statusValue) dobj.meter = agent.statusValue;
     if (agent.statusValueColor !== undefined)
       dobj.meterClr = agent.statusValueColor;
+    dobj.meterPosition = agent.getMeterFlags();
     if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;

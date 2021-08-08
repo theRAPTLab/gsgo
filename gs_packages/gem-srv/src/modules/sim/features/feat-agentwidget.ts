@@ -23,6 +23,7 @@ import { IAgent } from 'lib/t-script';
 import { GetAgentById } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
 import { GetGlobalAgent } from 'lib/class-gagent';
+import FLAGS from 'modules/flags';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -186,6 +187,7 @@ class WidgetPack extends GFeature {
     this.featAddMethod('showMessage', this.showMessage);
     this.featAddMethod('bindTextTo', this.bindTextTo);
     this.featAddMethod('bindMeterTo', this.bindMeterTo);
+    this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod('bindGraphTo', this.bindGraphTo);
     this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
     UR.HookPhase('SIM/GRAPHS_UPDATE', m_GraphsUpdate);
@@ -218,7 +220,7 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets._graphCounter = 0;
     agent.prop.AgentWidgets._graphValueOld = 0;
     agent.prop.AgentWidgets._graphGlobalProp = undefined;
-
+    agent.prop.AgentWidgets._meterPosition = FLAGS.METER.OUTSIDE_LEFT;
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
@@ -234,9 +236,26 @@ class WidgetPack extends GFeature {
   bindTextTo(agent: IAgent, propname: string) {
     agent.prop.AgentWidgets.textProp.setTo(propname);
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// METER
+
   bindMeterTo(agent: IAgent, propname: string) {
     agent.prop.AgentWidgets.meterProp.setTo(propname);
   }
+  setMeterPosition(agent: IAgent, position: string) {
+    let result = FLAGS.METER.OUTSIDE_LEFT; // defaults to outside left
+    if (position === 'outside-left') result = FLAGS.METER.OUTSIDE_LEFT;
+    if (position === 'inside-left') result = FLAGS.METER.INSIDE_LEFT;
+    if (position === 'middle') result = FLAGS.METER.MIDDLE;
+    if (position === 'inside-right') result = FLAGS.METER.INSIDE_RIGHT;
+    if (position === 'outside-right') result = FLAGS.METER.OUTSIDE_RIGHT;
+    agent.prop.AgentWidgets._meterPosition = result;
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// GRAPH
+
   /**
    *
    * @param agent
@@ -260,6 +279,8 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets._histogramFeature = feature;
     agent.prop.AgentWidgets._histogramProp = propname;
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 }
 
 /// REGISTER SINGLETON ////////////////////////////////////////////////////////
