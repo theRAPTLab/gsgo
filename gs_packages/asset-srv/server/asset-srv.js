@@ -10,7 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * ///////////////////////////////////*/
 
 /// LOAD LIBRARIES ////////////////////////////////////////////////////////////
-const { UTIL } = require('@gemstep/ursys/server');
+const UR = require('@gemstep/ursys/server');
 const Express = require('express'); //your original BE server
 const Compression = require('compression');
 const CORS = require('cors');
@@ -20,7 +20,6 @@ const FSE = require('fs-extra');
 const { URL } = require('url');
 const CookieP = require('cookie-parser');
 const ServeIndex = require('serve-index');
-const { UseLokiGQL_Middleware, PrefixUtil } = require('@gemstep/ursys/server');
 const {
   PACKAGE_NAME,
   PUBLIC_RESOURCES_PATH,
@@ -35,7 +34,7 @@ const resolvers = require('../config/graphql/resolvers');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PrefixUtil(PACKAGE_NAME);
+const PR = UR.PrefixUtil(PACKAGE_NAME);
 const PORT = 8080;
 const GSGO_HTDOCS = Path.resolve(__dirname, '../../..', PUBLIC_RESOURCES_PATH);
 let m_server; // server instance; check if unset before launching
@@ -67,7 +66,7 @@ function StartAssetServer(opt = {}) {
 
   // make sure asset server document path exists
   // and write an index file there
-  FSE.ensureDirSync(Path.join(GSGO_HTDOCS, 'assets'));
+  FSE.ensureDirSync(Path.join(GSGO_HTDOCS));
   const INDEX_TEXT = `GEMSTEP ASSET SERVER (${PACKAGE_NAME})`;
   const INDEX_SEND = Path.join(GSGO_HTDOCS, '_serverId.txt');
   FSE.writeFileSync(INDEX_SEND, INDEX_TEXT);
@@ -78,7 +77,7 @@ function StartAssetServer(opt = {}) {
   app.use(CORS());
 
   // start GraphQL server because why not
-  UseLokiGQL_Middleware(app, {
+  UR.UseLokiGQL_Middleware(app, {
     dbFile: 'runtime/db.loki',
     dbImportFile: 'config/graphql/dbinit-loki.json',
     doReset: false,
@@ -94,32 +93,69 @@ function StartAssetServer(opt = {}) {
   // handle /assets in several ways
   // (1) detect manifest request
   // (2) enable index serving for debugging
-  // (3) enable static file serving
+  // (3) enable stalkatic file serving
   app.use(
     '/assets',
-    (req, res, next) => {
-      //      const baseURL = `${req.protocol}://${req.headers.host}/${req.originalUrl`;
+    async (req, res, next) => {
+      // (1) determine urlbits
       const baseURL = `${req.protocol}://${req.headers.host}`;
       const fullURL = `${baseURL}${req.originalUrl}`;
-      const urlbits = new URL(fullURL, baseURL); // warn: this is not an iterable nodejs.org/api/url.html
-      const { pathname, searchParams } = urlbits;
-      // console.log(...PR('base:', baseURL), 'full:', fullURL);
-      // for (const key of searchParams.keys()) console.log('?param:', key);
+      const { pathname, searchParams } = new URL(fullURL, baseURL); // warn: this is not an iterable nodejs.org/api/url.html
+
+      // (2) if has ?manifest query, do special processing
       if (searchParams.has('manifest')) {
         console.log(...PR(`requested manifest for: '${pathname}'`));
-        // is it a directory?
-        const dirpath = Path.resolve(GSGO_HTDOCS, req.path);
-        if (!FSE.statSync(dirpath).isDirectory()) {
+        // (A) is this a directory?
+        const dirpath = Path.join(GSGO_HTDOCS, req.path);
+        if (!UR.FILE.IsDirectory(dirpath)) {
           console.log('NOT DIR:', dirpath);
-          // return { error:'manifest generator requires a dirpath, not a filepath'}
+          next();
+          return;
+        }
+        // (B) retrieve all top-level files of directory
+        console.log('MANIFEST DIR OK:', dirpath);
+        const mfile = `${Path.join(dirpath, MANIFEST_NAME)}.json`;
+        const allfiles = UR.FILE.GetFilenamesInDir(dirpath);
+        // (C) filter for manifest files
+        const manifests = allfiles
+          .filter(f => f.startsWith(MANIFEST_NAME) && f.endsWith('.json'))
+          .sort();
+        // (D) no manifest file(s)? MAKE ONE from directory contents
+        if (!UR.FILE.FileExists(mfile) && manifests.length === 0) {
+          console.log('no manifest file(s) found in dir, so generating');
+          // (E) gather information about each media file
+          const promises = [];
+          const mediafiles = allfiles.filter(f => UR.FILE.HasMediaExt(f));
+          for (const f of mediafiles) {
+            const path = Path.join(dirpath, f);
+            promises.push(UR.FILE.PromiseFileHash(path));
+          }
+          const filesInfo = await Promise.all(promises);
+          // (F) generate manifest
+          let counter = 1000;
+          const media = [];
+          for (let info of filesInfo) {
+            const assetId = counter++;
+            const { filename, ext: assetType, hash } = info;
+            const asset = {
+              assetId,
+              assetName: filename,
+              assetUrl: `${pathname}/${filename}`,
+              assetType,
+              hash
+            };
+            media.push(asset);
+          }
+          const manifest = { media };
+          res.json(manifest);
         } else {
-          console.log('MANIFEST DIR OK:', dirpath);
-          const mfile = Path.join(dirpath, MANIFEST_NAME);
+          // (D) yay manifest files
+          for (let mf of manifests) console.log('manifest:', mf);
         }
       } else {
         console.log(...PR(`requested asset for: '${pathname}'`));
+        next();
       }
-      next();
     },
     ServeIndex(GSGO_HTDOCS, { 'icons': true }),
     Express.static(GSGO_HTDOCS)

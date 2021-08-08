@@ -14,6 +14,10 @@ const Hasha = require('hasha');
 const FSE = require('fs-extra');
 const TERM = require('./prompts').makeTerminalOut('UTIL-FS', 'TagGreen');
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const MEDIA_EXT = ['.png', '.gif', '.jpg', '.jpeg', '.json', '.txt'];
+
 /// FILE METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a list of files with a particular extension through a callback.
@@ -23,7 +27,7 @@ const TERM = require('./prompts').makeTerminalOut('UTIL-FS', 'TagGreen');
  *  @param {string} ext - extension without period (ex: js, png|gif)
  *  @param {function} callback - provide (err,files)=>{}
  */
-function ReadFiles(dirpath, ext, cb) {
+function ReadFilesExt(dirpath, ext, cb) {
   const reg = new RegExp(`.(${ext})$`);
   const callback = typeof cb === 'function' ? cb : false;
   const opt = {
@@ -43,7 +47,7 @@ function ReadFiles(dirpath, ext, cb) {
       if (callback) callback(err, files);
       else {
         if (err) throw err;
-        TERM('ReadFiles debug (add callback to receive files)');
+        TERM('ReadFilesExt debug (add callback to receive files)');
         TERM('DIR:', dirpath);
         TERM('EXT:', ext);
         TERM('OPTIONS', JSON.stringify(opt));
@@ -64,9 +68,9 @@ function ReadFiles(dirpath, ext, cb) {
  *  @param {string} ext - extension without period (ex: js, png|gif)
  *  @returns {Promise} - resolves to filename array
  */
-function PromiseReadFiles(dirpath, ext) {
+function PromiseReadFilesExt(dirpath, ext) {
   return new Promise((resolve, reject) => {
-    ReadFiles(dirpath, ext, (err, files) => {
+    ReadFilesExt(dirpath, ext, (err, files) => {
       if (err) reject(err);
       else resolve(files);
     });
@@ -86,14 +90,11 @@ function FileExists(filepath) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns TRUE if the passed file is a directory */
-function DirectoryExists(filepath) {
+function DirectoryExists(dirpath) {
   try {
-    const stat = FSE.statSync(filepath);
+    const stat = FSE.statSync(dirpath);
     if (stat.isFile()) {
-      console.warn(
-        'DirectoryExists: Passed path is a file, not a directory',
-        filepath
-      );
+      console.warn(`DirectoryExists: ${dirpath} is a file, not a directory`);
       return false;
     }
     return stat.isDirectory();
@@ -101,6 +102,29 @@ function DirectoryExists(filepath) {
     return false;
   }
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsDirectory(dirpath) {
+  try {
+    const stat = FSE.statSync(dirpath);
+    if (stat.isDirectory()) return true;
+    return false;
+  } catch (e) {
+    console.warn(`IsDirectory: ${dirpath} does not exist`);
+    return false;
+  }
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function IsFile(filepath) {
+  try {
+    const stat = FSE.statSync(filepath);
+    if (stat.isFile()) return true;
+    return false;
+  } catch (e) {
+    console.warn(`IsFile: ${filepath} does not exist`);
+    return false;
+  }
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a dirpath, make sure it exists */
 function EnsureDirectory(path) {
@@ -114,60 +138,20 @@ function EnsureDirectory(path) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return array of filenames */
-function GetFilesInDirectory(dirpath) {
-  if (!DirectoryExists(dirpath)) {
-    console.warn(`${dirpath} is not a directory`);
-    return undefined;
-  }
-  const items = FSE.readdirSync(dirpath);
-  const files = [];
-  for (let item of items) {
-    let path = Path.join(dirpath, item);
-    const stat = FSE.lstatSync(path);
-    // eslint-disable-next-line no-continue
-    if (stat.isDirectory()) continue;
-    files.push(item);
-  }
-  return files;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** 	Based on http://stackoverflow.com/questions/25460574/ */
-function GetPrefixedFilesInDirectory(dirpath) {
-  const files = GetFilesInDirectory(dirpath);
-  const recfiles = [];
-  if (files === undefined) return undefined;
-  let count = 0;
-  let highest = 0;
-  for (const f of files) {
-    const seqnum = IsRecorderFilepath(f);
-    if (seqnum) {
-      count++;
-      highest = Math.max(seqnum, highest);
-      recfiles.push(f);
-    }
-  }
-  return {
-    count,
-    highest,
-    files: recfiles
-  };
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** returns TRUE if the passed filename is a 'recorder' file, which looks
- *  like 234-description.rec
- *  @param {string} filepath - a filename string
- *  @return {number} sequence number if is matched type, or undefined if not
- */
-function IsRecorderFilepath(filepath) {
-  // NNN-abcd.rec
-  const regex = /^(?<seq>\d{4})-.*\.rec/;
-  const m = filepath.exec(regex);
-  return m.groups.seq;
+function HasMediaExt(filename) {
+  const ext = Path.extname(filename).toLowerCase();
+  return MEDIA_EXT.includes(ext);
 }
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { ReadFiles, PromiseReadFiles, GetFilesInDirectory };
+module.exports = {
+  ReadFilesExt,
+  PromiseReadFilesExt,
+  IsFile,
+  FileExists,
+  IsDirectory,
+  DirectoryExists,
+  EnsureDirectory,
+  HasMediaExt
+};
