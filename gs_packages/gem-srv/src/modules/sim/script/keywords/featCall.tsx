@@ -110,7 +110,7 @@ export class featCall extends Keyword {
         } else {
           options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
         }
-        return <div>{ScriptToJSX(a, options)}</div>;
+        return <div key={blockIndex}>{ScriptToJSX(a, options)}</div>;
       }
       return a;
     });
