@@ -12,30 +12,45 @@ const Ndir = require('node-dir');
 const hasha = require('hasha');
 const FSE = require('fs-extra');
 const URFS = require('./util/fs-helper');
-const { CFG_SVR_UADDR } = require('./ur-common');
+const PROMPTS = require('./util/prompts');
+const COMMON = require('./ur-common');
 
-const TERM = require('./util/prompts').makeTerminalOut('  URFS', 'TagGreen');
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TERM = PROMPTS.makeTerminalOut('  URFS', 'TagGreen');
+const ASSET_DIRS = ['sprites']; // valid asset subdirectories
 
+/// IMPORTED METHODS //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { DirectoryExists } = URFS;
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return array of filenames */
-function GetFilenamesInDir(dirpath) {
+function GetDirContent(dirpath) {
   if (!DirectoryExists(dirpath)) {
     console.warn(`${dirpath} is not a directory`);
     return undefined;
   }
   const filenames = FSE.readdirSync(dirpath);
   const files = [];
+  const dirs = [];
   for (let name of filenames) {
     let path = Path.join(dirpath, name);
     const stat = FSE.lstatSync(path);
     // eslint-disable-next-line no-continue
-    if (stat.isDirectory()) continue;
-    files.push(name);
+    if (stat.isDirectory()) dirs.push(name);
+    else files.push(name);
   }
-  return files;
+  return { files, dirs };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetFiles(dirpath) {
+  return GetDirContent(dirpath).files || [];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetSubdirs(dirpath) {
+  return GetDirContent(dirpath).dirs || [];
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -47,7 +62,7 @@ function RecordingsInDirectory(dirpath) {
   // this regex looks for 4-digit named group "seq" followed
   // by a dash and ending with a .rec extension
   const regex = /^(?<seq>\d{4})-.*\.rec$/;
-  const files = GetFilenamesInDir(dirpath);
+  const files = GetDirContent(dirpath);
   const recfiles = [];
   if (files === undefined) return undefined;
   let count = 0;
@@ -68,10 +83,17 @@ function RecordingsInDirectory(dirpath) {
   };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the MD5 hash of the passed filepath */
 async function PromiseFileHash(filepath) {
   const hash = await hasha.fromFile(filepath, { algorithm: 'md5' });
-  const { base: filename, ext } = Path.parse(filepath);
-  return { filepath, filename, ext, hash };
+  const { base, ext } = Path.parse(filepath);
+  return { filepath, filename: base, ext, hash };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return a list of asset directories that match ASSET_DIRS */
+function GetAssetDirs(dirpath) {
+  const { dirs } = GetDirContent(dirpath);
+  return dirs.filter(d => ASSET_DIRS.includes(d));
 }
 
 /// TEST METHODS //////////////////////////////////////////////////////////////
@@ -92,7 +114,10 @@ function TestFileList() {
 module.exports = {
   ...URFS,
   PromiseFileHash,
-  GetFilenamesInDir,
+  GetDirContent,
+  GetFiles,
+  GetSubdirs,
+  GetAssetDirs,
   RecordingsInDirectory,
   TestFileList
 };

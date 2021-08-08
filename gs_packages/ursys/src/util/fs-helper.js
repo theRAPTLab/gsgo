@@ -16,7 +16,9 @@ const TERM = require('./prompts').makeTerminalOut('UTIL-FS', 'TagGreen');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const MEDIA_EXT = ['.png', '.gif', '.jpg', '.jpeg', '.json', '.txt'];
+const VALID_MEDIA_EXT = {
+  sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json']
+};
 
 /// FILE METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -137,10 +139,13 @@ function EnsureDirectory(path) {
     throw new Error(errmsg);
   }
 }
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HasMediaExt(filename) {
+function HasValidAssetType({ type, filename }) {
   const ext = Path.extname(filename).toLowerCase();
-  return MEDIA_EXT.includes(ext);
+  const validtypes = VALID_MEDIA_EXT[type];
+  if (validtypes === undefined) return false;
+  return validtypes.includes(ext);
 }
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
@@ -153,5 +158,5 @@ module.exports = {
   IsDirectory,
   DirectoryExists,
   EnsureDirectory,
-  HasMediaExt
+  HasValidAssetType
 };

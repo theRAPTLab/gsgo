@@ -36,6 +36,7 @@ const resolvers = require('../config/graphql/resolvers');
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil(PACKAGE_NAME);
 const PORT = 8080;
+const ASSET_ID_START = 100;
 const GSGO_HTDOCS = Path.resolve(__dirname, '../../..', PUBLIC_RESOURCES_PATH);
 let m_server; // server instance; check if unset before launching
 
@@ -97,6 +98,8 @@ function StartAssetServer(opt = {}) {
   app.use(
     '/assets',
     async (req, res, next) => {
+      // (0) output object
+      const manifest = {};
       // (1) determine urlbits
       const baseURL = `${req.protocol}://${req.headers.host}`;
       const fullURL = `${baseURL}${req.originalUrl}`;
@@ -105,37 +108,54 @@ function StartAssetServer(opt = {}) {
       // (2) if has ?manifest query, do special processing
       if (searchParams.has('manifest')) {
         console.log(...PR(`requested manifest for: '${pathname}'`));
-        // (A) is this a directory?
+
         const dirpath = Path.join(GSGO_HTDOCS, req.path);
         if (!UR.FILE.IsDirectory(dirpath)) {
-          console.log('NOT DIR:', dirpath);
+          console.log(`manifest error: ${dirpath} is not a directory`, dirpath);
           next();
           return;
         }
-        // (B) retrieve all top-level files of directory
-        console.log('MANIFEST DIR OK:', dirpath);
-        const mfile = `${Path.join(dirpath, MANIFEST_NAME)}.json`;
-        const allfiles = UR.FILE.GetFilenamesInDir(dirpath);
-        // (C) filter for manifest files
+
+        const allfiles = UR.FILE.GetFiles(dirpath);
         const manifests = allfiles
           .filter(f => f.startsWith(MANIFEST_NAME) && f.endsWith('.json'))
           .sort();
-        // (D) no manifest file(s)? MAKE ONE from directory contents
-        if (!UR.FILE.FileExists(mfile) && manifests.length === 0) {
-          console.log('no manifest file(s) found in dir, so generating');
-          // (E) gather information about each media file
+
+        // CASE 1: 1 OR MORE MANIFEST FILES
+        if (manifests.length > 0) {
+          console.log('manifest files:', manifests);
+          res.json(manifests);
+          return;
+        }
+
+        // CASE 2: NO MANIFEST FILE, SO SCAN SUBDIRS
+        let assetcounter = ASSET_ID_START;
+        const assetdirs = UR.FILE.GetAssetDirs(dirpath);
+        console.log(`found ${assetdirs.length} assetdirs`);
+
+        for (const subdir of assetdirs) {
           const promises = [];
-          const mediafiles = allfiles.filter(f => UR.FILE.HasMediaExt(f));
+          const subdirpath = Path.join(dirpath, subdir);
+
+          // get valid media files
+          const mediafiles = UR.FILE.GetFiles(subdirpath).filter(f =>
+            UR.FILE.HasValidAssetType({ type: subdir, filename: f })
+          );
+          console.log(`${subdir} has ${mediafiles.length} valid files`);
+
           for (const f of mediafiles) {
-            const path = Path.join(dirpath, f);
+            const path = Path.join(subdirpath, f);
             promises.push(UR.FILE.PromiseFileHash(path));
           }
+          //
+          // eslint-disable-next-line no-await-in-loop
           const filesInfo = await Promise.all(promises);
-          // (F) generate manifest
-          let counter = 1000;
-          const media = [];
+          //
+          //
+          //
+          const entries = [];
           for (let info of filesInfo) {
-            const assetId = counter++;
+            const assetId = assetcounter++;
             const { filename, ext: assetType, hash } = info;
             const asset = {
               assetId,
@@ -144,18 +164,14 @@ function StartAssetServer(opt = {}) {
               assetType,
               hash
             };
-            media.push(asset);
+            entries.push(asset);
           }
-          const manifest = { media };
-          res.json(manifest);
-        } else {
-          // (D) yay manifest files
-          for (let mf of manifests) console.log('manifest:', mf);
-        }
-      } else {
-        console.log(...PR(`requested asset for: '${pathname}'`));
-        next();
-      }
+          manifest[subdir] = entries;
+        } // end subdir processing
+        res.json(manifest);
+        return;
+      } // no manifest request, so pass request forward
+      next();
     },
     ServeIndex(GSGO_HTDOCS, { 'icons': true }),
     Express.static(GSGO_HTDOCS)

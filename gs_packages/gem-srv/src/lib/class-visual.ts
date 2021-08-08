@@ -41,6 +41,7 @@ import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
 import { DrawGraph } from './class-visual-graph';
+import { texture } from './sprite/pixi-default';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -96,8 +97,13 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
     }
     return tex;
   }
-  // otherwise, is this a regular texture?
+  // otherwise, is this a regular loaded texture?
   if (rsrc.texture) return rsrc.texture;
+
+  // or maybe it's a straight-up texture already
+  if (rsrc instanceof PIXI.Texture) {
+    throw Error('resource is a PIXI.Texture, not PIXI.LoaderResource');
+  }
 
   // if we got here, the passed rsrc  might not be one
   throw Error('could not find texture in resource');
