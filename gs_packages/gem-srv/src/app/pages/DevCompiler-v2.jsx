@@ -49,7 +49,7 @@ UR.HookPhase(
         if (DBG) console.log(...PR('ASSETS LOADED'));
         console.log(...PR('Waiting for user input'));
         // (2) the new asset manager routine
-        await ASSETS.PromiseLoadAssets('00-manifest.json');
+        await ASSETS.PromiseLoadAssets('auto');
         resolve();
       })();
     })

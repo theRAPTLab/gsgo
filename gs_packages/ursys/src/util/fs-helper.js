@@ -148,6 +148,12 @@ function HasValidAssetType({ type, filename }) {
   return validtypes.includes(ext);
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function ReadJSON(filepath) {
+  let rawdata = FSE.readFileSync(filepath);
+  return JSON.parse(rawdata);
+}
+
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
@@ -158,5 +164,6 @@ module.exports = {
   IsDirectory,
   DirectoryExists,
   EnsureDirectory,
-  HasValidAssetType
+  HasValidAssetType,
+  ReadJSON
 };

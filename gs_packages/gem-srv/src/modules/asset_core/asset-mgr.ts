@@ -23,7 +23,11 @@ import {
   TManifest
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
-import { ASSETS_ROUTE, MANIFEST_FILE } from '../../../config/gem.settings';
+import {
+  ASSETS_HOST,
+  ASSETS_ROUTE,
+  MANIFEST_FILE
+} from '../../../config/gem.settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -63,19 +67,29 @@ function m_RegisterLoader(loader: TAssetLoader) {
  */
 export async function PromiseLoadAssets(subdir: string = '') {
   const route = !subdir ? ASSETS_ROUTE : `${ASSETS_ROUTE}/${subdir}`;
-  const url = `${route}/${MANIFEST_FILE}.json`;
-  const res = await fetch(url);
-
-  const json: TManifest = await res.json();
+  const url = `${ASSETS_HOST}/${route}?manifest`;
+  console.log(...PR('fetching', url));
+  let res = await fetch(url);
+  let json: TManifest = await res.json();
+  console.log(...PR('got json', json));
+  if (Array.isArray(json) && json.length > 0) {
+    console.log('converting json array...');
+    json = json.shift();
+  }
   const promises = [];
   const assets = Object.entries(json).filter(m_IsSupportedType);
-  if (DBG)
-    console.groupCollapsed(
-      ...PR('loading', assets.length, 'supported assetTypes')
-    );
+  if (DBG) console.group(...PR('loading', assets.length, 'supported assetTypes'));
   assets.forEach(([asType, asList]) => {
+    // because manifest entries are relative to their directory, we have
+    // to add subdir in so loader has correct URL
+    if (subdir)
+      asList.forEach(e => {
+        e.assetUrl = `${subdir}/${e.assetUrl}`;
+      });
+
     const loader = m_GetLoaderByType(asType as TAssetType);
     if (loader) {
+      console.log('aslist', asList);
       loader.queueAssetList(asList);
       promises.push(loader.promiseLoadAssets());
       console.log(`[${loader.type()}] loading ${asList.length} items`);

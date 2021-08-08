@@ -22,7 +22,7 @@ const {
   UseLokiGQL_Middleware,
   PrefixUtil
 } = require('@gemstep/ursys/server');
-const { ASSETS_PATH } = require('../config/gem.settings');
+const { ASSETS_LOCAL } = require('../config/gem.settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -184,7 +184,7 @@ function StartAppServer(opt = {}) {
       if (DBG) console.log(...PR(`gs_assets request: '/assets${req.url}'`));
       next();
     },
-    Express.static(ASSETS_PATH)
+    Express.static(ASSETS_LOCAL)
   );
   // for everything else...
   app.use('/', Express.static(DIR_OUT));

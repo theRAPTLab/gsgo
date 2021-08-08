@@ -101,8 +101,8 @@ function StartAssetServer(opt = {}) {
       // (0) output object
       const manifest = {};
       // (1) determine urlbits
-      const baseURL = `${req.protocol}://${req.headers.host}`;
-      const fullURL = `${baseURL}${req.originalUrl}`;
+      const baseURL = `${req.protocol}://${req.headers.host}/assets/`;
+      const fullURL = `${req.protocol}://${req.originalUrl}`;
       const { pathname, searchParams } = new URL(fullURL, baseURL); // warn: this is not an iterable nodejs.org/api/url.html
 
       // (2) if has ?manifest query, do special processing
@@ -124,7 +124,12 @@ function StartAssetServer(opt = {}) {
         // CASE 1: 1 OR MORE MANIFEST FILES
         if (manifests.length > 0) {
           console.log('manifest files:', manifests);
-          res.json(manifests);
+          const m = [];
+          for (let f of manifests) {
+            const json = UR.FILE.ReadJSON(`${dirpath}/${f}`);
+            m.push(json);
+          }
+          res.json(m);
           return;
         }
 
@@ -160,7 +165,7 @@ function StartAssetServer(opt = {}) {
             const asset = {
               assetId,
               assetName: filename,
-              assetUrl: `${pathname}/${filename}`,
+              assetUrl: `${subdir}/${filename}`,
               assetType,
               hash
             };
@@ -168,7 +173,8 @@ function StartAssetServer(opt = {}) {
           }
           manifest[subdir] = entries;
         } // end subdir processing
-        res.json(manifest);
+        // res.json(manifest);
+        res.send(JSON.stringify(manifest, null, 2));
         return;
       } // no manifest request, so pass request forward
       next();

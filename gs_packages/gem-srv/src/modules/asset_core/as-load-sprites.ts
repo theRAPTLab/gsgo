@@ -19,10 +19,12 @@ import UR from '@gemstep/ursys/client';
 import * as PIXI from 'pixi.js';
 import AssetLoader from './class-asset-loader';
 import { TAssetDef, TAssetType } from '../../lib/t-assets';
+import { ASSETS_HOST, ASSETS_ROUTE } from '../../../config/gem.settings';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AS-SPRITE');
+const ASSET_URL = `${ASSETS_HOST}/${ASSETS_ROUTE}`;
 const DBG = false;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
@@ -97,7 +99,8 @@ class SpriteLoader extends AssetLoader {
       const { assetId, assetName, assetUrl } = item;
       if (typeof assetId !== 'number') throw Error('bad/missing assetId in list');
       if (!(assetId && assetName && assetUrl)) throw Error('bad asset list');
-      this._queueAsset(assetId, assetName, assetUrl);
+      const remoteUrl = `${ASSET_URL}/${assetUrl}`;
+      this._queueAsset(assetId, assetName, remoteUrl);
     });
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
