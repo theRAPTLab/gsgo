@@ -81,6 +81,72 @@ featCall Population agentsForEach Moth [[
   },
   scripts: [
     {
+      id: 'Test',
+      label: 'Test',
+      isCharControllable: false,
+      isPozyxControllable: false, // use Cursor instead
+      script: `# BLUEPRINT Test
+# PROGRAM DEFINE
+useFeature Population
+useFeature Movement
+useFeature AgentWidgets
+
+// top level prop update test
+prop alpha setTo 1
+// test strings
+addProp label String 'foo'
+prop label setTo 'bar'
+featProp AgentWidgets text setTo 'joe'
+
+// Testing nested scriptifying
+ifExpr {{ agent.prop.alpha.value < 1 }} [[
+  prop alpha setTo 1
+  prop alpha setTo 2
+]] [[
+  // alternate
+  prop alpha setTo 3
+]]
+
+// Testing implicit/explicit agent reference
+featCall Population agentsForEach Moth [[
+  featProp Movement direction setTo 88
+  featProp Moth.Movement direction setTo 99
+]]
+
+when Test dies [[
+  prop alpha setTo 4
+  prop Test.alpha setTo 99
+  featProp Movement direction setTo 91
+  featProp Test.Movement direction setTo 92
+  // double nest
+  ifExpr {{ agent.prop.alpha.value < 1 }} [[
+    prop alpha setTo 99
+    // triple nest
+    ifExpr {{ agent.prop.alpha.value < 1 }} [[
+      prop alpha setTo 11
+    ]]
+  ]]
+]]
+
+every 1 [[
+  prop alpha setTo 5
+]]
+every 1 runAtStart [[
+  prop alpha setTo 6
+  ifExpr {{ agent.prop.alpha.value < 1 }} [[
+    prop alpha setTo 99
+  ]]
+]]
+
+onEvent Start [[
+  prop alpha setTo 7
+  ifExpr {{ agent.prop.alpha.value < 1 }} [[
+    prop alpha setTo 77
+  ]]
+]]
+`
+    },
+    {
       id: 'Moth',
       label: 'Moth',
       isCharControllable: false,
@@ -493,6 +559,14 @@ onEvent RoundStop [[
     //     }
   ],
   instances: [
+    {
+      id: 1100,
+      name: 'Test1',
+      blueprint: 'Test',
+      initScript: `featCall Population agentsForEach Moth [[
+  featProp Moth.Movement direction setTo 99
+]]`
+    }
     // {
     //   id: 1101,
     //   name: 'Tree1',
@@ -534,36 +608,37 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 1.2
     // featProp Physics scaleY setTo 2`
     //     },
-    {
-      id: 1103,
-      name: 'Tree2',
-      blueprint: 'TreeTrunk',
-      initScript: `prop x setTo 0
-prop y setTo 200
-featCall Costume setColorizeHSV 0 0 1
-featProp Physics scale setTo 0.6
-featProp Physics scaleY setTo 2`
-    },
-    {
-      id: 1104,
-      name: 'TreeFoliage',
-      blueprint: 'TreeFoliage',
-      initScript: `prop x setTo 0
-prop y setTo -150
-featCall Costume setColorizeHSV 0 0 0.65
-featProp Physics scale setTo 2.5
-featProp Physics scaleY setTo 2`
-    },
-    {
-      id: 1201,
-      name: 'Moth1',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition 100 0
-featProp Costume colorScaleIndex setTo 6
-featPropPush Costume colorScaleIndex
-featPropPop AgentWidgets text
-`
-    },
+    //     {
+    //       id: 1103,
+    //       name: 'Tree2',
+    //       blueprint: 'TreeTrunk',
+    //       initScript: `prop x setTo 0
+    // prop y setTo 200
+    // featCall Costume setColorizeHSV 0 0 1
+    // featProp Physics scale setTo 0.6
+    // featProp Physics scaleY setTo 2`
+    //     },
+    //     {
+    //       id: 1104,
+    //       name: 'TreeFoliage',
+    //       blueprint: 'TreeFoliage',
+    //       initScript: `prop x setTo 0
+    // prop y setTo -150
+    // featCall Costume setColorizeHSV 0 0 0.65
+    // featProp Physics scale setTo 2.5
+    // featProp Physics scaleY setTo 2`
+    //     },
+    //     {
+    //       id: 1201,
+    //       name: 'Moth1',
+    //       blueprint: 'Moth',
+    //       initScript: `featCall Movement queuePosition 100 0
+    // featProp Movement useAutoOrientation setTo true
+    // // featProp Costume colorScaleIndex setTo 6
+    // // featPropPush Costume colorScaleIndex
+    // // featPropPop AgentWidgets text
+    // `
+    //     }
     //     {
     //       id: 1202,
     //       name: 'Moth2',
@@ -632,53 +707,53 @@ featPropPop AgentWidgets text
     //       initScript: `prop x setTo -250
     // prop y setTo -100`
     //     },
-    {
-      id: 1400,
-      name: 'Histogram',
-      blueprint: 'Histogram',
-      initScript: `prop x setTo 460
-prop y setTo -300
-featCall AgentWidgets bindHistogramToFeatProp Population _countsByProp`
-    },
+    //     {
+    //       id: 1400,
+    //       name: 'Histogram',
+    //       blueprint: 'Histogram',
+    //       initScript: `prop x setTo 460
+    // prop y setTo -300
+    // featCall AgentWidgets bindHistogramToFeatProp Population _countsByProp`
+    //     },
+    //     //     {
+    //     //       id: 1401,
+    //     //       name: 'Counter',
+    //     //       blueprint: 'Counter',
+    //     //       initScript: `prop x setTo 460
+    //     // prop y setTo 300`
+    //     //     }
     //     {
     //       id: 1401,
-    //       name: 'Counter',
-    //       blueprint: 'Counter',
+    //       name: 'Count Agent',
+    //       blueprint: 'CountAgent',
+    //       initScript: ``
+    //     },
+    //     {
+    //       id: 1402,
+    //       name: 'Dark Moths',
+    //       blueprint: 'ColorGraph',
     //       initScript: `prop x setTo 460
-    // prop y setTo 300`
+    // prop y setTo 300
+    // featCall AgentWidgets bindGraphToGlobalProp darkMoths 30
+    // `
+    //     },
+    //     {
+    //       id: 1403,
+    //       name: 'Medium Moths',
+    //       blueprint: 'ColorGraph',
+    //       initScript: `prop x setTo 460
+    // prop y setTo 100
+    // featCall AgentWidgets bindGraphToGlobalProp medMoths 30
+    // `
+    //     },
+    //     {
+    //       id: 1404,
+    //       name: 'Light Moths',
+    //       blueprint: 'ColorGraph',
+    //       initScript: `prop x setTo 460
+    // prop y setTo -100
+    // featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
+    // `
     //     }
-    {
-      id: 1401,
-      name: 'Count Agent',
-      blueprint: 'CountAgent',
-      initScript: ``
-    },
-    {
-      id: 1402,
-      name: 'Dark Moths',
-      blueprint: 'ColorGraph',
-      initScript: `prop x setTo 460
-prop y setTo 300
-featCall AgentWidgets bindGraphToGlobalProp darkMoths 30
-`
-    },
-    {
-      id: 1403,
-      name: 'Medium Moths',
-      blueprint: 'ColorGraph',
-      initScript: `prop x setTo 460
-prop y setTo 100
-featCall AgentWidgets bindGraphToGlobalProp medMoths 30
-`
-    },
-    {
-      id: 1404,
-      name: 'Light Moths',
-      blueprint: 'ColorGraph',
-      initScript: `prop x setTo 460
-prop y setTo -100
-featCall AgentWidgets bindGraphToGlobalProp lightMoths 30
-`
-    }
   ]
 };

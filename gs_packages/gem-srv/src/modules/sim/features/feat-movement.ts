@@ -626,6 +626,8 @@ class MovementPack extends GFeature {
   }
 
   // TYPES
+  // These are convenience functions.
+  // Each can be set separately via featProps.
   setMovementType(agent: IAgent, type: string, ...params) {
     agent.getFeatProp(FEATID, 'movementType').value = type;
     if (params.length > 0) {

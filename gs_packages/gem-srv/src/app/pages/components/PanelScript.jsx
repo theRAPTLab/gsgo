@@ -14,7 +14,11 @@ import ToggleButton from '@material-ui/lab/ToggleButton';
 import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
+import {
+  ScriptToJSX,
+  UpdateScript
+} from 'modules/sim/script/tools/script-to-jsx';
 import { GetAllKeywords } from 'modules/datacore';
 import { CompileToJSX } from '../elements/mod-panel-script';
 
@@ -268,15 +272,57 @@ class PanelScript extends React.Component {
    * @param {Object} data { index, scriptUnit, exitEdit }
    */
   HandleScriptUIChanged(data) {
+    // 1. Convert script text to script units
     const currentScript = this.jar.toString();
-    // 1. Convert script text to array
-    const scriptTextLines = currentScript.split('\n');
-    // 2. Conver the updated line to text
-    const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
-    // 3. Replace the updated line in the script array
-    scriptTextLines[data.index] = updatedLineText;
-    // 4. Convert the script array back to script text
-    const updatedScript = scriptTextLines.join('\n');
+    const updatedScript = UpdateScript(currentScript, data);
+
+    // WORKING VERSION
+    // const origScriptUnits = TRANSPILER.TextToScript(currentScript);
+
+    // // 2. Figure out which unit to replace
+    // const line = data.index;
+    // const parentLine = data.parentIndices;
+    // let scriptUnits = [...origScriptUnits];
+    // console.log('scriptUnits (should be same as prev)', scriptUnits);
+    // if (parentLine !== undefined) {
+    //   // Update is a nested line, replace the block
+    //   console.log('updating nested line');
+    //   const blockPosition = data.blockIndex; // could be first block or second block <conseq> <alt>
+    //   console.error('block is', blockPosition);
+    //   const origBlock = scriptUnits[parentLine][blockPosition];
+    //   console.log('...origBlock', origBlock);
+    //   console.log('...line', line);
+    //   const origBlockData = origBlock.block;
+    //   origBlockData.splice(line, 1, ...data.scriptUnit);
+    //   console.log('...updatedBlockData', origBlockData);
+    //   scriptUnits[parentLine][blockPosition] = {
+    //     block: origBlockData
+    //   };
+    // } else {
+    //   // Update root level line
+    //   scriptUnits[line] = data.scriptUnit;
+    // }
+    // console.log('updated ScriptUnits', scriptUnits, scriptUnits[1]);
+
+    // // 3. Convert back to script text
+    // const updatedScript = TRANSPILER.ScriptToText(scriptUnits);
+    // console.log('updated script text', updatedScript);
+
+    // END WORKING VERSION
+
+    // ORIG
+    // const currentScript = this.jar.toString();
+    // // 1. Convert script text to array
+    // const scriptTextLines = currentScript.split('\n');
+    // // 2. Conver the updated line to text
+    // const updatedLineText = TRANSPILER.ScriptToText(
+    //   data.scriptUnit
+    // );
+    // // 3. Replace the updated line in the script array
+    // scriptTextLines[data.index] = updatedLineText;
+    // // 4. Convert the script array back to script text
+    // const updatedScript = scriptTextLines.join('\n');
+
     // 5. Update the codejar code
     this.jar.updateCode(updatedScript);
     this.setState({ isDirty: true });
