@@ -89,9 +89,14 @@ featCall Population agentsForEach Moth [[
 # PROGRAM DEFINE
 useFeature Population
 useFeature Movement
+useFeature AgentWidgets
 
 // top level prop update test
 prop alpha setTo 1
+// test strings
+addProp label String 'foo'
+prop label setTo 'bar'
+featProp AgentWidgets text setTo 'joe'
 
 // Testing nested scriptifying
 ifExpr {{ agent.prop.alpha.value < 1 }} [[
