@@ -126,17 +126,22 @@ class Keyword implements IKeyword {
       'setMin',
       'setMax',
       'setTo',
+      'setToRnd',
       'add',
+      'addRnd',
       'sub',
+      'subFloat2',
+      'subRnd',
       'div',
       'mul',
       'eq',
       'gt',
       'lt',
       'gte',
-      'lte'
+      'lte',
+      'clear'
     ]);
-    map.set('string', ['setTo', 'eq']);
+    map.set('string', ['setTo', 'eq', 'clear']);
     map.set('dictionary', ['addItem', 'updateItem', 'getItem', 'has', 'getKeys']);
     return map;
   }
