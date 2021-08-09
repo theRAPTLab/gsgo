@@ -87,6 +87,9 @@ onEvent Start [[
     exprPush {{ agent.getProp('startDirection').value }}
     featPropPop agent.Movement direction
 
+    // STUDENTS_MAY_CHANGE to make fish move faster when they are automatic
+    featProp Movement distance setTo 2
+
     featCall AgentWidgets bindMeterTo energyLevel
 
     // set name + energyLevel
@@ -368,6 +371,8 @@ featProp AgentWidgets meterColor setTo 65280
 
 onEvent Tick [[
 
+    // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+
     // Algae meter display
     featCall Population countAgentProp 'Algae' 'energyLevel'
     exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
@@ -410,8 +415,7 @@ featProp AgentWidgets meterColor setTo 3120383
 
 onEvent Tick [[
 
-  // **** OPTIONS TO CHANGE BEHAVIOR ****
-  // uncomment avg and re-comment max here and below to make this work
+  // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
 
   // setup meter for max value
   featCall Population maxAgentProp 'Fish' 'energyLevel'

@@ -31,7 +31,7 @@ prop nutrients setMin 0
 
 useFeature Physics
 
-featCall Physics setSize 200 200
+featCall Physics setSize 196 196
 
 prop zIndex setTo -100
 
@@ -105,6 +105,20 @@ useFeature AgentWidgets
 `
     },
     {
+      id: 'SoilBG',
+      label: 'SoilBG',
+      script: `# BLUEPRINT SoilBG
+# PROGRAM DEFINE
+useFeature Costume
+featCall Costume setCostume 'square.json' 0
+featCall Costume setColorize 200 192 176
+useFeature Physics
+featCall Physics setSize 800 400
+prop zIndex setTo -110
+
+`
+    },
+    {
       id: 'Worm',
       label: 'Worm',
       isCharControllable: true,
@@ -164,7 +178,7 @@ when Worm touches Soil [[
       prop Worm.matter sub 50
       featCall Worm.Costume setGlow 1
       prop Soil.nutrients add 50
-      featCall Soil.Costume setGlow 0.1
+      featCall Soil.Costume setGlow 1
     ]]
   ]]
 ]]
@@ -455,7 +469,11 @@ every 1 runAtStart [[
 
             # PROGRAM UPDATE
             every 1 runAtStart [[
-              // STUDENTS_MAY_CHANGE - change the variable name to get a different count [NOT_WORKING]
+              // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+              // -- Character options: Plant, Worm, Waste, Bunny
+              // -- Variable options: matter, energyLevel, nutrients
+              // -- Population options: sum, avg, min, max
+
               featCall Population countAgentProp 'Plant' 'energyLevel'
 
               exprPush {{ agent.getFeatProp('Population', 'sum').value  }}
@@ -490,7 +508,11 @@ every 1 runAtStart [[
             # PROGRAM EVENT
 
             onEvent Tick [[
-              // STUDENTS_MAY_CHANGE - change the variable name to get a different count [NOT_WORKING]
+              // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+              // -- Character options: Plant, Worm, Waste, Bunny
+              // -- Variable options: matter, energyLevel, nutrients
+              // -- Population options: sum, avg, min, max
+
               featCall Population countAgentProp 'Bunny' 'energyLevel'
 
               exprPush {{ agent.getFeatProp('Population', 'sum').value }}
@@ -523,7 +545,11 @@ every 1 runAtStart [[
             # PROGRAM EVENT
 
             onEvent Tick [[
-              // STUDENTS_MAY_CHANGE - change the variable name to get a different count [NOT_WORKING]
+              // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+              // -- Character options: Plant, Worm, Waste, Bunny
+              // -- Variable options: matter, energyLevel, nutrients
+              // -- Population options: sum, avg, min, max
+
               featCall Population countAgentProp 'Worm' 'energyLevel'
 
               exprPush {{ agent.getFeatProp('Population', 'sum').value }}
@@ -590,6 +616,13 @@ every 1 runAtStart [[
       blueprint: 'Soil',
       initScript: `prop x setTo 300
     prop y setTo 300`
+    },
+    {
+      id: 1109,
+      name: 'SoilBG01',
+      blueprint: 'SoilBG',
+      initScript: `prop x setTo 0
+    prop y setTo 200`
     },
     {
       id: 1110,
