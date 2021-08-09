@@ -30,525 +30,61 @@
 * W1: Refine AppCore conventions, document, debug
 * W2: ScriptEngine Confirmation of ScriptUnit paths
 
+**SUMMARY S2115 JUL 26 - AUG 08**
+
+* W1: Asset Manager Design, File Utilities Collection
+* W2: Asset Server, Asset Client
+
+**SUMMARY S2116 AUG 09 - AUG 22**
+
+* W1: ?
+
 ---
 
-## JUL 12 MON - Review With Ben
+# SPRINT S2115 - AUG 09 - AUG 22
 
-* color modulation for #157
-* script editor needs to handle blocks
-* how to formalize how to handle image assets #236
-* the date: 
-  * **August 2nd** (Vanderbilt, IU) - (MOTHS)
-  * full pilot for IU **August 9** , soft pilot: IU **September** (FISH, ALGAE)
-* make a module import document for Ben
-* look at merge requests since 113 to get an idea
-* Vanderbilt: candidate script is moths-sandbox branch
+## Project Review with Ben
 
-## JUL 13 TUE - Bug Fixes
+The [issues list](https://gitlab.com/stepsys/gem-step/gsgo/-/issues) is automatically sorted by last updated. The [STUDENTS_MAY_CHANGE](https://gitlab.com/stepsys/gem-step/gsgo/-/issues/287) issue is showing script changes that need to happen as they are checked off.
 
-* [ ] make sure that database is loading correct data on start
+My impression is that I have to do a systematic review of every feature to see what's going on.
 
-The issue is that when the localeID changes, we need to do several things:
+We're basically **at the end** of the project cycle. We've done the 450 hours for Milestone 2. The remaining 600 hours is improving the experience. Noel **really wants video**, and they would be satisfied with just playing sprites over a video canvas.
 
-1. set state.localeID
-2. load ptrack data into state.transfor
+On the Systems board, the `@Refactor` list is what we're going to hit.
 
-```
-agents
-features
-globals
-inputs
-interactions
-named-methods
-project
-render
-script-bundle
-script-engine
-sim
-varprops
-```
+I'd like to assay the difference between the starting engine and the current snapshots.
 
-## JUL 14-15 - Bug Fixes Continued
+There are three things I want to look at:
 
-The StateGroupMgr needed some refinements and best practices refined, but it appears to work now.
+* Finish the Asset Manager functionality
+* Doing the engine review to see (1) what we learned about using it, scripting, features, keywords (2) technical engine review of what's changed since Sri handed it off.
+* Engine Review - Writing documentation to help clarify or improve those experiences.
+* GUI system review + analysis - what are the practices that Ben came up with to make things more usable?
 
-* appcore modules are allowed to mutate its state directly, but it is then responsible for sending the correct updates
-* updateKey does **NOT** automatically use the change and effect hooks, nor does it notify. That functionality is provided only as part of the static class methods; it's up to the module to implementing the behind-the-scenes state management related to database loads and inter-related data.
-* updated section in [modularity docs](01-architecture/02-modularity.md)
+Maybe I should **mark placeholder code**
 
-Everything SEEMS to work. Let's give it a try.
+Also helpful was when I **stubbed out pseudocode**. 
 
-## JUL 19 MON - Script Engine Review
+* Introduction to NetLogo and Scratch. Go to the sites and find something there. Self-guided tutorial might be a thing. 
 
-There is an issue with the SCRIPT WIZARD being **unable to render block scriptunits**. So I need to make sure ScriptUnit formats are as they seem.
+## AUG 09 MON - Spends, Resuming with the Asset Manager
 
-## JUL 20 TUE - Script Engine Point-by-Point
+### Update Milestone 2 spends
 
-**Q. Does TextifyScript produce an all-scriptUnit output?**
-A. The actual conversion code is in `class-gscript-tokenizer` which only tokenizes the top level.
-
-**Q. How to change gscript-tokenizer to fully recurse?**
-
-```
-tokenize is the top level, calls gobbleLine, which returns an array of "nodes" which are our token data type.
-
-gobbleLine starts with gobbleToken
-it checks first for our GEMSCRIPT additions:
-[[ as the opening for a BLOCK
-{{ as the opening for expressions
-
-gobbleBlock tests for inline [[ ]] and returns { program } token
-However, if the line ends without seeing ]], gobbleMultiBlock runs.
-
-gobbleMultiBlock keeps track of levels to ultimately returns everything between the top [[ ]], and leaves the expansion to transpiler.r_ExpandArgs, which recursively calls itself through r_CompileUnit.
-```
-
-The contents of a block token are lines of text; the processing of these lines is deferred to `TRANSPILER.CompileScript()` via `r__CompileUnit` which calls `r_ExpandArgs` which calls `r_CompileUnit` for each line a `{ block }` token.
-
-**Q. How do we change gScriptTokenizer to fully tokenize?**
-
-* [x] first modify the tokenizer to call gobbleLine after the complete block is captured?
-* [x] it actually is not re-entrant because of the way the class instance handles the character and line indicator. Rather than rewrite it, it was easier to do a recursive pass on the resulting scriptunit array
-
-**Q. Now that the script is completely tokenizing, what changes in the compiler?**
-
-```
-r_CompileUnit() processing a single scriptunit array, and returns a TSMCProgram aka TOpcode[]
-
-the unit is first "expanded"
-```
-
-## JUL 21 WED - Debugging Recursive Compile
-
-There's a problem with **nblock** test:
-
-```
-B touch B [[
-  prop C set 10
-  if C gt 0 [[
-    prop D add 1
-  ]]
-]]
-```
-
-Line 4, nested block of nested block, is **not tokenized**. This also affects **nblockblock** test.
-
-This means there's a bug in my recursion logic. Let's pseudocode this
-
-```
-lines = text.split(`n`);
-lines forEach line
-	tokens = tokenizeLine
-	
-tokenizeLine is GScriptTokenizer...so this is the broken thing
-```
-
-The **key issues** is there are **TWO PARTS** to fix at the same time:
-
-* either the tokenizer has to recursively tokenize OR
-* the scriptifier has to do the recursion pass
-
-The correct way to do this would be to fix the parser so 'block' is never returned anymore. 
-
-So let's look at the tokenizer again to assess it for **recursion**
-* [x] gscript-tokenizer updated to return fully tokenized text
-
-* [ ] there is a problem with NESTED SCRIPT BLOCKS being textified
-
-## JUL 22 THU - Debugging ScriptifyText
-
-```
-script = [
-  [ // statement 00
-    { 'token': 'when' },
-    { 'token': 'A' },
-    { 'token': 'touches' },
-    { 'token': 'B' },
-    [ // conseq1
-      [ // statement 1a
-        { 'token': 'prop' },
-        { 'token': 'C' },
-        { 'token': 'set' },
-        { 'value': 10 }
-      ], 
-      [ // statement 1b
-        { 'token': 'ifExpr' },
-        { 'expr': 'C' },
-        [ // conseq2
-          [ /** ERROR extra open ************************/
-            [ // statement 2a
-              { 'token': 'prop' },
-              { 'token': 'D' },
-              { 'token': 'add' },
-              { 'value': 1 }
-            ], // end 2a
-            [ // statement 2b
-              { 'token': 'ifExpr' },
-              { 'expr': 'Z' }, 
-              [ // conseq3
-                [ /** ERROR extra open ******************/
-                  [ // statement 3a
-                    { 'token': 'prop' }, 
-                    { 'expr': 'Z' }
-                  ] // end 3a
-                ] /** ERROR extra close *****************/
-              ] // end conseq3
-            ] // end 2b
-          ] /** ERROR extra close ***********************/
-        ] // end conseq2
-      ] // end 1b
-    ] // end conseq1
-  ] // end 00
-];
-```
-
-It looks like the code that produces the **consequent** in the block read is doing an extra wrap around the block.
-
-in `gobbleMultiblock()` I removed the array wrap from`return [ scriptunits ];`
-
-```
-[ // program
-  [ // statement1
-    { 'token': 'when' },
-    { 'token': 'A' },
-    { 'token': 'touches' },
-    { 'token': 'B' },
-    [ // conseq is arr of statements
-    /** missing statement [ ***************************/
-    	{ 'token': 'prop' }, 
-    	{ 'token': 'C' }, 
-    	{ 'token': 'set' }, 
-    	{ 'value': 10 }
-    /** missing statement ] ***************************/
-    ], /** premature end conseq ***********************/
-    [ 
-      { 'token': 'ifExpr' },
-      { 'expr': 'C' },
-      [
-        [
-          { 'token': 'prop' },
-          { 'token': 'D' },
-          { 'token': 'add' },
-          { 'value': 1 }
-        ],
-        [
-          { 'token': 'ifExpr' },
-          { 'expr': 'Z' },
-          [
-          	[
-          		{ 'token': 'prop' }, 
-          		{ 'expr': 'Z' }
-          	]
-          ]
-        ]
-      ]
-    ]
-  ]
-];
-```
-
-So that wasn't it.
-
-I think the issue is that the **multiline parse is breaking across line boundaries**, so the statements are nested incorrectly. That's because it goes LINE-BY-LINE.
-
-```
-when A touches B [[
-  prop C set 10       <---
-  ifExpr {{ C }} [[
-    prop D add 1
-    ifExpr {{ Z }} [[
-      prop {{ Z }}
-    ]]
-  ]]
-]]
----------------------
-process block line 1: 'prop C set 10'
-	unit = [{prop}{C}{set}{10}]
-	statements.push(unit);
-process block line 2: 'ifExpr {{ C }} [['
-	gobbleToken {ifExpr}{C} [[
-		gobbleBlock() EOL ... so 
-			gobbleMultiBlock()
-		  	process block line 3: 'prop {{ D }} add 1`
-					unit = [{prop}{D}{add}{1}]
-					statements.push(unit)
-				process block line 4: 'ifExpr {{ Z }} [[`
-					gobbleToken {ifExpr}{Z} [[
-						gobbleBlock() EOL ... so 
-							gobbleMultiBlock()
-								process block line 5: 'prop {{ Z }}'
-									gobbleToken {prop}{Z}
-							-return [[{prop}{Z}]]
-						-[[{prop}{Z}]]
-					- return {ifExpr}{Z}[[{prop}{Z}]]
-				- return [{ifExpr}{Z}[[{prop}{Z}]]]
-			- return [ [prop D add 1], [[{ifExpr}{Z}[[{prop}{Z}]]] ]
-I WONDER if this is the issue...when returning the nesting it is one extra				
-```
-
-There is something **wrapping** the consequent?
-
-Simpler version:
-
-```
-when [[
-  prop A
-  ifExpr [[
-    prop D
-  ]]
-]]
-
-script = [
-  [ // statement
-    { 'token': 'when' },
-    [ // block
-      [ // block statement
-        { 'token': 'prop' }, 
-        { 'token': 'A' }
-      ],
-      [ // block statement
-        { 'token': 'ifExpr' },
-        [ // block
-          [ // block statement
-            [ /*** ERROR *** spurious [ ***/
-              { 'token': 'prop' }, 
-              { 'token': 'D' }
-            ] /*** ERROR *** spurious ] ***/
-          ]
-        ]
-      ]
-    ]
-  ]
-]
-
-
-```
-
-Maybe we have to spread the statement
-
-```
-
-script = [
-  [ // statement
-    { 'token': 'when' },
-    [ // block
-    /** missing [ **/
-      { 'token': 'prop' },
-      { 'token': 'A' }
-    /** missing ] **/
-    ],
-    [ //
-      { 'token': 'ifExpr' }, 
-      [
-        [
-          { 'token': 'prop' }, 
-          { 'token': 'D' }
-        ]
-      ]
-    ]
-  ]
-];
-```
-
-So it seems to hinge around `statement`
-
-### There is still a bug
-
-```
-fail nblock variations, pass block + ifExpr
-WRAPPED nblockFail = 
-[
-  [
-    { 'token': 'when' },
-OK  [
-OK    [ { 'token': 'prop' }, { 'token': 'A' } ],
-OK    [
-        { 'token': 'ifExpr' },
-        [
-          [  **** ERROR EXTRA WRAP
-            [ { 'token': 'prop' }, { 'token': 'D' } ]
-          ]  **** ERROR EXTRA WRAP
-        ]
-      ]
-    ]
-  ]
-];
-
-fail everything
-NOWRAPPED const nblockFail = 
-[
-  [
-    *** MISSING [
-    { 'token': 'when' },
-    [
-      *** MISSING WRAP
-      { 'token': 'prop' }, { 'token': 'A' }
-    ] *** MISSING WRAP
-    [
-      *** MISSING WRAP
-      { 'token': 'ifExpr' },
-OK    [ 
-        [ { 'token': 'prop' }, { 'token': 'D' } ]
-      ]
-      *** MISSING WRAP
-    ]
-    *** MISSING ]
-  ]
-];
-```
-
-
-
-```
-statements = [[ u ]]
-if (sl === 1 && Array.isArray(tarr) && typeof u === 'object')
-```
-
-## JUL 23 FRI - CompileScript
-
-* [ ] The `moth` script doesn't run, but maybe that is OK because **blueprint** isn't set
-* [ ] **comment** tokens are mysteriously not delivered as statements. Maybe build the line debugger in
-  * the bug 
-* [x] convert arrays back to program blocks...it all seems to work
-* [x] update `scriptify-text` checks
-
-### Debugging Comment Blocks
-
-The issue appears to be when a comment is captured **inside a multiblock**
-
-```
-  gobbleComment() {
-    const eol = this.line.length;
-    const comment = this.line.substring(2, eol).trim();
-    // this.loadLine();
-    return [{ comment }]; // comments comment keyword
-  }
-```
-
-A comment is being returned as a statement because comments are whole-line only.
-
-I think the issue is happening when a multiblock returns a multiblock. It's pushing the result of the multiblock onto the stack.
-
-```
-a=[] sa=[]
-multiblock gobbleToken ...
-  b=[] sb=[]
-  multiblock gobbleTokengobbleb.push([{comment}])
-  b=[ [{comment}] ];
-  ]] sb.push(b) sb = [ [ [{comment}] ] ];
-  return [ [ [{comment}] ] ];
-  
-```
-
-**The BUG** with **COMMENTS** was that comment tokens SHOULD NOT assume that it is returning a complete line as in `[ { comment }]` in `gobbleComment()`. There is a second comment returner that checks for `COMMENT_1` in `gobbleLine()` and this returns `gobbleComment()` directly
-
-* [x] can we remove the line test and have it still work? YES
-* [x] we need to detect blank lines generated by TextifyScript, when there is an empty line inside of a multiblock. 
-* [x] add better difference hilighting
-
-## JUL 24 SAT - Updating Transpiler-v2
-
-Going through CompileBlueprint and other code.
-
-**NOTE** The `_pragma` signalling is rather convoluted because how `#` is swiched to `_pragma` and `TScriptUnit`  so it can do this:
-
-```js
-if (stm[0] === '#') {
-      objcode = CompileStatement([{ directive: '#' }, ...stm.slice(1)]);
-```
-
-The way that PRAGMA works is interesting.
-
-* When a pragma is executed, it looks up a particular SMC function that will be returned depending on the kind of directive. The SMC function is used to initalize stuff in the compiler at compile time. It's not used f
-
-## JUL 25 SUN - Checking Nested When Blocks
-
-> Issue is that nested blocks in WHEN are not renderable as JSX because  the SCriptUNits of the block are not accessible as scriptunits, but as  already-compiled code functions. We want the WIZARD view to show those as  editable blocks that are also nested appropriately.
-
-## JUL 28 WED - Designing the Asset Manager
-
-The design is in [architecture/urfile](01-architecture/01-urfile.md). This is the complete design, more or less, in draft form. 
-
-## JUL 29 THU - Where to start with the asset manager.
-
-The essential function is to load an asset manifest from a directory. So the initial feature list:
-
-* [ ] look at the asset manager right now and outline it a bit. It's in `class-pixi-asset-mgr.ts`
-
-Typescript Updates:
-
-* [ ] `typescript` 4.0.3 --> 4.3.5
-* [ ] `@typescript-eslint/eslint-plugin` 4.4.1 --> 4.28.5
-* [ ] `@typescript-eslint/parser 4.4.1` --> 4.28.5
-* [ ] `eslint-config-airbnb-typescript` 11.0.0 --> 12.3.1
-
-## JUL 30 FRI - Asset PIXI Manager
-
-We now have `mediacore` available. This is where the new `asset-mgr` module lives
-
-The old system worked like this:
-
-1. root view (e.g. `DevCompiler`) calls `loadAssetsSync(jsonfile)` during `UR/LOAD_ASSETS`
-2. Sprites are implemented with `class-visual`  which uses `PIXI` . The asset manager for class visual stores `PIXI.Resource` things like textures that can be retrieved. `setTexture()` is called from `api-render` as dobj is converted to vobj
-
-The new system should hopefully be a drop-in replacement for the GLOBALS pixi asset mgr.
-
-* [x] can I get asset manager to load in DevCompiler? YES
-* [x] class Visual: GetAssetById(id)
-* [x] class Visual: GetAsset(name)
-* [x] class Visual: LookupAssetId(name)
-
-## JUL 31 SAT - Asset PIXI Manager Replacement
-
-Took a while to clean up the asset loader independent class, but we have the system in place now. 
-
-Need to make sure AssetLoader saves responsibly by updating the assetRecord instead of completely overwriting it
-
-## AUG 05 THU - Simple Server
-
-To **autogenerate a manifest**, we first want to add an archive server. I'm going to build this into the current server so Digital Ocean can serve as the master contoller at some point. This is the **beginning of URNET WAN** support!
-
-At the very basic, we need another express server with its own database that provides the following features:
-
-* [ ] query directory for listing or use `serve-index`
-* [ ] for the `assets/` route, drill-down into a path and return a manifest if it's a directory, a zip file if it's a file
-* [ ] For manifests, if there is no manifest generate one. If there is a manifest, then use that.
-* [ ] If there is more than one manifest, all of them will be applied additively in alphabetical order
-
-Then we want the GEMSTEP side to
+* [ ] update the timesheet to add issues specifically for it
+* [ ] add to any issue
+
+### Asset Manager Resumption
+
+This is the current outstanding to-do list from last sprint:
 
 * [ ] request `assets/path-to-archive` and download the files there
   * [ ] zip file, download and uncompress into `runtime/cache` matching path
   * [ ] manifest, download everything into `runtime/cache`
 
-### STREAM OF CONSCIOUSNESS
-
-* [x] made `gs_packages/asset-srv` by copying files from `gem-srv` startup.
-
-* [x] added `ASSET_PATH` and `MANIFEST_FILE` to **config/gem.settings.js**
-
-* [x] Changed `PromiseLoadManifest()` call to accept a filepath, which will be relative to the `gs_assets` directory
-* [x] Modify PromiseLoadManifest() to ge relative to gassets
-
-* [ ] Tried to load a default SVG sprite but PIXI is proving obtuse
-
-## AUG 06 FRI - Simple Asset Cache
-
-Picking up from yesterday: Let's **read a manifest** and compare them!
-
-* [ ] copy sprites to `dsriseah.com/public/gemstep_assets`
-* [ ] look for hash utility: using `hasha` with MD5 for file revving
-* [ ] handle detection of `?maniest` query in express
-
-## AUG 7 SAT - Asset Manager Server
-
-Asset manager is serving automatic manifests now, but for some reason automatic manifests create a problem.
-
-**TODO**
-
 * [ ] for loading corey's sprites, the use of nested folders means we have to work harder to extract a full manifest
 * [ ] pixijs json files may have several images
-* [ ] PromiseLoadAssets() has changed
-* [ ] expandable asset server can have multiple asset typed served
+* [x] PromiseLoadAssets() has changed
+* [x] expandable asset server can have multiple asset typed served
 * [ ] consider writing the generated manifest file to directory so it doesn't have to be generated all the time.
-
