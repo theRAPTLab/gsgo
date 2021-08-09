@@ -43,6 +43,7 @@ import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetFeature } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { TextToScript } from 'modules/sim/script/tools//text-to-script';
 import InputElement from '../components/InputElement';
 import SelectElement from '../components/SelectElement';
 import GVarElement from '../components/GVarElement';
@@ -347,7 +348,7 @@ export class featProp extends Keyword {
     const { featName, featPropName, methodName, args } = state;
     const scriptArr = [this.keyword, featName, featPropName, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = ScriptifyText(scriptText);
+    const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
   }
 
