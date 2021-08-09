@@ -9,7 +9,6 @@ export {
 } from './script-compiler';
 export { ScriptToText } from './script-to-text';
 export { TextToScript } from './text-to-script';
-export { ScriptToJSX } from './script-to-jsx';
 /// CLASSES
 export { ScriptTokenizer, Tokenize };
 export { ExpressionEvaluator, Evaluate };

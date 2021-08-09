@@ -12,7 +12,8 @@ import UR from '@gemstep/ursys/client';
 import { TScriptUnit, IToken } from 'lib/t-script.d';
 import { GetKeyword } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
-import { TextToScript, ScriptToText } from 'modules/sim/script/tools/_all_tools';
+import { ScriptToText } from './script-to-text';
+import { TextToScript } from './text-to-script';
 import { ParseExpression } from './class-expr-parser-v2';
 
 const merge = require('deepmerge');

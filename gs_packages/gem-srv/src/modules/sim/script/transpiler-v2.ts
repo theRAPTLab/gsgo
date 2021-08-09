@@ -33,9 +33,9 @@ import {
   CompileScript,
   ScriptToText,
   CompileBlueprint,
-  DecodeStatement,
-  ScriptToJSX
+  DecodeStatement
 } from './tools/_all_tools';
+import { ScriptToJSX } from './tools/script-to-jsx';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
