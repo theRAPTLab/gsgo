@@ -35,6 +35,7 @@ import {
   CompileBlueprint,
   DecodeStatement
 } from './tools/_all_tools';
+import { ScriptToJSX } from './tools/script-to-jsx';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -405,7 +406,8 @@ function RemoveAgent(instanceDef: TInstance) {
 export {
   TextToScript, // text w/ newlines => TScriptUnit[]
   ScriptToText, // TScriptUnit[] => produce source text from units
-  CompileScript // TScriptUnit[] => TSMCProgram
+  CompileScript, // TScriptUnit[] => TSMCProgram
+  ScriptToJSX // TScriptUnit[] => jsx
 };
 
 /// DEPRECATED FUNCTIONS

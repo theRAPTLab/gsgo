@@ -42,6 +42,7 @@ import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { TextToScript } from 'modules/sim/script/tools//text-to-script';
 import GVarElement from '../components/GVarElement';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -63,6 +64,7 @@ type MyState = {
   propName: string;
   methodName: string;
   args: string[];
+  parentLineIndices: any;
 };
 type MyProps = {
   index: number;
@@ -113,8 +115,10 @@ class PropElement extends React.Component<MyProps, MyState> {
    *                           Used to handle exiting edit on "Enter"
    */
   saveData(exitEdit = false) {
+    const { parentLineIndices } = this.state;
     const updata = {
       index: this.index,
+      parentLineIndices,
       scriptUnit: this.serialize(this.state),
       exitEdit
     };
@@ -245,7 +249,7 @@ export class prop extends Keyword {
     const { propName, methodName, type, propMethods, args } = state;
     const scriptArr = [this.keyword, propName, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = ScriptifyText(scriptText);
+    const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
   }
 
@@ -253,22 +257,42 @@ export class prop extends Keyword {
   jsx(
     index: number,
     unit: TScriptUnit,
+    // REVIEW: Add 'options' here?
     children?: any[] // options
   ): any {
     const expUnit = JSXFieldsFromUnit(unit);
-    const [kw, ref, methodName, ...args] = expUnit;
+    const [kw, refArg, methodName, ...args] = expUnit;
+
+    // Dereference Ref ("Costume" or "Moth.Costume")
+    const ref = refArg.objref || [refArg];
+    const len = ref.length;
+    let propName = '';
+    let refDisplay = '';
+    if (len === 1) {
+      /** IMPLICIT REF *******************************************************/
+      /// e.g. 'Costume' is interpreted as 'agent.Costume'
+      propName = `${ref[0]}`;
+      refDisplay = `${ref[0]}`;
+    } else if (len === 2) {
+      /** EXPLICIT REF *******************************************************/
+      /// e.g. 'agent.Costume' or 'Bee.Costume'
+      propName = `${ref[1]}`;
+      refDisplay = `${ref[0]}.${ref[1]}`;
+    }
+
     const state = {
-      propName: ref,
+      propName,
       methodName,
       args,
       type: '', // set by PropElement
-      propMethods: [] // set by PropElement
+      propMethods: [], // set by PropElement
+      parentLineIndices: children ? children.parentLineIndices : undefined
     };
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
     const propMap = children ? children.propMap : new Map();
-    const property = propMap.get(ref);
+    const property = propMap.get(propName);
     this.type = property ? property.type : 'string';
 
     const StyledPropElement = withStyles(useStylesHOC)(PropElement);

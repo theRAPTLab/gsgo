@@ -206,7 +206,13 @@ function JSXifyArg(arg: any) {
   // if typeof arg==='boolean'
   // handle special object cases
   if (arg.program) return ['program block'];
-  if (arg.objref) return arg.objref.join('.');
+
+  // ORIG CODE
+  // if (arg.objref) return arg.objref.join('.');
+
+  // Ben's NEW CODE: objrefs should not be joined!  We want the raw array!
+  if (arg.objref) return arg;
+
   if (arg.expr) return `{{ ${arg.expr} }}`;
   console.error('JSXifyArg: unknown arg type', arg);
   return undefined;

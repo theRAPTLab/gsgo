@@ -54,13 +54,8 @@ function UADDRtoID(uaddr) {
 }
 // "CC340_0" to "340"
 function COBJIDtoID(cobjid) {
-  // pozyx
-  if (cobjid.startsWith('ft-pozyx')) return String(cobjid).substring(8);
-  // CharControl
-  const re = /([0-9])+/;
-  const result = re.exec(cobjid);
-  if (result === null)
-    throw new Error(`dc-inputs: Unable to retrieve id of ${cobjid}`);
+  const re = /([0-9])+\B/;
+  // console.log(re.exec(cobjid));
   return re.exec(cobjid)[0];
 }
 // "CC340_0" to "340_0"
@@ -285,9 +280,7 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.y = y;
     // HACK Blueprints into cobj
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
-      ? entity.id.substring(8)
-      : entity.id;
+    cobj.name = entity.id.substring(entity.id.length - 4);
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     let pos = { x: entity.x, y: entity.y };
@@ -301,9 +294,7 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.x = pos.x;
     cobj.y = pos.y;
     cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
-      ? entity.id.substring(8)
-      : entity.id;
+    cobj.name = entity.id.substring(entity.id.length - 4);
   },
   shouldRemove: cobj => false
   // Inputs do not necessarily come in with every INPUTS phase fire

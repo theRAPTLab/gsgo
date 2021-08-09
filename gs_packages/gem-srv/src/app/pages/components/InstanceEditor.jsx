@@ -27,6 +27,10 @@ import {
   GetBlueprintPropertiesMap
 } from 'modules/datacore/dc-project';
 import * as TRANSPILER from 'script/transpiler-v2';
+import {
+  ScriptToJSX,
+  UpdateScript
+} from 'modules/sim/script/tools/script-to-jsx';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 import InputField from './InputField';
@@ -119,14 +123,68 @@ class InstanceEditor extends React.Component {
     if (isEditable) {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
+
+      const updatedScript = UpdateScript(instance.initScript, data);
+
+      // WORKING VERSION
+      // // 1. Convert init script text to script units
+      // const origScriptUnits = TRANSPILER.TextToScript(instance.initScript);
+      // console.log('orig script', origScriptUnits);
+
+      // // 2. Figure out which unit to replace
+      // const line = data.index;
+      // const parentLine = data.parentIndices;
+      // let scriptUnits = [...origScriptUnits];
+      // console.log('scriptUnits (should be same as prev)', scriptUnits);
+      // if (parentLine !== undefined) {
+      //   // Update is a nested line, replace the block
+      //   console.log('updating nested line');
+      //   const blockPosition = data.blockIndex; // could be first block or second block <conseq> <alt>
+      //   console.error('block is', blockPosition);
+      //   const origBlock = scriptUnits[parentLine][blockPosition];
+      //   console.log('...origBlock', origBlock);
+      //   console.log('...line', line);
+      //   const origBlockData = origBlock.block;
+      //   origBlockData.splice(line, 1, ...data.scriptUnit);
+      //   console.log('...updatedBlockData', origBlockData);
+      //   scriptUnits[parentLine][blockPosition] = {
+      //     block: origBlockData
+      //   };
+
+      //   // WORKING without blockIndex
+      //   // // Update is a nested line, replace the block
+      //   // console.log('updating nested line');
+      //   // // Find the block component
+      //   // const lineToUpdate = scriptUnits[parentLine];
+      //   // const blockPosition = lineToUpdate.findIndex(l => l.block);
+      //   // console.error('block is', blockPosition);
+      //   // const origBlock = scriptUnits[parentLine][blockPosition];
+      //   // console.log('...origBlock', origBlock);
+      //   // console.log('...line', line);
+      //   // const origBlockData = origBlock.block;
+      //   // origBlockData.splice(line, 1, ...data.scriptUnit);
+      //   // console.log('...updatedBlockData', origBlockData);
+      //   // scriptUnits[parentLine][blockPosition] = { block: origBlockData };
+      // } else {
+      //   // Update root level line
+      //   scriptUnits[line] = data.scriptUnit;
+      // }
+      // console.log('updated ScriptUnits', scriptUnits, scriptUnits[1]);
+
+      // // 3. Convert back to script text
+      // const updatedScript = TRANSPILER.ScriptToText(scriptUnits);
+      // console.log('updated script text', updatedScript);
+
+      // ORIG
       // 1. Convert init script text to array
       const scriptTextLines = instance.initScript.split('\n');
       // 2. Convert the updated line to text
       const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
-      // 3. Replace the updated line in the script array
-      scriptTextLines[data.index] = updatedLineText;
-      // 4. Convert the script array back to script text
-      const updatedScript = scriptTextLines.join('\n');
+      // console.log('script text', scriptTextLines);
+      // // 3. Replace the updated line in the script array
+      // scriptTextLines[data.index] = updatedLineText;
+      // // 4. Convert the script array back to script text
+      // const updatedScript = scriptTextLines.join('\n');
 
       if (data.exitEdit) {
         this.DoDeselect();
@@ -184,7 +242,7 @@ class InstanceEditor extends React.Component {
     let properties = GetBlueprintProperties(blueprintName);
     // Remove properties that have already been set
     // 1. Get the list or properties
-    const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
+    const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
     const initProperties = scriptUnits.map(unit => {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
@@ -379,7 +437,7 @@ class InstanceEditor extends React.Component {
 
     let jsx = '';
     if (instance) {
-      const source = TRANSPILER.ScriptifyText(instance.initScript);
+      const source = TRANSPILER.TextToScript(instance.initScript);
 
       // initScripts really should not be defining new props
       // (leads to 'prop already added' errors)
@@ -415,7 +473,7 @@ class InstanceEditor extends React.Component {
       //    new features, so the two sets of feature keys are unique.
       const featPropMap = new Map([...bpFeatPropMap], [initFeatPropMap]);
 
-      jsx = TRANSPILER.RenderScript(source, {
+      jsx = TRANSPILER.ScriptToJSX(source, {
         isEditable,
         isDeletable: isDeletingProperty,
         isInstanceEditor: true,
