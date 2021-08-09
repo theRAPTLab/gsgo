@@ -452,39 +452,17 @@ onEvent Tick [[
 `
     },
     {
-      id: 'DecorationRed',
-      label: 'Decoration Red',
-      script: `# BLUEPRINT DecorationRed
+      id: 'Rock',
+      label: 'Rock Blue',
+      script: `# BLUEPRINT Rock
 
       # PROGRAM DEFINE
       useFeature Costume
-      featCall Costume setCostume 'flower.json' 1
+
+      featCall Costume setCostume 'boulder.json' 0
 
       useFeature Physics
-      `
-    },
-    {
-      id: 'DecorationYellow',
-      label: 'Decoration Yellow',
-      script: `# BLUEPRINT DecorationYellow
-
-      # PROGRAM DEFINE
-      useFeature Costume
-      featCall Costume setCostume 'flower.json' 0
-
-      useFeature Physics
-      `
-    },
-    {
-      id: 'DecorationBlue',
-      label: 'Decoration Blue',
-      script: `# BLUEPRINT DecorationBlue
-
-      # PROGRAM DEFINE
-      useFeature Costume
-      featCall Costume setCostume 'flower.json' 2
-
-      useFeature Physics      `
+`
     }
   ],
   instances: [
@@ -520,26 +498,20 @@ prop y setTo 350`
     },
     {
       id: 505,
-      name: 'DecorationYellow1',
-      blueprint: 'DecorationYellow',
-      initScript: `prop x setTo -384
-prop y setTo 362
-prop zIndex setTo 200`
+      name: 'Rock1',
+      blueprint: 'Rock',
+      initScript: `prop x setTo -350
+prop y setTo 368
+featProp Physics scale setTo 1.3
+prop zIndex setTo 210`
     },
     {
       id: 506,
-      name: 'DecorationRed1',
-      blueprint: 'DecorationRed',
-      initScript: `prop x setTo -308
-prop y setTo 384
-prop zIndex setTo 220`
-    },
-    {
-      id: 507,
-      name: 'DecorationBlue1',
-      blueprint: 'DecorationBlue',
-      initScript: `prop x setTo -350
+      name: 'Rock2',
+      blueprint: 'Rock',
+      initScript: `prop x setTo 350
 prop y setTo 378
+featProp Costume flipX setTo true
 prop zIndex setTo 210`
     }
   ]
