@@ -2,6 +2,8 @@
 
   Generic User Input Field
 
+  This is a user input field for an arbitrary argument in the keyword,
+  referenced via `argindex`.
   Intended for use with a class-keyword.
 
   type = 'string' || 'number'

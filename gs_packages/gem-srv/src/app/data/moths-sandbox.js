@@ -97,6 +97,8 @@ prop alpha setTo 1
 addProp label String 'foo'
 prop label setTo 'bar'
 featProp AgentWidgets text setTo 'joe'
+// test methods
+prop alpha addRnd -20 20
 
 // Testing nested scriptifying
 ifExpr {{ agent.prop.alpha.value < 1 }} [[

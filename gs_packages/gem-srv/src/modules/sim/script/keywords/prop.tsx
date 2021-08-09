@@ -61,6 +61,7 @@ const DBG = true;
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyState = {
+  context: string;
   propName: string;
   methodName: string;
   args: string[];
@@ -134,7 +135,7 @@ class PropElement extends React.Component<MyProps, MyState> {
       isInstanceEditor,
       classes
     } = this.props;
-    const { propName, methodName, args } = this.state;
+    const { context, propName, methodName, args } = this.state;
 
     let propNames = [...propMap.values()];
 
@@ -159,6 +160,7 @@ class PropElement extends React.Component<MyProps, MyState> {
       // Static Minimized View
       jsx = (
         <>
+          {context ? `${context}.` : ''}
           {propName}:&nbsp;{args[0]}&nbsp;{' '}
         </>
       );
@@ -168,6 +170,7 @@ class PropElement extends React.Component<MyProps, MyState> {
         <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
           <GVarElement
             state={this.state}
+            context={context}
             propName={propName}
             propNameOptions={propNames}
             propMethod={methodName}
@@ -196,6 +199,7 @@ class PropElement extends React.Component<MyProps, MyState> {
             prop
             <GVarElement
               state={this.state}
+              context={context}
               propName={propName}
               propNameOptions={propNames}
               propMethod={methodName}
@@ -246,8 +250,9 @@ export class prop extends Keyword {
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
     // pull `type` and 'propMethods' out so it doesn't get mixed in with `...arg`
-    const { propName, methodName, type, propMethods, args } = state;
-    const scriptArr = [this.keyword, propName, methodName, ...args];
+    const { context, propName, methodName, type, propMethods, args } = state;
+    const refArg = context ? `${context}.${propName}` : propName;
+    const scriptArr = [this.keyword, refArg, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
     const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
@@ -267,20 +272,21 @@ export class prop extends Keyword {
     const ref = refArg.objref || [refArg];
     const len = ref.length;
     let propName = '';
-    let refDisplay = '';
+    let context = '';
     if (len === 1) {
       /** IMPLICIT REF *******************************************************/
       /// e.g. 'Costume' is interpreted as 'agent.Costume'
       propName = `${ref[0]}`;
-      refDisplay = `${ref[0]}`;
+      // context = `${ref[0]}`;
     } else if (len === 2) {
       /** EXPLICIT REF *******************************************************/
       /// e.g. 'agent.Costume' or 'Bee.Costume'
       propName = `${ref[1]}`;
-      refDisplay = `${ref[0]}.${ref[1]}`;
+      context = `${ref[0]}`;
     }
 
     const state = {
+      context,
       propName,
       methodName,
       args,
