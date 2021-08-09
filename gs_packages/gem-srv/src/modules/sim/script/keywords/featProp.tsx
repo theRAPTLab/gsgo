@@ -198,7 +198,8 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
       // Static Minimized View
       jsx = (
         <>
-          {featName}:{featPropName}:&nbsp;{args[0]}&nbsp;{' '}
+          {featName}:{context ? `${context}.` : ''}
+          {featPropName}:&nbsp;{args[0]}&nbsp;{' '}
         </>
       );
     } else if (isInstanceEditor) {
@@ -212,8 +213,10 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
           }}
         >
           {featName}
+          {context ? `${context}.` : ''}
           <GVarElement
             state={this.state}
+            context="" // not needed for featProp
             propName={featPropName}
             propNameOptions={propNameOptions}
             propMethod={methodName}
@@ -237,7 +240,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
               display: 'grid'
             }}
           >
-            featProp {context}.
+            featProp {context ? `${context}.` : ''}
             <SelectElement
               state={this.state}
               value={featName}
@@ -248,6 +251,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
             />
             <GVarElement
               state={this.state}
+              context="" // not needed for featProp
               propName={featPropName}
               propNameOptions={propNameOptions}
               propMethod={methodName}
@@ -345,8 +349,12 @@ export class featProp extends Keyword {
     // const { featPropName, methodName, ...args } = state;
     // return [this.keyword, featName, featPropName, methodName, ...args];
 
-    const { featName, featPropName, methodName, args } = state;
-    const scriptArr = [this.keyword, featName, featPropName, methodName, ...args];
+    const { featName, context, featPropName, methodName, args } = state;
+    const refArg =
+      context && context !== 'agent'
+        ? `${context}.${featPropName}`
+        : featPropName;
+    const scriptArr = [this.keyword, featName, refArg, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
     const scriptUnits = TextToScript(scriptText);
     return scriptUnits;

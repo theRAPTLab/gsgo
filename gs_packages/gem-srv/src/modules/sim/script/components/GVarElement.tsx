@@ -24,6 +24,7 @@ type MyState = {};
 type MyProps = {
   index: number; // script line number
   state: MyState;
+  context: string;
   propName: string;
   propMethod: string;
   propNameOptions: any[];
@@ -51,6 +52,7 @@ class GVarElement extends React.Component<MyProps, MyState> {
   render() {
     if (DBG) console.log(...PR('render'));
     const {
+      context,
       propName,
       propNameOptions,
       propMethod,
@@ -82,6 +84,7 @@ class GVarElement extends React.Component<MyProps, MyState> {
           gridTemplateColumns: 'repeat(3, minmax(60px, auto)'
         }}
       >
+        {context ? `${context}.` : ''}
         <SelectElement
           state={this.state}
           value={propName}
