@@ -92,22 +92,28 @@ class GVarElement extends React.Component<MyProps, MyState> {
         }}
       >
         {context ? `${context}.` : ''}
-        <SelectElement
-          state={this.state}
-          value={propName}
-          options={propNames}
-          selectMessage="-- Select a property... --"
-          onChange={onSelectProp}
-          index={index}
-        />
-        <SelectElement
-          state={this.state}
-          value={propMethod}
-          options={propMethodOptions}
-          selectMessage="-- Select a method... --"
-          onChange={onSelectMethod}
-          index={index}
-        />
+        {selectedProp ? (
+          <>
+            <SelectElement
+              state={this.state}
+              value={propName}
+              options={propNames}
+              selectMessage="-- Select a property... --"
+              onChange={onSelectProp}
+              index={index}
+            />
+            <SelectElement
+              state={this.state}
+              value={propMethod}
+              options={propMethodOptions}
+              selectMessage="-- Select a method... --"
+              onChange={onSelectMethod}
+              index={index}
+            />
+          </>
+        ) : (
+          `${propName} ${propMethod}`
+        )}
         {args.map((arg, i) => (
           <InputElement
             state={this.state}
