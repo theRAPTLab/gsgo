@@ -74,6 +74,9 @@ class InputElement extends React.Component<any, any> {
         // wrap strings in quotes or the parameter will be treated as a token
         args[argindex] = `"${args[argindex]}"`;
       }
+      if (type === 'number' && String(args[argindex]).startsWith('.')) {
+        args[argindex] = `0${args[argindex]}`;
+      }
       onSave(); // don't setState({args}) or the quotes will be added to the input element
     }
   }
