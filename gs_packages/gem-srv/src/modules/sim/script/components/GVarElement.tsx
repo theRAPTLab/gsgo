@@ -70,10 +70,17 @@ class GVarElement extends React.Component<MyProps, MyState> {
 
     // get options for method names
     const selectedProp = propNameOptions.find(p => p.name === propName);
-    if (!selectedProp)
-      throw new Error(
-        `Prop Menu selected prop ${propName} is not currently supported in ${propNameOptions}.  Please report the script and propName to the developers.`
-      );
+
+    // HACK
+    // Don't throw an error if the selectedProp is not in propNameOptions
+    // It probably means this is a prop with a different parent source.
+    // For now, just disable editing
+    //
+    // if (!selectedProp)
+    //   throw new Error(
+    //     `Prop Menu selected prop ${propName} is not currently supported in ${propNameOptions}.  Please report the script and propName to the developers.`
+    //   );
+
     const gVarType = selectedProp ? selectedProp.type : undefined;
     const propMethodOptions = gVarType ? propMethodsMap.get(gVarType) : undefined;
 
