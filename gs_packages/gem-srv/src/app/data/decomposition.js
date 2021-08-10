@@ -245,8 +245,8 @@ every 1 runAtStart [[
     prop matter sub 20
     featCall Population createAgent Waste [[
       // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
-      prop x addRnd -20 20
-      prop y addRnd 50 150
+      prop x addRndInt -20 20
+      prop y addRndInt 50 150
       prop matter setTo 20
     ]]
     featCall agent.Costume setGlow 1
