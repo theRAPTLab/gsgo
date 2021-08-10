@@ -122,8 +122,13 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
-  addRnd(min: number, max: number, integer: boolean) {
-    this.value += u_RND(min, max, integer);
+  addRnd(min: number, max: number) {
+    this.value += u_RND(min, max, false);
+    u_CheckMinMax(this);
+    return this;
+  }
+  addRndInt(min: number, max: number) {
+    this.value += u_RND(min, max, true);
     u_CheckMinMax(this);
     return this;
   }
@@ -140,8 +145,13 @@ export class GVarNumber extends SM_Object implements IScopeable {
     u_CheckMinMax(this);
     return this;
   }
-  subRnd(min: number, max: number, integer: boolean) {
-    this.value -= u_RND(min, max, integer);
+  subRnd(min: number, max: number) {
+    this.value -= u_RND(min, max, false);
+    u_CheckMinMax(this);
+    return this;
+  }
+  subRndInt(min: number, max: number) {
+    this.value -= u_RND(min, max, true);
     u_CheckMinMax(this);
     return this;
   }
