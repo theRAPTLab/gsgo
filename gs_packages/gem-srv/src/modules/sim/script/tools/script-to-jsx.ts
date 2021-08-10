@@ -35,7 +35,13 @@ function m_GetTokenValue(arg) {
   const { objref, program, block, expr } = arg; // req runtime eval
   if (directive) return arg; // directive = _pragma, cmd
   if (comment) return comment;
-  if (line !== undefined) return `// line:${line}`; // don't compile these!
+
+  // ORIG
+  // if (line !== undefined) return `// line:${line}`; // don't compile these!
+
+  // NEW just return the line, so blank lines don't get an extra warning
+  if (line !== undefined) return line; // don't compile these!
+
   if (token !== undefined) return token;
   if (value !== undefined) return value;
   if (string !== undefined) return string;
@@ -119,14 +125,14 @@ function RenderScript(units: TScriptUnit[], options: any[]): any[] {
     // if (unit.length === 0) return;
 
     // NEW: Keep blank lines, otherwise
-    // index gets screwed up when updating text lines.
-    // Treat the blank lines as a comment.
-    if (unit.length === 0) {
-      sourceJSX.push('//'); // no jsx to render for comments
-      return;
-    }
-
+    //      index gets screwed up when updating text lines
+    //      Treate the blank lines as a comment
     let keyword = unit[0];
+    if (keyword === '') {
+      // blank line keyword is ''
+      keyword = '_comment';
+      unit[1] = '';
+    }
 
     // ORIG
     // comment processing
