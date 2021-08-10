@@ -450,94 +450,17 @@ every 1 runAtStart [[
 `
     },
     {
-      id: 'PlantGraph',
-      label: 'PlantGraph',
-      script: `# BLUEPRINT PlantGraph
+      id: 'CharacterGraph',
+      label: 'CharacterGraph',
+      script: `# BLUEPRINT CharacterGraph
             # PROGRAM DEFINE
             prop skin setTo 'onexone'
 
-            useFeature Population
-            useFeature Global
-            useFeature AgentWidgets
-            featProp AgentWidgets isLargeGraphic setTo true
-
-            // using a generic name so that it is easier to change later
-            addProp graphValue Number 0
-            prop graphValue setMax 1000
-            prop graphValue setMin 0
-
-            // STUDENTS_MAY_CHANGE to set the starting value and adjust the graph scale
-            prop graphValue setTo 0
-
-            featCall AgentWidgets bindGraphTo graphValue 30
-
-            // STUDENTS_MAY_CHANGE - this is the graph name - change the actual contents below in the program event [WORKS]
-            featProp AgentWidgets text setTo 'Plant Energy'
-
-            # PROGRAM UPDATE
-            every 1 runAtStart [[
-              // STUDENTS_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
-              // -- Character options: Plant, Worm, Waste, Bunny
-              // -- Variable options: matter, energyLevel, nutrients
-              // -- Population options: sum, avg, min, max
-
-              featProp Population monitoredAgent setTo 'Plant'
-              featProp Population monitoredAgentProp setTo 'energyLevel'
-              featCall Population countAgentProp
-
-              exprPush {{ agent.getFeatProp('Population', 'sum').value  }}
-              propPop graphValue
-            ]]
-            `
-    },
-    {
-      id: 'BunnyGraph',
-      label: 'BunnyGraph',
-      script: `# BLUEPRINT BunnyGraph
-            # PROGRAM DEFINE
-            prop skin setTo 'onexone'
-
-            useFeature AgentWidgets
-            useFeature Population
-            featProp AgentWidgets isLargeGraphic setTo true
-
-            // using a generic name so that it is easier to change later
-            addProp graphValue Number 0
-            prop graphValue setMax 1000
-            prop graphValue setMin 0
-
-            // STUDENTS_MAY_CHANGE to set the starting value and adjust the graph scale
-            prop graphValue setTo 0
-
-           featCall AgentWidgets bindGraphTo graphValue 30
-
-           // STUDENTS_MAY_CHANGE - this is the graph name - change the actual contents below in the program event [WORKS]
-           featProp AgentWidgets text setTo 'Bunny Energy'
-
-            # PROGRAM EVENT
-
-            onEvent Tick [[
-              // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
-              // -- Character options: Plant, Worm, Waste, Bunny
-              // -- Variable options: matter, energyLevel, nutrients
-              // -- Population options: sum, avg, min, max
-
-              featProp Population monitoredAgent setTo 'Bunny'
-              featProp Population monitoredAgentProp setTo 'energyLevel'
-              featCall Population countAgentProp
-
-              exprPush {{ agent.getFeatProp('Population', 'sum').value }}
-              propPop graphValue
-            ]]
-
-            `
-    },
-    {
-      id: 'WormGraph',
-      label: 'WormGraph',
-      script: `# BLUEPRINT WormGraph
-            # PROGRAM DEFINE
-            prop skin setTo 'onexone'
+            // setting these all up to so they can be changed in the map editor
+            addProp characterType String 'Worm'
+            addProp countType String 'sum'
+            addProp variableToGraph String 'energyLevel'
+            addProp labelText String 'Worm Energy'
 
             useFeature AgentWidgets
             useFeature Population
@@ -550,10 +473,12 @@ every 1 runAtStart [[
 
            featCall AgentWidgets bindGraphTo graphValue 30
 
-           // STUDENTS_MAY_CHANGE - this is the graph name - change the actual contents below in the program event [WORKS]
-           featProp AgentWidgets text setTo 'Worm Energy'
-
             # PROGRAM EVENT
+
+            onEvent Start [[
+              exprPush {{agent.getProp('labelText').value}}
+              featPropPop AgentWidgets text
+            ]]
 
             onEvent Tick [[
               // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
@@ -561,11 +486,15 @@ every 1 runAtStart [[
               // -- Variable options: matter, energyLevel, nutrients
               // -- Population options: sum, avg, min, max
 
-              featProp Population monitoredAgent setTo 'Worm'
-              featProp Population monitoredAgentProp setTo 'energyLevel'
+              exprPush {{agent.getProp('characterType').value}}
+              featPropPop Population monitoredAgent
+
+              exprPush {{agent.getProp('variableToGraph').value}}
+              featPropPop Population monitoredAgentProp
+
               featCall Population countAgentProp
 
-              exprPush {{ agent.getFeatProp('Population', 'sum').value }}
+              exprPush {{ agent.getFeatProp('Population', agent.prop.countType.value).value }}
               propPop graphValue
             ]]
 
@@ -654,25 +583,37 @@ every 1 runAtStart [[
     {
       id: 1801,
       name: 'Plant Energy',
-      blueprint: 'PlantGraph',
+      blueprint: 'CharacterGraph',
       initScript: `prop x setTo 470
 prop y setTo 370
+prop characterType setTo 'Plant'
+prop countType setTo 'sum'
+prop variableToGraph setTo 'energyLevel'
+prop labelText setTo 'Plant Energy'
 `
     },
     {
       id: 1802,
       name: 'Bunny Energy',
-      blueprint: 'BunnyGraph',
+      blueprint: 'CharacterGraph',
       initScript: `prop x setTo 470
 prop y setTo 230
+prop characterType setTo 'Bunny'
+prop countType setTo 'sum'
+prop variableToGraph setTo 'energyLevel'
+prop labelText setTo 'Bunny Energy'
 `
     },
     {
       id: 1803,
       name: 'Worm Energy',
-      blueprint: 'WormGraph',
+      blueprint: 'CharacterGraph',
       initScript: `prop x setTo 470
 prop y setTo 90
+prop characterType setTo 'Worm'
+prop countType setTo 'sum'
+prop variableToGraph setTo 'energyLevel'
+prop labelText setTo 'Worm Energy'
 `
     },
     {
