@@ -476,12 +476,14 @@ every 1 runAtStart [[
 
             # PROGRAM UPDATE
             every 1 runAtStart [[
-              // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+              // STUDENTS_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
               // -- Character options: Plant, Worm, Waste, Bunny
               // -- Variable options: matter, energyLevel, nutrients
               // -- Population options: sum, avg, min, max
 
-              featCall Population countAgentProp 'Plant' 'energyLevel'
+              featProp Population monitoredAgent setTo 'Plant'
+              featProp Population monitoredAgentProp setTo 'energyLevel'
+              featCall Population countAgentProp
 
               exprPush {{ agent.getFeatProp('Population', 'sum').value  }}
               propPop graphValue
@@ -520,7 +522,9 @@ every 1 runAtStart [[
               // -- Variable options: matter, energyLevel, nutrients
               // -- Population options: sum, avg, min, max
 
-              featCall Population countAgentProp 'Bunny' 'energyLevel'
+              featProp Population monitoredAgent setTo 'Bunny'
+              featProp Population monitoredAgentProp setTo 'energyLevel'
+              featCall Population countAgentProp
 
               exprPush {{ agent.getFeatProp('Population', 'sum').value }}
               propPop graphValue
@@ -557,7 +561,9 @@ every 1 runAtStart [[
               // -- Variable options: matter, energyLevel, nutrients
               // -- Population options: sum, avg, min, max
 
-              featCall Population countAgentProp 'Worm' 'energyLevel'
+              featProp Population monitoredAgent setTo 'Worm'
+              featProp Population monitoredAgentProp setTo 'energyLevel'
+              featCall Population countAgentProp
 
               exprPush {{ agent.getFeatProp('Population', 'sum').value }}
               propPop graphValue
