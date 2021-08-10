@@ -109,6 +109,31 @@
       "assetId": 211,
       "assetName": "worm.json",
       "assetUrl": "static/sprites/local/worm.json"
+    },
+    {
+      "assetId": 212,
+      "assetName": "smallsquare.json",
+      "assetUrl": "static/sprites/local/smallsquare.json"
+    },
+    {
+      "assetId": 213,
+      "assetName": "star.json",
+      "assetUrl": "static/sprites/local/star.json"
+    },
+    {
+      "assetId": 214,
+      "assetName": "hawk.json",
+      "assetUrl": "static/sprites/local/hawk.json"
+    },
+    {
+      "assetId": 500,
+      "assetName": "turtle.json",
+      "assetUrl": "static/sprites/local/student/turtle.json"
+    },
+    {
+      "assetId": 501,
+      "assetName": "butterfly.json",
+      "assetUrl": "static/sprites/local/student/butterfly.json"
     }
   ],
   "READ_ME": [
