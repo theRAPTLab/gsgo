@@ -141,8 +141,10 @@ function UpdateActiveDevices(changes) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// POZYX DATA UPDATE  FOR VU/////////////////////////////////////////////////////////
+/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// VU
 export const POZYX_TRANSFORM = {
   scaleX: -0.0002, // -0.0002
   scaleY: 0.00016, // 0.0003
@@ -152,8 +154,10 @@ export const POZYX_TRANSFORM = {
   useAccelerometer: true
 };
 
-/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+// IU
+// add when finished
+
+// BEN
 /* export const POZYX_TRANSFORM = {
   scaleX: -0.0002, // -0.0002
   scaleY: 0.0003, // 0.0003
@@ -162,6 +166,7 @@ export const POZYX_TRANSFORM = {
   rotate: -160, // -160
   useAccelerometer: true
 }; */
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_PozyxTransform(position: {
   x: number;
