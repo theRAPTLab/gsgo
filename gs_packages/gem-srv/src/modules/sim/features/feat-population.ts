@@ -95,6 +95,7 @@ class PopulationPack extends GFeature {
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
     this.featAddMethod('removeInertAgents', this.removeInertAgents);
     this.featAddMethod('agentsReproduce', this.agentsReproduce);
+    this.featAddMethod('oneAgentReproduce', this.oneAgentReproduce);
     this.featAddMethod('populateBySpawning', this.populateBySpawning);
     this.featAddMethod('agentsForEachActive', this.agentsForEachActive);
     this.featAddMethod('agentsForEach', this.agentsForEach);
@@ -281,6 +282,25 @@ class PopulationPack extends GFeature {
     });
   }
   /**
+   * For ONE agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
+   */
+  oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    console.error('oneagentreproduce');
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
+    const parent = this.getRandomActiveAgent(agent, bpname);
+    if (parent === undefined) {
+      console.error(
+        'Popuation.oneAgentReproduce was not able to find a non-inert parent agent to reproduce from!'
+      );
+      return;
+    }
+    parent.callFeatMethod('Population', 'spawnChild', spawnScript);
+    if (deleteAfterSpawning) parent.prop.isInert.setTo(true);
+  }
+  /**
    * For all agents of type bpname, call SpawnChild if not inert
    * @param agent
    * @param bpname
@@ -374,8 +394,8 @@ class PopulationPack extends GFeature {
    * 3. Then call this without paramaeters: featCall Population countAgentProp
    *
    * @param agent
-   * @param blueprintName
-   * @param prop
+   * @param blueprintName (optional -- falls back to monitoredAgent)
+   * @param prop (optional -- falls back to monitoredAgentProp)
    * @returns Sets three feature propertie: count, sum, avg
    */
   countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
