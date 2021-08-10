@@ -70,10 +70,17 @@ class GVarElement extends React.Component<MyProps, MyState> {
 
     // get options for method names
     const selectedProp = propNameOptions.find(p => p.name === propName);
-    if (!selectedProp)
-      throw new Error(
-        `Prop Menu selected prop ${propName} is not currently supported in ${propNameOptions}.  Please report the script and propName to the developers.`
-      );
+
+    // HACK
+    // Don't throw an error if the selectedProp is not in propNameOptions
+    // It probably means this is a prop with a different parent source.
+    // For now, just disable editing
+    //
+    // if (!selectedProp)
+    //   throw new Error(
+    //     `Prop Menu selected prop ${propName} is not currently supported in ${propNameOptions}.  Please report the script and propName to the developers.`
+    //   );
+
     const gVarType = selectedProp ? selectedProp.type : undefined;
     const propMethodOptions = gVarType ? propMethodsMap.get(gVarType) : undefined;
 
@@ -85,22 +92,28 @@ class GVarElement extends React.Component<MyProps, MyState> {
         }}
       >
         {context ? `${context}.` : ''}
-        <SelectElement
-          state={this.state}
-          value={propName}
-          options={propNames}
-          selectMessage="-- Select a property... --"
-          onChange={onSelectProp}
-          index={index}
-        />
-        <SelectElement
-          state={this.state}
-          value={propMethod}
-          options={propMethodOptions}
-          selectMessage="-- Select a method... --"
-          onChange={onSelectMethod}
-          index={index}
-        />
+        {selectedProp ? (
+          <>
+            <SelectElement
+              state={this.state}
+              value={propName}
+              options={propNames}
+              selectMessage="-- Select a property... --"
+              onChange={onSelectProp}
+              index={index}
+            />
+            <SelectElement
+              state={this.state}
+              value={propMethod}
+              options={propMethodOptions}
+              selectMessage="-- Select a method... --"
+              onChange={onSelectMethod}
+              index={index}
+            />
+          </>
+        ) : (
+          `${propName} ${propMethod}`
+        )}
         {args.map((arg, i) => (
           <InputElement
             state={this.state}
