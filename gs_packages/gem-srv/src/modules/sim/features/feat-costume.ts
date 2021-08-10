@@ -170,6 +170,21 @@ class CostumePack extends GFeature {
     this.featAddProp(agent, 'colorValue', prop);
     prop = new GVarNumber();
     this.featAddProp(agent, 'colorScaleIndex', prop);
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorScaleHue', prop);
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorScaleSaturation', prop);
+    prop = new GVarNumber(1);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorScaleValue', prop);
+    this.featAddProp(agent, 'colorScaleType', new GVarString('value'));
+    prop = new GVarNumber(5);
+    this.featAddProp(agent, 'colorScaleSteps', prop);
 
     COSTUME_AGENTS.set(agent.id, agent.id);
 
@@ -297,6 +312,13 @@ class CostumePack extends GFeature {
     type: string,
     steps: number
   ) {
+    // featProp overrides
+    if (hue === undefined) hue = agent.prop.Costume.colorScaleHue.value;
+    if (sat === undefined) sat = agent.prop.Costume.colorScaleSaturation.value;
+    if (val === undefined) val = agent.prop.Costume.colorScaleValue.value;
+    if (type === undefined) type = agent.prop.Costume.colorScaleType.value;
+    if (steps === undefined) steps = agent.prop.Costume.colorScaleSteps.value;
+
     agent.prop.Costume._colorScale = new Map();
     // index is 0-based
     const max = steps - 1;
