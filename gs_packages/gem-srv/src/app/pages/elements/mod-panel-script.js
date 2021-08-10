@@ -32,15 +32,12 @@ export function CompileToJSX(currentScript) {
 
   // Construct list of featProps for script UI menu
   const featPropMap = TRANSPILER.ExtractFeatPropMapFromScript(currentScript);
-  console.log('featPropMap', featPropMap);
-  // console.error('currentScript', currentScript);
 
   // TRANSPILER v1
   // const source = TRANSPILER.ScriptifyText(currentScript);
 
   // TRANSPILER v2
   const source = TRANSPILER.TextToScript(currentScript);
-  console.error('mod-panel-script', source);
 
   // ORIG using TRANSPILER v1
   // const jsx = TRANSPILER.RenderScript(source, {
