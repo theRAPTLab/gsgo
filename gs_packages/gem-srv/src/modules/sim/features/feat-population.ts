@@ -137,6 +137,10 @@ class PopulationPack extends GFeature {
     this.featAddProp(agent, 'min', new GVarString());
     this.featAddProp(agent, 'max', new GVarString());
 
+    // used by countAgentProp without parameters
+    this.featAddProp(agent, 'monitoredAgent', new GVarString());
+    this.featAddProp(agent, 'monitoredAgentProp', new GVarString());
+
     // Used by populateBySpawning to set target population levels
     this.featAddProp(agent, 'targetPopulationSize', new GVarNumber(1));
     this.featAddProp(agent, 'deleteAfterSpawning', new GVarBoolean(true));
@@ -362,14 +366,24 @@ class PopulationPack extends GFeature {
    *   count -- number of agents
    *   sum -- total of the agent's prop values (e.g. sum of algae energylevels)
    *   avg -- average of agent's prop values (e.g. avg of algae energylevel)
+   * This is a one-time call.
+   *
+   * To use this with Script Wizard UI:
+   * 1. First set targetAgent: featProp Population targetAgent setTo Moth
+   * 2. Set targetAgentProp: featProp Population targetAgentProp setTo energyLevel
+   * 3. Then call this without paramaeters: featCall Population countAgentProp
+   *
    * @param agent
    * @param blueprintName
    * @param prop
    * @returns Sets three feature propertie: count, sum, avg
    */
   countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
+    if (blueprintName === undefined)
+      blueprintName = agent.prop.Population.monitoredAgent.value;
     const agents = GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
+    if (prop === undefined) prop = agent.prop.Population.monitoredAgentProp.value;
     const sum = agents
       .map(a => a.getProp(prop).value)
       .reduce((acc, cur) => acc + cur);
@@ -379,6 +393,7 @@ class PopulationPack extends GFeature {
       .getFeatProp(this.name, 'avg')
       .setTo(Number(sum / agents.length).toFixed(2));
   }
+  /// Returns the minimum number of agents of type blueprintName
   minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
@@ -388,6 +403,7 @@ class PopulationPack extends GFeature {
       .reduce(minimizer, Infinity);
     agent.getFeatProp(this.name, 'min').setTo(min);
   }
+  /// Returns the maximum number of agents of type blueprintName
   maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
