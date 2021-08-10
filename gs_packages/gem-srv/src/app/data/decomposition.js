@@ -303,6 +303,11 @@ featProp AgentWidgets meterColor setTo 65280
 featProp AgentWidgets text setTo ''
 
 # PROGRAM UPDATE
+
+// constantly re-position the plant appropriately
+exprPush {{ 0 + 25 - agent.prop.Physics.bodyHeight.value / 2 }}
+propPop y
+
 when Plant touches Sunbeam [[
   every 1 runAtStart [[
     prop Plant.energyLevel add 1
@@ -319,6 +324,7 @@ when Plant touches Soil [[
     ]]
   ]]
 ]]
+
 every 1 runAtStart [[
   // remove if dead
   ifExpr {{ agent.getProp('matter').value < 10 }} [[
@@ -327,8 +333,9 @@ every 1 runAtStart [[
   ]]
 
   // set size based on matter
-  exprPush {{ 0.7 + (0.3 * (agent.getProp('matter').value / 50)) }}
+  exprPush {{ agent.getProp('matter').value / 50 }}
   featPropPop Physics scale
+
 
   // is it healthy?  Use some nutrients and then set color
   prop nutrients sub 1
@@ -667,7 +674,7 @@ prop y setTo 90
       name: 'Plant01',
       blueprint: 'Plant',
       initScript: `prop x setTo -300
-    prop y setTo -76`
+    prop y setTo -85`
     },
     {
       id: 1301,
