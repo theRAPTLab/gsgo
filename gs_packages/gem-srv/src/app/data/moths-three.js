@@ -331,7 +331,7 @@ when Predator centerTouchesCenter Moth [[
         featCall Population oneAgentReproduce Moth [[
           prop x setTo 0
           prop y setTo 0
-          prop colorIndx addRnd -1 1 true
+          prop colorIndx addRndInt -1 1
           //dbgOut {{ agent.getProp('colorIndx').value  }}
           propPush colorIndx
           featPropPop Costume colorScaleIndex
