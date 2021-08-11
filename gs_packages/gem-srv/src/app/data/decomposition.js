@@ -101,7 +101,22 @@ featCall Costume setCostume 'boulder.json' 0
 
 useFeature Physics
 useFeature AgentWidgets
-# PROGRAM UPDATE
+
+featProp Physics scale setTo 0.5
+`
+    },
+    {
+      id: 'House',
+      label: 'House',
+      script: `# BLUEPRINT House
+# PROGRAM DEFINE
+useFeature Costume
+featCall Costume setCostume 'house.json' 0
+
+useFeature Physics
+useFeature AgentWidgets
+
+featProp Physics scale setTo 0.5
 `
     },
     {
