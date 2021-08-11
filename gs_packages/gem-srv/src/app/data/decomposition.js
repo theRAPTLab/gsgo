@@ -181,6 +181,9 @@ when Worm touches Waste [[
         ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
           prop feeling setTo 'full'
 
+          // make this red so we know we are full
+          featProp AgentWidgets meterColor setTo 15736076
+
           // BEN LOOK HERE
           exprPush {{ agent.getProp('nutrientCountStart').value }}
           propPop nutrientCount
@@ -202,6 +205,8 @@ when Worm touches Soil [[
         featCall Soil.Costume setGlow 1
         featCall Worm.Costume setGlow 1
         prop feeling setTo 'hungry'
+        // back to green now that we are hungry again
+        featProp AgentWidgets meterColor setTo 65280
       ]]
       ifExpr {{ agent.getProp('nutrientCount').value > 0}} [[
         prop nutrientCount sub 1
@@ -271,6 +276,7 @@ when Bunny touches Plant [[
     featCall Bunny.Costume setGlow 0.1
   ]]
 ]]
+
 every 1 runAtStart [[
   // if full energy, emit waste
   ifExpr {{ agent.getProp('energyLevel').value > 45 }} [[
