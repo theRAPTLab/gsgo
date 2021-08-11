@@ -129,6 +129,13 @@ prop zIndex setTo -110
 useFeature Costume
 featCall Costume setCostume 'worm.json' 2
 
+// move between hungry and full where hungry will eat and full will release nutrients
+addProp feeling String 'hungry'
+
+// used internally to delay nutrient release when full
+addProp nutrientCountStart Number 3
+addProp nutrientCount Number 0
+
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
 
@@ -154,31 +161,52 @@ featCall AgentWidgets bindMeterTo energyLevel
 featProp AgentWidgets meterColor setTo 65280
 
 # PROGRAM UPDATE
-ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
-  featProp Costume flipY setTo false
-]]
-ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
-  featProp Costume flipY setTo true
-]]
+
 
 when Worm touches Waste [[
   every 1 runAtStart [[
-    prop Worm.energyLevel add 10
-    prop Worm.matter add 10
-    prop Waste.matter sub 10
-    featCall Worm.Costume setGlow 0.05
+
+    // if hungry, eat
+    ifExpr {{ agent.getProp('feeling').value == 'hungry'}} [[
+      // move energy and matter from the waste to the worm and glow so we notice
+      prop Worm.energyLevel add 10
+      prop Worm.matter add 10
+      prop Waste.matter sub 10
+      featCall Costume setGlow 0.05
+
+      // if you are nice and full of energy, note you are full and start poop count-down
+        ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
+          prop feeling setTo 'full'
+
+          // BEN LOOK HERE
+          pushExpr {{ agent.getProp('nutrientCountStart').value }}
+          dbgStack
+
+          propPop nutrientCount
+          // prop nutrientCount setTo 5
+          featCall Worm.Costume setGlow 1
+        ]]
+    ]]
   ]]
 ]]
 when Worm touches Soil [[
   every 1 runAtStart [[
-    // if full energy, emit nutrients
-    // note they eemit nutrients if they are in a spot where they are eating ... we might want a delay?
-    ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
-      prop Worm.energyLevel sub 50
-      prop Worm.matter sub 50
-      featCall Worm.Costume setGlow 1
-      prop Soil.nutrients add 50
-      featCall Soil.Costume setGlow 1
+
+    // if you are full, check if enough time has passed to release nutrients... do so and then switch to being hungry again
+    // if not, just update counter
+    ifExpr {{ agent.getProp('feeling').value == 'full'}} [[
+      ifExpr {{ agent.getProp('nutrientCount').value == 0}} [[
+        prop Worm.energyLevel sub 50
+        prop Worm.matter sub 50
+        prop Soil.nutrients add 50
+        featCall Soil.Costume setGlow 1
+        featCall Worm.Costume setGlow 1
+        prop feeling setTo 'hungry'
+      ]]
+      ifExpr {{ agent.getProp('nutrientCount').value > 0}} [[
+        prop nutrientCount sub 1
+        featCall Worm.Costume setGlow 1
+      ]]
     ]]
   ]]
 ]]
@@ -186,6 +214,12 @@ every 1 runAtStart [[
   // energy goes down
   prop energyLevel sub 1
 
+  ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
+    featProp Costume flipY setTo false
+  ]]
+  ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
+    featProp Costume flipY setTo true
+  ]]
 ]]
 `
     },
