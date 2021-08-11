@@ -133,7 +133,10 @@ featCall Costume setCostume 'worm.json' 2
 addProp feeling String 'hungry'
 
 // used internally to delay nutrient release when full
-addProp nutrientCountStart Number 3
+addProp nutrientCountStart Number 0
+
+// STUDENTS_MAY_CHANGE set this lower for instant dispersal of nutrients, or higher to stretch it out
+prop nutrientCountStart setTo 5
 addProp nutrientCount Number 0
 
 useFeature Movement
