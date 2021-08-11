@@ -360,8 +360,17 @@ when Plant touches Soil [[
 ]]
 
 every 1 runAtStart [[
-  // remove if dead
+  // if the plant is basically dead
   ifExpr {{ agent.getProp('matter').value < 10 }} [[
+
+    // create a little bit of inorganic matter
+    featCall Population createAgent Waste [[
+      // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
+      prop x addRndInt -5 5
+      prop y addRndInt -10 0
+      prop matter setTo 20
+    ]]
+
     // then remove the plant
     featCall Population removeAgent
   ]]
@@ -428,7 +437,7 @@ when Waste touches Soil [[
   ]]
 ]]
 every 1 runAtStart [[
-  // remove if dead
+  // remove if there is nothing left
   ifExpr {{ agent.getProp('matter').value < 1 }} [[
     featCall Population removeAgent
   ]]
