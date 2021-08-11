@@ -72,8 +72,8 @@ Also helpful was when I **stubbed out pseudocode**.
 
 ### Update Milestone 2 spends
 
-* [ ] update the timesheet to add issues specifically for it
-* [ ] add to any issue
+* [x] update the timesheet to add issues specifically for it
+* [x] add to any issue
 
 ### Asset Manager Resumption
 
@@ -82,9 +82,22 @@ This is the current outstanding to-do list from last sprint:
 * [ ] request `assets/path-to-archive` and download the files there
   * [ ] zip file, download and uncompress into `runtime/cache` matching path
   * [ ] manifest, download everything into `runtime/cache`
-
 * [ ] for loading corey's sprites, the use of nested folders means we have to work harder to extract a full manifest
 * [ ] pixijs json files may have several images
 * [x] PromiseLoadAssets() has changed
 * [x] expandable asset server can have multiple asset typed served
 * [ ] consider writing the generated manifest file to directory so it doesn't have to be generated all the time.
+
+## AUG 11 WED - Asset Manager
+
+* [ ] request `assets/path-to-archive` and download the files there
+  * [ ] zip file, download and uncompress into `runtime/cache` matching path
+  * [ ] manifest, download everything into runtime/cache
+* [ ] for loading corey's sprites, the use of nested folders means we have to work harder to extract a full manifest
+* [ ] pixijs json files may have several images
+* [ ] consider writing the generated manifest file to directory so it doesn't have to be generated all the time (would require the hash differ)
+
+* Make a `gs_assets_distrib` folder for testing.
+* redirect asset server to it to test...works
+* package the assetserver middleware
+* 

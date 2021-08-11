@@ -22,7 +22,8 @@ const CookieP = require('cookie-parser');
 const ServeIndex = require('serve-index');
 const {
   PACKAGE_NAME,
-  PUBLIC_RESOURCES_PATH,
+  SERVER_ASSETS_DIRPATH,
+  LOCAL_ASSETS_DIRPATH,
   MANIFEST_NAME
 } = require('../config/asrv.settings');
 
@@ -37,7 +38,7 @@ const resolvers = require('../config/graphql/resolvers');
 const PR = UR.PrefixUtil(PACKAGE_NAME);
 const PORT = 8080;
 const ASSET_ID_START = 100;
-const GSGO_HTDOCS = Path.resolve(__dirname, '../../..', PUBLIC_RESOURCES_PATH);
+const GSGO_HTDOCS = Path.resolve(__dirname, '../../..', SERVER_ASSETS_DIRPATH);
 let m_server; // server instance; check if unset before launching
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
@@ -196,8 +197,7 @@ function StartAssetServer(opt = {}) {
           }
           manifest[subdir] = entries;
         } // end subdir processing
-        // res.json(manifest);
-        res.send(JSON.stringify(manifest, null, 2));
+        res.json(manifest);
         return;
       } // no manifest request, so pass request forward
       next();

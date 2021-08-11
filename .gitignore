@@ -20,7 +20,7 @@ npm-debug.log
 runtime/
 dist/
 built/
-gs_assets/
+gs_assets*/
 
 # Numerous always-ignore extensions
 *~

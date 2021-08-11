@@ -20,9 +20,14 @@ const WebpackHot = require('webpack-hot-middleware');
 const {
   NetInfo_Middleware,
   UseLokiGQL_Middleware,
-  PrefixUtil
+  PrefixUtil,
+  FILE
 } = require('@gemstep/ursys/server');
-const { ASSETS_LOCAL } = require('../config/gem.settings');
+const {
+  ASSETS_LOCAL, // local path to assets directory
+  ASSETS_HOST, // where to pull assets from
+  ASSETS_ROUTE
+} = require('../config/gem.settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -178,6 +183,7 @@ function StartAppServer(opt = {}) {
     root: resolvers
   });
 
+  FILE.EnsureDirectory(ASSETS_LOCAL);
   app.use(
     '/assets',
     (req, res, next) => {
