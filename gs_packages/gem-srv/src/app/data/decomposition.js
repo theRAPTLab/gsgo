@@ -179,11 +179,8 @@ when Worm touches Waste [[
           prop feeling setTo 'full'
 
           // BEN LOOK HERE
-          pushExpr {{ agent.getProp('nutrientCountStart').value }}
-          dbgStack
-
+          exprPush {{ agent.getProp('nutrientCountStart').value }}
           propPop nutrientCount
-          // prop nutrientCount setTo 5
           featCall Worm.Costume setGlow 1
         ]]
     ]]
