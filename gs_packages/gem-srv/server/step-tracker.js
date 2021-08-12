@@ -329,7 +329,7 @@ function m_BindPozyxListener() {
   // });
 
   // UNCOMMENT THIS TO ALLOW LOCALHOST for the mqtt broker to run locallly (replay of pozyx streams)
-  mtrack_ss = mqtt.connect('mqtt://localhost', {
+  mtrack_ss = mqtt.connect('mqtt://10.0.0.254/', {
     port: 1883
   }); // Enterprise server "via uplink network" works
 
