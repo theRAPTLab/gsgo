@@ -144,17 +144,17 @@ export const MODEL = {
           featCall Population populateBySpawning Moth [[
             prop y setTo 280
             prop x setTo 0
-            prop x addRnd -360 360 true
-            prop y addRnd -60 60 true
+            prop x addRndInt -360 360
+            prop y addRndInt -60 60
             featCall Movement jitterPos -2 2
-            prop colorIndx addRnd -1 1 true
+            prop colorIndx addRndInt -1 1
             propPush colorIndx
             featPropPop Costume colorScaleIndex
             propPush colorIndx
             featPropPop AgentWidgets text
             prop costumenum setTo 0
 
-            //featProp Costume colorScaleIndex addRnd -1 1 true
+            //featProp Costume colorScaleIndex addRndInt -1 1
             //dbgOut {{ featProp Costume colorScaleIndex }}
             // update color index label
             featPropPush Costume colorScaleIndex
@@ -265,16 +265,16 @@ export const MODEL = {
           featCall Population populateBySpawning Moth [[
             prop y setTo 280
             prop x setTo 0
-            prop x addRnd -360 360 true
-            prop y addRnd -60 60 true
+            prop x addRndInt -360 360
+            prop y addRndInt -60 60
             featCall Movement jitterPos -2 2
-            prop colorIndx addRnd -1 1 true
+            prop colorIndx addRndInt -1 1
             propPush colorIndx
             featPropPop Costume colorScaleIndex
             propPush colorIndx
             featPropPop AgentWidgets text
 
-            //featProp Costume colorScaleIndex addRnd -1 1 true
+            //featProp Costume colorScaleIndex addRndInt -1 1
             //dbgOut {{ featProp Costume colorScaleIndex }}
             // update color index label
             featPropPush Costume colorScaleIndex
@@ -385,16 +385,16 @@ export const MODEL = {
           featCall Population populateBySpawning Moth [[
             prop y setTo 280
             prop x setTo 0
-            prop x addRnd -360 360 true
-            prop y addRnd -60 60 true
+            prop x addRndInt -360 360
+            prop y addRndInt -60 60
             featCall Movement jitterPos -2 2
-            prop colorIndx addRnd -1 1 true
+            prop colorIndx addRndInt -1 1
             propPush colorIndx
             featPropPop Costume colorScaleIndex
             propPush colorIndx
             featPropPop AgentWidgets text
 
-            //featProp Costume colorScaleIndex addRnd -1 1 true
+            //featProp Costume colorScaleIndex addRndInt -1 1
             //dbgOut {{ featProp Costume colorScaleIndex }}
             // update color index label
             featPropPush Costume colorScaleIndex
@@ -506,16 +506,16 @@ export const MODEL = {
           featCall Population populateBySpawning Moth [[
             prop y setTo 280
             prop x setTo 0
-            prop x addRnd -360 360 true
-            prop y addRnd -60 60 true
+            prop x addRndInt -360 360
+            prop y addRndInt -60 60
             featCall Movement jitterPos -2 2
-            prop colorIndx addRnd -1 1 true
+            prop colorIndx addRndInt -1 1
             propPush colorIndx
             featPropPop Costume colorScaleIndex
             propPush colorIndx
             featPropPop AgentWidgets text
 
-            //featProp Costume colorScaleIndex addRnd -1 1 true
+            //featProp Costume colorScaleIndex addRndInt -1 1
             //dbgOut {{ featProp Costume colorScaleIndex }}
             // update color index label
             featPropPush Costume colorScaleIndex
