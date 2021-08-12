@@ -22,8 +22,7 @@ export const MODEL = {
       script: `# BLUEPRINT Soil
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'square.json' 0
-featCall Costume setColorize 200 192 176
+featCall Costume setCostume 'dirt.json' 0
 
 addProp nutrients Number 50
 prop nutrients setMax 100
@@ -126,7 +125,7 @@ featProp Physics scale setTo 0.5
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'square.json' 0
-featCall Costume setColorize 200 192 176
+featCall Costume setColorize 0.56 0.52 0.40
 useFeature Physics
 featCall Physics setSize 800 400
 prop zIndex setTo -110
@@ -142,7 +141,7 @@ prop zIndex setTo -110
 # PROGRAM DEFINE
 
 useFeature Costume
-featCall Costume setCostume 'worm.json' 2
+featCall Costume setCostume 'worm.json' 1
 
 // move between hungry and full where hungry will eat and full will release nutrients
 addProp feeling String 'hungry'
@@ -196,10 +195,9 @@ when Worm touches Waste [[
         ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
           prop feeling setTo 'full'
 
-          // make this red so we know we are full
-          featProp AgentWidgets meterColor setTo 15736076
+          // change costume so we know we are full
+          featCall Costume setCostume 'worm.json' 0
 
-          // BEN LOOK HERE
           exprPush {{ agent.getProp('nutrientCountStart').value }}
           propPop nutrientCount
           featCall Worm.Costume setGlow 1
@@ -220,8 +218,8 @@ when Worm touches Soil [[
         featCall Soil.Costume setGlow 1
         featCall Worm.Costume setGlow 1
         prop feeling setTo 'hungry'
-        // back to green now that we are hungry again
-        featProp AgentWidgets meterColor setTo 65280
+        // revert costume now that we are hungry again
+        featCall Costume setCostume 'worm.json' 1
       ]]
       ifExpr {{ agent.getProp('nutrientCount').value > 0}} [[
         prop nutrientCount sub 1
@@ -254,7 +252,7 @@ useFeature Population
 useFeature Global
 useFeature Costume
 
-featCall Costume setCostume 'bunny.json' 0
+featCall Costume setCostume 'bunnies.json' 1
 
 // set bunny energy
 addProp energyLevel Number 25
@@ -267,6 +265,11 @@ prop matter setMax 50
 prop matter setMin 0
 
 useFeature Physics
+
+featProp Physics scale setTo 0.3
+
+useFeature Movement
+
 useFeature Touches
 featCall Touches monitor Plant b2b
 
@@ -278,6 +281,13 @@ featProp AgentWidgets meterColor setTo 65280
 
 
 # PROGRAM UPDATE
+
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
+  featProp Costume flipX setTo false
+]]
+ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
+  featProp Costume flipX setTo true
+]]
 
 when Bunny touches Plant [[
   every 1 runAtStart [[
@@ -293,8 +303,16 @@ when Bunny touches Plant [[
 ]]
 
 every 1 runAtStart [[
+
+  // if not full, shift costume
+  ifExpr {{ agent.getProp('energyLevel').value < 45 }} [[
+    featCall Costume setCostume 'bunnies.json' 1
+  ]]
+
   // if full energy, emit waste
   ifExpr {{ agent.getProp('energyLevel').value > 45 }} [[
+    featCall Costume setCostume 'bunnies.json' 0
+
     // STUDENTS_MAY_CHANGE - switching these numbers will change how bunnies produce waste [WORKS]
     prop energyLevel sub 20
     prop matter sub 20
@@ -309,6 +327,7 @@ every 1 runAtStart [[
 
   // use some energy from just livin / running around
   prop energyLevel sub 1
+
 ]]
 `
     },
@@ -318,7 +337,7 @@ every 1 runAtStart [[
       script: `# BLUEPRINT Plant
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'plant.json' 0
+featCall Costume setCostume 'plants.json' 0
 useFeature Global
 useFeature Population
 
@@ -359,10 +378,6 @@ featProp AgentWidgets text setTo ''
 
 # PROGRAM UPDATE
 
-// constantly re-position the plant appropriately
-exprPush {{ 0 + 25 - agent.prop.Physics.bodyHeight.value / 2 }}
-propPop y
-
 when Plant touches Sunbeam [[
   every 1 runAtStart [[
     prop Plant.energyLevel add 1
@@ -381,6 +396,17 @@ when Plant touches Soil [[
 ]]
 
 every 1 runAtStart [[
+
+
+  // set size based on matter
+  exprPush {{ agent.getProp('matter').value / 50 }}
+  featPropPop Physics scale
+
+  // constantly re-position the plant appropriately
+  exprPush {{ 0  - agent.prop.Physics.bodyHeight.value / 2 }}
+  propPop y
+
+
   // if the plant is basically dead
   ifExpr {{ agent.getProp('matter').value < 10 }} [[
 
@@ -396,24 +422,20 @@ every 1 runAtStart [[
     featCall Population removeAgent
   ]]
 
-  // set size based on matter
-  exprPush {{ agent.getProp('matter').value / 50 }}
-  featPropPop Physics scale
-
 
   // is it healthy?  Use some nutrients and then set color
   prop nutrients sub 1
   ifExpr {{ agent.getProp('nutrients').value > 6 }} [[
     // healthy
-    featCall Costume setColorize 0 255 0
+    featCall Costume setCostume 'plants.json' 0
   ]]
   ifExpr {{ agent.getProp('nutrients').value < 6 }} [[
     // ok, but not great
-    featCall Costume setColorize 255 255 0
+    featCall Costume setCostume 'plants.json' 1
   ]]
   ifExpr {{ agent.getProp('nutrients').value < 2 }} [[
     // not doing well at all, so lets also lose some matter
-    featCall Costume setColorize 165 42 42
+    featCall Costume setCostume 'plants.json' 2
     prop matter sub 1
   ]]
 ]]

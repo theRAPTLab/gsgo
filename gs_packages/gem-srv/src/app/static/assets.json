@@ -112,18 +112,28 @@
     },
     {
       "assetId": 212,
+      "assetName": "bunnies.json",
+      "assetUrl": "static/sprites/local/bunnies.json"
+    },
+    {
+      "assetId": 213,
       "assetName": "smallsquare.json",
       "assetUrl": "static/sprites/local/smallsquare.json"
     },
     {
-      "assetId": 213,
+      "assetId": 214,
       "assetName": "star.json",
       "assetUrl": "static/sprites/local/star.json"
     },
     {
-      "assetId": 214,
+      "assetId": 215,
       "assetName": "hawk.json",
       "assetUrl": "static/sprites/local/hawk.json"
+    },
+    {
+      "assetId": 216,
+      "assetName": "plants.json",
+      "assetUrl": "static/sprites/local/plants.json"
     },
     {
       "assetId": 500,
