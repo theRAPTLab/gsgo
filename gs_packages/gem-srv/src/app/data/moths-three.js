@@ -90,7 +90,12 @@ useFeature Costume
 featCall Costume setCostume 'moth.json' 0
 
 // COLOR range: SEE NOTE IN Act 1 about alignment with the decimal [0,1] valuess
-featCall Costume initHSVColorScale 0 0 1 'value' 11
+featProp Costume colorScaleHue setTo 0
+featProp Costume colorScaleSaturation setTo 0
+featProp Costume colorScaleValue setTo 1
+featProp Costume colorScaleType setTo 'value'
+featProp Costume colorScaleSteps setTo 11
+featCall Costume initHSVColorScale
 
 
 // Start out visible so costumes can be picked up
