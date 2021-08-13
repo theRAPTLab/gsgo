@@ -425,7 +425,8 @@ export class featProp extends Keyword {
       const retval = super.jsx(index, unit, jsx);
       return retval;
     }
-    return jsx;
+    // return jsx;
+    return super.jsx(index, unit, jsx);
   }
 
   // ORIG METHOD
