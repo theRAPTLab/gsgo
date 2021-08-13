@@ -84,11 +84,13 @@ class GVarElement extends React.Component<MyProps, MyState> {
     const gVarType = selectedProp ? selectedProp.type : undefined;
     const propMethodOptions = gVarType ? propMethodsMap.get(gVarType) : undefined;
 
+    const numCols = args.length + 2;
+
     return (
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(60px, auto)'
+          gridTemplateColumns: `repeat(${numCols}, minmax(60px, max-content)`
         }}
       >
         {context ? `${context}.` : ''}
