@@ -389,6 +389,8 @@ class MissionControl extends React.Component {
     this.setState(state => ({
       panelConfiguration: state.panelConfiguration === 'edit' ? 'run' : 'edit'
     }));
+    // Trigger Window Resize so that PanelSimulation will resize
+    window.dispatchEvent(new Event('resize'));
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({
