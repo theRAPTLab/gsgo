@@ -19,7 +19,7 @@ export const MODEL = {
         id: 'r1',
         label: 'Round 1: PopulateBySpawning',
         time: 10,
-        intro: 'PopulateBySpawning 10',
+        intro: 'PopulateBySpawning 2',
         outtro: 'What happened?',
         initScript: `dbgOut 'roundDef: Round1!'
 // Spawn New Moths
@@ -44,7 +44,7 @@ prop y setTo 100`
         id: 'r2',
         label: 'Round 2: oneAgentReproduce',
         time: 60,
-        intro: 'One will get VERY dark',
+        intro: 'Spawn one VERY dark',
         outtro: 'What happened to spawn?',
         initScript: `dbgOut 'roundDef: Round2'
 // Release Cursors from All Moths
