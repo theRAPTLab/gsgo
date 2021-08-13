@@ -37,7 +37,12 @@ export class _comment extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, cmt] = unit;
-    return super.jsx(index, unit, <i style={{ color: 'gray' }}>{`${cmt}`}</i>);
+    const comment = cmt === '' ? '...' : cmt;
+    return super.jsx(
+      index,
+      unit,
+      <i style={{ color: 'gray' }}>{`${comment}`}</i>
+    );
   }
 } // end of UseFeature
 
