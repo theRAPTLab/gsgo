@@ -100,6 +100,9 @@ featProp AgentWidgets text setTo 'joe'
 // test methods
 prop alpha addRnd -20 20
 
+// test prop editing (see instance)
+addProp energyLevel Number 0
+
 // Testing nested scriptifying
 ifExpr {{ agent.prop.alpha.value < 1 }} [[
   prop alpha setTo 1
@@ -566,6 +569,8 @@ onEvent RoundStop [[
       name: 'Test1',
       blueprint: 'Test',
       initScript: `featCall Population agentsForEach Moth [[
+  prop energyLevel setTo 77
+  prop Moth.energyLevel setTo 88
   featProp Moth.Movement direction setTo 99
 ]]`
     }
