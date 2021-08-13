@@ -47,7 +47,7 @@ let DEVICE_UDID;
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('edit', '30% auto 0px'); // columns
+PANEL_CONFIG.set('edit', '40% auto 0px'); // columns
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
