@@ -25,6 +25,7 @@ import {
   GetAgentById
 } from 'modules/datacore/dc-agents';
 import * as TRANSPILER from 'modules/sim/script/transpiler';
+import merge from 'deepmerge';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -74,6 +75,19 @@ function m_Create(frame) {
 
     // but reset inert!
     agent.prop.isInert.setTo(false);
+
+    // if spawnMutation settings are defined, then change those
+    // BEFORE executing the script
+    if (def.mutationPropName !== undefined) {
+      let mutationProp;
+      if (def.mutationPropFeature) {
+        // featProp
+        mutationProp = agent.prop[def.mutationPropFeature][def.mutationPropName];
+      } else {
+        mutationProp = agent.prop[def.mutationPropName];
+      }
+      mutationProp.addRndInt(-def.mutationSubtract, def.mutationAdd);
+    }
 
     const initScript = def.initScript; // spawnscript
     agent.exec(initScript, { agent }); // run spawnscript
@@ -142,6 +156,12 @@ class PopulationPack extends GFeature {
     this.featAddProp(agent, 'monitoredAgent', new GVarString());
     this.featAddProp(agent, 'monitoredAgentProp', new GVarString());
 
+    // Used by spawnChild
+    this.featAddProp(agent, 'spawnMutationProp', new GVarString());
+    this.featAddProp(agent, 'spawnMutationPropFeature', new GVarString()); // if prop is a featProp, this is the feature
+    this.featAddProp(agent, 'spawnMutationMaxAdd', new GVarNumber());
+    this.featAddProp(agent, 'spawnMutationMaxSubtract', new GVarNumber());
+
     // Used by populateBySpawning to set target population levels
     this.featAddProp(agent, 'targetPopulationSize', new GVarNumber(1));
     this.featAddProp(agent, 'deleteAfterSpawning', new GVarBoolean(true));
@@ -173,23 +193,23 @@ class PopulationPack extends GFeature {
   }
   /**
    * Create child agent via script, duplicating properties of parent
-   * and running special spawn script
+   * and running special spawn script.
+   * The parent agent is the first `agent` parameter.
    * @param agent
-   * @param blueprintName
-   * @param initScript
+   * @param spawnScript
+   * @param def
    */
-  spawnChild(agent: IAgent, spawnScript: string) {
+  spawnChild(agent: IAgent, spawnScript: string, def: any = {}) {
     const bpname = agent.blueprint.name;
     const name = `${bpname}${COUNT++}`;
     // Queue Instance Defs
-    const def = {
-      name,
-      blueprint: bpname,
-      initScript: spawnScript,
-      doClone: true,
-      parentId: agent.id // save for positioning
-    };
-    AGENTS_TO_CREATE.push(def);
+    const thisDef: any = merge.all([def]); // clone since other children share the same def
+    thisDef.name = name;
+    thisDef.blueprint = bpname;
+    thisDef.initScript = spawnScript;
+    thisDef.doClone = true;
+    thisDef.parentId = agent.id;
+    AGENTS_TO_CREATE.push(thisDef);
   }
   /**
    * Removes self
@@ -274,9 +294,15 @@ class PopulationPack extends GFeature {
   agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
     const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     const agents = GetAgentsByType(bpname);
+    const def = {
+      mutationPropName: agent.prop.Population.spawnMutationProp.value,
+      mutationPropFeature: agent.prop.Population.spawnMutationPropFeature.value,
+      mutationAdd: agent.prop.Population.spawnMutationMaxAdd.value,
+      mutationSubtract: agent.prop.Population.spawnMutationMaxSubtract.value
+    };
     agents.forEach(a => {
       if (!a.isInert) {
-        a.callFeatMethod('Population', 'spawnChild', spawnScript);
+        this.spawnChild(a, spawnScript, def);
         if (deleteAfterSpawning) a.prop.isInert.setTo(true);
       }
     });
@@ -297,7 +323,13 @@ class PopulationPack extends GFeature {
       );
       return;
     }
-    parent.callFeatMethod('Population', 'spawnChild', spawnScript);
+    const def = {
+      mutationPropName: agent.prop.Population.spawnMutationProp.value,
+      mutationPropFeature: agent.prop.Population.spawnMutationPropFeature.value,
+      mutationAdd: agent.prop.Population.spawnMutationMaxAdd.value,
+      mutationSubtract: agent.prop.Population.spawnMutationMaxSubtract.value
+    };
+    this.spawnChild(parent, spawnScript, def);
     if (deleteAfterSpawning) parent.prop.isInert.setTo(true);
   }
   /**
@@ -321,7 +353,27 @@ class PopulationPack extends GFeature {
     while (count < targetPopulationSize) {
       const a = agents[agentIndex];
       if (!a.isInert) {
-        this.spawnChild(a, spawnScript);
+        // mutationProps
+        // Pass the mutation properties to SpawnChild and m_Create.
+        // Mutation parameters are defined for the agent calling populateBySpawning
+        // which in many cases is the GlobalAgent.
+        // m_Create is run without any agent context other than
+        // the newly created agent, which will not have the mutation
+        // parameters defined.
+        // Also, for populateBySpawning, spawnChild is run in the context
+        // of a selected parent agent.  So again, the mutation parameters
+        // will be missing.
+        // So we need to pass the mutation parameters from here
+        // to the spawnChild defintion, which then passes it
+        // to m_Create.
+        const def = {
+          mutationPropName: agent.prop.Population.spawnMutationProp.value,
+          mutationPropFeature:
+            agent.prop.Population.spawnMutationPropFeature.value,
+          mutationAdd: agent.prop.Population.spawnMutationMaxAdd.value,
+          mutationSubtract: agent.prop.Population.spawnMutationMaxSubtract.value
+        };
+        this.spawnChild(a, spawnScript, def);
         count++;
         if (count >= targetPopulationSize) break;
       }
