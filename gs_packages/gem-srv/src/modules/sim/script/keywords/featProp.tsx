@@ -351,10 +351,8 @@ export class featProp extends Keyword {
 
     const { featName, context, featPropName, methodName, args } = state;
     const refArg =
-      context && context !== 'agent'
-        ? `${context}.${featPropName}`
-        : featPropName;
-    const scriptArr = [this.keyword, featName, refArg, methodName, ...args];
+      context && context !== 'agent' ? `${context}.${featName}` : featName;
+    const scriptArr = [this.keyword, refArg, featPropName, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
     const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
