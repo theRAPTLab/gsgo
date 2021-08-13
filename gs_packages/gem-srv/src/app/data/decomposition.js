@@ -374,7 +374,16 @@ featProp AgentWidgets meterProp setTo energyLevel
 // Green
 featProp AgentWidgets meterColor setTo 65280
 
+featCall AgentWidgets setMeterPosition 'middle'
 featProp AgentWidgets text setTo ''
+
+// always keep it right near the edge of the dirt, but give some variability
+prop y setTo -50
+prop y addRnd -10 10
+
+  // set size based on matter (assume matter max of 100) and that we waver between 80-100%
+  exprPush {{ 0.25 + agent.getProp('matter').value / 100 }}
+  featPropPop Physics scale
 
 # PROGRAM UPDATE
 
@@ -397,15 +406,9 @@ when Plant touches Soil [[
 
 every 1 runAtStart [[
 
-
-  // set size based on matter
-  exprPush {{ agent.getProp('matter').value / 50 }}
-  featPropPop Physics scale
-
-  // constantly re-position the plant appropriately
-  exprPush {{ 0  - agent.prop.Physics.bodyHeight.value / 2 }}
-  propPop y
-
+  // set size based on matter (assume matter max of 100) and that we waver between 80-100%
+  exprPush {{ 0.25 + agent.getProp('matter').value / 100 }}
+  featPropPop Physics scale  featPropPop Physics scale
 
   // if the plant is basically dead
   ifExpr {{ agent.getProp('matter').value < 10 }} [[
@@ -414,7 +417,7 @@ every 1 runAtStart [[
     featCall Population createAgent Waste [[
       // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
       prop x addRndInt -5 5
-      prop y addRndInt -10 0
+      prop y addRndInt 0 50
       prop matter setTo 20
     ]]
 
@@ -706,8 +709,7 @@ prop labelText setTo 'Worm Energy'
       id: 1201,
       name: 'Plant01',
       blueprint: 'Plant',
-      initScript: `prop x setTo -300
-    prop y setTo -85`
+      initScript: `prop x setTo -300`
     },
     {
       id: 1301,
