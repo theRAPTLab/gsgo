@@ -207,27 +207,29 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
       jsx = (
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '80px auto 15px',
-            gridAutoRows: '1fr'
+            display: 'grid'
+            // gridTemplateColumns: 'auto 15px',
+            // gridAutoRows: '1fr'
           }}
         >
-          {featName}
-          {context ? `${context}.` : ''}
-          <GVarElement
-            state={this.state}
-            context="" // not needed for featProp
-            propName={featPropName}
-            propNameOptions={propNameOptions}
-            propMethod={methodName}
-            propMethodsMap={methodsMap}
-            args={args}
-            onSelectProp={this.onSelectPropName}
-            onSelectMethod={this.onSelectMethod}
-            onValueChange={this.onValueChange}
-            onSaveData={this.saveData}
-            index={index}
-          />
+          <>
+            {featName}&nbsp;
+            {context ? `${context}.` : ''}
+            <GVarElement
+              state={this.state}
+              context="" // not needed for featProp
+              propName={featPropName}
+              propNameOptions={propNameOptions}
+              propMethod={methodName}
+              propMethodsMap={methodsMap}
+              args={args}
+              onSelectProp={this.onSelectPropName}
+              onSelectMethod={this.onSelectMethod}
+              onValueChange={this.onValueChange}
+              onSaveData={this.saveData}
+              index={index}
+            />
+          </>
           {deletablejsx}
         </div>
       );

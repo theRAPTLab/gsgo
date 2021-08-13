@@ -167,7 +167,7 @@ class PropElement extends React.Component<MyProps, MyState> {
     } else if (isInstanceEditor) {
       // InstanceEditor
       jsx = (
-        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 15px' }}>
           <GVarElement
             state={this.state}
             context={context}
