@@ -677,7 +677,12 @@ useFeature Costume
 featCall Costume setCostume 'moth.json' 0
 
 // COLOR
-featCall Costume initHSVColorScale 0 0 0 'value' 10
+featProp Costume colorScaleHue setTo 0
+featProp Costume colorScaleSaturation setTo 0
+featProp Costume colorScaleValue setTo 0
+featProp Costume colorScaleType setTo 'value'
+featProp Costume colorScaleSteps setTo 10
+featCall Costume initHSVColorScale
 
 // Fully visible
 prop alpha setTo 1
