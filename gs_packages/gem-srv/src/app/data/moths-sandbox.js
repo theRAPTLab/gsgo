@@ -593,7 +593,11 @@ onEvent Start [[
   prop agent.energyLevel setTo 44
 ]]
 propPop energyLevel
-
+when Test dies [[
+  // three lines here
+  prop energyLevel setTo 22
+  prop Test.energyLevel setTo 33
+]]
 `
     }
     // {
