@@ -598,6 +598,7 @@ when Test dies [[
   prop energyLevel setTo 22
   prop Test.energyLevel setTo 33
 ]]
+useFeature Costume
 `
     }
     // {
