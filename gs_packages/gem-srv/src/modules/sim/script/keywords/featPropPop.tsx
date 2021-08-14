@@ -77,7 +77,14 @@ export class featPropPop extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, objref, optMethod, ...optArgs] = unit;
-    return super.jsx(index, unit, <>featPropPop: {`'${objref}'`}</>);
+    const isEditable = children ? children.isEditable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+
+    const jsx = <>featPropPop {`'${objref}'`}&ensp;</>;
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, jsx);
+    }
+    return jsx;
   }
 } // end of UseFeature
 

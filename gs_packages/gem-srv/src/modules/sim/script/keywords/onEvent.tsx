@@ -64,13 +64,19 @@ export class onEvent extends Keyword {
     }
     const cc = ScriptToJSX(consq, options);
 
-    return super.jsx(
-      index,
-      unit,
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    const jsx = (
       <>
-        onEvent {`'${event}'`} {cc}
+        onEvent {`'${event}'`} {cc}&ensp;
       </>
     );
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, jsx);
+    }
+    return jsx;
   }
 } // end of UseFeature
 

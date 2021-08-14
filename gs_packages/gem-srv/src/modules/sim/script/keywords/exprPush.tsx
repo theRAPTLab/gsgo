@@ -42,7 +42,15 @@ export class exprPush extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any): any {
     const [kw, expr] = unit;
-    return super.jsx(index, unit, <>exprPush {`'${expr}'`}</>);
+    const isEditable = children ? children.isEditable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+
+    const jsx = <>exprPush {`'${expr}'`}&ensp;</>;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, jsx);
+    }
+    return jsx;
   }
 } // end of DefProp
 

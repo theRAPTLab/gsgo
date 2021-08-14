@@ -152,14 +152,19 @@ export class every extends Keyword {
       ]; // for nested lines
     }
     const cc = ScriptToJSX(consq, options);
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
 
-    return super.jsx(
-      index,
-      unit,
+    const jsx = (
       <>
-        every {`'${period}'`} {runAtStart} {cc}
+        every {`'${period}'`} {runAtStart} {cc} &ensp;
       </>
     );
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, jsx);
+    }
+    return jsx;
   }
 } // end of UseFeature
 

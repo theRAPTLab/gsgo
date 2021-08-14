@@ -38,11 +38,20 @@ export class AddProp extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, propName, propType, initValue] = unit;
-    return super.jsx(
-      index,
-      unit,
+    const isEditable = children ? children.isEditable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          addProp {propName} = {initValue} :{propType}
+        </>
+      );
+    }
+    return (
       <>
-        addProp {propName} = {initValue} :{propType}
+        {propName}: {initValue}&ensp;
       </>
     );
   }

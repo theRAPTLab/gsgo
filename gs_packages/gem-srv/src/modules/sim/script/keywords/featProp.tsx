@@ -420,13 +420,11 @@ export class featProp extends Keyword {
         serialize={this.serialize}
       />
     );
-    if (!isInstanceEditor) {
+    if (!isInstanceEditor || isEditable) {
       // Script Editor, add line numbers
-      const retval = super.jsx(index, unit, jsx);
-      return retval;
+      return super.jsx(index, unit, jsx);
     }
-    // return jsx;
-    return super.jsx(index, unit, jsx);
+    return jsx;
   }
 
   // ORIG METHOD

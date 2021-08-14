@@ -86,13 +86,18 @@ export class ifExpr extends Keyword {
         ? testName.expr.raw
         : 'testExpression';
 
-    return super.jsx(
-      index,
-      unit,
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    const jsx = (
       <>
-        ifExpr ( {expr} ) {cc} {aa}
+        ifExpr ( {expr} ) {cc} {aa}&ensp;
       </>
     );
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, jsx);
+    }
+    return jsx;
   }
 } // end of DefProp
 

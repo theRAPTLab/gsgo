@@ -38,11 +38,17 @@ export class _comment extends Keyword {
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, cmt] = unit;
     const comment = cmt === '' ? '...' : cmt;
-    return super.jsx(
-      index,
-      unit,
-      <i style={{ color: 'gray' }}>{`${comment}`}</i>
-    );
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+
+    if (!isInstanceEditor) {
+      // Script Editor, add line numbers
+      return super.jsx(
+        index,
+        unit,
+        <i style={{ color: 'gray' }}>{`${comment}`}</i>
+      );
+    }
+    return ''; // skip comments for instance editors
   }
 } // end of UseFeature
 
