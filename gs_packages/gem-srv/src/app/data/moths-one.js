@@ -114,8 +114,13 @@ useFeature Costume
 featCall Costume setCostume 'moth.json' 0
 
 // COLOR SCALE FOR MOTHS.
-//NOTE:  Intention with this scale is to map onto the [0,1] interval Value, wiht 0->0, 10->1.  But I think the indices are 1-11 not 0-10
-featCall Costume initHSVColorScale 0 0 1 'value' 11
+// NOTE:  Intention with this scale is to map onto the [0,1] interval Value, wiht 0->0, 10->1.  But I think the indices are 1-11 not 0-10
+featProp Costume colorScaleHue setTo 0
+featProp Costume colorScaleSaturation setTo 0
+featProp Costume colorScaleValue setTo 1
+featProp Costume colorScaleType setTo 'value'
+featProp Costume colorScaleSteps setTo 11
+featCall Costume initHSVColorScale
 
 // Start out visible
 prop alpha setTo 1
