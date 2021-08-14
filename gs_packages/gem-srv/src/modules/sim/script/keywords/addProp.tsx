@@ -49,9 +49,11 @@ export class AddProp extends Keyword {
         </>
       );
     }
-    return (
+    return super.jsxMin(
+      index,
+      unit,
       <>
-        {propName}: {initValue}&ensp;
+        {propName}: {initValue}
       </>
     );
   }

@@ -89,15 +89,22 @@ export class ifExpr extends Keyword {
     const isEditable = options ? options.isEditable : false;
     const isInstanceEditor = options ? options.isInstanceEditor : false;
 
-    const jsx = (
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          ifExpr ( {expr} ) {cc} {aa}
+        </>
+      );
+    }
+    return super.jsxMin(
+      index,
+      unit,
       <>
-        ifExpr ( {expr} ) {cc} {aa}&ensp;
+        ifExpr ( {expr} ) (+{consequent.length + alternate.length} lines)
       </>
     );
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, jsx);
-    }
-    return jsx;
   }
 } // end of DefProp
 

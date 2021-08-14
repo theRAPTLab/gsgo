@@ -49,11 +49,11 @@ export class propPop extends Keyword {
     const isEditable = children ? children.isEditable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
 
-    const jsx = <>propPop {`'${objref}'`}&ensp;</>;
+    const jsx = <>propPop {`'${objref}'`}</>;
     if (!isInstanceEditor || isEditable) {
       return super.jsx(index, unit, jsx);
     }
-    return jsx;
+    return super.jsxMin(index, unit, jsx);
   }
 } // end of UseFeature
 

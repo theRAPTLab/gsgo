@@ -68,11 +68,11 @@ export class featPropPush extends Keyword {
     const [kw, objref, optMethod, ...optArgs] = unit;
     const isEditable = children ? children.isEditable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
-    const jsx = <>featPropPush {`'${objref}'`}&ensp;</>;
+    const jsx = <>featPropPush {`'${objref}'`}</>;
     if (!isInstanceEditor || isEditable) {
       return super.jsx(index, unit, jsx);
     }
-    return jsx;
+    return super.jsxMin(index, unit, jsx);
   }
 } // end of UseFeature
 

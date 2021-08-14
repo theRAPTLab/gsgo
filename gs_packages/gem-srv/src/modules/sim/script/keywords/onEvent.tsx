@@ -67,16 +67,22 @@ export class onEvent extends Keyword {
     const isEditable = options ? options.isEditable : false;
     const isInstanceEditor = options ? options.isInstanceEditor : false;
 
-    const jsx = (
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          onEvent {`'${event}'`} {cc}
+        </>
+      );
+    }
+    return super.jsxMin(
+      index,
+      unit,
       <>
-        onEvent {`'${event}'`} {cc}&ensp;
+        onEvent {`'${event}'`} (+{consq.length} lines)
       </>
     );
-
-    if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, jsx);
-    }
-    return jsx;
   }
 } // end of UseFeature
 

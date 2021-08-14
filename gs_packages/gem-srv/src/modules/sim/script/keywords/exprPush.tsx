@@ -45,12 +45,12 @@ export class exprPush extends Keyword {
     const isEditable = children ? children.isEditable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
 
-    const jsx = <>exprPush {`'${expr}'`}&ensp;</>;
+    const jsx = <>exprPush {`'${expr}'`}</>;
 
     if (!isInstanceEditor || isEditable) {
       return super.jsx(index, unit, jsx);
     }
-    return jsx;
+    return super.jsxMin(index, unit, jsx);
   }
 } // end of DefProp
 

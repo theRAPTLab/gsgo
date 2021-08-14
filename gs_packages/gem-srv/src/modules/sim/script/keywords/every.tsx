@@ -157,14 +157,26 @@ export class every extends Keyword {
 
     const jsx = (
       <>
-        every {`'${period}'`} {runAtStart} {cc} &ensp;
+        every {`'${period}'`} {runAtStart} {cc}
       </>
     );
 
     if (!isInstanceEditor || isEditable) {
-      return super.jsx(index, unit, jsx);
+      return super.jsx(
+        index,
+        unit,
+        <>
+          every {`'${period}'`} {runAtStart} {cc}
+        </>
+      );
     }
-    return jsx;
+    return super.jsxMin(
+      index,
+      unit,
+      <>
+        every {`'${period}'`} {runAtStart} (+{consq.length} lines)
+      </>
+    );
   }
 } // end of UseFeature
 

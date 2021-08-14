@@ -127,9 +127,11 @@ export class featCall extends Keyword {
         </>
       );
     }
-    return (
+    return super.jsxMin(
+      index,
+      unit,
       <>
-        featCall {refDisplay}.{methodName} (+{args.length} lines)&ensp;
+        featCall {refDisplay}.{methodName} (+{args.length} lines)
       </>
     );
 

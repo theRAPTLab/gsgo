@@ -63,7 +63,7 @@ export class dbgOut extends Keyword {
     if (!isInstanceEditor || isEditable) {
       return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
     }
-    return <>{`${kw} ${args}`}&ensp;</>;
+    return super.jsxMin(index, unit, <>{`${kw} ${args}`}</>);
   }
 } // end of UseFeature
 

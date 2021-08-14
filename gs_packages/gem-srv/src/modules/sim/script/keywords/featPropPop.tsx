@@ -80,11 +80,11 @@ export class featPropPop extends Keyword {
     const isEditable = children ? children.isEditable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
 
-    const jsx = <>featPropPop {`'${objref}'`}&ensp;</>;
+    const jsx = <>featPropPop {`'${objref}'`}</>;
     if (!isInstanceEditor || isEditable) {
       return super.jsx(index, unit, jsx);
     }
-    return jsx;
+    return super.jsxMin(index, unit, jsx);
   }
 } // end of UseFeature
 
