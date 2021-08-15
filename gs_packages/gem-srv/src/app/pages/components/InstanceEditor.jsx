@@ -81,6 +81,7 @@ class InstanceEditor extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.UnhandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.UnhandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
