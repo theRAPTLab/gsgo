@@ -28,7 +28,7 @@ function r_TextifyToken(tok: IToken, indent: number) {
   if (value !== undefined) return value;
   if (string !== undefined) return `"${string}"`;
   if (objref) return objref.join('.');
-  if (comment) return `// ${comment}`;
+  if (comment !== undefined) return `// ${comment}`;
   if (block) {
     let lines = '';
     block.forEach((su, ii) => {

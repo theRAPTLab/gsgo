@@ -62,8 +62,7 @@ featProp Population targetPopulationSize setTo 2
 featCall Population oneAgentReproduce Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  // auto-generated
-  // featProp Costume colorScaleIndex addRnd -1 1 true
+  featProp Costume colorScaleIndex addRndInt -1 1
   // update color index label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
@@ -142,6 +141,9 @@ prop label setTo 'bar'
 featProp AgentWidgets text setTo 'joe'
 // test methods
 prop alpha addRnd -20 20
+
+// test prop editing (see instance)
+addProp energyLevel Number 0
 
 // Testing nested scriptifying
 ifExpr {{ agent.prop.alpha.value < 1 }} [[
@@ -604,14 +606,43 @@ onEvent RoundStop [[
     //     }
   ],
   instances: [
-    //     {
-    //       id: 1100,
-    //       name: 'Test1',
-    //       blueprint: 'Test',
-    //       initScript: `featCall Population agentsForEach Moth [[
-    //   featProp Moth.Movement direction setTo 99
-    // ]]`
-    //     }
+    {
+      id: 1100,
+      name: 'Test1',
+      blueprint: 'Test',
+      initScript: `// tests minimized/lined formatting for all keywords
+featCall Population agentsForEach Moth [[
+  prop energyLevel setTo 77
+  prop Moth.energyLevel setTo 88
+  featProp Moth.Movement direction setTo 99
+]]
+every 5 runAtStart [[
+  dbgOut 'unlikely'
+  // second line
+]]
+every 10 [[
+  addProp junk Number 11
+]]
+exprPush {{ 10 * 10 }}
+ifExpr {{ 1 < 10 }} [[
+  featPropPush Movement direction
+  featPropPop Movement direction
+]] [[
+  //
+]]
+onEvent Start [[
+  // This really should not ever be in an initScript
+  prop agent.energyLevel setTo 44
+]]
+propPop energyLevel
+when Test dies [[
+  // three lines here
+  prop energyLevel setTo 22
+  prop Test.energyLevel setTo 33
+]]
+useFeature Costume
+`
+    }
     // {
     //   id: 1101,
     //   name: 'Tree1',
