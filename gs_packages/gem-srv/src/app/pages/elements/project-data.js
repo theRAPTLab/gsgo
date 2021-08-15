@@ -39,6 +39,8 @@ import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
 
 import { ReadProjectsList, ReadProject } from './project-db';
 
+const merge = require('deepmerge');
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ProjectData');
@@ -383,21 +385,25 @@ function ScriptUpdate(data) {
   }
 
   // 2. Update the new blueprint
-  const blueprint = {
-    id: blueprintName,
-    label: blueprintName,
-    script: data.script
-  };
+  let blueprint;
   const index = model.scripts.findIndex(s => s.id === blueprintName);
   if (index > -1) {
-    // Copy isControllable
-    blueprint.isControllable = model.scripts[index].isControllable;
+    // 1. Clone all properties
+    blueprint = merge.all([model.scripts[index]]);
+    // 2. Modify new propreites
+    blueprint.id = blueprintName;
+    blueprint.label = blueprintName;
     // Replace existing blueprint
     model.scripts[index] = blueprint;
   } else {
-    // REVIEW: Need to set isControllable here?
-    // For now automatically make it controllable.
-    blueprint.isControllable = true;
+    blueprint = {
+      id: blueprintName,
+      label: blueprintName,
+      // REVIEW: Need to set isControllable here?
+      // For now automatically make it controllable.
+      isControllable: true,
+      script: data.script
+    };
     // New Blueprint
     model.scripts.push(blueprint);
   }

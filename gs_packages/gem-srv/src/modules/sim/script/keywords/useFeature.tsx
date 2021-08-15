@@ -37,7 +37,13 @@ export class useFeature extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, featureName] = unit;
-    return super.jsx(index, unit, <>useFeature {featureName}</>);
+    const isEditable = children ? children.isEditable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const jsx = <>useFeature {featureName}</>;
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, jsx);
+    }
+    return super.jsxMin(index, unit, jsx);
   }
 } // end of useFeature
 

@@ -86,11 +86,23 @@ export class ifExpr extends Keyword {
         ? testName.expr.raw
         : 'testExpression';
 
-    return super.jsx(
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          ifExpr ( {expr} ) {cc} {aa}
+        </>
+      );
+    }
+    return super.jsxMin(
       index,
       unit,
       <>
-        ifExpr ( {expr} ) {cc} {aa}
+        ifExpr ( {expr} ) (+{consequent.length + alternate.length} lines)
       </>
     );
   }

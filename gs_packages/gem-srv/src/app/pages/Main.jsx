@@ -47,7 +47,7 @@ let DEVICE_UDID;
 const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
-PANEL_CONFIG.set('edit', '30% auto 0px'); // columns
+PANEL_CONFIG.set('edit', '40% auto 0px'); // columns
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
@@ -389,6 +389,8 @@ class MissionControl extends React.Component {
     this.setState(state => ({
       panelConfiguration: state.panelConfiguration === 'edit' ? 'run' : 'edit'
     }));
+    // Trigger Window Resize so that PanelSimulation will resize
+    window.dispatchEvent(new Event('resize'));
   }
   OnToggleNetworkMapSize() {
     this.setState(state => ({

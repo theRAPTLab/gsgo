@@ -81,14 +81,19 @@ class GVarElement extends React.Component<MyProps, MyState> {
     //     `Prop Menu selected prop ${propName} is not currently supported in ${propNameOptions}.  Please report the script and propName to the developers.`
     //   );
 
+    if (!selectedProp)
+      console.warn('GVarElement could not determine var type for', propName);
+
     const gVarType = selectedProp ? selectedProp.type : undefined;
     const propMethodOptions = gVarType ? propMethodsMap.get(gVarType) : undefined;
+
+    const numCols = args.length + 2 + 1 * (context ? 1 : 0);
 
     return (
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(3, minmax(60px, auto)'
+          gridTemplateColumns: `repeat(${numCols}, minmax(60px, max-content)`
         }}
       >
         {context ? `${context}.` : ''}

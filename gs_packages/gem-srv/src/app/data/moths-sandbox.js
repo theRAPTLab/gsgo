@@ -15,22 +15,36 @@ export const MODEL = {
       noloop: false // if true, stop after last round
     },
     roundDefs: [
-      //       {
-      //         id: 'r1',
-      //         label: 'Round 1: First Gen',
-      //         time: 10,
-      //         intro: 'First generation',
-      //         outtro: 'What happened?',
-      //         initScript: `dbgOut 'roundDef: Round1!'
-      // prop x setTo 100`,
-      //         endScript: `dbgOut 'END Round1!'
-      // prop y setTo 100`
-      //       },
+      {
+        id: 'r1',
+        label: 'Round 1: PopulateBySpawning',
+        time: 10,
+        intro: 'PopulateBySpawning 2',
+        outtro: 'What happened?',
+        initScript: `dbgOut 'roundDef: Round1!'
+// Spawn New Moths
+featProp Population spawnMutationProp setTo 'colorScaleIndex'
+featProp Population spawnMutationPropFeature setTo 'Costume'
+featProp Population spawnMutationMaxAdd setTo 1
+featProp Population spawnMutationMaxSubtract setTo 3
+
+featProp Population targetPopulationSize setTo 2
+featCall Population populateBySpawning Moth [[
+  prop x addRnd -64 64
+  prop y addRnd -64 64
+  // update color index label
+  featPropPush Costume colorScaleIndex
+  featPropPop AgentWidgets text
+]]
+`,
+        endScript: `dbgOut 'END Round1!'
+prop y setTo 100`
+      },
       {
         id: 'r2',
-        label: 'Mutation Round',
+        label: 'Round 2: oneAgentReproduce',
         time: 60,
-        intro: 'Moths are mutated at the beginning of the round',
+        intro: 'Spawn one VERY dark',
         outtro: 'What happened to spawn?',
         initScript: `dbgOut 'roundDef: Round2'
 // Release Cursors from All Moths
@@ -39,12 +53,16 @@ featCall Population releaseAllAgents
 featCall Population removeInertAgents
 
 // Spawn New Moths
+featProp Population spawnMutationProp setTo 'colorScaleIndex'
+featProp Population spawnMutationPropFeature setTo 'Costume'
+featProp Population spawnMutationMaxAdd setTo 0
+featProp Population spawnMutationMaxSubtract setTo 10
 
-featProp Population targetPopulationSize setTo 10
-featCall Population populateBySpawning Moth [[
+featProp Population targetPopulationSize setTo 2
+featCall Population oneAgentReproduce Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
-  featProp Costume colorScaleIndex addRnd -1 1 true
+  featProp Costume colorScaleIndex addRndInt -1 1
   // update color index label
   featPropPush Costume colorScaleIndex
   featPropPop AgentWidgets text
@@ -76,6 +94,30 @@ featCall Population agentsForEach Moth [[
   // Rotate
   prop orientation setTo 0
 ]]`
+      },
+      {
+        id: 'r3',
+        label: 'Round 3: agentsReproduce',
+        time: 10,
+        intro: 'agentsReproduce generally darker',
+        outtro: 'What happened?',
+        initScript: `dbgOut 'roundDef: Round3!'
+// Spawn New Moths
+featProp Population spawnMutationProp setTo 'colorScaleIndex'
+featProp Population spawnMutationPropFeature setTo 'Costume'
+featProp Population spawnMutationMaxAdd setTo 1
+featProp Population spawnMutationMaxSubtract setTo 3
+
+featCall Population agentsReproduce Moth [[
+  prop x addRnd -64 64
+  prop y addRnd -64 64
+  // update color index label
+  featPropPush Costume colorScaleIndex
+  featPropPop AgentWidgets text
+]]
+`,
+        endScript: `dbgOut 'END Round1!'
+prop y setTo 100`
       }
     ]
   },
@@ -99,6 +141,9 @@ prop label setTo 'bar'
 featProp AgentWidgets text setTo 'joe'
 // test methods
 prop alpha addRnd -20 20
+
+// test prop editing (see instance)
+addProp energyLevel Number 0
 
 // Testing nested scriptifying
 ifExpr {{ agent.prop.alpha.value < 1 }} [[
@@ -565,9 +610,38 @@ onEvent RoundStop [[
       id: 1100,
       name: 'Test1',
       blueprint: 'Test',
-      initScript: `featCall Population agentsForEach Moth [[
+      initScript: `// tests minimized/lined formatting for all keywords
+featCall Population agentsForEach Moth [[
+  prop energyLevel setTo 77
+  prop Moth.energyLevel setTo 88
   featProp Moth.Movement direction setTo 99
-]]`
+]]
+every 5 runAtStart [[
+  dbgOut 'unlikely'
+  // second line
+]]
+every 10 [[
+  addProp junk Number 11
+]]
+exprPush {{ 10 * 10 }}
+ifExpr {{ 1 < 10 }} [[
+  featPropPush Movement direction
+  featPropPop Movement direction
+]] [[
+  //
+]]
+onEvent Start [[
+  // This really should not ever be in an initScript
+  prop agent.energyLevel setTo 44
+]]
+propPop energyLevel
+when Test dies [[
+  // three lines here
+  prop energyLevel setTo 22
+  prop Test.energyLevel setTo 33
+]]
+useFeature Costume
+`
     }
     // {
     //   id: 1101,
@@ -630,17 +704,17 @@ onEvent RoundStop [[
     // featProp Physics scale setTo 2.5
     // featProp Physics scaleY setTo 2`
     //     },
-    //     {
-    //       id: 1201,
-    //       name: 'Moth1',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition 100 0
-    // featProp Movement useAutoOrientation setTo true
-    // // featProp Costume colorScaleIndex setTo 6
-    // // featPropPush Costume colorScaleIndex
-    // // featPropPop AgentWidgets text
-    // `
-    //     }
+    {
+      id: 1201,
+      name: 'Moth1',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 100 0
+    featProp Movement useAutoOrientation setTo true
+    // featProp Costume colorScaleIndex setTo 6
+    // featPropPush Costume colorScaleIndex
+    // featPropPop AgentWidgets text
+    `
+    }
     //     {
     //       id: 1202,
     //       name: 'Moth2',

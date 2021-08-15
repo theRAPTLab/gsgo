@@ -115,11 +115,23 @@ export class featCall extends Keyword {
       return a;
     });
 
-    return super.jsx(
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          featCall {refDisplay}.{methodName} {[...args]}
+        </>
+      );
+    }
+    return super.jsxMin(
       index,
       unit,
       <>
-        featCall {refDisplay}.{methodName} {[...args]}
+        featCall {refDisplay}.{methodName} (+{args.length} lines)
       </>
     );
 
