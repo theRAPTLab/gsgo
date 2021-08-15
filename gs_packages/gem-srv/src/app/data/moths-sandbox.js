@@ -642,7 +642,7 @@ when Test dies [[
 ]]
 useFeature Costume
 `
-    }
+    },
     // {
     //   id: 1101,
     //   name: 'Tree1',
