@@ -167,7 +167,7 @@ class PropElement extends React.Component<MyProps, MyState> {
     } else if (isInstanceEditor) {
       // InstanceEditor
       jsx = (
-        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 15px' }}>
           <GVarElement
             state={this.state}
             context={context}
@@ -315,10 +315,9 @@ export class prop extends Keyword {
         serialize={this.serialize}
       />
     );
-    if (!isInstanceEditor) {
+    if (!isInstanceEditor || isEditable) {
       // Script Editor, add line numbers
-      const retval = super.jsx(index, unit, jsx);
-      return retval;
+      return super.jsx(index, unit, jsx);
     }
     return jsx;
   }

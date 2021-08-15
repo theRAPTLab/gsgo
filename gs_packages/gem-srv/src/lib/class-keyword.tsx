@@ -90,6 +90,11 @@ class Keyword implements IKeyword {
       </div>
     );
   }
+  /** minimized jsx for use in InstanceEditor */
+  jsxMin(index: number, srcLine: TScriptUnit, children?: any): any {
+    return <span key={index}>{children}&ensp;</span>;
+  }
+
   /// UTILITY METHODS /////////////////////////////////////////////////////////
   /** return the name of this keyword */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

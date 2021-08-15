@@ -127,11 +127,23 @@ export class when extends Keyword {
       }
       out = `${kw} ${A} ${testName} ${B}`;
     }
-    return super.jsx(
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          {out} {cc}
+        </>
+      );
+    }
+    return super.jsxMin(
       index,
       unit,
       <>
-        {out} {cc}
+        {out} (+{cc.length} lines)
       </>
     );
   }

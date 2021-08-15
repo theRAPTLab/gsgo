@@ -189,7 +189,7 @@ class SubpanelScript extends React.Component {
     const jsx = ScriptToJSX(source, {
       isEditable,
       isDeletable: isDeletingProperty,
-      isInstanceEditor: true,
+      isInstanceEditor: false,
       propMap,
       featPropMap
     });
