@@ -345,6 +345,7 @@ class InstanceEditor extends React.Component {
       isEditable = true;
       isSelected = true;
       this.setState({ isEditable, isSelected });
+      this.instance.scrollIntoView();
     } else {
       // always disable if message is not for us!
       this.DoDeselect();
@@ -500,6 +501,9 @@ class InstanceEditor extends React.Component {
 
     return (
       <div
+        ref={c => {
+          this.instance = c;
+        }}
         className={clsx(classes.instanceSpec, {
           [classes.instanceSpecHovered]: isHovered,
           [classes.instanceSpecSelected]: isSelected
