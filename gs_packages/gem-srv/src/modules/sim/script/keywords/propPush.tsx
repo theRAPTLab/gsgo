@@ -39,9 +39,15 @@ export class propPush extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+  jsx(index: number, unit: TScriptUnit, children?: any): any {
     const [kw, objref, optMethod, ...optArgs] = unit;
-    return super.jsx(index, unit, <>propPush: {`'${objref}'`}</>);
+    const isEditable = children ? children.isEditable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    const jsx = <>propPush {`'${objref}'`}&ensp;</>;
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit);
+    }
+    return jsx;
   }
 } // end of UseFeature
 

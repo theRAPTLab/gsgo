@@ -257,6 +257,7 @@ const useStylesHOC = theme => ({
   },
   instanceSpec: {
     backgroundColor: '#000',
+    // width: '100%', // Keep it narrow so we can stack up multiple in a row
     margin: '0.5em 0 0.5em 0.5em',
     padding: '3px',
     border: '1px solid #00000000',

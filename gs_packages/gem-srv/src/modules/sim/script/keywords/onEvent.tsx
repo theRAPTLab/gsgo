@@ -64,11 +64,23 @@ export class onEvent extends Keyword {
     }
     const cc = ScriptToJSX(consq, options);
 
-    return super.jsx(
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          onEvent {`'${event}'`} {cc}
+        </>
+      );
+    }
+    return super.jsxMin(
       index,
       unit,
       <>
-        onEvent {`'${event}'`} {cc}
+        onEvent {`'${event}'`} (+{consq.length} lines)
       </>
     );
   }
