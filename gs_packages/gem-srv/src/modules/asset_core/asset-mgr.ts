@@ -44,7 +44,9 @@ const LOADER_DICT = new Map<TAssetType, TAssetLoader>();
 /** returns true for supported loader types */
 function m_IsSupportedType(entry: [TAssetType, TAssetDef[]]): boolean {
   const [asType] = entry;
-  return LOADER_DICT.has(asType);
+  if (LOADER_DICT.has(asType)) return true;
+  console.warn(`asset type ${asType} is not supported`);
+  return false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** retrieve the AssetLoader for a particular type of resource */
@@ -61,42 +63,64 @@ function m_RegisterLoader(loader: TAssetLoader) {
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** utility function to load manifest from a constructed route of the form
+ *  http://host:port/assets/subdir
+ */
+async function m_LoadManifest(route) {
+  const url = `${ASSETS_HOST}/${route}?manifest`;
+  console.log('loading', url);
+  let json: any;
+  try {
+    json = await fetch(url).then(async response => {
+      if (!response.ok) throw new Error('network error');
+      let js: TManifest = await response.json();
+      if (Array.isArray(js) && js.length > 0) {
+        console.log('converting json array...');
+        js = js.shift();
+      }
+      return js;
+    });
+    console.log('success', json);
+    return json as TManifest;
+  } catch (err) {
+    console.warn(err);
+    json = undefined;
+  }
+  return json;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a manifest, load all asset types. this currently loads from the
  *  local directory in gs_assets.
  *  @param {string} subdir if set, relative to assets/
  */
 export async function PromiseLoadAssets(subdir: string = '') {
   const route = !subdir ? ASSETS_ROUTE : `${ASSETS_ROUTE}/${subdir}`;
-  const url = `${ASSETS_HOST}/${route}?manifest`;
-  console.log(...PR('fetching', url));
-  let res = await fetch(url);
-  let json: TManifest = await res.json();
-  console.log(...PR('got json', json));
-  if (Array.isArray(json) && json.length > 0) {
-    console.log('converting json array...');
-    json = json.shift();
-  }
-  const promises = [];
+  const json = await m_LoadManifest(route);
+  if (json === undefined) throw Error("can't load manifest");
+  // grab the top-level keys of the manifest (e.g. sprites:[])
+  // return only assets that are supported
   const assets = Object.entries(json).filter(m_IsSupportedType);
   if (DBG) console.group(...PR('loading', assets.length, 'supported assetTypes'));
-  assets.forEach(([asType, asList]) => {
+  const promises = [];
+  for (const kv of assets) {
+    const asType = kv[0]; // avoiding array destructure because old typescript
+    const asList = kv[1] as Array<TAssetDef>;
     // because manifest entries are relative to their directory, we have
     // to add subdir in so loader has correct URL
     if (subdir)
-      asList.forEach(e => {
+      for (const e of asList) {
         e.assetUrl = `${subdir}/${e.assetUrl}`;
-      });
-
+      }
+    // create a promise for each asset entry that is loaded
     const loader = m_GetLoaderByType(asType as TAssetType);
     if (loader) {
-      console.log('aslist', asList);
       loader.queueAssetList(asList);
       promises.push(loader.promiseLoadAssets());
-      console.log(`[${loader.type()}] loading ${asList.length} items`);
+      if (DBG) console.log(`[${loader.type()}] loading ${asList.length} items`);
     } else {
-      console.log(`[${asType}] no loader for ${asList.length} items`, asList);
+      console.warn(`[${asType}] no loader for ${asList.length} items`, asList);
     }
-  });
+  }
   if (DBG) console.groupEnd();
   return Promise.all(promises);
 }

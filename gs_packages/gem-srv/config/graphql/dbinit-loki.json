@@ -16,7 +16,15 @@
       "stage": {
         "memo": "These are the stage dimensions (world)"
       },
-      "poyxz": {},
+      "pozyx": {
+        "memo": "location 0",
+        "scaleX": 0,
+        "scaleY": 0,
+        "translateX": 0,
+        "translateY": 0,
+        "rotate": 0,
+        "useAccelerometer": true
+      },
       "urnet": {}
     },
     {
@@ -35,7 +43,15 @@
       "stage": {
         "memo": "stage for vanderbilt"
       },
-      "poyxz": {},
+      "pozyx": {
+        "memo": "location 1",
+        "scaleX": 0,
+        "scaleY": 0,
+        "translateX": 0,
+        "translateY": 0,
+        "rotate": 0,
+        "useAccelerometer": true
+      },
       "urnet": {}
     },
     {
@@ -53,6 +69,15 @@
         "xScale": 2,
         "yScale": 2,
         "zRot": 2
+      },
+      "pozyx": {
+        "memo": "location 2",
+        "scaleX": 0,
+        "scaleY": 0,
+        "translateX": 0,
+        "translateY": 0,
+        "rotate": 0,
+        "useAccelerometer": true
       }
     }
   ]

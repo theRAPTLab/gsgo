@@ -13,7 +13,7 @@ const PROJECT_NAME = 'GEMSTEP';
 const RUNTIME_DIRNAME = 'runtime';
 const RUNTIME_PATH = PATH.join(__dirname, `../${RUNTIME_DIRNAME}`);
 const ASSETS_LOCAL = PATH.join(__dirname, '../../../gs_assets');
-const ASSETS_HOST = 'http://localhost';
+const ASSETS_HOST = 'http://localhost:8080';
 const ASSETS_ROUTE = 'assets';
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
