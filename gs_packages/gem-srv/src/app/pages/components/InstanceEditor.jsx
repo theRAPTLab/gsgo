@@ -532,10 +532,10 @@ class InstanceEditor extends React.Component {
             isEditable={isEditable}
             onSave={this.OnNameSave}
           />
-          <div>{jsx}</div>
-          <br />
           {isEditable && (
             <>
+              <div>{jsx}</div>
+              <br />
               {isAddingProperty && isEditable && propMenuJsx}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <button

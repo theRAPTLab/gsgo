@@ -99,7 +99,7 @@ class InputField extends React.Component {
       // Show Static Value
       jsx = (
         <>
-          <div className={classes.inspectorLabel}>{propName}:&nbsp;</div>
+          {/* <div className={classes.inspectorLabel}>{propName}:&nbsp;</div> */}
           <div className={classes.inspectorData}>{value}&nbsp; </div>
         </>
       );
