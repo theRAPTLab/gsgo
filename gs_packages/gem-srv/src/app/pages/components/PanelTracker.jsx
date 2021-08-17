@@ -18,7 +18,7 @@ class PanelTracker extends React.Component {
     super();
     this.state = {
       isInitialized: false,
-      title: 'Setup',
+      title: 'Tracker Data',
       xmin: Infinity,
       xmax: -Infinity,
       ymin: Infinity,
