@@ -44,7 +44,7 @@ const merge = require('deepmerge');
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ProjectData');
-const DBG = true;
+const DBG = false;
 
 let CURRENT_MODEL_ID;
 let CURRENT_MODEL;

@@ -81,6 +81,7 @@ class InstanceEditor extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.UnhandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.UnhandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
@@ -345,6 +346,7 @@ class InstanceEditor extends React.Component {
       isEditable = true;
       isSelected = true;
       this.setState({ isEditable, isSelected });
+      this.instance.scrollIntoView();
     } else {
       // always disable if message is not for us!
       this.DoDeselect();
@@ -500,6 +502,9 @@ class InstanceEditor extends React.Component {
 
     return (
       <div
+        ref={c => {
+          this.instance = c;
+        }}
         className={clsx(classes.instanceSpec, {
           [classes.instanceSpecHovered]: isHovered,
           [classes.instanceSpecSelected]: isSelected
