@@ -331,11 +331,11 @@ function m_BindPozyxListener(mqtturl) {
   if (mqtturl) {
     // DON'T COMMENT THIS OUT!
     // This will connect to `mqtturl` if `mqtturl` is passed.
-    // Currently not called.
+    // Currently not called by anyone.
     mtrack_ss = mqtt.connect(`mqtt://${mqtturl}`, { port: 1883 }); // Enterprise server "via uplink network" works
   } else {
     // UNCOMMENT THIS TO ALLOW LOCALHOST for the mqtt broker to run locallly (replay of pozyx streams)
-    // mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 });
+    mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 });
 
     // UNCOMMENT THIS FOR VU LAB
     // mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
@@ -345,7 +345,7 @@ function m_BindPozyxListener(mqtturl) {
 
     // UNCOMMENT THIS FOR BEN's CAMPBELL ENTERPRISE SERVER
     // Ben's Campbell Enterprise server's "uplink network" IP
-    mtrack_ss = mqtt.connect('mqtt://10.1.10.185', { port: 1883 }); // Enterprise server "via uplink network" works
+    // mtrack_ss = mqtt.connect('mqtt://10.1.10.185', { port: 1883 }); // Enterprise server "via uplink network" works
   }
 
   mtrack_ss.on('connect', () => {
