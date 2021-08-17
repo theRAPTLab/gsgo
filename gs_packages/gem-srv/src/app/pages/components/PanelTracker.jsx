@@ -1,14 +1,23 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import * as INPUT from 'modules/input/api-input';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
 import PanelChrome from './PanelChrome';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('PanelTracker');
+const DBG = true;
+
+/// CLASS DECLARATION /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class PanelTracker extends React.Component {
   constructor() {
     super();
     this.state = {
+      isInitialized: false,
       title: 'Setup',
       xmin: Infinity,
       xmax: -Infinity,
@@ -31,9 +40,8 @@ class PanelTracker extends React.Component {
     this.updateTransform = this.updateTransform.bind(this);
     this.update = this.update.bind(this);
 
-    UR.HandleMessage('INIT_TRACKER', this.init);
     UR.HandleMessage('NET:POZYX_TRANSFORM_UPDATE', this.updateTransform);
-    UR.HandleMessage('NET:ENTITY_UPDATE', this.update);
+    UR.HandleMessage('TRACKER_SETUP_UPDATE', this.update);
   }
 
   componentDidMount() {
@@ -41,9 +49,9 @@ class PanelTracker extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('INIT_TRACKER', this.init);
+    INPUT.StopTrackerEmitter();
     UR.UnhandleMessage('NET:POZYX_TRANSFORM_UPDATE', this.updateTransform);
-    UR.UnhandleMessage('NET:ENTITY_UPDATE', this.update);
+    UR.UnhandleMessage('TRACKER_SETUP_UPDATE', this.update);
   }
 
   onFormInputUpdate(e) {
@@ -57,10 +65,14 @@ class PanelTracker extends React.Component {
     UR.RaiseMessage('NET:POZYX_TRANSFORM_SET', data);
   }
 
-  init() {
+  async init() {
+    // eslint-disable-next-line react/destructuring-assignment
+    if (this.state.isInitialized) return;
+    this.setState({ isInitialized: true });
     UR.CallMessage('NET:POZYX_TRANSFORM_REQ').then(rdata =>
       this.updateTransform(rdata)
     );
+    INPUT.StartTrackerEmitter();
   }
 
   updateTransform(data) {
@@ -110,8 +122,8 @@ class PanelTracker extends React.Component {
     const suggestedScaleX = Number(1 / (xmax - xmin)).toFixed(4);
     const suggestedScaleY = Number(1 / (ymax - ymin)).toFixed(4);
 
-    const suggestedTranslateX = -((xmax - xmin) / 2 + xmin);
-    const suggestedTranslateY = -((ymax - ymin) / 2 + xmin);
+    const suggestedTranslateX = -((xmax - xmin) / 2 + xmin) || 0;
+    const suggestedTranslateY = -((ymax - ymin) / 2 + xmin) || 0;
 
     const boundsjsx = (
       <div>
@@ -253,7 +265,7 @@ class PanelTracker extends React.Component {
         ENTITIES -- raw | transformed
         <p>
           <i>
-            The goal is to get the transformed units in the range of -0.5 to +0.5.
+            The goal is to get the transformed units in the range of -1 to +1.
           </i>
         </p>
         <div
