@@ -17,28 +17,23 @@ const CORS = require('cors');
 const Path = require('path');
 const IP = require('ip');
 const FSE = require('fs-extra');
-const { URL } = require('url');
 const CookieP = require('cookie-parser');
 const ServeIndex = require('serve-index');
 const {
   PACKAGE_NAME,
-  SERVER_ASSETS_DIRPATH,
-  LOCAL_ASSETS_DIRPATH,
-  MANIFEST_NAME
-} = require('../config/asrv.settings');
-
-const DBG = true;
+  GS_ASSETS_PATH, // local gsgo media files
+  GS_ASSETS_DISTRIB_PATH, // gsgo media distrib for master asset servers
+  GS_ASSETS_PORT
+} = require('../config/asrv-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const resolvers = require('../config/graphql/resolvers');
-
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil(PACKAGE_NAME);
-const PORT = 8080;
-const ASSET_ID_START = 100;
-const GSGO_ASSETS = Path.resolve(__dirname, '../../..', SERVER_ASSETS_DIRPATH);
+const PORT = GS_ASSETS_PORT || 8080;
+const GSGO_ASSETS = GS_ASSETS_DISTRIB_PATH;
 let m_server; // server instance; check if unset before launching
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////

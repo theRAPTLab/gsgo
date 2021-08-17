@@ -24,10 +24,8 @@ const {
   FILE
 } = require('@gemstep/ursys/server');
 const {
-  ASSETS_LOCAL, // local path to assets directory
-  ASSETS_HOST, // where to pull assets from
-  ASSETS_ROUTE
-} = require('../config/gem.settings');
+  GS_ASSETS_PATH // local path to assets directory
+} = require('../config/gem-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -167,14 +165,8 @@ function StartAppServer(opt = {}) {
 
   // handle urnet
   app.use(NetInfo_Middleware);
-  // hook URDB endpoint
-  // UseURDB_Middleware(app, {
-  //   dbPath: 'runtime/db.loki',
-  //   importPath: 'config/init/db-test.json',
-  //   schemaPath: 'config/graphql/locale-schema.graphql',
-  //   root: db_resolver
-  // });
 
+  // GraphQL interface
   UseLokiGQL_Middleware(app, {
     dbFile: 'runtime/db.loki',
     dbImportFile: 'config/graphql/dbinit-loki.json',
@@ -183,15 +175,17 @@ function StartAppServer(opt = {}) {
     root: resolvers
   });
 
-  FILE.EnsureDirectory(ASSETS_LOCAL);
+  // Asset Media Directory
+  FILE.EnsureDirectory(GS_ASSETS_PATH);
   app.use(
     '/assets',
     (req, res, next) => {
       if (DBG) console.log(...PR(`gs_assets request: '/assets${req.url}'`));
       next();
     },
-    Express.static(ASSETS_LOCAL)
+    Express.static(GS_ASSETS_PATH)
   );
+
   // for everything else...
   app.use('/', Express.static(DIR_OUT));
 

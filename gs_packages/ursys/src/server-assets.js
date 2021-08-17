@@ -10,16 +10,18 @@ const Path = require('path');
 const FILE = require('./util/files');
 const PROMPTS = require('./util/prompts');
 const {
-  MANIFEST_NAME,
-  SERVER_ASSETS_DIRPATH,
-  LOCAL_ASSETS_DIRPATH
-} = require('../../../gsgo-config');
+  GS_MANIFEST_FILENAME,
+  GS_ASSETS_DISTRIB_PATH,
+  GS_ASSETS_PATH
+} = require('../../../gsgo-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('ASSET_SRV', 'TagGreen');
 const ASSET_ID_START = 100;
-const GSGO_ASSETS = Path.resolve(__dirname, '../../..', SERVER_ASSETS_DIRPATH);
+//
+// const GSGO_ASSETS = GS_ASSETS_PATH;
+const GSGO_ASSETS = GS_ASSETS_DISTRIB_PATH;
 
 /// SUPPORT METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -44,12 +46,12 @@ function m_ScanAssets(dirpath) {
   const mediafiles = FILE.GetFiles(dirpath).filter(f =>
     FILE.HasValidAssetExtension({ type: subdir, filename: f })
   );
-  TERM(`${subdir} has ${mediafiles.length} valid files`);
+  TERM(`... ${subdir} has ${mediafiles.length} valid files`);
 
   const jsonfiles = mediafiles.filter(
     f => Path.extname(f).toLowerCase() === '.json'
   );
-  TERM(`${subdir} has ${jsonfiles.length} json files to scan for images`);
+  TERM(`... ${subdir} has ${jsonfiles.length} json files to scan for images`);
 
   const spriteFiles = [];
   jsonfiles.forEach(f => {
@@ -60,7 +62,7 @@ function m_ScanAssets(dirpath) {
       for (let frame of frames)
         if (frame.filename) spriteFiles.push(frame.filenam);
   });
-  TERM(`jsonfiles contained ${spriteFiles.length} image references`);
+  TERM(`... jsonfiles contained ${spriteFiles.length} image references`);
   return { mediafiles, jsonfiles, spriteFiles };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -76,12 +78,12 @@ function m_PromiseHashes(dirpath, files) {
 function m_GetManifestDataArray(dirpath) {
   const allfiles = FILE.GetFiles(dirpath);
   const manifests = allfiles
-    .filter(f => f.startsWith(MANIFEST_NAME) && f.endsWith('.json'))
+    .filter(f => f.startsWith(GS_MANIFEST_FILENAME) && f.endsWith('.json'))
     .sort();
 
   // CASE 1: 1 OR MORE MANIFEST FILES
   if (manifests.length > 0) {
-    TERM('manifest files:', manifests);
+    TERM('.. manifest files:', manifests);
     const m = [];
     for (let f of manifests) {
       const json = FILE.ReadJSON(`${dirpath}/${f}`);
@@ -121,7 +123,7 @@ function AssetManifest_Middleware(options) {
       // CASE 2: NO MANIFEST FILE, SO SCAN SUBDIRS
       let assetcounter = ASSET_ID_START;
       const assetdirs = FILE.GetAssetDirs(dirpath);
-      TERM(`found ${assetdirs.length} assetdirs`);
+      TERM(`... found ${assetdirs.length} assetdirs`);
 
       for (const subdir of assetdirs) {
         const subdirpath = Path.join(dirpath, subdir);
@@ -162,7 +164,7 @@ function AssetManifest_Middleware(options) {
 function MediaProxy_Middleware(options = {}) {
   return (req, res, next) => {
     const { pathname } = m_DecodeAssetRequest(req);
-    TERM(pathname, 'not found');
+    TERM('MediaProxy', pathname, 'not found');
     next();
   };
 }

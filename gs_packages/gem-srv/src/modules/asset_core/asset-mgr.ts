@@ -24,10 +24,10 @@ import {
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
 import {
-  ASSETS_HOST,
-  ASSETS_ROUTE,
-  MANIFEST_FILE
-} from '../../../config/gem.settings';
+  GS_ASSETS_HOST,
+  GS_ASSETS_ROUTE,
+  GS_ASSETS_PORT
+} from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +67,7 @@ function m_RegisterLoader(loader: TAssetLoader) {
  *  http://host:port/assets/subdir
  */
 async function m_LoadManifest(route) {
-  const url = `${ASSETS_HOST}/${route}?manifest`;
+  const url = `${GS_ASSETS_HOST}:${GS_ASSETS_PORT}/${route}?manifest`;
   console.log('loading', url);
   let json: any;
   try {
@@ -94,7 +94,7 @@ async function m_LoadManifest(route) {
  *  @param {string} subdir if set, relative to assets/
  */
 export async function PromiseLoadAssets(subdir: string = '') {
-  const route = !subdir ? ASSETS_ROUTE : `${ASSETS_ROUTE}/${subdir}`;
+  const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
   const json = await m_LoadManifest(route);
   if (json === undefined) throw Error("can't load manifest");
   // grab the top-level keys of the manifest (e.g. sprites:[])

@@ -28,7 +28,7 @@ import {
 /// APPCORE STATE INITIALIZATION //////////////////////////////////////////////
 import '../../modules/appcore';
 /// MAIN APP SHELL ////////////////////////////////////////////////////////////
-import { PROJECT_NAME } from '../../../config/gem.settings';
+import { PACKAGE_NAME } from '../../../config/gem-settings';
 import theme from '../../modules/style/theme';
 import SystemShell from './SystemShell';
 
@@ -90,7 +90,7 @@ function Init() {
 
   // handle disconnect event
   document.addEventListener('URSYSDisconnect', () => {
-    console.log(...PR(`${PROJECT_NAME.toUpperCase} SYSTEM DISCONNECTED`));
+    console.log(...PR(`${PACKAGE_NAME.toUpperCase} SYSTEM DISCONNECTED`));
     document.location.reload();
   });
 }

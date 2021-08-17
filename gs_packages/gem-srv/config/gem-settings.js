@@ -4,27 +4,23 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const PATH = require('path');
+const Path = require('path');
+// export everything that's already in the global config
+const GSCONFIG = require('../../../gsgo-settings');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOTE: Webpack replaces __dirname with the file's dirname for browsers!
-const PROJECT_NAME = 'GEMSTEP';
+const PACKAGE_NAME = 'GEMSTEP';
 const RUNTIME_DIRNAME = 'runtime';
-const RUNTIME_PATH = PATH.join(__dirname, `../${RUNTIME_DIRNAME}`);
-const ASSETS_LOCAL = PATH.join(__dirname, '../../../gs_assets');
-const ASSETS_HOST = 'http://localhost:8080';
-const ASSETS_ROUTE = 'assets';
+const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  PROJECT_NAME,
+  PACKAGE_NAME,
   //
   RUNTIME_DIRNAME,
   RUNTIME_PATH, // used only by servers
   //
-  ASSETS_LOCAL, // used only by servers
-  ASSETS_HOST, // server hosting assets
-  ASSETS_ROUTE // relative path to assets root
+  ...GSCONFIG // all props begin with GS_
 };

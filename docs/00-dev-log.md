@@ -119,11 +119,11 @@ Actually, since we want to move asset-srv to URSYS there's some additional work 
 
 We want to **replace** the middleware in `asset-srv` with middleware now in `server-assets` 
 
-* [ ] make a copy in `server-asset`
+* [x] make a copy in `server-asset`
 
 Next:
 
-* [ ] clean-up settings/configs
+* [x] clean-up settings/configs
 * [ ] add settings override
 * [ ] add media proxying
 

@@ -18,7 +18,7 @@ const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
 const TRACKER = require('./server/step-tracker');
 const GEMAPP = require('./server/gem-app-srv');
-const { RUNTIME_PATH } = require('./config/gem.settings');
+const { RUNTIME_PATH } = require('./config/gem-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

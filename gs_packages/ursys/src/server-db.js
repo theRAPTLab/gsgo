@@ -19,7 +19,6 @@ const TERM = require('./util/prompts').makeTerminalOut('URDB');
 
 let DB;
 let SCHEMA;
-const DBG = true;
 const AS_INTERVAL = 5000;
 
 /// HELPER METHODS ////////////////////////////////////////////////////////////

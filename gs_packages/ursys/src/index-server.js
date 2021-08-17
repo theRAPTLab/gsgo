@@ -42,14 +42,6 @@ const META = {
   _VERSION: '0.0.1'
 };
 
-/// SERVER-SIDE ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const STORE = {};
-const EXPRESS = {};
-const LOGGER = {};
-// const NETWORK = {};
-const MEDIA = {};
-
 /// LIBRARY INITIALIZATION ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** initialize dependent libraries (vestige from PLAE)
@@ -105,12 +97,6 @@ module.exports = {
   NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
   AssetManifest_Middleware: ASSETS.AssetManifest_Middleware,
   MediaProxy_Middleware: ASSETS.MediaProxy_Middleware,
-  // SERVICES API
-  STORE,
-  EXPRESS,
-  LOGGER,
-  NETWORK,
-  MEDIA,
   // UTILITIES API
   FILE,
   STRING,
