@@ -100,4 +100,30 @@ This is the current outstanding to-do list from last sprint:
 * Make a `gs_assets_distrib` folder for testing.
 * redirect asset server to it to test...works
 * package the assetserver middleware
-* 
+
+## AUG 16 MON - Asset Manager
+
+* [ ] Fix `UseAssetServer_Middleware`
+* [x] fix `PromiseLoadAssets()`
+* [ ] fix `asset-srv` to use `LOCAL_ASSETS_DIRPATH`
+
+Actually, since we want to move asset-srv to URSYS there's some additional work to do. 
+
+* [x] simplify middleware by factoring out functions
+* [x] new structure
+  * [x] `util/files` can be imported by anyone
+  * [x] `svc`- are for packet handlers
+  * [x] `server-assets.js` for asset serving
+
+## AUG 17 TUE - Asset Manager
+
+We want to **replace** the middleware in `asset-srv` with middleware now in `server-assets` 
+
+* [ ] make a copy in `server-asset`
+
+Next:
+
+* [ ] clean-up settings/configs
+* [ ] add settings override
+* [ ] add media proxying
+

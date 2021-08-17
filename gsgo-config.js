@@ -12,7 +12,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const MANIFEST_NAME = '00-manifest';
+const SERVER_ASSETS_DIRPATH = 'gs_assets_distrib';
+const LOCAL_ASSETS_DIRPATH = 'gs_assets';
 
 module.exports = {
-  MANIFEST_NAME
+  MANIFEST_NAME,
+  SERVER_ASSETS_DIRPATH,
+  LOCAL_ASSETS_DIRPATH
 };

@@ -19,6 +19,7 @@ const TERM = require('./prompts').makeTerminalOut('UTIL-FS', 'TagGreen');
 const VALID_MEDIA_EXT = {
   sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json']
 };
+const ASSET_DIRS = ['sprites']; // valid asset subdirectories
 
 /// FILE METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -141,7 +142,7 @@ function EnsureDirectory(path) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HasValidAssetType({ type, filename }) {
+function HasValidAssetExtension({ type, filename }) {
   const ext = Path.extname(filename).toLowerCase();
   const validtypes = VALID_MEDIA_EXT[type];
   if (validtypes === undefined) return false;
@@ -154,6 +155,77 @@ function ReadJSON(filepath) {
   return JSON.parse(rawdata);
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return array of filenames */
+function GetDirContent(dirpath) {
+  if (!DirectoryExists(dirpath)) {
+    console.warn(`${dirpath} is not a directory`);
+    return undefined;
+  }
+  const filenames = FSE.readdirSync(dirpath);
+  const files = [];
+  const dirs = [];
+  for (let name of filenames) {
+    let path = Path.join(dirpath, name);
+    const stat = FSE.lstatSync(path);
+    // eslint-disable-next-line no-continue
+    if (stat.isDirectory()) dirs.push(name);
+    else files.push(name);
+  }
+  return { files, dirs };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetFiles(dirpath) {
+  return GetDirContent(dirpath).files || [];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GetSubdirs(dirpath) {
+  return GetDirContent(dirpath).dirs || [];
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Based on http://stackoverflow.com/questions/25460574/
+ *  returns an object with files:recfiles, number of files, and
+ *  the highest count found.
+ */
+function RecordingsInDirectory(dirpath) {
+  // this regex looks for 4-digit named group "seq" followed
+  // by a dash and ending with a .rec extension
+  const regex = /^(?<seq>\d{4})-.*\.rec$/;
+  const files = GetDirContent(dirpath);
+  const recfiles = [];
+  if (files === undefined) return undefined;
+  let count = 0;
+  let highest = 0;
+  for (const f of files) {
+    const m = f.match(regex);
+    const seqnum = m.group.seq;
+    if (seqnum) {
+      count++;
+      highest = Math.max(seqnum, highest);
+      recfiles.push({ prefix: seqnum, file: f });
+    }
+  }
+  return {
+    count,
+    highest,
+    files: recfiles
+  };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return the MD5 hash of the passed filepath */
+async function PromiseFileHash(filepath) {
+  const hash = await Hasha.fromFile(filepath, { algorithm: 'md5' });
+  const { base, ext } = Path.parse(filepath);
+  return { filepath, filename: base, ext, hash };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return a list of asset directories that match ASSET_DIRS */
+function GetAssetDirs(dirpath) {
+  const { dirs } = GetDirContent(dirpath);
+  return dirs.filter(d => ASSET_DIRS.includes(d));
+}
+
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
@@ -164,6 +236,11 @@ module.exports = {
   IsDirectory,
   DirectoryExists,
   EnsureDirectory,
-  HasValidAssetType,
-  ReadJSON
+  HasValidAssetExtension,
+  ReadJSON,
+  GetFiles,
+  GetSubdirs,
+  RecordingsInDirectory,
+  PromiseFileHash,
+  GetAssetDirs
 };

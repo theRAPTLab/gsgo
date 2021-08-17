@@ -106,5 +106,9 @@ module.exports = {
   strNanoTimeStamp,
   strTimeDatedFilename,
   // numeric zero padding
-  fZeroPad
+  fZeroPad,
+  // compatibility
+  TimeStamp: strTimeStamp,
+  DateStamp: strDateStamp,
+  DatedFilename: strTimeDatedFilename
 };

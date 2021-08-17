@@ -12,10 +12,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const FS = require('fs');
-const PROCESS = require('process');
-const PATH = require('path');
-const shell = require('shelljs');
-const minimist = require('minimist');
+const Process = require('process');
+const Shell = require('shelljs');
+const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
 const TRACKER = require('./server/step-tracker');
 const GEMAPP = require('./server/gem-app-srv');
@@ -36,7 +35,7 @@ function m_WrapErrorText(str) {
 /** Start up GEMSTEP SERVER (at end of this file) */
 function GEMSRV_Start(opt) {
   // git branch information
-  const { error, stdout } = shell.exec('git symbolic-ref --short -q HEAD', {
+  const { error, stdout } = Shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
   });
   TOUT('Starting Development Server...');
@@ -52,7 +51,7 @@ function GEMSRV_Start(opt) {
     else {
       TOUT(m_WrapErrorText('UNCAUGHT EXCEPTION'), err);
     }
-    PROCESS.exit(0);
+    Process.exit(0);
   });
 
   // run ursys
@@ -80,17 +79,17 @@ if (!FS.existsSync('./node_modules')) {
   out += 'or did you just run \x1b[33mnpm clean:all\x1b[0m?\n';
   out += 'run \x1b[33mnpm ci\x1b[0m to install all node_modules\n';
   console.log(out);
-  PROCESS.exit(0);
+  Process.exit(0);
 }
 /// CHECK GIT DEPENDENCY //////////////////////////////////////////////////////
-if (!shell.which('git')) {
-  shell.echo(
+if (!Shell.which('git')) {
+  Shell.echo(
     `\x1b[30;41m You must have git installed to run the ${PR} devtool \x1b[0m`
   );
-  shell.exit(0);
+  Shell.exit(0);
 }
-/// PROCESS COMMAND LINE //////////////////////////////////////////////////////
-const argv = minimist(process.argv.slice(1));
+/// Process COMMAND LINE //////////////////////////////////////////////////////
+const argv = Minimist(process.argv.slice(1));
 const cmd = argv._[1];
 
 switch (cmd) {

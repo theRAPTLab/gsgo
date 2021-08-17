@@ -12,7 +12,7 @@ const FSE = require('fs-extra');
 const { URL } = require('url');
 //
 const PROMPTS = require('./prompts');
-const { EnsureDirectory, FileExists } = require('./fs-helper');
+const { EnsureDirectory, FileExists } = require('./files');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

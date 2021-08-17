@@ -11,11 +11,11 @@ const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
 const DB = require('./server-db');
-const FILE = require('./server-files');
+const ASSETS = require('./server-assets');
 const DBG = require('./ur-dbg-settings');
 const COMMON = require('./ur-common');
-const UTIL_FS = require('./util/fs-helper');
-const UTIL_STRING = require('./util/string-helper');
+const FILE = require('./util/files');
+const STRING = require('./util/strings');
 
 //
 const {
@@ -88,11 +88,6 @@ module.exports = {
   // META
   ...META,
   NetInfoRoute: NETINFO.NetInfoRoute,
-  // Utilities
-  UTIL: {
-    string: UTIL_STRING,
-    fs: UTIL_FS
-  },
   // SYSTEM ENVIRONMENT
   IsNode,
   IsBrowser,
@@ -108,13 +103,17 @@ module.exports = {
   NetInfo_Middleware: NETINFO.Express_Middleware,
   URNET_Use: NETINFO.UseURNET,
   NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
+  AssetManifest_Middleware: ASSETS.AssetManifest_Middleware,
+  MediaProxy_Middleware: ASSETS.MediaProxy_Middleware,
   // SERVICES API
   STORE,
   EXPRESS,
   LOGGER,
   NETWORK,
   MEDIA,
+  // UTILITIES API
   FILE,
+  STRING,
   // PROMPT UTILITIES
   PrefixUtil: PROMPTS.makeStyleFormatter,
   TermOut: PROMPTS.makeTerminalOut,
