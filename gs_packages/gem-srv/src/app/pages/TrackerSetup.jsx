@@ -1,6 +1,11 @@
 /* eslint-disable react/destructuring-assignment */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+
+  DEPRECATED -- Setting up tracker is now done directly on Main.
+
+
+
   Tracker Setup -- Setup screen for PTrack and Pozyx input systems
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
@@ -15,6 +20,8 @@ import PanelSimViewer from './components/PanelSimViewer';
 import DialogConfirm from './components/DialogConfirm';
 
 import PanelTracker from './components/PanelTracker';
+import FormTransform from './components/FormTransform';
+import '../../lib/css/tracker.css';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -139,8 +146,12 @@ class TrackerSetup extends React.Component {
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div id="console-right" className={classes.right}>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <PanelTracker />
+          <div
+            className={classes.ioTransform}
+            style={{ display: 'flex', flexDirection: 'column' }}
+          >
+            {/* <PanelTracker /> */}
+            <FormTransform />
           </div>
         </div>
         <div
