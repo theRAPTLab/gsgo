@@ -36,7 +36,9 @@ class PanelTracker extends React.Component {
     UR.HandleMessage('NET:ENTITY_UPDATE', this.update);
   }
 
-  componentDidMount() {}
+  componentDidMount() {
+    this.init();
+  }
 
   componentWillUnmount() {
     UR.UnhandleMessage('INIT_TRACKER', this.init);
@@ -181,7 +183,12 @@ class PanelTracker extends React.Component {
             input values in the original Pozyx mm units.
           </i>
         </p>
-        <div
+        <p>
+          <li>Scale: Use a negative scale to flip</li>
+          <li>Rotation: measured in degrees counterclockwise</li>
+          <li>Translate/Offset: Relative to rotated pozyx units</li>
+        </p>
+        {/* <div
           style={{
             display: 'grid',
             gridTemplateColumns: '100px 100px auto',
@@ -236,7 +243,7 @@ class PanelTracker extends React.Component {
             onChange={this.onFormInputUpdate}
           />
           <i>Only for wearable tags</i>
-        </div>
+        </div> */}
         <br />
       </div>
     );
