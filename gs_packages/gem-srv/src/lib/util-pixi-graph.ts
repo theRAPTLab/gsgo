@@ -6,6 +6,7 @@
 
   Pass a PIXI Graphics object to DrawGraph.
 
+      import { DrawGraph } from './util-pixi-graph';
       const graph = new PIXI.Graphics();
       DrawGraph(graph, data, {
         scale: 4, // scale 1 = 100 pixels
