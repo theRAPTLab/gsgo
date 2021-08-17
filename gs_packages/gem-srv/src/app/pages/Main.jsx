@@ -29,6 +29,10 @@ import PanelInstances from './components/PanelInstances';
 import PanelMessage from './components/PanelMessage';
 import DialogConfirm from './components/DialogConfirm';
 
+import PanelTracker from './components/PanelTracker';
+import FormTransform from './components/FormTransform';
+import '../../lib/css/tracker.css';
+
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
 
@@ -48,6 +52,7 @@ const PANEL_CONFIG = new Map();
 PANEL_CONFIG.set('run', '15% auto 150px'); // columns
 PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
 PANEL_CONFIG.set('edit', '40% auto 0px'); // columns
+PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 
 const StyledToggleButton = withStyles(theme => ({
   root: {
@@ -129,6 +134,7 @@ class MissionControl extends React.Component {
     this.OnToggleNetworkMapSize = this.OnToggleNetworkMapSize.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
+    this.OnToggleTracker = this.OnToggleTracker.bind(this);
 
     // System Hooks
     UR.HookPhase('UR/APP_START', this.Initialize);
@@ -145,6 +151,9 @@ class MissionControl extends React.Component {
     document.title = `GEMSTEP MAIN ${modelId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
+
+    // register project-data
+    PROJ.ProjectDataInit();
   }
 
   componentDidCatch(e) {
@@ -407,7 +416,14 @@ class MissionControl extends React.Component {
     const { modelId } = this.state;
     window.location = `/app/model?model=${modelId}`;
   }
-
+  OnToggleTracker() {
+    this.setState(state => ({
+      panelConfiguration:
+        state.panelConfiguration !== 'tracker' ? 'tracker' : 'run'
+    }));
+    // Trigger Window Resize so that PanelSimulation will resize
+    window.dispatchEvent(new Event('resize'));
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER
   ///
@@ -520,6 +536,10 @@ class MissionControl extends React.Component {
           <div style={{ flexGrow: '1' }}>
             <span style={{ fontSize: '32px' }}>MAIN {modelId}</span>{' '}
             {UR.ConnectionString()}
+            &emsp;
+            <button type="button" onClick={this.OnToggleTracker}>
+              tracker
+            </button>
           </div>
           <Link
             to={{ pathname: `/app/model?model=${modelId}` }}
@@ -563,7 +583,15 @@ class MissionControl extends React.Component {
               overflow: 'hidden'
             }}
           >
-            {panelConfiguration !== 'edit' && (
+            {panelConfiguration === 'tracker' && (
+              <>
+                <div className={classes.ioTransform}>
+                  <FormTransform />
+                </div>
+                <PanelTracker />
+              </>
+            )}
+            {panelConfiguration !== 'edit' && panelConfiguration !== 'tracker' && (
               <>
                 <PanelPlayback
                   id="playback"

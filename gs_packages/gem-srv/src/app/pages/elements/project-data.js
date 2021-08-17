@@ -58,6 +58,42 @@ function m_GetUID() {
   return String(SEED++);
 }
 
+function getLocaleIdFromLocalStorage() {
+  const localeId = localStorage.getItem('localeId');
+  return Number(localeId !== null ? localeId : 4);
+}
+function saveLocaleIdToLocalStorage(id) {
+  localStorage.setItem('localeId', id);
+}
+
+/// PROJECT DATA INIT /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function ProjectDataInit() {
+  UR.SubscribeState('locales', HandleLocaleUpdated);
+
+  // Load currently saved locale
+  const localeId = getLocaleIdFromLocalStorage();
+  UR.WriteState('locales', 'localeId', localeId);
+}
+
+function HandleLocaleUpdated(stateObj, cb) {
+  console.error('locale updated', stateObj);
+
+  // if update was to localeID, save localeID to localStorage
+  if (stateObj.localeId) saveLocaleIdToLocalStorage(stateObj.localeId);
+
+  // Read the current transforms
+  const state = UR.ReadFlatStateGroups('locales');
+
+  // Copy to POZYX_TRANSFORM
+  const data = state.transform;
+  POZYX_TRANSFORM.scaleX = data.xScale;
+  POZYX_TRANSFORM.scaleY = data.yScale;
+  POZYX_TRANSFORM.translateX = data.xOff;
+  POZYX_TRANSFORM.translateY = data.yOff;
+  POZYX_TRANSFORM.useAccelerometer = data.useAccelerometer;
+}
+
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -594,9 +630,8 @@ function HandleRequestProjData(data) {
   return { result: undefined };
 }
 
-/// EXPORT MODULE API /////////////////////////////////////////////////////////
+/// UR HANDLERS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see above for exports
 
 /// TRANSFORM UTILS -----------------------------------------------------------
 UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
@@ -622,6 +657,14 @@ UR.HandleMessage('NET:INSTANCE_SELECT', InstanceSelect);
 UR.HandleMessage('NET:INSTANCE_DESELECT', InstanceDeselect);
 UR.HandleMessage('INSTANCE_HOVEROVER', InstanceHoverOver);
 UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
+
+/// UR HOOKS //////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HookPhase('UR/APP_READY', ProjectDataInit);
+
+/// EXPORT MODULE API /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see above for exports
 
 export {
   GetProject,

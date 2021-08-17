@@ -45,5 +45,15 @@ module.exports = {
     locale.ptrack = { ...locale.ptrack, ...input };
     coll.update(locale);
     return locale.ptrack;
+  },
+  updatePozyx(args, context) {
+    const { localeId, input } = args;
+    const { DB } = context;
+    if (DBG) TERM(`update localeId:${localeId}, input:${JSON.stringify(input)}`);
+    const coll = DB.getCollection('locales');
+    const locale = coll.findOne({ id: localeId });
+    locale.pozyx = { ...locale.pozyx, ...input };
+    coll.update(locale);
+    return locale.pozyx;
   }
 };
