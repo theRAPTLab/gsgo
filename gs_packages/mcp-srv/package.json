@@ -1,5 +1,5 @@
 {
-  "name": "@gemstep/asset-srv",
+  "name": "@gemstep/mcp-srv",
   "version": "0.1.0-alpha.0",
   "description": "Now I’m the model of a modern major general / The venerated Virginian veteran whose men are all / Lining up, to put me up on a pedestal / Writin’ letters to relatives / Embellishin’ my elegance and eloquence / But the elephant is in the room / The truth is in ya face when ya hear the British cannons go / BOOM",
   "keywords": [],
@@ -15,8 +15,8 @@
     "url": "git@gitlab.com:stepsys/gem-step/gsgo.git"
   },
   "scripts": {
-    "local": "npm run dev:asrv",
-    "dev:asrv": "nodemon asrv_run.js",
+    "local": "npm run dev:mcp",
+    "dev:mcp": "nodemon mcp_run.js",
     "..ursys": "cd ../ursys && npm run local",
     "..bootstrap": "cd ../../ && npm run bootstrap"
   },

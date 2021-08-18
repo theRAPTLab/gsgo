@@ -8,6 +8,7 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Path = require('path');
 const FILE = require('./util/files');
+const HTTP = require('./util/http-proxy');
 const PROMPTS = require('./util/prompts');
 const {
   GS_MANIFEST_FILENAME,
@@ -17,24 +18,13 @@ const {
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const TERM = PROMPTS.makeTerminalOut('ASSET_SRV', 'TagGreen');
+const TERM = PROMPTS.makeTerminalOut('ASSETS', 'TagGreen');
 const ASSET_ID_START = 100;
 
 /// SUPPORT METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_DecodeAssetRequest(req) {
-  // (1) determine urlbits
-  const baseURL = `${req.protocol}://${req.headers.host}/assets/`; // base url + 'assets/'
-  const fullURL = `${req.protocol}://${req.originalUrl}`; // full url
-  // get pathname after baseURL and ?query
-  const { pathname, searchParams } = new URL(fullURL, baseURL);
-  // (2) if has ?manifest query, do special processing
-  return {
-    baseURL,
-    fullURL,
-    pathname,
-    searchParams
-  };
+  return HTTP.DecodeRequest('assets', req);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_ScanAssets(dirpath) {
@@ -169,10 +159,7 @@ function MediaProxy_Middleware(options = {}) {
     return (req, res, next) => next();
   }
   return (req, res, next) => {
-    const { pathname } = m_DecodeAssetRequest(req);
-    TERM(`should pull from ${remoteAssetUrl}/${pathname}`);
-
-    next();
+    HTTP.MediaProxy(req, res, next);
   };
 }
 

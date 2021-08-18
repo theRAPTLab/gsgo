@@ -1,12 +1,14 @@
 /* eslint-disable global-require */
 /*/////////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  GEMSTEP ASSET SERVER
+  GEMSTEP MAIN CONTROL PROGRAM SERVER
 
-  This is a standalone server that runs on the GS_ASSETS_PORT and serves
-  from the GS_ASSETS_DESTRIB_PATH. This is intended to be the 'master
-  asset server' that local servers (like the GEMSTEP App Server) will
-  query if it doesn't have those assets stored locally.
+  This is a standalone server that:
+  * runs on the GS_ASSETS_PORT and serves from the GS_ASSETS_DESTRIB_PATH. This
+    is intended to be the 'master asset server' that local servers (like the
+    GEMSTEP App Server) will query if it doesn't have those assets stored
+    locally.
+  * eventually will provide net-wide authentication and other services
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * ///////////////////////////////////*/
 
@@ -24,7 +26,7 @@ const {
   PACKAGE_NAME,
   GS_ASSETS_HOST_PATH, // gsgo media distrib for master asset servers
   GS_ASSETS_PORT
-} = require('../config/asrv-settings');
+} = require('../config/mcp-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -65,7 +67,7 @@ function StartAssetServer(options = {}) {
   // make sure asset server document path exists
   // and write an index file there
   FSE.ensureDirSync(Path.join(assetPath));
-  const INDEX_TEXT = `${PACKAGE_NAME} - CENTRALIZED ASSET HOST `;
+  const INDEX_TEXT = `${PACKAGE_NAME} - GEMSTEP MAIN CONTROL PROGRAM HOST `;
   const INDEX_SEND = Path.join(assetPath, '_serverId.txt');
   FSE.writeFileSync(INDEX_SEND, INDEX_TEXT);
 
@@ -91,10 +93,10 @@ function StartAssetServer(options = {}) {
   // set up /assets manifest, index, media, mediaproxy
   app.use(
     '/assets',
-    UR.AssetManifest_Middleware({ assetPath }),
+    UR.AssetManifest_Middleware({ assetPath }), // should be gs_assets_hosted
     ServeIndex(assetPath, { 'icons': true }),
-    Express.static(assetPath),
-    UR.MediaProxy_Middleware({}) // a pure asset host server does not proxy
+    Express.static(assetPath)
+    // UR.MediaProxy_Middleware({}) // asset host servers do not proxy
   );
 
   // start server listening for http at port

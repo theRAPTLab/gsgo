@@ -1,6 +1,6 @@
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  ASSET SERVER (ASRV) CONFIGURATION
+  MAIN CONTROL PROGRAM SERVER (MCP) CONFIGURATION
 
   you probably DO NOT need to change settings here. If you are localizing
   your installation, make a `gs-config-local.js` file in the root directory
@@ -11,7 +11,7 @@
 // export everything that's already in the global config
 const GSCONFIG = require('../../../gsgo-settings');
 
-const PACKAGE_NAME = 'ASSET_SRV';
+const PACKAGE_NAME = 'MCP_SRV';
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -9,10 +9,10 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NDir = require('node-dir');
 const Path = require('path');
-const IP = require('ip');
 const Hasha = require('hasha');
 const FSE = require('fs-extra');
-const TERM = require('./prompts').makeTerminalOut('UTIL-FS', 'TagGreen');
+const TERM = require('./prompts').makeTerminalOut('U-FILE', 'TagGreen');
+const FNAME = require('./files-naming');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -229,6 +229,9 @@ function GetAssetDirs(dirpath) {
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  // file name utilities
+  ...FNAME,
+  // file ops
   ReadFilesExt,
   PromiseReadFilesExt,
   IsFile,
@@ -236,10 +239,11 @@ module.exports = {
   IsDirectory,
   DirectoryExists,
   EnsureDirectory,
-  HasValidAssetExtension,
-  ReadJSON,
   GetFiles,
   GetSubdirs,
+  // asset-related
+  HasValidAssetExtension,
+  ReadJSON,
   RecordingsInDirectory,
   PromiseFileHash,
   GetAssetDirs

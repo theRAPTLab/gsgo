@@ -15,7 +15,6 @@ const ASSETS = require('./server-assets');
 const DBG = require('./ur-dbg-settings');
 const COMMON = require('./ur-common');
 const FILE = require('./util/files');
-const STRING = require('./util/strings');
 
 //
 const {
@@ -99,7 +98,6 @@ module.exports = {
   MediaProxy_Middleware: ASSETS.MediaProxy_Middleware,
   // UTILITIES API
   FILE,
-  STRING,
   // PROMPT UTILITIES
   PrefixUtil: PROMPTS.makeStyleFormatter,
   TermOut: PROMPTS.makeTerminalOut,

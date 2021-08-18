@@ -8,15 +8,15 @@
     "start": "npm run build && multiview [npm run gem:multi] [npm run admin:multi]",
     "ursys": "cd gs_packages/ursys/ && npm run local",
     "admin": "npm run build && cd gs_packages/admin-srv/ && npm run local",
-    "assets": "npm run build && cd gs_packages/asset-srv/ && npm run local",
+    "mcp": "npm run build && cd gs_packages/mcp-srv/ && npm run local",
     "gem": "npm run build && cd gs_packages/gem-srv/ && npm run local",
     "admin:multi": "lerna run dev:admin --stream --no-prefix",
-    "assets:multi": "lerna run dev:asrv --stream --no-prefix",
+    "mcp:multi": "lerna run dev:mcp --stream --no-prefix",
     "gem:multi": "lerna run dev:gem --stream --no-prefix",
     "ursys:multi": "lerna run dev:ursys --stream --no-prefix",
     "xplay": "npm run build && lerna run dev:xplay --stream --no-prefix",
     "list:global": "npm list -g --depth=0",
-    "sridev": "multiview [npm run ursys:multi] [npm run assets:multi] [npm run gem:multi]"
+    "sridev": "multiview [npm run ursys:multi] [npm run mcp:multi] [npm run gem:multi]"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.4.1",

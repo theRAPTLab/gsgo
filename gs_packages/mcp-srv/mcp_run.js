@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  This is the ASSET SERVER for GEMSTEP
+  This is the MAIN CONTROL PROGRAM SERVER for GEMSTEP, which currently acts as
+  the remote asset server
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const FS = require('fs');
 const Process = require('process');
-const Path = require('path');
 const Shell = require('shelljs');
 const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
-const SERVER = require('./server/asset-srv');
+const SERVER = require('./server/main-control-srv');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = 'ASRV_RUN';
+const PR = 'MCP_RUN';
 const TOUT = UR.TermOut(PR);
 const HT_PORT = 8080; // hack to avoid confict with 2929 for admsrv fornow
 
@@ -27,7 +27,7 @@ function m_WrapErrorText(str) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start up GEMSTEP SERVER (at end of this file) */
-function ASRV_Start(opt = {}) {
+function MCP_Start(opt = {}) {
   // git branch information
   const { error, stdout } = Shell.exec('git symbolic-ref --short -q HEAD', {
     silent: true
@@ -78,10 +78,10 @@ const argv = Minimist(process.argv.slice(1));
 const cmd = argv._[1];
 switch (cmd) {
   case 'dev':
-    TOUT('Starting Asset Server in DEVELOPMENT MODE');
-    ASRV_Start({ mode: 'dev' });
+    TOUT('Starting Main Control Program Server in DEVELOPMENT MODE');
+    MCP_Start({ mode: 'dev' });
     break;
   default:
-    TOUT('Starting Asset Server in PRODUCTION MODE');
-    ASRV_Start();
+    TOUT('Starting Main Control Program Server in PRODUCTION MODE');
+    MCP_Start();
 }

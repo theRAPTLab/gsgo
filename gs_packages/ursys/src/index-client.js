@@ -15,7 +15,6 @@ const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
 const COMMON = require('./ur-common');
-const STRING = require('./util/strings');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
@@ -143,7 +142,6 @@ function SendMessage(mesgName, inData, options) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
-  STRING,
   // NETWORK MESSAGES
   DeclareMessage,
   HasMessage,
