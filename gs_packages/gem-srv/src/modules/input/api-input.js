@@ -25,13 +25,24 @@ const INTERVAL = (1 / FRAMERATE) * 1000;
 export function Init() {
   console.log(...PR('should initialize'));
 }
+
+/// TRACKER SETUP HELPERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function TrackerSetupIsOnline() {
-  const devices = UR.GetDeviceDirectory();
-  return devices.find(d => {
-    return d.meta.uclass === 'TrackerSetup';
-  });
+
+let SETUP_TRACKER = false;
+
+/**
+ * If true, StartTrackerVisual's setInterval sends entity data to PanelTracker
+ * so entity locations can be monitored for setting up transforms.
+ */
+export function StartTrackerEmitter() {
+  SETUP_TRACKER = true;
 }
+export function StopTrackerEmitter() {
+  SETUP_TRACKER = false;
+}
+
+/// TRACKER DATA //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
   // REVIEW: Skip starting tracker if there are no pozyx mappings.
@@ -49,8 +60,8 @@ export function StartTrackerVisuals() {
 
     // This sends entity data to PanelTracker so entity locations
     // can be monitored for setting up transforms.
-    if (TrackerSetupIsOnline()) {
-      UR.RaiseMessage('NET:ENTITY_UPDATE', {
+    if (SETUP_TRACKER) {
+      UR.RaiseMessage('TRACKER_SETUP_UPDATE', {
         entities,
         tentities: PTRACK_SYNCMAP.getMappedObjects()
       });
