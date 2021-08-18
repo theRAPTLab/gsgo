@@ -23,18 +23,14 @@ import {
   TManifest
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
-import {
-  GS_ASSETS_HOST,
-  GS_ASSETS_ROUTE,
-  GS_ASSETS_PORT
-} from '../../../config/gem-settings';
+import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('ASSETS', 'TagRed');
+const PR = UR.PrefixUtil('ASSETM', 'TagGreen');
 const DBG = true;
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
@@ -67,20 +63,20 @@ function m_RegisterLoader(loader: TAssetLoader) {
  *  http://host:port/assets/subdir
  */
 async function m_LoadManifest(route) {
-  const url = `${GS_ASSETS_HOST}:${GS_ASSETS_PORT}/${route}?manifest`;
-  console.log('loading', url);
+  const url = `${route}?manifest`;
+  console.log(...PR('loading', url));
   let json: any;
   try {
     json = await fetch(url).then(async response => {
       if (!response.ok) throw new Error('network error');
       let js: TManifest = await response.json();
       if (Array.isArray(js) && js.length > 0) {
-        console.log('converting json array...');
+        if (DBG) console.log('converting json array...');
         js = js.shift();
       }
       return js;
     });
-    console.log('success', json);
+    if (DBG) console.log(...PR('success', json));
     return json as TManifest;
   } catch (err) {
     console.warn(err);

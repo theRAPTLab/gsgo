@@ -11,7 +11,7 @@ const FILE = require('./util/files');
 const PROMPTS = require('./util/prompts');
 const {
   GS_MANIFEST_FILENAME,
-  GS_ASSETS_DISTRIB_PATH,
+  GS_ASSET_HOST_URL,
   GS_ASSETS_PATH
 } = require('../../../gsgo-settings');
 
@@ -19,9 +19,6 @@ const {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('ASSET_SRV', 'TagGreen');
 const ASSET_ID_START = 100;
-//
-// const GSGO_ASSETS = GS_ASSETS_PATH;
-const GSGO_ASSETS = GS_ASSETS_DISTRIB_PATH;
 
 /// SUPPORT METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,10 +90,14 @@ function m_GetManifestDataArray(dirpath) {
   }
   return [];
 }
+
 /// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function AssetManifest_Middleware(options) {
-  const { rootHost } = options;
+function AssetManifest_Middleware(options = {}) {
+  const {
+    assetPath = GS_ASSETS_PATH,
+    remoteAssetUrl = GS_ASSET_HOST_URL
+  } = options;
   return async (req, res, next) => {
     // (0) define output object to capture data
     const manifest = {};
@@ -106,10 +107,10 @@ function AssetManifest_Middleware(options) {
       next(); // no manifest request, so let next middleware
     } else {
       TERM(`requested manifest for: '${pathname}'`);
-      const dirpath = Path.join(GSGO_ASSETS, pathname);
+      const dirpath = Path.join(assetPath, pathname);
 
       if (!FILE.IsDirectory(dirpath)) {
-        TERM(`manifest error: ${dirpath} is not a directory`, dirpath);
+        TERM(`manifest error: '${dirpath}' is not a directory`);
         next();
         return;
       }
@@ -162,9 +163,15 @@ function AssetManifest_Middleware(options) {
 /// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MediaProxy_Middleware(options = {}) {
+  const { remoteAssetUrl } = options;
+  if (remoteAssetUrl === undefined) {
+    TERM('NO MEDIAHOST DEFINED: proxied media is disabled');
+    return (req, res, next) => next();
+  }
   return (req, res, next) => {
     const { pathname } = m_DecodeAssetRequest(req);
-    TERM('MediaProxy', pathname, 'not found');
+    TERM(`should pull from ${remoteAssetUrl}/${pathname}`);
+
     next();
   };
 }

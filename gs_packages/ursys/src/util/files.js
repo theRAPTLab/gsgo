@@ -112,7 +112,7 @@ function IsDirectory(dirpath) {
     if (stat.isDirectory()) return true;
     return false;
   } catch (e) {
-    console.warn(`IsDirectory: ${dirpath} does not exist`);
+    // console.warn(`IsDirectory: ${dirpath} does not exist`);
     return false;
   }
 }

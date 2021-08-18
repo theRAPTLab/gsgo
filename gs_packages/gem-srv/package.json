@@ -94,6 +94,7 @@
     "ip": "^1.1.5",
     "jsep": "^0.3.5",
     "jss": "^10.5.0",
+    "serve-index": "^1.9.1",
     "jss-plugin-extend": "^10.5.0",
     "lokijs": "^1.5.12",
     "minimist": "^1.2.5",

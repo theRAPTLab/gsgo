@@ -12,20 +12,15 @@
 const Express = require('express'); //your original BE server
 const Compression = require('compression');
 const Path = require('path');
+const FSE = require('fs-extra');
 const IP = require('ip');
 const CookieP = require('cookie-parser');
+const ServeIndex = require('serve-index');
 const Webpack = require('webpack');
 const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
-const {
-  NetInfo_Middleware,
-  UseLokiGQL_Middleware,
-  PrefixUtil,
-  FILE
-} = require('@gemstep/ursys/server');
-const {
-  GS_ASSETS_PATH // local path to assets directory
-} = require('../config/gem-settings');
+const UR = require('@gemstep/ursys/server');
+const { GS_ASSETS_PATH, GS_ASSET_HOST_URL } = require('../config/gem-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -34,7 +29,7 @@ const resolvers = require('../config/graphql/resolvers');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = PrefixUtil('APPSRV');
+const PR = UR.PrefixUtil('APPSRV');
 const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -66,6 +61,7 @@ function m_AppListen(opt = {}) {
  */
 function StartAppServer(opt = {}) {
   const { skipWebCompile = false } = opt;
+  const assetsPath = opt.assetsPath || GS_ASSETS_PATH;
   console.log(
     ...PR('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...')
   );
@@ -134,6 +130,12 @@ function StartAppServer(opt = {}) {
     console.log(...PR(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`));
     m_AppListen(opt);
   }
+
+  FSE.ensureDirSync(Path.join(assetsPath));
+  const INDEX_TEXT = 'GEMSRV ASSET SERVER (PROXY)';
+  const INDEX_SEND = Path.join(assetsPath, '_serverId.txt');
+  FSE.writeFileSync(INDEX_SEND, INDEX_TEXT);
+
   // configure cookies middleware (appears in req.cookies)
   app.use(CookieP());
   // configure headers to allow cross-domain requests of media elements
@@ -164,10 +166,10 @@ function StartAppServer(opt = {}) {
   });
 
   // handle urnet
-  app.use(NetInfo_Middleware);
+  app.use(UR.NetInfo_Middleware);
 
   // GraphQL interface
-  UseLokiGQL_Middleware(app, {
+  UR.UseLokiGQL_Middleware(app, {
     dbFile: 'runtime/db.loki',
     dbImportFile: 'config/graphql/dbinit-loki.json',
     doReset: false,
@@ -176,14 +178,15 @@ function StartAppServer(opt = {}) {
   });
 
   // Asset Media Directory
-  FILE.EnsureDirectory(GS_ASSETS_PATH);
   app.use(
     '/assets',
-    (req, res, next) => {
-      if (DBG) console.log(...PR(`gs_assets request: '/assets${req.url}'`));
-      next();
-    },
-    Express.static(GS_ASSETS_PATH)
+    UR.AssetManifest_Middleware({
+      assetPath: GS_ASSETS_PATH,
+      remoteAssetUrl: GS_ASSET_HOST_URL
+    }),
+    ServeIndex(GS_ASSETS_PATH, { 'icons': true }),
+    Express.static(GS_ASSETS_PATH),
+    UR.MediaProxy_Middleware({ remoteAssetUrl: GS_ASSET_HOST_URL })
   );
 
   // for everything else...

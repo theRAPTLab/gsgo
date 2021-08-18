@@ -126,4 +126,8 @@ Next:
 * [x] clean-up settings/configs
 * [ ] add settings override
 * [ ] add media proxying
+  * [x] make gem-srv the local media server
+  * [ ] make asset-srv the proxy
+
+## AUG 18 WED - Asset Manager Proxying
 
