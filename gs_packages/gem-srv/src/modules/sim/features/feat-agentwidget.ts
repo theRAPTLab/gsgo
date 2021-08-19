@@ -99,7 +99,7 @@ function m_GraphsUpdate(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
-    // HACK: Histogram
+    // HACK: LineGraph Histogram
     // If Histogram has been defined, this will override any line graphs
     // Just hacking this in for Moths for now.  Impelmentation is really
     // problematic
@@ -213,6 +213,10 @@ class WidgetPack extends GFeature {
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod('bindGraphTo', this.bindGraphTo);
     this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
+    this.featAddMethod(
+      'bindLineGraphHistogramToFeatProp',
+      this.bindLineGraphHistogramToFeatProp
+    );
     UR.HookPhase('SIM/GRAPHS_UPDATE', m_GraphsUpdate);
     UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
     UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
@@ -301,7 +305,11 @@ class WidgetPack extends GFeature {
   /// HISTOGRAMS
 
   /// This expects the featprop to be a dictionary
-  bindHistogramToFeatProp(agent: IAgent, feature: string, propname: string) {
+  bindLineGraphHistogramToFeatProp(
+    agent: IAgent,
+    feature: string,
+    propname: string
+  ) {
     agent.prop.AgentWidgets._histogramFeature = feature;
     agent.prop.AgentWidgets._histogramProp = propname;
   }
