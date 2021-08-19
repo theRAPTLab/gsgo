@@ -121,13 +121,51 @@ We want to **replace** the middleware in `asset-srv` with middleware now in `ser
 
 * [x] make a copy in `server-asset`
 
-Next:
-
 * [x] clean-up settings/configs
-* [ ] add settings override
-* [ ] add media proxying
   * [x] make gem-srv the local media server
-  * [ ] make asset-srv the proxy
+  * [x] make asset-srv the proxy
+  * [x] asset-srv is now **mcp-srv**
 
 ## AUG 18 WED - Asset Manager Proxying
 
+* [ ] add settings override
+* [ ] add media proxying
+
+### Testing Proxying in GEMSRV
+
+* [ ] case 1: `assets/dir`
+  * does `dir` exist locally?
+  * does `dir` exist on control server?
+    * download dir
+
+* [ ] case 2: `assets/dir?manifest`
+
+  * follow case 1
+
+  * run manifest code
+
+    
+
+* [x] case 3: `assets/dir/sprites/file.png`
+
+  * does dir/sprites/file.png exist on control server?
+    * download file and cache
+
+Stream of consciousness
+
+the setup is in `gem-app-srv` when the middleware is setup. Specifically it's `MediaProxyMiddleWare` for handling case 1 and 3, and `AssetManifestMiddleware` for handling case 2.
+
+We have some existing code in **ursys/util/http-proxy**
+
+* `ProxyMedia(req,res,next)` - uses its own `ParseRequest(req)` to extract varous parameters. We have duplicate code for this somewhere. 
+* deduplicated code
+
+**Q. How to use `ProxyMedia()`?**
+A. 
+
+Makes use of internal `mediapath` and `cachepath`. mediapath is the path-to-requested-file. cachepath is where the file is expected to be. For the asset server, cachepath is `gs_assets` which will be fulfilled by http download
+
+always try to send the file with `res.send()` , but if it fails that means we need to download the file and then try again. That's what `u_Download(url,path,cb)` does, where **url** is the remote host/CDN and **path** is where the file should be written. On success `res.send()` is called again.
+
+**Q. How to download a directory?**
+A. 

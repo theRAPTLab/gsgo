@@ -23,10 +23,6 @@ const ASSET_ID_START = 100;
 
 /// SUPPORT METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_DecodeAssetRequest(req) {
-  return HTTP.DecodeRequest('assets', req);
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_ScanAssets(dirpath) {
   const subdir = dirpath.substring(dirpath.lastIndexOf('/') + 1);
   // get valid media files
@@ -79,6 +75,12 @@ function m_GetManifestDataArray(dirpath) {
     return m;
   }
   return [];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_DecodeAssetRequest(req) {
+  const reqbits = HTTP.DecodeRequest('assets', req);
+  // TERM(JSON.stringify(reqbits, null, 2));
+  return reqbits;
 }
 
 /// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
@@ -153,13 +155,13 @@ function AssetManifest_Middleware(options = {}) {
 /// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MediaProxy_Middleware(options = {}) {
-  const { remoteAssetUrl } = options;
+  const { remoteAssetUrl, assetPath = GS_ASSETS_PATH } = options;
   if (remoteAssetUrl === undefined) {
     TERM('NO MEDIAHOST DEFINED: proxied media is disabled');
     return (req, res, next) => next();
   }
   return (req, res, next) => {
-    HTTP.MediaProxy(req, res, next);
+    HTTP.ProxyMedia(req, res, next);
   };
 }
 

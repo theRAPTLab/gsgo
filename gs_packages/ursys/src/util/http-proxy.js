@@ -7,17 +7,23 @@
 
 const Path = require('path');
 const IP = require('ip');
-const Hasha = require('hasha');
 const FSE = require('fs-extra');
+const fetch = require('node-fetch').default;
 const { URL } = require('url');
 //
 const PROMPTS = require('./prompts');
-const { EnsureDirectory, FileExists } = require('./files');
+const { EnsureDirectory } = require('./files');
+const {
+  GS_ASSETS_PATH,
+  GS_ASSET_HOST_URL,
+  GS_ASSETS_ROUTE
+} = require('../../../../gsgo-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('U-HTTP', 'TagGreen');
 const DBG = true;
+let ASSETS_SAVEPATH = GS_ASSETS_PATH;
 
 /// IP ADDRESS UTILITIES //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -33,32 +39,6 @@ function GetIPV4(req) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a url, attempts to download the file to server/mediacache directory
- *  and calls cb() falsey on success (via file.close())
- */
-function u_Download(url, path, cb) {
-  if (!EnsureDirectory(path)) return undefined;
-  // prepare to download and write file
-  let file = FSE.createWriteStream(path);
-  let sendReq = Request.get(url)
-    .on('error', err => {
-      FSE.unlink(path);
-      if (cb) cb(`Request ERROR: ${err.message}`);
-    })
-    .on('response', response => {
-      if (response.statusCode !== 200) {
-        if (cb) cb(`Response status was ${response.statusCode}`);
-      }
-    })
-    .pipe(file);
-  // detect end of file
-  file.on('finish', () => {
-    cb(); // if no error, then don't send anything to callback
-  });
-  return sendReq;
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given a string '//a//a//aaa/', returns 'a/a/aaa'
  */
 function TrimPath(p = '') {
@@ -71,89 +51,80 @@ function TrimPath(p = '') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a request to an express server, extract stuff from the URL
  */
-function DecodeRequest(route = '', req) {
-  if (typeof route !== 'string') {
-    req = route;
-    route = '';
+function DecodeRequest(baseRoute = '', req) {
+  if (typeof baseRoute !== 'string') {
+    req = baseRoute;
+    baseRoute = '';
   }
-  route = TrimPath(route);
+  baseRoute = TrimPath(baseRoute);
   if (typeof req !== 'object') {
     TERM('error: arg1 should be route, arg2 should be request objets');
     return undefined;
   }
-  const hostRoute = route === '' ? '' : `/${route}`;
+  const hostRoute = baseRoute === '' ? '' : `/${baseRoute}`;
   const hostURL = `${req.protocol}://${req.headers.host}${hostRoute}`;
-  const fullURL = `${hostURL}${req.originalUrl}`;
+  const fullURL = `${req.protocol}://${req.headers.host}${req.url}`;
   const host = req.headers.host;
   const { pathname, searchParams } = new URL(fullURL, hostURL);
   const basename = Path.basename(pathname);
   return {
     // given req to http://domain.com/path/to/name?foo=12&bar
-    hostURL, // http://domain.com
-    fullURL, // http://domains.com/path/to/name
-    path: req.path, // path/to/name
-    pathname, // path/to/name
-    basename, // name
+    hostURL, // http://domain.com/route
+    fullURL, // http://domains.com/route/path/base
+    pathname, // route/path/base
+    basename, // base
     host, // domain.com
     searchParams // [SearchParameterObject]
   };
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** given a url, attempts to download the file to server/mediacache directory
+ *  and calls cb() falsey on success (via file.close())
+ */
+async function u_Download(url, path, cb) {
+  const dirname = Path.dirname(path);
+  if (!EnsureDirectory(dirname)) {
+    TERM(`WARNING: could not ensure dir '${dirname}'. Aborting`);
+    return;
+  }
+  // prepare to download and write file
+  await fetch(url).then(res => {
+    if (res.ok) {
+      let file = FSE.createWriteStream(path);
+      file.on('finish', () => cb());
+      res.body.pipe(file);
+      return;
+    }
+    if (cb) cb(`Request error: ${url}`);
+  });
+  // detect end of file
+}
 
 /// EXPRESS MIDDLEWARE ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** app.use(ProxyMedia)
- *  the idea is that given a url that is expected to be in the home
- *  app server, it's fetched from a remote server
+/** if file doesn't exist, then attempt to proxy the predefined ASSET_HOST
+ *  that distributes assets to servers. This middleware should be added
+ *  after Express.static()
  */
 function ProxyMedia(req, res, next) {
   // create pathname elements from url querystring
-  const url = req.query.url; // expect a url=http://blah/mediafile query
-  const { host, pathname, basename } = DecodeRequest(req);
-  const hostpath = host;
-  let filename = basename;
-  let cachepath = Path.resolve(`${__dirname}/../mediacache`);
+  const { pathname, basename } = DecodeRequest(req);
+  let saveroot = Path.resolve(ASSETS_SAVEPATH);
   let mediapath = Path.normalize(Path.dirname(pathname));
-  // (1)
-  // try to serve the file, if fail try to fetch and cache
-  let path = `${cachepath}/${hostpath}${mediapath}/${filename}`;
-
-  // try to catch mystery case where 0-length files are
-  // written to cache. this is not a great way to do it
-  // because synchronous calls block i/o.
-  if (FileExists(path)) {
-    let stat = FSE.statSync(path);
-    if (stat.size === 0) {
-      TERM('deleting unexpected zero-length file to force refetch');
-      FSE.unlinkSync(path);
-    }
-  }
-
-  // consider converting this to use Asynch
-  // https://github.com/caolan/async
-  res.sendFile(path, err => {
-    if (err) {
-      if (err.code === 'ECONNABORT' && res.statusCode === 304) {
-        if (DBG) TERM('browser cache hit', `${hostpath}/.../${filename}`);
-        return;
-      }
-      if (DBG) TERM('Fetching from', host, '...');
-      u_Download(url, path, err => {
-        if (err) {
-          TERM('DOWNLOAD ERR', err);
-        } else {
-          if (DBG) TERM('Caching', filename, '...');
-          res.sendFile(path, err => {
-            if (err) {
-              if (DBG) TERM('ERROR fetching', url, 'failed', err);
-            } else if (DBG)
-              console.log('cached fetch', `${hostpath}/.../${filename}`);
-          });
-        }
+  let filename = basename;
+  let path = Path.join(saveroot, mediapath, filename);
+  const url = `${GS_ASSET_HOST_URL}/${GS_ASSETS_ROUTE}${pathname}`;
+  if (DBG) TERM(`ProxyMedia: ${url}`);
+  u_Download(url, path, err => {
+    if (err) next();
+    // download failed, so next middleware
+    else {
+      if (DBG) TERM(`... copied '${pathname}'`);
+      res.sendFile(path, err => {
+        if (err) TERM('proxy send error:', err);
       });
-    } else if (DBG) console.log('cached fetch', `${hostpath}/.../${filename}`);
+    }
   });
-  //
-  next();
 }
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
