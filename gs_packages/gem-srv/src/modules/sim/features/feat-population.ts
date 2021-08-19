@@ -146,6 +146,8 @@ class PopulationPack extends GFeature {
    */
   decorate(agent) {
     super.decorate(agent);
+
+    // statistics
     this.featAddProp(agent, 'count', new GVarString());
     this.featAddProp(agent, 'sum', new GVarString());
     this.featAddProp(agent, 'avg', new GVarString());
@@ -155,6 +157,7 @@ class PopulationPack extends GFeature {
     // used by countAgentProp without parameters
     this.featAddProp(agent, 'monitoredAgent', new GVarString());
     this.featAddProp(agent, 'monitoredAgentProp', new GVarString());
+    this.featAddProp(agent, 'monitoredAgentPropFeature', new GVarString());
 
     // Used by spawnChild
     this.featAddProp(agent, 'spawnMutationProp', new GVarString());
@@ -440,9 +443,10 @@ class PopulationPack extends GFeature {
    *   avg -- average of agent's prop values (e.g. avg of algae energylevel)
    * This is a one-time call.
    *
+   * Using featProps
    * To use this with Script Wizard UI:
-   * 1. First set targetAgent: featProp Population targetAgent setTo Moth
-   * 2. Set targetAgentProp: featProp Population targetAgentProp setTo energyLevel
+   * 1. First set monitoredAgent: featProp Population monitoredAgent setTo Moth
+   * 2. Set monitoredAgentProp: featProp Population monitoredAgentProp setTo energyLevel
    * 3. Then call this without paramaeters: featCall Population countAgentProp
    *
    * @param agent
@@ -548,8 +552,11 @@ class PopulationPack extends GFeature {
    * Counts number of agents matching a featProp
    * e.g. Moth Costume colorScaleIndex, usually a dict?
    *
+   * The result is stored in agent.prop.Population._countsByProp
+   *
    * This assumes we only have a single countAgentsByFeatPropType
    * property.
+   *
    * @param agent
    * @param blueprintName
    * @param feature
@@ -567,7 +574,7 @@ class PopulationPack extends GFeature {
     const countsByProp = agent.prop.Population._countsByProp;
 
     // reset count first?
-    if (clear) {
+    if (clear || agent.prop.Population._countsByProp.size < 1) {
       if (agent.prop.Population._countsByPropKeys.length > 0) {
         this.m_CountAgentsByFeatPropTypeReset(agent);
       } else {
@@ -584,19 +591,33 @@ class PopulationPack extends GFeature {
       countsByProp.set(key, count);
     });
   }
-  /// Counts currently active (non-inert) agents
-  /// NOTE this does not include newly spawned agents
-  /// in the AGENTS_TO_CREATE array.  Use countSpawnedAgentsByFeatPropType
-  /// to count AGENTS_TO_CREATE.
+  /**
+   * Counts currently active (non-inert) agents
+   *
+   * NOTE this does not include newly spawned agents
+   * in the AGENTS_TO_CREATE array.  Use countSpawnedAgentsByFeatPropType
+   * to count AGENTS_TO_CREATE.
+   *
+   * Using featProps
+   * To use this with Script Wizard UI:
+   * 1. First set monitoredAgent: featProp Population monitoredAgent setTo Moth
+   * 2. Set monitoredAgentProp: featProp Population monitoredAgentProp setTo energyLevel
+   * 3. Then call this without paramaeters: featCall Population countAgentProp
+   *
+   */
   countExistingAgentsByFeatPropType(
     agent: IAgent,
     blueprintName: string,
     feature: string,
     featprop: string,
-    clear: boolean
+    clear: boolean // REVIEW: `clear` hard to set with if using featProp method?
+    // e.g. have to use `featCall countExistingAgentsByFeatPropType undefined undefined undefined true`
   ) {
-    const agents = GetAgentsByType(blueprintName);
-    this.m_CountAgentsByFeatPropType(agent, agents, feature, featprop, clear);
+    const bpname = blueprintName || agent.prop.Population.monitoredAgent.value;
+    const feat = feature || agent.prop.Population.monitoredAgentPropFeature.value;
+    const prop = featprop || agent.prop.Population.monitoredAgentProp.value;
+    const agents = GetAgentsByType(bpname);
+    this.m_CountAgentsByFeatPropType(agent, agents, feat, prop, clear);
   }
 
   /// THIS DOESN"T WORK!
