@@ -111,6 +111,9 @@ function Init(element) {
         );
       if (dobj.graph !== undefined)
         vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
+      else if (dobj.barGraph !== undefined) {
+        vobj.setBarGraph(dobj.barGraph, dobj.barGraphLabels);
+      }
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
@@ -178,7 +181,9 @@ function Init(element) {
       else vobj.removeMeter();
       if (dobj.graph !== undefined)
         vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
-      else vobj.removeGraph();
+      else if (dobj.barGraph !== undefined) {
+        vobj.setBarGraph(dobj.barGraph, dobj.barGraphLabels);
+      } else vobj.removeGraph();
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
