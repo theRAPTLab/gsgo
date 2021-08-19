@@ -70,6 +70,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   lastTouched: any; // used by Touches
   isTouching: any; // used by Touches
   // name, value are defined in IScopeable
+  statusObject: any;
 }
 
 /// FEATURE DECLARATIONS //////////////////////////////////////////////////////
