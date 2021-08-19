@@ -102,7 +102,7 @@ function Init(element) {
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
-      if (dobj.meter)
+      if (dobj.meter !== undefined)
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
@@ -171,7 +171,7 @@ function Init(element) {
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
-      if (dobj.meter)
+      if (dobj.meter !== undefined)
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
