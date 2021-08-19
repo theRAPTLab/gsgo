@@ -247,7 +247,6 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets._graphCounter = 0;
     agent.prop.AgentWidgets._graphValueOld = 0;
     agent.prop.AgentWidgets._graphGlobalProp = undefined;
-    agent.prop.AgentWidgets._meterPosition = FLAGS.METER.OUTSIDE_LEFT;
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
@@ -271,13 +270,13 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets.meterProp.setTo(propname);
   }
   setMeterPosition(agent: IAgent, position: string) {
-    let result = FLAGS.METER.OUTSIDE_LEFT; // defaults to outside left
-    if (position === 'outside-left') result = FLAGS.METER.OUTSIDE_LEFT;
-    if (position === 'inside-left') result = FLAGS.METER.INSIDE_LEFT;
-    if (position === 'middle') result = FLAGS.METER.MIDDLE;
-    if (position === 'inside-right') result = FLAGS.METER.INSIDE_RIGHT;
-    if (position === 'outside-right') result = FLAGS.METER.OUTSIDE_RIGHT;
-    agent.prop.AgentWidgets._meterPosition = result;
+    let result = FLAGS.POSITION.OUTSIDE_LEFT; // defaults to outside left
+    if (position === 'outside-left') result = FLAGS.POSITION.OUTSIDE_LEFT;
+    if (position === 'inside-left') result = FLAGS.POSITION.INSIDE_LEFT;
+    if (position === 'middle') result = FLAGS.POSITION.MIDDLE;
+    if (position === 'inside-right') result = FLAGS.POSITION.INSIDE_RIGHT;
+    if (position === 'outside-right') result = FLAGS.POSITION.OUTSIDE_RIGHT;
+    agent.statusObject.position = result;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

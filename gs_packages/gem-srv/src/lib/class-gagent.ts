@@ -95,6 +95,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
     this.prop.isInhabitingTarget = new GVarBoolean(false); // is not available to pick up agent
+
+    // REVIEW: All of these status variables should be folded into statusObject
     this.prop.statusText = new GVarString();
     this.prop.statusValue = new GVarNumber();
     this.prop.statusValue.setMax(1);
@@ -329,9 +331,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   /** Returns a bitflags for various selection states */
   getMeterFlags(): number {
-    return this.prop.AgentWidgets
-      ? this.prop.AgentWidgets._meterPosition
-      : undefined;
+    return this.statusObject.position;
   }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

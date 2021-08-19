@@ -450,11 +450,11 @@ class Visual implements IVisual, IPoolable, IActable {
     // meter position
     let xoff = 0; // x-offset
     const sw = this.sprite.width;
-    if (position === FLAGS.METER.OUTSIDE_LEFT) xoff = -(w + pad);
-    if (position === FLAGS.METER.INSIDE_LEFT) xoff = pad;
-    if (position === FLAGS.METER.MIDDLE) xoff = sw / 2 - w / 2;
-    if (position === FLAGS.METER.INSIDE_RIGHT) xoff = sw - w - pad;
-    if (position === FLAGS.METER.OUTSIDE_RIGHT) xoff = sw + pad;
+    if (position === FLAGS.POSITION.OUTSIDE_LEFT) xoff = -(w + pad);
+    if (position === FLAGS.POSITION.INSIDE_LEFT) xoff = pad;
+    if (position === FLAGS.POSITION.MIDDLE) xoff = sw / 2 - w / 2;
+    if (position === FLAGS.POSITION.INSIDE_RIGHT) xoff = sw - w - pad;
+    if (position === FLAGS.POSITION.OUTSIDE_RIGHT) xoff = sw + pad;
 
     const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 + xoff;
     const y = this.sprite.height / 2 - h; // flush with bottom of sprite
