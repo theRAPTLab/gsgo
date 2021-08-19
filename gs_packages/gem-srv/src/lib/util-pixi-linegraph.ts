@@ -14,6 +14,7 @@
       });
       container.addChild(graph);
 
+  data is a flat array of x, y values, e.g. [0,0, 1,2, 3,4]
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -71,7 +72,7 @@ function m_Normalize(
  * @param data flat array of x, y values, e.g. [0,0, 1,2, 3,4]
  * @param options
  */
-export function DrawGraph(
+export function DrawLineGraph(
   graph: PIXI.Graphics,
   data: number[],
   options?: {
@@ -122,7 +123,7 @@ export function DrawGraph(
   }
 
   // draw graph
-  graph.lineStyle({
+  const parms = {
     width: 1,
     color: color,
     alignment: 0.5,
@@ -130,7 +131,8 @@ export function DrawGraph(
     join: PIXI.LINE_JOIN.ROUND,
     cap: PIXI.LINE_CAP.ROUND,
     miterLimit: 10
-  });
+  };
+  graph.lineStyle(parms);
   graph.moveTo(0, bounds.y < 0 ? 50 : 0);
   const l = normalized.length;
   graph.moveTo(normalized[0], normalized[1]);

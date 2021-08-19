@@ -40,7 +40,7 @@ import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
-import { DrawGraph } from './util-pixi-graph';
+import { DrawLineGraph } from './util-pixi-linegraph';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
