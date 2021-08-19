@@ -28,7 +28,7 @@ featProp Population spawnMutationPropFeature setTo 'Costume'
 featProp Population spawnMutationMaxAdd setTo 1
 featProp Population spawnMutationMaxSubtract setTo 3
 
-featProp Population targetPopulationSize setTo 2
+featProp Population targetPopulationSize setTo 10
 featCall Population populateBySpawning Moth [[
   prop x addRnd -64 64
   prop y addRnd -64 64
@@ -503,9 +503,24 @@ dbgStack
 `
     },
     {
-      id: 'Histogram', // used by Histogra
+      id: 'Histogram',
       label: 'Histogram',
       script: `# BLUEPRINT Histogram
+# PROGRAM DEFINE
+useFeature Population
+useFeature AgentWidgets
+
+# PROGRAM EVENT
+onEvent Start [[
+  dbgOut 'Starting Round!  Update Histogram'
+  featCall Population countExistingAgentsByFeatPropType
+]]
+`
+    },
+    {
+      id: 'LineGraphHistogram', // used by Histogra
+      label: 'LineGraphHistogram',
+      script: `# BLUEPRINT LineGraphHistogram
 # PROGRAM DEFINE
 // prop skin setTo 'onexone'
 // intentionally left blank for testing
@@ -609,42 +624,60 @@ onEvent RoundStop [[
     //     }
   ],
   instances: [
+    //     {
+    //       id: 1100,
+    //       name: 'Test1',
+    //       blueprint: 'Test',
+    //       initScript: `// tests minimized/lined formatting for all keywords
+    // featCall Population agentsForEach Moth [[
+    //   prop energyLevel setTo 77
+    //   prop Moth.energyLevel setTo 88
+    //   featProp Moth.Movement direction setTo 99
+    // ]]
+    // every 5 runAtStart [[
+    //   dbgOut 'unlikely'
+    //   // second line
+    // ]]
+    // every 10 [[
+    //   addProp junk Number 11
+    // ]]
+    // exprPush {{ 10 * 10 }}
+    // ifExpr {{ 1 < 10 }} [[
+    //   featPropPush Movement direction
+    //   featPropPop Movement direction
+    // ]] [[
+    //   //
+    // ]]
+    // onEvent Start [[
+    //   // This really should not ever be in an initScript
+    //   prop agent.energyLevel setTo 44
+    // ]]
+    // propPop energyLevel
+    // when Test dies [[
+    //   // three lines here
+    //   prop energyLevel setTo 22
+    //   prop Test.energyLevel setTo 33
+    // ]]
+    // useFeature Costume
+    // `
+    //     },
     {
-      id: 1100,
-      name: 'Test1',
-      blueprint: 'Test',
-      initScript: `// tests minimized/lined formatting for all keywords
-featCall Population agentsForEach Moth [[
-  prop energyLevel setTo 77
-  prop Moth.energyLevel setTo 88
-  featProp Moth.Movement direction setTo 99
-]]
-every 5 runAtStart [[
-  dbgOut 'unlikely'
-  // second line
-]]
-every 10 [[
-  addProp junk Number 11
-]]
-exprPush {{ 10 * 10 }}
-ifExpr {{ 1 < 10 }} [[
-  featPropPush Movement direction
-  featPropPop Movement direction
-]] [[
-  //
-]]
-onEvent Start [[
-  // This really should not ever be in an initScript
-  prop agent.energyLevel setTo 44
-]]
-propPop energyLevel
-when Test dies [[
-  // three lines here
-  prop energyLevel setTo 22
-  prop Test.energyLevel setTo 33
-]]
-useFeature Costume
-`
+      id: 1101,
+      name: 'Histogram1',
+      blueprint: 'Histogram',
+      initScript: `prop x setTo -290
+prop y setTo 370
+featCall Population setAgentsByFeatPropTypeKeys 0 1 2 3 4 5 6 7 8 9 10 11
+featProp Population monitoredAgent setTo 'Moth'
+featProp Population monitoredAgentPropFeature setTo 'Costume'
+featProp Population monitoredAgentProp setTo 'colorScaleIndex'
+featProp AgentWidgets barGraphProp setTo '_countsByProp'
+featProp AgentWidgets barGraphPropFeature setTo 'Population'
+featProp AgentWidgets text setTo 'colorScaleIndex'`
+
+      // featProp Histogram targetCharacter setTo 'Moth'
+      // featProp Histogram targetCharacterProp setTo 'colorScaleIndex'
+      // featProp Histogram targetCharacterPropFeature setTo 'Costume'
     },
     // {
     //   id: 1101,
@@ -714,62 +747,64 @@ useFeature Costume
       initScript: `featCall Movement queuePosition 100 0
 featProp Movement useAutoOrientation setTo true
 prop energyLevel setTo 100
-`
+    // featPropPush Costume colorScaleIndex
+    // featPropPop AgentWidgets text
+    `
+    },
+    {
+      id: 1202,
+      name: 'Moth2',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -50 -100`
+    },
+    {
+      id: 1203,
+      name: 'Moth3',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -150 200`
+    },
+    {
+      id: 1204,
+      name: 'Moth4',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -300 -225`
+    },
+    {
+      id: 1205,
+      name: 'Moth5',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -275 -120`
+    },
+    {
+      id: 1206,
+      name: 'Moth6',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition -100 140`
+    },
+    {
+      id: 1207,
+      name: 'Moth7',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 50 225`
+    },
+    {
+      id: 1208,
+      name: 'Moth8',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 150 100`
+    },
+    {
+      id: 1209,
+      name: 'Moth9',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 250 40`
+    },
+    {
+      id: 1210,
+      name: 'Moth10',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 350 200`
     }
-    //     {
-    //       id: 1202,
-    //       name: 'Moth2',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition -50 -100`
-    //     },
-    //     {
-    //       id: 1203,
-    //       name: 'Moth3',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition -150 200`
-    //     },
-    //     {
-    //       id: 1204,
-    //       name: 'Moth4',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition -300 -225`
-    //     },
-    //     {
-    //       id: 1205,
-    //       name: 'Moth5',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition -275 -120`
-    //     },
-    //     {
-    //       id: 1206,
-    //       name: 'Moth6',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition -100 140`
-    //     },
-    //     {
-    //       id: 1207,
-    //       name: 'Moth7',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition 50 225`
-    //     },
-    //     {
-    //       id: 1208,
-    //       name: 'Moth8',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition 150 100`
-    //     },
-    //     {
-    //       id: 1209,
-    //       name: 'Moth9',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition 250 40`
-    //     },
-    //     {
-    //       id: 1210,
-    //       name: 'Moth10',
-    //       blueprint: 'Moth',
-    //       initScript: `featCall Movement queuePosition 350 200`
-    //     },
     //     {
     //       id: 1301,
     //       name: 'Predator1',
