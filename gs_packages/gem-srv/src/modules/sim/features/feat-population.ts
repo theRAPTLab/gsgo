@@ -24,7 +24,7 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import * as TRANSPILER from 'modules/sim/script/transpiler';
+import * as TRANSPILER from 'modules/sim/script/transpiler-v2';
 import merge from 'deepmerge';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
