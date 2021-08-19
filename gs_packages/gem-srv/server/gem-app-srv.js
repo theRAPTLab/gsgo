@@ -20,7 +20,11 @@ const Webpack = require('webpack');
 const WebpackDev = require('webpack-dev-middleware');
 const WebpackHot = require('webpack-hot-middleware');
 const UR = require('@gemstep/ursys/server');
-const { GS_ASSETS_PATH, GS_ASSET_HOST_URL } = require('../config/gem-settings');
+const {
+  GS_ASSETS_PATH,
+  GS_ASSET_HOST_URL,
+  PACKAGE_NAME
+} = require('../config/gem-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -29,7 +33,7 @@ const resolvers = require('../config/graphql/resolvers');
 
 /// DEBUG INFO ////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('APPSRV');
+const TERM = UR.TermOut(PACKAGE_NAME);
 const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
@@ -48,11 +52,18 @@ function m_AppListen(opt = {}) {
     const ip = `\x1b[33m${IP.address()}\x1b[0m`;
     const port = `\x1b[33m${PORT}\x1b[0m`;
     m_server = app.listen(PORT, () => {
-      console.log(...PR(`webapp bundle: '${DIR_OUT}'`));
-      console.log(...PR(`webapp server listening ${ip} on port ${port}`));
-      if (!opt.skipWebCompile) console.log(...PR('LIVE RELOAD ENABLED'));
+      TERM(`webapp bundle: '${DIR_OUT}'`);
+      TERM(`webapp server listening ${ip} on port ${port}`);
+      if (!opt.skipWebCompile) TERM('LIVE RELOAD ENABLED');
     });
   }
+  process.on('SIGINT', () => {
+    TERM('SIGINT signal received: closing HTTP server');
+    m_server.close(() => {
+      TERM('HTTP server closed');
+      process.exit();
+    });
+  });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -62,9 +73,7 @@ function m_AppListen(opt = {}) {
 function StartAppServer(opt = {}) {
   const { skipWebCompile = false } = opt;
   const assetsPath = opt.assetsPath || GS_ASSETS_PATH;
-  console.log(
-    ...PR('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...')
-  );
+  TERM('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...');
   let promiseStart;
 
   if (!skipWebCompile) {
@@ -79,7 +88,7 @@ function StartAppServer(opt = {}) {
       publicPath: wp_config.output.publicPath,
       stats: 'errors-only' // see https://webpack.js.org/configuration/stats/
     });
-    console.log(...PR('... starting hot devserver (this may take a while)'));
+    TERM('... starting hot devserver (this may take a while)');
 
     app.use(Compression());
     app.use(wp_devserver);
@@ -102,7 +111,7 @@ function StartAppServer(opt = {}) {
       // start compile status update timer
       let INTERVAL = setInterval(() => {
         if (++INTERVAL_COUNT < INTERVAL_MAX) {
-          console.log(...PR('... transpiling bundle'));
+          TERM('... transpiling bundle');
         } else {
           clearInterval(INTERVAL);
           const emsg = `webpack compile time > INTERVAL_MAX (${COMPILE_TIME} seconds)`;
@@ -114,20 +123,20 @@ function StartAppServer(opt = {}) {
       // set resolver
       wp_compiler.hooks.afterCompile.tap('ResolvePromise', () => {
         if (!COMPILE_RESOLVED) {
-          console.log(...PR('... transpiling complete!'));
+          TERM('... transpiling complete!');
           clearInterval(INTERVAL);
           resolve();
           COMPILE_RESOLVED = true;
         } else {
-          console.log(...PR('RECOMPILED SOURCE CODE and RELOADING'));
+          TERM('RECOMPILED SOURCE CODE and RELOADING');
         }
       });
     });
   } else {
     const TS = '\x1b[33m';
     const TE = '\x1b[0m';
-    console.log(...PR(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`));
-    console.log(...PR(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`));
+    TERM(`*** ${TS}SKIPPING APP BUILD${TE} for fast server launch`);
+    TERM(`*** ${TS}ONLY SERVER CODE CHANGES${TE} WILL LIVE RELOAD`);
     m_AppListen(opt);
   }
 
@@ -184,9 +193,9 @@ function StartAppServer(opt = {}) {
       assetPath: GS_ASSETS_PATH,
       remoteAssetUrl: GS_ASSET_HOST_URL
     }),
-    ServeIndex(GS_ASSETS_PATH, { 'icons': true }),
     Express.static(GS_ASSETS_PATH),
-    UR.MediaProxy_Middleware({ remoteAssetUrl: GS_ASSET_HOST_URL })
+    UR.MediaProxy_Middleware({ remoteAssetUrl: GS_ASSET_HOST_URL }),
+    ServeIndex(GS_ASSETS_PATH, { 'icons': true })
   );
 
   // for everything else...

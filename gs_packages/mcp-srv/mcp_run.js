@@ -11,7 +11,7 @@ const Process = require('process');
 const Shell = require('shelljs');
 const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
-const SERVER = require('./server/main-control-srv');
+const SERVER = require('./server/mcp-srv');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

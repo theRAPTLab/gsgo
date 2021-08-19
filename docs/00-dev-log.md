@@ -168,4 +168,4 @@ Makes use of internal `mediapath` and `cachepath`. mediapath is the path-to-requ
 always try to send the file with `res.send()` , but if it fails that means we need to download the file and then try again. That's what `u_Download(url,path,cb)` does, where **url** is the remote host/CDN and **path** is where the file should be written. On success `res.send()` is called again.
 
 **Q. How to download a directory?**
-A. 
+A. AssetManifest_Middleware handles requests for manifests, so have it download manifest and use that to download files if it exists.

@@ -10,7 +10,7 @@ const GSCONFIG = require('../../../gsgo-settings');
 
 /// DECLARATIONS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PACKAGE_NAME = 'GEMSTEP';
+const PACKAGE_NAME = 'GEM_SRV';
 const RUNTIME_DIRNAME = 'runtime';
 const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 

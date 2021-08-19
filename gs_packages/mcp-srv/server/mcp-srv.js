@@ -34,7 +34,7 @@ const resolvers = require('../config/graphql/resolvers');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil(PACKAGE_NAME);
+const TERM = UR.TermOut(PACKAGE_NAME);
 const PORT = GS_ASSETS_PORT || 8080;
 let m_server; // server instance; check if unset before launching
 
@@ -49,9 +49,17 @@ const port = `\x1b[33m${PORT}\x1b[0m`;
 function m_AppListen(opt = {}) {
   if (!m_server) {
     m_server = app.listen(PORT, () => {
-      console.log(...PR(`Asset Server listening to: ${ip}:${port}`));
+      TERM(`Asset Server listening to: ${ip}:${port}`);
     });
   }
+
+  process.on('SIGINT', () => {
+    TERM('SIGINT signal received: closing HTTP server');
+    m_server.close(() => {
+      TERM('HTTP server closed');
+      process.exit();
+    });
+  });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
@@ -60,9 +68,9 @@ function m_AppListen(opt = {}) {
  */
 function StartAssetServer(options = {}) {
   const assetPath = options.assetPath || GS_ASSETS_HOST_PATH;
-  console.log(...PR('Starting Asset Server [async]'));
-  console.log(...PR(`... will use port ${port} at ${ip}`));
-  console.log(...PR(`... will serve from ${assetPath}`));
+  TERM('Starting Asset Server [async]');
+  TERM(`... will use port ${port} at ${ip}`);
+  TERM(`... will serve from ${assetPath}`);
 
   // make sure asset server document path exists
   // and write an index file there
@@ -94,9 +102,9 @@ function StartAssetServer(options = {}) {
   app.use(
     '/assets',
     UR.AssetManifest_Middleware({ assetPath }), // should be gs_assets_hosted
-    ServeIndex(assetPath, { 'icons': true }),
-    Express.static(assetPath)
+    Express.static(assetPath),
     // UR.MediaProxy_Middleware({}) // asset host servers do not proxy
+    ServeIndex(assetPath, { 'icons': true })
   );
 
   // start server listening for http at port
