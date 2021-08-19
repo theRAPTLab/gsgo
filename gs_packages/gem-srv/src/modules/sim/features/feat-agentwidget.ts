@@ -58,7 +58,7 @@ function m_FeaturesUpdate(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
-    // Update Graph values
+    // Add new Graph values
     if (frame % agent.prop.AgentWidgets._graphFreq === 0) {
       // Time-based Graphs
       // New plot point based every _graphFreq per second
@@ -129,6 +129,7 @@ function m_GraphsUpdate(frame) {
 }
 
 /// SIM/UI_UPDATE Loop -- Runs once per gameloop
+/// Update agent with new values
 function m_UIUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
   agentIds.forEach(agentId => {
@@ -177,6 +178,26 @@ function m_UIUpdate(frame) {
         Math.max(l - max, 0)
       );
     }
+
+    // 4. Update Bar Graph
+    const barGraphProp = agent.prop.AgentWidgets.barGraphProp.value;
+    const barGraphPropFeature = agent.prop.AgentWidgets.barGraphPropFeature.value;
+    let barGraphSource;
+    if (barGraphPropFeature) {
+      // featProp
+      barGraphSource = agent.prop[barGraphPropFeature][barGraphProp]; // dict, so don't use 'value'
+    } else if (barGraphProp) {
+      // prop
+      barGraphSource = agent.prop[barGraphProp]; // dict
+    }
+    if (barGraphSource) {
+      if (!(barGraphSource instanceof Map))
+        throw new Error(
+          `AgentWidgets: barGraphProp (${barGraphProp}) needs to be a Map property!`
+        );
+      agent.statusObject.barGraph = [...barGraphSource.values()];
+      agent.statusObject.barGraphLabels = [...barGraphSource.keys()];
+    }
   });
 }
 
@@ -211,6 +232,10 @@ class WidgetPack extends GFeature {
     this.featAddProp(agent, 'isLargeGraphic', new GVarBoolean(false));
     prop = new GVarNumber(0);
     this.featAddProp(agent, 'graphValue', prop);
+
+    // Bar Graph
+    this.featAddProp(agent, 'barGraphProp', new GVarString()); // this should be a dict prop
+    this.featAddProp(agent, 'barGraphPropFeature', new GVarString());
 
     // Private Props
     this.featAddProp(agent, 'textProp', new GVarString()); // agent prop name that text is bound to
