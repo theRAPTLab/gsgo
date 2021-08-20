@@ -73,6 +73,10 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
     if (agent.debug) dobj.debug = agent.debug;
+    if (agent.statusObject !== undefined) {
+      dobj.barGraph = agent.statusObject.barGraph;
+      dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
@@ -98,6 +102,10 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
     if (agent.debug) dobj.debug = agent.debug;
+    if (agent.statusObject !== undefined) {
+      dobj.barGraph = agent.statusObject.barGraph;
+      dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
   }
 });
 

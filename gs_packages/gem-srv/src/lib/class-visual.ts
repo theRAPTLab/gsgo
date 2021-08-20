@@ -40,7 +40,8 @@ import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
-import { DrawGraph } from './util-pixi-graph';
+import { DrawLineGraph } from './util-pixi-linegraph';
+import { DrawBarGraph } from './util-pixi-bargraph';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -449,11 +450,11 @@ class Visual implements IVisual, IPoolable, IActable {
     // meter position
     let xoff = 0; // x-offset
     const sw = this.sprite.width;
-    if (position === FLAGS.METER.OUTSIDE_LEFT) xoff = -(w + pad);
-    if (position === FLAGS.METER.INSIDE_LEFT) xoff = pad;
-    if (position === FLAGS.METER.MIDDLE) xoff = sw / 2 - w / 2;
-    if (position === FLAGS.METER.INSIDE_RIGHT) xoff = sw - w - pad;
-    if (position === FLAGS.METER.OUTSIDE_RIGHT) xoff = sw + pad;
+    if (position === FLAGS.POSITION.OUTSIDE_LEFT) xoff = -(w + pad);
+    if (position === FLAGS.POSITION.INSIDE_LEFT) xoff = pad;
+    if (position === FLAGS.POSITION.MIDDLE) xoff = sw / 2 - w / 2;
+    if (position === FLAGS.POSITION.INSIDE_RIGHT) xoff = sw - w - pad;
+    if (position === FLAGS.POSITION.OUTSIDE_RIGHT) xoff = sw + pad;
 
     const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 + xoff;
     const y = this.sprite.height / 2 - h; // flush with bottom of sprite
@@ -479,13 +480,27 @@ class Visual implements IVisual, IPoolable, IActable {
     }
   }
 
-  setGraph(data: number[], isLargeGraph: boolean) {
+  m_addGraph() {
     if (!this.graph) {
       this.graph = new PIXI.Graphics();
       this.container.addChild(this.graph);
     }
+  }
+  setGraph(data: number[], isLargeGraph: boolean) {
+    this.m_addGraph();
     const [w, h] = this.getSizeValues();
-    DrawGraph(this.graph, data, {
+    DrawLineGraph(this.graph, data, {
+      scale: isLargeGraph ? 1 : 0.25, // scale 1 = 100 pixels
+      scaleY: isLargeGraph ? 1 : 0.25,
+      color: 0xffff00,
+      offsetY: isLargeGraph ? 0 : h
+    });
+  }
+  setBarGraph(data: number[], labels: string[], isLargeGraph: boolean = true) {
+    // if (data.length > 0) console.log('Draw', data);
+    this.m_addGraph();
+    const [w, h] = this.getSizeValues();
+    DrawBarGraph(this.graph, data, labels, {
       scale: isLargeGraph ? 1 : 0.25, // scale 1 = 100 pixels
       scaleY: isLargeGraph ? 1 : 0.25,
       color: 0xffff00,
@@ -494,6 +509,7 @@ class Visual implements IVisual, IPoolable, IActable {
   }
   removeGraph() {
     if (this.graph) {
+      this.graph.removeChildren(); // REVIEW: Need to destroy text children too?
       this.graph.destroy();
       this.graph = undefined;
     }

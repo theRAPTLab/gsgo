@@ -58,7 +58,7 @@ function m_FeaturesUpdate(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
-    // Update Graph values
+    // Add new Graph values
     if (frame % agent.prop.AgentWidgets._graphFreq === 0) {
       // Time-based Graphs
       // New plot point based every _graphFreq per second
@@ -99,7 +99,7 @@ function m_GraphsUpdate(frame) {
     const agent = m_getAgent(agentId);
     if (!agent) return;
 
-    // HACK: Histogram
+    // HACK: LineGraph Histogram
     // If Histogram has been defined, this will override any line graphs
     // Just hacking this in for Moths for now.  Impelmentation is really
     // problematic
@@ -129,6 +129,7 @@ function m_GraphsUpdate(frame) {
 }
 
 /// SIM/UI_UPDATE Loop -- Runs once per gameloop
+/// Update agent with new values
 function m_UIUpdate(frame) {
   const agentIds = Array.from(WIDGET_AGENTS.keys());
   agentIds.forEach(agentId => {
@@ -177,6 +178,26 @@ function m_UIUpdate(frame) {
         Math.max(l - max, 0)
       );
     }
+
+    // 4. Update Bar Graph
+    const barGraphProp = agent.prop.AgentWidgets.barGraphProp.value;
+    const barGraphPropFeature = agent.prop.AgentWidgets.barGraphPropFeature.value;
+    let barGraphSource;
+    if (barGraphPropFeature) {
+      // featProp
+      barGraphSource = agent.prop[barGraphPropFeature][barGraphProp]; // dict, so don't use 'value'
+    } else if (barGraphProp) {
+      // prop
+      barGraphSource = agent.prop[barGraphProp]; // dict
+    }
+    if (barGraphSource) {
+      if (!(barGraphSource instanceof Map))
+        throw new Error(
+          `AgentWidgets: barGraphProp (${barGraphProp}) needs to be a Map property!`
+        );
+      agent.statusObject.barGraph = [...barGraphSource.values()];
+      agent.statusObject.barGraphLabels = [...barGraphSource.keys()];
+    }
   });
 }
 
@@ -192,6 +213,10 @@ class WidgetPack extends GFeature {
     this.featAddMethod('setMeterPosition', this.setMeterPosition);
     this.featAddMethod('bindGraphTo', this.bindGraphTo);
     this.featAddMethod('bindGraphToGlobalProp', this.bindGraphToGlobalProp);
+    this.featAddMethod(
+      'bindLineGraphHistogramToFeatProp',
+      this.bindLineGraphHistogramToFeatProp
+    );
     UR.HookPhase('SIM/GRAPHS_UPDATE', m_GraphsUpdate);
     UR.HookPhase('SIM/FEATURES_UPDATE', m_FeaturesUpdate);
     UR.HookPhase('SIM/UI_UPDATE', m_UIUpdate);
@@ -212,6 +237,10 @@ class WidgetPack extends GFeature {
     prop = new GVarNumber(0);
     this.featAddProp(agent, 'graphValue', prop);
 
+    // Bar Graph
+    this.featAddProp(agent, 'barGraphProp', new GVarString()); // this should be a dict prop
+    this.featAddProp(agent, 'barGraphPropFeature', new GVarString());
+
     // Private Props
     this.featAddProp(agent, 'textProp', new GVarString()); // agent prop name that text is bound to
     this.featAddProp(agent, 'meterProp', new GVarString());
@@ -222,7 +251,6 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets._graphCounter = 0;
     agent.prop.AgentWidgets._graphValueOld = 0;
     agent.prop.AgentWidgets._graphGlobalProp = undefined;
-    agent.prop.AgentWidgets._meterPosition = FLAGS.METER.OUTSIDE_LEFT;
     // REGISTER the Agent for updates
     WIDGET_AGENTS.set(agent.id, agent.id);
   }
@@ -246,13 +274,13 @@ class WidgetPack extends GFeature {
     agent.prop.AgentWidgets.meterProp.setTo(propname);
   }
   setMeterPosition(agent: IAgent, position: string) {
-    let result = FLAGS.METER.OUTSIDE_LEFT; // defaults to outside left
-    if (position === 'outside-left') result = FLAGS.METER.OUTSIDE_LEFT;
-    if (position === 'inside-left') result = FLAGS.METER.INSIDE_LEFT;
-    if (position === 'middle') result = FLAGS.METER.MIDDLE;
-    if (position === 'inside-right') result = FLAGS.METER.INSIDE_RIGHT;
-    if (position === 'outside-right') result = FLAGS.METER.OUTSIDE_RIGHT;
-    agent.prop.AgentWidgets._meterPosition = result;
+    let result = FLAGS.POSITION.OUTSIDE_LEFT; // defaults to outside left
+    if (position === 'outside-left') result = FLAGS.POSITION.OUTSIDE_LEFT;
+    if (position === 'inside-left') result = FLAGS.POSITION.INSIDE_LEFT;
+    if (position === 'middle') result = FLAGS.POSITION.MIDDLE;
+    if (position === 'inside-right') result = FLAGS.POSITION.INSIDE_RIGHT;
+    if (position === 'outside-right') result = FLAGS.POSITION.OUTSIDE_RIGHT;
+    agent.statusObject.position = result;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -277,7 +305,11 @@ class WidgetPack extends GFeature {
   /// HISTOGRAMS
 
   /// This expects the featprop to be a dictionary
-  bindHistogramToFeatProp(agent: IAgent, feature: string, propname: string) {
+  bindLineGraphHistogramToFeatProp(
+    agent: IAgent,
+    feature: string,
+    propname: string
+  ) {
     agent.prop.AgentWidgets._histogramFeature = feature;
     agent.prop.AgentWidgets._histogramProp = propname;
   }
