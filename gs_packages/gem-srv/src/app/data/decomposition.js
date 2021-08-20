@@ -655,13 +655,13 @@ every 1 runAtStart [[
       initScript: `prop x setTo 0
     prop y setTo 200`
     },
-    {
+    /* {
       id: 1110,
       name: 'Sunbeam',
       blueprint: 'Sunbeam',
       initScript: `prop x setTo -400
     prop y setTo -240`
-    },
+    }, */
     /* {
       id: 1120,
       name: 'Rock01',
@@ -711,13 +711,13 @@ prop labelText setTo 'Worm Energy'
       blueprint: 'Plant',
       initScript: `prop x setTo -300`
     },
-    {
+    /* {
       id: 1301,
       name: 'Bunny01',
       blueprint: 'Bunny',
       initScript: `prop x setTo 0
     prop y setTo -20`
-    },
+    }, */
     /* {
       id: 1501,
       name: 'Worm01',
