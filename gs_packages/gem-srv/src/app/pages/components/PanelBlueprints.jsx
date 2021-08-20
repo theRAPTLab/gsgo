@@ -58,6 +58,13 @@ class PanelBlueprints extends React.Component {
       // To be implemented
       console.log('Show instance');
     };
+
+    const sortedAgents = agents.sort((a, b) => {
+      if (a.label < b.label) return -1;
+      if (a.label > b.label) return 1;
+      return 0;
+    });
+
     return (
       // Placeholder for now
       <PanelChrome
@@ -82,7 +89,7 @@ class PanelBlueprints extends React.Component {
                 flexWrap: 'wrap'
               }}
             >
-              {agents.map(a => (
+              {sortedAgents.map(a => (
                 <div
                   style={{
                     flex: '0 1 auto',
