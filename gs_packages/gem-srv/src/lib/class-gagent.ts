@@ -27,6 +27,7 @@ import FLAGS from 'modules/flags';
 import SM_Message from './class-sm-message';
 import SM_Object from './class-sm-object';
 import SM_State from './class-sm-state';
+import StatusObject from './class-status-object';
 
 /// CONSTANTS & DECLARATIONS ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -55,6 +56,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   touchTable: Map<any, any>;
   lastTouched: any;
   isTouching: any;
+  statusObject: StatusObject;
   //
   constructor(agentName = '<anon>', id?: string | number) {
     super(agentName); // sets value to agentName, which is only for debugging
@@ -93,12 +95,17 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.prop.alpha.setMin(0);
     this.prop.isInert = new GVarBoolean(false);
     this.prop.isInhabitingTarget = new GVarBoolean(false); // is not available to pick up agent
+
+    // REVIEW: All of these status variables should be folded into statusObject
     this.prop.statusText = new GVarString();
     this.prop.statusValue = new GVarNumber();
     this.prop.statusValue.setMax(1);
     this.prop.statusValue.setMin(0);
     this.prop.statusValueColor = new GVarNumber(); // color
     this.prop.statusValueIsLarge = new GVarBoolean(false); // script accessible
+    // feature data -- only accessible via features, not directly
+    this.statusObject = new StatusObject(this);
+
     this.prop.name = () => {
       throw Error('use agent.name, not agent.prop.name');
     };
@@ -324,9 +331,7 @@ class GAgent extends SM_Object implements IAgent, IActable {
   }
   /** Returns a bitflags for various selection states */
   getMeterFlags(): number {
-    return this.prop.AgentWidgets
-      ? this.prop.AgentWidgets._meterPosition
-      : undefined;
+    return this.statusObject.position;
   }
   /// SIM LIFECYCLE QUEUES ////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
