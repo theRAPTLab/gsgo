@@ -237,6 +237,13 @@ every 1 runAtStart [[
   // energy goes down
   prop energyLevel sub 1
 
+  // if out of energy ... die
+  ifExpr {{agent.getProp('energyLevel').value == 0}} [[
+    prop alpha setTo 0.3
+    prop isInert setTo true
+  ]]
+
+
   ifExpr {{ agent.prop.Movement.compassDirection.value === 'E' }} [[
     featProp Costume flipY setTo false
   ]]
@@ -337,6 +344,12 @@ every 1 runAtStart [[
 
   // use some energy from just livin / running around
   prop energyLevel sub 1
+
+  // if out of energy ... die
+  ifExpr {{agent.getProp('energyLevel').value == 0}} [[
+    prop alpha setTo 0.3
+    prop isInert setTo true
+  ]]
 
 ]]
 `
