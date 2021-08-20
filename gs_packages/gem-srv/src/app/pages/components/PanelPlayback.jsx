@@ -109,14 +109,16 @@ class PanelPlayback extends React.Component {
               <p>No model loaded</p>
             ) : (
               <>
-                <button
-                  type="button"
-                  className={needsUpdate ? classes.buttonHi : classes.button}
-                  onClick={this.OnResetClick}
-                  style={{ width: '100%' }}
-                >
-                  RESET STAGE
-                </button>
+                {!isRunning && (
+                  <button
+                    type="button"
+                    className={needsUpdate ? classes.buttonHi : classes.button}
+                    onClick={this.OnResetClick}
+                    style={{ width: '100%' }}
+                  >
+                    RESET STAGE
+                  </button>
+                )}
                 {showCostumes && (
                   <button
                     type="button"
