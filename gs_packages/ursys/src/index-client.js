@@ -14,7 +14,8 @@ const EXEC = require('./client-exec');
 const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
-const COMMON = require('./ur-common');
+const DTECT = require('./common/ur-detect');
+const ENUM = require('./common/enum-lists');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
@@ -26,7 +27,7 @@ const {
   IsElectron,
   IsElectronMain,
   IsElectronRenderer
-} = COMMON;
+} = DTECT;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -142,6 +143,7 @@ function SendMessage(mesgName, inData, options) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
+  ...ENUM,
   // NETWORK MESSAGES
   DeclareMessage,
   HasMessage,

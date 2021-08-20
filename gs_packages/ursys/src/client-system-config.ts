@@ -8,7 +8,7 @@
 
 /// note: these are CJS modules so use require syntax
 const PROMPTS = require('./util/prompts');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// TYPES /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

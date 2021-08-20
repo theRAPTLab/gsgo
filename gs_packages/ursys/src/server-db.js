@@ -11,7 +11,7 @@ const path = require('path');
 const LOKI = require('lokijs');
 const { graphqlHTTP } = require('express-graphql');
 const { buildSchema } = require('graphql');
-const { CFG_URDB_GQL } = require('./ur-common');
+const { CFG_URDB_GQL } = require('./common/ur-constants');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

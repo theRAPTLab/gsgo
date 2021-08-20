@@ -8,8 +8,10 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const Path = require('path');
 const FILE = require('./util/files');
-const HTTP = require('./util/http-proxy');
+const PROXY = require('./util/http-proxy');
 const PROMPTS = require('./util/prompts');
+const MFEST = require('./util/manifest');
+const DCODE = require('./util/decoders');
 const {
   GS_MANIFEST_FILENAME,
   GS_ASSET_HOST_URL,
@@ -78,7 +80,7 @@ function m_GetManifestDataArray(dirpath) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_DecodeAssetRequest(req) {
-  const reqbits = HTTP.DecodeRequest('assets', req);
+  const reqbits = DCODE.DecodeRequest('assets', req);
   // TERM(JSON.stringify(reqbits, null, 2));
   return reqbits;
 }
@@ -95,7 +97,7 @@ function AssetManifest_Middleware(options = {}) {
     );
     // (2) if has ?manifest query, do special processing
     const path = Path.join(assetPath, pathname); // doesn't include /assets
-    const pathInfo = HTTP.DecodePath(path);
+    const pathInfo = DCODE.DecodePath(path);
 
     // SKIP FOR: no manifest request
     if (!searchParams.has('manifest')) {
@@ -179,7 +181,7 @@ function MediaProxy_Middleware(options = {}) {
     return (req, res, next) => next();
   }
   return (req, res, next) => {
-    HTTP.ProxyMedia(req, res, next);
+    PROXY.ProxyMedia(req, res, next);
   };
 }
 

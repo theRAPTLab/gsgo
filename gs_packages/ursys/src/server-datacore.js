@@ -13,10 +13,10 @@ const {
   PRE_SYS_MESG,
   CFG_URNET_PORT,
   CFG_SVR_UADDR,
-  CFG_URNET_VERSION,
-  PacketHash
-} = require('./ur-common');
-const DBG = require('./ur-dbg-settings');
+  CFG_URNET_VERSION
+} = require('./common/ur-constants');
+const { PacketHash } = require('./common/ur-detect');
+const DBG = require('./common/debug-props');
 
 /// URNET DATA STRUCTURES /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

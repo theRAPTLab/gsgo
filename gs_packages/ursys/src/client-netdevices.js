@@ -16,7 +16,7 @@ const StickyCache = require('./class-sticky-cache');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
 const UDevice = require('./class-udevice');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
