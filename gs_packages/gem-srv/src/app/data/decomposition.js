@@ -192,7 +192,7 @@ when Worm touches Waste [[
       prop Worm.energyLevel add 10
       prop Worm.matter add 10
       prop Waste.matter sub 10
-      featCall Costume setGlow 100
+      featCall Costume setGlow 4
 
       // if you are nice and full of energy, note you are full and start poop count-down
         ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
@@ -271,6 +271,13 @@ addProp energyLevel Number 25
 prop energyLevel setMax 50
 prop energyLevel setMin 0
 
+// used internally to delay waste release when full
+addProp nutrientCountStart Number 0
+
+// STUDENTS_MAY_CHANGE set this lower for instant dispersal of waste, or higher to stretch it out
+prop nutrientCountStart setTo 5
+addProp nutrientCount Number 0
+
 addProp matter Number 50
 
 prop matter setMax 50
@@ -311,7 +318,7 @@ when Bunny touches Plant [[
     // Bunny matter and energy go up from eating
     prop Bunny.matter add 10
     prop Bunny.energyLevel add 10
-    featCall Bunny.Costume setGlow 100
+    featCall Bunny.Costume setGlow 4
   ]]
 ]]
 
@@ -416,7 +423,7 @@ when Plant touches Sunbeam [[
   every 1 runAtStart [[
     prop Plant.energyLevel add 1
     prop Plant.matter add 1
-    featCall Plant.Costume setGlow 100
+    featCall Plant.Costume setGlow 4
   ]]
 ]]
 

@@ -107,7 +107,7 @@ ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
 when Fish touches Algae [[
   every 1 runAtStart [[
     // always glow to show the interaction
-    featCall Fish.Costume setGlow 100
+    featCall Fish.Costume setGlow 4
 
     // only eat if the algae is above 0
     ifExpr {{Algae.getProp('energyLevel').value > 0}} [[
@@ -243,7 +243,7 @@ prop zIndex setTo -110
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
   every 1 [[
-      featCall Algae.Costume setGlow 100
+      featCall Algae.Costume setGlow 4
       exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
       propPop energyLevel
 
