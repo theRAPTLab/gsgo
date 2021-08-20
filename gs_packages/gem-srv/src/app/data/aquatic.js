@@ -29,7 +29,7 @@ useFeature AgentWidgets
 
 featCall Costume setCostume 'fish.json' 0
 
-addProp energyLevel Number 50
+addProp energyLevel Number 30
 prop energyLevel setMax 100
 prop energyLevel setMin 0
 
@@ -89,8 +89,6 @@ onEvent Start [[
 
     // STUDENTS_MAY_CHANGE to make fish move faster when they are automatic
     featProp Movement distance setTo 2
-
-    featCall AgentWidgets bindMeterTo energyLevel
 
     // set name + energyLevel
     exprPush {{ agent.name }}
