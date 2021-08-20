@@ -1,7 +1,7 @@
 const path = require('path');
-const { ReadFiles, PromiseReadFiles } = require('./src/util/fs-helper');
+const { ReadFiles, PromiseReadFiles } = require('./src/util/files');
 
-const { CFG_SVR_UADDR } = require('./src/ur-common');
+const { CFG_SVR_UADDR } = require('./src/common/ur-constants');
 
 const TERM = require('./src/util/prompts').makeTerminalOut('TEST');
 const TITLE = require('./src/util/prompts').makeTerminalOut('TEST', 'TagBlue');

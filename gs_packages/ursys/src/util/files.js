@@ -148,11 +148,27 @@ function HasValidAssetExtension({ type, filename }) {
   if (validtypes === undefined) return false;
   return validtypes.includes(ext);
 }
-
+//
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function ReadJSON(filepath) {
   let rawdata = FSE.readFileSync(filepath);
   return JSON.parse(rawdata);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function WriteJSON(filepath, obj, cb) {
+  let file = FSE.createWriteStream(filepath, { emitClose: true });
+  if (typeof obj !== 'string') obj = JSON.stringify(obj, null, 2);
+  file.write(obj);
+  file.on('finish', () => {
+    TERM('wrote:', filepath);
+    if (typeof cb === 'function') cb();
+  });
+  file.on('error', () => {
+    TERM('error on write');
+    if (typeof cb === 'function') cb(`error writing ${filepath}`);
+  });
+  file.end(); // if this is missing, close event will never fire.
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -244,6 +260,7 @@ module.exports = {
   // asset-related
   HasValidAssetExtension,
   ReadJSON,
+  WriteJSON,
   RecordingsInDirectory,
   PromiseFileHash,
   GetAssetDirs

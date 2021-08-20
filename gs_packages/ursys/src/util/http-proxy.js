@@ -17,7 +17,8 @@ const DCOD = require('./decoders');
 const {
   GS_ASSETS_PATH,
   GS_ASSET_HOST_URL,
-  GS_ASSETS_ROUTE
+  GS_ASSETS_ROUTE,
+  GS_MANIFEST_FILENAME
 } = require('../../../../gsgo-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -99,9 +100,9 @@ async function ProxyMedia(req, res, next) {
   if (INFO) TERM(`ProxyMedia: ${url} to ${path}`);
 
   try {
-    const resExists = await UHTTP.HTTPResourceExists(url);
-    if (!resExists) {
-      if (DBG) TERM(`SKIP PROXY: ${url} does not exist on host`);
+    const remoteDirExists = await UHTTP.HTTPResourceExists(url);
+    if (!remoteDirExists) {
+      TERM(`SKIP PROXY: ${url} does not exist on host`);
       next();
       return;
     }
@@ -113,7 +114,16 @@ async function ProxyMedia(req, res, next) {
         next();
         return;
       }
-      TERM('manifest', DCOD.FString(json));
+      // was the manifest a file? then also write it to dir
+      if (Array.isArray(json)) {
+        // only read the first loaded manifest
+        json = json.shift();
+        const mpath = Path.join(path, `${GS_MANIFEST_FILENAME}.json`);
+        FILE.EnsureDirectory(path);
+        FILE.WriteJSON(mpath, json, err => {
+          if (err) TERM('error:', err);
+        });
+      }
       // if we got this far, then we have a good manifest json
       const assets = u_ExtractResourceUrls(json);
       const promises = [];
