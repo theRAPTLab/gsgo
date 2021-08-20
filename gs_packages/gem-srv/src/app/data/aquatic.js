@@ -107,7 +107,7 @@ ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
 when Fish touches Algae [[
   every 1 runAtStart [[
     // always glow to show the interaction
-    featCall Fish.Costume setGlow 0.5
+    featCall Fish.Costume setGlow 100
 
     // only eat if the algae is above 0
     ifExpr {{Algae.getProp('energyLevel').value > 0}} [[
@@ -130,6 +130,12 @@ when Fish touches Algae [[
 
   ]]
 ]]
+
+when Fish lastTouches Algae [[
+  featCall Costume setGlow 0
+]]
+
+
 every 1 runAtStart [[
   // foodLevel goes down every n seconds
   exprPush {{ agent.getProp('energyLevel').value - agent.getProp('energyUse').value}}
@@ -235,7 +241,7 @@ featPropPop Physics scale
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
   every 1 [[
-      featCall Algae.Costume setGlow 1
+      featCall Algae.Costume setGlow 100
       exprPush {{Algae.getProp('energyLevel').value + Sunbeam.getProp('energyRate').value}}
       propPop energyLevel
 
@@ -246,15 +252,18 @@ when Algae touches Sunbeam [[
         featCall Population createAgent Algae [[
           // STUDENTS_MAY_CHANGE - maybe change the new energy level (currently 40) or the threshold (from 100) or the new position or other things
            prop energyLevel setTo 40
-           featCall Costume setGlow 1
            prop x add 25
            prop y add 25
         ]]
       ]]
     ]] // if spawning
-
   ]]
 ]]
+
+when Algae lastTouches Sunbeam [[
+  featCall Costume setGlow 0
+]]
+
   every 1 runAtStart [[
 
     // decrease energy each tick, using the energyUse varable to determine how much
