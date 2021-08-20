@@ -424,14 +424,18 @@ function ScriptUpdate(data) {
   let blueprint;
   const index = model.scripts.findIndex(s => s.id === blueprintName);
   if (index > -1) {
+    // Replace existing blueprint
     // 1. Clone all properties
     blueprint = merge.all([model.scripts[index]]);
     // 2. Modify new propreites
     blueprint.id = blueprintName;
     blueprint.label = blueprintName;
+    // 3. Replace the script
+    blueprint.script = data.script;
     // Replace existing blueprint
     model.scripts[index] = blueprint;
   } else {
+    // Add new blueprint
     blueprint = {
       id: blueprintName,
       label: blueprintName,
