@@ -424,14 +424,18 @@ function ScriptUpdate(data) {
   let blueprint;
   const index = model.scripts.findIndex(s => s.id === blueprintName);
   if (index > -1) {
+    // Replace existing blueprint
     // 1. Clone all properties
     blueprint = merge.all([model.scripts[index]]);
     // 2. Modify new propreites
     blueprint.id = blueprintName;
     blueprint.label = blueprintName;
+    // 3. Replace the script
+    blueprint.script = data.script;
     // Replace existing blueprint
     model.scripts[index] = blueprint;
   } else {
+    // Add new blueprint
     blueprint = {
       id: blueprintName,
       label: blueprintName,
@@ -465,21 +469,24 @@ function ScriptUpdate(data) {
     InputsReset();
   }
 
-  // 5. Add an instance if one isn't already defined
-  // Should not affect running sim until reset
-  const bp = TRANSPILER.RegisterBlueprint(bundle);
-  const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
-  if (instancesSpec.length < 1) {
-    // If the map has not been defined yet, then generate a single instance
-    // instancesSpec.push({ name: `${bp.name}01`, init: '' });
-    InstanceAdd(
-      {
-        modelId: CURRENT_MODEL_ID,
-        blueprintName: bp.name
-      },
-      false
-    );
-  }
+  // DEPRECATED
+  // This was helpful for early testing
+  //
+  // // 5. Add an instance if one isn't already defined
+  // // Should not affect running sim until reset
+  // const bp = TRANSPILER.RegisterBlueprint(bundle);
+  // const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
+  // if (instancesSpec.length < 1) {
+  //   // If the map has not been defined yet, then generate a single instance
+  //   // instancesSpec.push({ name: `${bp.name}01`, init: '' });
+  //   InstanceAdd(
+  //     {
+  //       modelId: CURRENT_MODEL_ID,
+  //       blueprintName: bp.name
+  //     },
+  //     false
+  //   );
+  // }
 
   RaiseModelUpdate();
 }
