@@ -22,8 +22,10 @@ class PanelInstances extends React.Component {
 
     // sort alphabetically
     const sortedInstances = instances.sort((a, b) => {
-      if (a.name < b.name) return -1;
-      if (a.name > b.name) return 1;
+      const aname = a.meta ? a.meta.name : a.name;
+      const bname = b.meta ? b.meta.name : b.name;
+      if (aname < bname) return -1;
+      if (aname > bname) return 1;
       return 0;
     });
 
