@@ -186,11 +186,46 @@ A. AssetManifest_Middleware handles requests for manifests, so have it download 
 * [x] fetch non-exist file?manifest --> 400 bad request
 * [ ] **dev-compiler** still works?
 
-
+## AUG 20 FRI - Continuing
 
 Where I left off:
 
-* ProxyMedia is now requesting manifests in preparation of downloading everything to a directory, but it doesn't do that yet. This is the case when a **normal directory that does not exist on local** is read. The idea is that this triggers a directory download through the manifest. Individual files should just work.
-* AssetManifesst_Middleware needs to handle **case 3** where manifest request for a non-existent directory is made; we want to download it from the remote.
-* localhost/assets/auto should **not** trigger ProxyMedia
+* `localhost/assets/auto` should **not** trigger `ProxyMedia` because it already is on the server
+
+* `ProxyMedia` is now requesting manifests in preparation of downloading everything to a directory, but it doesn't do that yet. This is the case when a **normal directory that does not exist on local** is read. The idea is that this triggers a directory download through the manifest. Individual files should just work.
+
+* `AssetManifesst_Middleware` needs to handle **case 3** where manifest request for a non-existent directory is made; we want to download it from the remote.
+
+  
+
+### Disable ProxyMedia for local directory
+
+* [x] in ProxyMedia, check if file already exists before continuing with proxy operation
+
+### ProxyMedia: Download Files in Manifest
+
+`http-proxy` needs to know how to download a manifest. This is handled by the code in `ProxyMedia()`
+
+```js
+if (DecodePath(path).isDir) {
+      let manifest = await fetch(`${url}?manifest`).then(res => res.json());
+      if (Array.isArray(manifest)) manifest = manifest.shift();
+```
+
+* [x] port `m_LoadManifest()` from `asset-mgr` to `ProxyMedia()`
+* [x] test with `localhost/assets/manual` which isn't on local server
+
+Manifest is:
+
+```
+{
+  sprites: [
+    {assetId, assetName, assetUrl}
+  ]
+}
+```
+
+* [ ] if manifest file exists, then should copy it
+
+
 

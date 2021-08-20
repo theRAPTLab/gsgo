@@ -15,6 +15,11 @@ const TERM = PROMPTS.makeTerminalOut('U-DECODE');
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return a formatted object  */
+function FString(obj) {
+  return JSON.stringify(obj, null, 2);
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a request to an express server, extract stuff from the URL
  *  NOTES: URL parsing in Node with URL() and Express Requests is a minefield.
  *  Express:
@@ -71,6 +76,7 @@ function DecodePath(path) {
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  FString,
   DecodeRequest,
   DecodePath
 };
