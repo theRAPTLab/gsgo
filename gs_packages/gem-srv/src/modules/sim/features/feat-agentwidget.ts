@@ -155,7 +155,7 @@ function m_UIUpdate(frame) {
     const meter = agent.getFeatProp(FEATID, 'meter').value;
     const meterColor = agent.getFeatProp(FEATID, 'meterColor').value;
     const isLargeGraphic = agent.getFeatProp(FEATID, 'isLargeGraphic').value;
-    if (meterProp) {
+    if (meterProp !== undefined) {
       // Calculate meter value based on property max value
       const { max, min } = agent.prop[meterProp];
       const val = (agent.getProp(meterProp).value - min) / (max - min);

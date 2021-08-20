@@ -59,6 +59,7 @@ class PanelBlueprints extends React.Component {
       console.log('Show instance');
     };
 
+    // sort alphabetically
     const sortedAgents = agents.sort((a, b) => {
       if (a.label < b.label) return -1;
       if (a.label > b.label) return 1;
