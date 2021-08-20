@@ -32,7 +32,7 @@ useFeature Physics
 
 featCall Physics setSize 196 196
 
-prop zIndex setTo -100
+prop zIndex setTo -200
 
 useFeature Touches
 featCall Touches monitor Worm b2b
@@ -128,7 +128,7 @@ featCall Costume setCostume 'square.json' 0
 featCall Costume setColorize 0.56 0.52 0.40
 useFeature Physics
 featCall Physics setSize 800 400
-prop zIndex setTo -110
+prop zIndex setTo -210
 
 `
     },
@@ -284,6 +284,7 @@ featCall AgentWidgets bindMeterTo energyLevel
 // Green = 0x00FF00
 featProp AgentWidgets meterColor setTo 65280
 
+prop zIndex setTo 110
 
 # PROGRAM UPDATE
 
@@ -330,6 +331,7 @@ every 1 runAtStart [[
       prop x addRndInt -20 20
       prop y addRndInt 50 150
       prop matter setTo 20
+
     ]]
   ]]
 
@@ -369,6 +371,8 @@ addProp matter Number 50
 prop matter setTo 50
 prop matter setMax 100
 prop matter setMin 0
+
+prop zIndex setTo -110
 
 useFeature Physics
 useFeature Touches
@@ -429,7 +433,7 @@ every 1 runAtStart [[
     featCall Population createAgent Waste [[
       // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with
       prop x addRndInt -5 5
-      prop y addRndInt 0 50
+      prop y addRndInt 50 100
       prop matter setTo 20
     ]]
 
@@ -475,7 +479,7 @@ useFeature Touches
 featCall Touches monitor Worm b2b
 featCall Touches monitor Soil b2b
 
-prop zIndex setTo -100
+prop zIndex setTo -150
 
 useFeature AgentWidgets
 // STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter

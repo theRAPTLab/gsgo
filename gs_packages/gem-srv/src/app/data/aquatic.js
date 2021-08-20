@@ -238,6 +238,8 @@ featProp Movement distance setTo 0.2
 exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
 featPropPop Physics scale
 
+prop zIndex setTo -110
+
 # PROGRAM UPDATE
 when Algae touches Sunbeam [[
   every 1 [[
