@@ -143,6 +143,9 @@ prop zIndex setTo -110
 useFeature Costume
 featCall Costume setCostume 'worm.json' 1
 
+// put above everything
+prop zIndex setTo 100
+
 // move between hungry and full where hungry will eat and full will release nutrients
 addProp feeling String 'hungry'
 
@@ -189,7 +192,7 @@ when Worm touches Waste [[
       prop Worm.energyLevel add 10
       prop Worm.matter add 10
       prop Waste.matter sub 10
-      featCall Costume setGlow 0.05
+      featCall Costume setGlow 100
 
       // if you are nice and full of energy, note you are full and start poop count-down
         ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
@@ -200,11 +203,15 @@ when Worm touches Waste [[
 
           exprPush {{ agent.getProp('nutrientCountStart').value }}
           propPop nutrientCount
-          featCall Worm.Costume setGlow 1
         ]]
     ]]
   ]]
 ]]
+
+when Worm lastTouches Waste [[
+  featCall Costume setGlow 0
+]]
+
 when Worm touches Soil [[
   every 1 runAtStart [[
 
@@ -216,14 +223,12 @@ when Worm touches Soil [[
         prop Worm.matter sub 50
         prop Soil.nutrients add 50
         featCall Soil.Costume setGlow 1
-        featCall Worm.Costume setGlow 1
         prop feeling setTo 'hungry'
         // revert costume now that we are hungry again
         featCall Costume setCostume 'worm.json' 1
       ]]
       ifExpr {{ agent.getProp('nutrientCount').value > 0}} [[
         prop nutrientCount sub 1
-        featCall Worm.Costume setGlow 1
       ]]
     ]]
   ]]
@@ -298,8 +303,12 @@ when Bunny touches Plant [[
     // Bunny matter and energy go up from eating
     prop Bunny.matter add 10
     prop Bunny.energyLevel add 10
-    featCall Bunny.Costume setGlow 0.1
+    featCall Bunny.Costume setGlow 100
   ]]
+]]
+
+when Bunny lastTouches Plant [[
+  featCall Costume setGlow 0
 ]]
 
 every 1 runAtStart [[
@@ -322,7 +331,6 @@ every 1 runAtStart [[
       prop y addRndInt 50 150
       prop matter setTo 20
     ]]
-    featCall agent.Costume setGlow 1
   ]]
 
   // use some energy from just livin / running around
@@ -391,15 +399,19 @@ when Plant touches Sunbeam [[
   every 1 runAtStart [[
     prop Plant.energyLevel add 1
     prop Plant.matter add 1
-    featCall Plant.Costume setGlow 0.05
+    featCall Plant.Costume setGlow 100
   ]]
 ]]
+
+when Plant lastTouches Sunbeam [[
+  featCall Costume setGlow 0
+]]
+
 when Plant touches Soil [[
   every 1 [[
     ifExpr {{ Soil.getProp('nutrients').value > 0 }} [[
       prop Soil.nutrients sub 1
       prop Plant.nutrients add 1
-      featCall Plant.Costume setGlow 0.05
     ]]
   ]]
 ]]
@@ -415,7 +427,7 @@ every 1 runAtStart [[
 
     // create a little bit of inorganic matter
     featCall Population createAgent Waste [[
-      // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
+      // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with
       prop x addRndInt -5 5
       prop y addRndInt 0 50
       prop matter setTo 20
