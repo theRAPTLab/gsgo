@@ -385,6 +385,10 @@ const useStylesHOC = theme => ({
   },
   colorData: {
     color: CLR_DATA
+  },
+  ioTransform: {
+    // FormTransform
+    color: CLR_DATA
   }
 });
 

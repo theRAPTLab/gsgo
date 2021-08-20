@@ -202,6 +202,7 @@ const UR = {
   ReadFlatStateGroups: StateGroupMgr.ReadFlatStateGroups,
   WriteState: StateGroupMgr.WriteState,
   SubscribeState: StateGroupMgr.SubscribeState,
+  UnsubscribeState: StateGroupMgr.UnsubscribeState,
   // FORWARDED CLASSES
   class: { PhaseMachine, StateGroupMgr },
   // FORWARDED CONSOLE DEBUG UTILITIES

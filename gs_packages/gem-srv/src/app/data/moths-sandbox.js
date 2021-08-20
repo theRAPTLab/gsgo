@@ -157,14 +157,16 @@ ifExpr {{ agent.prop.alpha.value < 1 }} [[
 // Testing implicit/explicit agent reference
 featCall Population agentsForEach Moth [[
   featProp Movement direction setTo 88
-  featProp Moth.Movement direction setTo 99
+  // this line breaks compilation
+  // featProp Moth.Movement direction setTo 99
 ]]
 
 when Test dies [[
   prop alpha setTo 4
   prop Test.alpha setTo 99
   featProp Movement direction setTo 91
-  featProp Test.Movement direction setTo 92
+  // as does this
+  // featProp Test.Movement direction setTo 92
   // double nest
   ifExpr {{ agent.prop.alpha.value < 1 }} [[
     prop alpha setTo 99
@@ -443,7 +445,8 @@ when Predator centerTouchesCenter Moth [[
       // featCall Moth.Population removeAgent
       prop Moth.isInert setTo true
       featCall Moth.Costume setCostume 'square.json' 0
-      featProp Moth.Physics scale setTo 0.1
+      // this breaks
+      // featProp Moth.Physics scale setTo 0.1
       featCall Predator.Costume setGlow 1
 
       // release cursor of eaten Moth
@@ -709,11 +712,9 @@ useFeature Costume
       name: 'Moth1',
       blueprint: 'Moth',
       initScript: `featCall Movement queuePosition 100 0
-    featProp Movement useAutoOrientation setTo true
-    // featProp Costume colorScaleIndex setTo 6
-    // featPropPush Costume colorScaleIndex
-    // featPropPop AgentWidgets text
-    `
+featProp Movement useAutoOrientation setTo true
+prop energyLevel setTo 100
+`
     }
     //     {
     //       id: 1202,

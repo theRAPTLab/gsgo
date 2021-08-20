@@ -41,12 +41,12 @@ h2 {
 }
 #faketrack_xform input,
 .io-transform input {
-  width: 50px;
+  width: 70px;
   margin-bottom: 4px;
 }
 #faketrack_xform label,
 .io-transform label {
-  width: 120px;
+  width: 130px;
 }
 /* hide stuff for Indiana U */
 #faketrack_tests,

@@ -75,7 +75,18 @@ fragment TransformParts on PTrackProps {
 
 type PozyxProps {
   memo: String
+  xRange: Float
+  yRange: Float
+  xOff: Float
+  yOff: Float
+  xScale: Float
+  yScale: Float
+  xRot: Float
+  yRot: Float
+  zRot: Float
+  useAccelerometer: Boolean
 }
+
 type StepProps {
   memo: String
 }
