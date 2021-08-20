@@ -169,3 +169,28 @@ always try to send the file with `res.send()` , but if it fails that means we ne
 
 **Q. How to download a directory?**
 A. AssetManifest_Middleware handles requests for manifests, so have it download manifest and use that to download files if it exists.
+
+### August 19 Thu - Debugging
+
+* [x] fetch exist dir --> serve-index!
+* [x] fetch exist dir?manifest --> generate manifest!
+* [ ] fetch non-exist dir  --> ??
+* [ ] fetch non-exist dir proxy to existing host dir --> ??
+* [ ] fetch non-exist dir proxy to non-existing host dir --> ??
+* [ ] fetch non-exist directory?manifest --> ??
+* [x] fetch exist file --> file
+* [x] fetch exist file?manifest --> 400 bad request
+* [x] fetch non-exist file --> 404 not found
+* [ ] fetch non-exist file proxy to existing host file --> ??
+* [ ] fetch non-exist file proxy to non-existing host file -->??
+* [x] fetch non-exist file?manifest --> 400 bad request
+* [ ] **dev-compiler** still works?
+
+
+
+Where I left off:
+
+* ProxyMedia is now requesting manifests in preparation of downloading everything to a directory, but it doesn't do that yet. This is the case when a **normal directory that does not exist on local** is read. The idea is that this triggers a directory download through the manifest. Individual files should just work.
+* AssetManifesst_Middleware needs to handle **case 3** where manifest request for a non-existent directory is made; we want to download it from the remote.
+* localhost/assets/auto should **not** trigger ProxyMedia
+

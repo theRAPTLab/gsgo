@@ -86,52 +86,61 @@ function m_DecodeAssetRequest(req) {
 /// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function AssetManifest_Middleware(options = {}) {
-  const {
-    assetPath = GS_ASSETS_PATH,
-    remoteAssetUrl = GS_ASSET_HOST_URL
-  } = options;
+  const { assetPath = GS_ASSETS_PATH, remoteAssetUrl } = options;
   return async (req, res, next) => {
     // (0) define output object to capture data
     const manifest = {};
-    const { pathname, searchParams } = m_DecodeAssetRequest(req);
+    const { fullURL, baseURL, pathname, searchParams } = m_DecodeAssetRequest(
+      req
+    );
     // (2) if has ?manifest query, do special processing
+    const path = Path.join(assetPath, pathname); // doesn't include /assets
+    const pathInfo = HTTP.DecodePath(path);
+
+    // SKIP FOR: no manifest request
     if (!searchParams.has('manifest')) {
-      next(); // no manifest request, so let next middleware
-    } else {
-      TERM(`requested manifest for: '${pathname}'`);
-      const dirpath = Path.join(assetPath, pathname);
-
-      if (!FILE.IsDirectory(dirpath)) {
-        TERM(`manifest error: '${dirpath}' is not a directory`);
-        next();
-        return;
-      }
-
-      const mdata = m_GetManifestDataArray(dirpath);
+      // TERM('SKIP: no manifest param');
+      next();
+      return;
+    }
+    // SKIP FOR: manifest request for a file, not dir
+    if (pathInfo.isFile) {
+      const err = `${fullURL} appears to be a file request, not a directory`;
+      TERM(err);
+      res.status(400).send(err);
+      return;
+    }
+    // if we got here, then our synthesized path is a directory
+    // manifest request and directory exists
+    if (FILE.DirectoryExists(path)) {
+      TERM('return manifest for', path, 'from local');
+      // CASE 1: are there manifest files?
+      const mdata = m_GetManifestDataArray(path);
       if (mdata.length > 0) {
         res.json(mdata);
         return;
       }
-
-      // CASE 2: NO MANIFEST FILE, SO SCAN SUBDIRS
+      // case 2: autogenerate
       let assetcounter = ASSET_ID_START;
-      const assetdirs = FILE.GetAssetDirs(dirpath);
-      TERM(`... found ${assetdirs.length} assetdirs`);
-
+      const assetdirs = FILE.GetAssetDirs(path);
+      if (assetdirs.length === 0) {
+        TERM(`WARN: no assets in ${path}`);
+      }
+      // step through every found asset type in directory
       for (const subdir of assetdirs) {
-        const subdirpath = Path.join(dirpath, subdir);
+        TERM('... scanning', subdir);
+        const subdirpath = Path.join(path, subdir);
         // get valid media files & jsonfiles subsets
         const { mediafiles, jsonfiles, spriteFiles } = m_ScanAssets(subdirpath);
         // only load hard png assets
         const files = mediafiles.filter(f => !spriteFiles.includes(f));
         const promises = m_PromiseHashes(subdirpath, files);
-        //
+        // - - - - - - - -
         //
         // eslint-disable-next-line no-await-in-loop
         const filesInfo = await Promise.all(promises);
         //
-        //
-        //
+        // - - - - - - - -
         const entries = [];
         for (let info of filesInfo) {
           const assetId = assetcounter++;
@@ -147,8 +156,17 @@ function AssetManifest_Middleware(options = {}) {
         }
         manifest[subdir] = entries;
       } // end subdir processing
+      // send result of automanifest
       res.json(manifest);
+      return;
     }
+    // CASE 3: manifest request & directory DOES NOT exist
+    // premature abort
+    const err = `${baseURL}${pathname} not on local server`;
+    TERM(err);
+    res.status(404).send(err);
+    TERM('here is where we see if the asset host has it');
+    return;
   };
 }
 
