@@ -531,14 +531,20 @@ addProp matter Number 100
 prop matter setMax 100
 prop matter setMin 0
 
+// scale up because the art is a bit small
 useFeature Physics
-
 featProp Physics scale setTo 2
 
+// pick a random rotation to keep things looking interesting
+prop orientation setTo 0
+prop orientation addRnd 0 6
+
+// we need to be able to see when the waste is on soil and / or being eaten by a worm
 useFeature Touches
 featCall Touches monitor Worm b2b
 featCall Touches monitor Soil b2b
 
+// make sure it is in front of the soil but behind the worms
 prop zIndex setTo -150
 
 useFeature AgentWidgets
