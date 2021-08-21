@@ -28,6 +28,8 @@ addProp nutrients Number 50
 prop nutrients setMax 100
 prop nutrients setMin 0
 
+addProp sparkleCount Number 0
+
 useFeature Physics
 
 featCall Physics setSize 196 196
@@ -44,6 +46,18 @@ featCall AgentWidgets setMeterPosition 'inside-left'
 // violet
 featProp AgentWidgets meterColor setTo 9055202
 featProp AgentWidgets text setTo ''
+
+# PROGRAM UPDATE
+
+every 1 runAtStart [[
+  ifExpr {{ agent.getProp('sparkleCount').value > 0}} [[
+      prop sparkleCount sub 1
+  ]]
+  ifExpr {{ agent.getProp('sparkleCount').value == 0}} [[
+    featCall Costume setCostume 'dirt.json' 0
+  ]]
+]]
+
 `
     },
     {
@@ -115,7 +129,7 @@ featCall Costume setCostume 'house.json' 0
 useFeature Physics
 useFeature AgentWidgets
 
-featProp Physics scale setTo 0.5
+featProp Physics scale setTo 2
 `
     },
     {
@@ -198,6 +212,9 @@ when Worm touches Waste [[
         ifExpr {{ agent.getProp('energyLevel').value > 90 }} [[
           prop feeling setTo 'full'
 
+          // set the glow to 0 to reflect not eating while full
+          featCall Costume setGlow 0
+
           // change costume so we know we are full
           featCall Costume setCostume 'worm.json' 0
 
@@ -223,6 +240,8 @@ when Worm touches Soil [[
         prop Worm.matter sub 50
         prop Soil.nutrients add 50
         featCall Soil.Costume setGlow 1
+        prop Soil.sparkleCount setTo 3
+        featCall Soil.Costume setCostume 'dirt.json' 1
         prop feeling setTo 'hungry'
         // revert costume now that we are hungry again
         featCall Costume setCostume 'worm.json' 1
@@ -336,6 +355,7 @@ when Bunny touches Plant [[
         prop feeling setTo 'full'
         exprPush {{ agent.getProp('wasteCountStart').value }}
         propPop wasteCount
+        featCall Bunny.Costume setGlow 0
       ]]
     ]]
   ]]
@@ -512,6 +532,9 @@ prop matter setMax 100
 prop matter setMin 0
 
 useFeature Physics
+
+featProp Physics scale setTo 2
+
 useFeature Touches
 featCall Touches monitor Worm b2b
 featCall Touches monitor Soil b2b
@@ -524,7 +547,6 @@ featProp AgentWidgets meterProp setTo matter
 
 featProp AgentWidgets meterColor setTo 5783616
 featProp AgentWidgets text setTo ''
-
 
 # PROGRAM UPDATE
 when Waste touches Soil [[
@@ -542,7 +564,7 @@ every 1 runAtStart [[
   ]]
 
   // scale based on amount of matter
-    exprPush {{ (agent.getProp('matter').value / 100)}}
+    exprPush {{ (agent.getProp('matter').value / 50)}}
     featPropPop agent.Physics scale
 
 ]]
