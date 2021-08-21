@@ -830,6 +830,7 @@ prop labelText setTo 'Worm Energy'
       initScript: `prop x setTo 455
     prop y setTo -373
     featProp AgentWidgets text setTo 'Energy'
+    prop zIndex setTo 100
     `
     },
     {
@@ -839,6 +840,7 @@ prop labelText setTo 'Worm Energy'
       initScript: `prop x setTo 455
     prop y setTo -340
     featProp AgentWidgets text setTo 'Nutrients'
+    prop zIndex setTo 100
     `
     },
     {
@@ -848,6 +850,7 @@ prop labelText setTo 'Worm Energy'
       initScript: `prop x setTo 455
     prop y setTo -308
     featProp AgentWidgets text setTo 'Matter'
+    prop zIndex setTo 100
     `
     },
     {
