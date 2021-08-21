@@ -49,7 +49,9 @@ function m_Delete(frame) {
       // Clear isTouching and lastTouched values here
       // because agent will be removed and touch update
       // will no longer update touch state with this agent
-      agent.callFeatMethod('Touches', 'clearTouches', agent.id);
+      if (agent.hasFeature('Touches')) {
+        agent.callFeatMethod('Touches', 'clearTouches', agent.id);
+      }
       DeleteAgent({
         id: agent.id,
         blueprint: agent.blueprint.name
