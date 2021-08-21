@@ -271,12 +271,15 @@ addProp energyLevel Number 25
 prop energyLevel setMax 50
 prop energyLevel setMin 0
 
+// to manage when it is full and releases waste
+addProp feeling String 'hungry'
+
 // used internally to delay waste release when full
-addProp nutrientCountStart Number 0
+addProp wasteCountStart Number 0
 
 // STUDENTS_MAY_CHANGE set this lower for instant dispersal of waste, or higher to stretch it out
-prop nutrientCountStart setTo 5
-addProp nutrientCount Number 0
+prop wasteCountStart setTo 5
+addProp wasteCount Number 0
 
 addProp matter Number 50
 
@@ -311,14 +314,30 @@ ifExpr {{ agent.prop.Movement.compassDirection.value === 'W' }} [[
 
 when Bunny touches Plant [[
   every 1 runAtStart [[
-    // STUDENTS_MAY_CHANGE - switching these numbers models different speeds of how bunnies eat the plants [NOT_WORKING]
-    // Plant matter goes down as it is eaten, as does Plant energy
-    prop Plant.matter sub 10
-    prop Plant.energyLevel sub 10
-    // Bunny matter and energy go up from eating
-    prop Bunny.matter add 10
-    prop Bunny.energyLevel add 10
-    featCall Bunny.Costume setGlow 4
+
+    // if hungry, eat
+    ifExpr {{ agent.getProp('feeling').value == 'hungry'}} [[
+      featCall Costume setCostume 'bunnies.json' 1
+
+      // STUDENTS_MAY_CHANGE - switching these numbers models different speeds of how bunnies eat the plants [NOT_WORKING]
+      // Plant matter goes down as it is eaten, as does Plant energy
+      prop Plant.matter sub 10
+      prop Plant.energyLevel sub 10
+      // Bunny matter and energy go up from eating
+      prop Bunny.matter add 10
+      prop Bunny.energyLevel add 10
+      featCall Bunny.Costume setGlow 4
+
+      // if full, change costume and set timer to emit waste
+      ifExpr {{ agent.getProp('energyLevel').value > 45 }} [[
+        featCall Costume setCostume 'bunnies.json' 0
+
+        // set variables to be full and prepare to release waste
+        prop feeling setTo 'full'
+        exprPush {{ agent.getProp('wasteCountStart').value }}
+        propPop wasteCount
+      ]]
+    ]]
   ]]
 ]]
 
@@ -327,27 +346,25 @@ when Bunny lastTouches Plant [[
 ]]
 
 every 1 runAtStart [[
+    ifExpr {{ agent.getProp('feeling').value == 'full'}} [[
+      ifExpr {{ agent.getProp('wasteCount').value == 0}} [[
 
-  // if not full, shift costume
-  ifExpr {{ agent.getProp('energyLevel').value < 45 }} [[
-    featCall Costume setCostume 'bunnies.json' 1
-  ]]
-
-  // if full energy, emit waste
-  ifExpr {{ agent.getProp('energyLevel').value > 45 }} [[
-    featCall Costume setCostume 'bunnies.json' 0
-
-    // STUDENTS_MAY_CHANGE - switching these numbers will change how bunnies produce waste [WORKS]
-    prop energyLevel sub 20
-    prop matter sub 20
-    featCall Population createAgent Waste [[
-      // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
-      prop x addRndInt -20 20
-      prop y addRndInt 50 150
-      prop matter setTo 20
-
+        // STUDENTS_MAY_CHANGE - switching these numbers will change how bunnies produce waste [WORKS]
+        prop energyLevel sub 20
+        prop matter sub 20
+        prop feeling setTo 'hungry'
+        featCall Population createAgent Waste [[
+          // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
+          prop x addRndInt -20 20
+          prop y addRndInt 50 150
+          prop matter setTo 20
+      ]]
     ]]
-  ]]
+
+    ifExpr {{ agent.getProp('wasteCount').value > 0}} [[
+      prop wasteCount sub 1
+    ]]
+]]
 
   // use some energy from just livin / running around
   prop energyLevel sub 1
