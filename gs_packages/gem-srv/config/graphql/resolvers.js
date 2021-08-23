@@ -8,7 +8,7 @@
 const UR = require('@gemstep/ursys/server');
 
 const TERM = UR.TermOut('RESOLVER', 'TagRed');
-const DBG = false;
+const DBG = true;
 
 module.exports = {
   locale: (args, context) => {
@@ -55,5 +55,37 @@ module.exports = {
     locale.pozyx = { ...locale.pozyx, ...input };
     coll.update(locale);
     return locale.pozyx;
+  },
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// PROJECTS
+
+  projects: (args, context) => {
+    const { DB } = context;
+    const coll = DB.getCollection('projects');
+    const objs = coll.chain().data({ removeMeta: true });
+    console.error(`return projects: ${JSON.stringify(objs)}`);
+    if (DBG) TERM(`return projects: ${JSON.stringify(objs)}`);
+    return objs;
+  },
+  project: (args, context) => {
+    const { id } = args;
+    const { DB } = context;
+    const coll = DB.getCollection('projects');
+    const result = coll.findOne({ id });
+    console.error(`return project: ${JSON.stringify(result)}`);
+    if (DBG) TERM(`return project '${id}': found ${JSON.stringify(result)}`);
+    return result;
+  },
+  projectNames: (args, context) => {
+    const { DB } = context;
+    const coll = DB.getCollection('projects');
+    const objs = coll
+      .chain() // return full ResultSet
+      .data({ removeMeta: true }) // return documents in ResultSet as Array
+      .map(i => ({ label: i.label, id: i.id })); // map documents to values
+    console.error(`return projectNames: ${JSON.stringify(objs)}`);
+    if (DBG) TERM(`return projectNames: ${JSON.stringify(objs)}`);
+    return objs;
   }
 };
