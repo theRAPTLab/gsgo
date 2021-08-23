@@ -161,5 +161,115 @@
         "useAccelerometer": true
       }
     }
+  ],
+  "projects": [
+    {
+      "id": "demo",
+      "label": "Empty Project",
+      "metadata": {
+        "top": -400,
+        "right": 400,
+        "bottom": 400,
+        "left": -400,
+        "wrap": [false, false],
+        "bounce": true,
+        "bgcolor": "0x006600",
+        "roundsCanLoop": false
+      },
+      "rounds": [
+        {
+          "id": 1,
+          "label": "Round 1",
+          "time": 10,
+          "intro": "Intro 1",
+          "outtro": "Outtro 1",
+          "initScript": "// initScript 1",
+          "endScript": "// endScript 1"
+        },
+        {
+          "id": 2,
+          "label": "Round 2",
+          "time": 10,
+          "intro": "Intro 2",
+          "outtro": "Outtro 2",
+          "initScript": "// initScript 2",
+          "endScript": "// endScript 2"
+        }
+      ],
+      "scripts": [
+        {
+          "id": 0,
+          "label": "Bunny",
+          "isCharControllable": false,
+          "isPozyxControllable": false,
+          "scriptText": "# BLUEPRINT Bunny\n# PROGRAM DEFINE\nuseFeature Costume\nfeatCall Costume setCostume 'bunny.json' 0"
+        }
+      ],
+      "instances": [
+        {
+          "id": 1000,
+          "label": "Bunny1",
+          "bpid": "Bunny",
+          "initScript": "// initScript Bunny1"
+        },
+        {
+          "id": 1001,
+          "label": "Bunny2",
+          "bpid": "Bunny",
+          "initScript": "// initScript Bunny2"
+        }
+      ]
+    },
+    {
+      "id": "aquatic",
+      "label": "Aquatic Ecosystems",
+      "metadata": {
+        "top": -400,
+        "right": 400,
+        "bottom": 400,
+        "left": -400,
+        "wrap": [false, false],
+        "bounce": true,
+        "bgcolor": "0x000066",
+        "roundsCanLoop": false
+      },
+      "rounds": [
+        {
+          "id": 1,
+          "label": "Round 1",
+          "time": 10,
+          "intro": "Intro 1",
+          "outtro": "Outtro 1",
+          "initScript": "// initScript 1",
+          "endScript": "// endScript 1"
+        },
+        {
+          "id": 2,
+          "label": "Round 2",
+          "time": 10,
+          "intro": "Intro 2",
+          "outtro": "Outtro 2",
+          "initScript": "// initScript 2",
+          "endScript": "// endScript 2"
+        }
+      ],
+      "scripts": [
+        {
+          "id": 0,
+          "label": "Fish",
+          "isCharControllable": false,
+          "isPozyxControllable": false,
+          "scriptText": "# BLUEPRINT Fish\n# PROGRAM DEFINE\nuseFeature Costume\nfeatCall Costume setCostume 'fish.json' 0"
+        }
+      ],
+      "instances": [
+        {
+          "id": 1000,
+          "label": "Fish1",
+          "bpid": "Fish",
+          "initScript": "// initScript Fish"
+        }
+      ]
+    }
   ]
 }
