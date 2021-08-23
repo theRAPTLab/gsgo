@@ -10,8 +10,8 @@ const Path = require('path');
 const PROMPTS = require('./prompts');
 const FILE = require('./files');
 const MFEST = require('./manifest');
-const UHTTP = require('./http');
-const DCOD = require('./decoders');
+const HTTP = require('./http');
+const DCODE = require('./decoders');
 const {
   GS_ASSETS_PATH,
   GS_ASSET_HOST_URL,
@@ -22,8 +22,7 @@ const {
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('U-PROXY', 'TagBlue');
-const DBG = true;
-const INFO = true;
+const DBG = false;
 let ASSETS_SAVEPATH = GS_ASSETS_PATH;
 
 /// EXPRESS MIDDLEWARE ////////////////////////////////////////////////////////
@@ -34,7 +33,7 @@ let ASSETS_SAVEPATH = GS_ASSETS_PATH;
  */
 async function ProxyMedia(req, res, next) {
   // create pathname elements from url querystring
-  const { pathname, basename } = DCOD.DecodeRequest(req);
+  const { pathname, basename } = DCODE.DecodeRequest(req);
   let saveroot = Path.resolve(ASSETS_SAVEPATH);
   let mediapath = Path.normalize(Path.dirname(pathname));
   let filename = basename;
@@ -42,23 +41,22 @@ async function ProxyMedia(req, res, next) {
   let path = Path.join(saveroot, mediapath, filename);
   // if file already exists locally, we don't need to proxy anything
   if (FILE.FileExists(path)) {
-    if (INFO) TERM(`file ${path} exists, no need to proxy`);
+    if (DBG) TERM(`file ${path} exists, no need to proxy`);
     next();
     return;
   }
   // construct remote asset location
-  const url = `${GS_ASSET_HOST_URL}/${GS_ASSETS_ROUTE}${pathname}`;
-  if (INFO) TERM(`ProxyMedia: ${url} to ${path}`);
 
   try {
-    const remoteDirExists = await UHTTP.HTTPResourceExists(url);
+    const url = `${GS_ASSET_HOST_URL}/${GS_ASSETS_ROUTE}${pathname}`;
+    const remoteDirExists = await HTTP.HTTPResourceExists(url);
     if (!remoteDirExists) {
       TERM(`SKIP PROXY: ${url} does not exist on host`);
       next();
       return;
     }
     // if this is a directory, then let's download the entire manifest
-    if (DCOD.DecodePath(path).isDir) {
+    if (DCODE.DecodePath(path).isDir) {
       let json = await MFEST.ReadManifest(url);
       if (!json) {
         TERM('manifest', url, 'could not be read');
@@ -84,7 +82,7 @@ async function ProxyMedia(req, res, next) {
       for (const asset of assets) {
         const remoteUrl = `${url}${asset}`;
         const newPath = `${path}/${asset}`;
-        promises.push(UHTTP.DownloadUrlToPath(remoteUrl, newPath, f_err));
+        promises.push(HTTP.DownloadUrlToPath(remoteUrl, newPath, f_err));
       }
       //
       //
@@ -96,14 +94,14 @@ async function ProxyMedia(req, res, next) {
     }
 
     // if got this far, it's a regular file to download
-    UHTTP.DownloadUrlToPath(url, path, err => {
+    HTTP.DownloadUrlToPath(url, path, err => {
       if (err) {
         TERM('download error', err);
         next();
       }
       // download failed, so next middleware
       else {
-        if (INFO) TERM(`... copied '${pathname}'`);
+        TERM(`... proxied '${pathname}' from remote asset host`);
         res.sendFile(path, err => {
           if (err) TERM('proxy send error:', err);
         });

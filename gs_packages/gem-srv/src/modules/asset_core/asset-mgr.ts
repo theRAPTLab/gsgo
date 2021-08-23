@@ -79,7 +79,7 @@ async function m_LoadManifest(route) {
     if (DBG) console.log(...PR('success', json));
     return json as TManifest;
   } catch (err) {
-    console.warn(err);
+    // console.warn(err);
     json = undefined;
   }
   return json;

@@ -20,6 +20,7 @@ const VALID_MEDIA_EXT = {
   sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json']
 };
 const ASSET_DIRS = ['sprites']; // valid asset subdirectories
+const DBG = false;
 
 /// FILE METHODS //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -161,7 +162,7 @@ async function WriteJSON(filepath, obj, cb) {
   if (typeof obj !== 'string') obj = JSON.stringify(obj, null, 2);
   file.write(obj);
   file.on('finish', () => {
-    TERM('wrote:', filepath);
+    if (DBG) TERM('wrote:', filepath);
     if (typeof cb === 'function') cb();
   });
   file.on('error', () => {

@@ -231,15 +231,16 @@ Manifest is:
 
 When a manifest is requested in asset manifest middleware.
 
-* [ ] is manifest local? yes? then deliver it
-* [ ] if not, is it on remote? yes? then download directory
+* [x] is manifest local? yes? then deliver it
+* [x] if not, is it on remote? yes? then download directory
 
 *setup*
 
 * Move `u_Download` to `http.js` 
 * Move `u_ExtractResourceUrls` to `manifest.js`
 * Does autodownload still work? **yes**
-* 
+
+  
 
 
 
