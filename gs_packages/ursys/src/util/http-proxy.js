@@ -6,8 +6,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const Path = require('path');
-const FSE = require('fs-extra');
-const fetch = require('node-fetch').default;
 //
 const PROMPTS = require('./prompts');
 const FILE = require('./files');
@@ -27,53 +25,6 @@ const TERM = PROMPTS.makeTerminalOut('U-PROXY', 'TagBlue');
 const DBG = true;
 const INFO = true;
 let ASSETS_SAVEPATH = GS_ASSETS_PATH;
-
-/// IP ADDRESS UTILITIES //////////////////////////////////////////////////////
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** given a url, attempts to download the file to server/mediacache directory
- *  and calls cb() falsey on success (via file.close())
- */
-async function u_Download(url, path, cb) {
-  //  TERM('download pathInfo:', DCOD.FString(pathInfo));
-  const pathInfo = DCOD.DecodePath(path);
-  const { dirname } = pathInfo;
-  // got this far? we have a file!
-  if (!FILE.EnsureDirectory(dirname)) {
-    TERM(`WARNING: could not ensure dir '${dirname}'. Aborting`);
-    return;
-  }
-  // prepare to download and write file
-  await fetch(url).then(res => {
-    if (res.ok) {
-      let file = FSE.createWriteStream(path);
-      file.on('finish', () => {
-        cb();
-        TERM('success dl:', path);
-      });
-      res.body.pipe(file);
-      return;
-    }
-    if (cb) cb(`Request error: ${url}`);
-  });
-  // detect end of file
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** extract list of urls to download from a manifest, return as array of
- *  url strings
- */
-function u_ExtractResourceUrls(manifest) {
-  // just run over all entries and pull the assetUrl
-  const assets = [];
-  const fields = Object.entries(manifest);
-  for (const [asType, asList] of fields) {
-    for (const { assetUrl } of asList) {
-      if (assetUrl) assets.push(assetUrl);
-    }
-  }
-  // these paths are relative to the containing directory
-  return assets;
-}
 
 /// EXPRESS MIDDLEWARE ////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,7 +76,7 @@ async function ProxyMedia(req, res, next) {
         });
       }
       // if we got this far, then we have a good manifest json
-      const assets = u_ExtractResourceUrls(json);
+      const assets = MFEST.ExtractResourceUrls(json);
       const promises = [];
       const f_err = err => {
         if (err) TERM('err proxy dl', err);
@@ -133,7 +84,7 @@ async function ProxyMedia(req, res, next) {
       for (const asset of assets) {
         const remoteUrl = `${url}${asset}`;
         const newPath = `${path}/${asset}`;
-        promises.push(u_Download(remoteUrl, newPath, f_err));
+        promises.push(UHTTP.DownloadUrlToPath(remoteUrl, newPath, f_err));
       }
       //
       //
@@ -145,7 +96,7 @@ async function ProxyMedia(req, res, next) {
     }
 
     // if got this far, it's a regular file to download
-    u_Download(url, path, err => {
+    UHTTP.DownloadUrlToPath(url, path, err => {
       if (err) {
         TERM('download error', err);
         next();
