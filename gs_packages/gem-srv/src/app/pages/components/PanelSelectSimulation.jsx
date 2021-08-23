@@ -1,18 +1,27 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import { GetProjectNames } from 'modules/datacore/dc-project';
+
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import { ReadProjectsList } from '../elements/project-db';
 
 import PanelChrome from './PanelChrome';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('PanelSelectSimulation', 'TagPurple');
+const DBG = true;
+
+// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
+    // const state = UR.ReadFlatStateGroups('projects');
     this.state = {
       title: 'Select Project',
-      models: []
-      // models: [
+      projectNames: []
+      // projectNames: [
       //   // Dummy Data
       //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
       //   { id: 'decomposition', label: 'Decomposition' },
@@ -21,12 +30,14 @@ class PanelSelectSimulation extends React.Component {
       // ]
     };
     this.onClick = this.onClick.bind(this);
+    this.loadProjectNames = this.loadProjectNames.bind(this);
   }
 
   componentDidMount() {
-    const models = ReadProjectsList();
-    this.setState({ models });
+    this.loadProjectNames();
   }
+
+  componentWillUnmount() {}
 
   onClick(modelId) {
     console.log('Select model ID:', modelId);
@@ -36,8 +47,14 @@ class PanelSelectSimulation extends React.Component {
     onClick(modelId); // Tell Login panel to show Panelselect
   }
 
+  async loadProjectNames() {
+    const projectNames = await GetProjectNames();
+    console.log('projectNames', projectNames);
+    this.setState({ projectNames });
+  }
+
   render() {
-    const { title, models } = this.state;
+    const { title, projectNames } = this.state;
     const { id, isActive, onClick, classes } = this.props;
 
     return (
@@ -55,7 +72,7 @@ class PanelSelectSimulation extends React.Component {
             <div className={classes.instructions}>
               <p>Select a project to work on:</p>
             </div>
-            {models.map(m => (
+            {projectNames.map(m => (
               <button
                 type="button"
                 className={classes.button}

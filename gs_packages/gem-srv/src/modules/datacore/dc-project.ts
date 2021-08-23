@@ -16,11 +16,43 @@ import * as TRANSPILER from 'script/transpiler-v2';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
+const DBG = true;
+
+let PROJECT_NAMES: any[] = [];
 const MODEL: any = {};
 const BOUNDS: any = {};
 
 /// PRIVATE METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// API ///////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/**
+ * Loads the list of project names and ids from graphQL
+ */
+async function m_LoadProjectNames(): Promise<any[]> {
+  const response = await UR.Query(`
+    query {
+      projectNames { id label }
+    }
+  `);
+  if (!response.errors) {
+    if (DBG) console.log(...PR('m_LoadProjectInfo response', response));
+    const { projectNames } = response.data;
+    PROJECT_NAMES = projectNames;
+    return projectNames;
+  }
+  console.error(...PR('m_LoadProjectNames ERROR response:', response));
+  return [];
+}
+export function GetProjectNames(): Promise<any[]> {
+  return m_LoadProjectNames();
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Local Updates
+
 function m_UpdateDCBounds(bounds) {
   BOUNDS.top = bounds.top;
   BOUNDS.right = bounds.right;
