@@ -10,7 +10,7 @@ type Query {
   locale(id: Int!): Locale
   localeNames: [LocalesType]!
   locales: [Locale]!
-  project(id: Int!): Project
+  project(id: String!): Project
   projectNames: [Project]!
   projects: [Project]!
 }

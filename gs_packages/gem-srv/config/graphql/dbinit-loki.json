@@ -196,9 +196,9 @@
           "endScript": "// endScript 2"
         }
       ],
-      "scripts": [
+      "blueprints": [
         {
-          "id": 0,
+          "id": "Bunny",
           "label": "Bunny",
           "isCharControllable": false,
           "isPozyxControllable": false,
@@ -253,9 +253,9 @@
           "endScript": "// endScript 2"
         }
       ],
-      "scripts": [
+      "blueprints": [
         {
-          "id": 0,
+          "id": "Fish",
           "label": "Fish",
           "isCharControllable": false,
           "isPozyxControllable": false,
