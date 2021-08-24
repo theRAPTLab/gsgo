@@ -41,7 +41,7 @@ prop type setTo 'change'
 addProp energyUse Number 0
 
 // STUDENTS_MAY_CHANGE - to change how quickly Fish use up energy and get hungry
-prop energyUse setTo 1
+prop energyUse setTo 3
 
 addProp grows Boolean false
 
