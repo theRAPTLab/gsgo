@@ -381,19 +381,19 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  *  dc-agents, because datacore modules must be pure definition
  */
 function MakeAgent(instanceDef: TInstance) {
-  const { blueprint, name } = instanceDef;
-  const agent = new GAgent(name, String(instanceDef.id));
+  const { bpid, label } = instanceDef;
+  const agent = new GAgent(label, String(instanceDef.id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
-  if (typeof blueprint === 'string') {
-    const bdl = GetBlueprint(blueprint);
-    if (!bdl) throw Error(`agent blueprint for '${blueprint}' not defined`);
+  if (typeof bpid === 'string') {
+    const bdl = GetBlueprint(bpid);
+    if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
 
     return SaveAgent(agent);
   }
-  throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);
+  throw Error(`MakeAgent(): bad blueprint name ${bpid}`);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RemoveAgent(instanceDef: TInstance) {

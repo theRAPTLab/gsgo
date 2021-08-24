@@ -61,7 +61,6 @@ class PanelBlueprints extends React.Component {
 
     // graphQL
     const blueprints = GetProject().blueprints || [];
-    console.error('blueprints', blueprints);
 
     // sort alphabetically
     const sortedBlueprints = blueprints.sort((a, b) => {

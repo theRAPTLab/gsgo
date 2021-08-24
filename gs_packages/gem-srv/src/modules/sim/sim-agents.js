@@ -32,7 +32,7 @@ import {
 import DisplayObject from '../../lib/class-display-object';
 import * as RENDERER from '../render/api-render';
 import { MakeDraggable } from '../../lib/vis/draggable';
-import * as TRANSPILER from './script/transpiler';
+import * as TRANSPILER from './script/transpiler-v2';
 import SyncMap from '../../lib/class-syncmap';
 import { ClearGlobalAgent } from '../../lib/class-gagent';
 
@@ -130,19 +130,19 @@ function MakeAgent(def) {
 
 SCRIPT_TO_INSTANCE.setMapFunctions({
   onAdd: (newDef, def) => {
-    def.name = newDef.name;
-    def.blueprint = newDef.blueprint;
+    def.label = newDef.label;
+    def.bpid = newDef.bpid;
     def.initScript = newDef.initScript;
     DefineInstance({
       id: newDef.id,
-      name: newDef.name,
-      blueprint: newDef.blueprint,
+      label: newDef.label,
+      bpid: newDef.bpid,
       initScript: newDef.initScript
     });
     MakeAgent(newDef);
   },
   onUpdate: (newDef, def) => {
-    def.name = newDef.name;
+    def.label = newDef.label;
     def.initScript = newDef.initScript;
     // If blueprint is updated and recompiled
     // the old instance has been removed
@@ -152,8 +152,8 @@ SCRIPT_TO_INSTANCE.setMapFunctions({
     } else {
       DefineInstance({
         id: newDef.id,
-        name: newDef.name,
-        blueprint: newDef.blueprint,
+        label: newDef.label,
+        bpid: newDef.bpid,
         initScript: newDef.initScript
       });
     }
@@ -270,7 +270,7 @@ export function AgentProgram(blueprint) {
   // Remove any existing agent instances
   let instances = GetAllInstances();
   instances.forEach(instance => {
-    if (instance.blueprint === blueprint) {
+    if (instance.bpid === blueprint) {
       TRANSPILER.RemoveAgent(instance);
     }
   });
@@ -290,7 +290,7 @@ export function AgentProgram(blueprint) {
   instances.forEach(instance => {
     // Make an instance only for this blueprint, ignore others
     // otherwise other blueprints will get duplicate instances
-    if (instance.blueprint === blueprint) {
+    if (instance.bpid === blueprint) {
       TRANSPILER.MakeAgent(instance);
     }
   });
