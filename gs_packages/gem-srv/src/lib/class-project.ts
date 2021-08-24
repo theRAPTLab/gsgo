@@ -28,7 +28,7 @@ export default class Project {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  constructor(id) {
+  constructor(id = 0) {
     this.init(id);
   }
 
@@ -39,6 +39,15 @@ export default class Project {
     this._rounds = [];
     this._blueprints = [];
     this._instances = [];
+  }
+
+  load(def) {
+    this._id = def.id !== undefined ? def.id : this._id;
+    this._label = def.label !== undefined ? def.label : this._label;
+    this._metadata.load(def.metadata);
+    this._rounds = def.rounds.map(r => new ProjectRound(r));
+    this._blueprints = def.blueprints.map(b => new ProjectBlueprint(b));
+    this._instances = def.instances.map(i => new ProjectInstance(i));
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -82,10 +91,10 @@ export default class Project {
   set rounds(val: ProjectRound[]) {
     this._rounds = val;
   }
-  get blueprints(): ProjectScript[] {
+  get blueprints(): ProjectBlueprint[] {
     return this._blueprints;
   }
-  set blueprints(val: ProjectScript[]) {
+  set blueprints(val: ProjectBlueprint[]) {
     this._blueprints = val;
   }
   get instances(): ProjectInstance[] {

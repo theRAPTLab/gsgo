@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Project Object Script Definition
+  Project Object Blueprint Script Definition
 
   Used by:
   * class-project.ts
@@ -9,7 +9,7 @@
 
 /// CLASS DEFINITIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export default class ProjectScript {
+export default class ProjectBlueprint {
   // Core
   private _id: any; // id of parent project object -- REVIEW: necessary?
   private _label: string;
@@ -21,18 +21,20 @@ export default class ProjectScript {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  constructor(id) {
-    this.init(id);
-  }
+  constructor(def) {
+    if (def === undefined)
+      throw new Error(
+        `ProjectBlueprint.load missing definition object: ${JSON.stringify(def)}`
+      );
+    this._id = def.id !== undefined ? def.id : 0;
+    this._label = def.label !== undefined ? def.label : '';
 
-  init(id) {
-    this._id = id;
-    this._label = '';
+    this._isCharControllable =
+      def.isCharControllable !== undefined ? def.isCharControllable : false;
+    this._isPozyxControllable =
+      def.isPozyxControllable !== undefined ? def.isPozyxControllable : false;
 
-    this._isCharControllable = false;
-    this._isPozyxControllable = false;
-
-    this._scriptText = '';
+    this._scriptText = def.scriptText !== undefined ? def.scriptText : '';
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

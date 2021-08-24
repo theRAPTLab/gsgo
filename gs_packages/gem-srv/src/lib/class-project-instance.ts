@@ -19,16 +19,16 @@ export default class ProjectInstance {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  constructor(id) {
-    this.init(id);
-  }
+  constructor(def) {
+    if (def === undefined)
+      throw new Error(
+        `ProjectInstance.load missing definition object: ${JSON.stringify(def)}`
+      );
+    this._id = def.id !== undefined ? def.id : 0;
+    this._label = def.label !== undefined ? def.label : '';
 
-  init(id) {
-    this._id = id;
-
-    this._label = '';
-    this._bpid = '';
-    this._initScript = '';
+    this._bpid = def.bpid !== undefined ? def.bpid : '';
+    this._initScript = def.initScript !== undefined ? def.initScript : '';
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

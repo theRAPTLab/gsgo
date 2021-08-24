@@ -31,7 +31,7 @@ export default class ProjectMetadata {
   }
 
   init(id) {
-    this._id = id;
+    this._id = id; // parent project id, not really used for anything currently
 
     this._top = 0;
     this._right = 400;
@@ -43,6 +43,25 @@ export default class ProjectMetadata {
     this._bgcolor = 0x00ffff;
 
     this._roundsCanLoop = false;
+  }
+
+  load(def) {
+    if (def === undefined)
+      throw new Error(
+        `ProjectMetadata.load missing definition object: ${JSON.stringify(def)}`
+      );
+
+    this._top = def.top !== undefined ? def.top : 0;
+    this._right = def.right !== undefined ? def.right : 400;
+    this._bottom = def.bottom !== undefined ? def.bottom : 400;
+    this._left = def.left !== undefined ? def.left : 0;
+
+    this._wrap = def.wrap !== undefined ? def.wrap : [false];
+    this._bounce = def.bounce !== undefined ? def.bounce : false;
+    this._bgcolor = def.bgcolor !== undefined ? def.bgcolor : 0x00ffff;
+
+    this._roundsCanLoop =
+      def.roundsCanLoop !== undefined ? def.roundsCanLoop : false;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

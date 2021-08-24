@@ -23,20 +23,20 @@ export default class ProjectRound {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  constructor(id) {
-    this.init(id);
-  }
+  constructor(def) {
+    if (def === undefined)
+      throw new Error(
+        `ProjectRound.load missing definition object: ${JSON.stringify(def)}`
+      );
+    this._id = def.id !== undefined ? def.id : 0;
+    this._label = def.label !== undefined ? def.label : '';
 
-  init(id) {
-    this._id = id;
-    this._label = '';
+    this._time = def.time !== undefined ? def.time : 60;
 
-    this._time = 60;
-
-    this._intro = '';
-    this._outtro = '';
-    this._initScript = '';
-    this._endScript = '';
+    this._intro = def.intro !== undefined ? def.intro : '';
+    this._outtro = def.outtro !== undefined ? def.outtro : '';
+    this._initScript = def.initScript !== undefined ? def.initScript : '';
+    this._endScript = def.endScript !== undefined ? def.endScript : '';
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

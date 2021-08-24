@@ -12,6 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import Project from 'lib/class-project';
 import * as TRANSPILER from 'script/transpiler-v2';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -19,13 +20,16 @@ import * as TRANSPILER from 'script/transpiler-v2';
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = true;
 
-let PROJECT_NAMES: any[] = [];
+let PROJECT_ID: string = ''; // currently loaded project id
+let PROJECT: any = {}; // currently loaded project
+
 const MODEL: any = {};
 const BOUNDS: any = {};
 
 /// PRIVATE METHODS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// API ///////////////////////////////////////////////////////////////////////
+
+/// API PRIVATE METHODS ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /**
@@ -40,14 +44,51 @@ async function m_LoadProjectNames(): Promise<any[]> {
   if (!response.errors) {
     if (DBG) console.log(...PR('m_LoadProjectInfo response', response));
     const { projectNames } = response.data;
-    PROJECT_NAMES = projectNames;
     return projectNames;
   }
   console.error(...PR('m_LoadProjectNames ERROR response:', response));
   return [];
 }
-export function GetProjectNames(): Promise<any[]> {
-  return m_LoadProjectNames();
+
+/**
+ * Loads project instance data from DB
+ */
+async function m_LoadProject(id): Promise<Project> {
+  if (DBG) console.log(...PR('(1) GET PROJECT DATA'));
+  const response = await UR.Query(`
+    query {
+      project(id:"${id}") {
+        id
+        label
+        metadata { top right bottom left wrap bounce bgcolor roundsCanLoop}
+        rounds { id label time intro outtro initScript endScript }
+        blueprints { id label isCharControllable isPozyxControllable scriptText }
+        instances { id label bpid initScript }
+      }
+    }
+  `);
+  if (!response.errors) {
+    if (DBG) console.log(...PR('m_LoadProject response', response));
+    // update state data
+    const { project } = response.data;
+    // cache
+    PROJECT_ID = id;
+    PROJECT = new Project();
+    PROJECT.load(project);
+
+
+    return PROJECT;
+  }
+  return undefined;
+}
+/**
+ * Returns cached project if project id matches
+ * otherwise loads the project from db
+ */
+function m_GetProject(id = PROJECT_ID): Promise<Project> {
+  // Return cached project
+  if (id === PROJECT_ID && PROJECT) return PROJECT;
+  return m_LoadProject(id);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -67,7 +108,7 @@ export function UpdateDCModel(model) {
   MODEL.rounds = model.rounds;
   MODEL.scripts = model.scripts;
   MODEL.instances = model.instances;
-  const bounds = model.bounds || {
+  const bounds = model.metadata || {
     top: -400, // default if not set
     right: 400,
     bottom: 400,
@@ -180,3 +221,16 @@ export function GetBlueprintPropertiesMap(blueprintName) {
   const script = blueprint.script;
   return TRANSPILER.ExtractBlueprintPropertiesMap(script);
 }
+
+/// API ///////////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetProjectNames(): Promise<any[]> {
+  return m_LoadProjectNames();
+}
+export function LoadProject(id): Promise<Project> {
+  return m_LoadProject(id);
+}
+export function GetProject(id): Promise<Project> {
+  return m_GetProject(id);
+}
+
