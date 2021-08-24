@@ -44,7 +44,7 @@ class PanelSelect extends React.Component {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     let { modelId } = this.props;
-    window.location = `/app/${url}?model=${modelId}`;
+    window.location = `/app/${url}?project=${modelId}`;
   }
 
   render() {

@@ -48,7 +48,7 @@ class Model extends React.Component {
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
+    const modelId = params.get('project');
     const wasRedirected = params.get('redirect') !== null;
     this.setState({
       modelId,

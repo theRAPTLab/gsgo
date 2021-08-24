@@ -98,7 +98,7 @@ class ScriptEditor extends React.Component {
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
+    const modelId = params.get('project');
     const scriptId = params.get('script');
     document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
 

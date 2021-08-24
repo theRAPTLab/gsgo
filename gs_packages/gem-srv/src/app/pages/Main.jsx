@@ -142,18 +142,17 @@ class MissionControl extends React.Component {
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
+    const projId = params.get('project');
 
     // No model selected, go back to login to select model
-    if (!modelId) window.location = '/app/login';
+    if (!projId) window.location = '/app/login';
 
-    this.setState({ modelId });
-    document.title = `GEMSTEP MAIN ${modelId}`;
+    this.setState({ projId });
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
 
     // register project-data
-    PROJ.ProjectDataInit();
+    PROJ.ProjectDataPreInit(this, projId);
   }
 
   componentDidCatch(e) {
