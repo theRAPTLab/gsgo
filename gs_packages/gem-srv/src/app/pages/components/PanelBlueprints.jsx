@@ -11,7 +11,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as DATACORE from 'modules/datacore';
+import { GetProject } from 'modules/datacore/dc-project';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import { withStyles } from '@material-ui/core/styles';
@@ -35,14 +35,14 @@ class PanelBlueprints extends React.Component {
   }
 
   OnBlueprintClick(scriptId) {
-    const { modelId, enableAdd } = this.props;
+    const { projId, enableAdd } = this.props;
     if (enableAdd) {
       // Add Instance
-      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { modelId, blueprintName: scriptId });
+      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { projId, blueprintName: scriptId });
     } else {
       // Open script in a new window
       window.open(
-        `/app/scripteditor?model=${modelId}&script=${scriptId}`,
+        `/app/scripteditor?project=${projId}&script=${scriptId}`,
         '_blank'
       );
     }
@@ -50,7 +50,7 @@ class PanelBlueprints extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { modelId, id, isActive, agents, enableAdd, classes } = this.props;
+    const { projId, id, isActive, enableAdd, classes } = this.props;
     const instructions = enableAdd
       ? 'Click to add a character'
       : 'Click to edit a character type script in a new window';
@@ -59,8 +59,12 @@ class PanelBlueprints extends React.Component {
       console.log('Show instance');
     };
 
+    // graphQL
+    const blueprints = GetProject().blueprints || [];
+    console.error('blueprints', blueprints);
+
     // sort alphabetically
-    const sortedAgents = agents.sort((a, b) => {
+    const sortedBlueprints = blueprints.sort((a, b) => {
       if (a.label < b.label) return -1;
       if (a.label > b.label) return 1;
       return 0;
@@ -90,7 +94,7 @@ class PanelBlueprints extends React.Component {
                 flexWrap: 'wrap'
               }}
             >
-              {sortedAgents.map(a => (
+              {sortedBlueprints.map(a => (
                 <div
                   style={{
                     flex: '0 1 auto',

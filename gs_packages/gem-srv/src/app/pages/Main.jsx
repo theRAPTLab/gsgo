@@ -434,6 +434,7 @@ class MissionControl extends React.Component {
     const {
       panelConfiguration,
       message,
+      projId,
       modelId,
       model,
       devices,
@@ -487,8 +488,7 @@ class MissionControl extends React.Component {
         <MissionMapEditor modelId={modelId} model={model} />
       ) : (
         <MissionRun
-          modelId={modelId}
-          model={model}
+          projId={projId}
           devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}
