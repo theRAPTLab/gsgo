@@ -104,9 +104,14 @@ export default class Project {
     this._instances = val;
   }
 
+  /// API /////////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// API
 
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// METADATA
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// ROUNDS
   GetRound(id) {
     return this.rounds.find(r => r.id === id);
   }
@@ -114,6 +119,22 @@ export default class Project {
     const index = this.rounds.findIndex(r => r.id === id);
     this.rounds[index] = { ...updatedRound }; // copy
   }
+  GetRoundCount(): number {
+    return this.rounds.length;
+  }
+  GetRoundDef(index: number) {
+    if (index > this.rounds.length)
+      throw new Error(
+        `Bad round index request: '${index}'. Rounds length is ${this.rounds.length}`
+      );
+    return this.rounds[index];
+  }
+  RoundsShouldLoop() {
+    return this.metadata.roundsCanLoop;
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// BLUEPRINTS
   GetBlueprint(id) {
     return this.blueprints.find(s => s.id === id);
   }

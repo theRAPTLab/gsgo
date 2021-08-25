@@ -179,23 +179,14 @@ export function Wraps(wall = 'any') {
 /// ROUNDS METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetRoundCount() {
-  if (MODEL.rounds && MODEL.rounds.roundDefs)
-    return MODEL.rounds.roundDefs.length;
-  return undefined;
+  return PROJECT.GetRoundCount();
 }
 export function GetRoundDef(index: number) {
-  if (
-    MODEL.rounds &&
-    MODEL.rounds.roundDefs &&
-    index < MODEL.rounds.roundDefs.length
-  )
-    return MODEL.rounds.roundDefs[index];
-  return undefined;
+  return PROJECT.GetRoundDef(index);
 }
 /// Rounds loop by default
 export function RoundsShouldLoop() {
-  if (MODEL.rounds && MODEL.rounds.options) return !MODEL.rounds.options.noloop;
-  return true;
+  return PROJECT.RoundsShouldLoop();
 }
 
 /// BLUEPRINT METHODS /////////////////////////////////////////////////////////
