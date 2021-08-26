@@ -2,6 +2,8 @@
 
   Various decoding utilities
 
+  eventually should hold our session dehashers and so on
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const Path = require('path');
@@ -15,7 +17,7 @@ const TERM = PROMPTS.makeTerminalOut('U-DECODE');
 
 /// PUBLIC METHODS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return a formatted object  */
+/** return a formatted object as a readable indented string  */
 function FString(obj) {
   return JSON.stringify(obj, null, 2);
 }

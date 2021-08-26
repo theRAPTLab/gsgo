@@ -17,10 +17,9 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
+  ...GSCONFIG,
+  // overrides
   PACKAGE_NAME,
-  //
   RUNTIME_DIRNAME,
-  RUNTIME_PATH, // used only by servers
-  //
-  ...GSCONFIG // all props begin with GS_
+  RUNTIME_PATH // used only by servers
 };

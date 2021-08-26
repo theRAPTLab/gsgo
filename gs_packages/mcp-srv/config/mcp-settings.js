@@ -16,7 +16,7 @@ const PACKAGE_NAME = 'MCP_SRV';
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  PACKAGE_NAME,
-  //
-  ...GSCONFIG // all props begin with GS_
+  ...GSCONFIG,
+  // overrides
+  PACKAGE_NAME
 };

@@ -1,6 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  URSYS default configuration-related stuff
+  URSYS default configuration-related stuff as well as enumerations and
+  typecheck utils used in both node and browser environments
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -38,6 +39,13 @@ const TRANSACTION_MODE = [
 ];
 const VALID_CHANNELS = ['LOCAL', 'NET', 'SVR', 'STATE']; // is all channels in list
 
+/// ASSET FILES ///////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const VALID_ASSET_EXTS = {
+  sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json']
+};
+const VALID_ASSET_DIRS = ['sprites']; // valid asset subdirectories
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
@@ -55,5 +63,8 @@ module.exports = {
   PRE_SVR_MESG,
   PACKET_TYPES,
   TRANSACTION_MODE,
-  VALID_CHANNELS
+  VALID_CHANNELS,
+  // ASSET FILES
+  VALID_ASSET_EXTS,
+  VALID_ASSET_DIRS
 };

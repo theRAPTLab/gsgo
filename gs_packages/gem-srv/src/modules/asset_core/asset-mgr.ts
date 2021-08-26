@@ -11,7 +11,7 @@
     tell each loader to load its portion.
   * GetLoader(assetType) - returns the loader instance for given type.
 
-  See `class-asset-loader` for an example of host
+  See `class-asset-loader` for an example of host.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -128,6 +128,7 @@ export function GetLoader(asType: TAssetType): any {
 
 /// INITIALIZATION ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// register for every type
 m_RegisterLoader(new SpriteLoader('sprites'));
 
 /// TEST INTERFACE ////////////////////////////////////////////////////////////

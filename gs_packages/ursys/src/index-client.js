@@ -15,7 +15,7 @@ const PROMPTS = require('./util/prompts');
 const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
 const DTECT = require('./common/ur-detect');
-const ENUM = require('./common/enum-lists');
+const CONST = require('./common/ur-constants');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
@@ -29,7 +29,7 @@ const {
   IsElectronRenderer
 } = DTECT;
 
-/// CONSTANTS /////////////////////////////////////////////////////////////////
+/// CONST /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = PROMPTS.makeStyleFormatter('URSYS ', 'TagUR');
 const DBG = false;
@@ -143,7 +143,7 @@ function SendMessage(mesgName, inData, options) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const UR = {
   ...META,
-  ...ENUM,
+  ...CONST,
   // NETWORK MESSAGES
   DeclareMessage,
   HasMessage,

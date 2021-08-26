@@ -1,12 +1,11 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  String Helper Utilities
+  http proxy download helpers and utilities
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const Path = require('path');
-//
 const PROMPTS = require('./prompts');
 const FILE = require('./files');
 const MFEST = require('./manifest');
@@ -68,7 +67,7 @@ async function ProxyMedia(req, res, next) {
         // only read the first loaded manifest
         json = json.shift();
         const mpath = Path.join(path, `${GS_MANIFEST_FILENAME}.json`);
-        FILE.EnsureDirectory(path);
+        FILE.EnsureDir(path);
         FILE.WriteJSON(mpath, json, err => {
           if (err) TERM('error:', err);
         });

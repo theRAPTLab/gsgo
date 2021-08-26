@@ -37,7 +37,7 @@ async function DownloadUrlToPath(url, path, cb) {
   const pathInfo = DCOD.DecodePath(path);
   const { dirname } = pathInfo;
   // got this far? we have a file!
-  if (!FILE.EnsureDirectory(dirname)) {
+  if (!FILE.EnsureDir(dirname)) {
     TERM(`WARNING: could not ensure dir '${dirname}'. Aborting`);
     return;
   }

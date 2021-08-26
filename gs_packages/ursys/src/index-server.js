@@ -11,7 +11,7 @@ const NETWORK = require('./server-urnet');
 const PROMPTS = require('./util/prompts');
 const NETINFO = require('./server-netinfo');
 const DB = require('./server-db');
-const ASSETS = require('./server-assets');
+const ASSETS = require('./express-assets');
 const DBG = require('./common/debug-props');
 const {
   IsBrowser,

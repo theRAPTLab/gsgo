@@ -242,5 +242,36 @@ When a manifest is requested in asset manifest middleware.
 
   
 
+* 1545 review with ben
 
+how to load project data from GraphQL
+
+## AUG 24 TUE - Subscriptions
+
+Some libraries to look into
+
+* [graphql subscriptions](https://github.com/enisdenjo/graphql-ws#express) with Express GraphQL
+* admin interfaces with [AdminJS](https://github.com/SoftwareBrothers/adminjs)
+
+## AUG 25 WED - Documentation Merge
+
+Refactor pass one:
+
+* [x] `ur-constants`
+* [x] `util/files`
+* [x] `util/files-naming`
+* [x] `util/tcp`
+* [x] `util/http`
+* [x] `util/http-proxy`
+* [x] `util/normalize`
+* [x] `util/decoders`
+* [x] `express-assets` - express middleware 
+* [x] `common/ur-constants`
+* [x] `common/ur-detect`
+* [x] `gsgo-settings`
+
+Refactor pass two: make sure manifest code is a bit cleaner
+
+* [x] `util/manifest`
+* [x] `asset-mgr`
 

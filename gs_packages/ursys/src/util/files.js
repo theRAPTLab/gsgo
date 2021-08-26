@@ -1,7 +1,8 @@
-/* eslint-disable no-continue */
 /*//////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  File System Helpers
+  Base File System Helpers
+
+  Provides a variety of common file operations.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
@@ -9,17 +10,11 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const NDir = require('node-dir');
 const Path = require('path');
-const Hasha = require('hasha');
 const FSE = require('fs-extra');
 const TERM = require('./prompts').makeTerminalOut('U-FILE', 'TagGreen');
-const FNAME = require('./files-naming');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const VALID_MEDIA_EXT = {
-  sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json']
-};
-const ASSET_DIRS = ['sprites']; // valid asset subdirectories
 const DBG = false;
 
 /// FILE METHODS //////////////////////////////////////////////////////////////
@@ -31,7 +26,7 @@ const DBG = false;
  *  @param {string} ext - extension without period (ex: js, png|gif)
  *  @param {function} callback - provide (err,files)=>{}
  */
-function ReadFilesExt(dirpath, ext, cb) {
+function ReadFilesExtSync(dirpath, ext, cb) {
   const reg = new RegExp(`.(${ext})$`);
   const callback = typeof cb === 'function' ? cb : false;
   const opt = {
@@ -72,9 +67,9 @@ function ReadFilesExt(dirpath, ext, cb) {
  *  @param {string} ext - extension without period (ex: js, png|gif)
  *  @returns {Promise} - resolves to filename array
  */
-function PromiseReadFilesExt(dirpath, ext) {
+function ReadFilesExt(dirpath, ext) {
   return new Promise((resolve, reject) => {
-    ReadFilesExt(dirpath, ext, (err, files) => {
+    ReadFilesExtSync(dirpath, ext, (err, files) => {
       if (err) reject(err);
       else resolve(files);
     });
@@ -94,11 +89,11 @@ function FileExists(filepath) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** returns TRUE if the passed file is a directory */
-function DirectoryExists(dirpath) {
+function DirExists(dirpath) {
   try {
     const stat = FSE.statSync(dirpath);
     if (stat.isFile()) {
-      console.warn(`DirectoryExists: ${dirpath} is a file, not a directory`);
+      console.warn(`DirExists: ${dirpath} is a file, not a directory`);
       return false;
     }
     return stat.isDirectory();
@@ -107,17 +102,19 @@ function DirectoryExists(dirpath) {
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function IsDirectory(dirpath) {
+/** returns TRUE if the passed dirfile is a directory */
+function IsDir(dirpath) {
   try {
     const stat = FSE.statSync(dirpath);
     if (stat.isDirectory()) return true;
     return false;
   } catch (e) {
-    // console.warn(`IsDirectory: ${dirpath} does not exist`);
+    // console.warn(`IsDir: ${dirpath} does not exist`);
     return false;
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** returns TRUE if the passed dirfile is a file */
 function IsFile(filepath) {
   try {
     const stat = FSE.statSync(filepath);
@@ -131,32 +128,30 @@ function IsFile(filepath) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** given a dirpath, make sure it exists */
-function EnsureDirectory(path) {
+function EnsureDir(path) {
   try {
     FSE.ensureDirSync(path);
     return true;
   } catch (err) {
-    const errmsg = `EnsureDirectory <${path}> failed w/ error ${err}`;
+    const errmsg = `EnsureDir <${path}> failed w/ error ${err}`;
     console.error(errmsg);
     throw new Error(errmsg);
   }
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HasValidAssetExtension({ type, filename }) {
-  const ext = Path.extname(filename).toLowerCase();
-  const validtypes = VALID_MEDIA_EXT[type];
-  if (validtypes === undefined) return false;
-  return validtypes.includes(ext);
-}
-//
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** read the JSON file at the filepath. It's up to the calling function to
+ *  catch errors.
+ */
 function ReadJSON(filepath) {
   let rawdata = FSE.readFileSync(filepath);
   return JSON.parse(rawdata);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** write the JSON file to the filepath. It's up to the calling function to
+ *  catch errors.
+ */
 async function WriteJSON(filepath, obj, cb) {
   let file = FSE.createWriteStream(filepath, { emitClose: true });
   if (typeof obj !== 'string') obj = JSON.stringify(obj, null, 2);
@@ -175,7 +170,7 @@ async function WriteJSON(filepath, obj, cb) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return array of filenames */
 function GetDirContent(dirpath) {
-  if (!DirectoryExists(dirpath)) {
+  if (!DirExists(dirpath)) {
     console.warn(`${dirpath} is not a directory`);
     return undefined;
   }
@@ -192,77 +187,33 @@ function GetDirContent(dirpath) {
   return { files, dirs };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return an array of filenames in the dirpath. these are short filename
+ *  and are not recursive
+ */
 function GetFiles(dirpath) {
   return GetDirContent(dirpath).files || [];
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return an aray of directories in the dirpath. these are short dirnames */
 function GetSubdirs(dirpath) {
   return GetDirContent(dirpath).dirs || [];
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Based on http://stackoverflow.com/questions/25460574/
- *  returns an object with files:recfiles, number of files, and
- *  the highest count found.
- */
-function RecordingsInDirectory(dirpath) {
-  // this regex looks for 4-digit named group "seq" followed
-  // by a dash and ending with a .rec extension
-  const regex = /^(?<seq>\d{4})-.*\.rec$/;
-  const files = GetDirContent(dirpath);
-  const recfiles = [];
-  if (files === undefined) return undefined;
-  let count = 0;
-  let highest = 0;
-  for (const f of files) {
-    const m = f.match(regex);
-    const seqnum = m.group.seq;
-    if (seqnum) {
-      count++;
-      highest = Math.max(seqnum, highest);
-      recfiles.push({ prefix: seqnum, file: f });
-    }
-  }
-  return {
-    count,
-    highest,
-    files: recfiles
-  };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return the MD5 hash of the passed filepath */
-async function PromiseFileHash(filepath) {
-  const hash = await Hasha.fromFile(filepath, { algorithm: 'md5' });
-  const { base, ext } = Path.parse(filepath);
-  return { filepath, filename: base, ext, hash };
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return a list of asset directories that match ASSET_DIRS */
-function GetAssetDirs(dirpath) {
-  const { dirs } = GetDirContent(dirpath);
-  return dirs.filter(d => ASSET_DIRS.includes(d));
 }
 
 /// EXPORT MODULE /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
-  // file name utilities
-  ...FNAME,
   // file ops
+  ReadFilesExtSync,
   ReadFilesExt,
-  PromiseReadFilesExt,
   IsFile,
   FileExists,
-  IsDirectory,
-  DirectoryExists,
-  EnsureDirectory,
+  IsDir,
+  DirExists,
+  GetDirContent,
+  EnsureDir,
   GetFiles,
   GetSubdirs,
-  // asset-related
-  HasValidAssetExtension,
+  // json
   ReadJSON,
-  WriteJSON,
-  RecordingsInDirectory,
-  PromiseFileHash,
-  GetAssetDirs
+  WriteJSON
 };
