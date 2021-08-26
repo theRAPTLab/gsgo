@@ -358,8 +358,7 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span>
           </div>
           <button
             type="button"
