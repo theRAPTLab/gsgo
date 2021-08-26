@@ -249,13 +249,16 @@ when Algae touches Sunbeam [[
 
     // if Spawning is active, create more algae when we hit 100
     ifExpr {{ agent.getProp('spawns').value }} [[
-      ifExpr {{ agent.getProp('energyLevel').value == 100 }} [[
-        prop energyLevel sub 50
-        featCall Population createAgent Algae [[
-          // STUDENTS_MAY_CHANGE - maybe change the new energy level (currently 40) or the threshold (from 100) or the new position or other things
-           prop energyLevel setTo 40
-           prop x add 25
-           prop y add 25
+      // Only spawn more if we are under 200 total ... to avoid crashing the system
+      ifExpr {{ Algae.callFeatMethod('Population', 'getActiveAgentsCount', 'Algae') < 200 }} [[
+        ifExpr {{ agent.getProp('energyLevel').value == 100 }} [[
+          prop energyLevel sub 50
+          featCall Population createAgent Algae [[
+            // STUDENTS_MAY_CHANGE - maybe change the new energy level (currently 40) or the threshold (from 100) or the new position or other things
+            prop energyLevel setTo 40
+            prop x add 25
+            prop y add 25
+          ]]
         ]]
       ]]
     ]] // if spawning
