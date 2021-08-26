@@ -7,6 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+import { IbpidListItem } from 'lib/t-ui.d';
 import ProjectMetadata from './class-project-meta';
 import ProjectRound from './class-project-round';
 import ProjectBlueprint from './class-project-blueprint';
@@ -135,12 +136,30 @@ export default class Project {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// BLUEPRINTS
+
   GetBlueprint(id) {
     return this.blueprints.find(s => s.id === id);
   }
   SetBlueprint(id, updatedBlueprint) {
     const index = this.blueprints.findIndex(s => s.id === id);
     this.blueprints[index] = { ...updatedBlueprint }; // copy
+  }
+  /**
+   * Returns array of blueprint definitions defined for a project
+   * Generally used by selector UI for `bpidList` objects
+   * @returns [...{id, label}]
+   */
+  GetBlueprintIDsList(): IbpidListItem[] {
+    return this.blueprints.map(b => {
+      return { id: b.id, label: b.label };
+    });
+  }
+  /**
+   * Returns array of blueprint ids that are CharControllable.
+   * @returns [...id]
+   */
+  GetCharControlBpidList(): string[] {
+    return this.blueprints.filter(b => b.isCharControllable).map(b => b.id);
   }
   /**
    * Returns array of blueprint ids that are PozyxControllable.
@@ -168,5 +187,15 @@ export default class Project {
   SetInstance(id, updatedInstance) {
     const index = this.instances.findIndex(i => i.id === id);
     this.instances[index] = { ...updatedInstance }; // copy
+  }
+  /**
+   * Returns array of instance ids + labels defined for a project
+   * Generally used by selector UI for `instanceList` objects
+   * @returns [...{id, label, blueprint}]
+   */
+  GetInstancesList(): any[] {
+    return this.instances.map(i => {
+      return { id: i.id, label: i.label, bpid: i.bpid };
+    });
   }
 }

@@ -6,10 +6,11 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
+import UR from '@gemstep/ursys/client';
 import { Link } from 'react-router-dom';
+import Project from 'lib/class-project';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
-import UR from '@gemstep/ursys/client';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelSimViewer from './components/PanelSimViewer';
@@ -44,20 +45,23 @@ class Viewer extends React.Component {
       isReady: false,
       noMain: true,
       panelConfiguration: 'sim',
-      modelId: '',
-      model: {},
+      projId: '',
+      // modelId: '',
+      // model: {},
+      bpidList: [],
       instances: []
     };
     this.Initialize = this.Initialize.bind(this);
-    this.RequestModel = this.RequestModel.bind(this);
-    this.HandleModelUpdate = this.HandleModelUpdate.bind(this);
-    this.UpdateModelData = this.UpdateModelData.bind(this);
+    this.RequestProjectData = this.RequestProjectData.bind(this);
+    this.HandleBpidList = this.HandleBpidList.bind(this);
+    this.HandleInstancesList = this.HandleInstancesList.bind(this);
     this.HandleInspectorUpdate = this.HandleInspectorUpdate.bind(this);
     this.OnModelClick = this.OnModelClick.bind(this);
     this.OnHomeClick = this.OnModelClick.bind(this);
     this.OnPanelClick = this.OnPanelClick.bind(this);
-    UR.HandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.HandleMessage('NET:BPIDLIST_UPDATE', this.HandleBpidList);
+    UR.HandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
 
     // Instance Interaction Handlers
     UR.HandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
@@ -91,40 +95,41 @@ class Viewer extends React.Component {
   }
 
   componentWillUnmount() {
-    UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleModelUpdate);
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
+    UR.UnhandleMessage('NET:BPIDLIST_UPDATE', this.HandleBpidList);
+    UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstacesList);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
   Initialize() {
     if (this.state.isReady) return; // already initialized
-    this.RequestModel();
+    this.RequestProjectData();
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
 
-  RequestModel() {
-    if (DBG) console.log(...PR('RequestModel...'));
+  RequestProjectData() {
+    if (DBG) console.log(...PR('RequestProjectData...'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetCurrentModelData'
-    }).then(rdata => {
-      this.UpdateModelData(rdata.result.modelId, rdata.result.model);
-    });
+      fnName: 'GetBpidList'
+    }).then(rdata => this.HandleBpidList(rdata));
+    UR.CallMessage('NET:REQ_PROJDATA', {
+      fnName: 'GetInstancesList'
+    }).then(rdata => this.HandleInstancesList(rdata));
   }
 
-  HandleModelUpdate(data) {
-    if (DBG) console.log('HandleModelUpdate', data);
-    this.UpdateModelData(data.model, data.modelId);
-  }
-
-  UpdateModelData(modelId, model) {
-    if (DBG) console.log('UpdateModelData', modelId, model);
+  HandleBpidList(rdata) {
+    console.error('getbpidList', rdata);
     this.setState({
-      modelId,
-      model,
-      instances: model.instances
+      projId: rdata.result.projId,
+      bpidList: rdata.result.bpidList
     });
-    document.title = `VIEWER ${modelId}`;
+  }
+  HandleInstancesList(rdata) {
+    console.error('GetInstancesList', rdata);
+    this.setState({
+      instances: rdata.result.instancesList
+    });
   }
 
   HandleSimInstanceHoverOver(data) {
@@ -140,8 +145,8 @@ class Viewer extends React.Component {
   }
 
   OnModelClick() {
-    const { modelId } = this.state;
-    window.location = `/app/model?${modelId}`;
+    const { projId } = this.state;
+    window.location = `/app/model?project=${projId}`;
   }
 
   OnPanelClick(id) {
@@ -156,8 +161,16 @@ class Viewer extends React.Component {
    *  make this happen.
    */
   render() {
-    const { noMain, panelConfiguration, modelId, model, instances } = this.state;
+    const {
+      noMain,
+      panelConfiguration,
+      projId,
+      bpidList,
+      instances
+    } = this.state;
     const { classes } = this.props;
+
+    document.title = `VIEWER ${projId}`;
 
     const DialogNoMain = (
       <DialogConfirm
@@ -167,11 +180,6 @@ class Viewer extends React.Component {
         noMessage=""
       />
     );
-
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
 
     return (
       <div
@@ -186,11 +194,10 @@ class Viewer extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>VIEWER {modelId}</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>VIEWER {projId}</span>
           </div>
           <Link
-            to={{ pathname: `/app/model?model=${modelId}` }}
+            to={{ pathname: `/app/model?project=${projId}` }}
             className={classes.navButton}
           >
             Back to PROJECT
@@ -201,8 +208,7 @@ class Viewer extends React.Component {
           className={classes.left} // commented out b/c adding a padding
           style={{ backgroundColor: 'transparent' }}
         >
-          <PanelBlueprints id="blueprints" modelId={modelId} agents={agents} />
-          <PanelInstances id="instances" />
+          <PanelBlueprints id="blueprints" projId={projId} bpidList={bpidList} />
         </div>
         <div id="console-main" className={classes.main}>
           <PanelSimViewer id="sim" onClick={this.OnPanelClick} />

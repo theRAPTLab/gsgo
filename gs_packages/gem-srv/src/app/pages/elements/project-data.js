@@ -23,12 +23,11 @@ import {
   DeleteAgent,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
+import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
 import {
-  POZYX_TRANSFORM,
-  InputsReset,
-  SetPozyxBPNames
-} from 'modules/datacore/dc-inputs';
-import {
+  PROJECT,
+  LoadProject,
+  GetProject,
   UpdateDCModel,
   GetBoundary,
   GetBlueprintProperties
@@ -160,6 +159,22 @@ function RaiseModelUpdate(modelId = CURRENT_MODEL_ID) {
   UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
 }
 
+function GetBpidList(projId = CURRENT_PROJECT_ID) {
+  const bpidList = PROJECT.GetBlueprintIDsList();
+  console.error('GetBpidList', bpidList);
+  return { projId, bpidList };
+}
+function RaiseBpidListUpdate(projId = CURRENT_PROJECT_ID) {
+  UR.RaiseMessage('NET:BPIDLIST_UPDATE', this.GetBpidList(projId));
+}
+function GetInstancesList(projId = CURRENT_PROJECT_ID) {
+  const instancesList = PROJECT.GetInstancesList();
+  return { projId, instancesList };
+}
+function RaiseInstancesListUpdate(projId = CURRENT_PROJECT_ID) {
+  UR.RaiseMessage('NET:INSTANCESLIST_UPDATE', this.GetInstancesList(projId));
+}
+
 /// API CALLS: BLUEPRINT DATA REQUESTS ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -215,6 +230,7 @@ function BlueprintDelete(blueprintName, modelId = CURRENT_PROJECT_ID) {
 function HandleBlueprintDelete(data) {
   BlueprintDelete(data.blueprintName, data.modelId);
   RaiseModelUpdate();
+  RaiseBpidListUpdate();
 }
 
 /// INSTANCE SPEC UTILS ////////////////////////////////////////////////////
@@ -275,7 +291,10 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   // REVIEW
   // This needs to send data to db
   //
-  if (sendUpdate) RaiseModelUpdate(data.modelId);
+  if (sendUpdate) {
+    RaiseModelUpdate(data.modelId);
+    RaiseInstancesListUpdate();
+  }
 }
 /**
  *
@@ -295,6 +314,7 @@ export function InstanceUpdate(data) {
       : instance.initScript;
   model.instances[instanceIndex] = instance;
   RaiseModelUpdate(data.modelId);
+  RaiseInstancesListUpdate();
 }
 /**
  * HACK: Manually change the init script when updating position.
@@ -315,6 +335,7 @@ export function InstanceUpdatePosition(data) {
   instance.initScript = scriptText;
   model.instances[instanceIndex] = instance;
   RaiseModelUpdate(data.modelId);
+  RaiseInstancesListUpdate();
 }
 /**
  * User is requesting to edit an instance
@@ -358,6 +379,7 @@ export function InstanceDelete(data) {
   DeleteInstance(data.instanceDef);
   DeleteAgent(data.instanceDef);
   RaiseModelUpdate(data.modelId);
+  RaiseInstancesListUpdate();
 
   // REVIEW
   // Update the DB!
@@ -474,6 +496,8 @@ function ScriptUpdate(data) {
   // }
 
   RaiseModelUpdate();
+  RaiseBpidListUpdate();
+  RaiseInstancesListUpdate();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RoundUpdate(data) {
@@ -589,7 +613,9 @@ const API_PROJDATA = [
   'GetCurrentModelData',
   'GetProjectBoundary',
   'GetCharControlBpidList',
-  'GetBlueprintProperties'
+  'GetBlueprintProperties',
+  'GetBpidList',
+  'GetInstancesList'
 ];
 /// Map mod.<functionName> so they can be called by HandleREquestProjData
 const mod = {};
@@ -599,6 +625,8 @@ mod.GetCurrentModelData = GetCurrentModelData;
 mod.GetProjectBoundary = GetBoundary; // Mapping clarifies target
 mod.GetCharControlBpidList = GetCharControlBpidList;
 mod.GetBlueprintProperties = GetBlueprintProperties;
+mod.GetBpidList = GetBpidList;
+mod.GetInstancesList = GetInstancesList;
 /// Call Handler
 function HandleRequestProjData(data) {
   if (DBG) console.log('NET:REQ_PROJDATA got request', data);

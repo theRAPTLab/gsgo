@@ -200,9 +200,9 @@
         {
           "id": "Bunny",
           "label": "Bunny",
-          "isCharControllable": false,
-          "isPozyxControllable": false,
-          "scriptText": "# BLUEPRINT Bunny\n# PROGRAM DEFINE\nuseFeature Costume\nfeatCall Costume setCostume 'bunny.json' 0"
+          "isCharControllable": true,
+          "isPozyxControllable": true,
+          "scriptText": "# BLUEPRINT Bunny\n# PROGRAM DEFINE\nuseFeature Costume\nfeatCall Costume setCostume 'bunny.json' 0\nuseFeature Movement\nfeatCall Movement setMovementType 'wander'"
         }
       ],
       "instances": [
