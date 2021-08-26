@@ -170,14 +170,14 @@ export function SaveAgent(agent) {
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, id } = instancedef;
-  if (!AGENTS.has(blueprint)) {
-    console.error(...PR(`blueprint ${blueprint} not found`));
+  const { bpid, id } = instancedef;
+  if (!AGENTS.has(bpid)) {
+    console.error(...PR(`blueprint ${bpid} not found`));
     return;
   }
-  const agents = AGENTS.get(blueprint);
+  const agents = AGENTS.get(bpid);
   agents.delete(id);
-  AGENTS.set(blueprint, agents);
+  AGENTS.set(bpid, agents);
   AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

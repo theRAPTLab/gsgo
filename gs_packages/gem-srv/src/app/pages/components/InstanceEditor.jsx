@@ -96,7 +96,7 @@ class InstanceEditor extends React.Component {
 
   GetBlueprintName() {
     const { instance } = this.props;
-    return instance ? instance.blueprint : '';
+    return instance ? instance.bpid : '';
   }
 
   GetAgentId() {
@@ -433,7 +433,7 @@ class InstanceEditor extends React.Component {
       isDeletingProperty
     } = this.state;
     const { id, modelId, instance, classes } = this.props;
-    const instanceName = instance.name;
+    const instanceName = instance.label;
 
     const addableProperties = this.GetAddableProperties();
 

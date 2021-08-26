@@ -73,7 +73,7 @@ function UDIDtoID(udid) {
 
 /// DATA UPDATE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Control Object Sync to InputDef
+// Control Object (from CharControl) Sync to InputDef
 const COBJ_TO_INPUTDEF = new SyncMap({
   Constructor: InputDef,
   autoGrow: true,
@@ -84,15 +84,15 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
     // HACK Blueprints into cobj
-    inputDef.bpname = cobj.bpname;
-    inputDef.name = cobj.name;
+    inputDef.bpid = cobj.bpid;
+    inputDef.label = cobj.label;
     inputDef.framesSinceLastUpdate = 0;
   },
   onUpdate: (cobj: any, inputDef: InputDef) => {
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
-    inputDef.bpname = cobj.bpname;
-    inputDef.name = cobj.name;
+    inputDef.bpid = cobj.bpid;
+    inputDef.label = cobj.label;
     inputDef.framesSinceLastUpdate = 0;
   },
   shouldRemove: (inputDef, map) => {
@@ -359,8 +359,8 @@ function InputUpdate(devAPI, bpname) {
   // Technically cobjs should not have a blueprint parameter
   // but InputDefs need it to be able to generate an agent.
   const overriden_cobjs = raw_cobjs.map(o => {
-    o.bpname = bpname;
-    o.name = o.id;
+    o.bpid = bpname;
+    o.label = o.id;
     return o;
   });
   if (DBG) console.log('cobs', overriden_cobjs);
@@ -405,6 +405,5 @@ export function GetInputDefs(): object[] {
  */
 export function InputsReset() {
   const defs = GetInputDefs();
-  console.error('delete input agents');
   defs.forEach(d => DeleteAgent(d));
 }

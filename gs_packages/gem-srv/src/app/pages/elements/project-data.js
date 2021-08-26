@@ -307,7 +307,7 @@ export function InstanceUpdate(data) {
   const model = GetProject(data.modelId);
   const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
   const instance = model.instances[instanceIndex];
-  instance.name = data.instanceName || instance.name;
+  instance.label = data.instanceName || instance.label;
   instance.initScript =
     data.instanceInit !== undefined // data.instanceInit might be ''
       ? data.instanceInit
@@ -524,7 +524,7 @@ export function SendInspectorUpdate(frametime) {
   const inspectorAgents = agents.map(a =>
     MONITORED_INSTANCES.includes(a.id)
       ? a
-      : { id: a.id, name: a.name, blueprint: a.blueprint }
+      : { id: a.id, label: a.name, blueprint: a.blueprint }
   );
 
   // Debug PIXI Output
