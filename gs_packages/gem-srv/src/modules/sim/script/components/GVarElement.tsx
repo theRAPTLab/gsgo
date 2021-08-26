@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Script UI for GVars
@@ -127,7 +128,7 @@ class GVarElement extends React.Component<MyProps, MyState> {
             onSave={onSaveData}
             index={index}
             argindex={i}
-            key={i}
+            key={arg}
           />
         ))}
       </div>
