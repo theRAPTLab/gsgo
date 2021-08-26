@@ -73,11 +73,16 @@ class CharController extends React.Component {
       rate: 0
     };
     this.init = this.init.bind(this);
-    this.updateInputBPNames = this.updateInputBPNames.bind(this);
-    this.handleSetInputBPNames = this.handleSetInputBPNames.bind(this);
+    this.updateCharControlBpidList = this.updateCharControlBpidList.bind(this);
+    this.handleSetCharControlBpidList = this.handleSetCharControlBpidList.bind(
+      this
+    );
     this.requestBPNames = this.requestBPNames.bind(this);
     this.handleInputChange = this.handleInputChange.bind(this);
-    UR.HandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
+    UR.HandleMessage(
+      'NET:SET_CHARCONTROL_BPIDLIST',
+      this.handleSetCharControlBpidList
+    );
   }
 
   componentDidMount() {
@@ -109,7 +114,10 @@ class CharController extends React.Component {
 
   componentWillUnmount() {
     if (DBG) console.log(...PR('componentWillUnmount'));
-    UR.UnhandleMessage('NET:SET_INPUT_BPNAMES', this.handleSetInputBPNames);
+    UR.UnhandleMessage(
+      'NET:SET_CHARCONTROL_BPIDLIST',
+      this.handleSetCharControlBpidList
+    );
   }
 
   init() {
@@ -119,7 +127,7 @@ class CharController extends React.Component {
     this.setState({ isReady: true });
   }
 
-  updateInputBPNames(bpnames) {
+  updateCharControlBpidList(bpnames) {
     if (DBG) console.log(...PR('setInputBPNames', bpnames));
     // TAGS is in mod-charcontrol-ui.js
     const tags = bpnames.map(b => ({ 'id': `bp_${b}`, 'label': b }));
@@ -134,9 +142,9 @@ class CharController extends React.Component {
   }
 
   // URSYS Handler
-  handleSetInputBPNames(data) {
+  handleSetCharControlBpidList(data) {
     if (DBG) console.log(...PR('handleSetInputBPNames', data));
-    this.updateInputBPNames(data.bpnames);
+    this.updateCharControlBpidList(data.bpnames);
   }
 
   // Direct Call
@@ -146,8 +154,8 @@ class CharController extends React.Component {
     // will come back before we're ready
     if (DBG) console.log(...PR('requestBPNames'));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetInputBPNames'
-    }).then(rdata => this.updateInputBPNames(rdata.result));
+      fnName: 'GetCharControlBpidList'
+    }).then(rdata => this.updateCharControlBpidList(rdata.result));
   }
 
   // FORM CHANGE METHOD

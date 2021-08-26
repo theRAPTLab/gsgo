@@ -10,6 +10,7 @@
 import UR from '@gemstep/ursys/client';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
+import { PROJECT } from './dc-project';
 import { DeleteAgent } from './dc-agents';
 import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
 
@@ -21,9 +22,6 @@ let FRAME_TIMER;
 
 let STAGE_WIDTH = 100; // default
 let STAGE_HEIGHT = 100; // default
-
-let BPNAMES = []; // names of user-controllable blueprints
-let POZYX_BPNAMES = [];
 
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
@@ -269,23 +267,9 @@ function m_PozyxDampen(
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Return the first pozyx controllable blueprint for now
- * Eventually we'll add a more sophisticated map
- * SRI: this borks up every non-pozyx system and makes INPUT dependent
- * on SIM. INPUT, SIM, and RENDER are supposed to be completely independent.
- */
-export function GetDefaultPozyxBPName() {
-  if (POZYX_BPNAMES.length < 1) {
-    // console.warn('No pozyx controllable blueprints defined!');
-    // SRI: disable this because it isn't necessarily pozyx
-    // console.warn('No pozyx controllable blueprints defined!');
-    return undefined;
-  }
-  return POZYX_BPNAMES[0];
-}
-export function SetPozyxBPNames(bpnames: string[]) {
-  POZYX_BPNAMES = [...bpnames];
+
+function GetDefaultPozyxBpid() {
+  PROJECT.GetPozyxControlDefaultBpid();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const POZYX_TO_COBJ = new SyncMap({
@@ -299,8 +283,8 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.x = x;
     cobj.y = y;
     // HACK Blueprints into cobj
-    cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
+    cobj.bpid = GetDefaultPozyxBpid(); // GetDefaultPozyxBPName();
+    cobj.label = String(entity.id).startsWith('ft-pozyx')
       ? entity.id.substring(8)
       : entity.id;
   },
@@ -315,8 +299,8 @@ POZYX_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
+    cobj.bpid = GetDefaultPozyxBpid(); // GetDefaultPozyxBPName();
+    cobj.label = String(entity.id).startsWith('ft-pozyx')
       ? entity.id.substring(8)
       : entity.id;
   },
@@ -338,17 +322,6 @@ export function GetTrackerMap() {
 export function SetInputStageBounds(width, height) {
   STAGE_WIDTH = width;
   STAGE_HEIGHT = height;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Determines which blueprint types can be controlled by user inputs
- * @param bpnames
- */
-export function SetInputBPnames(bpnames: string[]) {
-  BPNAMES = [...bpnames];
-}
-export function GetInputBPnames() {
-  return BPNAMES;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

@@ -142,6 +142,26 @@ export default class Project {
     const index = this.blueprints.findIndex(s => s.id === id);
     this.blueprints[index] = { ...updatedBlueprint }; // copy
   }
+  /**
+   * Returns array of blueprint ids that are PozyxControllable.
+   * @returns [...id]
+   */
+  GetPozyxControlBpidList(): string[] {
+    return this.blueprints.filter(b => b.isPozyxControllable).map(b => b.id);
+  }
+  /**
+   * Returns the first pozyx controllable blueprint as the default bp to use
+   * Used dc-inputs to determine mapping
+   * @returns id
+   */
+  GetPozyxControlDefaultBpid(): string {
+    const bpidList = this.GetPozyxControlBpidList();
+    if (bpidList.length < 1) return undefined;
+    return bpidList[0];
+  }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// INSTANCES
   GetInstance(id) {
     return this.instances.find(i => i.id === id);
   }

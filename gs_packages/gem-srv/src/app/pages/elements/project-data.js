@@ -129,8 +129,6 @@ export function InjectBlueprint(data) {
   const source = TRANSPILER.ScriptifyText(blueprint.script);
   const bundle = TRANSPILER.CompileBlueprint(source);
   TRANSPILER.RegisterBlueprint(bundle);
-  // Update PozyxBPNames
-  SetPozyxBPNames(GetPozyxBPNames());
 }
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
@@ -189,26 +187,14 @@ function GetBlueprintPropertiesTypeMap(
 /**
  * Returns array of blueprint names that are controllable by user input.
  * Used to set sim-inputs and CharControl.
- * @param {string} modelId
- * @return {string[]} [ ...bpnames ]
+ * CharControl requests this list directly via REQ:PROJ_DATA
+ * @return {string[]} [ ...bpid ]
  */
-function GetInputBPNames(modelId = CURRENT_MODEL_ID) {
-  if (DBG) console.log(...PR('GetInputBPNames called with', modelId));
-  const model = GetProject(modelId);
-  if (!model)
-    console.error(...PR('GetInputBPNames could not load model', modelId));
-  const scripts = model.scripts;
-  const res = scripts.filter(s => s.isCharControllable).map(s => s.id);
-  return res;
+function GetCharControlBpidList() {
+  return PROJECT.GetCharControlBpidList();
 }
-function GetPozyxBPNames(modelId = CURRENT_MODEL_ID) {
-  if (DBG) console.log(...PR('GetPozyxBPNames called with', modelId));
-  const model = GetProject(modelId);
-  if (!model)
-    console.error(...PR('GetPozyxBPNames could not load model', modelId));
-  const scripts = model.scripts;
-  const res = scripts.filter(s => s.isPozyxControllable).map(s => s.id);
-  return res;
+function GetPozyxBPNames() {
+  return PROJECT.GetPozyxControlBpidList();
 }
 /**
  * Removes the script from `model` and related `model.instances`
@@ -603,7 +589,7 @@ const API_PROJDATA = [
   'GetProject',
   'GetCurrentModelData',
   'GetProjectBoundary',
-  'GetInputBPNames',
+  'GetCharControlBpidList',
   'GetBlueprintProperties'
 ];
 /// Map mod.<functionName> so they can be called by HandleREquestProjData
@@ -612,7 +598,7 @@ mod.ReadProjectsList = ReadProjectsList;
 mod.GetProject = GetProject;
 mod.GetCurrentModelData = GetCurrentModelData;
 mod.GetProjectBoundary = GetBoundary; // Mapping clarifies target
-mod.GetInputBPNames = GetInputBPNames;
+mod.GetCharControlBpidList = GetCharControlBpidList;
 mod.GetBlueprintProperties = GetBlueprintProperties;
 /// Call Handler
 function HandleRequestProjData(data) {
@@ -677,7 +663,6 @@ export {
   GetProject,
   GetCurrentModelData,
   GetBlueprintPropertiesTypeMap,
-  GetInputBPNames,
   GetPozyxBPNames,
   BlueprintDelete
 };
