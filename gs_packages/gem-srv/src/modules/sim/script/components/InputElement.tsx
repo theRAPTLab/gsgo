@@ -2,6 +2,8 @@
 
   Generic User Input Field
 
+  This is a user input field for an arbitrary argument in the keyword,
+  referenced via `argindex`.
   Intended for use with a class-keyword.
 
   type = 'string' || 'number'
@@ -67,9 +69,18 @@ class InputElement extends React.Component<any, any> {
     // Otherwise clicks will propagage to InstanceEditor where it will exit edit mode
   }
   saveData() {
-    const { onSave } = this.props;
-    const { isDirty } = this.state;
-    if (isDirty) onSave();
+    const { args, isDirty } = this.state;
+    const { argindex, onSave, type } = this.props;
+    if (isDirty) {
+      if (type === 'string') {
+        // wrap strings in quotes or the parameter will be treated as a token
+        args[argindex] = `"${args[argindex]}"`;
+      }
+      if (type === 'number' && String(args[argindex]).startsWith('.')) {
+        args[argindex] = `0${args[argindex]}`;
+      }
+      onSave(); // don't setState({args}) or the quotes will be added to the input element
+    }
   }
   render() {
     const { index, argindex, type, classes } = this.props;

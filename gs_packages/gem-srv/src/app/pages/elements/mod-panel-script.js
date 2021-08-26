@@ -7,7 +7,13 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler';
+// TRANSPILER v1
+// import * as TRANSPILER from 'script/transpiler';
+
+// TRANSPILER v2
+import * as TRANSPILER from 'script/transpiler-v2';
+
+import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -27,10 +33,18 @@ export function CompileToJSX(currentScript) {
   // Construct list of featProps for script UI menu
   const featPropMap = TRANSPILER.ExtractFeatPropMapFromScript(currentScript);
 
-  // console.error('currentScript', currentScript);
-  const source = TRANSPILER.ScriptifyText(currentScript);
-  // console.error('mod-panel-script', source);
-  const jsx = TRANSPILER.RenderScript(source, {
+  // TRANSPILER v1
+  // const source = TRANSPILER.ScriptifyText(currentScript);
+
+  // TRANSPILER v2
+  const source = TRANSPILER.TextToScript(currentScript);
+
+  // ORIG using TRANSPILER v1
+  // const jsx = TRANSPILER.RenderScript(source, {
+
+  // TRANSPILER v2
+  // NEW Use ScriptToJSX for block rendering
+  const jsx = ScriptToJSX(source, {
     isEditable: true,
     isDeletable: false,
     isInstanceEditor: false,

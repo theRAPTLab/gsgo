@@ -47,8 +47,10 @@ const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
-const MOVEDISTANCE = 1; // Minimum distance moved before `isMoved` is registered
+const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
 // This is necessary to account for input jitter
+// 1 is too quirky
+// 5 seems too high for predator bees
 
 /// Movement Agent Manager
 const MOVEMENT_AGENTS = new Map();
@@ -349,7 +351,16 @@ function seekAgentOrWander(agent: IAgent, frame: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// wanderUntilAgent
 function wanderUntilAgent(agent: IAgent, frame: number) {
-  // if bounds
+  if (!INSIDE_AGENTS.has(agent.id)) {
+    console.error(
+      'Feature Movement: wanderUntilAgent could not find a registered targetType for',
+      agent.id,
+      agent.blueprint.name,
+      '. Perhaps its freshly spawned/cloned and you did not set the "wanderUntilInside" targetType yet?  Reverting movement type to static.'
+    );
+    agent.prop.Movement.movementType.setTo('static');
+    return;
+  }
   const targetType = INSIDE_AGENTS.get(agent.id).targetType;
   const targets = GetAgentsByType(targetType);
   let isInside = false;
@@ -400,8 +411,12 @@ function m_FindNearestAgent(agent, targetType) {
 /// NOTE This assumes Vision
 function m_FindNearbyAgents(agent, targetType) {
   // Only run this after m_FeaturesUpdate sets distances
-  if (!agent.distanceTo)
-    throw new Error('Set distance before finding nearby agents');
+  if (!agent.distanceTo) {
+    console.log(
+      `m_FindNearbyAgents skipping ${agent.blueprint.name} ${agent.id} because distanceTo was not yet calculated by SIM/PHYSICS_UPDATE.`
+    );
+    return [];
+  }
   const nearby = [];
   const targets = GetAgentsByType(targetType);
   targets.forEach(t => {
@@ -443,9 +458,10 @@ function m_FeaturesThinkSeek(frame) {
     // 1. Start with agents within vision distance
     //    Sorted by distance
     const nearAgents = m_FindNearbyAgents(agent, options.targetType);
+    if (nearAgents === undefined) return; // no agents
     const target = nearAgents.find(near => {
-      // 2. Find first agent within the cone
-      if (near) {
+      // 2. Find first active (non-inert) agent within the cone
+      if (near && !near.isInert) {
         if (options.useVisionColor) {
           // console.log('...canSeeColor', near.id, agent.canSeeColor.get(near.id));
           return agent.canSeeColor.get(near.id);
@@ -554,7 +570,8 @@ class MovementPack extends GFeature {
     this.featAddMethod('jitterPos', this.jitterPos);
     this.featAddMethod('jitterRotate', this.jitterRotate);
     this.featAddMethod('seekNearest', this.seekNearest);
-    this.featAddMethod('seekNearestVisible', this.seekNearestVisible);
+    this.featAddMethod('seekNearestVisibleCone', this.seekNearestVisibleCone);
+    this.featAddMethod('seekNearestVisibleColor', this.seekNearestVisibleColor);
     this.featAddMethod('wanderUntilInside', this.wanderUntilInside);
   }
 
@@ -609,6 +626,8 @@ class MovementPack extends GFeature {
   }
 
   // TYPES
+  // These are convenience functions.
+  // Each can be set separately via featProps.
   setMovementType(agent: IAgent, type: string, ...params) {
     agent.getFeatProp(FEATID, 'movementType').value = type;
     if (params.length > 0) {

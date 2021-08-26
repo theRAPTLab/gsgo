@@ -217,7 +217,8 @@ const useStylesHOC = theme => ({
     display: 'inline-block',
     color: CLR_DATA,
     // width: '80px',
-    textAlign: 'right'
+    textAlign: 'right',
+    marginRight: '3px'
   },
   inspectorLabelLeft: {
     display: 'inline-block',
@@ -256,6 +257,7 @@ const useStylesHOC = theme => ({
   },
   instanceSpec: {
     backgroundColor: '#000',
+    // width: '100%', // Keep it narrow so we can stack up multiple in a row
     margin: '0.5em 0 0.5em 0.5em',
     padding: '3px',
     border: '1px solid #00000000',
@@ -267,7 +269,6 @@ const useStylesHOC = theme => ({
   },
   instanceSpecSelected: {
     border: '1px solid #ffff00',
-    width: '200px',
     padding: '10px 5px'
   },
   instanceEditorLineItem: {
@@ -383,6 +384,10 @@ const useStylesHOC = theme => ({
     backgroundColor: CLR_OBJECT_CLICKABLE
   },
   colorData: {
+    color: CLR_DATA
+  },
+  ioTransform: {
+    // FormTransform
     color: CLR_DATA
   }
 });

@@ -22,7 +22,13 @@ Update Cycle
 import React from 'react';
 import clsx from 'clsx';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
+import { GetAllFeatures } from 'modules/datacore/dc-features';
+import {
+  ScriptToJSX,
+  UpdateScript
+} from 'modules/sim/script/tools/script-to-jsx';
+
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -62,14 +68,56 @@ class SubpanelScript extends React.Component {
     const { script } = this.props;
     const { isEditable } = this.state;
     if (isEditable) {
-      // 1. Convert full script text to array
-      const scriptTextLines = script.split('\n');
-      // 2. Convert the updated line to text
-      const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
-      // 3. Replace the updated line in the script array
-      scriptTextLines[data.index] = updatedLineText;
-      // 4. Convert the script array back to script text
-      const updatedScript = scriptTextLines.join('\n');
+      const updatedScript = UpdateScript(script, data);
+
+      // WORKING VERSION
+      // // 1. Convert init script text to script units
+      // const origScriptUnits = TRANSPILER.TextToScript(script);
+      // console.log('orig script', origScriptUnits);
+
+      // // 2. Figure out which unit to replace
+      // const line = data.index;
+      // const parentLine = data.parentIndices;
+      // let scriptUnits = [...origScriptUnits];
+      // console.log('scriptUnits (should be same as prev)', scriptUnits);
+      // if (parentLine !== undefined) {
+      //   // Update is a nested line, replace the block
+      //   console.log('updating nested line');
+
+      //   // what if we don't know what the block is?
+      //   // why don't we know the block?
+      //   // featCall is not passin the options info to featProp?
+
+      //   const blockPosition = data.blockIndex; // could be first block or second block <conseq> <alt>
+      //   console.error('block is', blockPosition);
+      //   const origBlock = scriptUnits[parentLine][blockPosition];
+      //   console.log('...origBlock', origBlock);
+      //   console.log('...line', line);
+      //   const origBlockData = origBlock.block;
+      //   origBlockData.splice(line, 1, ...data.scriptUnit);
+      //   console.log('...updatedBlockData', origBlockData);
+      //   scriptUnits[parentLine][blockPosition] = {
+      //     block: origBlockData
+      //   };
+      // } else {
+      //   // Update root level line
+      //   scriptUnits[line] = data.scriptUnit;
+      // }
+      // console.log('updated ScriptUnits', scriptUnits, scriptUnits[1]);
+
+      // // 3. Convert back to script text
+      // const updatedScript = TRANSPILER.ScriptToText(scriptUnits);
+      // console.log('updated script text', updatedScript);
+
+      // ORIG
+      // // 1. Convert full script text to array
+      // const scriptTextLines = script.split('\n');
+      // // 2. Convert the updated line to text
+      // const updatedLineText = TRANSPILER.ScriptToText(data.scriptUnit);
+      // // 3. Replace the updated line in the script array
+      // scriptTextLines[data.index] = updatedLineText;
+      // // 4. Convert the script array back to script text
+      // const updatedScript = scriptTextLines.join('\n');
 
       if (data.exitEdit) {
         this.DoDeselect();
@@ -122,20 +170,26 @@ class SubpanelScript extends React.Component {
       isDeletingProperty
     } = this.state;
     const { id, script, onChange, classes } = this.props;
-    const source = TRANSPILER.ScriptifyText(script);
+    const source = TRANSPILER.TextToScript(script);
 
     // Construct list of selectable agent properties
     const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(script);
 
-    // Construct list of featProps for script UI menu
-    // HACK: Rounds are run by the Global Agent, which only has the Population
-    // feature available
-    const featPropMap = TRANSPILER.ExtractFeatPropMap(['Population']);
+    // // ORIG => This doesn't load all the features?!?
+    //              // Construct list of featProps for script UI menu
+    //              // HACK: Rounds are run by the Global Agent, which only has the Population
+    //              // feature available
+    //              const featPropMap = TRANSPILER.ExtractFeatPropMap(['Population']);
 
-    const jsx = TRANSPILER.RenderScript(source, {
+    // Construct list of featProps for script UI menu
+    const features = GetAllFeatures();
+    const featNames = [...features.keys()];
+    const featPropMap = TRANSPILER.ExtractFeatPropMap(featNames);
+
+    const jsx = ScriptToJSX(source, {
       isEditable,
       isDeletable: isDeletingProperty,
-      isInstanceEditor: true,
+      isInstanceEditor: false,
       propMap,
       featPropMap
     });

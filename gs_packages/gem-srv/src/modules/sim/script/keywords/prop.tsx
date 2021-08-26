@@ -42,6 +42,7 @@ import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { TextToScript } from 'modules/sim/script/tools//text-to-script';
 import GVarElement from '../components/GVarElement';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
@@ -60,9 +61,11 @@ const DBG = true;
  */
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 type MyState = {
+  context: string;
   propName: string;
   methodName: string;
   args: string[];
+  parentLineIndices: any;
 };
 type MyProps = {
   index: number;
@@ -113,8 +116,10 @@ class PropElement extends React.Component<MyProps, MyState> {
    *                           Used to handle exiting edit on "Enter"
    */
   saveData(exitEdit = false) {
+    const { parentLineIndices } = this.state;
     const updata = {
       index: this.index,
+      parentLineIndices,
       scriptUnit: this.serialize(this.state),
       exitEdit
     };
@@ -130,7 +135,7 @@ class PropElement extends React.Component<MyProps, MyState> {
       isInstanceEditor,
       classes
     } = this.props;
-    const { propName, methodName, args } = this.state;
+    const { context, propName, methodName, args } = this.state;
 
     let propNames = [...propMap.values()];
 
@@ -155,15 +160,17 @@ class PropElement extends React.Component<MyProps, MyState> {
       // Static Minimized View
       jsx = (
         <>
+          {context ? `${context}.` : ''}
           {propName}:&nbsp;{args[0]}&nbsp;{' '}
         </>
       );
     } else if (isInstanceEditor) {
       // InstanceEditor
       jsx = (
-        <div style={{ display: 'grid', gridTemplateColumns: '80px auto 15px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'auto 15px' }}>
           <GVarElement
             state={this.state}
+            context={context}
             propName={propName}
             propNameOptions={propNames}
             propMethod={methodName}
@@ -192,6 +199,7 @@ class PropElement extends React.Component<MyProps, MyState> {
             prop
             <GVarElement
               state={this.state}
+              context={context}
               propName={propName}
               propNameOptions={propNames}
               propMethod={methodName}
@@ -242,10 +250,11 @@ export class prop extends Keyword {
   /** return a state object that turn react state back into source */
   serialize(state: any): TScriptUnit {
     // pull `type` and 'propMethods' out so it doesn't get mixed in with `...arg`
-    const { propName, methodName, type, propMethods, args } = state;
-    const scriptArr = [this.keyword, propName, methodName, ...args];
+    const { context, propName, methodName, type, propMethods, args } = state;
+    const refArg = context ? `${context}.${propName}` : propName;
+    const scriptArr = [this.keyword, refArg, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = ScriptifyText(scriptText);
+    const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
   }
 
@@ -253,22 +262,43 @@ export class prop extends Keyword {
   jsx(
     index: number,
     unit: TScriptUnit,
+    // REVIEW: Add 'options' here?
     children?: any[] // options
   ): any {
     const expUnit = JSXFieldsFromUnit(unit);
-    const [kw, ref, methodName, ...args] = expUnit;
+    const [kw, refArg, methodName, ...args] = expUnit;
+
+    // Dereference Ref ("Costume" or "Moth.Costume")
+    const ref = refArg.objref || [refArg];
+    const len = ref.length;
+    let propName = '';
+    let context = '';
+    if (len === 1) {
+      /** IMPLICIT REF *******************************************************/
+      /// e.g. 'Costume' is interpreted as 'agent.Costume'
+      propName = `${ref[0]}`;
+      // context = `${ref[0]}`;
+    } else if (len === 2) {
+      /** EXPLICIT REF *******************************************************/
+      /// e.g. 'agent.Costume' or 'Bee.Costume'
+      propName = `${ref[1]}`;
+      context = `${ref[0]}`;
+    }
+
     const state = {
-      propName: ref,
+      context,
+      propName,
       methodName,
       args,
       type: '', // set by PropElement
-      propMethods: [] // set by PropElement
+      propMethods: [], // set by PropElement
+      parentLineIndices: children ? children.parentLineIndices : undefined
     };
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
     const isInstanceEditor = children ? children.isInstanceEditor : false;
     const propMap = children ? children.propMap : new Map();
-    const property = propMap.get(ref);
+    const property = propMap.get(propName);
     this.type = property ? property.type : 'string';
 
     const StyledPropElement = withStyles(useStylesHOC)(PropElement);
@@ -285,10 +315,9 @@ export class prop extends Keyword {
         serialize={this.serialize}
       />
     );
-    if (!isInstanceEditor) {
+    if (!isInstanceEditor || isEditable) {
       // Script Editor, add line numbers
-      const retval = super.jsx(index, unit, jsx);
-      return retval;
+      return super.jsx(index, unit, jsx);
     }
     return jsx;
   }

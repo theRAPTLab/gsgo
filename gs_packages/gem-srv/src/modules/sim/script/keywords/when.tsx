@@ -13,6 +13,7 @@ import {
   RegisterPairInteraction,
   GetInteractionResults
 } from 'modules/datacore/dc-interactions';
+import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,19 +86,66 @@ export class when extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any[]): any {
+  jsx(index: number, unit: TScriptUnit, options: any, children?: any[]): any {
     let out;
+    let cc = '';
     if (unit.length < 4 || unit.length > 5) {
       const [kw] = unit;
       out = `${kw} invalid number of arguments`;
     } else if (unit.length === 4) {
       const [kw, A, testName, consq] = unit;
-      out = `${kw} ${A} ${testName} run ${consq.length} ops`;
+      if (consq && Array.isArray(consq)) {
+        const blockIndex = 3; // the position in the unit array to replace <when> <agent> <testName> <conseq>
+        // already nested?
+        if (options.parentLineIndices !== undefined) {
+          // nested parentIndices!
+          options.parentLineIndices = [
+            ...options.parentLineIndices,
+            { index, blockIndex }
+          ];
+        } else {
+          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+        }
+        cc = ScriptToJSX(consq, options);
+      }
+      out = `${kw} ${A} ${testName}`;
     } else if (unit.length === 5) {
-      const [kw, A, B, testName, consq] = unit;
-      out = `${kw} ${A} ${testName} ${B} run ${consq.length} ops`;
+      const [kw, A, testName, B, consq] = unit;
+      if (consq && Array.isArray(consq)) {
+        const blockIndex = 4; // the position in the unit array to replace <when> <agent> <testName> <conseq>
+        // already nested?
+        if (options.parentLineIndices !== undefined) {
+          // nested parentIndices!
+          options.parentLineIndices = [
+            ...options.parentLineIndices,
+            { index, blockIndex }
+          ];
+        } else {
+          options.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+        }
+        cc = ScriptToJSX(consq, options);
+      }
+      out = `${kw} ${A} ${testName} ${B}`;
     }
-    return super.jsx(index, unit, <>{out}</>);
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          {out} {cc}
+        </>
+      );
+    }
+    return super.jsxMin(
+      index,
+      unit,
+      <>
+        {out} (+{cc.length} lines)
+      </>
+    );
   }
 } // end of UseFeature
 

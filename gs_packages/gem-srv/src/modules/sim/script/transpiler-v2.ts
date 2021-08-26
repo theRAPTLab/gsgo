@@ -35,6 +35,7 @@ import {
   CompileBlueprint,
   DecodeStatement
 } from './tools/_all_tools';
+import { ScriptToJSX } from './tools/script-to-jsx';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -126,21 +127,38 @@ function ExtractBlueprintProperties(scriptText): any[] {
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
-    // { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
-    // { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
-    // { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
-    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false }
-    // { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
-    // { name: 'text', type: 'string', defaultValue: '""', isFeatProp: false },
-    // { name: 'meter', type: 'number', defaultValue: 0, isFeatProp: false },
-    // { name: 'meterClr', type: 'number', defaultValue: 0, isFeatProp: false },
-    // {
-    //   name: 'meterLarge',
-    //   type: 'boolean',
-    //   defaultValue: false,
-    //   isFeatProp: false
-    // }
-
+    { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
+    { name: 'color', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'orientation', type: 'number', defaultValue: 0, isFeatProp: false },
+    { name: 'visible', type: 'boolean', defaultValue: true, isFeatProp: false },
+    { name: 'alpha', type: 'number', defaultValue: 1, isFeatProp: false },
+    { name: 'isInert', type: 'boolean', defaultValue: false, isFeatProp: false },
+    {
+      name: 'statusText',
+      type: 'string',
+      defaultValue: undefined,
+      isFeatProp: false
+    },
+    {
+      name: 'statusValue',
+      type: 'number',
+      defaultValue: undefined,
+      isFeatProp: false
+    },
+    {
+      name: 'statusValueColor',
+      type: 'number',
+      defaultValue: undefined,
+      isFeatProp: false
+    },
+    {
+      name: 'statusValueIsLarge',
+      type: 'boolean',
+      defaultValue: undefined,
+      isFeatProp: false
+    }
     // Don't allow wizard to set built-in skin property directly.
     // This should be handled via `featCall Costume setCostume` because that
     // call properly initializes the frameCount.
@@ -152,7 +170,8 @@ function ExtractBlueprintProperties(scriptText): any[] {
   const scriptUnits = TextToScript(scriptText);
   scriptUnits.forEach(unit => {
     if (unit[0] && unit[0].token === 'addProp') {
-      properties.push({
+      // add them to the top of the list
+      properties.unshift({
         name: unit[1].token,
         type: unit[2].token.toLowerCase(),
         defaultValue: Object.values(unit[3]), // might be a 'value' or 'string' or 'token'
@@ -387,7 +406,8 @@ function RemoveAgent(instanceDef: TInstance) {
 export {
   TextToScript, // text w/ newlines => TScriptUnit[]
   ScriptToText, // TScriptUnit[] => produce source text from units
-  CompileScript // TScriptUnit[] => TSMCProgram
+  CompileScript, // TScriptUnit[] => TSMCProgram
+  ScriptToJSX // TScriptUnit[] => jsx
 };
 
 /// DEPRECATED FUNCTIONS

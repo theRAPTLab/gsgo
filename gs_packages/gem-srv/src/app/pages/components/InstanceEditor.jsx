@@ -22,8 +22,15 @@ import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
 import { GetAllFeatures } from 'modules/datacore/dc-features';
-import { GetBlueprintProperties } from 'modules/datacore/dc-project';
-import * as TRANSPILER from 'script/transpiler';
+import {
+  GetBlueprintProperties,
+  GetBlueprintPropertiesMap
+} from 'modules/datacore/dc-project';
+import * as TRANSPILER from 'script/transpiler-v2';
+import {
+  ScriptToJSX,
+  UpdateScript
+} from 'modules/sim/script/tools/script-to-jsx';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 import InputField from './InputField';
@@ -74,6 +81,7 @@ class InstanceEditor extends React.Component {
 
   componentWillUnmount() {
     UR.UnhandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
+    UR.UnhandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
     UR.UnhandleMessage('INSTANCE_EDIT_ENABLE', this.HandleEditEnable);
     UR.UnhandleMessage('INSTANCE_EDIT_DISABLE', this.HandleEditDisable);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleHoverOver);
@@ -98,8 +106,8 @@ class InstanceEditor extends React.Component {
     let { agentId } = this.state;
     if (!agentId) {
       const { instance } = this.props;
-      const agent = GetAgentByName(instance.name);
-      agentId = agent.id;
+      if (!instance) throw new Error('InstanceEditor instance not defined yet');
+      agentId = instance.id; // instance id should match agent id
       this.setState({ agentId });
     }
     return agentId;
@@ -116,14 +124,68 @@ class InstanceEditor extends React.Component {
     if (isEditable) {
       const { instance } = this.props;
       const instanceName = this.GetInstanceName();
+
+      const updatedScript = UpdateScript(instance.initScript, data);
+
+      // WORKING VERSION
+      // // 1. Convert init script text to script units
+      // const origScriptUnits = TRANSPILER.TextToScript(instance.initScript);
+      // console.log('orig script', origScriptUnits);
+
+      // // 2. Figure out which unit to replace
+      // const line = data.index;
+      // const parentLine = data.parentIndices;
+      // let scriptUnits = [...origScriptUnits];
+      // console.log('scriptUnits (should be same as prev)', scriptUnits);
+      // if (parentLine !== undefined) {
+      //   // Update is a nested line, replace the block
+      //   console.log('updating nested line');
+      //   const blockPosition = data.blockIndex; // could be first block or second block <conseq> <alt>
+      //   console.error('block is', blockPosition);
+      //   const origBlock = scriptUnits[parentLine][blockPosition];
+      //   console.log('...origBlock', origBlock);
+      //   console.log('...line', line);
+      //   const origBlockData = origBlock.block;
+      //   origBlockData.splice(line, 1, ...data.scriptUnit);
+      //   console.log('...updatedBlockData', origBlockData);
+      //   scriptUnits[parentLine][blockPosition] = {
+      //     block: origBlockData
+      //   };
+
+      //   // WORKING without blockIndex
+      //   // // Update is a nested line, replace the block
+      //   // console.log('updating nested line');
+      //   // // Find the block component
+      //   // const lineToUpdate = scriptUnits[parentLine];
+      //   // const blockPosition = lineToUpdate.findIndex(l => l.block);
+      //   // console.error('block is', blockPosition);
+      //   // const origBlock = scriptUnits[parentLine][blockPosition];
+      //   // console.log('...origBlock', origBlock);
+      //   // console.log('...line', line);
+      //   // const origBlockData = origBlock.block;
+      //   // origBlockData.splice(line, 1, ...data.scriptUnit);
+      //   // console.log('...updatedBlockData', origBlockData);
+      //   // scriptUnits[parentLine][blockPosition] = { block: origBlockData };
+      // } else {
+      //   // Update root level line
+      //   scriptUnits[line] = data.scriptUnit;
+      // }
+      // console.log('updated ScriptUnits', scriptUnits, scriptUnits[1]);
+
+      // // 3. Convert back to script text
+      // const updatedScript = TRANSPILER.ScriptToText(scriptUnits);
+      // console.log('updated script text', updatedScript);
+
+      // ORIG
       // 1. Convert init script text to array
       const scriptTextLines = instance.initScript.split('\n');
       // 2. Convert the updated line to text
       const updatedLineText = TRANSPILER.TextifyScript(data.scriptUnit);
-      // 3. Replace the updated line in the script array
-      scriptTextLines[data.index] = updatedLineText;
-      // 4. Convert the script array back to script text
-      const updatedScript = scriptTextLines.join('\n');
+      // console.log('script text', scriptTextLines);
+      // // 3. Replace the updated line in the script array
+      // scriptTextLines[data.index] = updatedLineText;
+      // // 4. Convert the script array back to script text
+      // const updatedScript = scriptTextLines.join('\n');
 
       if (data.exitEdit) {
         this.DoDeselect();
@@ -181,7 +243,7 @@ class InstanceEditor extends React.Component {
     let properties = GetBlueprintProperties(blueprintName);
     // Remove properties that have already been set
     // 1. Get the list or properties
-    const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
+    const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
     const initProperties = scriptUnits.map(unit => {
       if (unit[0] && (unit[0].token === 'prop' || unit[0].token === 'featProp')) {
         return unit[1].token;
@@ -284,6 +346,7 @@ class InstanceEditor extends React.Component {
       isEditable = true;
       isSelected = true;
       this.setState({ isEditable, isSelected });
+      this.instance.scrollIntoView();
     } else {
       // always disable if message is not for us!
       this.DoDeselect();
@@ -376,10 +439,19 @@ class InstanceEditor extends React.Component {
 
     let jsx = '';
     if (instance) {
-      const source = TRANSPILER.ScriptifyText(instance.initScript);
-      const propMap = TRANSPILER.ExtractBlueprintPropertiesMap(
+      const source = TRANSPILER.TextToScript(instance.initScript);
+
+      // initScripts really should not be defining new props
+      // (leads to 'prop already added' errors)
+      // but this code is ready for it
+      const initPropMap = TRANSPILER.ExtractBlueprintPropertiesMap(
         instance.initScript
       );
+      const blueprintName = this.GetBlueprintName();
+      const propMap = new Map([
+        ...GetBlueprintPropertiesMap(blueprintName),
+        ...initPropMap
+      ]);
 
       // Construct list of featProps for script UI menu
       // This is complicated.
@@ -403,7 +475,7 @@ class InstanceEditor extends React.Component {
       //    new features, so the two sets of feature keys are unique.
       const featPropMap = new Map([...bpFeatPropMap], [initFeatPropMap]);
 
-      jsx = TRANSPILER.RenderScript(source, {
+      jsx = TRANSPILER.ScriptToJSX(source, {
         isEditable,
         isDeletable: isDeletingProperty,
         isInstanceEditor: true,
@@ -430,6 +502,9 @@ class InstanceEditor extends React.Component {
 
     return (
       <div
+        ref={c => {
+          this.instance = c;
+        }}
         className={clsx(classes.instanceSpec, {
           [classes.instanceSpecHovered]: isHovered,
           [classes.instanceSpecSelected]: isSelected
@@ -462,10 +537,10 @@ class InstanceEditor extends React.Component {
             isEditable={isEditable}
             onSave={this.OnNameSave}
           />
-          <div>{jsx}</div>
-          <br />
           {isEditable && (
             <>
+              <div>{jsx}</div>
+              <br />
               {isAddingProperty && isEditable && propMenuJsx}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <button

@@ -1,11 +1,12 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Returns a simple PIXI line graph
+  Returns a simple PIXI bar graph
 
   TO USE
 
   Pass a PIXI Graphics object to DrawGraph.
 
+      import { DrawGraph } from './util-pixi-graph';
       const graph = new PIXI.Graphics();
       DrawGraph(graph, data, {
         scale: 4, // scale 1 = 100 pixels
@@ -13,54 +14,55 @@
       });
       container.addChild(graph);
 
+  data is a simple array, e.g. [5, 10, 15].
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import * as PIXI from 'pixi.js';
 
-const SIZE = 100;
-const PAD = 10;
+const SIZEW = 200;
+const SIZEH = 100;
+const PAD = 2;
 const BGCOLOR = 0xffffff;
 const COLOR = 0xffffff;
+
+const LABELTEXT = [];
+
+const labelStyle = new PIXI.TextStyle({
+  fontFamily: 'Arial',
+  fontSize: 11,
+  fill: ['#ffffffcc'],
+  stroke: '#333333cc',
+  strokeThickness: 1
+});
 
 // not necessary, just use position
 function m_Offset(path: number[], x: number, y: number) {
   return path.map((val, index) => (index % 2 ? val + x : val + y));
 }
 
+// Min and Max Y values
 function m_GetBounds(path: number[]) {
-  let xmin = Infinity;
-  let xmax = -Infinity;
   let ymin = Infinity;
   let ymax = -Infinity;
   path.forEach((val, index) => {
-    if (index % 2) {
-      ymin = Math.min(val, ymin, 0);
-      ymax = Math.max(val, ymax);
-    } else {
-      xmin = Math.min(val, xmin);
-      xmax = Math.max(val, xmax);
-    }
+    ymin = Math.min(val, ymin, 0);
+    ymax = Math.max(val, ymax);
   });
-  return { x: xmin, y: ymin, width: xmax - xmin, height: ymax - ymin };
+  return { y: ymin, height: ymax - ymin };
 }
 
 /// Normalize to [0-100]
 /// We use 100, not 1 because line drawing at widths < 1 results in uneven lines
-function m_Normalize(
-  path: number[],
-  bounds: { x: number; y: number; width: number; height: number }
-) {
-  const w = bounds.width;
+function m_Normalize(path: number[], bounds: { y: number; height: number }) {
   let h = bounds.height;
   let hoffset = 0;
   if (bounds.y < 0) {
     h *= 2;
     hoffset = 0.5;
   }
-  return path.map((val, index) => {
-    if (index % 2) return ((val - bounds.y) / h + hoffset) * (SIZE - PAD);
-    return ((val - bounds.x) / w) * SIZE;
+  return path.map(val => {
+    return ((val - bounds.y) / h + hoffset) * (SIZEH - PAD);
   });
 }
 
@@ -70,9 +72,10 @@ function m_Normalize(
  * @param data flat array of x, y values, e.g. [0,0, 1,2, 3,4]
  * @param options
  */
-export function DrawGraph(
+export function DrawBarGraph(
   graph: PIXI.Graphics,
   data: number[],
+  labels: string[],
   options?: {
     scale?: number;
     scaleY?: number;
@@ -86,24 +89,23 @@ export function DrawGraph(
   // const path = [0, 0, 2, -10, 3, -12, 4, 9, 5, 5, 6, 0];
   // const path = [0, 0, 2, 10, 3, 12, 5, 9, 5, 5, 6, 0];
 
-  const path = data;
-  const bounds = m_GetBounds(path);
+  const bounds = m_GetBounds(data);
   const HAS_NEGATIVE_Y = bounds.y < 0;
 
   const color = options.color || COLOR;
   const scale = options.scale || 1;
   const scaleY = options.scaleY || scale;
   const offsetX = options.offsetX || 0;
-  const offsetY = options.offsetY || 0;
+  const offsetY = options.offsetY || -10; // Room to clear text label
 
-  const normalized = m_Normalize(path, bounds);
+  const normalized = m_Normalize(data, bounds);
 
   graph.clear();
 
   // draw background box
   if (!options.skipBackground) {
     graph.beginFill(BGCOLOR, 0.2);
-    graph.drawRect(0, 0, 100, 100);
+    graph.drawRect(0, 0, SIZEW, SIZEH);
     graph.endFill();
   }
 
@@ -120,30 +122,35 @@ export function DrawGraph(
     }
   }
 
-  // draw graph
-  graph.lineStyle({
-    width: 1,
-    color: color,
-    alignment: 0.5,
-    native: true,
-    join: PIXI.LINE_JOIN.ROUND,
-    cap: PIXI.LINE_CAP.ROUND,
-    miterLimit: 10
-  });
-  graph.moveTo(0, bounds.y < 0 ? 50 : 0);
+  // draw bars
+  graph.beginFill(color);
   const l = normalized.length;
-  graph.moveTo(normalized[0], normalized[1]);
-  for (let i = 2; i < l; i += 2) {
-    graph.lineTo(normalized[i], normalized[i + 1]);
+  const barW = SIZEW / l;
+  for (let i = 0; i < l; i += 1) {
+    const x = i * barW;
+    const y = 0;
+    const w = barW - PAD;
+    const h = normalized[i];
+    graph.drawRect(x, y, w, h);
+
+    if (i >= LABELTEXT.length) {
+      const str = labels ? labels[i] : '';
+      console.log('creating label', str);
+      const label = new PIXI.Text(str, labelStyle);
+      label.position.set(x, y - PAD); // left justified
+      label.scale.set(1, -1); // FLIP
+      graph.addChild(label);
+      LABELTEXT.push(label);
+    }
   }
   graph.endFill();
 
   // position and scale
   graph.position.set(
-    offsetX + (-SIZE * scale) / 2, // center
+    offsetX + (-SIZEW * scale) / 2, // center
     // offsetY + (SIZE * scaleY) / 2 // center
     // offsetY + SIZE * scaleY + PAD // bottom
     offsetY // bottom-aligned at center
   ); // centered
-  graph.scale.set(scale, -scaleY);
+  graph.scale.set(scale, -scaleY); // NOTE: Flipped Y
 }

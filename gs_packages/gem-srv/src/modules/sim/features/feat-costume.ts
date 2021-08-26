@@ -66,20 +66,27 @@ function m_Update() {
     // COLOR can be set two different ways: colorScale or HSV
     // NOTE: color scale will override any hsv settings
     if (agent.prop.Costume.colorScaleIndex.value !== undefined) {
-      // color scale?
+      // retrieve color from color scale
       color = agent.prop.Costume._colorScale.get(
         agent.prop.Costume.colorScaleIndex.value
       );
-    } else {
-      // hsv?
-      h = agent.prop.Costume.colorHue.value;
-      s = agent.prop.Costume.colorSaturation.value;
-      v = agent.prop.Costume.colorValue.value;
+      // set hsv
+      [h, s, v] = HSVfromHEX(color);
+      agent.prop.Costume.colorHue.setTo(h);
+      agent.prop.Costume.colorSaturation.setTo(s);
+      agent.prop.Costume.colorValue.setTo(v);
+    }
+
+    // convert feature color data to hex for agent
+    h = agent.prop.Costume.colorHue.value;
+    s = agent.prop.Costume.colorSaturation.value;
+    v = agent.prop.Costume.colorValue.value;
+    if (h !== undefined && s !== undefined && v !== undefined) {
       color = HEXfromHSV(h, s, v);
     }
-    if (!Number.isNaN(color)) {
-      agent.prop.color.setTo(color);
-    }
+
+    // always set color, esp if it's undefined (to clear filters)
+    agent.prop.color.setTo(color);
   });
 }
 
@@ -165,6 +172,21 @@ class CostumePack extends GFeature {
     this.featAddProp(agent, 'colorValue', prop);
     prop = new GVarNumber();
     this.featAddProp(agent, 'colorScaleIndex', prop);
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorScaleHue', prop);
+    prop = new GVarNumber(0);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorScaleSaturation', prop);
+    prop = new GVarNumber(1);
+    prop.setMax(1);
+    prop.setMin(0);
+    this.featAddProp(agent, 'colorScaleValue', prop);
+    this.featAddProp(agent, 'colorScaleType', new GVarString('value'));
+    prop = new GVarNumber(5);
+    this.featAddProp(agent, 'colorScaleSteps', prop);
 
     COSTUME_AGENTS.set(agent.id, agent.id);
 
@@ -292,18 +314,27 @@ class CostumePack extends GFeature {
     type: string,
     steps: number
   ) {
+    // featProp overrides
+    if (hue === undefined) hue = agent.prop.Costume.colorScaleHue.value;
+    if (sat === undefined) sat = agent.prop.Costume.colorScaleSaturation.value;
+    if (val === undefined) val = agent.prop.Costume.colorScaleValue.value;
+    if (type === undefined) type = agent.prop.Costume.colorScaleType.value;
+    if (steps === undefined) steps = agent.prop.Costume.colorScaleSteps.value;
+
     agent.prop.Costume._colorScale = new Map();
-    for (let i = 1; i <= steps; i++) {
+    // index is 0-based
+    const max = steps - 1;
+    for (let i = 0; i <= max; i++) {
       let color;
-      if (type === 'hue') color = HEXfromHSV((i * 1) / steps, sat, val);
-      if (type === 'saturation') color = HEXfromHSV(hue, (i * 1) / steps, val);
-      if (type === 'value') color = HEXfromHSV(hue, sat, (i * 1) / steps);
+      if (type === 'hue') color = HEXfromHSV(i / max, sat, val);
+      if (type === 'saturation') color = HEXfromHSV(hue, i / max, val);
+      if (type === 'value') color = HEXfromHSV(hue, sat, i / max);
       if (color === undefined)
         console.error('initHSVColorScale with bad "type".');
       agent.prop.Costume._colorScale.set(i, color);
     }
-    agent.prop.Costume.colorScaleIndex.setMax(steps);
-    agent.prop.Costume.colorScaleIndex.setMin(1);
+    agent.prop.Costume.colorScaleIndex.setMax(steps - 1);
+    agent.prop.Costume.colorScaleIndex.setMin(0);
   }
   getHSVColorScaleColor(agent: IAgent, index: number) {
     if (agent.prop.Costume._colorScale)

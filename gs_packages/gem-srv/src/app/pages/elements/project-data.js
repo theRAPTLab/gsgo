@@ -39,10 +39,12 @@ import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
 
 import { ReadProjectsList, ReadProject } from './project-db';
 
+const merge = require('deepmerge');
+
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ProjectData');
-const DBG = true;
+const DBG = false;
 
 let CURRENT_MODEL_ID;
 let CURRENT_MODEL;
@@ -54,6 +56,42 @@ const MONITORED_INSTANCES = [];
 let SEED = 100; // ids for instances created via SETUP
 function m_GetUID() {
   return String(SEED++);
+}
+
+function getLocaleIdFromLocalStorage() {
+  const localeId = localStorage.getItem('localeId');
+  return Number(localeId !== null ? localeId : 4);
+}
+function saveLocaleIdToLocalStorage(id) {
+  localStorage.setItem('localeId', id);
+}
+
+/// PROJECT DATA INIT /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function ProjectDataInit() {
+  UR.SubscribeState('locales', HandleLocaleUpdated);
+
+  // Load currently saved locale
+  const localeId = getLocaleIdFromLocalStorage();
+  UR.WriteState('locales', 'localeId', localeId);
+}
+
+function HandleLocaleUpdated(stateObj, cb) {
+  console.error('locale updated', stateObj);
+
+  // if update was to localeID, save localeID to localStorage
+  if (stateObj.localeId) saveLocaleIdToLocalStorage(stateObj.localeId);
+
+  // Read the current transforms
+  const state = UR.ReadFlatStateGroups('locales');
+
+  // Copy to POZYX_TRANSFORM
+  const data = state.transform;
+  POZYX_TRANSFORM.scaleX = data.xScale;
+  POZYX_TRANSFORM.scaleY = data.yScale;
+  POZYX_TRANSFORM.translateX = data.xOff;
+  POZYX_TRANSFORM.translateY = data.yOff;
+  POZYX_TRANSFORM.useAccelerometer = data.useAccelerometer;
 }
 
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
@@ -383,21 +421,29 @@ function ScriptUpdate(data) {
   }
 
   // 2. Update the new blueprint
-  const blueprint = {
-    id: blueprintName,
-    label: blueprintName,
-    script: data.script
-  };
+  let blueprint;
   const index = model.scripts.findIndex(s => s.id === blueprintName);
   if (index > -1) {
-    // Copy isControllable
-    blueprint.isControllable = model.scripts[index].isControllable;
+    // Replace existing blueprint
+    // 1. Clone all properties
+    blueprint = merge.all([model.scripts[index]]);
+    // 2. Modify new propreites
+    blueprint.id = blueprintName;
+    blueprint.label = blueprintName;
+    // 3. Replace the script
+    blueprint.script = data.script;
     // Replace existing blueprint
     model.scripts[index] = blueprint;
   } else {
-    // REVIEW: Need to set isControllable here?
-    // For now automatically make it controllable.
-    blueprint.isControllable = true;
+    // Add new blueprint
+    blueprint = {
+      id: blueprintName,
+      label: blueprintName,
+      // REVIEW: Need to set isControllable here?
+      // For now automatically make it controllable.
+      isControllable: true,
+      script: data.script
+    };
     // New Blueprint
     model.scripts.push(blueprint);
   }
@@ -423,21 +469,24 @@ function ScriptUpdate(data) {
     InputsReset();
   }
 
-  // 5. Add an instance if one isn't already defined
-  // Should not affect running sim until reset
-  const bp = TRANSPILER.RegisterBlueprint(bundle);
-  const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
-  if (instancesSpec.length < 1) {
-    // If the map has not been defined yet, then generate a single instance
-    // instancesSpec.push({ name: `${bp.name}01`, init: '' });
-    InstanceAdd(
-      {
-        modelId: CURRENT_MODEL_ID,
-        blueprintName: bp.name
-      },
-      false
-    );
-  }
+  // DEPRECATED
+  // This was helpful for early testing
+  //
+  // // 5. Add an instance if one isn't already defined
+  // // Should not affect running sim until reset
+  // const bp = TRANSPILER.RegisterBlueprint(bundle);
+  // const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
+  // if (instancesSpec.length < 1) {
+  //   // If the map has not been defined yet, then generate a single instance
+  //   // instancesSpec.push({ name: `${bp.name}01`, init: '' });
+  //   InstanceAdd(
+  //     {
+  //       modelId: CURRENT_MODEL_ID,
+  //       blueprintName: bp.name
+  //     },
+  //     false
+  //   );
+  // }
 
   RaiseModelUpdate();
 }
@@ -588,9 +637,8 @@ function HandleRequestProjData(data) {
   return { result: undefined };
 }
 
-/// EXPORT MODULE API /////////////////////////////////////////////////////////
+/// UR HANDLERS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// see above for exports
 
 /// TRANSFORM UTILS -----------------------------------------------------------
 UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
@@ -616,6 +664,14 @@ UR.HandleMessage('NET:INSTANCE_SELECT', InstanceSelect);
 UR.HandleMessage('NET:INSTANCE_DESELECT', InstanceDeselect);
 UR.HandleMessage('INSTANCE_HOVEROVER', InstanceHoverOver);
 UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
+
+/// UR HOOKS //////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+UR.HookPhase('UR/APP_READY', ProjectDataInit);
+
+/// EXPORT MODULE API /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// see above for exports
 
 export {
   GetProject,

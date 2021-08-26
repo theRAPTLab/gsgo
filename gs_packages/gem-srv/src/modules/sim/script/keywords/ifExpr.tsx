@@ -9,6 +9,7 @@ import React from 'react';
 import Keyword from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, UtilFirstValue } from 'modules/datacore';
+import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';
 
 /// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,33 +43,68 @@ export class ifExpr extends Keyword {
   }
 
   /** return rendered component representation */
-  jsx(index: number, unit: TScriptUnit, children?: any): any {
+  jsx(index: number, unit: TScriptUnit, options: any, children?: any): any {
     const [kw, testName, consequent, alternate] = unit;
-    const cc = consequent ? 'TRUE:[consequent]' : '';
-    const aa = alternate ? 'FALSE:[alternate]' : '';
+    let cc = '';
+    if (consequent && Array.isArray(consequent)) {
+      const blockIndex = 2; // the position in the unit array to replace <ifExpr> <expr> <conseq>
+      // already nested?
+      // consequents and alternates need to maintain their own options
+      // because the parentLineIndices need to be maintained separately
+      // otherwise, alternate parentLineIndices end up with consequents' inserted
+      const ccOptions = { ...options };
+      if (ccOptions.parentLineIndices !== undefined) {
+        // nested parentIndices!
+        ccOptions.parentLineIndices = [
+          ...ccOptions.parentLineIndices,
+          { index, blockIndex }
+        ];
+      } else {
+        ccOptions.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+      }
+      cc = ScriptToJSX(consequent, ccOptions);
+    }
+    let aa = '';
+    if (alternate && Array.isArray(alternate)) {
+      const blockIndex = 3; // the position in the unit array to replace <ifExpr> <expr> <conseq>
+      // already nested?
+      const aaOptions = { ...options };
+      if (aaOptions.parentLineIndices !== undefined) {
+        // nested parentIndices!
+        aaOptions.parentLineIndices = [
+          ...aaOptions.parentLineIndices,
+          { index, blockIndex }
+        ];
+      } else {
+        aaOptions.parentLineIndices = [{ index, blockIndex }]; // for nested lines
+      }
+      aa = ScriptToJSX(alternate, aaOptions);
+    }
 
     const expr =
       testName && testName.expr && testName.expr.raw
         ? testName.expr.raw
         : 'testExpression';
 
-    return super.jsx(
+    const isEditable = options ? options.isEditable : false;
+    const isInstanceEditor = options ? options.isInstanceEditor : false;
+
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(
+        index,
+        unit,
+        <>
+          ifExpr ( {expr} ) {cc} {aa}
+        </>
+      );
+    }
+    return super.jsxMin(
       index,
       unit,
       <>
-        ifExpr ( {expr} ) {cc} {aa}
+        ifExpr ( {expr} ) (+{consequent.length + alternate.length} lines)
       </>
     );
-
-    // ORIG CODE
-    // Results in Uncaught Error: Objects are not valid as a React child (found: object with keys {expr}). If you meant to render a collection of children, use an array instead.
-    // return super.jsx(
-    //   index,
-    //   unit,
-    //   <>
-    //     ifExpr {testName} {cc} {aa}
-    //   </>
-    // );
   }
 } // end of DefProp
 

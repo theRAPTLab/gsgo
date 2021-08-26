@@ -43,6 +43,7 @@ import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword, GetFeature } from 'modules/datacore';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from 'app/pages/elements/page-xui-styles';
+import { TextToScript } from 'modules/sim/script/tools//text-to-script';
 import InputElement from '../components/InputElement';
 import SelectElement from '../components/SelectElement';
 import GVarElement from '../components/GVarElement';
@@ -69,6 +70,8 @@ type MyState = {
   methodName: string;
   args: string[];
   featPropMethods: string[];
+  parentLineIndices: number;
+  blockIndex: number;
 };
 type MyProps = {
   index: number;
@@ -125,8 +128,10 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
    *                           Used to handle exiting edit on "Enter"
    */
   saveData(exitEdit = false) {
+    const { parentLineIndices } = this.state;
     const updata = {
       index: this.index,
+      parentLineIndices,
       scriptUnit: this.serialize(this.state),
       exitEdit
     };
@@ -155,6 +160,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
     // skip if not defined yet
     if (!featPropMap) {
       // REVIEW: This shouldn't happen anymore?  Remove?
+      // -> Actually this catches bad calls
       console.error('undefined featPropMap...skipping featProp render');
       return '';
     }
@@ -167,7 +173,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
 
     const featNames = [...featPropMap.keys()];
     const featProps = featPropMap.get(featName);
-    const propNameOptions = [...featProps.values()];
+    const propNameOptions = featProps ? [...featProps.values()] : ['none found'];
 
     // Delete Button
     const deletablejsx = (
@@ -192,7 +198,8 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
       // Static Minimized View
       jsx = (
         <>
-          {featName}:{featPropName}:&nbsp;{args[0]}&nbsp;{' '}
+          {featName}:{context ? `${context}.` : ''}
+          {featPropName}:&nbsp;{args[0]}&nbsp;{' '}
         </>
       );
     } else if (isInstanceEditor) {
@@ -200,25 +207,29 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
       jsx = (
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: '80px auto 15px',
-            gridAutoRows: '1fr'
+            display: 'grid'
+            // gridTemplateColumns: 'auto 15px',
+            // gridAutoRows: '1fr'
           }}
         >
-          {featName}
-          <GVarElement
-            state={this.state}
-            propName={featPropName}
-            propNameOptions={propNameOptions}
-            propMethod={methodName}
-            propMethodsMap={methodsMap}
-            args={args}
-            onSelectProp={this.onSelectPropName}
-            onSelectMethod={this.onSelectMethod}
-            onValueChange={this.onValueChange}
-            onSaveData={this.saveData}
-            index={index}
-          />
+          <>
+            {featName}&nbsp;
+            {context ? `${context}.` : ''}
+            <GVarElement
+              state={this.state}
+              context="" // not needed for featProp
+              propName={featPropName}
+              propNameOptions={propNameOptions}
+              propMethod={methodName}
+              propMethodsMap={methodsMap}
+              args={args}
+              onSelectProp={this.onSelectPropName}
+              onSelectMethod={this.onSelectMethod}
+              onValueChange={this.onValueChange}
+              onSaveData={this.saveData}
+              index={index}
+            />
+          </>
           {deletablejsx}
         </div>
       );
@@ -231,7 +242,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
               display: 'grid'
             }}
           >
-            featProp {context}.
+            featProp {context ? `${context}.` : ''}
             <SelectElement
               state={this.state}
               value={featName}
@@ -242,6 +253,7 @@ class FeatPropElement extends React.Component<MyProps, MyState> {
             />
             <GVarElement
               state={this.state}
+              context="" // not needed for featProp
               propName={featPropName}
               propNameOptions={propNameOptions}
               propMethod={methodName}
@@ -339,10 +351,12 @@ export class featProp extends Keyword {
     // const { featPropName, methodName, ...args } = state;
     // return [this.keyword, featName, featPropName, methodName, ...args];
 
-    const { featName, featPropName, methodName, args } = state;
-    const scriptArr = [this.keyword, featName, featPropName, methodName, ...args];
+    const { featName, context, featPropName, methodName, args } = state;
+    const refArg =
+      context && context !== 'agent' ? `${context}.${featName}` : featName;
+    const scriptArr = [this.keyword, refArg, featPropName, methodName, ...args];
     const scriptText = TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = ScriptifyText(scriptText);
+    const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
   }
 
@@ -377,7 +391,9 @@ export class featProp extends Keyword {
       featPropName, // feature prop name
       methodName,
       args,
-      featPropMethods: [] // set by PropElement
+      featPropMethods: [], // set by PropElement
+      parentLineIndices: children ? children.parentLineIndices : undefined,
+      blockIndex: children ? children.blockIndex : undefined
     };
     const isEditable = children ? children.isEditable : false;
     const isDeletable = children ? children.isDeletable : false;
@@ -404,10 +420,9 @@ export class featProp extends Keyword {
         serialize={this.serialize}
       />
     );
-    if (!isInstanceEditor) {
+    if (!isInstanceEditor || isEditable) {
       // Script Editor, add line numbers
-      const retval = super.jsx(index, unit, jsx);
-      return retval;
+      return super.jsx(index, unit, jsx);
     }
     return jsx;
   }

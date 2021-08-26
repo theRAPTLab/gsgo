@@ -46,6 +46,7 @@ export function UpdateInstance(instanceDef: TInstance) {
 export function DeleteInstance(instanceDef: TInstance) {
   const { blueprint, id } = instanceDef;
   const bpi = INSTANCES.get(blueprint);
+  if (!bpi) return; // already deleted
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
     console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
@@ -95,31 +96,49 @@ function m_CopyProps(props: object, targetProps: object) {
     // Test for targetProps[key] b/c non-GVar properties (like `statusHistory`) do not have a setTo
     if (targetProps[key] && targetProps[key].setTo) {
       targetProps[key].setTo(value.value);
-    } else {
-      // Features
-      // Maybe we don't want to copy feature properties?
-      //
-      // const features = value;
-      // if (Object.entries(features).length > 0) {
-      //   m_CloneProps(features, cloneProps[key]);
-      // }
     }
   }
 }
 /**
- * This will copy the feature Map and all 'prop' properties from orig to target
- * @param orig
- * @param target a freshly minted agent with no settings
+ * Blindly copy all featProps.  Used by CopyAgentProps.
+ * NOTE: Ignores Dicts!!!!
  */
-export function CopyAgentProps(orig: IAgent, target: IAgent) {
+function m_CopyFeatProps(origFeatProps: any[], targetAgentFeatProps: any) {
+  const featProps = [...Object.keys(origFeatProps)];
+  featProps.forEach(p => {
+    // only copy GVars, skip private variables
+    const gvar = origFeatProps[p];
+    // if it's gvar, return the value, otherwise skip
+    // REVIEW: Ignores DICTS!
+    if (gvar !== undefined && gvar.value !== undefined) {
+      targetAgentFeatProps[p].setTo(gvar.value);
+      // copy min and max values?
+      if (gvar.min !== undefined) targetAgentFeatProps[p].min = gvar.min;
+      if (gvar.max !== undefined) targetAgentFeatProps[p].max = gvar.max;
+    }
+  });
+}
+/**
+ * This will copy the feature Map and all 'prop' properties from orig to target
+ * @param origAgent
+ * @param targetAgent a freshly minted agent with no settings
+ */
+export function CopyAgentProps(origAgent: IAgent, targetAgent: IAgent) {
   // blueprint is already copied by MakeAgent
   // flags are temporary states that should not be copied?
 
-  // REVIEW: Is this cloning all feature properties too?!?
-  target.featureMap = new Map(orig.featureMap);
+  // copy props
+  m_CopyProps(origAgent.prop, targetAgent.prop);
 
-  m_CopyProps(orig.prop, target.prop);
-  return target;
+  // copy features
+  targetAgent.featureMap = new Map(origAgent.featureMap);
+  // copy featProps
+  const origFeatures = [...origAgent.featureMap.keys()];
+  origFeatures.forEach(f => {
+    m_CopyFeatProps(origAgent.prop[f], targetAgent.prop[f]);
+  });
+
+  return targetAgent;
 }
 
 /** save agent by type into agent map, which contains weaksets of types

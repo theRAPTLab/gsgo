@@ -4,7 +4,7 @@
       "id": 0,
       "name": "Default Locale",
       "ptrack": {
-        "memo": "These are the default for FakeTrack",
+        "memo": "These are the ptrack default for FakeTrack",
         "xRange": 0,
         "yRange": 0,
         "xOff": 0,
@@ -16,13 +16,16 @@
       "stage": {
         "memo": "These are the stage dimensions (world)"
       },
+      "junk": "This is junk data",
       "pozyx": {
-        "memo": "location 0",
-        "scaleX": 0,
-        "scaleY": 0,
-        "translateX": 0,
-        "translateY": 0,
-        "rotate": 0,
+        "memo": "These are the pozyx default for FakeTrack",
+        "xRange": 0,
+        "yRange": 0,
+        "xOff": 0,
+        "yOff": 0,
+        "xScale": 0,
+        "yScale": 0,
+        "zRot": 0,
         "useAccelerometer": true
       },
       "urnet": {}
@@ -31,31 +34,62 @@
       "id": 1,
       "name": "vanderbilt",
       "ptrack": {
-        "memo": "VU tracking room",
+        "memo": "VU ptrack",
         "xRange": 1,
         "yRange": 1,
-        "xOff": 1,
-        "yOff": 1,
-        "xScale": 1,
-        "yScale": 1,
-        "zRot": 1
+        "xOff": -4200,
+        "yOff": -6000,
+        "xScale": -0.0002,
+        "yScale": 0.00106,
+        "zRot": 0
       },
       "stage": {
         "memo": "stage for vanderbilt"
       },
       "pozyx": {
-        "memo": "location 1",
-        "scaleX": 0,
-        "scaleY": 0,
-        "translateX": 0,
-        "translateY": 0,
-        "rotate": 0,
+        "memo": "VU Pozyx",
+        "xRange": 1,
+        "yRange": 1,
+        "xOff": -4200,
+        "yOff": -6000,
+        "xScale": -0.0002,
+        "yScale": 0.00106,
+        "zRot": 0,
         "useAccelerometer": true
       },
       "urnet": {}
     },
     {
       "id": 2,
+      "name": "indiana",
+      "ptrack": {
+        "memo": "VU PTrack",
+        "xRange": 1,
+        "yRange": 1,
+        "xOff": -4200,
+        "yOff": -6000,
+        "xScale": -0.0002,
+        "yScale": 0.00106,
+        "zRot": 0
+      },
+      "stage": {
+        "memo": "stage for indiana"
+      },
+      "pozyx": {
+        "memo": "IU Pozyx",
+        "xRange": 1,
+        "yRange": 1,
+        "xOff": -4200,
+        "yOff": -6000,
+        "xScale": -0.0002,
+        "yScale": 0.00106,
+        "zRot": 0,
+        "useAccelerometer": true
+      },
+      "urnet": {}
+    },
+    {
+      "id": 3,
       "name": "Sri's Locale",
       "stage": {
         "memo": "stage for sri"
@@ -69,14 +103,61 @@
         "xScale": 2,
         "yScale": 2,
         "zRot": 2
+      }
+    },
+    {
+      "id": 4,
+      "name": "Ben's Locale",
+      "stage": {
+        "memo": "stage for ben"
+      },
+      "ptrack": {
+        "memo": "Ben PTrack",
+        "xRange": 2,
+        "yRange": 2,
+        "xOff": 0,
+        "yOff": 0,
+        "xScale": -0.0002,
+        "yScale": 0.0003,
+        "zRot": -160
       },
       "pozyx": {
-        "memo": "location 2",
-        "scaleX": 0,
-        "scaleY": 0,
-        "translateX": 0,
-        "translateY": 0,
-        "rotate": 0,
+        "memo": "Ben Pozyx",
+        "xRange": 2,
+        "yRange": 2,
+        "xOff": 0,
+        "yOff": 0,
+        "xScale": -0.0002,
+        "yScale": 0.0003,
+        "zRot": -160,
+        "useAccelerometer": true
+      }
+    },
+    {
+      "id": 6,
+      "name": "Restarted Locale",
+      "stage": {
+        "memo": "new stage"
+      },
+      "ptrack": {
+        "memo": "Restarted Locale PTrack",
+        "xRange": 2,
+        "yRange": 2,
+        "xOff": 0,
+        "yOff": 0,
+        "xScale": -0.0002,
+        "yScale": 0.0003,
+        "zRot": -160
+      },
+      "pozyx": {
+        "memo": "New Pozyx",
+        "xRange": 2,
+        "yRange": 2,
+        "xOff": 0,
+        "yOff": 0,
+        "xScale": -0.0002,
+        "yScale": 0.0003,
+        "zRot": -160,
         "useAccelerometer": true
       }
     }

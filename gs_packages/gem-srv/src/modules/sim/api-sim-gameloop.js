@@ -29,11 +29,15 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'INPUTS_UPDATE',
 
     // allow creation of new objects???????
-    'DELETE',
     'CREATE',
+    'DELETE',
 
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',
+
+    // update static graphs during pre-run
+    'GRAPHS_UPDATE',
+
     // 'INPUTS_EXEC', // Don't allow cursor attachment during PRERUN!
     'UI_UPDATE',
     'VIS_UPDATE',
@@ -45,8 +49,13 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'INPUTS_UPDATE',
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',
+
+    // update static graphs during pre-run
+    'GRAPHS_UPDATE',
+
     // process conditions and collection
     'CONDITIONS_UPDATE', // for agent pickup
+
     // attach cursor to agent
     'INPUTS_EXEC',
     // display output
@@ -67,8 +76,8 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     // get state and queue derived state
     'INPUTS_READ',
     'INPUTS_UPDATE',
-    'DELETE',
     'CREATE',
+    'DELETE',
     'TIMERS',
     'PHYSICS_UPDATE',
     'PHYSICS_THINK',
@@ -78,6 +87,10 @@ const GAME_LOOP = new UR.class.PhaseMachine('SIM', {
     'AGENTS_UPDATE',
     'GROUPS_UPDATE',
     'FEATURES_UPDATE',
+
+    // update static graphs during pre-run
+    'GRAPHS_UPDATE',
+
     // process conditions and collection
     'CONDITIONS_UPDATE',
     // agent/groups script execution and queue actions

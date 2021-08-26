@@ -102,14 +102,18 @@ function Init(element) {
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
-      if (dobj.meter)
+      if (dobj.meter !== undefined)
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
+          dobj.meterPosition,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
-      if (dobj.graph)
+      if (dobj.graph !== undefined)
         vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
+      else if (dobj.barGraph !== undefined) {
+        vobj.setBarGraph(dobj.barGraph, dobj.barGraphLabels);
+      }
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call
@@ -167,16 +171,19 @@ function Init(element) {
       // has to be called after setTexture and
       // setScale so font placement can be calculated relative to scale
       if (dobj.text !== undefined) vobj.setText(dobj.text);
-      if (dobj.meter)
+      if (dobj.meter !== undefined)
         vobj.setMeter(
           dobj.meter,
           dobj.meterClr,
+          dobj.meterPosition,
           dobj.flags & FLAGS.SELECTION.LARGEMETER
         );
       else vobj.removeMeter();
-      if (dobj.graph)
+      if (dobj.graph !== undefined)
         vobj.setGraph(dobj.graph, dobj.flags & FLAGS.SELECTION.LARGEMETER);
-      else vobj.removeGraph();
+      else if (dobj.barGraph !== undefined) {
+        vobj.setBarGraph(dobj.barGraph, dobj.barGraphLabels);
+      } else vobj.removeGraph();
 
       // Set selection state from flags.
       // This needs to be set before the setTexture call

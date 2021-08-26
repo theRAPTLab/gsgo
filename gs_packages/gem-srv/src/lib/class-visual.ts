@@ -32,16 +32,16 @@ import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
-// import * as GLOBAL from 'modules/datacore/dc-globals';
 import * as ASSETS from 'modules/asset_core';
+import FLAGS from 'modules/flags';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
 import { IActable } from './t-script';
 import { MakeDraggable } from './vis/draggable';
 import { MakeHoverable } from './vis/hoverable';
 import { MakeSelectable } from './vis/selectable';
-import { DrawGraph } from './class-visual-graph';
-import { texture } from './sprite/pixi-default';
+import { DrawLineGraph } from './util-pixi-linegraph';
+import { DrawBarGraph } from './util-pixi-bargraph';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,7 +60,8 @@ const style = new PIXI.TextStyle({
   fontSize: 18,
   fontWeight: 'bold',
   fill: ['#ffffffcc'],
-  stroke: '#ffffff'
+  stroke: '#333333cc',
+  strokeThickness: 3
 });
 // replacement for GLOBAL sprite
 const SPRITES = ASSETS.GetLoader('sprites');
@@ -97,13 +98,8 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
     }
     return tex;
   }
-  // otherwise, is this a regular loaded texture?
+  // otherwise, is this a regular texture?
   if (rsrc.texture) return rsrc.texture;
-
-  // or maybe it's a straight-up texture already
-  if (rsrc instanceof PIXI.Texture) {
-    throw Error('resource is a PIXI.Texture, not PIXI.LoaderResource');
-  }
 
   // if we got here, the passed rsrc  might not be one
   throw Error('could not find texture in resource');
@@ -171,7 +167,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = SPRITES.getAssetById(assetId);
+    const rsrc = SPRITES.GetAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
     this.assetId = assetId;
@@ -179,11 +175,11 @@ class Visual implements IVisual, IPoolable, IActable {
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const { rsrc } = SPRITES.getAsset(name);
+    const rsrc: PIXI.LoaderResource = SPRITES.GetAsset(name);
     // is this a spritesheet?
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
-    this.assetId = SPRITES.lookupAssetId(name);
+    this.assetId = SPRITES.LookupAssetId(name);
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);
@@ -206,16 +202,20 @@ class Visual implements IVisual, IPoolable, IActable {
    * AdjustmentFIlter by itself will tint but not change values.
    */
   setColorize(color: number) {
-    if (this.filterColor === color) return; // color hasn't changed, skip update
-    this.filterColor = color;
-    if (color === null) {
+    if (color === null || color === undefined) {
       // Remove Colorize
       this.filterColorOverlay = undefined;
       this.filterAdjustment = undefined;
       return;
     }
+
+    // Don't cache color.  Always update color because vobjs are not reset during RESET Stage
+    // if (this.filterColor === color) return; // color hasn't changed, skip update
+
+    this.filterColor = color;
     const [r, g, b] = PIXI.utils.hex2rgb(color);
-    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
+    // this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
+    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 1.0);
     this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
   }
   /**
@@ -395,7 +395,7 @@ class Visual implements IVisual, IPoolable, IActable {
    * the bounds of the sprite for placing the text
    */
   setText(str: string) {
-    if (this.textContent === str) return; // no update necessary
+    if (this.text && this.textContent === str) return; // no update necessary
 
     // Remove any old text
     // We have to remove the child and reset it to update the text?
@@ -425,18 +425,34 @@ class Visual implements IVisual, IPoolable, IActable {
     }
   }
 
-  setMeter(percent: number, color: number, isLargeGraphic: boolean) {
-    if (percent === this.meterValue) return; // no update necessary
+  setMeter(
+    percent: number,
+    color: number,
+    position: number,
+    isLargeGraphic: boolean
+  ) {
+    // Don't cache meterValue because script might change only color
+    // if (percent === this.meterValue) return; // no update necessary
     if (!this.meter) {
       this.meter = new PIXI.Graphics();
       this.filterbox.addChild(this.meter);
     }
     if (!color) color = 0xff6600; // default is orange. If color is not set it is 0.
 
+    const pad = 5;
     const w = isLargeGraphic ? 40 : 10;
     const h = isLargeGraphic ? 80 : 40;
-    const spacer = w + 5;
-    const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 - spacer;
+
+    // meter position
+    let xoff = 0; // x-offset
+    const sw = this.sprite.width;
+    if (position === FLAGS.POSITION.OUTSIDE_LEFT) xoff = -(w + pad);
+    if (position === FLAGS.POSITION.INSIDE_LEFT) xoff = pad;
+    if (position === FLAGS.POSITION.MIDDLE) xoff = sw / 2 - w / 2;
+    if (position === FLAGS.POSITION.INSIDE_RIGHT) xoff = sw - w - pad;
+    if (position === FLAGS.POSITION.OUTSIDE_RIGHT) xoff = sw + pad;
+
+    const x = isLargeGraphic ? -w / 2 : -this.sprite.width / 2 + xoff;
     const y = this.sprite.height / 2 - h; // flush with bottom of sprite
 
     this.meter.clear();
@@ -460,13 +476,27 @@ class Visual implements IVisual, IPoolable, IActable {
     }
   }
 
-  setGraph(data: number[], isLargeGraph: boolean) {
+  m_addGraph() {
     if (!this.graph) {
       this.graph = new PIXI.Graphics();
       this.container.addChild(this.graph);
     }
+  }
+  setGraph(data: number[], isLargeGraph: boolean) {
+    this.m_addGraph();
     const [w, h] = this.getSizeValues();
-    DrawGraph(this.graph, data, {
+    DrawLineGraph(this.graph, data, {
+      scale: isLargeGraph ? 1 : 0.25, // scale 1 = 100 pixels
+      scaleY: isLargeGraph ? 1 : 0.25,
+      color: 0xffff00,
+      offsetY: isLargeGraph ? 0 : h
+    });
+  }
+  setBarGraph(data: number[], labels: string[], isLargeGraph: boolean = true) {
+    // if (data.length > 0) console.log('Draw', data);
+    this.m_addGraph();
+    const [w, h] = this.getSizeValues();
+    DrawBarGraph(this.graph, data, labels, {
       scale: isLargeGraph ? 1 : 0.25, // scale 1 = 100 pixels
       scaleY: isLargeGraph ? 1 : 0.25,
       color: 0xffff00,
@@ -475,6 +505,7 @@ class Visual implements IVisual, IPoolable, IActable {
   }
   removeGraph() {
     if (this.graph) {
+      this.graph.removeChildren(); // REVIEW: Need to destroy text children too?
       this.graph.destroy();
       this.graph = undefined;
     }

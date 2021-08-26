@@ -90,6 +90,11 @@ class Keyword implements IKeyword {
       </div>
     );
   }
+  /** minimized jsx for use in InstanceEditor */
+  jsxMin(index: number, srcLine: TScriptUnit, children?: any): any {
+    return <span key={index}>{children}&ensp;</span>;
+  }
+
   /// UTILITY METHODS /////////////////////////////////////////////////////////
   /** return the name of this keyword */
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -126,17 +131,24 @@ class Keyword implements IKeyword {
       'setMin',
       'setMax',
       'setTo',
+      'setToRnd',
       'add',
+      'addRnd',
+      'addRndInt',
       'sub',
+      'subFloat2',
+      'subRnd',
+      'subRndInt',
       'div',
       'mul',
       'eq',
       'gt',
       'lt',
       'gte',
-      'lte'
+      'lte',
+      'clear'
     ]);
-    map.set('string', ['setTo', 'eq']);
+    map.set('string', ['setTo', 'eq', 'clear']);
     map.set('dictionary', ['addItem', 'updateItem', 'getItem', 'has', 'getKeys']);
     return map;
   }
@@ -206,7 +218,13 @@ function JSXifyArg(arg: any) {
   // if typeof arg==='boolean'
   // handle special object cases
   if (arg.program) return ['program block'];
-  if (arg.objref) return arg.objref.join('.');
+
+  // ORIG CODE
+  // if (arg.objref) return arg.objref.join('.');
+
+  // Ben's NEW CODE: objrefs should not be joined!  We want the raw array!
+  if (arg.objref) return arg;
+
   if (arg.expr) return `{{ ${arg.expr} }}`;
   console.error('JSXifyArg: unknown arg type', arg);
   return undefined;

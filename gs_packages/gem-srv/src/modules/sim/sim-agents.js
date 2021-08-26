@@ -52,48 +52,56 @@ AGENT_TO_DOBJ.setMapFunctions({
   onAdd: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    // NPC always default to 200 if not set explicitly?
-    // so NPC agents (200) always appera on top of input agents (-100)
-    dobj.zIndex = agent.zIndex || 200;
+    dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
-    if (agent.color) dobj.color = agent.color;
+    dobj.color = agent.color; // always copy color, set color = undefined to clear filters
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale) dobj.scale = agent.scale;
-    if (agent.scaleY) dobj.scaleY = agent.scaleY;
-    if (agent.orientation) dobj.rotation = agent.orientation;
+    if (agent.scale !== undefined) dobj.scale = agent.scale;
+    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
+    if (agent.orientation !== undefined) dobj.rotation = agent.orientation;
     dobj.visible = agent.visible;
-    if (agent.alpha) dobj.alpha = agent.alpha;
-    if (agent.statusText) dobj.text = agent.statusText;
-    if (agent.statusValue) dobj.meter = agent.statusValue;
-    if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
+    if (agent.alpha !== undefined) dobj.alpha = agent.alpha;
+    if (agent.statusText !== undefined) dobj.text = agent.statusText;
+    if (agent.statusValue !== undefined) dobj.meter = agent.statusValue;
+    if (agent.statusValueColor !== undefined)
+      dobj.meterClr = agent.statusValueColor;
+    dobj.meterPosition = agent.getMeterFlags();
     if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
     if (agent.debug) dobj.debug = agent.debug;
+    if (agent.statusObject !== undefined) {
+      dobj.barGraph = agent.statusObject.barGraph;
+      dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
   },
   onUpdate: (agent, dobj) => {
     dobj.x = agent.x;
     dobj.y = agent.y;
-    // NPC always default to 200 if not set explicitly?
-    // so NPC agents (200) always appera on top of input agents (-100)
-    dobj.zIndex = agent.zIndex || 200;
+    dobj.zIndex = agent.zIndex !== undefined ? agent.zIndex : 0;
     if (agent.skin) dobj.skin = agent.skin;
-    if (agent.color) dobj.color = agent.color;
+    dobj.color = agent.color; // always copy color, set color = undefined to clear filters
     if (agent.prop.Costume) dobj.frame = agent.prop.Costume.currentFrame.value;
-    if (agent.scale) dobj.scale = agent.scale;
-    if (agent.scaleY) dobj.scaleY = agent.scaleY;
-    if (agent.orientation) dobj.rotation = agent.orientation;
+    if (agent.scale !== undefined) dobj.scale = agent.scale;
+    if (agent.scaleY !== undefined) dobj.scaleY = agent.scaleY;
+    if (agent.orientation !== undefined) dobj.rotation = agent.orientation;
     dobj.visible = agent.visible;
-    if (agent.alpha) dobj.alpha = agent.alpha;
-    if (agent.statusText || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
-    if (agent.statusValue) dobj.meter = agent.statusValue;
-    if (agent.statusValueColor) dobj.meterClr = agent.statusValueColor;
+    if (agent.alpha !== undefined) dobj.alpha = agent.alpha;
+    if (agent.statusText !== undefined || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
+    if (agent.statusValue !== undefined) dobj.meter = agent.statusValue;
+    if (agent.statusValueColor !== undefined)
+      dobj.meterClr = agent.statusValueColor;
+    dobj.meterPosition = agent.getMeterFlags();
     if (agent.prop.statusHistory) dobj.graph = agent.prop.statusHistory;
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
     if (agent.debug) dobj.debug = agent.debug;
+    if (agent.statusObject !== undefined) {
+      dobj.barGraph = agent.statusObject.barGraph;
+      dobj.barGraphLabels = agent.statusObject.barGraphLabels;
+    }
   }
 });
 

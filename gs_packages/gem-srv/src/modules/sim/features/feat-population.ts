@@ -5,11 +5,17 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 /*/ required libraries /*/
+import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import GFeature from 'lib/class-gfeature';
 import { Register } from 'modules/datacore/dc-features';
 import { IAgent, TSMCProgram } from 'lib/t-script';
-import { GVarBoolean, GVarNumber, GVarString } from 'modules/sim/vars/_all_vars';
+import {
+  GVarBoolean,
+  GVarDictionary,
+  GVarNumber,
+  GVarString
+} from 'modules/sim/vars/_all_vars';
 import {
   CopyAgentProps,
   DeleteAgent,
@@ -18,7 +24,8 @@ import {
   DefineInstance,
   GetAgentById
 } from 'modules/datacore/dc-agents';
-import * as TRANSPILER from 'modules/sim/script/transpiler';
+import * as TRANSPILER from 'modules/sim/script/transpiler-v2';
+import merge from 'deepmerge';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -39,6 +46,12 @@ function m_Delete(frame) {
     const id = AGENTS_TO_REMOVE.pop();
     const agent = GetAgentById(id);
     if (agent) {
+      // Clear isTouching and lastTouched values here
+      // because agent will be removed and touch update
+      // will no longer update touch state with this agent
+      if (agent.hasFeature('Touches')) {
+        agent.callFeatMethod('Touches', 'clearTouches', agent.id);
+      }
       DeleteAgent({
         id: agent.id,
         blueprint: agent.blueprint.name
@@ -53,7 +66,30 @@ function m_Create(frame) {
     DefineInstance(def);
     let agent = TRANSPILER.MakeAgent(def);
     const parent = GetAgentById(def.parentId);
-    if (parent) CopyAgentProps(parent, agent);
+    if (parent) {
+      if (def.doClone) CopyAgentProps(parent, agent);
+      else {
+        // just copy x/y
+        agent.x = parent.x + RNG() * 8 - 4;
+        agent.y = parent.y + RNG() * 8 - 4;
+      }
+    }
+
+    // but reset inert!
+    agent.prop.isInert.setTo(false);
+
+    // if spawnMutation settings are defined, then change those
+    // BEFORE executing the script
+    if (def.mutationPropName !== undefined) {
+      let mutationProp;
+      if (def.mutationPropFeature) {
+        // featProp
+        mutationProp = agent.prop[def.mutationPropFeature][def.mutationPropName];
+      } else {
+        mutationProp = agent.prop[def.mutationPropName];
+      }
+      mutationProp.addRndInt(-def.mutationSubtract, def.mutationAdd);
+    }
 
     const initScript = def.initScript; // spawnscript
     agent.exec(initScript, { agent }); // run spawnscript
@@ -69,15 +105,32 @@ class PopulationPack extends GFeature {
     this.featAddMethod('createAgent', this.createAgent);
     this.featAddMethod('spawnChild', this.spawnChild);
     this.featAddMethod('removeAgent', this.removeAgent);
+    this.featAddMethod('getRandomActiveAgent', this.getRandomActiveAgent);
     // Global Population Management
     this.featAddMethod('releaseInertAgents', this.releaseInertAgents);
     this.featAddMethod('hideInertAgents', this.hideInertAgents);
+    this.featAddMethod('removeInertAgents', this.removeInertAgents);
     this.featAddMethod('agentsReproduce', this.agentsReproduce);
+    this.featAddMethod('oneAgentReproduce', this.oneAgentReproduce);
+    this.featAddMethod('populateBySpawning', this.populateBySpawning);
+    this.featAddMethod('agentsForEachActive', this.agentsForEachActive);
+    this.featAddMethod('agentsForEach', this.agentsForEach);
     // Statistics
     this.featAddMethod('getActiveAgentsCount', this.getActiveAgentsCount);
     this.featAddMethod('countAgents', this.countAgents);
     this.featAddMethod('countAgentProp', this.countAgentProp);
     this.featAddMethod('minAgentProp', this.minAgentProp);
+    this.featAddMethod('maxAgentProp', this.maxAgentProp);
+    // Histogram
+    this.featAddMethod('countAgentsByPropType', this.countAgentsByPropType);
+    this.featAddMethod(
+      'setAgentsByFeatPropTypeKeys',
+      this.setAgentsByFeatPropTypeKeys
+    );
+    this.featAddMethod(
+      'countExistingAgentsByFeatPropType',
+      this.countExistingAgentsByFeatPropType
+    );
 
     UR.HookPhase('SIM/DELETE', m_Delete);
     UR.HookPhase('SIM/CREATE', m_Create);
@@ -95,11 +148,30 @@ class PopulationPack extends GFeature {
    */
   decorate(agent) {
     super.decorate(agent);
+
+    // statistics
     this.featAddProp(agent, 'count', new GVarString());
     this.featAddProp(agent, 'sum', new GVarString());
     this.featAddProp(agent, 'avg', new GVarString());
     this.featAddProp(agent, 'min', new GVarString());
     this.featAddProp(agent, 'max', new GVarString());
+
+    // used by countAgentProp without parameters
+    this.featAddProp(agent, 'monitoredAgent', new GVarString());
+    this.featAddProp(agent, 'monitoredAgentProp', new GVarString());
+    this.featAddProp(agent, 'monitoredAgentPropFeature', new GVarString());
+
+    // Used by spawnChild
+    this.featAddProp(agent, 'spawnMutationProp', new GVarString());
+    this.featAddProp(agent, 'spawnMutationPropFeature', new GVarString()); // if prop is a featProp, this is the feature
+    this.featAddProp(agent, 'spawnMutationMaxAdd', new GVarNumber());
+    this.featAddProp(agent, 'spawnMutationMaxSubtract', new GVarNumber());
+
+    // Used by populateBySpawning to set target population levels
+    this.featAddProp(agent, 'targetPopulationSize', new GVarNumber(1));
+    this.featAddProp(agent, 'deleteAfterSpawning', new GVarBoolean(true));
+
+    agent.prop.Population._countsByProp = new Map();
   }
 
   /// POPULATION METHODS /////////////////////////////////////////////////////////
@@ -107,6 +179,7 @@ class PopulationPack extends GFeature {
 
   /**
    * Create agent of arbitrary blueprintName type via script
+   * Only copies x and y of parent
    * @param agent
    * @param blueprintName
    * @param initScript
@@ -118,28 +191,30 @@ class PopulationPack extends GFeature {
       name,
       blueprint: blueprintName,
       initScript,
+      doClone: false,
       parentId: agent.id // save for positioning
     };
     AGENTS_TO_CREATE.push(def);
   }
   /**
    * Create child agent via script, duplicating properties of parent
-   * and running special spawn script
+   * and running special spawn script.
+   * The parent agent is the first `agent` parameter.
    * @param agent
-   * @param blueprintName
-   * @param initScript
+   * @param spawnScript
+   * @param def
    */
-  spawnChild(agent: IAgent, spawnScript: string) {
+  spawnChild(agent: IAgent, spawnScript: string, def: any = {}) {
     const bpname = agent.blueprint.name;
     const name = `${bpname}${COUNT++}`;
     // Queue Instance Defs
-    const def = {
-      name,
-      blueprint: bpname,
-      initScript: spawnScript,
-      parentId: agent.id // save for positioning
-    };
-    AGENTS_TO_CREATE.push(def);
+    const thisDef: any = merge.all([def]); // clone since other children share the same def
+    thisDef.name = name;
+    thisDef.blueprint = bpname;
+    thisDef.initScript = spawnScript;
+    thisDef.doClone = true;
+    thisDef.parentId = agent.id;
+    AGENTS_TO_CREATE.push(thisDef);
   }
   /**
    * Removes self
@@ -147,9 +222,42 @@ class PopulationPack extends GFeature {
   removeAgent(agent: IAgent) {
     AGENTS_TO_REMOVE.push(agent.id);
   }
+  /**
+   * Returns a random agent of blueprint type that is not inert.
+   * @param agent
+   * @param spawnScript
+   */
+  getRandomActiveAgent(agent: IAgent, bpname: string): IAgent {
+    const agents = GetAgentsByType(bpname);
+    if (agents.length < 1) {
+      console.error(`Population:getRandomActiveAgent: No ${bpname} agents left!`);
+      return undefined; // no agents
+    }
+    const activeAgents = agents.filter(a => !a.isInert);
+    if (activeAgents.length < 1) {
+      console.error(
+        `Population:getRandomActiveAgent: No non-inert ${bpname} agents left!`
+      );
+      return undefined; // no non-inert agents
+    }
+    return activeAgents[Math.floor(RNG()) * activeAgents.length];
+  }
 
   /// GLOBAL METHODS /////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  /**
+   * Release cursors for ALL agents globally
+   */
+  releaseAllAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.hasFeature('Cursor') && a.blueprint.name !== 'Cursor') {
+        a.callFeatMethod('Cursor', 'releaseCursor');
+      }
+    });
+  }
+
   /**
    * Release cursors for ALL inert agents globally
    */
@@ -161,34 +269,150 @@ class PopulationPack extends GFeature {
     });
   }
   /**
-   * Release cursors for ALL inert agents globally
+   * Turn off visible property for ALL inert agents globally
    */
   hideInertAgents(agent: IAgent) {
     const agents = GetAllAgents();
     agents.forEach(a => {
       if (a.isInert) {
-        console.error('hiding', a.id);
+        // console.error('hiding', a.id);
         a.visible = false;
       }
     });
   }
   /**
+   * Remove ALL inert agents globally
+   */
+  removeInertAgents(agent: IAgent) {
+    const agents = GetAllAgents();
+    agents.forEach(a => {
+      if (a.isInert) this.removeAgent(a);
+    });
+  }
+
+  /**
    * For all agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
    */
   agentsReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
     const agents = GetAgentsByType(bpname);
+    const def = {
+      mutationPropName: agent.prop.Population.spawnMutationProp.value,
+      mutationPropFeature: agent.prop.Population.spawnMutationPropFeature.value,
+      mutationAdd: agent.prop.Population.spawnMutationMaxAdd.value,
+      mutationSubtract: agent.prop.Population.spawnMutationMaxSubtract.value
+    };
     agents.forEach(a => {
-      if (!a.isInert) a.callFeatMethod('Population', 'spawnChild', spawnScript);
+      if (!a.isInert) {
+        this.spawnChild(a, spawnScript, def);
+        if (deleteAfterSpawning) a.prop.isInert.setTo(true);
+      }
     });
   }
   /**
+   * For ONE agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
+   */
+  oneAgentReproduce(agent: IAgent, bpname: string, spawnScript: string) {
+    console.error('oneagentreproduce');
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
+    const parent = this.getRandomActiveAgent(agent, bpname);
+    if (parent === undefined) {
+      console.error(
+        'Popuation.oneAgentReproduce was not able to find a non-inert parent agent to reproduce from!'
+      );
+      return;
+    }
+    const def = {
+      mutationPropName: agent.prop.Population.spawnMutationProp.value,
+      mutationPropFeature: agent.prop.Population.spawnMutationPropFeature.value,
+      mutationAdd: agent.prop.Population.spawnMutationMaxAdd.value,
+      mutationSubtract: agent.prop.Population.spawnMutationMaxSubtract.value
+    };
+    this.spawnChild(parent, spawnScript, def);
+    if (deleteAfterSpawning) parent.prop.isInert.setTo(true);
+  }
+  /**
+   * For all agents of type bpname, call SpawnChild if not inert
+   * @param agent
+   * @param bpname
+   * @param spawnScript
+   */
+  populateBySpawning(agent: IAgent, bpname: string, spawnScript: string) {
+    const targetPopulationSize = agent.prop.Population.targetPopulationSize.value;
+    const deleteAfterSpawning = agent.prop.Population.deleteAfterSpawning.value;
+    let count = AGENTS_TO_CREATE.length;
+    let agentIndex = 0;
+    const agents = GetAgentsByType(bpname);
+
+    if (agents.length < 1)
+      throw Error(
+        `populateBySpwaning can't spawn because there are no ${bpname} agents left!`
+      );
+
+    while (count < targetPopulationSize) {
+      const a = agents[agentIndex];
+      if (!a.isInert) {
+        // mutationProps
+        // Pass the mutation properties to SpawnChild and m_Create.
+        // Mutation parameters are defined for the agent calling populateBySpawning
+        // which in many cases is the GlobalAgent.
+        // m_Create is run without any agent context other than
+        // the newly created agent, which will not have the mutation
+        // parameters defined.
+        // Also, for populateBySpawning, spawnChild is run in the context
+        // of a selected parent agent.  So again, the mutation parameters
+        // will be missing.
+        // So we need to pass the mutation parameters from here
+        // to the spawnChild defintion, which then passes it
+        // to m_Create.
+        const def = {
+          mutationPropName: agent.prop.Population.spawnMutationProp.value,
+          mutationPropFeature:
+            agent.prop.Population.spawnMutationPropFeature.value,
+          mutationAdd: agent.prop.Population.spawnMutationMaxAdd.value,
+          mutationSubtract: agent.prop.Population.spawnMutationMaxSubtract.value
+        };
+        this.spawnChild(a, spawnScript, def);
+        count++;
+        if (count >= targetPopulationSize) break;
+      }
+      agentIndex++;
+      if (agentIndex >= agents.length) agentIndex = 0;
+    }
+
+    // force immediate creation so that population can be set
+    // during PREP ROUND, otherwise population isn't created until
+    // after START ROUND
+    m_Create(0);
+
+    if (deleteAfterSpawning) {
+      agents.forEach(a => this.removeAgent(a));
+      // force immediate delete otherwise deletion happens only after START ROUND
+      m_Delete(0);
+    }
+  }
+
+  /**
    * For all agents of type bpname, call program if not inert
    */
-  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+  agentsForEachActive(agent: IAgent, bpname: string, program: TSMCProgram) {
     const agents = GetAgentsByType(bpname);
     agents.forEach(a => {
       if (!a.isInert) a.exec(program, { agent: a });
     });
+  }
+  /**
+   * For all agents of type bpname, call program regardless of inert state
+   */
+  agentsForEach(agent: IAgent, bpname: string, program: TSMCProgram) {
+    const agents = GetAgentsByType(bpname);
+    agents.forEach(a => a.exec(program, { agent: a }));
   }
 
   /// STATISTICS METHODS /////////////////////////////////////////////////////////
@@ -198,6 +422,9 @@ class PopulationPack extends GFeature {
    *  featCall Population setRadius value
    */
 
+  /**
+   * Returns the number of active (non-inert) agents of a particular blueprint type
+   */
   getActiveAgentsCount(agent: IAgent, blueprintName: string) {
     const agents = GetAgentsByType(blueprintName);
     let count = 0;
@@ -212,15 +439,29 @@ class PopulationPack extends GFeature {
     agent.getFeatProp(this.name, 'count').setTo(agents.length);
   }
   /**
+   * Updates three featProp statistics:
+   *   count -- number of agents
+   *   sum -- total of the agent's prop values (e.g. sum of algae energylevels)
+   *   avg -- average of agent's prop values (e.g. avg of algae energylevel)
+   * This is a one-time call.
+   *
+   * Using featProps
+   * To use this with Script Wizard UI:
+   * 1. First set monitoredAgent: featProp Population monitoredAgent setTo Moth
+   * 2. Set monitoredAgentProp: featProp Population monitoredAgentProp setTo energyLevel
+   * 3. Then call this without paramaeters: featCall Population countAgentProp
    *
    * @param agent
-   * @param blueprintName
-   * @param prop
+   * @param blueprintName (optional -- falls back to monitoredAgent)
+   * @param prop (optional -- falls back to monitoredAgentProp)
    * @returns Sets three feature propertie: count, sum, avg
    */
   countAgentProp(agent: IAgent, blueprintName: string, prop: string) {
+    if (blueprintName === undefined)
+      blueprintName = agent.prop.Population.monitoredAgent.value;
     const agents = GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
+    if (prop === undefined) prop = agent.prop.Population.monitoredAgentProp.value;
     const sum = agents
       .map(a => a.getProp(prop).value)
       .reduce((acc, cur) => acc + cur);
@@ -230,6 +471,7 @@ class PopulationPack extends GFeature {
       .getFeatProp(this.name, 'avg')
       .setTo(Number(sum / agents.length).toFixed(2));
   }
+  /// Returns the minimum number of agents of type blueprintName
   minAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
@@ -239,6 +481,7 @@ class PopulationPack extends GFeature {
       .reduce(minimizer, Infinity);
     agent.getFeatProp(this.name, 'min').setTo(min);
   }
+  /// Returns the maximum number of agents of type blueprintName
   maxAgentProp(agent: IAgent, blueprintName: string, prop: string) {
     const agents = GetAgentsByType(blueprintName);
     if (agents.length < 1) return;
@@ -248,6 +491,161 @@ class PopulationPack extends GFeature {
       .reduce(maximizer, -Infinity);
     agent.getFeatProp(this.name, 'max').setTo(max);
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  /// HISTOGRAM
+
+  /**
+   * Counts the number of agents that match a particular prop value
+   * - This is generally used for a histogram with a prop that uses
+   *   discrete categories or indices.
+   * - It saves the count in the `countByProp` dictionary where the
+   *   keys corresponnd to the prop's values.
+   * - Use this for instance to count the number of agents using a
+   *   particular colorscale color.
+   * - Each call starts from a fresh count.
+   *
+   * e.g.:
+   *    countByProp = [
+   *      ['0', 11],
+   *      ['1', 53],
+   *      ['2', 22],
+   *    ]
+   * @param agent
+   * @param blueprintName
+   * @param prop
+   */
+  countAgentsByPropType(
+    agent: IAgent,
+    blueprintName: string,
+    prop: string,
+    clear: boolean
+  ) {
+    const agents = GetAgentsByType(blueprintName);
+    const countsByProp = agent.prop.Population._countsByProp;
+
+    // reset count first?
+    if (clear) countsByProp.clear();
+
+    agents.forEach(a => {
+      // skip count if inert
+      if (a.isInert) return;
+
+      const key = a.getProp(prop).value;
+      const count = countsByProp.get(key) + 1 || 1;
+      countsByProp.set(key, count);
+    });
+  }
+
+  /// Prepopulate the countsByProp map with keys
+  /// This is necessary so all bars in the histogram will have values
+  /// otherwise, bars without values are not plotted.
+  setAgentsByFeatPropTypeKeys(agent: IAgent, ...keys: string[]) {
+    agent.prop.Population._countsByPropKeys = keys;
+  }
+
+  /// Clear counts for each key
+  m_CountAgentsByFeatPropTypeReset(agent: IAgent) {
+    agent.prop.Population._countsByPropKeys.forEach(k => {
+      agent.prop.Population._countsByProp.set(k, 0);
+    });
+  }
+  /**
+   * Counts number of agents matching a featProp
+   * e.g. Moth Costume colorScaleIndex, usually a dict?
+   *
+   * The result is stored in agent.prop.Population._countsByProp
+   *
+   * This assumes we only have a single countAgentsByFeatPropType
+   * property.
+   *
+   * @param agent
+   * @param blueprintName
+   * @param feature
+   * @param featprop
+   * @param clear reset counts to 0 with every invocation
+   *              otherwise, the count is cumulative across invocations
+   */
+  m_CountAgentsByFeatPropType(
+    agent: IAgent,
+    agents: IAgent[],
+    feature: string,
+    featprop: string,
+    clear: boolean
+  ) {
+    const countsByProp = agent.prop.Population._countsByProp;
+
+    // reset count first?
+    if (clear || agent.prop.Population._countsByProp.size < 1) {
+      if (agent.prop.Population._countsByPropKeys.length > 0) {
+        this.m_CountAgentsByFeatPropTypeReset(agent);
+      } else {
+        countsByProp.clear();
+      }
+    }
+
+    agents.forEach(a => {
+      // skip count if inert
+      if (a.isInert) return;
+      if (!a.prop[feature] || !a.prop[feature][featprop]) return;
+      const key = a.prop[feature][featprop].value;
+      const count = countsByProp.get(key) + 1 || 1;
+      countsByProp.set(key, count);
+    });
+  }
+  /**
+   * Counts currently active (non-inert) agents
+   *
+   * NOTE this does not include newly spawned agents
+   * in the AGENTS_TO_CREATE array.  Use countSpawnedAgentsByFeatPropType
+   * to count AGENTS_TO_CREATE.
+   *
+   * Using featProps
+   * To use this with Script Wizard UI:
+   * 1. First set monitoredAgent: featProp Population monitoredAgent setTo Moth
+   * 2. Set monitoredAgentProp: featProp Population monitoredAgentProp setTo energyLevel
+   * 3. Then call this without paramaeters: featCall Population countAgentProp
+   *
+   */
+  countExistingAgentsByFeatPropType(
+    agent: IAgent,
+    blueprintName: string,
+    feature: string,
+    featprop: string,
+    clear: boolean // REVIEW: `clear` hard to set with if using featProp method?
+    // e.g. have to use `featCall countExistingAgentsByFeatPropType undefined undefined undefined true`
+  ) {
+    const bpname = blueprintName || agent.prop.Population.monitoredAgent.value;
+    const feat = feature || agent.prop.Population.monitoredAgentPropFeature.value;
+    const prop = featprop || agent.prop.Population.monitoredAgentProp.value;
+    const agents = GetAgentsByType(bpname);
+    this.m_CountAgentsByFeatPropType(agent, agents, feat, prop, clear);
+  }
+
+  /// THIS DOESN"T WORK!
+  /// AGENTS_TO_CREATE Is an array of isntanceDefs, not actual agents.
+  /// so we can't inspect its featprops.
+  ///
+  /// Counts agents newly spawned by agentsReproduce that have yet to be
+  /// created. AGENTS_TO_CREATE
+  // countSpawnedAgentsByFeatPropType(
+  //   agent: IAgent,
+  //   blueprintName: string,
+  //   feature: string,
+  //   featprop: string,
+  //   clear: boolean
+  // ) {
+  //   const agents = AGENTS_TO_CREATE.filter(a => a.blueprint === blueprintName);
+  //   console.error('Agents-to-create', AGENTS_TO_CREATE, agents);
+  //   this.countAgentsByFeatPropType(
+  //     agent,
+  //     agents,
+  //     blueprintName,
+  //     feature,
+  //     featprop,
+  //     clear
+  //   );
+  // }
 } // end of feature class
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////

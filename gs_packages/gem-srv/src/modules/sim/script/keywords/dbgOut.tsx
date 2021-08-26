@@ -13,7 +13,7 @@ import { RegisterKeyword } from 'modules/datacore';
 
 /// KEYWORD STATIC DECLARATIONS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let MAX_OUT = 100;
+let MAX_OUT = 1000;
 let COUNTER = MAX_OUT;
 UR.HandleMessage('ALL_AGENTS_PROGRAM', () => {
   console.log('DBGOUT RESET OUTPUT COUNTER to', MAX_OUT);
@@ -58,7 +58,12 @@ export class dbgOut extends Keyword {
   /** return rendered component representation */
   jsx(index: number, unit: TScriptUnit, children?: any[]): any {
     const [kw, ...args] = unit;
-    return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
+    const isEditable = children ? children.isEditable : false;
+    const isInstanceEditor = children ? children.isInstanceEditor : false;
+    if (!isInstanceEditor || isEditable) {
+      return super.jsx(index, unit, <>{`${kw} ${args}`}</>);
+    }
+    return super.jsxMin(index, unit, <>{`${kw} ${args}`}</>);
   }
 } // end of UseFeature
 

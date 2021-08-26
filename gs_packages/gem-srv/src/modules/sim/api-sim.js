@@ -46,6 +46,7 @@ const LOOP = {
 // updated directly by sim-round
 export const SIMSTATUS = {
   currentLoop: LOOP.LOAD,
+  roundHasBeenStarted: false, // used to prevent script updates after round has started
   completed: false,
   timer: undefined
 };
@@ -82,6 +83,8 @@ function Stage() {
   // load agents and assets
   // prep recording buffer
   (async () => {
+    // Unsubscribe if previously run, otherwise it'll keep running.
+    if (RX_SUB) RX_SUB.unsubscribe();
     console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
     console.log(...PR('Simulation Loaded'));
@@ -90,6 +93,7 @@ function Stage() {
     console.log(...PR('Simulation Staged'));
     StageInit();
     SIMSTATUS.currentLoop = LOOP.STAGED;
+    SIMSTATUS.roundHasBeenStarted = false;
     SIMSTATUS.completed = false;
     // NextRound();
 
@@ -139,6 +143,7 @@ function Start() {
   if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_Step);
   SIMSTATUS.currentLoop = LOOP.RUN;
+  SIMSTATUS.roundHasBeenStarted = true;
   RoundStart(Stop);
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'Start' });
 }
@@ -210,6 +215,9 @@ function IsRunning() {
 function RoundsCompleted() {
   return SIMSTATUS.completed;
 }
+function RoundHasBeenStarted() {
+  return SIMSTATUS.roundHasBeenStarted;
+}
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -231,5 +239,6 @@ export {
   Export,
   Reset,
   IsRunning,
-  RoundsCompleted
+  RoundsCompleted,
+  RoundHasBeenStarted
 };
