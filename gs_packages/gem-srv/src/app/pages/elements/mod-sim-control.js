@@ -78,8 +78,8 @@ class SimControl {
     });
 
     // 4. Compile All Blueprints
-    const scripts = model.scripts;
-    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
+    const scripts = model.blueprints;
+    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.scriptText));
     const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
     const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
     const blueprintNames = blueprints.map(b => b.name);
@@ -100,7 +100,7 @@ class SimControl {
     // 7. Update Agent Display
     //    Agent displays are automatically updated during SIM/VIS_UPDATE
     // 8. Update Inspectors
-    //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
+    //    Inspectors will be automatically updated during SIM/UI_UPDATE phase    return;
   }
 
   DoSimCostumes() {

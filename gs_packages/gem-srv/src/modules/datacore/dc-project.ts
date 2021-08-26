@@ -201,16 +201,14 @@ export function RoundsShouldLoop() {
  * @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
  */
 export function GetBlueprintProperties(blueprintName) {
-  const blueprint = MODEL.scripts.find(s => s.id === blueprintName);
+  const blueprint = PROJECT.GetBlueprint(blueprintName);
   if (!blueprint) return []; // blueprint was probably deleted
-  const script = blueprint.script;
-  return TRANSPILER.ExtractBlueprintProperties(script);
+  return TRANSPILER.ExtractBlueprintProperties(blueprint.scriptText);
 }
 export function GetBlueprintPropertiesMap(blueprintName) {
-  const blueprint = MODEL.scripts.find(s => s.id === blueprintName);
+  const blueprint = PROJECT.GetBlueprint(blueprintName);
   if (!blueprint) return []; // blueprint was probably deleted
-  const script = blueprint.script;
-  return TRANSPILER.ExtractBlueprintPropertiesMap(script);
+  return TRANSPILER.ExtractBlueprintPropertiesMap(blueprint.scriptText);
 }
 
 /// API ///////////////////////////////////////////////////////////////////////

@@ -263,21 +263,21 @@ class ScriptEditor extends React.Component {
     if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
     const { model, modelId } = this.state;
-    if (model === undefined || model.scripts === undefined) {
+    if (model === undefined || model.blueprints === undefined) {
       console.warn(
         'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
         model
       );
       return; // no scripts defined
     }
-    const agent = model.scripts.find(s => s.id === scriptId);
-    const script = agent && agent.script ? agent.script : SCRIPT_TEMPLATE;
+    const agent = model.blueprints.find(s => s.id === scriptId);
+    const script = agent && agent.scriptText ? agent.scriptText : SCRIPT_TEMPLATE;
 
     // add script to URL
     history.pushState(
       {},
       '',
-      `/app/scripteditor?model=${modelId}&script=${scriptId}`
+      `/app/scripteditor?project=${modelId}&script=${scriptId}`
     );
 
     // Show script selector if scriptId was not passed
@@ -342,8 +342,8 @@ class ScriptEditor extends React.Component {
     );
 
     const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+      model && model.blueprints
+        ? model.blueprints.map(s => ({ id: s.id, label: s.label }))
         : [];
     return (
       <div

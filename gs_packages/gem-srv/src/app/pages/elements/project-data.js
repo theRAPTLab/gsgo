@@ -123,10 +123,9 @@ function GetCurrentModelData() {
 export function InjectBlueprint(data) {
   const blueprint = data.script;
   // Skip if already defined
-  if (CURRENT_MODEL.scripts.find(s => s.id === blueprint.id)) return;
-
-  CURRENT_MODEL.scripts.push(blueprint);
-  const source = TRANSPILER.ScriptifyText(blueprint.script);
+  if (CURRENT_PROJECT.blueprints.find(s => s.id === blueprint.id)) return;
+  CURRENT_PROJECT.blueprints.push(blueprint);
+  const source = TRANSPILER.ScriptifyText(blueprint.scriptText);
   const bundle = TRANSPILER.CompileBlueprint(source);
   TRANSPILER.RegisterBlueprint(bundle);
 }
@@ -201,13 +200,13 @@ function GetPozyxBPNames() {
  * Does not remove sim instances/agents.
  * @param {string} blueprintName
  */
-function BlueprintDelete(blueprintName, modelId = CURRENT_MODEL_ID) {
+function BlueprintDelete(blueprintName, modelId = CURRENT_PROJECT_ID) {
   const model = GetProject(modelId);
   // 1. Delete the old blueprint from model
-  const index = model.scripts.findIndex(s => s.id === blueprintName);
+  const index = model.blueprints.findIndex(s => s.id === blueprintName);
   if (index > -1) {
     // Remove existing blueprint
-    model.scripts.splice(index, 1);
+    model.blueprints.splice(index, 1);
   }
   // 2. Delete any existing instances from model definition
   model.instances = model.instances.filter(i => i.blueprint !== blueprintName);
@@ -263,7 +262,7 @@ export function InstanceAdd(data, sendUpdate = true) {
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = model.scripts.find(s => s.id === data.blueprintName);
+  const blueprint = model.blueprints.find(s => s.id === data.blueprintName);
   const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
@@ -408,18 +407,18 @@ function ScriptUpdate(data) {
 
   // 2. Update the new blueprint
   let blueprint;
-  const index = model.scripts.findIndex(s => s.id === blueprintName);
+  const index = model.blueprints.findIndex(s => s.id === blueprintName);
   if (index > -1) {
     // Replace existing blueprint
     // 1. Clone all properties
-    blueprint = merge.all([model.scripts[index]]);
+    blueprint = merge.all([model.blueprints[index]]);
     // 2. Modify new propreites
     blueprint.id = blueprintName;
     blueprint.label = blueprintName;
     // 3. Replace the script
     blueprint.script = data.script;
     // Replace existing blueprint
-    model.scripts[index] = blueprint;
+    model.blueprints[index] = blueprint;
   } else {
     // Add new blueprint
     blueprint = {
@@ -431,7 +430,7 @@ function ScriptUpdate(data) {
       script: data.script
     };
     // New Blueprint
-    model.scripts.push(blueprint);
+    model.blueprints.push(blueprint);
   }
 
   // 3. Clean the init scripts

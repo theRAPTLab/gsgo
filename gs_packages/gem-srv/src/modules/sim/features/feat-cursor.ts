@@ -61,7 +61,7 @@ function m_CompileCursors() {
     label: 'Cursor',
     isCharControllable: true,
     isPozyxControllable: true,
-    script: `# BLUEPRINT Cursor
+    scriptText: `# BLUEPRINT Cursor
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
