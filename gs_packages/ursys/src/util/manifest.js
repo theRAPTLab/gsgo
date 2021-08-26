@@ -282,7 +282,7 @@ async function DeliverManifest(req, res, next) {
       // only read the first loaded manifest
       json = json.shift();
       const mpath = Path.join(path, `${GS_MANIFEST_FILENAME}.json`);
-      FILE.EnsureDirectory(path);
+      FILE.EnsureDir(path);
       FILE.WriteJSON(mpath, json, err => {
         if (err) TERM('error:', err);
       });

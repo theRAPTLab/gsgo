@@ -101,6 +101,11 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
   // otherwise, is this a regular texture?
   if (rsrc.texture) return rsrc.texture;
 
+  // or maybe it's a straight-up texture already
+  if (rsrc instanceof PIXI.Texture) {
+    throw Error('resource is a PIXI.Texture, not PIXI.LoaderResource');
+  }
+
   // if we got here, the passed rsrc  might not be one
   throw Error('could not find texture in resource');
 }
@@ -167,7 +172,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = SPRITES.GetAssetById(assetId);
+    const { rsrc } = SPRITES.getAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
     this.assetId = assetId;
@@ -175,11 +180,11 @@ class Visual implements IVisual, IPoolable, IActable {
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const rsrc: PIXI.LoaderResource = SPRITES.GetAsset(name);
+    const { rsrc } = SPRITES.getAsset(name);
     // is this a spritesheet?
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
-    this.assetId = SPRITES.LookupAssetId(name);
+    this.assetId = SPRITES.lookupAssetId(name);
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);

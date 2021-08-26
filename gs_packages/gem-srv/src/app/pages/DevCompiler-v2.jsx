@@ -65,7 +65,7 @@ class Compiler extends React.Component {
     this.source = [];
     const jsx = TRANSPILER.RenderScript(this.source);
     this.state = {
-      jsx,
+      // jsx,
       text: this.text,
       source: '',
       tabIndex: 0
@@ -130,7 +130,7 @@ class Compiler extends React.Component {
 
   // called by message 'SCRIPT_JSX_CHANGED'
   updateJSX(jsx) {
-    this.setState({ jsx });
+    // this.setState({ jsx });
   }
 
   // echo typing in ScriptText to state
@@ -149,8 +149,8 @@ class Compiler extends React.Component {
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
     // this.source = TRANSPILER.ScriptifyText(this.state.text);
-    const jsx = TRANSPILER.RenderScript(this.source);
-    this.setState({ jsx });
+    // const jsx = TRANSPILER.ScriptToJSX(this.source);
+    // this.setState({ jsx });
     if (DBG) console.groupEnd();
   }
 
@@ -187,8 +187,8 @@ class Compiler extends React.Component {
     const bp = TRANSPILER.RegisterBlueprint(bdl);
     UR.RaiseMessage('AGENT_PROGRAM', bp.name);
     // update local jsx render
-    const jsx = TRANSPILER.RenderScript(this.source);
-    this.setState({ jsx });
+    // const jsx = TRANSPILER.ScriptToJSX(this.source);
+    // this.setState({ jsx });
     SIM.Start();
   }
 
@@ -236,11 +236,8 @@ class Compiler extends React.Component {
       tab = (
         <div id="script-wizard">
           <h3>WIZARD VIEW</h3>
-          {this.state.jsx}
+          deprecated
           <hr />
-          <button type="button" name="updateText" onClick={this.userUpdateText}>
-            Update Blueprint
-          </button>
         </div>
       );
     }
