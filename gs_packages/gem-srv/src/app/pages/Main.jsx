@@ -84,6 +84,8 @@ class MissionControl extends React.Component {
       message: '',
       modelId: '',
       model: {},
+      projId: '', // new graphQL-based id, set by project-data
+      bpidList: [],
       devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
@@ -435,6 +437,7 @@ class MissionControl extends React.Component {
       panelConfiguration,
       message,
       projId,
+      bpidList,
       modelId,
       model,
       devices,
@@ -485,10 +488,16 @@ class MissionControl extends React.Component {
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor modelId={modelId} model={model} />
+        <MissionMapEditor
+          projId={projId}
+          bpidList={bpidList}
+          modelId={modelId}
+          model={model}
+        />
       ) : (
         <MissionRun
           projId={projId}
+          bpidList={bpidList}
           devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}

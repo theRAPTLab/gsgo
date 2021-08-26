@@ -52,7 +52,7 @@ class MissionControl extends React.Component {
   }
 
   render() {
-    const { projId, devices, minimized, classes } = this.props;
+    const { projId, devices, bpidList, minimized, classes } = this.props;
 
     return (
       <>
@@ -62,7 +62,7 @@ class MissionControl extends React.Component {
           isMinimized={minimized}
           onClick={this.OnPanelClick}
         />
-        <PanelBlueprints id="blueprints" projId={projId} />
+        <PanelBlueprints id="blueprints" projId={projId} bpidList={bpidList} />
       </>
     );
   }

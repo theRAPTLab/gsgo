@@ -10,8 +10,8 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React, { useState } from 'react';
-import { withStyles } from '@material-ui/core/styles';
 import UR from '@gemstep/ursys/client';
+import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 
@@ -55,7 +55,7 @@ class MapEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { modelId, model, classes } = this.props;
+    const { projId, bpidList, classes } = this.props;
     const mapInstanceSpec = model && model.instances ? model.instances : [];
     const agents =
       model && model.scripts
@@ -72,16 +72,16 @@ class MapEditor extends React.Component {
           overflow: 'hidden'
         }}
       >
-        <PanelRounds id="rounds" modelId={modelId} rounds={rounds} />
+        <PanelRounds id="rounds" modelId={projId} rounds={rounds} />
         <PanelBlueprints
           id="blueprints"
-          modelId={modelId}
-          agents={agents}
+          projId={projId}
+          bpidList={bpidList}
           enableAdd
         />
         <PanelMapInstances
           id="instances"
-          modelId={modelId}
+          modelId={projId}
           mapInstanceSpec={mapInstanceSpec}
         />
       </div>

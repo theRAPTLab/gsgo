@@ -3,15 +3,19 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Lists all the blueprints available in a model
-  * Used in MissionControl to see which blueprints have been defined
+  * Used in Main > MissionRun to see which blueprints have been defined
     (click to open the script)
-  * Used with MapEditor to create new instances
+  * Used with Main > MissionMapEdit to create new instances
     (click to create new instance)
+  * Used with Viewer to display blueprints for editing
+
+  PanelBlueprints relies on its parent to set the list of blueprints
+  because it is used both locally (on Main) and over the network
+  (on Viewer). It doesn't know where to get the updated data from.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { GetProject } from 'modules/datacore/dc-project';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import { withStyles } from '@material-ui/core/styles';
@@ -50,7 +54,7 @@ class PanelBlueprints extends React.Component {
 
   render() {
     const { title } = this.state;
-    const { projId, id, isActive, enableAdd, classes } = this.props;
+    const { projId, bpidList, id, isActive, enableAdd, classes } = this.props;
     const instructions = enableAdd
       ? 'Click to add a character'
       : 'Click to edit a character type script in a new window';
@@ -58,12 +62,8 @@ class PanelBlueprints extends React.Component {
       // To be implemented
       console.log('Show instance');
     };
-
-    // graphQL
-    const blueprints = GetProject().blueprints || [];
-
     // sort alphabetically
-    const sortedBlueprints = blueprints.sort((a, b) => {
+    const sortedBlueprints = bpidList.sort((a, b) => {
       if (a.label < b.label) return -1;
       if (a.label > b.label) return 1;
       return 0;
