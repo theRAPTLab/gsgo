@@ -64,7 +64,6 @@ module.exports = {
     const { DB } = context;
     const coll = DB.getCollection('projects');
     const objs = coll.chain().data({ removeMeta: true });
-    console.error(`return projects: ${JSON.stringify(objs)}`);
     if (DBG) TERM(`return projects: ${JSON.stringify(objs)}`);
     return objs;
   },
@@ -73,7 +72,6 @@ module.exports = {
     const { DB } = context;
     const coll = DB.getCollection('projects');
     const result = coll.findOne({ id });
-    console.error(`return project: ${JSON.stringify(result)}`);
     if (DBG) TERM(`return project '${id}': found ${JSON.stringify(result)}`);
     return result;
   },
@@ -84,8 +82,19 @@ module.exports = {
       .chain() // return full ResultSet
       .data({ removeMeta: true }) // return documents in ResultSet as Array
       .map(i => ({ label: i.label, id: i.id })); // map documents to values
-    console.error(`return projectNames: ${JSON.stringify(objs)}`);
     if (DBG) TERM(`return projectNames: ${JSON.stringify(objs)}`);
     return objs;
+  updateRounds(args, context) {
+    const { projectId, input } = args;
+    const { DB } = context;
+    if (DBG)
+      TERM(`update project.rounds:${projectId}, input:${JSON.stringify(input)}`);
+    const coll = DB.getCollection('projects');
+    const project = coll.findOne({ id: projectId });
+    TERM(`project.rounds is ${JSON.stringify(project.rounds)}`);
+    project.rounds = input; // replace them all
+    TERM(`REPLACED project.rounds is ${JSON.stringify(project.rounds)}`);
+    coll.update(project);
+    return project.rounds;
   }
 };

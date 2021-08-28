@@ -8,6 +8,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { IbpidListItem } from 'lib/t-ui.d';
+import * as ACMetadata from '../modules/appcore/ac-metadata';
+import * as ACRounds from '../modules/appcore/ac-rounds';
+
 import ProjectMetadata from './class-project-meta';
 import ProjectRound from './class-project-round';
 import ProjectBlueprint from './class-project-blueprint';
@@ -49,6 +52,9 @@ export default class Project {
     this._rounds = def.rounds.map(r => new ProjectRound(r));
     this._blueprints = def.blueprints.map(b => new ProjectBlueprint(b));
     this._instances = def.instances.map(i => new ProjectInstance(i));
+
+    // Init AppCore (AC) modules
+    ACRounds.updateAndPublish(def.id, def.rounds);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
