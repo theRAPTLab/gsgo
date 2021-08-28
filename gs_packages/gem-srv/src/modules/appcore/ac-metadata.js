@@ -158,3 +158,39 @@ export function GetBoundary() {
   const bgcolor = metadata.bgcolor;
   return { width, height, bgcolor };
 }
+
+/**
+ * Test function used by feat-movement to determine whether a wall
+ * is set to wrap or prevent passing
+ * @param {string} wall
+ * @returns
+ */
+export function Wraps(wall = 'any') {
+  const BOUNDS = _getKey('metadata');
+  const wrap = BOUNDS ? BOUNDS.wrap : undefined;
+  let wallWrap;
+  if (!wrap) {
+    // default if wrap is not set
+    wallWrap = [false, false, false, false];
+  } else if (!Array.isArray(wrap)) {
+    wallWrap = [wrap, wrap, wrap, wrap];
+  } else if (wrap.length === 4) {
+    wallWrap = wrap;
+  } else if (wrap.length === 2) {
+    wallWrap = [wrap[0], wrap[1], wrap[0], wrap[1]];
+  }
+  switch (wall) {
+    case 'top':
+      return wallWrap[0];
+    case 'right':
+      return wallWrap[1];
+    case 'bottom':
+      return wallWrap[2];
+    case 'left':
+      return wallWrap[3];
+    case 'any':
+    default:
+      // Generally you should only call this if there is a single wrap setting
+      return wallWrap[0];
+  }
+}
