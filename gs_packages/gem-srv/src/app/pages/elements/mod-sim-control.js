@@ -18,7 +18,8 @@ import { ClearDOBJ } from 'modules/sim/sim-agents';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
-import { PROJECT, GetBoundary, SendBoundary } from 'modules/datacore/dc-project';
+import { PROJECT, SendBoundary } from 'modules/datacore/dc-project';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { ClearGlobalAgent } from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -61,7 +62,7 @@ class SimControl {
     if (!model) return;
 
     // 2. Show Boundary
-    const boundary = GetBoundary();
+    const boundary = ACMetadata.GetBoundary();
     RENDERER.SetBoundary(boundary.width, boundary.height, boundary.bgcolor);
     // And Set Listeners too
     SendBoundary();

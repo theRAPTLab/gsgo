@@ -66,10 +66,6 @@ const { addEffectHook, deleteEffectHook } = STATE;
 addChangeHook(hook_Filter);
 addEffectHook(hook_Effect);
 
-/// ACCESSORS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// return copies
-
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function updateAndPublish(projId, rounds) {
@@ -162,3 +158,23 @@ async function m_LoadRounds(projId) {
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Handled by class-project
+
+/// ACCESSORS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// return copies
+export function GetRoundCount() {
+  const rounds = _getKey('rounds');
+  return rounds.length;
+}
+export function GetRoundDef(index) {
+  const rounds = _getKey('rounds');
+  if (index > rounds.length)
+    throw new Error(
+      `Bad round index request: '${index}'. Rounds length is ${rounds.length}`
+    );
+  return rounds[index];
+}
+export function RoundsShouldLoop() {
+  const metadata = _getKey('metadata');
+  return metadata.roundsCanLoop;
+}

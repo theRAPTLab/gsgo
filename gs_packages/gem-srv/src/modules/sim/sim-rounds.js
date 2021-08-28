@@ -7,11 +7,7 @@
 import { interval } from 'rxjs';
 import UR from '@gemstep/ursys/client';
 import { GetAgentsByType } from 'modules/datacore/dc-agents';
-import {
-  GetRoundCount,
-  GetRoundDef,
-  RoundsShouldLoop
-} from 'modules/datacore/dc-project';
+import * as ACRounds from 'modules/appcore/ac-rounds';
 import { GetGlobalAgent } from 'lib/class-gagent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler';
@@ -98,7 +94,7 @@ export function RoundInit(SIMSTATUS) {
   console.log(...PR('RoundInit!'));
   ROUNDS_INDEX++;
   ROUNDS_COUNTER++;
-  const round = GetRoundDef(ROUNDS_INDEX);
+  const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
   if (round) {
     if (round.time !== undefined) {
       ROUND_TIMER_START_VALUE = round.time;
@@ -120,7 +116,7 @@ export function RoundStart(stopfn) {
 export function RoundStop() {
   console.log(...PR('RoundStop!'));
   StopRoundTimer();
-  const round = GetRoundDef(ROUNDS_INDEX);
+  const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
   if (round) {
     const outtro = round.outtro || '';
     const message = `End Round ${ROUNDS_COUNTER + 1}: ${outtro}`;
@@ -131,11 +127,11 @@ export function RoundStop() {
   // Prep for Next Round
 
   // If there are more rounds, not complete
-  if (ROUNDS_INDEX + 1 < GetRoundCount()) return false;
+  if (ROUNDS_INDEX + 1 < ACRounds.GetRoundCount()) return false;
 
   // If rounds loop, not complete
   // (Rounds loop by default if 'noloop' is not defined or set to true)
-  if (RoundsShouldLoop()) {
+  if (ACRounds.RoundsShouldLoop()) {
     ROUNDS_INDEX = -1;
     return false;
   }

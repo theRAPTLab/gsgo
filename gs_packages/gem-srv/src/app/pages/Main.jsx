@@ -16,7 +16,6 @@ import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
-import { GetBoundary } from 'modules/datacore/dc-project';
 import SIMCTRL from './elements/mod-sim-control';
 import * as PROJ from './elements/project-data';
 

@@ -49,10 +49,6 @@ const { addEffectHook, deleteEffectHook } = STATE;
 addChangeHook(hook_Filter);
 addEffectHook(hook_Effect);
 
-/// ACCESSORS /////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// return copies
-
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function updateAndPublish(projId, metadata) {
@@ -149,3 +145,16 @@ async function m_LoadMetadata(projId) {
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Handled by class-project
+
+/// ACCESSORS /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// return copies
+
+export function GetBoundary() {
+  const metadata = _getKey('metadata');
+  if (!metadata) return { width: 0, height: 0, bgcolor: 0 }; // not loaded yet
+  const width = metadata.right - metadata.left;
+  const height = metadata.bottom - metadata.top;
+  const bgcolor = metadata.bgcolor;
+  return { width, height, bgcolor };
+}

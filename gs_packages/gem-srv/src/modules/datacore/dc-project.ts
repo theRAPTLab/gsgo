@@ -14,6 +14,7 @@
 import UR from '@gemstep/ursys/client';
 import Project from 'lib/class-project';
 import * as TRANSPILER from 'script/transpiler-v2';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -127,14 +128,8 @@ export function SetInputStageBounds(width, height) {}
 export function GetBounds() {
   return BOUNDS;
 }
-export function GetBoundary() {
-  const width = BOUNDS.right - BOUNDS.left;
-  const height = BOUNDS.bottom - BOUNDS.top;
-  const bgcolor = BOUNDS.bgcolor;
-  return { width, height, bgcolor };
-}
 export function SendBoundary() {
-  const boundary = GetBoundary();
+  const boundary = ACMetadata.GetBoundary();
   UR.RaiseMessage('NET:SET_BOUNDARY', {
     width: boundary.width,
     height: boundary.height,
@@ -178,16 +173,7 @@ export function Wraps(wall = 'any') {
 
 /// ROUNDS METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetRoundCount() {
-  return PROJECT.GetRoundCount();
-}
-export function GetRoundDef(index: number) {
-  return PROJECT.GetRoundDef(index);
-}
 /// Rounds loop by default
-export function RoundsShouldLoop() {
-  return PROJECT.RoundsShouldLoop();
-}
 
 /// BLUEPRINT METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

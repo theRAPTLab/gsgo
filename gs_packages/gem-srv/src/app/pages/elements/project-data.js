@@ -29,9 +29,9 @@ import {
   LoadProject,
   GetProject,
   UpdateDCModel,
-  GetBoundary,
   GetBlueprintProperties
 } from 'modules/datacore/dc-project';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as INPUT from 'modules/input/api-input';
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
@@ -117,6 +117,10 @@ function GetCurrentModelData() {
     modelId: CURRENT_MODEL_ID,
     model: CURRENT_MODEL
   };
+}
+/// Used by REQ_PROJ_DATA and Main
+export function GetBoundary() {
+  return ACMetadata.GetBoundary();
 }
 /// Used to inject the Cursor blueprint
 export function InjectBlueprint(data) {
@@ -500,14 +504,6 @@ function ScriptUpdate(data) {
   RaiseInstancesListUpdate();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RoundUpdate(data) {
-  const model = GetProject();
-  const round = data.round;
-  model.rounds.roundDefs = model.rounds.roundDefs.map(r => {
-    return r.id === round.id ? round : r;
-  });
-  RaiseModelUpdate();
-}
 
 /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
