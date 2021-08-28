@@ -106,6 +106,7 @@ type Mutation {
   updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
   updatePozyx(localeId: Int, input: PozyxInput): PozyxProps
   updateProject(projectId: Int, input: ProjectInput): Project
+  updateMetadata(projectId: String, input: ProjectMetaInput): ProjectMeta
   updateRounds(projectId: String, input: [ProjectRoundInput]): [ProjectRound]
 }
 

@@ -54,6 +54,7 @@ export default class Project {
     this._instances = def.instances.map(i => new ProjectInstance(i));
 
     // Init AppCore (AC) modules
+    ACMetadata.updateAndPublish(def.id, def.metadata);
     ACRounds.updateAndPublish(def.id, def.rounds);
   }
 

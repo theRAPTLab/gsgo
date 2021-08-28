@@ -84,6 +84,20 @@ module.exports = {
       .map(i => ({ label: i.label, id: i.id })); // map documents to values
     if (DBG) TERM(`return projectNames: ${JSON.stringify(objs)}`);
     return objs;
+  },
+  updateMetadata(args, context) {
+    const { projectId, input } = args;
+    const { DB } = context;
+    if (DBG)
+      TERM(
+        `update project.metadata:${projectId}, input:${JSON.stringify(input)}`
+      );
+    const coll = DB.getCollection('projects');
+    const project = coll.findOne({ id: projectId });
+    project.metadata = { ...project.metadata, ...input };
+    coll.update(project);
+    return project.metadata;
+  },
   updateRounds(args, context) {
     const { projectId, input } = args;
     const { DB } = context;

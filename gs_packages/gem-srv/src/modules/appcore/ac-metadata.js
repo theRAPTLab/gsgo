@@ -1,6 +1,6 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Manage rounds lists
+  Manage project metadata
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -8,41 +8,24 @@ import UR from '@gemstep/ursys/client';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('AC-ROUNDS', 'TagCyan');
+const PR = UR.PrefixUtil('AC-META', 'TagCyan');
 const DBG = true;
 
 /// The module name will be used as args for UR.ReadStateGroups
-const STATE = new UR.class.StateGroupMgr('rounds');
+const STATE = new UR.class.StateGroupMgr('metadata');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
   // dummy
-  rounds: [
+  metadata: [
     {
-      id: 1,
-      label: 'Dummy Round 1',
-      time: 1,
-      intro: 'intro 1',
-      outtro: 'outro 1',
-      initScript: '// init 1',
-      endScript: '// end 1'
-    },
-    {
-      id: 2,
-      label: 'Dummy Round 2',
-      time: 2,
-      intro: 'intro 2',
-      outtro: 'outro 2',
-      initScript: '// init 2',
-      endScript: '// end 2'
-    },
-    {
-      id: 3,
-      label: 'Dummy Round 3',
-      time: 2,
-      intro: 'intro 3',
-      outtro: 'outro 3',
-      initScript: '// init 3',
-      endScript: '// end 3'
+      top: -100,
+      right: 100,
+      bottom: 100,
+      left: -100,
+      wrap: [false, false],
+      bounce: false,
+      bgcolor: '0x006666',
+      roundsCanLoop: false
     }
   ]
 });
@@ -72,9 +55,9 @@ addEffectHook(hook_Effect);
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function updateAndPublish(projId, rounds) {
-  updateKey({ projId, rounds });
-  _publishState({ rounds });
+export function updateAndPublish(projId, metadata) {
+  updateKey({ projId, metadata });
+  _publishState({ metadata });
 }
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
@@ -87,25 +70,26 @@ let AUTOTIMER;
  */
 function hook_Filter(key, propOrValue, propValue) {
   console.log('hook_Filter', key, propOrValue, propValue);
-  if (key === 'rounds') return [key, propOrValue, propValue];
+  if (key === 'metadata') return [key, propOrValue, propValue];
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return Promise to write to database */
 function promise_WriteTransform() {
   const projId = _getKey('projId');
-  const input = _getKey('rounds');
-  const result = UR.Mutate(
+  const input = _getKey('metadata');
+  return UR.Mutate(
     `
-    mutation UpdateRounds($projectId:String $input:[ProjectRoundInput]) {
-      updateRounds(projectId:$projectId,input:$input) {
-        id
-        label
-        time
-        intro
-        outtro
-        initScript
-        endScript
+    mutation UpdateMetadata($projectId:String $input:ProjectMetaInput) {
+      updateMetadata(projectId:$projectId,input:$input) {
+        top
+        right
+        bottom
+        left
+        wrap
+        bounce
+        bgcolor
+        roundsCanLoop
       }
     }`,
     {
@@ -113,10 +97,10 @@ function promise_WriteTransform() {
       projectId: projId
     }
   );
-  return result;
 }
 // Test Function
-// window.writeRound = () => promise_WriteTransform();
+// window.writeMeta = () => promise_WriteTransform();
+// window.changeMeta = () => UR.WriteState('metadata', 'metadata', { top: -1000 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Optionally fire once all state change hooks have been processed.
@@ -124,15 +108,15 @@ function promise_WriteTransform() {
  */
 function hook_Effect(effectKey, propOrValue, propValue) {
   console.error('hook_Effect called', effectKey, propOrValue, propValue);
-  if (effectKey === 'rounds') {
+  if (effectKey === 'metadata') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
       promise_WriteTransform().then(response => {
-        const rounds = response.data.updateRounds;
-        updateKey('rounds', rounds);
-        _publishState({ rounds });
+        const metadata = response.data.updateMetadata;
+        updateKey('metadata', metadata);
+        _publishState({ metadata });
       });
       clearInterval(AUTOTIMER);
       AUTOTIMER = 0;
@@ -143,19 +127,22 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOT USED: If rounds ever loaded themselves this is the call
-async function m_LoadRounds(projId) {
-  if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
-  const response = await UR.Query(`
-    query {
-      project(id:"${id}") {
-        rounds { id label time intro outtro initScript endScript }
+/// NOT USED: If metadata ever loaded themselves this is the call
+async function m_LoadMetadata(projId) {
+  if (DBG) console.log(...PR('(1) GET METADATA'));
+  const response = await UR.Query(
+    `
+    query GeMetadata($id:String!) {
+      project(id:$id) {
+        metadata { top right bottom left wrap bounce bgcolor roundsCanLoop }
       }
     }
-  `);
+  `,
+    { id: projId }
+  );
   if (!response.errors) {
-    const { rounds } = response.data;
-    updateAndPublish(rounds);
+    const { metadata } = response.data;
+    updateAndPublish(metadata);
   }
 }
 
