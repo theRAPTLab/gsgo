@@ -77,8 +77,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
     this.controlMode = ControlMode.auto;
     this.controlModeHistory = [];
     // shared basic props in props for conceptual symmetry
-    this.prop.x = new GVarNumber();
-    this.prop.y = new GVarNumber();
+    this.prop.x = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
+    this.prop.y = new GVarNumber(0); // default to 0, otherwise it'll start out undefined
     this.prop.zIndex = new GVarNumber();
     this.prop.skin = new GVarString('default');
     this.prop.color = new GVarNumber();
