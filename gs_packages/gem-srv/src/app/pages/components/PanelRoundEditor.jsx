@@ -23,7 +23,6 @@ class PanelRoundEditor extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: '',
       round: undefined
     };
     this.urStateUpdated = this.urStateUpdated.bind(this);
@@ -32,8 +31,6 @@ class PanelRoundEditor extends React.Component {
   }
 
   componentDidMount() {
-    const title = 'Edit Rounds';
-    this.setState({ title });
     UR.SubscribeState('rounds', this.urStateUpdated);
 
     const roundsSGM = UR.ReadFlatStateGroups('rounds');
@@ -59,8 +56,8 @@ class PanelRoundEditor extends React.Component {
   // Save is triggered by any change in form data
   onSave() {
     const { round } = this.state;
-    const { roundId, onChange } = this.props;
-    onChange({ roundId, round });
+    const { roundId, onFormChange } = this.props;
+    onFormChange({ roundId, round });
   }
 
   urStateUpdated(stateObj, cb) {
@@ -74,13 +71,9 @@ class PanelRoundEditor extends React.Component {
   }
 
   render() {
-    const { title, round } = this.state;
-    const { roundId, onChange, isActive, classes } = this.props;
-    const instructions = 'Click a round to edit';
-    const onPanelClick = () => {
-      // To be implemented
-      console.log('PanelRounds Panel Click');
-    };
+    const { round } = this.state;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { roundId, onFormChange, classes } = this.props;
 
     if (!round) return '';
 

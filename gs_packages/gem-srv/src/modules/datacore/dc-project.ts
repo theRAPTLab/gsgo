@@ -21,8 +21,8 @@ import * as ACMetadata from 'modules/appcore/ac-metadata';
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = true;
 
+export const PROJECT = new Project(); // currently loaded project
 let PROJECT_ID: string = ''; // currently loaded project id
-let PROJECT: any = {}; // currently loaded project
 
 const MODEL: any = {};
 const BOUNDS: any = {};
@@ -74,8 +74,7 @@ async function m_LoadProject(id): Promise<Project> {
     const { project } = response.data;
     // cache
     PROJECT_ID = id;
-    PROJECT = new Project();
-    PROJECT.load(project);
+    PROJECT.read(project);
 
 
     return PROJECT;

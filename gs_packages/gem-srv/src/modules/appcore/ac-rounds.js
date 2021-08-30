@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Manage rounds lists
@@ -61,11 +62,6 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-addChangeHook(hook_Filter);
-addEffectHook(hook_Effect);
-
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function updateAndPublish(projId, rounds) {
@@ -77,18 +73,19 @@ export function updateAndPublish(projId, rounds) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let AUTOTIMER;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Intercept changes to locale.transform so we can cache the changes
+/** Intercept changes to rounds so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
  *  values, if any, for subsequent update to GSTATE and publishState
  */
 function hook_Filter(key, propOrValue, propValue) {
-  console.log('hook_Filter', key, propOrValue, propValue);
-  if (key === 'rounds') return [key, propOrValue, propValue];
-  return undefined;
+  // console.log('hook_Filter', key, propOrValue, propValue);
+  // No need to return anything if data is not being filtered.
+  // if (key === 'rounds') return [key, propOrValue, propValue];
+  // return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return Promise to write to database */
-function promise_WriteTransform() {
+function promise_WriteRounds() {
   const projId = _getKey('projId');
   const input = _getKey('rounds');
   const result = UR.Mutate(
@@ -125,7 +122,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     // (a) start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
-      promise_WriteTransform().then(response => {
+      promise_WriteRounds().then(response => {
         const rounds = response.data.updateRounds;
         updateKey('rounds', rounds);
         _publishState({ rounds });
@@ -140,11 +137,12 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOT USED: If rounds ever loaded themselves this is the call
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadRounds(projId) {
   if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
   const response = await UR.Query(`
     query {
-      project(id:"${id}") {
+      project(id:"${projId}") {
         rounds { id label time intro outtro initScript endScript }
       }
     }
@@ -154,6 +152,11 @@ async function m_LoadRounds(projId) {
     updateAndPublish(rounds);
   }
 }
+
+/// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+addChangeHook(hook_Filter);
+addEffectHook(hook_Effect);
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -166,6 +169,7 @@ export function GetRoundCount() {
   const rounds = _getKey('rounds');
   return rounds.length;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetRoundDef(index) {
   const rounds = _getKey('rounds');
   if (index > rounds.length)
@@ -174,6 +178,7 @@ export function GetRoundDef(index) {
     );
   return rounds[index];
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function RoundsShouldLoop() {
   const metadata = _getKey('metadata');
   return metadata.roundsCanLoop;

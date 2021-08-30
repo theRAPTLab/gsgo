@@ -1,9 +1,16 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Project Object
+  Project Core Data Object
+
+  This is the data structure for defining a project (a set of blueprints,
+  instances, specification of rounds and general stage setup, e.g. bounds
+  corresponding to a particular phenomean, e.g. "Moths")
+
+  It loads and initiates the appcore modules (and group state managers)
+  for metadata, rounds, blueprints, and instances.
 
   Used by:
-  *
+  * dc-project
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -32,11 +39,11 @@ export default class Project {
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-  constructor(id = 0) {
+  constructor(id = '0') {
     this.init(id);
   }
 
-  init(id) {
+  init(id: string) {
     this._id = id;
     this._label = '';
     this._metadata = new ProjectMetadata(id);
@@ -45,10 +52,17 @@ export default class Project {
     this._instances = [];
   }
 
-  load(def) {
+  read(def: {
+    id: string;
+    label: string;
+    metadata: any;
+    rounds: any[];
+    blueprints: any[];
+    instances: any[];
+  }) {
     this._id = def.id !== undefined ? def.id : this._id;
     this._label = def.label !== undefined ? def.label : this._label;
-    this._metadata.load(def.metadata);
+    this._metadata.read(def.metadata);
     this._rounds = def.rounds.map(r => new ProjectRound(r));
     this._blueprints = def.blueprints.map(b => new ProjectBlueprint(b));
     this._instances = def.instances.map(i => new ProjectInstance(i));

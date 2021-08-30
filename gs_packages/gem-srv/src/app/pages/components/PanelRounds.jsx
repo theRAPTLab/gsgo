@@ -17,10 +17,10 @@ import PanelRoundEditor from './PanelRoundEditor';
 class PanelRounds extends React.Component {
   constructor() {
     super();
-    const roundsSGM = UR.ReadFlatStateGroups('rounds');
+    const { rounds } = UR.ReadFlatStateGroups('rounds');
     this.state = {
       title: '',
-      rounds: roundsSGM.rounds
+      rounds: rounds
     };
     this.onRoundChange = this.onRoundChange.bind(this);
     this.onSave = this.onSave.bind(this);
@@ -29,6 +29,8 @@ class PanelRounds extends React.Component {
   }
 
   componentDidMount() {
+    // FUTURE: Allow adding new rounds.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { enableAdd } = this.props;
     const title = 'Edit Rounds';
     this.setState({ title });
@@ -72,10 +74,6 @@ class PanelRounds extends React.Component {
     if (typeof cb === 'function') cb();
   }
 
-  OnRoundEdit(roundId) {
-    // Make editable?
-  }
-
   render() {
     const { title, rounds } = this.state;
     const { id, isActive, classes } = this.props;
@@ -112,15 +110,12 @@ class PanelRounds extends React.Component {
                 <div
                   style={{
                     flex: '0 1 auto'
-                    // height: '20px',
-                    // overflow: 'hide'
                   }}
-                  // onClick={() => this.OnRoundEdit(r.id)}
                   key={r.id}
                 >
                   <PanelRoundEditor
                     roundId={r.id}
-                    onChange={this.onRoundChange}
+                    onFormChange={this.onRoundChange}
                   />
                 </div>
               ))}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Manage project metadata
@@ -44,11 +45,6 @@ const { _publishState } = STATE;
 const { addChangeHook, deleteChangeHook } = STATE;
 const { addEffectHook, deleteEffectHook } = STATE;
 
-/// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-addChangeHook(hook_Filter);
-addEffectHook(hook_Effect);
-
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function updateAndPublish(projId, metadata) {
@@ -60,18 +56,19 @@ export function updateAndPublish(projId, metadata) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let AUTOTIMER;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Intercept changes to locale.transform so we can cache the changes
+/** Intercept changes to metadata so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
  *  values, if any, for subsequent update to GSTATE and publishState
  */
 function hook_Filter(key, propOrValue, propValue) {
-  console.log('hook_Filter', key, propOrValue, propValue);
-  if (key === 'metadata') return [key, propOrValue, propValue];
-  return undefined;
+  // console.log('hook_Filter', key, propOrValue, propValue);
+  // No need to return anything if data is not being filtered.
+  // if (key === 'metadata') return [key, propOrValue, propValue];
+  // return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return Promise to write to database */
-function promise_WriteTransform() {
+function promise_WriteMetadata() {
   const projId = _getKey('projId');
   const input = _getKey('metadata');
   return UR.Mutate(
@@ -109,7 +106,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     // (a) start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
-      promise_WriteTransform().then(response => {
+      promise_WriteMetadata().then(response => {
         const metadata = response.data.updateMetadata;
         updateKey('metadata', metadata);
         _publishState({ metadata });
@@ -124,6 +121,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOT USED: If metadata ever loaded themselves this is the call
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadMetadata(projId) {
   if (DBG) console.log(...PR('(1) GET METADATA'));
   const response = await UR.Query(
@@ -141,6 +139,11 @@ async function m_LoadMetadata(projId) {
     updateAndPublish(metadata);
   }
 }
+
+/// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+addChangeHook(hook_Filter);
+addEffectHook(hook_Effect);
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

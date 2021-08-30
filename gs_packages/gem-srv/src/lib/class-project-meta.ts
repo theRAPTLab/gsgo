@@ -45,7 +45,7 @@ export default class ProjectMetadata {
     this._roundsCanLoop = false;
   }
 
-  load(def) {
+  read(def) {
     if (def === undefined)
       throw new Error(
         `ProjectMetadata.load missing definition object: ${JSON.stringify(def)}`
