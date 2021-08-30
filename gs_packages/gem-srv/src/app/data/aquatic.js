@@ -353,99 +353,124 @@ onEvent Tick [[
     },
     {
       id: 'AlgaeAvgMeter',
-      label: 'Algae avg meter',
+      label: 'Algae Energy Meter',
       script: `# BLUEPRINT AlgaeAvgMeter
 # PROGRAM DEFINE
-addProp reportSubject String 'Algae'
+addProp reportSubject String Algae
+addProp energyLevel Number 100
 
 useFeature Population
 useFeature AgentWidgets
 
-exprPush {{ 'Algae avg' }}
+// setup the meter title
+exprPush {{ 'Algae avg energy' }}
 featPropPop AgentWidgets text
 
-// Make skin invisible
+// Make costume an invisible dot
 prop skin setTo 'onexone'
 
 // Show meter on start.
 featProp AgentWidgets isLargeGraphic setTo true
-exprPush {{ 1 }}
-featPropPop AgentWidgets meter
+featProp AgentWidgets meterColor setTo 65280
+// set to 1 so we can see something at start
+// I tried binding and it wasn't working so sticking with this hack for now
+featProp AgentWidgets meter setTo 1
+
 
 # PROGRAM INIT
+// default placement for the algae meter
 prop x setTo 75
 prop y setTo 320
-prop reportSubject setTo Algae
 prop alpha setTo 0.3
-featProp AgentWidgets meterColor setTo 65280
 
 # PROGRAM EVENT
 
 onEvent Tick [[
 
-    // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
-
     // Algae meter display
     featCall Population countAgentProp 'Algae' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value }}
+    propPop energyLevel
+
     exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
     featPropPop AgentWidgets meter
 
-    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
+    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getProp('energyLevel').value}}
     featPropPop AgentWidgets text
+
+    // set meter color for average energy
+    ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
+      featProp AgentWidgets meterColor setTo 65280
+    ]]
+    ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
+      featProp AgentWidgets meterColor setTo 16737792
+    ]]
+    ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
+      featProp AgentWidgets meterColor setTo 16711680
+    ]]
+
 ]]
 `
     },
     {
-      id: 'FishMaxMeter',
-      label: 'Fish max meter',
-      script: `# BLUEPRINT FishMaxMeter
+      id: 'FishAvgMeter',
+      label: 'Fish Energy Meter',
+      script: `# BLUEPRINT FishAvgMeter
 # PROGRAM DEFINE
-addProp reportSubject String 'Fish'
+addProp reportSubject String Fish
+addProp energyLevel Number 100
 
 useFeature Population
 useFeature AgentWidgets
 
-exprPush {{ 'Fish max' }}
+// setup the meter title
+exprPush {{ 'Fish avg energy' }}
 featPropPop AgentWidgets text
 
-// Make skin invisible
+// Make costume an invisible dot
 prop skin setTo 'onexone'
 
 // Show meter on start.
 featProp AgentWidgets isLargeGraphic setTo true
- exprPush {{ 1 }}
- featPropPop AgentWidgets meter
+featProp AgentWidgets meterColor setTo 65280
+// set to 1 so we can see something at start
+// I tried binding and it wasn't working so sticking with this hack for now
+featProp AgentWidgets meter setTo 1
+
 
 # PROGRAM INIT
-prop x setTo -75
+// default placement for the fish meter
+prop x setTo -83
 prop y setTo 320
-prop reportSubject setTo Fish
 prop alpha setTo 0.3
-featProp AgentWidgets meterColor setTo 3120383
 
 # PROGRAM EVENT
 
 onEvent Tick [[
 
-  // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+    // Fish meter display
+    featCall Population countAgentProp 'Fish' 'energyLevel'
+    exprPush {{ agent.getFeatProp('Population', 'avg').value }}
+    propPop energyLevel
 
-  // setup meter for max value
-  featCall Population maxAgentProp 'Fish' 'energyLevel'
-  exprPush {{ agent.getFeatProp('Population', 'max').value * 0.01 }}
+    exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+    featPropPop AgentWidgets meter
 
-  // setup meter for avg value
-  // featCall Population countAgentProp 'Fish' 'energyLevel'
-  //  exprPush {{ agent.getFeatProp('Population', 'avg').value / 100 }}
+    exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getProp('energyLevel').value}}
+    featPropPop AgentWidgets text
 
-  featPropPop AgentWidgets meter
+    // set meter color for average energy
+    ifExpr {{ agent.getProp('energyLevel').value > 50 }} [[
+      featProp AgentWidgets meterColor setTo 65280
+    ]]
+    ifExpr {{ agent.getProp('energyLevel').value < 50 }} [[
+      featProp AgentWidgets meterColor setTo 16737792
+    ]]
+    ifExpr {{ agent.getProp('energyLevel').value < 20 }} [[
+      featProp AgentWidgets meterColor setTo 16711680
+    ]]
 
-  // text for max value
-  exprPush {{ agent.getProp('reportSubject').value + ' max: ' + (agent.getFeatProp('Population', 'max').value > 0 ? agent.getFeatProp('Population', 'max').value : 0 )}}
-
-  // text for avg value
-  // exprPush {{ agent.getProp('reportSubject').value + ' avg: ' + agent.getFeatProp('Population', 'avg').value}}
-
-  featPropPop AgentWidgets text]]
+]]
 `
     },
     {
