@@ -504,6 +504,130 @@ onEvent Tick [[
 
       useFeature Physics
 `
+    },
+    {
+      id: 'Graph1',
+      label: 'Graph1',
+      script: `# BLUEPRINT Graph1
+            # PROGRAM DEFINE
+            prop skin setTo 'onexone'
+
+            addProp characterType String 'Fish'
+            addProp countType String 'avg'
+            addProp variableToGraph String 'energyLevel'
+            addProp labelText String 'Fish energyLevel'
+
+            // STUDENTS_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+            // -- Character options: Fish, Algae
+            // -- Variable options: energyLevel
+            // -- Population options: sum, avg, min, max
+            prop characterType setTo 'Fish'
+            prop countType setTo 'avg'
+            prop variableToGraph setTo 'energyLevel'
+            prop labelText setTo 'Fish energyLevel'
+
+            useFeature AgentWidgets
+            useFeature Population
+            featProp AgentWidgets isLargeGraphic setTo true
+
+            // using a generic name so that it is easier to change later
+            addProp graphValue Number 0
+            prop graphValue setMax 1000
+            prop graphValue setMin 0
+
+           featCall AgentWidgets bindGraphTo graphValue 30
+
+            # PROGRAM INIT
+            // make sure something displays with some initial text, on bottom right at first
+            prop x setTo 510
+            prop y setTo 230
+            prop zIndex setTo 300
+
+            exprPush {{agent.getProp('characterType').value + ' ' + agent.getProp('countType').value + ' ' + agent.getProp('variableToGraph').value}}
+            propPop labelText
+
+            exprPush {{agent.getProp('labelText').value}}
+            featPropPop AgentWidgets text
+
+            # PROGRAM EVENT
+
+            onEvent Tick [[
+
+              exprPush {{agent.getProp('characterType').value}}
+              featPropPop Population monitoredAgent
+
+              exprPush {{agent.getProp('variableToGraph').value}}
+              featPropPop Population monitoredAgentProp
+
+              featCall Population countAgentProp
+
+              exprPush {{ agent.getFeatProp('Population', agent.prop.countType.value).value }}
+              propPop graphValue
+            ]]
+
+            `
+    },
+    {
+      id: 'Graph2',
+      label: 'Graph2',
+      script: `# BLUEPRINT Graph2
+            # PROGRAM DEFINE
+            prop skin setTo 'onexone'
+
+            addProp characterType String 'Fish'
+            addProp countType String 'avg'
+            addProp variableToGraph String 'energyLevel'
+            addProp labelText String 'Fish energyLevel'
+
+            // STUDENTS_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed
+            // -- Character options: Fish, Algae
+            // -- Variable options: energyLevel
+            // -- Population options: sum, avg, min, max
+            prop characterType setTo 'Fish'
+            prop countType setTo 'avg'
+            prop variableToGraph setTo 'energyLevel'
+            prop labelText setTo 'Fish energyLevel'
+
+            useFeature AgentWidgets
+            useFeature Population
+            featProp AgentWidgets isLargeGraphic setTo true
+
+            // using a generic name so that it is easier to change later
+            addProp graphValue Number 0
+            prop graphValue setMax 1000
+            prop graphValue setMin 0
+
+           featCall AgentWidgets bindGraphTo graphValue 30
+
+            # PROGRAM INIT
+            // make sure something displays with some initial text, on bottom right at first
+            prop x setTo 510
+            prop y setTo 370
+            prop zIndex setTo 300
+
+            exprPush {{agent.getProp('characterType').value + ' ' + agent.getProp('countType').value + ' ' + agent.getProp('variableToGraph').value}}
+            propPop labelText
+
+            exprPush {{agent.getProp('labelText').value}}
+            featPropPop AgentWidgets text
+
+            # PROGRAM EVENT
+
+            onEvent Tick [[
+
+              exprPush {{agent.getProp('characterType').value}}
+              featPropPop Population monitoredAgent
+
+              exprPush {{agent.getProp('variableToGraph').value}}
+              featPropPop Population monitoredAgentProp
+
+              featCall Population countAgentProp
+
+              exprPush {{ agent.getFeatProp('Population', agent.prop.countType.value).value }}
+              propPop graphValue
+            ]]
+
+            `
     }
   ],
   instances: [
