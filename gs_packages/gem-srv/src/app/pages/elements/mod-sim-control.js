@@ -18,8 +18,8 @@ import { ClearDOBJ } from 'modules/sim/sim-agents';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
 import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
-import { PROJECT, SendBoundary } from 'modules/datacore/dc-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import { ClearGlobalAgent } from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -73,7 +73,7 @@ class SimControl {
 
     //    Set char controlled agents
     //    This is primarily for Viewers
-    const charcontrolBpidList = PROJECT.GetCharControlBpidList();
+    const charcontrolBpidList = ACBlueprints.GetCharControlBpidList();
     UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
       bpnames: charcontrolBpidList
     });

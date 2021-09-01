@@ -6,7 +6,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as PTRACK from 'modules/step/in-ptrack';
-import { PROJECT } from 'modules/datacore/dc-project';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import { GetTrackerMap } from 'modules/datacore/dc-inputs';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -49,7 +49,7 @@ export function StartTrackerVisuals() {
   // REVIEW: Skip starting tracker if there are no pozyx mappings.
   //         Otherwise, dc-inputs will try to create instances with
   //         no blueprint names.
-  const defaultPozyxBpid = PROJECT.GetPozyxControlDefaultBpid(); // GetDefaultPozyxBPName();
+  const defaultPozyxBpid = ACBlueprints.GetPozyxControlDefaultBpid(); // GetDefaultPozyxBPName();
   if (!defaultPozyxBpid) return;
 
   const PTRACK_SYNCMAP = GetTrackerMap();

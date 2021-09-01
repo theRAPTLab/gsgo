@@ -108,6 +108,10 @@ type Mutation {
   updateProject(projectId: Int, input: ProjectInput): Project
   updateMetadata(projectId: String, input: ProjectMetaInput): ProjectMeta
   updateRounds(projectId: String, input: [ProjectRoundInput]): [ProjectRound]
+  updateBlueprints(
+    projectId: String
+    input: [ProjectBlueprintInput]
+  ): [ProjectBlueprint]
 }
 
 """
@@ -157,8 +161,8 @@ type Project {
   label: String
   metadata: ProjectMeta
   rounds: [ProjectRound]
-  blueprints: [Blueprint]
   instances: [Instance]
+  blueprints: [ProjectBlueprint]
 }
 type ProjectMeta {
   top: Float
@@ -179,7 +183,7 @@ type ProjectRound {
   initScript: String
   endScript: String
 }
-type Blueprint {
+type ProjectBlueprint {
   id: String!
   label: String
   isCharControllable: Boolean
@@ -201,8 +205,8 @@ input ProjectInput {
   label: String
   metadata: ProjectMetaInput
   rounds: [ProjectRoundInput]
-  blueprints: [BlueprintInput]
   instances: [InstanceInput]
+  blueprints: [ProjectBlueprintInput]
 }
 input ProjectMetaInput {
   top: Float
@@ -223,7 +227,7 @@ input ProjectRoundInput {
   initScript: String
   endScript: String
 }
-input BlueprintInput {
+input ProjectBlueprintInput {
   id: String!
   label: String
   isCharControllable: Boolean

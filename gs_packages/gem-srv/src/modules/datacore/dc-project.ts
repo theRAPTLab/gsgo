@@ -15,9 +15,10 @@ import UR from '@gemstep/ursys/client';
 import Project from 'lib/class-project';
 import * as TRANSPILER from 'script/transpiler-v2';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - -
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = true;
 
@@ -76,6 +77,7 @@ async function m_LoadProject(id): Promise<Project> {
     PROJECT_ID = id;
     PROJECT.read(project);
 
+    const bpidList = ACBlueprints.GetBlueprintIDsList();
 
     return PROJECT;
   }

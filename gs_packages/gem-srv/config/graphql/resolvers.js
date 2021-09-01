@@ -110,5 +110,20 @@ module.exports = {
     TERM(`REPLACED project.rounds is ${JSON.stringify(project.rounds)}`);
     coll.update(project);
     return project.rounds;
+  },
+  updateBlueprints(args, context) {
+    const { projectId, input } = args;
+    const { DB } = context;
+    if (DBG)
+      TERM(
+        `update project.blueprints:${projectId}, input:${JSON.stringify(input)}`
+      );
+    const coll = DB.getCollection('projects');
+    const project = coll.findOne({ id: projectId });
+    TERM(`project.blueprints is ${JSON.stringify(project.blueprints)}`);
+    project.blueprints = input; // replace them all
+    TERM(`REPLACED project.blueprints is ${JSON.stringify(project.blueprints)}`);
+    coll.update(project);
+    return project.blueprints;
   }
 };

@@ -17,6 +17,7 @@
 import { IbpidListItem } from 'lib/t-ui.d';
 import * as ACMetadata from '../modules/appcore/ac-metadata';
 import * as ACRounds from '../modules/appcore/ac-rounds';
+import * as ACBlueprints from '../modules/appcore/ac-blueprints';
 
 import ProjectMetadata from './class-project-meta';
 import ProjectRound from './class-project-round';
@@ -70,6 +71,7 @@ export default class Project {
     // Init AppCore (AC) modules
     ACMetadata.updateAndPublish(def.id, def.metadata);
     ACRounds.updateAndPublish(def.id, def.rounds);
+    ACBlueprints.updateAndPublish(def.id, def.blueprints);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -151,40 +153,6 @@ export default class Project {
   SetBlueprint(id, updatedBlueprint) {
     const index = this.blueprints.findIndex(s => s.id === id);
     this.blueprints[index] = { ...updatedBlueprint }; // copy
-  }
-  /**
-   * Returns array of blueprint definitions defined for a project
-   * Generally used by selector UI for `bpidList` objects
-   * @returns [...{id, label}]
-   */
-  GetBlueprintIDsList(): IbpidListItem[] {
-    return this.blueprints.map(b => {
-      return { id: b.id, label: b.label };
-    });
-  }
-  /**
-   * Returns array of blueprint ids that are CharControllable.
-   * @returns [...id]
-   */
-  GetCharControlBpidList(): string[] {
-    return this.blueprints.filter(b => b.isCharControllable).map(b => b.id);
-  }
-  /**
-   * Returns array of blueprint ids that are PozyxControllable.
-   * @returns [...id]
-   */
-  GetPozyxControlBpidList(): string[] {
-    return this.blueprints.filter(b => b.isPozyxControllable).map(b => b.id);
-  }
-  /**
-   * Returns the first pozyx controllable blueprint as the default bp to use
-   * Used dc-inputs to determine mapping
-   * @returns id
-   */
-  GetPozyxControlDefaultBpid(): string {
-    const bpidList = this.GetPozyxControlBpidList();
-    if (bpidList.length < 1) return undefined;
-    return bpidList[0];
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

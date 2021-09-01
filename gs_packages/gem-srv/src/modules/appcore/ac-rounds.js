@@ -17,6 +17,7 @@ const STATE = new UR.class.StateGroupMgr('rounds');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
   // dummy
+  projId: 0,
   rounds: [
     {
       id: 1,
@@ -137,6 +138,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOT USED: If rounds ever loaded themselves this is the call
+/// Rounds are loaded by class-project
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadRounds(projId) {
   if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));

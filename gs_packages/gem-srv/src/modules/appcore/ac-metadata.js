@@ -17,6 +17,7 @@ const STATE = new UR.class.StateGroupMgr('metadata');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
   // dummy
+  projId: 0,
   metadata: [
     {
       top: -100,
@@ -121,6 +122,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 /// DATABASE QUERIES //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOT USED: If metadata ever loaded themselves this is the call
+/// Metadata are loaded by class-project
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadMetadata(projId) {
   if (DBG) console.log(...PR('(1) GET METADATA'));

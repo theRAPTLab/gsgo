@@ -26,25 +26,33 @@ import PanelChrome from './PanelChrome';
 class PanelBlueprints extends React.Component {
   constructor() {
     super();
+    const { bpidList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
-      title: ''
+      title: '',
+      bpidList
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
   componentDidMount() {
     const { enableAdd } = this.props;
     const title = enableAdd ? 'Add Characters' : 'Character Type Scripts';
     this.setState({ title });
+    UR.SubscribeState('blueprints', this.urStateUpdated);
+  }
+
+  componentWillUnmount() {
+    UR.UnsubscribeState('blueprints', this.urStateUpdated);
   }
 
   OnBlueprintClick(scriptId) {
     const { projId, enableAdd } = this.props;
     if (enableAdd) {
-      // Add Instance
+      // Panel is in MissionEdit: Add Instance
       UR.RaiseMessage('LOCAL:INSTANCE_ADD', { projId, blueprintName: scriptId });
     } else {
-      // Open script in a new window
+      // Panel is in MissionRun: Open script in a new window
       window.open(
         `/app/scripteditor?project=${projId}&script=${scriptId}`,
         '_blank'
@@ -52,9 +60,17 @@ class PanelBlueprints extends React.Component {
     }
   }
 
+  urStateUpdated(stateObj, cb) {
+    const { bpidList } = stateObj;
+    if (bpidList) {
+      this.setState({ bpidList });
+    }
+    if (typeof cb === 'function') cb();
+  }
+
   render() {
-    const { title } = this.state;
-    const { projId, bpidList, id, isActive, enableAdd, classes } = this.props;
+    const { title, bpidList } = this.state;
+    const { projId, id, isActive, enableAdd, classes } = this.props;
     const instructions = enableAdd
       ? 'Click to add a character'
       : 'Click to edit a character type script in a new window';

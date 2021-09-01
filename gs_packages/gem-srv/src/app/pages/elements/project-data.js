@@ -32,6 +32,7 @@ import {
   GetBlueprintProperties
 } from 'modules/datacore/dc-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as INPUT from 'modules/input/api-input';
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
@@ -209,10 +210,10 @@ function GetBlueprintPropertiesTypeMap(
  * @return {string[]} [ ...bpid ]
  */
 function GetCharControlBpidList() {
-  return PROJECT.GetCharControlBpidList();
+  return ACBlueprints.GetCharControlBpidList();
 }
 function GetPozyxBPNames() {
-  return PROJECT.GetPozyxControlBpidList();
+  return ACBlueprints.GetPozyxControlBpidList();
 }
 /**
  * Removes the script from `model` and related `model.instances`

@@ -5,6 +5,7 @@
 // instead of this, the entities should be in DATACORE
 
 import UR from '@gemstep/ursys/client';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import {
   GetInputBPnames,
   InputInit,
@@ -14,7 +15,7 @@ import {
 import { GetAgentById, DeleteAgent } from 'modules/datacore/dc-agents';
 import SyncMap from '../../lib/class-syncmap';
 import InputDef from '../../lib/class-input-def';
-import * as TRANSPILER from './script/transpiler';
+import * as TRANSPILER from './script/transpiler-v2';
 
 /// DEBUG /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -106,7 +107,8 @@ UR.HookPhase('SIM/INPUTS_READ', ProcessInputs);
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function InputsInit(frameTime) {
-  const BPNAMES = GetInputBPnames();
+  const BPNAMES = ACBlueprints.GetCharControlBpidList();
+  // GetInputBPnames();
   BPNAMES.forEach(b => InputInit(b));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
