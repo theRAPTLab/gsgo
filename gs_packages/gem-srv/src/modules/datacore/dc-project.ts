@@ -42,6 +42,9 @@ async function m_LoadProjectNames() {
 /// SINGLE PROJECT DATABASE QUERIES ///////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// PROJECT
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadProject(projId) {
   console.log(...PR(`(1) LOAD PROJECT DATA ${projId}`));
@@ -92,20 +95,21 @@ function promise_WriteProject() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// ROUNDS
 
-async function m_LoadRounds(projId) {
-  if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
-  const response = await UR.Query(`
-    query {
-      project(id:"${projId}") {
-        rounds { id label time intro outtro initScript endScript }
-      }
-    }
-  `);
-  if (!response.errors) {
-    const { rounds } = response.data;
-    updateAndPublish(rounds);
-  }
-}
+// NOT USED CURRENTLY
+// async function m_LoadRounds(projId) {
+//   if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
+//   const response = await UR.Query(`
+//     query {
+//       project(id:"${projId}") {
+//         rounds { id label time intro outtro initScript endScript }
+//       }
+//     }
+//   `);
+//   if (!response.errors) {
+//     const { rounds } = response.data;
+//     updateAndPublish(rounds);
+//   }
+// }
 
 /** return Promise to write to database */
 async function promise_WriteRounds(projId, rounds) {
@@ -124,6 +128,52 @@ async function promise_WriteRounds(projId, rounds) {
     }`,
     {
       input: rounds,
+      projectId: projId
+    }
+  );
+  return result;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// BLUEPRINTS
+
+/// NOT USED: If rounds ever loaded themselves this is the call
+// async function m_LoadBlueprints(projId) {
+//   if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
+//   const response = await UR.Query(`
+//     query {
+//       project(id:"${projId}") {
+//         blueprints {
+//           id
+//           label
+//           isCharControllable
+//           isPozyxControllable
+//           scriptText
+//         }
+//       }
+//     }
+//   `);
+//   if (!response.errors) {
+//     const { blueprints } = response.data;
+//     updateAndPublish(projId, blueprints);
+//   }
+// }
+
+/** return Promise to write to database */
+function promise_WriteBlueprints(projId, blueprints) {
+  const result = UR.Mutate(
+    `
+    mutation UpdateBlueprints($projectId:String $input:[ProjectBlueprintInput]) {
+      updateBlueprints(projectId:$projectId,input:$input) {
+        id
+        label
+        isCharControllable
+        isPozyxControllable
+        scriptText
+      }
+    }`,
+    {
+      input: blueprints,
       projectId: projId
     }
   );
@@ -190,14 +240,26 @@ async function HandleLoadProject(data: { projId: string }) {
 }
 
 async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
-  await promise_WriteRounds(data.projId, data.rounds);
-  return { ok: true };
+  const response = await promise_WriteRounds(data.projId, data.rounds);
+  return response;
+}
+
+// REVIEW: This should be a return to a CallMessage request.
+async function HandleWriteBlueprints(data: {
+  projId: string;
+  blueprints: any[];
+}) {
+  const response = await promise_WriteBlueprints(data.projId, data.blueprints);
+  return response;
 }
 
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 UR.HandleMessage('*:DC_LOAD_PROJECT', HandleLoadProject);
+UR.HandleMessage('*:DC_WRITE_ROUNDS', HandleWriteRounds);
+UR.HandleMessage('*:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
+
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
