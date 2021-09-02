@@ -18,7 +18,7 @@ import UR from '@gemstep/ursys/client';
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = true;
 
-/// PROJECTS DATABASE QUERIES /////////////////////////////////////////////////
+/// MULTIPLE PROJECTS DATABASE QUERIES ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Loads the list of project names and ids from graphQL
@@ -39,9 +39,15 @@ async function m_LoadProjectNames() {
   console.error(...PR('m_LoadProjectNames ERROR response:', response));
 }
 
+/// SINGLE PROJECT DATABASE QUERIES ///////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function m_LoadProject(projId) {
+  console.log(...PR(`(1) LOAD PROJECT DATA ${projId}`));
   const response = await UR.Query(`
     query {
-      project(id:"${id}") {
+      project(id:"${projId}") {
         id
         label
         metadata { top right bottom left wrap bounce bgcolor roundsCanLoop}
@@ -52,14 +58,37 @@ async function m_LoadProjectNames() {
     }
   `);
   if (!response.errors) {
-    if (DBG) console.log(...PR('m_LoadProject response', response));
-    // update state data
     const { project } = response.data;
-    // cache
-    PROJECT_ID = id;
-    PROJECT.read(project);
+    const data = { projId, project }; // redundant, for clarification
+    UR.RaiseMessage('*:DC_PROJECT_UPDATE', data);
+    return { ok: true };
+  }
+  console.error(...PR('m_LoadProjectNames ERROR response:', response));
+  return { ok: false, err: response };
+}
 
-    const bpidList = ACBlueprints.GetBlueprintIDsList();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return Promise to write to database */
+function promise_WriteProject() {
+  console.error('promise_WriteProject!!!');
+  const projId = _getKey('projId');
+  const input = _getKey('project');
+  const result = UR.Mutate(
+    `
+    mutation UpdateProject($projectId:String $input:ProjectInput) {
+      updateProject(projectId:$projectId,input:$input) {
+        id
+        label
+      }
+    }`,
+    {
+      input,
+      projectId: projId
+    }
+  );
+  return result;
+}
+
 
     return PROJECT;
   }
@@ -112,38 +141,24 @@ export function UpdateDCModel(model) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Rounds loop by default
 
-/// BLUEPRINT METHODS /////////////////////////////////////////////////////////
+/// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Returns array of properties {name, type, defaultvalue, isFeatProp}
- * that have been defined by the blueprint.
- * Used to populate property menus when selecting properties to show
- * in InstanceInspectors
- * @param {string} blueprintName
- * @param {string} [modelId=currentModelId]
- * @return {Object[]} [...{ name, type, defaultValue, isFeatProp }]
- */
-export function GetBlueprintProperties(blueprintName) {
-  const blueprint = PROJECT.GetBlueprint(blueprintName);
-  if (!blueprint) return []; // blueprint was probably deleted
-  return TRANSPILER.ExtractBlueprintProperties(blueprint.scriptText);
+
+async function HandleLoadProject(data: { projId: string }) {
+  if (data === undefined || data.projId === undefined)
+    throw new Error(`${[...PR]} Called with bad projId: ${data}`);
+  const project = await m_LoadProject(data.projId);
+
+  // HACK: This should be a return to a CallMessage request.
+  // Raising an UR message until we figure out why CallMessage is not working
+  UR.RaiseMessage('DC_PROJECT_LOADED', { project });
 }
-export function GetBlueprintPropertiesMap(blueprintName) {
-  const blueprint = PROJECT.GetBlueprint(blueprintName);
-  if (!blueprint) return []; // blueprint was probably deleted
-  return TRANSPILER.ExtractBlueprintPropertiesMap(blueprint.scriptText);
 }
 
-/// API ///////////////////////////////////////////////////////////////////////
+/// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function GetProjectNames(): Promise<any[]> {
-  return m_LoadProjectNames();
-}
-export function LoadProject(id): Promise<Project> {
-  return m_LoadProject(id);
-}
-export function GetProject(id): Promise<Project> {
-  return m_GetProject(id);
+
+UR.HandleMessage('*:DC_LOAD_PROJECT', HandleLoadProject);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

@@ -24,13 +24,8 @@ import {
   GetInstancesType
 } from 'modules/datacore/dc-agents';
 import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
-import {
-  PROJECT,
-  LoadProject,
-  GetProject,
-  UpdateDCModel,
-  GetBlueprintProperties
-} from 'modules/datacore/dc-project';
+import 'modules/datacore/dc-project'; // must import to load db
+import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as INPUT from 'modules/input/api-input';
@@ -43,11 +38,13 @@ const merge = require('deepmerge');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('ProjectData');
-const DBG = false;
+const PR = UR.PrefixUtil('ProjData', 'TagBlue');
+const DBG = true;
 
-let CURRENT_MODEL_ID;
-let CURRENT_MODEL;
+let PARENT_COMPONENT; // e.g. Main.jsx
+
+let CURRENT_PROJECT_ID;
+let CURRENT_PROJECT;
 const MONITORED_INSTANCES = [];
 
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
@@ -66,19 +63,10 @@ function saveLocaleIdToLocalStorage(id) {
   localStorage.setItem('localeId', id);
 }
 
-/// PROJECT DATA INIT /////////////////////////////////////////////////////////
+/// STATE UPDATE HANDLERS /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function ProjectDataInit() {
-  UR.SubscribeState('locales', HandleLocaleUpdated);
 
-  // Load currently saved locale
-  const localeId = getLocaleIdFromLocalStorage();
-  UR.WriteState('locales', 'localeId', localeId);
-}
-
-function HandleLocaleUpdated(stateObj, cb) {
-  console.error('locale updated', stateObj);
-
+function urLocaleStateUpdated(stateObj, cb) {
   // if update was to localeID, save localeID to localStorage
   if (stateObj.localeId) saveLocaleIdToLocalStorage(stateObj.localeId);
 
@@ -94,6 +82,19 @@ function HandleLocaleUpdated(stateObj, cb) {
   POZYX_TRANSFORM.useAccelerometer = data.useAccelerometer;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function urProjectStateUpdated(stateObj, cb) {
+  if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
+  const { projId, project } = stateObj;
+  CURRENT_PROJECT_ID = projId;
+  CURRENT_PROJECT = project;
+  if (typeof cb === 'function') cb();
+}
+  // TEMP CALL just to get project loaded
+  UR.RaiseMessage('*:DC_LOAD_PROJECT', {
+    projId: CURRENT_PROJECT_ID
+  });
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -654,6 +655,10 @@ function HandleRequestProjData(data) {
 UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
 UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
+
+// temp handler until we figur eout why CallMessage is not working
+UR.HandleMessage('DC_PROJECT_LOADED', HandleProjectLoaded);
+
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
