@@ -84,33 +84,6 @@ function hook_Filter(key, propOrValue, propValue) {
   // if (key === 'rounds') return [key, propOrValue, propValue];
   // return undefined;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return Promise to write to database */
-function promise_WriteRounds() {
-  const projId = _getKey('projId');
-  const input = _getKey('rounds');
-  const result = UR.Mutate(
-    `
-    mutation UpdateRounds($projectId:String $input:[ProjectRoundInput]) {
-      updateRounds(projectId:$projectId,input:$input) {
-        id
-        label
-        time
-        intro
-        outtro
-        initScript
-        endScript
-      }
-    }`,
-    {
-      input,
-      projectId: projId
-    }
-  );
-  return result;
-}
-// Test Function
-// window.writeRound = () => promise_WriteTransform();
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Optionally fire once all state change hooks have been processed.
@@ -123,36 +96,14 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     // (a) start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
-      promise_WriteRounds().then(response => {
-        const rounds = response.data.updateRounds;
-        updateKey('rounds', rounds);
-        _publishState({ rounds });
-      });
+      const projId = _getKey('projId');
+      const rounds = propOrValue;
+      UR.RaiseMessage('*:DC_WRITE_ROUNDS', { projId, rounds });
       clearInterval(AUTOTIMER);
       AUTOTIMER = 0;
     }, 1000);
   }
   // otherwise return nothing to handle procesing normally
-}
-
-/// DATABASE QUERIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOT USED: If rounds ever loaded themselves this is the call
-/// Rounds are loaded by class-project
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function m_LoadRounds(projId) {
-  if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
-  const response = await UR.Query(`
-    query {
-      project(id:"${projId}") {
-        rounds { id label time intro outtro initScript endScript }
-      }
-    }
-  `);
-  if (!response.errors) {
-    const { rounds } = response.data;
-    updateAndPublish(rounds);
-  }
 }
 
 /// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////
@@ -167,6 +118,13 @@ addEffectHook(hook_Effect);
 /// ACCESSORS /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function GetRounds() {
+  const rounds = _getKey('rounds');
+  return [...rounds]; // clone
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetRoundCount() {
   const rounds = _getKey('rounds');
   return rounds.length;

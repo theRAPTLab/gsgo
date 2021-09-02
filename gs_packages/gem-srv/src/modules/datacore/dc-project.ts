@@ -89,10 +89,45 @@ function promise_WriteProject() {
   return result;
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// ROUNDS
 
-    return PROJECT;
+async function m_LoadRounds(projId) {
+  if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
+  const response = await UR.Query(`
+    query {
+      project(id:"${projId}") {
+        rounds { id label time intro outtro initScript endScript }
+      }
+    }
+  `);
+  if (!response.errors) {
+    const { rounds } = response.data;
+    updateAndPublish(rounds);
   }
-  return undefined;
+}
+
+/** return Promise to write to database */
+async function promise_WriteRounds(projId, rounds) {
+  const result = await UR.Mutate(
+    `
+    mutation UpdateRounds($projectId:String $input:[ProjectRoundInput]) {
+      updateRounds(projectId:$projectId,input:$input) {
+        id
+        label
+        time
+        intro
+        outtro
+        initScript
+        endScript
+      }
+    }`,
+    {
+      input: rounds,
+      projectId: projId
+    }
+  );
+  return result;
 }
 /**
  * Returns cached project if project id matches
@@ -153,6 +188,10 @@ async function HandleLoadProject(data: { projId: string }) {
   // Raising an UR message until we figure out why CallMessage is not working
   UR.RaiseMessage('DC_PROJECT_LOADED', { project });
 }
+
+async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
+  await promise_WriteRounds(data.projId, data.rounds);
+  return { ok: true };
 }
 
 /// URSYS API /////////////////////////////////////////////////////////////////

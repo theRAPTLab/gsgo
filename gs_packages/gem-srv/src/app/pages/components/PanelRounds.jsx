@@ -20,12 +20,11 @@ class PanelRounds extends React.Component {
     const { rounds } = UR.ReadFlatStateGroups('rounds');
     this.state = {
       title: '',
-      rounds: rounds
+      rounds
     };
     this.onRoundChange = this.onRoundChange.bind(this);
     this.onSave = this.onSave.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
-    this.OnBlueprintClick = this.OnRoundEdit.bind(this);
   }
 
   componentDidMount() {
