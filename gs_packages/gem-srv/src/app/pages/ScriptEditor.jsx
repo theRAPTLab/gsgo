@@ -64,7 +64,7 @@ class ScriptEditor extends React.Component {
       isReady: false,
       noMain: true,
       panelConfiguration: 'select',
-      modelId: '',
+      projId: '',
       model: {},
       scriptId: '',
       script: '',
@@ -98,9 +98,9 @@ class ScriptEditor extends React.Component {
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('project');
+    const projId = params.get('project');
     const scriptId = params.get('script');
-    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
+    document.title = `GEMSTEP SCRIPT EDITOR: ${projId}`;
 
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
@@ -108,7 +108,7 @@ class ScriptEditor extends React.Component {
     window.addEventListener('beforeunload', this.CleanupComponents);
 
     // Set model section
-    this.setState({ modelId, scriptId });
+    this.setState({ projId, scriptId });
 
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
@@ -148,8 +148,8 @@ class ScriptEditor extends React.Component {
 
   Initialize() {
     if (this.state.isReady) return; // already initialized
-    const { modelId } = this.state;
-    this.RequestModel(modelId);
+    const { projId } = this.state;
+    this.RequestModel(projId);
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
@@ -160,13 +160,15 @@ class ScriptEditor extends React.Component {
    * project-data will respond with model data { result: model }
    * which is handled by UpdateModelData, below.
    */
-  RequestModel(modelId) {
-    if (DBG) console.log(...PR('RequestModel...', modelId));
-    const fnName = 'GetProject';
+  RequestModel(projId) {
+    if (DBG) console.log(...PR('RequestModel...', projId));
+    const fnName = 'RequestProject';
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName,
-      parms: [modelId]
-    }).then(rdata => this.UpdateModelData(rdata.result));
+      parms: [projId]
+    }).then(rdata => {
+      return this.UpdateModelData(rdata.result);
+    });
   }
   HandleModelUpdate(data) {
     this.UpdateModelData(data.model);
@@ -262,7 +264,7 @@ class ScriptEditor extends React.Component {
     const { scriptId } = data;
     if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
-    const { model, modelId } = this.state;
+    const { model, projId } = this.state;
     if (model === undefined || model.blueprints === undefined) {
       console.warn(
         'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
@@ -274,10 +276,10 @@ class ScriptEditor extends React.Component {
     const script = agent && agent.scriptText ? agent.scriptText : SCRIPT_TEMPLATE;
 
     // add script to URL
-    history.pushState(
+    window.history.pushState(
       {},
       '',
-      `/app/scripteditor?project=${modelId}&script=${scriptId}`
+      `/app/scripteditor?project=${projId}&script=${scriptId}`
     );
 
     // Show script selector if scriptId was not passed
@@ -322,7 +324,7 @@ class ScriptEditor extends React.Component {
     const {
       noMain,
       panelConfiguration,
-      modelId,
+      projId,
       model,
       scriptId,
       script,
@@ -358,7 +360,7 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span>
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {projId}</span>
           </div>
           <button
             type="button"
@@ -373,7 +375,7 @@ class ScriptEditor extends React.Component {
             <PanelSelectAgent
               id="select"
               agents={agents}
-              modelId={modelId}
+              modelId={projId}
               onClick={this.OnPanelClick}
             />
           )}
@@ -381,7 +383,7 @@ class ScriptEditor extends React.Component {
             <PanelScript
               id="script"
               script={script}
-              modelId={modelId}
+              projId={projId}
               onClick={this.OnPanelClick}
             />
           )}

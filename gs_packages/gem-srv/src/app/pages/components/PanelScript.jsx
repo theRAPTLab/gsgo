@@ -355,9 +355,11 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
+    const { projId } = this.props;
     const text = this.jar.toString();
     const currentBlueprintName = TRANSPILER.ExtractBlueprintName(text);
     UR.RaiseMessage('NET:SCRIPT_UPDATE', {
+      projId,
       script: text,
       origBlueprintName: this.origBlueprintName
     });
@@ -447,7 +449,7 @@ class PanelScript extends React.Component {
       openConfirmDelete,
       openConfirmUnload
     } = this.state;
-    const { id, script, modelId, onClick, classes } = this.props;
+    const { id, script, projId, onClick, classes } = this.props;
 
     // CodeJar Refresh
     //
