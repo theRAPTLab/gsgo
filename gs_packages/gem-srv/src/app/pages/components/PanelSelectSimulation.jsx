@@ -1,6 +1,8 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import { GetProjectNames } from 'modules/datacore/dc-project';
+import 'modules/datacore/dc-project'; // Have to import to load db
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to access state
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
@@ -17,10 +19,10 @@ const DBG = true;
 class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
-    // const state = UR.ReadFlatStateGroups('projects');
+    const { projectNames } = UR.ReadFlatStateGroups('projects');
     this.state = {
       title: 'Select Project',
-      projectNames: []
+      projectNames: projectNames
       // projectNames: [
       //   // Dummy Data
       //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
@@ -30,27 +32,31 @@ class PanelSelectSimulation extends React.Component {
       // ]
     };
     this.onClick = this.onClick.bind(this);
-    this.loadProjectNames = this.loadProjectNames.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
   componentDidMount() {
-    this.loadProjectNames();
+    UR.SubscribeState('projects', this.urStateUpdated);
   }
 
-  componentWillUnmount() {}
+  componentWillUnmount() {
+    UR.UnsubscribeState('projects', this.urStateUpdated);
+  }
 
   onClick(modelId) {
-    console.log('Select model ID:', modelId);
+    if (DBG) console.log(...PR('Clicked to Select model ID:', modelId));
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     const { onClick } = this.props;
     onClick(modelId); // Tell Login panel to show Panelselect
   }
 
-  async loadProjectNames() {
-    const projectNames = await GetProjectNames();
-    console.log('projectNames', projectNames);
-    this.setState({ projectNames });
+  urStateUpdated(stateObj, cb) {
+    const { projectNames } = stateObj;
+    if (projectNames) {
+      this.setState({ projectNames });
+    }
+    if (typeof cb === 'function') cb();
   }
 
   render() {

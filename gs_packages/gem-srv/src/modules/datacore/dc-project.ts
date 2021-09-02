@@ -12,32 +12,18 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import Project from 'lib/class-project';
-import * as TRANSPILER from 'script/transpiler-v2';
-import * as ACMetadata from 'modules/appcore/ac-metadata';
-import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - -
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
 const DBG = true;
 
-export const PROJECT = new Project(); // currently loaded project
-let PROJECT_ID: string = ''; // currently loaded project id
-
-const MODEL: any = {};
-const BOUNDS: any = {};
-
-/// PRIVATE METHODS ///////////////////////////////////////////////////////////
+/// PROJECTS DATABASE QUERIES /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// API PRIVATE METHODS ///////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /**
  * Loads the list of project names and ids from graphQL
  */
-async function m_LoadProjectNames(): Promise<any[]> {
+async function m_LoadProjectNames() {
   const response = await UR.Query(`
     query {
       projectNames { id label }
@@ -46,17 +32,14 @@ async function m_LoadProjectNames(): Promise<any[]> {
   if (!response.errors) {
     if (DBG) console.log(...PR('m_LoadProjectInfo response', response));
     const { projectNames } = response.data;
-    return projectNames;
+    const data = { projectNames }; // redundant, for clarification
+    console.error('sending', data);
+    UR.RaiseMessage('*:DC_PROJECTS_UPDATE', data);
+    return;
   }
   console.error(...PR('m_LoadProjectNames ERROR response:', response));
-  return [];
 }
 
-/**
- * Loads project instance data from DB
- */
-async function m_LoadProject(id): Promise<Project> {
-  if (DBG) console.log(...PR('(1) GET PROJECT DATA'));
   const response = await UR.Query(`
     query {
       project(id:"${id}") {
@@ -172,3 +155,15 @@ export function GetProject(id): Promise<Project> {
   return m_GetProject(id);
 }
 
+/// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// for loading data structures
+UR.HookPhase(
+  'UR/LOAD_DB',
+  () =>
+    new Promise<void>((resolve, reject) => {
+      m_LoadProjectNames();
+      console.log(...PR('resolved LOAD_DB'));
+      resolve();
+    })
+);
