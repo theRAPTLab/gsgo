@@ -33,7 +33,6 @@ async function m_LoadProjectNames() {
     if (DBG) console.log(...PR('m_LoadProjectInfo response', response));
     const { projectNames } = response.data;
     const data = { projectNames }; // redundant, for clarification
-    console.error('sending', data);
     UR.RaiseMessage('*:DC_PROJECTS_UPDATE', data);
     return;
   }
