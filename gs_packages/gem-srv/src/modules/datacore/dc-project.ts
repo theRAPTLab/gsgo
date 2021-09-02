@@ -107,14 +107,6 @@ export function UpdateDCModel(model) {
 // REVIEW: Can we handle all this with the REQ_PROJDATA calls?
 //         so we don't even need this class?
 
-export function SendBoundary() {
-  const boundary = ACMetadata.GetBoundary();
-  UR.RaiseMessage('NET:SET_BOUNDARY', {
-    width: boundary.width,
-    height: boundary.height,
-    bgcolor: boundary.bgcolor
-  });
-}
 
 /// ROUNDS METHODS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

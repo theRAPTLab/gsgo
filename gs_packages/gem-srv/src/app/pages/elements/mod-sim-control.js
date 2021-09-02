@@ -65,7 +65,11 @@ class SimControl {
     const boundary = ACMetadata.GetBoundary();
     RENDERER.SetBoundary(boundary.width, boundary.height, boundary.bgcolor);
     // And Set Listeners too
-    SendBoundary();
+    UR.RaiseMessage('NET:SET_BOUNDARY', {
+      width: boundary.width,
+      height: boundary.height,
+      bgcolor: boundary.bgcolor
+    });
 
     // 3. Update Input System
     //    Set Input transforms
