@@ -50,10 +50,11 @@ const { addEffectHook, deleteEffectHook } = STATE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function updateAndPublish(projId, project) {
   // Init AppCore (AC) modules
-  ACMetadata.updateAndPublish(projId, project.metadata);
-  ACRounds.updateAndPublish(projId, project.rounds);
-  ACBlueprints.updateAndPublish(projId, project.blueprints);
-  ACInstances.updateAndPublish(projId, project.instances);
+  ACMetadata.SetMetadata(projId, project.metadata);
+  ACRounds.SetRounds(projId, project.rounds);
+  ACBlueprints.SetBlueprints(projId, project.blueprints);
+  ACInstances.SetInstances(projId, project.instances);
+  // Init Self
   updateKey({
     projId,
     project

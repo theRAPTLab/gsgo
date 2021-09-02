@@ -125,17 +125,9 @@ export function GetBlueprintPropertiesMap(bpid) {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function updateAndPublish(projId, blueprints) {
+function updateAndPublish(blueprints) {
   const bpidList = GetBlueprintIDsList(blueprints);
-  console.error(
-    'ac-blueprints updateAndPublis projId',
-    projId,
-    'bluepritns',
-    blueprints,
-    'bpidlist',
-    bpidList
-  );
-  updateKey({ projId, blueprints, bpidList });
+  updateKey({ blueprints, bpidList });
   _publishState({ blueprints, bpidList });
 }
 
@@ -192,6 +184,14 @@ addEffectHook(hook_Effect);
 
 /// UPDATERS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function SetBlueprints(projId, blueprints) {
+  updateKey({ projId });
+  updateAndPublish(blueprints);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 export function UpdateBlueprint(projId, bpid, scriptText) {
   const blueprints = _getKey('blueprints');
   const index = blueprints.findIndex(b => b.id === bpid);
@@ -221,7 +221,8 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
       'ac-blueprints: Trying to add a new blueprint.  Not supported!'
     );
   }
-  updateAndPublish(projId, blueprints);
+  updateKey({ projId });
+  updateAndPublish(blueprints);
   console.error('...updating blueprints to', blueprints);
   UR.WriteState('blueprints', 'blueprints', blueprints);
 }

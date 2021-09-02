@@ -48,8 +48,8 @@ const { addEffectHook, deleteEffectHook } = STATE;
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function updateAndPublish(projId, metadata) {
-  updateKey({ projId, metadata });
+function updateAndPublish(metadata) {
+  updateKey({ metadata });
   _publishState({ metadata });
 }
 
@@ -155,6 +155,12 @@ addEffectHook(hook_Effect);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// return copies
 
+export function GetMetadata() {
+  return { ..._getKey('metadata') }; // clone
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 export function GetBoundary() {
   const metadata = _getKey('metadata');
   if (!metadata) return { width: 0, height: 0, bgcolor: 0 }; // not loaded yet
@@ -163,6 +169,8 @@ export function GetBoundary() {
   const bgcolor = metadata.bgcolor;
   return { width, height, bgcolor };
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /**
  * Test function used by feat-movement to determine whether a wall
@@ -198,4 +206,12 @@ export function Wraps(wall = 'any') {
       // Generally you should only call this if there is a single wrap setting
       return wallWrap[0];
   }
+}
+
+/// UPDATERS //////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function SetMetadata(projId, metadata) {
+  updateKey({ projId });
+  updateAndPublish(metadata);
 }

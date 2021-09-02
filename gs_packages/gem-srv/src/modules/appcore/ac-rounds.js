@@ -65,8 +65,8 @@ const { addEffectHook, deleteEffectHook } = STATE;
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function updateAndPublish(projId, rounds) {
-  updateKey({ projId, rounds });
+function updateAndPublish(rounds) {
+  updateKey({ rounds });
   _publishState({ rounds });
 }
 
@@ -142,4 +142,12 @@ export function GetRoundDef(index) {
 export function RoundsShouldLoop() {
   const metadata = _getKey('metadata');
   return metadata.roundsCanLoop;
+}
+
+/// UPDATERS //////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function SetRounds(projId, rounds) {
+  updateKey({ projId });
+  updateAndPublish(rounds);
 }
