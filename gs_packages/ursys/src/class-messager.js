@@ -236,11 +236,12 @@ class Messager {
     let promises = [];
     /// handle a call from the network
     if (toLocal || fromNet) {
-      console.log(
-        ...PR(
-          `incoming CallMessage: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
-        )
-      );
+      if (DBG.handle)
+        console.log(
+          ...PR(
+            `incoming CallMessage: toLocal:${toLocal} fromNet:${fromNet} isNet:${isNet}`
+          )
+        );
       // initiated from app
       // NOTE: THIS SEEMS SUSPICIOUS AND UNNECESSARY
       // if (!channel.LOCAL && !fromNet)
@@ -248,7 +249,7 @@ class Messager {
       if (handlers) {
         let count = 1;
         handlers.forEach(handlerFunc => {
-          console.log(...PR(count++, 'calling func'));
+          if (DBG.call) console.log(...PR(count++, 'calling func'));
           /*/
           handlerFunc signature: (data,dataReturn) => {}
           handlerFunc has ulink_id property to note originating URCHAN object
@@ -297,7 +298,7 @@ class Messager {
     let handlers = [];
     this.handlerMap.forEach((set, key) => {
       handlers.push(key);
-      if (DBG) console.log(`handler: ${key}`);
+      if (DBG.reg) console.log(`handler: ${key}`);
     });
     return handlers;
   }
