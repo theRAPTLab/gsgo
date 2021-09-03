@@ -10,13 +10,13 @@
 // (7) in .ts and .tsx files, type warnings should appear for 'str' and imported modules
 
 /* 8< cut here */
-import Moo from "config/app.settings"
+import Moo from "config/gem-settings"
 		import GEM_CONFIG from "@gemstep/globals"
 
 
 const foo = (a) => {
-    const { PROJECT_NAME } = Moo;
-return `${PROJECT_NAME} ${GEM_CONFIG.NAME} ${a}`
+    const { PACKAGE_NAME } = Moo;
+return `${PACKAGE_NAME} ${GEM_CONFIG.NAME} ${a}`
 } 
       console.log(foo);
 ```

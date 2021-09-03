@@ -13,7 +13,8 @@ const WSS = require('ws').Server;
 const NetPacket = require('./class-netpacket');
 const LOGGER = require('./server-logger');
 const TERM = require('./util/prompts').makeTerminalOut(' URNET');
-const { CFG_SVR_UADDR, PacketHash } = require('./ur-common');
+const { PacketHash } = require('./common/ur-detect');
+const { CFG_SVR_UADDR } = require('./common/ur-constants');
 const {
   InitializeNetInfo,
   SocketAdd,
@@ -36,7 +37,7 @@ const {
 } = require('./svc-netdevices');
 const { PKT_ProtocolDirectory } = require('./svc-netprotocols');
 const { PKT_ServiceList, PKT_Reflect } = require('./svc-debug');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

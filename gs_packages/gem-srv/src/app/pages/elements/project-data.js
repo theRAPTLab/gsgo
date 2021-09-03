@@ -77,8 +77,6 @@ export function ProjectDataInit() {
 }
 
 function HandleLocaleUpdated(stateObj, cb) {
-  console.error('locale updated', stateObj);
-
   // if update was to localeID, save localeID to localStorage
   if (stateObj.localeId) saveLocaleIdToLocalStorage(stateObj.localeId);
 

@@ -14,7 +14,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * //////////////////////////////////////*/
 
 const NetPacket = require('./class-netpacket');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// MODULE VARS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

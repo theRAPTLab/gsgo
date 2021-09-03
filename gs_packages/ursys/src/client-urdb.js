@@ -7,7 +7,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 const PROMPTS = require('./util/prompts');
-const { CFG_URDB_GQL } = require('./ur-common'); // graphql endpint
+const { CFG_URDB_GQL } = require('./common/ur-constants'); // graphql endpint
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
