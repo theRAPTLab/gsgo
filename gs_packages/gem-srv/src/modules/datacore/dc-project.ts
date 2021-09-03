@@ -179,6 +179,46 @@ function promise_WriteBlueprints(projId, blueprints) {
   );
   return result;
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// INSTANCES
+
+/// NOT USED: If instances ever loaded themselves this is the call
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// async function m_LoadInstances(projId) {
+//   if (DBG) console.log(...PR('(1) GET INSTANCES DATA'));
+//   const response = await UR.Query(`
+//     query {
+//       project(id:"${projId}") {
+//         instances { id label bpid initScript }
+//       }
+//     }
+//   `);
+//   if (!response.errors) {
+//     const { instances } = response.data;
+//     updateAndPublish(instances);
+//   }
+// }
+
+/** return Promise to write to database */
+function promise_WriteInstances(projId, instances) {
+  const result = UR.Mutate(
+    `
+    mutation UpdateInstances($projectId:String $input:[ProjectInstanceInput]) {
+      updateInstances(projectId:$projectId,input:$input) {
+        id
+        label
+        bpid
+        initScript
+      }
+    }`,
+    {
+      input: instances,
+      projectId: projId
+    }
+  );
+  return result;
+}
 /**
  * Returns cached project if project id matches
  * otherwise loads the project from db
@@ -253,12 +293,18 @@ async function HandleWriteBlueprints(data: {
   return response;
 }
 
+async function HandleWriteInstances(data: { projId: string; instances: any[] }) {
+  const response = await promise_WriteInstances(data.projId, data.instances);
+  return response;
+}
+
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 UR.HandleMessage('*:DC_LOAD_PROJECT', HandleLoadProject);
 UR.HandleMessage('*:DC_WRITE_ROUNDS', HandleWriteRounds);
 UR.HandleMessage('*:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
+UR.HandleMessage('*:DC_WRITE_INSTANCES', HandleWriteInstances);
 
 }
 
