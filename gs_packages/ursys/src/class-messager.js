@@ -256,8 +256,13 @@ class Messager {
           /*/
           // skip calls that don't have their fromNet stat set if it's a net call
           if (fromNet && !handlerFunc.isNetFunc) return;
+
+          /*/
+          Now that we have channel names, we no longer need to skip "same origin" calls
           // skip "same origin" calls
-          if (srcUID && handlerFunc.ulink_id === srcUID) return;
+          // if (srcUID && handlerFunc.ulink_id === srcUID) return;
+          /*/
+
           // Create a promise. if handlerFunc returns a promise, it follows
           let p = m_MakeResolverFunction(handlerFunc, inData);
           promises.push(p);
