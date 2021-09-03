@@ -8,9 +8,9 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as ACBlueprints from '../appcore/ac-blueprints';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
-import { PROJECT } from './dc-project';
 import { DeleteAgent } from './dc-agents';
 import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
 
@@ -269,7 +269,9 @@ function m_PozyxDampen(
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function GetDefaultPozyxBpid() {
-  PROJECT.GetPozyxControlDefaultBpid();
+  const bpidItem = ACBlueprints.GetPozyxControlDefaultBpid();
+  if (bpidItem) return bpidItem.id;
+  throw new Error('dc-inputs.GetDefaultpozyxzBpid could not find a default bpid');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const POZYX_TO_COBJ = new SyncMap({
