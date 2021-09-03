@@ -272,41 +272,35 @@ export function UpdateDCModel(model) {
 async function HandleLoadProject(data: { projId: string }) {
   if (data === undefined || data.projId === undefined)
     throw new Error(`${[...PR]} Called with bad projId: ${data}`);
-  const project = await m_LoadProject(data.projId);
-
-  // HACK: This should be a return to a CallMessage request.
-  // Raising an UR message until we figure out why CallMessage is not working
-  UR.RaiseMessage('DC_PROJECT_LOADED', { project });
+  return m_LoadProject(data.projId);
 }
 
 async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
-  const response = await promise_WriteRounds(data.projId, data.rounds);
-  return response;
+  console.error('WRITE ROUND', data);
+  return promise_WriteRounds(data.projId, data.rounds);
 }
 
-// REVIEW: This should be a return to a CallMessage request.
 async function HandleWriteBlueprints(data: {
   projId: string;
   blueprints: any[];
 }) {
-  const response = await promise_WriteBlueprints(data.projId, data.blueprints);
-  return response;
+  console.error('WRITE BLUEPRINTS', data);
+  return promise_WriteBlueprints(data.projId, data.blueprints);
 }
 
 async function HandleWriteInstances(data: { projId: string; instances: any[] }) {
-  const response = await promise_WriteInstances(data.projId, data.instances);
-  return response;
+  console.error('WRITE INSTANCES', data);
+  return promise_WriteInstances(data.projId, data.instances);
 }
 
 /// URSYS API /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-UR.HandleMessage('*:DC_LOAD_PROJECT', HandleLoadProject);
-UR.HandleMessage('*:DC_WRITE_ROUNDS', HandleWriteRounds);
-UR.HandleMessage('*:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
-UR.HandleMessage('*:DC_WRITE_INSTANCES', HandleWriteInstances);
-
-}
+/// Handle both LOCAL and NET requests.  ('*' is deprecated)
+UR.HandleMessage('LOCAL:DC_LOAD_PROJECT', HandleLoadProject);
+UR.HandleMessage('LOCAL:DC_WRITE_ROUNDS', HandleWriteRounds);
+UR.HandleMessage('LOCAL:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
+UR.HandleMessage('LOCAL:DC_WRITE_INSTANCES', HandleWriteInstances);
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

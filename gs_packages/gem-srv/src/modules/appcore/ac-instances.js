@@ -106,10 +106,13 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     AUTOTIMER = setInterval(() => {
       const projId = _getKey('projId');
       const instances = propOrValue;
-      // REVIEW: This should be a CallMessage
-      UR.RaiseMessage('*:DC_WRITE_INSTANCES', {
+      UR.CallMessage('LOCAL:DC_WRITE_INSTANCES', {
         projId,
         instances
+      }).then(status => {
+        const { err } = status;
+        if (err) console.error(err);
+        return status;
       });
       clearInterval(AUTOTIMER);
       AUTOTIMER = 0;

@@ -16,6 +16,7 @@
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
+import 'modules/datacore/dc-project'; // must import to load db
 import {
   DeleteInstance,
   GetAllAgents,
@@ -24,10 +25,10 @@ import {
   GetInstancesType
 } from 'modules/datacore/dc-agents';
 import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
-import 'modules/datacore/dc-project'; // must import to load db
 import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import * as INPUT from 'modules/input/api-input';
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
@@ -91,27 +92,76 @@ function urProjectStateUpdated(stateObj, cb) {
   CURRENT_PROJECT = project;
   if (typeof cb === 'function') cb();
 }
-  // TEMP CALL just to get project loaded
-  UR.RaiseMessage('*:DC_LOAD_PROJECT', {
+
+/// PROJECT DATA PRE INIT /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// Called by Main
+/// Load application-specific settings (current locale, projId as defined by URL)
+export function ProjectDataPreInit(parent, projId) {
+  PARENT_COMPONENT = parent;
+  CURRENT_PROJECT_ID = projId; // Save slug to load after urStateUpdated
+
+  UR.SubscribeState('locales', urLocaleStateUpdated);
+  UR.SubscribeState('project', urProjectStateUpdated);
+
+  // Load currently saved locale
+  const localeId = getLocaleIdFromLocalStorage();
+  UR.WriteState('locales', 'localeId', localeId);
+}
+
+/// MAIN INITIALIZATION ///////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// Hooked to APP_START
+async function Initialize() {
+  // 1. Check for other 'Sim' devices.
+  const devices = UR.GetDeviceDirectory();
+  const sim = devices.filter(d => d.meta.uclass === 'Sim');
+  if (sim.length > 0) {
+    PARENT_COMPONENT.FailSimAlreadyRunning();
+    return;
+  }
+
+  // 2. Load Model from DB
+  UR.CallMessage('LOCAL:DC_LOAD_PROJECT', { projId: CURRENT_PROJECT_ID })
+    .then(status => {
+      const { err } = status;
+      if (err) console.error(err);
+      return status;
+    })
+    .then(status => {
+      console.error('got valid project status', status);
+      SIMCTRL.SimPlaces(CURRENT_PROJECT);
+    });
+
+  // 3. Register as 'Sim' Device
+  // devices templates are defined in class-udevice.js
+  const dev = UR.NewDevice('Sim');
+  const { udid, status, error } = await UR.RegisterDevice(dev);
+  if (error) console.error(error);
+  if (status) console.log(...PR(status));
+  if (udid) PARENT_COMPONENT.DEVICE_UDID = udid;
+
+  // 4. Listen for Controllers
+  const charControllerDevAPI = UR.SubscribeDeviceSpec({
+    selectify: device => device.meta.uclass === 'CharControl',
+    notify: deviceLists => {
+      const { selected, quantified, valid } = deviceLists;
+      if (valid) {
+        PARENT_COMPONENT.UpdateDeviceList(selected);
+      }
+    }
+  });
+
+  // 5. Housekeeping
+  UR.HookPhase('SIM/UI_UPDATE', SendInspectorUpdate);
+  PARENT_COMPONENT.setState({
     projId: CURRENT_PROJECT_ID
   });
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// 1. Reads project from db
-/// 2. Updates dc-project data
-export async function LoadProject(modelId) {
-  CURRENT_MODEL_ID = modelId;
-  CURRENT_MODEL = await ReadProject(modelId);
-  UpdateDCModel(CURRENT_MODEL);
-  UR.HookPhase('SIM/UI_UPDATE', this.SendInspectorUpdate);
-  return CURRENT_MODEL;
-}
-/// Retrieves cached model or reads from db
-function GetProject(modelId = CURRENT_MODEL_ID) {
-  if (!modelId) throw new Error('Tried to GetProject before setting modelId');
-  if (modelId === CURRENT_MODEL_ID) return CURRENT_MODEL;
-  return ReadProject(modelId);
 }
 /// Used for URSYS requests for full project data, e.g. Viewer
 function GetCurrentModelData() {

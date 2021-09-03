@@ -165,10 +165,13 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     AUTOTIMER = setInterval(() => {
       const projId = _getKey('projId');
       const blueprints = propOrValue;
-      // REVIEW: This should be a CallMessage
-      UR.RaiseMessage('*:DC_WRITE_BLUEPRINTS', {
+      UR.CallMessage('LOCAL:DC_WRITE_BLUEPRINTS', {
         projId,
         blueprints
+      }).then(status => {
+        const { err } = status;
+        if (err) console.error(err);
+        return status;
       });
       clearInterval(AUTOTIMER);
       AUTOTIMER = 0;
