@@ -235,7 +235,7 @@ featProp AgentWidgets text setTo ''
 featProp Movement movementType setTo 'wander'
 featProp Movement distance setTo 0.2
 
-exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+exprPush {{ (agent.getProp('energyLevel').value / 100)* 3}}
 featPropPop Physics scale
 
 prop zIndex setTo -110
@@ -278,7 +278,7 @@ when Algae lastTouches Sunbeam [[
     ]]
 
     // re-scale the algae based on its energy level
-  exprPush {{ (agent.getProp('energyLevel').value / 100)* 2}}
+  exprPush {{ (agent.getProp('energyLevel').value / 100)* 3}}
   featPropPop agent.Physics scale
 
     // set algae energy meter color
@@ -635,34 +635,62 @@ onEvent Tick [[
       id: 501,
       name: 'Algae 1',
       blueprint: 'Algae',
-      initScript: `prop x setTo 120
-       prop y setTo 120`
+      initScript: `prop x setTo 300
+       prop y setTo 220`
     },
     {
       id: 502,
       name: 'Algae 2',
       blueprint: 'Algae',
       initScript: `prop energyLevel setTo 50
- prop x setTo -150
- prop y setTo -120
+ prop x setTo -250
+ prop y setTo -200
 `
     },
     {
       id: 503,
       name: 'Algae 3',
       blueprint: 'Algae',
-      initScript: `prop x setTo -120
-prop y setTo -90`
+      initScript: `prop x setTo -220
+prop y setTo -290`
     },
     {
       id: 504,
-      name: 'Timer',
-      blueprint: 'Timer',
-      initScript: `prop x setTo 0
-prop y setTo 350`
+      name: 'Algae 4',
+      blueprint: 'Algae',
+      initScript: `prop x setTo -220
+prop y setTo -230`
     },
     {
       id: 505,
+      name: 'Algae 5',
+      blueprint: 'Algae',
+      initScript: `prop x setTo 220
+prop y setTo 230`
+    },
+    {
+      id: 506,
+      name: 'Algae 6',
+      blueprint: 'Algae',
+      initScript: `prop x setTo 240
+prop y setTo 250`
+    },
+    {
+      id: 507,
+      name: 'Algae 7',
+      blueprint: 'Algae',
+      initScript: `prop x setTo 260
+prop y setTo 280`
+    },
+    {
+      id: 520,
+      name: 'Timer',
+      blueprint: 'Timer',
+      initScript: `prop x setTo 0
+prop y setTo -350`
+    },
+    {
+      id: 521,
       name: 'Rock1',
       blueprint: 'Rock',
       initScript: `prop x setTo -350
@@ -671,7 +699,7 @@ featProp Physics scale setTo 1.3
 prop zIndex setTo 210`
     },
     {
-      id: 506,
+      id: 522,
       name: 'Rock2',
       blueprint: 'Rock',
       initScript: `prop x setTo 350
