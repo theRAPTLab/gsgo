@@ -34,6 +34,10 @@ prop energyLevel setMax 100
 prop energyLevel setMin 0
 
 addProp type String 'change'
+addProp movementType String 'edgeToEdge'
+
+// STUDENTS_MAY_CHANGE - set to edgeToEdge or wander - note other options below for speed and direction
+prop movementType setTo 'edgeToEdge'
 
 // STUDENTS_MAY_CHANGE - set as consumer or producer
 prop type setTo 'change'
@@ -73,19 +77,18 @@ onEvent Start [[
   featProp Physics scale setTo 1
 
     // **** OPTIONS TO CHANGE BEHAVIOR ****
-    // ** pick a movement below:
-    // this line for wandering:
-    // featCall Movement setMovementType 'wander' 0.5
 
-    // this line for edge to edge, 0 == straight right, change to 90 to go up, 180 left, etc.
-    // featCall Movement setMovementType 'edgeToEdge' 1 0
+    // if the movementType is wander
+    ifExpr {{ agent.getProp('movementType').value == 'wander' }} [[
+      featCall Movement setMovementType 'wander' 0.5
+    ]]
 
-    // this line to pick a random direction and go until you hit the edge then reverse ... add 'rand' if you want to pick starting directions randomly
-    // in this example it will be ignored anyhow because I am setting  the startDirection just below:
-    featCall Movement setMovementType 'edgeToEdge' 1 0 180
-
-    exprPush {{ agent.getProp('startDirection').value }}
-    featPropPop agent.Movement direction
+    // if it is edgetoedge
+    ifExpr {{ agent.getProp('movementType').value == 'edgeToEdge' }} [[
+      featCall Movement setMovementType 'edgeToEdge' 1 0 180
+      exprPush {{ agent.getProp('startDirection').value }}
+      featPropPop agent.Movement direction
+    ]]
 
     // STUDENTS_MAY_CHANGE to make fish move faster when they are automatic
     featProp Movement distance setTo 2
