@@ -393,22 +393,27 @@ class InstanceEditor extends React.Component {
       });
     }
   }
-  OnNameSave(data) {
-    // Update the script
-    const { modelId, instance } = this.props;
+  OnNameChange(data) {
     const { isEditable } = this.state;
-    const instanceName = data.instanceName;
     if (isEditable) {
       if (data.exitEdit) {
-        console.warn('EXITING DESELECTING');
+        // Handle "ENTER" being used to exit
         this.DoDeselect();
       }
-      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
-        modelId,
-        instanceId: instance.id,
-        instanceName
-      });
+      this.setState(
+        state => {
+          const { instance } = state;
+          instance.label = data.value !== undefined ? data.value : instance.label;
+          return { instance };
+        },
+        () => this.OnInstanceSave()
+      );
     }
+  }
+
+  OnInstanceSave() {
+    const { instance } = this.state;
+    UR.WriteState('instances', 'currentInstance', instance);
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -532,10 +537,10 @@ class InstanceEditor extends React.Component {
           )}
           <InputField
             propName="Name"
-            value={instanceName}
+            value={inputLabel}
             type="string"
             isEditable={isEditable}
-            onSave={this.OnNameSave}
+            onChange={this.OnNameChange}
           />
           {isEditable && (
             <>
