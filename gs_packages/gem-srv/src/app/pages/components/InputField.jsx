@@ -17,7 +17,7 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 
 /// CLASS HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const DBG = true;
+const DBG = false;
 
 /// REACT COMPONENT ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -53,6 +53,15 @@ class InputField extends React.Component {
     const { onChange } = this.props;
     onChange({ exitEdit: true });
   }
+
+  stopPropagation(e) {
+    // Special handling to prevent a mouseUp on InstanceEditor
+    // from canceling edit.
+    // This happens when the user clicks down on the InputFIeld
+    // then drags, releasing the mouse outside of this field.
+    e.stopPropagation();
+  }
+
   render() {
     const {
       index,
@@ -64,7 +73,7 @@ class InputField extends React.Component {
       classes
     } = this.props;
 
-    if (DBG) console.log('Clear eslint', index, onChange);
+    if (DBG) console.log('DUMMY log to clear eslint', index, onChange);
 
     let jsx;
     if (isEditable) {
@@ -77,6 +86,7 @@ class InputField extends React.Component {
             onKeyDown={this.onKeyDown}
             onBlur={this.onBlur}
             onClick={this.onClick}
+            onPointerDown={this.stopPropagation}
             type={type}
             value={value}
             className={classes.instanceEditorField}

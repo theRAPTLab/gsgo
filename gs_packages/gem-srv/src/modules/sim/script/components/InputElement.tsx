@@ -68,6 +68,13 @@ class InputElement extends React.Component<any, any> {
     // Stop click here when user clicks inside form to edit.
     // Otherwise clicks will propagage to InstanceEditor where it will exit edit mode
   }
+  stopPropagation(e) {
+    // Special handling to prevent a mouseUp on InstanceEditor
+    // from canceling edit.
+    // This happens when the user clicks down on the InputElement
+    // then drags, releasing the mouse outside of this field.
+    e.stopPropagation();
+  }
   saveData() {
     const { args, isDirty } = this.state;
     const { argindex, onSave, type } = this.props;
@@ -91,6 +98,7 @@ class InputElement extends React.Component<any, any> {
         onKeyDown={this.onKeyDown}
         onBlur={this.onBlur}
         onClick={this.onClick}
+        onPointerDown={this.stopPropagation}
         type={type}
         value={args[argindex]}
         className={classes.instanceEditorField}

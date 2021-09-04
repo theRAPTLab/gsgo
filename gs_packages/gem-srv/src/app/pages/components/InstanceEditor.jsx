@@ -514,9 +514,12 @@ class InstanceEditor extends React.Component {
           [classes.instanceSpecHovered]: isHovered,
           [classes.instanceSpecSelected]: isSelected
         })}
-        onClick={this.OnInstanceClick}
+        // Don't use 'onClick' -- if user drags out from InputElement
+        // releasing on top of InstanceEditor will result in a click, canceling edit
+        // onClick={this.OnInstanceClick}
         onPointerEnter={this.OnHoverOver}
         onPointerLeave={this.OnHoverOut}
+        onPointerDown={this.OnInstanceClick}
       >
         <div>
           {isEditable && (
