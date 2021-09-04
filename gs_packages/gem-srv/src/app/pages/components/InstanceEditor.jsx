@@ -202,24 +202,22 @@ class InstanceEditor extends React.Component {
 
   HandleScriptLineDelete(data) {
     // Update the script
-    const { modelId } = this.props;
     const { isEditable } = this.state;
     if (isEditable) {
-      const { instance } = this.props;
-      const instanceName = this.GetInstanceName();
-      // 1. Convert init script text to array
-      const scriptTextLines = instance.initScript.split('\n');
-      // 2. Remove the line
-      scriptTextLines.splice(data.index, 1);
-      // 3. Convert the script array back to script text
-      const updatedScript = scriptTextLines.join('\n');
-
-      UR.RaiseMessage('NET:INSTANCE_UPDATE', {
-        modelId,
-        instanceId: instance.id,
-        instanceName,
-        instanceInit: updatedScript
-      });
+      this.setState(
+        state => {
+          const { instance } = state;
+          // 1. Convert init script text to array
+          const scriptTextLines = instance.initScript.split('\n');
+          // 2. Remove the line
+          scriptTextLines.splice(data.index, 1);
+          // 3. Convert the script array back to script text
+          const updatedScript = scriptTextLines.join('\n');
+          instance.initScript = updatedScript;
+          return { instance };
+        },
+        () => this.OnInstanceSave()
+      );
     }
   }
 
