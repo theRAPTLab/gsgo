@@ -628,6 +628,25 @@ onEvent Tick [[
             ]]
 
             `
+    },
+    {
+      id: 'TextLabel',
+      label: 'TextLabel',
+      script: `# BLUEPRINT TextLabel
+      # PROGRAM DEFINE
+      useFeature AgentWidgets
+      prop skin setTo 'onexone'
+`
+    },
+    {
+      id: 'ColorChip',
+      label: 'ColorChip',
+      script: `# BLUEPRINT ColorChip
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'square.json' 0
+
+      useFeature Physics`
     }
   ],
   instances: [
@@ -706,6 +725,78 @@ prop zIndex setTo 210`
 prop y setTo 378
 featProp Costume flipX setTo true
 prop zIndex setTo 210`
+    },
+    {
+      id: 1700,
+      name: 'LegendLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 455
+    prop y setTo -400
+    featProp AgentWidgets text setTo 'Energy Key:'
+    `
+    },
+    {
+      id: 1701,
+      name: 'HighLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 455
+    prop y setTo -370
+    featProp AgentWidgets text setTo 'High'
+    prop zIndex setTo 100
+    `
+    },
+    {
+      id: 1702,
+      name: 'MediumLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 455
+    prop y setTo -340
+    featProp AgentWidgets text setTo 'Medium'
+    prop zIndex setTo 100
+    `
+    },
+    {
+      id: 1703,
+      name: 'LowLabel',
+      blueprint: 'TextLabel',
+      initScript: `prop x setTo 455
+    prop y setTo -308
+    featProp AgentWidgets text setTo 'Low'
+    prop zIndex setTo 100
+    `
+    },
+    {
+      id: 1704,
+      name: 'HighChip',
+      blueprint: 'ColorChip',
+      initScript: `prop x setTo 455
+    prop y setTo -351
+    featCall Costume setColorize 0 255 0
+    prop zIndex setTo 95
+    featCall Physics setSize 100 30
+    `
+    },
+    {
+      id: 1705,
+      name: 'MediumChip',
+      blueprint: 'ColorChip',
+      initScript: `prop x setTo 455
+    prop y setTo -322
+    featCall Costume setColorize 210 140 0
+    prop zIndex setTo 95
+    featCall Physics setSize 100 30
+    `
+    },
+    {
+      id: 1706,
+      name: 'LowChip',
+      blueprint: 'ColorChip',
+      initScript: `prop x setTo 455
+    prop y setTo -292
+    featCall Costume setColorize 255 0 0
+    prop zIndex setTo 95
+    featCall Physics setSize 100 30
+    `
     }
   ]
 };
