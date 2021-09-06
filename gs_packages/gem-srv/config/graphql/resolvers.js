@@ -8,7 +8,7 @@
 const UR = require('@gemstep/ursys/server');
 
 const TERM = UR.TermOut('RESOLVER', 'TagRed');
-const DBG = true;
+const DBG = false;
 
 module.exports = {
   locale: (args, context) => {
@@ -125,5 +125,20 @@ module.exports = {
     TERM(`REPLACED project.blueprints is ${JSON.stringify(project.blueprints)}`);
     coll.update(project);
     return project.blueprints;
+  },
+  updateInstances(args, context) {
+    const { projectId, input } = args;
+    const { DB } = context;
+    if (DBG)
+      TERM(
+        `update project.instances:${projectId}, input:${JSON.stringify(input)}`
+      );
+    const coll = DB.getCollection('projects');
+    const project = coll.findOne({ id: projectId });
+    TERM(`project.instances is ${JSON.stringify(project.instances)}`);
+    project.instances = input; // replace them all
+    TERM(`REPLACED project.instances is ${JSON.stringify(project.instances)}`);
+    coll.update(project);
+    return project.instances;
   }
 };

@@ -22,7 +22,7 @@ STATE.initializeState({
   projId: 0,
   instances: [
     {
-      id: 1,
+      id: '1',
       label: 'Bunny 1',
       bpid: 'Bunny',
       initScript: '// init 1'
@@ -31,7 +31,7 @@ STATE.initializeState({
   instanceidList: [],
   currentInstance: {
     // currently being edited
-    id: 0,
+    id: '0',
     label: 'empty',
     bpid: 'bp',
     initScript: '// init'

@@ -112,6 +112,10 @@ type Mutation {
     projectId: String
     input: [ProjectBlueprintInput]
   ): [ProjectBlueprint]
+  updateInstances(
+    projectId: String
+    input: [ProjectInstanceInput]
+  ): [ProjectInstance]
 }
 
 """
@@ -161,8 +165,8 @@ type Project {
   label: String
   metadata: ProjectMeta
   rounds: [ProjectRound]
-  instances: [Instance]
   blueprints: [ProjectBlueprint]
+  instances: [ProjectInstance]
 }
 type ProjectMeta {
   top: Float
@@ -190,8 +194,8 @@ type ProjectBlueprint {
   isPozyxControllable: Boolean
   scriptText: String
 }
-type Instance {
-  id: Int!
+type ProjectInstance {
+  id: String!
   label: String
   bpid: String
   initScript: String
@@ -205,8 +209,8 @@ input ProjectInput {
   label: String
   metadata: ProjectMetaInput
   rounds: [ProjectRoundInput]
-  instances: [InstanceInput]
   blueprints: [ProjectBlueprintInput]
+  instances: [ProjectInstanceInput]
 }
 input ProjectMetaInput {
   top: Float
@@ -234,8 +238,8 @@ input ProjectBlueprintInput {
   isPozyxControllable: Boolean
   scriptText: String
 }
-input InstanceInput {
-  id: Int!
+input ProjectInstanceInput {
+  id: String!
   label: String
   bpid: String
   initScript: String

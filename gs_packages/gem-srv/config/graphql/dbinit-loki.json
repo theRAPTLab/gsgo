@@ -207,13 +207,13 @@
       ],
       "instances": [
         {
-          "id": 1000,
+          "id": "1000",
           "label": "Bunny1",
           "bpid": "Bunny",
-          "initScript": "// initScript Bunny1"
+          "initScript": "// initScript Bunny1\nprop x setTo 100\nprop y setTo 100"
         },
         {
-          "id": 1001,
+          "id": "1001",
           "label": "Bunny2",
           "bpid": "Bunny",
           "initScript": "// initScript Bunny2"
