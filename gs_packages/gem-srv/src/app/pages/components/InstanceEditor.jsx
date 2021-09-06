@@ -16,11 +16,11 @@ props.instance = instance specification: {name, blueprint, initScript}
 
 import React from 'react';
 import clsx from 'clsx';
-import Button from '@material-ui/core/Button';
 import DeleteIcon from '@material-ui/icons/Delete';
 import VisibilityIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import { GetAgentByName } from 'modules/datacore/dc-agents';
+import { Button, ClickAwayListener } from '@material-ui/core';
 import { GetAllFeatures } from 'modules/datacore/dc-features';
 import {
   GetBlueprintProperties,
@@ -226,9 +226,17 @@ class InstanceEditor extends React.Component {
    * @param {*} e
    */
   OnInstanceClick(e) {
+    // Ignore clicks when editing. ClickAwayListener will handle closing.
+    const { isEditable } = this.state;
+    if (isEditable) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+
     // just pass it up to Map Editor so it's centralized?
-    const agentId = this.GetAgentId();
-    UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId });
+    const { id } = this.props;
+    UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId: id });
   }
 
   GetAddableProperties() {
@@ -276,6 +284,10 @@ class InstanceEditor extends React.Component {
     e.stopPropagation();
   }
 
+  StopPropagation(e) {
+    e.stopPropagation(); // prevent click from deselecting instance
+  }
+
   OnPropMenuSelect(e) {
     e.preventDefault(); // prevent click from deselecting instance
     e.stopPropagation();
@@ -318,14 +330,13 @@ class InstanceEditor extends React.Component {
   }
 
   DoDeselect() {
-    const { modelId } = this.props;
+    const { id } = this.props;
     let { isSelected, isEditable } = this.state;
-    const agentId = this.GetAgentId();
     isEditable = false;
     isSelected = false;
     this.setState({ isEditable, isSelected });
     // And also deselect
-    UR.RaiseMessage('NET:INSTANCE_DESELECT', { modelId, agentId });
+    UR.RaiseMessage('NET:INSTANCE_DESELECT', { agentId: id });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -525,6 +536,7 @@ class InstanceEditor extends React.Component {
               className={classes.instanceEditorLineItem}
               style={{ margin: '0.5em 0' }}
             >
+        <ClickAwayListener onClickAway={this.DoDeselect}>
               <div
                 className={classes.instanceEditorLabel}
                 style={{ fontSize: '10px' }}
@@ -588,6 +600,7 @@ class InstanceEditor extends React.Component {
           <div className={classes.inspectorLabel}>{instance.id}&nbsp;</div>{' '}
            */}
         </div>
+        </ClickAwayListener>
       </div>
     );
   }
