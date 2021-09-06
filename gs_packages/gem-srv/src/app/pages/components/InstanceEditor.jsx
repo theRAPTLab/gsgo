@@ -249,13 +249,10 @@ class InstanceEditor extends React.Component {
   }
 
   OnDeleteInstance(e) {
-    const { modelId, instance } = this.props;
+    const { id } = this.props;
     e.preventDefault();
     e.stopPropagation();
-    UR.RaiseMessage('NET:INSTANCE_DELETE', {
-      modelId,
-      instanceDef: instance
-    });
+    ACInstances.DeleteInstance(id);
   }
 
   DoDeselect() {

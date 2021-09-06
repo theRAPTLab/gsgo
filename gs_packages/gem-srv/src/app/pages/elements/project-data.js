@@ -386,27 +386,6 @@ export function InstanceRequestEdit(data) {
     UR.RaiseMessage('INSTANCE_EDIT_ENABLE', data);
   }
 }
-/**
- *
- * @param {Object} data -- { modelId, instanceDef }
- */
-export function InstanceDelete(data) {
-  // Remove from Blueprint
-  const model = GetProject(data.modelId);
-  const instanceIndex = model.instances.findIndex(
-    i => i.id === data.instanceDef.id
-  );
-  model.instances.splice(instanceIndex, 1);
-
-  // Remove from Sim
-  DeleteInstance(data.instanceDef);
-  DeleteAgent(data.instanceDef);
-  RaiseModelUpdate(data.modelId);
-  RaiseInstancesListUpdate();
-
-  // REVIEW
-  // Update the DB!
-}
 
 /// API CALLS: SCRIPT DATA REQUESTS ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -673,7 +652,6 @@ UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', InstanceRequestEdit);
-UR.HandleMessage('NET:INSTANCE_DELETE', InstanceDelete);
 // INSPECTOR UTILS --------------------------------------------------------
 UR.HandleMessage('NET:INSPECTOR_REGISTER', DoRegisterInspector);
 UR.HandleMessage('NET:INSPECTOR_UNREGISTER', DoUnRegisterInspector);

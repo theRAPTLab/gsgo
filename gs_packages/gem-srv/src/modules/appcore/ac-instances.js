@@ -181,6 +181,7 @@ function hook_Effect(effectKey, propOrValue, propValue) {
 
   if (effectKey === 'instances') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
+    updateAndPublish(propOrValue);
     // (a) start async autosave
     delayedInstancesSave();
   }
@@ -202,6 +203,15 @@ addEffectHook(hook_Effect);
 export function SetInstances(projId, instances) {
   updateKey({ projId });
   updateAndPublish(instances);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function DeleteInstance(id) {
+  const instances = _getKey('instances');
+  const index = instances.findIndex(i => i.id !== id);
+  instances.splice(index, 1);
+  UR.WriteState('instances', 'instances', instances);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
