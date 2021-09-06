@@ -347,11 +347,11 @@ class MissionControl extends React.Component {
     // Only update init if we're in edit mode
     if (panelConfiguration === 'edit') {
       const agent = data.agent;
-      const { modelId } = this.state;
+      const { projId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
       PROJ.InstanceUpdatePosition({
-        modelId,
+        projId,
         instanceId: agent.id,
         updatedData: { x, y }
       });

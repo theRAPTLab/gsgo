@@ -107,7 +107,7 @@ function updateAndPublish(instances) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /** Updates and publishes `instances` with the `instance` object */
-function m_UpdateInstance(instance) {
+export function UpdateInstance(instance) {
   const instances = GetInstances();
   const id = instance.id;
   const index = instances.findIndex(i => i.id === id);
@@ -140,7 +140,7 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'currentInstance') {
     // Update `instances` with the currentInstance
     const instance = propOrValue;
-    m_UpdateInstance(instance);
+    UpdateInstance(instance);
     return [key, propOrValue];
   }
   return undefined;

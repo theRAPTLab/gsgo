@@ -354,33 +354,33 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
 }
 /**
  *
- * @param {Object} data -- { modelId, instanceId, instanceName, updatedData }
+ * @param {Object} data -- { projId, instanceId, instanceName, updatedData }
  * where `updatedData` = { initScript } -- initScript is scriptText.
  *                 Leave instanceName or instanceInit undefined
  *                 if they're not being set.
  */
 export function InstanceUpdate(data) {
-  const model = GetProject(data.modelId);
-  const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
-  const instance = model.instances[instanceIndex];
+  const project = ACProject.GetProject(data.projId);
+  const instanceIndex = project.instances.findIndex(
+    i => i.id === data.instanceId
+  );
+  const instance = project.instances[instanceIndex];
   instance.label = data.instanceName || instance.label;
   instance.initScript =
     data.instanceInit !== undefined // data.instanceInit might be ''
       ? data.instanceInit
       : instance.initScript;
-  model.instances[instanceIndex] = instance;
-  RaiseModelUpdate(data.modelId);
+  project.instances[instanceIndex] = instance;
+  RaiseModelUpdate(data.projId);
   RaiseInstancesListUpdate();
 }
 /**
  * HACK: Manually change the init script when updating position.
  * This is mostly used to support drag and drop
- * @param {Object} data -- { modelId, instanceId, updatedData: {x, y} }
+ * @param {Object} data -- { projId, instanceId, updatedData: {x, y} }
  */
 export function InstanceUpdatePosition(data) {
-  const model = GetProject(data.modelId);
-  const instanceIndex = model.instances.findIndex(i => i.id === data.instanceId);
-  const instance = model.instances[instanceIndex];
+  const instance = ACInstances.GetInstance(data.instanceId);
   if (!instance) return; // Pozyx/PTrack instances are not in model.instances, so ignore
   let scriptTextLines = instance.initScript
     ? instance.initScript.split('\n')
@@ -389,9 +389,7 @@ export function InstanceUpdatePosition(data) {
   ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
   const scriptText = scriptTextLines.join('\n');
   instance.initScript = scriptText;
-  model.instances[instanceIndex] = instance;
-  RaiseModelUpdate(data.modelId);
-  RaiseInstancesListUpdate();
+  ACInstances.UpdateInstance(instance);
 }
 /**
  * User is requesting to edit an instance

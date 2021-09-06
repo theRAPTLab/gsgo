@@ -115,8 +115,8 @@ addEffectHook(hook_Effect);
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** Returns in-state project data, or loads from db if necessary */
-export async function GetProject(projId) {
+/// Returns in-state project data
+export function GetProject(projId) {
   // Get base data
   let project = _getKey('project');
   if (project === undefined || project.id === undefined) {
