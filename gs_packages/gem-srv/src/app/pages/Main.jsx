@@ -487,12 +487,7 @@ class MissionControl extends React.Component {
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor
-          projId={projId}
-          bpidList={bpidList}
-          modelId={modelId}
-          model={model}
-        />
+        <MissionMapEditor projId={projId} bpidList={bpidList} />
       ) : (
         <MissionRun
           projId={projId}

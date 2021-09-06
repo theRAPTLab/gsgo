@@ -9,7 +9,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useState } from 'react';
+import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -27,7 +27,7 @@ import './scrollbar.css';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('MAPEDITOR');
-const DBG = true;
+const DBG = false;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,6 +48,7 @@ class MapEditor extends React.Component {
 
   OnPanelClick(id) {
     // Do something?
+    if (DBG) console.log(...PR('OnPanelClick', id));
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -56,13 +57,7 @@ class MapEditor extends React.Component {
    */
   render() {
     const { projId, bpidList, classes } = this.props;
-    const mapInstanceSpec = model && model.instances ? model.instances : [];
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
-    const rounds = model && model.rounds ? model.rounds : [];
-
+    if (DBG) console.log(...PR('render', classes));
     return (
       <div
         style={{
@@ -72,18 +67,14 @@ class MapEditor extends React.Component {
           overflow: 'hidden'
         }}
       >
-        <PanelRounds id="rounds" modelId={projId} rounds={rounds} />
+        <PanelRounds id="rounds" modelId={projId} />
         <PanelBlueprints
           id="blueprints"
           projId={projId}
           bpidList={bpidList}
           enableAdd
         />
-        <PanelMapInstances
-          id="instances"
-          modelId={projId}
-          mapInstanceSpec={mapInstanceSpec}
-        />
+        <PanelMapInstances id="instances" />
       </div>
     );
   }
