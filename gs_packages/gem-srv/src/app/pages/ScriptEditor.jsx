@@ -192,9 +192,8 @@ class ScriptEditor extends React.Component {
     const { instances, monitoredInstances } = this.state;
     if (!instances) return;
     instances.forEach(i => {
-      const name = i.name || i.meta.name; // instance spec || GAgent
-      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
-      monitoredInstances.splice(monitoredInstances.indexOf(name), 1);
+      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id: i.id });
+      monitoredInstances.splice(monitoredInstances.indexOf(i.id), 1);
     });
     this.setState({ monitoredInstances });
   }
