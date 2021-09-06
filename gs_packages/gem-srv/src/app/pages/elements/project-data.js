@@ -353,28 +353,6 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 }
 /**
- *
- * @param {Object} data -- { projId, instanceId, instanceName, updatedData }
- * where `updatedData` = { initScript } -- initScript is scriptText.
- *                 Leave instanceName or instanceInit undefined
- *                 if they're not being set.
- */
-export function InstanceUpdate(data) {
-  const project = ACProject.GetProject(data.projId);
-  const instanceIndex = project.instances.findIndex(
-    i => i.id === data.instanceId
-  );
-  const instance = project.instances[instanceIndex];
-  instance.label = data.instanceName || instance.label;
-  instance.initScript =
-    data.instanceInit !== undefined // data.instanceInit might be ''
-      ? data.instanceInit
-      : instance.initScript;
-  project.instances[instanceIndex] = instance;
-  RaiseModelUpdate(data.projId);
-  RaiseInstancesListUpdate();
-}
-/**
  * HACK: Manually change the init script when updating position.
  * This is mostly used to support drag and drop
  * @param {Object} data -- { projId, instanceId, updatedData: {x, y} }
@@ -715,7 +693,6 @@ UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
-UR.HandleMessage('NET:INSTANCE_UPDATE', InstanceUpdate);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
 UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', InstanceRequestEdit);
 UR.HandleMessage('NET:INSTANCE_DELETE', InstanceDelete);
