@@ -12,6 +12,8 @@ import UR from '@gemstep/ursys/client';
 const PR = UR.PrefixUtil('AC-INSTANCES', 'TagCyan');
 const DBG = true;
 
+let AUTOTIMER;
+
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('instances');
 /// StateGroup keys must be unique across the entire app
@@ -26,7 +28,14 @@ STATE.initializeState({
       initScript: '// init 1'
     }
   ],
-  instanceidList: []
+  instanceidList: [],
+  currentInstance: {
+    // currently being edited
+    id: 0,
+    label: 'empty',
+    bpid: 'bp',
+    initScript: '// init'
+  }
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
@@ -54,6 +63,13 @@ export function GetInstances() {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+export function GetInstance(id) {
+  const instances = _getKey('instances');
+  return instances.find(i => i.id === id);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /**
  * Returns array of instance ids + labels defined for a project
  * Generally used by selector UI for `instanceList` objects
@@ -66,6 +82,17 @@ export function GetInstanceidList() {
   });
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/** Sets the`id` instance as the `currentInstance` state object
+ *  Used by InstanceEditor to handle updates.
+ */
+export function EditInstance(id) {
+  const instance = GetInstance(id);
+  updateKey({ currentInstance: instance });
+  _publishState({ currentInstance: instance });
+}
+
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function updateAndPublish(instances) {
@@ -76,9 +103,20 @@ function updateAndPublish(instances) {
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-let AUTOTIMER;
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Intercept changes to locale.transform so we can cache the changes
+
+/** Updates and publishes `instances` with the `instance` object */
+function m_UpdateInstance(instance) {
+  const instances = GetInstances();
+  const id = instance.id;
+  const index = instances.findIndex(i => i.id === id);
+  instances.splice(index, 1, instance);
+  updateAndPublish(instances);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Intercept changes to currentInstance so we can cache the changes
  *  for later write to DB after some time has elapsed. Returns the modified
  *  values, if any, for subsequent update to GSTATE and publishState
  *
@@ -88,9 +126,44 @@ let AUTOTIMER;
  *  written as-is.
  */
 function hook_Filter(key, propOrValue, propValue) {
-  // console.log('hook_Filter', key, propOrValue, propValue);
-  // if (key === 'instances') return [key, propOrValue, propValue];
-  // return undefined;
+  if (DBG)
+    console.log(
+      ...PR(
+        'ACInstances:hook_Filter key:',
+        key,
+        'propOrValue: ',
+        propOrValue,
+        'propValue:',
+        propValue
+      )
+    );
+  if (key === 'currentInstance') {
+    // Update `instances` with the currentInstance
+    const instance = propOrValue;
+    m_UpdateInstance(instance);
+    return [key, propOrValue];
+  }
+  return undefined;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function delayedInstancesSave() {
+  if (AUTOTIMER) clearInterval(AUTOTIMER);
+  AUTOTIMER = setInterval(() => {
+    const projId = _getKey('projId');
+    const instances = _getKey('instances');
+    UR.CallMessage('LOCAL:DC_WRITE_INSTANCES', {
+      projId,
+      instances
+    }).then(status => {
+      const { err } = status;
+      if (err) console.error(err);
+      return status;
+    });
+    clearInterval(AUTOTIMER);
+    AUTOTIMER = 0;
+  }, 1000);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,25 +171,16 @@ function hook_Filter(key, propOrValue, propValue) {
  *  This is provided as the second arg of addChangeHook()
  */
 function hook_Effect(effectKey, propOrValue, propValue) {
-  console.error('hook_Effect called', effectKey, propOrValue, propValue);
+  if (DBG)
+    console.log(
+      ...PR('ACInstances:hook_Effect called', effectKey, propOrValue, propValue)
+    );
+  if (effectKey === 'currentInstance') delayedInstancesSave();
+
   if (effectKey === 'instances') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave
-    if (AUTOTIMER) clearInterval(AUTOTIMER);
-    AUTOTIMER = setInterval(() => {
-      const projId = _getKey('projId');
-      const instances = propOrValue;
-      UR.CallMessage('LOCAL:DC_WRITE_INSTANCES', {
-        projId,
-        instances
-      }).then(status => {
-        const { err } = status;
-        if (err) console.error(err);
-        return status;
-      });
-      clearInterval(AUTOTIMER);
-      AUTOTIMER = 0;
-    }, 1000);
+    delayedInstancesSave();
   }
   // otherwise return nothing to handle procesing normally
 }
