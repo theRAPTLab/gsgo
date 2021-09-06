@@ -73,10 +73,12 @@ export function GetInstance(id) {
 /**
  * Returns array of instance ids + labels defined for a project
  * Generally used by selector UI for `instanceList` objects
+ * Call with `currentInstances` parm to derive instancedidList
+ * from in-progress changes rather than saved state.
  * @returns [...{id, label, blueprint}]
  */
-export function GetInstanceidList() {
-  const instances = _getKey('instances');
+export function GetInstanceidList(currentInstances) {
+  const instances = currentInstances || _getKey('instances');
   return instances.map(i => {
     return { id: i.id, label: i.label, bpid: i.bpid };
   });
@@ -96,7 +98,7 @@ export function EditInstance(id) {
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function updateAndPublish(instances) {
-  const instanceidList = GetInstanceidList();
+  const instanceidList = GetInstanceidList(instances);
   updateKey({ instances, instanceidList });
   _publishState({ instances, instanceidList });
 }
@@ -200,4 +202,27 @@ addEffectHook(hook_Effect);
 export function SetInstances(projId, instances) {
   updateKey({ projId });
   updateAndPublish(instances);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function DeleteInstancesByBPID(bpid) {
+  const instances = _getKey('instances');
+  const reduced = instances.filter(i => i.bpid !== bpid);
+  UR.WriteState('instances', 'instances', reduced);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function RenameInstanceBlueprint(oldBpid, newBpid) {
+  const instances = _getKey('instances');
+  UR.WriteState(
+    'instances',
+    'instances',
+    instances.map(i => {
+      if (i.bpid !== oldBpid) return i;
+      i.bpid = newBpid;
+      return i;
+    })
+  );
 }

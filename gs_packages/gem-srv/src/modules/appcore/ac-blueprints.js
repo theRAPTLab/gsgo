@@ -219,15 +219,27 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
       scriptText
     };
     const blueprint = new Blueprint(def);
-    blueprints.push(blueprint);
-    throw new Error(
-      'ac-blueprints: Trying to add a new blueprint.  Not supported!'
-    );
+    blueprints.push(blueprint.get());
   }
   updateKey({ projId });
   updateAndPublish(blueprints);
   console.error('...updating blueprints to', blueprints);
   UR.WriteState('blueprints', 'blueprints', blueprints);
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/** NOTE: See project-data.BlueprintDelete -- you should also delete
+ *        instances created with this blueprint.
+ *  NOTE: This does not trigger an update to prevent multiple state updates!
+ *        The update will happen with UpdateBlueprint
+ */
+export function DeleteBlueprint(bpid) {
+  const blueprints = _getKey('blueprints');
+  const index = blueprints.findIndex(b => b.id === bpid);
+  if (index < 0)
+    throw new Error(`ac-blueprints: Trying to delete non-existent bpid ${bpid}`);
+  blueprints.splice(index, 1);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////

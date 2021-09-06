@@ -37,6 +37,16 @@ export default class ProjectBlueprint {
     this._scriptText = def.scriptText !== undefined ? def.scriptText : '';
   }
 
+  get() {
+    const bp: any = {};
+    bp.id = this._id;
+    bp.label = this._label;
+    bp.isCharControllable = this._isCharControllable;
+    bp.isPozyxControllable = this._isPozyxControllable;
+    bp.scriptText = this._scriptText;
+    return bp;
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// CORE
 

@@ -267,26 +267,17 @@ function GetPozyxBPNames() {
   return ACBlueprints.GetPozyxControlBpidList();
 }
 /**
- * Removes the script from `model` and related `model.instances`
- * Does not remove sim instances/agents.
+ * Removes the script from the project and any instances using the blueprint
  * @param {string} blueprintName
  */
-function BlueprintDelete(blueprintName, modelId = CURRENT_PROJECT_ID) {
-  const model = GetProject(modelId);
+function BlueprintDelete(blueprintName) {
   // 1. Delete the old blueprint from model
-  const index = model.blueprints.findIndex(s => s.id === blueprintName);
-  if (index > -1) {
-    // Remove existing blueprint
-    model.blueprints.splice(index, 1);
-  }
+  ACBlueprints.DeleteBlueprint(blueprintName);
   // 2. Delete any existing instances from model definition
-  model.instances = model.instances.filter(i => i.blueprint !== blueprintName);
-  // 3. REVIEW: Write changes to DB???
+  ACInstances.DeleteInstancesByBPID(blueprintName);
 }
 function HandleBlueprintDelete(data) {
   BlueprintDelete(data.blueprintName, data.modelId);
-  RaiseModelUpdate();
-  RaiseBpidListUpdate();
 }
 
 /// INSTANCE SPEC UTILS ////////////////////////////////////////////////////
@@ -442,50 +433,36 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
 /**
  * Update the script for a single blueprint (not all blueprints in the model)
  * This should just update the `model.scripts` and `model.instances` data.
- * Any sim instance/agent data updates should be hanlded by sim-agents.
+ * Any sim instance/agent data updates should be handled by sim-agents.
  * ASSUMES: Updating the current model
- * @param {Object} data -- { script, origBlueprintName }
+ * @param {Object} data -- { projId, script, origBlueprintName }
  */
 function ScriptUpdate(data) {
-  const model = GetProject();
+  const project = ACProject.GetProject();
   const source = TRANSPILER.ScriptifyText(data.script);
   const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
-  const blueprintName = bundle.name;
+  const bpid = bundle.name;
 
-  // 1. Did the blueprint name change?
-  if (data.origBlueprintName !== blueprintName) {
+  // 1. Did the blueprint name change?  Remove the old blueprint
+  if (data.origBlueprintName !== bpid) {
     // If name changed, remove the original
     BlueprintDelete(data.origBlueprintName);
+    // NOTE We have to delete before adding the new blueprint otherwise
+    //      the default pozyx might be set to a non-existent blueprint
     // NOTE sim agents and instances are added/removed in sim-agents.AllAgentsProgramUpdate
   }
 
-  // 2. Update the new blueprint
-  let blueprint;
-  const index = model.blueprints.findIndex(s => s.id === blueprintName);
-  if (index > -1) {
-    // Replace existing blueprint
-    // 1. Clone all properties
-    blueprint = merge.all([model.blueprints[index]]);
-    // 2. Modify new propreites
-    blueprint.id = blueprintName;
-    blueprint.label = blueprintName;
-    // 3. Replace the script
-    blueprint.script = data.script;
-    // Replace existing blueprint
-    model.blueprints[index] = blueprint;
-  } else {
-    // Add new blueprint
-    blueprint = {
-      id: blueprintName,
-      label: blueprintName,
-      // REVIEW: Need to set isControllable here?
-      // For now automatically make it controllable.
-      isControllable: true,
-      script: data.script
-    };
-    // New Blueprint
-    model.blueprints.push(blueprint);
+  // 2. Add or update the blueprint
+  ACBlueprints.UpdateBlueprint(data.projId, bpid, data.script);
+
+  // 3. Convert instances
+  if (data.origBlueprintName !== bpid) {
+    // If name changed, change existing instances to use the new blueprint
+    // Name change should only happen after the new blueprint is defined
+    // otherwise we end up defining instances for nonexisting blueprints
+    ACInstances.RenameInstanceBlueprint(data.origBlueprintName, bpid);
   }
+
 
   // 3. Clean the init scripts
   const validPropDefs = TRANSPILER.ExtractBlueprintProperties(data.script);
@@ -527,6 +504,7 @@ function ScriptUpdate(data) {
   //   );
   // }
 
+  // 5. Inform network devices
   RaiseModelUpdate();
   RaiseBpidListUpdate();
   RaiseInstancesListUpdate();
