@@ -165,6 +165,8 @@ async function Initialize() {
   PARENT_COMPONENT.setState({
     projId: CURRENT_PROJECT_ID
   });
+}
+
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -189,10 +191,16 @@ export function GetBoundary() {
 
 /// Used to inject the Cursor blueprint
 export function InjectBlueprint(data) {
-  const blueprint = data.script;
+  const { blueprint } = data;
   // Skip if already defined
-  if (CURRENT_PROJECT.blueprints.find(s => s.id === blueprint.id)) return;
-  CURRENT_PROJECT.blueprints.push(blueprint);
+  if (ACBlueprints.GetBlueprint(blueprint.id)) {
+    console.error('skipping injection, already defined');
+    return;
+  }
+  ACBlueprints.NewBlueprint(CURRENT_PROJECT_ID, blueprint);
+
+  // Compile and Register
+  // REVIEW: Should this be moved to ACBlueprints
   const source = TRANSPILER.ScriptifyText(blueprint.scriptText);
   const bundle = TRANSPILER.CompileBlueprint(source);
   TRANSPILER.RegisterBlueprint(bundle);
