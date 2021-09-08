@@ -62,9 +62,7 @@ class MissionControl extends React.Component {
     this.state = {
       panelConfiguration: 'run',
       message: '',
-      modelId: '',
-      model: {},
-      projId: '', // new graphQL-based id, set by project-data
+      projId: '', // set by project-data
       projectIsLoaded: false,
       bpidList: [],
       devices: [],
@@ -170,7 +168,7 @@ class MissionControl extends React.Component {
     if (typeof cb === 'function') cb();
   }
   FailSimAlreadyRunning() {
-    const { modelId } = this.state;
+    const { projId } = this.state;
     this.setState({ openRedirectDialog: true });
     // redirect to project view
     window.location = `/app/project?project=${projId}&redirect`;
@@ -212,7 +210,7 @@ class MissionControl extends React.Component {
       return; // skip update if it's already running
     }
     this.setState(
-      { modelId: data.modelId, model: data.model },
+      { projId: data.projId },
       // Call Sim Places to recompile agents.
       () => SIMCTRL.SimPlaces(data.model)
     );
@@ -222,7 +220,7 @@ class MissionControl extends React.Component {
     const { model } = this.state;
     // REVIEW why is model not loaded?
     if (!model) {
-      console.error('MissionControl state is missing model?!?', this.state);
+      console.error('MissionControl state is missing model?!?', data, this.state);
       return;
     }
     model.instances = data.instances;
@@ -253,7 +251,7 @@ class MissionControl extends React.Component {
       },
       () => {
         SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
-        this.LoadModel(this.state.modelId); // This will also call SimPlaces
+        this.LoadModel(this.state.projId); // This will also call SimPlaces
       }
     );
   }
@@ -315,27 +313,28 @@ class MissionControl extends React.Component {
   }
   /**
    * User clicked on agent instance in simulation view
+   * or User clicked on instance in MapEditor
    * If Map Editor is open, then when the user clicks
    * on an instance in the simulation view, we want to
    * select it for editing.
    * @param {object} data { agentId }
    */
   HandleSimInstanceClick(data) {
-    const { panelConfiguration, modelId } = this.state;
+    const { panelConfiguration, projId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      PROJ.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      PROJ.InstanceRequestEdit({ projId, agentId: data.agentId });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
-    const { modelId } = this.state;
-    PROJ.InstanceHoverOver({ modelId, agentId: data.agentId });
+    const { projId } = this.state;
+    PROJ.InstanceHoverOver({ projId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
-    const { modelId } = this.state;
-    PROJ.InstanceHoverOut({ modelId, agentId: data.agentId });
+    const { projId } = this.state;
+    PROJ.InstanceHoverOut({ projId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
