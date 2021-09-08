@@ -8,8 +8,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useState } from 'react';
-import ToggleButton from '@material-ui/lab/ToggleButton';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
@@ -53,25 +52,6 @@ PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
 PANEL_CONFIG.set('edit', '40% auto 0px'); // columns
 PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 
-const StyledToggleButton = withStyles(theme => ({
-  root: {
-    color: 'rgba(0,156,156,1)',
-    backgroundColor: 'rgba(60,256,256,0.1)',
-    '&:hover': {
-      color: 'black',
-      backgroundColor: '#6effff'
-    },
-    '&.Mui-selected': {
-      color: '#6effff',
-      backgroundColor: 'rgba(60,256,256,0.3)',
-      '&:hover': {
-        color: 'black',
-        backgroundColor: '#6effff'
-      }
-    }
-  }
-}))(ToggleButton);
-
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
@@ -98,7 +78,6 @@ class MissionControl extends React.Component {
     // Initialization
     this.urStateUpdated = this.urStateUpdated.bind(this);
     this.GetUDID = this.GetUDID.bind(this);
-    this.Initialize = this.Initialize.bind(this);
     this.FailSimAlreadyRunning = this.FailSimAlreadyRunning.bind(this);
 
     // Devices
@@ -139,16 +118,13 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
-
-    // System Hooks
-    UR.HookPhase('UR/APP_START', this.Initialize);
   }
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
 
-    // No model selected, go back to login to select model
+    // No project selected, go back to login to select project
     if (!projId) window.location = '/app/login';
 
     this.setState({ projId });
@@ -158,7 +134,7 @@ class MissionControl extends React.Component {
 
     UR.SubscribeState('project', this.urStateUpdated);
 
-    // register project-data
+    // Prepare project-data for db load
     PROJ.ProjectDataPreInit(this, projId);
   }
 
@@ -186,39 +162,6 @@ class MissionControl extends React.Component {
     return DEVICE_UDID;
   }
 
-  /// INITIALIZATION ////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  async Initialize() {
-    // 1. Check for other 'Sim' devices.
-    const devices = UR.GetDeviceDirectory();
-    const sim = devices.filter(d => d.meta.uclass === 'Sim');
-    if (sim.length > 0) {
-      this.FailSimAlreadyRunning();
-      return;
-    }
-
-    // 2. Load Model
-    const { modelId } = this.state;
-    this.LoadModel(modelId);
-
-    // 3. Register as 'Sim' Device
-    // devices templates are defined in class-udevice.js
-    const dev = UR.NewDevice('Sim');
-    const { udid, status, error } = await UR.RegisterDevice(dev);
-    if (error) console.error(error);
-    if (status) console.log(...PR(status));
-    if (udid) DEVICE_UDID = udid;
-
-    // 4. Listen for Controllers
-    const charControllerDevAPI = UR.SubscribeDeviceSpec({
-      selectify: device => device.meta.uclass === 'CharControl',
-      notify: deviceLists => {
-        const { selected, quantified, valid } = deviceLists;
-        if (valid) {
-          this.UpdateDeviceList(selected);
-        }
-      }
-    });
   urStateUpdated(stateObj, cb) {
     const { project, bpidList, instancesList } = stateObj;
     console.error('ustateupdated', stateObj);
@@ -451,7 +394,6 @@ class MissionControl extends React.Component {
       projId,
       projectIsLoaded,
       bpidList,
-      modelId,
       model,
       devices,
       inspectorInstances,
@@ -461,12 +403,9 @@ class MissionControl extends React.Component {
       dialogMessage
     } = this.state;
     const { classes } = this.props;
-    const { width, height, bgcolor } = GetBoundary();
+    const { width, height, bgcolor } = PROJ.GetBoundary();
 
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
+    document.title = `GEMSTEP MAIN ${projId}`;
 
     const stageBtn = (
       <>
@@ -550,7 +489,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MAIN {modelId}</span>{' '}
+            <span style={{ fontSize: '32px' }}>MAIN {projId}</span>{' '}
             {UR.ConnectionString()}
             &emsp;
             <button type="button" onClick={this.OnToggleTracker}>
