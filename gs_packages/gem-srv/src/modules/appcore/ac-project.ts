@@ -48,7 +48,8 @@ const { addEffectHook, deleteEffectHook } = STATE;
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export function updateAndPublish(projId, project) {
+export function updateAndPublish(project) {
+  const projId = _getKey('projId');
   // Init AppCore (AC) modules
   ACMetadata.SetMetadata(projId, project.metadata);
   ACRounds.SetRounds(projId, project.rounds);
@@ -56,7 +57,6 @@ export function updateAndPublish(projId, project) {
   ACInstances.SetInstances(projId, project.instances);
   // Init Self
   updateKey({
-    projId,
     project
   });
   _publishState({ project });
@@ -140,7 +140,8 @@ export function GetProject(projId) {
 
 function HandleProjectUpdate(data: { projId: string; project: any }) {
   const { projId, project } = data;
-  updateAndPublish(projId, project);
+  updateKey({ projId });
+  updateAndPublish(project);
 }
 
 /// URSYS API /////////////////////////////////////////////////////////////////
