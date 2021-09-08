@@ -357,7 +357,7 @@ export function InstanceUpdatePosition(data) {
   ReplacePropLine('y', 'setTo', data.updatedData.y, scriptTextLines);
   const scriptText = scriptTextLines.join('\n');
   instance.initScript = scriptText;
-  ACInstances.UpdateInstance(instance);
+  ACInstances.WriteInstance(instance);
 }
 /**
  * User is requesting to edit an instance

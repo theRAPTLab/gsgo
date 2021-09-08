@@ -105,11 +105,13 @@ function updateAndPublish(instances) {
 
 /// INTERCEPT STATE UPDATE ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** Updates and publishes `instances` with the `instance` object */
-export function UpdateInstance(instance) {
+/** Updates and publishes `instances` with the `instance` object
+ *  NOTE: Used by hook_Filter
+ *  NOTE: Does not write to db
+ */
+export function UpdateCurrentInstance(instance) {
   const instances = GetInstances();
   const id = instance.id;
   const index = instances.findIndex(i => i.id === id);
@@ -142,7 +144,7 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'currentInstance') {
     // Update `instances` with the currentInstance
     const instance = propOrValue;
-    UpdateInstance(instance);
+    UpdateCurrentInstance(instance);
     return [key, propOrValue];
   }
   return undefined;
@@ -207,11 +209,31 @@ export function SetInstances(projId, instances) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+export function AddInstance(instance) {
+  const instances = _getKey('instances');
+  instances.push(instance);
+  UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/** Saves instance to db, Updates and publishes `instances` with the `instance` object
+ */
+export function WriteInstance(instance) {
+  const instances = GetInstances();
+  const id = instance.id;
+  const index = instances.findIndex(i => i.id === id);
+  instances.splice(index, 1, instance);
+  UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 export function DeleteInstance(id) {
   const instances = _getKey('instances');
   const index = instances.findIndex(i => i.id !== id);
   instances.splice(index, 1);
-  UR.WriteState('instances', 'instances', instances);
+  UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -219,7 +241,7 @@ export function DeleteInstance(id) {
 export function DeleteInstancesByBPID(bpid) {
   const instances = _getKey('instances');
   const reduced = instances.filter(i => i.bpid !== bpid);
-  UR.WriteState('instances', 'instances', reduced);
+  UR.WriteState('instances', 'instances', reduced); // calls updateAndPublish via hook_Effect
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -234,5 +256,5 @@ export function RenameInstanceBlueprint(oldBpid, newBpid) {
       i.bpid = newBpid;
       return i;
     })
-  );
+  ); // calls updateAndPublish via hook_Effect
 }
