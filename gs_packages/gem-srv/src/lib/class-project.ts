@@ -15,9 +15,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import { IbpidListItem } from 'lib/t-ui.d';
-import * as ACMetadata from '../modules/appcore/ac-metadata';
-import * as ACRounds from '../modules/appcore/ac-rounds';
-import * as ACBlueprints from '../modules/appcore/ac-blueprints';
 
 import ProjectMetadata from './class-project-meta';
 import ProjectRound from './class-project-round';
@@ -53,7 +50,8 @@ export default class Project {
     this._instances = [];
   }
 
-  read(def: {
+  /** Set data from 'def' into class-project object  */
+  set(def: {
     id: string;
     label: string;
     metadata: any;
@@ -63,15 +61,23 @@ export default class Project {
   }) {
     this._id = def.id !== undefined ? def.id : this._id;
     this._label = def.label !== undefined ? def.label : this._label;
-    this._metadata.read(def.metadata);
+    this._metadata.set(def.metadata);
     this._rounds = def.rounds.map(r => new ProjectRound(r));
     this._blueprints = def.blueprints.map(b => new ProjectBlueprint(b));
     this._instances = def.instances.map(i => new ProjectInstance(i));
+  }
 
-    // Init AppCore (AC) modules
-    ACMetadata.updateAndPublish(def.id, def.metadata);
-    ACRounds.updateAndPublish(def.id, def.rounds);
-    ACBlueprints.updateAndPublish(def.id, def.blueprints);
+  /** Get a copy of the project data */
+  get() {
+    console.error('blueprints is', this._blueprints);
+    const proj: any = {};
+    proj.id = this._id;
+    proj.label = this._label;
+    proj.metadata = this._metadata.get();
+    proj.rounds = this._rounds.map(r => r.get());
+    proj.blueprints = this._blueprints.map(b => b.get());
+    proj.instances = this._instances.map(i => i.get());
+    return proj;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

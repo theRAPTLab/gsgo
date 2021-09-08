@@ -39,6 +39,18 @@ export default class ProjectRound {
     this._endScript = def.endScript !== undefined ? def.endScript : '';
   }
 
+  get() {
+    const round: any = {};
+    round.id = this._id;
+    round.label = this._label;
+    round.time = this._time;
+    round.intro = this._intro;
+    round.outtro = this._outtro;
+    round.initScript = this._initScript;
+    round.endScript = this._endScript;
+    return round;
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// CORE
 

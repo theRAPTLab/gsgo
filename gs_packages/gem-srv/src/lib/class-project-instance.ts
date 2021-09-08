@@ -31,6 +31,14 @@ export default class ProjectInstance {
     this._initScript = def.initScript !== undefined ? def.initScript : '';
   }
 
+  get() {
+    const instance: any = {};
+    instance.id = this._id;
+    instance.label = this._label;
+    instance.bpid = this._bpid;
+    instance.initScript = this._initScript;
+    return instance;
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// CORE
 

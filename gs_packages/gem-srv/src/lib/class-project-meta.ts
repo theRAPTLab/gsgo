@@ -45,7 +45,7 @@ export default class ProjectMetadata {
     this._roundsCanLoop = false;
   }
 
-  read(def) {
+  set(def) {
     if (def === undefined)
       throw new Error(
         `ProjectMetadata.load missing definition object: ${JSON.stringify(def)}`
@@ -64,6 +64,18 @@ export default class ProjectMetadata {
       def.roundsCanLoop !== undefined ? def.roundsCanLoop : false;
   }
 
+  get() {
+    const meta: any = {};
+    meta.top = this._top;
+    meta.right = this._right;
+    meta.bottom = this._bottom;
+    meta.left = this._left;
+    meta.wrap = [...this._wrap];
+    meta.bounce = this._bounce;
+    meta.bgcolor = this._bgcolor;
+    meta.roundsCanLoop = this._roundsCanLoop;
+    return meta;
+  }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// CORE
 
