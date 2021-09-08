@@ -71,6 +71,8 @@ class PanelBlueprints extends React.Component {
   render() {
     const { title, bpidList } = this.state;
     const { projId, id, isActive, enableAdd, classes } = this.props;
+    if (!bpidList) return ''; // not loaded yet
+
     const instructions = enableAdd
       ? 'Click to add a character'
       : 'Click to edit a character type script in a new window';

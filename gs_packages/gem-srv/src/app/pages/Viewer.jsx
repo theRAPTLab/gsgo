@@ -46,8 +46,6 @@ class Viewer extends React.Component {
       noMain: true,
       panelConfiguration: 'sim',
       projId: '',
-      // modelId: '',
-      // model: {},
       bpidList: [],
       instances: []
     };
@@ -114,7 +112,7 @@ class Viewer extends React.Component {
       fnName: 'GetBpidList'
     }).then(rdata => this.HandleBpidList(rdata));
     UR.CallMessage('NET:REQ_PROJDATA', {
-      fnName: 'GetInstancesList'
+      fnName: 'GetInstanceidList'
     }).then(rdata => this.HandleInstancesList(rdata));
   }
 
@@ -126,7 +124,6 @@ class Viewer extends React.Component {
     });
   }
   HandleInstancesList(rdata) {
-    console.error('GetInstancesList', rdata);
     this.setState({
       instances: rdata.result.instancesList
     });
