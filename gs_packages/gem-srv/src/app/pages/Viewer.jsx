@@ -143,7 +143,7 @@ class Viewer extends React.Component {
 
   OnModelClick() {
     const { projId } = this.state;
-    window.location = `/app/model?project=${projId}`;
+    window.location = `/app/project?project=${projId}`;
   }
 
   OnPanelClick(id) {
@@ -194,7 +194,7 @@ class Viewer extends React.Component {
             <span style={{ fontSize: '32px' }}>VIEWER {projId}</span>
           </div>
           <Link
-            to={{ pathname: `/app/model?project=${projId}` }}
+            to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
           >
             Back to PROJECT

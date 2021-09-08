@@ -230,7 +230,7 @@ class MissionControl extends React.Component {
     const { modelId } = this.state;
     this.setState({ openRedirectDialog: true });
     // redirect to project view
-    window.location = `/app/model?model=${modelId}&redirect`;
+    window.location = `/app/project?project=${projId}&redirect`;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -426,8 +426,8 @@ class MissionControl extends React.Component {
     });
   }
   OnSelectView() {
-    const { modelId } = this.state;
-    window.location = `/app/model?model=${modelId}`;
+    const { projId } = this.state;
+    window.location = `/app/project?project=${projId}`;
   }
   OnToggleTracker() {
     this.setState(state => ({
@@ -558,7 +558,7 @@ class MissionControl extends React.Component {
             </button>
           </div>
           <Link
-            to={{ pathname: `/app/model?model=${modelId}` }}
+            to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
           >
             Back to PROJECT

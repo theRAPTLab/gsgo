@@ -24,7 +24,7 @@ import './scrollbar.css';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const PR = UR.PrefixUtil('MODEL');
+const PR = UR.PrefixUtil('PROJECT');
 const DBG = true;
 
 /// PANEL CONFIGURATIONS //////////////////////////////////////////////////////
@@ -34,12 +34,12 @@ PANEL_CONFIG.set('select', '20% auto 100px'); // columns
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
-class Model extends React.Component {
+class Project extends React.Component {
   constructor() {
     super();
     this.state = {
       panelConfiguration: 'select',
-      modelId: '',
+      projId: '',
       openRedirectDialog: false
     };
 
@@ -48,13 +48,13 @@ class Model extends React.Component {
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('project');
+    const projId = params.get('project');
     const wasRedirected = params.get('redirect') !== null;
     this.setState({
-      modelId,
+      projId,
       openRedirectDialog: wasRedirected
     });
-    document.title = `GEMSTEP PROJECT ${modelId}`;
+    document.title = `GEMSTEP PROJECT ${projId}`;
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
   }
@@ -79,7 +79,7 @@ class Model extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, modelId, openRedirectDialog } = this.state;
+    const { panelConfiguration, projId, openRedirectDialog } = this.state;
     const { classes } = this.props;
 
     const DialogMainRedirect = (
@@ -105,9 +105,9 @@ class Model extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>GEMSTEP PROJECT {modelId}</span>{' '}
+            <span style={{ fontSize: '32px' }}>GEMSTEP PROJECT {projId}</span>{' '}
           </div>
-          <Link to={{ pathname: `/app/login` }} className={classes.navButton}>
+          <Link to={{ pathname: '/app/login' }} className={classes.navButton}>
             Back to HOME
           </Link>
         </div>
@@ -119,7 +119,7 @@ class Model extends React.Component {
           {panelConfiguration === 'select' && (
             <PanelSelect
               id="select"
-              modelId={modelId}
+              projId={projId}
               onClick={this.OnPanelClick}
             />
           )}
@@ -140,4 +140,4 @@ class Model extends React.Component {
 /// EXPORT REACT COMPONENT ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// include MaterialUI styles
-export default withStyles(useStylesHOC)(Model);
+export default withStyles(useStylesHOC)(Project);
