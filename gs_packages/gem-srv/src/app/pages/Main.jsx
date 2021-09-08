@@ -82,7 +82,6 @@ class MissionControl extends React.Component {
     this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
 
     // Data Update Handlers
-    this.LoadModel = this.LoadModel.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
     this.HandleInstancesUpdate = this.HandleInstancesUpdate.bind(this);
@@ -91,7 +90,6 @@ class MissionControl extends React.Component {
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
     this.DoShowMessage = this.DoShowMessage.bind(this);
-    UR.HandleMessage('LOAD_MODEL', this.LoadModel); // re from project-data
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
     UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
@@ -190,14 +188,6 @@ class MissionControl extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
-  async LoadModel(modelId) {
-    const model = await PROJ.LoadProject(modelId);
-    this.setState(
-      { model },
-      // Call Sim Places to compile agents after model load
-      () => SIMCTRL.SimPlaces(model)
-    );
-  }
   HandleSimDataUpdate(data) {
     // REVIEW: This logic should probably be in mod-sim-control?
     if (DBG) console.log('HandleSimDataUpdate', data);
@@ -251,7 +241,7 @@ class MissionControl extends React.Component {
       },
       () => {
         SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
-        this.LoadModel(this.state.projId); // This will also call SimPlaces
+        PROJ.ReloadProject();
       }
     );
   }
