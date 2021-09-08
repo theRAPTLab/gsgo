@@ -122,7 +122,7 @@ export function GetProject(projId) {
   if (project === undefined || project.id === undefined) {
     // Project not loaded yet
     throw new Error(
-      `${[...PR]}.GetProject called before project state was defined!`
+      'ac-projects.GetProject called before project state was defined!'
     );
   }
 
