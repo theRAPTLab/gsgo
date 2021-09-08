@@ -6,10 +6,11 @@
   * blueprints
   * instance defintions
 
-  NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
+  How it works:
+  * 'projId' is set by Main reading the url parameter 'project'
+  * 'UR/APP_START' then triggers Initialize
 
-  Currently this is a placeholder class.  No data is saved between sessions.
-  Eventually it will communicate with as erver database.
+  NOTE: This should NOT be used directly by ScriptEditor or PanelScript!!!
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
@@ -18,7 +19,6 @@ import UR from '@gemstep/ursys/client';
 import * as TRANSPILER from 'script/transpiler';
 import 'modules/datacore/dc-project'; // must import to load db
 import {
-  DeleteInstance,
   GetAllAgents,
   GetAgentById,
   DeleteAgent,
@@ -29,13 +29,10 @@ import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
-import * as INPUT from 'modules/input/api-input';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ReportMemory } from 'modules/render/api-render';
 import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
-
-import { ReadProjectsList, ReadProject } from './project-db';
-
-const merge = require('deepmerge');
+import SIMCTRL from './mod-sim-control';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,6 +135,7 @@ async function Initialize() {
       return status;
     })
     .then(status => {
+      if (DBG) console.log('DC_LOAD_PROJECT status:', status);
       SIMCTRL.SimPlaces(CURRENT_PROJECT);
     });
 
@@ -150,9 +148,11 @@ async function Initialize() {
   if (udid) PARENT_COMPONENT.DEVICE_UDID = udid;
 
   // 4. Listen for Controllers
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const charControllerDevAPI = UR.SubscribeDeviceSpec({
     selectify: device => device.meta.uclass === 'CharControl',
     notify: deviceLists => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { selected, quantified, valid } = deviceLists;
       if (valid) {
         PARENT_COMPONENT.UpdateDeviceList(selected);
@@ -168,13 +168,6 @@ async function Initialize() {
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-}
-/// Used for URSYS requests for full project data, e.g. Viewer
-function GetCurrentModelData() {
-  return {
-    modelId: CURRENT_MODEL_ID,
-    model: CURRENT_MODEL
-  };
 }
 /// Used by REQ_PROJ_DATA and Main
 export function GetBoundary() {
@@ -470,25 +463,6 @@ function ScriptUpdate(data) {
     InputsReset();
   }
 
-  // DEPRECATED
-  // This was helpful for early testing
-  //
-  // // 5. Add an instance if one isn't already defined
-  // // Should not affect running sim until reset
-  // const bp = TRANSPILER.RegisterBlueprint(bundle);
-  // const instancesSpec = model.instances.filter(i => i.blueprint === bp.name);
-  // if (instancesSpec.length < 1) {
-  //   // If the map has not been defined yet, then generate a single instance
-  //   // instancesSpec.push({ name: `${bp.name}01`, init: '' });
-  //   InstanceAdd(
-  //     {
-  //       modelId: CURRENT_MODEL_ID,
-  //       blueprintName: bp.name
-  //     },
-  //     false
-  //   );
-  // }
-
   // 5. Inform network devices
   RaiseModelUpdate();
   RaiseBpidListUpdate();
@@ -593,29 +567,16 @@ export function InstanceHoverOut(data) {
  * @param {*} data
  * @returns
  */
-/// Functions that are allowed to be requested via `NET:REQ_PROJDATA`
-const API_PROJDATA = [
-  'ReadProjectsList',
-  'GetProject',
-  'GetCurrentModelData',
-  'GetProjectBoundary',
-  'GetCharControlBpidList',
-  'GetBlueprintProperties',
-  'GetBpidList',
-  'GetInstancesList'
-];
-/// Map mod.<functionName> so they can be called by HandleREquestProjData
+/// Map mod.<functionName> so they can be called by HandleRequestProjData
 const mod = {};
-mod.ReadProjectsList = ReadProjectsList;
-mod.GetProject = GetProject;
-mod.GetCurrentModelData = GetCurrentModelData;
+mod.RequestProject = RequestProject;
 mod.GetProjectBoundary = GetBoundary; // Mapping clarifies target
 mod.GetCharControlBpidList = GetCharControlBpidList;
-mod.GetBlueprintProperties = GetBlueprintProperties;
+mod.GetBlueprintProperties = ACBlueprints.GetBlueprintProperties;
 mod.GetBpidList = GetBpidList;
-mod.GetInstancesList = GetInstancesList;
+mod.GetInstanceidList = GetInstanceidList;
 /// Call Handler
-function HandleRequestProjData(data) {
+async function HandleRequestProjData(data) {
   if (DBG) console.log('NET:REQ_PROJDATA got request', data);
   if (!data.fnName) {
     console.error(...PR('NET:REQ_PROJDATA got bad function name', data.fnName));
@@ -645,13 +606,9 @@ UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
 UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
 
-// temp handler until we figur eout why CallMessage is not working
-UR.HandleMessage('DC_PROJECT_LOADED', HandleProjectLoaded);
-
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);
-UR.HandleMessage('NET:ROUND_UPDATE', RoundUpdate);
 UR.HandleMessage('NET:BLUEPRINT_DELETE', HandleBlueprintDelete);
 UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
@@ -669,16 +626,10 @@ UR.HandleMessage('INSTANCE_HOVEROUT', InstanceHoverOut);
 
 /// UR HOOKS //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-UR.HookPhase('UR/APP_READY', ProjectDataInit);
+UR.HookPhase('UR/APP_START', Initialize);
 
 /// EXPORT MODULE API /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
 
-export {
-  GetProject,
-  GetCurrentModelData,
-  GetBlueprintPropertiesTypeMap,
-  GetPozyxBPNames,
-  BlueprintDelete
-};
+export { GetBlueprintPropertiesTypeMap, GetPozyxBPNames, BlueprintDelete };
