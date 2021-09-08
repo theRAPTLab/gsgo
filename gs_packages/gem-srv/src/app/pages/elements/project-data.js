@@ -131,7 +131,6 @@ async function Initialize() {
       return status;
     })
     .then(status => {
-      console.error('got valid project status', status);
       SIMCTRL.SimPlaces(CURRENT_PROJECT);
     });
 

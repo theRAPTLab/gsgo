@@ -393,7 +393,11 @@ function MakeAgent(instanceDef: TInstance) {
 
     return SaveAgent(agent);
   }
-  throw Error(`MakeAgent(): bad blueprint name ${bpid}`);
+  throw Error(
+    `MakeAgent(): bad blueprint name ${JSON.stringify(
+      bpid
+    )} in instanceDef ${JSON.stringify(instanceDef)}`
+  );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RemoveAgent(instanceDef: TInstance) {

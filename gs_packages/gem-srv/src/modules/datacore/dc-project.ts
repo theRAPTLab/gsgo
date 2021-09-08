@@ -30,7 +30,7 @@ async function m_LoadProjectNames() {
     }
   `);
   if (!response.errors) {
-    if (DBG) console.log(...PR('m_LoadProjectInfo response', response));
+    if (DBG) console.log(...PR('m_LoadProjectNames response', response));
     const { projectNames } = response.data;
     const data = { projectNames }; // redundant, for clarification
     UR.RaiseMessage('*:DC_PROJECTS_UPDATE', data);
