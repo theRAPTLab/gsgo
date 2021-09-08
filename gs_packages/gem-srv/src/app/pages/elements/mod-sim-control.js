@@ -20,6 +20,7 @@ import * as RENDERER from 'modules/render/api-render';
 import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import { ClearGlobalAgent } from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -83,14 +84,16 @@ class SimControl {
     });
 
     // 4. Compile All Blueprints
-    const scripts = model.blueprints;
-    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.scriptText));
+    const blueprintDefs = ACBlueprints.GetBlueprints();
+    const sources = blueprintDefs.map(s =>
+      TRANSPILER.ScriptifyText(s.scriptText)
+    );
     const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
     const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
     const blueprintNames = blueprints.map(b => b.name);
 
     // 5. Create/Update All Instances
-    const instancesSpec = model.instances;
+    const instancesSpec = ACInstances.GetInstances();
     UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
       blueprintNames,
       instancesSpec
