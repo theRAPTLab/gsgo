@@ -14,8 +14,6 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import { IbpidListItem } from 'lib/t-ui.d';
-
 import ProjectMetadata from './class-project-meta';
 import ProjectRound from './class-project-round';
 import ProjectBlueprint from './class-project-blueprint';
@@ -69,7 +67,6 @@ export default class Project {
 
   /** Get a copy of the project data */
   get() {
-    console.error('blueprints is', this._blueprints);
     const proj: any = {};
     proj.id = this._id;
     proj.label = this._label;
@@ -136,48 +133,4 @@ export default class Project {
 
   /// API /////////////////////////////////////////////////////////////////////
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// METADATA
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// ROUNDS
-  GetRound(id) {
-    return this.rounds.find(r => r.id === id);
-  }
-  SetRound(id, updatedRound) {
-    const index = this.rounds.findIndex(r => r.id === id);
-    this.rounds[index] = { ...updatedRound }; // copy
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// BLUEPRINTS
-
-  GetBlueprint(id) {
-    return this.blueprints.find(s => s.id === id);
-  }
-  SetBlueprint(id, updatedBlueprint) {
-    const index = this.blueprints.findIndex(s => s.id === id);
-    this.blueprints[index] = { ...updatedBlueprint }; // copy
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// INSTANCES
-  GetInstance(id) {
-    return this.instances.find(i => i.id === id);
-  }
-  SetInstance(id, updatedInstance) {
-    const index = this.instances.findIndex(i => i.id === id);
-    this.instances[index] = { ...updatedInstance }; // copy
-  }
-  /**
-   * Returns array of instance ids + labels defined for a project
-   * Generally used by selector UI for `instanceList` objects
-   * @returns [...{id, label, blueprint}]
-   */
-  GetInstancesList(): any[] {
-    return this.instances.map(i => {
-      return { id: i.id, label: i.label, bpid: i.bpid };
-    });
-  }
 }
