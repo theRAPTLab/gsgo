@@ -228,20 +228,26 @@ function RaiseModelUpdate(modelId = CURRENT_MODEL_ID) {
   UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Used by Viewer via REQ_PROJ_DATA
 function GetBpidList(projId = CURRENT_PROJECT_ID) {
-  const bpidList = PROJECT.GetBlueprintIDsList();
+  const bpidList = ACBlueprints.GetBlueprintIDsList();
   console.error('GetBpidList', bpidList);
   return { projId, bpidList };
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RaiseBpidListUpdate(projId = CURRENT_PROJECT_ID) {
-  UR.RaiseMessage('NET:BPIDLIST_UPDATE', this.GetBpidList(projId));
+  UR.RaiseMessage('NET:BPIDLIST_UPDATE', GetBpidList(projId));
 }
-function GetInstancesList(projId = CURRENT_PROJECT_ID) {
-  const instancesList = PROJECT.GetInstancesList();
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Used by Viewer via REQ_PROJ_DATA
+function GetInstanceidList(projId = CURRENT_PROJECT_ID) {
+  const instancesList = ACInstances.GetInstanceidList();
   return { projId, instancesList };
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RaiseInstancesListUpdate(projId = CURRENT_PROJECT_ID) {
-  UR.RaiseMessage('NET:INSTANCESLIST_UPDATE', this.GetInstancesList(projId));
+  UR.RaiseMessage('NET:INSTANCESLIST_UPDATE', GetInstanceidList(projId));
 }
 
 /// API CALLS: BLUEPRINT DATA REQUESTS ////////////////////////////////////////
@@ -378,7 +384,7 @@ export function InstanceUpdatePosition(data) {
  * Can be triggered by:
  *   * Simulation View: Clicking on an instance in simulation
  *   * Map Instances View: Clicking on an instance in list
- * @param {object} data -- {modelId, agentId}
+ * @param {object} data -- {projId, agentId}
  */
 export function InstanceRequestEdit(data) {
   // 0. Check for Locking
@@ -472,7 +478,7 @@ function ScriptUpdate(data) {
   //    If the sim IS running, we want to leave the instance
   //    running with the old blueprint code.
   if (!IsRunning() && RoundsCompleted()) {
-    GetInstancesType(blueprintName).forEach(a => DeleteAgent(a));
+    GetInstancesType(bpid).forEach(a => DeleteAgent(a));
     // Also delete input agents
     InputsReset();
   }
@@ -532,7 +538,7 @@ export function DoUnRegisterInspector(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Toggles the selection state of the agent
- * @param {object} data -- {modelId, agentId}
+ * @param {object} data -- {projId, agentId}
  */
 export function InstanceSelect(data) {
   const agent = GetAgentById(data.agentId);
@@ -540,7 +546,7 @@ export function InstanceSelect(data) {
 }
 /**
  * Deselects the selection state of the agent
- * @param {object} data -- {modelId, agentId}
+ * @param {object} data -- {projId, agentId}
  */
 export function InstanceDeselect(data) {
   const agent = GetAgentById(data.agentId);
@@ -551,7 +557,7 @@ export function InstanceDeselect(data) {
 }
 /**
  * Turns hover on
- * @param {object} data -- {modelId, agentId}
+ * @param {object} data -- {projId, agentId}
  */
 export function InstanceHoverOver(data) {
   const agent = GetAgentById(data.agentId);
@@ -562,7 +568,7 @@ export function InstanceHoverOver(data) {
 }
 /**
  * Turns hover off
- * @param {object} data -- {modelId, agentId}
+ * @param {object} data -- {projId, agentId}
  */
 export function InstanceHoverOut(data) {
   const agent = GetAgentById(data.agentId);
@@ -596,19 +602,22 @@ async function HandleRequestProjData(data) {
     console.error(...PR('NET:REQ_PROJDATA got bad function name', data.fnName));
     return { result: undefined };
   }
-  if (!API_PROJDATA.includes(data.fnName)) {
+  if (!mod[data.fnName]) {
     console.error(
-      ...PR(`NET:REQ_PROJDATA Calling ${data.fnName} is not allowed!`)
+      ...PR(`NET:REQ_PROJDATA Calling unknown function: ${data.fnName}!`)
     );
     return { result: undefined };
   }
-  const fn = mod[data.fnName]; // convert into a function
+  const fn = mod[data.fnName]; // convert call data into a function
   if (typeof fn === 'function') {
     let res;
     if (data.parms && Array.isArray(data.parms)) res = fn(...data.parms);
     else res = fn();
-    return { result: res };
+    return { result: await res };
   }
+  console.error(
+    ...PR(`NET:REQ_PROJDATA Failed with ${data.fnName} -- not a function?`)
+  );
   return { result: undefined };
 }
 
