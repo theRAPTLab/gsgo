@@ -49,14 +49,12 @@ class PanelPlayback extends React.Component {
 
   render() {
     const { title, isRunning } = this.state;
-    const { id, model, needsUpdate, isActive, classes } = this.props;
+    const { id, isDisabled, needsUpdate, isActive, classes } = this.props;
 
     const onClick = () => {
       // To be implemented
       console.log('Show instance');
     };
-
-    const isDisabled = model === undefined;
 
     const showCostumes =
       SIMSTATUS.currentLoop === 'prerun' && !SIMSTATUS.completed;

@@ -78,12 +78,14 @@ const StyledToggleButton = withStyles(theme => ({
 class MissionControl extends React.Component {
   constructor() {
     super();
+    const state = UR.ReadFlatStateGroups('project');
     this.state = {
       panelConfiguration: 'run',
       message: '',
       modelId: '',
       model: {},
       projId: '', // new graphQL-based id, set by project-data
+      projectIsLoaded: false,
       bpidList: [],
       devices: [],
       inspectorInstances: [],
@@ -94,6 +96,7 @@ class MissionControl extends React.Component {
     };
 
     // Initialization
+    this.urStateUpdated = this.urStateUpdated.bind(this);
     this.GetUDID = this.GetUDID.bind(this);
     this.Initialize = this.Initialize.bind(this);
     this.FailSimAlreadyRunning = this.FailSimAlreadyRunning.bind(this);
@@ -149,8 +152,11 @@ class MissionControl extends React.Component {
     if (!projId) window.location = '/app/login';
 
     this.setState({ projId });
+
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
+
+    UR.SubscribeState('project', this.urStateUpdated);
 
     // register project-data
     PROJ.ProjectDataPreInit(this, projId);
@@ -161,6 +167,7 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnsubscribeState('project', this.urStateUpdated);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
@@ -212,6 +219,12 @@ class MissionControl extends React.Component {
         }
       }
     });
+  urStateUpdated(stateObj, cb) {
+    const { project, bpidList, instancesList } = stateObj;
+    console.error('ustateupdated', stateObj);
+    if (project) this.setState({ projectIsLoaded: true });
+    if (bpidList) this.setState({ bpidList });
+    if (typeof cb === 'function') cb();
   }
   FailSimAlreadyRunning() {
     const { modelId } = this.state;
@@ -436,6 +449,7 @@ class MissionControl extends React.Component {
       panelConfiguration,
       message,
       projId,
+      projectIsLoaded,
       bpidList,
       modelId,
       model,
@@ -597,7 +611,7 @@ class MissionControl extends React.Component {
               <>
                 <PanelPlayback
                   id="playback"
-                  model={model}
+                  isDisabled={!projectIsLoaded}
                   needsUpdate={scriptsNeedUpdate}
                 />
                 <PanelInstances
