@@ -58,13 +58,13 @@ PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 class MissionControl extends React.Component {
   constructor() {
     super();
-    const state = UR.ReadFlatStateGroups('project');
+    const { bpidList } = UR.ReadFlatStateGroups('project');
     this.state = {
       panelConfiguration: 'run',
       message: '',
       projId: '', // set by project-data
       projectIsLoaded: false,
-      bpidList: [],
+      bpidList,
       devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
@@ -159,12 +159,13 @@ class MissionControl extends React.Component {
   }
 
   urStateUpdated(stateObj, cb) {
-    const { project, bpidList, instancesList } = stateObj;
+    const { project, bpidList } = stateObj;
     console.error('ustateupdated', stateObj);
     if (project) this.setState({ projectIsLoaded: true });
     if (bpidList) this.setState({ bpidList });
     if (typeof cb === 'function') cb();
   }
+
   FailSimAlreadyRunning() {
     const { projId } = this.state;
     this.setState({ openRedirectDialog: true });
@@ -235,7 +236,6 @@ class MissionControl extends React.Component {
     if (SIMCTRL.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
     this.setState(
       {
-        model: {},
         inspectorInstances: [],
         scriptsNeedUpdate: false
       },
