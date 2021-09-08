@@ -312,23 +312,22 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
   }
 }
 /**
- *
+ * User is adding a new instance via MapEditor
  * @param {Object} data -- { modelId, blueprintName, initScript }
  */
 export function InstanceAdd(data, sendUpdate = true) {
   console.log('...InstanceAdd', data);
-  const model = GetProject(data.modelId);
-  console.log('....model is ', model);
+  const id = m_GetUID();
   const instance = {
-    id: m_GetUID(),
-    name: `${data.blueprintName}${model.instances.length}`,
-    blueprint: data.blueprintName,
+    id,
+    label: `${data.blueprintName}${id}`,
+    bpid: data.blueprintName,
     initScript: data.initScript
   };
 
   // If blueprint has `# PROGRAM INIT` we run that
   // otherwise we auto-place the agent around the center of the screen
-  const blueprint = model.blueprints.find(s => s.id === data.blueprintName);
+  const blueprint = ACBlueprints.GetBlueprint(data.blueprintName);
   const hasInit = TRANSPILER.HasDirective(blueprint.script, 'INIT');
   const SPREAD = 100;
   if (!hasInit && !instance.initScript) {
@@ -336,11 +335,8 @@ export function InstanceAdd(data, sendUpdate = true) {
 prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 
-  model.instances.push(instance);
-  //
-  // REVIEW
-  // This needs to send data to db
-  //
+  ACInstances.AddInstance(instance);
+
   if (sendUpdate) {
     RaiseModelUpdate(data.modelId);
     RaiseInstancesListUpdate();
