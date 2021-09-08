@@ -195,6 +195,25 @@ export function SetBlueprints(projId, blueprints) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// Used to inject Cursor
+export function AddBlueprint(projId, blueprintDef) {
+  // Add new blueprint
+  const def = {
+    id: blueprintDef.id,
+    label: blueprintDef.label,
+    isCharControllable: blueprintDef.isCharControllable, // defaul to false?
+    isPozyxControllable: blueprintDef.isPozyxControllable,
+    scriptText: blueprintDef.scriptText
+  };
+  const bp = new Blueprint(def);
+  const blueprints = _getKey('blueprints');
+  blueprints.push(bp.get());
+
+  // NOTE: Not updating state, nor writing to db
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 export function UpdateBlueprint(projId, bpid, scriptText) {
   const blueprints = _getKey('blueprints');
   const index = blueprints.findIndex(b => b.id === bpid);

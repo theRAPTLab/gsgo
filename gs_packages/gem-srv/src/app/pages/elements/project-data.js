@@ -197,7 +197,7 @@ export function InjectBlueprint(data) {
     console.error('skipping injection, already defined');
     return;
   }
-  ACBlueprints.NewBlueprint(CURRENT_PROJECT_ID, blueprint);
+  ACBlueprints.AddBlueprint(CURRENT_PROJECT_ID, blueprint);
 
   // Compile and Register
   // REVIEW: Should this be moved to ACBlueprints
