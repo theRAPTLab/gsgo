@@ -72,30 +72,32 @@ async function m_LoadProject(projId) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return Promise to write to database */
-function promise_WriteProject() {
-  console.error('promise_WriteProject!!!');
-  const projId = _getKey('projId');
-  const input = _getKey('project');
-  const result = UR.Mutate(
-    `
-    mutation UpdateProject($projectId:String $input:ProjectInput) {
-      updateProject(projectId:$projectId,input:$input) {
-        id
-        label
-      }
-    }`,
-    {
-      input,
-      projectId: projId
-    }
-  );
-  return result;
-}
+
+// NOT USED CURRENTLY
+// function promise_WriteProject() {
+// console.error('promise_WriteProject!!!');
+// const projId = _getKey('projId');
+// const input = _getKey('project');
+// const result = UR.Mutate(
+//   `
+//   mutation UpdateProject($projectId:String $input:ProjectInput) {
+//     updateProject(projectId:$projectId,input:$input) {
+//       id
+//       label
+//     }
+//   }`,
+//   {
+//     input,
+//     projectId: projId
+//   }
+// );
+// return result;
+// }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// ROUNDS
 
-// NOT USED CURRENTLY
+// NOT USED CURRENTLY -- Project handles Rounds loading
 // async function m_LoadRounds(projId) {
 //   if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
 //   const response = await UR.Query(`
@@ -137,7 +139,7 @@ async function promise_WriteRounds(projId, rounds) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// BLUEPRINTS
 
-/// NOT USED: If rounds ever loaded themselves this is the call
+// NOT USED CURRENTLY -- Project handles blueprint loading
 // async function m_LoadBlueprints(projId) {
 //   if (DBG) console.log(...PR('(1) GET ROUNDS DATA'));
 //   const response = await UR.Query(`
@@ -183,8 +185,7 @@ function promise_WriteBlueprints(projId, blueprints) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// INSTANCES
 
-/// NOT USED: If instances ever loaded themselves this is the call
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// NOT USED CURRENTLY -- Project handles instances loading
 // async function m_LoadInstances(projId) {
 //   if (DBG) console.log(...PR('(1) GET INSTANCES DATA'));
 //   const response = await UR.Query(`
@@ -219,52 +220,6 @@ function promise_WriteInstances(projId, instances) {
   );
   return result;
 }
-/**
- * Returns cached project if project id matches
- * otherwise loads the project from db
- */
-function m_GetProject(id = PROJECT_ID): Promise<Project> {
-  // Return cached project
-  if (id === PROJECT_ID && PROJECT) return PROJECT;
-  return m_LoadProject(id);
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Local Updates
-
-function m_UpdateDCBounds(bounds) {
-  BOUNDS.top = bounds.top;
-  BOUNDS.right = bounds.right;
-  BOUNDS.bottom = bounds.bottom;
-  BOUNDS.left = bounds.left;
-  BOUNDS.wrap = bounds.wrap;
-  BOUNDS.bounce = bounds.bounce;
-  BOUNDS.bgcolor = bounds.bgcolor;
-}
-export function UpdateDCModel(model) {
-  MODEL.label = model.label;
-  MODEL.rounds = model.rounds;
-  MODEL.scripts = model.scripts;
-  MODEL.instances = model.instances;
-  const bounds = model.metadata || {
-    top: -400, // default if not set
-    right: 400,
-    bottom: 400,
-    left: -400
-  };
-  m_UpdateDCBounds(bounds);
-}
-
-/// BOUNDS METHODS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// REVIEW: Can we handle all this with the REQ_PROJDATA calls?
-//         so we don't even need this class?
-
-
-/// ROUNDS METHODS /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// Rounds loop by default
 
 /// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
