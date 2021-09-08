@@ -168,11 +168,25 @@ async function Initialize() {
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// Handle ScriptEditor's request for current project data
+/// Used by REQ_PROJ_DATA
+function RequestProject(projId = CURRENT_PROJECT_ID) {
+  if (projId === undefined)
+    throw new Error(
+      'Tried to current GetProject before setting CURRENT_PROJECT_ID'
+    );
+  return ACProject.GetProject();
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// Used by REQ_PROJ_DATA and Main
 export function GetBoundary() {
   return ACMetadata.GetBoundary();
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 /// Used to inject the Cursor blueprint
 export function InjectBlueprint(data) {
   const blueprint = data.script;
