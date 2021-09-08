@@ -16,7 +16,7 @@
 
 import RNG from 'modules/sim/sequencer';
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
 import 'modules/datacore/dc-project'; // must import to load db
 import {
   GetAllAgents,
@@ -316,7 +316,6 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
  * @param {Object} data -- { modelId, blueprintName, initScript }
  */
 export function InstanceAdd(data, sendUpdate = true) {
-  console.log('...InstanceAdd', data);
   const id = m_GetUID();
   const instance = {
     id,
@@ -445,11 +444,13 @@ function ScriptUpdate(data) {
   // 3. Clean the init scripts
   const validPropDefs = TRANSPILER.ExtractBlueprintProperties(data.script);
   const validPropNames = validPropDefs.map(d => d.name);
-  model.instances = model.instances.map(i => {
+  const instances = ACInstances.GetInstances();
+  const cleanedInstances = instances.map(i => {
     // Only clean init scripts for the submitted blueprint
-    if (i.blueprint !== blueprintName) return i;
+    if (i.bpid !== bpid) return i;
     return m_RemoveInvalidPropsFromInstanceInit(i, validPropNames);
   });
+  ACInstances.WriteInstances(cleanedInstances);
 
   // 4. Delete the old instance
   //    If the sim is not running, delete the old instance
