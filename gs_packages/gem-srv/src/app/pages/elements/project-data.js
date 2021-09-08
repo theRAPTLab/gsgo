@@ -232,7 +232,6 @@ function RaiseModelUpdate(modelId = CURRENT_MODEL_ID) {
 /// Used by Viewer via REQ_PROJ_DATA
 function GetBpidList(projId = CURRENT_PROJECT_ID) {
   const bpidList = ACBlueprints.GetBlueprintIDsList();
-  console.error('GetBpidList', bpidList);
   return { projId, bpidList };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -253,27 +252,6 @@ function RaiseInstancesListUpdate(projId = CURRENT_PROJECT_ID) {
 /// API CALLS: BLUEPRINT DATA REQUESTS ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
- * Used by InstanceEditor and props.tsx to look up property types
- * NOTE: Non-MissionControl panels should always call this with a
- * modelId, since currentModelId may not be set.
- * @param {string} blueprintName
- * @param {string} modelId
- * @return {map} [ ...{name: type}]
- */
-function GetBlueprintPropertiesTypeMap(
-  blueprintName,
-  modelId = CURRENT_MODEL_ID
-) {
-  if (modelId === '')
-    console.error(
-      'GetBlueprintPRopertiesTypeMap needs to specify modelId -- You are probably calling this from PanelScript!'
-    );
-  const properties = GetBlueprintProperties(blueprintName, modelId);
-  const map = new Map();
-  properties.forEach(p => map.set(p.name, p.type));
-  return map;
-}
-/**
  * Returns array of blueprint names that are controllable by user input.
  * Used to set sim-inputs and CharControl.
  * CharControl requests this list directly via REQ:PROJ_DATA
@@ -290,10 +268,8 @@ function GetPozyxBPNames() {
  * @param {string} blueprintName
  */
 function BlueprintDelete(blueprintName) {
-  // 1. Delete the old blueprint from model
+  // Delete the old blueprint from project
   ACBlueprints.DeleteBlueprint(blueprintName);
-  // 2. Delete any existing instances from model definition
-  ACInstances.DeleteInstancesByBPID(blueprintName);
 }
 function HandleBlueprintDelete(data) {
   BlueprintDelete(data.blueprintName, data.modelId);
@@ -655,4 +631,4 @@ UR.HookPhase('UR/APP_START', Initialize);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// see above for exports
 
-export { GetBlueprintPropertiesTypeMap, GetPozyxBPNames, BlueprintDelete };
+export { GetPozyxBPNames, BlueprintDelete };
