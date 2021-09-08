@@ -113,6 +113,13 @@ export function ProjectDataPreInit(parent, projId) {
 /// MAIN INITIALIZATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// Called by Main.LoadModel after a SIM RESET
+export async function ReloadProject() {
+  CURRENT_PROJECT = ACProject.GetProject(CURRENT_PROJECT_ID);
+  await ACProject.TriggerProjectStateUpdate();
+  SIMCTRL.SimPlaces(CURRENT_PROJECT);
+}
+
 /// Hooked to APP_START
 async function Initialize() {
   // 1. Check for other 'Sim' devices.

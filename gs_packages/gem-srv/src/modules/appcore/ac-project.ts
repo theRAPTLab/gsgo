@@ -135,6 +135,13 @@ export function GetProject(projId) {
   return project;
 }
 
+/// Updates the project state subscribers after a project reload / sim reset
+/// Called by project-data.ReloadProject()
+export async function TriggerProjectStateUpdate(projId) {
+  const project = _getKey('project');
+  updateAndPublish(project);
+}
+
 /// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
