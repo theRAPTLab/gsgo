@@ -171,7 +171,7 @@ class ScriptEditor extends React.Component {
     });
   }
   HandleModelUpdate(data) {
-    this.UpdateModelData(data.model);
+    this.UpdateModelData(data.project);
   }
   /**
    * This saves the model data to the local state

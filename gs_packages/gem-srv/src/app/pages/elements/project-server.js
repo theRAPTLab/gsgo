@@ -241,8 +241,8 @@ function HandlePozyxTransformReq() {
  * @param {*} projId
  */
 function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
-  const model = ACProject.GetProject(projId);
-  UR.RaiseMessage('NET:UPDATE_MODEL', { projId, model });
+  const project = ACProject.GetProject(projId);
+  UR.RaiseMessage('NET:UPDATE_MODEL', { projId, project });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

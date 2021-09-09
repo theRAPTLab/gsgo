@@ -206,7 +206,7 @@ class MissionControl extends React.Component {
     this.setState(
       { projId: data.projId },
       // Call Sim Places to recompile agents.
-      () => SIMCTRL.SimPlaces(data.model)
+      () => SIMCTRL.SimPlaces(data.project)
     );
   }
   HandleInstancesUpdate(data) {
