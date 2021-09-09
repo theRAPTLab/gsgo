@@ -131,6 +131,9 @@ class MissionControl extends React.Component {
     UR.SubscribeState('project', this.urStateUpdated);
 
     // Prepare project-data for db load
+    // We read the currently selected projId from the URL,
+    // and prep project-data to load it.
+    // project-data will load on UR/APP_START
     PROJ.ProjectDataPreInit(this, projId);
   }
 

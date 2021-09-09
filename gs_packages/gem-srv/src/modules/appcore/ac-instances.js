@@ -199,7 +199,7 @@ addEffectHook(hook_Effect);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Handled by class-project
 
-/// UPDATERS //////////////////////////////////////////////////////////////////
+/// UPDATERS MULTIPLE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export function SetInstances(projId, instances) {
@@ -207,6 +207,14 @@ export function SetInstances(projId, instances) {
   updateAndPublish(instances);
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+export function WriteInstances(instances) {
+  UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
+}
+
+/// UPDATERS SINGLE ///////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export function AddInstance(instance) {

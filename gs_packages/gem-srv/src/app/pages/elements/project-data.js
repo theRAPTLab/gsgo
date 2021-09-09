@@ -225,15 +225,20 @@ function HandlePozyxTransformReq() {
 }
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function RaiseModelsUpdate() {
-  const models = ReadProjectsList();
-  UR.RaiseMessage('LOCAL:UPDATE_MODELS', { models });
-}
-function RaiseModelUpdate(modelId = CURRENT_MODEL_ID) {
-  const model = GetProject(modelId);
-  UpdateDCModel(model); // update dc-project
-  // MissionControl instances need to be updated as well.
-  UR.RaiseMessage('NET:UPDATE_MODEL', { modelId, model });
+
+/**
+ * Raised by project-data at:
+ *   *  InstanceAdd
+ *   *  ScriptUpdate
+ * Broadcasts changes to
+ *   *  Main: Calls SimPlaces
+ *   *  ScriptEditor: Updates script
+ *   *  PanelScript: Update highlight
+ * @param {*} projId
+ */
+function RaiseModelUpdate(projId = CURRENT_PROJECT_ID) {
+  const model = ACProject.GetProject(projId);
+  UR.RaiseMessage('NET:UPDATE_MODEL', { projId, model });
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -439,7 +444,6 @@ function ScriptUpdate(data) {
     // otherwise we end up defining instances for nonexisting blueprints
     ACInstances.RenameInstanceBlueprint(data.origBlueprintName, bpid);
   }
-
 
   // 3. Clean the init scripts
   const validPropDefs = TRANSPILER.ExtractBlueprintProperties(data.script);
