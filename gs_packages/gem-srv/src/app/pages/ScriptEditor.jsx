@@ -157,7 +157,7 @@ class ScriptEditor extends React.Component {
   /**
    * This requests model data from Mission Control's
    * ProjectData module.
-   * project-data will respond with model data { result: model }
+   * project-server will respond with model data { result: model }
    * which is handled by UpdateModelData, below.
    */
   RequestModel(projId) {

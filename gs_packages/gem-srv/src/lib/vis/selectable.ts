@@ -19,7 +19,7 @@
         => sends SIM_INSTANCE_CLICK
     2.  InstanceEditor handles SIM_INSTANCE_CLICK
         => sends NET:INSTANCE_REQUEST_EDIT
-    3.  project-data handles NET:INSTANCE_REQUEST_EDIT
+    3.  project-server handles NET:INSTANCE_REQUEST_EDIT
         => Sets agent.isSelected
         => raises INSTANCE_EDIT_ENABLE
            InstanceEditor handles INSTANCE_EDIT_ENABLE

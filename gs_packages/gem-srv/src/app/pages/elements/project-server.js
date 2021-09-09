@@ -276,7 +276,7 @@ function HandlePozyxTransformReq() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /**
- * Raised by project-data at:
+ * Raised by project-server at:
  *   *  InstanceAdd
  *   *  ScriptUpdate
  * Broadcasts changes to
@@ -358,7 +358,7 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
   const newLine = `prop ${propName} ${propMethod} ${params}`;
   if (lineNumber === -1) {
     console.warn(
-      `project-data.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
+      `project-server.ReplacePositionLine: No "prop ${propName} ${propMethod}..." line found.  Inserting new line.`
     );
     scriptTextLines.push(newLine);
   } else {

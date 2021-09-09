@@ -248,7 +248,7 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** NOTE: See project-data.BlueprintDelete -- you should also delete
+/** NOTE: See project-server.BlueprintDelete -- you should also delete
  *        instances created with this blueprint.
  *  NOTE: This does not trigger an update to prevent multiple state updates!
  *        The update will happen with UpdateBlueprint

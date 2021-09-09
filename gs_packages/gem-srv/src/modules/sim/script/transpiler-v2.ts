@@ -275,7 +275,7 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A brute force method of checking to see if the script has a directive
- *  Used by project-data.InstanceAdd to check for the presence of
+ *  Used by project-server.InstanceAdd to check for the presence of
  *  '# PROGRAM INIT' to decide whether or not to replace
  *  the init script.
  *  @param {string} bpText

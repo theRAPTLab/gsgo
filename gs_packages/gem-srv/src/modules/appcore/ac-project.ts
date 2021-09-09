@@ -136,7 +136,7 @@ export function GetProject(projId) {
 }
 
 /// Updates the project state subscribers after a project reload / sim reset
-/// Called by project-data.ReloadProject()
+/// Called by project-server.ReloadProject()
 export async function TriggerProjectStateUpdate(projId) {
   const project = _getKey('project');
   updateAndPublish(project);

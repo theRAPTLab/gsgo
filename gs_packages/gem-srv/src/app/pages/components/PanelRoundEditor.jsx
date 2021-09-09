@@ -10,7 +10,7 @@
      sends changes to onFormInputUpdate
   3. onFormInputUpdate then calls onSave
   4. onSave triggers NET:ROUND_UPDATE,
-     which is handled by project-data
+     which is handled by project-server
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';

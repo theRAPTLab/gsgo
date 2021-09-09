@@ -62,7 +62,7 @@ class MissionControl extends React.Component {
     this.state = {
       panelConfiguration: 'run',
       message: '',
-      projId: '', // set by project-data
+      projId: '', // set by project-server
       projectIsLoaded: false,
       bpidList,
       devices: [],
@@ -128,10 +128,10 @@ class MissionControl extends React.Component {
 
     UR.SubscribeState('project', this.urStateUpdated);
 
-    // Prepare project-data for db load
+    // Prepare project-server for db load
     // We read the currently selected projId from the URL,
-    // and prep project-data to load it.
-    // project-data will load on UR/APP_START
+    // and prep project-server to load it.
+    // project-server will load on UR/APP_START
     PROJSERVER.ProjectDataPreInit(this, projId);
   }
 
@@ -208,7 +208,7 @@ class MissionControl extends React.Component {
   }
   /**
    * User has submitted a new script, just update message
-   * project-data handles script editing and instance creation
+   * project-server handles script editing and instance creation
    * @param {object} data { script }
    */
   DoScriptUpdate(data) {
@@ -229,7 +229,7 @@ class MissionControl extends React.Component {
         scriptsNeedUpdate: false
       },
       () => {
-        SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
+        SIMCTRL.DoSimReset(); // First, clear state, then project-server.DoSimREset so they fire in order
         PROJSERVER.ReloadProject();
       }
     );
