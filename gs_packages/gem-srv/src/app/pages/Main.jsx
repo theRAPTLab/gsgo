@@ -16,7 +16,7 @@ import { withStyles } from '@material-ui/core/styles';
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
 import SIMCTRL from './elements/mod-sim-control';
-import * as PROJ from './elements/project-data';
+import * as PROJSERVER from './elements/project-server';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import MissionMapEditor from './MissionMapEditor';
@@ -134,7 +134,7 @@ class MissionControl extends React.Component {
     // We read the currently selected projId from the URL,
     // and prep project-data to load it.
     // project-data will load on UR/APP_START
-    PROJ.ProjectDataPreInit(this, projId);
+    PROJSERVER.ProjectDataPreInit(this, projId);
   }
 
   componentDidCatch(e) {
@@ -244,7 +244,7 @@ class MissionControl extends React.Component {
       },
       () => {
         SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
-        PROJ.ReloadProject();
+        PROJSERVER.ReloadProject();
       }
     );
   }
@@ -297,7 +297,7 @@ class MissionControl extends React.Component {
       const { projId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      PROJ.InstanceUpdatePosition({
+      PROJSERVER.InstanceUpdatePosition({
         projId,
         instanceId: agent.id,
         updatedData: { x, y }
@@ -316,18 +316,18 @@ class MissionControl extends React.Component {
     const { panelConfiguration, projId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      PROJ.InstanceRequestEdit({ projId, agentId: data.agentId });
+      PROJSERVER.InstanceRequestEdit({ projId, agentId: data.agentId });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
     const { projId } = this.state;
-    PROJ.InstanceHoverOver({ projId, agentId: data.agentId });
+    PROJSERVER.InstanceHoverOver({ projId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
     const { projId } = this.state;
-    PROJ.InstanceHoverOut({ projId, agentId: data.agentId });
+    PROJSERVER.InstanceHoverOut({ projId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -395,7 +395,7 @@ class MissionControl extends React.Component {
       dialogMessage
     } = this.state;
     const { classes } = this.props;
-    const { width, height, bgcolor } = PROJ.GetBoundary();
+    const { width, height, bgcolor } = PROJSERVER.GetBoundary();
 
     document.title = `GEMSTEP MAIN ${projId}`;
 

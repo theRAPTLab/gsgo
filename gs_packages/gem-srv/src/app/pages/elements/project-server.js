@@ -1,12 +1,16 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
-  Project Data - Data Module for Mission Control
+  Project Server
 
   This loads and manages the project definition data, specifically:
   * blueprints
   * instance defintions
+  * metadata
+  * rounds
 
-  How it works:
+  It works hand in hand with Main to manage all data requests.
+
+  How it's started:
   * 'projId' is set by Main reading the url parameter 'project'
   * 'UR/APP_START' then triggers Initialize
 
