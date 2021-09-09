@@ -41,7 +41,7 @@ import SIMCTRL from './mod-sim-control';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('ProjData', 'TagBlue');
-const DBG = true;
+const DBG = false;
 
 let PARENT_COMPONENT; // e.g. Main.jsx
 
@@ -82,6 +82,52 @@ function urLocaleStateUpdated(stateObj, cb) {
   POZYX_TRANSFORM.translateX = data.xOff;
   POZYX_TRANSFORM.translateY = data.yOff;
   POZYX_TRANSFORM.useAccelerometer = data.useAccelerometer;
+
+  if (typeof cb === 'function') cb();
+}
+
+/// INSPECTOR UTILS ////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * On every system loop, we broadcast instance updates
+ * for any instances that have registered for modeling.
+ * We keep this list small to keep from flooding the net with data.
+ */
+export function SendInspectorUpdate(frametime) {
+  if (frametime % 30 !== 0) return;
+  // walk down agents and broadcast results for monitored agents
+  const agents = GetAllAgents();
+  // Send all instances, but minmize non-monitored
+  const inspectorAgents = agents.map(a =>
+    MONITORED_INSTANCES.includes(a.id)
+      ? a
+      : { id: a.id, label: a.name, blueprint: a.blueprint }
+  );
+
+  // Debug PIXI Output
+  // if (DBG) ReportMemory(frametime);
+
+  // Broadcast data
+  UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
+}
+/**
+ * PanelSimulation keeps track of any instances that have been requested
+ * for inspector monitoring.
+ * We allow duplicate registrations so that when one device unregisters,
+ * the instance is still considered monitored.
+ * @param {Object} data { name: <string> } where name is the agent name.
+ */
+export function DoRegisterInspector(data) {
+  const id = data.id;
+  MONITORED_INSTANCES.push(id);
+  // force inspector update immediately so that the inspector
+  // will open up.  otherwise there is a 1 second delay
+  SendInspectorUpdate(30);
+}
+export function DoUnRegisterInspector(data) {
+  const id = data.id;
+  const i = MONITORED_INSTANCES.indexOf(id);
+  if (i > -1) MONITORED_INSTANCES.splice(i, 1);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -198,7 +244,6 @@ export function InjectBlueprint(data) {
   const { blueprint } = data;
   // Skip if already defined
   if (ACBlueprints.GetBlueprint(blueprint.id)) {
-    console.error('skipping injection, already defined');
     return;
   }
   ACBlueprints.AddBlueprint(CURRENT_PROJECT_ID, blueprint);
@@ -424,7 +469,6 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
  * @param {Object} data -- { projId, script, origBlueprintName }
  */
 function ScriptUpdate(data) {
-  const project = ACProject.GetProject();
   const source = TRANSPILER.ScriptifyText(data.script);
   const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
   const bpid = bundle.name;
@@ -478,50 +522,6 @@ function ScriptUpdate(data) {
   RaiseInstancesListUpdate();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// INSPECTOR UTILS ////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * On every system loop, we broadcast instance updates
- * for any instances that have registered for modeling.
- * We keep this list small to keep from flooding the net with data.
- */
-export function SendInspectorUpdate(frametime) {
-  if (frametime % 30 !== 0) return;
-  // walk down agents and broadcast results for monitored agents
-  const agents = GetAllAgents();
-  // Send all instances, but minmize non-monitored
-  const inspectorAgents = agents.map(a =>
-    MONITORED_INSTANCES.includes(a.id)
-      ? a
-      : { id: a.id, label: a.name, blueprint: a.blueprint }
-  );
-
-  // Debug PIXI Output
-  // if (DBG) ReportMemory(frametime);
-
-  // Broadcast data
-  UR.RaiseMessage('NET:INSPECTOR_UPDATE', { agents: inspectorAgents });
-}
-/**
- * PanelSimulation keeps track of any instances that have been requested
- * for inspector monitoring.
- * We allow duplicate registrations so that when one device unregisters,
- * the instance is still considered monitored.
- * @param {Object} data { name: <string> } where name is the agent name.
- */
-export function DoRegisterInspector(data) {
-  const id = data.id;
-  MONITORED_INSTANCES.push(id);
-  // force inspector update immediately so that the inspector
-  // will open up.  otherwise there is a 1 second delay
-  SendInspectorUpdate(30);
-}
-export function DoUnRegisterInspector(data) {
-  const id = data.id;
-  const i = MONITORED_INSTANCES.indexOf(id);
-  if (i > -1) MONITORED_INSTANCES.splice(i, 1);
-}
 
 /// INSTANCE SELECTION HANDLERS ///////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

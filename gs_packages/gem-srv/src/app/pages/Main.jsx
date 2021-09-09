@@ -163,7 +163,6 @@ class MissionControl extends React.Component {
 
   urStateUpdated(stateObj, cb) {
     const { project, bpidList } = stateObj;
-    console.error('ustateupdated', stateObj);
     if (project) this.setState({ projectIsLoaded: true });
     if (bpidList) this.setState({ bpidList });
     if (typeof cb === 'function') cb();
