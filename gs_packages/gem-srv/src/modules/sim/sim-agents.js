@@ -247,6 +247,8 @@ export function AllAgentsProgram(data) {
   // 3. Create Instances from Script
   SCRIPT_TO_INSTANCE.syncFromArray(instancesSpec);
   SCRIPT_TO_INSTANCE.mapObjects();
+
+  // 4. Broadcast update to network devices
   UR.RaiseMessage('NET:INSTANCES_UPDATE', {
     instances: SCRIPT_TO_INSTANCE.getMappedObjects()
   });

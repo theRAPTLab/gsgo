@@ -84,7 +84,6 @@ class MissionControl extends React.Component {
     // Data Update Handlers
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    this.HandleInstancesUpdate = this.HandleInstancesUpdate.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
@@ -92,7 +91,6 @@ class MissionControl extends React.Component {
     this.DoShowMessage = this.DoShowMessage.bind(this);
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
@@ -207,17 +205,6 @@ class MissionControl extends React.Component {
       // Call Sim Places to recompile agents.
       () => SIMCTRL.SimPlaces(data.project)
     );
-  }
-  HandleInstancesUpdate(data) {
-    // if (DBG) console.log('HandleInstancesUpdate', data);
-    const { model } = this.state;
-    // REVIEW why is model not loaded?
-    if (!model) {
-      console.error('MissionControl state is missing model?!?', data, this.state);
-      return;
-    }
-    model.instances = data.instances;
-    this.setState({ model });
   }
   /**
    * User has submitted a new script, just update message
