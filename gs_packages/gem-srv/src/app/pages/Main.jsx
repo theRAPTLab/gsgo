@@ -385,7 +385,6 @@ class MissionControl extends React.Component {
       projId,
       projectIsLoaded,
       bpidList,
-      model,
       devices,
       inspectorInstances,
       runIsMinimized,
@@ -514,7 +513,6 @@ class MissionControl extends React.Component {
         <div id="console-main" className={classes.main}>
           <PanelSimulation
             id="sim"
-            model={model}
             width={width}
             height={height}
             bgcolor={bgcolor}
