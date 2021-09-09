@@ -46,12 +46,6 @@ export function StopTrackerEmitter() {
 /// TRACKER DATA //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
-  // REVIEW: Skip starting tracker if there are no pozyx mappings.
-  //         Otherwise, dc-inputs will try to create instances with
-  //         no blueprint names.
-  const defaultPozyxBpid = ACBlueprints.GetPozyxControlDefaultBpid(); // GetDefaultPozyxBPName();
-  if (!defaultPozyxBpid) return;
-
   const PTRACK_SYNCMAP = GetTrackerMap();
 
   setInterval(() => {

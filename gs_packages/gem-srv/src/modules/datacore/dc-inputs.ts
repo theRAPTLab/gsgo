@@ -269,9 +269,7 @@ function m_PozyxDampen(
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 function GetDefaultPozyxBpid() {
-  const bpidItem = ACBlueprints.GetPozyxControlDefaultBpid();
-  if (bpidItem) return bpidItem.id;
-  throw new Error('dc-inputs.GetDefaultpozyxzBpid could not find a default bpid');
+  return ACBlueprints.GetPozyxControlDefaultBpid();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const POZYX_TO_COBJ = new SyncMap({
@@ -285,7 +283,7 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.x = x;
     cobj.y = y;
     // HACK Blueprints into cobj
-    cobj.bpid = GetDefaultPozyxBpid(); // GetDefaultPozyxBPName();
+    cobj.bpid = GetDefaultPozyxBpid();
     cobj.label = String(entity.id).startsWith('ft-pozyx')
       ? entity.id.substring(8)
       : entity.id;
@@ -301,7 +299,7 @@ POZYX_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpid = GetDefaultPozyxBpid(); // GetDefaultPozyxBPName();
+    cobj.bpid = GetDefaultPozyxBpid();
     cobj.label = String(entity.id).startsWith('ft-pozyx')
       ? entity.id.substring(8)
       : entity.id;
@@ -383,13 +381,18 @@ export function InputsUpdate() {
   blueprintNames.forEach(bpname => {
     InputUpdate(INPUT_GROUPS.get(bpname), bpname);
   });
-  // 2. Process PTrack, Pozyx, FakeTrack Inputs
+  // 2. Process Pozyx, FakeTrack Inputs
   //    PTRACK_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
   // SRI: it would have been much clearer if you coded a parallel structure
   // for the above to show COBJ_TO_INPUTDEF was used by both methods
-  COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
-  COBJ_TO_INPUTDEF.mapObjects();
-  // 3. Combine them all
+  if (GetDefaultPozyxBpid() !== undefined) {
+    COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
+    COBJ_TO_INPUTDEF.mapObjects();
+  }
+
+  // 3. Process PTrack TBD
+
+  // 4. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

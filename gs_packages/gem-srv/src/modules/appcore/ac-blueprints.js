@@ -95,7 +95,7 @@ export function GetPozyxControlBpidList(blueprints) {
  * @returns id
  */
 export function GetPozyxControlDefaultBpid() {
-  const bpidList = _getKey('bpidList');
+  const bpidList = GetPozyxControlBpidList();
   if (bpidList.length < 1) return undefined;
   return bpidList[0];
 }
