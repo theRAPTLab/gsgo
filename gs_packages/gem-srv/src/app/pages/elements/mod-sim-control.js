@@ -12,7 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
 import * as SIM from 'modules/sim/api-sim';
 import { ClearDOBJ } from 'modules/sim/sim-agents';
 import * as DATACORE from 'modules/datacore';
@@ -85,9 +85,13 @@ class SimControl {
 
     // 4. Compile All Blueprints
     const blueprintDefs = ACBlueprints.GetBlueprints();
-    const sources = blueprintDefs.map(s =>
-      TRANSPILER.ScriptifyText(s.scriptText)
-    );
+    const sources = blueprintDefs.map(s => {
+      try {
+        return TRANSPILER.ScriptifyText(s.scriptText);
+      } catch (error) {
+        return console.error('Failed transpilling', s);
+      }
+    });
     const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
     const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
     const blueprintNames = blueprints.map(b => b.name);

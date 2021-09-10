@@ -178,13 +178,20 @@ class PixiAssetManager {
   getTextureInfo(idOrName: number | string) {
     let assetId = idOrName;
     if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
-    const rsrc: any = this.getAssetById(assetId as number);
-    if (rsrc.texture) return { frameCount: 1 };
-    if (rsrc.spritesheet)
-      return {
-        frameCount: rsrc.spritesheet._frameKeys.length
-      };
-    return { err: 'not a texture or spritesheet' };
+    try {
+      const rsrc: any = this.getAssetById(assetId as number);
+      if (rsrc.texture) return { frameCount: 1 };
+      if (rsrc.spritesheet)
+        return {
+          frameCount: rsrc.spritesheet._frameKeys.length
+        };
+      return { err: 'not a texture or spritesheet' };
+    } catch (error) {
+      console.error(
+        ...PR('getTextureInfo failed with assetId', assetId, 'idOrName', idOrName)
+      );
+      return { err: 'not a texture or spritesheet' };
+    }
   }
 
   getSpriteDimensions(idOrName: number | string, frame: number) {
