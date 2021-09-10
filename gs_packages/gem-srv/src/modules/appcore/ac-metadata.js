@@ -67,34 +67,6 @@ function hook_Filter(key, propOrValue, propValue) {
   // if (key === 'metadata') return [key, propOrValue, propValue];
   // return undefined;
 }
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return Promise to write to database */
-function promise_WriteMetadata() {
-  const projId = _getKey('projId');
-  const input = _getKey('metadata');
-  return UR.Mutate(
-    `
-    mutation UpdateMetadata($projectId:String $input:ProjectMetaInput) {
-      updateMetadata(projectId:$projectId,input:$input) {
-        top
-        right
-        bottom
-        left
-        wrap
-        bounce
-        bgcolor
-        roundsCanLoop
-      }
-    }`,
-    {
-      input,
-      projectId: projId
-    }
-  );
-}
-// Test Function
-// window.writeMeta = () => promise_WriteTransform();
-// window.changeMeta = () => UR.WriteState('metadata', 'metadata', { top: -1000 });
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Optionally fire once all state change hooks have been processed.
@@ -107,39 +79,20 @@ function hook_Effect(effectKey, propOrValue, propValue) {
     // (a) start async autosave
     if (AUTOTIMER) clearInterval(AUTOTIMER);
     AUTOTIMER = setInterval(() => {
-      promise_WriteMetadata().then(response => {
-        const metadata = response.data.updateMetadata;
-        updateKey('metadata', metadata);
-        _publishState({ metadata });
-      });
+      const projId = _getKey('projId');
+      const metadata = propOrValue;
+      UR.CallMessage('LOCAL:DC_WRITE_METADATA', { projId, metadata }).then(
+        status => {
+          const { err } = status;
+          if (err) console.error(err);
+          return status;
+        }
+      );
       clearInterval(AUTOTIMER);
       AUTOTIMER = 0;
     }, 1000);
   }
   // otherwise return nothing to handle procesing normally
-}
-
-/// DATABASE QUERIES //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// NOT USED: If metadata ever loaded themselves this is the call
-/// Metadata are loaded by class-project
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function m_LoadMetadata(projId) {
-  if (DBG) console.log(...PR('(1) GET METADATA'));
-  const response = await UR.Query(
-    `
-    query GeMetadata($id:String!) {
-      project(id:$id) {
-        metadata { top right bottom left wrap bounce bgcolor roundsCanLoop }
-      }
-    }
-  `,
-    { id: projId }
-  );
-  if (!response.errors) {
-    const { metadata } = response.data;
-    updateAndPublish(metadata);
-  }
 }
 
 /// ADD LOCAL MODULE HOOKS ////////////////////////////////////////////////////

@@ -95,6 +95,51 @@ async function m_LoadProject(projId) {
 // }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// METADATA
+
+// NOT USED CURRENTLY -- Project handles Metadata loading
+// async function m_LoadMetadata(projId) {
+//   if (DBG) console.log(...PR('(1) GET METADATA'));
+//   const response = await UR.Query(
+//     `
+//     query GeMetadata($id:String!) {
+//       project(id:$id) {
+//         metadata { top right bottom left wrap bounce bgcolor roundsCanLoop }
+//       }
+//     }
+//   `,
+//     { id: projId }
+//   );
+//   if (!response.errors) {
+//     const { metadata } = response.data;
+//     updateAndPublish(metadata);
+//   }
+// }
+
+/** return Promise to write to database */
+function promise_WriteMetadata(projId, metadata) {
+  return UR.Mutate(
+    `
+    mutation UpdateMetadata($projectId:String $input:ProjectMetaInput) {
+      updateMetadata(projectId:$projectId,input:$input) {
+        top
+        right
+        bottom
+        left
+        wrap
+        bounce
+        bgcolor
+        roundsCanLoop
+      }
+    }`,
+    {
+      input: metadata,
+      projectId: projId
+    }
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// ROUNDS
 
 // NOT USED CURRENTLY -- Project handles Rounds loading
@@ -230,6 +275,11 @@ async function HandleLoadProject(data: { projId: string }) {
   return m_LoadProject(data.projId);
 }
 
+async function HandleWriteMetadata(data: { projId: string; metadata: any[] }) {
+  if (DBG) console.log('WRITE ROUND', data);
+  return promise_WriteMetadata(data.projId, data.metadata);
+}
+
 async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
   if (DBG) console.log('WRITE ROUND', data);
   return promise_WriteRounds(data.projId, data.rounds);
@@ -253,6 +303,7 @@ async function HandleWriteInstances(data: { projId: string; instances: any[] }) 
 
 /// Handle both LOCAL and NET requests.  ('*' is deprecated)
 UR.HandleMessage('LOCAL:DC_LOAD_PROJECT', HandleLoadProject);
+UR.HandleMessage('LOCAL:DC_WRITE_Metadata', HandleWriteMetadata);
 UR.HandleMessage('LOCAL:DC_WRITE_ROUNDS', HandleWriteRounds);
 UR.HandleMessage('LOCAL:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
 UR.HandleMessage('LOCAL:DC_WRITE_INSTANCES', HandleWriteInstances);
