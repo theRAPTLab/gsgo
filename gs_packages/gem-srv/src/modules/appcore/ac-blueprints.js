@@ -12,7 +12,7 @@ import Blueprint from '../../lib/class-project-blueprint';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-BPRNT', 'TagCyan');
-const DBG = true;
+const DBG = false;
 
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('blueprints');
@@ -145,7 +145,7 @@ let AUTOTIMER;
  *  written as-is.
  */
 function hook_Filter(key, propOrValue, propValue) {
-  console.error('ac-blueprints: hook_Filter', key, propOrValue, propValue);
+  if (DBG) console.log('ac-blueprints: hook_Filter', key, propOrValue, propValue);
   // No need to return anything if data is not being filtered.
   // if (key === 'rounds') return [key, propOrValue, propValue];
   // return undefined;
@@ -157,7 +157,7 @@ function hook_Filter(key, propOrValue, propValue) {
  *  This is provided as the second arg of addChangeHook()
  */
 function hook_Effect(effectKey, propOrValue, propValue) {
-  console.error('hook_Effect called', effectKey, propOrValue, propValue);
+  if (DBG) console.log('hook_Effect called', effectKey, propOrValue, propValue);
   if (effectKey === 'blueprints') {
     if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
     // (a) start async autosave

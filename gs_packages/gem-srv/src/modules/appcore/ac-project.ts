@@ -14,7 +14,7 @@ import * as ACInstances from './ac-instances';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-PROJECT', 'TagCyan');
-const DBG = true;
+const DBG = false;
 
 /// The module name will be used as args for UR.ReadStateGroups
 const STATE = new UR.class.StateGroupMgr('project');
@@ -76,7 +76,7 @@ let AUTOTIMER;
  *  written as-is.
  */
 function hook_Filter(key, propOrValue, propValue) {
-  console.error('ac-project: hook_Filter', key, propOrValue, propValue);
+  if (DBG) console.log('ac-project: hook_Filter', key, propOrValue, propValue);
   // No need to return anything if data is not being filtered.
   // if (key === 'rounds') return [key, propOrValue, propValue];
   // return undefined;
@@ -86,7 +86,7 @@ function hook_Filter(key, propOrValue, propValue) {
  *  This is provided as the second arg of addChangeHook()
  */
 function hook_Effect(effectKey, propOrValue, propValue) {
-  console.error('hook_Effect called', effectKey, propOrValue, propValue);
+  if (DBG) console.log('hook_Effect called', effectKey, propOrValue, propValue);
   // REVIEW: Need to rewrite, add update to dc-project
   //
   // if (effectKey === 'project') {

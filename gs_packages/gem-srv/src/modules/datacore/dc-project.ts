@@ -231,7 +231,7 @@ async function HandleLoadProject(data: { projId: string }) {
 }
 
 async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
-  console.error('WRITE ROUND', data);
+  if (DBG) console.log('WRITE ROUND', data);
   return promise_WriteRounds(data.projId, data.rounds);
 }
 
@@ -239,12 +239,12 @@ async function HandleWriteBlueprints(data: {
   projId: string;
   blueprints: any[];
 }) {
-  console.error('WRITE BLUEPRINTS', data);
+  if (DBG) console.log('WRITE BLUEPRINTS', data);
   return promise_WriteBlueprints(data.projId, data.blueprints);
 }
 
 async function HandleWriteInstances(data: { projId: string; instances: any[] }) {
-  console.error('WRITE INSTANCES', data);
+  if (DBG) console.log('WRITE INSTANCES', data);
   return promise_WriteInstances(data.projId, data.instances);
 }
 

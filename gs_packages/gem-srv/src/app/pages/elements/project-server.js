@@ -417,6 +417,8 @@ export function InstanceUpdatePosition(data) {
  * Can be triggered by:
  *   * Simulation View: Clicking on an instance in simulation
  *   * Map Instances View: Clicking on an instance in list
+ *     (This is handled directly in InstanceEditor.OnInstanceClick,
+ *      passed via SIM_INSTANCE_CLICK and Main.HanldeSimInstanceClick)
  * @param {object} data -- {projId, agentId}
  */
 export function InstanceRequestEdit(data) {
@@ -626,7 +628,6 @@ UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
-UR.HandleMessage('NET:INSTANCE_REQUEST_EDIT', InstanceRequestEdit);
 // INSPECTOR UTILS --------------------------------------------------------
 UR.HandleMessage('NET:INSPECTOR_REGISTER', DoRegisterInspector);
 UR.HandleMessage('NET:INSPECTOR_UNREGISTER', DoUnRegisterInspector);
