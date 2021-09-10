@@ -5,10 +5,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useState } from 'react';
+import React from 'react';
 import UR from '@gemstep/ursys/client';
 import { Link } from 'react-router-dom';
-import Project from 'lib/class-project';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
@@ -72,9 +71,11 @@ class Viewer extends React.Component {
     UR.SystemAppConfig({ autoRun: true });
 
     UR.HookPhase('UR/APP_START', async () => {
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const devAPI = UR.SubscribeDeviceSpec({
         selectify: device => device.meta.uclass === 'Sim',
         notify: deviceLists => {
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
           const { selected, quantified, valid } = deviceLists;
           if (valid) {
             if (DBG) console.log(...PR('Main Sim Online!'));
@@ -129,6 +130,7 @@ class Viewer extends React.Component {
     });
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   HandleSimInstanceHoverOver(data) {
     if (DBG) console.log('hover!');
   }
@@ -172,7 +174,7 @@ class Viewer extends React.Component {
     const DialogNoMain = (
       <DialogConfirm
         open={noMain}
-        message={`Waiting for a "Main" project to load...`}
+        message={'Waiting for a "Main" project to load...'}
         yesMessage=""
         noMessage=""
       />
