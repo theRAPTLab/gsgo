@@ -302,7 +302,11 @@ class MissionControl extends React.Component {
     const { panelConfiguration, projId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      PROJSERVER.InstanceRequestEdit({ projId, agentId: data.agentId });
+      PROJSERVER.InstanceRequestEdit({
+        projId,
+        agentId: data.agentId,
+        source: data.source
+      });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }

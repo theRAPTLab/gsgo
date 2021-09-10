@@ -62,7 +62,13 @@ export function MakeDraggable(vobj: Visual) {
         // used in place of selectable.ts
         // need to handle this here in draggable to differentiate
         // the mouseup from dragging
-        UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId: agent.id });
+        //
+        // We specify 'source' so that InstanceEditor knows to ignore the
+        // next ClickAwayListener click.
+        UR.RaiseMessage('SIM_INSTANCE_CLICK', {
+          agentId: agent.id,
+          source: 'stage'
+        });
       }
     }
     // set the interaction data to null

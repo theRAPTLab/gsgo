@@ -56,7 +56,8 @@ class InstanceEditor extends React.Component {
       isHovered: false,
       isSelected: false,
       isAddingProperty: false,
-      isDeletingProperty: false
+      isDeletingProperty: false,
+      ignoreNextClickAway: false
     };
     this.GetInstanceName = this.GetInstanceName.bind(this);
     this.HandleScriptUpdate = this.HandleScriptUpdate.bind(this);
@@ -77,6 +78,7 @@ class InstanceEditor extends React.Component {
     this.OnHoverOut = this.OnHoverOut.bind(this);
     this.OnNameChange = this.OnNameChange.bind(this);
     this.OnInstanceSave = this.OnInstanceSave.bind(this);
+    this.OnClickAway = this.OnClickAway.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
     UR.HandleMessage('SCRIPT_UI_CHANGED', this.HandleScriptUpdate);
     UR.HandleMessage('SCRIPT_LINE_DELETE', this.HandleScriptLineDelete);
@@ -167,7 +169,7 @@ class InstanceEditor extends React.Component {
       return;
     }
 
-    // just pass it up to Map Editor so it's centralized
+    // just pass it up to Main (Map Editor) so it's centralized
     const { id } = this.props;
     UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId: id });
   }
@@ -274,14 +276,15 @@ class InstanceEditor extends React.Component {
    */
   HandleEditEnable(data) {
     const { id } = this.props;
-    let { isEditable, isSelected } = this.state;
     // Is this message for us?
     if (data.agentId === id) {
       // YES!  Enable!
       ACInstances.EditInstance(id);
-      isEditable = true;
-      isSelected = true;
-      this.setState({ isEditable, isSelected });
+      this.setState({
+        isEditable: true,
+        isSelected: true,
+        ignoreNextClickAway: data.source === 'stage'
+      });
       this.instance.scrollIntoView();
     } else {
       // always disable if message is not for us!
@@ -363,7 +366,23 @@ class InstanceEditor extends React.Component {
     const { id } = this.props;
     UR.RaiseMessage('SIM_INSTANCE_HOVEROUT', { agentId: id });
   }
-
+  OnClickAway(e) {
+    const { id } = this.props;
+    const { isEditable, ignoreNextClickAway } = this.state;
+    if (ignoreNextClickAway) {
+      // Requests to edit via clicking on the instance in the stage
+      // (as opposed to the PanelMapInstances list) will trigger the
+      // ClickAwayListener because the InstanceEditor is enabled and
+      // rendered while the click from draggable bubbles its way
+      // up triggering the ClickAwayListener.  We check for that in
+      // HandleEditEnable and set the ignoreNextClickAway flag.
+      // Stopping propagation at dragEnd doesn't work because it's the wrong
+      // event and ClickAwayListener would trigger anyway.
+      this.setState({ ignoreNextClickAway: false });
+      return;
+    }
+    if (isEditable) this.DoDeselect(); // only deselect if already editing
+  }
   urStateUpdated(stateObj, cb) {
     const { id } = this.props;
     const { currentInstance } = stateObj;
@@ -394,7 +413,7 @@ class InstanceEditor extends React.Component {
 
     const addableProperties = this.GetAddableProperties();
 
-    let jsx = '';
+    let scriptJSX = '';
     if (instance) {
       const source = TRANSPILER.TextToScript(instance.initScript);
 
@@ -433,7 +452,7 @@ class InstanceEditor extends React.Component {
       //    new features, so the two sets of feature keys are unique.
       const featPropMap = new Map([...bpFeatPropMap], [initFeatPropMap]);
 
-      jsx = TRANSPILER.ScriptToJSX(source, {
+      scriptJSX = TRANSPILER.ScriptToJSX(source, {
         isEditable,
         isDeletable: isDeletingProperty,
         isInstanceEditor: true,
@@ -442,9 +461,9 @@ class InstanceEditor extends React.Component {
       });
     }
 
-    let propMenuJsx = '';
+    let propMenuJSX = '';
     if (isAddingProperty) {
-      propMenuJsx = (
+      propMenuJSX = (
         <select
           onChange={this.OnPropMenuSelect}
           onClick={this.StopEvent}
@@ -462,6 +481,16 @@ class InstanceEditor extends React.Component {
 
     const disableAddProperties = this.GetAddableProperties().length < 1;
 
+    const inputJSX = (
+      <InputField
+        propName="Name"
+        value={inputLabel}
+        type="string"
+        isEditable={isEditable}
+        onChange={this.OnNameChange}
+      />
+    );
+
     return (
       <div
         ref={c => {
@@ -475,9 +504,11 @@ class InstanceEditor extends React.Component {
         onPointerLeave={this.OnHoverOut}
         onClick={this.OnInstanceClick}
       >
-        <ClickAwayListener onClickAway={this.DoDeselect}>
-          <div>
-            {isEditable && (
+        {!isEditable ? (
+          inputJSX
+        ) : (
+          <ClickAwayListener onClickAway={this.OnClickAway}>
+            <div>
               <div
                 className={classes.instanceEditorLineItem}
                 style={{ margin: '0.5em 0' }}
@@ -490,46 +521,34 @@ class InstanceEditor extends React.Component {
                 </div>
                 <div className={classes.instanceEditorData}>{instance.bpid}</div>
               </div>
-            )}
-            <InputField
-              propName="Name"
-              value={inputLabel}
-              type="string"
-              isEditable={isEditable}
-              onChange={this.OnNameChange}
-            />
-            {isEditable && (
-              <>
-                <div>{jsx}</div>
-                <br />
-                {isAddingProperty && isEditable && propMenuJsx}
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              {inputJSX}
+              <div>{scriptJSX}</div>
+              <br />
+              {isAddingProperty && isEditable && propMenuJSX}
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <button
+                  onClick={this.OnAddProperty}
+                  onPointerDown={this.StopEvent}
+                  type="button"
+                  className={classes.buttonSmall}
+                  title="Add Property"
+                  disabled={disableAddProperties}
+                >
+                  {isAddingProperty ? 'HIDE PROPERTY MENU' : 'SHOW PROPERTY'}
+                </button>
+                {!isAddingProperty && (
                   <button
-                    onClick={this.OnAddProperty}
+                    onClick={this.OnEnableDeleteProperty}
                     onPointerDown={this.StopEvent}
                     type="button"
                     className={classes.buttonSmall}
-                    title="Add Property"
-                    disabled={disableAddProperties}
+                    title="Delete Property"
+                    style={{}}
                   >
-                    {isAddingProperty ? 'HIDE PROPERTY MENU' : 'SHOW PROPERTY'}
+                    <VisibilityIcon fontSize="small" />
                   </button>
-                  {!isAddingProperty && (
-                    <button
-                      onClick={this.OnEnableDeleteProperty}
-                      onPointerDown={this.StopEvent}
-                      type="button"
-                      className={classes.buttonSmall}
-                      title="Delete Property"
-                      style={{}}
-                    >
-                      <VisibilityIcon fontSize="small" />
-                    </button>
-                  )}
-                </div>
-              </>
-            )}
-            {isEditable && (
+                )}
+              </div>
               <div style={{ textAlign: 'center', marginTop: '1em' }}>
                 <Button
                   type="button"
@@ -540,9 +559,9 @@ class InstanceEditor extends React.Component {
                   DELETE CHARACTER
                 </Button>
               </div>
-            )}
-          </div>
-        </ClickAwayListener>
+            </div>
+          </ClickAwayListener>
+        )}
       </div>
     );
   }
