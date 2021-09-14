@@ -48,7 +48,7 @@ export function MakeDraggable(vobj: Visual) {
     if (agent) {
       agent.setPreviousMode();
       agent.setCaptive(false);
-      console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
+      // console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
       //
       if (this.data && dragStopTime - dragStartTime > 150) {
         // Consider it a drag if the mouse was down for > 150 ms
