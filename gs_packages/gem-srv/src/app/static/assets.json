@@ -112,28 +112,28 @@
     },
     {
       "assetId": 212,
+      "assetName": "bunnies.json",
+      "assetUrl": "static/sprites/local/bunnies.json"
+    },
+    {
+      "assetId": 213,
       "assetName": "smallsquare.json",
       "assetUrl": "static/sprites/local/smallsquare.json"
     },
     {
-      "assetId": 213,
+      "assetId": 214,
       "assetName": "star.json",
       "assetUrl": "static/sprites/local/star.json"
     },
     {
-      "assetId": 214,
+      "assetId": 215,
       "assetName": "hawk.json",
       "assetUrl": "static/sprites/local/hawk.json"
     },
     {
-      "assetId": 500,
-      "assetName": "turtle.json",
-      "assetUrl": "static/sprites/local/student/turtle.json"
-    },
-    {
-      "assetId": 501,
-      "assetName": "butterfly.json",
-      "assetUrl": "static/sprites/local/student/butterfly.json"
+      "assetId": 216,
+      "assetName": "plants.json",
+      "assetUrl": "static/sprites/local/plants.json"
     }
   ],
   "READ_ME": [
