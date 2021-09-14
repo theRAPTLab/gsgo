@@ -10,7 +10,7 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('AC-INSTANCES', 'TagCyan');
-const DBG = true;
+const DBG = false;
 
 let AUTOTIMER;
 
@@ -251,7 +251,7 @@ export function WriteInstance(instance) {
 
 export function DeleteInstance(id) {
   const instances = _getKey('instances');
-  const index = instances.findIndex(i => i.id !== id);
+  const index = instances.findIndex(i => i.id === id);
   instances.splice(index, 1);
   UR.WriteState('instances', 'instances', instances); // calls updateAndPublish via hook_Effect
 }

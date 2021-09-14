@@ -192,7 +192,6 @@ class MissionControl extends React.Component {
   HandleSimDataUpdate(data) {
     // REVIEW: This logic should probably be in mod-sim-control?
     if (DBG) console.log('HandleSimDataUpdate', data);
-    console.log('HandleSimDataUpdate', data);
     if (
       SIMCTRL.IsRunning() || // Don't allow reset if sim is running
       SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started

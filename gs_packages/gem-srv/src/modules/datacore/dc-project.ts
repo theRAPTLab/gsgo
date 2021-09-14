@@ -16,7 +16,7 @@ import UR from '@gemstep/ursys/client';
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - -
 const PR = UR.PrefixUtil('DC-PROJ', 'TagPurple');
-const DBG = true;
+const DBG = false;
 
 /// MULTIPLE PROJECTS DATABASE QUERIES ////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

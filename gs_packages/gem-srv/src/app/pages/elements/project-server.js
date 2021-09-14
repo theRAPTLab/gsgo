@@ -26,6 +26,7 @@ import {
   GetAllAgents,
   GetAgentById,
   DeleteAgent,
+  DeleteInstance,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
 import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
@@ -391,6 +392,17 @@ prop y setTo ${Math.trunc(RNG() * SPREAD - SPREAD / 2)}`;
   }
 }
 /**
+ * Removes instance from the stage
+ * @param {bpid, id} data
+ */
+export function InstanceDelete(data) {
+  // Remove from Sim
+  DeleteInstance(data);
+  DeleteAgent(data);
+  // RaiseModelUpdate(data.modelId); // not needed?  shouldn't state cause this?
+}
+
+/**
  * HACK: Manually change the init script when updating position.
  * This is mostly used to support drag and drop
  * @param {Object} data -- { projId, instanceId, updatedData: {x, y} }
@@ -623,6 +635,7 @@ UR.HandleMessage('INJECT_BLUEPRINT', InjectBlueprint);
 /// INSTANCE EDITING UTILS ----------------------------------------------------
 UR.HandleMessage('LOCAL:INSTANCE_ADD', InstanceAdd);
 UR.HandleMessage('NET:INSTANCE_UPDATE_POSITION', InstanceUpdatePosition);
+UR.HandleMessage('LOCAL:INSTANCE_DELETE', InstanceDelete);
 // INSPECTOR UTILS --------------------------------------------------------
 UR.HandleMessage('NET:INSPECTOR_REGISTER', DoRegisterInspector);
 UR.HandleMessage('NET:INSPECTOR_UNREGISTER', DoUnRegisterInspector);
