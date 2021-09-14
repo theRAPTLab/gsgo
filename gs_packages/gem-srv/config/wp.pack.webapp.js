@@ -61,14 +61,14 @@ const WebpackPacker = env => {
         toType: 'file'
       },
       {
-        from: 'favicon.ico',
-        to: `${DIR_OUT}/favicon.ico`,
-        toType: 'file'
-      },
-      {
         from: 'static',
         to: `${DIR_OUT}/static`,
         toType: 'dir'
+      },
+      {
+        from: 'favicon.ico',
+        to: `${DIR_OUT}/favicon.ico`,
+        toType: 'file'
       }
     ]
   };

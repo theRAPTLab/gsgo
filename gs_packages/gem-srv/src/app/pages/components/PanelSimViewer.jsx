@@ -2,7 +2,7 @@ import React from 'react';
 
 // SELECT RUNTIME MODULES FOR APP
 import * as RENDERER from 'modules/render/api-render';
-import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as ASSETS from 'modules/asset_core';
 //
 import UR from '@gemstep/ursys/client';
 
@@ -22,9 +22,9 @@ UR.HookPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {
-      let map = await GLOBAL.LoadAssetsSync('static/assets.json');
       if (DBG) console.log(...PR('ASSETS LOADED'));
       console.log(...PR('Waiting for user input'));
+      await ASSETS.PromiseLoadAssets('corey');
       ASSETS_LOADED = true;
       resolve();
     })();

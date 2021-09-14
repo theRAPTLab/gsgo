@@ -187,5 +187,3 @@ class Pool {
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Pool;
-/// forward types as needed
-export { IPoolable, IPoolOptions };
