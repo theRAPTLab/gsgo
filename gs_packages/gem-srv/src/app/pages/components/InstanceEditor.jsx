@@ -251,10 +251,14 @@ class InstanceEditor extends React.Component {
   }
 
   OnDeleteInstance(e) {
+    const { instance } = this.state;
     const { id } = this.props;
     e.preventDefault();
     e.stopPropagation();
+    const bpid = instance.bpid;
     ACInstances.DeleteInstance(id);
+    // Tell project-server to remove agent from stage
+    UR.RaiseMessage('LOCAL:INSTANCE_DELETE', { bpid, id });
   }
 
   DoDeselect() {
