@@ -24,13 +24,13 @@
 
 /// LIBRARIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-import createMuiTheme from '@material-ui/core/styles/createMuiTheme';
+import createTheme from '@material-ui/core/styles/createTheme';
 import { red, indigo, deepOrange } from '@material-ui/core/colors';
 import addDerivedStyles from './theme-derived';
 
 /// DEFINE MUI THEME //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const baseTheme = createMuiTheme({
+const baseTheme = createTheme({
   // global change MD default parameters
   palette: {
     primary: indigo,

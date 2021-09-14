@@ -9,7 +9,7 @@
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const DBG = false;
 const PR = require('./util/prompts').makeStyleFormatter('UR.SES');
-const { CFG_URNET_SERVICE } = require('./ur-common');
+const { CFG_URNET_SERVICE } = require('./common/ur-constants');
 const DATACORE = require('./client-datacore');
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////

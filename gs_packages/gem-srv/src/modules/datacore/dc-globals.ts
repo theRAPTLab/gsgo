@@ -10,23 +10,23 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import PixiTextureMgr from 'lib/class-pixi-asset-mgr';
+
+/// ASSET LOADING API METHODS /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/*/ THESE HAVE BEEN DEPRECATED
+ *  see modules/mediacore/asset-mgr.ts which treats assets as a separate
+    top-level source alongside APPCORE (appstate) and DATACORE (model data)
+/*/
+/// export const GetAsset = ASSET_MGR.getAsset;
+/// export const GetAssetById = ASSET_MGR.getAssetById;
+/// export const LookupAssetId = ASSET_MGR.lookupAssetId;
+/// export const LoadAssetsSync = ASSET_MGR.loadManifestSync;
+/// export const GetTextureInfo = ASSET_MGR.getTextureInfo;
+/// export const GetSpriteDimensions = ASSET_MGR.getSpriteDimensions;
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 let FRAME_TIME = 0;
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const ASSET_MGR = new PixiTextureMgr();
-
-/// ASSET LOADING API METHODS /////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-export const GetAsset = ASSET_MGR.getAsset;
-export const GetAssetById = ASSET_MGR.getAssetById;
-export const LookupAssetId = ASSET_MGR.lookupAssetId;
-export const LoadAssetsSync = ASSET_MGR.loadManifestSync;
-export const GetTextureInfo = ASSET_MGR.getTextureInfo;
-export const GetSpriteDimensions = ASSET_MGR.getSpriteDimensions;
 
 /// FORWARD INTRINSIC OBJECTS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

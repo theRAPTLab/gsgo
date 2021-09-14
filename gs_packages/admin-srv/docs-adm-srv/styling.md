@@ -9,7 +9,7 @@ Note that Material UI is derived from Material Design, and are not the same thin
 * Theme parameters (e.g. color palettes, spacing, element sizes) are the standard configuration values listed the [Material Design specifications](https://material.io/design/).
 * Styles are CSS rules, defined using [JSS](https://v4.material-ui.com/customization/css-in-js/). Styles can be applied either as overrides to specific MUI components, or as new definitions with your chosen names. 
 
-An [MUI Theme](https://material-ui.com/customization/theming/) is a collection of **MD configuration variables** like color, spacing, and sizes. These are described in the [Material Design specification](https://material.io/design/) and is created by the utility function `createMuiTheme()`. In GEM_SRV, this is already defined for you in `src/modules/styling/theme.js`. 
+An [MUI Theme](https://material-ui.com/customization/theming/) is a collection of **MD configuration variables** like color, spacing, and sizes. These are described in the [Material Design specification](https://material.io/design/) and is created by the utility function `createTheme()`. In GEM_SRV, this is already defined for you in `src/modules/styling/theme.js`. 
 
 In addition to the MD parameters, the theme object also has some MUI-specific properties:
 

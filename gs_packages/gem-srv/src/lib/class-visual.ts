@@ -32,7 +32,7 @@ import { ColorOverlayFilter } from '@pixi/filter-color-overlay';
 import { OutlineFilter } from '@pixi/filter-outline';
 import { GlowFilter } from '@pixi/filter-glow';
 import * as DATACORE from 'modules/datacore';
-import * as GLOBAL from 'modules/datacore/dc-globals';
+import * as ASSETS from 'modules/asset_core';
 import FLAGS from 'modules/flags';
 import { IVisual } from './t-visual';
 import { IPoolable } from './t-pool.d';
@@ -63,6 +63,8 @@ const style = new PIXI.TextStyle({
   stroke: '#333333cc',
   strokeThickness: 3
 });
+// replacement for GLOBAL sprite
+const SPRITES = ASSETS.GetLoader('sprites');
 
 /// MODULE HELPERS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -98,6 +100,11 @@ function m_ExtractTexture(rsrc: any, frameKey: number | string): PIXI.Texture {
   }
   // otherwise, is this a regular texture?
   if (rsrc.texture) return rsrc.texture;
+
+  // or maybe it's a straight-up texture already
+  if (rsrc instanceof PIXI.Texture) {
+    throw Error('resource is a PIXI.Texture, not PIXI.LoaderResource');
+  }
 
   // if we got here, the passed rsrc  might not be one
   throw Error('could not find texture in resource');
@@ -165,7 +172,7 @@ class Visual implements IVisual, IPoolable, IActable {
   setTextureById(assetId: number, frameKey: string | number) {
     if (!Number.isInteger(assetId))
       throw Error('numeric frameKey must be integer');
-    const rsrc = GLOBAL.GetAssetById(assetId);
+    const { rsrc } = SPRITES.getAssetById(assetId);
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
     this.assetId = assetId;
@@ -173,17 +180,11 @@ class Visual implements IVisual, IPoolable, IActable {
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const rsrc: PIXI.LoaderResource = GLOBAL.GetAsset(name);
-    if (rsrc === undefined) {
-      console.log(`ERR: couldn't find resource '${name}'`);
-      (window as any).DC = DATACORE;
-      (window as any).GLOB = GLOBAL;
-      return;
-    }
+    const { rsrc } = SPRITES.getAsset(name);
     // is this a spritesheet?
     const tex = m_ExtractTexture(rsrc, frameKey);
     this.sprite.texture = tex;
-    this.assetId = GLOBAL.LookupAssetId(name);
+    this.assetId = SPRITES.lookupAssetId(name);
     const px = this.sprite.texture.width / 2;
     const py = this.sprite.texture.height / 2;
     this.sprite.pivot.set(px, py);

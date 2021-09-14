@@ -20,7 +20,8 @@ const TOUT = require('./util/prompts').makeTerminalOut(' URLOG');
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
-const DATESTR = require('./util/date-strings');
+const FILES = require('./util/files');
+const FNAME = require('./util/files-naming');
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
@@ -37,13 +38,13 @@ function StartLogging(options = {}) {
   try {
     TOUT(`logging to ${dir}`);
     FSE.ensureDirSync(dir);
-    let logname = `${DATESTR.DatedFilename('log')}.txt`;
+    let logname = `${FNAME.DatedFilename('log')}.txt`;
     let pathname = `${dir}/${logname}`;
     fs_log = FSE.createWriteStream(pathname);
     LogLine(
       `${
         options.serverName
-      } APPSERVER SESSION LOG for ${DATESTR.DateStamp()} ${DATESTR.TimeStamp()}`
+      } APPSERVER SESSION LOG for ${FNAME.DateStamp()} ${FNAME.TimeStamp()}`
     );
     LogLine('---');
   } catch (err) {
@@ -58,7 +59,7 @@ function StartLogging(options = {}) {
 function LogLine(...args) {
   if (!fs_log) throw Error('must call StartLogging with runtimePath first');
 
-  let out = `${DATESTR.TimeStamp()} `;
+  let out = `${FNAME.TimeStamp()} `;
   let c = args.length;
   // arguments are delimited
   if (c) {

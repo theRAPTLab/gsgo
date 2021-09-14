@@ -11,12 +11,12 @@ const EndPoint = require('./class-endpoint');
 const NETINFO = require('./client-netinfo');
 const PROMPTS = require('./util/prompts');
 const DATACORE = require('./client-datacore');
+const { PacketHash } = require('./common/ur-detect');
 const {
   CFG_SVR_UADDR,
   CFG_URNET_SERVICE,
-  PacketHash,
   CLI_UADDR
-} = require('./ur-common');
+} = require('./common/ur-constants');
 
 const PR = PROMPTS.makeStyleFormatter('SYSTEM');
 const NPR = PROMPTS.makeStyleFormatter('URSYS ');
