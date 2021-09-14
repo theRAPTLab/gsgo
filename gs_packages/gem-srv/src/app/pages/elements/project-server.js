@@ -52,11 +52,6 @@ const MONITORED_INSTANCES = [];
 /// UTILITY FUNCTIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-let SEED = 100; // ids for instances created via SETUP
-function m_GetUID() {
-  return String(SEED++);
-}
-
 function getLocaleIdFromLocalStorage() {
   const localeId = localStorage.getItem('localeId');
   return Number(localeId !== null ? localeId : 4);
@@ -370,7 +365,7 @@ function ReplacePropLine(propName, propMethod, params, scriptTextLines) {
  * @param {Object} data -- { modelId, blueprintName, initScript }
  */
 export function InstanceAdd(data, sendUpdate = true) {
-  const id = m_GetUID();
+  const id = ACInstances.GetInstanceUID();
   const instance = {
     id,
     label: `${data.blueprintName}${id}`,
