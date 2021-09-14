@@ -297,109 +297,109 @@
       ],
       "instances": [
         {
-          "id": 1000,
+          "id": "1000",
           "label": "Fish1",
           "bpid": "Fish",
           "initScript": "// initScript Fish"
         },
         {
-          "id": 501,
+          "id": "501",
           "label": "Algae 1",
           "bpid": "Algae",
           "initScript": "prop x setTo 300\nprop y setTo 220"
         },
         {
-          "id": 502,
+          "id": "502",
           "label": "Algae 2",
           "bpid": "Algae",
           "initScript": "prop energyLevel setTo 50\nprop x setTo -250\nprop y setTo -200"
         },
         {
-          "id": 503,
+          "id": "503",
           "label": "Algae 3",
           "bpid": "Algae",
           "initScript": "prop x setTo -220\nprop y setTo -290"
         },
         {
-          "id": 504,
+          "id": "504",
           "label": "Algae 4",
           "bpid": "Algae",
           "initScript": "prop x setTo -220\nprop y setTo -230"
         },
         {
-          "id": 505,
+          "id": "505",
           "label": "Algae 5",
           "bpid": "Algae",
           "initScript": "prop x setTo 220\nprop y setTo 230"
         },
         {
-          "id": 506,
+          "id": "506",
           "label": "Algae 6",
           "bpid": "Algae",
           "initScript": "prop x setTo 240\nprop y setTo 250"
         },
         {
-          "id": 507,
+          "id": "507",
           "label": "Algae 7",
           "bpid": "Algae",
           "initScript": "prop x setTo 260\nprop y setTo 280"
         },
         {
-          "id": 520,
+          "id": "520",
           "label": "Timer",
           "bpid": "Timer",
           "initScript": "prop x setTo 0\nprop y setTo -350"
         },
         {
-          "id": 521,
+          "id": "521",
           "label": "Rock1",
           "bpid": "Rock",
           "initScript": "prop x setTo -350\nprop y setTo 368\nfeatProp Physics scale setTo 1.3\nprop zIndex setTo 210"
         },
         {
-          "id": 522,
+          "id": "522",
           "label": "Rock2",
           "bpid": "Rock",
           "initScript": "prop x setTo 350\nprop y setTo 378\nfeatProp Costume flipX setTo true\nprop zIndex setTo 210"
         },
         {
-          "id": 1700,
+          "id": "1700",
           "label": "LegendLabel",
           "bpid": "TextLabel",
           "initScript": "prop x setTo 455\nprop y setTo -400\nfeatProp AgentWidgets text setTo 'Energy Key:'"
         },
         {
-          "id": 1701,
+          "id": "1701",
           "label": "HighLabel",
           "bpid": "TextLabel",
           "initScript": "prop x setTo 455\nprop y setTo -370\nfeatProp AgentWidgets text setTo 'High'\nprop zIndex setTo 100"
         },
         {
-          "id": 1702,
+          "id": "1702",
           "label": "MediumLabel",
           "bpid": "TextLabel",
           "initScript": "prop x setTo 455\nprop y setTo -340\nfeatProp AgentWidgets text setTo 'Medium'\nprop zIndex setTo 100"
         },
         {
-          "id": 1703,
+          "id": "1703",
           "label": "LowLabel",
           "bpid": "TextLabel",
           "initScript": "prop x setTo 455\nprop y setTo -308\nfeatProp AgentWidgets text setTo 'Low'\nprop zIndex setTo 100"
         },
         {
-          "id": 1704,
+          "id": "1704",
           "label": "HighChip",
           "bpid": "ColorChip",
           "initScript": "prop x setTo 455\nprop y setTo -351\nfeatCall Costume setColorize 0 255 0\nprop zIndex setTo 95\nfeatCall Physics setSize 100 30"
         },
         {
-          "id": 1705,
+          "id": "1705",
           "label": "MediumChip",
           "bpid": "ColorChip",
           "initScript": "prop x setTo 455\nprop y setTo -322\nfeatCall Costume setColorize 210 140 0\nprop zIndex setTo 95\nfeatCall Physics setSize 100 30"
         },
         {
-          "id": 1706,
+          "id": "1706",
           "label": "LowChip",
           "bpid": "ColorChip",
           "initScript": "prop x setTo 455\nprop y setTo -292\nfeatCall Costume setColorize 255 0 0\nprop zIndex setTo 95\nfeatCall Physics setSize 100 30"
@@ -472,12 +472,12 @@
         {
           "id": "TextLabel",
           "label": "TextLabel",
-          "scriptText": "# BLUEPRINT TextLabel\n# PROGRAM DEFINE\nuseFeature AgentWidgets\nprop skin setTo 'onexone'"
+          "scriptText": "# BLUEPRINT TextLabel\n      # PROGRAM DEFINE\n      useFeature AgentWidgets\n      prop skin setTo 'onexone'"
         },
         {
           "id": "ColorChip",
           "label": "ColorChip",
-          "scriptText": "# BLUEPRINT ColorChip\n# PROGRAM DEFINE\nuseFeature Costume\nfeatCall Costume setCostume 'square.json' 0\n\nuseFeature Physics"
+          "scriptText": "# BLUEPRINT ColorChip\n      # PROGRAM DEFINE\n      useFeature Costume\n      featCall Costume setCostume 'square.json' 0\n\n      useFeature Physics"
         },
         {
           "id": "Timer",
@@ -485,156 +485,140 @@
           "scriptText": "# BLUEPRINT Timer\n# PROGRAM DEFINE\nuseFeature AgentWidgets\nprop skin setTo 'onexone'\naddProp time Number 0\n\nfeatProp AgentWidgets text setTo 'Time: 0'\n\n# PROGRAM INIT\n\nprop x setTo 445\nprop y setTo -256\n\n# PROGRAM UPDATE\nevery 1 runAtStart [[\n  prop time add 1\n  exprPush {{ 'Time: ' + agent.getProp('time').value }}\n  featPropPop AgentWidgets text\n]]"
         },
         {
-          "id": "PlantGraph",
-          "label": "PlantGraph",
-          "scriptText": "# BLUEPRINT PlantGraph\n# PROGRAM DEFINE\nprop skin setTo 'onexone'\n\nuseFeature Population\nuseFeature Global\nuseFeature AgentWidgets\nfeatProp AgentWidgets isLargeGraphic setTo true\n\n// using a generic name so that it is easier to change later\naddProp graphValue Number 0\nprop graphValue setMax 1000\nprop graphValue setMin 0\n\n// STUDENTS_MAY_CHANGE to set the starting value and adjust the graph scale\nprop graphValue setTo 0\n\nfeatCall AgentWidgets bindGraphTo graphValue 30\n\n// STUDENTS_MAY_CHANGE - this is the graph name - change the actual contents below in the program event [WORKS]\nfeatProp AgentWidgets text setTo 'Plant Energy'\n\n# PROGRAM UPDATE\nevery 1 runAtStart [[\n  // STUDENTS_MAY_CHANGE - change the variable name to get a different count [NOT_WORKING]\n  featCall Population countAgentProp 'Plant' 'energyLevel'\n\n  exprPush {{ agent.getFeatProp('Population', 'sum').value  }}\n  propPop graphValue\n]]"
-        },
-        {
-          "id": "BunnyGraph",
-          "label": "BunnyGraph",
-          "scriptText": "# BLUEPRINT BunnyGraph\n# PROGRAM DEFINE\nprop skin setTo 'onexone'\n\nuseFeature AgentWidgets\nuseFeature Population\nfeatProp AgentWidgets isLargeGraphic setTo true\n\n// using a generic name so that it is easier to change later\naddProp graphValue Number 0\nprop graphValue setMax 1000\nprop graphValue setMin 0\n\n// STUDENTS_MAY_CHANGE to set the starting value and adjust the graph scale\nprop graphValue setTo 0\n\nfeatCall AgentWidgets bindGraphTo graphValue 30\n\n// STUDENTS_MAY_CHANGE - this is the graph name - change the actual contents below in the program event [WORKS]\nfeatProp AgentWidgets text setTo 'Bunny Energy'\n\n# PROGRAM EVENT\n\nonEvent Tick [[\n  // STUDENTS_MAY_CHANGE - change the variable name to get a different count [NOT_WORKING]\n  featCall Population countAgentProp 'Bunny' 'energyLevel'\n\n  exprPush {{ agent.getFeatProp('Population', 'sum').value }}\n  propPop graphValue\n]]"
-        },
-        {
-          "id": "WormGraph",
-          "label": "WormGraph",
-          "scriptText": "# BLUEPRINT WormGraph\n# PROGRAM DEFINE\nprop skin setTo 'onexone'\n\nuseFeature AgentWidgets\nuseFeature Population\nfeatProp AgentWidgets isLargeGraphic setTo true\n\n// using a generic name so that it is easier to change later\naddProp graphValue Number 0\nprop graphValue setMax 1000\nprop graphValue setMin 0\n\nfeatCall AgentWidgets bindGraphTo graphValue 30\n\n// STUDENTS_MAY_CHANGE - this is the graph name - change the actual contents below in the program event [WORKS]\nfeatProp AgentWidgets text setTo 'Worm Energy'\n\n# PROGRAM EVENT\n\nonEvent Tick [[\n  // STUDENTS_MAY_CHANGE - change the variable name to get a different count [NOT_WORKING]\n  featCall Population countAgentProp 'Worm' 'energyLevel'\n\n  exprPush {{ agent.getFeatProp('Population', 'sum').value }}\n  propPop graphValue\n]]"
+          "id": "CharacterGraph",
+          "label": "CharacterGraph",
+          "scriptText": "# BLUEPRINT CharacterGraph\n# PROGRAM DEFINE\nprop skin setTo 'onexone'\n\n// setting these all up to so they can be changed in the map editor\naddProp characterType String 'Worm'\naddProp countType String 'sum'\naddProp variableToGraph String 'energyLevel'\naddProp labelText String 'Worm Energy'\n\nuseFeature AgentWidgets\nuseFeature Population\nfeatProp AgentWidgets isLargeGraphic setTo true\n\n// using a generic name so that it is easier to change later\naddProp graphValue Number 0\nprop graphValue setMax 1000\nprop graphValue setMin 0\n\nfeatCall AgentWidgets bindGraphTo graphValue 30\n\n# PROGRAM EVENT\n\nonEvent Start [[\n  exprPush {{agent.getProp('labelText').value}}\n  featPropPop AgentWidgets text\n]]\n\nonEvent Tick [[\n  // TEAM_MAY_CHANGE - change the character, variable, and possible countTypeto a different name as needed\n  // -- Character options: Plant, Worm, Waste, Bunny\n  // -- Variable options: matter, energyLevel, nutrients\n  // -- Population options: sum, avg, min, max\n\n  exprPush {{agent.getProp('characterType').value}}\n  featPropPop Population monitoredAgent\n\n  exprPush {{agent.getProp('variableToGraph').value}}\n  featPropPop Population monitoredAgentProp\n\n  featCall Population countAgentProp\n\n  exprPush {{ agent.getFeatProp('Population', agent.prop.countType.value).value }}\n  propPop graphValue\n]]"
         }
       ],
       "instances": [
         {
-          "id": 1101,
+          "id": "1101",
           "label": "Soil01",
           "bpid": "Soil",
           "initScript": "prop x setTo -300\nprop y setTo 100\nprop nutrients setTo 10"
         },
         {
-          "id": 1102,
+          "id": "1102",
           "label": "Soil02",
           "bpid": "Soil",
           "initScript": "prop x setTo -100\nprop y setTo 100"
         },
         {
-          "id": 1103,
+          "id": "1103",
           "label": "Soil03",
           "bpid": "Soil",
           "initScript": "prop x setTo 100\nprop y setTo 100"
         },
         {
-          "id": 1104,
+          "id": "1104",
           "label": "Soil04",
           "bpid": "Soil",
           "initScript": "prop x setTo 300\nprop y setTo 100"
         },
         {
-          "id": 1105,
+          "id": "1105",
           "label": "Soil05",
           "bpid": "Soil",
           "initScript": "prop x setTo -300\nprop y setTo 300"
         },
         {
-          "id": 1106,
+          "id": "1106",
           "label": "Soil06",
           "bpid": "Soil",
           "initScript": "prop x setTo -100\nprop y setTo 300"
         },
         {
-          "id": 1107,
+          "id": "1107",
           "label": "Soil07",
           "bpid": "Soil",
           "initScript": "prop x setTo 100\nprop y setTo 300"
         },
         {
-          "id": 1108,
+          "id": "1108",
           "label": "Soil08",
           "bpid": "Soil",
           "initScript": "prop x setTo 300\nprop y setTo 300"
         },
         {
-          "id": 1110,
-          "label": "Sunbeam",
-          "bpid": "Sunbeam",
-          "initScript": "prop x setTo -400\nprop y setTo -240"
+          "id": "1109",
+          "label": "SoilBG01",
+          "bpid": "SoilBG",
+          "initScript": "prop x setTo 0\n prop y setTo 200"
         },
         {
-          "id": 1801,
+          "id": "1801",
           "label": "Plant Energy",
-          "bpid": "PlantGraph",
-          "initScript": "prop x setTo 470\nprop y setTo 370"
+          "bpid": "CharacterGraph",
+          "initScript": "prop x setTo 470\nprop y setTo 370\nprop characterType setTo 'Plant'\nprop countType setTo 'sum'\nprop variableToGraph setTo 'energyLevel'\nprop labelText setTo 'Plant Energy'"
         },
         {
-          "id": 1802,
+          "id": "1802",
           "label": "Bunny Energy",
-          "bpid": "BunnyGraph",
-          "initScript": "prop x setTo 470\nprop y setTo 230"
+          "bpid": "CharacterGraph",
+          "initScript": "prop x setTo 470\nprop y setTo 230\nprop characterType setTo 'Bunny'\nprop countType setTo 'sum'\nprop variableToGraph setTo 'energyLevel'\nprop labelText setTo 'Bunny Energy'"
         },
         {
-          "id": 1803,
+          "id": "1803",
           "label": "Worm Energy",
-          "bpid": "WormGraph",
-          "initScript": "prop x setTo 470\nprop y setTo 90"
+          "bpid": "CharacterGraph",
+          "initScript": "prop x setTo 470\nprop y setTo 90\nprop characterType setTo 'Worm'\nprop countType setTo 'sum'\nprop variableToGraph setTo 'energyLevel'\nprop labelText setTo 'Worm Energy'\n"
         },
         {
-          "id": 1201,
+          "id": "1201",
           "label": "Plant01",
           "bpid": "Plant",
-          "initScript": "prop x setTo -300\nprop y setTo -76"
+          "initScript": "prop x setTo -300"
         },
         {
-          "id": 1301,
-          "label": "Bunny01",
-          "bpid": "Bunny",
-          "initScript": "prop x setTo 0\nprop y setTo -20"
-        },
-        {
-          "id": 1601,
+          "id": "1601",
           "label": "Waste01",
           "bpid": "Waste",
           "initScript": "prop x setTo -100\nprop y setTo 100"
         },
         {
-          "id": 1602,
+          "id": "1602",
           "label": "Waste02",
           "bpid": "Waste",
           "initScript": "prop x setTo 220\nprop y setTo 50"
         },
         {
-          "id": 1700,
+          "id": "1700",
           "label": "LegendLabel",
           "bpid": "TextLabel",
           "initScript": "prop x setTo 455\nprop y setTo -400\nfeatProp AgentWidgets text setTo 'Key:'"
         },
         {
-          "id": 1701,
+          "id": "1701",
           "label": "EnergyLabel",
           "bpid": "TextLabel",
-          "initScript": "prop x setTo 455\nprop y setTo -373\nfeatProp AgentWidgets text setTo 'Energy'"
+          "initScript": "prop x setTo 455\n    prop y setTo -373\n    featProp AgentWidgets text setTo 'Energy'\n    prop zIndex setTo 100"
         },
         {
-          "id": 1702,
+          "id": "1702",
           "label": "NutrientsLabel",
           "bpid": "TextLabel",
-          "initScript": "prop x setTo 455\nprop y setTo -340\nfeatProp AgentWidgets text setTo 'Nutrients'"
+          "initScript": "prop x setTo 455\nprop y setTo -340\nfeatProp AgentWidgets text setTo 'Nutrients'\nprop zIndex setTo 100"
         },
         {
-          "id": 1703,
+          "id": "1703",
           "label": "MatterLabel",
           "bpid": "TextLabel",
-          "initScript": "prop x setTo 455\nprop y setTo -308\nfeatProp AgentWidgets text setTo 'Matter'"
+          "initScript": "prop x setTo 455\nprop y setTo -308\nfeatProp AgentWidgets text setTo 'Matter'\nprop zIndex setTo 100"
         },
         {
-          "id": 1704,
+          "id": "1704",
           "label": "EnergyChip",
           "bpid": "ColorChip",
           "initScript": "prop x setTo 455\nprop y setTo -351\nfeatCall Costume setColorize 0 255 0\nprop zIndex setTo 95\nfeatCall Physics setSize 100 30"
         },
         {
-          "id": 1705,
+          "id": "1705",
           "label": "NutrientsChip",
           "bpid": "ColorChip",
           "initScript": "prop x setTo 455\nprop y setTo -320\nfeatCall Costume setColorize 138 43 226\nprop zIndex setTo 95\nfeatCall Physics setSize 100 30"
         },
         {
-          "id": 1706,
+          "id": "1706",
           "label": "MatterChip",
           "bpid": "ColorChip",
           "initScript": "prop x setTo 455\nprop y setTo -290\nfeatCall Costume setColorize 0.56 0.52 0.40\nprop zIndex setTo 95\nfeatCall Physics setSize 100 30"
