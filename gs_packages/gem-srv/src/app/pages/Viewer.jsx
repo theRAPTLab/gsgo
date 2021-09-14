@@ -96,7 +96,7 @@ class Viewer extends React.Component {
   componentWillUnmount() {
     UR.UnhandleMessage('NET:INSPECTOR_UPDATE', this.HandleInspectorUpdate);
     UR.UnhandleMessage('NET:BPIDLIST_UPDATE', this.HandleBpidList);
-    UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstacesList);
+    UR.UnhandleMessage('NET:INSTANCESLIST_UPDATE', this.HandleInstancesList);
     UR.UnhandleMessage('SIM_INSTANCE_HOVEROVER', this.HandleSimInstanceHoverOver);
   }
 
@@ -126,7 +126,7 @@ class Viewer extends React.Component {
   }
   HandleInstancesList(rdata) {
     this.setState({
-      instances: rdata.result.instancesList
+      instances: rdata.instancesList
     });
   }
 
