@@ -24,7 +24,7 @@ UR.HookPhase('UR/LOAD_ASSETS', () => {
     (async () => {
       if (DBG) console.log(...PR('ASSETS LOADED'));
       console.log(...PR('Waiting for user input'));
-      await ASSETS.PromiseLoadAssets('corey');
+      await ASSETS.PromiseLoadAssets('art_assets');
       ASSETS_LOADED = true;
       resolve();
     })();

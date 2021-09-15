@@ -23,7 +23,7 @@ UR.HookPhase(
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
         if (DBG) console.log(...PR('ASSETS LOADED'));
-        await ASSETS.PromiseLoadAssets('corey');
+        await ASSETS.PromiseLoadAssets('art_assets');
         resolve();
       })();
     })
