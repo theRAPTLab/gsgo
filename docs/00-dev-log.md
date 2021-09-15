@@ -275,3 +275,340 @@ Refactor pass two: make sure manifest code is a bit cleaner
 * [x] `util/manifest`
 * [x] `asset-mgr`
 
+## AUG 27 FRI - Review the Script Engine?
+
+I'm not quite sure where to start right now, so I'm starting by reviewing what's in TRANSPILER-V2 and will just do some free writing for now.
+
+Corey at al want to know how the script engine actually works. Let's make a list of everything that I know is in it. We can start with a **review of keywords** that we currently have.
+
+* [ ] execution engine
+* [ ] keyword parameter types
+* [ ] keyword parameter type automatic inferences
+* [ ] context
+* [ ] parameter passing
+* [ ] blocks
+* [ ] expressions
+
+### Looking at `api-sim` to see what's going on
+
+`api-sim` is loaded by **`mod-sim-control`**  which is loaded by **Main.jsx**, so we'll start there.
+
+```
+SIMCTRL is elements/mod-sim-control
+PROJ    is elements/project-data
+
+MissionControl 
+on mount:
+	get modelId from URL query
+	PROJ ProjectDataInit
+  
+layout areas:
+  console-top:  	tracker view button, back to project
+  console-left: 	stageBtn; MissionMapEditor || MissionRun
+  console-main: 	PanelSimulation
+  console-right:	tracker: FormTransform; PanelTracker
+  								!edit !tracker: PanelPlayback; PanelInstances ('run' mode)
+  console-bottom: PanelMessage
+	
+state:
+	panelConfiguration - application mode 'run' | 'edit' | 'tracker'
+	message
+	modelId
+	model
+	devices
+	inspectorInstances - data structure passed into Panit displayelInstances
+	runIsMinimized
+	scriptsNeedUpdate  - a dirty flag
+	openRedirectDialog
+	dialogMessage
+	
+when panelConfiguration is 'edit', it's also used as a switch at runtime to do certain things
+```
+
+What's up with the UI event flow?
+
+```
+mode changes: tracker view (top row)
+left panel controls:
+  <stage button toggle> save (exit editor) or setup (ented editor)
+  MissionRun | MissionMapEditor (via jsxLeft)
+
+right panel controls:
+	run:  PanelPlayback, PanelInstances
+	edit: not used for a panel display but to handle live editing
+
+```
+
+What's up with PanelSimulation?
+
+* it displays a child renderer wrapped in <PanelChrome>, which receives a number of props
+
+```
+PanelChrome receives
+      id,
+      title,
+      isActive,
+      children,
+      topbar,
+      bottombar,
+      onClick,
+      classes
+```
+
+What's up with right-side controls like *PanelPlayback* and *PanelInstances*?
+
+```
+isDisabled
+isRunning
+needsUpdate
+showCostumes
+showRun
+showNextRun
+
+... these are calculated by inspecting SIMSTATUS.currentLoop which is in modules/sim/api-sim
+```
+
+
+
+Patterns noticed:
+
+* props are passed to subcomponents so they have the ability to call methods in their parent to set application state, which makes it hard to tell. They all have different names like `toggleMinimized` and `onClick` and `onClose` which mimics built-in event handlers and CONFUSES THE HECK out of everything.
+* <PanelSimulation> passes an `onClick` to `OnPanelClick()` but this isn't really a click, it's a prop I bet.
+* Main elements have the prefix **Panel** 
+* There is only a single app mode, but several different manifestations
+
+## AUG 28 SAT - Reviewing API-Sim 
+
+Concepts for **api-sim**, which is the top-level module for the simulation. 
+
+The control of the simulation occurs in the `UR` PhaseMachine:
+
+* `UR/APP_STAGE` -> Stage()
+* `UR/APP_RUN` -> Run()
+* `UR/APP_RESET` -> Reset()
+* `UR/APP_RESTAGE` -> Restage()
+
+```
+// SIM STATUS ////////////////////////////////////////////////
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+SIM_RATE = integer 0 or 1 (!!!) also used to check if sim is "running"
+SIM_STATUS -- this is also passed to ROUNDS submodule
+  .currentLoop: [ LOAD, STAGED, PRERUN, COSTUMES, RUN, POSTRUN ]
+  .roundHasBeenStarted: bool
+  .completed: bool
+  .timer: used by ROUNDS submodule
+
+// ROUNDS SUBMODULE //////////////////////////////////////////
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+ROUNDS_INDEX: int -1
+ROUNDS_COUNTER: int -1
+TIMER
+TIMER_COUNTER
+ROUND_TINER_START_VALUE
+RSIMSTATUS = SIM_STATUS via RoundInit()
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+API methods 
+  Stage 				GLOOP_LOAD, GLOOP_STAGED, ROUNDS.StageInit()
+  							SIMSTATUS.currentLoop = STAGED,
+  		  				step on GLOOP_PRERUN
+
+	NextRound			SIMSTATUS.currentLoop = PRERUN
+  							SIM_RATE 0
+  							ROUNDS.RoundInit(SIMSTATUS)
+  							Raise 'SCRIPT_EVENT', { type: 'RoundInit' }
+  							step on GLOOP_PRERUN
+  							
+  Costumes			SIMSTATUS.currentLoop = PRERUN
+                step on GLOOP_COSTUMES           
+                Raise 'SCRIPT_EVENT', { type: 'Costumes' }
+                step on GLOOP_PRERUN
+
+	Start					SIM_RATE 1
+								step on GLOOP
+								will Raise 'SCRIPT_EVENT', { type: 'Tick' } every 30 frames
+								ROUNDS.RoundStart(Stop)
+								Raise 'SCRIPT_EVENT', { type: 'Start' }
+	
+  Stop					SIM_RATE 0
+  							SIMSTATUS.currentLoop = POSTRUN
+  							SIMSTATUS.completed = RoundStop()
+  							Raise 'SCRIPT_EVENT', { type: 'RoundStep' }
+  						
+  
+  End						SIM_RATE 0
+  							SIMSTATUS.currentLoop = PRERUM
+  							
+  Reset					ROUNDS.RoundsReset()
+  							SIMSTATUS.completed = true
+                back to Stage()
+
+	Run						- unused
+
+  Restage				- unused
+  
+  Pause					- unused
+
+  Export				- unused
+
+sim-rounds
+	RoundsReset
+	RoundInit
+	RoundStart
+	RoundStop
+	StageInit
+
+GLOOP_LOAD:
+	LOAD_ASSETS, RESET, SETMODE, WAIT, PROGRAM, INIT, READY
+	
+GLOOP_STAGED:
+	STAGED
+	
+GLOOP_PRERUN:
+	INPUTS_READ, INPUTS_UPDATE, CREATE, DELETE, PHYSICS_UPDATE, PHYSICS_THINK,
+	GRAPHS_UPDATE, UI_UPDATE, VIS_UPDATE, VIS_RENDER
+	
+GLOOP_COSTUMES:
+	INPUTS_READ, INPUTS_UPDATE, PHYSICS_UPDATE, PHYSICS_THINK
+	GRAPHS_UPDATE, CONDITIONS_UPDATE, 
+	INPUTS_EXEC, 
+	UI_UPDATE, VIS_UPDATE, VIS_RENDER
+	
+GLOOP_POSTRUN:
+	UI_UPDATE, VIS_UPDATE, VIS_RENDER
+	
+GLOOP:
+	INPUTS_READ, INPUTS_UPDATE, CREATE, DELETE, PHYSICS_UPDATE, PHYSICS_THINK,
+	INPUTS_EXEC
+	AGENTS_UPDATE, GROUPS_UPDATE, FEATURES_UPDATE
+	GRAPHS_UPDATE, CONDITIONS_UPDATE, 
+	FEATURES_THINK, GROUPS_THINK, AGENTS_THINK, GROUPS_VETO,
+	FEATURES_EXEC, AGENTS_EXEC, GROUPS_EXEC,
+	SIM_EVAL, REFEREE_EVAL
+	UI_UPDATE, VIS_UPDATE, VIS_RENDER
+```
+
+## AUG 29 SUN - Free Writing What Docs
+
+ok what works right now?
+
+We write scripts in scriptText, which is compiled into scriptUnits, which themselves are either converted into running code (called SMC) or converted into a visual user interface.
+
+## AUG 30 MON - Review Current Direction
+
+> #### Tasks for Project Wind-down
+>
+> * [x] Review [Rounds](https://gitlab.com/stepsys/gem-step/gsgo/-/commit/b9b53ec914fe58c8dc7d21ca4e64013c7ec88dee) and [Metadata](https://gitlab.com/stepsys/gem-step/gsgo/-/commit/45d98081bd43631c95d555984d2e074768ced113) ... write a short synopsys to submit to ben similar to bug report format (intent, implementation, expectation, results) - do it sooner than later.
+> * [ ] design - vision of gui (10 hours)  - bill under "issue #115 scripting ui"
+> * [ ] design - user system / joshua posted requirements (10 hours) bill under "issue #307 user model"
+> * [ ] FAQs as the thought arises (unbilled or 50% billed)
+
+### Review of Rounds
+
+Posted this in the UI [GEMScript Inquirium/CodeReviews](https://drive.google.com/drive/folders/1-AIkBF-9xuHHTQyvLekZjQ2VNC9SHSrX) folder.
+
+
+
+## SEP 01 WED - Pick something?
+
+I think we'll start with the **design of gui vision** because this actually is a good entry point into the related **script FAQ**. I've allocated 10 hours for this.
+
+
+
+## SEP 15 WED - Meeting To Dos
+
+* #127 partial script import 
+* #119 script and project duplicate copy/paste
+* contact corey for #??? video background source code for their camera
+
+## SEP 19 SUN - Let's Concept
+
+Looking at #127 Partial Script Import, which I believe is a quality of life thing for researcher developers. Aside: big goal is to make this system something **grad students** can use to make their own things. 
+
+In the initialization script like `moths-sandbox` I see these major elements:
+
+* **project**: 
+  * **bounds**: topleft, bottomright rectangle in pixels, and bgcolor
+  * **scripts**: [ blueprint, ... ]
+  * **instances**: [ agent:{ blueprintname, initscript }, ... ]
+  * **rounds**: [ round_def, ... ]
+    * round_def: duration, intro/outro text, intro/end setup script
+* **initscripts** for rounds( **context**: simulation of many agents )
+  * initScript: scriptText to set up certain things before the round starts
+  * endScript: scriptText to asses simulation, possibly cleanup 
+* **initscripts** for instances (**context**: an agent instance)
+  * initScript: scriptText to set properties of the agent instance
+* **organization context**:
+  * the id of my installation 
+  * the id of my class, at the installation
+  * the id of my group, in the class
+  * my user id, in the class
+
+What about **Assets**?
+
+* these are referred to in the various scripts so they are bound to the **project** level, possibly as pointer to the right asset path
+
+Types of data to **exchange/import**
+
+Since the blueprint data is now in the database. there's no automated way to get it out of there the sim and into visual studio code (and vice versa). I think we decided to do this with cut/paste.
+
+Now there are small bits we want to move between scripts:
+
+* entire blueprints can be moved, but they may have **asset dependencies**
+* entire `when` clauses could be moved, but they have **blueprint context  dependencies**
+* entire `every` clauses could be moved, but they have **blueprint context dependencies** too
+
+The general desire is to be able to EASILY SHARE WORKING STUFF between researchers and perhaps students.
+
+## SEP 23 THU - Local Overrides
+
+Right now we have the following settings files:
+
+* `gsgo/gsgo-settings.js`
+* `gsgo/gs_packages/gem-srv/config/gem-settings.js`
+* `gsgo/gs_packages/mcp-srv/config/mcp-settings.js`
+
+This is what's inside `gem-settings`
+
+```````js
+const GSCONFIG = require('../../../gsgo-settings');
+
+/// DECLARATIONS //////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PACKAGE_NAME = 'GEM_SRV';
+const RUNTIME_DIRNAME = 'runtime';
+const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
+
+/// EXPORTS ///////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+module.exports = {
+  ...GSCONFIG,
+  // overrides
+  PACKAGE_NAME,
+  RUNTIME_DIRNAME,
+  RUNTIME_PATH // used only by servers
+};
+```````````````````````````````
+
+There's an issue that **gem-settings** has to work with the *CLIENT* as well, so we can't access the filesystem in `gem-settings.js` so how to we make this:
+
+* [ ] gem-settings.js is a normal import/require anywhere it needs it
+
+I think we need to build the config file from sources. So a lot of what's in `gem-settings` gets converted into a file.
+
+```
+pseudocode
+gsgo-settings.js creates exports an object of constants that it calculates from the runtime environment
+
+webpack contexts can be used to export a library, but I don't think it works on the brower side?
+
+```
+
+The hard part is trying to make `gem-settings` something that's easy to load, knowing that it includes stuff from our `local.json` file.
+
+* we need to create the settings.json file dynamically before webpack runs.
+* the place to do that is in `gem_run.js`
+
+I've updated the code to create the `local-settings.json` file if it doesn't exist when running `gem_run` or `mcp_run` 
