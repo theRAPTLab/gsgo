@@ -187,13 +187,21 @@ class SpriteLoader extends AssetLoader {
   getTextureInfo(idOrName: number | string) {
     let assetId = idOrName;
     if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
-    const { rsrc } = this.getAssetById(assetId as number);
-    if (rsrc.texture) return { frameCount: 1 };
-    if (rsrc.spritesheet)
-      return {
-        frameCount: rsrc.spritesheet._frameKeys.length
-      };
-    return { err: 'not a texture or spritesheet' };
+    try {
+      const { rsrc } = this.getAssetById(assetId as number);
+      if (rsrc.texture) return { frameCount: 1 };
+      if (rsrc.spritesheet)
+        return {
+          frameCount: rsrc.spritesheet._frameKeys.length
+        };
+      return { err: 'not a texture or spritesheet' };
+    } catch (err) {
+      console.error(
+        `failed reading assetId ${assetId} rsrc ${this.getAssetById(
+          assetId as number
+        )}`
+      );
+    }
   }
 } // end class
 
