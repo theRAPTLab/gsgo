@@ -112,6 +112,9 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
+
+    // Project Data
+    this.OnExport = this.OnExport.bind(this);
   }
 
   componentDidMount() {
@@ -361,6 +364,13 @@ class MissionControl extends React.Component {
     // Trigger Window Resize so that PanelSimulation will resize
     window.dispatchEvent(new Event('resize'));
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnExport() {
+    const { projId } = this.state;
+    PROJSERVER.ExportProject(projId);
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER
   ///
@@ -474,6 +484,10 @@ class MissionControl extends React.Component {
             &emsp;
             <button type="button" onClick={this.OnToggleTracker}>
               tracker
+            </button>
+            &emsp;
+            <button type="button" onClick={this.OnExport}>
+              export
             </button>
           </div>
           <Link

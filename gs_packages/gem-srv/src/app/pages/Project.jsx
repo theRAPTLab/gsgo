@@ -92,6 +92,18 @@ class Project extends React.Component {
       />
     );
 
+    const DialogNoProject = (
+      <DialogConfirm
+        open={projId === null}
+        message="No project specified."
+        yesMessage="Select Project"
+        noMessage=""
+        onClose={() => {
+          window.location = '/app/login';
+        }}
+      />
+    );
+
     return (
       <div
         className={classes.root}
@@ -131,6 +143,7 @@ class Project extends React.Component {
           style={{ gridColumnEnd: 'span 3' }}
         >
           {DialogMainRedirect}
+          {DialogNoProject}
         </div>
       </div>
     );

@@ -216,6 +216,22 @@ async function Initialize() {
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+/// HACKY DOWNLOAD FILE
+/// Used to export project
+function DownloadToFile(content, filename, contentType) {
+  const a = document.createElement('a');
+  const file = new Blob([content], { type: contentType });
+  a.href = URL.createObjectURL(file);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+export function ExportProject(id) {
+  const jsonString = JSON.stringify(ACProject.GetProject());
+  DownloadToFile(jsonString, `${id}.project`, 'application/json');
+}
+
 /// Handle ScriptEditor's request for current project data
 /// Used by REQ_PROJ_DATA
 function RequestProject(projId = CURRENT_PROJECT_ID) {
