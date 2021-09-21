@@ -23,6 +23,7 @@ import {
   TManifest
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
+import ProjectLoader from './as-load-projects';
 import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
@@ -130,6 +131,7 @@ export function GetLoader(asType: TAssetType): any {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// register for every type
 m_RegisterLoader(new SpriteLoader('sprites'));
+m_RegisterLoader(new ProjectLoader('projects'));
 
 /// TEST INTERFACE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
