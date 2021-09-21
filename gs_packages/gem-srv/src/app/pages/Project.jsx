@@ -39,7 +39,8 @@ class Project extends React.Component {
     super();
     this.state = {
       panelConfiguration: 'select',
-      projId: '',
+      projId: undefined,
+      templateId: undefined,
       openRedirectDialog: false
     };
 
@@ -49,9 +50,12 @@ class Project extends React.Component {
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
+    const templateId = params.get('template');
+
     const wasRedirected = params.get('redirect') !== null;
     this.setState({
       projId,
+      templateId,
       openRedirectDialog: wasRedirected
     });
     document.title = `GEMSTEP PROJECT ${projId}`;
@@ -79,7 +83,12 @@ class Project extends React.Component {
    *  make this happen.
    */
   render() {
-    const { panelConfiguration, projId, openRedirectDialog } = this.state;
+    const {
+      panelConfiguration,
+      projId,
+      templateId,
+      openRedirectDialog
+    } = this.state;
     const { classes } = this.props;
 
     const DialogMainRedirect = (
@@ -94,7 +103,7 @@ class Project extends React.Component {
 
     const DialogNoProject = (
       <DialogConfirm
-        open={projId === null}
+        open={projId === null && templateId === null}
         message="No project specified."
         yesMessage="Select Project"
         noMessage=""
@@ -103,6 +112,9 @@ class Project extends React.Component {
         }}
       />
     );
+
+    const parms =
+      projId !== null ? `project=${projId}` : `template=${templateId}`;
 
     return (
       <div
@@ -129,14 +141,9 @@ class Project extends React.Component {
           style={{ backgroundColor: 'transparent' }}
         >
           {panelConfiguration === 'select' && (
-            <PanelSelect
-              id="select"
-              projId={projId}
-              onClick={this.OnPanelClick}
-            />
+            <PanelSelect id="select" parms={parms} onClick={this.OnPanelClick} />
           )}
         </div>
-        <div id="root-renderer" className={classes.main} />
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}

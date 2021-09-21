@@ -12,6 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as ASSETS from 'modules/asset_core';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - -  - - - - - - - - - - -
@@ -45,8 +46,21 @@ async function m_LoadProjectNames() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// PROJECT
 
+/** Load project to state from project json */
+async function m_LoadProject(projId, project) {
+  const data = { projId, project }; // redundant, for clarification
+  UR.RaiseMessage('*:DC_PROJECT_UPDATE', data);
+  return { ok: true };
+}
+
+async function m_LoadProjectFromAsset(projId) {
+  const PROJECT_LOADER = ASSETS.GetLoader('projects');
+  const project = PROJECT_LOADER.getProjectByProjId(projId);
+  return m_LoadProject(projId, project);
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function m_LoadProject(projId) {
+async function m_LoadProjectFromDB(projId) {
   console.log(...PR(`(1) LOAD PROJECT DATA ${projId}`));
   const response = await UR.Query(`
     query {
@@ -71,28 +85,88 @@ async function m_LoadProject(projId) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return Promise to write to database */
+/** return Promise to write to database
+ *  NOTE: Only updates project settings/metadata!!!  Rounds Blueprints, Instances are not updated.
+ */
+function promise_WriteProject(projId, project) {
+  const result = UR.Mutate(
+    `
+  mutation UpdateProject($projectId:String $input:ProjectInput) {
+    updateProject(projectId:$projectId,input:$input) {
+      id
+      label
+      metadata {
+        top
+        right
+        bottom
+        left
+        wrap
+        bounce
+        bgcolor
+        roundsCanLoop
+      }
+      rounds {
+        id
+        label
+        time
+        intro
+        outtro
+        initScript
+        endScript
+      }
+      blueprints {
+        id
+        label
+        isCharControllable
+        isPozyxControllable
+        scriptText
+      }
+      instances {
+        id
+        label
+        bpid
+        initScript
+      }
+    }
+  }`,
+    {
+      input: project,
+      projectId: projId
+    }
+  );
+  return result;
+}
 
-// NOT USED CURRENTLY
-// function promise_WriteProject() {
-// console.error('promise_WriteProject!!!');
-// const projId = _getKey('projId');
-// const input = _getKey('project');
-// const result = UR.Mutate(
-//   `
-//   mutation UpdateProject($projectId:String $input:ProjectInput) {
-//     updateProject(projectId:$projectId,input:$input) {
-//       id
-//       label
-//     }
-//   }`,
-//   {
-//     input,
-//     projectId: projId
-//   }
-// );
-// return result;
-// }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** return Promise to write to database
+ *  NOTE: Only updates project settings/metadata!!!  Rounds Blueprints, Instances are not updated.
+ */
+function promise_WriteProjectSettings(projId, project) {
+  const result = UR.Mutate(
+    `
+  mutation UpdateProject($projectId:String $input:ProjectInput) {
+    updateProject(projectId:$projectId,input:$input) {
+      id
+      label
+      metadata {
+        top
+        right
+        bottom
+        left
+        wrap
+        bounce
+        bgcolor
+        roundsCanLoop
+      }
+    }
+  }`,
+    {
+      input: project,
+      projectId: projId
+    }
+  );
+  return result;
+}
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// METADATA
@@ -272,7 +346,20 @@ function promise_WriteInstances(projId, instances) {
 async function HandleLoadProject(data: { projId: string }) {
   if (data === undefined || data.projId === undefined)
     throw new Error(`${[...PR]} Called with bad projId: ${data}`);
-  return m_LoadProject(data.projId);
+  return m_LoadProjectFromAsset(data.projId);
+}
+
+async function HandleWriteProject(data: { projId: string; project: any }) {
+  if (DBG) console.log('WRITE PROJECT', data);
+  return promise_WriteProject(data.projId, data.project);
+}
+
+async function HandleWriteProjectSettings(data: {
+  projId: string;
+  project: any;
+}) {
+  if (DBG) console.log('WRITE PROJECT SETTINGS', data);
+  return promise_WriteProjectSettings(data.projId, data.project);
 }
 
 async function HandleWriteMetadata(data: { projId: string; metadata: any[] }) {
@@ -303,7 +390,9 @@ async function HandleWriteInstances(data: { projId: string; instances: any[] }) 
 
 /// Handle both LOCAL and NET requests.  ('*' is deprecated)
 UR.HandleMessage('LOCAL:DC_LOAD_PROJECT', HandleLoadProject);
-UR.HandleMessage('LOCAL:DC_WRITE_Metadata', HandleWriteMetadata);
+UR.HandleMessage('LOCAL:DC_WRITE_PROJECT', HandleWriteProject);
+UR.HandleMessage('LOCAL:DC_WRITE_PROJECT_SETTINGS', HandleWriteProjectSettings);
+UR.HandleMessage('LOCAL:DC_WRITE_METADATA', HandleWriteMetadata);
 UR.HandleMessage('LOCAL:DC_WRITE_ROUNDS', HandleWriteRounds);
 UR.HandleMessage('LOCAL:DC_WRITE_BLUEPRINTS', HandleWriteBlueprints);
 UR.HandleMessage('LOCAL:DC_WRITE_INSTANCES', HandleWriteInstances);

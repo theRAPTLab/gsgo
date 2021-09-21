@@ -82,6 +82,16 @@ function urLocaleStateUpdated(stateObj, cb) {
   if (typeof cb === 'function') cb();
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function urProjectStateUpdated(stateObj, cb) {
+  if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
+  const { projId, project } = stateObj;
+  CURRENT_PROJECT_ID = projId;
+  CURRENT_PROJECT = project;
+  if (typeof cb === 'function') cb();
+}
+
 /// INSPECTOR UTILS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
@@ -124,16 +134,6 @@ export function DoUnRegisterInspector(data) {
   const id = data.id;
   const i = MONITORED_INSTANCES.indexOf(id);
   if (i > -1) MONITORED_INSTANCES.splice(i, 1);
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function urProjectStateUpdated(stateObj, cb) {
-  if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
-  const { projId, project } = stateObj;
-  CURRENT_PROJECT_ID = projId;
-  CURRENT_PROJECT = project;
-  if (typeof cb === 'function') cb();
 }
 
 /// PROJECT DATA PRE INIT /////////////////////////////////////////////////////
@@ -229,7 +229,7 @@ function DownloadToFile(content, filename, contentType) {
 
 export function ExportProject(id) {
   const jsonString = JSON.stringify(ACProject.GetProject());
-  DownloadToFile(jsonString, `${id}.project`, 'application/json');
+  DownloadToFile(jsonString, `${id}.gemprj`, 'application/json');
 }
 
 /// Handle ScriptEditor's request for current project data

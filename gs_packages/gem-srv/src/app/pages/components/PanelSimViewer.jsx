@@ -8,6 +8,7 @@ import UR from '@gemstep/ursys/client';
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import { GS_ASSETS_DEFAULT_DIR } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
 
@@ -22,9 +23,8 @@ UR.HookPhase('UR/LOAD_ASSETS', () => {
   return new Promise((resolve, reject) => {
     if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
     (async () => {
+      await ASSETS.PromiseLoadAssets(GS_ASSETS_DEFAULT_DIR);
       if (DBG) console.log(...PR('ASSETS LOADED'));
-      console.log(...PR('Waiting for user input'));
-      await ASSETS.PromiseLoadAssets('art-assets');
       ASSETS_LOADED = true;
       resolve();
     })();

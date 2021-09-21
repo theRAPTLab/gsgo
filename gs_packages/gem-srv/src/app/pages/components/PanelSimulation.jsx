@@ -6,6 +6,7 @@ import * as ASSETS from 'modules/asset_core';
 import * as RENDERER from 'modules/render/api-render';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import { GS_ASSETS_DEFAULT_DIR } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
 
@@ -23,7 +24,7 @@ UR.HookPhase(
       if (DBG) console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
       (async () => {
         if (DBG) console.log(...PR('ASSETS LOADED'));
-        await ASSETS.PromiseLoadAssets('art-assets');
+        await ASSETS.PromiseLoadAssets(GS_ASSETS_DEFAULT_DIR);
         resolve();
       })();
     })
