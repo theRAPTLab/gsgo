@@ -6,7 +6,7 @@
 
   * getSpriteDimensions(idOrName)
   * getTextureInfo(idOrName)
-z
+
   Provides custom PIXIJS loader tool in the override of promiseLoadAssets().
   Overrides queueAssetList() to add additional parameter validation (this
   probably isn't necessary.
@@ -201,6 +201,11 @@ class SpriteLoader extends AssetLoader {
           assetId as number
         )}`
       );
+      return {
+        err: `failed reading assetId ${assetId} rsrc ${this.getAssetById(
+          assetId as number
+        )}`
+      };
     }
   }
 } // end class
