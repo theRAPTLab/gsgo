@@ -38,6 +38,7 @@ import '../../lib/css/tracker.css';
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
+import PanelProjectEditor from './components/PanelProjectEditor';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -436,7 +437,10 @@ class MissionControl extends React.Component {
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor projId={projId} bpidList={bpidList} />
+        <>
+          <PanelProjectEditor openByDefault={templateId} />
+          <MissionMapEditor projId={projId} bpidList={bpidList} />
+        </>
       ) : (
         <MissionRun
           projId={projId}

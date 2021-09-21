@@ -75,6 +75,16 @@ let AUTOTIMER;
  */
 function hook_Filter(key, propOrValue, propValue) {
   if (DBG) console.log('ac-project: hook_Filter', key, propOrValue, propValue);
+
+  // If project is being updated by PanelProjectEditor, we also need to update metadata
+  // NOTE: This does not update Rounds, Blueprints, and Instances!
+  if (key === 'project') {
+    const projId = _getKey('projId');
+    const project = propOrValue;
+    ACMetadata.SetMetadata(projId, project.metadata);
+    // REVIEW: Do we need to also update Rounds, Blueprints, and Instances?
+  }
+
   // No need to return anything if data is not being filtered.
   // if (key === 'rounds') return [key, propOrValue, propValue];
   // return undefined;
