@@ -10,7 +10,7 @@ import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to 
 
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import { GS_ASSETS_DEFAULT_DIR } from '../../../../config/gem-settings';
+import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
 
@@ -51,7 +51,7 @@ class PanelSelectSimulation extends React.Component {
           if (DBG)
             console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
           (async () => {
-            await ASSETS.PromiseLoadAssets(GS_ASSETS_DEFAULT_DIR);
+            await ASSETS.PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
             if (DBG) console.log(...PR('ASSETS LOADED'));
             resolve();
           })();
