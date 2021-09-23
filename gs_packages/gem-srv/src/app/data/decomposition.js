@@ -338,7 +338,7 @@ when Bunny touches Plant [[
     ifExpr {{ agent.getProp('feeling').value == 'hungry'}} [[
       featCall Costume setCostume 'bunnies.json' 1
 
-      // STUDENTS_MAY_CHANGE - switching these numbers models different speeds of how bunnies eat the plants [NOT_WORKING]
+      // STUDENTS_MAY_CHANGE - switching these numbers models different speeds of how bunnies eat the plants
       // Plant matter goes down as it is eaten, as does Plant energy
       prop Plant.matter sub 10
       prop Plant.energyLevel sub 10
@@ -374,7 +374,7 @@ every 1 runAtStart [[
         prop matter sub 20
         prop feeling setTo 'hungry'
         featCall Population createAgent Waste [[
-          // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with [NOT_WORKING]
+          // STUDENTS_MAY_CHANGE - switching these numbers changes where the waste appears and how much matter it starts with
           prop x addRndInt -20 20
           prop y addRndInt 50 150
           prop matter setTo 20
@@ -556,7 +556,7 @@ featProp AgentWidgets text setTo ''
 
 # PROGRAM UPDATE
 when Waste touches Soil [[
-  // STUDENTS_MAY_CHANGE - change the numbers to seee the impact of bacteria, including making the numberes 0 if you want (no bacteria) [NOT_WORKING]
+  // STUDENTS_MAY_CHANGE - change the numbers to seee the impact of bacteria, including making the numberes 0 if you want (no bacteria)
   every 1 [[
     // Bacteria decomposes waste
     prop Waste.matter sub 1
