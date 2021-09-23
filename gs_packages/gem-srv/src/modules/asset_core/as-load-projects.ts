@@ -140,7 +140,13 @@ class ProjectLoader extends AssetLoader {
           });
           res(project);
         }).then(result => {
+          // Override the project.id with the filename
           const json = JSON.parse(String(result).replace(/`/g, '"'));
+          const paths = assetUrl.split('/');
+          const filename = paths[paths.length - 1];
+          const url = encodeURIComponent(filename.split('.')[0]);
+          json.id = url;
+
           this._saveAsset({ assetId, assetName }, json);
         });
       });
@@ -163,8 +169,8 @@ class ProjectLoader extends AssetLoader {
   /** Returns project matching projId (not assetId) */
   getProjectByProjId(projId) {
     const projassets = [...this._assetDict.values()];
-    const project = projassets.find(a => a.rsrc.id === projId);
-    return project.rsrc;
+    const projasset = projassets.find(a => a.rsrc.id === projId);
+    return projasset.rsrc;
   }
 } // end class
 
