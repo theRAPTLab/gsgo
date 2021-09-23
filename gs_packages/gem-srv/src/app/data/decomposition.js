@@ -315,8 +315,9 @@ useFeature Touches
 featCall Touches monitor Plant b2b
 
 useFeature AgentWidgets
-// STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter (note, color won't change below) [NOT_WORKING]
-featCall AgentWidgets bindMeterTo energyLevel
+// STUDENTS_MAY_CHANGE - to pick a different thing to display on the meter (note, color won't change below)
+featProp AgentWidgets meterProp setTo energyLevel
+
 // Green = 0x00FF00
 featProp AgentWidgets meterColor setTo 65280
 
