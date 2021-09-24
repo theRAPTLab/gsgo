@@ -171,7 +171,7 @@ function StartAppServer(opt = {}) {
   UseLokiGQL_Middleware(app, {
     dbFile: 'runtime/db.loki',
     dbImportFile: 'config/graphql/dbinit-loki.json',
-    doReset: false,
+    doReset: true,
     schemaFile: 'config/graphql/schema.graphql',
     root: resolvers
   });
