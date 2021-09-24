@@ -173,13 +173,27 @@ function m_ProcessPosition(agent, frame) {
   // inputs come in at a 15fps frame rate, so we need to use hysteresis
   let didMove = false;
   let didMoveWithinWindow = false;
-  if (
-    Math.abs(agent.x - x) > MOVEDISTANCE ||
-    Math.abs(agent.y - y) > MOVEDISTANCE
-  ) {
+  if (agent.isModePuppet()) {
+    // agent is char control or pozyx agent so only set isMoving if moved a minimal MOVEDISTANCE
+    if (
+      Math.abs(agent.x - x) > MOVEDISTANCE ||
+      Math.abs(agent.y - y) > MOVEDISTANCE
+    ) {
+      agent.prop.Movement._lastMove = frame;
+      didMove = true;
+    }
+  } else if (Math.abs(agent.x - x) > 0 || Math.abs(agent.y - y) > 0) {
+    // agent is AI so detect ANY movement
     agent.prop.Movement._lastMove = frame;
     didMove = true;
-  } else if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
+  } else {
+    // console.log(
+    //   'move < MOVEDISTANCE',
+    //   Math.abs(agent.x - x),
+    //   Math.abs(agent.y - y)
+    // );
+  }
+  if (frame - agent.prop.Movement._lastMove < MOVEWINDOW) {
     didMoveWithinWindow = true; // moved within a period of time
   }
   agent.prop.Movement.isMoving.setTo(didMove || didMoveWithinWindow);
