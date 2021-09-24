@@ -369,8 +369,8 @@ when Predator centerTouchesCenter Moth [[
       # PROGRAM DEFINE
       useFeature Costume
       featCall Costume setCostume 'square.json' 0
-      // Replaced by treeColorIndex
-      // featCall Costume setColorize 0 0 0.9
+      // MUST Initialize color before changing Value, overriden by treeColorIndex and colorValue below
+      featCall Costume setColorizeHSV 0 0 0
 
       useFeature Physics
       useFeature AgentWidgets
