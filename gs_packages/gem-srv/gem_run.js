@@ -11,19 +11,38 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// LOAD MINIMAL DEPENDENCIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FS = require('fs');
+const Path = require('path');
 const Process = require('process');
 const Shell = require('shelljs');
 const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
-const TRACKER = require('./server/step-tracker');
-const GEMAPP = require('./server/gem-app-srv');
-const { RUNTIME_PATH } = require('./config/gem-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = 'GEMRUN';
 const TOUT = UR.TermOut(PR);
+
+// ensure that local settings file exists
+const localSettingsPath = Path.join(__dirname, 'config/local-settings.json');
+if (!UR.FILE.FileExists(localSettingsPath)) {
+  TOUT('creating empty config/local-settings.json file');
+  UR.FILE.SyncWriteJSON(localSettingsPath, {
+    _INFO: [
+      'Override constants defined gsgo-settings.js and gem-settings.js in this file',
+      'Settings added here can be set for your gsgo installation, and will not be',
+      'committed to the gsgo repo'
+    ]
+  });
+}
+
+/// LOAD GEMSTEP DEPENDENCIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TRACKER = require('./server/step-tracker');
+const GEMAPP = require('./server/gem-app-srv');
+const { RUNTIME_PATH } = require('./config/gem-settings');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -88,6 +107,7 @@ if (!Shell.which('git')) {
   );
   Shell.exit(0);
 }
+
 /// Process COMMAND LINE //////////////////////////////////////////////////////
 const argv = Minimist(process.argv.slice(1));
 const cmd = argv._[1];
