@@ -189,9 +189,9 @@ class CostumePack extends GFeature {
     COSTUME_AGENTS.set(agent.id, agent.id);
 
     // Private Variables
-    agent.prop.Costume.colorHue.value = 0;
-    agent.prop.Costume.colorSaturation.value = 0;
-    agent.prop.Costume.colorValue.value = 0;
+    agent.prop.Costume.colorHue.value = undefined;
+    agent.prop.Costume.colorSaturation.value = undefined;
+    agent.prop.Costume.colorValue.value = undefined;
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
