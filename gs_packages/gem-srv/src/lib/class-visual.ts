@@ -227,8 +227,7 @@ class Visual implements IVisual, IPoolable, IActable {
 
     this.filterColor = color;
     const [r, g, b] = PIXI.utils.hex2rgb(color);
-    // this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
-    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 1.0);
+    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
     this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
   }
   /**
