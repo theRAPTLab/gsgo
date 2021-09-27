@@ -717,18 +717,24 @@ class MovementPack extends GFeature {
   }
 
   seekNearest(agent: IAgent, targetType: string) {
+    // Clear any existing target.  This is especially important between rounds.
+    agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: false });
     this.setMovementType(agent, 'seekAgent');
   }
 
   // vision cone visible
   seekNearestVisibleCone(agent: IAgent, targetType: string) {
+    // Clear any existing target.  This is especially important between rounds.
+    agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
 
   // color visible
   seekNearestVisibleColor(agent: IAgent, targetType: string) {
+    // Clear any existing target.  This is especially important between rounds.
+    agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionColor: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
