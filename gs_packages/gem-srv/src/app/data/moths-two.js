@@ -847,11 +847,6 @@ useFeature Timer
 // process more than once a second second to be timely when round timer hits the mark
 every 0.5 [[
   ifExpr {{ agent.prop.seekState.value === 'waiting' && agent.callFeatMethod('Global', 'getGlobalProp', 'roundTime').value > 5 }} [[
-    prop seekState setTo 'startSeek'
-    dbgOut 'trigger seek prey'
-  ]]
-  // triggers just once
-  ifExpr {{ agent.prop.seekState.value === 'startSeek' }} [[
     featProp Movement distance setTo 4
     featCall Movement seekNearestVisibleCone Moth
     dbgOut 'seeking prey'
