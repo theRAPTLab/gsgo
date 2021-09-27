@@ -10,6 +10,8 @@
 
   TODO: add methods for initialization management
 
+  TODO: Rewrite most featCalls as reatProp calls
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
@@ -632,11 +634,16 @@ class MovementPack extends GFeature {
     agent.getFeatProp(FEATID, 'movementType').value = type;
     if (params.length > 0) {
       switch (type) {
+        case 'static':
+          SEEK_AGENTS.delete(agent.id);
+          break;
         case 'wander':
+          SEEK_AGENTS.delete(agent.id);
           // first param is distance
           agent.getFeatProp(FEATID, 'distance').value = params[0];
           break;
         case 'edgeToEdge':
+          SEEK_AGENTS.delete(agent.id);
           agent.getFeatProp(FEATID, 'distance').value = params[0];
           agent.getFeatProp(FEATID, 'direction').value = params[1];
 
