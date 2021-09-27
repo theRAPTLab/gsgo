@@ -654,10 +654,13 @@ class MovementPack extends GFeature {
           }
           break;
         case 'jitter':
-          // min max
+          SEEK_AGENTS.delete(agent.id);
+          break;
+        case 'wanderUntilAgent':
+          SEEK_AGENTS.delete(agent.id);
           break;
         case 'seekAgent':
-          break;
+        case 'seekAgentOrWander':
         default:
       }
     }
