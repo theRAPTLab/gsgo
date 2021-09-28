@@ -59,6 +59,13 @@ async function m_LoadProjectFromAsset(projId) {
   return m_LoadProject(projId, project);
 }
 
+export async function CreateFileFromTemplate(templateId) {
+  // duplicates a file
+  const PROJECT_LOADER = ASSETS.GetLoader('projects');
+  await PROJECT_LOADER.duplicateProject(templateId);
+  return { ok: true };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadProjectFromDB(projId) {
   console.log(...PR(`(1) LOAD PROJECT DATA ${projId}`));

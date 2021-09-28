@@ -13,11 +13,18 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 import { GS_ASSETS_PROJECT_ROOT } from '../../../../config/gem-settings';
 
 import PanelChrome from './PanelChrome';
+import DialogFilename from './DialogFilename';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PanelSelectSimulation', 'TagPurple');
 const DBG = true;
+
+/** Returns random 3 digit suffix for filenames */
+function randomSuffix() {
+  const suf = String(Math.random());
+  return suf.substring(suf.length - 3);
+}
 
 // CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -28,7 +35,10 @@ class PanelSelectSimulation extends React.Component {
     this.state = {
       title: 'Select Project',
       projectTemplates: [],
-      projectFiles: projectNames
+      projectFiles: projectNames,
+      showEnterNameDialog: false,
+      filename: '',
+      isValidFilename: false
       // projectNames: [
       //   // Dummy Data
       //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
@@ -39,6 +49,9 @@ class PanelSelectSimulation extends React.Component {
     };
     this.onSelectTemplate = this.onSelectTemplate.bind(this);
     this.onSelectProject = this.onSelectProject.bind(this);
+    this.onCheckValidFilename = this.onCheckValidFilename.bind(this);
+    this.onRenameAndOpenFile = this.onRenameAndOpenFile.bind(this);
+    this.isFilenameUnique = this.isFilenameUnique.bind(this);
     this.listProjectTemplates = this.listProjects.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
 
@@ -74,9 +87,13 @@ class PanelSelectSimulation extends React.Component {
   onSelectTemplate(projId) {
     if (DBG) console.log(...PR('Clicked to Select model ID:', projId));
     // This should request a model load through URSYS
-    // HACK for now to go to main select screen
-    const { onClick } = this.props;
-    onClick(`template=${projId}`); // Tell Login panel to show Panelselect
+    // HACK for now to go to main select screen\
+
+    let filename;
+    do {
+      filename = `${projId.replace('_template_', '')}_${randomSuffix()}`;
+    } while (!this.isFilenameUnique(filename));
+    this.setState({ showEnterNameDialog: true, filename });
   }
 
   onSelectProject(projId) {
@@ -85,6 +102,32 @@ class PanelSelectSimulation extends React.Component {
     // HACK for now to go to main select screen
     const { onClick } = this.props;
     onClick(`project=${projId}`); // Tell Login panel to show Panelselect
+  }
+
+  onCheckValidFilename(e) {
+    // Update filename if it's valid
+    const filename = e.target.value;
+    this.isFilenameUnique(filename);
+    this.setState({ filename });
+  }
+
+  onRenameAndOpenFile() {
+    const { filename } = this.state;
+
+    // duplicate file and rename
+
+    // then open it
+    const { onClick } = this.props;
+    onClick(`project=${filename}`);
+  }
+
+  /** Checks current list of project names to make sure name is unique */
+  isFilenameUnique(filename) {
+    const { projectFiles } = this.state;
+    const ids = projectFiles.map(f => f.id);
+    const isValidFilename = !ids.includes(filename);
+    this.setState({ isValidFilename });
+    return isValidFilename;
   }
 
   /** projlist = [ ...{id, label, info}] */
@@ -107,7 +150,14 @@ class PanelSelectSimulation extends React.Component {
   }
 
   render() {
-    const { title, projectTemplates, projectFiles } = this.state;
+    const {
+      title,
+      projectTemplates,
+      projectFiles,
+      showEnterNameDialog,
+      filename,
+      isValidFilename
+    } = this.state;
     const { id, isActive, onClick, classes } = this.props;
 
     return (
@@ -162,6 +212,15 @@ class PanelSelectSimulation extends React.Component {
             ))}
           </div>
         </div>
+        <DialogFilename
+          open={showEnterNameDialog}
+          value={filename}
+          hasValidFilename={isValidFilename}
+          onChange={this.onCheckValidFilename}
+          onClose={this.onRenameAndOpenFile}
+          yesMessage="OK"
+          noMessage=""
+        />
       </PanelChrome>
     );
   }

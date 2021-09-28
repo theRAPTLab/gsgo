@@ -172,6 +172,16 @@ class ProjectLoader extends AssetLoader {
     const projasset = projassets.find(a => a.rsrc.id === projId);
     return projasset.rsrc;
   }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  duplicateProject(projId) {
+    const promise = new Promise((resolve, reject) => {
+      const projassets = [...this._assetDict.values()];
+      const projasset = projassets.find(a => a.rsrc.id === projId);
+
+      resolve(projId);
+    });
+    return promise;
+  }
 } // end class
 
 /// STATIC METHODS ////////////////////////////////////////////////////////////
