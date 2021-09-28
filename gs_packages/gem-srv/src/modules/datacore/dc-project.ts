@@ -12,6 +12,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import { GetProject } from 'modules/appcore/ac-project';
 import * as ASSETS from 'modules/asset_core';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -95,7 +96,7 @@ async function m_LoadProjectFromDB(projId) {
 /** return Promise to write to database
  *  NOTE: Only updates project settings/metadata!!!  Rounds Blueprints, Instances are not updated.
  */
-function promise_WriteProject(projId, project) {
+function promise_DBWriteProject(projId, project) {
   const result = UR.Mutate(
     `
   mutation UpdateProject($projectId:String $input:ProjectInput) {
@@ -145,7 +146,7 @@ function promise_WriteProject(projId, project) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return Promise to write to database
+/** return Promise to write project settings (id, label, metdata) to database
  *  NOTE: Only updates project settings/metadata!!!  Rounds Blueprints, Instances are not updated.
  */
 function promise_WriteProjectSettings(projId, project) {
@@ -197,7 +198,7 @@ function promise_WriteProjectSettings(projId, project) {
 //   }
 // }
 
-/** return Promise to write to database */
+/** return Promise to write metadata only (no id, label) to database */
 function promise_WriteMetadata(projId, metadata) {
   return UR.Mutate(
     `
@@ -347,6 +348,34 @@ function promise_WriteInstances(projId, instances) {
   return result;
 }
 
+function FileWriteProject(projId, project, cb = {}) {
+  // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
+  fetch(`http://localhost/assets-update/${projId}`, {
+    method: 'PUT',
+    body: JSON.stringify(project),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  })
+    .then(response => response.json())
+    .then(json => {
+      console.log('FileWriteProject:', json);
+      if (typeof cb === 'function') cb();
+    })
+    .catch(error => console.error(error));
+}
+
+function UpdateProjectFile(projId, data) {
+  const project = GetProject(projId);
+  project.id = data.id || project.id;
+  project.label = data.label || project.label;
+  project.metadata = data.metadata || project.metadata;
+  project.rounds = data.rounds || project.rounds;
+  project.blueprints = data.blueprints || project.blueprints;
+  project.instances = data.instances || project.instances;
+  FileWriteProject(projId, project);
+}
+
 /// URSYS HANDLERS ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -358,9 +387,11 @@ async function HandleLoadProject(data: { projId: string }) {
 
 async function HandleWriteProject(data: { projId: string; project: any }) {
   if (DBG) console.log('WRITE PROJECT', data);
-  return promise_WriteProject(data.projId, data.project);
+  FileWriteProject(data.projId, data.project);
+  return promise_DBWriteProject(data.projId, data.project);
 }
 
+/// Not used at the moment -- ac-projects calls DC_WRITE_PROJECT/HandlewriteProject
 async function HandleWriteProjectSettings(data: {
   projId: string;
   project: any;
@@ -376,6 +407,7 @@ async function HandleWriteMetadata(data: { projId: string; metadata: any[] }) {
 
 async function HandleWriteRounds(data: { projId: string; rounds: any[] }) {
   if (DBG) console.log('WRITE ROUND', data);
+  UpdateProjectFile(data.projId, data);
   return promise_WriteRounds(data.projId, data.rounds);
 }
 
@@ -384,11 +416,13 @@ async function HandleWriteBlueprints(data: {
   blueprints: any[];
 }) {
   if (DBG) console.log('WRITE BLUEPRINTS', data);
+  UpdateProjectFile(data.projId, data);
   return promise_WriteBlueprints(data.projId, data.blueprints);
 }
 
 async function HandleWriteInstances(data: { projId: string; instances: any[] }) {
   if (DBG) console.log('WRITE INSTANCES', data);
+  UpdateProjectFile(data.projId, data);
   return promise_WriteInstances(data.projId, data.instances);
 }
 
@@ -416,3 +450,26 @@ UR.HookPhase(
       resolve();
     })
 );
+
+/// TEST CODE /////////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function putproject() {
+  console.log('putprojec!t');
+  fetch('http://localhost/assets-update/aquatic', {
+    method: 'PUT',
+    body: JSON.stringify({
+      userId: 1,
+      id: 'jo',
+      title: 'hello task',
+      completed: false
+    }),
+    headers: {
+      'Content-type': 'application/json; charset=UTF-8'
+    }
+  })
+    .then(response => response.json())
+    .then(json => console.log(json))
+    .catch(error => console.error(error));
+}
+window.putproject = putproject;

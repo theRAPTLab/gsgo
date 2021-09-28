@@ -95,6 +95,7 @@ module.exports = {
   URNET_Use: NETINFO.UseURNET,
   NextJS_NetinfoHook: NETINFO.NextJS_Middleware,
   AssetManifest_Middleware: ASSETS.AssetManifest_Middleware,
+  AssetUpdate_Middleware: ASSETS.AssetUpdate_Middleware,
   MediaProxy_Middleware: ASSETS.MediaProxy_Middleware,
   // PROMPT UTILITIES
   PrefixUtil: PROMPTS.makeStyleFormatter,

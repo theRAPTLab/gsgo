@@ -36,8 +36,12 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PROXY = require('./util/http-proxy');
 const MFEST = require('./util/manifest');
+const PROJFILE = require('./util/projfile');
 const PROMPTS = require('./util/prompts');
-const { GS_ASSETS_PATH } = require('../../../gsgo-settings');
+const {
+  GS_ASSETS_PATH,
+  GS_ASSETS_PROJECT_ROOT
+} = require('../../../gsgo-settings');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -64,6 +68,26 @@ function AssetManifest_Middleware(options = {}) {
 
 /// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function AssetUpdate_Middleware(options = {}) {
+  const {
+    assetPath = GS_ASSETS_PATH,
+    projectRoot = GS_ASSETS_PROJECT_ROOT,
+    remoteAssetUrl
+  } = options;
+  return (req, res, next) => {
+    const projId = req.params.projId;
+    const body = req.body;
+    PROJFILE.SetAssetPath(assetPath);
+    PROJFILE.SetProjectRoot(projectRoot);
+    PROJFILE.WriteProject(body, result => {
+      if (result) res.status(500).send(`WriteProject Error: ${result}`);
+      else res.status(200).send({ result: 'Saved' });
+    });
+  };
+}
+
+/// MIDDLEWARE DEFINITION /////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** checks a remote server that implements AssetManifest_Middleware with static
  *  file serving and downloads the resource. This should be added after
  *  Express.static but before index serving.
@@ -85,4 +109,8 @@ function MediaProxy_Middleware(options = {}) {
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { AssetManifest_Middleware, MediaProxy_Middleware };
+module.exports = {
+  AssetManifest_Middleware,
+  AssetUpdate_Middleware,
+  MediaProxy_Middleware
+};

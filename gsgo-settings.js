@@ -31,6 +31,8 @@ const GS_ASSETS_PATH = Path.join(GS_DIRPATH, 'gs_assets');
 const GS_ASSETS_PROJECT_ROOT = 'orgs/iu/fall2021'; // user can load anyth8ing in GS_ASSETS_PROJECT_ROOT folder
 const GS_MANIFEST_FILENAME = '00-manifest';
 
+const GS_PROJFILE_EXTENSION = 'gemprj';
+
 /// assets server parameters
 const GS_ASSETS_PORT = 8080;
 const GS_ASSET_HOST_URL = `http://localhost:${GS_ASSETS_PORT}`;
@@ -46,6 +48,7 @@ module.exports = {
   GS_ASSETS_HOST_PATH,
   GS_ASSETS_PATH,
   GS_ASSETS_PROJECT_ROOT,
+  GS_PROJFILE_EXTENSION,
   GS_DIRPATH,
   GS_ASSET_HOST_URL,
   GS_APP_PORT,
