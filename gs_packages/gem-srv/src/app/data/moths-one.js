@@ -54,8 +54,8 @@ export const MODEL = {
             featCall Movement queuePosition 0 0
             exprPush {{ -420 + ( agent.getProp('colorIndx').value  * 70 ) }}
             propPop x
-            prop y setTo -200
-            prop y addRnd -150 150
+            exprPush {{ -50 - ( agent.getProp('cInstance').value  * 70 ) }}
+            propPop y
             featCall Movement jitterPos -2 2
           ]]
         ]]
@@ -68,8 +68,8 @@ export const MODEL = {
             featCall Movement queuePosition 0 0
             exprPush {{ -420 + ( agent.getProp('colorIndx').value  * 70 ) }}
             propPop x
-            prop y setTo 200
-            prop y addRnd -150 150
+            exprPush {{ 400 - ( agent.getProp('cInstance').value  * 70 ) }}
+            propPop y
             featCall Movement jitterPos -2 2
           ]]
         ]]
@@ -144,6 +144,9 @@ useFeature Vision
 addProp colorIndx Number 5
 prop colorIndx setMax 11
 prop colorIndx setMin 0
+
+//for sorting the moths vertically at end of round
+addProp cInstance Number 1
 
 addProp energyLevel Number 0
 prop energyLevel addRnd 0 10
@@ -290,7 +293,9 @@ ifExpr {{ agent.getProp('isInert').value }} [[
 
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'predator.json' 0
+//featCall Costume setCostume 'predator.json' 0
+//featCall Costume setCostume 'hawk.json' 0
+featCall Costume setCostume 'robin.json' 0
 
 useFeature Physics
 useFeature Touches
@@ -307,7 +312,8 @@ featProp Vision viewAngle setTo 90
 featProp Vision colorHueDetectionThreshold setTo 0.2
 featProp Vision colorValueDetectionThreshold setTo 0.2
 
-featProp Physics scale setTo 0.75
+//featProp Physics scale setTo 0.75  //FOR 'predator'
+featProp Physics scale setTo 0.5
 
 addProp kills Number 0
 prop kills setMax 100
@@ -368,8 +374,8 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeTrunk
       # PROGRAM DEFINE
       useFeature Costume
-      featCall Costume setCostume 'square.json' 0
-      featCall Costume setColorize 0 0 0.9
+      featCall Costume setCostume 'trunk.json' 0
+      //featCall Costume setColorize 0 0 0.9
 
       useFeature Physics
       useFeature AgentWidgets
@@ -390,8 +396,8 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeFoliage
       # PROGRAM DEFINE
       useFeature Costume
-      featCall Costume setCostume 'circle.json' 0
-      featCall Costume setColorizeHSV 0 .8 0.5
+      featCall Costume setCostume 'canopy.json' 0
+      //featCall Costume setColorizeHSV 0 .8 0.5
 
       useFeature Physics
       useFeature AgentWidgets
@@ -416,17 +422,17 @@ when Predator centerTouchesCenter Moth [[
       featCall Movement queuePosition -250 50
      featCall Costume setColorizeHSV 0 0 0.66
      featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 2.7`
+     featProp Physics scaleY setTo 0.65`
     },
     {
       id: 1103,
       name: 'TreeFoliage1',
       blueprint: 'TreeFoliage',
       initScript: `
-     featCall Movement queuePosition -250 -342
-     featCall Costume setColorize 0.3 0.9 0.2
-     featProp Physics scale setTo 1.1
-     featProp Physics scaleY setTo 0.4
+     featCall Movement queuePosition -250 -332
+     //featCall Costume setColorize 0.3 0.9 0.2
+     featProp Physics scale setTo 1.6
+     featProp Physics scaleY setTo 0.9
      `
     },
     {
@@ -437,17 +443,18 @@ when Predator centerTouchesCenter Moth [[
       featCall Movement queuePosition 50 50
       featCall Costume setColorizeHSV 0 0 0.68
       featProp Physics scale setTo 0.5
-      featProp Physics scaleY setTo 2.7`
+      featProp Physics scaleY setTo 0.65`
     },
     {
       id: 1105,
       name: 'TreeFoliage2',
       blueprint: 'TreeFoliage',
       initScript: `
-     featCall Movement queuePosition 50 -342
-     featCall Costume setColorize 0.3 0.9 0.2
-     featProp Physics scale setTo 1.1
-     featProp Physics scaleY setTo 0.4
+     featCall Movement queuePosition 50 -352
+     //featCall Costume setColorize 0.3 0.9 0.2
+     featProp Costume currentFrame setTo 1
+     featProp Physics scale setTo 1.6
+     featProp Physics scaleY setTo 1.1
      `
     },
     {
@@ -458,7 +465,7 @@ when Predator centerTouchesCenter Moth [[
     featCall Movement queuePosition 250 50
      featCall Costume setColorizeHSV 0 0 0.67
      featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 2.7`
+     featProp Physics scaleY setTo 0.65`
     },
 
     {
@@ -466,10 +473,11 @@ when Predator centerTouchesCenter Moth [[
       name: 'TreeFoliage3',
       blueprint: 'TreeFoliage',
       initScript: `
-     featCall Movement queuePosition 250 -342
-     featCall Costume setColorize 0.3 0.9 0.2
-     featProp Physics scale setTo 1.1
-     featProp Physics scaleY setTo 0.4
+     featCall Movement queuePosition 250 -332
+     //featCall Costume setColorize 0.3 0.9 0.2
+     featProp Costume currentFrame setTo 2
+     featProp Physics scale setTo 1.6
+     featProp Physics scaleY setTo 0.9
      `
     },
     {
@@ -481,6 +489,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 3
+      prop cInstance setTo 1
       `
     },
     {
@@ -492,6 +501,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 4
+      prop cInstance setTo 1
       `
     },
     {
@@ -503,6 +513,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 5
+      prop cInstance setTo 1
       `
     },
     {
@@ -514,6 +525,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 6
+      prop cInstance setTo 1
 `
     },
     {
@@ -525,6 +537,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 7
+      prop cInstance setTo 1
 `
     },
     {
@@ -536,6 +549,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 8
+      prop cInstance setTo 1
 `
     },
     {
@@ -547,6 +561,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 9
+      prop cInstance setTo 1
 `
     },
     {
@@ -558,6 +573,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 3
+      prop cInstance setTo 2
 `
     },
     {
@@ -569,6 +585,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 4
+      prop cInstance setTo 2
 `
     },
     {
@@ -580,6 +597,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 5
+      prop cInstance setTo 2
 `
     },
     {
@@ -591,6 +609,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 6
+      prop cInstance setTo 2
 `
     },
     {
@@ -602,6 +621,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 7
+      prop cInstance setTo 2
 `
     },
     {
@@ -613,6 +633,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 8
+      prop cInstance setTo 2
 `
     },
     {
@@ -624,6 +645,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 9
+      prop cInstance setTo 2
 `
     },
     {
@@ -635,6 +657,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 3
+      prop cInstance setTo 3
 `
     },
     {
@@ -646,6 +669,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 4
+      prop cInstance setTo 3
 `
     },
     {
@@ -657,6 +681,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 5
+      prop cInstance setTo 3
 `
     },
     {
@@ -668,6 +693,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 6
+      prop cInstance setTo 3
 `
     },
     {
@@ -679,6 +705,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 7
+      prop cInstance setTo 3
 `
     },
     {
@@ -690,6 +717,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 8
+      prop cInstance setTo 3
 `
     },
     {
@@ -701,6 +729,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 9
+      prop cInstance setTo 3
 `
     },
     {
@@ -712,6 +741,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 3
+      prop cInstance setTo 4
 `
     },
     {
@@ -723,6 +753,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 4
+      prop cInstance setTo 4
 `
     },
     {
@@ -734,6 +765,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 5
+      prop cInstance setTo 4
 `
     },
     {
@@ -745,6 +777,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 6
+      prop cInstance setTo 4
 `
     },
     {
@@ -756,6 +789,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 7
+      prop cInstance setTo 4
 `
     },
     {
@@ -767,6 +801,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 8
+      prop cInstance setTo 4
 `
     },
     {
@@ -778,6 +813,7 @@ when Predator centerTouchesCenter Moth [[
       featPropPush Costume colorScaleIndex
       featPropPop AgentWidgets text
       prop colorIndx setTo 9
+      prop cInstance setTo 4
 `
     }
   ]
