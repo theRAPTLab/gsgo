@@ -165,16 +165,24 @@ class PanelSelectSimulation extends React.Component {
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
-        <div style={{ display: 'flex', justifyContent: 'center' }}>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: '30% 70%',
+            overflow: 'scroll'
+          }}
+        >
           <div
             style={{
               display: 'flex',
               flexDirection: 'column',
-              justifyContent: 'space-around',
-              width: '200px',
+              justifyContent: 'start',
               padding: '30px'
             }}
           >
+            <div>
+              <b>TEMPLATES</b>
+            </div>
             <div className={classes.instructions}>
               <p>Create a new project from a Project Template:</p>
             </div>
@@ -182,6 +190,7 @@ class PanelSelectSimulation extends React.Component {
               <button
                 type="button"
                 className={classes.buttonSmall}
+                style={{ textAlign: 'left' }}
                 key={m.id}
                 title={m.id}
                 onClick={() => this.onSelectTemplate(m.id)}
@@ -195,10 +204,12 @@ class PanelSelectSimulation extends React.Component {
               display: 'flex',
               flexDirection: 'column',
               justifyContent: 'space-around',
-              width: '200px',
               padding: '30px'
             }}
           >
+            <div>
+              <b>PROJECTS</b>
+            </div>
             <div className={classes.instructions}>
               <p>Select a project to work on:</p>
             </div>
@@ -206,6 +217,7 @@ class PanelSelectSimulation extends React.Component {
               <button
                 type="button"
                 className={classes.button}
+                style={{ textAlign: 'left' }}
                 key={m.id}
                 title={m.id}
                 onClick={() => this.onSelectProject(m.id)}
