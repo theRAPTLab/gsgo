@@ -60,13 +60,6 @@ async function m_LoadProjectFromAsset(projId) {
   return m_LoadProject(projId, project);
 }
 
-export async function CreateFileFromTemplate(templateId) {
-  // duplicates a file
-  const PROJECT_LOADER = ASSETS.GetLoader('projects');
-  await PROJECT_LOADER.duplicateProject(templateId);
-  return { ok: true };
-}
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function m_LoadProjectFromDB(projId) {
   console.log(...PR(`(1) LOAD PROJECT DATA ${projId}`));
@@ -348,21 +341,20 @@ function promise_WriteInstances(projId, instances) {
   return result;
 }
 
-function FileWriteProject(projId, project, cb = {}) {
+async function FileWriteProject(projId, project) {
   // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
-  fetch(`http://localhost/assets-update/${projId}`, {
+  const response = await fetch(`http://localhost/assets-update/${projId}`, {
     method: 'PUT',
     body: JSON.stringify(project),
     headers: {
       'Content-type': 'application/json; charset=UTF-8'
     }
-  })
-    .then(response => response.json())
-    .then(json => {
-      console.log('FileWriteProject:', json);
-      if (typeof cb === 'function') cb();
-    })
-    .catch(error => console.error(error));
+  });
+  if (!response.ok) {
+    throw new Error(`FileWriteProject failed with ${response.status}`);
+  }
+  const result = await response.json();
+  return result;
 }
 
 function UpdateProjectFile(projId, data) {
@@ -374,6 +366,20 @@ function UpdateProjectFile(projId, data) {
   project.blueprints = data.blueprints || project.blueprints;
   project.instances = data.instances || project.instances;
   FileWriteProject(projId, project);
+}
+
+export async function CreateFileFromTemplate(templateId, newfilename) {
+  // 1. open the template file
+  const PROJECT_LOADER = ASSETS.GetLoader('projects');
+  const project = PROJECT_LOADER.getProjectByProjId(templateId);
+  if (project === undefined)
+    throw new Error(
+      `CreateFileFromTemplate could not find template ${templateId}`
+    );
+  // 2. update the id
+  project.id = newfilename;
+  // 3. save as a new file
+  return FileWriteProject(newfilename, project);
 }
 
 /// URSYS HANDLERS ////////////////////////////////////////////////////////////

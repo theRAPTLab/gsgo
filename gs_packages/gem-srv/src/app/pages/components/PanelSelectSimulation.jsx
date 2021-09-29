@@ -4,7 +4,7 @@ import UR from '@gemstep/ursys/client';
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import * as ASSETS from 'modules/asset_core';
 
-import 'modules/datacore/dc-project'; // Have to import to load db
+import { CreateFileFromTemplate } from 'modules/datacore/dc-project'; // Have to import to load db
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to access state
 
@@ -38,6 +38,7 @@ class PanelSelectSimulation extends React.Component {
       projectFiles: projectNames,
       showEnterNameDialog: false,
       filename: '',
+      selectedTemplateId: undefined,
       isValidFilename: false
       // projectNames: [
       //   // Dummy Data
@@ -50,7 +51,7 @@ class PanelSelectSimulation extends React.Component {
     this.onSelectTemplate = this.onSelectTemplate.bind(this);
     this.onSelectProject = this.onSelectProject.bind(this);
     this.onCheckValidFilename = this.onCheckValidFilename.bind(this);
-    this.onRenameAndOpenFile = this.onRenameAndOpenFile.bind(this);
+    this.onCreateFileFromTemplate = this.onCreateFileFromTemplate.bind(this);
     this.isFilenameUnique = this.isFilenameUnique.bind(this);
     this.listProjectTemplates = this.listProjects.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
@@ -93,7 +94,11 @@ class PanelSelectSimulation extends React.Component {
     do {
       filename = `${projId.replace('_template_', '')}_${randomSuffix()}`;
     } while (!this.isFilenameUnique(filename));
-    this.setState({ showEnterNameDialog: true, filename });
+    this.setState({
+      showEnterNameDialog: true,
+      filename,
+      selectedTemplateId: projId
+    });
   }
 
   onSelectProject(projId) {
@@ -111,11 +116,9 @@ class PanelSelectSimulation extends React.Component {
     this.setState({ filename });
   }
 
-  onRenameAndOpenFile() {
-    const { filename } = this.state;
-
-    // duplicate file and rename
-
+  async onCreateFileFromTemplate() {
+    const { selectedTemplateId, filename } = this.state;
+    await CreateFileFromTemplate(selectedTemplateId, filename);
     // then open it
     const { onClick } = this.props;
     onClick(`project=${filename}`);
@@ -217,7 +220,7 @@ class PanelSelectSimulation extends React.Component {
           value={filename}
           hasValidFilename={isValidFilename}
           onChange={this.onCheckValidFilename}
-          onClose={this.onRenameAndOpenFile}
+          onClose={this.onCreateFileFromTemplate}
           yesMessage="OK"
           noMessage=""
         />
