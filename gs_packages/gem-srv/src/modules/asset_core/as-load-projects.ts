@@ -101,6 +101,7 @@ class ProjectLoader extends AssetLoader {
     const i = this._loadCount;
     if (DBG) console.log(...PR(`[${i}] loading ${this._queue.length} items...`));
     // define function to return wrapped in promise
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const loadAssets = (resolve: Function, reject: Function) => {
       // if (this._loader.loading) {
       //   const batch = this._loadCount;

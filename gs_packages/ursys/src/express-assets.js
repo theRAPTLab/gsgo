@@ -72,9 +72,12 @@ function AssetUpdate_Middleware(options = {}) {
   const {
     assetPath = GS_ASSETS_PATH,
     projectRoot = GS_ASSETS_PROJECT_ROOT,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     remoteAssetUrl
   } = options;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   return (req, res, next) => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const projId = req.params.projId;
     const body = req.body; // originally sent as string, but converted to object here
     PROJFILE.SetAssetPath(assetPath);

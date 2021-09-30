@@ -20,7 +20,7 @@ const PROMPTS = require('./prompts');
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const TERM = PROMPTS.makeTerminalOut('U-PROJFILE}', 'TagGreen');
-const DBG = true;
+
 let m_assetPath = GS_ASSETS_PATH;
 let m_projectRoot = GS_ASSETS_PROJECT_ROOT;
 
