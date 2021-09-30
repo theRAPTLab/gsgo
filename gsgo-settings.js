@@ -28,7 +28,7 @@ const Path = require('path');
 const GS_DIRPATH = Path.resolve(__dirname);
 const GS_ASSETS_HOST_PATH = Path.join(GS_DIRPATH, 'gs_assets_hosted');
 const GS_ASSETS_PATH = Path.join(GS_DIRPATH, 'gs_assets');
-const GS_ASSETS_PROJECT_ROOT = 'orgs/iu/fall2021'; // user can load anyth8ing in GS_ASSETS_PROJECT_ROOT folder
+const GS_ASSETS_PROJECT_ROOT = 'local'; // user can load anyth8ing in GS_ASSETS_PROJECT_ROOT folder
 const GS_MANIFEST_FILENAME = '00-manifest';
 
 const GS_PROJFILE_EXTENSION = 'gemprj';
