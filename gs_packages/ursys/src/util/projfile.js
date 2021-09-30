@@ -35,11 +35,11 @@ function SetProjectRoot(path = GS_ASSETS_PROJECT_ROOT) {
   m_projectRoot = path;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-async function WriteProject(json, cb) {
-  const filename = `${json.id}.${GS_PROJFILE_EXTENSION}`;
+async function WriteProject(obj, cb) {
+  const filename = `${obj.id}.${GS_PROJFILE_EXTENSION}`;
   const assetTypeRoot = 'projects';
   const projPath = Path.join(m_assetPath, m_projectRoot, assetTypeRoot, filename);
-  FILE.WriteJSON(projPath, json, res => {
+  FILE.WriteProject(projPath, obj, res => {
     if (res) TERM('WriteProject:', res);
     if (typeof cb === 'function') cb(res);
   });

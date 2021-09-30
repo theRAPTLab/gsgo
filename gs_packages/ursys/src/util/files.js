@@ -167,6 +167,37 @@ async function WriteJSON(filepath, obj, cb) {
   file.end(); // if this is missing, close event will never fire.
 }
 
+async function WriteProject(filepath, obj, cb) {
+  let file = FSE.createWriteStream(filepath, { emitClose: true });
+
+  // 1. Insert template literals and newlines to
+  //    make scripts easily editable
+  const replacer = (key, val) => {
+    if (key === 'initScript' || key === 'endScript' || key === 'scriptText') {
+      // Mark script with ` so we can insert newlines after stringify
+      return `\`${val}\``;
+    }
+    return val;
+  };
+
+  const text = JSON.stringify(obj, replacer, 2)
+    // eslint-disable-next-line no-control-regex
+    .replace(/(?<=`[\s\S]+)\\n(?=[\s\S]+`)/g, '\n')
+    .replace(/"`/g, '`')
+    .replace(/`"/g, '`');
+
+  file.write(text);
+  file.on('finish', () => {
+    if (DBG) TERM('wrote:', filepath);
+    if (typeof cb === 'function') cb();
+  });
+  file.on('error', () => {
+    TERM('error on write');
+    if (typeof cb === 'function') cb(`error writing ${filepath}`);
+  });
+  file.end(); // if this is missing, close event will never fire.
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return array of filenames */
 function GetDirContent(dirpath) {
@@ -215,5 +246,6 @@ module.exports = {
   GetSubdirs,
   // json
   ReadJSON,
-  WriteJSON
+  WriteJSON,
+  WriteProject
 };

@@ -140,14 +140,25 @@ class ProjectLoader extends AssetLoader {
           });
           res(project);
         }).then(result => {
-          // Override the project.id with the filename
-          const json = JSON.parse(String(result).replace(/`/g, '"'));
-          const paths = assetUrl.split('/');
-          const filename = paths[paths.length - 1];
-          const url = encodeURIComponent(filename.split('.')[0]);
-          json.id = url;
+          // convert .gemprj format to json
+          // 1. Look for scripts inside of ``
+          // 2. For each ``, insert "\n" and replace ` with "
+          const cleaned = String(result).replace(/`[\s\S]+?`/g, match => {
+            return match.replace(/\n/g, '\\n').replace(/`/g, '"');
+          });
 
-          this._saveAsset({ assetId, assetName }, json);
+          try {
+            const json = JSON.parse(cleaned);
+            // Override the project.id with the filename
+            const paths = assetUrl.split('/');
+            const filename = paths[paths.length - 1];
+            const url = encodeURIComponent(filename.split('.')[0]);
+            json.id = url;
+
+            this._saveAsset({ assetId, assetName }, json);
+          } catch (err) {
+            console.error(...PR(`parse error ${err} on ${assetName}`));
+          }
         });
       });
       // we need to call resolve otherwise the promise is never fulfilled
