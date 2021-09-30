@@ -36,7 +36,7 @@ import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ReportMemory } from 'modules/render/api-render';
-import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
+import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
 import SIMCTRL from './mod-sim-control';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -535,7 +535,10 @@ function ScriptUpdate(data) {
   //    the new script.
   //    If the sim IS running, we want to leave the instance
   //    running with the old blueprint code.
-  if (!IsRunning() && RoundsCompleted()) {
+  //
+  //    Also skip reset if we're in the middle of multiple rounds of
+  //    running.  (RoundHasBeenStarted)
+  if (!IsRunning() && !RoundHasBeenStarted()) {
     GetInstancesType(bpid).forEach(a => DeleteAgent(a));
     // Also delete input agents
     InputsReset();

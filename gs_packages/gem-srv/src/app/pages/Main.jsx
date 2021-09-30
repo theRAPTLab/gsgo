@@ -204,6 +204,7 @@ class MissionControl extends React.Component {
     if (
       SIMCTRL.IsRunning() || // Don't allow reset if sim is running
       SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started
+      // to prevent resets om between rounds
     ) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
