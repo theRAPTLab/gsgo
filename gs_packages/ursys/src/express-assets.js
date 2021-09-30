@@ -76,7 +76,7 @@ function AssetUpdate_Middleware(options = {}) {
   } = options;
   return (req, res, next) => {
     const projId = req.params.projId;
-    const body = req.body;
+    const body = req.body; // originally sent as string, but converted to object here
     PROJFILE.SetAssetPath(assetPath);
     PROJFILE.SetProjectRoot(projectRoot);
     PROJFILE.WriteProject(body, result => {
