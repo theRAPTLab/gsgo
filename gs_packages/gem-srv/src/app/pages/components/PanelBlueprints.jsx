@@ -3,15 +3,19 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Lists all the blueprints available in a model
-  * Used in MissionControl to see which blueprints have been defined
+  * Used in Main > MissionRun to see which blueprints have been defined
     (click to open the script)
-  * Used with MapEditor to create new instances
+  * Used with Main > MissionMapEdit to create new instances
     (click to create new instance)
+  * Used with Viewer to display blueprints for editing
+
+  PanelBlueprints relies on its parent to set the list of blueprints
+  because it is used both locally (on Main) and over the network
+  (on Viewer). It doesn't know where to get the updated data from.
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import * as DATACORE from 'modules/datacore';
 import AddIcon from '@material-ui/icons/Add';
 import EditIcon from '@material-ui/icons/Edit';
 import { withStyles } from '@material-ui/core/styles';
@@ -22,35 +26,53 @@ import PanelChrome from './PanelChrome';
 class PanelBlueprints extends React.Component {
   constructor() {
     super();
+    const { bpidList } = UR.ReadFlatStateGroups('blueprints');
     this.state = {
-      title: ''
+      title: '',
+      bpidList
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
   componentDidMount() {
     const { enableAdd } = this.props;
     const title = enableAdd ? 'Add Characters' : 'Character Type Scripts';
     this.setState({ title });
+    UR.SubscribeState('blueprints', this.urStateUpdated);
+  }
+
+  componentWillUnmount() {
+    UR.UnsubscribeState('blueprints', this.urStateUpdated);
   }
 
   OnBlueprintClick(scriptId) {
-    const { modelId, enableAdd } = this.props;
+    const { projId, enableAdd } = this.props;
     if (enableAdd) {
-      // Add Instance
-      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { modelId, blueprintName: scriptId });
+      // Panel is in MissionEdit: Add Instance
+      UR.RaiseMessage('LOCAL:INSTANCE_ADD', { projId, blueprintName: scriptId });
     } else {
-      // Open script in a new window
+      // Panel is in MissionRun: Open script in a new window
       window.open(
-        `/app/scripteditor?model=${modelId}&script=${scriptId}`,
+        `/app/scripteditor?project=${projId}&script=${scriptId}`,
         '_blank'
       );
     }
   }
 
+  urStateUpdated(stateObj, cb) {
+    const { bpidList } = stateObj;
+    if (bpidList) {
+      this.setState({ bpidList });
+    }
+    if (typeof cb === 'function') cb();
+  }
+
   render() {
-    const { title } = this.state;
-    const { modelId, id, isActive, agents, enableAdd, classes } = this.props;
+    const { title, bpidList } = this.state;
+    const { projId, id, isActive, enableAdd, classes } = this.props;
+    if (!bpidList) return ''; // not loaded yet
+
     const instructions = enableAdd
       ? 'Click to add a character'
       : 'Click to edit a character type script in a new window';
@@ -58,9 +80,8 @@ class PanelBlueprints extends React.Component {
       // To be implemented
       console.log('Show instance');
     };
-
     // sort alphabetically
-    const sortedAgents = agents.sort((a, b) => {
+    const sortedBlueprints = bpidList.sort((a, b) => {
       if (a.label < b.label) return -1;
       if (a.label > b.label) return 1;
       return 0;
@@ -90,7 +111,7 @@ class PanelBlueprints extends React.Component {
                 flexWrap: 'wrap'
               }}
             >
-              {sortedAgents.map(a => (
+              {sortedBlueprints.map(a => (
                 <div
                   style={{
                     flex: '0 1 auto',

@@ -275,7 +275,7 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A brute force method of checking to see if the script has a directive
- *  Used by project-data.InstanceAdd to check for the presence of
+ *  Used by project-server.InstanceAdd to check for the presence of
  *  '# PROGRAM INIT' to decide whether or not to replace
  *  the init script.
  *  @param {string} bpText
@@ -381,19 +381,23 @@ function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
  *  dc-agents, because datacore modules must be pure definition
  */
 function MakeAgent(instanceDef: TInstance) {
-  const { blueprint, name } = instanceDef;
-  const agent = new GAgent(name, String(instanceDef.id));
+  const { bpid, label } = instanceDef;
+  const agent = new GAgent(label, String(instanceDef.id));
   // handle extension of base agent
   // TODO: doesn't handle recursive agent definitions
-  if (typeof blueprint === 'string') {
-    const bdl = GetBlueprint(blueprint);
-    if (!bdl) throw Error(`agent blueprint for '${blueprint}' not defined`);
+  if (typeof bpid === 'string') {
+    const bdl = GetBlueprint(bpid);
+    if (!bdl) throw Error(`agent blueprint for '${bpid}' not defined`);
     // console.log(...PR(`Making '${agentName}' w/ blueprint:'${blueprint}'`));
     agent.setBlueprint(bdl);
 
     return SaveAgent(agent);
   }
-  throw Error(`MakeAgent(): bad blueprint name ${blueprint}`);
+  throw Error(
+    `MakeAgent(): bad blueprint name ${JSON.stringify(
+      bpid
+    )} in instanceDef ${JSON.stringify(instanceDef)}`
+  );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RemoveAgent(instanceDef: TInstance) {

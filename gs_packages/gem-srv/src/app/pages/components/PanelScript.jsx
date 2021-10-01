@@ -330,7 +330,7 @@ class PanelScript extends React.Component {
 
   /**
    * 1. PanelScript raises NET:SCRIPT_UPDATE
-   * 2. project-data handles NET:SCRIPT_UPDATE
+   * 2. project-server handles NET:SCRIPT_UPDATE
    *    a. ScriptUpdate updates main data
    *    b. ScirptUpdate raises NET:UPDATE_MODEL
    * 3. MissionControl handles NET_UPDATE_MODEL
@@ -355,9 +355,11 @@ class PanelScript extends React.Component {
    *    b. SaveAgent saves agents by id, which comes from a counter
    */
   SendText() {
+    const { projId } = this.props;
     const text = this.jar.toString();
     const currentBlueprintName = TRANSPILER.ExtractBlueprintName(text);
     UR.RaiseMessage('NET:SCRIPT_UPDATE', {
+      projId,
       script: text,
       origBlueprintName: this.origBlueprintName
     });
@@ -447,7 +449,7 @@ class PanelScript extends React.Component {
       openConfirmDelete,
       openConfirmUnload
     } = this.state;
-    const { id, script, modelId, onClick, classes } = this.props;
+    const { id, script, projId, onClick, classes } = this.props;
 
     // CodeJar Refresh
     //

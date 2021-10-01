@@ -9,7 +9,10 @@ import { IAgent, TInstanceMap, TInstance } from 'lib/t-script.d';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
 const PR = UR.PrefixUtil('DCAGNT');
+const DBG = false;
+
 export const AGENTS: Map<string, Map<any, IAgent>> = new Map(); // blueprint => Map<id,Agent>
 export const AGENT_DICT: Map<any, IAgent> = new Map(); // id => Agent
 export const INSTANCES: TInstanceMap = new Map();
@@ -22,10 +25,10 @@ let INSTANCE_COUNTER = INSTANCE_COUNTER_START_VAL;
  *  the default values (and any other startup code if needed).
  */
 export function DefineInstance(instanceDef: TInstance) {
-  const { blueprint, id, initScript, name = '<none>' } = instanceDef;
+  const { bpid, id, initScript, name = '<none>' } = instanceDef;
   // console.log(...PR(`saving '${name}' blueprint '${blueprint}' with init`, init));
-  if (!INSTANCES.has(blueprint)) INSTANCES.set(blueprint, []);
-  const bpi = INSTANCES.get(blueprint);
+  if (!INSTANCES.has(bpid)) INSTANCES.set(bpid, []);
+  const bpi = INSTANCES.get(bpid);
   // Use the spec'd id, otherwise auto-generate an id
   if (!instanceDef.id) {
     instanceDef.id = String(INSTANCE_COUNTER++);
@@ -35,8 +38,8 @@ export function DefineInstance(instanceDef: TInstance) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function UpdateInstance(instanceDef: TInstance) {
-  const { blueprint, id } = instanceDef;
-  const bpi = INSTANCES.get(blueprint);
+  const { bpid, id } = instanceDef;
+  const bpi = INSTANCES.get(bpid);
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
     console.error(...PR(`UpdateInstance couldn't find instance ${id}`));
@@ -44,8 +47,8 @@ export function UpdateInstance(instanceDef: TInstance) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function DeleteInstance(instanceDef: TInstance) {
-  const { blueprint, id } = instanceDef;
-  const bpi = INSTANCES.get(blueprint);
+  const { bpid, id } = instanceDef;
+  const bpi = INSTANCES.get(bpid);
   if (!bpi) return; // already deleted
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0)
@@ -61,8 +64,8 @@ export function GetAllInstances() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function GetInstance(instanceDef: TInstance) {
-  const { blueprint, id } = instanceDef;
-  const bpi = INSTANCES.get(blueprint);
+  const { bpid, id } = instanceDef;
+  const bpi = INSTANCES.get(bpid);
   if (bpi === undefined) return undefined;
   const index = bpi.findIndex(i => i.id === id);
   if (index < 0) return undefined;
@@ -170,14 +173,14 @@ export function SaveAgent(agent) {
  *     with the same GAgent.id as the key.
  */
 export function DeleteAgent(instancedef) {
-  const { blueprint, id } = instancedef;
-  if (!AGENTS.has(blueprint)) {
-    console.error(...PR(`blueprint ${blueprint} not found`));
+  const { bpid, id } = instancedef;
+  if (!AGENTS.has(bpid)) {
+    console.error(...PR(`blueprint ${instancedef} not found`));
     return;
   }
-  const agents = AGENTS.get(blueprint);
+  const agents = AGENTS.get(bpid);
   agents.delete(id);
-  AGENTS.set(blueprint, agents);
+  AGENTS.set(bpid, agents);
   AGENT_DICT.delete(id);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

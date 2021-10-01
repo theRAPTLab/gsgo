@@ -71,7 +71,7 @@ class Login extends React.Component {
   OnModelSelectClick(id) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    window.location = `/app/model?model=${id}`;
+    window.location = `/app/project?project=${id}`;
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -93,8 +93,7 @@ class Login extends React.Component {
           className={clsx(classes.cell, classes.top)}
           style={{ gridColumnEnd: 'span 3' }}
         >
-          <span style={{ fontSize: '32px' }}>GEMSTEP LOGIN</span> UGLY DEVELOPER
-          MODE
+          <span style={{ fontSize: '32px' }}>GEMSTEP LOGIN</span>
         </div>
         <div
           id="console-left"

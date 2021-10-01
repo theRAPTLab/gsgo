@@ -191,9 +191,9 @@ class StateGroupMgr {
    *  this does NOT fire publish or change handlers
    */
   updateKeyProp(key, prop, value) {
-    if (typeof key !== 'string') throw Error('arg1 must be string');
-    if (typeof prop !== 'string') throw Error('arg2 must be string');
-    if (value === undefined) throw Error('arg3 must be object literal');
+    if (typeof key !== 'string') throw Error(`arg1 ${key} must be string`);
+    if (typeof prop !== 'string') throw Error(`arg2 ${prop} must be string`);
+    if (value === undefined) throw Error(`arg3 ${value} must be object literal`);
     if (!this.hasKey(key)) {
       console.warn(
         ...PR(`updateKeyProp: group '${key}' not managed by this state`)

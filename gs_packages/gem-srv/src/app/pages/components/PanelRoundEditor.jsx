@@ -10,7 +10,7 @@
      sends changes to onFormInputUpdate
   3. onFormInputUpdate then calls onSave
   4. onSave triggers NET:ROUND_UPDATE,
-     which is handled by project-data
+     which is handled by project-server
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
@@ -23,20 +23,22 @@ class PanelRoundEditor extends React.Component {
   constructor() {
     super();
     this.state = {
-      title: '',
       round: undefined
     };
+    this.urStateUpdated = this.urStateUpdated.bind(this);
     this.onFormInputUpdate = this.onFormInputUpdate.bind(this);
     this.onSave = this.onSave.bind(this);
   }
 
   componentDidMount() {
-    const title = 'Edit Rounds';
-    const { round } = this.props; // copy props to state
-    this.setState({
-      title,
-      round
-    });
+    UR.SubscribeState('rounds', this.urStateUpdated);
+
+    const roundsSGM = UR.ReadFlatStateGroups('rounds');
+    this.urStateUpdated(roundsSGM);
+  }
+
+  componentWillUnmount() {
+    UR.UnsubscribeState('rounds', this.urStateUpdated);
   }
 
   /// Round Editor Direct Input Field Updates (not script wizard UI)
@@ -54,17 +56,24 @@ class PanelRoundEditor extends React.Component {
   // Save is triggered by any change in form data
   onSave() {
     const { round } = this.state;
-    UR.RaiseMessage('NET:ROUND_UPDATE', { round });
+    const { roundId, onFormChange } = this.props;
+    onFormChange({ roundId, round });
+  }
+
+  urStateUpdated(stateObj, cb) {
+    const { rounds } = stateObj;
+    if (rounds) {
+      const { roundId } = this.props;
+      const round = rounds.find(r => r.id === roundId);
+      if (round) this.setState({ round });
+    }
+    if (typeof cb === 'function') cb();
   }
 
   render() {
-    const { title, round } = this.state;
-    const { modelId, id, isActive, classes } = this.props;
-    const instructions = 'Click a round to edit';
-    const onPanelClick = () => {
-      // To be implemented
-      console.log('PanelRounds Panel Click');
-    };
+    const { round } = this.state;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { roundId, onFormChange, classes } = this.props;
 
     if (!round) return '';
 
@@ -81,7 +90,7 @@ class PanelRoundEditor extends React.Component {
             lineHeight: '20px'
           }}
         >
-          <div className={classes.inspectorLabelLeft}>Round {id}</div>
+          <div className={classes.inspectorLabelLeft}>Round {roundId}</div>
           <div />
           <div className={classes.inspectorLabel}>label:</div>
           <div className={classes.inspectorData}>

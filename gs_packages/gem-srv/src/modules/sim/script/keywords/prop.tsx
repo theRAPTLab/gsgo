@@ -125,6 +125,10 @@ class PropElement extends React.Component<MyProps, MyState> {
     };
     UR.RaiseMessage('SCRIPT_UI_CHANGED', updata);
   }
+  stopEvent(e) {
+    e.preventDefault(); // prevent click from deselecting instance
+    e.stopPropagation();
+  }
   render() {
     const {
       index,
@@ -147,6 +151,7 @@ class PropElement extends React.Component<MyProps, MyState> {
               type="button"
               className={classes.buttonMini}
               onClick={this.onDeleteLine}
+              onPointerDown={this.stopEvent}
             >
               <DeleteIcon fontSize="small" />
             </button>
@@ -263,7 +268,7 @@ export class prop extends Keyword {
     index: number,
     unit: TScriptUnit,
     // REVIEW: Add 'options' here?
-    children?: any[] // options
+    children?: any // options
   ): any {
     const expUnit = JSXFieldsFromUnit(unit);
     const [kw, refArg, methodName, ...args] = expUnit;

@@ -214,9 +214,9 @@ export interface IScriptUpdate {
 /// AGENT INSTANCING //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export type TInstance = {
-  blueprint: string;
+  bpid: string;
   id?: string;
-  name?: string;
+  label?: string;
   initScript?: TScriptUnit[];
 };
 export type TInstanceMap = Map<string, TInstance[]>; // string is blueprint name

@@ -32,6 +32,7 @@ import { GAME_LOOP } from './api-sim-gameloop';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SIM');
+const DBG = false;
 
 const LOOP = {
   LOAD: 'load',
@@ -85,17 +86,17 @@ function Stage() {
   (async () => {
     // Unsubscribe if previously run, otherwise it'll keep running.
     if (RX_SUB) RX_SUB.unsubscribe();
-    console.log(...PR('Loading Simulation'));
+    if (DBG) console.log(...PR('Loading Simulation'));
     await GAME_LOOP.executePhase('GLOOP_LOAD');
-    console.log(...PR('Simulation Loaded'));
-    console.log(...PR('Staging Simulation'));
+    if (DBG) console.log(...PR('Simulation Loaded'));
+    if (DBG) console.log(...PR('Staging Simulation'));
     await GAME_LOOP.executePhase('GLOOP_STAGED');
-    console.log(...PR('Simulation Staged'));
+    if (DBG) console.log(...PR('Simulation Staged'));
     StageInit();
     SIMSTATUS.currentLoop = LOOP.STAGED;
     SIMSTATUS.roundHasBeenStarted = false;
     SIMSTATUS.completed = false;
-    // NextRound();
+    if (DBG) console.log(...PR('Starting GLOOP_PRERUN Phase'));
 
     // On first staging, do prerun WITHOUT RoundInit
     // so that characters get drawn on screen.
@@ -107,18 +108,18 @@ function Stage() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function NextRound() {
   // stop simulation
-  console.log(...PR('NextRound'));
+  if (DBG) console.log(...PR('NextRound'));
   if (RX_SUB) RX_SUB.unsubscribe();
   SIM_RATE = 0;
-  console.log(...PR('Pre-run Loop Starting'));
+  if (DBG) console.log(...PR('Pre-run Loop Starting'));
   SIMSTATUS.currentLoop = LOOP.PRERUN;
   RoundInit(SIMSTATUS);
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundInit' });
   RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
-  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
+  if (DBG) console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
 function Costumes() {
-  console.log(...PR('Costumes!'));
+  if (DBG) console.log(...PR('Costumes!'));
   // Unsubscribe from PRERUN, otherwise it'll keep running.
   if (RX_SUB) RX_SUB.unsubscribe();
   RX_SUB = SIM_FRAME_MS.subscribe(m_CostumesStep);
@@ -134,10 +135,10 @@ function Run() {
 /** once the simluation is initialized, start the periodic frame update */
 function Start() {
   if (SIM_RATE === 1) {
-    console.log(...PR('Simulation already started'));
+    if (DBG) console.log(...PR('Simulation already started'));
     return;
   }
-  console.log(...PR('Simulation Timestep Started'));
+  if (DBG) console.log(...PR('Simulation Timestep Started'));
   SIM_RATE = 1;
   // Unsubscribe from PRERUN, otherwise it'll keep running.
   if (RX_SUB) RX_SUB.unsubscribe();
@@ -152,7 +153,8 @@ function Start() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Restage() {
   // application host has changed
-  console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
+  if (DBG)
+    console.log(...PR('Global Simulation State has changed! Broadcasting SYSEX'));
   GAME_LOOP.execute('SYSEX');
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -164,7 +166,7 @@ function Pause() {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function Stop() {
   // stop simulation (pause, allow resume)
-  console.log(...PR('Stop'));
+  if (DBG) console.log(...PR('Stop'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
   console.log(...PR('Post-run Loop Starting'));
@@ -172,18 +174,18 @@ function Stop() {
   SIMSTATUS.completed = RoundStop();
   UR.RaiseMessage('SCRIPT_EVENT', { type: 'RoundStop' });
   RX_SUB = SIM_FRAME_MS.subscribe(m_PostRunStep);
-  console.log(...PR('Post-run Loop Running...Monitoring Inputs'));
+  if (DBG) console.log(...PR('Post-run Loop Running...Monitoring Inputs'));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function End() {
   // end simulation
-  console.log(...PR('End'));
+  if (DBG) console.log(...PR('End'));
   RX_SUB.unsubscribe();
   SIM_RATE = 0;
-  console.log(...PR('Pre-run Loop Starting'));
+  if (DBG) console.log(...PR('Pre-run Loop Starting'));
   SIMSTATUS.currentLoop = LOOP.PRERUN;
   RX_SUB = SIM_FRAME_MS.subscribe(m_PreRunStep);
-  console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
+  if (DBG) console.log(...PR('Pre-run Loop Running...Monitoring Inputs'));
 }
 
 /// MODEL LOAD/SAVE CONTROL ///////////////////////////////////////////////////

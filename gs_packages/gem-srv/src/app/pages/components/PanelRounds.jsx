@@ -7,6 +7,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 import React from 'react';
+import UR from '@gemstep/ursys/client';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -16,32 +17,70 @@ import PanelRoundEditor from './PanelRoundEditor';
 class PanelRounds extends React.Component {
   constructor() {
     super();
+    const { rounds } = UR.ReadFlatStateGroups('rounds');
     this.state = {
-      title: ''
+      title: '',
+      rounds
     };
-    this.OnBlueprintClick = this.OnRoundEdit.bind(this);
+    this.onRoundChange = this.onRoundChange.bind(this);
+    this.onSave = this.onSave.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
   componentDidMount() {
+    // FUTURE: Allow adding new rounds.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { enableAdd } = this.props;
     const title = 'Edit Rounds';
     this.setState({ title });
+    UR.SubscribeState('rounds', this.urStateUpdated);
   }
 
-  OnRoundEdit(roundId) {
-    // Make editable?
+  componentWillUnmount() {
+    UR.UnsubscribeState('rounds', this.urStateUpdated);
+  }
+
+  onRoundChange(data) {
+    this.setState(
+      state => {
+        const rounds = state.rounds;
+        const idx = rounds.findIndex(r => r.id === data.roundId);
+        console.error(
+          'replacing round',
+          data.roundId,
+          'with',
+          data.round,
+          'at index',
+          idx
+        );
+        rounds.splice(idx, 1, data.round);
+        return { rounds };
+      },
+      () => this.onSave()
+    );
+  }
+
+  onSave() {
+    const { rounds } = this.state;
+    UR.WriteState('rounds', 'rounds', rounds);
+  }
+
+  urStateUpdated(stateObj, cb) {
+    const { rounds } = stateObj;
+    if (rounds) {
+      this.setState({ rounds });
+    }
+    if (typeof cb === 'function') cb();
   }
 
   render() {
-    const { title } = this.state;
-    const { modelId, id, isActive, rounds, classes } = this.props;
+    const { title, rounds } = this.state;
+    const { id, isActive, classes } = this.props;
     const instructions = 'Click a round to edit';
     const onPanelClick = () => {
       // To be implemented
       console.log('PanelRounds Panel Click');
     };
-
-    const roundDefs = rounds && rounds.roundDefs ? rounds.roundDefs : [];
 
     return (
       <PanelChrome
@@ -66,17 +105,17 @@ class PanelRounds extends React.Component {
                 flexWrap: 'wrap'
               }}
             >
-              {roundDefs.map((r, index) => (
+              {rounds.map((r, index) => (
                 <div
                   style={{
                     flex: '0 1 auto'
-                    // height: '20px',
-                    // overflow: 'hide'
                   }}
-                  // onClick={() => this.OnRoundEdit(r.id)}
                   key={r.id}
                 >
-                  <PanelRoundEditor id={r.id} round={r} modelId={modelId} />
+                  <PanelRoundEditor
+                    roundId={r.id}
+                    onFormChange={this.onRoundChange}
+                  />
                 </div>
               ))}
             </div>
