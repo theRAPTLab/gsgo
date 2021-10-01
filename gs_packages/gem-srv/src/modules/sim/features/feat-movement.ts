@@ -10,6 +10,8 @@
 
   TODO: add methods for initialization management
 
+  TODO: Rewrite most featCalls as reatProp calls
+
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import RNG from 'modules/sim/sequencer';
@@ -656,11 +658,16 @@ class MovementPack extends GFeature {
     agent.getFeatProp(FEATID, 'movementType').value = type;
     if (params.length > 0) {
       switch (type) {
+        case 'static':
+          SEEK_AGENTS.delete(agent.id);
+          break;
         case 'wander':
+          SEEK_AGENTS.delete(agent.id);
           // first param is distance
           agent.getFeatProp(FEATID, 'distance').value = params[0];
           break;
         case 'edgeToEdge':
+          SEEK_AGENTS.delete(agent.id);
           agent.getFeatProp(FEATID, 'distance').value = params[0];
           agent.getFeatProp(FEATID, 'direction').value = params[1];
 
@@ -671,10 +678,13 @@ class MovementPack extends GFeature {
           }
           break;
         case 'jitter':
-          // min max
+          SEEK_AGENTS.delete(agent.id);
+          break;
+        case 'wanderUntilAgent':
+          SEEK_AGENTS.delete(agent.id);
           break;
         case 'seekAgent':
-          break;
+        case 'seekAgentOrWander':
         default:
       }
     }
@@ -738,18 +748,24 @@ class MovementPack extends GFeature {
   }
 
   seekNearest(agent: IAgent, targetType: string) {
+    // Clear any existing target.  This is especially important between rounds.
+    agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: false });
     this.setMovementType(agent, 'seekAgent');
   }
 
   // vision cone visible
   seekNearestVisibleCone(agent: IAgent, targetType: string) {
+    // Clear any existing target.  This is especially important between rounds.
+    agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionCone: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }
 
   // color visible
   seekNearestVisibleColor(agent: IAgent, targetType: string) {
+    // Clear any existing target.  This is especially important between rounds.
+    agent.prop.Movement._targetId = undefined;
     SEEK_AGENTS.set(agent.id, { targetType, useVisionColor: true });
     this.setMovementType(agent, 'seekAgentOrWander');
   }

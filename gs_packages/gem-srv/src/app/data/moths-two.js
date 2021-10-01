@@ -116,6 +116,7 @@ export const MODEL = {
             propPop x
             propPush inity
             propPop y
+            prop seekState setTo 'waiting'
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
@@ -241,6 +242,7 @@ export const MODEL = {
             propPop x
             propPush inity
             propPop y
+            prop seekState setTo 'waiting'
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
@@ -362,6 +364,7 @@ export const MODEL = {
             propPop x
             propPush inity
             propPop y
+            prop seekState setTo 'waiting'
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
@@ -482,6 +485,7 @@ export const MODEL = {
             propPop x
             propPush inity
             propPop y
+            prop seekState setTo 'waiting'
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
@@ -828,7 +832,8 @@ addProp frame Number 0
 prop frame setMax 1000
 prop frame setMin 0
 
-
+// timed release: 'waiting' || 'startSeek' || 'seeking'
+addProp seekState String 'waiting'
 
 // AI Movement
 featProp Movement distance setTo 4
@@ -839,10 +844,14 @@ useFeature Timer
 
 # PROGRAM UPDATE
 
-
-every 60 [[
-  featProp Movement distance setTo 4
-  featCall Movement seekNearestVisibleCone Moth
+// process more than once a second second to be timely when round timer hits the mark
+every 0.5 [[
+  ifExpr {{ agent.prop.seekState.value === 'waiting' && agent.callFeatMethod('Global', 'getGlobalProp', 'roundTime').value > 5 }} [[
+    featProp Movement distance setTo 4
+    featCall Movement seekNearestVisibleCone Moth
+    dbgOut 'seeking prey'
+    prop seekState setTo 'seeking'
+  ]]
 ]]
 
 every 0.1 [[
