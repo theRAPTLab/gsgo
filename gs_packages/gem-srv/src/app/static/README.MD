@@ -1,0 +1,1 @@
+sprite assets for activities are now located in `gsgo/gs_assets/sprites`

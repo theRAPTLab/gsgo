@@ -3,11 +3,11 @@
   This is where you can define additional global styles anhd properties that
   will be propagated under the theme object available to all components.
 
-  addDerivedStyles() accepts a theme object created with createMuiTheme, and
+  addDerivedStyles() accepts a theme object created with createTheme, and
   returns a decorated object. You can create your derived properties using
   the values in the theme object.
 
-  The following reserved property names are defined by createMuiTheme() and
+  The following reserved property names are defined by createTheme() and
   will already be set when addDerivedStyles() is invoked by theme.js
 
     breakpoints   overrides    shadows      transitions
@@ -22,7 +22,7 @@ import merge from 'deepmerge';
 
 /// MERGE STYLES //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Merge a MuiTheme (assumed to be created with createMuiTheme) with
+/** Merge a MuiTheme (assumed to be created with createTheme) with
  *  extra parameters. The categories below are merely suggestions.
  *  example:
  *  const theme = useTheme();

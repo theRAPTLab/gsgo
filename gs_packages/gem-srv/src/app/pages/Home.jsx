@@ -140,8 +140,8 @@ class Home extends React.Component {
               testing. Non-devs should use Character Controller instead.
             </li>
             <li>
-              <a href="/app/dev-compiler">COMPILER</a> - ScriptText Compiler /
-              Simulator / Renderer Source
+              <a href="/app/dev-compiler-v2">COMPILER V2</a> - ScriptText Compiler
+              / Simulator / Renderer Source (version 2 full tokenization)
             </li>
           </ol>
         </div>

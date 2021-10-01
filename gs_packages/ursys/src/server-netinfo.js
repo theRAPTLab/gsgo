@@ -8,7 +8,7 @@
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const { URL } = require('url');
 const requestIp = require('request-ip');
-const { CFG_URNET_SERVICE, CFG_URDB_GQL } = require('./ur-common');
+const { CFG_URNET_SERVICE, CFG_URDB_GQL } = require('./common/ur-constants');
 
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

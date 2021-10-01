@@ -4,10 +4,10 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-const $$ = require('./ur-common');
+const $$ = require('./common/ur-constants');
 const DifferenceCache = require('./class-diff-cache');
 const PathedHasher = require('./class-pathed-hasher');
-const DBG = require('./ur-dbg-settings');
+const DBG = require('./common/debug-props');
 
 /// URNET MESSAGING SYSTEM ////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
