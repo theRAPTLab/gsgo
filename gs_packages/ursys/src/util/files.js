@@ -166,7 +166,12 @@ async function WriteJSON(filepath, obj, cb) {
   });
   file.end(); // if this is missing, close event will never fire.
 }
-
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Synchronous JSON write */
+function SyncWriteJSON(filepath, obj = {}) {
+  FSE.writeFileSync(filepath, JSON.stringify(obj, null, 2));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 async function WriteProject(filepath, obj, cb) {
   let file = FSE.createWriteStream(filepath, { emitClose: true });
 
@@ -247,5 +252,6 @@ module.exports = {
   // json
   ReadJSON,
   WriteJSON,
+  SyncWriteJSON
   WriteProject
 };

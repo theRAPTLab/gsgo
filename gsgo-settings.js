@@ -2,19 +2,14 @@
 
   GSGO PARAMETERS
 
-  For constants shared by multiple package. Import into package-specific
-  settings, override, and export.
+  For global constants shared by multiple packages in gsgo
+  All global config names should begin with GS_
 
-  NOTE: all global config names should begin with GS_
+  This is imported by the individual package settings in their config/
+  directory, and selectively overridden if necessary. These settings can be
+  loaded by both the node and browser environments!
 
-  example from gem-settings.js:
-
-    const GSCONFIG = require('../../../gsgo-settings');
-    const PACKAGE_NAME = 'GEM_SRV';
-    module.exports = {
-      PACKAGE_NAME,
-      ...GSCONFIG // all props begin with GS_
-    };
+  See 'gs_packages/gem-srv/config/gem-settings.js' for an example use
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 

@@ -6,18 +6,37 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
+/// LOAD MINIMAL DEPENDENCIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const FS = require('fs');
+const Path = require('path');
 const Process = require('process');
 const Shell = require('shelljs');
 const Minimist = require('minimist');
 const UR = require('@gemstep/ursys/server');
-const SERVER = require('./server/mcp-srv');
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = 'MCP_RUN';
 const TOUT = UR.TermOut(PR);
 const HT_PORT = 8080; // hack to avoid confict with 2929 for admsrv fornow
+
+// ensure that local settings file exists
+const localSettingsPath = Path.join(__dirname, 'config/local-settings.json');
+if (!UR.FILE.FileExists(localSettingsPath)) {
+  TOUT('creating empty config/local-settings.json file');
+  UR.FILE.SyncWriteJSON(localSettingsPath, {
+    _INFO: [
+      'Override constants defined gsgo-settings.js and mcp-settings.js in this file',
+      'Settings added here can be set for your gsgo installation, and will not be',
+      'committed to the gsgo repo'
+    ]
+  });
+}
+
+/// LOAD GEMSTEP DEPENDENCIES /////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const SERVER = require('./server/mcp-srv');
 
 /// HELPER FUNCTIONS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

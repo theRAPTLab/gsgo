@@ -25,7 +25,8 @@ const {
   GS_ASSETS_PATH,
   GS_ASSETS_PROJECT_ROOT,
   GS_ASSET_HOST_URL,
-  PACKAGE_NAME
+  PACKAGE_NAME,
+  GS_APP_PORT
 } = require('../config/gem-settings');
 
 /// LOAD LOCAL MODULES ////////////////////////////////////////////////////////
@@ -39,7 +40,7 @@ const TERM = UR.TermOut(PACKAGE_NAME);
 const DBG = false;
 
 /// CONSTANTS /////////////////////////////////////////////////////////////////
-const PORT = 80;
+const PORT = GS_APP_PORT;
 const DIR_ROOT = Path.resolve(__dirname, '../');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
 

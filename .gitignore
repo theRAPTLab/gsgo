@@ -22,6 +22,9 @@ dist/
 built/
 gs_assets*/
 
+# Ignore local settings overrides
+local-settings.json
+
 # Numerous always-ignore extensions
 *~
 *.diff
