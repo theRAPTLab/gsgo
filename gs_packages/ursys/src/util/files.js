@@ -252,6 +252,6 @@ module.exports = {
   // json
   ReadJSON,
   WriteJSON,
-  SyncWriteJSON
+  SyncWriteJSON,
   WriteProject
 };
