@@ -90,7 +90,7 @@ class InstanceInspector extends React.Component {
     // -- else instance is an instanceDef so get name via instance.name
     const { instance } = this.props;
     if (!instance) return '';
-    return instance.meta ? instance.meta.name : instance.name;
+    return instance.meta ? instance.meta.name : instance.label;
   }
 
   GetInstanceId() {
@@ -221,7 +221,7 @@ class InstanceInspector extends React.Component {
     } = this.state;
     const { id, instance, isActive, disallowDeRegister, classes } = this.props;
     const agentName = this.GetInstanceName();
-    const blueprintName = instance.blueprint.name;
+    const blueprintName = instance.blueprint ? instance.blueprint.name : '';
     const data = this.GetInstanceProperties();
     const visibleProps = data.filter(p => !propsToHide.includes(p.label));
     const hiddenProps = data.filter(p => propsToHide.includes(p.label));

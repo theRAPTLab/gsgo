@@ -9,9 +9,9 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useState } from 'react';
-import { withStyles } from '@material-ui/core/styles';
+import React from 'react';
 import UR from '@gemstep/ursys/client';
+import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 
@@ -27,7 +27,7 @@ import './scrollbar.css';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('MAPEDITOR');
-const DBG = true;
+const DBG = false;
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -48,6 +48,7 @@ class MapEditor extends React.Component {
 
   OnPanelClick(id) {
     // Do something?
+    if (DBG) console.log(...PR('OnPanelClick', id));
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -55,14 +56,8 @@ class MapEditor extends React.Component {
    *  make this happen.
    */
   render() {
-    const { modelId, model, classes } = this.props;
-    const mapInstanceSpec = model && model.instances ? model.instances : [];
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
-    const rounds = model && model.rounds ? model.rounds : [];
-
+    const { projId, bpidList, classes } = this.props;
+    if (DBG) console.log(...PR('render', classes));
     return (
       <div
         style={{
@@ -72,18 +67,14 @@ class MapEditor extends React.Component {
           overflow: 'hidden'
         }}
       >
-        <PanelRounds id="rounds" modelId={modelId} rounds={rounds} />
+        <PanelRounds id="rounds" modelId={projId} />
         <PanelBlueprints
           id="blueprints"
-          modelId={modelId}
-          agents={agents}
+          projId={projId}
+          bpidList={bpidList}
           enableAdd
         />
-        <PanelMapInstances
-          id="instances"
-          modelId={modelId}
-          mapInstanceSpec={mapInstanceSpec}
-        />
+        <PanelMapInstances id="instances" />
       </div>
     );
   }

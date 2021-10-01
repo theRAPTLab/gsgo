@@ -48,7 +48,7 @@ export function MakeDraggable(vobj: Visual) {
     if (agent) {
       agent.setPreviousMode();
       agent.setCaptive(false);
-      console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
+      // console.log(`agent id ${agent.id} '${agent.name}' dropped`, agent);
       //
       if (this.data && dragStopTime - dragStartTime > 150) {
         // Consider it a drag if the mouse was down for > 150 ms
@@ -62,7 +62,13 @@ export function MakeDraggable(vobj: Visual) {
         // used in place of selectable.ts
         // need to handle this here in draggable to differentiate
         // the mouseup from dragging
-        UR.RaiseMessage('SIM_INSTANCE_CLICK', { agentId: agent.id });
+        //
+        // We specify 'source' so that InstanceEditor knows to ignore the
+        // next ClickAwayListener click.
+        UR.RaiseMessage('SIM_INSTANCE_CLICK', {
+          agentId: agent.id,
+          source: 'stage'
+        });
       }
     }
     // set the interaction data to null

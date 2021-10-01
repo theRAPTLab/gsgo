@@ -63,7 +63,6 @@ class SubpanelScript extends React.Component {
    * @param {*} data
    */
   HandleScriptUpdate(data) {
-    console.warn('got script data update', data);
     // Update the script
     const { script } = this.props;
     const { isEditable } = this.state;

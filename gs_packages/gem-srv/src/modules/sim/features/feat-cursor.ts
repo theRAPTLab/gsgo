@@ -56,12 +56,12 @@ function m_CompileCursors() {
     // `;
   });
 
-  const CURSOR_SCRIPT = {
+  const CURSOR_BLUEPRINT = {
     id: 'Cursor',
     label: 'Cursor',
     isCharControllable: true,
     isPozyxControllable: true,
-    script: `# BLUEPRINT Cursor
+    scriptText: `# BLUEPRINT Cursor
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
@@ -80,13 +80,9 @@ ${touchscripts}
 
 useFeature AgentWidgets
 `
-    // No longer used.  See not above
-    // # PROGRAM UPDATE
-    // ${whenscripts}
-    // `
   };
 
-  UR.RaiseMessage('INJECT_BLUEPRINT', { script: CURSOR_SCRIPT });
+  UR.RaiseMessage('INJECT_BLUEPRINT', { blueprint: CURSOR_BLUEPRINT });
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 

@@ -64,7 +64,7 @@ class ScriptEditor extends React.Component {
       isReady: false,
       noMain: true,
       panelConfiguration: 'select',
-      modelId: '',
+      projId: '',
       model: {},
       scriptId: '',
       script: '',
@@ -98,9 +98,9 @@ class ScriptEditor extends React.Component {
   componentDidMount() {
     if (DBG) console.log(...PR('componentDidMount'));
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
+    const projId = params.get('project');
     const scriptId = params.get('script');
-    document.title = `GEMSTEP SCRIPT EDITOR: ${modelId}`;
+    document.title = `GEMSTEP SCRIPT EDITOR: ${projId}`;
 
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
@@ -108,7 +108,7 @@ class ScriptEditor extends React.Component {
     window.addEventListener('beforeunload', this.CleanupComponents);
 
     // Set model section
-    this.setState({ modelId, scriptId });
+    this.setState({ projId, scriptId });
 
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({
@@ -148,8 +148,8 @@ class ScriptEditor extends React.Component {
 
   Initialize() {
     if (this.state.isReady) return; // already initialized
-    const { modelId } = this.state;
-    this.RequestModel(modelId);
+    const { projId } = this.state;
+    this.RequestModel(projId);
     UR.RaiseMessage('INIT_RENDERER'); // Tell PanelSimViewer to request boundaries
     this.setState({ isReady: true });
   }
@@ -157,19 +157,21 @@ class ScriptEditor extends React.Component {
   /**
    * This requests model data from Mission Control's
    * ProjectData module.
-   * project-data will respond with model data { result: model }
+   * project-server will respond with model data { result: model }
    * which is handled by UpdateModelData, below.
    */
-  RequestModel(modelId) {
-    if (DBG) console.log(...PR('RequestModel...', modelId));
-    const fnName = 'GetProject';
+  RequestModel(projId) {
+    if (DBG) console.log(...PR('RequestModel...', projId));
+    const fnName = 'RequestProject';
     UR.CallMessage('NET:REQ_PROJDATA', {
       fnName,
-      parms: [modelId]
-    }).then(rdata => this.UpdateModelData(rdata.result));
+      parms: [projId]
+    }).then(rdata => {
+      return this.UpdateModelData(rdata.result);
+    });
   }
   HandleModelUpdate(data) {
-    this.UpdateModelData(data.model);
+    this.UpdateModelData(data.project);
   }
   /**
    * This saves the model data to the local state
@@ -190,9 +192,8 @@ class ScriptEditor extends React.Component {
     const { instances, monitoredInstances } = this.state;
     if (!instances) return;
     instances.forEach(i => {
-      const name = i.name || i.meta.name; // instance spec || GAgent
-      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { name });
-      monitoredInstances.splice(monitoredInstances.indexOf(name), 1);
+      UR.RaiseMessage('NET:INSPECTOR_UNREGISTER', { id: i.id });
+      monitoredInstances.splice(monitoredInstances.indexOf(i.id), 1);
     });
     this.setState({ monitoredInstances });
   }
@@ -262,22 +263,22 @@ class ScriptEditor extends React.Component {
     const { scriptId } = data;
     if (DBG) console.warn(...PR('OnSelectScript', data));
     this.UnRegisterInstances();
-    const { model, modelId } = this.state;
-    if (model === undefined || model.scripts === undefined) {
+    const { model, projId } = this.state;
+    if (model === undefined || model.blueprints === undefined) {
       console.warn(
         'ScriptEditor.OnSelectAgent: model or model.scripts is not defined',
         model
       );
       return; // no scripts defined
     }
-    const agent = model.scripts.find(s => s.id === scriptId);
-    const script = agent && agent.script ? agent.script : SCRIPT_TEMPLATE;
+    const agent = model.blueprints.find(s => s.id === scriptId);
+    const script = agent && agent.scriptText ? agent.scriptText : SCRIPT_TEMPLATE;
 
     // add script to URL
-    history.pushState(
+    window.history.pushState(
       {},
       '',
-      `/app/scripteditor?model=${modelId}&script=${scriptId}`
+      `/app/scripteditor?project=${projId}&script=${scriptId}`
     );
 
     // Show script selector if scriptId was not passed
@@ -322,7 +323,7 @@ class ScriptEditor extends React.Component {
     const {
       noMain,
       panelConfiguration,
-      modelId,
+      projId,
       model,
       scriptId,
       script,
@@ -342,8 +343,8 @@ class ScriptEditor extends React.Component {
     );
 
     const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
+      model && model.blueprints
+        ? model.blueprints.map(s => ({ id: s.id, label: s.label }))
         : [];
     return (
       <div
@@ -358,8 +359,7 @@ class ScriptEditor extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {modelId}</span> UGLY
-            DEVELOPER MODE
+            <span style={{ fontSize: '32px' }}>SCRIPT EDITOR {projId}</span>
           </div>
           <button
             type="button"
@@ -374,7 +374,7 @@ class ScriptEditor extends React.Component {
             <PanelSelectAgent
               id="select"
               agents={agents}
-              modelId={modelId}
+              modelId={projId}
               onClick={this.OnPanelClick}
             />
           )}
@@ -382,7 +382,7 @@ class ScriptEditor extends React.Component {
             <PanelScript
               id="script"
               script={script}
-              modelId={modelId}
+              projId={projId}
               onClick={this.OnPanelClick}
             />
           )}

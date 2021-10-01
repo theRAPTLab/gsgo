@@ -1,12 +1,14 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
   Status Object for defining custom GAgent parameters
+
   Used by:
+  * GAgent
   * AgentWidgets for barGraph
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// CLASS DEFINITION //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default class StatusObject {
   // Metadata

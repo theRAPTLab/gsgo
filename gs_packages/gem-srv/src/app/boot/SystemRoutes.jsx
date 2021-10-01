@@ -5,7 +5,7 @@ import React, { Suspense } from 'react';
 const Home = React.lazy(() => import('../pages/Home'));
 const CharControl = React.lazy(() => import('../pages/CharControl'));
 const Login = React.lazy(() => import('../pages/Login'));
-const Model = React.lazy(() => import('../pages/Model'));
+const Project = React.lazy(() => import('../pages/Project'));
 const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
@@ -33,9 +33,9 @@ export const LazyLogin = () => (
     <Login />
   </Suspense>
 );
-export const LazyModel = () => (
+export const LazyProject = () => (
   <Suspense fallback={<div>loading</div>}>
-    <Model />
+    <Project />
   </Suspense>
 );
 export const LazyMain = () => (

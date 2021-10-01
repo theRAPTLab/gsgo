@@ -54,7 +54,7 @@ function m_Delete(frame) {
       }
       DeleteAgent({
         id: agent.id,
-        blueprint: agent.blueprint.name
+        bpid: agent.blueprint.name
       });
     }
   }
@@ -189,7 +189,7 @@ class PopulationPack extends GFeature {
     // Queue Instance Defs
     const def = {
       name,
-      blueprint: blueprintName,
+      bpid: blueprintName,
       initScript,
       doClone: false,
       parentId: agent.id // save for positioning
@@ -210,7 +210,7 @@ class PopulationPack extends GFeature {
     // Queue Instance Defs
     const thisDef: any = merge.all([def]); // clone since other children share the same def
     thisDef.name = name;
-    thisDef.blueprint = bpname;
+    thisDef.bpid = bpname;
     thisDef.initScript = spawnScript;
     thisDef.doClone = true;
     thisDef.parentId = agent.id;

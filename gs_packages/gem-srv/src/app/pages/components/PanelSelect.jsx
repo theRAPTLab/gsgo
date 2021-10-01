@@ -28,7 +28,6 @@ class PanelSelect extends React.Component {
     // 1. Check for other 'Sim' devices.
     const devices = UR.GetDeviceDirectory();
     const sim = devices.filter(d => d.meta.uclass === 'Sim');
-    console.error('Init devices', devices, sim);
     if (sim.length > 0) {
       // HACKY
       this.setState(state => ({
@@ -43,13 +42,13 @@ class PanelSelect extends React.Component {
   OnClick(url) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    let { modelId } = this.props;
-    window.location = `/app/${url}?model=${modelId}`;
+    let { projId } = this.props;
+    window.location = `/app/${url}?project=${projId}`;
   }
 
   render() {
     const { title, options } = this.state;
-    const { id, modelId, isActive, onClick, classes } = this.props;
+    const { id, projId, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>

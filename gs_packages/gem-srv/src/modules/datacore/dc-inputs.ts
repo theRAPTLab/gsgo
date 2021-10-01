@@ -8,6 +8,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
+import * as ACBlueprints from '../appcore/ac-blueprints';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
 import { DeleteAgent } from './dc-agents';
@@ -21,9 +22,6 @@ let FRAME_TIMER;
 
 let STAGE_WIDTH = 100; // default
 let STAGE_HEIGHT = 100; // default
-
-let BPNAMES = []; // names of user-controllable blueprints
-let POZYX_BPNAMES = [];
 
 export const INPUT_GROUPS = new Map(); // Each device can belong to a specific group
 export const INPUTDEFS = []; //
@@ -75,7 +73,7 @@ function UDIDtoID(udid) {
 
 /// DATA UPDATE ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Control Object Sync to InputDef
+// Control Object (from CharControl) Sync to InputDef
 const COBJ_TO_INPUTDEF = new SyncMap({
   Constructor: InputDef,
   autoGrow: true,
@@ -86,15 +84,15 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
     // HACK Blueprints into cobj
-    inputDef.bpname = cobj.bpname;
-    inputDef.name = cobj.name;
+    inputDef.bpid = cobj.bpid;
+    inputDef.label = cobj.label;
     inputDef.framesSinceLastUpdate = 0;
   },
   onUpdate: (cobj: any, inputDef: InputDef) => {
     inputDef.x = transformX(cobj.x);
     inputDef.y = transformY(cobj.y);
-    inputDef.bpname = cobj.bpname;
-    inputDef.name = cobj.name;
+    inputDef.bpid = cobj.bpid;
+    inputDef.label = cobj.label;
     inputDef.framesSinceLastUpdate = 0;
   },
   shouldRemove: (inputDef, map) => {
@@ -269,23 +267,9 @@ function m_PozyxDampen(
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Return the first pozyx controllable blueprint for now
- * Eventually we'll add a more sophisticated map
- * SRI: this borks up every non-pozyx system and makes INPUT dependent
- * on SIM. INPUT, SIM, and RENDER are supposed to be completely independent.
- */
-export function GetDefaultPozyxBPName() {
-  if (POZYX_BPNAMES.length < 1) {
-    // console.warn('No pozyx controllable blueprints defined!');
-    // SRI: disable this because it isn't necessarily pozyx
-    // console.warn('No pozyx controllable blueprints defined!');
-    return undefined;
-  }
-  return POZYX_BPNAMES[0];
-}
-export function SetPozyxBPNames(bpnames: string[]) {
-  POZYX_BPNAMES = [...bpnames];
+
+function GetDefaultPozyxBpid() {
+  return ACBlueprints.GetPozyxControlDefaultBpid();
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const POZYX_TO_COBJ = new SyncMap({
@@ -299,8 +283,8 @@ POZYX_TO_COBJ.setMapFunctions({
     cobj.x = x;
     cobj.y = y;
     // HACK Blueprints into cobj
-    cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
+    cobj.bpid = GetDefaultPozyxBpid();
+    cobj.label = String(entity.id).startsWith('ft-pozyx')
       ? entity.id.substring(8)
       : entity.id;
   },
@@ -315,8 +299,8 @@ POZYX_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpname = GetDefaultPozyxBPName();
-    cobj.name = String(entity.id).startsWith('ft-pozyx')
+    cobj.bpid = GetDefaultPozyxBpid();
+    cobj.label = String(entity.id).startsWith('ft-pozyx')
       ? entity.id.substring(8)
       : entity.id;
   },
@@ -338,17 +322,6 @@ export function GetTrackerMap() {
 export function SetInputStageBounds(width, height) {
   STAGE_WIDTH = width;
   STAGE_HEIGHT = height;
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/**
- * Determines which blueprint types can be controlled by user inputs
- * @param bpnames
- */
-export function SetInputBPnames(bpnames: string[]) {
-  BPNAMES = [...bpnames];
-}
-export function GetInputBPnames() {
-  return BPNAMES;
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -386,8 +359,8 @@ function InputUpdate(devAPI, bpname) {
   // Technically cobjs should not have a blueprint parameter
   // but InputDefs need it to be able to generate an agent.
   const overriden_cobjs = raw_cobjs.map(o => {
-    o.bpname = bpname;
-    o.name = o.id;
+    o.bpid = bpname;
+    o.label = o.id;
     return o;
   });
   if (DBG) console.log('cobs', overriden_cobjs);
@@ -408,13 +381,18 @@ export function InputsUpdate() {
   blueprintNames.forEach(bpname => {
     InputUpdate(INPUT_GROUPS.get(bpname), bpname);
   });
-  // 2. Process PTrack, Pozyx, FakeTrack Inputs
+  // 2. Process Pozyx, FakeTrack Inputs
   //    PTRACK_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
   // SRI: it would have been much clearer if you coded a parallel structure
   // for the above to show COBJ_TO_INPUTDEF was used by both methods
-  COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
-  COBJ_TO_INPUTDEF.mapObjects();
-  // 3. Combine them all
+  if (GetDefaultPozyxBpid() !== undefined) {
+    COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
+    COBJ_TO_INPUTDEF.mapObjects();
+  }
+
+  // 3. Process PTrack TBD
+
+  // 4. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -432,6 +410,5 @@ export function GetInputDefs(): object[] {
  */
 export function InputsReset() {
   const defs = GetInputDefs();
-  console.error('delete input agents');
   defs.forEach(d => DeleteAgent(d));
 }

@@ -8,17 +8,15 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import React, { useState } from 'react';
-import ToggleButton from '@material-ui/lab/ToggleButton';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import clsx from 'clsx';
 import { withStyles } from '@material-ui/core/styles';
 
 /// APP MAIN ENTRY POINT //////////////////////////////////////////////////////
 import UR from '@gemstep/ursys/client';
-import { GetBoundary } from 'modules/datacore/dc-project';
 import SIMCTRL from './elements/mod-sim-control';
-import * as PROJ from './elements/project-data';
+import * as PROJSERVER from './elements/project-server';
 
 /// PANELS ////////////////////////////////////////////////////////////////////
 import MissionMapEditor from './MissionMapEditor';
@@ -54,36 +52,19 @@ PANEL_CONFIG.set('run-map', '50% auto 150px'); // columns
 PANEL_CONFIG.set('edit', '40% auto 0px'); // columns
 PANEL_CONFIG.set('tracker', '0px auto 400px'); // columns
 
-const StyledToggleButton = withStyles(theme => ({
-  root: {
-    color: 'rgba(0,156,156,1)',
-    backgroundColor: 'rgba(60,256,256,0.1)',
-    '&:hover': {
-      color: 'black',
-      backgroundColor: '#6effff'
-    },
-    '&.Mui-selected': {
-      color: '#6effff',
-      backgroundColor: 'rgba(60,256,256,0.3)',
-      '&:hover': {
-        color: 'black',
-        backgroundColor: '#6effff'
-      }
-    }
-  }
-}))(ToggleButton);
-
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// NOTE: STYLES ARE IMPORTED FROM COMMON-STYLES.JS
 class MissionControl extends React.Component {
   constructor() {
     super();
+    const { bpidList } = UR.ReadFlatStateGroups('project');
     this.state = {
       panelConfiguration: 'run',
       message: '',
-      modelId: '',
-      model: {},
+      projId: '', // set by project-server
+      projectIsLoaded: false,
+      bpidList,
       devices: [],
       inspectorInstances: [],
       runIsMinimized: true,
@@ -93,27 +74,23 @@ class MissionControl extends React.Component {
     };
 
     // Initialization
+    this.urStateUpdated = this.urStateUpdated.bind(this);
     this.GetUDID = this.GetUDID.bind(this);
-    this.Initialize = this.Initialize.bind(this);
     this.FailSimAlreadyRunning = this.FailSimAlreadyRunning.bind(this);
 
     // Devices
     this.UpdateDeviceList = this.UpdateDeviceList.bind(this);
 
     // Data Update Handlers
-    this.LoadModel = this.LoadModel.bind(this);
     this.HandleSimDataUpdate = this.HandleSimDataUpdate.bind(this);
     this.DoScriptUpdate = this.DoScriptUpdate.bind(this);
-    this.HandleInstancesUpdate = this.HandleInstancesUpdate.bind(this);
     this.DoSimStop = this.DoSimStop.bind(this);
     this.DoSimReset = this.DoSimReset.bind(this);
     this.OnInspectorUpdate = this.OnInspectorUpdate.bind(this);
     this.PostMessage = this.PostMessage.bind(this);
     this.DoShowMessage = this.DoShowMessage.bind(this);
-    UR.HandleMessage('LOAD_MODEL', this.LoadModel); // re from project-data
     UR.HandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.HandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
-    UR.HandleMessage('NET:INSTANCES_UPDATE', this.HandleInstancesUpdate);
     UR.HandleMessage('NET:HACK_SIM_STOP', this.DoSimStop);
     UR.HandleMessage('NET:HACK_SIM_RESET', this.DoSimReset);
     UR.HandleMessage('NET:INSPECTOR_UPDATE', this.OnInspectorUpdate);
@@ -135,25 +112,27 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
-
-    // System Hooks
-    UR.HookPhase('UR/APP_START', this.Initialize);
   }
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
-    const modelId = params.get('model');
+    const projId = params.get('project');
 
-    // No model selected, go back to login to select model
-    if (!modelId) window.location = '/app/login';
+    // No project selected, go back to login to select project
+    if (!projId) window.location = '/app/login';
 
-    this.setState({ modelId });
-    document.title = `GEMSTEP MAIN ${modelId}`;
+    this.setState({ projId });
+
     // start URSYS
     UR.SystemAppConfig({ autoRun: true });
 
-    // register project-data
-    PROJ.ProjectDataInit();
+    UR.SubscribeState('project', this.urStateUpdated);
+
+    // Prepare project-server for db load
+    // We read the currently selected projId from the URL,
+    // and prep project-server to load it.
+    // project-server will load on UR/APP_START
+    PROJSERVER.ProjectDataPreInit(this, projId);
   }
 
   componentDidCatch(e) {
@@ -161,6 +140,7 @@ class MissionControl extends React.Component {
   }
 
   componentWillUnmount() {
+    UR.UnsubscribeState('project', this.urStateUpdated);
     UR.UnhandleMessage('UR_DEVICES_CHANGED', this.UpdateDeviceList);
     UR.UnhandleMessage('NET:UPDATE_MODEL', this.HandleSimDataUpdate);
     UR.UnhandleMessage('NET:SCRIPT_UPDATE', this.DoScriptUpdate);
@@ -179,45 +159,18 @@ class MissionControl extends React.Component {
     return DEVICE_UDID;
   }
 
-  /// INITIALIZATION ////////////////////////////////////////////////////////////
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  async Initialize() {
-    // 1. Check for other 'Sim' devices.
-    const devices = UR.GetDeviceDirectory();
-    const sim = devices.filter(d => d.meta.uclass === 'Sim');
-    if (sim.length > 0) {
-      this.FailSimAlreadyRunning();
-      return;
-    }
-
-    // 2. Load Model
-    const { modelId } = this.state;
-    this.LoadModel(modelId);
-
-    // 3. Register as 'Sim' Device
-    // devices templates are defined in class-udevice.js
-    const dev = UR.NewDevice('Sim');
-    const { udid, status, error } = await UR.RegisterDevice(dev);
-    if (error) console.error(error);
-    if (status) console.log(...PR(status));
-    if (udid) DEVICE_UDID = udid;
-
-    // 4. Listen for Controllers
-    const charControllerDevAPI = UR.SubscribeDeviceSpec({
-      selectify: device => device.meta.uclass === 'CharControl',
-      notify: deviceLists => {
-        const { selected, quantified, valid } = deviceLists;
-        if (valid) {
-          this.UpdateDeviceList(selected);
-        }
-      }
-    });
+  urStateUpdated(stateObj, cb) {
+    const { project, bpidList } = stateObj;
+    if (project) this.setState({ projectIsLoaded: true });
+    if (bpidList) this.setState({ bpidList });
+    if (typeof cb === 'function') cb();
   }
+
   FailSimAlreadyRunning() {
-    const { modelId } = this.state;
+    const { projId } = this.state;
     this.setState({ openRedirectDialog: true });
     // redirect to project view
-    window.location = `/app/model?model=${modelId}&redirect`;
+    window.location = `/app/project?project=${projId}&redirect`;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -236,18 +189,9 @@ class MissionControl extends React.Component {
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// DATA UPDATE HANDLERS
   ///
-  async LoadModel(modelId) {
-    const model = await PROJ.LoadProject(modelId);
-    this.setState(
-      { model },
-      // Call Sim Places to compile agents after model load
-      () => SIMCTRL.SimPlaces(model)
-    );
-  }
   HandleSimDataUpdate(data) {
     // REVIEW: This logic should probably be in mod-sim-control?
     if (DBG) console.log('HandleSimDataUpdate', data);
-    console.log('HandleSimDataUpdate', data);
     if (
       SIMCTRL.IsRunning() || // Don't allow reset if sim is running
       SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started
@@ -256,25 +200,14 @@ class MissionControl extends React.Component {
       return; // skip update if it's already running
     }
     this.setState(
-      { modelId: data.modelId, model: data.model },
+      { projId: data.projId },
       // Call Sim Places to recompile agents.
-      () => SIMCTRL.SimPlaces(data.model)
+      () => SIMCTRL.SimPlaces(data.project)
     );
-  }
-  HandleInstancesUpdate(data) {
-    // if (DBG) console.log('HandleInstancesUpdate', data);
-    const { model } = this.state;
-    // REVIEW why is model not loaded?
-    if (!model) {
-      console.error('MissionControl state is missing model?!?', this.state);
-      return;
-    }
-    model.instances = data.instances;
-    this.setState({ model });
   }
   /**
    * User has submitted a new script, just update message
-   * project-data handles script editing and instance creation
+   * project-server handles script editing and instance creation
    * @param {object} data { script }
    */
   DoScriptUpdate(data) {
@@ -291,13 +224,12 @@ class MissionControl extends React.Component {
     if (SIMCTRL.IsRunning()) UR.RaiseMessage('NET:HACK_SIM_STOP'); // stop first
     this.setState(
       {
-        model: {},
         inspectorInstances: [],
         scriptsNeedUpdate: false
       },
       () => {
-        SIMCTRL.DoSimReset(); // First, clear state, then project-data.DoSimREset so they fire in order
-        this.LoadModel(this.state.modelId); // This will also call SimPlaces
+        SIMCTRL.DoSimReset(); // First, clear state, then project-server.DoSimREset so they fire in order
+        PROJSERVER.ReloadProject();
       }
     );
   }
@@ -347,11 +279,11 @@ class MissionControl extends React.Component {
     // Only update init if we're in edit mode
     if (panelConfiguration === 'edit') {
       const agent = data.agent;
-      const { modelId } = this.state;
+      const { projId } = this.state;
       const x = Number.parseFloat(agent.prop.x.value).toFixed(2);
       const y = Number.parseFloat(agent.prop.y.value).toFixed(2);
-      PROJ.InstanceUpdatePosition({
-        modelId,
+      PROJSERVER.InstanceUpdatePosition({
+        projId,
         instanceId: agent.id,
         updatedData: { x, y }
       });
@@ -359,27 +291,32 @@ class MissionControl extends React.Component {
   }
   /**
    * User clicked on agent instance in simulation view
+   * or User clicked on instance in MapEditor
    * If Map Editor is open, then when the user clicks
    * on an instance in the simulation view, we want to
    * select it for editing.
    * @param {object} data { agentId }
    */
   HandleSimInstanceClick(data) {
-    const { panelConfiguration, modelId } = this.state;
+    const { panelConfiguration, projId } = this.state;
     // Only request instance edit in edit mode
     if (panelConfiguration === 'edit') {
-      PROJ.InstanceRequestEdit({ modelId, agentId: data.agentId });
+      PROJSERVER.InstanceRequestEdit({
+        projId,
+        agentId: data.agentId,
+        source: data.source
+      });
     } else {
       UR.RaiseMessage('INSPECTOR_CLICK', { id: data.agentId });
     }
   }
   HandleSimInstanceHoverOver(data) {
-    const { modelId } = this.state;
-    PROJ.InstanceHoverOver({ modelId, agentId: data.agentId });
+    const { projId } = this.state;
+    PROJSERVER.InstanceHoverOver({ projId, agentId: data.agentId });
   }
   HandleSimInstanceHoverOut(data) {
-    const { modelId } = this.state;
-    PROJ.InstanceHoverOut({ modelId, agentId: data.agentId });
+    const { projId } = this.state;
+    PROJSERVER.InstanceHoverOut({ projId, agentId: data.agentId });
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -413,8 +350,8 @@ class MissionControl extends React.Component {
     });
   }
   OnSelectView() {
-    const { modelId } = this.state;
-    window.location = `/app/model?model=${modelId}`;
+    const { projId } = this.state;
+    window.location = `/app/project?project=${projId}`;
   }
   OnToggleTracker() {
     this.setState(state => ({
@@ -435,8 +372,9 @@ class MissionControl extends React.Component {
     const {
       panelConfiguration,
       message,
-      modelId,
-      model,
+      projId,
+      projectIsLoaded,
+      bpidList,
       devices,
       inspectorInstances,
       runIsMinimized,
@@ -445,12 +383,9 @@ class MissionControl extends React.Component {
       dialogMessage
     } = this.state;
     const { classes } = this.props;
-    const { width, height, bgcolor } = GetBoundary();
+    const { width, height, bgcolor } = PROJSERVER.GetBoundary();
 
-    const agents =
-      model && model.scripts
-        ? model.scripts.map(s => ({ id: s.id, label: s.label }))
-        : [];
+    document.title = `GEMSTEP MAIN ${projId}`;
 
     const stageBtn = (
       <>
@@ -485,11 +420,11 @@ class MissionControl extends React.Component {
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor modelId={modelId} model={model} />
+        <MissionMapEditor projId={projId} bpidList={bpidList} />
       ) : (
         <MissionRun
-          modelId={modelId}
-          model={model}
+          projId={projId}
+          bpidList={bpidList}
           devices={devices}
           toggleMinimized={this.OnToggleNetworkMapSize}
           minimized={runIsMinimized}
@@ -534,7 +469,7 @@ class MissionControl extends React.Component {
           style={{ gridColumnEnd: 'span 3', display: 'flex' }}
         >
           <div style={{ flexGrow: '1' }}>
-            <span style={{ fontSize: '32px' }}>MAIN {modelId}</span>{' '}
+            <span style={{ fontSize: '32px' }}>MAIN {projId}</span>{' '}
             {UR.ConnectionString()}
             &emsp;
             <button type="button" onClick={this.OnToggleTracker}>
@@ -542,7 +477,7 @@ class MissionControl extends React.Component {
             </button>
           </div>
           <Link
-            to={{ pathname: `/app/model?model=${modelId}` }}
+            to={{ pathname: `/app/project?project=${projId}` }}
             className={classes.navButton}
           >
             Back to PROJECT
@@ -568,7 +503,6 @@ class MissionControl extends React.Component {
         <div id="console-main" className={classes.main}>
           <PanelSimulation
             id="sim"
-            model={model}
             width={width}
             height={height}
             bgcolor={bgcolor}
@@ -595,7 +529,7 @@ class MissionControl extends React.Component {
               <>
                 <PanelPlayback
                   id="playback"
-                  model={model}
+                  isDisabled={!projectIsLoaded}
                   needsUpdate={scriptsNeedUpdate}
                 />
                 <PanelInstances

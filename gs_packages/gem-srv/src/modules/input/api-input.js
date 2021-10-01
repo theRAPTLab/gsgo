@@ -6,7 +6,8 @@
 
 import UR from '@gemstep/ursys/client';
 import * as PTRACK from 'modules/step/in-ptrack';
-import { GetTrackerMap, GetDefaultPozyxBPName } from 'modules/datacore/dc-inputs';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import { GetTrackerMap } from 'modules/datacore/dc-inputs';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -45,12 +46,6 @@ export function StopTrackerEmitter() {
 /// TRACKER DATA //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
-  // REVIEW: Skip starting tracker if there are no pozyx mappings.
-  //         Otherwise, dc-inputs will try to create instances with
-  //         no blueprint names.
-  const defaultPozyxBPName = GetDefaultPozyxBPName();
-  if (!defaultPozyxBPName) return;
-
   const PTRACK_SYNCMAP = GetTrackerMap();
 
   setInterval(() => {

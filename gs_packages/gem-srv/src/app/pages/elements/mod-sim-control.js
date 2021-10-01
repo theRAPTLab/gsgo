@@ -12,18 +12,15 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
 import * as SIM from 'modules/sim/api-sim';
 import { ClearDOBJ } from 'modules/sim/sim-agents';
 import * as DATACORE from 'modules/datacore';
 import * as RENDERER from 'modules/render/api-render';
-import {
-  SetInputStageBounds,
-  SetInputBPnames,
-  SetPozyxBPNames
-} from 'modules/datacore/dc-inputs';
-import { GetBoundary, SendBoundary } from 'modules/datacore/dc-project';
-import { GetInputBPNames, GetPozyxBPNames } from './project-data';
+import { SetInputStageBounds } from 'modules/datacore/dc-inputs';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
+import * as ACBlueprints from 'modules/appcore/ac-blueprints';
+import * as ACInstances from 'modules/appcore/ac-instances';
 import { ClearGlobalAgent } from '../../../lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -66,32 +63,41 @@ class SimControl {
     if (!model) return;
 
     // 2. Show Boundary
-    const boundary = GetBoundary();
+    const boundary = ACMetadata.GetBoundary();
     RENDERER.SetBoundary(boundary.width, boundary.height, boundary.bgcolor);
     // And Set Listeners too
-    SendBoundary();
+    UR.RaiseMessage('NET:SET_BOUNDARY', {
+      width: boundary.width,
+      height: boundary.height,
+      bgcolor: boundary.bgcolor
+    });
 
     // 3. Update Input System
     //    Set Input transforms
     SetInputStageBounds(boundary.width, boundary.height); // dc-inputs
-    //    Set Input controlled agents
-    const inputBPnames = GetInputBPNames();
-    SetInputBPnames(inputBPnames); // dc-inputs
-    //    Set Pozyx controlled agents
-    const pozyxBPnames = GetPozyxBPNames();
-    SetPozyxBPNames(pozyxBPnames);
 
-    UR.RaiseMessage('NET:SET_INPUT_BPNAMES', { bpnames: inputBPnames });
+    //    Set char controlled agents
+    //    This is primarily for Viewers
+    const charcontrolBpidList = ACBlueprints.GetCharControlBpidList();
+    UR.RaiseMessage('NET:SET_CHARCONTROL_BPIDLIST', {
+      bpnames: charcontrolBpidList
+    });
 
     // 4. Compile All Blueprints
-    const scripts = model.scripts;
-    const sources = scripts.map(s => TRANSPILER.ScriptifyText(s.script));
+    const blueprintDefs = ACBlueprints.GetBlueprints();
+    const sources = blueprintDefs.map(s => {
+      try {
+        return TRANSPILER.ScriptifyText(s.scriptText);
+      } catch (error) {
+        return console.error('Failed transpilling', s);
+      }
+    });
     const bundles = sources.map(s => TRANSPILER.CompileBlueprint(s));
     const blueprints = bundles.map(b => TRANSPILER.RegisterBlueprint(b));
     const blueprintNames = blueprints.map(b => b.name);
 
     // 5. Create/Update All Instances
-    const instancesSpec = model.instances;
+    const instancesSpec = ACInstances.GetInstances();
     UR.RaiseMessage('ALL_AGENTS_PROGRAM', {
       blueprintNames,
       instancesSpec
@@ -106,7 +112,7 @@ class SimControl {
     // 7. Update Agent Display
     //    Agent displays are automatically updated during SIM/VIS_UPDATE
     // 8. Update Inspectors
-    //    Inspectors will be automatically updated during SIM/UI_UPDATE phase
+    //    Inspectors will be automatically updated during SIM/UI_UPDATE phase    return;
   }
 
   DoSimCostumes() {

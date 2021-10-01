@@ -1,18 +1,29 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
+import 'modules/datacore/dc-project'; // Have to import to load db
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as ACProjects from 'modules/appcore/ac-projects'; // Have to import to access state
+
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
-import { ReadProjectsList } from '../elements/project-db';
 
 import PanelChrome from './PanelChrome';
 
+/// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('PanelSelectSimulation', 'TagPurple');
+const DBG = true;
+
+// CLASS DEFINITION //////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class PanelSelectSimulation extends React.Component {
   constructor() {
     super();
+    const { projectNames } = UR.ReadFlatStateGroups('projects');
     this.state = {
       title: 'Select Project',
-      models: []
-      // models: [
+      projectNames: projectNames
+      // projectNames: [
       //   // Dummy Data
       //   { id: 'aquatic', label: 'Aquatic Ecosystems' },
       //   { id: 'decomposition', label: 'Decomposition' },
@@ -21,23 +32,35 @@ class PanelSelectSimulation extends React.Component {
       // ]
     };
     this.onClick = this.onClick.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
   componentDidMount() {
-    const models = ReadProjectsList();
-    this.setState({ models });
+    UR.SubscribeState('projects', this.urStateUpdated);
+  }
+
+  componentWillUnmount() {
+    UR.UnsubscribeState('projects', this.urStateUpdated);
   }
 
   onClick(modelId) {
-    console.log('Select model ID:', modelId);
+    if (DBG) console.log(...PR('Clicked to Select model ID:', modelId));
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
     const { onClick } = this.props;
     onClick(modelId); // Tell Login panel to show Panelselect
   }
 
+  urStateUpdated(stateObj, cb) {
+    const { projectNames } = stateObj;
+    if (projectNames) {
+      this.setState({ projectNames });
+    }
+    if (typeof cb === 'function') cb();
+  }
+
   render() {
-    const { title, models } = this.state;
+    const { title, projectNames } = this.state;
     const { id, isActive, onClick, classes } = this.props;
 
     return (
@@ -55,7 +78,7 @@ class PanelSelectSimulation extends React.Component {
             <div className={classes.instructions}>
               <p>Select a project to work on:</p>
             </div>
-            {models.map(m => (
+            {projectNames.map(m => (
               <button
                 type="button"
                 className={classes.button}

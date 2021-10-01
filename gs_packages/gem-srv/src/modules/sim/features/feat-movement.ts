@@ -25,7 +25,7 @@ import {
   GetAgentById
 } from 'modules/datacore/dc-agents';
 import { Register } from 'modules/datacore/dc-features';
-import { GetBounds, Wraps } from 'modules/datacore/dc-project';
+import * as ACMetadata from 'modules/appcore/ac-metadata';
 import { intersect } from 'lib/vendor/js-intersect';
 import { ANGLES } from 'lib/vendor/angles';
 import {
@@ -45,6 +45,9 @@ ANGLES.DIRECTIONS = ['E', 'W'];
 const FEATID = 'Movement';
 const PR = UR.PrefixUtil('FeatMovement');
 const DBG = false;
+
+let BOUNDS = UR.ReadFlatStateGroups('metadata');
+UR.SubscribeState('metadata', urStateUpdated);
 
 const MOVEWINDOW = 10; // A move will leave `isMoved` active for this number of frames
 const MOVEDISTANCE = 3; // Minimum distance moved before `isMoved` is registered
@@ -71,13 +74,20 @@ function m_setDirection(agent, degrees) {
   agent.prop.Movement.direction.value = degrees;
 }
 
+function urStateUpdated(stateObj, cb) {
+  const { metadata } = stateObj;
+  BOUNDS = { ...BOUNDS, ...metadata };
+
+  if (typeof cb === 'function') cb();
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// Processes position request
 /// * Checks bounds
 /// * Applies bounce
 /// But does not actually set the agent x/y until FEATURES_EXEC phase
 function m_QueuePosition(agent, x, y) {
-  const bounds = GetBounds();
+  const bounds = BOUNDS;
   const pad = 1; // default 5, 10 was too big and too far, try one to get close to edge?
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
@@ -100,7 +110,7 @@ function m_QueuePosition(agent, x, y) {
 
   if (!agent.isCaptive) {
     // only bounds check if not being dragged
-    if (Wraps('left')) {
+    if (ACMetadata.Wraps('left')) {
       // This lets the agent poke its nose out before wrapping
       // to the other side.  Otherwise, the agent will suddenly
       // pop to other side.
@@ -116,7 +126,7 @@ function m_QueuePosition(agent, x, y) {
         if (DBG) console.log('bounce left');
       }
     }
-    if (Wraps('right')) {
+    if (ACMetadata.Wraps('right')) {
       xx = x >= bounds.right ? bounds.left + pad : xx;
     } else if (x + hwidth >= bounds.right) {
       xx = bounds.right - hwidth - pad;
@@ -125,7 +135,7 @@ function m_QueuePosition(agent, x, y) {
         if (DBG) console.log('bounce right');
       }
     }
-    if (Wraps('top')) {
+    if (ACMetadata.Wraps('top')) {
       yy = y <= bounds.top ? bounds.bottom - pad : yy;
     } else if (y - hheight <= bounds.top) {
       yy = bounds.top + hheight + pad;
@@ -134,7 +144,7 @@ function m_QueuePosition(agent, x, y) {
         if (DBG) console.log('bounce top');
       }
     }
-    if (Wraps('bottom')) {
+    if (ACMetadata.Wraps('bottom')) {
       yy = y >= bounds.bottom ? bounds.top + pad : yy;
     } else if (y + hheight > bounds.bottom) {
       yy = bounds.bottom - hheight - pad;
@@ -225,8 +235,8 @@ function m_ProcessPosition(agent, frame) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_SetPosition(agent, frame) {
-  const x = agent.prop.Movement._x;
-  const y = agent.prop.Movement._y;
+  const x = agent.prop.Movement._x || agent.x; // Fall back to x, set by MapEditor
+  const y = agent.prop.Movement._y || agent.y; // Fall back to y, set by MapEditor
   if (x === undefined || y === undefined) return; // Movement not set, so ignore
   agent.prop.x.value = x;
   agent.prop.y.value = y;
@@ -265,7 +275,7 @@ function moveWander(agent: IAgent, frame: number) {
 /// EDGE to EDGE (of the entire tank / system)
 /// Go in the same direction most of the way across the space, then turn back and do similar
 function moveEdgeToEdge(agent: IAgent, frame: number) {
-  const bounds = GetBounds();
+  const bounds = BOUNDS;
   const pad = 5;
   let hwidth = pad; // half width -- default to some padding
   let hheight = pad;
@@ -670,19 +680,16 @@ class MovementPack extends GFeature {
   }
 
   setRandomPosition(agent: IAgent) {
-    const bounds = GetBounds();
-    this.setRandomBoundedPosition(agent, bounds);
+    this.setRandomBoundedPosition(agent, BOUNDS);
   }
 
   setRandomPositionX(agent: IAgent) {
-    const bounds = GetBounds();
-    const x = m_random(bounds.left, bounds.right);
+    const x = m_random(BOUNDS.left, BOUNDS.right);
     m_QueuePosition(agent, x, agent.prop.y.value);
   }
 
   setRandomPositionY(agent: IAgent) {
-    const bounds = GetBounds();
-    const y = m_random(bounds.top, bounds.bottom);
+    const y = m_random(BOUNDS.top, BOUNDS.bottom);
     m_QueuePosition(agent, agent.prop.x.value, y);
   }
 
