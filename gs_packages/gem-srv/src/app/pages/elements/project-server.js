@@ -86,8 +86,7 @@ function urLocaleStateUpdated(stateObj, cb) {
 
 function urProjectStateUpdated(stateObj, cb) {
   if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
-  const { projId, project } = stateObj;
-  CURRENT_PROJECT_ID = projId;
+  const { project } = stateObj;
   CURRENT_PROJECT = project;
   if (typeof cb === 'function') cb();
 }
