@@ -32,9 +32,9 @@ export const MODEL = {
       {
         id: 'r1',
         label: 'Predation Round',
-        time: 100,
+        time: 130,
         intro:
-          'You have 60 seconds to hide your moths.  Then the predators will come....',
+          'You have 90 seconds to hide your moths.  Then the birds will come....',
         initScript: `
         `,
         outtro:
@@ -45,6 +45,7 @@ export const MODEL = {
           featCall Population agentsForEach Predator [[
             prop agent.isInert setTo true
             featCall Movement queuePosition -400 -400
+            prop tickCounter setTo 0
           ]]
 
           featCall Population agentsForEach Myth [[
@@ -98,14 +99,26 @@ export const MODEL = {
             prop alpha setTo 0.01
             featCall Movement queuePosition -400 400
           ]]
+
+          featCall Population agentsForEach Grass [[
+            featProp Physics scale setTo 0.01
+            prop alpha setTo 0.01
+            featCall Movement queuePosition -400 400
+          ]]
+
+          featCall Population agentsForEach TreeRoots [[
+            featProp Physics scale setTo 0.01
+            prop alpha setTo 0.01
+            featCall Movement queuePosition -400 400
+          ]]
   `
       },
       {
         id: 'r2',
         label: 'Reproduction Round',
-        time: 100,
+        time: 130,
         intro:
-          'You have 60 seconds to hide your moths.  Then the predators will come....',
+          'You have 90 seconds to hide your moths.  Then the birds will come....',
         initScript: `
 
           featCall Population agentsForEach Predator [[
@@ -119,6 +132,7 @@ export const MODEL = {
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
+            prop tickCounter setTo 0
           ]]
 
           featCall Population agentsForEach Myth [[
@@ -129,7 +143,31 @@ export const MODEL = {
           featCall Population agentsForEach TreeTrunk [[
             prop agent.isInert setTo false
             featProp Physics scale setTo 0.5
-            featProp Physics scaleY setTo 2
+            featProp Physics scaleY setTo 0.55
+            prop alpha setTo 1
+            propPush initx
+            propPop x
+            propPush inity
+            propPop y
+            featCall Movement jitterPos -2 2
+          ]]
+
+          featCall Population agentsForEach Grass [[
+            prop agent.isInert setTo false
+            featProp Physics scale setTo 0.55
+            featProp Physics scaleY setTo 0.9
+            prop alpha setTo 1
+            propPush initx
+            propPop x
+            propPush inity
+            propPop y
+            featCall Movement jitterPos -2 2
+          ]]
+
+          featCall Population agentsForEach TreeRoots [[
+            prop agent.isInert setTo false
+            featProp Physics scale setTo 0.35
+            featProp Physics scaleY setTo 0.35
             prop alpha setTo 1
             propPush initx
             propPop x
@@ -169,6 +207,7 @@ export const MODEL = {
         featCall Population agentsForEach Predator [[
           prop agent.isInert setTo true
           featCall Movement queuePosition -400 -400
+          prop tickCounter setTo 0
         ]]
 
         featCall Population agentsForEach Myth [[
@@ -219,6 +258,19 @@ export const MODEL = {
         ]]
 
         featCall Population agentsForEach TreeFoliage [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+
+        featCall Population agentsForEach Grass [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+        featCall Population agentsForEach TreeRoots [[
           featProp Physics scale setTo 0.01
           prop alpha setTo 0.01
           featCall Movement queuePosition -400 400
@@ -228,9 +280,9 @@ export const MODEL = {
       {
         id: 'r3',
         label: 'Reproduction Round',
-        time: 100,
+        time: 130,
         intro:
-          'You have 60 seconds to hide your moths.  Then the predators will come....',
+          'You have 90 seconds to hide your moths.  Then the birds will come....',
         initScript: `
 
           featCall Population agentsForEach Predator [[
@@ -244,13 +296,14 @@ export const MODEL = {
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
+            prop tickCounter setTo 0
           ]]
 
 
           featCall Population agentsForEach TreeTrunk [[
             prop agent.isInert setTo false
             featProp Physics scale setTo 0.5
-            featProp Physics scaleY setTo 2
+            featProp Physics scaleY setTo 0.55
             prop alpha setTo 1
             propPush initx
             propPop x
@@ -258,6 +311,31 @@ export const MODEL = {
             propPop y
             featCall Movement jitterPos -2 2
           ]]
+
+
+		  featCall Population agentsForEach Grass [[
+        prop agent.isInert setTo false
+        featProp Physics scale setTo 0.55
+        featProp Physics scaleY setTo 0.9
+        prop alpha setTo 1
+        propPush initx
+        propPop x
+        propPush inity
+        propPop y
+        featCall Movement jitterPos -2 2
+      ]]
+
+      featCall Population agentsForEach TreeRoots [[
+        prop agent.isInert setTo false
+        featProp Physics scale setTo 0.35
+        featProp Physics scaleY setTo 0.35
+        prop alpha setTo 1
+        propPush initx
+        propPop x
+        propPush inity
+        propPop y
+        featCall Movement jitterPos -2 2
+      ]]
 
 
           featCall Population removeInertAgents
@@ -290,6 +368,7 @@ export const MODEL = {
         featCall Population agentsForEach Predator [[
           prop agent.isInert setTo true
           featCall Movement queuePosition -400 -400
+          prop tickCounter setTo 0
         ]]
 
         featCall Population agentsForEach Myth [[
@@ -340,6 +419,18 @@ export const MODEL = {
         ]]
 
         featCall Population agentsForEach TreeFoliage [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+        featCall Population agentsForEach Grass [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+        featCall Population agentsForEach TreeRoots [[
           featProp Physics scale setTo 0.01
           prop alpha setTo 0.01
           featCall Movement queuePosition -400 400
@@ -349,9 +440,9 @@ export const MODEL = {
       {
         id: 'r4',
         label: 'Reproduction Round',
-        time: 100,
+        time: 130,
         intro:
-          'You have 60 seconds to hide your moths.  Then the predators will come....',
+          'You have 90 seconds to hide your moths.  Then the birds will come....',
         initScript: `
 
           featCall Population agentsForEach Predator [[
@@ -365,12 +456,13 @@ export const MODEL = {
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
+            prop tickCounter setTo 0
           ]]
 
           featCall Population agentsForEach TreeTrunk [[
             prop agent.isInert setTo false
             featProp Physics scale setTo 0.5
-            featProp Physics scaleY setTo 2
+            featProp Physics scaleY setTo 0.55
             prop alpha setTo 1
             propPush initx
             propPop x
@@ -379,6 +471,30 @@ export const MODEL = {
             featCall Movement jitterPos -2 2
           ]]
 
+
+		  featCall Population agentsForEach Grass [[
+        prop agent.isInert setTo false
+        featProp Physics scale setTo 0.55
+        featProp Physics scaleY setTo 0.9
+        prop alpha setTo 1
+        propPush initx
+        propPop x
+        propPush inity
+        propPop y
+        featCall Movement jitterPos -2 2
+      ]]
+
+      featCall Population agentsForEach TreeRoots [[
+        prop agent.isInert setTo false
+        featProp Physics scale setTo 0.35
+        featProp Physics scaleY setTo 0.35
+        prop alpha setTo 1
+        propPush initx
+        propPop x
+        propPush inity
+        propPop y
+        featCall Movement jitterPos -2 2
+      ]]
 
           featCall Population removeInertAgents
           featProp Population targetPopulationSize setTo 21
@@ -410,6 +526,7 @@ export const MODEL = {
         featCall Population agentsForEach Predator [[
           prop agent.isInert setTo true
           featCall Movement queuePosition -400 -400
+          prop tickCounter setTo 0
         ]]
 
         featCall Population agentsForEach Myth [[
@@ -464,14 +581,28 @@ export const MODEL = {
           prop alpha setTo 0.01
           featCall Movement queuePosition -400 400
         ]]
+
+
+        featCall Population agentsForEach Grass [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+        featCall Population agentsForEach TreeRoots [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
         `
       },
       {
         id: 'r5',
         label: 'Reproduction Round',
-        time: 100,
+        time: 130,
         intro:
-          'You have 60 seconds to hide your moths.  Then the predators will come....',
+          'You have 90 seconds to hide your moths.  Then the birds will come....',
         initScript: `
 
           featCall Population agentsForEach Predator [[
@@ -485,13 +616,14 @@ export const MODEL = {
             featCall Movement jitterPos -2 2
             featProp Movement distance setTo 4
             featCall Movement setMovementType 'static'
+            prop tickCounter setTo 0
           ]]
 
 
           featCall Population agentsForEach TreeTrunk [[
             prop agent.isInert setTo false
             featProp Physics scale setTo 0.5
-            featProp Physics scaleY setTo 2
+            featProp Physics scaleY setTo 0.55
             prop alpha setTo 1
             propPush initx
             propPop x
@@ -500,6 +632,29 @@ export const MODEL = {
             featCall Movement jitterPos -2 2
           ]]
 
+          featCall Population agentsForEach Grass [[
+            prop agent.isInert setTo false
+            featProp Physics scale setTo 0.55
+            featProp Physics scaleY setTo 0.9
+            prop alpha setTo 1
+            propPush initx
+            propPop x
+            propPush inity
+            propPop y
+            featCall Movement jitterPos -2 2
+          ]]
+
+          featCall Population agentsForEach TreeRoots [[
+            prop agent.isInert setTo false
+            featProp Physics scale setTo 0.35
+            featProp Physics scaleY setTo 0.35
+            prop alpha setTo 1
+            propPush initx
+            propPop x
+            propPush inity
+            propPop y
+            featCall Movement jitterPos -2 2
+          ]]
 
           featCall Population removeInertAgents
           featProp Population targetPopulationSize setTo 21
@@ -531,6 +686,7 @@ export const MODEL = {
         featCall Population agentsForEach Predator [[
           prop agent.isInert setTo true
           featCall Movement queuePosition -400 -400
+          prop tickCounter setTo 0
         ]]
 
         featCall Population agentsForEach Myth [[
@@ -585,6 +741,19 @@ export const MODEL = {
           prop alpha setTo 0.01
           featCall Movement queuePosition -400 400
         ]]
+
+        featCall Population agentsForEach Grass [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
+        featCall Population agentsForEach TreeRoots [[
+          featProp Physics scale setTo 0.01
+          prop alpha setTo 0.01
+          featCall Movement queuePosition -400 400
+        ]]
+
         `
       }
     ]
@@ -593,7 +762,7 @@ export const MODEL = {
     {
       id: 'Myth',
       label: 'Myth',
-      isCharControllable: true,
+      //isCharControllable: true,
       isPozyxControllable: true,
       script: `# BLUEPRINT Myth
 
@@ -795,11 +964,15 @@ ifExpr {{ agent.getProp('isInert').value }} [[
     {
       id: 'Predator',
       label: 'Predator',
+      //isCharControllable: true,
+      //isPozyxControllable: true,
       script: `# BLUEPRINT Predator
 
 # PROGRAM DEFINE
 useFeature Costume
-featCall Costume setCostume 'predator.json' 0
+//featCall Costume setCostume 'predator.json' 0
+//featCall Costume setCostume 'hawk.json' 0
+featCall Costume setCostume 'robin.json' 0
 
 useFeature Physics
 useFeature Touches
@@ -808,6 +981,9 @@ featCall Touches monitor Moth c2c
 // needed for Seek
 useFeature Movement
 featProp Movement useAutoOrientation setTo true
+
+//featProp Physics scale setTo 0.75  //FOR 'predator'
+featProp Physics scale setTo 0.5
 
 useFeature Vision
 featCall Vision monitor Moth
@@ -828,6 +1004,10 @@ addProp frame Number 0
 prop frame setMax 1000
 prop frame setMin 0
 
+addProp tickCounter Number 0
+prop tickCounter setMax 1000
+prop tickCounter setMin 0
+prop tickCounter setTo 0
 
 
 // AI Movement
@@ -840,10 +1020,17 @@ useFeature Timer
 # PROGRAM UPDATE
 
 
-every 60 [[
-  featProp Movement distance setTo 4
-  featCall Movement seekNearestVisibleCone Moth
+every 1 [[
+  prop tickCounter add 1
+  //dbgOut{{  agent.getProp('tickCounter').value  }}
+  ifExpr {{ agent.getProp('tickCounter').value > 88 }} [[
+    //dbgOut{{ "setting the movemnt info" }}
+    featProp Movement distance setTo 4
+    featCall Movement seekNearestVisibleCone Moth
+    prop tickCounter setTo 0
+  ]]
 ]]
+
 
 every 0.1 [[
   prop frame add 1
@@ -858,16 +1045,17 @@ when Predator centerTouchesCenter Moth [[
   // Only if Moth is not camouflaged
   ifExpr {{ Moth.getProp('vulnerable').value  > 0 }} [[
     featCall Moth.Costume setGlow 1
-    every 0.2 [[
-      prop Moth.isInert setTo true
+    every 0.12 [[
+
       featCall Moth.Costume setCostume 'smallsquare.json' 0
       prop Moth.alpha setMin 0.1
       prop Moth.alpha setTo 0.1
       prop Moth.orientation setTo 3.14
       featProp Moth.AgentWidgets text setTo ''
+      prop Moth.isInert setTo true
 
       // Stop sim if half of the moths are eaten
-      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 10 }} [[
+      ifExpr {{ Moth.callFeatMethod('Population', 'getActiveAgentsCount', 'Moth') < 11 }} [[
         featCall Predator.Timer stopRound
         // This will be added to the end of round message
         featCall Moth.AgentWidgets showMessage 'Predators have eaten over half of the Moth population!'
@@ -884,7 +1072,7 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeTrunk
           # PROGRAM DEFINE
           useFeature Costume
-          featCall Costume setCostume 'square.json' 0
+          featCall Costume setCostume 'trunk.json' 0
 
           useFeature Physics
           useFeature Population
@@ -911,17 +1099,55 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT Grass
           # PROGRAM DEFINE
           useFeature Costume
-          featCall Costume setCostume 'square.json' 0
+          featCall Costume setCostume 'grass.json' 0
 
           useFeature Physics
           useFeature Population
           useFeature Movement
+
+          addProp initx Number 0
+          prop initx setMax 400
+          prop initx setMin -400
+
+          addProp inity Number 0
+          prop inity setMax 400
+          prop inity setMin -400
 
           # PROGRAM INIT
           prop zIndex setTo -300
 
           # PROGRAM UPDATE
         `
+    },
+    {
+      id: 'TreeRoots',
+      label: 'TreeRoots',
+      script: `# BLUEPRINT TreeRoots
+      # PROGRAM DEFINE
+      useFeature Costume
+      featCall Costume setCostume 'roots.json' 0
+      //featCall Costume setColorizeHSV 0 .8 0.5
+
+      useFeature Physics
+      useFeature AgentWidgets
+      useFeature Movement
+
+      addProp initx Number 0
+      prop initx setMax 400
+      prop initx setMin -400
+
+      addProp inity Number 0
+      prop inity setMax 400
+      prop inity setMin -400
+
+      featProp AgentWidgets text setTo ''
+
+
+      # PROGRAM INIT
+      prop zIndex setTo -199
+
+      # PROGRAM UPDATE
+`
     }
   ],
   instances: [
@@ -931,9 +1157,12 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'Grass',
       initScript: `
     featCall Movement queuePosition 0 265
-     featCall Costume setColorize 0.1 0.8 0
-     featProp Physics scale setTo 3.13
-     featProp Physics scaleY setTo 1.8`
+     //featCall Costume setColorize 0.1 0.8 0
+     featProp Physics scale setTo 0.55
+     featProp Physics scaleY setTo 0.9
+     prop initx setTo 0
+     prop inity setTo 265
+     `
     },
     {
       id: 1102,
@@ -943,9 +1172,22 @@ when Predator centerTouchesCenter Moth [[
       featCall Movement queuePosition -250 -145
      featCall Costume setColorizeHSV 0 0 0.66
      featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 2
+     featProp Physics scaleY setTo 0.55
      prop initx setTo -250
      prop inity setTo -145
+     `
+    },
+    {
+      id: 1103,
+      name: 'TreeRoots1',
+      blueprint: 'TreeRoots',
+      initScript: `
+      featCall Movement queuePosition -250 125
+     featCall Costume setColorizeHSV 0 0 0.66
+     featProp Physics scale setTo 0.35
+     featProp Physics scaleY setTo 0.35
+     prop initx setTo -250
+     prop inity setTo 125
      `
     },
     {
@@ -956,9 +1198,22 @@ when Predator centerTouchesCenter Moth [[
       featCall Movement queuePosition 50 -145
       featCall Costume setColorizeHSV 0 0 0.67
       featProp Physics scale setTo 0.5
-      featProp Physics scaleY setTo 2
-      prop initx setTo -50
+      featProp Physics scaleY setTo 0.55
+      prop initx setTo 50
       prop inity setTo -145
+     `
+    },
+    {
+      id: 1105,
+      name: 'TreeRoots2',
+      blueprint: 'TreeRoots',
+      initScript: `
+      featCall Movement queuePosition 50 125
+     featCall Costume setColorizeHSV 0 0 0.67
+     featProp Physics scale setTo 0.35
+     featProp Physics scaleY setTo 0.35
+     prop initx setTo 50
+     prop inity setTo 125
      `
     },
     {
@@ -969,12 +1224,24 @@ when Predator centerTouchesCenter Moth [[
     featCall Movement queuePosition 250 -145
      featCall Costume setColorizeHSV 0 0 0.68
      featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 2
+     featProp Physics scaleY setTo 0.55
      prop initx setTo 250
      prop inity setTo -145
      `
     },
-
+    {
+      id: 1107,
+      name: 'TreeRoots3',
+      blueprint: 'TreeRoots',
+      initScript: `
+      featCall Movement queuePosition 250 125
+     featCall Costume setColorizeHSV 0 0 0.68
+     featProp Physics scale setTo 0.35
+     featProp Physics scaleY setTo 0.35
+     prop initx setTo 250
+     prop inity setTo 125
+     `
+    },
     {
       id: 1203,
       name: 'Moth3a',
@@ -1204,17 +1471,6 @@ when Predator centerTouchesCenter Moth [[
 `
     },
     {
-      id: 12092,
-      name: 'Moth9c',
-      blueprint: 'Moth',
-      initScript: `featCall Movement queuePosition 240 320
-      featProp Costume colorScaleIndex setTo 9
-      //featPropPush Costume colorScaleIndex
-      //featPropPop AgentWidgets text
-     prop colorIndx setTo 9
-`
-    },
-    {
       id: 1301,
       name: 'Predator1',
       blueprint: 'Predator',
@@ -1235,6 +1491,17 @@ when Predator centerTouchesCenter Moth [[
       prop inity setTo -300
       prop frame setTo 1
       `
+    },
+    {
+      id: 12092,
+      name: 'Moth9c',
+      blueprint: 'Moth',
+      initScript: `featCall Movement queuePosition 240 320
+      featProp Costume colorScaleIndex setTo 9
+      //featPropPush Costume colorScaleIndex
+      //featPropPop AgentWidgets text
+     prop colorIndx setTo 9
+`
     }
   ]
 };
