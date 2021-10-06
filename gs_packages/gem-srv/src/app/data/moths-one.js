@@ -374,8 +374,14 @@ when Predator centerTouchesCenter Moth [[
       script: `# BLUEPRINT TreeTrunk
       # PROGRAM DEFINE
       useFeature Costume
+<<<<<<< gs_packages/gem-srv/src/app/data/moths-one.js
+      featCall Costume setCostume 'square.json' 0
+      // MUST Initialize color before changing Value, overriden by treeColorIndex and colorValue below
+      featCall Costume setColorizeHSV 0 0 0
+=======
       featCall Costume setCostume 'trunk.json' 0
       //featCall Costume setColorize 0 0 0.9
+>>>>>>> gs_packages/gem-srv/src/app/data/moths-one.js
 
       useFeature Physics
       useFeature AgentWidgets
@@ -383,11 +389,20 @@ when Predator centerTouchesCenter Moth [[
 
       featProp AgentWidgets text setTo ''
 
+      // STUDENTS_CAN_CHANGE -- Set this value here or in initScript
+      addProp treeColorIndex Number 7.0
+      // Force update to show color immediately
+      exprPush {{ agent.getProp('treeColorIndex').value / 10 }}
+      featPropPop Costume colorValue
 
       # PROGRAM INIT
       prop zIndex setTo -200
 
       # PROGRAM UPDATE
+      // Automatically set color based on treeColorIndex.
+      // Has to be in PROGRAM UPDATE because PROGRAM INIT runs before instance initScript
+      exprPush {{ agent.getProp('treeColorIndex').value / 10 }}
+      featPropPop Costume colorValue
 `
     },
     {
@@ -420,9 +435,12 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition -250 50
-     featCall Costume setColorizeHSV 0 0 0.66
-     featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 0.65`
+// Override default color -- NOTE this will not show up until after Run starts because the color update is in PROGRAM UPDATE
+prop treeColorIndex setTo 8.5
+// Set in TreeTrunk INIT
+// featCall Costume setColorizeHSV 0 0 0.66
+featProp Physics scale setTo 0.5
+featProp Physics scaleY setTo 0.65`
     },
     {
       id: 1103,
@@ -441,9 +459,10 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
       featCall Movement queuePosition 50 50
-      featCall Costume setColorizeHSV 0 0 0.68
-      featProp Physics scale setTo 0.5
-      featProp Physics scaleY setTo 0.65`
+// Set in TreeTrunk INIT
+// featCall Costume setColorizeHSV 0 0 0.68
+featProp Physics scale setTo 0.5
+featProp Physics scaleY setTo 0.65`
     },
     {
       id: 1105,
@@ -463,9 +482,10 @@ when Predator centerTouchesCenter Moth [[
       blueprint: 'TreeTrunk',
       initScript: `
     featCall Movement queuePosition 250 50
-     featCall Costume setColorizeHSV 0 0 0.67
-     featProp Physics scale setTo 0.5
-     featProp Physics scaleY setTo 0.65`
+// Set in TreeTrunk INIT
+// featCall Costume setColorizeHSV 0 0 0.67
+featProp Physics scale setTo 0.5
+featProp Physics scaleY setTo 0.65`
     },
 
     {
