@@ -12,6 +12,7 @@ import {
   GetRoundDef,
   RoundsShouldLoop
 } from 'modules/datacore/dc-project';
+import { GVarNumber } from 'modules/sim/vars/_all_vars';
 import { GetGlobalAgent } from 'lib/class-gagent';
 import SM_State from 'lib/class-sm-state';
 import * as TRANSPILER from './script/transpiler';
@@ -56,10 +57,15 @@ function StartRoundTimer(stopfn) {
   if (DBG) console.log(...PR('Start Timer'));
   if (!ROUND_TIMER_START_VALUE) return;
 
+  const GLOBAL_AGENT = GetGlobalAgent();
+
   TIMER_COUNTER = 0;
+  GLOBAL_AGENT.prop.roundTime.setTo(0); // reset between rounds
+
   const size = 1000; // every second -- Interval size matches sim rate
   TIMER = interval(size).subscribe(count => {
     TIMER_COUNTER++;
+    GLOBAL_AGENT.prop.roundTime.setTo(TIMER_COUNTER);
     RSIMSTATUS.timer = ROUND_TIMER_START_VALUE - TIMER_COUNTER;
     if (TIMER_COUNTER >= ROUND_TIMER_START_VALUE) stopfn();
   });
@@ -74,6 +80,10 @@ export function StageInit() {
   const GLOBAL_AGENT = GetGlobalAgent();
   if (!GLOBAL_AGENT.hasFeature('Population'))
     GLOBAL_AGENT.addFeature('Population');
+  if (!GLOBAL_AGENT.getProp('roundTime')) {
+    const prop = new GVarNumber();
+    GLOBAL_AGENT.addProp('roundTime', prop);
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RunScript(scriptUnits) {
