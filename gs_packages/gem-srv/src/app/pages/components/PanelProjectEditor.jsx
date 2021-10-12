@@ -114,65 +114,76 @@ class ProjectEditor extends React.Component {
     ];
 
     const inputJsx = (
-      <div
-        style={{
-          padding: '10px',
-          display: 'grid',
-          gridTemplateColumns: '120px auto',
-          gridTemplateRows: 'auto',
-          lineHeight: '20px'
-        }}
-      >
-        <div className={classes.inspectorLabel}>id (url)&nbsp;</div>
-        <div className={classes.inspectorData}>
-          <input
-            id="id"
-            defaultValue={project.id}
-            onChange={this.onFormInputUpdate}
-          />
+      <>
+        <div
+          style={{
+            padding: '10px',
+            display: 'grid',
+            gridTemplateColumns: '120px auto',
+            gridTemplateRows: 'auto',
+            lineHeight: '20px'
+          }}
+        >
+          <div className={classes.inspectorLabel}>id (url)&nbsp;</div>
+          <div className={classes.inspectorData}>
+            <input
+              id="id"
+              defaultValue={project.id}
+              onChange={this.onFormInputUpdate}
+            />
+          </div>
+          <div className={classes.inspectorLabel}>label&nbsp;</div>
+          <div className={classes.inspectorData}>
+            <input
+              id="label"
+              defaultValue={project.label}
+              onChange={this.onFormInputUpdate}
+            />
+            <br />
+            <br />
+          </div>
         </div>
-        <div className={classes.inspectorLabel}>label&nbsp;</div>
-        <div className={classes.inspectorData}>
-          <input
-            id="label"
-            defaultValue={project.label}
-            onChange={this.onFormInputUpdate}
-          />
-          <br />
-          <br />
-        </div>
-
-        {metadataFields.map(f => (
-          <>
-            <div className={classes.inspectorLabel}>{f}&nbsp;</div>
-            <div className={classes.inspectorData}>
-              <input
-                id={f}
-                defaultValue={metadata[f]}
-                type={
-                  typeof metadata[f] === 'boolean'
-                    ? 'checkbox'
-                    : typeof metadata[f]
-                }
-                checked={typeof metadata[f] === 'boolean' ? metadata[f] : false}
-                onChange={this.onFormInputUpdate}
-              />
+        <div>
+          {metadataFields.map(f => (
+            <div
+              key={f}
+              style={{
+                padding: '0 10px',
+                display: 'grid',
+                gridTemplateColumns: '120px auto',
+                gridTemplateRows: 'auto'
+              }}
+            >
+              <div className={classes.inspectorLabel}>{f}&nbsp;</div>
+              <div className={classes.inspectorData}>
+                <input
+                  id={f}
+                  defaultValue={metadata[f]}
+                  type={
+                    typeof metadata[f] === 'boolean'
+                      ? 'checkbox'
+                      : typeof metadata[f]
+                  }
+                  checked={typeof metadata[f] === 'boolean' ? metadata[f] : false}
+                  onChange={this.onFormInputUpdate}
+                />
+              </div>
             </div>
-          </>
-        ))}
+          ))}
 
-        <div className={classes.inspectorLabel}>&nbsp;</div>
-        <div className={classes.inspectorData}>
-          <br />
-          <button
-            type="button"
-            onClick={this.EndEditProject}
-            className={classes.button}
-          >
-            Save Project Settings
-          </button>
+          <div className={classes.inspectorLabel}>&nbsp;</div>
+          <div className={classes.inspectorData}>
+            <br />
+            <button
+              type="button"
+              onClick={this.EndEditProject}
+              className={classes.button}
+            >
+              Save Project Settings
+            </button>
+          </div>
         </div>
-      </div>
+      </>
     );
 
     return (
