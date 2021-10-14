@@ -36,7 +36,7 @@ import * as ACBlueprints from 'modules/appcore/ac-blueprints';
 import * as ACInstances from 'modules/appcore/ac-instances';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ReportMemory } from 'modules/render/api-render';
-import { IsRunning, RoundsCompleted } from 'modules/sim/api-sim';
+import { IsRunning, RoundHasBeenStarted } from 'modules/sim/api-sim';
 import SIMCTRL from './mod-sim-control';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -79,6 +79,15 @@ function urLocaleStateUpdated(stateObj, cb) {
   POZYX_TRANSFORM.translateY = data.yOff;
   POZYX_TRANSFORM.useAccelerometer = data.useAccelerometer;
 
+  if (typeof cb === 'function') cb();
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function urProjectStateUpdated(stateObj, cb) {
+  if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
+  const { project } = stateObj;
+  CURRENT_PROJECT = project;
   if (typeof cb === 'function') cb();
 }
 
@@ -126,16 +135,6 @@ export function DoUnRegisterInspector(data) {
   if (i > -1) MONITORED_INSTANCES.splice(i, 1);
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function urProjectStateUpdated(stateObj, cb) {
-  if (DBG) console.log(...PR('urProjectStateUpdated', stateObj));
-  const { projId, project } = stateObj;
-  CURRENT_PROJECT_ID = projId;
-  CURRENT_PROJECT = project;
-  if (typeof cb === 'function') cb();
-}
-
 /// PROJECT DATA PRE INIT /////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -155,13 +154,6 @@ export function ProjectDataPreInit(parent, projId) {
 
 /// MAIN INITIALIZATION ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// Called by Main.LoadModel after a SIM RESET
-export async function ReloadProject() {
-  CURRENT_PROJECT = ACProject.GetProject(CURRENT_PROJECT_ID);
-  await ACProject.TriggerProjectStateUpdate();
-  SIMCTRL.SimPlaces(CURRENT_PROJECT);
-}
 
 /// Hooked to APP_START
 async function Initialize() {
@@ -213,8 +205,31 @@ async function Initialize() {
   });
 }
 
+/// Called by Main.LoadModel after a SIM RESET
+export async function ReloadProject() {
+  CURRENT_PROJECT = ACProject.GetProject(CURRENT_PROJECT_ID);
+  await ACProject.TriggerProjectStateUpdate();
+  SIMCTRL.SimPlaces(CURRENT_PROJECT);
+}
+
 /// API CALLS: MODEL DATA REQUESTS ////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+/// HACKY DOWNLOAD FILE
+/// Used to export project
+function DownloadToFile(content, filename, contentType) {
+  const a = document.createElement('a');
+  const file = new Blob([content], { type: contentType });
+  a.href = URL.createObjectURL(file);
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+export function ExportProject(id) {
+  const jsonString = JSON.stringify(ACProject.GetProject());
+  DownloadToFile(jsonString, `${id}.gemprj`, 'application/json');
+}
 
 /// Handle ScriptEditor's request for current project data
 /// Used by REQ_PROJ_DATA
@@ -519,7 +534,10 @@ function ScriptUpdate(data) {
   //    the new script.
   //    If the sim IS running, we want to leave the instance
   //    running with the old blueprint code.
-  if (!IsRunning() && RoundsCompleted()) {
+  //
+  //    Also skip reset if we're in the middle of multiple rounds of
+  //    running.  (RoundHasBeenStarted)
+  if (!IsRunning() && !RoundHasBeenStarted()) {
     GetInstancesType(bpid).forEach(a => DeleteAgent(a));
     // Also delete input agents
     InputsReset();

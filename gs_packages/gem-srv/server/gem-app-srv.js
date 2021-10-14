@@ -23,6 +23,7 @@ const WebpackHot = require('webpack-hot-middleware');
 const UR = require('@gemstep/ursys/server');
 const {
   GS_ASSETS_PATH,
+  GS_ASSETS_PROJECT_ROOT,
   GS_ASSET_HOST_URL,
   PACKAGE_NAME,
   GS_APP_PORT
@@ -183,7 +184,7 @@ function StartAppServer(opt = {}) {
   UR.UseLokiGQL_Middleware(app, {
     dbFile: 'runtime/db.loki',
     dbImportFile: 'config/graphql/dbinit-loki.json',
-    doReset: false,
+    doReset: true,
     schemaFile: 'config/graphql/schema.graphql',
     root: resolvers
   });
@@ -198,6 +199,18 @@ function StartAppServer(opt = {}) {
     Express.static(GS_ASSETS_PATH),
     UR.MediaProxy_Middleware({ remoteAssetUrl: GS_ASSET_HOST_URL }),
     ServeIndex(GS_ASSETS_PATH, { 'icons': true })
+  );
+
+  // Project Updates
+  // -- Add express middleware for parsing req.body
+  app.use(Express.json());
+  app.put(
+    '/assets-update/:projId',
+    UR.AssetUpdate_Middleware({
+      assetPath: GS_ASSETS_PATH,
+      projectRoot: GS_ASSETS_PROJECT_ROOT,
+      remoteAssetUrl: GS_ASSET_HOST_URL
+    })
   );
 
   // for everything else...

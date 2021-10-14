@@ -13,7 +13,6 @@ import UR from '@gemstep/ursys/client';
 /// PANELS ////////////////////////////////////////////////////////////////////
 import PanelLogin from './components/PanelLogin';
 import PanelSelectSimulation from './components/PanelSelectSimulation';
-import PanelSimViewer from './components/PanelSimViewer';
 
 /// TESTS /////////////////////////////////////////////////////////////////////
 // import 'modules/tests/test-parser'; // test parser evaluation
@@ -68,10 +67,10 @@ class Login extends React.Component {
     });
   }
 
-  OnModelSelectClick(id) {
+  OnModelSelectClick(parms) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    window.location = `/app/project?project=${id}`;
+    window.location = `/app/project?${parms}`;
   }
 
   /*  Renders 2-col, 3-row grid with TOP and BOTTOM spanning both columns.
@@ -109,9 +108,6 @@ class Login extends React.Component {
               onClick={this.OnModelSelectClick}
             />
           )}
-        </div>
-        <div id="root-renderer" className={classes.main}>
-          <PanelSimViewer id="sim" onClick={this.OnPanelClick} />
         </div>
         <div
           id="console-bottom"

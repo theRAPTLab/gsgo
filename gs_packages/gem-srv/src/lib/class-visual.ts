@@ -180,14 +180,22 @@ class Visual implements IVisual, IPoolable, IActable {
 
   setTexture(name: string, frameKey: string | number) {
     if (typeof name !== 'string') throw Error('arg1 must be texture asset name');
-    const { rsrc } = SPRITES.getAsset(name);
-    // is this a spritesheet?
-    const tex = m_ExtractTexture(rsrc, frameKey);
-    this.sprite.texture = tex;
-    this.assetId = SPRITES.lookupAssetId(name);
-    const px = this.sprite.texture.width / 2;
-    const py = this.sprite.texture.height / 2;
-    this.sprite.pivot.set(px, py);
+    try {
+      const { rsrc } = SPRITES.getAsset(name);
+      // is this a spritesheet?
+      const tex = m_ExtractTexture(rsrc, frameKey);
+      this.sprite.texture = tex;
+      this.assetId = SPRITES.lookupAssetId(name);
+      const px = this.sprite.texture.width / 2;
+      const py = this.sprite.texture.height / 2;
+      this.sprite.pivot.set(px, py);
+    } catch (err) {
+      console.error(
+        `class-visual failed setting texture name ${name} for agent ${
+          this.id
+        } rsrc ${SPRITES.getAsset(name)}`
+      );
+    }
   }
 
   /**
@@ -219,8 +227,7 @@ class Visual implements IVisual, IPoolable, IActable {
 
     this.filterColor = color;
     const [r, g, b] = PIXI.utils.hex2rgb(color);
-    // this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
-    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 1.0);
+    this.filterColorOverlay = new ColorOverlayFilter([r, g, b], 0.5);
     this.filterAdjustment = new AdjustmentFilter({ red: r, green: g, blue: b });
   }
   /**

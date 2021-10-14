@@ -38,6 +38,7 @@ import '../../lib/css/tracker.css';
 // this is where classes.* for css are defined
 import { useStylesHOC } from './elements/page-xui-styles';
 import './scrollbar.css';
+import PanelProjectEditor from './components/PanelProjectEditor';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -112,14 +113,22 @@ class MissionControl extends React.Component {
     this.OnPanelClick = this.OnPanelClick.bind(this);
     this.OnSelectView = this.OnSelectView.bind(this);
     this.OnToggleTracker = this.OnToggleTracker.bind(this);
+
+    // Project Data
+    this.OnExport = this.OnExport.bind(this);
   }
 
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
+    const templateId = params.get('template');
+
+    if (templateId !== null) {
+      // Load from template
+    }
 
     // No project selected, go back to login to select project
-    if (!projId) window.location = '/app/login';
+    if (projId === null && templateId === null) window.location = '/app/login';
 
     this.setState({ projId });
 
@@ -195,6 +204,7 @@ class MissionControl extends React.Component {
     if (
       SIMCTRL.IsRunning() || // Don't allow reset if sim is running
       SIMCTRL.RoundHasBeenStarted() // Don't allow reset after a Round has started
+      // to prevent resets om between rounds
     ) {
       this.setState({ scriptsNeedUpdate: true });
       return; // skip update if it's already running
@@ -361,6 +371,13 @@ class MissionControl extends React.Component {
     // Trigger Window Resize so that PanelSimulation will resize
     window.dispatchEvent(new Event('resize'));
   }
+
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  OnExport() {
+    const { projId } = this.state;
+    PROJSERVER.ExportProject(projId);
+  }
+
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /// RENDER
   ///
@@ -373,6 +390,7 @@ class MissionControl extends React.Component {
       panelConfiguration,
       message,
       projId,
+      templateId,
       projectIsLoaded,
       bpidList,
       devices,
@@ -420,7 +438,10 @@ class MissionControl extends React.Component {
 
     const jsxLeft =
       panelConfiguration === 'edit' ? (
-        <MissionMapEditor projId={projId} bpidList={bpidList} />
+        <>
+          <PanelProjectEditor openByDefault={templateId} />
+          <MissionMapEditor projId={projId} bpidList={bpidList} />
+        </>
       ) : (
         <MissionRun
           projId={projId}
@@ -474,6 +495,10 @@ class MissionControl extends React.Component {
             &emsp;
             <button type="button" onClick={this.OnToggleTracker}>
               tracker
+            </button>
+            &emsp;
+            <button type="button" onClick={this.OnExport}>
+              export
             </button>
           </div>
           <Link

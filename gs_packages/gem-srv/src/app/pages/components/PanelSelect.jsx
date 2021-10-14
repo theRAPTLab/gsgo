@@ -12,9 +12,9 @@ class PanelSelect extends React.Component {
       title: 'Select',
       options: [
         // Dummy Data
-        { id: 'main', label: 'Main' },
-        { id: 'viewer', label: 'Viewer' },
-        { id: 'charcontrol', label: 'Character Controller' }
+        { route: 'main', label: 'Main' },
+        { route: 'viewer', label: 'Viewer' },
+        { route: 'charcontrol', label: 'Character Controller' }
       ]
     };
     this.Initialize = this.Initialize.bind(this);
@@ -42,13 +42,13 @@ class PanelSelect extends React.Component {
   OnClick(url) {
     // This should request a model load through URSYS
     // HACK for now to go to main select screen
-    let { projId } = this.props;
-    window.location = `/app/${url}?project=${projId}`;
+    let { parms } = this.props;
+    window.location = `/app/${url}?${parms}`;
   }
 
   render() {
     const { title, options } = this.state;
-    const { id, projId, isActive, onClick, classes } = this.props;
+    const { id, parms, projId, isActive, onClick, classes } = this.props;
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -66,9 +66,9 @@ class PanelSelect extends React.Component {
               <button
                 type="button"
                 className={classes.button}
-                key={m.id}
+                key={m.route}
                 disabled={m.disabled}
-                onClick={() => this.OnClick(m.id)}
+                onClick={() => this.OnClick(m.route)}
               >
                 {m.label}
               </button>

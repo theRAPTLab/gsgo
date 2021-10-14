@@ -23,6 +23,7 @@ import {
   TManifest
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
+import ProjectLoader from './as-load-projects';
 import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
@@ -92,7 +93,7 @@ async function m_LoadManifest(route) {
 export async function PromiseLoadAssets(subdir: string = '') {
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
   const json = await m_LoadManifest(route);
-  if (json === undefined) throw Error("can't load manifest");
+  if (json === undefined) throw Error(`can't load manifest at route "${route}"`);
   // grab the top-level keys of the manifest (e.g. sprites:[])
   // return only assets that are supported
   const assets = Object.entries(json).filter(m_IsSupportedType);
@@ -130,6 +131,7 @@ export function GetLoader(asType: TAssetType): any {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// register for every type
 m_RegisterLoader(new SpriteLoader('sprites'));
+m_RegisterLoader(new ProjectLoader('projects'));
 
 /// TEST INTERFACE ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

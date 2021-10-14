@@ -56,9 +56,7 @@ export function updateAndPublish(project) {
   ACBlueprints.SetBlueprints(projId, project.blueprints);
   ACInstances.SetInstances(projId, project.instances);
   // Init Self
-  updateKey({
-    project
-  });
+  updateKey({ project });
   _publishState({ project });
 }
 
@@ -77,6 +75,16 @@ let AUTOTIMER;
  */
 function hook_Filter(key, propOrValue, propValue) {
   if (DBG) console.log('ac-project: hook_Filter', key, propOrValue, propValue);
+
+  // If project is being updated by PanelProjectEditor, we also need to update metadata
+  // NOTE: This does not update Rounds, Blueprints, and Instances!
+  if (key === 'project') {
+    const projId = _getKey('projId');
+    const project = propOrValue;
+    ACMetadata.SetMetadata(projId, project.metadata);
+    // REVIEW: Do we need to also update Rounds, Blueprints, and Instances?
+  }
+
   // No need to return anything if data is not being filtered.
   // if (key === 'rounds') return [key, propOrValue, propValue];
   // return undefined;
@@ -87,23 +95,24 @@ function hook_Filter(key, propOrValue, propValue) {
  */
 function hook_Effect(effectKey, propOrValue, propValue) {
   if (DBG) console.log('hook_Effect called', effectKey, propOrValue, propValue);
-  // REVIEW: Need to rewrite, add update to dc-project
-  //
-  // if (effectKey === 'project') {
-  //   if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
-  //   // (a) start async autosave
-  //   if (AUTOTIMER) clearInterval(AUTOTIMER);
-  //   AUTOTIMER = setInterval(() => {
-  //     promise_WriteProject().then(response => {
-  //       console.log('write result', response);
-  //       const project = response.data.updateProject;
-  //       updateKey('project', project);
-  //       _publishState({ project });
-  //     });
-  //     clearInterval(AUTOTIMER);
-  //     AUTOTIMER = 0;
-  //   }, 1000);
-  // }
+  if (effectKey === 'project') {
+    if (DBG) console.log(...PR(`effect ${effectKey} = ${propOrValue}`));
+    // (a) start async autosave
+    if (AUTOTIMER) clearInterval(AUTOTIMER);
+    AUTOTIMER = setInterval(() => {
+      const projId = _getKey('projId');
+      const project = propOrValue;
+      UR.CallMessage('LOCAL:DC_WRITE_PROJECT', { projId, project }).then(
+        status => {
+          const { err } = status;
+          if (err) console.error(err);
+          return status;
+        }
+      );
+      clearInterval(AUTOTIMER);
+      AUTOTIMER = 0;
+    }, 1000);
+  }
   // otherwise return nothing to handle procesing normally
 }
 

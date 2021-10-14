@@ -105,7 +105,7 @@ The code that handles the update is in resolvers.js
 type Mutation {
   updatePTrack(localeId: Int, input: PTrackInput): PTrackProps
   updatePozyx(localeId: Int, input: PozyxInput): PozyxProps
-  updateProject(projectId: Int, input: ProjectInput): Project
+  updateProject(projectId: String, input: ProjectInput): Project
   updateMetadata(projectId: String, input: ProjectMetaInput): ProjectMeta
   updateRounds(projectId: String, input: [ProjectRoundInput]): [ProjectRound]
   updateBlueprints(
