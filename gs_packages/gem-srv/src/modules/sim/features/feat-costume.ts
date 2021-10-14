@@ -210,6 +210,11 @@ class CostumePack extends GFeature {
       cf.setMax(frameCount - 1);
     }
     agent.getProp('skin').value = costumeName;
+
+    // If Physics feature is used, update physics body.
+    if (agent.hasFeature('Physics')) {
+      agent.callFeatMethod('Physics', 'init');
+    }
   }
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
