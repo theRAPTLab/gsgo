@@ -35,6 +35,10 @@ function GetAssetDirs(dirpath) {
   const { dirs } = FILE.GetDirContent(dirpath);
   return dirs.filter(d => VALID_ASSET_DIRS.includes(d));
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function DuplicateAsset(sourcefilepath, newfilepath, cb) {
+  FILE.copyFile(sourcefilepath, newfilepath, cb);
+}
 
 /// MODULE EXPORTS ////////////////////////////////////////////////////////////
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -42,5 +46,6 @@ module.exports = {
   IsAssetDirname,
   HasValidAssetExtension,
   PromiseFileHash,
-  GetAssetDirs
+  GetAssetDirs,
+  DuplicateAsset
 };

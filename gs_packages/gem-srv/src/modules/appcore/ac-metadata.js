@@ -139,11 +139,17 @@ export function Wraps(wall = 'any') {
     // default if wrap is not set
     wallWrap = [false, false, false, false];
   } else if (!Array.isArray(wrap)) {
-    wallWrap = [wrap, wrap, wrap, wrap];
+    const w = Boolean(wrap);
+    wallWrap = [w, w, w, w];
   } else if (wrap.length === 4) {
-    wallWrap = wrap;
+    wallWrap = Boolean(wrap);
   } else if (wrap.length === 2) {
-    wallWrap = [wrap[0], wrap[1], wrap[0], wrap[1]];
+    wallWrap = [
+      Boolean(wrap[0]),
+      Boolean(wrap[1]),
+      Boolean(wrap[0]),
+      Boolean(wrap[1])
+    ];
   }
   switch (wall) {
     case 'top':
@@ -165,6 +171,7 @@ export function Wraps(wall = 'any') {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 export function SetMetadata(projId, metadata) {
+  if (DBG) console.log(...PR('ac-metadata setting metadata to', metadata));
   updateKey({ projId });
   updateAndPublish(metadata);
 }

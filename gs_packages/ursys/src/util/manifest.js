@@ -67,6 +67,16 @@ function f_SpriteAssets(subdirpath, files) {
   return { mediafiles: imgFiles };
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** filter the filelist for valid sprite-related image files */
+function f_ProjectAssets(subdirpath, files) {
+  // scan for project files in assets
+  const jsfiles = files.filter(f => Path.extname(f).toLowerCase() === '.gemprj');
+  if (DBG) {
+    TERM(`... jsfiles contained ${jsfiles.length} project references`);
+  }
+  return { mediafiles: jsfiles };
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Return a list of mediafiles for the assetype of the directory, which is
  *  determined by the terminating dirname of the path.
  */
@@ -80,16 +90,27 @@ function m_ScanAssets(subdirpath) {
   if (DBG) TERM(`... ${asType} has ${files.length} valid files`);
 
   let mediaObj;
-  switch (asType) {
-    case 'sprites':
-      mediaObj = f_SpriteAssets(subdirpath, files);
-      break;
-    default:
-      mediaObj = { err: `unknown astype ${asType}` };
+  try {
+    switch (asType) {
+      case 'sprites':
+        mediaObj = f_SpriteAssets(subdirpath, files);
+        // TERM(`Sprite scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
+        break;
+      case 'projects':
+        TERM('ho ho ho');
+        mediaObj = f_ProjectAssets(subdirpath, files);
+        TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
+        break;
+      default:
+        mediaObj = { err: `unknown astype ${asType}` };
+    }
+    mediaObj.assetType = asType;
+    // this should return { assetType, mediafiles }
+    return mediaObj;
+  } catch (err) {
+    TERM(`mScanAssets error "${err}" mediaObj error, skipping!`);
+    return undefined;
   }
-  mediaObj.assetType = asType;
-  // this should return { assetType, mediafiles }
-  return mediaObj;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** return promises that will return the hash for each file's content,
@@ -174,6 +195,49 @@ function ExtractResourceUrls(manifest) {
   // these paths are relative to the containing directory
   return assets;
 }
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function m_AutoGenerateManifest(path, pathname, manifest) {
+  let assetcounter = ASSET_ID_START;
+  const assetdirs = ASFILE.GetAssetDirs(path);
+  if (DBG) TERM('... assetdirs', assetdirs, `\npath`, path);
+  if (assetdirs.length === 0) {
+    const base = Path.basename(m_assetPath);
+    const refpath = `${base}/${GS_ASSETS_ROUTE}${pathname}`;
+    TERM(`WARN: ${refpath} does not seem to be an asset directory`);
+  }
+  // step through every found asset type in directory
+  for (const subdir of assetdirs) {
+    if (DBG) TERM('... scanning', subdir);
+    const subdirpath = Path.join(path, subdir);
+    // get valid media files & jsonfiles subsets
+    const { mediafiles } = m_ScanAssets(subdirpath);
+    // only load hard png assets
+    const promises = m_PromiseHashes(subdirpath, mediafiles);
+    // - - - - - - - -
+    //
+    // eslint-disable-next-line no-await-in-loop
+    const filesInfo = await Promise.all(promises);
+    //
+    // - - - - - - - -
+    const entries = [];
+    for (let info of filesInfo) {
+      const assetId = assetcounter++;
+      const { filename, ext: assetType, hash } = info;
+      const asset = {
+        assetId,
+        assetName: filename,
+        assetUrl: `${subdir}/${filename}`,
+        assetType,
+        hash
+      };
+      entries.push(asset);
+    }
+    manifest[subdir] = entries;
+  } // end subdir processing
+  return manifest;
+}
+
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** EXPRESS MIDDLEWARE
  *  If a ?manifest is part of the request url, then try to deliver a manifest
@@ -213,45 +277,16 @@ async function DeliverManifest(req, res, next) {
       res.json(mdata);
       return;
     }
-    // case 2: autogenerate
-    let assetcounter = ASSET_ID_START;
-    const assetdirs = ASFILE.GetAssetDirs(path);
-    if (assetdirs.length === 0) {
-      const base = Path.basename(m_assetPath);
-      const refpath = `${base}/${GS_ASSETS_ROUTE}${pathname}`;
-      TERM(`WARN: ${refpath} does not seem to be an asset directory`);
+
+    // CASE 2: autogenerate
+    const assetDirs = ASFILE.GetAssetDirs(path);
+    if (assetDirs.length > 0) {
+      // Assets are in this directory
+      m_AutoGenerateManifest(path, pathname, manifest).then(result => {
+        res.json(result);
+      });
+      return;
     }
-    // step through every found asset type in directory
-    for (const subdir of assetdirs) {
-      if (DBG) TERM('... scanning', subdir);
-      const subdirpath = Path.join(path, subdir);
-      // get valid media files & jsonfiles subsets
-      const { mediafiles } = m_ScanAssets(subdirpath);
-      // only load hard png assets
-      const promises = m_PromiseHashes(subdirpath, mediafiles);
-      // - - - - - - - -
-      //
-      // eslint-disable-next-line no-await-in-loop
-      const filesInfo = await Promise.all(promises);
-      //
-      // - - - - - - - -
-      const entries = [];
-      for (let info of filesInfo) {
-        const assetId = assetcounter++;
-        const { filename, ext: assetType, hash } = info;
-        const asset = {
-          assetId,
-          assetName: filename,
-          assetUrl: `${subdir}/${filename}`,
-          assetType,
-          hash
-        };
-        entries.push(asset);
-      }
-      manifest[subdir] = entries;
-    } // end subdir processing
-    // send result of automanifest
-    res.json(manifest);
     return;
   }
   // CASE 3: manifest request & directory DOES NOT exist

@@ -85,6 +85,17 @@ module.exports = {
     if (DBG) TERM(`return projectNames: ${JSON.stringify(objs)}`);
     return objs;
   },
+  updateProject(args, context) {
+    const { projectId, input } = args;
+    const { DB } = context;
+    if (DBG) TERM(`update project:${projectId}, input:${JSON.stringify(input)}`);
+    const coll = DB.getCollection('projects');
+    let project = coll.findOne({ id: projectId });
+    project = { ...project, ...input };
+    TERM(`!!!!updated project data is ${JSON.stringify(project)}`);
+    coll.update(project);
+    return project;
+  },
   updateMetadata(args, context) {
     const { projectId, input } = args;
     const { DB } = context;

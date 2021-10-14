@@ -127,7 +127,12 @@ function ExtractBlueprintProperties(scriptText): any[] {
     { name: 'x', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'y', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'zIndex', type: 'number', defaultValue: 0, isFeatProp: false },
-    { name: 'skin', type: 'string', defaultValue: 'onexone', isFeatProp: false },
+    {
+      name: 'skin',
+      type: 'string',
+      defaultValue: 'onexone.json',
+      isFeatProp: false
+    },
     { name: 'color', type: 'number', defaultValue: 0, isFeatProp: false },
     { name: 'scale', type: 'number', defaultValue: 1, isFeatProp: false },
     { name: 'scaleY', type: 'number', defaultValue: 1, isFeatProp: false },

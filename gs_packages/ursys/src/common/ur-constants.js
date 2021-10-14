@@ -42,9 +42,10 @@ const VALID_CHANNELS = ['LOCAL', 'NET', 'SVR', 'STATE']; // is all channels in l
 /// ASSET FILES ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const VALID_ASSET_EXTS = {
-  sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json']
+  sprites: ['.png', '.gif', '.jpg', '.jpeg', '.json'],
+  projects: ['.gemprj']
 };
-const VALID_ASSET_DIRS = ['sprites']; // valid asset subdirectories
+const VALID_ASSET_DIRS = ['sprites', 'projects']; // valid asset subdirectories
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

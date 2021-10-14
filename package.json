@@ -5,7 +5,7 @@
     "bootstrap": "lerna clean -y && lerna bootstrap --hoist",
     "audit": "lerna bootstrap && lerna-audit",
     "build": "lerna run build",
-    "start": "npm run build && multiview [npm run gem:multi] [npm run admin:multi]",
+    "start": "npm run build && multiview [npm run gem:multi]",
     "ursys": "cd gs_packages/ursys/ && npm run local",
     "admin": "cd gs_packages/admin-srv/ && npm run local",
     "mcp": "cd gs_packages/mcp-srv/ && npm run local",
