@@ -41,7 +41,8 @@ const DBG = false;
 
 const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # PROGRAM DEFINE
-// useFeature Costume
+useFeature Costume
+featCall Costume setCostume 'circle.json' 0
 // useFeature Movement
 # PROGRAM EVENT
 // onEvent Tick [[ ]]
