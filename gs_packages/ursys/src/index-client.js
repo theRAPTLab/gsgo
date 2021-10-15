@@ -172,6 +172,8 @@ const UR = {
   BrokerIP: NETWORK.ServerIP,
   ServerPort: NETWORK.ServerPort,
   WebServerPort: NETWORK.WebServerPort,
+  MyNetBrokerInfo: DATACORE.MyNetBrokerInfo,
+  MyNetBroker: DATACORE.MyNetBroker,
   ConnectionString: DATACORE.ConnectionString,
   NetInfoRoute: NETWORK.NetInfoRoute,
   GetUAddressNumber: DATACORE.GetUAddressNumber,

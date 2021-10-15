@@ -342,8 +342,8 @@ function promise_WriteInstances(projId, instances) {
 }
 
 async function FileWriteProject(projId, project) {
-  // REVIEW: Should the url be parameterized, e.g. 'localhost' might be remote?
-  const response = await fetch(`http://localhost/assets-update/${projId}`, {
+  const server = UR.MyNetBroker();
+  const response = await fetch(`http://${server}/assets-update/${projId}`, {
     method: 'PUT',
     body: JSON.stringify(project),
     headers: {
