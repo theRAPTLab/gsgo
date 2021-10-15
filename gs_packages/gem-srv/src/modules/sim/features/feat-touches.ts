@@ -137,7 +137,6 @@ function m_Update(frame) {
   AGENT_TOUCHTYPES.forEach((d_TouchTypes, agentId) => {
     const agent = m_GetAgent(agentId);
     if (!agent) return;
-    if (agent.isInert) return;
 
     d_TouchTypes.forEach((touchTypes, bpname) => {
       const targets = GetAgentsByType(bpname);
@@ -146,12 +145,11 @@ function m_Update(frame) {
         let c2b;
         let b2b;
         let binb;
-        // if target is inert, we still need to clear c2c/c2b/b2b
-        if (!t.isInert) {
+        // if agent or target is inert, we still need to clear c2c/c2b/b2b
+        if (!agent.isInert && !t.isInert) {
           if (touchTypes.includes('c2c')) {
             c2c = m_TouchesC2C(agent, t) ? frame : undefined;
             if (DBG && c2c) console.log('touches c2c', frame);
-            // if (c2c) console.log('touch c2c', agent.id, t.id, c2c);
           }
           if (touchTypes.includes('c2b')) {
             c2b = m_TouchesC2B(agent, t) ? frame : undefined;
