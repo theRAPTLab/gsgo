@@ -171,14 +171,24 @@ class SpriteLoader extends AssetLoader {
   getSpriteDimensions(idOrName: number | string, frame: number) {
     let assetId = idOrName;
     if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
-    const { rsrc: sprite } = this.getAssetById(assetId as number);
-    if (sprite.texture)
-      console.error('getSpriteDimensions: Unexpected texture, not spritesheet.');
-    if (sprite.spritesheet) {
-      const key = sprite.spritesheet._frameKeys[frame];
-      return {
-        ...sprite.spritesheet._frames[key].sourceSize
-      };
+    try {
+      const { rsrc: sprite } = this.getAssetById(assetId as number);
+      if (sprite.texture)
+        console.error(
+          'getSpriteDimensions: Unexpected texture, not spritesheet.'
+        );
+      if (sprite.spritesheet) {
+        const key = sprite.spritesheet._frameKeys[frame];
+        return {
+          ...sprite.spritesheet._frames[key].sourceSize
+        };
+      }
+    } catch (err) {
+      console.error(
+        ...PR(
+          `getSpriteDimensions: Could not load sprite with assetId "${idOrName}"\n${err}`
+        )
+      );
     }
     return { err: 'not a texture or spritesheet' };
   }

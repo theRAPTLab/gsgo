@@ -212,7 +212,8 @@ class PhysicsPack extends GFeature {
    * parameters for use in scaling.
    */
   readCostumeSize(agent: IAgent): { width: number; height: number } {
-    if (!agent.hasFeature('Costume')) return { width: 0, height: 0 }; // no costume
+    if (!agent.hasFeature('Costume') || agent.prop.skin.value === undefined)
+      return { width: 0, height: 0 }; // no costume
     const { w, h } = agent.callFeatMethod('Costume', 'getBounds');
     agent.prop.Physics.costumeWidth.setTo(w);
     agent.prop.Physics.costumeHeight.setTo(h);
