@@ -14,6 +14,7 @@ const dgram = require('dgram');
 const WebSocketServer = require('ws').Server;
 const mqtt = require('mqtt');
 const { PrefixUtil, DBG } = require('@gemstep/ursys/server');
+const { MQTT_URL } = require('../config/gem-settings');
 //
 const PR = PrefixUtil('PTRACK');
 const PT_GROUP = '224.0.0.1'; // ptrack UDP multicast address
@@ -321,6 +322,12 @@ function ConvertMQTTtoTrackerData(message) {
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Pass `mqtturl` to use a specific server.
+ * Otherwise, the system will fall back to MQTT_URL defined in local-settings.json
+ * or gem-settings.js.
+ * @param {string} mqtturl
+ */
 function m_BindPozyxListener(mqtturl) {
   // Use this to test basic connection to mqtt test server
   // port 1883 is tcp (not udp)
@@ -328,25 +335,26 @@ function m_BindPozyxListener(mqtturl) {
   // 	port: 1883,
   // });
 
-  if (mqtturl) {
-    // DON'T COMMENT THIS OUT!
-    // This will connect to `mqtturl` if `mqtturl` is passed.
-    // Currently not called by anyone.
-    mtrack_ss = mqtt.connect(`mqtt://${mqtturl}`, { port: 1883 }); // Enterprise server "via uplink network" works
-  } else {
-    // UNCOMMENT THIS TO ALLOW LOCALHOST for the mqtt broker to run locallly (replay of pozyx streams)
-    mtrack_ss = mqtt.connect('mqtt://localhost', { port: 1883 });
+  const url = mqtturl || MQTT_URL;
+  mtrack_ss = mqtt.connect(`mqtt://${url}`, { port: 1883 });
+  /*
+      MQTT url settings have been moved to gs_packages/gem-srv/config/local-settings.json.
 
-    // UNCOMMENT THIS FOR VU LAB
-    // mtrack_ss = mqtt.connect('mqtt://10.2.191.28', { port: 1883 }); // Enterprise server "via uplink network" works
+      DO NOT COMMENT/UNCOMMENT settings here.
+      Add "MQTT_URL" to local-settings.json.
 
-    // UNCOMMENT THIS FOR IU
-    // mtrack_ss = mqtt.connect('mqtt://10.0.0.254', { port: 1883 }); // Enterprise server "via uplink network" works
+      For reference, these were the old settings:
 
-    // UNCOMMENT THIS FOR BEN's CAMPBELL ENTERPRISE SERVER
-    // Ben's Campbell Enterprise server's "uplink network" IP
-    // mtrack_ss = mqtt.connect('mqtt://10.1.10.185', { port: 1883 }); // Enterprise server "via uplink network" works
-  }
+      * To run a local mqtt server and replay streams use
+          "MQTT_URL": "localhost"
+
+      * In the VU lab use
+          "MQTT_URL": "10.2.191.28"
+
+      * In the IU lab use
+          "MQTT_URL": "10.0.0.254"
+
+  */
 
   mtrack_ss.on('connect', () => {
     console.log(...PR('1883 MQTT Connect'));
