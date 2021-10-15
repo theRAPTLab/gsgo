@@ -156,7 +156,7 @@ class PanelBlueprints extends React.Component {
             key="add"
           >
             <AddIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
-            &nbsp;New Character
+            &nbsp;New Character Type
           </div>
         </div>
       </PanelChrome>
