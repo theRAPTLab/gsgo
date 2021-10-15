@@ -231,6 +231,10 @@ class CostumePack extends GFeature {
     agent.prop.scale.setTo(newScale); // use the minmaxed number
   }
   setGlow(agent: IAgent, seconds: number) {
+    if (seconds === 0) {
+      agent.isGlowing = false;
+      return;
+    }
     agent.isGlowing = true;
     setTimeout(() => {
       agent.isGlowing = false;
