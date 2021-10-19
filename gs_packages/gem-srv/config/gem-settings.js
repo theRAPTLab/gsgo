@@ -30,6 +30,8 @@ const RUNTIME_PATH = Path.join(__dirname, `../${RUNTIME_DIRNAME}`);
 /// it can be customized per installation and not overwrite other people's
 /// configs
 
+const MQTT_URL = 'localhost';
+
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = {
@@ -38,6 +40,7 @@ module.exports = {
   PACKAGE_NAME,
   RUNTIME_DIRNAME,
   RUNTIME_PATH, // used only by servers
+  MQTT_URL,
   // overrides from local-settings.json
   ...OVERRIDES
 };
