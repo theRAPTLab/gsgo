@@ -256,8 +256,10 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
 export function DeleteBlueprint(bpid) {
   const blueprints = _getKey('blueprints');
   const index = blueprints.findIndex(b => b.id === bpid);
-  if (index < 0)
-    throw new Error(`ac-blueprints: Trying to delete non-existent bpid ${bpid}`);
+  if (index < 0) {
+    console.warn(...PR(`Trying to delete non-existent bpid ${bpid}`));
+    return;
+  }
   blueprints.splice(index, 1);
 }
 
