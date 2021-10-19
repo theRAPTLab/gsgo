@@ -51,7 +51,10 @@ export function DeleteInstance(instanceDef: TInstance) {
   const bpi = INSTANCES.get(bpid);
   if (!bpi) return; // already deleted
   const index = bpi.findIndex(i => i.id === id);
-  if (index < 0)
+  if (index < 0 && DBG)
+    // This warning can be ignored because when deleting a blueprint,
+    // sim-agents.FilterBlueprints will have already removed the instance
+    // even before AllAgentsProgram gets around to removal with SCRIPT_TO_INSTANCE.mapObjects();
     console.warn(...PR(`DeleteInstance couldn't find instance ${id}`));
   bpi.splice(index, 1);
 }

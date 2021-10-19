@@ -149,6 +149,12 @@ function hook_Filter(key, propOrValue, propValue) {
   // No need to return anything if data is not being filtered.
   // if (key === 'rounds') return [key, propOrValue, propValue];
   // return undefined;
+  if (key === 'blueprints') {
+    // update and publish bpidList too
+    const bpidList = GetBlueprintIDsList(propOrValue);
+    updateKey({ bpidList });
+    _publishState({ bpidList });
+  }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
@@ -248,11 +254,6 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/** NOTE: See project-server.BlueprintDelete -- you should also delete
- *        instances created with this blueprint.
- *  NOTE: This does not trigger an update to prevent multiple state updates!
- *        The update will happen with UpdateBlueprint
- */
 export function DeleteBlueprint(bpid) {
   const blueprints = _getKey('blueprints');
   const index = blueprints.findIndex(b => b.id === bpid);
@@ -261,6 +262,11 @@ export function DeleteBlueprint(bpid) {
     return;
   }
   blueprints.splice(index, 1);
+  // REVIEW: This can potentially trigger multiple state updates
+  //         See sim-agents.AllAgentsProgram / FilterBlueprints
+  //         Do we need a way to do multiple deletes with a delayed
+  //         state update?
+  UR.WriteState('blueprints', 'blueprints', blueprints);
 }
 
 /// PHASE MACHINE DIRECT INTERFACE ////////////////////////////////////////////
