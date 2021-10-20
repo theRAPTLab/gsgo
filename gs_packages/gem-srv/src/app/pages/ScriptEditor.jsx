@@ -41,7 +41,8 @@ const DBG = false;
 
 const SCRIPT_TEMPLATE = `# BLUEPRINT untitled
 # PROGRAM DEFINE
-// useFeature Costume
+useFeature Costume
+featCall Costume setCostume 'circle.json' 0
 // useFeature Movement
 # PROGRAM EVENT
 // onEvent Tick [[ ]]
@@ -108,7 +109,13 @@ class ScriptEditor extends React.Component {
     window.addEventListener('beforeunload', this.CleanupComponents);
 
     // Set model section
-    this.setState({ projId, scriptId });
+    let { panelConfiguration, script } = this.state;
+    if (scriptId === '') {
+      // New Script
+      panelConfiguration = 'script';
+      script = SCRIPT_TEMPLATE;
+    }
+    this.setState({ panelConfiguration, projId, scriptId, script });
 
     UR.HookPhase('UR/APP_START', async () => {
       const devAPI = UR.SubscribeDeviceSpec({

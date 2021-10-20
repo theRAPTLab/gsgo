@@ -32,6 +32,7 @@ class PanelBlueprints extends React.Component {
       bpidList
     };
     this.OnBlueprintClick = this.OnBlueprintClick.bind(this);
+    this.OnNewBlueprint = this.OnNewBlueprint.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
   }
 
@@ -58,6 +59,11 @@ class PanelBlueprints extends React.Component {
         '_blank'
       );
     }
+  }
+
+  OnNewBlueprint() {
+    const { projId } = this.props;
+    window.open(`/app/scripteditor?project=${projId}&script=${''}`, '_blank');
   }
 
   urStateUpdated(stateObj, cb) {
@@ -97,13 +103,19 @@ class PanelBlueprints extends React.Component {
       >
         <div // Panel Layout
           style={{
-            display: 'flex',
-            flexDirection: 'column',
+            display: 'grid',
+            height: '100%',
+            gridTemplateRows: 'auto',
             fontSize: '12px'
           }}
         >
           <span className={classes.instructions}>{instructions}</span>
-          <div>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateRows: 'auto'
+            }}
+          >
             <div
               style={{
                 display: 'flex',
@@ -131,6 +143,20 @@ class PanelBlueprints extends React.Component {
                 </div>
               ))}
             </div>
+          </div>
+          <div
+            style={{
+              alignSelf: 'flex-end',
+              flex: '0 1 auto',
+              height: '20px',
+              overflow: 'hide'
+            }}
+            className={classes.instanceListItem}
+            onClick={this.OnNewBlueprint}
+            key="add"
+          >
+            <AddIcon style={{ fontSize: 10, marginRight: '0.3em' }} />
+            &nbsp;New Character Type
           </div>
         </div>
       </PanelChrome>
