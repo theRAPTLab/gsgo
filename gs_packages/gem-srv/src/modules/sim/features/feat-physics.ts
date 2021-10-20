@@ -199,8 +199,14 @@ class PhysicsPack extends GFeature {
    * values based on the current Costume.
    */
   init(agent: IAgent) {
-    const dim = this.readCostumeSize(agent);
-    this.setSize(agent, dim.width, dim.height); // default to sprite size
+    // if size was previously set, use that, otherwise, default to sprite size
+    if (agent.prop.Physics.width.value !== undefined) {
+      this.setWidth(agent, agent.prop.Physics.width.value);
+      this.setHeight(agent, agent.prop.Physics.height.value);
+    } else {
+      const dim = this.readCostumeSize(agent);
+      this.setSize(agent, dim.width, dim.height); // default to sprite size
+    }
     this.setShape(agent, RECTANGLE);
   }
 
