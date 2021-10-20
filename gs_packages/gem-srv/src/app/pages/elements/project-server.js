@@ -341,8 +341,18 @@ function GetPozyxBPNames() {
  * @param {string} blueprintName
  */
 function BlueprintDelete(blueprintName) {
+  // Delete any insmtances using the blueprint
+  ACInstances.DeleteInstancesByBPID(blueprintName);
   // Delete the old blueprint from project
   ACBlueprints.DeleteBlueprint(blueprintName);
+
+  // The instance delete and blueprint delete do trigger state updates
+  // but project-server only listents to `project` state updates
+  // so we have to trigger the updates locally as well as for remote viewers
+  // These only trigger URSYS updates, not state updates!
+  RaiseModelUpdate();
+  RaiseBpidListUpdate();
+  RaiseInstancesListUpdate();
 }
 function HandleBlueprintDelete(data) {
   BlueprintDelete(data.blueprintName, data.modelId);
