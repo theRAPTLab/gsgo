@@ -318,16 +318,19 @@ export default class PTrackEndpoint {
 
       // MUTATE x to fixed precision
       // MUTATE is OK because the raw track is thrown away every frame
-      raw.x = raw.x.toFixed(PRECISION);
-      raw.y = raw.y.toFixed(PRECISION);
+      if (raw.x !== undefined && raw.y !== undefined) {
+        // 2021-10 Workaround to avoid error
+        // pose tracks do not have raw.x or raw.y
+        // x and y are set below in SPECIAL POSE HANDLING
+        raw.x = raw.x.toFixed(PRECISION);
+        raw.y = raw.y.toFixed(PRECISION);
+      }
       // raw.isFaketrack = raw.isFaketrack;`
       // add additional properties that are in an EntityObject
       // based on other parameters
       raw.type = pf_type;
       raw.name = raw.object_name;
       raw.pose = raw.predicted_pose_name;
-      // SAVE RAW ENTITY TO LIST
-      entities.push(raw);
 
       // SPECIAL OBJECT HANDLING
       if (pf_type === TYPES.Object) {
@@ -341,11 +344,15 @@ export default class PTrackEndpoint {
         // x,y from poses is set from the CHEST joint
         // .. make sure the joints exist
         // raw.joints = raw.joints;
-        raw.x = raw.joints.CHEST.x;
-        raw.y = raw.joints.CHEST.y;
+        raw.x = raw.joints.CHEST.x.toFixed(PRECISION);
+        raw.y = raw.joints.CHEST.y.toFixed(PRECISION);
         // orientation
         // raw.orientation = raw.orientation; // in radians
       }
+
+      // SAVE RAW ENTITY TO LIST
+      entities.push(raw);
+
       /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
         According to Marco, any data that has a NaN CHEST coordinate should be
         rejected. but sometimes PTrack does include it.
