@@ -17,12 +17,13 @@ import EntityObject from './class-entity-object';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PTRAK');
-const TYPES = {
+export const TYPES = {
   Undefined: '?',
   Object: 'ob',
   People: 'pp',
   Pose: 'po',
-  Faketrack: 'ft'
+  Faketrack: 'ft',
+  Pozyx: 'pz'
 };
 const PRECISION = 4;
 const DBG = false;
@@ -174,6 +175,13 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.pose_tracks.length;
         ok = true;
       }
+      // detected pozyx data //
+      if (frame.pozyx_tracks) {
+        tracks = frame.pozyx_tracks;
+        pf_type += TYPES.Pozyx;
+        pf_entity_count = frame.pozyx_tracks.length;
+        ok = true;
+      }
       // detected ptrack simulated data //
       if (frame.fake_tracks) {
         if (pf_type)
@@ -244,6 +252,10 @@ export default class PTrackEndpoint {
       case 'world':
         tracks = parseTracks();
         pf_short_id = 'PTrak';
+        break;
+      case 'pozyx':
+        tracks = parseTracks();
+        pf_short_id = 'PZTrak';
         break;
       case 'faketrack':
         tracks = parseTracks();
