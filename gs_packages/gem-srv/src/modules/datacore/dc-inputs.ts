@@ -96,10 +96,19 @@ function UpdateActiveDevices(changes) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+///////////////////////////////////////////////////////////////////////////////
 /// POZYX DATA UPDATE /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // Default
+export const PTRACK_TRANSFORM = {
+  scaleX: 0.4,
+  scaleY: 0.5,
+  translateX: -2,
+  translateY: -1,
+  rotate: 0
+};
+
 export const POZYX_TRANSFORM = {
   scaleX: 0,
   scaleY: 0,
