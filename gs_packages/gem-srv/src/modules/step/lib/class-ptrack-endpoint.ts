@@ -287,6 +287,10 @@ export default class PTrackEndpoint {
     // .. if not, create new object with nop 0
     // .. if exist, update object
     const entities = [];
+
+    // heartbeats don't have tracks
+    if (!tracks) return;
+
     tracks.forEach(raw => {
       // ABORT ON BAD DATA (but don't crash)
       if (hasBadData(raw)) return;
