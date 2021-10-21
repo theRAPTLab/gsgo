@@ -38,6 +38,11 @@ class PanelSelectAgent extends React.Component {
     const { id, isActive, agents, modelId, onClick, classes } = this.props;
 
     // agents are [ {id, label}, ... ]
+    const sortedBlueprints = agents.sort((a, b) => {
+      if (a.label < b.label) return -1;
+      if (a.label > b.label) return 1;
+      return 0;
+    });
 
     return (
       <PanelChrome id={id} title={title} isActive={isActive} onClick={onClick}>
@@ -52,8 +57,8 @@ class PanelSelectAgent extends React.Component {
               padding: '30px'
             }}
           >
-            {agents.map(m => (
-              <div key={m.id}>
+            {sortedBlueprints.map(m => (
+              <div key={m.id} style={{ height: '60px' }}>
                 <button
                   type="button"
                   disabled={m.editor !== undefined}
