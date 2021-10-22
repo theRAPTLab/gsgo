@@ -268,20 +268,6 @@ export function InjectBlueprint(data) {
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function HandlePozyxTransformSet(data) {
-  if (data.scaleX !== undefined) POZYX_TRANSFORM.scaleX = Number(data.scaleX);
-  if (data.scaleY !== undefined) POZYX_TRANSFORM.scaleY = Number(data.scaleY);
-  if (data.translateX !== undefined)
-    POZYX_TRANSFORM.translateX = Number(data.translateX);
-  if (data.translateY !== undefined)
-    POZYX_TRANSFORM.translateY = Number(data.translateY);
-  if (data.rotate !== undefined) POZYX_TRANSFORM.rotate = Number(data.rotate);
-  if (data.useAccelerometer !== undefined)
-    POZYX_TRANSFORM.useAccelerometer = Boolean(data.useAccelerometer);
-  UR.RaiseMessage('NET:POZYX_TRANSFORM_UPDATE', { transform: POZYX_TRANSFORM });
-}
-function HandlePozyxTransformReq() {
-  return { transform: POZYX_TRANSFORM };
 }
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -651,7 +637,6 @@ async function HandleRequestProjData(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// TRANSFORM UTILS -----------------------------------------------------------
-UR.HandleMessage('NET:POZYX_TRANSFORM_SET', HandlePozyxTransformSet);
 UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
 
