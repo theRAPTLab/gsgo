@@ -200,62 +200,6 @@ class PanelTracker extends React.Component {
           <li>Rotation: measured in degrees counterclockwise</li>
           <li>Translate/Offset: Relative to rotated pozyx units</li>
         </p>
-        {/* <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: '100px 100px auto',
-            columnGap: '5px'
-          }}
-        >
-          <div className={classes.inspectorLabel}>ScaleX: </div>
-          <input
-            id="scaleX"
-            value={transform.scaleX}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Use a negative scale to flip</i>
-          <div className={classes.inspectorLabel}>ScaleY: </div>
-          <input
-            id="scaleY"
-            value={transform.scaleY}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i />
-          <div className={classes.inspectorLabel}>Rotate (deg): </div>
-          <input
-            id="rotate"
-            value={transform.rotate}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Counterclockwise</i>
-          <div className={classes.inspectorLabel}>TranslateX (mm): </div>
-          <input
-            id="translateX"
-            value={transform.translateX}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Relative to rotated pozyx units</i>
-          <div className={classes.inspectorLabel}>TranslateY (mm): </div>
-          <input
-            id="translateY"
-            value={transform.translateY}
-            type="number"
-            onChange={this.onFormInputUpdate}
-          />
-          <i />
-          <div className={classes.inspectorLabel}>Accelerometer: </div>
-          <input
-            id="useAccelerometer"
-            checked={transform.useAccelerometer}
-            type="checkbox"
-            onChange={this.onFormInputUpdate}
-          />
-          <i>Only for wearable tags</i>
-        </div> */}
         <br />
       </div>
     );
