@@ -66,7 +66,7 @@ type PTrackProps {
   zRot: Float
 }
 
-fragment TransformParts on PTrackProps {
+fragment PTrackTransformParts on PTrackProps {
   xRange
   yRange
   xOff
@@ -88,6 +88,17 @@ type PozyxProps {
   yRot: Float
   zRot: Float
   useAccelerometer: Boolean
+}
+
+fragment PozyxTransformParts on PTrackProps {
+  xRange
+  yRange
+  xOff
+  yOff
+  xScale
+  yScale
+  zRot
+  useAccelerometer
 }
 
 type StepProps {
