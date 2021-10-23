@@ -159,6 +159,7 @@ export default class FormTransform extends React.Component {
             Y-OFF
           </label>
           <br />
+          {/* NOT USED AT THE MOMENT?
           <label>
             <input
               name="xRange"
@@ -176,7 +177,7 @@ export default class FormTransform extends React.Component {
               onChange={this.handleInputChange}
             />{' '}
             Y-RANGE
-          </label>
+          </label> */}
           <div>{memo}</div>
         </div>
       </>
