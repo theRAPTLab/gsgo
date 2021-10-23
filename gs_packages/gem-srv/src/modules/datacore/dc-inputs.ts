@@ -102,11 +102,11 @@ function UpdateActiveDevices(changes) {
 
 // Default
 export const PTRACK_TRANSFORM = {
-  scaleX: 0.4,
-  scaleY: 0.5,
-  translateX: -2,
-  translateY: -1,
-  rotate: 0
+  scaleX: 0,
+  scaleY: 0,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0
 };
 
 export const POZYX_TRANSFORM = {
@@ -114,7 +114,7 @@ export const POZYX_TRANSFORM = {
   scaleY: 0,
   translateX: 0,
   translateY: 0,
-  rotate: 0,
+  rotation: 0,
   useAccelerometer: true
 };
 
@@ -130,7 +130,7 @@ function m_Transform(
   let ty = Number(position.y);
 
   // 1. Rotate
-  const rad = (TRANSFORM.rotate * Math.PI) / 180;
+  const rad = (TRANSFORM.rotation * Math.PI) / 180;
   const c = Math.cos(rad);
   const s = Math.sin(rad);
   tx = tx * c - ty * s;
@@ -173,7 +173,7 @@ function m_PozyxDampen(
 
   // If accelerometer movement is high, allow large movement
   // If acceleromoter movement is low, allow only small movmeent
-  const gforce = Rotate(acc, POZYX_TRANSFORM.rotate); // rotate accelerometer readings to match stage
+  const gforce = Rotate(acc, POZYX_TRANSFORM.rotation); // rotate accelerometer readings to match stage
   gforce.x = Math.abs(gforce.x); // we just want magnitude
   gforce.y = Math.abs(gforce.y);
   let xm = m_GetAccelerationMultiplier(gforce.x); // x multiplier
