@@ -7,6 +7,7 @@ import { useStylesHOC } from '../elements/page-xui-styles';
 import { ACLocales } from '../../../modules/appcore';
 
 import PanelChrome from './PanelChrome';
+import EntityObject from '../../../modules/step/lib/class-entity-object';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -87,6 +88,15 @@ class PanelTracker extends React.Component {
 
   urStateUpdated(stateObj, cb) {
     const { selectedTrack } = stateObj;
+    this.setState({
+      selectedTrack,
+      xmin: Infinity,
+      xmax: -Infinity,
+      ymin: Infinity,
+      ymax: -Infinity
+    });
+  }
+
   render() {
     const { title, xmin, xmax, ymin, ymax, entities, tentities } = this.state;
     const { id, classes } = this.props;
@@ -144,13 +154,13 @@ class PanelTracker extends React.Component {
               gridTemplateColumns: '100px 1fr 100px 1fr'
             }}
           >
-            <div className={classes.inspectorLabel}>ScaleX:&nbsp;</div>
+            <div className={classes.inspectorLabel}>X-SCALE:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedScaleX}</div>
-            <div className={classes.inspectorLabel}>TranslateX:&nbsp;</div>
+            <div className={classes.inspectorLabel}>X-OFFSET:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedTranslateX}</div>
-            <div className={classes.inspectorLabel}>ScaleY:&nbsp;</div>
+            <div className={classes.inspectorLabel}>Y-SCALE:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedScaleY}</div>
-            <div className={classes.inspectorLabel}>TranslateY:&nbsp;</div>
+            <div className={classes.inspectorLabel}>Y-OFFSET:&nbsp;</div>
             <div className={classes.inspectorData}>{suggestedTranslateY}</div>
           </div>
           <br />
@@ -179,7 +189,7 @@ class PanelTracker extends React.Component {
         <p>
           <li>Scale: Use a negative scale to flip</li>
           <li>Rotation: measured in degrees counterclockwise</li>
-          <li>Translate/Offset: Relative to rotated pozyx units</li>
+          <li>Translate/Offset: Relative to rotated pozyx raw units</li>
         </p>
         <br />
       </div>
@@ -195,40 +205,44 @@ class PanelTracker extends React.Component {
         </p>
         <div
           style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)'
+            display: 'grid'
           }}
         >
           <div>
-            {entities.map(e => (
-              <div
-                key={e.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: '100px 1fr 1fr',
-                  gridTemplateRows: '1fr'
-                }}
-              >
-                <div className={classes.inspectorData}>{e.id}</div>
-                <div className={classes.inspectorData}>{trunc(e.x)}</div>
-                <div className={classes.inspectorData}>{trunc(e.y)}</div>
-              </div>
-            ))}
-          </div>
-          <div>
-            {tentities.map(e => (
-              <div
-                key={e.id}
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(3, 1fr)'
-                }}
-              >
-                <div />
-                <div className={classes.inspectorData}>{trunc(e.x)}</div>
-                <div className={classes.inspectorData}>{trunc(e.y)}</div>
-              </div>
-            ))}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '100px 1fr 1fr 1fr 1fr 1fr',
+                gridTemplateRows: '1fr'
+              }}
+            >
+              <div className={classes.inspectorData}>ID</div>
+              <div className={classes.inspectorData}>RawX</div>
+              <div className={classes.inspectorData}>XformX</div>
+              <div className={classes.inspectorData}>&nbsp;</div>
+              <div className={classes.inspectorData}>RawY</div>
+              <div className={classes.inspectorData}>XformY</div>
+            </div>
+            {entities.map(e => {
+              const t = tentities.find(t => t.id === e.id);
+              return (
+                <div
+                  key={e.id}
+                  style={{
+                    display: 'grid',
+                    gridTemplateColumns: '100px 1fr 1fr 1fr 1fr 1fr',
+                    gridTemplateRows: '1fr'
+                  }}
+                >
+                  <div className={classes.inspectorData}>{e.id}</div>
+                  <div className={classes.inspectorData}>{trunc(e.x)}</div>
+                  <div className={classes.inspectorData}>{trunc(t.x)}</div>
+                  <div className={classes.inspectorData}>&nbsp;</div>
+                  <div className={classes.inspectorData}>{trunc(e.y)}</div>
+                  <div className={classes.inspectorData}>{trunc(t.y)}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

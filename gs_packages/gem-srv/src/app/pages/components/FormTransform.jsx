@@ -225,7 +225,7 @@ export default class FormTransform extends React.Component {
             />{' '}
             Y-RANGE
           </label> */}
-          <div>{memo}</div>
+          <label>MEMO: {memo}</label>
         </div>
       </>
     );
