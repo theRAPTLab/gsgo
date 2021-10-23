@@ -29,7 +29,11 @@ import {
   DeleteInstance,
   GetInstancesType
 } from 'modules/datacore/dc-agents';
-import { POZYX_TRANSFORM, InputsReset } from 'modules/datacore/dc-inputs';
+import {
+  PTRACK_TRANSFORM,
+  POZYX_TRANSFORM,
+  InputsReset
+} from 'modules/datacore/dc-inputs';
 import * as ACProject from 'modules/appcore/ac-project';
 import * as ACMetadata from 'modules/appcore/ac-metadata';
 import * as ACBlueprints from 'modules/appcore/ac-blueprints';
@@ -71,13 +75,23 @@ function urLocaleStateUpdated(stateObj, cb) {
   // Read the current transforms
   const state = UR.ReadFlatStateGroups('locales');
 
+  // Copy to PTRACK_TRANSFORM
+  const ptrack = state.ptrack;
+  PTRACK_TRANSFORM.scaleX = ptrack.xScale;
+  PTRACK_TRANSFORM.scaleY = ptrack.yScale;
+  PTRACK_TRANSFORM.translateX = ptrack.xOff;
+  PTRACK_TRANSFORM.translateY = ptrack.yOff;
+  PTRACK_TRANSFORM.rotation = ptrack.zRot;
+
   // Copy to POZYX_TRANSFORM
-  const data = state.transform;
-  POZYX_TRANSFORM.scaleX = data.xScale;
-  POZYX_TRANSFORM.scaleY = data.yScale;
-  POZYX_TRANSFORM.translateX = data.xOff;
-  POZYX_TRANSFORM.translateY = data.yOff;
-  POZYX_TRANSFORM.useAccelerometer = data.useAccelerometer;
+  const pozyx = state.pozyx;
+  POZYX_TRANSFORM.scaleX = pozyx.xScale;
+  POZYX_TRANSFORM.scaleY = pozyx.yScale;
+  POZYX_TRANSFORM.translateX = pozyx.xOff;
+  POZYX_TRANSFORM.translateY = pozyx.yOff;
+  POZYX_TRANSFORM.rotation = pozyx.zRot;
+  POZYX_TRANSFORM.useAccelerometer = pozyx.useAccelerometer;
+
 
   if (typeof cb === 'function') cb();
 }
@@ -268,6 +282,11 @@ export function InjectBlueprint(data) {
 
 /// TRANSFORM UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function HandleTransformReq() {
+  return {
+    ptrack: PTRACK_TRANSFORM,
+    pozyx: POZYX_TRANSFORM
+  };
 }
 /// MODEL UPDATE BROADCASTERS /////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -637,9 +656,8 @@ async function HandleRequestProjData(data) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// TRANSFORM UTILS -----------------------------------------------------------
-UR.HandleMessage('NET:POZYX_TRANSFORM_REQ', HandlePozyxTransformReq);
+UR.HandleMessage('NET:TRANSFORM_REQ', HandleTransformReq);
 /// PROJECT DATA UTILS ----------------------------------------------------
-
 UR.HandleMessage('REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:REQ_PROJDATA', HandleRequestProjData);
 UR.HandleMessage('NET:SCRIPT_UPDATE', ScriptUpdate);

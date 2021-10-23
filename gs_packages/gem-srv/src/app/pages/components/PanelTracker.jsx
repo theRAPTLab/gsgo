@@ -1,6 +1,7 @@
 import React from 'react';
 import UR from '@gemstep/ursys/client';
 import * as INPUT from 'modules/input/api-input';
+import { TYPES } from 'modules/step/lib/class-ptrack-endpoint';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
 
@@ -25,17 +26,23 @@ class PanelTracker extends React.Component {
       ymax: -Infinity,
       entities: [],
       tentities: [],
-      transform: {
+      ptrack: {
         scaleX: 1,
         scaleY: 1,
         translateX: 0,
         translateY: 0,
-        rotate: 0,
+        rotation: 0
+      },
+      pozyx: {
+        scaleX: 1,
+        scaleY: 1,
+        translateX: 0,
+        translateY: 0,
+        rotation: 0,
         useAccelerometer: true
       }
     };
 
-    this.onFormInputUpdate = this.onFormInputUpdate.bind(this);
     this.init = this.init.bind(this);
     this.updateTransform = this.updateTransform.bind(this);
     this.update = this.update.bind(this);
@@ -69,9 +76,7 @@ class PanelTracker extends React.Component {
     // eslint-disable-next-line react/destructuring-assignment
     if (this.state.isInitialized) return;
     this.setState({ isInitialized: true });
-    UR.CallMessage('NET:POZYX_TRANSFORM_REQ').then(rdata =>
-      this.updateTransform(rdata)
-    );
+    UR.CallMessage('NET:TRANSFORM_REQ');
     INPUT.StartTrackerEmitter();
   }
 
