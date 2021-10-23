@@ -44,6 +44,7 @@ export default class FormTransform extends React.Component {
   handleTrackChange(event) {
     const selectedTrack = event.target.value;
     this.setState({ selectedTrack });
+    UR.WriteState('locales.selectedTrack', selectedTrack);
   }
 
   urStateUpdated(stateObj, cb) {
@@ -126,6 +127,7 @@ export default class FormTransform extends React.Component {
         </div>
 
         <div className={clsx('io-track-controls', 'io-transform')}>
+          <label className="control-label">&nbsp;LOCALE</label>
           <select
             name="localeId"
             value={this.state.localeId}

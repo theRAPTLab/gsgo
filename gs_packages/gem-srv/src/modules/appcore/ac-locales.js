@@ -22,6 +22,7 @@ STATE.initializeState({
   locales: [],
   localeNames: [],
   localeId: 0,
+  selectedTrack: 'ptrack',
   ptrack: {
     xRange: -99,
     yRange: -99,
@@ -98,6 +99,7 @@ function hook_Filter(key, propOrValue, propValue) {
   if (key === 'ptrack') return [key, propOrValue, Number(propValue)];
   if (key === 'pozyx') return [key, propOrValue, Number(propValue)];
   if (key === 'localeId') return [key, Number(propOrValue)];
+  if (key === 'selectedTrack') return [key, propOrValue];
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

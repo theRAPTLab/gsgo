@@ -4,6 +4,7 @@ import * as INPUT from 'modules/input/api-input';
 import { TYPES } from 'modules/step/lib/class-ptrack-endpoint';
 import { withStyles } from '@material-ui/core/styles';
 import { useStylesHOC } from '../elements/page-xui-styles';
+import { ACLocales } from '../../../modules/appcore';
 
 import PanelChrome from './PanelChrome';
 
@@ -17,6 +18,7 @@ const DBG = true;
 class PanelTracker extends React.Component {
   constructor() {
     super();
+    const { selectedTrack } = UR.ReadFlatStateGroups('locales');
     this.state = {
       isInitialized: false,
       title: 'Tracker Data',
@@ -24,23 +26,27 @@ class PanelTracker extends React.Component {
       xmax: -Infinity,
       ymin: Infinity,
       ymax: -Infinity,
+      selectedTrack,
       entities: [],
       tentities: []
     };
 
     this.init = this.init.bind(this);
     this.update = this.update.bind(this);
+    this.urStateUpdated = this.urStateUpdated.bind(this);
 
     UR.HandleMessage('TRACKER_SETUP_UPDATE', this.update);
   }
 
   componentDidMount() {
+    UR.SubscribeState('locales', this.urStateUpdated);
     this.init();
   }
 
   componentWillUnmount() {
     INPUT.StopTrackerEmitter();
     UR.UnhandleMessage('TRACKER_SETUP_UPDATE', this.update);
+    UR.UnsubscribeState('locales', this.urStateUpdated);
   }
 
   async init() {
@@ -52,22 +58,35 @@ class PanelTracker extends React.Component {
   }
 
   update(data) {
+    const { selectedTrack } = this.state;
     const { entities, tentities } = data;
+
+    console.log('selectedTrack', selectedTrack, entities);
+
+    // Filter by Ptrack only
+    const filteredEntities = entities.filter(e => {
+      if (selectedTrack === 'ptrack') return ['ob', 'pp', 'po'].includes(e.type);
+      if (selectedTrack === 'pozyx') return ['pz'].includes(e.type);
+      return false;
+    });
+
     // Calculate Limits
-    const x = entities.map(e => e.x);
-    const y = entities.map(e => e.y);
+    const x = filteredEntities.map(e => e.x);
+    const y = filteredEntities.map(e => e.y);
     this.setState(state => {
       return {
         xmin: Math.min(state.xmin, ...x),
         xmax: Math.max(state.xmax, ...x),
         ymin: Math.min(state.ymin, ...y),
         ymax: Math.max(state.ymax, ...y),
-        entities,
+        entities: filteredEntities,
         tentities
       };
     });
   }
 
+  urStateUpdated(stateObj, cb) {
+    const { selectedTrack } = stateObj;
   render() {
     const { title, xmin, xmax, ymin, ymax, entities, tentities } = this.state;
     const { id, classes } = this.props;
