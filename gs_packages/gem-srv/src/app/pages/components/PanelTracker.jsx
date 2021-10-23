@@ -25,29 +25,12 @@ class PanelTracker extends React.Component {
       ymin: Infinity,
       ymax: -Infinity,
       entities: [],
-      tentities: [],
-      ptrack: {
-        scaleX: 1,
-        scaleY: 1,
-        translateX: 0,
-        translateY: 0,
-        rotation: 0
-      },
-      pozyx: {
-        scaleX: 1,
-        scaleY: 1,
-        translateX: 0,
-        translateY: 0,
-        rotation: 0,
-        useAccelerometer: true
-      }
+      tentities: []
     };
 
     this.init = this.init.bind(this);
-    this.updateTransform = this.updateTransform.bind(this);
     this.update = this.update.bind(this);
 
-    UR.HandleMessage('NET:POZYX_TRANSFORM_UPDATE', this.updateTransform);
     UR.HandleMessage('TRACKER_SETUP_UPDATE', this.update);
   }
 
@@ -57,19 +40,7 @@ class PanelTracker extends React.Component {
 
   componentWillUnmount() {
     INPUT.StopTrackerEmitter();
-    UR.UnhandleMessage('NET:POZYX_TRANSFORM_UPDATE', this.updateTransform);
     UR.UnhandleMessage('TRACKER_SETUP_UPDATE', this.update);
-  }
-
-  onFormInputUpdate(e) {
-    console.log('typed', e.target.value, e.target.id);
-    const data = {};
-    if (e.target.type === 'checkbox') {
-      data[e.target.id] = e.target.checked;
-    } else {
-      data[e.target.id] = e.target.value;
-    }
-    UR.RaiseMessage('NET:POZYX_TRANSFORM_SET', data);
   }
 
   async init() {
@@ -80,13 +51,8 @@ class PanelTracker extends React.Component {
     INPUT.StartTrackerEmitter();
   }
 
-  updateTransform(data) {
-    this.setState({ transform: data.transform });
-  }
-
   update(data) {
     const { entities, tentities } = data;
-    // console.log(entities);
     // Calculate Limits
     const x = entities.map(e => e.x);
     const y = entities.map(e => e.y);
@@ -103,16 +69,7 @@ class PanelTracker extends React.Component {
   }
 
   render() {
-    const {
-      title,
-      xmin,
-      xmax,
-      ymin,
-      ymax,
-      entities,
-      tentities,
-      transform
-    } = this.state;
+    const { title, xmin, xmax, ymin, ymax, entities, tentities } = this.state;
     const { id, classes } = this.props;
 
     const onClick = () => {
