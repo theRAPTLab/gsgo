@@ -128,6 +128,10 @@ class Home extends React.Component {
           <h4>DevTools</h4>
           <ol>
             <li>
+              <a href="/app/dev-wizard">GUI WIZARD</a> - Test renderer for GUI
+              shapes
+            </li>
+            <li>
               <a href="/app/dev-tracker">TRACKER</a> - For testing CharControl,
               PTrack, and Renderer Module entities.
             </li>

@@ -15,6 +15,7 @@ const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
 const DevTracker = React.lazy(() => import('../pages/DevTracker'));
 const DevFakeTrack = React.lazy(() => import('../pages/DevFakeTrack'));
 const DevController = React.lazy(() => import('../pages/DevController'));
+const DevWizard = React.lazy(() => import('../pages/DevWizard'));
 
 /// LAZY COMPONENTS ///////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -83,6 +84,11 @@ export const LazyTracker = () => (
 export const LazyFakeTrack = () => (
   <Suspense fallback={<div>loading</div>}>
     <DevFakeTrack />
+  </Suspense>
+);
+export const LazyWizard = () => (
+  <Suspense fallback={<div>loading</div>}>
+    <DevWizard />
   </Suspense>
 );
 
