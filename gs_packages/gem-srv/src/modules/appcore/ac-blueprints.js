@@ -262,8 +262,6 @@ export function AddBlueprint(projId, blueprintDef) {
   const def = {
     id: blueprintDef.id,
     label: blueprintDef.label,
-    isCharControllable: blueprintDef.isCharControllable, // defaul to false?
-    isPozyxControllable: blueprintDef.isPozyxControllable,
     scriptText: blueprintDef.scriptText
   };
   const bp = new Blueprint(def);
@@ -294,8 +292,6 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
     const def = {
       id: bpid,
       label: bpid,
-      isCharControllable: false, // defaul to false?
-      isPozyxControllable: false,
       scriptText
     };
     const blueprint = new Blueprint(def);

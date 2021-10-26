@@ -201,8 +201,6 @@ type ProjectRound {
 type ProjectBlueprint {
   id: String!
   label: String
-  isCharControllable: Boolean
-  isPozyxControllable: Boolean
   scriptText: String
 }
 type ProjectInstance {
@@ -245,8 +243,6 @@ input ProjectRoundInput {
 input ProjectBlueprintInput {
   id: String!
   label: String
-  isCharControllable: Boolean
-  isPozyxControllable: Boolean
   scriptText: String
 }
 input ProjectInstanceInput {
