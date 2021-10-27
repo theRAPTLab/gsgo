@@ -59,9 +59,10 @@ function m_CompileCursors() {
   const CURSOR_BLUEPRINT = {
     id: 'Cursor',
     label: 'Cursor',
-    isCharControllable: true,
-    isPozyxControllable: true,
     scriptText: `# BLUEPRINT Cursor
+# TAG isCharControllable true
+# TAG isPozyxControllable true
+
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
