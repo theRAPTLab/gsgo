@@ -62,8 +62,6 @@ class PanelTracker extends React.Component {
     const { selectedTrack } = this.state;
     const { entities, tentities } = data;
 
-    console.log('selectedTrack', selectedTrack, entities);
-
     // Filter by Ptrack only
     const filteredEntities = entities.filter(e => {
       if (selectedTrack === 'ptrack') return ['ob', 'pp', 'po'].includes(e.type);

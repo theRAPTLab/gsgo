@@ -60,6 +60,7 @@ export default class FormTransform extends React.Component {
       console.log(...PR('localeId changed to', localeId));
       this.setState({ localeId });
     }
+
     // (3) transform key has changed
     if (ptrack) {
       if (DBG)
