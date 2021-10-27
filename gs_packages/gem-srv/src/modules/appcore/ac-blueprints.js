@@ -267,10 +267,13 @@ export function InjectBlueprint(projId, blueprintDef) {
     scriptText: blueprintDef.scriptText
   };
   const bp = new Blueprint(def);
-  const blueprints = _getKey('blueprints');
+  // Remove it if it already exists
+  const blueprints = _getKey('blueprints').filter(b => b.id !== blueprintDef.id);
   blueprints.push(bp.get());
+  // Update derived states
+  updateAndPublishDerivedProperties(blueprints);
 
-  // NOTE: Not updating state, nor writing to db
+  // NOTE: Not updating 'blueprints' state, nor writing to db
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
