@@ -186,6 +186,13 @@ class PhaseMachine {
       console.log(...PR('*** PHASEMACHINE WARNING ***'));
       this.consolePhaseInfo('Slow Phase Resolution > 7 sec', 'red');
       console.log(...PR('check phase hooks for lack of promised resolve()'));
+      const err = `
+ERROR: PhaseMachine ${this.currentPhase}/${this.currentOp} failed to complete\n
+This is an irrecoverable runtime error.
+1. Check console for error information.
+2. Use your phone to send SCREENSHOT of the error to the devteam for troubleshooting.
+      `;
+      alert(err.trim());
     }, 7000);
     return Promise.all(promises)
       .then(values => {
