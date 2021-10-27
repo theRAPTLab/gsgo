@@ -25,8 +25,9 @@ STATE.initializeState({
   bpidList: [],
   bpBundles: new Map(), // compiled bundles of blueprint scrits
   defaultPozyxBpid: '',
-  pozyxControlBpidList: [],
-  charControlBpidList: []
+  charControlBpidList: [],
+  ptrackControlBpidList: [],
+  pozyxControlBpidList: []
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
@@ -108,11 +109,38 @@ export function GetCharControlBpidList(bpBundles) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+ * Returns array of blueprint ids that are PtrackControllable.
+ * NOTE: This does not distinguish between people, poses, and objects
+ *       If objects and poses need separate tracking, this should be split out
+ * @returns [...id]
+ */
+export function GeneratePTrackControlBpidList(bpBundles) {
+  const bpBundlesArr = [...bpBundles.values()];
+  return bpBundlesArr
+    .filter(bndl => bndl.getTag('isPTrackControllable'))
+    .map(bndl => {
+      return bndl.name;
+    });
+}
+export function GetPTrackControlBpidList() {
+  return _getKey('ptrackControlBpidList');
+}
+/**
+ * Returns the first ptrack controllable blueprint as the default bp to use
+ * Used dc-inputs to determine mapping
+ * @returns id
+ */
+export function GetPTrackControlDefaultBpid() {
+  const ptrackBpidList = _getKey('ptrackControlBpidList');
+  if (ptrackBpidList.length < 1) return undefined;
+  return ptrackBpidList[0];
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
  * Returns array of blueprint ids that are PozyxControllable.
  * @returns [...id]
  */
 export function GeneratePozyxControlBpidList(bpBundles) {
-  console.error('generatepozyx');
   const bpBundlesArr = [...bpBundles.values()];
   return bpBundlesArr
     .filter(bndl => bndl.getTag('isPozyxControllable'))
@@ -167,13 +195,22 @@ function updateAndPublishDerivedProperties(blueprints) {
   const bpBundles = CompileBlueprintBundles(blueprints);
   // updating charcontrol
   const charControlBpidList = GenerateCharControlBpidList(bpBundles);
+  // updating ptrack
+  const ptrackControlBpidList = GeneratePTrackControlBpidList(bpBundles);
   // updating pozyx
   const pozyxControlBpidList = GeneratePozyxControlBpidList(bpBundles);
-  updateKey({ bpidList, bpBundles, charControlBpidList, pozyxControlBpidList });
+  updateKey({
+    bpidList,
+    bpBundles,
+    charControlBpidList,
+    ptrackControlBpidList,
+    pozyxControlBpidList
+  });
   _publishState({
     bpidList,
     bpBundles,
     charControlBpidList,
+    ptrackControlBpidList,
     pozyxControlBpidList
   });
 }

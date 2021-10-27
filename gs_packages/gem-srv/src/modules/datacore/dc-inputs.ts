@@ -212,7 +212,9 @@ function m_PozyxDampen(
 function GetDefaultPozyxBpid() {
   return ACBlueprints.GetPozyxControlDefaultBpid();
 }
-
+function GetDefaultPTrackBpid() {
+  return ACBlueprints.GetPTrackControlDefaultBpid();
+}
 ///////////////////////////////////////////////////////////////////////////////
 /// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -229,7 +231,10 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.x = x;
     cobj.y = y;
     // HACK Blueprints into cobj
-    cobj.bpid = GetDefaultPozyxBpid();
+    cobj.bpid =
+      entity.type === TYPES.Pozyx
+        ? GetDefaultPozyxBpid()
+        : GetDefaultPTrackBpid();
     cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
       ? entity.id.substring(8)
       : entity.id;
@@ -247,7 +252,10 @@ ENTITY_TO_COBJ.setMapFunctions({
 
     cobj.x = pos.x;
     cobj.y = pos.y;
-    cobj.bpid = GetDefaultPozyxBpid();
+    cobj.bpid =
+      entity.type === TYPES.Pozyx
+        ? GetDefaultPozyxBpid()
+        : GetDefaultPTrackBpid();
     cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
       ? entity.id.substring(8)
       : entity.id;
