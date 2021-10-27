@@ -92,7 +92,6 @@ function urLocaleStateUpdated(stateObj, cb) {
   POZYX_TRANSFORM.rotation = pozyx.zRot;
   POZYX_TRANSFORM.useAccelerometer = pozyx.useAccelerometer;
 
-
   if (typeof cb === 'function') cb();
 }
 
@@ -271,7 +270,7 @@ export function InjectBlueprint(data) {
   if (ACBlueprints.GetBlueprint(blueprint.id)) {
     return;
   }
-  ACBlueprints.AddBlueprint(CURRENT_PROJECT_ID, blueprint);
+  ACBlueprints.InjectBlueprint(CURRENT_PROJECT_ID, blueprint);
 
   // Compile and Register
   // REVIEW: Should this be moved to ACBlueprints

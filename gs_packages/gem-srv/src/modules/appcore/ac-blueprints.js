@@ -257,7 +257,9 @@ export function SetBlueprints(projId, blueprints) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// Used to inject Cursor
-export function AddBlueprint(projId, blueprintDef) {
+/// This runs AFTER other blueprints have been compiled
+/// Initiated by mod-sim-control.SimPlaces
+export function InjectBlueprint(projId, blueprintDef) {
   // Add new blueprint
   const def = {
     id: blueprintDef.id,
