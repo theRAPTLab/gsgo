@@ -163,8 +163,10 @@ function m_BindPTrackListener() {
 
     m_ForwardTrackerData(s);
 
-    let d = new Date();
-    console.log(d.toLocaleTimeString(), s);
+    // UNCOMMENT THIS TO DEBUG PTRACK JSON DATA
+    // This will dump PTrack JSON data to the terminal
+    // let d = new Date();
+    // console.log(d.toLocaleTimeString(), s);
   });
 
   // we're not expecting errors, but we should
