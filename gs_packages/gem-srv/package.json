@@ -7,6 +7,7 @@
     "local": "npm run dev:gem",
     "dev:srv": "nodemon gem_run.js dev-skip",
     "dev:gem": "nodemon gem_run.js dev",
+    "kill": "./gem_run.js kill",
     "..ursys": "cd ../ursys && npm run local",
     "..bootstrap": "cd ../../ && npm run bootstrap",
     "webpack:app": "npx webpack --config config/wp.pack.webapp.js --display-error-details",

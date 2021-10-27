@@ -72,6 +72,13 @@ function GEMSRV_Start(opt) {
     }
     Process.exit(0);
   });
+  process.once('SIGINT', async () => {
+    TOUT('***SIGINT***');
+    TOUT('Stopping URNET...');
+    await UR.URNET_Stop();
+    TOUT('Stopping Development Server...');
+    await GEMAPP.CloseAppServer();
+  });
 
   // run ursys
   (async () => {
@@ -83,6 +90,25 @@ function GEMSRV_Start(opt) {
       runtimePath: RUNTIME_PATH
     });
   })();
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function GEMSRV_Kill() {
+  const { error, stdout } = Shell.exec(
+    `ps | grep "[n]ode gem_run.js" | awk '{ print $1 }'`,
+    {
+      silent: true
+    }
+  );
+  if (error) TOUT('...ERR:', error);
+  if (stdout) {
+    TOUT(
+      `KILL: PID '${stdout.trim()}' appears to be a GEMSRV instance...killing PID!`
+    );
+    Shell.exec(`kill -9 ${stdout}`);
+    TOUT('Hopefully that worked');
+  } else {
+    TOUT(`KILL: Couldn't find a GEMSRV instance 'node gem_run.js' to kill`);
+  }
 }
 
 /// RUNTIME INITIALIZE ////////////////////////////////////////////////////////
@@ -120,6 +146,9 @@ switch (cmd) {
   case 'dev-skip':
     // eslint-disable-next-line @typescript-eslint/no-use-before-define
     GEMSRV_Start({ skipWebCompile: true });
+    break;
+  case 'kill':
+    GEMSRV_Kill();
     break;
   default:
     console.log('unknown command', cmd);

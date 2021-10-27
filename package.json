@@ -8,6 +8,7 @@
     "start": "npm run build && multiview [npm run gem:multi]",
     "ursys": "cd gs_packages/ursys/ && npm run local",
     "admin": "cd gs_packages/admin-srv/ && npm run local",
+    "kill": "lerna run kill",
     "mcp": "cd gs_packages/mcp-srv/ && npm run local",
     "gem": "cd gs_packages/gem-srv/ && npm run local",
     "admin:multi": "lerna run dev:admin --stream --no-prefix",
