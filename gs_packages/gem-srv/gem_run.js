@@ -72,6 +72,13 @@ function GEMSRV_Start(opt) {
     }
     Process.exit(0);
   });
+  process.once('SIGINT', async () => {
+    TOUT('***SIGINT***');
+    TOUT('Stopping URNET...');
+    await UR.URNET_Stop();
+    TOUT('Stopping Development Server...');
+    await GEMAPP.CloseAppServer();
+  });
 
   // run ursys
   (async () => {

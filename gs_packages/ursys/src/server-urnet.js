@@ -42,13 +42,19 @@ const DBG = require('./common/debug-props');
 /// DEBUG MESSAGES ////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const ERR_SS_EXISTS = 'socket server already created';
+let m_options;
 
 /// MODULE-WIDE VARS //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// sockets
 let mu_wss; // websocket server
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// MESSAGE BROKER STARTUP API ////////////////////////////////////////////////
+/** stop network */
+async function StopNetwork() {
+  m_StopSocketServer();
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Initializes the web socket server using the options passed-in
  *  @param {Object} [options] - configuration settings
@@ -93,6 +99,7 @@ function StartNetwork(options = {}) {
 function m_StartSocketServer(options) {
   // create listener.
   try {
+    m_options = options;
     mu_wss = new WSS(options);
     mu_wss.on('listening', () => {
       if (DBG.init) TERM(`socket server listening on port ${options.port}`);
@@ -115,6 +122,16 @@ function m_StartSocketServer(options) {
     TERM('Another URSYS server already running on this machine, so exiting');
     process.exit(1);
   }
+}
+///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+async function m_StopSocketServer() {
+  if (!mu_wss) {
+    TERM(`... socket server ${m_options.port} already closed`);
+    return;
+  }
+  TERM('... close socket server...');
+  await mu_wss.close();
+  TERM(`... closed socket server ${m_options.port}`);
 }
 ///	- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Returns a JSON packet to the just-connected client with its assigned URSYS
@@ -306,4 +323,4 @@ function log_PktTransaction(pkt, status, promises) {
 
 /// EXPORT MODULE DEFINITION //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { StartNetwork };
+module.exports = { StartNetwork, StopNetwork };
