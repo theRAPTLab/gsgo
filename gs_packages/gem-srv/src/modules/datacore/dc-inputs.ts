@@ -238,6 +238,7 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
       ? entity.id.substring(8)
       : entity.id;
+    cobj.framesSinceLastUpdate = 0;
   },
   onUpdate: (entity: any, cobj: InputDef) => {
     const TRANSFORM =
@@ -259,15 +260,19 @@ ENTITY_TO_COBJ.setMapFunctions({
     cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
       ? entity.id.substring(8)
       : entity.id;
+    cobj.framesSinceLastUpdate = 0;
   },
-  shouldRemove: cobj => false
-  // Inputs do not necessarily come in with every INPUTS phase fire
-  // so we should NOT be removing them on every update.
-  // HACK: Remove agent if no update for 4 seconds
-  // inputDef.framesSinceLastUpdate++;
-  // if (inputDef.framesSinceLastUpdate > 120) {
-  //   return true;
-  // }
+  shouldRemove: cobj => {
+    // entities do not necessarily come in with every INPUTS phase fire
+    // so we should NOT be removing them on every update.
+    // However, entities might be removed by class-ptrack-endpoints
+    // (after they exceed MAX_AGE of 100)
+    // so we also need to remove them here if there has been
+    // no update for 4 seconds
+    cobj.framesSinceLastUpdate++;
+    if (cobj.framesSinceLastUpdate > 120) return true;
+    return false;
+  }
 });
 export function GetTrackerMap() {
   return ENTITY_TO_COBJ;
