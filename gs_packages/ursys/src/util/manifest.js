@@ -97,7 +97,6 @@ function m_ScanAssets(subdirpath) {
         // TERM(`Sprite scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
       case 'projects':
-        TERM('ho ho ho');
         mediaObj = f_ProjectAssets(subdirpath, files);
         TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;

@@ -297,6 +297,17 @@ PhaseMachine.Hook = (phaseSel, f) => {
   q.push([phase, f]); // array of 2-element arrays
 };
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Return object of all current machines and phases */
+PhaseMachine.GetMachineStates = () => {
+  let out = '';
+  for (const [name, m] of m_machines) {
+    if (out.length !== 0) out += ', ';
+    out += `${name}[${m.currentPhase}.${m.currentOp}]`;
+  }
+  return out;
+};
+
 /// EXPORT CLASS DEFINITION ///////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 module.exports = PhaseMachine;
