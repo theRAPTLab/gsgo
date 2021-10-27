@@ -141,6 +141,8 @@ function m_Update(frame) {
     d_TouchTypes.forEach((touchTypes, bpname) => {
       const targets = GetAgentsByType(bpname);
       targets.forEach(t => {
+        // skip self
+        if (agentId === t.id) return;
         let c2c;
         let c2b;
         let b2b;
