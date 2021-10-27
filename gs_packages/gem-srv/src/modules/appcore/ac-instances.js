@@ -89,6 +89,7 @@ export function GetInstanceidList(currentInstances) {
 /** Returns a unique instance ID by finding the highest id and adding 1 */
 export function GetInstanceUID() {
   const instances = _getKey('instances');
+  if (instances.length < 1) return 0;
   const max = instances.reduce((prev, b) => {
     const a = typeof prev === 'object' ? prev.id : prev;
     return Math.max(a, Number(b.id));
