@@ -97,7 +97,6 @@ function m_ScanAssets(subdirpath) {
         // TERM(`Sprite scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
       case 'projects':
-        TERM('ho ho ho');
         mediaObj = f_ProjectAssets(subdirpath, files);
         TERM(`project scanAssets mediaObj ${JSON.stringify(mediaObj)}`);
         break;
@@ -200,7 +199,10 @@ function ExtractResourceUrls(manifest) {
 async function m_AutoGenerateManifest(path, pathname, manifest) {
   let assetcounter = ASSET_ID_START;
   const assetdirs = ASFILE.GetAssetDirs(path);
-  if (DBG) TERM('... assetdirs', assetdirs, `\npath`, path);
+  if (DBG) {
+    TERM('... request from:', path);
+    TERM('... request assetdirs:', assetdirs);
+  }
   if (assetdirs.length === 0) {
     const base = Path.basename(m_assetPath);
     const refpath = `${base}/${GS_ASSETS_ROUTE}${pathname}`;
