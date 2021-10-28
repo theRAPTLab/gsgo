@@ -15,7 +15,7 @@ import * as ASSETS from '../../modules/asset_core';
 //
 import { useStylesHOC } from './elements/page-styles';
 //
-import '../../lib/css/tracker.css';
+import '../../lib/css/gem-ui.css';
 import { GS_ASSETS_DEV_ROOT } from '../../../config/gem-settings';
 //
 
@@ -74,16 +74,27 @@ class DevWizard extends React.Component {
             minWidth: '280px'
           }}
         >
-          <img
-            src="../static/gem-ui-shapes.svg"
-            alt="background shapes for wizard"
-          />
+          blank
         </div>
         <div
           id="root-renderer"
           className={classes.main}
-          style={{ width: '720px', height: '720px', gridColumnEnd: 'span 1' }}
-        />
+          style={{
+            width: '720px',
+            height: '720px',
+            gridColumnEnd: 'span 1',
+            display: 'inline',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          <div className="gunit gk0" />
+          <div className="gunit gk">keyword</div>
+          <div className="gunit gk1" />
+
+          <div className="gunit ga0" />
+          <div className="gunit ga">assign</div>
+          <div className="gunit ga1" />
+        </div>
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}

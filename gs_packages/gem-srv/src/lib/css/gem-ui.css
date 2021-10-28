@@ -1,0 +1,63 @@
+/*/ gemstep ui wizard css /*/
+/*/
+    gap is 10px
+    - 10 -130 -250 -360 - column
+    - 70
+    -130
+    -190
+    -250
+    -310
+/*/
+#root-renderer {
+  --border-color: red;
+  --row0: -10px;
+  --row1: -70px;
+  --row2: -130px;
+  --row3: -190px;
+  --row4: -250px;
+  --row5: -310px;
+  --col0: -10px;
+  --col1: -130px;
+  --col2: -250px;
+  --col3: -370px;
+  --shima: 16px;
+  --shim2a: 30px;
+  --gap: 10px;
+}
+
+.gunit {
+  float: left;
+  background-image: url('../../app/static/gem-ui-shapes.svg');
+  background-repeat: no-repeat;
+  background-size: auto;
+  min-height: 50px;
+  min-width: 16px;
+  background-origin: border-box;
+}
+
+.gunit.gk0 {
+  background-position: var(--col0) var(--row1);
+  width: var(--shima);
+}
+.gunit.gk1 {
+  background-position: calc(var(--col1) + var(--shima) + var(--gap)) var(--row1);
+  width: var(--shima);
+}
+.gunit.gk {
+  background-position: calc(var(--col0) - var(--shima)) var(--row0);
+  width: 50px;
+}
+
+.gunit.ga0 {
+  margin-left: -10px;
+  background-position: var(--col2) var(--row3);
+  width: var(--shim2a);
+}
+.gunit.ga1 {
+  background-position: calc(var(--col3) + var(--shim2a) + var(--gap)) var(--row3);
+  width: var(--shim2a);
+}
+.gunit.ga {
+  background-position: calc(var(--col2) - var(--shim2a)) var(--row3);
+  width: 50px;
+}
