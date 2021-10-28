@@ -60,12 +60,16 @@ function Shutdown(closers) {
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Start the URNET socket server
- */
+/** Start the URNET socket server */
 function URNET_Start(options) {
   m_netinfo = NETWORK.StartNetwork(options);
   NETINFO.SaveNetInfo(m_netinfo);
   return m_netinfo;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** close the URNET socket server */
+function URNET_Stop() {
+  if (m_netinfo) NETWORK.StopNetwork();
 }
 
 /// EXPORTS ///////////////////////////////////////////////////////////////////
@@ -89,6 +93,7 @@ module.exports = {
   Initialize,
   Shutdown,
   URNET_Start,
+  URNET_Stop,
   // MIDDLEWARE
   UseLokiGQL_Middleware: DB.UseLokiGQL_Middleware,
   NetInfo_Middleware: NETINFO.Express_Middleware,
