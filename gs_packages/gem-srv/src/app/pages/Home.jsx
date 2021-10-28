@@ -118,12 +118,6 @@ class Home extends React.Component {
               <a href="/app/charcontrol">CHARACTER CONTROLLER</a> - Ported from
               earlier versions FAKETRACK with the new device interface WIP.
             </li>
-            <li>
-              {/* DEPRECATED.  Tracker is now in Main.
-              <a href="/app/tracker">TRACKER SETUP</a> - Prototype app showing the
-              raw PTrack and Pozxy input data. Used to set up transforms and
-              debug. */}
-            </li>
           </ol>
           <h4>DevTools</h4>
           <ol>
