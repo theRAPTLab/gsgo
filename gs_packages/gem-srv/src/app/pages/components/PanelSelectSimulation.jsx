@@ -65,7 +65,13 @@ class PanelSelectSimulation extends React.Component {
           if (DBG)
             console.log(...PR('LOADING ASSET MANIFEST @ UR/LOAD_ASSETS...'));
           (async () => {
-            await ASSETS.PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT);
+            await ASSETS.PromiseLoadAssets(GS_ASSETS_PROJECT_ROOT).catch(err => {
+              reject(
+                new Error(
+                  `couldn't load from project root ${GS_ASSETS_PROJECT_ROOT}`
+                )
+              );
+            });
             if (DBG) console.log(...PR('ASSETS LOADED'));
             resolve();
           })();

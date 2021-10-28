@@ -16,6 +16,7 @@ const DBGTEST = require('./util/client-debug');
 const DATACORE = require('./client-datacore');
 const DTECT = require('./common/ur-detect');
 const CONST = require('./common/ur-constants');
+const LOG = require('./client-status');
 
 // classes
 const PhaseMachine = require('./class-phase-machine');
@@ -144,6 +145,8 @@ function SendMessage(mesgName, inData, options) {
 const UR = {
   ...META,
   ...CONST,
+  // FORWARDED LOGGER
+  LOG,
   // NETWORK MESSAGES
   DeclareMessage,
   HasMessage,
