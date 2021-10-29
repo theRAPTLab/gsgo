@@ -55,8 +55,6 @@ function m_getAgent(agentId): IAgent {
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Update(frame) {
-  const SPRITES = ASSETS.GetLoader('sprites');
-
   const agentIds = Array.from(COSTUME_AGENTS.keys());
   agentIds.forEach(id => {
     const agent = m_getAgent(id);
@@ -97,7 +95,6 @@ function m_Update(frame) {
 /// Runs only when sim is running (GLOOP)
 function m_Animate(frame) {
   const SPRITES = ASSETS.GetLoader('sprites');
-
   const agentIds = Array.from(COSTUME_AGENTS.keys());
   agentIds.forEach(id => {
     const agent = m_getAgent(id);
@@ -269,7 +266,11 @@ class CostumePack extends GFeature {
    * The animation will cycle back to to the first frame specified in the costumeName,
    * e.g. if you call it with `fly2.png` then fly2 will be the first frame.
    */
-  setAnimatedCostume(agent: IAgent, costumeName: string, frameRate: number = 10) {
+  setAnimatedCostume(
+    agent: IAgent,
+    costumeName: string,
+    frameRate: number = 0.3
+  ) {
     const findEndNumbers = /(\w+?)([0-9]+)\.([A-z]+)$/;
     const result = findEndNumbers.exec(costumeName);
     if (!result || result.length < 3) {
