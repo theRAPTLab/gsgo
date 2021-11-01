@@ -40,7 +40,6 @@ class Project extends React.Component {
     this.state = {
       panelConfiguration: 'select',
       projId: undefined,
-      templateId: undefined,
       openRedirectDialog: false
     };
 
@@ -50,12 +49,10 @@ class Project extends React.Component {
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
-    const templateId = params.get('template');
 
     const wasRedirected = params.get('redirect') !== null;
     this.setState({
       projId,
-      templateId,
       openRedirectDialog: wasRedirected
     });
     document.title = `GEMSTEP PROJECT ${projId}`;
@@ -83,12 +80,7 @@ class Project extends React.Component {
    *  make this happen.
    */
   render() {
-    const {
-      panelConfiguration,
-      projId,
-      templateId,
-      openRedirectDialog
-    } = this.state;
+    const { panelConfiguration, projId, openRedirectDialog } = this.state;
     const { classes } = this.props;
 
     const DialogMainRedirect = (
@@ -103,7 +95,7 @@ class Project extends React.Component {
 
     const DialogNoProject = (
       <DialogConfirm
-        open={projId === null && templateId === null}
+        open={projId === null}
         message="No project specified."
         yesMessage="Select Project"
         noMessage=""
@@ -113,8 +105,7 @@ class Project extends React.Component {
       />
     );
 
-    const parms =
-      projId !== null ? `project=${projId}` : `template=${templateId}`;
+    const parms = projId !== null ? `project=${projId}` : '';
 
     return (
       <div
