@@ -123,8 +123,13 @@ class MissionControl extends React.Component {
     const projId = params.get('project');
     const templateId = params.get('template');
 
-    if (templateId !== null) {
-      // Load from template
+    // Catch use of old URLs
+    const oldModelParm = params.get('model');
+    if (oldModelParm) {
+      // eslint-disable-next-line no-alert
+      alert('"model=<id>" is deprecated.  Please use "project=<id>" instead!');
+      window.location = '/app/login';
+      return;
     }
 
     // No project selected, go back to login to select project
