@@ -80,6 +80,9 @@ useFeature Touches
 ${touchscripts}
 
 useFeature AgentWidgets
+
+// always on top
+prop zIndex setTo 1000
 `
   };
 
