@@ -95,11 +95,11 @@ class ProjectEditor extends React.Component {
 
   render() {
     const { project, isBeingEdited } = this.state;
-    const { openByDefault, classes } = this.props;
+    const { classes } = this.props;
 
     if (project === undefined) return '';
 
-    const showEdit = openByDefault || isBeingEdited;
+    const showEdit = isBeingEdited;
 
     const { metadata } = project;
     const metadataFields = [
