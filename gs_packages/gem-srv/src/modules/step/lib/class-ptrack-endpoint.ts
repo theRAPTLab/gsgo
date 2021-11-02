@@ -17,12 +17,13 @@ import EntityObject from './class-entity-object';
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('PTRAK');
-const TYPES = {
+export const TYPES = {
   Undefined: '?',
   Object: 'ob',
   People: 'pp',
   Pose: 'po',
-  Faketrack: 'ft'
+  Faketrack: 'ft',
+  Pozyx: 'pz'
 };
 const PRECISION = 4;
 const DBG = false;
@@ -174,6 +175,13 @@ export default class PTrackEndpoint {
         pf_entity_count = frame.pose_tracks.length;
         ok = true;
       }
+      // detected pozyx data //
+      if (frame.pozyx_tracks) {
+        tracks = frame.pozyx_tracks;
+        pf_type += TYPES.Pozyx;
+        pf_entity_count = frame.pozyx_tracks.length;
+        ok = true;
+      }
       // detected ptrack simulated data //
       if (frame.fake_tracks) {
         if (pf_type)
@@ -245,6 +253,10 @@ export default class PTrackEndpoint {
         tracks = parseTracks();
         pf_short_id = 'PTrak';
         break;
+      case 'pozyx':
+        tracks = parseTracks();
+        pf_short_id = 'PZTrak';
+        break;
       case 'faketrack':
         tracks = parseTracks();
         pf_short_id = 'FTrak';
@@ -287,6 +299,10 @@ export default class PTrackEndpoint {
     // .. if not, create new object with nop 0
     // .. if exist, update object
     const entities = [];
+
+    // heartbeats don't have tracks
+    if (!tracks) return;
+
     tracks.forEach(raw => {
       // ABORT ON BAD DATA (but don't crash)
       if (hasBadData(raw)) return;
@@ -314,16 +330,19 @@ export default class PTrackEndpoint {
 
       // MUTATE x to fixed precision
       // MUTATE is OK because the raw track is thrown away every frame
-      raw.x = raw.x.toFixed(PRECISION);
-      raw.y = raw.y.toFixed(PRECISION);
+      if (raw.x !== undefined && raw.y !== undefined) {
+        // 2021-10 Workaround to avoid error
+        // pose tracks do not have raw.x or raw.y
+        // x and y are set below in SPECIAL POSE HANDLING
+        raw.x = raw.x.toFixed(PRECISION);
+        raw.y = raw.y.toFixed(PRECISION);
+      }
       // raw.isFaketrack = raw.isFaketrack;`
       // add additional properties that are in an EntityObject
       // based on other parameters
       raw.type = pf_type;
       raw.name = raw.object_name;
       raw.pose = raw.predicted_pose_name;
-      // SAVE RAW ENTITY TO LIST
-      entities.push(raw);
 
       // SPECIAL OBJECT HANDLING
       if (pf_type === TYPES.Object) {
@@ -337,11 +356,15 @@ export default class PTrackEndpoint {
         // x,y from poses is set from the CHEST joint
         // .. make sure the joints exist
         // raw.joints = raw.joints;
-        raw.x = raw.joints.CHEST.x;
-        raw.y = raw.joints.CHEST.y;
+        raw.x = raw.joints.CHEST.x.toFixed(PRECISION);
+        raw.y = raw.joints.CHEST.y.toFixed(PRECISION);
         // orientation
         // raw.orientation = raw.orientation; // in radians
       }
+
+      // SAVE RAW ENTITY TO LIST
+      entities.push(raw);
+
       /*- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -*:
         According to Marco, any data that has a NaN CHEST coordinate should be
         rejected. but sometimes PTrack does include it.

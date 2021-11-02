@@ -61,8 +61,8 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.orientation !== undefined) dobj.rotation = agent.orientation;
     dobj.visible = agent.visible;
     if (agent.alpha !== undefined) dobj.alpha = agent.alpha;
-    if (agent.statusText !== undefined) dobj.text = agent.statusText;
-    if (agent.statusValue !== undefined) dobj.meter = agent.statusValue;
+    dobj.text = agent.statusText; // always set statusText in case it's cleared
+    dobj.meter = agent.statusValue; // always set statusValue in case it's cleared
     if (agent.statusValueColor !== undefined)
       dobj.meterClr = agent.statusValueColor;
     dobj.meterPosition = agent.getMeterFlags();
@@ -88,8 +88,8 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.orientation !== undefined) dobj.rotation = agent.orientation;
     dobj.visible = agent.visible;
     if (agent.alpha !== undefined) dobj.alpha = agent.alpha;
-    if (agent.statusText !== undefined || dobj.text) dobj.text = agent.statusText; // clear old text if previously set
-    if (agent.statusValue !== undefined) dobj.meter = agent.statusValue;
+    dobj.text = agent.statusText; // always set statusText in case it's cleared
+    dobj.meter = agent.statusValue; // always set statusValue in case it's cleared
     if (agent.statusValueColor !== undefined)
       dobj.meterClr = agent.statusValueColor;
     dobj.meterPosition = agent.getMeterFlags();

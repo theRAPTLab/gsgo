@@ -42,6 +42,8 @@ export default class SM_Bundle implements ISMCBundle {
   test: TOpcode[]; // returns true or false
   conseq: TOpcode[]; // run if true
   alter: TOpcode[]; // run if false
+  // tags
+  tags: Map<string, any>;
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   constructor(name?: string, type?: EBundleType) {
     if (typeof name === 'string') this.setName(name);
@@ -57,6 +59,7 @@ export default class SM_Bundle implements ISMCBundle {
     this.test = []; // test function
     this.conseq = []; // program
     this.alter = []; // program
+    this.tags = new Map();
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   setName(name: string, parent?: string) {
@@ -70,6 +73,14 @@ export default class SM_Bundle implements ISMCBundle {
     const valid = Object.values(EBundleType).includes(type as any);
     if (!valid) throw Error(`invalid bundle type '${type}'`);
     this.type = type;
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  setTag(tagName: string, value: any) {
+    this.tags.set(tagName, value);
+  }
+  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  getTag(tagName: string): any {
+    return this.tags.get(tagName);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   /** return an object with non-empty program arrays

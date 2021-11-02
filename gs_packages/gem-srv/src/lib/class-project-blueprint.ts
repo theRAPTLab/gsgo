@@ -13,9 +13,6 @@ export default class ProjectBlueprint {
   // Core
   private _id: any; // id of parent project object -- REVIEW: necessary?
   private _label: string;
-  // Settings
-  private _isCharControllable: boolean; // agent can be controlled by charcontrol (iPad)
-  private _isPozyxControllable: boolean; // pozyx tag immediately appears as agent (only one allowed per project)
   // Definitions
   private _scriptText: string; // blueprint definition gemscript
 
@@ -29,11 +26,6 @@ export default class ProjectBlueprint {
     this._id = def.id !== undefined ? def.id : 0;
     this._label = def.label !== undefined ? def.label : '';
 
-    this._isCharControllable =
-      def.isCharControllable !== undefined ? def.isCharControllable : false;
-    this._isPozyxControllable =
-      def.isPozyxControllable !== undefined ? def.isPozyxControllable : false;
-
     this._scriptText = def.scriptText !== undefined ? def.scriptText : '';
   }
 
@@ -41,8 +33,6 @@ export default class ProjectBlueprint {
     const bp: any = {};
     bp.id = this._id;
     bp.label = this._label;
-    bp.isCharControllable = this._isCharControllable;
-    bp.isPozyxControllable = this._isPozyxControllable;
     bp.scriptText = this._scriptText;
     return bp;
   }
@@ -66,23 +56,6 @@ export default class ProjectBlueprint {
   }
   set label(val: string) {
     this._label = val;
-  }
-
-  /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-  /// SETTINGS
-
-  get isCharControllable(): boolean {
-    return this._isCharControllable;
-  }
-  set isCharControllable(val: boolean) {
-    this._isCharControllable = val;
-  }
-
-  get isPozyxControllable(): boolean {
-    return this._isPozyxControllable;
-  }
-  set isPozyxControllable(val: boolean) {
-    this._isPozyxControllable = val;
   }
 
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

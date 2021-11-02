@@ -53,7 +53,7 @@ class PanelSelectSimulation extends React.Component {
     this.onCheckValidFilename = this.onCheckValidFilename.bind(this);
     this.onCreateFileFromTemplate = this.onCreateFileFromTemplate.bind(this);
     this.isFilenameUnique = this.isFilenameUnique.bind(this);
-    this.listProjectTemplates = this.listProjects.bind(this);
+    this.listProjects = this.listProjects.bind(this);
     this.urStateUpdated = this.urStateUpdated.bind(this);
 
     /// URSYS SYSHOOKS ////////////////////////////////////////////////////////////

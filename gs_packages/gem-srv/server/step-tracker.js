@@ -163,8 +163,10 @@ function m_BindPTrackListener() {
 
     m_ForwardTrackerData(s);
 
-    let d = new Date();
-    console.log(d.toLocaleTimeString(), s);
+    // UNCOMMENT THIS TO DEBUG PTRACK JSON DATA
+    // This will dump PTrack JSON data to the terminal
+    // let d = new Date();
+    // console.log(d.toLocaleTimeString(), s);
   });
 
   // we're not expecting errors, but we should
@@ -310,12 +312,11 @@ function ConvertMQTTtoTrackerData(message) {
   // frame
   let m_frame = {
     header: {},
-    fake_tracks: [framedata]
+    pozyx_tracks: [framedata]
   };
   m_frame.header.stamp = { sec, nsec };
-  // FIXME: Masquerading as faketrack data for now.
-  m_frame.header.frame_id = 'faketrack';
-  m_frame.fake_id = 'pozyx'; // FIXME
+  m_frame.header.frame_id = 'pozyx';
+  // m_frame.fake_id = 'pozyx'; // fake_id is only used for ptrack data
   m_frame.header.seq = m_seq++;
 
   return JSON.stringify(m_frame);
