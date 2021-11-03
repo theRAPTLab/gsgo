@@ -109,8 +109,9 @@ export function RoundInit(SIMSTATUS) {
     if (round.time !== undefined) {
       ROUND_TIMER_START_VALUE = round.time;
       RSIMSTATUS.timer = ROUND_TIMER_START_VALUE;
-      const intro = round.intro || '';
-      const message = `Round ${ROUNDS_COUNTER + 1}: ${intro}`;
+    }
+    if (round.intro) {
+      const message = `Round ${ROUNDS_COUNTER + 1}: ${round.intro}`;
       UR.RaiseMessage('SHOW_MESSAGE', { message });
     }
     RunScript(round.initScript);
@@ -128,9 +129,10 @@ export function RoundStop() {
   StopRoundTimer();
   const round = ACRounds.GetRoundDef(ROUNDS_INDEX);
   if (round) {
-    const outtro = round.outtro || '';
-    const message = `End Round ${ROUNDS_COUNTER + 1}: ${outtro}`;
-    UR.RaiseMessage('SHOW_MESSAGE', { message });
+    if (round.outtro) {
+      const message = `End Round ${ROUNDS_COUNTER + 1}: ${round.outtro}`;
+      UR.RaiseMessage('SHOW_MESSAGE', { message });
+    }
     RunScript(round.endScript);
   }
 
