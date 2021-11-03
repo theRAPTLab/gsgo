@@ -78,6 +78,28 @@ export function SetBundleOut(str: string): boolean {
   return false;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+export function SetBundleTag(
+  bdl: ISMCBundle,
+  tagName: string,
+  tagValue: any
+): boolean {
+  if (typeof bdl !== 'object') {
+    console.warn('arg1 is not a bundle, got:', bdl);
+    return false;
+  }
+  if (typeof tagName !== 'string') {
+    console.warn('arg2 is not bundleName, got:', tagName);
+    return false;
+  }
+  if (tagValue === undefined) {
+    console.warn('arg3 is not tagValue, got:', tagValue);
+    return false;
+  }
+  // set the bundle name AND save it
+  bdl.setTag(tagName, tagValue);
+  return true;
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function CompilerState() {
   return {
     bundleName: BUNDLE_NAME,

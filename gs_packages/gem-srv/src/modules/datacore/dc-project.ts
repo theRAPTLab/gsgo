@@ -70,7 +70,7 @@ async function m_LoadProjectFromDB(projId) {
         label
         metadata { top right bottom left wrap bounce bgcolor roundsCanLoop}
         rounds { id label time intro outtro initScript endScript }
-        blueprints { id label isCharControllable isPozyxControllable scriptText }
+        blueprints { id label scriptText }
         instances { id label bpid initScript }
       }
     }
@@ -118,8 +118,6 @@ function promise_DBWriteProject(projId, project) {
       blueprints {
         id
         label
-        isCharControllable
-        isPozyxControllable
         scriptText
       }
       instances {
@@ -268,8 +266,6 @@ async function promise_WriteRounds(projId, rounds) {
 //         blueprints {
 //           id
 //           label
-//           isCharControllable
-//           isPozyxControllable
 //           scriptText
 //         }
 //       }
@@ -289,8 +285,6 @@ function promise_WriteBlueprints(projId, blueprints) {
       updateBlueprints(projectId:$projectId,input:$input) {
         id
         label
-        isCharControllable
-        isPozyxControllable
         scriptText
       }
     }`,

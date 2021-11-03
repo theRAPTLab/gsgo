@@ -14,7 +14,11 @@ import SM_Bundle from 'lib/class-sm-bundle';
 
 import { GetKeyword } from 'modules/datacore/dc-script-engine';
 import { GetProgram } from 'modules/datacore/dc-named-methods';
-import { AddToBundle, SetBundleName } from 'modules/datacore/dc-script-bundle';
+import {
+  AddToBundle,
+  SetBundleName,
+  SetBundleTag
+} from 'modules/datacore/dc-script-bundle';
 import GAgent from 'lib/class-gagent';
 
 import { ParseExpression } from './class-expr-parser-v2';
@@ -164,8 +168,18 @@ function CompileBlueprint(script: TScriptUnit[]): SM_Bundle {
       }
       throw Error(`${fn}: # BLUEPRINT must be first line in script`);
     }
-    // special case 2: run pragma compile-time scripts
+
+    // special case 2: tag processing
+    const [lead, kw, tagName, tagValue] = DecodeStatement(stm);
+    if (lead === '_pragma' && kw.toUpperCase() === 'TAG') {
+      SetBundleTag(bdl, tagName, tagValue);
+      return;
+    }
+
+    // special case 3: run pragma compile-time scripts
     // ??? this does not seem to run snymore...maybe not necesary
+    // BL: this doesn't run because stm[0] is now a {directive: '#'}
+    //     it's not clear that it needs to?
     if (stm[0] === '#') {
       objcode = CompileStatement([{ directive: '#' }, ...stm.slice(1)]);
       r_Execute(objcode, compilerAgent, compilerState);

@@ -59,9 +59,10 @@ function m_CompileCursors() {
   const CURSOR_BLUEPRINT = {
     id: 'Cursor',
     label: 'Cursor',
-    isCharControllable: true,
-    isPozyxControllable: true,
     scriptText: `# BLUEPRINT Cursor
+# TAG isCharControllable true
+# TAG isPozyxControllable true
+
 # PROGRAM DEFINE
 useFeature Costume
 featCall Costume setCostume 'circle.json' 0
@@ -79,6 +80,9 @@ useFeature Touches
 ${touchscripts}
 
 useFeature AgentWidgets
+
+// always on top
+prop zIndex setTo 1000
 `
   };
 
@@ -126,6 +130,12 @@ function m_UpdateInhabitAgent(frametime) {
 
     // found target, set target as inhabitingTarget
     const target = GetAgentById(targetId);
+    // clear label
+    c.prop.AgentWidgets.text.setTo('');
+    // clear meter
+    c.prop.statusValue.setTo(undefined);
+    c.prop.AgentWidgets.meter.setTo(undefined);
+    c.prop.AgentWidgets.meterProp.setTo(undefined);
 
     if (!target) {
       console.error(
@@ -187,6 +197,8 @@ class CursorPack extends GFeature {
     if (agent.cursor) {
       agent.cursor.prop.Cursor.cursorTargetId.setTo(undefined);
       agent.cursor.prop.isInhabitingTarget.setTo(false);
+      // restore cursor name
+      agent.cursor.prop.AgentWidgets.text.setTo(agent.cursor.id);
       agent.cursor = undefined;
     }
   }
