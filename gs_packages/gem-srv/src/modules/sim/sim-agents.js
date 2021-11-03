@@ -70,7 +70,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
-    if (agent.debug) dobj.debug = agent.debug;
+    dobj.debug = agent.debug; // always set debug b/c vision cone might be removed
     if (agent.statusObject !== undefined) {
       dobj.barGraph = agent.statusObject.barGraph;
       dobj.barGraphLabels = agent.statusObject.barGraphLabels;
@@ -97,7 +97,7 @@ AGENT_TO_DOBJ.setMapFunctions({
     if (agent.mode) dobj.mode = agent.mode();
     if (agent.dragging) dobj.dragging = agent.isCaptive;
     dobj.flags = agent.getFlags(); // always set flags b/c they might be cleared
-    if (agent.debug) dobj.debug = agent.debug;
+    dobj.debug = agent.debug; // always set debug b/c vision cone might be removed
     if (agent.statusObject !== undefined) {
       dobj.barGraph = agent.statusObject.barGraph;
       dobj.barGraphLabels = agent.statusObject.barGraphLabels;
