@@ -207,6 +207,20 @@ function m_update(frame) {
   });
 }
 
+function m_simStop() {
+  // Clear vision cone
+  const agentIds = Array.from(VISION_AGENTS.keys());
+  agentIds.forEach(agentId => {
+    const agent = m_getAgent(agentId);
+    if (!agent) return;
+    agent.debug = undefined;
+  });
+}
+
+function m_handleScriptEvent(data) {
+  if (data.type === 'RoundStop') m_simStop();
+}
+
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 class VisionPack extends GFeature {
@@ -219,6 +233,7 @@ class VisionPack extends GFeature {
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
     // movmeent's FEATURES_UPDATE
+    UR.HandleMessage('SCRIPT_EVENT', m_handleScriptEvent);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
