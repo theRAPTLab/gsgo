@@ -71,6 +71,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   isTouching: any; // used by Touches
   // name, value are defined in IScopeable
   statusObject: any;
+  debug: any; // used by Vision to pass polygon path of cone to class-visual
 }
 
 /// FEATURE DECLARATIONS //////////////////////////////////////////////////////

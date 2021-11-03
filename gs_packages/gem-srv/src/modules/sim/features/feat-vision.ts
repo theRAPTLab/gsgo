@@ -47,19 +47,14 @@ function m_getAgent(agentId): IAgent {
   return a;
 }
 
-// REVIEW: Consider using https://github.com/davidfig/pixi-intersects
-function m_IsTargetWithinVisionCone(agent, target): boolean {
+function m_updateVisionCone(agent): { visionPoly: any[]; visionPath: any[] } {
   // Newly minted agents will not have x and y set until VIS_UPDATE
   if (
     agent.x === undefined ||
     agent.y === undefined ||
-    target === undefined ||
-    target.isInert || // inert = dead
-    target.x === undefined ||
-    target.y === undefined ||
     agent.prop.Movement._orientation === undefined // orientation isn't set until agent moves
   )
-    return false;
+    return { visionPoly: [], visionPath: [] };
 
   const distance = agent.prop.Vision.viewDistance.value;
   // convert degrees viewAngle to radians
@@ -91,6 +86,19 @@ function m_IsTargetWithinVisionCone(agent, target): boolean {
     viewPointRight.y
   ];
   agent.debug = visionPath;
+
+  return { visionPoly, visionPath };
+}
+
+// REVIEW: Consider using https://github.com/davidfig/pixi-intersects
+function m_IsTargetWithinVisionCone(visionPoly, target): boolean {
+  if (
+    target === undefined ||
+    target.isInert || // inert = dead
+    target.x === undefined ||
+    target.y === undefined
+  )
+    return false;
 
   const targetPoly = GetAgentBoundingRect(target);
   // Returns array of intersecting objects, or [] if no intersects
@@ -148,9 +156,6 @@ function m_IsTargetColorVisible(agent: IAgent, target: IAgent) {
     sRange,
     vRange
   );
-
-  // }
-  return false;
 }
 
 /// PHYSICS LOOP ////////////////////////////////////////////////////////////
@@ -168,6 +173,8 @@ function m_update(frame) {
     // vision cone will show if hasActiveTargets
     let hasActiveTargets = false;
 
+    const { visionPoly, visionPath } = m_updateVisionCone(agent);
+
     const targets = GetAgentsByType(VISION_AGENTS.get(agentId));
     targets.forEach(t => {
       if (agent.id === t.id) return; // skip self
@@ -176,7 +183,7 @@ function m_update(frame) {
       let canSeeCone = false;
       if (!t.isInert && t.prop.Vision.visionable.value) {
         // don't check vision if inert or not visible
-        canSeeCone = m_IsTargetWithinVisionCone(agent, t);
+        canSeeCone = m_IsTargetWithinVisionCone(visionPoly, t);
       }
       if (!agent.canSeeCone) agent.canSeeCone = new Map();
       agent.canSeeCone.set(t.id, canSeeCone);
@@ -192,10 +199,26 @@ function m_update(frame) {
     // Clear cone if no more non-inert targets.
     // We can't simply check for 0 targets because
     // pozyx targets might still be around but inert
-    // and the cone is only drawn during the m_IsTargetWithinVisionCone call,
-    // but the call will skip drawing if the target is inert.
-    if (!hasActiveTargets) agent.debug = [];
+    if (!hasActiveTargets) {
+      agent.debug = undefined;
+    } else {
+      agent.debug = visionPath;
+    }
   });
+}
+
+function m_simStop() {
+  // Clear vision cone
+  const agentIds = Array.from(VISION_AGENTS.keys());
+  agentIds.forEach(agentId => {
+    const agent = m_getAgent(agentId);
+    if (!agent) return;
+    agent.debug = undefined;
+  });
+}
+
+function m_handleScriptEvent(data) {
+  if (data.type === 'RoundStop') m_simStop();
 }
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
@@ -210,6 +233,7 @@ class VisionPack extends GFeature {
     UR.HookPhase('SIM/AGENTS_UPDATE', m_update);
     // use AGENTS_UPDATE so the vision calculations are in place for use during
     // movmeent's FEATURES_UPDATE
+    UR.HandleMessage('SCRIPT_EVENT', m_handleScriptEvent);
   }
   /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   decorate(agent) {
