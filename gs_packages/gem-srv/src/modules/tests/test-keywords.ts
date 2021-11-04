@@ -5,7 +5,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { ScriptifyText, CompileBlueprint } from 'script/transpiler-v2';
+import { TextToScript, CompileBlueprint } from 'script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -21,8 +21,8 @@ function TestKeywords(index?: number) {
   else console.log(...PR('running', TT.length, 'tests'));
   TT.forEach((test, idx) => {
     if (!singleTest || index === idx) {
-      const [desc, text] = test;
-      const script = ScriptifyText(text);
+      const { desc, text } = test;
+      const script = TextToScript(text);
       const bundle = CompileBlueprint(script);
       const lead = `${idx}`.padStart(2, '0');
       if (singleTest) console.group('test', lead, '-', desc);
@@ -39,11 +39,14 @@ function TestKeywords(index?: number) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 TT.push([
-  'desc: ',
-  `
+  {
+    desc: 'all current keywords to test',
+    text: `
   # BLUEPRINT Bee
   # PROGRAM TEST
-  `.trim()
+  `.trim(),
+    expect: ``
+  }
 ]);
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /// TEST CODE /////////////////////////////////////////////////////////////////

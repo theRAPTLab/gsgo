@@ -4,8 +4,7 @@
 
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
-import ScriptTokenizer from '../../lib/class-gscript-tokenizer-dbg';
-// import * as TRANSPILER from '../sim/script/transpiler';
+import ScriptTokenizer from '../../lib/class-gscript-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
