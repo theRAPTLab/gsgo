@@ -35,8 +35,7 @@ import UR from '@gemstep/ursys/client';
 import Keyword, {
   DerefProp,
   JSXFieldsFromUnit,
-  TextifyScriptUnitValues,
-  ScriptifyText
+  TextifyScriptUnitValues
 } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';

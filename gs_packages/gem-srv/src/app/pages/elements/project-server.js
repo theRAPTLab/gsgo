@@ -261,7 +261,7 @@ export function InjectBlueprint(data) {
 
   // Compile and Register
   // REVIEW: Should this be moved to ACBlueprints
-  const source = TRANSPILER.ScriptifyText(blueprint.scriptText);
+  const source = TRANSPILER.TextToScript(blueprint.scriptText);
   const bundle = TRANSPILER.CompileBlueprint(source);
   TRANSPILER.RegisterBlueprint(bundle);
 }
@@ -484,7 +484,7 @@ export function InstanceRequestEdit(data) {
  * @return {object} InstanceDef with init scrubbed
  */
 function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
-  const scriptUnits = TRANSPILER.ScriptifyText(instance.initScript);
+  const scriptUnits = TRANSPILER.TextToScript(instance.initScript);
   const scrubbedScriptUnits = scriptUnits.filter(unit => {
     if (unit[0] && unit[0].token === 'prop') {
       return validPropNames.includes(unit[1].token);
@@ -503,7 +503,7 @@ function m_RemoveInvalidPropsFromInstanceInit(instance, validPropNames) {
  * @param {Object} data -- { projId, script, origBlueprintName }
  */
 function ScriptUpdate(data) {
-  const source = TRANSPILER.ScriptifyText(data.script);
+  const source = TRANSPILER.TextToScript(data.script);
   const bundle = TRANSPILER.CompileBlueprint(source); // compile to get name
   const bpid = bundle.name;
 

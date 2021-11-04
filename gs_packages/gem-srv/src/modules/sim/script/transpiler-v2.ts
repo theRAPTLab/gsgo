@@ -33,7 +33,10 @@ import {
   CompileScript,
   ScriptToText,
   CompileBlueprint,
-  DecodeStatement
+  TokenToString,
+  DecodeStatement,
+  DecodeToken,
+  GetTokenValue
 } from './tools/_all_tools';
 import { ScriptToJSX } from './tools/script-to-jsx';
 
@@ -106,10 +109,10 @@ function ScriptToConsole(units: TScriptUnit[], lines: string[] = []) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** A brute force method of retrieving the blueprint name from a script
  *  Compiles raw scriptText to determine the blueprint name
- *  @param {string} scriptText
+ *  @param {string} bpText
  */
-function ExtractBlueprintName(scriptText: string): string {
-  const script = TextToScript(scriptText);
+function ExtractBlueprintName(bpText: string): string {
+  const script = TextToScript(bpText);
   const bundle = CompileBlueprint(script); // compile to get name
   return bundle.name;
 }
@@ -117,10 +120,10 @@ function ExtractBlueprintName(scriptText: string): string {
 /** A brute force method of retrieving the blueprint properties from a
  *  scriptText. Compiles raw scriptText to determine the blueprint properties
  *  Only includes `prop` properties, not `featProps`
- *  @param {string} scriptText
+ *  @param {string} bpText
  *  @return {Object[]} [...{name, type, defaultValue, isFeatProp}]
  */
-function ExtractBlueprintProperties(scriptText): any[] {
+function ExtractBlueprintProperties(bpText): any[] {
   // HACK in built in properties -- where should these be looked up?
   // 1. Start with built in properties
   let properties: any[] = [
@@ -171,8 +174,8 @@ function ExtractBlueprintProperties(scriptText): any[] {
   ];
   // 2. Brute force deconstruct added properties
   //    by walking down script and looking for `addProp`
-  if (!scriptText) return properties; // During update script can be undefined
-  const scriptUnits = TextToScript(scriptText);
+  if (!bpText) return properties; // During update script can be undefined
+  const scriptUnits = TextToScript(bpText);
   scriptUnits.forEach(unit => {
     if (unit[0] && unit[0].token === 'addProp') {
       // add them to the top of the list
@@ -190,11 +193,11 @@ function ExtractBlueprintProperties(scriptText): any[] {
 /** A brute force method of retrieving the blueprint properties from a scriptText
  *  Compiles raw scriptText to determine the blueprint property types
  *  Used by PanelScript to generate property menus
- *  @param {string} scriptText
+ *  @param {string} bpText
  *  @return {map} [ ...{name: {name, type, defaultValue, isFeatProp}]
  */
-function ExtractBlueprintPropertiesMap(scriptText) {
-  const properties = this.ExtractBlueprintProperties(scriptText);
+function ExtractBlueprintPropertiesMap(bpText) {
+  const properties = this.ExtractBlueprintProperties(bpText);
   const map = new Map();
   properties.forEach(p => map.set(p.name, p));
   return map;
@@ -206,8 +209,8 @@ function ExtractBlueprintPropertiesMap(scriptText) {
  *  @param {string} scriptText
  *  @return {map} [ ...{name: type}]
  */
-function ExtractBlueprintPropertiesTypeMap(scriptText) {
-  const properties = this.ExtractBlueprintProperties(scriptText);
+function ExtractBlueprintPropertiesTypeMap(bpText) {
+  const properties = this.ExtractBlueprintProperties(bpText);
   const map = new Map();
   properties.forEach(p => map.set(p.name, p.type));
   return map;
@@ -215,12 +218,12 @@ function ExtractBlueprintPropertiesTypeMap(scriptText) {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** brute force method of retrieving a list of features used in a scriptText
  */
-function ExtractFeaturesUsed(scriptText: string): string[] {
+function ExtractFeaturesUsed(bpText: string): string[] {
   // Brute force deconstruct added properties
   // by walking down script and looking for `addProp`
-  if (!scriptText) return []; // During update script can be undefined
+  if (!bpText) return []; // During update script can be undefined
   const featureNames = [];
-  const scriptUnits = TextToScript(scriptText);
+  const scriptUnits = TextToScript(bpText);
   scriptUnits.forEach(unit => {
     if (unit[0] && unit[0].token === 'useFeature') {
       featureNames.push(unit[1].token);
@@ -232,9 +235,9 @@ function ExtractFeaturesUsed(scriptText: string): string[] {
 /** featPropMap is a map of ALL properties of ALL features
  *  for a given script (could be blueprint, or script snippet)
  */
-function ExtractFeatPropMapFromScript(script: string): Map<string, any[]> {
+function ExtractFeatPropMapFromScript(bpText: string): Map<string, any[]> {
   // Get list of features used in blueprint
-  const featureNames = this.ExtractFeaturesUsed(script);
+  const featureNames = this.ExtractFeaturesUsed(bpText);
   return ExtractFeatPropMap(featureNames);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -283,7 +286,7 @@ function ExtractFeatPropMap(featureNames: string[]): Map<string, any[]> {
  *  Used by project-server.InstanceAdd to check for the presence of
  *  '# PROGRAM INIT' to decide whether or not to replace
  *  the init script.
- *  @param {string} bpText
+ *  @param {string} bpText blueprint scriptText
  *  @param {string} directive
  *  @returns boolean
  */
@@ -419,18 +422,16 @@ export {
   ScriptToJSX // TScriptUnit[] => jsx
 };
 
-/// DEPRECATED FUNCTIONS
-export {
-  TextToScript as ScriptifyText, // deprecated
-  ScriptToText as TextifyScript, // deprecated
-  CompileText // CompileScript
-};
-
 /// CONVENIENCE FUNCTIONS
 export {
+  CompileText,
   CompileBlueprint, // combine scriptunits through m_CompileBundle
   RenderScript, // TScriptUnit[] => JSX for wizards
-  ScriptToConsole // used in DevCompiler to
+  ScriptToConsole, // used in DevCompiler print script to console
+  TokenToString, // for converting a token to its text representation
+  GetTokenValue, // for decoding the value of a token, returns token otherwise
+  DecodeToken, // Working with GetTokenValue, converts a token into runtime entity
+  DecodeStatement // Works with DecodeToken to create runtime enties
 };
 
 /// BLUEPRINT OPERATIONS

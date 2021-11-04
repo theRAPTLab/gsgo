@@ -87,7 +87,7 @@ class SimControl {
     const blueprintDefs = ACBlueprints.GetBlueprints();
     const sources = blueprintDefs.map(s => {
       try {
-        return TRANSPILER.ScriptifyText(s.scriptText);
+        return TRANSPILER.TextToScript(s.scriptText);
       } catch (error) {
         return console.error('Failed transpilling', s);
       }

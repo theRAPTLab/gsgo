@@ -38,7 +38,7 @@
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const string = 'class-script-tokenizer-v3';
+const string = 'class-script-tokenizer-v2';
 const charAtFunc = string.charAt;
 const charCodeAtFunc = string.charCodeAt;
 const t = true;

@@ -56,13 +56,13 @@ function TestKeywords() {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function MakeInstances() {
-  let bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(FishAgent));
+  let bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(FishAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(PadAgent));
+  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(PadAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(BeeAgent));
+  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(BeeAgent));
   TRANSPILER.RegisterBlueprint(bundle);
-  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.ScriptifyText(WorldAgent));
+  bundle = TRANSPILER.CompileBlueprint(TRANSPILER.TextToScript(WorldAgent));
   TRANSPILER.RegisterBlueprint(bundle);
   for (let i = 0; i < 1; i++) {
     // DefineInstance({
