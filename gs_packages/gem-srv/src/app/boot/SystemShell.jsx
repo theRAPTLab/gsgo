@@ -15,7 +15,6 @@ import {
   LazyTracker,
   LazyFakeTrack,
   LazyCompiler,
-  LazyCompilerV2,
   LazyDevice,
   LazyCharacterController,
   LazyWizard,
@@ -77,9 +76,6 @@ class SystemShell extends React.Component {
         </Route>
         <Route path="/app/dev-compiler">
           <LazyCompiler />
-        </Route>
-        <Route path="/app/dev-compiler-v2">
-          <LazyCompilerV2 />
         </Route>
         <Route path="/app/dev-faketrack">
           <LazyFakeTrack />

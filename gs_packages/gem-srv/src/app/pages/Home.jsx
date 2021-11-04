@@ -18,6 +18,7 @@ import { useStylesHOC } from './elements/page-styles';
 // import '../../modules/tests/test-script-parser'; // test script parser
 // import '../../modules/tests/test-compiler'; // test compiler
 // import '../../modules/tests/test-script-runtime'; // test runtime keyword functions
+// import '../../modules/tests/test-keywords'; // test individual keywords
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -138,8 +139,8 @@ class Home extends React.Component {
               testing. Non-devs should use Character Controller instead.
             </li>
             <li>
-              <a href="/app/dev-compiler-v2">COMPILER V2</a> - ScriptText Compiler
-              / Simulator / Renderer Source (version 2 full tokenization)
+              <a href="/app/dev-compiler">COMPILER V2</a> - ScriptText Compiler /
+              Simulator / Renderer Source (version 2 full tokenization)
             </li>
           </ol>
         </div>

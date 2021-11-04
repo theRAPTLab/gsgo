@@ -11,7 +11,7 @@ import * as ACRounds from 'modules/appcore/ac-rounds';
 import { GVarNumber } from 'modules/sim/vars/_all_vars';
 import { GetGlobalAgent } from 'lib/class-gagent';
 import SM_State from 'lib/class-sm-state';
-import * as TRANSPILER from './script/transpiler';
+import * as TRANSPILER from './script/transpiler-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

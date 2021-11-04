@@ -10,7 +10,6 @@ const Main = React.lazy(() => import('../pages/Main'));
 const ScriptEditor = React.lazy(() => import('../pages/ScriptEditor'));
 const Viewer = React.lazy(() => import('../pages/Viewer'));
 const TrackerSetup = React.lazy(() => import('../pages/TrackerSetup'));
-const DevCompilerV2 = React.lazy(() => import('../pages/DevCompiler-v2'));
 const DevCompiler = React.lazy(() => import('../pages/DevCompiler'));
 const DevTracker = React.lazy(() => import('../pages/DevTracker'));
 const DevFakeTrack = React.lazy(() => import('../pages/DevFakeTrack'));
@@ -64,11 +63,6 @@ export const LazyTrackerSetup = () => (
 export const LazyDevice = () => (
   <Suspense fallback={<div>loading</div>}>
     <DevController />
-  </Suspense>
-);
-export const LazyCompilerV2 = () => (
-  <Suspense fallback={<div>loading</div>}>
-    <DevCompilerV2 />
   </Suspense>
 );
 export const LazyCompiler = () => (

@@ -7,10 +7,6 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-// TRANSPILER v1
-// import * as TRANSPILER from 'script/transpiler';
-
-// TRANSPILER v2
 import * as TRANSPILER from 'script/transpiler-v2';
 
 import { ScriptToJSX } from 'modules/sim/script/tools/script-to-jsx';

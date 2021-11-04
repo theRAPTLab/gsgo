@@ -7,7 +7,7 @@
 
 import UR from '@gemstep/ursys/client';
 import * as SIM from 'modules/sim/api-sim';
-import * as TRANSPILER from 'script/transpiler';
+import * as TRANSPILER from 'script/transpiler-v2';
 import {
   DefineInstance,
   GetAllInstances,
