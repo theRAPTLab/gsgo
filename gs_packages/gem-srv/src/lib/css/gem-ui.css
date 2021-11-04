@@ -61,3 +61,22 @@
   background-position: calc(var(--col2) - var(--shim2a)) var(--row3);
   width: 50px;
 }
+
+.gwiz {
+  box-sizing: border-box;
+}
+.gwiz.line {
+  margin: 20px 0;
+  clear: left;
+}
+.gwiz.line div {
+  display: inline;
+  padding: 5px;
+  min-height: 50px;
+  min-width: 50px;
+  margin: 2px;
+  border: 1px solid gray;
+}
+.gwiz.block {
+  display: block;
+}
