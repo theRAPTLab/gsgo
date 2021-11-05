@@ -173,6 +173,14 @@ class CursorPack extends GFeature {
     this.featAddProp(agent, 'cursorTargetId', new GVarString());
 
     CURSOR_BLUEPRINTS.set(agent.blueprint.name, agent.blueprint.name);
+
+    // Make sure it has the Movement feature
+    if (!agent.hasFeature('Movement')) {
+      // eslint-disable-next-line no-alert
+      alert(
+        `Cursor control of ${agent.blueprint.name} requires the Movement feature!  Add 'useFeature Movement' to ${agent.blueprint.name} script!`
+      );
+    }
   }
 
   // `agent` in this case is usually the `Cursor` agent.
