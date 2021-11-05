@@ -4,7 +4,7 @@ import SM_Comparator from './class-sm-comparator';
 export default class SM_State implements IState {
   stack: TStackable[]; // data stack (pass values in/out)
   scope: IScopeable[]; // scope stack (current execution context)
-  ctx: { agent?: IScopeable };
+  ctx: { agent?: IScopeable; global?: IScopeable };
   flags: IComparator; // comparison flags set by ALU operations
   //
   constructor(argStack: TStackable[] = [], ctx?: any) {
