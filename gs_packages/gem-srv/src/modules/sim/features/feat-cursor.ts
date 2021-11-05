@@ -127,15 +127,8 @@ function m_UpdateInhabitAgent(frametime) {
 
     // not touching anything
     if (!targetId) return false;
-
     // found target, set target as inhabitingTarget
     const target = GetAgentById(targetId);
-    // clear label
-    c.prop.AgentWidgets.text.setTo('');
-    // clear meter
-    c.prop.statusValue.setTo(undefined);
-    c.prop.AgentWidgets.meter.setTo(undefined);
-    c.prop.AgentWidgets.meterProp.setTo(undefined);
 
     if (!target) {
       console.error(
@@ -146,6 +139,12 @@ function m_UpdateInhabitAgent(frametime) {
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
+    // clear label
+    c.prop.AgentWidgets.text.setTo('');
+    // clear meter
+    c.prop.statusValue.setTo(undefined);
+    c.prop.AgentWidgets.meter.setTo(undefined);
+    c.prop.AgentWidgets.meterProp.setTo(undefined);
     return true;
   });
 }
