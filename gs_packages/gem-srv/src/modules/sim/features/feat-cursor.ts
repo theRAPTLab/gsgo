@@ -24,6 +24,7 @@ import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('FeatCursor');
 
 // blueprint types that can be inhabited by a cursor
 const CURSOR_BLUEPRINTS = new Map(); // key = agent id, value = agent id
