@@ -156,7 +156,7 @@ class Compiler extends React.Component {
   // compile source to jsx
   userToJSX() {
     if (DBG) console.group(...PR('toReact'));
-    // this.source = TRANSPILER.ScriptifyText(this.state.text);
+    // this.source = TRANSPILER.TextToScript(this.state.text);
     // const jsx = TRANSPILER.ScriptToJSX(this.source);
     // this.setState({ jsx });
     if (DBG) console.groupEnd();

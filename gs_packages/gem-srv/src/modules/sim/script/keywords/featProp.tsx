@@ -33,10 +33,10 @@ import React from 'react';
 import DeleteIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import Keyword, {
-  DerefFeatureProp,
-  JSXFieldsFromUnit,
-  TextifyScriptUnitValues,
-  ScriptifyText
+  K_DerefFeatureProp,
+  K_JSXFieldsFromUnit,
+  K_TextifyScriptUnitValues,
+  K_ScriptifyText
 } from 'lib/class-keyword';
 import GAgent from 'lib/class-gagent';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
@@ -335,7 +335,7 @@ export class featProp extends Keyword {
 
     // OLD broken method
     // const [kw, refArg, methodName, ...args] = unit;
-    // const deref = DerefFeatureProp(refArg);
+    // const deref = K_DerefFeatureProp(refArg);
     // return [
     //   (agent: IAgent, state: IState) => {
     //     const p = deref(agent, state.ctx);
@@ -355,8 +355,8 @@ export class featProp extends Keyword {
     const refArg =
       context && context !== 'agent' ? `${context}.${featName}` : featName;
     const scriptArr = [this.keyword, refArg, featPropName, methodName, ...args];
-    const scriptText = TextifyScriptUnitValues(scriptArr);
-    const scriptUnits = ScriptifyText(scriptText);
+    const scriptText = K_TextifyScriptUnitValues(scriptArr);
+    const scriptUnits = K_ScriptifyText(scriptText);
     return scriptUnits;
   }
 
@@ -366,7 +366,7 @@ export class featProp extends Keyword {
     unit: TScriptUnit,
     children?: any[] // options
   ): any {
-    const expUnit = JSXFieldsFromUnit(unit);
+    const expUnit = K_JSXFieldsFromUnit(unit);
     const [kw, refArg, featPropName, methodName, ...args] = expUnit;
     // ref is an array of strings that are fields in dot addressing
     // like agent.x

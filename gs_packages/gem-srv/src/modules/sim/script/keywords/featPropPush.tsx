@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword, { DerefFeatureProp } from 'lib/class-keyword';
+import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
 import { IAgent, TOpcode, IScriptUpdate, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 

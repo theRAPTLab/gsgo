@@ -46,7 +46,7 @@ function m_CheckForError(code: TSMCProgram, unit: TScriptUnit, ...args: any[]) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** utility to return the 'decoded' value of a token */
-function GetTokenValue(arg) {
+function U_SimplifyTokenPrimitives(arg) {
   const { directive, comment, line } = arg; // meta information
   const { token, value, string } = arg; // primitive values
   const { objref, program, block, expr } = arg; // req runtime eval
@@ -69,7 +69,7 @@ function GetTokenValue(arg) {
  */
 function DecodeToken(tok: IToken): any {
   if (tok.comment !== undefined) return '//'; // signal compiler to skip
-  const arg = GetTokenValue(tok); // convert
+  const arg = U_SimplifyTokenPrimitives(tok); // convert
   // check special types
   if (arg.directive) return '_pragma'; // { directive, cmd } for compile-time processing
   if (typeof arg.expr === 'string') {
@@ -266,4 +266,5 @@ UR.AddConsoleTool({
 /// EXPORTS ///////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export { CompileScript, CompileBlueprint };
-export { GetTokenValue, DecodeToken, DecodeStatement };
+export { DecodeToken, DecodeStatement };
+export { U_SimplifyTokenPrimitives };

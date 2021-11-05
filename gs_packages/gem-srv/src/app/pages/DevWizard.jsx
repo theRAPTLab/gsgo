@@ -17,7 +17,7 @@ import * as ASSETS from '../../modules/asset_core';
 import {
   TextToScript,
   TokenToString,
-  GetTokenValue
+  U_SimplifyTokenPrimitives
 } from '../../modules/sim/script/transpiler-v2';
 import { useStylesHOC } from './elements/page-styles';
 //
@@ -69,7 +69,7 @@ function GLine(props) {
   const { statement } = props;
   const toks = [];
   statement.forEach(tok => {
-    const val = GetTokenValue(tok);
+    const val = U_SimplifyTokenPrimitives(tok);
     if (Array.isArray(val)) {
       // an array of scriptunits
       const { block } = val;

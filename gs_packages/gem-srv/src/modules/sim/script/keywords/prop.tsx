@@ -33,9 +33,9 @@ import React from 'react';
 import DeleteIcon from '@material-ui/icons/VisibilityOff';
 import UR from '@gemstep/ursys/client';
 import Keyword, {
-  DerefProp,
-  JSXFieldsFromUnit,
-  TextifyScriptUnitValues
+  K_DerefProp,
+  K_JSXFieldsFromUnit,
+  K_TextifyScriptUnitValues
 } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
@@ -242,7 +242,7 @@ export class prop extends Keyword {
     const [kw, refArg, methodName, ...args] = unit;
     // create a function that will be used to dereferences the objref
     // into an actual call
-    const deref = DerefProp(refArg);
+    const deref = K_DerefProp(refArg);
     return [
       (agent: IAgent, state: IState) => {
         const p = deref(agent, state.ctx, methodName, ...args);
@@ -257,7 +257,7 @@ export class prop extends Keyword {
     const { context, propName, methodName, type, propMethods, args } = state;
     const refArg = context ? `${context}.${propName}` : propName;
     const scriptArr = [this.keyword, refArg, methodName, ...args];
-    const scriptText = TextifyScriptUnitValues(scriptArr);
+    const scriptText = K_TextifyScriptUnitValues(scriptArr);
     const scriptUnits = TextToScript(scriptText);
     return scriptUnits;
   }
@@ -269,7 +269,7 @@ export class prop extends Keyword {
     // REVIEW: Add 'options' here?
     children?: any // options
   ): any {
-    const expUnit = JSXFieldsFromUnit(unit);
+    const expUnit = K_JSXFieldsFromUnit(unit);
     const [kw, refArg, methodName, ...args] = expUnit;
 
     // Dereference Ref ("Costume" or "Moth.Costume")

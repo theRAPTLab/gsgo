@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword, { DerefFeatureProp } from 'lib/class-keyword';
+import Keyword, { K_DerefFeatureProp } from 'lib/class-keyword';
 import { IAgent, IState, TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -58,7 +58,7 @@ export class featPropPop extends Keyword {
 
     // OLD broken method
     // const [kw, refArg, optMethod, ...optArgs] = unit;
-    // const deref = DerefFeatureProp(refArg);
+    // const deref = K_DerefFeatureProp(refArg);
     // const progout = [];
     // progout.push((agent, state) => {
     //   const p = deref(agent, state.ctx);

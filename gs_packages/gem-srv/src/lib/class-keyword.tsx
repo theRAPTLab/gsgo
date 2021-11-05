@@ -166,7 +166,7 @@ class Keyword implements IKeyword {
 /** checks a given argument, and if it's an object we'll assume it's an
  *  UnitToken and evaluate it. Otherwise, just return the value as-is
  */
-function EvalRuntimeArg(arg: any, context): any {
+function _evalRuntimeArg(arg: any, context): any {
   // return literals and arrays without changing
   // this is most objects
   if (typeof arg !== 'object') return arg;
@@ -201,7 +201,7 @@ function EvalRuntimeArg(arg: any, context): any {
     }
     return result;
   }
-  console.error('EvalRuntimeArg: unknown arg type', arg);
+  console.error('_evaluateArg: unknown arg type', arg);
   return undefined;
 }
 
@@ -209,7 +209,7 @@ function EvalRuntimeArg(arg: any, context): any {
 /** checks a given argument, and if it's an object we'll assume it's an
  *  UnitToken return a JSX element to stuff into the GUI
  */
-function JSXifyArg(arg: any) {
+function _jsxifyArg(arg: any) {
   // Return JSX GUI element for specific types
   if (typeof arg !== 'object') return arg; // placeholder
   // if Array.isArray(arg)
@@ -226,13 +226,13 @@ function JSXifyArg(arg: any) {
   if (arg.objref) return arg;
 
   if (arg.expr) return `{{ ${arg.expr} }}`;
-  console.error('JSXifyArg: unknown arg type', arg);
+  console.error('_jsxifyArg: unknown arg type', arg);
   return undefined;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** used by keyword compile-time to retreve a prop object dereferencing function
  *  that will be executed at runtime */
-function DerefProp(refArg) {
+function K_DerefProp(refArg) {
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
   const ref = refArg.objref || [refArg];
@@ -269,7 +269,7 @@ function DerefProp(refArg) {
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** this doesn't work with expressions */
-function DerefFeatureProp(refArg) {
+function K_DerefFeatureProp(refArg) {
   // ref is an array of strings that are fields in dot addressing
   // like agent.x
   const ref = refArg.objref || [refArg];
@@ -309,18 +309,18 @@ function DerefFeatureProp(refArg) {
 /** called by keywords that need to do runtime evaluation of an expression from
  *  within the returned program
  */
-function EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
+function K_EvalRuntimeUnitArgs(unit: TScriptUnit, context: {}): any {
   if (!Array.isArray(unit)) throw Error('arg must be TScriptUnit, an array');
   // note that unit is passed at creation time, so it's immutable within
   // the TOpcode. We need to return a copy through map()
-  return unit.map(arg => EvalRuntimeArg(arg, context));
+  return unit.map(arg => _evalRuntimeArg(arg, context));
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** called by keyword jsx generator to return data that can be used by JSX
  *
  */
-function JSXFieldsFromUnit(unit: TScriptUnit): any {
-  const jsxArray = unit.map(arg => JSXifyArg(arg));
+function K_JSXFieldsFromUnit(unit: TScriptUnit): any {
+  const jsxArray = unit.map(arg => _jsxifyArg(arg));
   return jsxArray;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -332,7 +332,7 @@ function JSXFieldsFromUnit(unit: TScriptUnit): any {
  *    e.g. with a join, ['prop', 'x', 'setTo', ''] => 'prop x setTo '
  *    but instead we want ['prop', 'x', 'setTo', ''] => 'prop x setTo ""'
  */
-function TextifyScriptUnitValues(unit: string[]): string {
+function K_TextifyScriptUnitValues(unit: string[]): string {
   const scriptText: string = unit.reduce((acc: string, curr: string) => {
     if (curr === '') return `${acc} ""`;
     return `${acc} ${curr}`;
@@ -346,9 +346,9 @@ function TextifyScriptUnitValues(unit: string[]): string {
  *  string arrays.
  */
 // REVIEW: This is duplicated in transpiler.
-//         It's here so that keywords (like props) can ScriptifyText directly
+//         It's here so that keywords (like props) can K_ScriptifyText directly
 //         avoiding a dependency cycle with transpiloer.
-function ScriptifyText(text: string): TScriptUnit[] {
+function K_ScriptifyText(text: string): TScriptUnit[] {
   if (text === undefined) return [];
   const sourceStrings = text.split('\n');
   const script = scriptifier.tokenize(sourceStrings);
@@ -359,10 +359,10 @@ function ScriptifyText(text: string): TScriptUnit[] {
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export default Keyword; // default export: import Keyword
 export {
-  EvalRuntimeUnitArgs, // convert all args in unit to runtime values
-  JSXFieldsFromUnit, // convert arg to JSX-renderable item
-  DerefProp, // return function to access agent prop at runtime
-  DerefFeatureProp, // return function to access agent prop at runtime
-  TextifyScriptUnitValues,
-  ScriptifyText
+  K_EvalRuntimeUnitArgs, // convert all args in unit to runtime values
+  K_JSXFieldsFromUnit, // convert arg to JSX-renderable item
+  K_DerefProp, // return function to access agent prop at runtime
+  K_DerefFeatureProp, // return function to access agent prop at runtime
+  K_TextifyScriptUnitValues,
+  K_ScriptifyText
 };

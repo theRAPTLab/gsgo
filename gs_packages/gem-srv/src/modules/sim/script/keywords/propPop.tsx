@@ -6,7 +6,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import React from 'react';
-import Keyword, { DerefProp } from 'lib/class-keyword';
+import Keyword, { K_DerefProp } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -22,7 +22,7 @@ export class propPop extends Keyword {
   /** create smc blueprint code objects */
   compile(unit: TScriptUnit): TOpcode[] {
     const [kw, refArg, optMethod, ...optArgs] = unit;
-    const deref = DerefProp(refArg);
+    const deref = K_DerefProp(refArg);
     const progout = [];
     progout.push((agent, state) => {
       const p = deref(agent, state.ctx);

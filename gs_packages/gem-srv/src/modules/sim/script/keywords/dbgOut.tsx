@@ -7,7 +7,7 @@
 
 import React from 'react';
 import UR from '@gemstep/ursys/client';
-import Keyword, { EvalRuntimeUnitArgs } from 'lib/class-keyword';
+import Keyword, { K_EvalRuntimeUnitArgs } from 'lib/class-keyword';
 import { TOpcode, TScriptUnit } from 'lib/t-script';
 import { RegisterKeyword } from 'modules/datacore';
 
@@ -41,7 +41,7 @@ export class dbgOut extends Keyword {
     progout.push((agent, state) => {
       if (COUNTER-- > 0) {
         console.log(
-          ...PR(...EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
+          ...PR(...K_EvalRuntimeUnitArgs(unit.slice(1), { agent, ...state.ctx }))
         );
       }
       if (COUNTER === 0) console.log('dbgOut limiter at', MAX_OUT, 'statements');
