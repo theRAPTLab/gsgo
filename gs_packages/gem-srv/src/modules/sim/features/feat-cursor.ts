@@ -178,7 +178,7 @@ class CursorPack extends GFeature {
     if (!agent.hasFeature('Movement')) {
       // eslint-disable-next-line no-alert
       alert(
-        `Cursor control of ${agent.blueprint.name} requires the Movement feature!  Add 'useFeature Movement' to ${agent.blueprint.name} script!`
+        `Cursor control of ${agent.blueprint.name} requires the Movement feature!  Add 'useFeature Movement' to ${agent.blueprint.name} script BEFORE 'useFeature Cursor'!`
       );
     }
   }
