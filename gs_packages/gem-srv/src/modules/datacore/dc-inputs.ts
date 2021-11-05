@@ -235,9 +235,7 @@ ENTITY_TO_COBJ.setMapFunctions({
       entity.type === TYPES.Pozyx
         ? GetDefaultPozyxBpid()
         : GetDefaultPTrackBpid();
-    cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
-      ? entity.id.substring(8)
-      : entity.id;
+    cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
   },
   onUpdate: (entity: any, cobj: InputDef) => {
@@ -257,9 +255,7 @@ ENTITY_TO_COBJ.setMapFunctions({
       entity.type === TYPES.Pozyx
         ? GetDefaultPozyxBpid()
         : GetDefaultPTrackBpid();
-    cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
-      ? entity.id.substring(8)
-      : entity.id;
+    cobj.label = entity.type === TYPES.Pozyx ? entity.id.substring(2) : entity.id;
     cobj.framesSinceLastUpdate = 0;
   },
   shouldRemove: cobj => {
