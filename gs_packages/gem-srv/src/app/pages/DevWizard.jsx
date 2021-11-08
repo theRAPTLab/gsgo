@@ -1,3 +1,5 @@
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/no-array-index-key */
 
@@ -8,7 +10,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import React from 'react';
+import React, { useState } from 'react';
 import { withStyles } from '@material-ui/core/styles';
 import clsx from 'clsx';
 
@@ -17,6 +19,7 @@ import * as ASSETS from '../../modules/asset_core';
 import {
   TextToScript,
   TokenToString,
+  ScriptToText,
   U_SimplifyTokenPrimitives
 } from '../../modules/sim/script/transpiler-v2';
 import { useStylesHOC } from './elements/page-styles';
@@ -58,6 +61,11 @@ when Bee sometest Bee [[
 const DBG = false;
 const PR = UR.PrefixUtil('WIZ', 'TagApp');
 
+let M_STATE;
+function m_SetStateUpdater(handler) {
+  M_STATE = handler;
+}
+
 const HANDLE_CLICK = event => {
   const data = event.target.getAttribute('data');
   console.log(`clicked ${data}`);
@@ -65,6 +73,17 @@ const HANDLE_CLICK = event => {
 const HANDLE_SELECT = event => {
   const data = event.target.getAttribute('data');
   console.log(`selected ${data}`);
+};
+const HANDLE_TOK = (event, tok, settok, state) => {
+  if (!Array.isArray(tok)) {
+    console.log('handle tok', tok);
+    const data = event.target.getAttribute('data');
+    settok({ token: 'foo' });
+    event.stopPropagation();
+    if (M_STATE) M_STATE();
+  } else {
+    console.log('got a block', tok);
+  }
 };
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -80,20 +99,40 @@ function u_Key(prefix) {
  *  @param {string|number} value - the token to render
  */
 function GToken(props) {
-  const { value } = props;
+  const { token } = props; // the scriptunit to render
+  // initialize our token state
+  const [mytok, setmytok] = useState(token);
+  //
   const key = u_Key('tok');
+  const value = U_SimplifyTokenPrimitives(mytok);
+
   if (typeof value !== 'object') {
     // a javascript primitive type
     return (
-      <div className="glabel" key={key} data={key}>
+      <div
+        className="glabel"
+        key={key}
+        data={key}
+        onClick={e => HANDLE_TOK(e, mytok, setmytok)}
+      >
         {value}
       </div>
     );
   }
+  if (Array.isArray(value)) {
+    // it's a block
+    return <div>whut</div>;
+  }
+
   // must be a token
   const text = TokenToString(value);
   return (
-    <div className="glabel" key={key} data={key}>
+    <div
+      className="glabel"
+      key={key}
+      data={key}
+      onClick={e => HANDLE_TOK(e, mytok, setmytok)}
+    >
       {text}
     </div>
   );
@@ -123,8 +162,8 @@ function GLine(props) {
             HANDLE_CLICK(id);
             console.log('foo', id);
           }}
+          token={tok}
           key={u_Key('tok')}
-          value={val}
         />
       );
     }
@@ -142,15 +181,33 @@ function GBlock(props) {
   const { script } = props;
   // inside of containing block, return a line for each
   const blockContent = [];
+  // assemble the content
   script.forEach(stmt => {
     const key = u_Key('line');
-
     blockContent.push(<GLine key={key} className="gwiz line" statement={stmt} />);
   });
   const key = u_Key('line');
   return (
     <div className="gwiz block" key={key}>
       {blockContent}
+    </div>
+  );
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function TestGraphics(props) {
+  return (
+    <div>
+      <div className="gunit gk0" />
+      <div className="gunit gk">
+        <div className="glabel">keyword</div>
+      </div>
+      <div className="gunit gk1" />
+
+      <div className="gunit ga0" />
+      <div className="gunit ga">
+        <div className="glabel">assign</div>
+      </div>
+      <div className="gunit ga1" />
     </div>
   );
 }
@@ -161,7 +218,7 @@ class DevWizard extends React.Component {
   constructor() {
     super();
     this.box = React.createRef(); // used for current box
-    this.state = { script: TextToScript(SCRIPT) };
+    this.state = { script: TextToScript(SCRIPT), DBGDRAW: 0 };
   }
 
   componentDidMount() {
@@ -171,6 +228,7 @@ class DevWizard extends React.Component {
     // end HookPhase
     if (DBG) console.log(...PR('mounted'));
     document.addEventListener('click', this.handleClick);
+    m_SetStateUpdater(this.handleExternalState);
   }
 
   handleClick = event => {
@@ -180,10 +238,18 @@ class DevWizard extends React.Component {
     } else HANDLE_CLICK(event);
   };
 
+  handleExternalState = () => {
+    console.log('updating state');
+    this.setState({ DBGDRAW: Math.random() }, () => {
+      console.log(ScriptToText(this.state.script));
+    });
+  };
+
   render() {
     const { classes } = this.props;
     const { script } = this.state;
     KEY = 0;
+    //
     return (
       <div
         className={classes.root}
@@ -224,28 +290,17 @@ class DevWizard extends React.Component {
             whiteSpace: 'nowrap'
           }}
         >
-          <div>
-            <div className="gunit gk0" />
-            <div className="gunit gk">
-              <div className="glabel">keyword</div>
-            </div>
-            <div className="gunit gk1" />
-
-            <div className="gunit ga0" />
-            <div className="gunit ga">
-              <div className="glabel">assign</div>
-            </div>
-            <div className="gunit ga1" />
-          </div>
           <br />
           <GBlock script={script} />
+          <br />
+          <TestGraphics />
         </div>
         <div
           id="console-bottom"
           className={clsx(classes.cell, classes.bottom)}
           style={{ gridColumnEnd: 'span 2' }}
         >
-          console-bottom
+          console-bottom {this.state.DBGDRAW}
         </div>
       </div>
     );
