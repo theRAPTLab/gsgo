@@ -34,7 +34,9 @@
   min-width: 16px;
   background-origin: border-box;
 }
-
+.glabel {
+  user-select: none;
+}
 .gunit.gk0 {
   background-position: var(--col0) var(--row1);
   width: var(--shima);

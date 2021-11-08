@@ -77,12 +77,20 @@ function GLine(props) {
     } else if (typeof val !== 'object') {
       // a javascript primitive type
       console.log('tok', val);
-      toks.push(<div key={u_Key('tok')}>{val}</div>);
+      toks.push(
+        <div className="glabel" key={u_Key('tok')}>
+          {val}
+        </div>
+      );
     } else {
       // a token
       const text = TokenToString(tok);
       console.log('tok', text);
-      toks.push(<div key={u_Key('spc')}>{text}</div>);
+      toks.push(
+        <div className="glabel" key={u_Key('spc')}>
+          {text}
+        </div>
+      );
     }
   });
   return <div className="gwiz line">{toks}</div>;
@@ -163,11 +171,15 @@ class DevWizard extends React.Component {
         >
           <div>
             <div className="gunit gk0" />
-            <div className="gunit gk">keyword</div>
+            <div className="gunit gk">
+              <div className="glabel">keyword</div>
+            </div>
             <div className="gunit gk1" />
 
             <div className="gunit ga0" />
-            <div className="gunit ga">assign</div>
+            <div className="gunit ga">
+              <div className="glabel">assign</div>
+            </div>
             <div className="gunit ga1" />
           </div>
 
