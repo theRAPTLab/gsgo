@@ -70,6 +70,10 @@
 .gwiz.line {
   margin: 20px 0;
   clear: left;
+  background-color: #f0f0f0;
+}
+.gwiz.line:hover {
+  background-color: #d0d0f0;
 }
 .gwiz.line div {
   display: inline;
@@ -78,6 +82,10 @@
   min-width: 50px;
   margin: 2px;
   border: 1px solid gray;
+  background-color: white;
+}
+.gwiz.line div:hover {
+  background-color: #ff7f00;
 }
 .gwiz.block {
   display: block;

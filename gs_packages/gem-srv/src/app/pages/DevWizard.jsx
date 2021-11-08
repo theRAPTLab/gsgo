@@ -58,42 +58,82 @@ when Bee sometest Bee [[
 const DBG = false;
 const PR = UR.PrefixUtil('WIZ', 'TagApp');
 
+const HANDLE_CLICK = event => {
+  const data = event.target.getAttribute('data');
+  console.log(`clicked ${data}`);
+};
+const HANDLE_SELECT = event => {
+  const data = event.target.getAttribute('data');
+  console.log(`selected ${data}`);
+};
 /// UTILITIES /////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** This is a cheeseball key indexer for rendering react children. Probably
+ *  not the best way to do it but hey this is a prototype
+ */
 let KEY = 0;
 function u_Key(prefix) {
   return `${prefix}${KEY++}`;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A GToken is the representation of a non-array element of a ScriptUnit
+ *  @param {string|number} value - the token to render
+ */
+function GToken(props) {
+  const { value } = props;
+  const key = u_Key('tok');
+  if (typeof value !== 'object') {
+    // a javascript primitive type
+    return (
+      <div className="glabel" key={key} data={key}>
+        {value}
+      </div>
+    );
+  }
+  // must be a token
+  const text = TokenToString(value);
+  return (
+    <div className="glabel" key={key} data={key}>
+      {text}
+    </div>
+  );
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** A GLine contains a number of Tokens, each of which is clickable. Eventually
+ *  it will be built in a GLine Editor of some kind.
+ *  @param {object} props.statement - a script unit array, which can contain
+ *  script unit arrays as elements also!
+ *  @return - jsx
+ */
 function GLine(props) {
   const { statement } = props;
   const toks = [];
+  const id = u_Key('line');
   statement.forEach(tok => {
     const val = U_SimplifyTokenPrimitives(tok);
     if (Array.isArray(val)) {
       // an array of scriptunits
       const { block } = val;
-      toks.push(<GBlock script={block} />);
-    } else if (typeof val !== 'object') {
-      // a javascript primitive type
-      console.log('tok', val);
-      toks.push(
-        <div className="glabel" key={u_Key('tok')}>
-          {val}
-        </div>
-      );
+      toks.push(<GBlock key={u_Key('block')} script={block} data={id} />);
     } else {
-      // a token
-      const text = TokenToString(tok);
-      console.log('tok', text);
       toks.push(
-        <div className="glabel" key={u_Key('spc')}>
-          {text}
-        </div>
+        <GToken
+          onClick={() => {
+            HANDLE_CLICK(id);
+            console.log('foo', id);
+          }}
+          key={u_Key('tok')}
+          value={val}
+        />
       );
     }
   });
-  return <div className="gwiz line">{toks}</div>;
+  return (
+    <div key={id} data={id} className="gwiz line">
+      {toks}
+    </div>
+  );
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function GBlock(props) {
@@ -103,11 +143,16 @@ function GBlock(props) {
   // inside of containing block, return a line for each
   const blockContent = [];
   script.forEach(stmt => {
-    blockContent.push(
-      <GLine className="gwiz line" key={u_Key('line')} statement={stmt} />
-    );
+    const key = u_Key('line');
+
+    blockContent.push(<GLine key={key} className="gwiz line" statement={stmt} />);
   });
-  return <div className="gwiz block">{blockContent}</div>;
+  const key = u_Key('line');
+  return (
+    <div className="gwiz block" key={key}>
+      {blockContent}
+    </div>
+  );
 }
 
 /// CLASS DECLARATION /////////////////////////////////////////////////////////
@@ -115,6 +160,7 @@ function GBlock(props) {
 class DevWizard extends React.Component {
   constructor() {
     super();
+    this.box = React.createRef(); // used for current box
     this.state = { script: TextToScript(SCRIPT) };
   }
 
@@ -124,7 +170,15 @@ class DevWizard extends React.Component {
     document.title = 'DEV WIZARD';
     // end HookPhase
     if (DBG) console.log(...PR('mounted'));
+    document.addEventListener('click', this.handleClick);
   }
+
+  handleClick = event => {
+    // handle click-outside
+    if (this.box && !this.box.current.contains(event.target)) {
+      console.log('you just clicked outside of box!');
+    } else HANDLE_CLICK(event);
+  };
 
   render() {
     const { classes } = this.props;
@@ -159,6 +213,7 @@ class DevWizard extends React.Component {
           blank
         </div>
         <div
+          ref={this.box}
           id="root-renderer"
           className={classes.main}
           style={{
@@ -182,7 +237,7 @@ class DevWizard extends React.Component {
             </div>
             <div className="gunit ga1" />
           </div>
-
+          <br />
           <GBlock script={script} />
         </div>
         <div
