@@ -24,6 +24,7 @@ import { GetGlobalAgent } from 'lib/class-gagent';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const PR = UR.PrefixUtil('FeatCursor');
 
 // blueprint types that can be inhabited by a cursor
 const CURSOR_BLUEPRINTS = new Map(); // key = agent id, value = agent id
@@ -127,15 +128,8 @@ function m_UpdateInhabitAgent(frametime) {
 
     // not touching anything
     if (!targetId) return false;
-
     // found target, set target as inhabitingTarget
     const target = GetAgentById(targetId);
-    // clear label
-    c.prop.AgentWidgets.text.setTo('');
-    // clear meter
-    c.prop.statusValue.setTo(undefined);
-    c.prop.AgentWidgets.meter.setTo(undefined);
-    c.prop.AgentWidgets.meterProp.setTo(undefined);
 
     if (!target) {
       console.error(
@@ -146,6 +140,12 @@ function m_UpdateInhabitAgent(frametime) {
 
     target.cursor = c;
     c.prop.isInhabitingTarget.setTo(true);
+    // clear label
+    c.prop.AgentWidgets.text.setTo('');
+    // clear meter
+    c.prop.statusValue.setTo(undefined);
+    c.prop.AgentWidgets.meter.setTo(undefined);
+    c.prop.AgentWidgets.meterProp.setTo(undefined);
     return true;
   });
 }
@@ -173,6 +173,14 @@ class CursorPack extends GFeature {
     this.featAddProp(agent, 'cursorTargetId', new GVarString());
 
     CURSOR_BLUEPRINTS.set(agent.blueprint.name, agent.blueprint.name);
+
+    // Make sure it has the Movement feature
+    if (!agent.hasFeature('Movement')) {
+      // eslint-disable-next-line no-alert
+      alert(
+        `Cursor control of ${agent.blueprint.name} requires the Movement feature!  Add 'useFeature Movement' to ${agent.blueprint.name} script BEFORE 'useFeature Cursor'!`
+      );
+    }
   }
 
   // `agent` in this case is usually the `Cursor` agent.
