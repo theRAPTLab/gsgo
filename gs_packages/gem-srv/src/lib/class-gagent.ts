@@ -428,7 +428,8 @@ class GAgent extends SM_Object implements IAgent, IActable {
    */
   exec(m: TMethod, context?, ...args): any {
     if (m === undefined) return undefined;
-    const ctx = { agent: this, global: GLOBAL };
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const ctx = { agent: this, global: GLOBAL_AGENT };
     Object.assign(ctx, context);
     if (Array.isArray(m)) return this.exec_smc(m, ctx, ...args);
     if (typeof m === 'object') {

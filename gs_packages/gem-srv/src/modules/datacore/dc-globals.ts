@@ -1,5 +1,7 @@
 /*///////////////////////////////// ABOUT \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\*\
 
+  DEPRECATED as of 10/29/2021 BL -- No longer being used in GAgent.
+
   Global instances are maintained here is a pure data module that can be
   included anywhere to access global data.
 
