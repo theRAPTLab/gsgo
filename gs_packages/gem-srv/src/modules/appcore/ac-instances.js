@@ -93,7 +93,7 @@ export function GetInstanceUID() {
   const max = instances.reduce((prev, b) => {
     const a = typeof prev === 'object' ? prev.id : prev;
     return Math.max(a, Number(b.id));
-  });
+  }, 0); // initial value is 0
   return String(max + 1);
 }
 
