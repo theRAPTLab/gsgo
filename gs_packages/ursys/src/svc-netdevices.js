@@ -107,9 +107,9 @@ UR_HandleMessage('SRV_SOCKET_DELETED', cmd => {
   const { uaddr } = cmd;
   const dMap = DEVICE_BY_UADDR.get(uaddr);
   if (dMap === undefined) {
-    TERM(`${uaddr} has no registered device(s) to drop`);
+    TERM(`... ${uaddr} has no registered device(s) to drop`);
   } else {
-    TERM(`${uaddr} dropping ${dMap.size} registered device(s)`);
+    TERM(`... ${uaddr} dropping ${dMap.size} registered device(s)`);
     DEVICE_BY_UADDR.delete(uaddr);
     const dir = m_CreateDeviceDirectoryFromMap();
     UR_RaiseMessage('NET:UR_DEVICES', dir);

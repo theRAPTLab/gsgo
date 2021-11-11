@@ -24,7 +24,7 @@ import {
 } from '../../lib/t-assets';
 import SpriteLoader from './as-load-sprites';
 import ProjectLoader from './as-load-projects';
-import { GS_ASSETS_ROUTE } from '../../../config/gem-settings';
+import { GS_ASSETS_ROUTE, GS_ASSETS_PATH } from '../../../config/gem-settings';
 
 /// TYPE DECLARATIONS /////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -93,7 +93,12 @@ async function m_LoadManifest(route) {
 export async function PromiseLoadAssets(subdir: string = '') {
   const route = !subdir ? GS_ASSETS_ROUTE : `${GS_ASSETS_ROUTE}/${subdir}`;
   const json = await m_LoadManifest(route);
-  if (json === undefined) throw Error(`can't load manifest at route "${route}"`);
+  if (json === undefined) {
+    const jsonErr = `ERROR: No asset manifest found at "${route}".\n\nTROUBLESHOOTING\n1. Are there assets in '${GS_ASSETS_PATH}/${subdir}?'.\n2. gsgo-settings.json has correct paths?\n3. gem-srv/config/*-settings overrides has correct paths?\n4. Does AssetServer have downloadable assets?`;
+    UR.LOG.MissingAsset(jsonErr);
+    alert(jsonErr);
+    return Promise.reject(jsonErr);
+  }
   // grab the top-level keys of the manifest (e.g. sprites:[])
   // return only assets that are supported
   const assets = Object.entries(json).filter(m_IsSupportedType);

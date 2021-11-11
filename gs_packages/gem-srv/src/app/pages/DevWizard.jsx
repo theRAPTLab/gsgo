@@ -43,6 +43,9 @@ onEvent Tick [[
   ifExpr {{ agent.getProp('name').value==='bun0' }} [[
     dbgOut 'my tick' 'agent instance' {{ agent.getProp('name').value }}
     dbgOut foolish game
+    if {{ true }} [[
+      dbgOut 'nested nested'
+    ]]
   ]]
   prop agent.x setTo  0
   prop agent.y setTo 0
@@ -68,7 +71,7 @@ function m_SetStateUpdater(handler) {
 
 const HANDLE_CLICK = event => {
   const data = event.target.getAttribute('data');
-  console.log(`clicked ${data}`);
+  console.log(`data clicked ${data}`);
 };
 const HANDLE_SELECT = event => {
   const data = event.target.getAttribute('data');
@@ -91,6 +94,8 @@ const HANDLE_TOK = (event, tok, settok, state) => {
  *  not the best way to do it but hey this is a prototype
  */
 let KEY = 0;
+let INDENT = 0;
+let TAB = 20;
 function u_Key(prefix) {
   return `${prefix}${KEY++}`;
 }
@@ -123,7 +128,6 @@ function GToken(props) {
     // it's a block
     return <div>whut</div>;
   }
-
   // must be a token
   const text = TokenToString(value);
   return (
@@ -146,16 +150,14 @@ function GToken(props) {
  *  @return - jsx
  */
 function GLine(props) {
-  const { statement } = props;
+  const { statement, indent } = props;
   const toks = [];
-  const id = u_Key('line');
   statement.forEach(tok => {
     const val = U_SimplifyTokenPrimitives(tok);
-    if (Array.isArray(val)) {
-      // an array of scriptunits
-      const { block } = val;
-      toks.push(<GBlock key={u_Key('block')} script={block} data={id} />);
-    } else {
+    if (typeof val !== 'object') {
+      // a javascript primitive type
+      // toks.push(<div key={u_Key('tok')}>{val}</div>);
+      const id = u_Key('tok');
       toks.push(
         <GToken
           onClick={() => {
@@ -166,10 +168,26 @@ function GLine(props) {
           key={u_Key('tok')}
         />
       );
+    } else {
+      // val is a token
+      // is it a block token?
+      if (Array.isArray(val.block)) {
+        toks.push(
+          <GBlock key={u_Key('block')} script={val.block} indent={indent + 1} />
+        );
+        return;
+      }
+      // get a text representation of the token
+      const text = TokenToString(tok);
+      toks.push(<GToken token={tok} key={u_Key('text')} />);
     }
   });
   return (
-    <div key={id} data={id} className="gwiz line">
+    <div
+      style={{ paddingLeft: `${indent * 8}px` }}
+      key={u_Key('line')}
+      className="gwiz line"
+    >
       {toks}
     </div>
   );
@@ -178,13 +196,19 @@ function GLine(props) {
 function GBlock(props) {
   // script is a tokenized program source, an array of statements
   // that are comprised of keywords and their parameters
-  const { script } = props;
+  const { script, indent } = props;
   // inside of containing block, return a line for each
   const blockContent = [];
   // assemble the content
   script.forEach(stmt => {
-    const key = u_Key('line');
-    blockContent.push(<GLine key={key} className="gwiz line" statement={stmt} />);
+    blockContent.push(
+      <GLine
+        className="gwiz line"
+        key={u_Key('line')}
+        indent={indent}
+        statement={stmt}
+      />
+    );
   });
   const key = u_Key('line');
   return (
@@ -241,7 +265,7 @@ class DevWizard extends React.Component {
   handleExternalState = () => {
     console.log('updating state');
     this.setState({ DBGDRAW: Math.random() }, () => {
-      console.log(ScriptToText(this.state.script));
+      console.log('should update script');
     });
   };
 
@@ -287,12 +311,11 @@ class DevWizard extends React.Component {
             height: '720px',
             gridColumnEnd: 'span 1',
             display: 'inline',
-            whiteSpace: 'nowrap'
+            whiteSpace: 'nowrap',
+            overflow: 'scroll'
           }}
         >
-          <br />
-          <GBlock script={script} />
-          <br />
+          <GBlock indent={0} script={script} />
           <TestGraphics />
         </div>
         <div

@@ -2,6 +2,13 @@
 
   Inputs Phase Machine Interface
 
+  This maps inputs to INPUTDEFs:
+
+  entities => Control Objects => Input Definitions
+
+  pozyx/ptrack/faketrack    => ENTITY_TO_COBJ   => COBJ_TO_INPUTDEF
+  charControl               => devAPI           => COBJ_TO_INPUTDEF
+
   This should be a pure data class that maintains a list of input objects
   and the agents it updates.
 
@@ -12,6 +19,7 @@ import * as ACBlueprints from '../appcore/ac-blueprints';
 import InputDef from '../../lib/class-input-def';
 import SyncMap from '../../lib/class-syncmap';
 import { DeleteAgent } from './dc-agents';
+import { TYPES } from '../step/lib/class-ptrack-endpoint';
 import { DistanceTo, Lerp, Rotate } from '../../lib/util-vector';
 
 /// CONSTANTS AND DECLARATIONS ////////////////////////////////////////////////
@@ -53,7 +61,7 @@ function UADDRtoID(uaddr) {
 // "CC340_0" to "340"
 function COBJIDtoID(cobjid) {
   // pozyx
-  if (cobjid.startsWith('ft-pozyx')) return String(cobjid).substring(8);
+  if (cobjid.startsWith(TYPES.Pozyx)) return String(cobjid).substring(8);
   // CharControl
   const re = /([0-9])+/;
   const result = re.exec(cobjid);
@@ -71,7 +79,207 @@ function UDIDtoID(udid) {
   return re.exec(udid)[0];
 }
 
-/// DATA UPDATE ///////////////////////////////////////////////////////////////
+/**
+ *
+ * @param changes {valid: boolean, selected: object[], quantified: object[] }
+ *                devObject = { udid = "UDEV_340:0",
+ *                              meta = { uaddr: "UADDR_340", uapp, uapp_tags, uclass, uname }
+ *                            , inputs, outputs}
+ */
+function UpdateActiveDevices(changes) {
+  // `changes` only contains the devices that notify is announcing
+  // we actually want to update ALL devices.
+  const devices = UR.GetDeviceDirectory();
+  const inputDevices = devices.filter(d => d.meta.uclass === 'CharControl');
+  ACTIVE_DEVICES.clear();
+  inputDevices.forEach(d => ACTIVE_DEVICES.set(UDIDtoID(d.udid), true));
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+///////////////////////////////////////////////////////////////////////////////
+/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+// Default
+export const PTRACK_TRANSFORM = {
+  scaleX: 0,
+  scaleY: 0,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0
+};
+
+export const POZYX_TRANSFORM = {
+  scaleX: 0,
+  scaleY: 0,
+  translateX: 0,
+  translateY: 0,
+  rotation: 0,
+  useAccelerometer: true
+};
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function m_Transform(
+  position: {
+    x: number;
+    y: number;
+  },
+  TRANSFORM
+): { x: number; y: number } {
+  let tx = Number(position.x);
+  let ty = Number(position.y);
+
+  // 1. Rotate
+  const rad = (TRANSFORM.rotation * Math.PI) / 180;
+  const c = Math.cos(rad);
+  const s = Math.sin(rad);
+  tx = tx * c - ty * s;
+  ty = tx * s + ty * c;
+
+  // 2. Translate
+  tx += TRANSFORM.translateX;
+  ty += TRANSFORM.translateY;
+
+  // 3. Scale
+  tx *= TRANSFORM.scaleX;
+  ty *= TRANSFORM.scaleY;
+
+  return { x: tx, y: ty };
+}
+/// Returns a value between 0 and 1 to use for lerps
+function m_GetAccelerationMultiplier(n: number): number {
+  // acceleration units in mg (gravity)
+  // Adjust thresholds and values to smooth behavior
+  if (n > 1000) return 0.8; // fast
+  if (n > 500) return 0.5; // medium
+  if (n > 250) return 0.1; // deliberate move
+  if (n > 50) return 0.05; // sleep threshold / standing still
+  return 0; // n <= 50, resting on a hard surface, don't move at all
+}
+/// Use accelerometer data to reduce jitter
+function m_PozyxDampen(
+  lastPosition: { x: number; y: number },
+  rawEntityPosition: { x: number; y: number },
+  acc: { x: number; y: number; z: number }
+): { x: number; y: number } {
+  //  api-input retrieves entity data at 30fps.
+  //  but Pozyx only sends updates at 15fps.
+  //  So every other frame is repeated with the same values.
+  //  To smooth this out, we only move toward the entity position
+  //  rather than jumping straight to the entity position.
+
+  // lastPosition is already transformed
+  const newPosition = m_Transform(rawEntityPosition, POZYX_TRANSFORM);
+
+  // If accelerometer movement is high, allow large movement
+  // If acceleromoter movement is low, allow only small movmeent
+  const gforce = Rotate(acc, POZYX_TRANSFORM.rotation); // rotate accelerometer readings to match stage
+  gforce.x = Math.abs(gforce.x); // we just want magnitude
+  gforce.y = Math.abs(gforce.y);
+  let xm = m_GetAccelerationMultiplier(gforce.x); // x multiplier
+  let ym = m_GetAccelerationMultiplier(gforce.y);
+
+  // protect against sleep jump
+  // While wearables sleep, they have a tendency to emit bad positions
+  if (
+    gforce.x < 250 &&
+    gforce.y < 250 &&
+    DistanceTo(lastPosition, newPosition) > 0.25
+  )
+    return lastPosition;
+
+  // lerp
+  // => still hitchy
+  const x = Lerp(lastPosition.x, newPosition.x, xm);
+  const y = Lerp(lastPosition.y, newPosition.y, ym);
+
+  // console.log(
+  //   // acc.x,
+  //   // limiter.x,
+  //   Number(xm).toFixed(2),
+  //   // Number(dx).toFixed(4),
+  //   // acc.y,
+  //   // limiter.y,
+  //   Number(ym).toFixed(2)
+  //   // Number(dy).toFixed(4)
+  // );
+
+  return { x, y };
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+function GetDefaultPozyxBpid() {
+  return ACBlueprints.GetPozyxControlDefaultBpid();
+}
+function GetDefaultPTrackBpid() {
+  return ACBlueprints.GetPTrackControlDefaultBpid();
+}
+///////////////////////////////////////////////////////////////////////////////
+/// ENTITY_TO_COBJ (was POZYX_TO_COBJ) /////////////////////////////////////////////////////////////
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const ENTITY_TO_COBJ = new SyncMap({
+  Constructor: InputDef,
+  autoGrow: true,
+  name: 'TrackedEntityToCObj'
+});
+ENTITY_TO_COBJ.setMapFunctions({
+  onAdd: (entity: any, cobj: InputDef) => {
+    const TRANSFORM =
+      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
+    const { x, y } = m_Transform({ x: entity.x, y: entity.y }, TRANSFORM);
+    cobj.x = x;
+    cobj.y = y;
+    // HACK Blueprints into cobj
+    cobj.bpid =
+      entity.type === TYPES.Pozyx
+        ? GetDefaultPozyxBpid()
+        : GetDefaultPTrackBpid();
+    cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
+      ? entity.id.substring(8)
+      : entity.id;
+    cobj.framesSinceLastUpdate = 0;
+  },
+  onUpdate: (entity: any, cobj: InputDef) => {
+    const TRANSFORM =
+      entity.type === TYPES.Pozyx ? POZYX_TRANSFORM : PTRACK_TRANSFORM;
+    let pos = { x: entity.x, y: entity.y };
+    if (entity.acc && TRANSFORM.useAccelerometer) {
+      // has accelerometer data
+      pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
+    } else {
+      pos = m_Transform(pos, TRANSFORM);
+    }
+
+    cobj.x = pos.x;
+    cobj.y = pos.y;
+    cobj.bpid =
+      entity.type === TYPES.Pozyx
+        ? GetDefaultPozyxBpid()
+        : GetDefaultPTrackBpid();
+    cobj.label = String(entity.id).startsWith(TYPES.Pozyx)
+      ? entity.id.substring(8)
+      : entity.id;
+    cobj.framesSinceLastUpdate = 0;
+  },
+  shouldRemove: cobj => {
+    // entities do not necessarily come in with every INPUTS phase fire
+    // so we should NOT be removing them on every update.
+    // However, entities might be removed by class-ptrack-endpoints
+    // (after they exceed MAX_AGE of 100)
+    // so we also need to remove them here if there has been
+    // no update for 4 seconds
+    cobj.framesSinceLastUpdate++;
+    if (cobj.framesSinceLastUpdate > 120) return true;
+    return false;
+  }
+});
+export function GetTrackerMap() {
+  return ENTITY_TO_COBJ;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+/// COBJ_TO_INPUTDEF //////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 // Control Object (from CharControl) Sync to InputDef
 const COBJ_TO_INPUTDEF = new SyncMap({
@@ -127,197 +335,9 @@ COBJ_TO_INPUTDEF.setMapFunctions({
     // }
   }
 });
-/**
- *
- * @param changes {valid: boolean, selected: object[], quantified: object[] }
- *                devObject = { udid = "UDEV_340:0",
- *                              meta = { uaddr: "UADDR_340", uapp, uapp_tags, uclass, uname }
- *                            , inputs, outputs}
- */
-function UpdateActiveDevices(changes) {
-  // `changes` only contains the devices that notify is announcing
-  // we actually want to update ALL devices.
-  const devices = UR.GetDeviceDirectory();
-  const inputDevices = devices.filter(d => d.meta.uclass === 'CharControl');
-  ACTIVE_DEVICES.clear();
-  inputDevices.forEach(d => ACTIVE_DEVICES.set(UDIDtoID(d.udid), true));
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-/// POZYX DATA UPDATE /////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-// Default
-export const POZYX_TRANSFORM = {
-  scaleX: 0,
-  scaleY: 0,
-  translateX: 0,
-  translateY: 0,
-  rotate: 0,
-  useAccelerometer: true
-};
-
-// VU
-// export const POZYX_TRANSFORM = {
-//   scaleX: -0.0002, // -0.0002
-//   scaleY: 0.00016, // 0.0003
-//   translateX: -4200, //0
-//   translateY: -6000, //0
-//   rotate: 0, // -160
-//   useAccelerometer: true
-// };
-
-// IU
-// add when finished
-
-// BEN
-/* export const POZYX_TRANSFORM = {
-  scaleX: -0.0002, // -0.0002
-  scaleY: 0.0003, // 0.0003
-  translateX: 0,
-  translateY: 0,
-  rotate: -160, // -160
-  useAccelerometer: true
-}; */
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_PozyxTransform(position: {
-  x: number;
-  y: number;
-}): { x: number; y: number } {
-  let tx = Number(position.x);
-  let ty = Number(position.y);
-
-  // 1. Rotate
-  const rad = (POZYX_TRANSFORM.rotate * Math.PI) / 180;
-  const c = Math.cos(rad);
-  const s = Math.sin(rad);
-  tx = tx * c - ty * s;
-  ty = tx * s + ty * c;
-
-  // 2. Translate
-  tx += POZYX_TRANSFORM.translateX;
-  ty += POZYX_TRANSFORM.translateY;
-
-  // 3. Scale
-  tx *= POZYX_TRANSFORM.scaleX;
-  ty *= POZYX_TRANSFORM.scaleY;
-
-  return { x: tx, y: ty };
-}
-/// Returns a value between 0 and 1 to use for lerps
-function m_GetAccelerationMultiplier(n: number): number {
-  // acceleration units in mg (gravity)
-  // Adjust thresholds and values to smooth behavior
-  if (n > 1000) return 0.8; // fast
-  if (n > 500) return 0.5; // medium
-  if (n > 250) return 0.1; // deliberate move
-  if (n > 50) return 0.05; // sleep threshold / standing still
-  return 0; // n <= 50, resting on a hard surface, don't move at all
-}
-/// Use accelerometer data to reduce jitter
-function m_PozyxDampen(
-  lastPosition: { x: number; y: number },
-  rawEntityPosition: { x: number; y: number },
-  acc: { x: number; y: number; z: number }
-): { x: number; y: number } {
-  //  api-input retrieves entity data at 30fps.
-  //  but Pozyx only sends updates at 15fps.
-  //  So every other frame is repeated with the same values.
-  //  To smooth this out, we only move toward the entity position
-  //  rather than jumping straight to the entity position.
-
-  // lastPosition is already transformed
-  const newPosition = m_PozyxTransform(rawEntityPosition);
-
-  // If accelerometer movement is high, allow large movement
-  // If acceleromoter movement is low, allow only small movmeent
-  const gforce = Rotate(acc, POZYX_TRANSFORM.rotate); // rotate accelerometer readings to match stage
-  gforce.x = Math.abs(gforce.x); // we just want magnitude
-  gforce.y = Math.abs(gforce.y);
-  let xm = m_GetAccelerationMultiplier(gforce.x); // x multiplier
-  let ym = m_GetAccelerationMultiplier(gforce.y);
-
-  // protect against sleep jump
-  // While wearables sleep, they have a tendency to emit bad positions
-  if (
-    gforce.x < 250 &&
-    gforce.y < 250 &&
-    DistanceTo(lastPosition, newPosition) > 0.25
-  )
-    return lastPosition;
-
-  // lerp
-  // => still hitchy
-  const x = Lerp(lastPosition.x, newPosition.x, xm);
-  const y = Lerp(lastPosition.y, newPosition.y, ym);
-
-  // console.log(
-  //   // acc.x,
-  //   // limiter.x,
-  //   Number(xm).toFixed(2),
-  //   // Number(dx).toFixed(4),
-  //   // acc.y,
-  //   // limiter.y,
-  //   Number(ym).toFixed(2)
-  //   // Number(dy).toFixed(4)
-  // );
-
-  return { x, y };
-}
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-function GetDefaultPozyxBpid() {
-  return ACBlueprints.GetPozyxControlDefaultBpid();
-}
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-const POZYX_TO_COBJ = new SyncMap({
-  Constructor: InputDef,
-  autoGrow: true,
-  name: 'TrackedEntityToCObj'
-});
-POZYX_TO_COBJ.setMapFunctions({
-  onAdd: (entity: any, cobj: InputDef) => {
-    const { x, y } = m_PozyxTransform({ x: entity.x, y: entity.y });
-    cobj.x = x;
-    cobj.y = y;
-    // HACK Blueprints into cobj
-    cobj.bpid = GetDefaultPozyxBpid();
-    cobj.label = String(entity.id).startsWith('ft-pozyx')
-      ? entity.id.substring(8)
-      : entity.id;
-  },
-  onUpdate: (entity: any, cobj: InputDef) => {
-    let pos = { x: entity.x, y: entity.y };
-    if (entity.acc && POZYX_TRANSFORM.useAccelerometer) {
-      // has accelerometer data
-      pos = m_PozyxDampen(cobj, pos, entity.acc); // dampen + transform
-    } else {
-      pos = m_PozyxTransform(pos);
-    }
-
-    cobj.x = pos.x;
-    cobj.y = pos.y;
-    cobj.bpid = GetDefaultPozyxBpid();
-    cobj.label = String(entity.id).startsWith('ft-pozyx')
-      ? entity.id.substring(8)
-      : entity.id;
-  },
-  shouldRemove: cobj => false
-  // Inputs do not necessarily come in with every INPUTS phase fire
-  // so we should NOT be removing them on every update.
-  // HACK: Remove agent if no update for 4 seconds
-  // inputDef.framesSinceLastUpdate++;
-  // if (inputDef.framesSinceLastUpdate > 120) {
-  //   return true;
-  // }
-});
-export function GetTrackerMap() {
-  return POZYX_TO_COBJ;
-}
-
-/// API METHODS ///////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
+/// dc-input General API //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function SetInputStageBounds(width, height) {
   STAGE_WIDTH = width;
@@ -346,7 +366,7 @@ export async function InputInit(bpname: string) {
   // console.error('input_groups', INPUT_GROUPS);
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function InputUpdate(devAPI, bpname) {
+function InputUpdateCharControl(devAPI, bpname) {
   // STEP 2 is to grab the getController('name') method which we
   // can call any time we want without mucking about with device
   // interfaces
@@ -367,6 +387,10 @@ function InputUpdate(devAPI, bpname) {
   COBJ_TO_INPUTDEF.syncFromArray(overriden_cobjs);
   COBJ_TO_INPUTDEF.mapObjects();
 }
+function InputUpdateEntityTracks() {
+  COBJ_TO_INPUTDEF.syncFromArray(ENTITY_TO_COBJ.getMappedObjects());
+  COBJ_TO_INPUTDEF.mapObjects();
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function InputsUpdate() {
   // The basic pipeline is:
@@ -379,20 +403,14 @@ export function InputsUpdate() {
   const blueprintNames = Array.from(INPUT_GROUPS.keys());
   INPUTDEFS.length = 0; // Clear INPUTDEFS with each update
   blueprintNames.forEach(bpname => {
-    InputUpdate(INPUT_GROUPS.get(bpname), bpname);
+    InputUpdateCharControl(INPUT_GROUPS.get(bpname), bpname);
   });
-  // 2. Process Pozyx, FakeTrack Inputs
-  //    PTRACK_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
-  // SRI: it would have been much clearer if you coded a parallel structure
-  // for the above to show COBJ_TO_INPUTDEF was used by both methods
+  // 2. Process PTrack, Pozyx, FakeTrack Inputs
+  //    ENTITY_TO_COBJ is regularly updated by api-input.StartTrackerVisuals
   if (GetDefaultPozyxBpid() !== undefined) {
-    COBJ_TO_INPUTDEF.syncFromArray(POZYX_TO_COBJ.getMappedObjects());
-    COBJ_TO_INPUTDEF.mapObjects();
+    InputUpdateEntityTracks();
   }
-
-  // 3. Process PTrack TBD
-
-  // 4. Combine them all
+  // 3. Combine them all
   INPUTDEFS.push(...COBJ_TO_INPUTDEF.getMappedObjects());
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

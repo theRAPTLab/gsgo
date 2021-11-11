@@ -43,6 +43,7 @@ const DBG = false;
 const PORT = GS_APP_PORT;
 const DIR_ROOT = Path.resolve(__dirname, '../');
 const DIR_OUT = Path.join(DIR_ROOT, 'built/web');
+const TIMESTAMP = Date.now();
 
 /// SERVER DECLARATIONS ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -60,23 +61,26 @@ function m_AppListen(opt = {}) {
       if (!opt.skipWebCompile) TERM('LIVE RELOAD ENABLED');
     });
   }
-  process.on('SIGINT', () => {
-    TERM('SIGINT signal received: closing HTTP server');
-    m_server.close(() => {
-      TERM('HTTP server closed');
-      process.exit();
-    });
-  });
 }
 
 /// API METHODS ///////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** Close the expres webserver. Called from gem_run.js on SIGINT */
+async function CloseAppServer() {
+  TERM('SIGINT signal received: closing HTTP server', TIMESTAMP);
+  if (m_server)
+    await m_server.close(() => {
+      TERM('HTTP server closed');
+      process.exit();
+    });
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Start the express webserver on designated PORT
  */
 function StartAppServer(opt = {}) {
+  TERM('START HTTP server (Express)', TIMESTAMP);
   const { skipWebCompile = false } = opt;
   const assetsPath = opt.assetsPath || GS_ASSETS_PATH;
-  TERM('COMPILING WEBSERVER w/ WEBPACK - THIS MAY TAKE SEVERAL SECONDS...');
   let promiseStart;
 
   if (!skipWebCompile) {
@@ -222,4 +226,4 @@ function StartAppServer(opt = {}) {
 
 /// MODULE EXPORT /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-module.exports = { StartAppServer, PORT };
+module.exports = { StartAppServer, CloseAppServer, PORT };

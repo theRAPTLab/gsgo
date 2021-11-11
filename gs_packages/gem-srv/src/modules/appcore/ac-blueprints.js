@@ -18,10 +18,16 @@ const DBG = false;
 const STATE = new UR.class.StateGroupMgr('blueprints');
 /// StateGroup keys must be unique across the entire app
 STATE.initializeState({
-  // dummy
+  // db states
   projId: 0,
   blueprints: [],
-  bpidList: []
+  // runtime states
+  bpidList: [],
+  bpBundles: new Map(), // compiled bundles of blueprint scrits
+  defaultPozyxBpid: '',
+  charControlBpidList: [],
+  ptrackControlBpidList: [],
+  pozyxControlBpidList: []
 });
 /// These are the primary methods you'll need to use to read and write
 /// state on the behalf of code using APPCORE.
@@ -70,22 +76,80 @@ export function GetBlueprintIDsList(blueprints) {
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
+ * Returns a map of blueprint Bundles
+ * Local call only.
+ * @param [] blueprints
+ * @returns Map<string, any>
+ */
+function CompileBlueprintBundles(blueprints) {
+  const bundles = blueprints.map(b => {
+    const script = TRANSPILER.TextToScript(b.scriptText);
+    return TRANSPILER.CompileBlueprint(script);
+  });
+  const bpBundles = new Map();
+  bundles.forEach(b => bpBundles.set(b.name, b));
+  return bpBundles;
+}
+
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
  * Returns array of blueprint ids that are CharControllable.
  * @returns [...id]
  */
-export function GetCharControlBpidList(blueprints) {
-  const bp = blueprints || _getKey('blueprints');
-  return bp.filter(b => b.isCharControllable).map(b => b.id);
+function GenerateCharControlBpidList(bpBundles) {
+  const bpBundlesArr = [...bpBundles.values()];
+  return bpBundlesArr
+    .filter(bndl => bndl.getTag('isCharControllable'))
+    .map(bndl => {
+      return bndl.name;
+    });
 }
-
+export function GetCharControlBpidList(bpBundles) {
+  return _getKey('charControlBpidList');
+}
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/**
+ * Returns array of blueprint ids that are PtrackControllable.
+ * NOTE: This does not distinguish between people, poses, and objects
+ *       If objects and poses need separate tracking, this should be split out
+ * @returns [...id]
+ */
+export function GeneratePTrackControlBpidList(bpBundles) {
+  const bpBundlesArr = [...bpBundles.values()];
+  return bpBundlesArr
+    .filter(bndl => bndl.getTag('isPTrackControllable'))
+    .map(bndl => {
+      return bndl.name;
+    });
+}
+export function GetPTrackControlBpidList() {
+  return _getKey('ptrackControlBpidList');
+}
+/**
+ * Returns the first ptrack controllable blueprint as the default bp to use
+ * Used dc-inputs to determine mapping
+ * @returns id
+ */
+export function GetPTrackControlDefaultBpid() {
+  const ptrackBpidList = _getKey('ptrackControlBpidList');
+  if (ptrackBpidList.length < 1) return undefined;
+  return ptrackBpidList[0];
+}
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /**
  * Returns array of blueprint ids that are PozyxControllable.
  * @returns [...id]
  */
-export function GetPozyxControlBpidList(blueprints) {
-  const bp = blueprints || _getKey('blueprints');
-  return bp.filter(b => b.isPozyxControllable).map(b => b.id);
+export function GeneratePozyxControlBpidList(bpBundles) {
+  const bpBundlesArr = [...bpBundles.values()];
+  return bpBundlesArr
+    .filter(bndl => bndl.getTag('isPozyxControllable'))
+    .map(bndl => {
+      return bndl.name;
+    });
+}
+export function GetPozyxControlBpidList() {
+  return _getKey('pozyxControlBpidList');
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -95,9 +159,9 @@ export function GetPozyxControlBpidList(blueprints) {
  * @returns id
  */
 export function GetPozyxControlDefaultBpid() {
-  const bpidList = GetPozyxControlBpidList();
-  if (bpidList.length < 1) return undefined;
-  return bpidList[0];
+  const pozyxBpidList = _getKey('pozyxControlBpidList');
+  if (pozyxBpidList.length < 1) return undefined;
+  return pozyxBpidList[0];
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -125,6 +189,34 @@ export function GetBlueprintPropertiesMap(bpid) {
 
 /// LOADER ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+function updateAndPublishDerivedProperties(blueprints) {
+  const bpidList = GetBlueprintIDsList(blueprints);
+  // compile and update bundles
+  const bpBundles = CompileBlueprintBundles(blueprints);
+  // updating charcontrol
+  const charControlBpidList = GenerateCharControlBpidList(bpBundles);
+  // updating ptrack
+  const ptrackControlBpidList = GeneratePTrackControlBpidList(bpBundles);
+  // updating pozyx
+  const pozyxControlBpidList = GeneratePozyxControlBpidList(bpBundles);
+  updateKey({
+    bpidList,
+    bpBundles,
+    charControlBpidList,
+    ptrackControlBpidList,
+    pozyxControlBpidList
+  });
+  _publishState({
+    bpidList,
+    bpBundles,
+    charControlBpidList,
+    ptrackControlBpidList,
+    pozyxControlBpidList
+  });
+}
+
+/// Update the main blueprint property
+/// AND also update dervied properties
 function updateAndPublish(blueprints) {
   const bpidList = GetBlueprintIDsList(blueprints);
   updateKey({ blueprints, bpidList });
@@ -151,9 +243,8 @@ function hook_Filter(key, propOrValue, propValue) {
   // return undefined;
   if (key === 'blueprints') {
     // update and publish bpidList too
-    const bpidList = GetBlueprintIDsList(propOrValue);
-    updateKey({ bpidList });
-    _publishState({ bpidList });
+    const blueprints = propOrValue;
+    updateAndPublishDerivedProperties(blueprints);
   }
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -197,25 +288,29 @@ addEffectHook(hook_Effect);
 export function SetBlueprints(projId, blueprints) {
   updateKey({ projId });
   updateAndPublish(blueprints);
+  updateAndPublishDerivedProperties(blueprints);
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 /// Used to inject Cursor
-export function AddBlueprint(projId, blueprintDef) {
+/// This runs AFTER other blueprints have been compiled
+/// Initiated by mod-sim-control.SimPlaces
+export function InjectBlueprint(projId, blueprintDef) {
   // Add new blueprint
   const def = {
     id: blueprintDef.id,
     label: blueprintDef.label,
-    isCharControllable: blueprintDef.isCharControllable, // defaul to false?
-    isPozyxControllable: blueprintDef.isPozyxControllable,
     scriptText: blueprintDef.scriptText
   };
   const bp = new Blueprint(def);
-  const blueprints = _getKey('blueprints');
+  // Remove it if it already exists
+  const blueprints = _getKey('blueprints').filter(b => b.id !== blueprintDef.id);
   blueprints.push(bp.get());
+  // Update derived states
+  updateAndPublishDerivedProperties(blueprints);
 
-  // NOTE: Not updating state, nor writing to db
+  // NOTE: Not updating 'blueprints' state, nor writing to db
 }
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -239,8 +334,6 @@ export function UpdateBlueprint(projId, bpid, scriptText) {
     const def = {
       id: bpid,
       label: bpid,
-      isCharControllable: false, // defaul to false?
-      isPozyxControllable: false,
       scriptText
     };
     const blueprint = new Blueprint(def);

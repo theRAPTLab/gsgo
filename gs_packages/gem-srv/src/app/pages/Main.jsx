@@ -121,14 +121,18 @@ class MissionControl extends React.Component {
   componentDidMount() {
     const params = new URLSearchParams(window.location.search.substring(1));
     const projId = params.get('project');
-    const templateId = params.get('template');
 
-    if (templateId !== null) {
-      // Load from template
+    // Catch use of old URLs
+    const oldModelParm = params.get('model');
+    if (oldModelParm) {
+      // eslint-disable-next-line no-alert
+      alert('"model=<id>" is deprecated.  Please use "project=<id>" instead!');
+      window.location = '/app/login';
+      return;
     }
 
     // No project selected, go back to login to select project
-    if (projId === null && templateId === null) window.location = '/app/login';
+    if (projId === null) window.location = '/app/login';
 
     this.setState({ projId });
 
@@ -390,7 +394,6 @@ class MissionControl extends React.Component {
       panelConfiguration,
       message,
       projId,
-      templateId,
       projectIsLoaded,
       bpidList,
       devices,
@@ -439,7 +442,7 @@ class MissionControl extends React.Component {
     const jsxLeft =
       panelConfiguration === 'edit' ? (
         <>
-          <PanelProjectEditor openByDefault={templateId} />
+          <PanelProjectEditor />
           <MissionMapEditor projId={projId} bpidList={bpidList} />
         </>
       ) : (

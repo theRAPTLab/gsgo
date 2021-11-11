@@ -79,11 +79,11 @@ class Home extends React.Component {
         <div id="console-left" className={clsx(classes.cell, classes.left)}>
           <b className={classes.title}>Demo Routes</b>
           <ul className={classes.list}>
-            <NavItem route="login?model=aquatic">login</NavItem>
-            <NavItem route="model?model=aquatic">model</NavItem>
-            <NavItem route="main?model=aquatic">main</NavItem>
-            <NavItem route="scripteditor?model=aquatic">script editor</NavItem>
-            <NavItem route="viewer?model=aquatic">viewer</NavItem>
+            <NavItem route="login?project=aquatic">login</NavItem>
+            <NavItem route="model?project=aquatic">model</NavItem>
+            <NavItem route="main?project=aquatic">main</NavItem>
+            <NavItem route="scripteditor?project=aquatic">script editor</NavItem>
+            <NavItem route="viewer?project=aquatic">viewer</NavItem>
             <NavItem route="charcontrol">WIP character controller</NavItem>
             {/* <NavItem route="tracker">tracker setup</NavItem> */}
           </ul>

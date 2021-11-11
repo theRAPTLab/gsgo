@@ -15,6 +15,7 @@ import { Register } from 'modules/datacore/dc-features';
 import { GetLoader } from 'modules/asset_core/asset-mgr';
 import { Clamp } from 'lib/util-vector';
 import { HSVfromRGB, RGBfromHSV, HSVfromHEX, HEXfromHSV } from 'lib/util-color';
+import * as ASSETS from 'modules/asset_core';
 
 ///
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
@@ -53,7 +54,7 @@ function m_getAgent(agentId): IAgent {
 
 /// UPDATES ////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_Update() {
+function m_Update(frame) {
   const agentIds = Array.from(COSTUME_AGENTS.keys());
   agentIds.forEach(id => {
     const agent = m_getAgent(id);
@@ -90,11 +91,41 @@ function m_Update() {
   });
 }
 
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/// Runs only when sim is running (GLOOP)
+function m_Animate(frame) {
+  const SPRITES = ASSETS.GetLoader('sprites');
+  const agentIds = Array.from(COSTUME_AGENTS.keys());
+  agentIds.forEach(id => {
+    const agent = m_getAgent(id);
+    if (!agent) return;
+
+    // Animation?
+    if (agent.prop.Costume._animationBaseSkin) {
+      // check framerate
+      if (frame % agent.prop.Costume._animationFrameRate === 0) {
+        agent.prop.Costume._animationFrame++;
+        let skin = `${agent.prop.Costume._animationBaseSkin}${agent.prop.Costume._animationFrame}.${agent.prop.Costume._animationBaseSkinExt}`;
+        if (DBG) console.log(...PR('looking up skin', skin));
+        if (!SPRITES.hasAsset(skin)) {
+          // Ran out of frame, reset to start
+          agent.prop.Costume._animationFrame =
+            agent.prop.Costume._animationStartFrame;
+          skin = `${agent.prop.Costume._animationBaseSkin}${agent.prop.Costume._animationFrame}.${agent.prop.Costume._animationBaseSkinExt}`;
+          if (DBG) console.log(...PR('....failed, reset to', skin));
+        }
+        agent.prop.skin.setTo(skin);
+      }
+    }
+  });
+}
+
 /// HOOKS /////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 // REVIEW: Use PHYSIC for now to set agent before VIS_UPDATE
 UR.HookPhase('SIM/VIS_UPDATE', m_Update);
+UR.HookPhase('SIM/FEATURES_EXEC', m_Animate);
 
 /// FEATURE CLASS /////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -105,6 +136,7 @@ class CostumePack extends GFeature {
     // add feature methods here
     this.featAddMethod('setCostume', this.setCostume);
     this.featAddMethod('setPose', this.setPose);
+    this.featAddMethod('setAnimatedCostume', this.setAnimatedCostume);
     this.featAddMethod('setScale', this.setScale);
     this.featAddMethod('setGlow', this.setGlow);
     this.featAddMethod('setColorize', this.setColorize);
@@ -194,6 +226,12 @@ class CostumePack extends GFeature {
     agent.prop.Costume.colorHue.value = undefined;
     agent.prop.Costume.colorSaturation.value = undefined;
     agent.prop.Costume.colorValue.value = undefined;
+
+    agent.prop.Costume._animationBaseSkin = undefined;
+    agent.prop.Costume._animationBaseSkinExt = undefined;
+    agent.prop.Costume._animationFrame = undefined;
+    agent.prop.Costume._animationStartFrame = undefined;
+    agent.prop.Costume._animationFrameRate = undefined;
   }
 
   /// COSTUME METHODS /////////////////////////////////////////////////////////
@@ -201,7 +239,7 @@ class CostumePack extends GFeature {
   /** Invoked through featureCall script command. To invoke via script:
    *  featureCall Costume setCostume value
    */
-  setCostume(agent: IAgent, costumeName: string, poseName: string | Number) {
+  setCostume(agent: IAgent, costumeName: string, poseName?: string | Number) {
     agent.getFeatProp(this.name, 'costumeName').value = costumeName;
     const { frameCount } = SPRITE.getTextureInfo(costumeName);
     if (poseName !== undefined) {
@@ -218,6 +256,49 @@ class CostumePack extends GFeature {
   }
   setPose(agent: IAgent, poseName: string | number) {
     agent.getFeatProp(this.name, 'currentFrame').value = poseName;
+  }
+  /**
+   * Animate by stepping through costume name, not spritesheet
+   * e.g. fly1.png, fly2.png, fly3.png
+   * This is intended to make it easy for non-technical users to create animations
+   * This supports an arbitrary number of frames.
+   * Turn off animation by setting the framerate to 0.
+   * The animation will cycle back to to the first frame specified in the costumeName,
+   * e.g. if you call it with `fly2.png` then fly2 will be the first frame.
+   */
+  setAnimatedCostume(
+    agent: IAgent,
+    costumeName: string,
+    frameRate: number = 0.3
+  ) {
+    const findEndNumbers = /(\w+?)([0-9]+)\.([A-z]+)$/;
+    const result = findEndNumbers.exec(costumeName);
+    if (!result || result.length < 3) {
+      // eslint-disable-next-line no-alert
+      alert(
+        `AnimatedCostume should be an image file that ends with a number, e.g. 'bunny1.jpg'.  You entered '${costumeName}'`
+      );
+      return;
+    }
+    const baseSkin = result[1];
+    const frame = result[2]; // numbers
+    const ext = result[3];
+
+    agent.prop.Costume._animationBaseSkin = baseSkin;
+    agent.prop.Costume._animationBaseSkinExt = ext;
+    agent.prop.Costume._animationFrame = frame;
+    agent.prop.Costume._animationStartFrame = frame;
+    agent.prop.Costume._animationFrameRate = 30 * frameRate; // frames per second
+    const skin = `${baseSkin}${frame}.${ext}`;
+
+    const SPRITES = ASSETS.GetLoader('sprites');
+    if (!SPRITES.hasAsset(skin)) {
+      // eslint-disable-next-line no-alert
+      alert(`Costume ${skin} not found!`);
+      return;
+    }
+
+    agent.prop.skin.setTo(skin);
   }
   /**
    * If Physics are being used, it's better to use Physics' setSize()

@@ -71,6 +71,7 @@ export interface IAgent extends IScopeable, IActable, IMovementMode {
   isTouching: any; // used by Touches
   // name, value are defined in IScopeable
   statusObject: any;
+  debug: any; // used by Vision to pass polygon path of cone to class-visual
 }
 
 /// FEATURE DECLARATIONS //////////////////////////////////////////////////////
@@ -171,6 +172,9 @@ export interface ISMCBundle extends ISMCPrograms {
   name?: string; // the blueprint name of the bundle, if any
   parent?: string; // the parent bundle, if any
   type?: EBundleType; // enum type (see below)
+  tags: Map<string, any>;
+  setTag(tagName: string, value: any);
+  getTag(tagName: string): any;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** defines the kinds of bundles */

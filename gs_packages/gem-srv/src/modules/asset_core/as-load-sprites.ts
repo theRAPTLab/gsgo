@@ -173,10 +173,12 @@ class SpriteLoader extends AssetLoader {
     if (typeof idOrName === 'string') assetId = this.lookupAssetId(idOrName);
     try {
       const { rsrc: sprite } = this.getAssetById(assetId as number);
-      if (sprite.texture)
-        console.error(
-          'getSpriteDimensions: Unexpected texture, not spritesheet.'
-        );
+      if (sprite.texture) {
+        // Texture, not spritesheet.  See if PIXI has size.
+        const { width, height } = sprite.texture;
+        if (width && height) return { w: width, h: height };
+        return { err: 'PIXI could not load texture size' };
+      }
       if (sprite.spritesheet) {
         const key = sprite.spritesheet._frameKeys[frame];
         return {

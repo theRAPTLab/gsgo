@@ -46,19 +46,31 @@ export function StopTrackerEmitter() {
 /// TRACKER DATA //////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 export function StartTrackerVisuals() {
-  const PTRACK_SYNCMAP = GetTrackerMap();
+  // REMOVE: Always startTrackerVisuals
+  // because different projects may be loaded.
+  // handle the missing names in dc-inputs
+  //
+  // // REVIEW: Skip starting tracker if there are no pozyx mappings.
+  // //         Otherwise, dc-inputs will try to create instances with
+  // //         no blueprint names.
+  // const defaultPozyxBpid = ACBlueprints.GetPozyxControlDefaultBpid(); // GetDefaultPozyxBPName();
+  // if (!defaultPozyxBpid) {
+  //   console.error('skipping StartTrackerVisuals');
+  //   return;
+  // }
+  const INPUT_TRACK_SYNCMAP = GetTrackerMap();
 
   setInterval(() => {
     const entities = PTRACK.GetInputs(500);
-    PTRACK_SYNCMAP.syncFromArray(entities);
-    PTRACK_SYNCMAP.mapObjects();
+    INPUT_TRACK_SYNCMAP.syncFromArray(entities);
+    INPUT_TRACK_SYNCMAP.mapObjects();
 
     // This sends entity data to PanelTracker so entity locations
     // can be monitored for setting up transforms.
     if (SETUP_TRACKER) {
       UR.RaiseMessage('TRACKER_SETUP_UPDATE', {
         entities,
-        tentities: PTRACK_SYNCMAP.getMappedObjects()
+        tentities: INPUT_TRACK_SYNCMAP.getMappedObjects()
       });
     }
   }, INTERVAL);
