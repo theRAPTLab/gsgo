@@ -64,31 +64,27 @@
   width: 50px;
 }
 
-/** these are for the cheap-o renderer test, not using the above
-    classes **/
+/** ProgramPrinter CSS **/
 .gwiz {
   box-sizing: border-box;
 }
-.gwiz.line {
-  margin: 20px 0;
+.gwiz.gtoken {
+  float: left;
+  padding: 4px 12px;
+  margin: 1px 1px;
+  user-select: none;
+}
+.gwiz.styleOpen {
+  border: 0px solid #707070;
+  background-color: #ddd;
+}
+.gwiz.styleSolid {
+  background-color: black;
+}
+.gwiz.lineLead {
+  min-height: 1em;
+  float: left;
+}
+.gwiz.newline {
   clear: left;
-  background-color: #f0f0f0;
-}
-.gwiz.line:hover {
-  background-color: #d0d0f0;
-}
-.gwiz.line > div {
-  display: inline;
-  padding: 5px;
-  min-height: 50px;
-  min-width: 50px;
-  margin: 2px;
-  border: 1px solid gray;
-  background-color: white;
-}
-.gwiz.line div:hover {
-  background-color: #ff7f00;
-}
-.gwiz.block {
-  display: block;
 }

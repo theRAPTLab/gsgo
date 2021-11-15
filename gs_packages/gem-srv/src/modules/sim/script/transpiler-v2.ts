@@ -36,7 +36,7 @@ import {
   TokenToString,
   DecodeStatement,
   DecodeToken,
-  U_SimplifyTokenPrimitives
+  DecodeTokenPrimitive
 } from './tools/_all_tools';
 import { ScriptToJSX } from './tools/script-to-jsx';
 
@@ -429,8 +429,8 @@ export {
   RenderScript, // TScriptUnit[] => JSX for wizards
   ScriptToConsole, // used in DevCompiler print script to console
   TokenToString, // for converting a token to its text representation
-  U_SimplifyTokenPrimitives, // for decoding the value of a token, returns token otherwise
-  DecodeToken, // Working with U_SimplifyTokenPrimitives, converts a token into runtime entity
+  DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
+  DecodeToken, // Working with DecodeTokenPrimitive, converts a token into runtime entity
   DecodeStatement // Works with DecodeToken to create runtime enties
 };
 

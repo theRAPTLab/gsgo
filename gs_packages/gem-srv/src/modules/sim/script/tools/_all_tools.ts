@@ -5,7 +5,7 @@ import ExpressionEvaluator, { Evaluate } from './class-expr-evaluator-v2';
 export {
   CompileScript,
   CompileBlueprint,
-  U_SimplifyTokenPrimitives,
+  DecodeTokenPrimitive,
   DecodeToken,
   DecodeStatement
 } from './script-compiler';

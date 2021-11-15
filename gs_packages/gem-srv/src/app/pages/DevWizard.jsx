@@ -20,13 +20,14 @@ import {
   TextToScript,
   TokenToString,
   ScriptToText,
-  U_SimplifyTokenPrimitives
+  DecodeTokenPrimitive
 } from '../../modules/sim/script/transpiler-v2';
 import { useStylesHOC } from './elements/page-styles';
 //
 import '../../lib/css/gem-ui.css';
 import { GS_ASSETS_DEV_ROOT } from '../../../config/gem-settings';
 //
+import { ProgramPrinter } from './components/ProgramPrinter';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -109,7 +110,7 @@ function GToken(props) {
   const [mytok, setmytok] = useState(token);
   //
   const key = u_Key('tok');
-  const value = U_SimplifyTokenPrimitives(mytok);
+  const value = DecodeTokenPrimitive(mytok);
 
   if (typeof value !== 'object') {
     // a javascript primitive type
@@ -153,7 +154,7 @@ function GLine(props) {
   const { statement, indent } = props;
   const toks = [];
   statement.forEach(tok => {
-    const val = U_SimplifyTokenPrimitives(tok);
+    const val = DecodeTokenPrimitive(tok);
     if (typeof val !== 'object') {
       // a javascript primitive type
       // toks.push(<div key={u_Key('tok')}>{val}</div>);
@@ -297,10 +298,11 @@ class DevWizard extends React.Component {
           style={{
             boxSizing: 'border-box',
             gridColumnEnd: 'span 1',
-            minWidth: '280px'
+            minWidth: '280px',
+            whiteSpace: 'pre'
           }}
         >
-          blank
+          {SCRIPT}
         </div>
         <div
           ref={this.box}
@@ -315,8 +317,9 @@ class DevWizard extends React.Component {
             overflow: 'scroll'
           }}
         >
-          <GBlock indent={0} script={script} />
-          <TestGraphics />
+          <ProgramPrinter program={script} />
+          {/* <GBlock indent={0} script={script} />
+          <TestGraphics /> */}
         </div>
         <div
           id="console-bottom"
