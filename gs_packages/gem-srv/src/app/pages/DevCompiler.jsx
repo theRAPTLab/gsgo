@@ -50,7 +50,7 @@ UR.HookPhase(
         console.log(...PR('Waiting for user input'));
         // (2) the new asset manager routine
         try {
-          await ASSETS.PromiseLoadAssets('system');
+          await ASSETS.PromiseLoadAssets('dev');
         } catch (err) {
           let shortErr = err.toString().split('\n')[0];
           console.log(
@@ -71,7 +71,7 @@ class Compiler extends React.Component {
     super();
     this.text = defaultText.trim();
     this.source = [];
-    const jsx = TRANSPILER.RenderScript(this.source);
+    const jsx = TRANSPILER.ScriptToJSX(this.source);
     this.state = {
       // jsx,
       text: this.text,

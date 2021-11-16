@@ -9,106 +9,26 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\ * /////////////////////////////////////*/
 
 import UR from '@gemstep/ursys/client';
-import { TScriptUnit, IToken } from 'lib/t-script.d';
+import { TScriptUnit } from 'lib/t-script.d';
 import { GetKeyword } from 'modules/datacore/dc-script-engine';
-import { GetProgram } from 'modules/datacore/dc-named-methods';
 import { ScriptToText } from './script-to-text';
 import { TextToScript } from './text-to-script';
-import { ParseExpression } from './class-expr-parser-v2';
+import { DecodeStatement } from './script-compiler';
 
-const merge = require('deepmerge');
+const merge = require('deepmerge'); // using require so TS doesn't look for types
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('SCRIPT_TO_JSX', 'TagDebug');
 const DBG = false;
 
-/// HELPER FUNCTIONS //////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** utility to return the 'decoded' value of a token
- *  COPIED unmodified from transpiler-v2.
- */
-function m_GetTokenValue(arg) {
-  const { directive, comment, line } = arg; // meta information
-  const { token, value, string } = arg; // primitive values
-  const { objref, program, block, expr } = arg; // req runtime eval
-  if (directive) return arg; // directive = _pragma, cmd
-  if (comment) return comment;
-
-  // ORIG
-  // if (line !== undefined) return `// line:${line}`; // don't compile these!
-
-  // NEW just return the line, so blank lines don't get an extra warning
-  if (line !== undefined) return line; // don't compile these!
-
-  if (token !== undefined) return token;
-  if (value !== undefined) return value;
-  if (string !== undefined) return string;
-  if (program) return arg; // { program = string name of stored program }
-  if (Array.isArray(block)) return arg; // { block = array of arrays of tok }
-  if (objref) {
-    return arg; // { objref = array of string parts }
-  }
-  if (expr) return arg; // { expr = string }
-  console.warn('unknown argument type:', arg);
-  throw Error('unknown argument type');
-}
-
-/// SUPPORT API ///////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** return 'expanded' version of argument, suitable for passing to a keyword
- *  compiler
- *  COPIED from script-compiler.ts and
- * MODIFIED to not compile blocks
- */
-function r_DecodeToken(tok: IToken): any {
-  if (tok.comment !== undefined) return '//'; // signal compiler to skip
-  const arg = m_GetTokenValue(tok); // convert
-  // check special types
-  if (arg.directive) return '_pragma'; // { directive, cmd } for compile-time processing
-  if (typeof arg.expr === 'string') {
-    const ast = ParseExpression(arg.expr);
-    return { expr: ast }; // runtime processing through Evaluate() required
-  }
-  if (Array.isArray(arg.objref)) return arg; // runtime processing required
-  if (typeof arg.program === 'string') return GetProgram(arg.program); // runtime processing required
-
-  if (arg.block) return arg.block; // return detokenized block
-  if (arg.line !== undefined) return `// line: ${arg.line}`;
-
-  // 6. otherwise this is a plain argument
-  return arg;
-}
-
-/** Given a ScriptUnit, return the 'decoded' tokens as usable valuables when
- *  it is time to invoke a compiler function
- *  COPIED unmodified from script-compiler.ts to use non-compiled r_DecodeToken
- */
-function DecodeStatement(toks: TScriptUnit): any[] {
-  // console.log('toks', toks);
-  const dUnit: TScriptUnit = toks.map((tok, ii) => {
-    let arg = r_DecodeToken(tok);
-    return arg;
-  });
-  return dUnit;
-}
-
 /// API ///////////////////////////////////////////////////////////////////////
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 /** Given an array of ScriptUnits, return JSX keyword components for each line
  *  as rendered by the corresponding KeywordDef object
  *  @param {array} options -- { isEditable }
- *  COPIED unmodified from transpiler-v2
  */
-
-/// REIVEW: Remove/rpelace transpiler-v2's version of RenderScript?
-
-function RenderScript(units: TScriptUnit[], options: any[]): any[] {
+function ScriptToJSX(units: TScriptUnit[], options: any[]): any[] {
   const sourceJSX = [];
   if (!(units.length > 0)) return sourceJSX;
   let out = [];
@@ -169,13 +89,9 @@ function RenderScript(units: TScriptUnit[], options: any[]): any[] {
   return sourceJSX;
 }
 
-/** given a TScriptUnit[], return text version */
-function ScriptToJSX(units: TScriptUnit[], options: any[]): any {
-  return RenderScript(units, options);
-}
+/** THE FOLLOWING CODE IS RELATED TO THE OLD JSX RENDERER PROTOTYPE I THINK **/
 
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
 /// This should replace one line in origScriptUnits and then return origScriptUnits
 /// Called by UpdateScript
 function UpdateLine(origScriptUnits: any, update: any) {

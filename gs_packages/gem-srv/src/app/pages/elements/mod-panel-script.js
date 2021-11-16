@@ -28,18 +28,7 @@ export function CompileToJSX(currentScript) {
 
   // Construct list of featProps for script UI menu
   const featPropMap = TRANSPILER.ExtractFeatPropMapFromScript(currentScript);
-
-  // TRANSPILER v1
-  // const source = TRANSPILER.ScriptifyText(currentScript);
-
-  // TRANSPILER v2
   const source = TRANSPILER.TextToScript(currentScript);
-
-  // ORIG using TRANSPILER v1
-  // const jsx = TRANSPILER.RenderScript(source, {
-
-  // TRANSPILER v2
-  // NEW Use ScriptToJSX for block rendering
   const jsx = ScriptToJSX(source, {
     isEditable: true,
     isDeletable: false,

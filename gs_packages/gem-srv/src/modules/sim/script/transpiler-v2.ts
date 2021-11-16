@@ -303,64 +303,6 @@ function HasDirective(bpText: string, directive: string) {
   return result;
 }
 
-/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-/** Given an array of ScriptUnits, return JSX keyword components for each line
- *  as rendered by the corresponding KeywordDef object
- *  @param {array} options -- { isEditable }
- */
-function RenderScript(units: TScriptUnit[], options: any[]): any[] {
-  const sourceJSX = [];
-  if (!(units.length > 0)) return sourceJSX;
-  let out = [];
-  if (DBG) console.groupCollapsed(...PR('RENDERING SCRIPT'));
-
-  units.forEach((rawUnit, index) => {
-    let unit = DecodeStatement(rawUnit);
-
-    // ORIG: Skip blank lines
-    // if (unit.length === 0) return;
-
-    // NEW: Keep blank lines, otherwise
-    // index gets screwed up when updating text lines.
-    // Treat the blank lines as a comment.
-    if (unit.length === 0) {
-      sourceJSX.push('//'); // no jsx to render for comments
-      return;
-    }
-
-    let keyword = unit[0];
-
-    // ORIG
-    // comment processing
-    // if (keyword === '//') {
-    // sourceJSX.push(undefined); // no jsx to render for comments
-    // if (DBG) console.groupEnd();
-    // return;
-    // }
-    //
-    // HACK
-    // Process comments as a keyword so they are displayed with line numbers
-    if (keyword === '//') {
-      keyword = '_comment';
-      unit[1] = rawUnit[0] ? rawUnit[0].comment : '';
-    }
-
-    if (keyword === '#') keyword = '_pragma';
-    let kwProcessor = GetKeyword(keyword);
-    if (!kwProcessor) {
-      kwProcessor = GetKeyword('dbgError');
-      kwProcessor.keyword = keyword;
-    }
-    const jsx = kwProcessor.jsx(index, unit, options);
-    sourceJSX.push(jsx);
-    out.push(`<${kwProcessor.getName()} ... />\n`);
-  });
-
-  if (DBG) console.log(`JSX (SIMULATED)\n${out.join('')}`);
-  if (DBG) console.groupEnd();
-  return sourceJSX;
-}
-
 /// BLUEPRINT UTILITIES ///////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function RegisterBlueprint(bdl: SM_Bundle): SM_Bundle {
@@ -426,7 +368,6 @@ export {
 export {
   CompileText,
   CompileBlueprint, // combine scriptunits through m_CompileBundle
-  RenderScript, // TScriptUnit[] => JSX for wizards
   ScriptToConsole, // used in DevCompiler print script to console
   TokenToString, // for converting a token to its text representation
   DecodeTokenPrimitive, // for decoding the value of a token, returns token otherwise
