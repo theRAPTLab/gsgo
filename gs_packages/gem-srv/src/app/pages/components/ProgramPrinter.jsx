@@ -17,12 +17,13 @@ import {
 
 /// LINE PRINTING MACHINE //////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+const TABSIZE = 1.5; // in em
+//
+let INDENT = TABSIZE;
 let LINE_NUM = 0;
 let LINE_IDX = 0;
 let LINE_BUF = [];
 let PAGE = [];
-const TABSIZE = 1.5; // in em
-let INDENT = TABSIZE;
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 function m_Indent() {
   ++INDENT;
@@ -50,11 +51,14 @@ function m_Flush() {
   LINE_IDX = 0;
 }
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-function m_NextLine(dbg) {
+function m_NextLine() {
   LINE_NUM++;
   const ww = INDENT * TABSIZE;
   LINE_BUF.push(
-    <div className="gwiz lineLead newline" style={{ width: `${ww}em` }}>
+    <div
+      className="gwiz lineLead newline"
+      style={{ width: `${ww}em`, paddingTop: '5px' }}
+    >
       {LINE_NUM}
     </div>
   );
@@ -82,7 +86,9 @@ function PrintStatement(stm) {
       m_Outdent();
       return;
     }
-    // otherwise, print the token.
+    // check for blank lines
+    if (tok.line !== undefined) return;
+    // otherwise just print
     PrintToken(tok);
   });
   // flush buffer after statement is printed, increment line

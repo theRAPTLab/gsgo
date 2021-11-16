@@ -19,7 +19,6 @@ import * as ASSETS from '../../modules/asset_core';
 import {
   TextToScript,
   TokenToString,
-  ScriptToText,
   DecodeTokenPrimitive
 } from '../../modules/sim/script/transpiler-v2';
 import { useStylesHOC } from './elements/page-styles';
@@ -39,6 +38,9 @@ useFeature Movement
 # PROGRAM UPDATE
 prop skin setTo "bunny.json"
 featCall agent.Movement jitterPos -5 5
+
+// comment allez vous?
+
 # PROGRAM EVENT
 onEvent Tick [[
   ifExpr {{ agent.getProp('name').value==='bun0' }} [[

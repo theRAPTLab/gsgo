@@ -55,8 +55,8 @@ function DecodeTokenPrimitive(arg) {
   const { token, value, string } = arg; // primitive values
   const { objref, program, block, expr } = arg; // req runtime eval
   if (directive) return arg; // directive = _pragma, cmd
-  if (comment) return comment;
-  if (line !== undefined) return `// line:${line}`; // don't compile these!
+  if (comment) return `// ${comment}`;
+  if (line !== undefined) return arg; // blank lines
   if (token !== undefined) return token;
   if (value !== undefined) return value;
   if (string !== undefined) return string;
@@ -72,7 +72,7 @@ function DecodeTokenPrimitive(arg) {
  *  compiler
  */
 function DecodeToken(tok: IToken): any {
-  if (tok.comment !== undefined) return '//'; // signal compiler to skip
+  if (tok.comment !== undefined) return `// ${tok.comment}`; // compile will skip
   const arg = DecodeTokenPrimitive(tok); // convert
   // check special types
   if (arg.directive) return '_pragma'; // { directive, cmd } for compile-time processing
@@ -82,8 +82,8 @@ function DecodeToken(tok: IToken): any {
   }
   if (Array.isArray(arg.objref)) return arg; // runtime processing required
   if (typeof arg.program === 'string') return GetProgram(arg.program); // runtime processing required
+  if (arg.line !== undefined) return arg; // blank line, preserve token for compiler
   if (arg.block) return CompileScript(arg.block); // recursive compile
-  if (arg.line !== undefined) return `// line: ${arg.line}`;
 
   // 6. otherwise this is a plain argument
   return arg;
@@ -110,6 +110,22 @@ function DecodeStatement(toks: TScriptUnit): any[] {
   });
   return dUnit;
 }
+/// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+/** check that the passed decoded token is actually a keyword. This is called
+ *  AFTER the statement tokens has been decoded as far as it can be by
+ *  DecodeStatement()
+ */
+function is_Keyword(tok: any): boolean {
+  // don't compile comment lines, but compile everything else
+  if (typeof tok === 'string') return !tok.startsWith('//');
+  // this shouldn't happen, but just ruling it out
+  if (Array.isArray(tok)) return false;
+  // if it's an object, do a bit more digging
+  if (typeof tok === 'object') {
+    if (tok.line) return false;
+  }
+  return false;
+}
 
 /// MAIN API //////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -123,8 +139,9 @@ function CompileStatement(statement: TScriptUnit, idx?: number): TSMCProgram {
   const kwArgs = DecodeStatement(statement);
   let kw = kwArgs[0];
   // let's compile!
-  if (typeof kw !== 'string') return []; // don't compile
-  if (kw.startsWith('//')) return []; // don't compile
+  // if first keyword is invalid return empty array (no code generated)
+  if (!is_Keyword(kw)) return [];
+  // otherwise, compile the statement!
   kwProcessor = GetKeyword(kw);
   if (!kwProcessor) kwProcessor = GetKeyword('keywordErr');
   const compiledStatement = kwProcessor.compile(kwArgs, idx); // qbits is the subsequent parameters
