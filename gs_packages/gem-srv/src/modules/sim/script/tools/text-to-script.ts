@@ -8,15 +8,13 @@
 
 import UR from '@gemstep/ursys/client';
 import { TScriptUnit } from 'lib/t-script.d';
-import GScriptTokenizerDBG from 'script/tools/class-gscript-tokenizer-v2';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer';
+import GScriptTokenizer from 'script/tools/class-gscript-tokenizer-v2';
 import { Blocks } from './test-data/td-tokenizer';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 const PR = UR.PrefixUtil('TOKENIZE', 'TagDebug');
-const gstDBG = new GScriptTokenizerDBG();
-const gst = new GScriptTokenizer();
+const gstDBG = new GScriptTokenizer();
 
 /// API ///////////////////////////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -

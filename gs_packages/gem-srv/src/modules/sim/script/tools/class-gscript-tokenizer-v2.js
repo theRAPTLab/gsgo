@@ -207,12 +207,10 @@ class ScriptTokenizer {
    *  We've extended it to also load line-after-line to process full texts
    */
   loadLine() {
-    // ben hacked this in a weird way before to allow blank lines to be
-    // processed, obscuring what this function actually did: setup the line and
-    // length props. It's been rewritten to reflect that operation more clearly
     this.index = 0;
     if (this.linesIndex < this.linesCount) {
-      this.line = this.lines[this.linesIndex++].trim();
+      this.line = this.lines[this.linesIndex].trim();
+      this.linesIndex++;
       this.length = this.line.length;
       if (DBG_MB) console.log('load', this.line);
       return;
@@ -523,7 +521,7 @@ class ScriptTokenizer {
       this.gobbleSpaces();
       ch_i = this.exprICode(this.index);
     }
-    /** GEMSCRIPT HACK ** In GEMSCRIPT an objref is something like 'foo.bar',
+    /** GEMSCRIPT HACK ** In GEMSCRIPT an "objref" is something like 'foo.bar',
      *  and we want to return the parts so keyword compilers can invoke those
      *  objects at runtime. This requires a new token { objref } which is an
      *  array of { string } tokens that are converted into a plain array of

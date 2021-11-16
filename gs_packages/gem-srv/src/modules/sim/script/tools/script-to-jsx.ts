@@ -76,11 +76,7 @@ function r_DecodeToken(tok: IToken): any {
   if (Array.isArray(arg.objref)) return arg; // runtime processing required
   if (typeof arg.program === 'string') return GetProgram(arg.program); // runtime processing required
 
-  // NEW: Pass Blocks uncompiled
   if (arg.block) return arg.block; // return detokenized block
-  // ORIG: Compile blocks for execution
-  // if (arg.block) return CompileScript(arg.block); // recursive compile
-
   if (arg.line !== undefined) return `// line: ${arg.line}`;
 
   // 6. otherwise this is a plain argument

@@ -19,8 +19,8 @@
 
 import React from 'react';
 import { IKeyword, TOpcode, TScriptUnit, IAgent } from 'lib/t-script';
-import GScriptTokenizer from 'lib/class-gscript-tokenizer';
-import { Evaluate } from 'lib/expr-evaluator';
+import GScriptTokenizer from '../modules/sim/script/tools/class-gscript-tokenizer-v2';
+import { Evaluate } from '../modules/sim/script/tools/class-expr-evaluator-v2';
 
 /// CONSTANTS & DECLARATIONS //////////////////////////////////////////////////
 /// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
